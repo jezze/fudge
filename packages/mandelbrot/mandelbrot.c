@@ -1,182 +1,51 @@
+#include <abi.h>
 #include <fudge.h>
+#include "video.h"
 
-#define _Complex_I                      0
+#define fpshift                         10
+#define tofp(_a)                        ((_a) << fpshift)
+#define fromfp(_a)                      ((_a) >> fpshift)
+#define fpabs(_a)                       ((_a < 0) ? -_a : _a)
+#define mulfp(_a,_b)                    (((_a) * (_b)) >> fpshift)
+#define divfp(_a,_b)                    (((_a) << fpshift) / (_b))
 
-#define WIDTH                           320
-#define HEIGHT                          200
-#define ZOOM                            2.0
-
-struct complex
+void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, unsigned int iterations)
 {
 
-    double r;
-    double i;
-
-};
-
-double creal(struct complex c)
-{
-
-    return c.r;
-
-}
-
-double cimag(struct complex c)
-{
-
-    return c.i;
-
-}
-
-double cabs(struct complex c)
-{
-
-    return 0;
-
-}
-
-struct complex caddc(struct complex c1, struct complex c2)
-{
-
-    struct complex c;
-
-    c.r = c1.r + c2.r;
-    c.i = c1.i + c2.i;
-
-    return c;
-
-}
-
-struct complex csubc(struct complex c1, struct complex c2)
-{
-
-    struct complex c;
-
-    c.r = c1.r - c2.r;
-    c.i = c1.i - c2.i;
-
-    return c;
-
-}
-
-struct complex cmuli(struct complex c1, int n)
-{
-
-    struct complex c;
-
-    c.r = c1.r * n;
-    c.i = c1.i * n;
-
-    return c;
-
-}
-
-struct complex cmulc(struct complex c1, struct complex c2)
-{
-
-    struct complex c;
-
-    c.r = (c1.r * c2.r) - (c1.i * c2.i);
-    c.i = (c1.i * c2.r) + (c1.r * c2.i);
-
-    return c;
-
-}
-
-struct complex cpow(struct complex c1, unsigned int t)
-{
-
-    return cmulc(c1, c1);
-
-}
-
-struct complex iterate(struct complex c, unsigned int iterations)
-{
-
-    struct complex z;
-    unsigned int i;
-
-    z.r = c.r;
-    z.i = c.i;
-
-    for (i = 0; i < iterations; i++)
-        z = caddc(cpow(z, 2), c);
-
-    return z;
-
-}
-
-static void render(double rcenter, double icenter, unsigned int iterations, double zoom, double granularity)
-{
-
-    unsigned char buffer[320];
-    double rsize = WIDTH / 2;
-    double isize = HEIGHT / 2;
+    int xs = (x2 - x1) / settings->w;
+    int ys = (y2 - y1) / settings->h;
+    char buffer[4096];
     int x, y;
 
-    for (y = 0; y < HEIGHT; y++)
-    {   
+    for (y = 0; y < settings->h; y++)
+    {
 
-        memory_clear(buffer, 320);
+        int yy = y1 + y * ys;
 
-        for (x = 0; x < WIDTH; x++)
+        for (x = 0; x < settings->w; x++)
         {
 
-            double rpoint = x;
-            double ipoint = y;
-            struct complex c;
-            struct complex z;
-            
-            c.r = (rcenter + ((rpoint - rsize) / zoom));
-            c.i = (icenter + ((ipoint - isize) / zoom));
+            int xx = x1 + x * xs;
+            unsigned char c;
+            int t, r = 0, i = 0;
 
-            z = iterate(c, iterations);
+            for (c = 0; (c < iterations) && (fpabs(r) < tofp(2)) && (fpabs(i) < tofp(2)); c++)
+            {
 
-            if (cabs(z) >= granularity)
-                buffer[x] = 0xFF;
+                t = (mulfp(r, r) - mulfp(i, i)) + xx;
+                i = ((r * i) >> (fpshift - 1)) + yy;
+                r = t;
+
+            }
+
+            if (c == iterations)
+                buffer[x] = 0;
+            else
+                buffer[x] = c % 16;
 
         }
 
-        call_write(CALL_PO, y * WIDTH, WIDTH, 1, buffer);
-
-    }
-
-}
-
-static void handle(char c)
-{
-
-    switch (c)
-    {
-
-        case 'q':
-
-            call_exit();
-
-            break;
-
-        default:
-
-            break;
-
-    }
-
-}
-
-static void poll()
-{
-
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count;
-    unsigned int i;
-
-    for (;;)
-    {
-
-        count = call_read(CALL_P0, 0, 1, FUDGE_BSIZE, buffer);
-
-        for (i = 0; i < count; i++)
-            handle(buffer[i]);
+        video_draw(y * settings->w, settings->w, buffer);
 
     }
 
@@ -185,14 +54,18 @@ static void poll()
 void main()
 {
 
-    unsigned int iterations = 32;
-    double x = -0.5;
-    double y = 0;
-    double granularity = 8.0;
-    double zoom = WIDTH / 4.0;
+    struct ctrl_videosettings settings;
 
-    render(x, y, iterations, zoom, granularity);
-    poll();
+    settings.w = 320;
+    settings.h = 200;
+    settings.bpp = 8;
+
+    video_setmode(&settings);
+    video_open();
+    draw(&settings, tofp(-2), tofp(-2), tofp(2), tofp(2), 64);
+    video_close();
+
+    for (;;);
 
 }
 
