@@ -23,7 +23,7 @@ static struct view view[VIEWS];
 static struct list views;
 static struct view *viewactive;
 static unsigned char backbuffer[4096];
-static unsigned int splitter;
+static unsigned int center;
 
 static unsigned char colormap[] = {
     0x00, 0x00, 0x00,
@@ -194,7 +194,7 @@ static void arrangewindows(struct view *view)
 
     }
 
-    box_setsize(&window->size, desktop.x, desktop.y, splitter, desktop.h);
+    box_setsize(&window->size, desktop.x, desktop.y, center, desktop.h);
 
     a = desktop.h / (count - 1);
     i = 0;
@@ -204,7 +204,7 @@ static void arrangewindows(struct view *view)
 
         window = current->data;
 
-        box_setsize(&window->size, desktop.x + splitter, desktop.y + i * a, desktop.w - splitter, a);
+        box_setsize(&window->size, desktop.x + center, desktop.y + i * a, desktop.w - center, a);
 
         i++;
 
@@ -307,7 +307,7 @@ static void pollevent()
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff;
+    unsigned int count, roff, quit = 0;
 
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
@@ -347,12 +347,16 @@ static void pollevent()
                 }
 
                 if (data[0] == 0x19)
+                {
+
                     spawn();
+
+                }
 
                 if (data[0] == 0x23)
                 {
 
-                    splitter -= (desktop.w / 32);
+                    center -= (desktop.w / 32);
 
                     arrangewindows(viewactive);
                     draw(&desktop);
@@ -378,10 +382,17 @@ static void pollevent()
                 if (data[0] == 0x26)
                 {
 
-                    splitter += (desktop.w / 32);
+                    center += (desktop.w / 32);
 
                     arrangewindows(viewactive);
                     draw(&desktop);
+
+                }
+
+                if (data[0] == 0x2C)
+                {
+
+                    quit = 1;
 
                 }
 
@@ -416,6 +427,9 @@ static void pollevent()
 
 
         }
+
+        if (quit)
+            break;
 
     }
 
@@ -476,7 +490,7 @@ void main()
     panel_init(&title);
     box_setsize(&title.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
 
-    splitter = desktop.w / 2;
+    center = desktop.w / 2;
 
     setupwindows();
     setupviews();
@@ -486,6 +500,12 @@ void main()
     activateview(views.head->data);
     draw(&screen);
     pollevent();
+
+    settings.w = 80;
+    settings.h = 25;
+    settings.bpp = 16;
+
+    video_setmode(&settings);
 
 }
 

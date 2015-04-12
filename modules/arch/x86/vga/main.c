@@ -227,11 +227,27 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
 static void videointerface_setmode(struct ctrl_videosettings *settings)
 {
 
-    videointerface.w = 320;
-    videointerface.h = 200;
-    videointerface.bpp = 8;
+    if (settings->w == 80 && settings->h == 25)
+    {
 
-    vga_setregisters((unsigned char *)g320x200x256);
+        videointerface.w = 80;
+        videointerface.h = 25;
+        videointerface.bpp = 16;
+
+        vga_settext();
+
+    }
+
+    else
+    {
+
+        videointerface.w = 320;
+        videointerface.h = 200;
+        videointerface.bpp = 8;
+
+        vga_setregisters((unsigned char *)g320x200x256);
+
+    }
 
 }
 

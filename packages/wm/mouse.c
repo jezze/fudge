@@ -90,5 +90,8 @@ void mouse_init(struct mouse *mouse)
 
     box_setsize(&mouse->size, 0, 0, 24, 24);
 
+    mouse->num = 0;
+    mouse->state = 0;
+
 }
 
