@@ -231,13 +231,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
     videointerface.h = 200;
     videointerface.bpp = 8;
 
-    io_inb(VGA_REGISTER_FCCCTRL);
-    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_DISABLE);
-
-    vga_setregisters((unsigned char *)g320x200x256, 0);
-
-    io_inb(VGA_REGISTER_FCCCTRL);
-    io_outb(VGA_REGISTER_ARINDEX, VGA_ARINDEX_ENABLE);
+    vga_setregisters((unsigned char *)g320x200x256);
 
 }
 

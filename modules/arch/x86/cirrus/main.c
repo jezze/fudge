@@ -172,7 +172,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
     vga_initmodeinfo(&modeinfo, 19);
     vga_initmodetiming(&modetiming, &modeinfo, &cardspecs);
     vga_initregisters(registers, &modetiming, &modeinfo);
-    vga_setregisters(registers, 0);
+    vga_setregisters(registers);
 
 }
 

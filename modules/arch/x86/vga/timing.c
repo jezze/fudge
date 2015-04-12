@@ -263,37 +263,52 @@ static struct vga_monitormodetiming timings[] = {
     {85000, 1072, 1088, 1160, 1360, 768, 603, 607, 625, 0},
 };
 
-void vga_setregisters(unsigned char *registers, unsigned int ega)
+#define RCOM 0x63
+#define RW320 0x00
+#define RH200 0x00
+
+static const unsigned char horregs[] = { 0x0,  0x1,  0x2,  0x3,  0x4, 0x5, 0x13 };
+static const unsigned char w320[] = { 0x5f, 0x4f, 0x50, 0x82, 0x54, 0x80, 0x28 };
+static const unsigned char verregs[] = { 0x6,  0x7,  0x9,  0x10, 0x11, 0x12, 0x15, 0x16 };
+static const unsigned char h200[] = { 0xbf, 0x1f, 0x41, 0x9c, 0x8e, 0x8f, 0x96, 0xb9 };
+
+void vga_setregisters(unsigned char *registers)
 {
 
     unsigned int i;
 
-    if (ega)
+    io_outb(0x3C2, RCOM | RW320 | RH200);
+    io_outw(0x3D4, 0x0E11);
+
+    for (i = 0; i < 7; i++)
+        io_outw(0x3D4, (w320[i] << 8) + horregs[i]);
+
+    for (i = 0; i < 8; i++)
+        io_outw(0x3D4, (h200[i] << 8) + verregs[i]);
+
+    io_outw(0x3D4, 0x0008);
+    io_outw(0x3D4, 0x4014);
+    io_outw(0x3D4, 0xA317);
+    io_outw(0x3C4, 0x0E04);
+    io_outw(0x3C4, 0x0101);
+    io_outw(0x3C4, 0x0F02);
+    io_outw(0x3Ce, 0x4005);
+    io_outw(0x3Ce, 0x0506);
+    io_inb(0x3DA);
+    io_outb(0x3C0, 0x30);
+    io_outb(0x3C0, 0x41);
+    io_outb(0x3C0, 0x33);
+    io_outb(0x3C0, 0x00);
+
+    for (i = 0; i < 16; i++)
     {
+
+        io_outb(0x3c0, i);
+        io_outb(0x3c0, i);
 
     }
 
-    io_outb(VGA_REGISTER_MISCWRITE, registers[VGA_MR_OFFSET]);
-
-    outsr(0x00, 0x01);
-    outsr(0x01, registers[VGA_SR_OFFSET + 1] | 0x20);
-
-    for (i = 2; i < VGA_SR_COUNT; i++)
-        outsr(i, registers[VGA_SR_OFFSET + i]);
-
-    outsr(0x00, 0x03);
-
-    if (ega)
-        outcrt1(0x11, incrt1(0x11) & 0x7f);
-
-    for (i = 0; i < VGA_CR_COUNT; i++)
-        outcrt1(i, registers[VGA_CR_OFFSET + i]);
-
-    for (i = 0; i < VGA_GR_COUNT; i++)
-        outgr(i, registers[VGA_GR_OFFSET + i]);
-
-    for (i = 0; i < VGA_AR_COUNT; i++)
-        outar(i, registers[VGA_AR_OFFSET + i]);
+    io_outb(0x3c0, 0x20);
 
 }
 
