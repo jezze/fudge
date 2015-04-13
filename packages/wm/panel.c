@@ -39,12 +39,12 @@ void panel_draw(struct panel *panel, unsigned int line)
 
 }
 
-void panel_init(struct panel *panel, char *text, unsigned int active)
+void panel_init(struct panel *panel)
 {
 
     box_setsize(&panel->size, 0, 0, 0, 0);
 
-    panel->active = active;
+    panel->active = 0;
 
 }
 

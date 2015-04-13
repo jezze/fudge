@@ -51,13 +51,14 @@ void window_draw(struct window *window, unsigned int line)
 
 }
 
-void window_init(struct window *window, char *text, unsigned int active)
+void window_init(struct window *window)
 {
 
     list_inititem(&window->item, window);
     box_setsize(&window->size, 0, 0, 0, 0);
 
-    window->active = active;
+    window->active = 0;
+    window->source = 0;
 
 }
 

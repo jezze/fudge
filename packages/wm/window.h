@@ -9,4 +9,4 @@ struct window
 };
 
 void window_draw(struct window *window, unsigned int line);
-void window_init(struct window *window, char *text, unsigned int active);
+void window_init(struct window *window);

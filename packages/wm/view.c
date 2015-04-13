@@ -34,14 +34,14 @@ void view_draw(struct view *view, unsigned int line)
 
 }
 
-void view_init(struct view *view, char *text, unsigned int active)
+void view_init(struct view *view)
 {
 
     list_inititem(&view->item, view);
-    panel_init(&view->panel, text, active);
     list_init(&view->windows);
+    panel_init(&view->panel);
 
-    view->active = active;
+    view->active = 0;
     view->windowactive = 0;
 
 }

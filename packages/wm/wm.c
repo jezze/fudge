@@ -216,20 +216,12 @@ static void activatewindow(struct view *view, struct window *window)
 {
 
     if (view->windowactive)
-    {
-
         view->windowactive->active = 0;
-
-    }
 
     view->windowactive = window;
 
     if (view->windowactive)
-    {
-
         view->windowactive->active = 1;
-
-    }
 
 }
 
@@ -244,8 +236,6 @@ static void nextwindow(struct view *view)
     else
         activatewindow(view, view->windows.head->data);
 
-    draw(&desktop);
-
 }
 
 static void prevwindow(struct view *view)
@@ -258,18 +248,6 @@ static void prevwindow(struct view *view)
         activatewindow(view, view->windowactive->item.prev->data);
     else
         activatewindow(view, view->windows.tail->data);
-
-    draw(&desktop);
-
-}
-
-static void movesplitter(int direction)
-{
-
-    splitter += direction * (desktop.w / 32);
-
-    arrangewindows(view);
-    draw(&desktop);
 
 }
 
@@ -286,8 +264,6 @@ static void mapwindow(struct view *view, unsigned int source)
 
     list_move(&view->windows, &windows, &window->item);
     activatewindow(view, window);
-    arrangewindows(view);
-    draw(&desktop);
 
 }
 
@@ -305,30 +281,16 @@ static void unmapwindow(struct view *view)
     else
         activatewindow(view, 0);
 
-    arrangewindows(view);
-    draw(&desktop);
-
 }
 
 static void activateview(struct view *v)
 {
 
-    if (viewactive == v)
-        return;
-
-    if (viewactive)
-    {
-
-        viewactive->active = 0;
-        viewactive->panel.active = 0;
-
-    }
-
+    viewactive->active = 0;
+    viewactive->panel.active = 0;
     viewactive = v;
     viewactive->active = 1;
     viewactive->panel.active = 1;
-
-    draw(&screen);
 
 }
 
@@ -366,47 +328,62 @@ static void pollevent()
             {
 
             case EVENT_KEYBOARD:
-                if (data[0] == 0x02)
-                    activateview(&view[0]);
+                if (data[0] >= 0x02 && data[0] < 0x0A)
+                {
 
-                if (data[0] == 0x03)
-                    activateview(&view[1]);
+                    activateview(&view[data[0] - 0x02]);
+                    arrangewindows(viewactive);
+                    draw(&screen);
 
-                if (data[0] == 0x04)
-                    activateview(&view[2]);
-
-                if (data[0] == 0x05)
-                    activateview(&view[3]);
-
-                if (data[0] == 0x06)
-                    activateview(&view[4]);
-
-                if (data[0] == 0x07)
-                    activateview(&view[5]);
-
-                if (data[0] == 0x08)
-                    activateview(&view[6]);
-
-                if (data[0] == 0x09)
-                    activateview(&view[7]);
+                }
 
                 if (data[0] == 0x10)
+                {
+
                     unmapwindow(viewactive);
+                    arrangewindows(viewactive);
+                    draw(&desktop);
+
+                }
 
                 if (data[0] == 0x19)
                     spawn();
 
                 if (data[0] == 0x23)
-                    movesplitter(-1);
+                {
+
+                    splitter -= (desktop.w / 32);
+
+                    arrangewindows(viewactive);
+                    draw(&desktop);
+
+                }
 
                 if (data[0] == 0x24)
+                {
+
                     nextwindow(viewactive);
+                    draw(&desktop);
+
+                }
 
                 if (data[0] == 0x25)
+                {
+
                     prevwindow(viewactive);
+                    draw(&desktop);
+
+                }
 
                 if (data[0] == 0x26)
-                    movesplitter(1);
+                {
+
+                    splitter += (desktop.w / 32);
+
+                    arrangewindows(viewactive);
+                    draw(&desktop);
+
+                }
 
                 break;
 
@@ -430,6 +407,8 @@ static void pollevent()
 
             case 1000:
                 mapwindow(viewactive, header->source);
+                arrangewindows(viewactive);
+                draw(&desktop);
 
                 break;
 
@@ -454,7 +433,7 @@ void setupwindows()
     for (i = 0; i < WINDOWS; i++)
     {
 
-        window_init(&window[i], "0", 0);
+        window_init(&window[i]);
         list_add(&windows, &window[i].item);
 
     }
@@ -471,7 +450,7 @@ void setupviews()
     for (i = 0; i < VIEWS; i++)
     {
 
-        view_init(&view[i], "0", 0);
+        view_init(&view[i]);
         box_setsize(&view[i].panel.size, menu.x + i * BOXSIZE, menu.y, BOXSIZE, BOXSIZE);
         list_add(&views, &view[i].item);
 
@@ -494,14 +473,17 @@ void main()
     box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
     box_setsize(&desktop, screen.x, screen.y + BOXSIZE, screen.w, screen.h - BOXSIZE);
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, mouse.size.w, mouse.size.h);
+    panel_init(&title);
+    box_setsize(&title.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
 
     splitter = desktop.w / 2;
 
     setupwindows();
     setupviews();
+
+    viewactive = views.head->data;
+
     activateview(views.head->data);
-    panel_init(&title, "0", 0);
-    box_setsize(&title.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
     draw(&screen);
     pollevent();
 
