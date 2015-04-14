@@ -227,8 +227,11 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
 static void videointerface_setmode(struct ctrl_videosettings *settings)
 {
 
-    if (settings->w == 80 && settings->h == 25)
+    if (settings->w == 80)
     {
+
+        if (videointerface.w == 320)
+            vga_restore();
 
         videointerface.w = 80;
         videointerface.h = 25;
@@ -240,6 +243,9 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 
     else
     {
+
+        if (videointerface.w == 80)
+            vga_save();
 
         videointerface.w = 320;
         videointerface.h = 200;

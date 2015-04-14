@@ -127,6 +127,8 @@ struct vga_info
 
 };
 
+void vga_save();
+void vga_restore();
 void vga_settext();
 void vga_setregisters(unsigned char *registers);
 void vga_initregisters(unsigned char *registers, struct vga_modetiming *modetiming, struct vga_modeinfo *modeinfo);
