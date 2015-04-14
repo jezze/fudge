@@ -14,8 +14,6 @@ DIR:=$(CUR)/atapi
 include $(DIR)/rules.mk
 DIR:=$(CUR)/bga
 include $(DIR)/rules.mk
-DIR:=$(CUR)/cirrus
-include $(DIR)/rules.mk
 DIR:=$(CUR)/cpuid
 include $(DIR)/rules.mk
 DIR:=$(CUR)/ehci

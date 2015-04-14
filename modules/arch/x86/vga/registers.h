@@ -178,3 +178,7 @@ void outar(unsigned char index, unsigned char value);
 void outcrt1(unsigned char index, unsigned char value);
 void outgr(unsigned char index, unsigned char value);
 void outsr(unsigned char index, unsigned char value);
+void vga_save();
+void vga_restore();
+void vga_settext();
+void vga_setgraphics();

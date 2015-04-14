@@ -1,5 +1,5 @@
 MOD_$(DIR):=$(BUILD_MODULE)/vga.ko.0
-OBJ_$(DIR):=$(DIR)/main.o $(DIR)/timing.o $(DIR)/registers.o
+OBJ_$(DIR):=$(DIR)/main.o $(DIR)/registers.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))
 	$(LD) -o $@ $(LDFLAGS) $^
