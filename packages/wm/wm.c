@@ -23,7 +23,6 @@ static struct view view[VIEWS];
 static struct list views;
 static struct view *viewactive;
 static unsigned char backbuffer[4096];
-static unsigned int center;
 
 static unsigned char colormap[] = {
     0x00, 0x00, 0x00,
@@ -194,7 +193,7 @@ static void arrangewindows(struct view *view)
 
     }
 
-    box_setsize(&window->size, desktop.x, desktop.y, center, desktop.h);
+    box_setsize(&window->size, desktop.x, desktop.y, view->center, desktop.h);
 
     a = desktop.h / (count - 1);
     i = 0;
@@ -204,7 +203,7 @@ static void arrangewindows(struct view *view)
 
         window = current->data;
 
-        box_setsize(&window->size, desktop.x + center, desktop.y + i * a, desktop.w - center, a);
+        box_setsize(&window->size, desktop.x + view->center, desktop.y + i * a, desktop.w - view->center, a);
 
         i++;
 
@@ -356,7 +355,7 @@ static void pollevent()
                 if (data[0] == 0x23)
                 {
 
-                    center -= (desktop.w / 32);
+                    viewactive->center -= (desktop.w / 32);
 
                     arrangewindows(viewactive);
                     draw(&desktop);
@@ -382,7 +381,7 @@ static void pollevent()
                 if (data[0] == 0x26)
                 {
 
-                    center += (desktop.w / 32);
+                    viewactive->center += (desktop.w / 32);
 
                     arrangewindows(viewactive);
                     draw(&desktop);
@@ -464,7 +463,7 @@ void setupviews()
     for (i = 0; i < VIEWS; i++)
     {
 
-        view_init(&view[i]);
+        view_init(&view[i], desktop.w / 2);
         box_setsize(&view[i].panel.size, menu.x + i * BOXSIZE, menu.y, BOXSIZE, BOXSIZE);
         list_add(&views, &view[i].item);
 
@@ -489,8 +488,6 @@ void main()
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, mouse.size.w, mouse.size.h);
     panel_init(&title);
     box_setsize(&title.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
-
-    center = desktop.w / 2;
 
     setupwindows();
     setupviews();
