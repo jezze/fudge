@@ -125,7 +125,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
         videointerface.h = 200;
         videointerface.bpp = 8;
 
-        vga_setgraphics();
+        vga_setgraphic();
 
     }
 

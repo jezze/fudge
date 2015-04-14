@@ -181,4 +181,5 @@ void outsr(unsigned char index, unsigned char value);
 void vga_save();
 void vga_restore();
 void vga_settext();
-void vga_setgraphics();
+void vga_setgraphic();
+void vga_setmode(unsigned int flags, unsigned int vdisplay, unsigned int vscan, unsigned int clockindex, unsigned int depth, unsigned int htotal, unsigned int hdisplay, unsigned int hsyncstart, unsigned int hsyncend, unsigned int hskew, unsigned int vtotal, unsigned int vsyncstart, unsigned int vsyncend, unsigned int vblankstart, unsigned int vblankend, unsigned int linewidth);
