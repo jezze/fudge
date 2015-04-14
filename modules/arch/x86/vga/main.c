@@ -51,6 +51,9 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
     unsigned int fullsize = videointerface.h * linesize;
     unsigned int i;
 
+    if (videointerface.w != 80)
+        return count;
+
     for (i = 0; i < count; i++)
     {
 
