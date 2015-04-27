@@ -105,7 +105,6 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
 {
 
     unsigned int i;
-    unsigned int ident;
     unsigned int identquote = 0;
     unsigned int identcount = 0;
 
@@ -113,8 +112,7 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
     {
 
         char c = buffer[i];
-
-        ident = 0;
+        unsigned int ident = 0;
 
         switch (c)
         {
