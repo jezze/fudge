@@ -307,6 +307,12 @@ static void pollevent()
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff, quit = 0;
+    struct box old;
+
+    old.x = mouse.size.x;
+    old.y = mouse.size.y;
+    old.w = mouse.size.w;
+    old.h = mouse.size.h;
 
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
@@ -400,16 +406,30 @@ static void pollevent()
             case EVENT_MOUSE:
                 {
 
-                    struct box old;
-
-                    old.x = mouse.size.x;
-                    old.y = mouse.size.y;
-                    old.w = mouse.size.w;
-                    old.h = mouse.size.h;
-
                     mouse_handle(&mouse, data[0]);
-                    draw(&old);
-                    draw(&mouse.size);
+
+                    if (mouse.size.x < 0)
+                        mouse.size.x = 0;
+                    if (mouse.size.x >= screen.w - mouse.size.w)
+                        mouse.size.x = screen.w - mouse.size.w;
+
+                    if (mouse.size.y < 0)
+                        mouse.size.y = 0;
+                    if (mouse.size.y >= screen.h - mouse.size.h)
+                        mouse.size.y = screen.h - mouse.size.h;
+
+                    if (mouse.num == 0)
+                    {
+
+                        draw(&old);
+                        draw(&mouse.size);
+
+                        old.x = mouse.size.x;
+                        old.y = mouse.size.y;
+                        old.w = mouse.size.w;
+                        old.h = mouse.size.h;
+
+                    }
 
                 }
 
