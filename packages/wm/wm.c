@@ -21,7 +21,6 @@ static struct window window[WINDOWS];
 static struct list windows;
 static struct view view[VIEWS];
 static struct list views;
-static struct view *viewactive;
 static unsigned char backbuffer[4096];
 
 static unsigned char colormap[] = {
@@ -282,14 +281,19 @@ static void unmapwindow(struct view *view)
 
 }
 
-static void activateview(struct view *v)
+static void activateview(struct view *view)
 {
 
-    viewactive->active = 0;
-    viewactive->panel.active = 0;
-    viewactive = v;
-    viewactive->active = 1;
-    viewactive->panel.active = 1;
+    view->active = 1;
+    view->panel.active = 1;
+
+}
+
+static void deactivateview(struct view *view)
+{
+
+    view->active = 0;
+    view->panel.active = 0;
 
 }
 
@@ -307,9 +311,12 @@ static void pollevent()
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count, roff, quit = 0;
+    struct view *viewactive = views.head->data;
     struct box old;
 
+    activateview(viewactive);
     box_setsize(&old, mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
+    draw(&screen);
 
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
@@ -333,7 +340,11 @@ static void pollevent()
                 if (data[0] >= 0x02 && data[0] < 0x0A)
                 {
 
-                    activateview(&view[data[0] - 0x02]);
+                    deactivateview(viewactive);
+
+                    viewactive = &view[data[0] - 0x02];
+
+                    activateview(viewactive);
                     arrangewindows(viewactive);
                     draw(&screen);
 
@@ -521,7 +532,6 @@ void main()
 
     video_setmode(&settings);
     video_setcolormap(0, 27, colormap);
-
     mouse_init(&mouse);
     box_setsize(&screen, 0, 0, settings.w, settings.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
@@ -529,14 +539,8 @@ void main()
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, mouse.size.w, mouse.size.h);
     panel_init(&title);
     box_setsize(&title.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
-
     setupwindows();
     setupviews();
-
-    viewactive = views.head->data;
-
-    activateview(views.head->data);
-    draw(&screen);
     pollevent();
 
     settings.w = 80;
