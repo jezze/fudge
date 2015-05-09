@@ -409,13 +409,40 @@ static void pollevent()
                     {
 
                         mouse.size.x += mouse.relx;
+
+                        if (mouse.relx < 0)
+                        {
+
+                            if (mouse.size.x >= screen.w - mouse.size.w)
+                                mouse.size.x = 0;
+
+                        }
+
+                        else
+                        {
+
+                            if (mouse.size.x >= screen.w - mouse.size.w)
+                                mouse.size.x = screen.w - mouse.size.w;
+
+                        }
+
                         mouse.size.y -= mouse.rely;
 
-                        if (mouse.size.x >= screen.w - mouse.size.w)
-                            mouse.size.x = screen.w - mouse.size.w;
+                        if (mouse.rely > 0)
+                        {
 
-                        if (mouse.size.y >= screen.h - mouse.size.h)
-                            mouse.size.y = screen.h - mouse.size.h;
+                            if (mouse.size.y >= screen.h - mouse.size.h)
+                                mouse.size.y = 0;
+
+                        }
+
+                        else
+                        {
+
+                            if (mouse.size.y >= screen.h - mouse.size.h)
+                                mouse.size.y = screen.h - mouse.size.h;
+
+                        }
 
                         draw(&mouse.size);
                         draw(&old);
