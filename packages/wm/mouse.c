@@ -34,9 +34,6 @@ static unsigned char pointer[] = {
 void mouse_handle(struct mouse *mouse, unsigned char value)
 {
 
-    char relx;
-    char rely;
-
     switch (mouse->num)
     {
 
@@ -47,15 +44,13 @@ void mouse_handle(struct mouse *mouse, unsigned char value)
         break;
 
     case 1:
-        relx = value - ((mouse->state << 4) & 0x100);
-        mouse->size.x += relx / 2;
+        mouse->relx = value - ((mouse->state << 4) & 0x100);
         mouse->num = 2;
 
         break;
 
     case 2:
-        rely = value - ((mouse->state << 3) & 0x100);
-        mouse->size.y -= rely / 2;
+        mouse->rely = value - ((mouse->state << 3) & 0x100);
         mouse->num = 0;
 
         break;
@@ -92,6 +87,8 @@ void mouse_init(struct mouse *mouse)
 
     mouse->num = 0;
     mouse->state = 0;
+    mouse->relx = 0;
+    mouse->rely = 0;
 
 }
 

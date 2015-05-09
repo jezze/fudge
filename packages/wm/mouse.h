@@ -3,6 +3,8 @@ struct mouse
 
     unsigned int num;
     unsigned char state;
+    char relx;
+    char rely;
     struct box size;
 
 };

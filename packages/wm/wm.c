@@ -57,10 +57,10 @@ static void flush(unsigned int line, unsigned int offset, unsigned int count)
 
 }
 
-static void fill8(void *bb, unsigned int color, unsigned int offset, unsigned int count)
+static void fill8(unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned char *b = bb;
+    unsigned char *b = (unsigned char *)backbuffer;
     unsigned int i;
 
     for (i = offset; i < count + offset; i++)
@@ -68,10 +68,10 @@ static void fill8(void *bb, unsigned int color, unsigned int offset, unsigned in
 
 }
 
-static void fill32(void *bb, unsigned int color, unsigned int offset, unsigned int count)
+static void fill32(unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned int *b = bb;
+    unsigned int *b = (unsigned int *)backbuffer;
     unsigned int i;
 
     for (i = offset; i < count + offset; i++)
@@ -86,12 +86,12 @@ void fill(unsigned int color, unsigned int offset, unsigned int count)
     {
 
     case 8:
-        fill8(backbuffer, color, offset, count);
+        fill8(color, offset, count);
 
         break;
 
     case 32:
-        fill32(backbuffer, color, offset, count);
+        fill32(color, offset, count);
 
         break;
 
@@ -309,10 +309,7 @@ static void pollevent()
     unsigned int count, roff, quit = 0;
     struct box old;
 
-    old.x = mouse.size.x;
-    old.y = mouse.size.y;
-    old.w = mouse.size.w;
-    old.h = mouse.size.h;
+    box_setsize(&old, mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
 
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
@@ -408,26 +405,23 @@ static void pollevent()
 
                     mouse_handle(&mouse, data[0]);
 
-                    if (mouse.size.x < 0)
-                        mouse.size.x = 0;
-                    if (mouse.size.x >= screen.w - mouse.size.w)
-                        mouse.size.x = screen.w - mouse.size.w;
-
-                    if (mouse.size.y < 0)
-                        mouse.size.y = 0;
-                    if (mouse.size.y >= screen.h - mouse.size.h)
-                        mouse.size.y = screen.h - mouse.size.h;
-
                     if (mouse.num == 0)
                     {
 
-                        draw(&old);
+                        mouse.size.x += mouse.relx;
+                        mouse.size.y -= mouse.rely;
+
+                        if (mouse.size.x >= screen.w - mouse.size.w)
+                            mouse.size.x = screen.w - mouse.size.w;
+
+                        if (mouse.size.y >= screen.h - mouse.size.h)
+                            mouse.size.y = screen.h - mouse.size.h;
+
                         draw(&mouse.size);
+                        draw(&old);
 
                         old.x = mouse.size.x;
                         old.y = mouse.size.y;
-                        old.w = mouse.size.w;
-                        old.h = mouse.size.h;
 
                     }
 
