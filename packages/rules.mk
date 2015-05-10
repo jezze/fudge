@@ -62,8 +62,6 @@ DIR:=$(CUR)/reboot
 include $(DIR)/rules.mk
 DIR:=$(CUR)/sha1
 include $(DIR)/rules.mk
-DIR:=$(CUR)/share
-include $(DIR)/rules.mk
 DIR:=$(CUR)/shell
 include $(DIR)/rules.mk
 DIR:=$(CUR)/slang

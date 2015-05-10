@@ -3,10 +3,8 @@ ARCH:=x86
 BUILD_ROOT:=build
 BUILD_BIN:=$(BUILD_ROOT)/bin
 BUILD_BOOT:=$(BUILD_ROOT)/boot
-BUILD_CONFIG:=$(BUILD_ROOT)/config
 BUILD_LIB:=$(BUILD_ROOT)/lib
 BUILD_MODULE:=$(BUILD_BOOT)/mod
-BUILD_SHARE:=$(BUILD_ROOT)/share
 
 TARGET_x86:=i386-unknown-elf
 TARGET_arm:=arm-unknown-eabi
@@ -101,7 +99,6 @@ $(BUILD_ROOT):
 	mkdir -p $@/boot
 	mkdir -p $@/boot/mod
 	mkdir -p $@/config
-	cp $(CONFIGS) $@/config
 	mkdir -p $@/home
 	mkdir -p $@/lib
 	mkdir -p $@/mount
@@ -114,8 +111,9 @@ $(BUILD_ROOT):
 	mkdir -p $@/mount/6
 	mkdir -p $@/mount/7
 	mkdir -p $@/share
-	cp $(SHARES) $@/share
 	mkdir -p $@/system
+	cp config/* $@/config
+	cp share/* $@/share
 
 $(BUILD_BOOT)/$(KERNEL): $(BUILD_ROOT) $(LIBS)
 	$(LD) -o $@ $(LDFLAGS)
