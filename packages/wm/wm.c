@@ -488,7 +488,7 @@ static void pollevent()
 
 }
 
-void setupwindows()
+static void setupwindows()
 {
 
     unsigned int i;
@@ -505,7 +505,7 @@ void setupwindows()
 
 }
 
-void setupviews()
+static void setupviews()
 {
 
     unsigned int i;
