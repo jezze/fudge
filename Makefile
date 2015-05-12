@@ -1,11 +1,5 @@
 ARCH:=x86
 
-BUILD_ROOT:=build
-BUILD_BIN:=$(BUILD_ROOT)/bin
-BUILD_BOOT:=$(BUILD_ROOT)/boot
-BUILD_LIB:=$(BUILD_ROOT)/lib
-BUILD_MODULE:=$(BUILD_BOOT)/mod
-
 TARGET_x86:=i386-unknown-elf
 TARGET_arm:=arm-unknown-eabi
 TARGET:=$(TARGET_$(ARCH))
@@ -14,31 +8,31 @@ PLATFORM_x86:=pc
 PLATFORM_arm:=integratorcp
 PLATFORM:=$(PLATFORM_$(ARCH))
 
-DEFAULT_LDFLAGS_x86:=-lfudge
-DEFAULT_LDFLAGS_arm:=-lfudge -lstd
-DEFAULT_LDFLAGS:=$(DEFAULT_LDFLAGS_$(ARCH))
+AS:=$(TARGET)-as
+CC:=$(TARGET)-cc
+LD:=$(TARGET)-ld
 
-LOADER_LDFLAGS_x86:=-lmboot
-LOADER_LDFLAGS_arm:=
-LOADER_LDFLAGS:=$(LOADER_LDFLAGS_$(ARCH))
-
-AS:=$(TARGET)-gcc
-CC:=$(TARGET)-gcc
-LD:=$(TARGET)-gcc
-
-ASFLAGS:=-c -nostdlib -O2
+ASFLAGS:=
 CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
-LDFLAGS:=-msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
+LDFLAGS:=
+
+BUILD_ROOT:=build
+BUILD_BIN:=$(BUILD_ROOT)/bin
+BUILD_BOOT:=$(BUILD_ROOT)/boot
+BUILD_LIB:=$(BUILD_ROOT)/lib
+BUILD_MODULE:=$(BUILD_BOOT)/mod
 
 INSTALL_PATH:=/boot
 
 INCLUDE_PATH:=include
 
-KERNEL:=fudge
-KERNEL_LDFLAGS:=-Tplatform/$(PLATFORM)/linker.ld -L$(BUILD_LIB) $(LOADER_LDFLAGS) -larch -lkernel -lelf -ltar -lcpio $(DEFAULT_LDFLAGS)
-
 LIBS_PATH:=libs
 LIBS_CFLAGS:=-I$(INCLUDE_PATH) -I$(LIBS_PATH)
+
+KERNEL:=fudge
+KERNEL_LDFLAGS_x86:=-lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
+KERNEL_LDFLAGS_arm:=-larch -lkernel -lelf -ltar -lcpio -lfudge -lstd
+KERNEL_LDFLAGS:=-Tplatform/$(PLATFORM)/linker.ld -L$(BUILD_LIB) $(KERNEL_LDFLAGS_$(ARCH))
 
 MODULES_PATH:=modules
 MODULES_CFLAGS:=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(MODULES_PATH)
@@ -46,7 +40,9 @@ MODULES_LDFLAGS:=-T$(MODULES_PATH)/linker.ld -r
 
 PACKAGES_PATH:=packages
 PACKAGES_CFLAGS:=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(PACKAGES_PATH)
-PACKAGES_LDFLAGS:=-L$(BUILD_LIB) -labi $(DEFAULT_LDFLAGS)
+PACKAGES_LDFLAGS_x86:=-labi -lfudge
+PACKAGES_LDFLAGS_arm:=-labi -lfudge -lstd
+PACKAGES_LDFLAGS:=-L$(BUILD_LIB) $(PACKAGES_LDFLAGS_$(ARCH))
 
 RAMDISK_NAME:=initrd
 RAMDISK_TYPE:=tar
