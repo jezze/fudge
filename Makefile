@@ -19,7 +19,6 @@ LDFLAGS:=
 BUILD_ROOT:=build
 BUILD_BIN:=$(BUILD_ROOT)/bin
 BUILD_BOOT:=$(BUILD_ROOT)/boot
-BUILD_LIB:=$(BUILD_ROOT)/lib
 BUILD_MODULE:=$(BUILD_BOOT)/mod
 
 INSTALL_PATH:=/boot
@@ -30,9 +29,10 @@ LIBS_PATH:=libs
 LIBS_CFLAGS:=-I$(INCLUDE_PATH) -I$(LIBS_PATH)
 
 KERNEL:=fudge
-KERNEL_LDFLAGS_x86:=-lmboot -larch -lkernel -lelf -ltar -lcpio -lfudge
-KERNEL_LDFLAGS_arm:=-larch -lkernel -lelf -ltar -lcpio -lfudge -lstd
-KERNEL_LDFLAGS:=-Tplatform/$(PLATFORM)/linker.ld -L$(BUILD_LIB) $(KERNEL_LDFLAGS_$(ARCH))
+KERNEL_LDFLAGS:=-Tplatform/$(PLATFORM)/linker.ld
+KERNEL_DEPS_x86:=$(LIBS_PATH)/mboot/libmboot.a $(LIBS_PATH)/arch/$(ARCH)/libarch.a $(LIBS_PATH)/kernel/libkernel.a $(LIBS_PATH)/elf/libelf.a $(LIBS_PATH)/tar/libtar.a $(LIBS_PATH)/cpio/libcpio.a $(LIBS_PATH)/fudge/libfudge.a
+KERNEL_DEPS_arm:=$(LIBS_PATH)/arch/$(ARCH)/libarch.a $(LIBS_PATH)/kernel/libkernel.a $(LIBS_PATH)/elf/libelf.a $(LIBS_PATH)/tar/libtar.a $(LIBS_PATH)/cpio/libcpio.a $(LIBS_PATH)/fudge/libfudge.a $(LIBS_PATH)/std/$(ARCH)/libstd.a
+KERNEL_DEPS:=$(KERNEL_DEPS_$(ARCH))
 
 MODULES_PATH:=modules
 MODULES_CFLAGS:=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(MODULES_PATH)
@@ -40,9 +40,9 @@ MODULES_LDFLAGS:=-T$(MODULES_PATH)/linker.ld -r
 
 PACKAGES_PATH:=packages
 PACKAGES_CFLAGS:=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(PACKAGES_PATH)
-PACKAGES_LDFLAGS_x86:=-labi -lfudge
-PACKAGES_LDFLAGS_arm:=-labi -lfudge -lstd
-PACKAGES_LDFLAGS:=-L$(BUILD_LIB) $(PACKAGES_LDFLAGS_$(ARCH))
+PACKAGES_DEPS_x86:=$(LIBS_PATH)/abi/$(ARCH)/libabi.a $(LIBS_PATH)/fudge/libfudge.a
+PACKAGES_DEPS_arm:=$(LIBS_PATH)/abi/$(ARCH)/libabi.a $(LIBS_PATH)/fudge/libfudge.a $(LIBS_PATH)/std/$(ARCH)/libstd.a
+PACKAGES_DEPS:=$(PACKAGES_DEPS_$(ARCH))
 
 RAMDISK_NAME:=initrd
 RAMDISK_TYPE:=tar
@@ -52,7 +52,7 @@ IMAGE_NAME:=$(KERNEL)
 IMAGE_TYPE:=img
 IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
-ALL:=$(LIBS_PATH) $(MODULES_PATH) $(PACKAGES_PATH) $(KERNEL) $(RAMDISK)
+ALL:=$(LIBS_PATH) $(MODULES_PATH) $(PACKAGES_PATH) $(BUILD_BOOT)/$(KERNEL) $(RAMDISK)
 CLEAN:=$(BUILD_ROOT) $(KERNEL) $(RAMDISK) $(IMAGE)
 
 .PHONY: all clean install
@@ -69,7 +69,7 @@ $(LIBS_PATH)/%.o: CFLAGS+=$(LIBS_CFLAGS)
 $(MODULES_PATH)/%.o: CFLAGS+=$(MODULES_CFLAGS)
 $(PACKAGES_PATH)/%.o: CFLAGS+=$(PACKAGES_CFLAGS)
 
-$(BUILD_BOOT)/$(KERNEL): LDFLAGS+=$(KERNEL_LDFLAGS)
+$(KERNEL): LDFLAGS+=$(KERNEL_LDFLAGS)
 $(BUILD_MODULE)/%.ko: LDFLAGS+=$(MODULES_LDFLAGS)
 $(BUILD_MODULE)/%.ko.0: LDFLAGS+=$(MODULES_LDFLAGS)
 $(BUILD_MODULE)/%.ko.1: LDFLAGS+=$(MODULES_LDFLAGS)
@@ -92,11 +92,9 @@ include $(DIR)/rules.mk
 $(BUILD_ROOT):
 	mkdir -p $@
 	mkdir -p $@/bin
-	mkdir -p $@/boot
 	mkdir -p $@/boot/mod
 	mkdir -p $@/config
 	mkdir -p $@/home
-	mkdir -p $@/lib
 	mkdir -p $@/mount
 	mkdir -p $@/mount/0
 	mkdir -p $@/mount/1
@@ -111,11 +109,14 @@ $(BUILD_ROOT):
 	cp config/* $@/config
 	cp share/* $@/share
 
-$(BUILD_BOOT)/$(KERNEL): $(BUILD_ROOT) $(LIBS)
-	$(LD) -o $@ $(LDFLAGS)
+$(BUILD_BOOT): $(BUILD_ROOT)
+	mkdir -p $@
 
-$(KERNEL): $(BUILD_BOOT)/$(KERNEL)
-	cp $^ $@
+$(BUILD_BOOT)/$(KERNEL): $(BUILD_BOOT) $(KERNEL)
+	cp $(KERNEL) $@
+
+$(KERNEL): $(KERNEL_DEPS)
+	$(LD) -o $@ $(LDFLAGS) $^
 
 $(RAMDISK_NAME).tar: $(BUILD_ROOT)
 	tar -cf $@ $^

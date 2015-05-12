@@ -1,4 +1,4 @@
-LIB_$(DIR):=$(BUILD_LIB)/libelf.a
+LIB_$(DIR):=$(DIR)/libelf.a
 OBJ_$(DIR):=$(DIR)/elf.o
 
 $(LIB_$(DIR)): $(OBJ_$(DIR))

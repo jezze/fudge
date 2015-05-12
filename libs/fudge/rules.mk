@@ -1,4 +1,4 @@
-LIB_$(DIR):=$(BUILD_LIB)/libfudge.a
+LIB_$(DIR):=$(DIR)/libfudge.a
 OBJ_$(DIR):=$(DIR)/ascii.o $(DIR)/buffer.o $(DIR)/memory.o $(DIR)/list.o
 
 $(LIB_$(DIR)): $(OBJ_$(DIR))

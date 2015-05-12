@@ -1,4 +1,4 @@
-LIB_$(DIR):=$(BUILD_LIB)/libutf8.a
+LIB_$(DIR):=$(DIR)/libutf8.a
 OBJ_$(DIR):=$(DIR)/utf8.o
 
 $(LIB_$(DIR)): $(OBJ_$(DIR))

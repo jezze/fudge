@@ -1,4 +1,4 @@
-LIB_$(DIR):=$(BUILD_LIB)/libabi.a
+LIB_$(DIR):=$(DIR)/libabi.a
 OBJ_$(DIR):=$(DIR)/call.o $(DIR)/crt0.o
 
 $(LIB_$(DIR)): $(OBJ_$(DIR))

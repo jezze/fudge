@@ -1,17 +1,17 @@
 BIN_$(DIR):=$(BUILD_BIN)/pcxdata
-OBJ_$(DIR):=$(DIR)/pcxdata.o
+OBJ_$(DIR):=$(DIR)/pcxdata.o $(DIR)/../gfx/gfx.o $(DIR)/../gfx/pcx.o
 
-$(BIN_$(DIR)): $(OBJ_$(DIR))
-	$(LD) -o $@ $(LDFLAGS) $^ -lgfx $(PACKAGES_LDFLAGS)
+$(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)
+	$(LD) -o $@ $(LDFLAGS) $^
 
 BINS:=$(BINS) $(BIN_$(DIR))
 CLEAN:=$(CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
 
 BIN_$(DIR):=$(BUILD_BIN)/pcxcmap
-OBJ_$(DIR):=$(DIR)/pcxcmap.o
+OBJ_$(DIR):=$(DIR)/pcxcmap.o $(DIR)/../gfx/gfx.o $(DIR)/../gfx/pcx.o
 
-$(BIN_$(DIR)): $(OBJ_$(DIR))
-	$(LD) -o $@ $(LDFLAGS) $^ -lgfx $(PACKAGES_LDFLAGS)
+$(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)
+	$(LD) -o $@ $(LDFLAGS) $^
 
 BINS:=$(BINS) $(BIN_$(DIR))
 CLEAN:=$(CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))

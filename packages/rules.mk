@@ -26,8 +26,6 @@ DIR:=$(CUR)/dump
 include $(DIR)/rules.mk
 DIR:=$(CUR)/echo
 include $(DIR)/rules.mk
-DIR:=$(CUR)/gfx
-include $(DIR)/rules.mk
 DIR:=$(CUR)/head
 include $(DIR)/rules.mk
 DIR:=$(CUR)/hello
@@ -67,8 +65,6 @@ include $(DIR)/rules.mk
 DIR:=$(CUR)/slang
 include $(DIR)/rules.mk
 DIR:=$(CUR)/sleep
-include $(DIR)/rules.mk
-DIR:=$(CUR)/video
 include $(DIR)/rules.mk
 DIR:=$(CUR)/wm
 include $(DIR)/rules.mk
