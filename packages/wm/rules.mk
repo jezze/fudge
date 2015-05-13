@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(BUILD_BIN)/wm
+BIN_$(DIR):=$(DIR)/wm
 OBJ_$(DIR):=$(DIR)/wm.o $(DIR)/box.o $(DIR)/mouse.o $(DIR)/panel.o $(DIR)/view.o $(DIR)/window.o $(DIR)/../video/video.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)

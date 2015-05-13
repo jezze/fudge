@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(BUILD_MODULE)/timer.ko
+MOD_$(DIR):=$(DIR)/timer.ko
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

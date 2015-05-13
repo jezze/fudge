@@ -1,11 +1,11 @@
-MOD0_$(DIR):=$(BUILD_MODULE)/pipe.ko.0
-MOD1_$(DIR):=$(BUILD_MODULE)/pipe.ko.1
-MOD2_$(DIR):=$(BUILD_MODULE)/pipe.ko.2
-MOD3_$(DIR):=$(BUILD_MODULE)/pipe.ko.3
-MOD4_$(DIR):=$(BUILD_MODULE)/pipe.ko.4
-MOD5_$(DIR):=$(BUILD_MODULE)/pipe.ko.5
-MOD6_$(DIR):=$(BUILD_MODULE)/pipe.ko.6
-MOD7_$(DIR):=$(BUILD_MODULE)/pipe.ko.7
+MOD0_$(DIR):=$(DIR)/pipe.ko.0
+MOD1_$(DIR):=$(DIR)/pipe.ko.1
+MOD2_$(DIR):=$(DIR)/pipe.ko.2
+MOD3_$(DIR):=$(DIR)/pipe.ko.3
+MOD4_$(DIR):=$(DIR)/pipe.ko.4
+MOD5_$(DIR):=$(DIR)/pipe.ko.5
+MOD6_$(DIR):=$(DIR)/pipe.ko.6
+MOD7_$(DIR):=$(DIR)/pipe.ko.7
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD0_$(DIR)): $(OBJ_$(DIR))

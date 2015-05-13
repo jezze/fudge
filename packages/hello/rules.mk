@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(BUILD_BIN)/hello
+BIN_$(DIR):=$(DIR)/hello
 OBJ_$(DIR):=$(DIR)/hello.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)

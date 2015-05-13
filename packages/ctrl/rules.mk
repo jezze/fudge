@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(BUILD_BIN)/ctrl
+BIN_$(DIR):=$(DIR)/ctrl
 OBJ_$(DIR):=$(DIR)/ctrl.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)

@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(BUILD_MODULE)/event.ko
+MOD_$(DIR):=$(DIR)/event.ko
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(BUILD_BIN)/ls
+BIN_$(DIR):=$(DIR)/ls
 OBJ_$(DIR):=$(DIR)/ls.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)
@@ -7,7 +7,7 @@ $(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)
 BINS:=$(BINS) $(BIN_$(DIR))
 CLEAN:=$(CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
 
-BIN_$(DIR):=$(BUILD_BIN)/lsc
+BIN_$(DIR):=$(DIR)/lsc
 OBJ_$(DIR):=$(DIR)/lsc.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)

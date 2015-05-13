@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(BUILD_BIN)/echo
+BIN_$(DIR):=$(DIR)/echo
 OBJ_$(DIR):=$(DIR)/echo.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)

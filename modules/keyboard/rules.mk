@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(BUILD_MODULE)/keyboard.ko
+MOD_$(DIR):=$(DIR)/keyboard.ko
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

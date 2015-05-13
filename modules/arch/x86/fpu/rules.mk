@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(BUILD_MODULE)/fpu.ko
+MOD_$(DIR):=$(DIR)/fpu.ko
 OBJ_$(DIR):=$(DIR)/main.o $(DIR)/fpu.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

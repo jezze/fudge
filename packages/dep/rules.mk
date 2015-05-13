@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(BUILD_BIN)/dep
+BIN_$(DIR):=$(DIR)/dep
 OBJ_$(DIR):=$(DIR)/dep.o $(DIR)/parse.o $(DIR)/token.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)

@@ -1,4 +1,4 @@
-MOD_$(DIR):=$(BUILD_MODULE)/video.ko
+MOD_$(DIR):=$(DIR)/video.ko
 OBJ_$(DIR):=$(DIR)/main.o
 
 $(MOD_$(DIR)): $(OBJ_$(DIR))

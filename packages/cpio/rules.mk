@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(BUILD_BIN)/cpio
+BIN_$(DIR):=$(DIR)/cpio
 OBJ_$(DIR):=$(DIR)/cpio.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS) $(LIBS_PATH)/cpio/libcpio.a

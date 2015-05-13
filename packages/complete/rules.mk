@@ -1,4 +1,4 @@
-BIN_$(DIR):=$(BUILD_BIN)/complete
+BIN_$(DIR):=$(DIR)/complete
 OBJ_$(DIR):=$(DIR)/complete.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(PACKAGES_DEPS)
