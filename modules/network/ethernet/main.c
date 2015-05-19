@@ -20,12 +20,11 @@ void ethernet_notify(struct ethernet_interface *interface, unsigned int size, un
         struct ethernet_protocol *protocol = current->data;
 
         if (protocol->type == type)
-            protocol->notify(interface, count - 18, 1, header + 1);
+            protocol->notify(interface, size - 18, header + 1);
 
     }
 
     scheduler_sendlist(&interface->data.mailboxes, size, count, buffer);
-    event_notify(EVENT_NETWORK, size, count, buffer);
 
 }
 
@@ -134,7 +133,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, const char *na
 
 }
 
-void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name, unsigned short type, void (*addinterface)(struct ethernet_interface *interface), void (*removeinterface)(struct ethernet_interface *interface), void (*notify)(struct ethernet_interface *interface, unsigned int size, unsigned int count, void *buffer))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name, unsigned short type, void (*addinterface)(struct ethernet_interface *interface), void (*removeinterface)(struct ethernet_interface *interface), void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);

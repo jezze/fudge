@@ -18,7 +18,7 @@ static void ethernetprotocol_removeinterface(struct ethernet_interface *interfac
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int size, unsigned int count, void *buffer)
+static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
     struct arp_header *header = buffer;
@@ -71,7 +71,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 
     }
 
-    scheduler_sendlist(&ethernetprotocol.data.mailboxes, size, count, buffer);
+    scheduler_sendlist(&ethernetprotocol.data.mailboxes, count, 1, buffer);
 
 }
 
