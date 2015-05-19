@@ -50,11 +50,17 @@ IMAGE_TYPE:=img
 IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
 ALL:=$(KERNEL) $(RAMDISK)
+INSTALL:=$(INSTALL_PATH)/$(KERNEL) $(INSTALL_PATH)/$(RAMDISK)
 CLEAN:=$(KERNEL) $(RAMDISK) $(BUILD_PATH) $(IMAGE)
 
 .PHONY: all clean install
 
 all: $(ALL)
+
+install: $(INSTALL)
+
+clean:
+	rm -rf $(CLEAN)
 
 .s.o:
 	$(AS) -o $@ $(ASFLAGS) $<
@@ -95,6 +101,7 @@ $(BUILD_PATH): $(LIBS) $(KERNEL) $(MODULES) $(BINS)
 	mkdir -p $@/boot/mod
 	cp $(MODULES) $@/boot/mod
 	mkdir -p $@/config
+	cp config/* $@/config
 	mkdir -p $@/home
 	mkdir -p $@/lib
 	cp $(LIBS) $@/lib
@@ -108,9 +115,8 @@ $(BUILD_PATH): $(LIBS) $(KERNEL) $(MODULES) $(BINS)
 	mkdir -p $@/mount/6
 	mkdir -p $@/mount/7
 	mkdir -p $@/share
-	mkdir -p $@/system
-	cp config/* $@/config
 	cp share/* $@/share
+	mkdir -p $@/system
 
 $(KERNEL): $(KERNEL_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
@@ -132,13 +138,3 @@ $(INSTALL_PATH)/$(KERNEL): $(KERNEL)
 $(INSTALL_PATH)/$(RAMDISK): $(RAMDISK)
 	install -m 644 $^ $@
 
-$(LIBS_PATH): $(LIBS)
-
-$(MODULES_PATH): $(MODULES)
-
-$(PACKAGES_PATH): $(BINS)
-
-clean:
-	rm -rf $(CLEAN)
-
-install: $(INSTALL_PATH)/$(KERNEL) $(INSTALL_PATH)/$(RAMDISK)
