@@ -10,21 +10,21 @@ static struct vfs_backend backend;
 static unsigned long address;
 static unsigned int limit;
 
-static unsigned int read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_read(buffer, count, (void *)address, limit, 1, offset);
 
 }
 
-static unsigned int write(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_write((void *)address, limit, buffer, count, 1, offset);
 
 }
 
-static unsigned long getphysical(struct vfs_backend *self)
+static unsigned long getphysical()
 {
 
     return address;

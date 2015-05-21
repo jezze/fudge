@@ -15,7 +15,7 @@ static unsigned int protocol_match(struct vfs_backend *backend)
 
     struct system_header header;
     
-    if (backend->read(backend, 0, sizeof (struct system_header), &header) < sizeof (struct system_header))
+    if (backend->read(0, sizeof (struct system_header), &header) < sizeof (struct system_header))
         return 0;
 
     return memory_match(header.id, "FUDGE_SYSTEM", 12);
@@ -27,7 +27,7 @@ static unsigned int protocol_root(struct vfs_backend *backend)
 
     struct system_header header;
 
-    backend->read(backend, 0, sizeof (struct system_header), &header);
+    backend->read(0, sizeof (struct system_header), &header);
 
     return header.root;
 

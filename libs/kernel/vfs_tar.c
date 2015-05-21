@@ -10,7 +10,7 @@ static unsigned int protocol_match(struct vfs_backend *backend)
 
     struct tar_header header;
 
-    if (backend->read(backend, 0, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
+    if (backend->read(0, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
         return 0;
 
     return tar_validate(&header);
@@ -46,7 +46,7 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
     unsigned int address = decode(id);
     unsigned int length;
 
-    if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
+    if (backend->read(address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
         return 0;
 
     length = ascii_length(header.name);
@@ -58,7 +58,7 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
     do
     {
 
-        if (backend->read(backend, address, TAR_BLOCK_SIZE, &pheader) < TAR_BLOCK_SIZE)
+        if (backend->read(address, TAR_BLOCK_SIZE, &pheader) < TAR_BLOCK_SIZE)
             break;
 
         if (!tar_validate(&pheader))
@@ -86,7 +86,7 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
     if (!count)
         return id;
 
-    if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
+    if (backend->read(address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
         return 0;
 
     length = ascii_length(header.name);
@@ -94,7 +94,7 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
     while ((address = tar_next(&header, address)))
     {
 
-        if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
+        if (backend->read(address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
             break;
 
         if (!tar_validate(&header))
@@ -146,7 +146,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
     struct tar_header header;
     unsigned int address = decode(id);
 
-    if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
+    if (backend->read(address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
         return 0;
 
     if (header.typeflag[0] == TAR_TYPEFLAG_REGULAR)
@@ -160,7 +160,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
         count = size * count;
         s -= offset;
 
-        return backend->read(backend, address + TAR_BLOCK_SIZE + offset, (count > s) ? s : count, buffer);
+        return backend->read(address + TAR_BLOCK_SIZE + offset, (count > s) ? s : count, buffer);
 
     }
 
@@ -182,7 +182,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
         while ((address = tar_next(&header, address)))
         {
 
-            if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
+            if (backend->read(address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
                 break;
 
             if (!tar_validate(&header))
@@ -212,7 +212,7 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
     struct tar_header header;
     unsigned int address = decode(id);
 
-    if (backend->read(backend, address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
+    if (backend->read(address, TAR_BLOCK_SIZE, &header) < TAR_BLOCK_SIZE)
         return 0;
 
     if (header.typeflag[0] == TAR_TYPEFLAG_REGULAR)
@@ -226,7 +226,7 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
         count = size * count;
         s -= offset;
 
-        return backend->write(backend, address + TAR_BLOCK_SIZE + offset, (count > s) ? s : count, buffer);
+        return backend->write(address + TAR_BLOCK_SIZE + offset, (count > s) ? s : count, buffer);
 
     }
 
@@ -238,7 +238,7 @@ static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned 
 {
 
     /* TEMPORARY FIX */
-    return backend->getphysical(backend) + id;
+    return backend->getphysical() + id;
 
 }
 

@@ -20,14 +20,14 @@ void system_unregisternode(struct system_node *node)
 
 }
 
-static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int backend_read(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_read(buffer, count, &header, sizeof (struct system_header), 1, offset);
 
 }
 
-static unsigned int backend_write(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int backend_write(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;

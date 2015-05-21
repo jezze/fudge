@@ -45,21 +45,21 @@ static struct
 
 static struct vfs_backend backend;
 
-static unsigned int backend_read(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int backend_read(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int backend_write(struct vfs_backend *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int backend_write(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned long backend_getphysical(struct vfs_backend *self)
+static unsigned long backend_getphysical()
 {
 
     return 0;
