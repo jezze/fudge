@@ -79,13 +79,11 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
     if (backend->read(address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
         return 0;
 
-    length = header.namesize;
+    length = header.namesize - 1;
 
-    while (--length && name[length - 1] != '/');
+    while (--length && name[length] != '/');
 
-    address = 0;
-
-    do
+    while ((address = cpio_next(&header, address)))
     {
 
         unsigned char pname[1024];
@@ -96,19 +94,19 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
         if (!cpio_validate(&header))
             break;
 
-        if ((header.mode & 0xF000) != 0x4000)
+        if (header.namesize != length + 1)
             continue;
 
-        if (header.namesize != length - 1)
+        if ((header.mode & 0xF000) != 0x4000)
             continue;
 
         if (backend->read(address + sizeof (struct cpio_header), header.namesize, pname) < header.namesize)
             break;
 
-        if (memory_match(name, pname, length - 1))
+        if (memory_match(name, pname, length))
             return encode(address);
 
-    } while ((address = cpio_next(&header, address)));
+    };
 
     return 0;
 
@@ -135,10 +133,10 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
 
         unsigned char name[1024];
 
-        if (backend->read(address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
+        if (encode(address) == id)
             break;
 
-        if (!cpio_validate(&header))
+        if (backend->read(address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
             break;
 
         if ((header.mode & 0xF000) == 0x0000)
@@ -242,29 +240,38 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
 
         i++;
 
-        while ((address = cpio_next(&header, address)))
+        address = 0;
+
+        do
         {
 
-            unsigned char name[1024];
+            unsigned int cid = encode(address);
+
+            if (cid == id)
+                break;
 
             if (backend->read(address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
                 break;
 
-            if (!cpio_validate(&header))
-                break;
+            if (protocol_parent(backend, cid) == id)
+            {
 
-            if (backend->read(address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
-                break;
+                unsigned char name[1024];
 
-            if (protocol_parent(backend, encode(address)) != id)
-                continue;
+                if (backend->read(address + sizeof (struct cpio_header), header.namesize, name) < header.namesize)
+                    break;
 
-            records[i].size = ((header.filesize[0] << 16) | header.filesize[1]);
-            records[i].length = memory_read(records[i].name, 120, name, header.namesize, 1, length);
+                records[i].size = ((header.filesize[0] << 16) | header.filesize[1]);
+                records[i].length = memory_read(records[i].name, 120, name, header.namesize, 1, length);
 
-            i++;
+                if ((header.mode & 0xF000) == 0x4000)
+                    records[i].length += memory_write(records[i].name, 120, "/", 1, 1, records[i].length);
 
-        }
+                i++;
+
+            }
+
+        } while ((address = cpio_next(&header, address)));
 
         return i;
 
