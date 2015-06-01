@@ -215,26 +215,37 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
     if ((header.mode & 0xF000) == 0x8000)
     {
 
-        unsigned int size = ((header.filesize[0] << 16) | header.filesize[1]) - offset;
+        unsigned int s = ((header.filesize[0] << 16) | header.filesize[1]);
 
-        return backend->read(address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1) + offset, (count > size) ? size : count, buffer);
+        if (offset >= s)
+            return 0;
+
+        count = size * count;
+        s -= offset;
+
+        return backend->read(address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1) + offset, (count > s) ? s : count, buffer);
 
     }
 
     if ((header.mode & 0xF000) == 0x4000)
     {
 
-        unsigned char *b = buffer;
-        unsigned int c = memory_read(b, count, "../\n", 4, 1, offset);
+        struct record *records = buffer;
         unsigned int length = header.namesize;
+        unsigned int i = 0;
 
-        offset -= (offset > 4) ? 4 : offset;
+        if (offset > 0)
+            return 0;
+
+        records[i].size = 0;
+        records[i].length = memory_read(records[i].name, 120, "../", 3, 1, 0);
+
+        i++;
 
         while ((address = cpio_next(&header, address)))
         {
 
             unsigned char name[1024];
-            unsigned int l;
 
             if (backend->read(address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
                 break;
@@ -248,15 +259,14 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
             if (protocol_parent(backend, encode(address)) != id)
                 continue;
 
-            l = header.namesize - length;
-            c += memory_read(b + c, count - c, name + length, l, 1, offset);
-            offset -= (offset > l) ? l : offset;
-            c += memory_read(b + c, count - c, "\n", 1, 1, offset);
-            offset -= (offset > 1) ? 1 : offset;
+            records[i].size = ((header.filesize[0] << 16) | header.filesize[1]);
+            records[i].length = memory_read(records[i].name, 120, name, header.namesize, 1, length);
+
+            i++;
 
         }
 
-        return c;
+        return i;
 
     }
 
@@ -276,9 +286,15 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
     if ((header.mode & 0xF000) == 0x8000)
     {
 
-        unsigned int size = ((header.filesize[0] << 16) | header.filesize[1]) - offset;
+        unsigned int s = ((header.filesize[0] << 16) | header.filesize[1]);
 
-        return backend->write(address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1) + offset, (count > size) ? size : count, buffer);
+        if (offset >= s)
+            return 0;
+
+        count = size * count;
+        s -= offset;
+
+        return backend->write(address + sizeof (struct cpio_header) + header.namesize + (header.namesize & 1) + offset, (count > s) ? s : count, buffer);
 
     }
 
