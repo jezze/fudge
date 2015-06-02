@@ -5,6 +5,20 @@
 
 static struct vfs_protocol protocol;
 
+static unsigned int decode(unsigned int id)
+{
+
+    return id - 4096;
+
+}
+
+static unsigned int encode(unsigned int address)
+{
+
+    return address + 4096;
+
+}
+
 static unsigned int protocol_match(struct vfs_backend *backend)
 {
 
@@ -22,8 +36,7 @@ static unsigned int protocol_root(struct vfs_backend *backend)
 
     struct cpio_header header;
     unsigned int address = 0;
-    unsigned int current = 0;
-    unsigned short namesize = 0xFFFF;
+    unsigned int last = address;
 
     do
     {
@@ -37,31 +50,11 @@ static unsigned int protocol_root(struct vfs_backend *backend)
         if ((header.mode & 0xF000) != 0x4000)
             continue;
 
-        if (header.namesize < namesize)
-        {
-
-            namesize = header.namesize;
-            current = address;
-
-        }
+        last = address;
 
     } while ((address = cpio_next(&header, address)));
 
-    return current;
-
-}
-
-static unsigned int decode(struct vfs_backend *backend, unsigned int id)
-{
-
-    return (id == 0xFFFFFFFF) ? protocol_root(backend) : id;
-
-}
-
-static unsigned int encode(unsigned int address)
-{
-
-    return (address) ? address : 0xFFFFFFFF;
+    return encode(last);
 
 }
 
@@ -70,7 +63,7 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
 
     struct cpio_header header;
     unsigned char name[1024];
-    unsigned int address = decode(backend, id);
+    unsigned int address = decode(id);
     unsigned int length;
 
     if (backend->read(address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
@@ -116,7 +109,7 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
 {
 
     struct cpio_header header;
-    unsigned int address = decode(backend, id);
+    unsigned int address = decode(id);
     unsigned int length;
 
     if (!count)
@@ -125,15 +118,16 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
     if (backend->read(address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
 
-    length = header.namesize - 1;
+    length = header.namesize;
     address = 0;
 
     do
     {
 
+        unsigned int cid = encode(address);
         unsigned char name[1024];
 
-        if (encode(address) == id)
+        if (cid == id)
             break;
 
         if (backend->read(address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
@@ -148,22 +142,22 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
         if ((header.mode & 0xF000) == 0x8000)
         {
 
-            if ((header.namesize - 1) - length != count + 1)
+            if (header.namesize - length != count + 1)
                 continue;
 
-            if (memory_match(name + length + 1, path, count))
-                return encode(address);
+            if (memory_match(name + length, path, count))
+                return cid;
 
         }
 
         if ((header.mode & 0xF000) == 0x4000)
         {
 
-            if ((header.namesize - 1) - length != count)
+            if (header.namesize - length != count)
                 continue;
 
-            if (memory_match(name + length + 1, path, count - 1))
-                return encode(address);
+            if (memory_match(name + length, path, count - 1))
+                return cid;
 
         }
 
@@ -205,7 +199,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
 {
 
     struct cpio_header header;
-    unsigned int address = decode(backend, id);
+    unsigned int address = decode(id);
 
     if (backend->read(address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
@@ -285,7 +279,7 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
 {
 
     struct cpio_header header;
-    unsigned int address = decode(backend, id);
+    unsigned int address = decode(id);
 
     if (backend->read(address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
@@ -314,7 +308,7 @@ static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned 
 
     /* TEMPORARY FIX */
     struct cpio_header header;
-    unsigned int address = decode(backend, id);
+    unsigned int address = decode(id);
 
     if (backend->read(address, sizeof (struct cpio_header), &header) < sizeof (struct cpio_header))
         return 0;
