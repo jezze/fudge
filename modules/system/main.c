@@ -25,7 +25,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
         return 0;
 
     records[i].size = 0;
-    records[i].length = memory_read(records[i].name, 120, "../", 3, 1, 0);
+    records[i].length = memory_read(records[i].name, RECORD_NAMESIZE, "../", 3, 1, 0);
 
     i++;
 
@@ -35,7 +35,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
         struct system_node *node = current->data;
 
         records[i].size = 0;
-        records[i].length = memory_read(records[i].name, 120, node->name, ascii_length(node->name), 1, 0);
+        records[i].length = memory_read(records[i].name, RECORD_NAMESIZE, node->name, ascii_length(node->name), 1, 0);
 
         if (node->type & SYSTEM_NODETYPE_MULTI)
         {
@@ -44,12 +44,12 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 
             index[1] = '0' + node->index;
 
-            records[i].length += memory_write(records[i].name, 120, index, 2, 1, records[i].length);
+            records[i].length += memory_write(records[i].name, RECORD_NAMESIZE, index, 2, 1, records[i].length);
 
         }
 
         if (node->type & SYSTEM_NODETYPE_GROUP)
-            records[i].length += memory_write(records[i].name, 120, "/", 1, 1, records[i].length);
+            records[i].length += memory_write(records[i].name, RECORD_NAMESIZE, "/", 1, 1, records[i].length);
 
         i++;
 
