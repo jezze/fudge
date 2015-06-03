@@ -8,6 +8,20 @@ unsigned int cpio_validate(struct cpio_header *header)
 
 }
 
+unsigned int cpio_namedata(struct cpio_header *header, unsigned int offset)
+{
+
+    return offset + sizeof (struct cpio_header);
+
+}
+
+unsigned int cpio_filedata(struct cpio_header *header, unsigned int offset)
+{
+
+    return cpio_namedata(header, offset) + header->namesize + (header->namesize & 1);
+
+}
+
 unsigned int cpio_filesize(struct cpio_header *header)
 {
 
@@ -20,7 +34,7 @@ unsigned int cpio_next(struct cpio_header *header, unsigned int offset)
 
     unsigned int size = cpio_filesize(header);
 
-    return offset + sizeof (struct cpio_header) + header->namesize + (header->namesize & 1) + size + (size & 1);
+    return cpio_filedata(header, offset) + size + (size & 1);
 
 }
 
