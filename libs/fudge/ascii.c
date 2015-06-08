@@ -77,7 +77,7 @@ unsigned int ascii_wzerovalue(void *out, unsigned int count, unsigned int value,
     unsigned int bcount = ascii_fromint(buffer, 32, value, base);
 
     memory_write(out, count, "00000000000000000000000000000000", padding, 1, offset);
-    memory_write(out, count, buffer, bcount, 1, padding - bcount);
+    memory_write(out, count, buffer, bcount, 1, offset + padding - bcount);
 
     return padding;
 
