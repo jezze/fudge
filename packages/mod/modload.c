@@ -192,10 +192,10 @@ static unsigned int resolve(unsigned int id)
 void main()
 {
 
-    if (!call_walk(CALL_L0, CALL_PR, 10, "boot/fudge"))
+    if (!call_walk(CALL_L0, CALL_PR, 9, "bin/fudge"))
         return;
 
-    if (!call_walk(CALL_L1, CALL_PR, 9, "boot/mod/"))
+    if (!call_walk(CALL_L1, CALL_PR, 4, "mod/"))
         return;
 
     call_open(CALL_L0);

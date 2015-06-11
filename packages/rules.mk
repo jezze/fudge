@@ -34,6 +34,8 @@ DIR:=$(CUR)/help
 include $(DIR)/rules.mk
 DIR:=$(CUR)/init
 include $(DIR)/rules.mk
+DIR:=$(CUR)/kernel
+include $(DIR)/rules.mk
 DIR:=$(CUR)/keymap
 include $(DIR)/rules.mk
 DIR:=$(CUR)/ls

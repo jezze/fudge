@@ -17,31 +17,23 @@ CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c8
 LDFLAGS:=
 
 BUILD_PATH:=build
-
 INSTALL_PATH:=/boot
-
 INCLUDE_PATH:=include
-
-LIBS_PATH:=libs
-LIBS_CFLAGS:=-I$(INCLUDE_PATH) -I$(LIBS_PATH)
-
 KERNEL:=fudge
-KERNEL_LDFLAGS:=-Tplatform/$(PLATFORM)/linker.ld
-KERNEL_DEPS_x86:=$(LIBS_PATH)/mboot/libmboot.a $(LIBS_PATH)/arch/$(ARCH)/libarch.a $(LIBS_PATH)/kernel/libkernel.a $(LIBS_PATH)/elf/libelf.a $(LIBS_PATH)/tar/libtar.a $(LIBS_PATH)/cpio/libcpio.a $(LIBS_PATH)/fudge/libfudge.a
-KERNEL_DEPS_arm:=$(LIBS_PATH)/arch/$(ARCH)/libarch.a $(LIBS_PATH)/kernel/libkernel.a $(LIBS_PATH)/elf/libelf.a $(LIBS_PATH)/tar/libtar.a $(LIBS_PATH)/cpio/libcpio.a $(LIBS_PATH)/fudge/libfudge.a $(LIBS_PATH)/std/$(ARCH)/libstd.a
-KERNEL_DEPS:=$(KERNEL_DEPS_$(ARCH))
-
-MODULES_PATH:=modules
-MODULES_CFLAGS:=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(MODULES_PATH)
-MODULES_LDFLAGS:=-T$(MODULES_PATH)/linker.ld -r
 
 PACKAGES_PATH:=packages
-PACKAGES_CFLAGS:=-I$(INCLUDE_PATH) -I$(LIBS_PATH) -I$(PACKAGES_PATH)
-PACKAGES_DEPS_x86:=$(LIBS_PATH)/abi/$(ARCH)/libabi.a $(LIBS_PATH)/fudge/libfudge.a
-PACKAGES_DEPS_arm:=$(LIBS_PATH)/abi/$(ARCH)/libabi.a $(LIBS_PATH)/fudge/libfudge.a $(LIBS_PATH)/std/$(ARCH)/libstd.a
-PACKAGES_DEPS:=$(PACKAGES_DEPS_$(ARCH))
+PACKAGES_CFLAGS:=-I$(INCLUDE_PATH) -I$(PACKAGES_PATH)
+PACKAGES_DEPS_x86:=$(PACKAGES_PATH)/abi/x86/call.o $(PACKAGES_PATH)/abi/x86/crt0.o
+PACKAGES_DEPS_arm:=$(PACKAGES_PATH)/abi/arm/call.o $(PACKAGES_PATH)/abi/arm/crt0.o
+PACKAGES_DEPS_arm+=$(PACKAGES_PATH)/std/arm/memcmp.o $(PACKAGES_PATH)/std/arm/memcpy.o $(PACKAGES_PATH)/std/arm/memmove.o $(PACKAGES_PATH)/std/arm/memset.o $(PACKAGES_PATH)/std/arm/setjmp.o $(PACKAGES_PATH)/std/arm/strcmp.o $(PACKAGES_PATH)/std/arm/strncmp.o $(PACKAGES_PATH)/std/arm/gcc/__aeabi_idiv.o $(PACKAGES_PATH)/std/arm/gcc/__aeabi_idivmod.o $(PACKAGES_PATH)/std/arm/gcc/__aeabi_uidiv.o $(PACKAGES_PATH)/std/arm/gcc/__aeabi_uidivmod.o $(PACKAGES_PATH)/std/arm/gcc/__clzsi2.o $(PACKAGES_PATH)/std/arm/gcc/__divsi3.o $(PACKAGES_PATH)/std/arm/gcc/__modsi3.o $(PACKAGES_PATH)/std/arm/gcc/__udivmodsi4.o $(PACKAGES_PATH)/std/arm/gcc/__udivsi3.o $(PACKAGES_PATH)/std/arm/gcc/__umodsi3.o
+PACKAGES_DEPS:=$(PACKAGES_PATH)/fudge/ascii.o $(PACKAGES_PATH)/fudge/buffer.o $(PACKAGES_PATH)/fudge/memory.o $(PACKAGES_PATH)/fudge/list.o
+PACKAGES_DEPS+=$(PACKAGES_DEPS_$(ARCH))
 
-RAMDISK_NAME:=initrd
+MODULES_PATH:=modules
+MODULES_CFLAGS:=-I$(INCLUDE_PATH) -I$(MODULES_PATH) -I$(PACKAGES_PATH)
+MODULES_LDFLAGS:=-T$(MODULES_PATH)/linker.ld -r
+
+RAMDISK_NAME:=$(KERNEL)
 RAMDISK_TYPE:=cpio
 RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 
@@ -51,7 +43,7 @@ IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
 ALL:=$(KERNEL) $(RAMDISK)
 INSTALL:=$(INSTALL_PATH)/$(KERNEL) $(INSTALL_PATH)/$(RAMDISK)
-CLEAN:=$(KERNEL) $(RAMDISK) $(BUILD_PATH) $(IMAGE)
+CLEAN:=$(PACKAGES_DEPS) $(KERNEL) $(RAMDISK) $(BUILD_PATH) $(IMAGE)
 
 .PHONY: all clean install
 
@@ -68,11 +60,8 @@ clean:
 .c.o:
 	$(CC) -o $@ $(CFLAGS) $<
 
-$(LIBS_PATH)/%.o: CFLAGS+=$(LIBS_CFLAGS)
-$(MODULES_PATH)/%.o: CFLAGS+=$(MODULES_CFLAGS)
 $(PACKAGES_PATH)/%.o: CFLAGS+=$(PACKAGES_CFLAGS)
-
-$(KERNEL): LDFLAGS+=$(KERNEL_LDFLAGS)
+$(MODULES_PATH)/%.o: CFLAGS+=$(MODULES_CFLAGS)
 $(MODULES_PATH)/%.ko: LDFLAGS+=$(MODULES_LDFLAGS)
 $(MODULES_PATH)/%.ko.0: LDFLAGS+=$(MODULES_LDFLAGS)
 $(MODULES_PATH)/%.ko.1: LDFLAGS+=$(MODULES_LDFLAGS)
@@ -85,26 +74,20 @@ $(MODULES_PATH)/%.ko.7: LDFLAGS+=$(MODULES_LDFLAGS)
 $(MODULES_PATH)/%.ko.8: LDFLAGS+=$(MODULES_LDFLAGS)
 $(MODULES_PATH)/%.ko.9: LDFLAGS+=$(MODULES_LDFLAGS)
 
-DIR:=$(LIBS_PATH)
-include $(DIR)/rules.mk
 DIR:=$(MODULES_PATH)
 include $(DIR)/rules.mk
 DIR:=$(PACKAGES_PATH)
 include $(DIR)/rules.mk
 
-$(BUILD_PATH): $(LIBS) $(KERNEL) $(MODULES) $(BINS)
+$(BUILD_PATH): $(BINS) $(MODULES)
 	mkdir -p $@
 	mkdir -p $@/bin
 	cp $(BINS) $@/bin
-	mkdir -p $@/boot
-	cp $(KERNEL) $@/boot
-	mkdir -p $@/boot/mod
-	cp $(MODULES) $@/boot/mod
+	mkdir -p $@/mod
+	cp $(MODULES) $@/mod
 	mkdir -p $@/config
 	cp config/* $@/config
 	mkdir -p $@/home
-	mkdir -p $@/lib
-	cp $(LIBS) $@/lib
 	mkdir -p $@/mount
 	mkdir -p $@/mount/0
 	mkdir -p $@/mount/1
@@ -118,8 +101,8 @@ $(BUILD_PATH): $(LIBS) $(KERNEL) $(MODULES) $(BINS)
 	cp share/* $@/share
 	mkdir -p $@/system
 
-$(KERNEL): $(KERNEL_DEPS)
-	$(LD) -o $@ $(LDFLAGS) $^
+$(KERNEL): $(PACKAGES_PATH)/kernel/$(KERNEL)
+	cp $< $@
 
 $(RAMDISK_NAME).tar: $(BUILD_PATH)
 	tar -cf $@ $^
