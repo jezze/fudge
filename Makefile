@@ -1,4 +1,5 @@
 ARCH:=x86
+KERNEL:=fudge
 
 TARGET_x86:=i386-unknown-elf
 TARGET_arm:=arm-unknown-eabi
@@ -17,9 +18,8 @@ CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c8
 LDFLAGS:=
 
 BUILD_PATH:=build
-INSTALL_PATH:=/boot
 INCLUDE_PATH:=include
-KERNEL:=fudge
+INSTALL_PATH:=/boot
 
 PACKAGES_PATH:=packages
 PACKAGES_CFLAGS:=-I$(INCLUDE_PATH) -I$(PACKAGES_PATH)
