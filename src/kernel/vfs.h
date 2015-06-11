@@ -62,4 +62,3 @@ void vfs_initchannel(struct vfs_channel *channel);
 void vfs_initmount(struct vfs_mount *mount);
 void vfs_initdescriptor(struct vfs_descriptor *descriptor);
 void vfs_setupcpio();
-void vfs_setuptar();

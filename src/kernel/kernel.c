@@ -427,7 +427,6 @@ void kernel_setup(unsigned int (*spawn)(struct container *container, struct task
     scheduler_setup();
     binary_setupelf();
     vfs_setupcpio();
-    vfs_setuptar();
 
     calls[0x00] = auth;
     calls[0x01] = walk;
