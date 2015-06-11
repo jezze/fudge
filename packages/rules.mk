@@ -48,6 +48,8 @@ DIR:=$(CUR)/md5
 include $(DIR)/rules.mk
 DIR:=$(CUR)/mod
 include $(DIR)/rules.mk
+DIR:=$(CUR)/modules
+include $(DIR)/rules.mk
 DIR:=$(CUR)/motd
 include $(DIR)/rules.mk
 DIR:=$(CUR)/mount
