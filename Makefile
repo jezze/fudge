@@ -21,15 +21,15 @@ BUILD_PATH:=build
 INCLUDE_PATH:=include
 INSTALL_PATH:=/boot
 
-PACKAGES_PATH:=packages
-PACKAGES_CFLAGS:=-I$(INCLUDE_PATH) -I$(PACKAGES_PATH)
-PACKAGES_DEPS_x86:=$(PACKAGES_PATH)/abi/x86/call.o $(PACKAGES_PATH)/abi/x86/crt0.o
-PACKAGES_DEPS_arm:=$(PACKAGES_PATH)/abi/arm/call.o $(PACKAGES_PATH)/abi/arm/crt0.o
-PACKAGES_DEPS_arm+=$(PACKAGES_PATH)/std/arm/memcmp.o $(PACKAGES_PATH)/std/arm/memcpy.o $(PACKAGES_PATH)/std/arm/memmove.o $(PACKAGES_PATH)/std/arm/memset.o $(PACKAGES_PATH)/std/arm/setjmp.o $(PACKAGES_PATH)/std/arm/strcmp.o $(PACKAGES_PATH)/std/arm/strncmp.o $(PACKAGES_PATH)/std/arm/gcc/__aeabi_idiv.o $(PACKAGES_PATH)/std/arm/gcc/__aeabi_idivmod.o $(PACKAGES_PATH)/std/arm/gcc/__aeabi_uidiv.o $(PACKAGES_PATH)/std/arm/gcc/__aeabi_uidivmod.o $(PACKAGES_PATH)/std/arm/gcc/__clzsi2.o $(PACKAGES_PATH)/std/arm/gcc/__divsi3.o $(PACKAGES_PATH)/std/arm/gcc/__modsi3.o $(PACKAGES_PATH)/std/arm/gcc/__udivmodsi4.o $(PACKAGES_PATH)/std/arm/gcc/__udivsi3.o $(PACKAGES_PATH)/std/arm/gcc/__umodsi3.o
-PACKAGES_DEPS:=$(PACKAGES_PATH)/fudge/ascii.o $(PACKAGES_PATH)/fudge/buffer.o $(PACKAGES_PATH)/fudge/memory.o $(PACKAGES_PATH)/fudge/list.o
-PACKAGES_DEPS+=$(PACKAGES_DEPS_$(ARCH))
+SRC_PATH:=src
+SRC_CFLAGS:=-I$(INCLUDE_PATH) -I$(SRC_PATH)
+SRC_DEPS_x86:=$(SRC_PATH)/abi/x86/call.o $(SRC_PATH)/abi/x86/crt0.o
+SRC_DEPS_arm:=$(SRC_PATH)/abi/arm/call.o $(SRC_PATH)/abi/arm/crt0.o
+SRC_DEPS_arm+=$(SRC_PATH)/std/arm/memcmp.o $(SRC_PATH)/std/arm/memcpy.o $(SRC_PATH)/std/arm/memmove.o $(SRC_PATH)/std/arm/memset.o $(SRC_PATH)/std/arm/setjmp.o $(SRC_PATH)/std/arm/strcmp.o $(SRC_PATH)/std/arm/strncmp.o $(SRC_PATH)/std/arm/gcc/__aeabi_idiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_idivmod.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidivmod.o $(SRC_PATH)/std/arm/gcc/__clzsi2.o $(SRC_PATH)/std/arm/gcc/__divsi3.o $(SRC_PATH)/std/arm/gcc/__modsi3.o $(SRC_PATH)/std/arm/gcc/__udivmodsi4.o $(SRC_PATH)/std/arm/gcc/__udivsi3.o $(SRC_PATH)/std/arm/gcc/__umodsi3.o
+SRC_DEPS:=$(SRC_PATH)/fudge/ascii.o $(SRC_PATH)/fudge/buffer.o $(SRC_PATH)/fudge/memory.o $(SRC_PATH)/fudge/list.o
+SRC_DEPS+=$(SRC_DEPS_$(ARCH))
 
-MODULES_PATH:=packages/modules
+MODULES_PATH:=src/modules
 MODULES_LDFLAGS:=-T$(MODULES_PATH)/linker.ld -r
 
 RAMDISK_NAME:=$(KERNEL)
@@ -42,7 +42,7 @@ IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
 ALL:=$(KERNEL) $(RAMDISK)
 INSTALL:=$(INSTALL_PATH)/$(KERNEL) $(INSTALL_PATH)/$(RAMDISK)
-CLEAN:=$(PACKAGES_DEPS) $(KERNEL) $(RAMDISK) $(BUILD_PATH) $(IMAGE)
+CLEAN:=$(SRC_DEPS) $(KERNEL) $(RAMDISK) $(BUILD_PATH) $(IMAGE)
 
 .PHONY: all clean install
 
@@ -59,7 +59,7 @@ clean:
 .c.o:
 	$(CC) -o $@ $(CFLAGS) $<
 
-$(PACKAGES_PATH)/%.o: CFLAGS+=$(PACKAGES_CFLAGS)
+$(SRC_PATH)/%.o: CFLAGS+=$(SRC_CFLAGS)
 $(MODULES_PATH)/%.ko: LDFLAGS+=$(MODULES_LDFLAGS)
 $(MODULES_PATH)/%.ko.0: LDFLAGS+=$(MODULES_LDFLAGS)
 $(MODULES_PATH)/%.ko.1: LDFLAGS+=$(MODULES_LDFLAGS)
@@ -72,7 +72,7 @@ $(MODULES_PATH)/%.ko.7: LDFLAGS+=$(MODULES_LDFLAGS)
 $(MODULES_PATH)/%.ko.8: LDFLAGS+=$(MODULES_LDFLAGS)
 $(MODULES_PATH)/%.ko.9: LDFLAGS+=$(MODULES_LDFLAGS)
 
-DIR:=$(PACKAGES_PATH)
+DIR:=$(SRC_PATH)
 include $(DIR)/rules.mk
 
 $(BUILD_PATH): $(BINS) $(MODULES)
@@ -97,7 +97,7 @@ $(BUILD_PATH): $(BINS) $(MODULES)
 	cp share/* $@/share
 	mkdir -p $@/system
 
-$(KERNEL): $(PACKAGES_PATH)/kernel/$(KERNEL)
+$(KERNEL): $(SRC_PATH)/kernel/$(KERNEL)
 	cp $< $@
 
 $(RAMDISK_NAME).tar: $(BUILD_PATH)
