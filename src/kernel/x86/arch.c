@@ -241,8 +241,14 @@ unsigned short arch_pagefault(void *stack)
     /*
     unsigned int address = cpu_getcr2();
     */
-    taskmaptext(current.task, 0x08048000);
-    kernel_copyprogram(current.task);
+
+    if (current.task)
+    {
+
+        taskmaptext(current.task, 0x08048000);
+        kernel_copyprogram(current.task);
+
+    }
 
     return arch_schedule(&registers->interrupt);
 
