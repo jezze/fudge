@@ -72,7 +72,7 @@ unsigned short pic_interrupt(void *stack)
 
     io_outb(REGISTERCOMMAND0, COMMANDEOI);
 
-    return arch_schedule(&registers->general, &registers->interrupt);
+    return arch_schedule(&registers->interrupt);
 
 }
 
