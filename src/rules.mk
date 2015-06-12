@@ -2,8 +2,6 @@ PAR:=$(PAR).x
 TMP_$(PAR):=$(CUR)
 CUR:=$(DIR)
 
-DIR:=$(CUR)/cpio
-include $(DIR)/cpio.mk
 DIR:=$(CUR)/kernel
 include $(DIR)/rules.mk
 DIR:=$(CUR)/mandelbrot
@@ -52,7 +50,6 @@ include $(DIR)/slang.mk
 include $(DIR)/sleep.mk
 DIR:=$(CUR)/wm
 include $(DIR)/wm.mk
-DIR:=$(CUR)/wnull
 include $(DIR)/wnull.mk
 
 CUR:=$(TMP_$(PAR))
