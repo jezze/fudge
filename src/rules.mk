@@ -2,78 +2,58 @@ PAR:=$(PAR).x
 TMP_$(PAR):=$(CUR)
 CUR:=$(DIR)
 
-DIR:=$(CUR)/cat
-include $(DIR)/rules.mk
-DIR:=$(CUR)/cconv
-include $(DIR)/rules.mk
-DIR:=$(CUR)/col
-include $(DIR)/rules.mk
-DIR:=$(CUR)/complete
-include $(DIR)/rules.mk
-DIR:=$(CUR)/count
-include $(DIR)/rules.mk
 DIR:=$(CUR)/cpio
-include $(DIR)/rules.mk
-DIR:=$(CUR)/crc
-include $(DIR)/rules.mk
-DIR:=$(CUR)/ctrl
-include $(DIR)/rules.mk
-DIR:=$(CUR)/date
-include $(DIR)/rules.mk
-DIR:=$(CUR)/dep
-include $(DIR)/rules.mk
-DIR:=$(CUR)/dump
-include $(DIR)/rules.mk
-DIR:=$(CUR)/echo
-include $(DIR)/rules.mk
-DIR:=$(CUR)/head
-include $(DIR)/rules.mk
-DIR:=$(CUR)/hello
-include $(DIR)/rules.mk
-DIR:=$(CUR)/help
-include $(DIR)/rules.mk
-DIR:=$(CUR)/init
-include $(DIR)/rules.mk
+include $(DIR)/cpio.mk
 DIR:=$(CUR)/kernel
 include $(DIR)/rules.mk
-DIR:=$(CUR)/keymap
-include $(DIR)/rules.mk
-DIR:=$(CUR)/ls
-include $(DIR)/rules.mk
 DIR:=$(CUR)/mandelbrot
-include $(DIR)/rules.mk
-DIR:=$(CUR)/mbr
-include $(DIR)/rules.mk
-DIR:=$(CUR)/md5
-include $(DIR)/rules.mk
-DIR:=$(CUR)/mod
-include $(DIR)/rules.mk
+include $(DIR)/mandelbrot.mk
 DIR:=$(CUR)/modules
 include $(DIR)/rules.mk
-DIR:=$(CUR)/motd
-include $(DIR)/rules.mk
-DIR:=$(CUR)/mount
-include $(DIR)/rules.mk
-DIR:=$(CUR)/name
-include $(DIR)/rules.mk
-DIR:=$(CUR)/nl
-include $(DIR)/rules.mk
 DIR:=$(CUR)/pcx
-include $(DIR)/rules.mk
-DIR:=$(CUR)/reboot
-include $(DIR)/rules.mk
-DIR:=$(CUR)/sha1
-include $(DIR)/rules.mk
-DIR:=$(CUR)/shell
-include $(DIR)/rules.mk
-DIR:=$(CUR)/slang
-include $(DIR)/rules.mk
-DIR:=$(CUR)/sleep
-include $(DIR)/rules.mk
+include $(DIR)/pcxcmap.mk
+include $(DIR)/pcxdata.mk
+DIR:=$(CUR)/utils
+include $(DIR)/cat.mk
+include $(DIR)/cconv8to6.mk
+include $(DIR)/col.mk
+include $(DIR)/complete.mk
+include $(DIR)/countb.mk
+include $(DIR)/countl.mk
+include $(DIR)/crc.mk
+include $(DIR)/ctrl.mk
+include $(DIR)/date.mk
+include $(DIR)/dep.mk
+include $(DIR)/dump.mk
+include $(DIR)/echo.mk
+include $(DIR)/headb.mk
+include $(DIR)/headl.mk
+include $(DIR)/hello.mk
+include $(DIR)/help.mk
+include $(DIR)/init.mk
+include $(DIR)/initfs.mk
+include $(DIR)/initmod.mk
+include $(DIR)/keymapse.mk
+include $(DIR)/keymapus.mk
+include $(DIR)/ls.mk
+include $(DIR)/mbr.mk
+include $(DIR)/md5.mk
+include $(DIR)/modload.mk
+include $(DIR)/modunload.mk
+include $(DIR)/motd.mk
+include $(DIR)/mount.mk
+include $(DIR)/named.mk
+include $(DIR)/namef.mk
+include $(DIR)/nl.mk
+include $(DIR)/reboot.mk
+include $(DIR)/sha1.mk
+include $(DIR)/shell.mk
+include $(DIR)/slang.mk
+include $(DIR)/sleep.mk
 DIR:=$(CUR)/wm
-include $(DIR)/rules.mk
+include $(DIR)/wm.mk
 DIR:=$(CUR)/wnull
-include $(DIR)/rules.mk
+include $(DIR)/wnull.mk
 
 CUR:=$(TMP_$(PAR))
 PAR:=$(basename $(PAR))
