@@ -306,7 +306,7 @@ static struct task *setuptasks()
 
 }
 
-void arch_complete()
+static void arch_complete()
 {
 
     struct cpu_interrupt interrupt;
