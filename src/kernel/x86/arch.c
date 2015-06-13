@@ -306,8 +306,23 @@ static struct task *setuptasks()
 
 }
 
+void arch_complete()
+{
+
+    struct cpu_interrupt interrupt;
+
+    interrupt.eflags = cpu_geteflags() | 0x200;
+
+    arch_schedule(&interrupt);
+    cpu_leave(interrupt);
+
+}
+
 void arch_setup(struct vfs_backend *backend)
 {
+
+    struct container *container;
+    struct task *task;
 
     gdt_initpointer(&gdt.pointer, GDTDESCRIPTORS, gdt.descriptors);
     idt_initpointer(&idt.pointer, IDTDESCRIPTORS, idt.descriptors);
@@ -328,18 +343,21 @@ void arch_setup(struct vfs_backend *backend)
     cpu_settss(selector.tlink);
     kernel_setup(spawn, despawn);
 
-    current.container = setupcontainers();
-    current.task = setuptasks();
+    container = setupcontainers();
+    task = setuptasks();
 
-    kernel_setupramdisk(current.container, current.task, backend);
-    kernel_copytask(current.task, current.task);
-    kernel_setuptask(current.task, TASKVSTACKLIMIT);
-    scheduler_use(current.task);
-    containermaptext(current.container);
-    taskmapcontainer(current.task, current.container);
-    taskactivate(current.task);
+    kernel_setupramdisk(container, task, backend);
+    kernel_copytask(task, task);
+    kernel_setuptask(task, TASKVSTACKLIMIT);
+    scheduler_use(task);
+    containermaptext(container);
+    taskmapcontainer(task, container);
+    taskactivate(task);
     mmu_setup();
-    cpu_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);
+
+    current.container = container;
+
+    arch_complete();
 
 }
 

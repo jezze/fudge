@@ -98,22 +98,13 @@ cpu_halt:
     hlt
     ret
 
-.global cpu_usermode
-cpu_usermode:
-    movw 8(%esp), %ax
+.global cpu_leave
+cpu_leave:
+    addl $4, %esp
+    movw 16(%esp), %ax
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
-    pushl %eax
-    movl 20(%esp), %eax
-    pushl %eax
-    call cpu_geteflags
-    orl $0x200, %eax
-    pushl %eax
-    movl 16(%esp), %eax
-    pushl %eax
-    movl 28(%esp), %eax
-    pushl %eax
     iret
 
