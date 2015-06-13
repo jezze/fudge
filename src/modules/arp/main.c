@@ -2,7 +2,7 @@
 #include <net/arp.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/network/ethernet/ethernet.h>
+#include <modules/ethernet/ethernet.h>
 #include "arp.h"
 
 static struct ethernet_protocol ethernetprotocol;

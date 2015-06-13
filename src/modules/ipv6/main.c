@@ -2,7 +2,7 @@
 #include <net/ipv6.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/network/ethernet/ethernet.h>
+#include <modules/ethernet/ethernet.h>
 
 static struct ethernet_protocol ethernetprotocol;
 

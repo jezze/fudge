@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
-#include <modules/network/ethernet/ethernet.h>
+#include <modules/ethernet/ethernet.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/io/io.h>
 #include <modules/arch/x86/pci/pci.h>

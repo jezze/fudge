@@ -9,28 +9,24 @@ PLATFORM_x86:=pc
 PLATFORM_arm:=integratorcp
 PLATFORM:=$(PLATFORM_$(ARCH))
 
+SRC_PATH:=src
+INCLUDE_PATH:=include
+BUILD_PATH:=build
+INSTALL_PATH:=/boot
+
 AS:=$(TARGET)-as
 CC:=$(TARGET)-cc
 LD:=$(TARGET)-ld
 
 ASFLAGS:=
-CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
+CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(SRC_PATH)
 LDFLAGS:=
 
-BUILD_PATH:=build
-INCLUDE_PATH:=include
-INSTALL_PATH:=/boot
-
-SRC_PATH:=src
-SRC_CFLAGS:=-I$(INCLUDE_PATH) -I$(SRC_PATH)
 SRC_DEPS_x86:=$(SRC_PATH)/abi/x86/call.o $(SRC_PATH)/abi/x86/crt0.o
 SRC_DEPS_arm:=$(SRC_PATH)/abi/arm/call.o $(SRC_PATH)/abi/arm/crt0.o
 SRC_DEPS_arm+=$(SRC_PATH)/std/arm/memcmp.o $(SRC_PATH)/std/arm/memcpy.o $(SRC_PATH)/std/arm/memmove.o $(SRC_PATH)/std/arm/memset.o $(SRC_PATH)/std/arm/setjmp.o $(SRC_PATH)/std/arm/strcmp.o $(SRC_PATH)/std/arm/strncmp.o $(SRC_PATH)/std/arm/gcc/__aeabi_idiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_idivmod.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidivmod.o $(SRC_PATH)/std/arm/gcc/__clzsi2.o $(SRC_PATH)/std/arm/gcc/__divsi3.o $(SRC_PATH)/std/arm/gcc/__modsi3.o $(SRC_PATH)/std/arm/gcc/__udivmodsi4.o $(SRC_PATH)/std/arm/gcc/__udivsi3.o $(SRC_PATH)/std/arm/gcc/__umodsi3.o
 SRC_DEPS:=$(SRC_PATH)/fudge/ascii.o $(SRC_PATH)/fudge/buffer.o $(SRC_PATH)/fudge/memory.o $(SRC_PATH)/fudge/list.o
 SRC_DEPS+=$(SRC_DEPS_$(ARCH))
-
-MODULES_PATH:=src/modules
-MODULES_LDFLAGS:=-T$(MODULES_PATH)/linker.ld -r
 
 RAMDISK_NAME:=$(KERNEL)
 RAMDISK_TYPE:=cpio
@@ -58,19 +54,6 @@ clean:
 
 .c.o:
 	$(CC) -o $@ $(CFLAGS) $<
-
-$(SRC_PATH)/%.o: CFLAGS+=$(SRC_CFLAGS)
-$(MODULES_PATH)/%.ko: LDFLAGS+=$(MODULES_LDFLAGS)
-$(MODULES_PATH)/%.ko.0: LDFLAGS+=$(MODULES_LDFLAGS)
-$(MODULES_PATH)/%.ko.1: LDFLAGS+=$(MODULES_LDFLAGS)
-$(MODULES_PATH)/%.ko.2: LDFLAGS+=$(MODULES_LDFLAGS)
-$(MODULES_PATH)/%.ko.3: LDFLAGS+=$(MODULES_LDFLAGS)
-$(MODULES_PATH)/%.ko.4: LDFLAGS+=$(MODULES_LDFLAGS)
-$(MODULES_PATH)/%.ko.5: LDFLAGS+=$(MODULES_LDFLAGS)
-$(MODULES_PATH)/%.ko.6: LDFLAGS+=$(MODULES_LDFLAGS)
-$(MODULES_PATH)/%.ko.7: LDFLAGS+=$(MODULES_LDFLAGS)
-$(MODULES_PATH)/%.ko.8: LDFLAGS+=$(MODULES_LDFLAGS)
-$(MODULES_PATH)/%.ko.9: LDFLAGS+=$(MODULES_LDFLAGS)
 
 DIR:=$(SRC_PATH)
 include $(DIR)/rules.mk

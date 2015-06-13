@@ -3,8 +3,8 @@
 #include <net/ipv4.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/network/ethernet/ethernet.h>
-#include <modules/network/arp/arp.h>
+#include <modules/ethernet/ethernet.h>
+#include <modules/arp/arp.h>
 #include "ipv4.h"
 
 #define LOCALS                          8

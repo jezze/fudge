@@ -1,8 +1,8 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/network/ethernet/ethernet.h>
-#include <modules/network/ipv4/ipv4.h>
+#include <modules/ethernet/ethernet.h>
+#include <modules/ipv4/ipv4.h>
 
 static struct ipv4_protocol ipv4protocol;
 
