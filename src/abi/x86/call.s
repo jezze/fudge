@@ -1,3 +1,5 @@
+.code32
+
 .set CALL_INTERRUPT,                    0x80
 .set CALL_INDEX_AUTH,                   0x00
 .set CALL_INDEX_WALK,                   0x01

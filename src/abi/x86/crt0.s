@@ -1,3 +1,5 @@
+.code32
+
 .extern main
 .extern call_despawn
 

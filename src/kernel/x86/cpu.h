@@ -16,10 +16,10 @@ struct cpu_interrupt
 {
 
     unsigned int eip;
-    unsigned int code;
+    unsigned int cs;
     unsigned int eflags;
     unsigned int esp;
-    unsigned int data;
+    unsigned int ss;
 
 };
 
@@ -38,3 +38,5 @@ void cpu_seteflags(unsigned int value);
 void cpu_setgdt(void *pointer, unsigned int code, unsigned int data);
 void cpu_setidt(void *pointer);
 void cpu_settss(unsigned int value);
+void cpu_halt();
+void cpu_usermode(unsigned int code, unsigned int data, unsigned int ip, unsigned int sp);

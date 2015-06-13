@@ -1,3 +1,5 @@
+.code32
+
 .global io_inb
 io_inb:
     movw 4(%esp), %dx

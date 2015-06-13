@@ -162,13 +162,6 @@ static unsigned int despawn(struct container *container, struct task *task, void
 
 }
 
-unsigned short arch_getsegment()
-{
-
-    return selector.kdata;
-
-}
-
 void arch_setinterrupt(unsigned char index, void (*callback)())
 {
 
@@ -202,26 +195,26 @@ unsigned short arch_schedule(struct cpu_interrupt *interrupt)
     if (current.task)
     {
 
-        interrupt->code = selector.ucode;
+        interrupt->cs = selector.ucode;
+        interrupt->ss = selector.udata;
         interrupt->eip = current.task->state.registers.ip;
         interrupt->esp = current.task->state.registers.sp;
 
         taskactivate(current.task);
-
-        return selector.udata;
 
     }
 
     else
     {
 
-        interrupt->code = selector.kcode;
-        interrupt->eip = (unsigned int)arch_halt;
+        interrupt->cs = selector.kcode;
+        interrupt->ss = selector.kdata;
+        interrupt->eip = (unsigned int)cpu_halt;
         interrupt->esp = KERNELLIMIT;
 
-        return selector.kdata;
-
     }
+
+    return interrupt->ss;
 
 }
 
@@ -346,7 +339,7 @@ void arch_setup(struct vfs_backend *backend)
     taskmapcontainer(current.task, current.container);
     taskactivate(current.task);
     mmu_setup();
-    arch_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);
+    cpu_usermode(selector.ucode, selector.udata, current.task->state.registers.ip, current.task->state.registers.sp);
 
 }
 
