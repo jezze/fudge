@@ -23,8 +23,10 @@ call_auth:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_AUTH, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -38,8 +40,10 @@ call_bind:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_BIND, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -53,8 +57,10 @@ call_close:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_CLOSE, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -68,8 +74,10 @@ call_create:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_CREATE, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -83,8 +91,10 @@ call_destroy:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_DESTROY, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -98,8 +108,10 @@ call_despawn:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_DESPAWN, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -113,8 +125,10 @@ call_load:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_LOAD, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -128,8 +142,10 @@ call_mount:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_MOUNT, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -143,8 +159,10 @@ call_open:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_OPEN, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -158,8 +176,10 @@ call_read:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_READ, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -173,8 +193,10 @@ call_spawn:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_SPAWN, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -188,8 +210,10 @@ call_unload:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_UNLOAD, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -203,8 +227,10 @@ call_walk:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_WALK, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx
@@ -218,8 +244,10 @@ call_write:
     pushl %ebx
     pushl %esi
     pushl %edi
+    addl $16, %esp
     movl $CALL_INDEX_WRITE, %eax
     int $CALL_INTERRUPT
+    subl $16, %esp
     popl %edi
     popl %esi
     popl %ebx

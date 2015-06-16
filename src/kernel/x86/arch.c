@@ -252,7 +252,7 @@ unsigned short arch_syscall(void *stack)
 
     struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
 
-    registers->general.eax = kernel_call(registers->general.eax, current.container, current.task, (void *)(registers->interrupt.esp + 16));
+    registers->general.eax = kernel_call(registers->general.eax, current.container, current.task, (void *)(registers->interrupt.esp));
 
     return arch_schedule(&registers->interrupt);
 
