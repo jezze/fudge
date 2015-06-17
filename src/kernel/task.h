@@ -29,4 +29,6 @@ struct task
 
 };
 
+unsigned int task_rmessage(struct task *task, unsigned int size, unsigned int count, void *buffer);
+unsigned int task_wmessage(struct task *task, unsigned int size, unsigned int count, void *buffer);
 void task_init(struct task *task);

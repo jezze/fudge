@@ -62,7 +62,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 static unsigned int read_mailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return rendezvous_read(scheduler_findactive(), size, count, buffer);
+    return task_rmessage(scheduler_findactive(), size, count, buffer);
 
 }
 
@@ -83,7 +83,7 @@ static unsigned int write_mailboxes(struct system_node *self, unsigned int offse
 
         struct task *task = current->data;
 
-        rendezvous_write(task, size, count, buffer);
+        task_wmessage(task, size, count, buffer);
 
     }
 

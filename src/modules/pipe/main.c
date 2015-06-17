@@ -29,7 +29,7 @@ static unsigned int readpipe(struct task *t, unsigned int size, unsigned int cou
 {
 
     if (t)
-        return rendezvous_read(t, size, count, buffer);
+        return task_rmessage(t, size, count, buffer);
     else
         return 0;
 
@@ -39,7 +39,7 @@ static unsigned int sendpipe(struct task *t, unsigned int size, unsigned int cou
 {
 
     if (t)
-        return rendezvous_write(t, size, count, buffer);
+        return task_wmessage(t, size, count, buffer);
     else
         return 0;
 

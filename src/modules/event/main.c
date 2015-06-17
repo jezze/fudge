@@ -41,7 +41,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     destination = (struct task *)header->destination;
 
-    return rendezvous_write(destination, size, count, buffer);
+    return task_wmessage(destination, size, count, buffer);
 
 }
 

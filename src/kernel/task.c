@@ -1,7 +1,36 @@
 #include <fudge.h>
 #include "resource.h"
 #include "vfs.h"
+#include "scheduler.h"
 #include "task.h"
+
+unsigned int task_rmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
+{
+
+    count = buffer_rcfifo(&task->mailbox.buffer, size, count, buffer);
+
+    if (count)
+        scheduler_unblockspecial(task);
+    else
+        scheduler_block(task);
+
+    return count;
+
+}
+
+unsigned int task_wmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
+{
+
+    count = buffer_wcfifo(&task->mailbox.buffer, size, count, buffer);
+
+    if (count)
+        scheduler_unblockspecial(task);
+    else
+        scheduler_block(task);
+
+    return count;
+
+}
 
 void task_init(struct task *task)
 {
