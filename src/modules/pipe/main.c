@@ -15,31 +15,31 @@ static struct task *openpipe()
 
 }
 
-static struct task *closepipe(struct task *t)
+static struct task *closepipe(struct task *task)
 {
 
-    if (t)
-        scheduler_release(t);
+    if (task)
+        scheduler_release(task);
 
     return 0;
 
 }
 
-static unsigned int readpipe(struct task *t, unsigned int size, unsigned int count, void *buffer)
+static unsigned int readpipe(struct task *task, unsigned int size, unsigned int count, void *buffer)
 {
 
-    if (t)
-        return scheduler_rmessage(t, size, count, buffer);
+    if (task)
+        return scheduler_rmessage(task, size, count, buffer);
     else
         return 0;
 
 }
 
-static unsigned int sendpipe(struct task *t, unsigned int size, unsigned int count, void *buffer)
+static unsigned int sendpipe(struct task *task, unsigned int size, unsigned int count, void *buffer)
 {
 
-    if (t)
-        return scheduler_wmessage(t, size, count, buffer);
+    if (task)
+        return scheduler_wmessage(task, size, count, buffer);
     else
         return 0;
 
