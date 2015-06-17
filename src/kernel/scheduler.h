@@ -1,6 +1,7 @@
 unsigned int scheduler_block(struct task *task);
 unsigned int scheduler_unblock(struct task *task);
 void scheduler_unblockspecial(struct task *task);
+void scheduler_unblockspecialid(unsigned int id);
 struct task *scheduler_findactive();
 struct task *scheduler_findinactive();
 unsigned int scheduler_getactiveid();

@@ -54,6 +54,15 @@ void scheduler_unblockspecial(struct task *task)
 
 }
 
+void scheduler_unblockspecialid(unsigned int id)
+{
+
+    struct task *task = (struct task *)id;
+
+    scheduler_unblockspecial(task);
+
+}
+
 struct task *scheduler_findactive()
 {
 
