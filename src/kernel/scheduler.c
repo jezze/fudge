@@ -8,6 +8,26 @@ static struct list active;
 static struct list inactive;
 static struct list blocked;
 
+struct task *scheduler_findactive()
+{
+
+    if (!active.tail)
+        return 0;
+
+    return active.tail->data;
+
+}
+
+struct task *scheduler_findinactive()
+{
+
+    if (!inactive.tail)
+        return 0;
+
+    return inactive.tail->data;
+
+}
+
 unsigned int scheduler_block(struct task *task)
 {
 
@@ -51,42 +71,6 @@ void scheduler_unblockspecial(struct task *task)
         task->state.registers.ip -= 7;
     else
         list_move(&active, &active, &task->state.item);
-
-}
-
-void scheduler_unblockspecialid(unsigned int id)
-{
-
-    struct task *task = (struct task *)id;
-
-    scheduler_unblockspecial(task);
-
-}
-
-struct task *scheduler_findactive()
-{
-
-    if (!active.tail)
-        return 0;
-
-    return active.tail->data;
-
-}
-
-struct task *scheduler_findinactive()
-{
-
-    if (!inactive.tail)
-        return 0;
-
-    return inactive.tail->data;
-
-}
-
-unsigned int scheduler_getactiveid()
-{
-
-    return (unsigned int)scheduler_findactive();
 
 }
 

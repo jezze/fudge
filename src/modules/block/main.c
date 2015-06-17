@@ -30,7 +30,7 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
 
     }
 
-    return rendezvous_read(size, count, buffer);
+    return rendezvous_read(scheduler_findactive(), size, count, buffer);
 
 }
 

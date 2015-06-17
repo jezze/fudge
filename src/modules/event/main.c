@@ -26,8 +26,9 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 {
 
     struct event_header *header = buffer;
+    struct task *destination;
 
-    header->source = scheduler_getactiveid();
+    header->source = (unsigned int)scheduler_findactive();
 
     if (header->destination == 0xFFFFFFFF)
     {
@@ -38,7 +39,9 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     }
 
-    return rendezvous_write(header->destination, size, count, buffer);
+    destination = (struct task *)header->destination;
+
+    return rendezvous_write(destination, size, count, buffer);
 
 }
 

@@ -3,39 +3,39 @@
 #include <modules/system/system.h>
 
 static struct system_node root;
-static unsigned int t0;
-static unsigned int t1;
+static struct task *t0;
+static struct task *t1;
 static struct system_node endpoint0;
 static struct system_node endpoint1;
 
-static unsigned int openpipe()
+static struct task *openpipe()
 {
 
-    return scheduler_getactiveid();
+    return scheduler_findactive();
 
 }
 
-static unsigned int closepipe(unsigned int t)
+static struct task *closepipe(struct task *t)
 {
 
     if (t)
-        scheduler_unblockspecialid(t);
+        scheduler_unblockspecial(t);
 
     return 0;
 
 }
 
-static unsigned int readpipe(unsigned int t, unsigned int size, unsigned int count, void *buffer)
+static unsigned int readpipe(struct task *t, unsigned int size, unsigned int count, void *buffer)
 {
 
     if (t)
-        return rendezvous_read(size, count, buffer);
+        return rendezvous_read(t, size, count, buffer);
     else
         return 0;
 
 }
 
-static unsigned int sendpipe(unsigned int t, unsigned int size, unsigned int count, void *buffer)
+static unsigned int sendpipe(struct task *t, unsigned int size, unsigned int count, void *buffer)
 {
 
     if (t)
