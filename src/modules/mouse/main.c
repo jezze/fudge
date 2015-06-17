@@ -7,7 +7,7 @@
 void mouse_notify(struct mouse_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
-    scheduler_sendlist(&interface->data.mailboxes, size, count, buffer);
+    rendezvous_writelist(&interface->data.mailboxes, size, count, buffer);
     event_notify(EVENT_MOUSE, size, count, buffer);
 
 }

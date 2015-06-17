@@ -13,16 +13,16 @@ void log_notify(unsigned int level, unsigned int size, unsigned int count, void 
 {
 
     if (level <= LOG_CRITICAL)
-        scheduler_sendlist(&critical.mailboxes, size, count, buffer);
+        rendezvous_writelist(&critical.mailboxes, size, count, buffer);
 
     if (level <= LOG_ERROR)
-        scheduler_sendlist(&error.mailboxes, size, count, buffer);
+        rendezvous_writelist(&error.mailboxes, size, count, buffer);
 
     if (level <= LOG_WARNING)
-        scheduler_sendlist(&warning.mailboxes, size, count, buffer);
+        rendezvous_writelist(&warning.mailboxes, size, count, buffer);
 
     if (level <= LOG_INFO)
-        scheduler_sendlist(&info.mailboxes, size, count, buffer);
+        rendezvous_writelist(&info.mailboxes, size, count, buffer);
 
 }
 

@@ -24,7 +24,7 @@ void ethernet_notify(struct ethernet_interface *interface, unsigned int size, un
 
     }
 
-    scheduler_sendlist(&interface->data.mailboxes, size, count, buffer);
+    rendezvous_writelist(&interface->data.mailboxes, size, count, buffer);
 
 }
 

@@ -10,7 +10,7 @@ static unsigned int readpipe(struct list *mailboxes, unsigned int size, unsigned
 {
 
     if (mailboxes->head != 0)
-        return scheduler_readactive(size, count, buffer);
+        return rendezvous_read(size, count, buffer);
     else
         return 0;
 
@@ -19,7 +19,7 @@ static unsigned int readpipe(struct list *mailboxes, unsigned int size, unsigned
 static unsigned int sendpipe(struct list *mailboxes, unsigned int size, unsigned int count, void *buffer)
 {
 
-    scheduler_sendlist(mailboxes, size, count, buffer);
+    rendezvous_writelist(mailboxes, size, count, buffer);
 
     return count;
 
@@ -28,8 +28,8 @@ static unsigned int sendpipe(struct list *mailboxes, unsigned int size, unsigned
 static unsigned int endpoint0_close(struct system_node *self)
 {
 
-    scheduler_detachactive(&endpoint0.mailboxes);
-    scheduler_detachlist(&endpoint1.mailboxes);
+    rendezvous_detach(&endpoint0.mailboxes);
+    rendezvous_detachlist(&endpoint1.mailboxes);
 
     return system_close(self);
 
@@ -52,8 +52,8 @@ static unsigned int endpoint0_write(struct system_node *self, unsigned int offse
 static unsigned int endpoint1_close(struct system_node *self)
 {
 
-    scheduler_detachactive(&endpoint1.mailboxes);
-    scheduler_detachlist(&endpoint0.mailboxes);
+    rendezvous_detach(&endpoint1.mailboxes);
+    rendezvous_detachlist(&endpoint0.mailboxes);
 
     return system_close(self);
 

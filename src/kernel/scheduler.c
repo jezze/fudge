@@ -8,7 +8,7 @@ static struct list active;
 static struct list inactive;
 static struct list blocked;
 
-static unsigned int block(struct task *task)
+unsigned int scheduler_block(struct task *task)
 {
 
     if (!task->state.blocked)
@@ -26,7 +26,7 @@ static unsigned int block(struct task *task)
 
 }
 
-static unsigned int unblock(struct task *task)
+unsigned int scheduler_unblock(struct task *task)
 {
 
     if (task->state.blocked)
@@ -44,56 +44,13 @@ static unsigned int unblock(struct task *task)
 
 }
 
-static void unblockspecial(struct task *task)
+void scheduler_unblockspecial(struct task *task)
 {
 
-    if (unblock(task))
+    if (scheduler_unblock(task))
         task->state.registers.ip -= 7;
     else
         list_move(&active, &active, &task->state.item);
-
-}
-
-static unsigned int readbox(struct task *task, unsigned int size, unsigned int count, void *buffer)
-{
-
-    count = buffer_rcfifo(&task->mailbox.buffer, size, count, buffer);
-
-    if (count)
-        unblockspecial(task);
-    else
-        block(task);
-
-    return count;
-
-}
-
-static unsigned int writebox(struct task *task, unsigned int size, unsigned int count, void *buffer)
-{
-
-    count = buffer_wcfifo(&task->mailbox.buffer, size, count, buffer);
-
-    if (count)
-        unblockspecial(task);
-    else
-        block(task);
-
-    return count;
-
-}
-
-static void attach(struct task *task, struct list *mailboxes)
-{
-
-    list_add(mailboxes, &task->mailbox.item);
-
-}
-
-static void detach(struct task *task, struct list *mailboxes)
-{
-
-    list_remove(mailboxes, &task->mailbox.item);
-    unblockspecial(task);
 
 }
 
@@ -121,74 +78,6 @@ unsigned int scheduler_getactiveid()
 {
 
     return (unsigned int)scheduler_findactive();
-
-}
-
-void scheduler_attachactive(struct list *mailboxes)
-{
-
-    struct task *task = scheduler_findactive();
-
-    attach(task, mailboxes);
-
-}
-
-void scheduler_detachactive(struct list *mailboxes)
-{
-
-    struct task *task = scheduler_findactive();
-
-    detach(task, mailboxes);
-
-}
-
-void scheduler_detachlist(struct list *mailboxes)
-{
-
-    struct list_item *current;
-
-    for (current = mailboxes->head; current; current = current->next)
-    {
-
-        struct task *task = current->data;
-
-        detach(task, mailboxes);
-
-    }
-
-}
-
-unsigned int scheduler_readactive(unsigned int size, unsigned int count, void *buffer)
-{
-
-    struct task *task = scheduler_findactive();
-
-    return readbox(task, size, count, buffer);
-
-}
-
-unsigned int scheduler_sendid(unsigned int id, unsigned int size, unsigned int count, void *buffer)
-{
-
-    struct task *task = (struct task *)id;
-
-    return writebox(task, size, count, buffer);
-
-}
-
-void scheduler_sendlist(struct list *mailboxes, unsigned int size, unsigned int count, void *buffer)
-{
-
-    struct list_item *current;
-
-    for (current = mailboxes->head; current; current = current->next)
-    {
-
-        struct task *task = current->data;
-
-        writebox(task, size, count, buffer);
-
-    }
 
 }
 

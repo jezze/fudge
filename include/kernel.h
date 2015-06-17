@@ -4,4 +4,5 @@
 #include <kernel/task.h>
 #include <kernel/container.h>
 #include <kernel/scheduler.h>
+#include <kernel/rendezvous.h>
 #include <kernel/kernel.h>

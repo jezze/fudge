@@ -6,7 +6,7 @@
 void timer_notify(struct timer_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
-    scheduler_sendlist(&interface->sleep.mailboxes, size, count, buffer);
+    rendezvous_writelist(&interface->sleep.mailboxes, size, count, buffer);
 
 }
 

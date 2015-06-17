@@ -19,7 +19,7 @@ static void ethernetprotocol_removeinterface(struct ethernet_interface *interfac
 static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    scheduler_sendlist(&ethernetprotocol.data.mailboxes, count, 1, buffer);
+    rendezvous_writelist(&ethernetprotocol.data.mailboxes, count, 1, buffer);
 
 }
 

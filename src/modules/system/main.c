@@ -62,7 +62,7 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 static unsigned int read_mailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return scheduler_readactive(size, count, buffer);
+    return rendezvous_read(size, count, buffer);
 
 }
 
@@ -149,7 +149,7 @@ unsigned int system_open(struct system_node *node)
 static unsigned int open_mailboxes(struct system_node *self)
 {
 
-    scheduler_attachactive(&self->mailboxes);
+    rendezvous_attach(&self->mailboxes);
 
     return system_open(self);
 
@@ -168,7 +168,7 @@ unsigned int system_close(struct system_node *node)
 static unsigned int close_mailboxes(struct system_node *self)
 {
 
-    scheduler_detachactive(&self->mailboxes);
+    rendezvous_detach(&self->mailboxes);
 
     return system_close(self);
 
