@@ -6,11 +6,30 @@ static struct system_node root;
 static struct system_node endpoint0;
 static struct system_node endpoint1;
 
+static unsigned int readpipe(struct list *mailboxes, unsigned int size, unsigned int count, void *buffer)
+{
+
+    if (mailboxes->head != 0)
+        return scheduler_readactive(size, count, buffer);
+    else
+        return 0;
+
+}
+
+static unsigned int sendpipe(struct list *mailboxes, unsigned int size, unsigned int count, void *buffer)
+{
+
+    scheduler_sendlist(mailboxes, size, count, buffer);
+
+    return count;
+
+}
+
 static unsigned int endpoint0_close(struct system_node *self)
 {
 
-    scheduler_detach(&endpoint0.mailboxes);
-    scheduler_detachall(&endpoint1.mailboxes);
+    scheduler_detachactive(&endpoint0.mailboxes);
+    scheduler_detachlist(&endpoint1.mailboxes);
 
     return system_close(self);
 
@@ -19,22 +38,22 @@ static unsigned int endpoint0_close(struct system_node *self)
 static unsigned int endpoint0_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return scheduler_readpipe(&endpoint0.mailboxes, size, count, buffer);
+    return readpipe(&endpoint0.mailboxes, size, count, buffer);
 
 }
 
 static unsigned int endpoint0_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return scheduler_sendpipe(&endpoint1.mailboxes, size, count, buffer);
+    return sendpipe(&endpoint1.mailboxes, size, count, buffer);
 
 }
 
 static unsigned int endpoint1_close(struct system_node *self)
 {
 
-    scheduler_detach(&endpoint1.mailboxes);
-    scheduler_detachall(&endpoint0.mailboxes);
+    scheduler_detachactive(&endpoint1.mailboxes);
+    scheduler_detachlist(&endpoint0.mailboxes);
 
     return system_close(self);
 
@@ -43,14 +62,14 @@ static unsigned int endpoint1_close(struct system_node *self)
 static unsigned int endpoint1_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return scheduler_readpipe(&endpoint1.mailboxes, size, count, buffer);
+    return readpipe(&endpoint1.mailboxes, size, count, buffer);
 
 }
 
 static unsigned int endpoint1_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return scheduler_sendpipe(&endpoint0.mailboxes, size, count, buffer);
+    return sendpipe(&endpoint0.mailboxes, size, count, buffer);
 
 }
 

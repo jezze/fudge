@@ -149,7 +149,7 @@ unsigned int system_open(struct system_node *node)
 static unsigned int open_mailboxes(struct system_node *self)
 {
 
-    scheduler_attach(&self->mailboxes);
+    scheduler_attachactive(&self->mailboxes);
 
     return system_open(self);
 
@@ -168,7 +168,7 @@ unsigned int system_close(struct system_node *node)
 static unsigned int close_mailboxes(struct system_node *self)
 {
 
-    scheduler_detach(&self->mailboxes);
+    scheduler_detachactive(&self->mailboxes);
 
     return system_close(self);
 
