@@ -66,8 +66,26 @@ static unsigned int read_mailboxes(struct system_node *self, unsigned int offset
 
 }
 
-static unsigned int write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int write_normal(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
+
+    return 0;
+
+}
+
+static unsigned int write_mailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+{
+
+    struct list_item *current;
+
+    for (current = self->mailboxes.head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+
+        rendezvous_write(task, size, count, buffer);
+
+    }
 
     return 0;
 
@@ -136,16 +154,6 @@ static unsigned int child_group(struct system_node *self, unsigned int count, co
 
 }
 
-unsigned int system_open(struct system_node *node)
-{
-
-    node->refcount++;
-    node->parent->refcount++;
-
-    return (unsigned int)node;
-
-}
-
 static unsigned int open_mailboxes(struct system_node *self)
 {
 
@@ -157,6 +165,28 @@ static unsigned int open_mailboxes(struct system_node *self)
 
 }
 
+static unsigned int close_mailboxes(struct system_node *self)
+{
+
+    struct task *task = scheduler_findactive();
+
+    list_remove(&self->mailboxes, &task->mailbox.item);
+
+    return system_close(self);
+
+}
+
+unsigned int system_open(struct system_node *node)
+{
+
+    node->refcount++;
+    node->parent->refcount++;
+
+    return (unsigned int)node;
+
+}
+
+
 unsigned int system_close(struct system_node *node)
 {
 
@@ -167,14 +197,17 @@ unsigned int system_close(struct system_node *node)
 
 }
 
-static unsigned int close_mailboxes(struct system_node *self)
+unsigned int system_read(struct system_node *node, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    struct task *task = scheduler_findactive();
+    return node->read(node, offset, size, count, buffer);
 
-    list_remove(&self->mailboxes, &task->mailbox.item);
+}
 
-    return system_close(self);
+unsigned int system_write(struct system_node *node, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+{
+
+    return node->write(node, offset, size, count, buffer);
 
 }
 
@@ -245,7 +278,10 @@ void system_initnode(struct system_node *node, unsigned int type, const char *na
     else
         node->read = read_normal;
 
-    node->write = write;
+    if (type & SYSTEM_NODETYPE_MAILBOX)
+        node->write = write_mailboxes;
+    else
+        node->write = write_normal;
 
     if (type & SYSTEM_NODETYPE_GROUP)
         node->child = child_group;

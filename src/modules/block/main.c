@@ -8,7 +8,7 @@ static unsigned int wait;
 void block_notify(struct block_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
-    rendezvous_writelist(&interface->data.mailboxes, size, count, buffer);
+    system_write(&interface->data, 0, size, count, buffer);
 
     wait = 0;
 

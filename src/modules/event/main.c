@@ -17,8 +17,8 @@ void event_notify(unsigned int type, unsigned int size, unsigned int count, void
     header.type = type;
     header.count = count;
 
-    rendezvous_writelist(&poll.mailboxes, 1, sizeof (struct event_header), &header);
-    rendezvous_writelist(&poll.mailboxes, size, count, buffer);
+    poll.write(&poll, 0, 1, sizeof (struct event_header), &header);
+    poll.write(&poll, 0, size, count, buffer);
 
 }
 
@@ -33,7 +33,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
     if (header->destination == 0xFFFFFFFF)
     {
 
-        rendezvous_writelist(&poll.mailboxes, size, count, buffer);
+        system_write(&poll, 0, size, count, buffer);
 
         return count;
 

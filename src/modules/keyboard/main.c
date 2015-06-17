@@ -7,7 +7,7 @@
 void keyboard_notify(struct keyboard_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
-    rendezvous_writelist(&interface->data.mailboxes, size, count, buffer);
+    system_write(&interface->data, 0, size, count, buffer);
     event_notify(EVENT_KEYBOARD, size, count, buffer);
 
 }

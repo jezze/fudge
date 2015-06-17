@@ -33,19 +33,3 @@ unsigned int rendezvous_write(struct task *task, unsigned int size, unsigned int
 
 }
 
-void rendezvous_writelist(struct list *mailboxes, unsigned int size, unsigned int count, void *buffer)
-{
-
-    struct list_item *current;
-
-    for (current = mailboxes->head; current; current = current->next)
-    {
-
-        struct task *task = current->data;
-
-        rendezvous_write(task, size, count, buffer);
-
-    }
-
-}
-

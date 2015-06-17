@@ -19,7 +19,7 @@ static void ethernetprotocol_removeinterface(struct ethernet_interface *interfac
 static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    rendezvous_writelist(&ethernetprotocol.data.mailboxes, count, 1, buffer);
+    system_write(&ethernetprotocol.data, 0, count, 1, buffer);
 
 }
 

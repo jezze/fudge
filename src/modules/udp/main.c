@@ -9,7 +9,7 @@ static struct ipv4_protocol ipv4protocol;
 void ipv4protocol_notify(struct ethernet_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
-    rendezvous_writelist(&ipv4protocol.data.mailboxes, size, count, buffer);
+    system_write(&ipv4protocol.data, 0, size, count, buffer);
 
 }
 
