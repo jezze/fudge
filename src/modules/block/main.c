@@ -30,7 +30,7 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
 
     }
 
-    return task_rmessage(scheduler_findactive(), size, count, buffer);
+    return scheduler_rmessage(scheduler_findactive(), size, count, buffer);
 
 }
 

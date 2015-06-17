@@ -19,7 +19,7 @@ static struct task *closepipe(struct task *t)
 {
 
     if (t)
-        scheduler_unblockspecial(t);
+        scheduler_release(t);
 
     return 0;
 
@@ -29,7 +29,7 @@ static unsigned int readpipe(struct task *t, unsigned int size, unsigned int cou
 {
 
     if (t)
-        return task_rmessage(t, size, count, buffer);
+        return scheduler_rmessage(t, size, count, buffer);
     else
         return 0;
 
@@ -39,7 +39,7 @@ static unsigned int sendpipe(struct task *t, unsigned int size, unsigned int cou
 {
 
     if (t)
-        return task_wmessage(t, size, count, buffer);
+        return scheduler_wmessage(t, size, count, buffer);
     else
         return 0;
 

@@ -8,6 +8,42 @@ static struct list active;
 static struct list inactive;
 static struct list blocked;
 
+static unsigned int block(struct task *task)
+{
+
+    if (!task->state.blocked)
+    {
+
+        list_move(&blocked, &active, &task->state.item);
+
+        task->state.blocked = 1;
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int unblock(struct task *task)
+{
+
+    if (task->state.blocked)
+    {
+
+        list_move(&active, &blocked, &task->state.item);
+
+        task->state.blocked = 0;
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 struct task *scheduler_findactive()
 {
 
@@ -28,49 +64,41 @@ struct task *scheduler_findinactive()
 
 }
 
-unsigned int scheduler_block(struct task *task)
+void scheduler_release(struct task *task)
 {
 
-    if (!task->state.blocked)
-    {
-
-        list_move(&blocked, &active, &task->state.item);
-
-        task->state.blocked = 1;
-
-        return 1;
-
-    }
-
-    return 0;
-
-}
-
-unsigned int scheduler_unblock(struct task *task)
-{
-
-    if (task->state.blocked)
-    {
-
-        list_move(&active, &blocked, &task->state.item);
-
-        task->state.blocked = 0;
-
-        return 1;
-
-    }
-
-    return 0;
-
-}
-
-void scheduler_unblockspecial(struct task *task)
-{
-
-    if (scheduler_unblock(task))
+    if (unblock(task))
         task->state.registers.ip -= 7;
     else
         list_move(&active, &active, &task->state.item);
+
+}
+
+unsigned int scheduler_rmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
+{
+
+    count = task_rmessage(task, size, count, buffer);
+
+    if (count)
+        scheduler_release(task);
+    else
+        block(task);
+
+    return count;
+
+}
+
+unsigned int scheduler_wmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
+{
+
+    count = task_wmessage(task, size, count, buffer);
+
+    if (count)
+        scheduler_release(task);
+    else
+        block(task);
+
+    return count;
 
 }
 
