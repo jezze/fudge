@@ -526,6 +526,7 @@ static void setupviews()
 void main()
 {
 
+    settings.header.type = CTRL_TYPE_VIDEO;
     settings.w = 1024;
     settings.h = 768;
     settings.bpp = 32;
@@ -543,6 +544,7 @@ void main()
     setupviews();
     pollevent();
 
+    settings.header.type = CTRL_TYPE_VIDEO;
     settings.w = 80;
     settings.h = 25;
     settings.bpp = 16;

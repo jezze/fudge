@@ -67,6 +67,7 @@ void main()
 
     struct ctrl_videosettings settings;
 
+    settings.header.type = CTRL_TYPE_VIDEO;
     settings.w = 320;
     settings.h = 200;
     settings.bpp = 8;

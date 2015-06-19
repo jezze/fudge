@@ -25,3 +25,4 @@
 /bin/modload < /mod/pipe.ko.6
 /bin/modload < /mod/pipe.ko.7
 /bin/modload < /mod/mtwist.ko
+/bin/modload < /mod/window.ko.0

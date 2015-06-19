@@ -69,6 +69,7 @@ static unsigned int interfacenode_colormapwrite(struct system_node *self, unsign
 void video_registerinterface(struct video_interface *interface, unsigned int id)
 {
 
+    resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&interface->root, &interface->data);
     system_addchild(&interface->root, &interface->colormap);
@@ -81,6 +82,7 @@ void video_registerinterface(struct video_interface *interface, unsigned int id)
 void video_unregisterinterface(struct video_interface *interface)
 {
 
+    resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->data);
     system_removechild(&interface->root, &interface->colormap);

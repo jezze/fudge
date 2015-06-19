@@ -26,6 +26,7 @@ MODULES += \
     src/modules/timer/timer.ko \
     src/modules/udp/udp.ko \
     src/modules/video/video.ko \
+    src/modules/window/window.ko.0 \
 
 CLEAN += \
     src/modules/arp/arp.ko src/modules/arp/main.o \
@@ -55,6 +56,7 @@ CLEAN += \
     src/modules/timer/timer.ko src/modules/timer/main.o \
     src/modules/udp/udp.ko src/modules/udp/main.o \
     src/modules/video/video.ko src/modules/video/main.o \
+    src/modules/window/window.ko.0 src/modules/window/main.o \
 
 src/modules/arp/arp.ko: src/modules/arp/main.o
 src/modules/audio/audio.ko: src/modules/audio/main.o
@@ -83,6 +85,7 @@ src/modules/system/system.ko: src/modules/system/main.o src/modules/system/backe
 src/modules/timer/timer.ko: src/modules/timer/main.o
 src/modules/udp/udp.ko: src/modules/udp/main.o
 src/modules/video/video.ko: src/modules/video/main.o
+src/modules/window/window.ko.0: src/modules/window/main.o
 
 include src/modules/arch/$(ARCH)/rules.mk
 
