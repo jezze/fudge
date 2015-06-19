@@ -28,7 +28,7 @@ static unsigned int writeboolean(unsigned int offset, unsigned int value)
 
 }
 
-static unsigned int writedec(unsigned int offset, unsigned char value)
+static unsigned int writedec(unsigned int offset, unsigned int value)
 {
 
     char num[32];
