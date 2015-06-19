@@ -152,7 +152,7 @@ void module_init()
 {
 
     seed1(&normal, MTWIST_SEED);
-    system_initnode(&root, SYSTEM_NODETYPE_NORMAL | SYSTEM_NODETYPE_MULTI, "mtwist");
+    system_initnode(&root, SYSTEM_NODETYPE_NORMAL, "mtwist");
 
     root.read = root_read;
 

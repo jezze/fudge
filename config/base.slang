@@ -24,4 +24,4 @@
 /bin/modload < /mod/pipe.ko.5
 /bin/modload < /mod/pipe.ko.6
 /bin/modload < /mod/pipe.ko.7
-/bin/modload < /mod/mtwist.ko.0
+/bin/modload < /mod/mtwist.ko
