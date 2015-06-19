@@ -55,7 +55,7 @@ void block_unregisterinterface(struct block_interface *interface)
 void block_initinterface(struct block_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer))
 {
 
-    resource_init(&interface->resource, 0, interface);
+    resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "block");
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 

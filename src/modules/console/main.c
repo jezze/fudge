@@ -66,7 +66,7 @@ void console_unregisterinterface(struct console_interface *interface)
 void console_initinterface(struct console_interface *interface, unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer))
 {
 
-    resource_init(&interface->resource, 0, interface);
+    resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "console");
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->in, SYSTEM_NODETYPE_MAILBOX, "in");

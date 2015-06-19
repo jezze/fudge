@@ -91,7 +91,7 @@ void clock_unregisterinterface(struct clock_interface *interface)
 void clock_initinterface(struct clock_interface *interface, unsigned char (*getseconds)(), unsigned char (*getminutes)(), unsigned char (*gethours)(), unsigned char (*getweekday)(), unsigned char (*getday)(), unsigned char (*getmonth)(), unsigned short (*getyear)())
 {
 
-    resource_init(&interface->resource, 0, interface);
+    resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "clock");
     system_initnode(&interface->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
     system_initnode(&interface->date, SYSTEM_NODETYPE_NORMAL, "date");
