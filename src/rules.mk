@@ -21,7 +21,6 @@ include $(DIR)/countl.mk
 include $(DIR)/crc.mk
 include $(DIR)/ctrl.mk
 include $(DIR)/date.mk
-include $(DIR)/dep.mk
 include $(DIR)/dump.mk
 include $(DIR)/echo.mk
 include $(DIR)/headb.mk
