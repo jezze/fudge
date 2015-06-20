@@ -124,9 +124,7 @@ static void handleirq(unsigned int irq)
 static void videointerface_setmode(struct ctrl_videosettings *settings)
 {
 
-    videointerface.w = settings->w;
-    videointerface.h = settings->h;
-    videointerface.bpp = settings->bpp;
+    ctrl_setvideosettings(&videointerface.settings, settings->w, settings->h, settings->bpp);
 
 }
 

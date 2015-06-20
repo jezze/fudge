@@ -142,8 +142,7 @@ static void driver_init()
 {
 
     console_initinterface(&consoleinterface, consoleinterface_send);
-
-    consoleinterface.scroll = 1;
+    ctrl_setconsolesettings(&consoleinterface.settings, 1);
 
 }
 

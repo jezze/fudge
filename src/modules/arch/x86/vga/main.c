@@ -46,12 +46,12 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
 {
 
     struct vga_character *memory = taddress;
-    unsigned int bytespp = videointerface.bpp / 8;
-    unsigned int linesize = videointerface.w * bytespp;
-    unsigned int fullsize = videointerface.h * linesize;
+    unsigned int bytespp = videointerface.settings.bpp / 8;
+    unsigned int linesize = videointerface.settings.w * bytespp;
+    unsigned int fullsize = videointerface.settings.h * linesize;
     unsigned int i;
 
-    if (videointerface.w != 80)
+    if (videointerface.settings.w != 80)
         return count;
 
     for (i = 0; i < count; i++)
@@ -104,13 +104,10 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
     if (settings->w == 80)
     {
 
-        if (videointerface.w == 320)
+        if (videointerface.settings.w == 320)
             vga_restore();
 
-        videointerface.w = 80;
-        videointerface.h = 25;
-        videointerface.bpp = 16;
-
+        ctrl_setvideosettings(&videointerface.settings, 80, 25, 16);
         vga_settext();
 
     }
@@ -118,13 +115,10 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
     else
     {
 
-        if (videointerface.w == 80)
+        if (videointerface.settings.w == 80)
             vga_save();
 
-        videointerface.w = 320;
-        videointerface.h = 200;
-        videointerface.bpp = 8;
-
+        ctrl_setvideosettings(&videointerface.settings, 320, 200, 8);
         vga_setgraphic();
 
     }
@@ -134,9 +128,9 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 static unsigned int videointerface_rdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    unsigned int bytespp = videointerface.bpp / 8;
-    unsigned int linesize = videointerface.w * bytespp;
-    unsigned int fullsize = videointerface.h * linesize;
+    unsigned int bytespp = videointerface.settings.bpp / 8;
+    unsigned int linesize = videointerface.settings.w * bytespp;
+    unsigned int fullsize = videointerface.settings.h * linesize;
 
     return memory_read(buffer, count, gaddress, fullsize, size, offset);
 
@@ -145,9 +139,9 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int size,
 static unsigned int videointerface_wdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    unsigned int bytespp = videointerface.bpp / 8;
-    unsigned int linesize = videointerface.w * bytespp;
-    unsigned int fullsize = videointerface.h * linesize;
+    unsigned int bytespp = videointerface.settings.bpp / 8;
+    unsigned int linesize = videointerface.settings.w * bytespp;
+    unsigned int fullsize = videointerface.settings.h * linesize;
 
     return memory_write(gaddress, fullsize, buffer, count, size, offset);
 
@@ -219,15 +213,9 @@ static void driver_init()
     cursor.color = 0x0F;
 
     console_initinterface(&consoleinterface, consoleinterface_wout);
-
-    consoleinterface.scroll = 1;
-
     video_initinterface(&videointerface, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
-
-    videointerface.w = 80;
-    videointerface.h = 25;
-    videointerface.bpp = 16;
-
+    ctrl_setconsolesettings(&consoleinterface.settings, 1);
+    ctrl_setvideosettings(&videointerface.settings, 80, 25, 16);
     clear(0);
 
 }

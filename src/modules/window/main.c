@@ -25,23 +25,12 @@ static unsigned int ctrl_read(struct system_node *self, unsigned int offset, uns
     if (!interface)
         return 0;
 
-    if (size == sizeof (struct ctrl_header))
-    {
+    count = interface->ctrl.read(&interface->ctrl, offset, size, count, buffer);
 
-        return interface->ctrl.read(&interface->ctrl, offset, size, count, buffer);
+    if (count && size == sizeof (struct ctrl_videosettings))
+        settings->h = settings->h / 2;
 
-    }
-
-    if (size == sizeof (struct ctrl_videosettings))
-    {
-
-        ctrl_initvideosettings(settings, interface->w, interface->h / 2, interface->bpp);
-
-        return 1;
-
-    }
-
-    return 0;
+    return count;
 
 }
 

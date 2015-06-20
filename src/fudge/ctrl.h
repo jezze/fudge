@@ -27,6 +27,6 @@ struct ctrl_videosettings
 
 };
 
-void ctrl_initheader(struct ctrl_header *header, unsigned int type);
-void ctrl_initconsolesettings(struct ctrl_consolesettings *settings, unsigned char scroll);
-void ctrl_initvideosettings(struct ctrl_videosettings *settings, unsigned int w, unsigned int h, unsigned int bpp);
+void ctrl_setheader(struct ctrl_header *header, unsigned int type);
+void ctrl_setconsolesettings(struct ctrl_consolesettings *settings, unsigned char scroll);
+void ctrl_setvideosettings(struct ctrl_videosettings *settings, unsigned int w, unsigned int h, unsigned int bpp);

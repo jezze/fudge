@@ -73,7 +73,7 @@ void main()
 
     struct ctrl_videosettings settings;
 
-    ctrl_initvideosettings(&settings, 320, 200, 8);
+    ctrl_setvideosettings(&settings, 320, 200, 8);
     video_setmode(&settings);
     setup(&settings);
     video_open();

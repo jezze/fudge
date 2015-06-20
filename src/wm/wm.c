@@ -526,7 +526,7 @@ static void setupviews()
 void main()
 {
 
-    ctrl_initvideosettings(&settings, 1024, 768, 32);
+    ctrl_setvideosettings(&settings, 1024, 768, 32);
     video_setmode(&settings);
     video_setcolormap(0, 3, 9, colormap);
     mouse_init(&mouse);
@@ -539,7 +539,7 @@ void main()
     setupwindows();
     setupviews();
     pollevent();
-    ctrl_initvideosettings(&settings, 80, 25, 16);
+    ctrl_setvideosettings(&settings, 80, 25, 16);
     video_setmode(&settings);
 
 }

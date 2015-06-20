@@ -45,14 +45,12 @@ static void setreg(unsigned short index, unsigned short data)
 static void videointerface_setmode(struct ctrl_videosettings *settings)
 {
 
-    videointerface.w = settings->w;
-    videointerface.h = settings->h;
-    videointerface.bpp = settings->bpp;
+    ctrl_setvideosettings(&videointerface.settings, settings->w, settings->h, settings->bpp);
 
     setreg(COMMANDENABLE, 0x00);
-    setreg(COMMANDXRES, videointerface.w);
-    setreg(COMMANDYRES, videointerface.h);
-    setreg(COMMANDBPP, videointerface.bpp);
+    setreg(COMMANDXRES, videointerface.settings.w);
+    setreg(COMMANDYRES, videointerface.settings.h);
+    setreg(COMMANDBPP, videointerface.settings.bpp);
     setreg(COMMANDENABLE, 0x40 | 0x01);
 
 }
@@ -60,7 +58,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 static unsigned int videointerface_rdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    unsigned int s = videointerface.w * videointerface.h * videointerface.bpp / 8;
+    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
 
     return memory_read(buffer, count, lfb, s, size, offset);
 
@@ -69,7 +67,7 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int size,
 static unsigned int videointerface_wdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    unsigned int s = videointerface.w * videointerface.h * videointerface.bpp / 8;
+    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
 
     return memory_write(lfb, s, buffer, count, size, offset);
 

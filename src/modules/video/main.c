@@ -9,23 +9,8 @@ static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned in
     struct video_interface *interface = self->resource->data;
     struct ctrl_videosettings *settings = buffer;
 
-    if (size == sizeof (struct ctrl_header))
-    {
-
-        settings->header.type = CTRL_TYPE_VIDEO;
-
-        return 1;
-
-    }
-
-    if (size == sizeof (struct ctrl_videosettings))
-    {
-
-        ctrl_initvideosettings(settings, interface->w, interface->h, interface->bpp);
-
-        return 1;
-
-    }
+    if (size == sizeof (struct ctrl_header) || size == sizeof (struct ctrl_videosettings))
+        return memory_read(settings, 1, &interface->settings, 1, size, offset);
 
     return 0;
 
