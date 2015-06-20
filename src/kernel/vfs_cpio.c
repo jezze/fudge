@@ -233,6 +233,9 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
         unsigned int length = header.namesize;
         unsigned int i = 0;
 
+        if (size != sizeof (struct record))
+            return 0;
+
         if (offset > 0)
             return 0;
 

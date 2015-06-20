@@ -26,6 +26,9 @@ static unsigned int ctrl_read(struct system_node *self, unsigned int offset, uns
     if (!interface)
         return 0;
 
+    if (size != sizeof (struct ctrl_videosettings))
+        return 0;
+
     settings.header.type = CTRL_TYPE_VIDEO;
     settings.w = interface->w;
     settings.h = interface->h / 2;
@@ -42,6 +45,9 @@ static unsigned int ctrl_write(struct system_node *self, unsigned int offset, un
     struct ctrl_videosettings *settings = buffer;
 
     if (!interface)
+        return 0;
+
+    if (size != sizeof (struct ctrl_videosettings))
         return 0;
 
     interface->setmode(settings);

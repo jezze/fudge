@@ -21,6 +21,9 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
     struct record *records = buffer;
     unsigned int i = 0;
 
+    if (size != sizeof (struct record))
+        return 0;
+
     if (offset > 0)
         return 0;
 
