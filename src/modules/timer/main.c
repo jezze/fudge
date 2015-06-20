@@ -13,6 +13,7 @@ void timer_notify(struct timer_interface *interface, unsigned int size, unsigned
 void timer_registerinterface(struct timer_interface *interface, unsigned int id)
 {
 
+    resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->sleep);
     system_registernode(&interface->root);
 
@@ -21,6 +22,7 @@ void timer_registerinterface(struct timer_interface *interface, unsigned int id)
 void timer_unregisterinterface(struct timer_interface *interface)
 {
 
+    resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->sleep);
     system_unregisternode(&interface->root);
 

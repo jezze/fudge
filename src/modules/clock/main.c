@@ -69,6 +69,7 @@ static unsigned int interfacenode_timeread(struct system_node *self, unsigned in
 void clock_registerinterface(struct clock_interface *interface, unsigned int id)
 {
 
+    resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->timestamp);
     system_addchild(&interface->root, &interface->date);
     system_addchild(&interface->root, &interface->time);
@@ -81,6 +82,7 @@ void clock_registerinterface(struct clock_interface *interface, unsigned int id)
 void clock_unregisterinterface(struct clock_interface *interface)
 {
 
+    resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->timestamp);
     system_removechild(&interface->root, &interface->date);
     system_removechild(&interface->root, &interface->time);

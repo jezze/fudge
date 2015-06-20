@@ -60,6 +60,7 @@ static unsigned int interfacenode_outwrite(struct system_node *self, unsigned in
 void console_registerinterface(struct console_interface *interface, unsigned int id)
 {
 
+    resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&interface->root, &interface->in);
     system_addchild(&interface->root, &interface->out);
@@ -72,6 +73,7 @@ void console_registerinterface(struct console_interface *interface, unsigned int
 void console_unregisterinterface(struct console_interface *interface)
 {
 
+    resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->in);
     system_removechild(&interface->root, &interface->out);

@@ -24,6 +24,7 @@ static unsigned int interfacenode_datawrite(struct system_node *self, unsigned i
 void audio_registerinterface(struct audio_interface *interface, unsigned int id)
 {
 
+    resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->data);
     system_registernode(&interface->root);
 
@@ -34,6 +35,7 @@ void audio_registerinterface(struct audio_interface *interface, unsigned int id)
 void audio_unregisterinterface(struct audio_interface *interface)
 {
 
+    resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->data);
     system_unregisternode(&interface->root);
 

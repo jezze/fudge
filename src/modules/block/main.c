@@ -37,6 +37,7 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
 void block_registerinterface(struct block_interface *interface, unsigned int id)
 {
 
+    resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->data);
     system_registernode(&interface->root);
 
@@ -47,6 +48,7 @@ void block_registerinterface(struct block_interface *interface, unsigned int id)
 void block_unregisterinterface(struct block_interface *interface)
 {
 
+    resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->data);
     system_unregisternode(&interface->root);
 

@@ -15,6 +15,7 @@ void mouse_notify(struct mouse_interface *interface, unsigned int size, unsigned
 void mouse_registerinterface(struct mouse_interface *interface, unsigned int id)
 {
 
+    resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->data);
     system_registernode(&interface->root);
 
@@ -25,6 +26,7 @@ void mouse_registerinterface(struct mouse_interface *interface, unsigned int id)
 void mouse_unregisterinterface(struct mouse_interface *interface)
 {
 
+    resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->data);
     system_unregisternode(&interface->root);
 

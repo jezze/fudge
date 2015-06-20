@@ -15,6 +15,7 @@ void keyboard_notify(struct keyboard_interface *interface, unsigned int size, un
 void keyboard_registerinterface(struct keyboard_interface *interface, unsigned int id)
 {
 
+    resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->data);
     system_registernode(&interface->root);
 
@@ -25,6 +26,7 @@ void keyboard_registerinterface(struct keyboard_interface *interface, unsigned i
 void keyboard_unregisterinterface(struct keyboard_interface *interface)
 {
 
+    resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->data);
     system_unregisternode(&interface->root);
 
