@@ -6,7 +6,6 @@
 static struct system_node root;
 static struct system_node data;
 static struct system_node ctrl;
-static void *gaddress = (void *)0x000A0000;
 
 static struct video_interface *findinterface()
 {
@@ -29,9 +28,7 @@ static unsigned int ctrl_read(struct system_node *self, unsigned int offset, uns
     if (size == sizeof (struct ctrl_header))
     {
 
-        settings->header.type = CTRL_TYPE_VIDEO;
-
-        return 1;
+        return interface->ctrl.read(&interface->ctrl, offset, size, count, buffer);
 
     }
 
@@ -55,28 +52,17 @@ static unsigned int ctrl_write(struct system_node *self, unsigned int offset, un
 {
 
     struct video_interface *interface = findinterface();
-    struct ctrl_videosettings *settings = buffer;
 
-    if (!interface)
-        return 0;
-
-    if (size == sizeof (struct ctrl_videosettings))
-    {
-
-        interface->setmode(settings);
-
-        return 1;
-
-    }
-
-    return 0;
+    return interface->ctrl.write(&interface->ctrl, offset, size, count, buffer);
 
 }
 
 static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return memory_write((unsigned char *)gaddress + 320 * 100, 320 * 200, buffer, count, size, offset);
+    struct video_interface *interface = findinterface();
+
+    return interface->data.write(&interface->data, offset + 320 * 100, size, count, buffer);
 
 }
 
