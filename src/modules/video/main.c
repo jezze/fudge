@@ -21,10 +21,7 @@ static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned in
     if (size == sizeof (struct ctrl_videosettings))
     {
 
-        settings->header.type = CTRL_TYPE_VIDEO;
-        settings->w = interface->w;
-        settings->h = interface->h;
-        settings->bpp = interface->bpp;
+        ctrl_initvideosettings(settings, interface->w, interface->h, interface->bpp);
 
         return 1;
 

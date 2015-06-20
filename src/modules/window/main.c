@@ -35,10 +35,7 @@ static unsigned int ctrl_read(struct system_node *self, unsigned int offset, uns
     if (size == sizeof (struct ctrl_videosettings))
     {
 
-        settings->header.type = CTRL_TYPE_VIDEO;
-        settings->w = interface->w;
-        settings->h = interface->h / 2;
-        settings->bpp = interface->bpp;
+        ctrl_initvideosettings(settings, interface->w, interface->h / 2, interface->bpp);
 
         return 1;
 

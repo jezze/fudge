@@ -73,11 +73,7 @@ void main()
 
     struct ctrl_videosettings settings;
 
-    settings.header.type = CTRL_TYPE_VIDEO;
-    settings.w = 320;
-    settings.h = 200;
-    settings.bpp = 8;
-
+    ctrl_initvideosettings(&settings, 320, 200, 8);
     video_setmode(&settings);
     setup(&settings);
     video_open();

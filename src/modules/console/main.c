@@ -30,8 +30,7 @@ static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned in
     if (size == sizeof (struct ctrl_videosettings))
     {
 
-        settings->header.type = CTRL_TYPE_CONSOLE;
-        settings->scroll = interface->scroll;
+        ctrl_initconsolesettings(settings, interface->scroll);
 
         return 1;
 
