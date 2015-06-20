@@ -13,12 +13,12 @@ void video_setmode(struct ctrl_videosettings *settings)
 
 }
 
-void video_setcolormap(unsigned int offset, unsigned int count, void *buffer)
+void video_setcolormap(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     call_walk(CALL_L0, CALL_PR, 23, "system/video:0/colormap");
     call_open(CALL_L0);
-    call_write(CALL_L0, offset, 1, count, buffer);
+    call_write(CALL_L0, offset, size, count, buffer);
     call_close(CALL_L0);
 
 }

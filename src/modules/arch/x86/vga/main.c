@@ -159,7 +159,8 @@ static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int s
     char *c = buffer;
     unsigned int i;
 
-    count = count * size;
+    if (size != 3)
+        return 0;
 
     if (count > VGA_COLORMAP_LIMIT)
         count = VGA_COLORMAP_LIMIT;
@@ -167,10 +168,10 @@ static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int s
     if (offset > count)
         return 0;
 
-    for (i = offset; i < count; i += 3)
+    for (i = offset; i < count * size; i += size)
     {
 
-        io_outb(VGA_REGISTER_DACRINDEX, i / 3);
+        io_outb(VGA_REGISTER_DACRINDEX, i / size);
         c[i + 0] = io_inb(VGA_REGISTER_DACDATA);
         c[i + 1] = io_inb(VGA_REGISTER_DACDATA);
         c[i + 2] = io_inb(VGA_REGISTER_DACDATA);
@@ -187,7 +188,8 @@ static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int s
     char *c = buffer;
     unsigned int i;
 
-    count = count * size;
+    if (size != 3)
+        return 0;
 
     if (count > VGA_COLORMAP_LIMIT)
         count = VGA_COLORMAP_LIMIT;
@@ -195,10 +197,10 @@ static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int s
     if (offset > count)
         return 0;
 
-    for (i = offset; i < count; i += 3)
+    for (i = offset; i < count * size; i += size)
     {
 
-        io_outb(VGA_REGISTER_DACWINDEX, i / 3);
+        io_outb(VGA_REGISTER_DACWINDEX, i / size);
         io_outb(VGA_REGISTER_DACDATA, c[i + 0]);
         io_outb(VGA_REGISTER_DACDATA, c[i + 1]);
         io_outb(VGA_REGISTER_DACDATA, c[i + 2]);

@@ -532,7 +532,7 @@ void main()
     settings.bpp = 32;
 
     video_setmode(&settings);
-    video_setcolormap(0, 27, colormap);
+    video_setcolormap(0, 3, 9, colormap);
     mouse_init(&mouse);
     box_setsize(&screen, 0, 0, settings.w, settings.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);

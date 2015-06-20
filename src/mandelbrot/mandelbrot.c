@@ -10,13 +10,19 @@
 void setup(struct ctrl_videosettings *settings)
 {
 
-    unsigned char colormap[256];
+    unsigned char colormap[768];
     unsigned int i;
 
-    for (i = 0; i < 256; i++)
-        colormap[i] = i;
+    for (i = 0; i < 768; i += 3)
+    {
 
-    video_setcolormap(0, 256, colormap);
+        colormap[i + 0] = i;
+        colormap[i + 1] = i;
+        colormap[i + 2] = i;
+
+    }
+
+    video_setcolormap(0, 3, 256, colormap);
 
 }
 
