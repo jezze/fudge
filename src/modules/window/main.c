@@ -21,20 +21,33 @@ static unsigned int ctrl_read(struct system_node *self, unsigned int offset, uns
 {
 
     struct video_interface *interface = findinterface();
-    struct ctrl_videosettings settings;
+    struct ctrl_videosettings *settings = buffer;
 
     if (!interface)
         return 0;
 
-    if (size != sizeof (struct ctrl_videosettings))
-        return 0;
+    if (size == sizeof (struct ctrl_header))
+    {
 
-    settings.header.type = CTRL_TYPE_VIDEO;
-    settings.w = interface->w;
-    settings.h = interface->h / 2;
-    settings.bpp = interface->bpp;
+        settings->header.type = CTRL_TYPE_VIDEO;
 
-    return memory_read(buffer, count, &settings, 1, sizeof (struct ctrl_videosettings), offset);
+        return 1;
+
+    }
+
+    if (size == sizeof (struct ctrl_videosettings))
+    {
+
+        settings->header.type = CTRL_TYPE_VIDEO;
+        settings->w = interface->w;
+        settings->h = interface->h / 2;
+        settings->bpp = interface->bpp;
+
+        return 1;
+
+    }
+
+    return 0;
 
 }
 
@@ -47,10 +60,14 @@ static unsigned int ctrl_write(struct system_node *self, unsigned int offset, un
     if (!interface)
         return 0;
 
-    if (size != sizeof (struct ctrl_videosettings))
-        return 0;
+    if (size == sizeof (struct ctrl_videosettings))
+    {
 
-    interface->setmode(settings);
+        interface->setmode(settings);
+
+        return 1;
+
+    }
 
     return 0;
 

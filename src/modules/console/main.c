@@ -16,15 +16,28 @@ static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned in
 {
 
     struct console_interface *interface = self->resource->data;
-    struct ctrl_consolesettings settings;
+    struct ctrl_consolesettings *settings = buffer;
 
-    if (size != sizeof (struct ctrl_consolesettings))
-        return 0;
+    if (size == sizeof (struct ctrl_header))
+    {
 
-    settings.header.type = CTRL_TYPE_CONSOLE;
-    settings.scroll = interface->scroll;
+        settings->header.type = CTRL_TYPE_CONSOLE;
 
-    return memory_read(buffer, count, &settings, 1, sizeof (struct ctrl_consolesettings), offset);
+        return 1;
+
+    }
+
+    if (size == sizeof (struct ctrl_videosettings))
+    {
+
+        settings->header.type = CTRL_TYPE_CONSOLE;
+        settings->scroll = interface->scroll;
+
+        return 1;
+
+    }
+
+    return 0;
 
 }
 

@@ -113,14 +113,11 @@ void main()
 {
 
     union settings buffer;
-    unsigned int count, roff, woff;
+    unsigned int woff;
 
-    call_open(CALL_P0);
-
-    for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, buffer.raw)); roff += count)
-
-    call_close(CALL_P0);
     call_open(CALL_PO);
+    call_open(CALL_P0);
+    call_read(CALL_P0, 0, sizeof (struct ctrl_header), 1, &buffer.header);
 
     woff = writeheader(0, &buffer.header);
 
@@ -128,17 +125,20 @@ void main()
     {
 
     case CTRL_TYPE_CONSOLE:
+        call_read(CALL_P0, 0, sizeof (struct ctrl_consolesettings), 1, &buffer.consolesettings);
         writeconsolesettings(woff, &buffer.consolesettings);
 
         break;
 
     case CTRL_TYPE_VIDEO:
+        call_read(CALL_P0, 0, sizeof (struct ctrl_videosettings), 1, &buffer.videosettings);
         writevideosettings(woff, &buffer.videosettings);
 
         break;
 
     }
 
+    call_close(CALL_P0);
     call_close(CALL_PO);
 
 }
