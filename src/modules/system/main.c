@@ -7,6 +7,48 @@
 static struct vfs_backend backend;
 static struct vfs_protocol protocol;
 
+static unsigned int node_open(struct system_node *self)
+{
+
+    self->refcount++;
+    self->parent->refcount++;
+
+    return (unsigned int)self;
+
+}
+
+static unsigned int node_openmailboxes(struct system_node *self)
+{
+
+    struct task *task = scheduler_findactive();
+
+    list_add(&self->mailboxes, &task->mailbox.item);
+
+    return node_open(self);
+
+}
+
+static unsigned int node_close(struct system_node *self)
+{
+
+    self->refcount--;
+    self->parent->refcount--;
+
+    return (unsigned int)self;
+
+}
+
+static unsigned int node_closemailboxes(struct system_node *self)
+{
+
+    struct task *task = scheduler_findactive();
+
+    list_remove(&self->mailboxes, &task->mailbox.item);
+
+    return node_close(self);
+
+}
+
 static unsigned int node_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
@@ -157,46 +199,17 @@ static unsigned int node_childgroup(struct system_node *self, unsigned int count
 
 }
 
-static unsigned int node_openmailboxes(struct system_node *self)
-{
-
-    struct task *task = scheduler_findactive();
-
-    list_add(&self->mailboxes, &task->mailbox.item);
-
-    return system_open(self);
-
-}
-
-static unsigned int node_closemailboxes(struct system_node *self)
-{
-
-    struct task *task = scheduler_findactive();
-
-    list_remove(&self->mailboxes, &task->mailbox.item);
-
-    return system_close(self);
-
-}
-
 unsigned int system_open(struct system_node *node)
 {
 
-    node->refcount++;
-    node->parent->refcount++;
-
-    return (unsigned int)node;
+    return node_open(node);
 
 }
-
 
 unsigned int system_close(struct system_node *node)
 {
 
-    node->refcount--;
-    node->parent->refcount--;
-
-    return (unsigned int)node;
+    return node_close(node);
 
 }
 
@@ -267,12 +280,12 @@ void system_initnode(struct system_node *node, unsigned int type, const char *na
     if (type & SYSTEM_NODETYPE_MAILBOX)
         node->open = node_openmailboxes;
     else
-        node->open = system_open;
+        node->open = node_open;
 
     if (type & SYSTEM_NODETYPE_MAILBOX)
         node->close = node_closemailboxes;
     else
-        node->close = system_close;
+        node->close = node_close;
 
     if (type & SYSTEM_NODETYPE_GROUP)
         node->read = node_readgroup;
