@@ -8,7 +8,6 @@
 #include <modules/arch/x86/pci/pci.h>
 #include "registers.h"
 
-#define VGA_TEXT_LIMIT                  2000
 #define VGA_COLORMAP_LIMIT              256
 
 struct vga_character
@@ -30,9 +29,10 @@ static void clear(unsigned int offset)
 {
 
     struct vga_character *memory = taddress;
+    unsigned int total = videointerface.settings.w * videointerface.settings.h;
     unsigned int i;
 
-    for (i = offset; i < VGA_TEXT_LIMIT; i++)
+    for (i = offset; i < total; i++)
     {
 
         memory[i].character = ' ';
@@ -46,8 +46,9 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
 {
 
     struct vga_character *memory = taddress;
+    unsigned int total = videointerface.settings.w * videointerface.settings.h;
     unsigned int linesize = videointerface.settings.w * videointerface.settings.bpp / 8;
-    unsigned int fullsize = videointerface.settings.h * linesize;
+    unsigned int fullsize = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
     unsigned int i;
 
     if (videointerface.settings.w != 80)
@@ -65,10 +66,10 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
             cursor.offset = (cursor.offset + 8) & ~(8 - 1);
 
         if (c == '\r')
-            cursor.offset -= (cursor.offset % 80);
+            cursor.offset -= (cursor.offset % videointerface.settings.w);
 
         if (c == '\n')
-            cursor.offset += 80 - (cursor.offset % 80);
+            cursor.offset += videointerface.settings.w - (cursor.offset % videointerface.settings.w);
 
         if (c >= ' ')
         {
@@ -79,12 +80,13 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
 
         }
 
-        if (cursor.offset >= VGA_TEXT_LIMIT)
+        if (cursor.offset >= total)
         {
 
             memory_read(taddress, fullsize, taddress, fullsize, 1, linesize);
-            clear(80 * 24);
-            cursor.offset -= 80;
+            clear(videointerface.settings.w * (videointerface.settings.h - 1));
+
+            cursor.offset -= videointerface.settings.w;
 
         }
 
