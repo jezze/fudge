@@ -60,14 +60,14 @@ static void notifyremoveinterface(struct ethernet_interface *interface)
 
 }
 
-static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;
@@ -127,8 +127,8 @@ void ethernet_initinterface(struct ethernet_interface *interface, const char *na
 
     interface->send = send;
     interface->ctrl.resource = &interface->resource;
-    interface->ctrl.read = interfacenode_ctrlread;
-    interface->ctrl.write = interfacenode_ctrlwrite;
+    interface->ctrl.read = interfacectrl_read;
+    interface->ctrl.write = interfacectrl_write;
     interface->data.resource = &interface->resource;
 
 }

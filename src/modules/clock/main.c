@@ -19,7 +19,7 @@ static unsigned int isleapyear(unsigned short year)
 
 }
 
-static unsigned int interfacenode_timestampread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacetimestamp_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct clock_interface *interface = self->resource->data;
@@ -38,7 +38,7 @@ static unsigned int interfacenode_timestampread(struct system_node *self, unsign
 
 }
 
-static unsigned int interfacenode_dateread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacedate_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct clock_interface *interface = self->resource->data;
@@ -52,7 +52,7 @@ static unsigned int interfacenode_dateread(struct system_node *self, unsigned in
 
 }
 
-static unsigned int interfacenode_timeread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacetime_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct clock_interface *interface = self->resource->data;
@@ -107,11 +107,11 @@ void clock_initinterface(struct clock_interface *interface, unsigned char (*gets
     interface->getmonth = getmonth;
     interface->getyear = getyear;
     interface->timestamp.resource = &interface->resource;
-    interface->timestamp.read = interfacenode_timestampread;
+    interface->timestamp.read = interfacetimestamp_read;
     interface->date.resource = &interface->resource;
-    interface->date.read = interfacenode_dateread;
+    interface->date.read = interfacedate_read;
     interface->time.resource = &interface->resource;
-    interface->time.read = interfacenode_timeread;
+    interface->time.read = interfacetime_read;
 
 }
 

@@ -12,7 +12,7 @@ void console_notify(struct console_interface *interface, unsigned int size, unsi
 
 }
 
-static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct console_interface *interface = self->resource->data;
@@ -25,14 +25,14 @@ static unsigned int interfacenode_ctrlread(struct system_node *self, unsigned in
 
 }
 
-static unsigned int interfacenode_ctrlwrite(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int interfacenode_outwrite(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfaceout_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct console_interface *interface = self->resource->data;
@@ -76,11 +76,11 @@ void console_initinterface(struct console_interface *interface, unsigned int (*s
 
     interface->send = send;
     interface->ctrl.resource = &interface->resource;
-    interface->ctrl.read = interfacenode_ctrlread;
-    interface->ctrl.write = interfacenode_ctrlwrite;
+    interface->ctrl.read = interfacectrl_read;
+    interface->ctrl.write = interfacectrl_write;
     interface->in.resource = &interface->resource;
     interface->out.resource = &interface->resource;
-    interface->out.write = interfacenode_outwrite;
+    interface->out.write = interfaceout_write;
 
 }
 

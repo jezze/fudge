@@ -7,14 +7,14 @@
 static struct vfs_backend backend;
 static struct vfs_protocol protocol;
 
-static unsigned int read_normal(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int node_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int read_group(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int node_readgroup(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct list_item *current;
@@ -62,21 +62,21 @@ static unsigned int read_group(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int read_mailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int node_readmailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return scheduler_rmessage(scheduler_findactive(), size, count, buffer);
 
 }
 
-static unsigned int write_normal(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int node_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int write_mailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int node_writemailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct list_item *current;
@@ -94,7 +94,7 @@ static unsigned int write_mailboxes(struct system_node *self, unsigned int offse
 
 }
 
-static unsigned int child_normal(struct system_node *self, unsigned int count, const char *path)
+static unsigned int node_child(struct system_node *self, unsigned int count, const char *path)
 {
 
     if (!count)
@@ -104,7 +104,7 @@ static unsigned int child_normal(struct system_node *self, unsigned int count, c
 
 }
 
-static unsigned int child_group(struct system_node *self, unsigned int count, const char *path)
+static unsigned int node_childgroup(struct system_node *self, unsigned int count, const char *path)
 {
 
     struct list_item *current;
@@ -157,7 +157,7 @@ static unsigned int child_group(struct system_node *self, unsigned int count, co
 
 }
 
-static unsigned int open_mailboxes(struct system_node *self)
+static unsigned int node_openmailboxes(struct system_node *self)
 {
 
     struct task *task = scheduler_findactive();
@@ -168,7 +168,7 @@ static unsigned int open_mailboxes(struct system_node *self)
 
 }
 
-static unsigned int close_mailboxes(struct system_node *self)
+static unsigned int node_closemailboxes(struct system_node *self)
 {
 
     struct task *task = scheduler_findactive();
@@ -265,31 +265,31 @@ void system_initnode(struct system_node *node, unsigned int type, const char *na
     node->name = name;
 
     if (type & SYSTEM_NODETYPE_MAILBOX)
-        node->open = open_mailboxes;
+        node->open = node_openmailboxes;
     else
         node->open = system_open;
 
     if (type & SYSTEM_NODETYPE_MAILBOX)
-        node->close = close_mailboxes;
+        node->close = node_closemailboxes;
     else
         node->close = system_close;
 
     if (type & SYSTEM_NODETYPE_GROUP)
-        node->read = read_group;
+        node->read = node_readgroup;
     else if (type & SYSTEM_NODETYPE_MAILBOX)
-        node->read = read_mailboxes;
+        node->read = node_readmailboxes;
     else
-        node->read = read_normal;
+        node->read = node_read;
 
     if (type & SYSTEM_NODETYPE_MAILBOX)
-        node->write = write_mailboxes;
+        node->write = node_writemailboxes;
     else
-        node->write = write_normal;
+        node->write = node_write;
 
     if (type & SYSTEM_NODETYPE_GROUP)
-        node->child = child_group;
+        node->child = node_childgroup;
     else
-        node->child = child_normal;
+        node->child = node_child;
 
 }
 

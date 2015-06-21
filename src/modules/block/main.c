@@ -14,7 +14,7 @@ void block_notify(struct block_interface *interface, unsigned int size, unsigned
 
 }
 
-static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacedata_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct block_interface *interface = self->resource->data;
@@ -64,7 +64,7 @@ void block_initinterface(struct block_interface *interface, unsigned int (*rdata
     interface->rdata = rdata;
     interface->wdata = wdata;
     interface->data.resource = &interface->resource;
-    interface->data.read = interfacenode_dataread;
+    interface->data.read = interfacedata_read;
 
 }
 

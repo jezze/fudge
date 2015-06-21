@@ -3,7 +3,7 @@
 #include <modules/system/system.h>
 #include "audio.h"
 
-static unsigned int interfacenode_dataread(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacedata_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct audio_interface *interface = self->resource->data;
@@ -12,7 +12,7 @@ static unsigned int interfacenode_dataread(struct system_node *self, unsigned in
 
 }
 
-static unsigned int interfacenode_datawrite(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacedata_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
     struct audio_interface *interface = self->resource->data;
@@ -51,8 +51,8 @@ void audio_initinterface(struct audio_interface *interface, unsigned int (*rdata
     interface->rdata = rdata;
     interface->wdata = wdata;
     interface->data.resource = &interface->resource;
-    interface->data.read = interfacenode_dataread;
-    interface->data.write = interfacenode_datawrite;
+    interface->data.read = interfacedata_read;
+    interface->data.write = interfacedata_write;
 
 }
 
