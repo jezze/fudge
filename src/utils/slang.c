@@ -101,6 +101,36 @@ static unsigned int precedence(struct token *token)
 
 }
 
+static unsigned int tokenize(char c)
+{
+
+    switch (c)
+    {
+
+    case ' ':
+    case '\t':
+        return 0;
+
+    case '<':
+        return TOKENIN;
+
+    case '>':
+        return TOKENOUT;
+
+    case '|':
+        return TOKENPIPE;
+
+    case ';':
+    case '\n':
+        return TOKENEND;
+
+    default:
+        return TOKENIDENT;
+
+    }
+
+}
+
 static unsigned int tokenizeident(struct tokenlist *infix, struct buffer *stringtable, unsigned int count, char *buffer)
 {
 
@@ -111,13 +141,12 @@ static unsigned int tokenizeident(struct tokenlist *infix, struct buffer *string
     for (i = 0; i < count; i++)
     {
 
-        char c = buffer[i];
+        unsigned int token = tokenize(buffer[i]);
 
-        if (c == ' ' || c == '\t' || c == '<' || c == '>' || c == '|' || c == ';' || c == '\n')
+        if (token != TOKENIDENT)
             break;
 
-        buffer_wcfifo(stringtable, 1, 1, &c);
-
+        buffer_wcfifo(stringtable, 1, 1, &buffer[i]);
 
     }
 
@@ -127,7 +156,7 @@ static unsigned int tokenizeident(struct tokenlist *infix, struct buffer *string
 
 }
 
-static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsigned int count, char *buffer)
+static void tokenizebuffer(struct tokenlist *infix, struct buffer *stringtable, unsigned int count, char *buffer)
 {
 
     unsigned int i;
@@ -135,40 +164,15 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
     for (i = 0; i < count; i++)
     {
 
-        switch (buffer[i])
-        {
+        unsigned int token = tokenize(buffer[i]);
 
-        case ' ':
-        case '\t':
+        if (!token)
             continue;
 
-        case '<':
-            tokenlist_add(infix, TOKENIN, 0);
-
-            break;
-
-        case '>':
-            tokenlist_add(infix, TOKENOUT, 0);
-
-            break;
-
-        case '|':
-            tokenlist_add(infix, TOKENPIPE, 0);
-
-            break;
-
-        case ';':
-        case '\n':
-            tokenlist_add(infix, TOKENEND, 0);
-
-            break;
-
-        default:
+        if (token == TOKENIDENT)
             i += tokenizeident(infix, stringtable, count - i, buffer + i);
-
-            break;
-
-        }
+        else
+            tokenlist_add(infix, token, 0);
 
     }
 
@@ -334,7 +338,7 @@ void main()
     call_open(CALL_P0);
 
     for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
-        tokenize(&infix, &stringtable, count, buffer);
+        tokenizebuffer(&infix, &stringtable, count, buffer);
 
     call_close(CALL_P0);
 
