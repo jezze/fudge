@@ -48,9 +48,13 @@ static unsigned int sendpipe(struct task *task, unsigned int size, unsigned int 
 static unsigned int endpoint0_open(struct system_node *self)
 {
 
-    t0 = openpipe();
+    if (!t0)
+        t0 = openpipe();
 
-    return system_open(self);
+    self->refcount++;
+    self->parent->refcount++;
+
+    return (unsigned int)self;
 
 }
 
@@ -59,8 +63,10 @@ static unsigned int endpoint0_close(struct system_node *self)
 
     t0 = closepipe(t0);
     t1 = closepipe(t1);
+    self->refcount--;
+    self->parent->refcount--;
 
-    return system_close(self);
+    return (unsigned int)self;
 
 }
 
@@ -81,9 +87,13 @@ static unsigned int endpoint0_write(struct system_node *self, unsigned int offse
 static unsigned int endpoint1_open(struct system_node *self)
 {
 
-    t1 = openpipe();
+    if (!t1)
+        t1 = openpipe();
 
-    return system_open(self);
+    self->refcount++;
+    self->parent->refcount++;
+
+    return (unsigned int)self;
 
 }
 
@@ -92,8 +102,10 @@ static unsigned int endpoint1_close(struct system_node *self)
 
     t1 = closepipe(t1);
     t0 = closepipe(t0);
+    self->refcount--;
+    self->parent->refcount--;
 
-    return system_close(self);
+    return (unsigned int)self;
 
 }
 

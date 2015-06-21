@@ -202,14 +202,14 @@ static unsigned int node_childgroup(struct system_node *self, unsigned int count
 unsigned int system_open(struct system_node *node)
 {
 
-    return node_open(node);
+    return node->open(node);
 
 }
 
 unsigned int system_close(struct system_node *node)
 {
 
-    return node_close(node);
+    return node->close(node);
 
 }
 
