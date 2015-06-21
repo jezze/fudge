@@ -101,21 +101,46 @@ static unsigned int precedence(struct token *token)
 
 }
 
-static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsigned int count, char *buffer)
+static unsigned int tokenizeident(struct tokenlist *infix, struct buffer *stringtable, unsigned int count, char *buffer)
 {
 
     unsigned int i;
-    unsigned int identquote = 0;
-    unsigned int identcount = 0;
+
+    tokenlist_add(infix, TOKENIDENT, (char *)stringtable->memory + stringtable->head);
 
     for (i = 0; i < count; i++)
     {
 
         char c = buffer[i];
-        unsigned int ident = 0;
 
-        switch (c)
+        if (c == ' ' || c == '\t' || c == '<' || c == '>' || c == '|' || c == ';' || c == '\n')
+            break;
+
+        buffer_wcfifo(stringtable, 1, 1, &c);
+
+
+    }
+
+    buffer_wcfifo(stringtable, 1, 1, "\0");
+
+    return i - 1;
+
+}
+
+static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsigned int count, char *buffer)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        switch (buffer[i])
         {
+
+        case ' ':
+        case '\t':
+            continue;
 
         case '<':
             tokenlist_add(infix, TOKENIN, 0);
@@ -139,43 +164,9 @@ static void tokenize(struct tokenlist *infix, struct buffer *stringtable, unsign
             break;
 
         default:
-            ident = 1;
+            i += tokenizeident(infix, stringtable, count - i, buffer + i);
 
             break;
-
-        }
-
-        if (c == '"')
-            identquote = !identquote;
-
-        if (!identquote && (c == ' ' || c == '\t'))
-            continue;
-
-        if (ident)
-        {
-
-            if (!identcount)
-                tokenlist_add(infix, TOKENIDENT, (char *)stringtable->memory + stringtable->head);
-
-            buffer_wcfifo(stringtable, 1, 1, &c);
-
-            identcount++;
-
-        }
-
-        else
-        {
-
-            if (identcount)
-            {
-
-                c = '\0';
-
-                buffer_wcfifo(stringtable, 1, 1, &c);
-
-                identcount = 0;
-
-            }
 
         }
 
