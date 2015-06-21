@@ -262,25 +262,8 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (ascii_length(t->str) >= 2 && t->str[0] == '"')
-            {
-
-                if (!call_walk(CALL_L1, CALL_PR, 12, "system/pipe/"))
-                    return;
-
-                call_walk(CALL_L2, CALL_L1, 1, "0");
-                call_walk(CALL_C0, CALL_L1, 1, "1");
-                call_write(CALL_L2, 0, ascii_length(t->str) - 2, 1, t->str + 1);
-
-            }
-
-            else
-            {
-
-                if (!walk_path(CALL_C0, CALL_PW, ascii_length(t->str), t->str))
-                    return;
-
-            }
+            if (!walk_path(CALL_C0, CALL_PW, ascii_length(t->str), t->str))
+                return;
 
             break;
 
