@@ -69,7 +69,7 @@ unsigned int memory_read(void *out, unsigned int ocount, const void *in, unsigne
     if (ocount > icount - offset)
         ocount = icount - offset;
 
-    ip += offset;
+    ip += offset * size;
 
     for (offset = ocount; offset; offset--)
         *op++ = *ip++;
@@ -93,7 +93,7 @@ unsigned int memory_write(void *out, unsigned int ocount, const void *in, unsign
     if (icount > ocount - offset)
         icount = ocount - offset;
 
-    op += offset;
+    op += offset * size;
 
     for (offset = icount; offset; offset--)
         *op++ = *ip++;

@@ -22,21 +22,20 @@ static struct base_driver driver;
 static struct console_interface consoleinterface;
 static struct video_interface videointerface;
 static struct {unsigned char color; unsigned short offset;} cursor;
-static void *taddress;
+static struct vga_character *taddress;
 static void *gaddress;
 
 static void clear(unsigned int offset)
 {
 
-    struct vga_character *memory = taddress;
     unsigned int total = videointerface.settings.w * videointerface.settings.h;
     unsigned int i;
 
     for (i = offset; i < total; i++)
     {
 
-        memory[i].character = ' ';
-        memory[i].color = cursor.color;
+        taddress[i].character = ' ';
+        taddress[i].color = cursor.color;
 
     }
 
@@ -45,10 +44,7 @@ static void clear(unsigned int offset)
 static unsigned int consoleinterface_wout(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct vga_character *memory = taddress;
     unsigned int total = videointerface.settings.w * videointerface.settings.h;
-    unsigned int linesize = videointerface.settings.w * videointerface.settings.bpp / 8;
-    unsigned int fullsize = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
     unsigned int i;
 
     if (videointerface.settings.w != 80)
@@ -74,8 +70,8 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
         if (c >= ' ')
         {
 
-            memory[cursor.offset].character = c;
-            memory[cursor.offset].color = cursor.color;
+            taddress[cursor.offset].character = c;
+            taddress[cursor.offset].color = cursor.color;
             cursor.offset++;
 
         }
@@ -83,7 +79,7 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
         if (cursor.offset >= total)
         {
 
-            memory_read(taddress, fullsize, taddress, fullsize, 1, linesize);
+            memory_read(taddress, videointerface.settings.w * videointerface.settings.h, taddress, videointerface.settings.w * videointerface.settings.h, sizeof (struct vga_character), videointerface.settings.w);
             clear(videointerface.settings.w * (videointerface.settings.h - 1));
 
             cursor.offset -= videointerface.settings.w;
@@ -205,7 +201,7 @@ static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int s
 static void driver_init()
 {
 
-    taddress = (void *)0x000B8000;
+    taddress = (struct vga_character *)0x000B8000;
     gaddress = (void *)0x000A0000;
     cursor.color = 0x0F;
 
