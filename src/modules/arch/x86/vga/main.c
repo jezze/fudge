@@ -46,8 +46,7 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
 {
 
     struct vga_character *memory = taddress;
-    unsigned int bytespp = videointerface.settings.bpp / 8;
-    unsigned int linesize = videointerface.settings.w * bytespp;
+    unsigned int linesize = videointerface.settings.w * videointerface.settings.bpp / 8;
     unsigned int fullsize = videointerface.settings.h * linesize;
     unsigned int i;
 
@@ -128,22 +127,18 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 static unsigned int videointerface_rdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    unsigned int bytespp = videointerface.settings.bpp / 8;
-    unsigned int linesize = videointerface.settings.w * bytespp;
-    unsigned int fullsize = videointerface.settings.h * linesize;
+    unsigned int s = videointerface.settings.h * videointerface.settings.w * videointerface.settings.bpp / 8;
 
-    return memory_read(buffer, count, gaddress, fullsize, size, offset);
+    return memory_read(buffer, count, gaddress, s, 1, offset);
 
 }
 
 static unsigned int videointerface_wdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    unsigned int bytespp = videointerface.settings.bpp / 8;
-    unsigned int linesize = videointerface.settings.w * bytespp;
-    unsigned int fullsize = videointerface.settings.h * linesize;
+    unsigned int s = videointerface.settings.h * videointerface.settings.w * videointerface.settings.bpp / 8;
 
-    return memory_write(gaddress, fullsize, buffer, count, size, offset);
+    return memory_write(gaddress, s, buffer, count, 1, offset);
 
 }
 

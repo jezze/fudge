@@ -46,7 +46,6 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 {
 
     ctrl_setvideosettings(&videointerface.settings, settings->w, settings->h, settings->bpp);
-
     setreg(COMMANDENABLE, 0x00);
     setreg(COMMANDXRES, videointerface.settings.w);
     setreg(COMMANDYRES, videointerface.settings.h);
@@ -60,7 +59,7 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int size,
 
     unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
 
-    return memory_read(buffer, count, lfb, s, size, offset);
+    return memory_read(buffer, count, lfb, s, 1, offset);
 
 }
 
@@ -69,7 +68,7 @@ static unsigned int videointerface_wdata(unsigned int offset, unsigned int size,
 
     unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
 
-    return memory_write(lfb, s, buffer, count, size, offset);
+    return memory_write(lfb, s, buffer, count, 1, offset);
 
 }
 
