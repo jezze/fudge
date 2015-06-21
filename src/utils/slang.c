@@ -131,12 +131,10 @@ static unsigned int tokenize(char c)
 
 }
 
-static unsigned int tokenizeident(struct tokenlist *infix, struct buffer *stringtable, unsigned int count, char *buffer)
+static unsigned int getidentlength(unsigned int count, char *buffer)
 {
 
     unsigned int i;
-
-    tokenlist_add(infix, TOKENIDENT, (char *)stringtable->memory + stringtable->head);
 
     for (i = 0; i < count; i++)
     {
@@ -146,13 +144,9 @@ static unsigned int tokenizeident(struct tokenlist *infix, struct buffer *string
         if (token != TOKENIDENT)
             break;
 
-        buffer_wcfifo(stringtable, 1, 1, &buffer[i]);
-
     }
 
-    buffer_wcfifo(stringtable, 1, 1, "\0");
-
-    return i - 1;
+    return i;
 
 }
 
@@ -170,9 +164,27 @@ static void tokenizebuffer(struct tokenlist *infix, struct buffer *stringtable, 
             continue;
 
         if (token == TOKENIDENT)
-            i += tokenizeident(infix, stringtable, count - i, buffer + i);
+        {
+
+            unsigned int c;
+
+            tokenlist_add(infix, token, (char *)stringtable->memory + stringtable->head);
+
+            c = getidentlength(count - i, buffer + i);
+
+            buffer_wcfifo(stringtable, 1, c, &buffer[i]);
+            buffer_wcfifo(stringtable, 1, 1, "\0");
+
+            i += c - 1;
+
+        }
+
         else
+        {
+
             tokenlist_add(infix, token, 0);
+
+        }
 
     }
 
