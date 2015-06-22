@@ -8,10 +8,13 @@ static struct task *t1;
 static struct system_node endpoint0;
 static struct system_node endpoint1;
 
-static struct task *openpipe()
+static struct task *openpipe(struct task *task)
 {
 
-    return scheduler_findactive();
+    if (task)
+        return task;
+    else
+        return scheduler_findactive();
 
 }
 
@@ -35,7 +38,7 @@ static unsigned int readpipe(struct task *task, unsigned int size, unsigned int 
 
 }
 
-static unsigned int sendpipe(struct task *task, unsigned int size, unsigned int count, void *buffer)
+static unsigned int writepipe(struct task *task, unsigned int size, unsigned int count, void *buffer)
 {
 
     if (task)
@@ -48,9 +51,7 @@ static unsigned int sendpipe(struct task *task, unsigned int size, unsigned int 
 static unsigned int endpoint0_open(struct system_node *self)
 {
 
-    if (!t0)
-        t0 = openpipe();
-
+    t0 = openpipe(t0);
     self->refcount++;
     self->parent->refcount++;
 
@@ -80,16 +81,14 @@ static unsigned int endpoint0_read(struct system_node *self, unsigned int offset
 static unsigned int endpoint0_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return sendpipe(t1, size, count, buffer);
+    return writepipe(t1, size, count, buffer);
 
 }
 
 static unsigned int endpoint1_open(struct system_node *self)
 {
 
-    if (!t1)
-        t1 = openpipe();
-
+    t1 = openpipe(t1);
     self->refcount++;
     self->parent->refcount++;
 
@@ -119,7 +118,7 @@ static unsigned int endpoint1_read(struct system_node *self, unsigned int offset
 static unsigned int endpoint1_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return sendpipe(t0, size, count, buffer);
+    return writepipe(t0, size, count, buffer);
 
 }
 
