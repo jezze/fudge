@@ -127,7 +127,7 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int size,
 
     unsigned int s = videointerface.settings.h * videointerface.settings.w * videointerface.settings.bpp / 8;
 
-    return memory_read(buffer, count, gaddress, s, size, offset);
+    return memory_read(buffer, count, gaddress, s, 1, offset);
 
 }
 
@@ -136,7 +136,7 @@ static unsigned int videointerface_wdata(unsigned int offset, unsigned int size,
 
     unsigned int s = videointerface.settings.h * videointerface.settings.w * videointerface.settings.bpp / 8;
 
-    return memory_write(gaddress, s, buffer, count, size, offset);
+    return memory_write(gaddress, s, buffer, count, 1, offset);
 
 }
 
