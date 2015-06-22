@@ -59,7 +59,7 @@ void mouse_handle(struct mouse *mouse, unsigned char value)
 
 }
 
-void mouse_draw(struct mouse *mouse, unsigned int line)
+void mouse_draw(struct mouse *mouse, struct ctrl_videosettings *settings, unsigned int line)
 {
 
     unsigned int i;
@@ -74,7 +74,7 @@ void mouse_draw(struct mouse *mouse, unsigned int line)
     {
 
         if (pointer[off + i] != 0xFF)
-            fill(pointer[off + i], mouse->size.x + i, 1);
+            fill(settings, pointer[off + i], mouse->size.x + i, 1);
 
     }
 

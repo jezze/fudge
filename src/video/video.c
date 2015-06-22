@@ -2,6 +2,16 @@
 #include <fudge.h>
 #include "video.h"
 
+void video_getmode(struct ctrl_videosettings *settings)
+{
+
+    call_walk(CALL_L0, CALL_PR, 19, "system/video:0/ctrl");
+    call_open(CALL_L0);
+    call_read(CALL_L0, 0, sizeof (struct ctrl_videosettings), 1, settings);
+    call_close(CALL_L0);
+
+}
+
 void video_setmode(struct ctrl_videosettings *settings)
 {
 

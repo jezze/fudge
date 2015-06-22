@@ -6,5 +6,5 @@ struct panel
 
 };
 
-void panel_draw(struct panel *panel, unsigned int line);
+void panel_draw(struct panel *panel, struct ctrl_videosettings *settings, unsigned int line);
 void panel_init(struct panel *panel);

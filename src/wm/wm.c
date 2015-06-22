@@ -11,7 +11,6 @@
 #define WINDOWS                         64
 #define VIEWS                           8
 
-static struct ctrl_videosettings settings;
 static struct box screen;
 static struct box menu;
 static struct box desktop;
@@ -47,10 +46,10 @@ static unsigned int colormap4[] = {
     0xF898B8
 };
 
-static void flush(unsigned int line, unsigned int offset, unsigned int count)
+static void flush(struct ctrl_videosettings *settings, unsigned int line, unsigned int offset, unsigned int count)
 {
 
-    unsigned int bpp = settings.bpp / 8;
+    unsigned int bpp = settings->bpp / 8;
 
     video_draw(line * bpp + offset * bpp, count * bpp, backbuffer + offset * bpp);
 
@@ -78,10 +77,10 @@ static void fill32(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-void fill(unsigned int color, unsigned int offset, unsigned int count)
+void fill(struct ctrl_videosettings *settings, unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    switch (settings.bpp)
+    switch (settings->bpp)
     {
 
     case 8:
@@ -98,17 +97,17 @@ void fill(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static void drawdesktop(unsigned int line)
+static void drawdesktop(struct ctrl_videosettings *settings, unsigned int line)
 {
 
     if (line < desktop.y || line >= desktop.y + desktop.h)
         return;
 
-    fill(WM_COLOR_BODY, desktop.x, desktop.w);
+    fill(settings, WM_COLOR_BODY, desktop.x, desktop.w);
 
 }
 
-static void drawviews(struct list *views, unsigned int line)
+static void drawviews(struct list *views, struct ctrl_videosettings *settings, unsigned int line)
 {
 
     struct list_item *current;
@@ -118,13 +117,13 @@ static void drawviews(struct list *views, unsigned int line)
 
         struct view *view = current->data;
 
-        view_draw(view, line);
+        view_draw(view, settings, line);
 
     }
 
 }
 
-static void draw(struct box *bb)
+static void draw(struct ctrl_videosettings *settings, struct box *bb)
 {
 
     unsigned int line;
@@ -134,11 +133,11 @@ static void draw(struct box *bb)
     for (line = bb->y; line < bb->y + bb->h; line++)
     {
 
-        drawdesktop(line);
-        panel_draw(&title, line);
-        drawviews(&views, line);
-        mouse_draw(&mouse, line);
-        flush(screen.w * line, bb->x, bb->w);
+        drawdesktop(settings, line);
+        panel_draw(&title, settings, line);
+        drawviews(&views, settings, line);
+        mouse_draw(&mouse, settings, line);
+        flush(settings, screen.w * line, bb->x, bb->w);
 
     }
 
@@ -306,7 +305,7 @@ static unsigned int event_next(void *buffer)
 
 }
 
-static void pollevent()
+static void pollevent(struct ctrl_videosettings *settings)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
@@ -316,7 +315,7 @@ static void pollevent()
 
     activateview(viewactive);
     box_setsize(&old, mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
-    draw(&screen);
+    draw(settings, &screen);
 
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
@@ -346,7 +345,7 @@ static void pollevent()
 
                     activateview(viewactive);
                     arrangewindows(viewactive);
-                    draw(&screen);
+                    draw(settings, &screen);
 
                 }
 
@@ -355,7 +354,7 @@ static void pollevent()
 
                     unmapwindow(viewactive);
                     arrangewindows(viewactive);
-                    draw(&desktop);
+                    draw(settings, &desktop);
 
                 }
 
@@ -372,7 +371,7 @@ static void pollevent()
                     viewactive->center -= (desktop.w / 32);
 
                     arrangewindows(viewactive);
-                    draw(&desktop);
+                    draw(settings, &desktop);
 
                 }
 
@@ -380,7 +379,7 @@ static void pollevent()
                 {
 
                     nextwindow(viewactive);
-                    draw(&desktop);
+                    draw(settings, &desktop);
 
                 }
 
@@ -388,7 +387,7 @@ static void pollevent()
                 {
 
                     prevwindow(viewactive);
-                    draw(&desktop);
+                    draw(settings, &desktop);
 
                 }
 
@@ -398,7 +397,7 @@ static void pollevent()
                     viewactive->center += (desktop.w / 32);
 
                     arrangewindows(viewactive);
-                    draw(&desktop);
+                    draw(settings, &desktop);
 
                 }
 
@@ -455,8 +454,8 @@ static void pollevent()
 
                         }
 
-                        draw(&mouse.size);
-                        draw(&old);
+                        draw(settings, &mouse.size);
+                        draw(settings, &old);
 
                         old.x = mouse.size.x;
                         old.y = mouse.size.y;
@@ -470,7 +469,7 @@ static void pollevent()
             case 1000:
                 mapwindow(viewactive, header->source);
                 arrangewindows(viewactive);
-                draw(&desktop);
+                draw(settings, &desktop);
 
                 break;
 
@@ -526,11 +525,15 @@ static void setupviews()
 void main()
 {
 
-    ctrl_setvideosettings(&settings, 1024, 768, 32);
-    video_setmode(&settings);
+    struct ctrl_videosettings oldsettings;
+    struct ctrl_videosettings newsettings;
+
+    ctrl_setvideosettings(&newsettings, 1024, 768, 32);
+    video_getmode(&oldsettings);
+    video_setmode(&newsettings);
     video_setcolormap(0, 3, 9, colormap);
     mouse_init(&mouse);
-    box_setsize(&screen, 0, 0, settings.w, settings.h);
+    box_setsize(&screen, 0, 0, newsettings.w, newsettings.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
     box_setsize(&desktop, screen.x, screen.y + BOXSIZE, screen.w, screen.h - BOXSIZE);
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, mouse.size.w, mouse.size.h);
@@ -538,9 +541,8 @@ void main()
     box_setsize(&title.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
     setupwindows();
     setupviews();
-    pollevent();
-    ctrl_setvideosettings(&settings, 80, 25, 16);
-    video_setmode(&settings);
+    pollevent(&newsettings);
+    video_setmode(&oldsettings);
 
 }
 

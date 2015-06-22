@@ -10,5 +10,5 @@ struct mouse
 };
 
 void mouse_handle(struct mouse *mouse, unsigned char value);
-void mouse_draw(struct mouse *mouse, unsigned int line);
+void mouse_draw(struct mouse *mouse, struct ctrl_videosettings *settings, unsigned int line);
 void mouse_init(struct mouse *mouse);

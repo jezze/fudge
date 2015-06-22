@@ -6,7 +6,7 @@
 #include "window.h"
 #include "view.h"
 
-static void drawwindows(struct list *windows, unsigned int line)
+static void drawwindows(struct list *windows, struct ctrl_videosettings *settings, unsigned int line)
 {
 
     struct list_item *current;
@@ -16,21 +16,21 @@ static void drawwindows(struct list *windows, unsigned int line)
 
         struct window *window = current->data;
 
-        window_draw(window, line);
+        window_draw(window, settings, line);
 
     }
 
 }
 
-void view_draw(struct view *view, unsigned int line)
+void view_draw(struct view *view, struct ctrl_videosettings *settings, unsigned int line)
 {
 
-    panel_draw(&view->panel, line);
+    panel_draw(&view->panel, settings, line);
 
     if (!view->active)
         return;
 
-    drawwindows(&view->windows, line);
+    drawwindows(&view->windows, settings, line);
 
 }
 

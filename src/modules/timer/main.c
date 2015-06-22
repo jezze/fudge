@@ -17,6 +17,8 @@ void timer_registerinterface(struct timer_interface *interface, unsigned int id)
     system_addchild(&interface->root, &interface->sleep);
     system_registernode(&interface->root);
 
+    interface->id = id;
+
 }
 
 void timer_unregisterinterface(struct timer_interface *interface)

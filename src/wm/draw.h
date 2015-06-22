@@ -9,4 +9,4 @@
 #define WM_COLOR_POINTERBACK            0x07
 #define WM_COLOR_POINTERFRAME           0x08
 
-void fill(unsigned int color, unsigned int offset, unsigned int count);
+void fill(struct ctrl_videosettings *settings, unsigned int color, unsigned int offset, unsigned int count);
