@@ -51,7 +51,10 @@ void video_close()
 void video_draw(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    call_write(CALL_L0, offset, 1, count, buffer);
+    unsigned int woff;
+    unsigned int wcount;
+
+    for (woff = 0; (wcount = call_write(CALL_L0, offset + woff, 1, count - woff, buffer)); woff += wcount);
 
 }
 
