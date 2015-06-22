@@ -1,11 +1,12 @@
 #include <abi.h>
 #include <fudge.h>
 
-#define TOKENEND                        1
-#define TOKENIDENT                      2
-#define TOKENIN                         3
-#define TOKENOUT                        4
-#define TOKENPIPE                       5
+#define TOKENSKIP                       1
+#define TOKENEND                        2
+#define TOKENIDENT                      3
+#define TOKENIN                         4
+#define TOKENOUT                        5
+#define TOKENPIPE                       6
 
 static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned int count, char *buffer)
 {
@@ -37,8 +38,7 @@ struct tokenlist
 static void tokenlist_init(struct tokenlist *list, unsigned int size, struct token *table)
 {
 
-    memory_clear(list, sizeof (struct tokenlist));
-
+    list->head = 0;
     list->size = size;
     list->table = table;
 
@@ -86,14 +86,14 @@ static unsigned int precedence(struct token *token)
     {
 
     case TOKENEND:
-        return 0;
+        return 1;
 
     case TOKENPIPE:
-        return 1;
+        return 2;
 
     case TOKENIN:
     case TOKENOUT:
-        return 2;
+        return 3;
 
     }
 
@@ -109,7 +109,7 @@ static unsigned int tokenize(char c)
 
     case ' ':
     case '\t':
-        return 0;
+        return TOKENSKIP;
 
     case '<':
         return TOKENIN;
@@ -124,10 +124,9 @@ static unsigned int tokenize(char c)
     case '\n':
         return TOKENEND;
 
-    default:
-        return TOKENIDENT;
-
     }
+
+    return TOKENIDENT;
 
 }
 
@@ -160,7 +159,7 @@ static void tokenizebuffer(struct tokenlist *infix, struct buffer *stringtable, 
 
         unsigned int token = tokenize(buffer[i]);
 
-        if (!token)
+        if (token == TOKENSKIP)
             continue;
 
         if (token == TOKENIDENT)
