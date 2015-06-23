@@ -17,8 +17,8 @@ void event_notify(unsigned int type, unsigned int size, unsigned int count, void
     header.type = type;
     header.count = count;
 
-    poll.write(&poll, 0, 1, sizeof (struct event_header), &header);
-    poll.write(&poll, 0, size, count, buffer);
+    system_write(&poll, 0, 1, sizeof (struct event_header), &header);
+    system_write(&poll, 0, size, count, buffer);
 
 }
 
