@@ -82,6 +82,7 @@ static struct arch_task
 {
 
     struct task base;
+    struct cpu_general general;
     struct mmu_directory *directory;
     struct mmu_table *table;
     unsigned int mapping[TASKTABLECOUNT];
@@ -136,6 +137,24 @@ static void taskactivate(struct task *task)
 
 }
 
+static void tasksave(struct task *task, struct cpu_general *general)
+{
+
+    struct arch_task *atask = (struct arch_task *)task;
+
+    memory_copy(&atask->general, general, sizeof (struct cpu_general));
+
+}
+
+static void taskload(struct task *task, struct cpu_general *general)
+{
+
+    struct arch_task *atask = (struct arch_task *)task;
+
+    memory_copy(general, &atask->general, sizeof (struct cpu_general));
+
+}
+
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
@@ -179,7 +198,7 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
-unsigned short arch_schedule(struct cpu_interrupt *interrupt)
+unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
     if (current.task)
@@ -187,6 +206,8 @@ unsigned short arch_schedule(struct cpu_interrupt *interrupt)
 
         current.task->state.registers.ip = interrupt->eip;
         current.task->state.registers.sp = interrupt->esp;
+
+        tasksave(current.task, general);
 
     }
 
@@ -200,6 +221,7 @@ unsigned short arch_schedule(struct cpu_interrupt *interrupt)
         interrupt->eip = current.task->state.registers.ip;
         interrupt->esp = current.task->state.registers.sp;
 
+        taskload(current.task, general);
         taskactivate(current.task);
 
     }
@@ -223,7 +245,7 @@ unsigned short arch_generalfault(void *stack)
 
     struct {struct cpu_general general; unsigned int selector; struct cpu_interrupt interrupt;} *registers = stack;
 
-    return arch_schedule(&registers->interrupt);
+    return arch_schedule(&registers->general, &registers->interrupt);
 
 }
 
@@ -243,7 +265,7 @@ unsigned short arch_pagefault(void *stack)
 
     }
 
-    return arch_schedule(&registers->interrupt);
+    return arch_schedule(&registers->general, &registers->interrupt);
 
 }
 
@@ -252,9 +274,9 @@ unsigned short arch_syscall(void *stack)
 
     struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
 
-    registers->general.eax = kernel_call(registers->general.eax, current.container, current.task, (void *)(registers->interrupt.esp));
+    registers->general.eax = kernel_call(registers->general.eax, current.container, current.task, (void *)registers->interrupt.esp);
 
-    return arch_schedule(&registers->interrupt);
+    return arch_schedule(&registers->general, &registers->interrupt);
 
 }
 
@@ -311,9 +333,12 @@ static void arch_complete()
 
     struct cpu_interrupt interrupt;
 
+    interrupt.cs = selector.ucode;
+    interrupt.ss = selector.udata;
+    interrupt.eip = current.task->state.registers.ip;
+    interrupt.esp = current.task->state.registers.sp;
     interrupt.eflags = cpu_geteflags() | 0x200;
 
-    arch_schedule(&interrupt);
     cpu_leave(interrupt);
 
 }
@@ -356,6 +381,7 @@ void arch_setup(struct vfs_backend *backend)
     mmu_setup();
 
     current.container = container;
+    current.task = task;
 
     arch_complete();
 
