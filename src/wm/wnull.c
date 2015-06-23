@@ -1,15 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
 
-static unsigned int event_next(void *buffer)
-{
-
-    struct event_header *header = buffer;
-
-    return header->count + sizeof (struct event_header);
-
-}
-
 static void sendevent(unsigned int destination, unsigned int type)
 {
 
@@ -29,35 +20,32 @@ static void sendevent(unsigned int destination, unsigned int type)
 static void pollevent()
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff;
-    unsigned int running = 1;
+    struct event_header header;
+    unsigned int count, roff, quit = 0;
 
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
 
-    for (roff = 0; running && (count = call_read(CALL_L1, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
+    for (roff = 0; (count = call_read(CALL_L1, roff, sizeof (struct event_header), 1, &header)); roff += count)
     {
 
-        unsigned int i;
+        char data[32];
 
-        for (i = 0; i < count; i += event_next(buffer + i))
+        if (header.count)
+            count += call_read(CALL_L1, roff + count, header.count, 1, data);
+
+        switch (header.type)
         {
 
-            unsigned char *temp = buffer + i;
-            struct event_header *header = (struct event_header *)temp;
+        case 1001:
+            quit = 1;
 
-            switch (header->type)
-            {
-
-            case 1001:
-                running = 0;
-
-                break;
-
-            }
+            break;
 
         }
+
+        if (quit)
+            break;
 
     }
 

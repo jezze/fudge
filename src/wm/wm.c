@@ -296,19 +296,10 @@ static void deactivateview(struct view *view)
 
 }
 
-static unsigned int event_next(void *buffer)
-{
-
-    struct event_header *header = buffer;
-
-    return header->count + sizeof (struct event_header);
-
-}
-
 static void pollevent(struct ctrl_videosettings *settings)
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
+    struct event_header header;
     unsigned int count, roff, quit = 0;
     struct view *viewactive = views.head->data;
     struct box old;
@@ -320,161 +311,150 @@ static void pollevent(struct ctrl_videosettings *settings)
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
 
-    for (roff = 0; (count = call_read(CALL_L1, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
+    for (roff = 0; (count = call_read(CALL_L1, roff, sizeof (struct event_header), 1, &header)); roff += count)
     {
 
-        unsigned int i;
+        char data[32];
 
-        for (i = 0; i < count; i += event_next(buffer + i))
+        if (header.count)
+            count += call_read(CALL_L1, roff + count, header.count, 1, data);
+
+        switch (header.type)
         {
 
-            unsigned char *temp = buffer + i;
-            struct event_header *header = (struct event_header *)temp;
-            unsigned char *data = temp + sizeof (struct event_header);
-
-            switch (header->type)
+        case EVENT_KEYBOARD:
+            if (data[0] >= 0x02 && data[0] < 0x0A)
             {
 
-            case EVENT_KEYBOARD:
-                if (data[0] >= 0x02 && data[0] < 0x0A)
-                {
+                deactivateview(viewactive);
 
-                    deactivateview(viewactive);
+                viewactive = &view[data[0] - 0x02];
 
-                    viewactive = &view[data[0] - 0x02];
-
-                    activateview(viewactive);
-                    arrangewindows(viewactive);
-                    draw(settings, &screen);
-
-                }
-
-                if (data[0] == 0x10)
-                {
-
-                    unmapwindow(viewactive);
-                    arrangewindows(viewactive);
-                    draw(settings, &desktop);
-
-                }
-
-                if (data[0] == 0x19)
-                {
-
-                    spawn();
-
-                }
-
-                if (data[0] == 0x23)
-                {
-
-                    viewactive->center -= (desktop.w / 32);
-
-                    arrangewindows(viewactive);
-                    draw(settings, &desktop);
-
-                }
-
-                if (data[0] == 0x24)
-                {
-
-                    nextwindow(viewactive);
-                    draw(settings, &desktop);
-
-                }
-
-                if (data[0] == 0x25)
-                {
-
-                    prevwindow(viewactive);
-                    draw(settings, &desktop);
-
-                }
-
-                if (data[0] == 0x26)
-                {
-
-                    viewactive->center += (desktop.w / 32);
-
-                    arrangewindows(viewactive);
-                    draw(settings, &desktop);
-
-                }
-
-                if (data[0] == 0x2C)
-                {
-
-                    quit = 1;
-
-                }
-
-                break;
-
-            case EVENT_MOUSE:
-                {
-
-                    mouse_handle(&mouse, data[0]);
-
-                    if (mouse.num == 0)
-                    {
-
-                        mouse.size.x += mouse.relx;
-
-                        if (mouse.relx < 0)
-                        {
-
-                            if (mouse.size.x >= screen.w - mouse.size.w)
-                                mouse.size.x = 0;
-
-                        }
-
-                        else
-                        {
-
-                            if (mouse.size.x >= screen.w - mouse.size.w)
-                                mouse.size.x = screen.w - mouse.size.w;
-
-                        }
-
-                        mouse.size.y -= mouse.rely;
-
-                        if (mouse.rely > 0)
-                        {
-
-                            if (mouse.size.y >= screen.h - mouse.size.h)
-                                mouse.size.y = 0;
-
-                        }
-
-                        else
-                        {
-
-                            if (mouse.size.y >= screen.h - mouse.size.h)
-                                mouse.size.y = screen.h - mouse.size.h;
-
-                        }
-
-                        draw(settings, &mouse.size);
-                        draw(settings, &old);
-
-                        old.x = mouse.size.x;
-                        old.y = mouse.size.y;
-
-                    }
-
-                }
-
-                break;
-
-            case 1000:
-                mapwindow(viewactive, header->source);
+                activateview(viewactive);
                 arrangewindows(viewactive);
-                draw(settings, &desktop);
-
-                break;
+                draw(settings, &screen);
 
             }
 
+            if (data[0] == 0x10)
+            {
+
+                unmapwindow(viewactive);
+                arrangewindows(viewactive);
+                draw(settings, &desktop);
+
+            }
+
+            if (data[0] == 0x19)
+            {
+
+                spawn();
+
+            }
+
+            if (data[0] == 0x23)
+            {
+
+                viewactive->center -= (desktop.w / 32);
+
+                arrangewindows(viewactive);
+                draw(settings, &desktop);
+
+            }
+
+            if (data[0] == 0x24)
+            {
+
+                nextwindow(viewactive);
+                draw(settings, &desktop);
+
+            }
+
+            if (data[0] == 0x25)
+            {
+
+                prevwindow(viewactive);
+                draw(settings, &desktop);
+
+            }
+
+            if (data[0] == 0x26)
+            {
+
+                viewactive->center += (desktop.w / 32);
+
+                arrangewindows(viewactive);
+                draw(settings, &desktop);
+
+            }
+
+            if (data[0] == 0x2C)
+            {
+
+                quit = 1;
+
+            }
+
+            break;
+
+        case EVENT_MOUSE:
+            mouse_handle(&mouse, data[0]);
+
+            if (mouse.num == 0)
+            {
+
+                mouse.size.x += mouse.relx;
+
+                if (mouse.relx < 0)
+                {
+
+                    if (mouse.size.x >= screen.w - mouse.size.w)
+                        mouse.size.x = 0;
+
+                }
+
+                else
+                {
+
+                    if (mouse.size.x >= screen.w - mouse.size.w)
+                        mouse.size.x = screen.w - mouse.size.w;
+
+                }
+
+                mouse.size.y -= mouse.rely;
+
+                if (mouse.rely > 0)
+                {
+
+                    if (mouse.size.y >= screen.h - mouse.size.h)
+                        mouse.size.y = 0;
+
+                }
+
+                else
+                {
+
+                    if (mouse.size.y >= screen.h - mouse.size.h)
+                        mouse.size.y = screen.h - mouse.size.h;
+
+                }
+
+                draw(settings, &mouse.size);
+                draw(settings, &old);
+
+                old.x = mouse.size.x;
+                old.y = mouse.size.y;
+
+            }
+
+            break;
+
+        case 1000:
+            mapwindow(viewactive, header.source);
+            arrangewindows(viewactive);
+            draw(settings, &desktop);
+
+            break;
 
         }
 
