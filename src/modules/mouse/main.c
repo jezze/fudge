@@ -4,12 +4,22 @@
 #include <modules/event/event.h>
 #include "mouse.h"
 
+static struct event_mousepress mousepress;
 static struct event_mousemove mousemove;
 
 void mouse_notify(struct mouse_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
     system_write(&interface->data, 0, size, count, buffer);
+
+}
+
+void mouse_notifymousepress(struct mouse_interface *interface, unsigned int button)
+{
+
+    mousepress.button = button;
+
+    event_notify(EVENT_MOUSEPRESS, sizeof (struct event_mousepress), 1, &mousepress);
 
 }
 
@@ -57,6 +67,8 @@ void mouse_initinterface(struct mouse_interface *interface)
 void module_init()
 {
 
+    mousepress.header.type = EVENT_MOUSEPRESS;
+    mousepress.header.count = sizeof (struct event_mousepress) - sizeof (struct event_header);
     mousemove.header.type = EVENT_MOUSEMOVE;
     mousemove.header.count = sizeof (struct event_mousemove) - sizeof (struct event_header);
 

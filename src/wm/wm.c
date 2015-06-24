@@ -397,6 +397,12 @@ static void pollevent(struct ctrl_videosettings *settings)
 
             break;
 
+        case EVENT_MOUSEPRESS:
+            if (data[0] == 2)
+                quit = 1;
+
+            break;
+
         case EVENT_MOUSEMOVE:
             mouse.size.x += data[0];
             mouse.size.y -= data[1];

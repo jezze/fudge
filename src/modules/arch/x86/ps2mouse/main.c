@@ -39,7 +39,17 @@ static void handleirq(unsigned int irq)
         rely = data - ((state << 3) & 0x100);
         sequence = 0;
 
-        mouse_notifymousemove(&mouseinterface, relx, rely);
+        if (state & 1)
+            mouse_notifymousepress(&mouseinterface, 1);
+
+        if (state & 2)
+            mouse_notifymousepress(&mouseinterface, 2);
+
+        if (state & 4)
+            mouse_notifymousepress(&mouseinterface, 3);
+
+        if (relx || rely)
+            mouse_notifymousemove(&mouseinterface, relx, rely);
 
         break;
 
