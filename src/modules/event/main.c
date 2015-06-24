@@ -10,14 +10,12 @@ static struct system_node send;
 void event_notify(unsigned int type, unsigned int size, unsigned int count, void *buffer)
 {
 
-    struct event_header header;
+    struct event_header *header = buffer;
 
-    header.destination = 0xFFFFFFFF;
-    header.source = 0;
-    header.type = type;
-    header.count = count;
+    header->destination = 0xFFFFFFFF;
+    header->source = 0;
+    header->type = type;
 
-    system_write(&poll, 0, sizeof (struct event_header), 1, &header);
     system_write(&poll, 0, size, count, buffer);
 
 }

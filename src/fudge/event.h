@@ -1,15 +1,8 @@
-#define EVENT_KEYBOARD                  1
-#define EVENT_MOUSE                     2
-#define EVENT_CONSOLE                   3
-#define EVENT_TIMER                     4
-#define EVENT_NETWORK                   5
-
-#define EVENT_KEYBOARD_PRESS            0x0001
-#define EVENT_KEYBOARD_RELEASE          0x0002
-
-#define EVENT_MOUSE_MOVE                0x0001
-#define EVENT_MOUSE_PRESS               0x0002
-#define EVENT_MOUSE_RELEASE             0x0004
+#define EVENT_KEYPRESS                  0x0001
+#define EVENT_KEYRELEASE                0x0002
+#define EVENT_MOUSEPRESS                0x0003
+#define EVENT_MOUSERELEASE              0x0004
+#define EVENT_MOUSEMOVE                 0x0005
 
 struct event_header
 {
@@ -21,22 +14,43 @@ struct event_header
 
 };
 
-struct event_keyboard
+struct event_keypress
 {
 
     struct event_header header;
-    unsigned int mask;
-    unsigned int scancode;
+    unsigned char scancode;
 
 };
 
-struct event_mouse
+struct event_keyrelease
 {
 
     struct event_header header;
-    unsigned int mask;
+    unsigned char scancode;
+
+};
+
+struct event_mousepress
+{
+
+    struct event_header header;
     unsigned int button;
-    unsigned int x;
-    unsigned int y;
+
+};
+
+struct event_mouserelease
+{
+
+    struct event_header header;
+    unsigned int button;
+
+};
+
+struct event_mousemove
+{
+
+    struct event_header header;
+    char relx;
+    char rely;
 
 };

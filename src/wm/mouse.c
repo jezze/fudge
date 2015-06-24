@@ -31,34 +31,6 @@ static unsigned char pointer[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-void mouse_handle(struct mouse *mouse, unsigned char value)
-{
-
-    switch (mouse->num)
-    {
-
-    case 0:
-        mouse->state = value;
-        mouse->num = 1;
-
-        break;
-
-    case 1:
-        mouse->relx = value - ((mouse->state << 4) & 0x100);
-        mouse->num = 2;
-
-        break;
-
-    case 2:
-        mouse->rely = value - ((mouse->state << 3) & 0x100);
-        mouse->num = 0;
-
-        break;
-
-    }
-
-}
-
 void mouse_draw(struct mouse *mouse, struct ctrl_videosettings *settings, unsigned int line)
 {
 
@@ -84,11 +56,6 @@ void mouse_init(struct mouse *mouse)
 {
 
     box_setsize(&mouse->size, 0, 0, 24, 24);
-
-    mouse->num = 0;
-    mouse->state = 0;
-    mouse->relx = 0;
-    mouse->rely = 0;
 
 }
 

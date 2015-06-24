@@ -4,11 +4,21 @@
 #include <modules/event/event.h>
 #include "keyboard.h"
 
+static struct event_keypress keypress;
+
 void keyboard_notify(struct keyboard_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
     system_write(&interface->data, 0, size, count, buffer);
-    event_notify(EVENT_KEYBOARD, size, count, buffer);
+
+}
+
+void keyboard_notifykeypress(struct keyboard_interface *interface, unsigned char scancode)
+{
+
+    keypress.scancode = scancode;
+
+    event_notify(EVENT_KEYPRESS, sizeof (struct event_keypress), 1, &keypress);
 
 }
 
@@ -40,6 +50,14 @@ void keyboard_initinterface(struct keyboard_interface *interface)
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     interface->data.resource = &interface->resource;
+
+}
+
+void module_init()
+{
+
+    keypress.header.type = EVENT_KEYPRESS;
+    keypress.header.count = sizeof (struct event_keypress) - sizeof (struct event_header);
 
 }
 

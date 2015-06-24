@@ -322,7 +322,7 @@ static void pollevent(struct ctrl_videosettings *settings)
         switch (header.type)
         {
 
-        case EVENT_KEYBOARD:
+        case EVENT_KEYPRESS:
             if (data[0] >= 0x02 && data[0] < 0x0A)
             {
 
@@ -397,55 +397,27 @@ static void pollevent(struct ctrl_videosettings *settings)
 
             break;
 
-        case EVENT_MOUSE:
-            mouse_handle(&mouse, data[0]);
+        case EVENT_MOUSEMOVE:
+            mouse.size.x += data[0];
+            mouse.size.y -= data[1];
 
-            if (mouse.num == 0)
-            {
+            if (data[0] > 0 && mouse.size.x + mouse.size.w > settings->w)
+                mouse.size.x = settings->w - mouse.size.w;
 
-                mouse.size.x += mouse.relx;
+            if (data[0] < 0 && mouse.size.x >= settings->w)
+                mouse.size.x = 0;
 
-                if (mouse.relx < 0)
-                {
+            if (data[1] < 0 && mouse.size.y + mouse.size.h > settings->h)
+                mouse.size.y = settings->h - mouse.size.h;
 
-                    if (mouse.size.x >= screen.w - mouse.size.w)
-                        mouse.size.x = 0;
+            if (data[1] > 0 && mouse.size.y >= settings->h)
+                mouse.size.y = 0;
 
-                }
+            draw(settings, &mouse.size);
+            draw(settings, &old);
 
-                else
-                {
-
-                    if (mouse.size.x >= screen.w - mouse.size.w)
-                        mouse.size.x = screen.w - mouse.size.w;
-
-                }
-
-                mouse.size.y -= mouse.rely;
-
-                if (mouse.rely > 0)
-                {
-
-                    if (mouse.size.y >= screen.h - mouse.size.h)
-                        mouse.size.y = 0;
-
-                }
-
-                else
-                {
-
-                    if (mouse.size.y >= screen.h - mouse.size.h)
-                        mouse.size.y = screen.h - mouse.size.h;
-
-                }
-
-                draw(settings, &mouse.size);
-                draw(settings, &old);
-
-                old.x = mouse.size.x;
-                old.y = mouse.size.y;
-
-            }
+            old.x = mouse.size.x;
+            old.y = mouse.size.y;
 
             break;
 

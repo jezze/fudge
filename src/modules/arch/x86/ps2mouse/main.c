@@ -8,6 +8,10 @@
 
 static struct base_driver driver;
 static struct mouse_interface mouseinterface;
+static unsigned int sequence;
+static unsigned char state;
+static char relx;
+static char rely;
 
 static void handleirq(unsigned int irq)
 {
@@ -16,10 +20,37 @@ static void handleirq(unsigned int irq)
 
     mouse_notify(&mouseinterface, 1, 1, &data);
 
+    switch (sequence)
+    {
+
+    case 0:
+        state = data;
+        sequence = 1;
+
+        break;
+
+    case 1:
+        relx = data - ((state << 4) & 0x100);
+        sequence = 2;
+
+        break;
+
+    case 2:
+        rely = data - ((state << 3) & 0x100);
+        sequence = 0;
+
+        mouse_notifymousemove(&mouseinterface, relx, rely);
+
+        break;
+
+    }
+
 }
 
 static void driver_init()
 {
+
+    sequence = 2;
 
     mouse_initinterface(&mouseinterface);
 

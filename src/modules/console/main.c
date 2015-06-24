@@ -8,8 +8,9 @@ void console_notify(struct console_interface *interface, unsigned int size, unsi
 {
 
     system_write(&interface->in, 0, size, count, buffer);
+    /*
     event_notify(EVENT_CONSOLE, size, count, buffer);
-
+    */
 }
 
 static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)

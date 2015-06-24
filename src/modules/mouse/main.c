@@ -4,11 +4,22 @@
 #include <modules/event/event.h>
 #include "mouse.h"
 
+static struct event_mousemove mousemove;
+
 void mouse_notify(struct mouse_interface *interface, unsigned int size, unsigned int count, void *buffer)
 {
 
     system_write(&interface->data, 0, size, count, buffer);
-    event_notify(EVENT_MOUSE, size, count, buffer);
+
+}
+
+void mouse_notifymousemove(struct mouse_interface *interface, char relx, char rely)
+{
+
+    mousemove.relx = relx;
+    mousemove.rely = rely;
+
+    event_notify(EVENT_MOUSEMOVE, sizeof (struct event_mousemove), 1, &mousemove);
 
 }
 
@@ -40,6 +51,14 @@ void mouse_initinterface(struct mouse_interface *interface)
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     interface->data.resource = &interface->resource;
+
+}
+
+void module_init()
+{
+
+    mousemove.header.type = EVENT_MOUSEMOVE;
+    mousemove.header.count = sizeof (struct event_mousemove) - sizeof (struct event_header);
 
 }
 
