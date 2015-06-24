@@ -427,7 +427,7 @@ static void pollevent(struct ctrl_videosettings *settings)
 
             break;
 
-        case 1000:
+        case EVENT_WMMAP:
             mapwindow(viewactive, header.source);
             arrangewindows(viewactive);
             draw(settings, &desktop);

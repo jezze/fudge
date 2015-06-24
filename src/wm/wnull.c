@@ -37,7 +37,7 @@ static void pollevent()
         switch (header.type)
         {
 
-        case 1001:
+        case EVENT_WMQUIT:
             quit = 1;
 
             break;
@@ -56,7 +56,7 @@ static void pollevent()
 void main()
 {
 
-    sendevent(0xFFFFFFFF, 1000);
+    sendevent(0xFFFFFFFF, EVENT_WMMAP);
     pollevent();
 
     call_open(CALL_PO);
