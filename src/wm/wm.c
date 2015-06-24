@@ -296,6 +296,25 @@ static void deactivateview(struct view *view)
 
 }
 
+static struct view *findview(struct list *views, struct mouse *mouse)
+{
+
+    struct list_item *current;
+
+    for (current = views->head; current; current = current->next)
+    {
+
+        struct view *view = current->data;
+
+        if (box_isinside(&view->panel.size, mouse->size.x, mouse->size.y))
+            return view;
+
+    }
+
+    return 0;
+
+}
+
 static void pollevent(struct ctrl_videosettings *settings)
 {
 
@@ -398,8 +417,25 @@ static void pollevent(struct ctrl_videosettings *settings)
             break;
 
         case EVENT_MOUSEPRESS:
-            if (data[0] == 2)
-                quit = 1;
+            if (data[0] == 1)
+            {
+
+                struct view *view = findview(&views, &mouse);
+
+                if (view)
+                {
+
+                    deactivateview(viewactive);
+
+                    viewactive = view;
+
+                    activateview(viewactive);
+                    arrangewindows(viewactive);
+                    draw(settings, &screen);
+
+                }
+
+            }
 
             break;
 
