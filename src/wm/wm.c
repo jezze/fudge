@@ -315,6 +315,25 @@ static struct view *findview(struct list *views, struct mouse *mouse)
 
 }
 
+static struct window *findwindow(struct view *view, struct mouse *mouse)
+{
+
+    struct list_item *current;
+
+    for (current = view->windows.head; current; current = current->next)
+    {
+
+        struct window *window = current->data;
+
+        if (box_isinside(&window->size, mouse->size.x, mouse->size.y))
+            return window;
+
+    }
+
+    return 0;
+
+}
+
 static void pollevent(struct ctrl_videosettings *settings)
 {
 
@@ -420,7 +439,10 @@ static void pollevent(struct ctrl_videosettings *settings)
             if (data[0] == 1)
             {
 
-                struct view *view = findview(&views, &mouse);
+                struct view *view;
+                struct window *window;
+                
+                view = findview(&views, &mouse);
 
                 if (view)
                 {
@@ -432,6 +454,16 @@ static void pollevent(struct ctrl_videosettings *settings)
                     activateview(viewactive);
                     arrangewindows(viewactive);
                     draw(settings, &screen);
+
+                }
+
+                window = findwindow(viewactive, &mouse);
+
+                if (window)
+                {
+
+                    activatewindow(viewactive, window);
+                    draw(settings, &desktop);
 
                 }
 
