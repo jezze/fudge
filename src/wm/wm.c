@@ -444,7 +444,7 @@ static void pollevent(struct ctrl_videosettings *settings)
                 
                 view = findview(&views, &mouse);
 
-                if (view)
+                if (view && view != viewactive)
                 {
 
                     deactivateview(viewactive);
@@ -459,7 +459,7 @@ static void pollevent(struct ctrl_videosettings *settings)
 
                 window = findwindow(viewactive, &mouse);
 
-                if (window)
+                if (window && window != viewactive->windowactive)
                 {
 
                     activatewindow(viewactive, window);
