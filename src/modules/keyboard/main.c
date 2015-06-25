@@ -18,7 +18,7 @@ void keyboard_notifykeypress(struct keyboard_interface *interface, unsigned char
 
     keypress.scancode = scancode;
 
-    event_notify(EVENT_KEYPRESS, sizeof (struct event_keypress), 1, &keypress);
+    event_notify(sizeof (struct event_keypress), 1, &keypress);
 
 }
 

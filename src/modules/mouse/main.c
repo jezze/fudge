@@ -19,7 +19,7 @@ void mouse_notifymousepress(struct mouse_interface *interface, unsigned int butt
 
     mousepress.button = button;
 
-    event_notify(EVENT_MOUSEPRESS, sizeof (struct event_mousepress), 1, &mousepress);
+    event_notify(sizeof (struct event_mousepress), 1, &mousepress);
 
 }
 
@@ -29,7 +29,7 @@ void mouse_notifymousemove(struct mouse_interface *interface, char relx, char re
     mousemove.relx = relx;
     mousemove.rely = rely;
 
-    event_notify(EVENT_MOUSEMOVE, sizeof (struct event_mousemove), 1, &mousemove);
+    event_notify(sizeof (struct event_mousemove), 1, &mousemove);
 
 }
 
