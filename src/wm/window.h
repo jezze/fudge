@@ -8,5 +8,5 @@ struct window
 
 };
 
-void window_draw(struct window *window, struct ctrl_videosettings *settings, unsigned int line);
+void window_draw(struct window *window, unsigned int line);
 void window_init(struct window *window);

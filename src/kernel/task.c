@@ -7,14 +7,14 @@
 unsigned int task_rmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return buffer_rcfifo(&task->mailbox.buffer, size, count, buffer);
+    return buffer_rcfifo(&task->mailbox.buffer, size * count, buffer);
 
 }
 
 unsigned int task_wmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return buffer_wcfifo(&task->mailbox.buffer, size, count, buffer);
+    return buffer_wcfifo(&task->mailbox.buffer, size * count, buffer);
 
 }
 

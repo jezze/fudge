@@ -1,21 +1,21 @@
 #include "memory.h"
 #include "buffer.h"
 
-unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int size, unsigned int count, void *memory)
+unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int count, void *memory)
 {
 
     unsigned int i;
+    char *m = memory;
 
     for (i = 0; i < count; i++)
     {
 
-        unsigned int tail = (buffer->tail + size) % buffer->count;
+        unsigned int tail = (buffer->tail + 1) % buffer->count;
 
         if (buffer->head == buffer->tail)
             break;
 
-        memory_write(memory, count, buffer->memory + buffer->tail, 1, size, i);
-
+        m[i] = buffer->memory[buffer->tail];
         buffer->tail = tail;
 
     }
@@ -24,21 +24,21 @@ unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int size, unsigned in
 
 }
 
-unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int size, unsigned int count, void *memory)
+unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memory)
 {
 
     unsigned int i;
+    char *m = memory;
 
     for (i = 0; i < count; i++)
     {
 
-        unsigned int head = (buffer->head + size) % buffer->count;
+        unsigned int head = (buffer->head + 1) % buffer->count;
 
         if (head == buffer->tail)
             break;
 
-        memory_read(buffer->memory + buffer->head, 1, memory, count, size, i);
-
+        buffer->memory[buffer->head] = m[i];
         buffer->head = head;
 
     }
@@ -47,7 +47,7 @@ unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int size, unsigned in
 
 }
 
-unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int size, unsigned int count)
+unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int count)
 {
 
     unsigned int i;
@@ -55,7 +55,7 @@ unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int size, unsigned in
     for (i = 0; i < count; i++)
     {
 
-        unsigned int head = (buffer->head - size) % buffer->count;
+        unsigned int head = (buffer->head - 1) % buffer->count;
 
         if (buffer->head == buffer->tail)
             break;

@@ -171,8 +171,8 @@ static void tokenizebuffer(struct tokenlist *infix, struct buffer *stringtable, 
 
             c = getidentlength(count - i, buffer + i);
 
-            buffer_wcfifo(stringtable, 1, c, &buffer[i]);
-            buffer_wcfifo(stringtable, 1, 1, "\0");
+            buffer_wcfifo(stringtable, c, &buffer[i]);
+            buffer_wcfifo(stringtable, 1, "\0");
 
             i += c - 1;
 

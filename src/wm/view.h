@@ -10,5 +10,5 @@ struct view
 
 };
 
-void view_draw(struct view *view, struct ctrl_videosettings *settings, unsigned int line);
+void view_draw(struct view *view, unsigned int line);
 void view_init(struct view *view, unsigned int center);

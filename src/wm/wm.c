@@ -21,6 +21,8 @@ static struct list windows;
 static struct view view[VIEWS];
 static struct list views;
 static unsigned char backbuffer[4096];
+static struct ctrl_videosettings oldsettings;
+static struct ctrl_videosettings settings;
 
 static unsigned char colormap[] = {
     0x00, 0x00, 0x00,
@@ -46,10 +48,28 @@ static unsigned int colormap4[] = {
     0xF898B8
 };
 
-static void flush(struct ctrl_videosettings *settings, unsigned int line, unsigned int offset, unsigned int count)
+static void spawn()
 {
 
-    unsigned int bpp = settings->bpp / 8;
+    call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
+    call_spawn();
+
+}
+
+static void sendevent(unsigned int size, unsigned int count, void *buffer)
+{
+
+    call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
+    call_open(CALL_L2);
+    call_write(CALL_L2, 0, size, count, buffer);
+    call_close(CALL_L2);
+
+}
+
+static void flush(unsigned int line, unsigned int offset, unsigned int count)
+{
+
+    unsigned int bpp = settings.bpp / 8;
 
     video_draw(line * bpp + offset * bpp, count * bpp, backbuffer + offset * bpp);
 
@@ -77,10 +97,10 @@ static void fill32(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-void fill(struct ctrl_videosettings *settings, unsigned int color, unsigned int offset, unsigned int count)
+void fill(unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    switch (settings->bpp)
+    switch (settings.bpp)
     {
 
     case 8:
@@ -97,17 +117,17 @@ void fill(struct ctrl_videosettings *settings, unsigned int color, unsigned int 
 
 }
 
-static void drawdesktop(struct ctrl_videosettings *settings, unsigned int line)
+static void drawdesktop(unsigned int line)
 {
 
     if (line < desktop.y || line >= desktop.y + desktop.h)
         return;
 
-    fill(settings, WM_COLOR_BODY, desktop.x, desktop.w);
+    fill(WM_COLOR_BODY, desktop.x, desktop.w);
 
 }
 
-static void drawviews(struct list *views, struct ctrl_videosettings *settings, unsigned int line)
+static void drawviews(struct list *views, unsigned int line)
 {
 
     struct list_item *current;
@@ -117,13 +137,95 @@ static void drawviews(struct list *views, struct ctrl_videosettings *settings, u
 
         struct view *view = current->data;
 
-        view_draw(view, settings, line);
+        view_draw(view, line);
 
     }
 
 }
 
-static void draw(struct ctrl_videosettings *settings, struct box *bb)
+static void sendwmresize(struct window *window)
+{
+
+    struct event_wmresize wmresize;
+
+    wmresize.header.source = 0;
+    wmresize.header.destination = window->source;
+    wmresize.header.type = EVENT_WMRESIZE;
+    wmresize.header.count = sizeof (struct event_wmresize) - sizeof (struct event_header);
+    wmresize.x = window->size.x + 3;
+    wmresize.y = window->size.y + 3;
+    wmresize.w = window->size.w - 6;
+    wmresize.h = window->size.h - 6;
+
+    sendevent(sizeof (struct event_wmresize), 1, &wmresize);
+
+}
+
+static void sendwmresizeall(struct view *view)
+{
+
+    struct list_item *current;
+
+    for (current = view->windows.head; current; current = current->next)
+    {
+
+        struct window *window = current->data;
+
+        sendwmresize(window);
+
+    }
+
+}
+
+static void sendwmdraw(struct window *window, struct box *bb)
+{
+
+    struct event_wmdraw wmdraw;
+
+    wmdraw.header.source = 0;
+    wmdraw.header.destination = window->source;
+    wmdraw.header.type = EVENT_WMDRAW;
+    wmdraw.header.count = sizeof (struct event_wmdraw) - sizeof (struct event_header);
+    wmdraw.x = bb->x;
+    wmdraw.y = bb->y;
+    wmdraw.w = bb->w;
+    wmdraw.h = bb->h;
+
+    sendevent(sizeof (struct event_wmdraw), 1, &wmdraw);
+
+}
+
+static void sendwmdrawall(struct view *view, struct box *bb)
+{
+
+    struct list_item *current;
+
+    for (current = view->windows.head; current; current = current->next)
+    {
+
+        struct window *window = current->data;
+
+        sendwmdraw(window, bb);
+
+    }
+
+}
+
+static void sendwmquit(struct window *window)
+{
+
+    struct event_wmquit wmquit;
+
+    wmquit.header.source = 0;
+    wmquit.header.destination = window->source;
+    wmquit.header.type = EVENT_WMQUIT;
+    wmquit.header.count = sizeof (struct event_wmquit) - sizeof (struct event_header);
+
+    sendevent(sizeof (struct event_wmquit), 1, &wmquit);
+
+}
+
+static void draw(struct view *view, struct box *bb)
 {
 
     unsigned int line;
@@ -133,39 +235,18 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb)
     for (line = bb->y; line < bb->y + bb->h; line++)
     {
 
-        drawdesktop(settings, line);
-        panel_draw(&title, settings, line);
-        drawviews(&views, settings, line);
-        mouse_draw(&mouse, settings, line);
-        flush(settings, screen.w * line, bb->x, bb->w);
+        if (!view->windowactive)
+            drawdesktop(line);
+
+        panel_draw(&title, line);
+        drawviews(&views, line);
+        mouse_draw(&mouse, line);
+        flush(screen.w * line, bb->x, bb->w);
 
     }
 
     video_close();
-
-}
-
-static void spawn()
-{
-
-    call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
-    call_spawn();
-
-}
-
-static void sendevent(unsigned int destination, unsigned int type)
-{
-
-    struct event_header header;
-
-    header.destination = destination;
-    header.type = type;
-    header.count = 0;
-
-    call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
-    call_open(CALL_L2);
-    call_write(CALL_L2, 0, sizeof (struct event_header), 1, &header);
-    call_close(CALL_L2);
+    sendwmdrawall(view, bb);
 
 }
 
@@ -270,7 +351,6 @@ static void unmapwindow(struct view *view)
     if (!view->windowactive)
         return;
 
-    sendevent(view->windowactive->source, 1001);
     list_move(&windows, &view->windows, &view->windowactive->item);
 
     if (view->windows.tail)
@@ -334,99 +414,105 @@ static struct window *findwindow(struct view *view, struct mouse *mouse)
 
 }
 
-static void pollevent(struct ctrl_videosettings *settings)
+static void pollevent()
 {
 
-    struct event_header header;
+    union event event;
     unsigned int count, roff, quit = 0;
     struct view *viewactive = views.head->data;
     struct box old;
 
     activateview(viewactive);
     box_setsize(&old, mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
-    draw(settings, &screen);
+    draw(viewactive, &screen);
 
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
 
-    for (roff = 0; (count = call_read(CALL_L1, roff, sizeof (struct event_header), 1, &header)); roff += count)
+    for (roff = 0; (count = call_read(CALL_L1, roff, sizeof (struct event_header), 1, &event.header)); roff += count)
     {
 
-        char data[32];
+        if (event.header.count)
+            count += call_read(CALL_L1, roff + count, event.header.count, 1, event.data + sizeof (struct event_header));
 
-        if (header.count)
-            count += call_read(CALL_L1, roff + count, header.count, 1, data);
-
-        switch (header.type)
+        switch (event.header.type)
         {
 
         case EVENT_KEYPRESS:
-            if (data[0] >= 0x02 && data[0] < 0x0A)
+            if (event.keypress.scancode >= 0x02 && event.keypress.scancode < 0x0A)
             {
 
                 deactivateview(viewactive);
 
-                viewactive = &view[data[0] - 0x02];
+                viewactive = &view[event.keypress.scancode - 0x02];
 
                 activateview(viewactive);
                 arrangewindows(viewactive);
-                draw(settings, &screen);
+                draw(viewactive, &screen);
 
             }
 
-            if (data[0] == 0x10)
+            if (event.keypress.scancode == 0x10)
             {
 
-                unmapwindow(viewactive);
-                arrangewindows(viewactive);
-                draw(settings, &desktop);
+                if (viewactive->windowactive)
+                {
+
+                    sendwmquit(viewactive->windowactive);
+                    unmapwindow(viewactive);
+                    arrangewindows(viewactive);
+                    draw(viewactive, &desktop);
+
+                }
 
             }
 
-            if (data[0] == 0x19)
+            if (event.keypress.scancode == 0x19)
             {
 
                 spawn();
 
             }
 
-            if (data[0] == 0x23)
+            if (event.keypress.scancode == 0x23)
             {
 
                 viewactive->center -= (desktop.w / 32);
 
                 arrangewindows(viewactive);
-                draw(settings, &desktop);
+                sendwmresizeall(viewactive);
+                draw(viewactive, &desktop);
 
             }
 
-            if (data[0] == 0x24)
+            if (event.keypress.scancode == 0x24)
             {
 
                 nextwindow(viewactive);
-                draw(settings, &desktop);
+                draw(viewactive, &desktop);
 
             }
 
-            if (data[0] == 0x25)
+            if (event.keypress.scancode == 0x25)
             {
 
                 prevwindow(viewactive);
-                draw(settings, &desktop);
+                draw(viewactive, &desktop);
 
             }
 
-            if (data[0] == 0x26)
+            if (event.keypress.scancode == 0x26)
             {
 
                 viewactive->center += (desktop.w / 32);
 
                 arrangewindows(viewactive);
-                draw(settings, &desktop);
+                sendwmresizeall(viewactive);
+                draw(viewactive, &desktop);
 
             }
 
-            if (data[0] == 0x2C)
+            if (event.keypress.scancode == 0x2C)
             {
 
                 quit = 1;
@@ -436,7 +522,7 @@ static void pollevent(struct ctrl_videosettings *settings)
             break;
 
         case EVENT_MOUSEPRESS:
-            if (data[0] == 1)
+            if (event.mousepress.button == 1)
             {
 
                 struct view *view;
@@ -453,7 +539,7 @@ static void pollevent(struct ctrl_videosettings *settings)
 
                     activateview(viewactive);
                     arrangewindows(viewactive);
-                    draw(settings, &screen);
+                    draw(viewactive, &screen);
 
                 }
 
@@ -463,7 +549,7 @@ static void pollevent(struct ctrl_videosettings *settings)
                 {
 
                     activatewindow(viewactive, window);
-                    draw(settings, &desktop);
+                    draw(viewactive, &desktop);
 
                 }
 
@@ -472,33 +558,33 @@ static void pollevent(struct ctrl_videosettings *settings)
             break;
 
         case EVENT_MOUSEMOVE:
-            mouse.size.x += data[0];
-            mouse.size.y -= data[1];
-
-            if (data[0] > 0 && mouse.size.x + mouse.size.w > settings->w)
-                mouse.size.x = settings->w - mouse.size.w;
-
-            if (data[0] < 0 && mouse.size.x >= settings->w)
-                mouse.size.x = 0;
-
-            if (data[1] < 0 && mouse.size.y + mouse.size.h > settings->h)
-                mouse.size.y = settings->h - mouse.size.h;
-
-            if (data[1] > 0 && mouse.size.y >= settings->h)
-                mouse.size.y = 0;
-
-            draw(settings, &mouse.size);
-            draw(settings, &old);
-
             old.x = mouse.size.x;
             old.y = mouse.size.y;
+            mouse.size.x += event.mousemove.relx;
+            mouse.size.y -= event.mousemove.rely;
+
+            if (event.mousemove.relx > 0 && mouse.size.x + mouse.size.w > settings.w)
+                mouse.size.x = settings.w - mouse.size.w;
+
+            if (event.mousemove.relx < 0 && mouse.size.x >= settings.w)
+                mouse.size.x = 0;
+
+            if (event.mousemove.rely < 0 && mouse.size.y + mouse.size.h > settings.h)
+                mouse.size.y = settings.h - mouse.size.h;
+
+            if (event.mousemove.rely > 0 && mouse.size.y >= settings.h)
+                mouse.size.y = 0;
+
+            draw(viewactive, &mouse.size);
+            draw(viewactive, &old);
 
             break;
 
         case EVENT_WMMAP:
-            mapwindow(viewactive, header.source);
+            mapwindow(viewactive, event.header.source);
             arrangewindows(viewactive);
-            draw(settings, &desktop);
+            sendwmresizeall(viewactive);
+            draw(viewactive, &desktop);
 
             break;
 
@@ -551,15 +637,12 @@ static void setupviews()
 void main()
 {
 
-    struct ctrl_videosettings oldsettings;
-    struct ctrl_videosettings newsettings;
-
-    ctrl_setvideosettings(&newsettings, 1024, 768, 32);
+    ctrl_setvideosettings(&settings, 1024, 768, 32);
     video_getmode(&oldsettings);
-    video_setmode(&newsettings);
+    video_setmode(&settings);
     video_setcolormap(0, 3, 9, colormap);
     mouse_init(&mouse);
-    box_setsize(&screen, 0, 0, newsettings.w, newsettings.h);
+    box_setsize(&screen, 0, 0, settings.w, settings.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
     box_setsize(&desktop, screen.x, screen.y + BOXSIZE, screen.w, screen.h - BOXSIZE);
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, mouse.size.w, mouse.size.h);
@@ -567,7 +650,7 @@ void main()
     box_setsize(&title.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
     setupwindows();
     setupviews();
-    pollevent(&newsettings);
+    pollevent(&settings);
     video_setmode(&oldsettings);
 
 }
