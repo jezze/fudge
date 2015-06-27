@@ -7,9 +7,7 @@ static unsigned char backbuffer[4096];
 void flush(unsigned int line, unsigned int bpp, unsigned int offset, unsigned int count)
 {
 
-    bpp = bpp / 8;
-
-    video_draw(line * bpp + offset * bpp, count * bpp, backbuffer + offset * bpp);
+    video_draw(line + offset, count, backbuffer + offset * bpp / 8);
 
 }
 

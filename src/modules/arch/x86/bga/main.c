@@ -66,9 +66,19 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int size,
 static unsigned int videointerface_wdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
+    unsigned int *g = lfb;
+    unsigned int *b = buffer;
+    unsigned int i;
 
-    return memory_write(lfb, s, buffer, count, 1, offset);
+    for (i = 0; i < count; i++)
+    {
+
+        if (b[i] & 0xFF000000)
+            g[i + offset] = b[i];
+
+    }
+
+    return count;
 
 }
 

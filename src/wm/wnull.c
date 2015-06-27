@@ -7,16 +7,16 @@
 
 static struct ctrl_videosettings settings;
 
-static unsigned int colormap4[] = {
-    0x00000000,
-    0x00FFFFFF,
-    0x00181014,
-    0x0020181C,
-    0x0030282C,
-    0x00105070,
-    0x00307090,
-    0x00B05070,
-    0x00F898B8
+static unsigned int colormap4[256] = {
+    0xFF000000,
+    0xFFFFFFFF,
+    0xFF181014,
+    0xFF20181C,
+    0xFF30282C,
+    0xFF105070,
+    0xFF307090,
+    0xFFB05070,
+    0xFFF898B8
 };
 
 void fill(unsigned int color, unsigned int offset, unsigned int count)
@@ -150,6 +150,7 @@ void main()
 
     video_getmode(&settings);
     fill(0x02, 0, 4096);
+    colormap4[0xFF] = 0x00FF00FF;
     send_wmmap(0xFFFFFFFF);
     pollevent();
 

@@ -43,12 +43,7 @@ void mouse_draw(struct mouse *mouse, unsigned int line)
     off = (line - mouse->size.y) * mouse->size.w;
 
     for (i = 0; i < 24; i++)
-    {
-
-        if (pointer[off + i] != 0xFF)
-            fill(pointer[off + i], mouse->size.x + i, 1);
-
-    }
+        fill(pointer[off + i], mouse->size.x + i, 1);
 
 }
 
