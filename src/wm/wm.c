@@ -461,6 +461,7 @@ static void pollevent()
                     sendwmquit(viewactive->windowactive);
                     unmapwindow(viewactive);
                     arrangewindows(viewactive);
+                    sendwmresizeall(viewactive);
                     draw(viewactive, &desktop);
 
                 }
@@ -575,8 +576,8 @@ static void pollevent()
             if (event.mousemove.rely > 0 && mouse.size.y >= settings.h)
                 mouse.size.y = 0;
 
-            draw(viewactive, &mouse.size);
             draw(viewactive, &old);
+            draw(viewactive, &mouse.size);
 
             break;
 
