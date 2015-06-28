@@ -134,7 +134,7 @@ static void sendwmdrawall(struct view *view, struct box *bb)
 
 }
 
-static void draw(struct view *view, struct box *bb)
+static void draw(struct view *view, struct box *bb, unsigned int notify)
 {
 
     unsigned int line;
@@ -156,7 +156,10 @@ static void draw(struct view *view, struct box *bb)
     }
 
     video_close();
-    sendwmdrawall(view, bb);
+
+    if (notify)
+        sendwmdrawall(view, bb);
+
     video_open();
 
     for (line = bb->y; line < bb->y + bb->h; line++)
@@ -347,7 +350,7 @@ static void pollevent()
 
     activateview(viewactive);
     box_setsize(&old, mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
-    draw(viewactive, &screen);
+    draw(viewactive, &screen, 0);
 
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
@@ -371,7 +374,7 @@ static void pollevent()
 
                 activateview(viewactive);
                 arrangewindows(viewactive);
-                draw(viewactive, &screen);
+                draw(viewactive, &screen, 1);
 
             }
 
@@ -385,7 +388,7 @@ static void pollevent()
                     unmapwindow(viewactive);
                     arrangewindows(viewactive);
                     sendwmresizeall(viewactive);
-                    draw(viewactive, &desktop);
+                    draw(viewactive, &desktop, 1);
 
                 }
 
@@ -401,8 +404,8 @@ static void pollevent()
                 if (mouse.size.y >= settings.h)
                     mouse.size.y = 0;
 
-                draw(viewactive, &old);
-                draw(viewactive, &mouse.size);
+                draw(viewactive, &old, 1);
+                draw(viewactive, &mouse.size, 1);
 
             }
 
@@ -423,8 +426,8 @@ static void pollevent()
                 if (mouse.size.y + mouse.size.h > settings.h)
                     mouse.size.y = settings.h - mouse.size.h;
 
-                draw(viewactive, &old);
-                draw(viewactive, &mouse.size);
+                draw(viewactive, &old, 1);
+                draw(viewactive, &mouse.size, 1);
 
             }
 
@@ -438,8 +441,8 @@ static void pollevent()
                 if (mouse.size.x >= settings.w)
                     mouse.size.x = 0;
 
-                draw(viewactive, &old);
-                draw(viewactive, &mouse.size);
+                draw(viewactive, &old, 1);
+                draw(viewactive, &mouse.size, 1);
 
             }
 
@@ -453,8 +456,8 @@ static void pollevent()
                 if (mouse.size.x + mouse.size.w > settings.w)
                     mouse.size.x = settings.w - mouse.size.w;
 
-                draw(viewactive, &old);
-                draw(viewactive, &mouse.size);
+                draw(viewactive, &old, 1);
+                draw(viewactive, &mouse.size, 1);
 
             }
 
@@ -465,7 +468,7 @@ static void pollevent()
 
                 arrangewindows(viewactive);
                 sendwmresizeall(viewactive);
-                draw(viewactive, &desktop);
+                draw(viewactive, &desktop, 1);
 
             }
 
@@ -473,7 +476,7 @@ static void pollevent()
             {
 
                 nextwindow(viewactive);
-                draw(viewactive, &desktop);
+                draw(viewactive, &desktop, 0);
 
             }
 
@@ -481,7 +484,7 @@ static void pollevent()
             {
 
                 prevwindow(viewactive);
-                draw(viewactive, &desktop);
+                draw(viewactive, &desktop, 0);
 
             }
 
@@ -492,7 +495,7 @@ static void pollevent()
 
                 arrangewindows(viewactive);
                 sendwmresizeall(viewactive);
-                draw(viewactive, &desktop);
+                draw(viewactive, &desktop, 1);
 
             }
 
@@ -523,7 +526,7 @@ static void pollevent()
 
                     activateview(viewactive);
                     arrangewindows(viewactive);
-                    draw(viewactive, &screen);
+                    draw(viewactive, &screen, 1);
 
                 }
 
@@ -533,7 +536,7 @@ static void pollevent()
                 {
 
                     activatewindow(viewactive, window);
-                    draw(viewactive, &desktop);
+                    draw(viewactive, &desktop, 0);
 
                 }
 
@@ -559,8 +562,8 @@ static void pollevent()
             if (event.mousemove.rely > 0 && mouse.size.y >= settings.h)
                 mouse.size.y = 0;
 
-            draw(viewactive, &old);
-            draw(viewactive, &mouse.size);
+            draw(viewactive, &old, 1);
+            draw(viewactive, &mouse.size, 1);
 
             break;
 
@@ -568,7 +571,7 @@ static void pollevent()
             mapwindow(viewactive, event.header.source);
             arrangewindows(viewactive);
             sendwmresizeall(viewactive);
-            draw(viewactive, &desktop);
+            draw(viewactive, &desktop, 1);
 
             break;
 
