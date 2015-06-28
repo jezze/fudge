@@ -7,6 +7,7 @@
 #include "panel.h"
 #include "window.h"
 #include "view.h"
+#include "send.h"
 
 #define WINDOWS                         64
 #define VIEWS                           8
@@ -20,7 +21,6 @@ static struct window window[WINDOWS];
 static struct list windows;
 static struct view view[VIEWS];
 static struct list views;
-static unsigned char backbuffer[4096];
 static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
 
@@ -56,47 +56,6 @@ static void spawn()
 
 }
 
-static void sendevent(unsigned int size, unsigned int count, void *buffer)
-{
-
-    call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
-    call_open(CALL_L2);
-    call_write(CALL_L2, 0, size, count, buffer);
-    call_close(CALL_L2);
-
-}
-
-static void flush(unsigned int line, unsigned int offset, unsigned int count)
-{
-
-    unsigned int bpp = settings.bpp / 8;
-
-    video_draw(line * bpp + offset * bpp, count * bpp, backbuffer + offset * bpp);
-
-}
-
-static void fill8(unsigned int color, unsigned int offset, unsigned int count)
-{
-
-    unsigned char *b = (unsigned char *)backbuffer;
-    unsigned int i;
-
-    for (i = offset; i < count + offset; i++)
-        b[i] = color;
-
-}
-
-static void fill32(unsigned int color, unsigned int offset, unsigned int count)
-{
-
-    unsigned int *b = (unsigned int *)backbuffer;
-    unsigned int i;
-
-    for (i = offset; i < count + offset; i++)
-        b[i] = colormap4[color];
-
-}
-
 void fill(unsigned int color, unsigned int offset, unsigned int count)
 {
 
@@ -109,7 +68,7 @@ void fill(unsigned int color, unsigned int offset, unsigned int count)
         break;
 
     case 32:
-        fill32(color, offset, count);
+        fill32(colormap4[color], offset, count);
 
         break;
 
@@ -143,24 +102,6 @@ static void drawviews(struct list *views, unsigned int line)
 
 }
 
-static void sendwmresize(struct window *window)
-{
-
-    struct event_wmresize wmresize;
-
-    wmresize.header.source = 0;
-    wmresize.header.destination = window->source;
-    wmresize.header.type = EVENT_WMRESIZE;
-    wmresize.header.count = sizeof (struct event_wmresize) - sizeof (struct event_header);
-    wmresize.x = window->size.x + 3;
-    wmresize.y = window->size.y + 3;
-    wmresize.w = window->size.w - 6;
-    wmresize.h = window->size.h - 6;
-
-    sendevent(sizeof (struct event_wmresize), 1, &wmresize);
-
-}
-
 static void sendwmresizeall(struct view *view)
 {
 
@@ -171,27 +112,9 @@ static void sendwmresizeall(struct view *view)
 
         struct window *window = current->data;
 
-        sendwmresize(window);
+        send_wmresize(window->source, window->size.x + 3, window->size.y + 3, window->size.w - 6, window->size.h - 6);
 
     }
-
-}
-
-static void sendwmdraw(struct window *window, struct box *bb)
-{
-
-    struct event_wmdraw wmdraw;
-
-    wmdraw.header.source = 0;
-    wmdraw.header.destination = window->source;
-    wmdraw.header.type = EVENT_WMDRAW;
-    wmdraw.header.count = sizeof (struct event_wmdraw) - sizeof (struct event_header);
-    wmdraw.x = bb->x;
-    wmdraw.y = bb->y;
-    wmdraw.w = bb->w;
-    wmdraw.h = bb->h;
-
-    sendevent(sizeof (struct event_wmdraw), 1, &wmdraw);
 
 }
 
@@ -205,23 +128,9 @@ static void sendwmdrawall(struct view *view, struct box *bb)
 
         struct window *window = current->data;
 
-        sendwmdraw(window, bb);
+        send_wmdraw(window->source, bb->x, bb->y, bb->w, bb->h);
 
     }
-
-}
-
-static void sendwmquit(struct window *window)
-{
-
-    struct event_wmquit wmquit;
-
-    wmquit.header.source = 0;
-    wmquit.header.destination = window->source;
-    wmquit.header.type = EVENT_WMQUIT;
-    wmquit.header.count = sizeof (struct event_wmquit) - sizeof (struct event_header);
-
-    sendevent(sizeof (struct event_wmquit), 1, &wmquit);
 
 }
 
@@ -241,7 +150,7 @@ static void draw(struct view *view, struct box *bb)
         panel_draw(&title, line);
         drawviews(&views, line);
         mouse_draw(&mouse, line);
-        flush(screen.w * line, bb->x, bb->w);
+        flush(settings.w * line, settings.bpp, bb->x, bb->w);
 
     }
 
@@ -458,7 +367,7 @@ static void pollevent()
                 if (viewactive->windowactive)
                 {
 
-                    sendwmquit(viewactive->windowactive);
+                    send_wmquit(viewactive->windowactive->source);
                     unmapwindow(viewactive);
                     arrangewindows(viewactive);
                     sendwmresizeall(viewactive);

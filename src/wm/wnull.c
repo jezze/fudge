@@ -2,8 +2,9 @@
 #include <fudge.h>
 #include <video/video.h>
 #include "box.h"
+#include "draw.h"
+#include "send.h"
 
-static unsigned char backbuffer[4096];
 static struct ctrl_videosettings settings;
 
 static unsigned int colormap4[] = {
@@ -18,28 +19,6 @@ static unsigned int colormap4[] = {
     0x00F898B8
 };
 
-static void fill8(unsigned int color, unsigned int offset, unsigned int count)
-{
-
-    unsigned char *b = (unsigned char *)backbuffer;
-    unsigned int i;
-
-    for (i = offset; i < count + offset; i++)
-        b[i] = color;
-
-}
-
-static void fill32(unsigned int color, unsigned int offset, unsigned int count)
-{
-
-    unsigned int *b = (unsigned int *)backbuffer;
-    unsigned int i;
-
-    for (i = offset; i < count + offset; i++)
-        b[i] = colormap4[color];
-
-}
-
 void fill(unsigned int color, unsigned int offset, unsigned int count)
 {
 
@@ -52,20 +31,11 @@ void fill(unsigned int color, unsigned int offset, unsigned int count)
         break;
 
     case 32:
-        fill32(color, offset, count);
+        fill32(colormap4[color], offset, count);
 
         break;
 
     }
-
-}
-
-static void flush(unsigned int line, unsigned int offset, unsigned int count)
-{
-
-    unsigned int bpp = settings.bpp / 8;
-
-    video_draw(line * bpp + offset * bpp, count * bpp, backbuffer + offset * bpp);
 
 }
 
@@ -79,35 +49,11 @@ static void draw(struct box *bb)
     for (line = bb->y; line < bb->y + bb->h; line++)
     {
 
-        flush(settings.w * line, bb->x, bb->w);
+        flush(settings.w * line, settings.bpp, bb->x, bb->w);
 
     }
 
     video_close();
-
-}
-
-static void sendevent(unsigned int size, unsigned int count, void *buffer)
-{
-
-    call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
-    call_open(CALL_L2);
-    call_write(CALL_L2, 0, size, count, buffer);
-    call_close(CALL_L2);
-
-}
-
-static void sendwmmap()
-{
-
-    struct event_wmmap wmmap;
-
-    wmmap.header.source = 0;
-    wmmap.header.destination = 0xFFFFFFFF;
-    wmmap.header.type = EVENT_WMMAP;
-    wmmap.header.count = sizeof (struct event_wmmap) - sizeof (struct event_header);
-
-    sendevent(sizeof (struct event_wmmap), 1, &wmmap);
 
 }
 
@@ -118,11 +64,7 @@ static void pollevent()
     unsigned int count, roff, quit = 0;
     struct box size;
 
-    size.x = 0;
-    size.y = 0;
-    size.w = 0;
-    size.h = 0;
-
+    box_setsize(&size, 0, 0, 0, 0);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
 
@@ -208,7 +150,7 @@ void main()
 
     video_getmode(&settings);
     fill(0x02, 0, 4096);
-    sendwmmap();
+    send_wmmap(0xFFFFFFFF);
     pollevent();
 
 }

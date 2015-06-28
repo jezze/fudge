@@ -1,5 +1,5 @@
 BIN_$(DIR):=$(DIR)/wnull
-OBJ_$(DIR):=$(DIR)/wnull.o $(SRC_PATH)/video/video.o
+OBJ_$(DIR):=$(DIR)/wnull.o $(DIR)/box.o $(DIR)/draw.o $(DIR)/send.o $(SRC_PATH)/video/video.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(SRC_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
