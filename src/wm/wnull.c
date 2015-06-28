@@ -6,6 +6,60 @@
 static unsigned char backbuffer[4096];
 static struct ctrl_videosettings settings;
 
+static unsigned int colormap4[] = {
+    0x00000000,
+    0x00FFFFFF,
+    0x00181014,
+    0x0020181C,
+    0x0030282C,
+    0x00105070,
+    0x00307090,
+    0x00B05070,
+    0x00F898B8
+};
+
+static void fill8(unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    unsigned char *b = (unsigned char *)backbuffer;
+    unsigned int i;
+
+    for (i = offset; i < count + offset; i++)
+        b[i] = color;
+
+}
+
+static void fill32(unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    unsigned int *b = (unsigned int *)backbuffer;
+    unsigned int i;
+
+    for (i = offset; i < count + offset; i++)
+        b[i] = colormap4[color];
+
+}
+
+void fill(unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    switch (settings.bpp)
+    {
+
+    case 8:
+        fill8(color, offset, count);
+
+        break;
+
+    case 32:
+        fill32(color, offset, count);
+
+        break;
+
+    }
+
+}
+
 static void flush(unsigned int line, unsigned int offset, unsigned int count)
 {
 
@@ -152,12 +206,8 @@ static void pollevent()
 void main()
 {
 
-    unsigned int i;
-
-    for (i = 0; i < 4096; i++)
-        backbuffer[i] = 0x02;
-
     video_getmode(&settings);
+    fill(0x02, 0, 4096);
     sendwmmap();
     pollevent();
 

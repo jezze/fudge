@@ -37,15 +37,15 @@ static unsigned char colormap[] = {
 };
 
 static unsigned int colormap4[] = {
-    0x000000,
-    0xFFFFFF,
-    0x181014,
-    0x20181C,
-    0x30282C,
-    0x105070,
-    0x307090,
-    0xB05070,
-    0xF898B8
+    0x00000000,
+    0x00FFFFFF,
+    0x00181014,
+    0x0020181C,
+    0x0030282C,
+    0x00105070,
+    0x00307090,
+    0x00B05070,
+    0x00F898B8
 };
 
 static void spawn()
