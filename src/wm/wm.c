@@ -468,10 +468,70 @@ static void pollevent()
 
             }
 
+            if (event.keypress.scancode == 0x11)
+            {
+
+                old.x = mouse.size.x;
+                old.y = mouse.size.y;
+                mouse.size.y -= 4;
+
+                if (mouse.size.y >= settings.h)
+                    mouse.size.y = 0;
+
+                draw(viewactive, &old);
+                draw(viewactive, &mouse.size);
+
+            }
+
             if (event.keypress.scancode == 0x19)
             {
 
                 spawn();
+
+            }
+
+            if (event.keypress.scancode == 0x1F)
+            {
+
+                old.x = mouse.size.x;
+                old.y = mouse.size.y;
+                mouse.size.y += 4;
+
+                if (mouse.size.y + mouse.size.h > settings.h)
+                    mouse.size.y = settings.h - mouse.size.h;
+
+                draw(viewactive, &old);
+                draw(viewactive, &mouse.size);
+
+            }
+
+            if (event.keypress.scancode == 0x1E)
+            {
+
+                old.x = mouse.size.x;
+                old.y = mouse.size.y;
+                mouse.size.x -= 4;
+
+                if (mouse.size.x >= settings.w)
+                    mouse.size.x = 0;
+
+                draw(viewactive, &old);
+                draw(viewactive, &mouse.size);
+
+            }
+
+            if (event.keypress.scancode == 0x20)
+            {
+
+                old.x = mouse.size.x;
+                old.y = mouse.size.y;
+                mouse.size.x += 4;
+
+                if (mouse.size.x + mouse.size.w > settings.w)
+                    mouse.size.x = settings.w - mouse.size.w;
+
+                draw(viewactive, &old);
+                draw(viewactive, &mouse.size);
 
             }
 
