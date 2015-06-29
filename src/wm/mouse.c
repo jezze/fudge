@@ -47,10 +47,10 @@ void mouse_draw(struct mouse *mouse, unsigned int bpp, unsigned int line)
 
 }
 
-void mouse_init(struct mouse *mouse)
+void mouse_init(struct mouse *mouse, struct box *screen)
 {
 
-    box_setsize(&mouse->size, 0, 0, 24, 24);
+    box_setsize(&mouse->size, screen->x + screen->w / 4, screen->y + screen->h / 4, 24, 24);
 
 }
 
