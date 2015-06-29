@@ -12,17 +12,11 @@
 #define WINDOWS                         64
 #define VIEWS                           8
 
-static struct box screen;
-static struct box menu;
-static struct box desktop;
 static struct mouse mouse;
-static struct panel title;
 static struct window window[WINDOWS];
 static struct list windows;
 static struct view view[VIEWS];
 static struct list views;
-static struct ctrl_videosettings oldsettings;
-static struct ctrl_videosettings settings;
 
 static unsigned char colormap[] = {
     0x00, 0x00, 0x00,
@@ -56,10 +50,10 @@ static void spawn()
 
 }
 
-void fill(unsigned int color, unsigned int offset, unsigned int count)
+void fill(unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    switch (settings.bpp)
+    switch (bpp)
     {
 
     case 8:
@@ -76,17 +70,17 @@ void fill(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static void drawdesktop(unsigned int line)
+static void drawbody(struct box *box, unsigned int bpp, unsigned int line)
 {
 
-    if (line < desktop.y || line >= desktop.y + desktop.h)
+    if (line < box->y || line >= box->y + box->h)
         return;
 
-    fill(WM_COLOR_BODY, desktop.x, desktop.w);
+    fill(bpp, WM_COLOR_BODY, box->x, box->w);
 
 }
 
-static void drawviews(struct list *views, unsigned int line)
+static void drawviews(struct list *views, unsigned int bpp, unsigned int line)
 {
 
     struct list_item *current;
@@ -96,7 +90,7 @@ static void drawviews(struct list *views, unsigned int line)
 
         struct view *view = current->data;
 
-        view_draw(view, line);
+        view_draw(view, bpp, line);
 
     }
 
@@ -134,7 +128,7 @@ static void sendwmdrawall(struct view *view, struct box *bb)
 
 }
 
-static void draw(struct view *view, struct box *bb, unsigned int notify)
+static void draw(struct ctrl_videosettings *settings, struct box *bb, struct view *view, unsigned int notify)
 {
 
     unsigned int line;
@@ -144,14 +138,13 @@ static void draw(struct view *view, struct box *bb, unsigned int notify)
     for (line = bb->y; line < bb->y + bb->h; line++)
     {
 
-        fill(0xFF, bb->x, bb->w);
+        fill(settings->bpp, WM_COLOR_TRANSPARENT, bb->x, bb->w);
 
-        if (!view->windowactive)
-            drawdesktop(line);
+        if (!view->windowfocus)
+            drawbody(bb, settings->bpp, line);
 
-        panel_draw(&title, line);
-        drawviews(&views, line);
-        flush(settings.w * line, settings.bpp, bb->x, bb->w);
+        drawviews(&views, settings->bpp, line);
+        flush(settings->w * line, settings->bpp, bb->x, bb->w);
 
     }
 
@@ -165,10 +158,9 @@ static void draw(struct view *view, struct box *bb, unsigned int notify)
     for (line = bb->y; line < bb->y + bb->h; line++)
     {
 
-        fill(0xFF, bb->x, bb->w);
-
-        mouse_draw(&mouse, line);
-        flush(settings.w * line, settings.bpp, bb->x, bb->w);
+        fill(settings->bpp, WM_COLOR_TRANSPARENT, bb->x, bb->w);
+        mouse_draw(&mouse, settings->bpp, line);
+        flush(settings->w * line, settings->bpp, bb->x, bb->w);
 
     }
 
@@ -176,7 +168,7 @@ static void draw(struct view *view, struct box *bb, unsigned int notify)
 
 }
 
-static void arrangewindows(struct view *view)
+static void arrangewindows(struct view *view, struct box *body)
 {
 
     unsigned int count = list_count(&view->windows);
@@ -192,15 +184,15 @@ static void arrangewindows(struct view *view)
     if (count == 1)
     {
 
-        box_setsize(&window->size, desktop.x, desktop.y, desktop.w, desktop.h);
+        box_setsize(&window->size, body->x, body->y, body->w, body->h);
 
         return;
 
     }
 
-    box_setsize(&window->size, desktop.x, desktop.y, view->center, desktop.h);
+    box_setsize(&window->size, body->x, body->y, view->center, body->h);
 
-    a = desktop.h / (count - 1);
+    a = body->h / (count - 1);
     i = 0;
 
     for (current = current->prev; current; current = current->prev)
@@ -208,7 +200,7 @@ static void arrangewindows(struct view *view)
 
         window = current->data;
 
-        box_setsize(&window->size, desktop.x + view->center, desktop.y + i * a, desktop.w - view->center, a);
+        box_setsize(&window->size, body->x + view->center, body->y + i * a, body->w - view->center, a);
 
         i++;
 
@@ -216,42 +208,42 @@ static void arrangewindows(struct view *view)
 
 }
 
-static void activatewindow(struct view *view, struct window *window)
+static struct window *focuswindow(struct window *old, struct window *new)
 {
 
-    if (view->windowactive)
-        view->windowactive->active = 0;
+    if (old)
+        window_deactivate(old);
 
-    view->windowactive = window;
+    if (new)
+        window_activate(new);
 
-    if (view->windowactive)
-        view->windowactive->active = 1;
+    return new;
 
 }
 
 static void nextwindow(struct view *view)
 {
 
-    if (!view->windowactive)
+    if (!view->windowfocus)
         return;
 
-    if (view->windowactive->item.next)
-        activatewindow(view, view->windowactive->item.next->data);
+    if (view->windowfocus->item.next)
+        view->windowfocus = focuswindow(view->windowfocus, view->windowfocus->item.next->data);
     else
-        activatewindow(view, view->windows.head->data);
+        view->windowfocus = focuswindow(view->windowfocus, view->windows.head->data);
 
 }
 
 static void prevwindow(struct view *view)
 {
 
-    if (!view->windowactive)
+    if (!view->windowfocus)
         return;
 
-    if (view->windowactive->item.prev)
-        activatewindow(view, view->windowactive->item.prev->data);
+    if (view->windowfocus->item.prev)
+        view->windowfocus = focuswindow(view->windowfocus, view->windowfocus->item.prev->data);
     else
-        activatewindow(view, view->windows.tail->data);
+        view->windowfocus = focuswindow(view->windowfocus, view->windows.tail->data);
 
 }
 
@@ -267,38 +259,36 @@ static void mapwindow(struct view *view, unsigned int source)
     window->source = source;
 
     list_move(&view->windows, &windows, &window->item);
-    activatewindow(view, window);
+
+    view->windowfocus = focuswindow(view->windowfocus, window);
 
 }
 
 static void unmapwindow(struct view *view)
 {
 
-    if (!view->windowactive)
+    if (!view->windowfocus)
         return;
 
-    list_move(&windows, &view->windows, &view->windowactive->item);
+    list_move(&windows, &view->windows, &view->windowfocus->item);
 
     if (view->windows.tail)
-        activatewindow(view, view->windows.tail->data);
+        view->windowfocus = focuswindow(view->windowfocus, view->windows.tail->data);
     else
-        activatewindow(view, 0);
+        view->windowfocus = focuswindow(view->windowfocus, 0);
 
 }
 
-static void activateview(struct view *view)
+static struct view *focusview(struct view *old, struct view *new)
 {
 
-    view->active = 1;
-    view->panel.active = 1;
+    if (old)
+        view_deactivate(old);
 
-}
+    if (new)
+        view_activate(new);
 
-static void deactivateview(struct view *view)
-{
-
-    view->active = 0;
-    view->panel.active = 0;
+    return new;
 
 }
 
@@ -340,17 +330,17 @@ static struct window *findwindow(struct view *view, struct mouse *mouse)
 
 }
 
-static void pollevent()
+static void pollevent(struct ctrl_videosettings *settings, struct box *screen, struct box *body)
 {
 
     union event event;
     unsigned int count, roff, quit = 0;
-    struct view *viewactive = views.head->data;
+    struct view *viewfocus = views.head->data;
     struct box old;
 
-    activateview(viewactive);
+    view_activate(viewfocus);
     box_setsize(&old, mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
-    draw(viewactive, &screen, 0);
+    draw(settings, screen, viewfocus, 0);
 
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
@@ -368,27 +358,24 @@ static void pollevent()
             if (event.keypress.scancode >= 0x02 && event.keypress.scancode < 0x0A)
             {
 
-                deactivateview(viewactive);
+                viewfocus = focusview(viewfocus, &view[event.keypress.scancode - 0x02]);
 
-                viewactive = &view[event.keypress.scancode - 0x02];
-
-                activateview(viewactive);
-                arrangewindows(viewactive);
-                draw(viewactive, &screen, 1);
+                arrangewindows(viewfocus, body);
+                draw(settings, screen, viewfocus, 1);
 
             }
 
             if (event.keypress.scancode == 0x10)
             {
 
-                if (viewactive->windowactive)
+                if (viewfocus->windowfocus)
                 {
 
-                    send_wmquit(viewactive->windowactive->source);
-                    unmapwindow(viewactive);
-                    arrangewindows(viewactive);
-                    sendwmresizeall(viewactive);
-                    draw(viewactive, &desktop, 1);
+                    send_wmquit(viewfocus->windowfocus->source);
+                    unmapwindow(viewfocus);
+                    arrangewindows(viewfocus, body);
+                    sendwmresizeall(viewfocus);
+                    draw(settings, body, viewfocus, 1);
 
                 }
 
@@ -401,11 +388,11 @@ static void pollevent()
                 old.y = mouse.size.y;
                 mouse.size.y -= 4;
 
-                if (mouse.size.y >= settings.h)
+                if (mouse.size.y >= screen->h)
                     mouse.size.y = 0;
 
-                draw(viewactive, &old, 1);
-                draw(viewactive, &mouse.size, 1);
+                draw(settings, &old, viewfocus, 1);
+                draw(settings, &mouse.size, viewfocus, 1);
 
             }
 
@@ -423,11 +410,11 @@ static void pollevent()
                 old.y = mouse.size.y;
                 mouse.size.y += 4;
 
-                if (mouse.size.y + mouse.size.h > settings.h)
-                    mouse.size.y = settings.h - mouse.size.h;
+                if (mouse.size.y + mouse.size.h > screen->h)
+                    mouse.size.y = screen->h - mouse.size.h;
 
-                draw(viewactive, &old, 1);
-                draw(viewactive, &mouse.size, 1);
+                draw(settings, &old, viewfocus, 1);
+                draw(settings, &mouse.size, viewfocus, 1);
 
             }
 
@@ -438,11 +425,11 @@ static void pollevent()
                 old.y = mouse.size.y;
                 mouse.size.x -= 4;
 
-                if (mouse.size.x >= settings.w)
+                if (mouse.size.x >= screen->w)
                     mouse.size.x = 0;
 
-                draw(viewactive, &old, 1);
-                draw(viewactive, &mouse.size, 1);
+                draw(settings, &old, viewfocus, 1);
+                draw(settings, &mouse.size, viewfocus, 1);
 
             }
 
@@ -453,49 +440,49 @@ static void pollevent()
                 old.y = mouse.size.y;
                 mouse.size.x += 4;
 
-                if (mouse.size.x + mouse.size.w > settings.w)
-                    mouse.size.x = settings.w - mouse.size.w;
+                if (mouse.size.x + mouse.size.w > screen->w)
+                    mouse.size.x = screen->w - mouse.size.w;
 
-                draw(viewactive, &old, 1);
-                draw(viewactive, &mouse.size, 1);
+                draw(settings, &old, viewfocus, 1);
+                draw(settings, &mouse.size, viewfocus, 1);
 
             }
 
             if (event.keypress.scancode == 0x23)
             {
 
-                viewactive->center -= (desktop.w / 32);
+                viewfocus->center -= (body->w / 32);
 
-                arrangewindows(viewactive);
-                sendwmresizeall(viewactive);
-                draw(viewactive, &desktop, 1);
+                arrangewindows(viewfocus, body);
+                sendwmresizeall(viewfocus);
+                draw(settings, body, viewfocus, 1);
 
             }
 
             if (event.keypress.scancode == 0x24)
             {
 
-                nextwindow(viewactive);
-                draw(viewactive, &desktop, 0);
+                nextwindow(viewfocus);
+                draw(settings, body, viewfocus, 0);
 
             }
 
             if (event.keypress.scancode == 0x25)
             {
 
-                prevwindow(viewactive);
-                draw(viewactive, &desktop, 0);
+                prevwindow(viewfocus);
+                draw(settings, body, viewfocus, 0);
 
             }
 
             if (event.keypress.scancode == 0x26)
             {
 
-                viewactive->center += (desktop.w / 32);
+                viewfocus->center += (body->w / 32);
 
-                arrangewindows(viewactive);
-                sendwmresizeall(viewactive);
-                draw(viewactive, &desktop, 1);
+                arrangewindows(viewfocus, body);
+                sendwmresizeall(viewfocus);
+                draw(settings, body, viewfocus, 1);
 
             }
 
@@ -512,31 +499,25 @@ static void pollevent()
             if (event.mousepress.button == 1)
             {
 
-                struct view *view;
-                struct window *window;
-                
-                view = findview(&views, &mouse);
+                struct view *view = findview(&views, &mouse);
+                struct window *window = findwindow(viewfocus, &mouse);
 
-                if (view && view != viewactive)
+                if (view && view != viewfocus)
                 {
 
-                    deactivateview(viewactive);
+                    viewfocus = focusview(viewfocus, view);
 
-                    viewactive = view;
-
-                    activateview(viewactive);
-                    arrangewindows(viewactive);
-                    draw(viewactive, &screen, 1);
+                    arrangewindows(viewfocus, body);
+                    draw(settings, screen, viewfocus, 1);
 
                 }
 
-                window = findwindow(viewactive, &mouse);
-
-                if (window && window != viewactive->windowactive)
+                if (window && window != viewfocus->windowfocus)
                 {
 
-                    activatewindow(viewactive, window);
-                    draw(viewactive, &desktop, 0);
+                    viewfocus->windowfocus = focuswindow(viewfocus->windowfocus, window);
+
+                    draw(settings, body, viewfocus, 0);
 
                 }
 
@@ -550,28 +531,28 @@ static void pollevent()
             mouse.size.x += event.mousemove.relx;
             mouse.size.y -= event.mousemove.rely;
 
-            if (event.mousemove.relx > 0 && mouse.size.x + mouse.size.w > settings.w)
-                mouse.size.x = settings.w - mouse.size.w;
+            if (event.mousemove.relx > 0 && mouse.size.x + mouse.size.w > screen->w)
+                mouse.size.x = screen->w - mouse.size.w;
 
-            if (event.mousemove.relx < 0 && mouse.size.x >= settings.w)
+            if (event.mousemove.relx < 0 && mouse.size.x >= screen->w)
                 mouse.size.x = 0;
 
-            if (event.mousemove.rely < 0 && mouse.size.y + mouse.size.h > settings.h)
-                mouse.size.y = settings.h - mouse.size.h;
+            if (event.mousemove.rely < 0 && mouse.size.y + mouse.size.h > screen->h)
+                mouse.size.y = screen->h - mouse.size.h;
 
-            if (event.mousemove.rely > 0 && mouse.size.y >= settings.h)
+            if (event.mousemove.rely > 0 && mouse.size.y >= screen->h)
                 mouse.size.y = 0;
 
-            draw(viewactive, &old, 1);
-            draw(viewactive, &mouse.size, 1);
+            draw(settings, &old, viewfocus, 1);
+            draw(settings, &mouse.size, viewfocus, 1);
 
             break;
 
         case EVENT_WMMAP:
-            mapwindow(viewactive, event.header.source);
-            arrangewindows(viewactive);
-            sendwmresizeall(viewactive);
-            draw(viewactive, &desktop, 1);
+            mapwindow(viewfocus, event.header.source);
+            arrangewindows(viewfocus, body);
+            sendwmresizeall(viewfocus);
+            draw(settings, body, viewfocus, 1);
 
             break;
 
@@ -603,7 +584,7 @@ static void setupwindows()
 
 }
 
-static void setupviews()
+static void setupviews(struct box *menu, struct box *body)
 {
 
     unsigned int i;
@@ -613,8 +594,8 @@ static void setupviews()
     for (i = 0; i < VIEWS; i++)
     {
 
-        view_init(&view[i], desktop.w / 2);
-        box_setsize(&view[i].panel.size, menu.x + i * BOXSIZE, menu.y, BOXSIZE, BOXSIZE);
+        view_init(&view[i], body->w / 2);
+        box_setsize(&view[i].panel.size, menu->x + i * menu->w / VIEWS, menu->y, menu->w / VIEWS, menu->h);
         list_add(&views, &view[i].item);
 
     }
@@ -624,22 +605,26 @@ static void setupviews()
 void main()
 {
 
-    colormap4[0xFF] = 0x00FF00FF;
+    struct ctrl_videosettings oldsettings;
+    struct ctrl_videosettings settings;
+    struct box screen;
+    struct box menu;
+    struct box body;
+
+    colormap4[WM_COLOR_TRANSPARENT] = 0x00FF00FF;
 
     ctrl_setvideosettings(&settings, 1024, 768, 32);
     video_getmode(&oldsettings);
     video_setmode(&settings);
     video_setcolormap(0, 3, 9, colormap);
-    mouse_init(&mouse);
     box_setsize(&screen, 0, 0, settings.w, settings.h);
-    box_setsize(&menu, screen.x, screen.y, screen.w, BOXSIZE);
-    box_setsize(&desktop, screen.x, screen.y + BOXSIZE, screen.w, screen.h - BOXSIZE);
+    box_setsize(&menu, screen.x, screen.y, screen.w, 32);
+    box_setsize(&body, screen.x, screen.y + menu.h, screen.w, screen.h - menu.h);
+    mouse_init(&mouse);
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, mouse.size.w, mouse.size.h);
-    panel_init(&title);
-    box_setsize(&title.size, menu.x + VIEWS * BOXSIZE, menu.y, menu.w - VIEWS * BOXSIZE, BOXSIZE);
     setupwindows();
-    setupviews();
-    pollevent(&settings);
+    setupviews(&menu, &body);
+    pollevent(&settings, &screen, &body);
     video_setmode(&oldsettings);
 
 }

@@ -5,5 +5,5 @@ struct mouse
 
 };
 
-void mouse_draw(struct mouse *mouse, unsigned int line);
+void mouse_draw(struct mouse *mouse, unsigned int bpp, unsigned int line);
 void mouse_init(struct mouse *mouse);

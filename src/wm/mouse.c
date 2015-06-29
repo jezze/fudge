@@ -31,7 +31,7 @@ static unsigned char pointer[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-void mouse_draw(struct mouse *mouse, unsigned int line)
+void mouse_draw(struct mouse *mouse, unsigned int bpp, unsigned int line)
 {
 
     unsigned int i;
@@ -43,7 +43,7 @@ void mouse_draw(struct mouse *mouse, unsigned int line)
     off = (line - mouse->size.y) * mouse->size.w;
 
     for (i = 0; i < 24; i++)
-        fill(pointer[off + i], mouse->size.x + i, 1);
+        fill(bpp, pointer[off + i], mouse->size.x + i, 1);
 
 }
 
