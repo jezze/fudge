@@ -8,6 +8,8 @@ DIR:=$(CUR)/mandelbrot
 include $(DIR)/mandelbrot.mk
 DIR:=$(CUR)/modules
 include $(DIR)/rules.mk
+DIR:=$(CUR)/pcf
+include $(DIR)/pcf.mk
 DIR:=$(CUR)/pcx
 include $(DIR)/pcxcmap.mk
 include $(DIR)/pcxdata.mk
