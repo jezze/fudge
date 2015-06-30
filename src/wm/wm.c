@@ -341,19 +341,25 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
         {
 
         case EVENT_KEYPRESS:
-            if (event.keypress.scancode >= 0x02 && event.keypress.scancode < 0x0A)
+            switch (event.keypress.scancode)
             {
 
+            case 0x02:
+            case 0x03:
+            case 0x04:
+            case 0x05:
+            case 0x06:
+            case 0x07:
+            case 0x08:
+            case 0x09:
                 viewfocus = focusview(viewfocus, &view[event.keypress.scancode - 0x02]);
 
                 arrangewindows(viewfocus);
                 draw(settings, screen, 1);
 
-            }
+                break;
 
-            if (event.keypress.scancode == 0x10)
-            {
-
+            case 0x10:
                 if (viewfocus->windowfocus)
                 {
 
@@ -365,11 +371,9 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
                 }
 
-            }
+                break;
 
-            if (event.keypress.scancode == 0x11)
-            {
-
+            case 0x11:
                 mouse.size.y -= 4;
 
                 if (mouse.size.y >= screen->h)
@@ -378,31 +382,14 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 draw(settings, &oldmouse, 1);
                 draw(settings, &mouse.size, 1);
 
-            }
+                break;
 
-            if (event.keypress.scancode == 0x19)
-            {
-
+            case 0x19:
                 spawn();
 
-            }
+                break;
 
-            if (event.keypress.scancode == 0x1F)
-            {
-
-                mouse.size.y += 4;
-
-                if (mouse.size.y + mouse.size.h > screen->h)
-                    mouse.size.y = screen->h - mouse.size.h;
-
-                draw(settings, &oldmouse, 1);
-                draw(settings, &mouse.size, 1);
-
-            }
-
-            if (event.keypress.scancode == 0x1E)
-            {
-
+            case 0x1E:
                 mouse.size.x -= 4;
 
                 if (mouse.size.x >= screen->w)
@@ -411,11 +398,20 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 draw(settings, &oldmouse, 1);
                 draw(settings, &mouse.size, 1);
 
-            }
+                break;
 
-            if (event.keypress.scancode == 0x20)
-            {
+            case 0x1F:
+                mouse.size.y += 4;
 
+                if (mouse.size.y + mouse.size.h > screen->h)
+                    mouse.size.y = screen->h - mouse.size.h;
+
+                draw(settings, &oldmouse, 1);
+                draw(settings, &mouse.size, 1);
+
+                break;
+
+            case 0x20:
                 mouse.size.x += 4;
 
                 if (mouse.size.x + mouse.size.w > screen->w)
@@ -424,77 +420,74 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 draw(settings, &oldmouse, 1);
                 draw(settings, &mouse.size, 1);
 
-            }
+                break;
 
-            if (event.keypress.scancode == 0x23)
-            {
-
+            case 0x23:
                 viewfocus->center -= (viewfocus->body.w / 32);
 
                 arrangewindows(viewfocus);
                 sendwmresizeall(viewfocus);
                 draw(settings, &viewfocus->body, 1);
 
-            }
+                break;
 
-            if (event.keypress.scancode == 0x24)
-            {
-
+            case 0x24:
                 nextwindow(viewfocus);
                 draw(settings, &viewfocus->body, 0);
 
-            }
+                break;
 
-            if (event.keypress.scancode == 0x25)
-            {
-
+            case 0x25:
                 prevwindow(viewfocus);
                 draw(settings, &viewfocus->body, 0);
 
-            }
+                break;
 
-            if (event.keypress.scancode == 0x26)
-            {
-
+            case 0x26:
                 viewfocus->center += (viewfocus->body.w / 32);
 
                 arrangewindows(viewfocus);
                 sendwmresizeall(viewfocus);
                 draw(settings, &viewfocus->body, 1);
 
-            }
+                break;
 
-            if (event.keypress.scancode == 0x2C)
-            {
-
+            case 0x2C:
                 quit = 1;
 
+                break;
+
             }
 
-            break;
-
         case EVENT_MOUSEPRESS:
-            if (event.mousepress.button == 1)
+            switch (event.mousepress.button)
             {
 
-                struct view *view = findview(&views, &mouse);
-                struct window *window = findwindow(viewfocus, &mouse);
-
-                if (view && view != viewfocus)
+            case 0x01:
                 {
 
-                    viewfocus = focusview(viewfocus, view);
+                    struct view *view = findview(&views, &mouse);
+                    struct window *window = findwindow(viewfocus, &mouse);
 
-                    draw(settings, screen, 1);
+                    if (view && view != viewfocus)
+                    {
 
-                }
+                        viewfocus = focusview(viewfocus, view);
 
-                if (window && window != viewfocus->windowfocus)
-                {
+                        draw(settings, screen, 1);
 
-                    viewfocus->windowfocus = focuswindow(viewfocus->windowfocus, window);
+                    }
 
-                    draw(settings, &viewfocus->body, 0);
+                    if (window && window != viewfocus->windowfocus)
+                    {
+
+                        viewfocus->windowfocus = focuswindow(viewfocus->windowfocus, window);
+
+                        draw(settings, &viewfocus->body, 0);
+
+                    }
+
+                    break;
 
                 }
 
