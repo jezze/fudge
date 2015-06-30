@@ -118,7 +118,7 @@ static void sendwmdrawall(struct view *view, struct box *bb)
 
 }
 
-static void draw(struct ctrl_videosettings *settings, struct box *bb, struct view *view, unsigned int notify)
+static void draw(struct ctrl_videosettings *settings, struct box *bb, unsigned int notify)
 {
 
     unsigned int line;
@@ -325,8 +325,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
     struct box oldmouse;
 
     view_activate(viewfocus);
-    draw(settings, screen, viewfocus, 0);
-
+    draw(settings, screen, 0);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
 
@@ -348,7 +347,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 viewfocus = focusview(viewfocus, &view[event.keypress.scancode - 0x02]);
 
                 arrangewindows(viewfocus);
-                draw(settings, screen, viewfocus, 1);
+                draw(settings, screen, 1);
 
             }
 
@@ -362,7 +361,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                     unmapwindow(viewfocus);
                     arrangewindows(viewfocus);
                     sendwmresizeall(viewfocus);
-                    draw(settings, &viewfocus->body, viewfocus, 1);
+                    draw(settings, &viewfocus->body, 1);
 
                 }
 
@@ -376,8 +375,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 if (mouse.size.y >= screen->h)
                     mouse.size.y = 0;
 
-                draw(settings, &oldmouse, viewfocus, 1);
-                draw(settings, &mouse.size, viewfocus, 1);
+                draw(settings, &oldmouse, 1);
+                draw(settings, &mouse.size, 1);
 
             }
 
@@ -396,8 +395,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 if (mouse.size.y + mouse.size.h > screen->h)
                     mouse.size.y = screen->h - mouse.size.h;
 
-                draw(settings, &oldmouse, viewfocus, 1);
-                draw(settings, &mouse.size, viewfocus, 1);
+                draw(settings, &oldmouse, 1);
+                draw(settings, &mouse.size, 1);
 
             }
 
@@ -409,8 +408,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 if (mouse.size.x >= screen->w)
                     mouse.size.x = 0;
 
-                draw(settings, &oldmouse, viewfocus, 1);
-                draw(settings, &mouse.size, viewfocus, 1);
+                draw(settings, &oldmouse, 1);
+                draw(settings, &mouse.size, 1);
 
             }
 
@@ -422,8 +421,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 if (mouse.size.x + mouse.size.w > screen->w)
                     mouse.size.x = screen->w - mouse.size.w;
 
-                draw(settings, &oldmouse, viewfocus, 1);
-                draw(settings, &mouse.size, viewfocus, 1);
+                draw(settings, &oldmouse, 1);
+                draw(settings, &mouse.size, 1);
 
             }
 
@@ -434,7 +433,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
                 arrangewindows(viewfocus);
                 sendwmresizeall(viewfocus);
-                draw(settings, &viewfocus->body, viewfocus, 1);
+                draw(settings, &viewfocus->body, 1);
 
             }
 
@@ -442,7 +441,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
             {
 
                 nextwindow(viewfocus);
-                draw(settings, &viewfocus->body, viewfocus, 0);
+                draw(settings, &viewfocus->body, 0);
 
             }
 
@@ -450,7 +449,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
             {
 
                 prevwindow(viewfocus);
-                draw(settings, &viewfocus->body, viewfocus, 0);
+                draw(settings, &viewfocus->body, 0);
 
             }
 
@@ -461,7 +460,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
                 arrangewindows(viewfocus);
                 sendwmresizeall(viewfocus);
-                draw(settings, &viewfocus->body, viewfocus, 1);
+                draw(settings, &viewfocus->body, 1);
 
             }
 
@@ -486,8 +485,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
                     viewfocus = focusview(viewfocus, view);
 
-                    arrangewindows(viewfocus);
-                    draw(settings, screen, viewfocus, 1);
+                    draw(settings, screen, 1);
 
                 }
 
@@ -496,7 +494,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
                     viewfocus->windowfocus = focuswindow(viewfocus->windowfocus, window);
 
-                    draw(settings, &viewfocus->body, viewfocus, 0);
+                    draw(settings, &viewfocus->body, 0);
 
                 }
 
@@ -520,8 +518,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
             if (event.mousemove.rely > 0 && mouse.size.y >= screen->h)
                 mouse.size.y = 0;
 
-            draw(settings, &oldmouse, viewfocus, 1);
-            draw(settings, &mouse.size, viewfocus, 1);
+            draw(settings, &oldmouse, 1);
+            draw(settings, &mouse.size, 1);
 
             break;
 
@@ -529,7 +527,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
             mapwindow(viewfocus, event.header.source);
             arrangewindows(viewfocus);
             sendwmresizeall(viewfocus);
-            draw(settings, &viewfocus->body, viewfocus, 1);
+            draw(settings, &viewfocus->body, 1);
 
             break;
 
