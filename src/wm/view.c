@@ -14,7 +14,7 @@ void view_draw(struct view *view, unsigned int bpp, unsigned int line)
     if (!view->active)
         return;
 
-    if (view->windowfocus)
+    if (view->windows.head)
     {
 
         struct list_item *current;

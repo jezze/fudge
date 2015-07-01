@@ -70,6 +70,7 @@ void window_init(struct window *window)
 
     list_inititem(&window->item, window);
     box_setsize(&window->size, 0, 0, 0, 0);
+    box_setsize(&window->screen, 0, 0, 0, 0);
 
     window->active = 0;
     window->source = 0;

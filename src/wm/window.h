@@ -4,6 +4,7 @@ struct window
     struct list_item item;
     unsigned int active;
     struct box size;
+    struct box screen;
     unsigned int source;
 
 };

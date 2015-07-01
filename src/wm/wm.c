@@ -70,12 +70,12 @@ void fill(unsigned int bpp, unsigned int color, unsigned int offset, unsigned in
 
 }
 
-static void drawviews(struct list *views, unsigned int bpp, unsigned int line)
+static void drawviews(unsigned int bpp, unsigned int line)
 {
 
     struct list_item *current;
 
-    for (current = views->head; current; current = current->next)
+    for (current = views.head; current; current = current->next)
     {
 
         struct view *view = current->data;
@@ -86,33 +86,28 @@ static void drawviews(struct list *views, unsigned int bpp, unsigned int line)
 
 }
 
-static void sendwmresizeall(struct view *view)
+static void sendwmdrawall(struct box *bb)
 {
 
     struct list_item *current;
 
-    for (current = view->windows.head; current; current = current->next)
+    for (current = views.head; current; current = current->next)
     {
 
-        struct window *window = current->data;
+        struct view *view = current->data;
+        struct list_item *current2;
 
-        send_wmresize(window->source, window->size.x + 3, window->size.y + 3, window->size.w - 6, window->size.h - 6);
+        if (!view->active)
+            continue;
 
-    }
+        for (current2 = view->windows.head; current2; current2 = current2->next)
+        {
 
-}
+            struct window *window = current2->data;
 
-static void sendwmdrawall(struct view *view, struct box *bb)
-{
+            send_wmdraw(window->source, bb->x, bb->y, bb->w, bb->h);
 
-    struct list_item *current;
-
-    for (current = view->windows.head; current; current = current->next)
-    {
-
-        struct window *window = current->data;
-
-        send_wmdraw(window->source, bb->x, bb->y, bb->w, bb->h);
+        }
 
     }
 
@@ -129,7 +124,7 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb, unsigned i
     {
 
         fill(settings->bpp, WM_COLOR_TRANSPARENT, bb->x, bb->w);
-        drawviews(&views, settings->bpp, line);
+        drawviews(settings->bpp, line);
         flush(settings->w * line, settings->bpp, bb->x, bb->w);
 
     }
@@ -137,7 +132,7 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb, unsigned i
     video_close();
 
     if (notify)
-        sendwmdrawall(view, bb);
+        sendwmdrawall(bb);
 
     video_open();
 
@@ -171,12 +166,16 @@ static void arrangewindows(struct view *view)
     {
 
         box_setsize(&window->size, view->body.x, view->body.y, view->body.w, view->body.h);
+        box_setsize(&window->screen, window->size.x + 3, window->size.y + 3, window->size.w - 6, window->size.h - 6);
+        send_wmresize(window->source, window->screen.x, window->screen.y, window->screen.w, window->screen.h);
 
         return;
 
     }
 
     box_setsize(&window->size, view->body.x, view->body.y, view->center, view->body.h);
+    box_setsize(&window->screen, window->size.x + 3, window->size.y + 3, window->size.w - 6, window->size.h - 6);
+    send_wmresize(window->source, window->screen.x, window->screen.y, window->screen.w, window->screen.h);
 
     a = view->body.h / (count - 1);
     i = 0;
@@ -187,6 +186,8 @@ static void arrangewindows(struct view *view)
         window = current->data;
 
         box_setsize(&window->size, view->body.x + view->center, view->body.y + i * a, view->body.w - view->center, a);
+        box_setsize(&window->screen, window->size.x + 3, window->size.y + 3, window->size.w - 6, window->size.h - 6);
+        send_wmresize(window->source, window->screen.x, window->screen.y, window->screen.w, window->screen.h);
 
         i++;
 
@@ -354,7 +355,6 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
             case 0x09:
                 viewfocus = focusview(viewfocus, &view[event.keypress.scancode - 0x02]);
 
-                arrangewindows(viewfocus);
                 draw(settings, screen, 1);
 
                 break;
@@ -366,7 +366,6 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                     send_wmquit(viewfocus->windowfocus->source);
                     unmapwindow(viewfocus);
                     arrangewindows(viewfocus);
-                    sendwmresizeall(viewfocus);
                     draw(settings, &viewfocus->body, 1);
 
                 }
@@ -426,7 +425,6 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 viewfocus->center -= (viewfocus->body.w / 32);
 
                 arrangewindows(viewfocus);
-                sendwmresizeall(viewfocus);
                 draw(settings, &viewfocus->body, 1);
 
                 break;
@@ -447,7 +445,6 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 viewfocus->center += (viewfocus->body.w / 32);
 
                 arrangewindows(viewfocus);
-                sendwmresizeall(viewfocus);
                 draw(settings, &viewfocus->body, 1);
 
                 break;
@@ -519,7 +516,6 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
         case EVENT_WMMAP:
             mapwindow(viewfocus, event.header.source);
             arrangewindows(viewfocus);
-            sendwmresizeall(viewfocus);
             draw(settings, &viewfocus->body, 1);
 
             break;
