@@ -1,5 +1,5 @@
 BIN_$(DIR):=$(DIR)/pcf
-OBJ_$(DIR):=$(DIR)/pcf.o
+OBJ_$(DIR):=$(DIR)/pcf.o $(DIR)/lib.o
 
 $(BIN_$(DIR)): $(OBJ_$(DIR)) $(SRC_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
