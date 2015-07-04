@@ -117,7 +117,6 @@ struct pcf_metricsdata_compressed
     unsigned char width;
     unsigned char ascent;
     unsigned char descent;
-    unsigned char attributes;
 
 } __attribute__((packed));
 
@@ -187,11 +186,19 @@ void writestring(unsigned int count, char *text)
     for (i = 0; i < count; i++)
     {
 
-        unsigned int encoding = text[i] - convert16(bdfencoding.mincharorbyte2, bdfencoding.format);
+        unsigned int encoding = text[i] - bdfencoding.mincharorbyte2;
         unsigned short glyphindex = convert16(glyphindices[encoding], bdfencoding.format);
-        unsigned int width = (metrics.format & PCF_FORMAT_COMPRESSED) ? metricsdatacompressed[glyphindex].width : convert16(metricsdatanormal[glyphindex].width, metrics.format);
+        unsigned int lbearing = (metrics.format & PCF_FORMAT_COMPRESSED) ? metricsdatacompressed[glyphindex].lbearing - 0x80 : convert16(metricsdatanormal[glyphindex].lbearing, metrics.format);
+        unsigned int rbearing = (metrics.format & PCF_FORMAT_COMPRESSED) ? metricsdatacompressed[glyphindex].rbearing - 0x80 : convert16(metricsdatanormal[glyphindex].rbearing, metrics.format);
+        unsigned int width = (metrics.format & PCF_FORMAT_COMPRESSED) ? metricsdatacompressed[glyphindex].width - 0x80 : convert16(metricsdatanormal[glyphindex].width, metrics.format);
+        unsigned int ascent = (metrics.format & PCF_FORMAT_COMPRESSED) ? metricsdatacompressed[glyphindex].ascent - 0x80 : convert16(metricsdatanormal[glyphindex].ascent, metrics.format);
+        unsigned int descent = (metrics.format & PCF_FORMAT_COMPRESSED) ? metricsdatacompressed[glyphindex].descent - 0x80 : convert16(metricsdatanormal[glyphindex].descent, metrics.format);
 
+        writenum(lbearing, 10);
+        writenum(rbearing, 10);
         writenum(width, 10);
+        writenum(ascent, 10);
+        writenum(descent, 10);
         writedata(4, convert32(bitmapoffset[glyphindex], bitmap.format), 72, bitmapdata);
 
     }
@@ -207,7 +214,6 @@ void main()
     struct pcf_entry *bitmapentry;
     struct pcf_entry *metricsentry;
     unsigned int bitmapsizes[4];
-    unsigned int bitmapsize;
 
     call_open(CALL_P0);
     call_read(CALL_P0, 0, sizeof (struct pcf_header), 1, &header);
@@ -242,12 +248,15 @@ void main()
     call_read(CALL_P0, bitmapentry->offset + sizeof (struct pcf_bitmap), sizeof (unsigned int), bitmap.count, &bitmapoffset);
     call_read(CALL_P0, bitmapentry->offset + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * bitmap.count, sizeof (unsigned int), 4, bitmapsizes);
 
-    bitmapsize = convert32(bitmapsizes[bitmap.format & 3], bitmap.format);
+    bitmapsizes[0] = convert32(bitmapsizes[0], bitmap.format);
+    bitmapsizes[1] = convert32(bitmapsizes[1], bitmap.format);
+    bitmapsizes[2] = convert32(bitmapsizes[2], bitmap.format);
+    bitmapsizes[3] = convert32(bitmapsizes[3], bitmap.format);
 
-    if (bitmapsize > 0x8000)
+    if (bitmapsizes[bitmap.format & 3] > 0x8000)
         return;
 
-    call_read(CALL_P0, bitmapentry->offset + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * bitmap.count + sizeof (unsigned int) * 4, sizeof (unsigned char), bitmapsize, bitmapdata);
+    call_read(CALL_P0, bitmapentry->offset + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * bitmap.count + sizeof (unsigned int) * 4, sizeof (unsigned char), bitmapsizes[bitmap.format & 3], bitmapdata);
     call_read(CALL_P0, metricsentry->offset, sizeof (struct pcf_metrics), 1, &metrics);
 
     if (metrics.format & PCF_FORMAT_COMPRESSED)
@@ -279,6 +288,13 @@ void main()
     }
 
     call_read(CALL_P0, bdfencodingentry->offset, sizeof (struct pcf_bdfencoding), 1, &bdfencoding);
+
+    bdfencoding.mincharorbyte2 = convert16(bdfencoding.mincharorbyte2, bdfencoding.format);
+    bdfencoding.maxcharorbyte2 = convert16(bdfencoding.maxcharorbyte2, bdfencoding.format);
+    bdfencoding.minbyte1 = convert16(bdfencoding.minbyte1, bdfencoding.format);
+    bdfencoding.maxbyte1 = convert16(bdfencoding.maxbyte1, bdfencoding.format);
+    bdfencoding.defaultchar = convert16(bdfencoding.defaultchar, bdfencoding.format);
+
     call_read(CALL_P0, bdfencodingentry->offset + sizeof (struct pcf_bdfencoding), sizeof (unsigned short), bitmap.count, glyphindices);
     writestring(3, "A Hello World!");
     call_close(CALL_P0);
