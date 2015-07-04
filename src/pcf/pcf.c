@@ -136,7 +136,60 @@ struct pcf_entry *pcf_findentry(struct pcf_header *header, struct pcf_entry *ent
 
 }
 
+static void writenum(unsigned int value, unsigned int base)
+{
+
+    char num[32];
+
+    call_write(CALL_PO, 0, ascii_wvalue(num, 32, value, base, 0), 1, num);
+    call_write(CALL_PO, 0, 1, 1, "\n");
+
+}
+
+static void writedata(unsigned int size, unsigned int offset, unsigned int count, unsigned char *buffer)
+{
+
+    char num[32];
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        call_write(CALL_PO, 0, ascii_wzerovalue(num, 32, buffer[offset + i], 16, 2, 0), 1, num);
+
+        if (!((i + 1) % size))
+            call_write(CALL_PO, 0, 2, 1, "  ");
+
+    }
+
+    call_write(CALL_PO, 0, 1, 1, "\n");
+
+}
+
+static struct pcf_bdfencoding bdfencoding;
+static struct pcf_bitmap bitmap;
+static unsigned short glyphindices[256];
+static unsigned int bitmapoffset[256];
 static unsigned char bitmapdata[0x8000];
+
+void writestring(unsigned int count, char *text)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int encoding = text[i] - convert16(bdfencoding.mincharorbyte2, bdfencoding.format);
+        unsigned short glyphindex = convert16(glyphindices[encoding], bdfencoding.format);
+
+        writenum(encoding, 10);
+        writenum(glyphindex, 10);
+        writedata(4, convert32(bitmapoffset[glyphindex], bitmap.format), 72, bitmapdata);
+
+    }
+
+}
 
 void main()
 {
@@ -145,8 +198,9 @@ void main()
     struct pcf_entry entries[16];
     struct pcf_entry *bdfencodingentry;
     struct pcf_entry *bitmapentry;
-    struct pcf_bdfencoding bdfencoding;
-    struct pcf_bitmap bitmap;
+    unsigned int bitmapsizes[4];
+    unsigned int bitmapsize;
+    unsigned int glyphcount;
 
     call_open(CALL_P0);
     call_read(CALL_P0, 0, sizeof (struct pcf_header), 1, &header);
@@ -166,59 +220,25 @@ void main()
     if (!bitmapentry)
         return;
 
-    {
+    call_read(CALL_P0, bitmapentry->offset, sizeof (struct pcf_bitmap), 1, &bitmap);
 
-        char num[32];
-        unsigned int encoding;
-        unsigned int count;
-        unsigned short glyphindex;
-        unsigned int glyphcount;
-        unsigned int bitmapoffset;
-        unsigned int bitmapsizes[4];
-        unsigned int bitmapsize;
-        unsigned int i;
+    glyphcount = convert32(bitmap.count, bitmap.format);
 
-        call_read(CALL_P0, bdfencodingentry->offset, sizeof (struct pcf_bdfencoding), 1, &bdfencoding);
+    if (glyphcount > 256)
+        return;
 
-        encoding = 'A' - convert16(bdfencoding.mincharorbyte2, bdfencoding.format);
+    call_read(CALL_P0, bitmapentry->offset + sizeof (struct pcf_bitmap) + sizeof (unsigned int), sizeof (unsigned int), glyphcount, &bitmapoffset);
+    call_read(CALL_P0, bitmapentry->offset + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * glyphcount, sizeof (unsigned int), 4, bitmapsizes);
 
-        call_read(CALL_P0, bdfencodingentry->offset + sizeof (struct pcf_bdfencoding) + sizeof (unsigned short) * encoding - 2, sizeof (unsigned short), 1, &glyphindex);
+    bitmapsize = convert32(bitmapsizes[bitmap.format & 3], bitmap.format);
 
-        glyphindex = convert16(glyphindex, bdfencoding.format);
+    if (bitmapsize > 0x8000)
+        return;
 
-        call_read(CALL_P0, bitmapentry->offset, sizeof (struct pcf_bitmap), 1, &bitmap);
-
-        glyphcount = convert32(bitmap.count, bitmap.format);
-
-        call_read(CALL_P0, bitmapentry->offset + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * glyphindex, sizeof (unsigned int), 1, &bitmapoffset);
-
-        bitmapoffset = convert32(bitmapoffset, bitmap.format);
-
-        call_read(CALL_P0, bitmapentry->offset + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * glyphcount, sizeof (unsigned int), 4, bitmapsizes);
-
-        bitmapsize = convert32(bitmapsizes[bitmap.format & 3], bitmap.format);
-
-        call_read(CALL_P0, bitmapentry->offset + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * glyphcount + sizeof (unsigned int) * 4, sizeof (unsigned char), bitmapsize, bitmapdata);
-
-        count = ascii_wvalue(num, 32, bitmapsize, 10, 0);
-
-        call_write(CALL_PO, 0, count, 1, num);
-        call_write(CALL_PO, 0, 1, 1, "\n");
-
-        for (i = 0; i < 72; i++)
-        {
-
-            count = ascii_wzerovalue(num, 32, bitmapdata[bitmapoffset + i], 16, 2, 0);
-
-            call_write(CALL_PO, 0, count, 1, num);
-            call_write(CALL_PO, 0, 2, 1, "  ");
-
-        }
-
-        call_write(CALL_PO, 0, 1, 1, "\n");
-
-    }
-
+    call_read(CALL_P0, bitmapentry->offset + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * glyphcount + sizeof (unsigned int) * 4, sizeof (unsigned char), bitmapsize, bitmapdata);
+    call_read(CALL_P0, bdfencodingentry->offset, sizeof (struct pcf_bdfencoding), 1, &bdfencoding);
+    call_read(CALL_P0, bdfencodingentry->offset + sizeof (struct pcf_bdfencoding) - 4, sizeof (unsigned short), glyphcount, glyphindices);
+    writestring(3, "A Hello World!");
     call_close(CALL_P0);
 
 }
