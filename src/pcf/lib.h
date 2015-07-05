@@ -108,4 +108,4 @@ unsigned int pcf_getascent(unsigned short index);
 unsigned int pcf_getdescent(unsigned short index);
 unsigned int pcf_getpadding();
 void *pcf_getdata(unsigned short index);
-void pcf_load(unsigned int descriptor);
+void pcf_load(unsigned int descriptor, struct pcf_header *header);

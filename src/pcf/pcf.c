@@ -58,7 +58,11 @@ static void writestring(unsigned int count, char *text)
 void main()
 {
 
-    pcf_load(CALL_P0);
+    struct pcf_header header;
+
+    call_open(CALL_P0);
+    pcf_load(CALL_P0, &header);
+    call_close(CALL_P0);
     writestring(3, "A Hello World!");
 
 }
