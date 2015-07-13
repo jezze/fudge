@@ -4,8 +4,8 @@
 .extern arch_pagefault
 .extern arch_syscall
 
-.global arch_isrgeneralfault
-arch_isrgeneralfault:
+.global isr_generalfault
+isr_generalfault:
     pusha
     movl %esp, %eax
     pushl %eax
@@ -24,8 +24,8 @@ arch_isrgeneralfault:
     addl $4, %esp
     iret
 
-.global arch_isrpagefault
-arch_isrpagefault:
+.global isr_pagefault
+isr_pagefault:
     pusha
     movl %esp, %eax
     pushl %eax
@@ -44,8 +44,8 @@ arch_isrpagefault:
     addl $4, %esp
     iret
 
-.global arch_isrsyscall
-arch_isrsyscall:
+.global isr_syscall
+isr_syscall:
     pusha
     movl %esp, %eax
     pushl %eax
