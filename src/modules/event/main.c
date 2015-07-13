@@ -38,7 +38,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     destination = (struct task *)header->destination;
 
-    return scheduler_wmessage(destination, size, count, buffer);
+    return kernel_wmessage(destination, size, count, buffer);
 
 }
 

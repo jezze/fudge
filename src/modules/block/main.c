@@ -30,7 +30,7 @@ static unsigned int interfacedata_read(struct system_node *self, unsigned int of
 
     }
 
-    return scheduler_rmessage(scheduler_findactive(), size, count, buffer);
+    return kernel_rmessage(scheduler_findactive(), size, count, buffer);
 
 }
 

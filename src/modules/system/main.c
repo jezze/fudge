@@ -107,7 +107,7 @@ static unsigned int node_readgroup(struct system_node *self, unsigned int offset
 static unsigned int node_readmailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return scheduler_rmessage(scheduler_findactive(), size, count, buffer);
+    return kernel_rmessage(scheduler_findactive(), size, count, buffer);
 
 }
 
@@ -128,7 +128,7 @@ static unsigned int node_writemailboxes(struct system_node *self, unsigned int o
 
         struct task *task = current->data;
 
-        scheduler_wmessage(task, size, count, buffer);
+        kernel_wmessage(task, size, count, buffer);
 
     }
 

@@ -32,7 +32,7 @@ static unsigned int readpipe(struct task *task, unsigned int size, unsigned int 
 {
 
     if (task)
-        return scheduler_rmessage(task, size, count, buffer);
+        return kernel_rmessage(task, size, count, buffer);
     else
         return 0;
 
@@ -42,7 +42,7 @@ static unsigned int writepipe(struct task *task, unsigned int size, unsigned int
 {
 
     if (task)
-        return scheduler_wmessage(task, size, count, buffer);
+        return kernel_wmessage(task, size, count, buffer);
     else
         return 0;
 

@@ -89,28 +89,6 @@ void scheduler_setstatus(struct task *task, unsigned int status)
 
 }
 
-unsigned int scheduler_rmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
-{
-
-    count = task_rmessage(task, size, count, buffer);
-
-    scheduler_setstatus(task, count ? TASK_STATUS_ACTIVE : TASK_STATUS_BLOCKED);
-
-    return count;
-
-}
-
-unsigned int scheduler_wmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
-{
-
-    count = task_wmessage(task, size, count, buffer);
-
-    scheduler_setstatus(task, count ? TASK_STATUS_ACTIVE : TASK_STATUS_BLOCKED);
-
-    return count;
-
-}
-
 void scheduler_registertask(struct task *task)
 {
 

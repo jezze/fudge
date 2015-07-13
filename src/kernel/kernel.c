@@ -328,6 +328,28 @@ unsigned int kernel_call(unsigned int index, struct container *container, struct
 
 }
 
+unsigned int kernel_rmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
+{
+
+    count = task_rmessage(task, size, count, buffer);
+
+    scheduler_setstatus(task, count ? TASK_STATUS_ACTIVE : TASK_STATUS_BLOCKED);
+
+    return count;
+
+}
+
+unsigned int kernel_wmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
+{
+
+    count = task_wmessage(task, size, count, buffer);
+
+    scheduler_setstatus(task, count ? TASK_STATUS_ACTIVE : TASK_STATUS_BLOCKED);
+
+    return count;
+
+}
+
 void kernel_copytask(struct task *task, struct task *next)
 {
 
