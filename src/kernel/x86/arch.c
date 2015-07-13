@@ -165,8 +165,8 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 
     kernel_copytask(task, next);
     kernel_setuptask(next, TASKVSTACKLIMIT);
+    scheduler_setstatus(next, TASK_STATUS_ACTIVE);
     taskmapcontainer(next, container);
-    scheduler_use(next);
 
     return 1;
 
@@ -175,7 +175,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 static unsigned int despawn(struct container *container, struct task *task, void *stack)
 {
 
-    scheduler_unuse(task);
+    scheduler_setstatus(task, TASK_STATUS_INACTIVE);
 
     return 1;
 
@@ -215,6 +215,14 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
     if (current.task)
     {
+
+        if (current.task->state.status == TASK_STATUS_READY)
+        {
+
+            current.task->state.status = TASK_STATUS_ACTIVE;
+            current.task->state.registers.ip -= 7;
+
+        }
 
         interrupt->cs = selector.ucode;
         interrupt->ss = selector.udata;
@@ -374,7 +382,7 @@ void arch_setup(struct vfs_backend *backend)
     kernel_setupramdisk(container, task, backend);
     kernel_copytask(task, task);
     kernel_setuptask(task, TASKVSTACKLIMIT);
-    scheduler_use(task);
+    scheduler_setstatus(task, TASK_STATUS_ACTIVE);
     containermaptext(container);
     taskmapcontainer(task, container);
     taskactivate(task);

@@ -1,12 +1,16 @@
 #define TASK_DESCRIPTORS                32
 #define TASK_MAILBOXSIZE                4096
+#define TASK_STATUS_INACTIVE            0
+#define TASK_STATUS_ACTIVE              1
+#define TASK_STATUS_BLOCKED             2
+#define TASK_STATUS_READY               3
 
 struct task_state
 {
 
     struct list_item item;
     struct {unsigned long ip; unsigned long sp;} registers;
-    unsigned int blocked;
+    unsigned int status;
 
 };
 

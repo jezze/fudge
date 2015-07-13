@@ -22,7 +22,7 @@ static struct task *closepipe(struct task *task)
 {
 
     if (task)
-        scheduler_release(task);
+        scheduler_setstatus(task, TASK_STATUS_ACTIVE);
 
     return 0;
 
