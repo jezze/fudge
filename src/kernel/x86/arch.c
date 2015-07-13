@@ -249,19 +249,16 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
 }
 
-unsigned short arch_generalfault(void *stack)
+unsigned short arch_generalfault(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    struct {struct cpu_general general; unsigned int selector; struct cpu_interrupt interrupt;} *registers = stack;
-
-    return arch_schedule(&registers->general, &registers->interrupt);
+    return arch_schedule(&general, &interrupt);
 
 }
 
-unsigned short arch_pagefault(void *stack)
+unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
 {
 
-    struct {struct cpu_general general; unsigned int type; struct cpu_interrupt interrupt;} *registers = stack;
     /*
     unsigned int address = cpu_getcr2();
     */
@@ -274,18 +271,16 @@ unsigned short arch_pagefault(void *stack)
 
     }
 
-    return arch_schedule(&registers->general, &registers->interrupt);
+    return arch_schedule(&general, &interrupt);
 
 }
 
-unsigned short arch_syscall(void *stack)
+unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct {struct cpu_general general; struct cpu_interrupt interrupt;} *registers = stack;
+    general.eax = kernel_call(general.eax, current.container, current.task, (void *)interrupt.esp);
 
-    registers->general.eax = kernel_call(registers->general.eax, current.container, current.task, (void *)registers->interrupt.esp);
-
-    return arch_schedule(&registers->general, &registers->interrupt);
+    return arch_schedule(&general, &interrupt);
 
 }
 

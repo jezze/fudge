@@ -7,8 +7,6 @@
 .global isr_generalfault
 isr_generalfault:
     pusha
-    movl %esp, %eax
-    pushl %eax
     movw %ss, %ax
     movw %ax, %ds
     movw %ax, %es
@@ -19,7 +17,6 @@ isr_generalfault:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
-    addl $4, %esp
     popa
     addl $4, %esp
     iret
@@ -27,8 +24,6 @@ isr_generalfault:
 .global isr_pagefault
 isr_pagefault:
     pusha
-    movl %esp, %eax
-    pushl %eax
     movw %ss, %ax
     movw %ax, %ds
     movw %ax, %es
@@ -39,7 +34,6 @@ isr_pagefault:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
-    addl $4, %esp
     popa
     addl $4, %esp
     iret
@@ -47,8 +41,6 @@ isr_pagefault:
 .global isr_syscall
 isr_syscall:
     pusha
-    movl %esp, %eax
-    pushl %eax
     movw %ss, %ax
     movw %ax, %ds
     movw %ax, %es
@@ -59,7 +51,6 @@ isr_syscall:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
-    addl $4, %esp
     popa
     iret
 

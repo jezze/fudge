@@ -100,8 +100,6 @@ pic_routine0F:
 
 pic_common:
     pusha
-    movl %esp, %eax
-    pushl %eax
     movw %ss, %ax
     movw %ax, %ds
     movw %ax, %es
@@ -112,7 +110,6 @@ pic_common:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
-    addl $4, %esp
     popa
     addl $8, %esp
     iret

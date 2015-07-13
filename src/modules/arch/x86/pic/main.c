@@ -60,19 +60,17 @@ static void disableline(unsigned short port, unsigned char line)
 
 }
 
-unsigned short pic_interrupt(void *stack)
+unsigned short pic_interrupt(struct cpu_general general, unsigned int index, unsigned int slave, struct cpu_interrupt interrupt)
 {
 
-    struct {struct cpu_general general; unsigned int index; unsigned int slave; struct cpu_interrupt interrupt;} *registers = stack;
+    routines[index](index);
 
-    routines[registers->index](registers->index);
-
-    if (registers->slave)
+    if (slave)
         io_outb(REGISTERCOMMAND1, COMMANDEOI);
 
     io_outb(REGISTERCOMMAND0, COMMANDEOI);
 
-    return arch_schedule(&registers->general, &registers->interrupt);
+    return arch_schedule(&general, &interrupt);
 
 }
 
