@@ -284,39 +284,24 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-static void setupcontainer(struct arch_container *container, unsigned int index)
-{
-
-    container_init(&container->base);
-
-    container->directory = (struct mmu_directory *)CONTAINERDIRECTORYBASE + index * CONTAINERDIRECTORYCOUNT;
-    container->table = (struct mmu_table *)CONTAINERTABLEBASE + index * CONTAINERTABLECOUNT;
-
-}
-
 static struct container *setupcontainers()
 {
 
     unsigned int index;
 
     for (index = 0; index < CONTAINERS; index++)
-        setupcontainer(&containers[index], index);
+    {
+
+        struct arch_container *container = &containers[index];
+
+        container_init(&container->base);
+
+        container->directory = (struct mmu_directory *)CONTAINERDIRECTORYBASE + index * CONTAINERDIRECTORYCOUNT;
+        container->table = (struct mmu_table *)CONTAINERTABLEBASE + index * CONTAINERTABLECOUNT;
+
+    }
 
     return &containers[0].base;
-
-}
-
-static void setuptask(struct arch_task *task, unsigned int index)
-{
-
-    task_init(&task->base);
-
-    task->directory = (struct mmu_directory *)TASKDIRECTORYBASE + index * TASKDIRECTORYCOUNT;
-    task->table = (struct mmu_table *)TASKTABLEBASE + index * TASKTABLECOUNT;
-    task->mapping[0] = TASKCODEBASE + index * TASKCODESIZE;
-    task->mapping[1] = TASKSTACKBASE + index * TASKSTACKSIZE;
-
-    scheduler_registertask(&task->base);
 
 }
 
@@ -326,32 +311,29 @@ static struct task *setuptasks()
     unsigned int index;
 
     for (index = 0; index < TASKS; index++)
-        setuptask(&tasks[index], index);
+    {
+
+        struct arch_task *task = &tasks[index];
+
+        task_init(&task->base);
+
+        task->directory = (struct mmu_directory *)TASKDIRECTORYBASE + index * TASKDIRECTORYCOUNT;
+        task->table = (struct mmu_table *)TASKTABLEBASE + index * TASKTABLECOUNT;
+        task->mapping[0] = TASKCODEBASE + index * TASKCODESIZE;
+        task->mapping[1] = TASKSTACKBASE + index * TASKSTACKSIZE;
+
+        scheduler_registertask(&task->base);
+
+    }
 
     return &tasks[0].base;
-
-}
-
-static void arch_complete()
-{
-
-    struct cpu_interrupt interrupt;
-
-    interrupt.cs = selector.ucode;
-    interrupt.ss = selector.udata;
-    interrupt.eip = current.task->state.registers.ip;
-    interrupt.esp = current.task->state.registers.sp;
-    interrupt.eflags = cpu_geteflags() | 0x200;
-
-    cpu_leave(interrupt);
 
 }
 
 void arch_setup(struct vfs_backend *backend)
 {
 
-    struct container *container;
-    struct task *task;
+    struct cpu_interrupt interrupt;
 
     gdt_initpointer(&gdt.pointer, GDTDESCRIPTORS, gdt.descriptors);
     idt_initpointer(&idt.pointer, IDTDESCRIPTORS, idt.descriptors);
@@ -372,22 +354,25 @@ void arch_setup(struct vfs_backend *backend)
     cpu_settss(selector.tlink);
     kernel_setup(spawn, despawn);
 
-    container = setupcontainers();
-    task = setuptasks();
+    current.container = setupcontainers();
+    current.task = setuptasks();
 
-    kernel_setupramdisk(container, task, backend);
-    kernel_copytask(task, task);
-    kernel_setuptask(task, TASKVSTACKLIMIT);
-    scheduler_setstatus(task, TASK_STATUS_ACTIVE);
-    containermaptext(container);
-    taskmapcontainer(task, container);
-    taskactivate(task);
+    kernel_setupramdisk(current.container, current.task, backend);
+    kernel_copytask(current.task, current.task);
+    kernel_setuptask(current.task, TASKVSTACKLIMIT);
+    scheduler_setstatus(current.task, TASK_STATUS_ACTIVE);
+    containermaptext(current.container);
+    taskmapcontainer(current.task, current.container);
+    taskactivate(current.task);
     mmu_setup();
 
-    current.container = container;
-    current.task = task;
+    interrupt.cs = selector.ucode;
+    interrupt.ss = selector.udata;
+    interrupt.eip = current.task->state.registers.ip;
+    interrupt.esp = current.task->state.registers.sp;
+    interrupt.eflags = cpu_geteflags() | 0x200;
 
-    arch_complete();
+    cpu_leave(interrupt);
 
 }
 
