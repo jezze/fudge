@@ -3,5 +3,5 @@
 #include <kernel/binary.h>
 #include <kernel/task.h>
 #include <kernel/container.h>
-#include <kernel/scheduler.h>
+#include <kernel/abi.h>
 #include <kernel/kernel.h>

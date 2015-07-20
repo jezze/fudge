@@ -14,7 +14,7 @@ static struct task *openpipe(struct task *task)
     if (task)
         return task;
     else
-        return scheduler_findactive();
+        return task_findactive();
 
 }
 
@@ -22,7 +22,7 @@ static struct task *closepipe(struct task *task)
 {
 
     if (task)
-        scheduler_setstatus(task, TASK_STATUS_ACTIVE);
+        task_setstatus(task, TASK_STATUS_ACTIVE);
 
     return 0;
 
@@ -32,7 +32,7 @@ static unsigned int readpipe(struct task *task, unsigned int size, unsigned int 
 {
 
     if (task)
-        return kernel_rmessage(task, size, count, buffer);
+        return task_rmessage(task, size, count, buffer);
     else
         return 0;
 
@@ -42,7 +42,7 @@ static unsigned int writepipe(struct task *task, unsigned int size, unsigned int
 {
 
     if (task)
-        return kernel_wmessage(task, size, count, buffer);
+        return task_wmessage(task, size, count, buffer);
     else
         return 0;
 

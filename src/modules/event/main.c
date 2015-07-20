@@ -25,7 +25,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
     struct event_header *header = buffer;
     struct task *destination;
 
-    header->source = (unsigned int)scheduler_findactive();
+    header->source = (unsigned int)task_findactive();
 
     if (header->destination == 0xFFFFFFFF)
     {
@@ -38,7 +38,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     destination = (struct task *)header->destination;
 
-    return kernel_wmessage(destination, size, count, buffer);
+    return task_wmessage(destination, size, count, buffer);
 
 }
 

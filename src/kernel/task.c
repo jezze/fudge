@@ -1,20 +1,135 @@
 #include <fudge.h>
 #include "resource.h"
 #include "vfs.h"
-#include "scheduler.h"
 #include "task.h"
+
+static struct list active;
+static struct list inactive;
+static struct list blocked;
+
+struct task *task_findactive()
+{
+
+    if (!active.tail)
+        return 0;
+
+    return active.tail->data;
+
+}
+
+struct task *task_findinactive()
+{
+
+    if (!inactive.tail)
+        return 0;
+
+    return inactive.tail->data;
+
+}
+
+void task_setstatus(struct task *task, unsigned int status)
+{
+
+    switch (status)
+    {
+
+    case TASK_STATUS_BLOCKED:
+        switch (task->state.status)
+        {
+
+        case TASK_STATUS_READY:
+        case TASK_STATUS_ACTIVE:
+            list_move(&blocked, &active, &task->state.item);
+
+            task->state.status = TASK_STATUS_BLOCKED;
+
+            break;
+
+        }
+
+        break;
+
+    case TASK_STATUS_ACTIVE:
+        switch (task->state.status)
+        {
+
+        case TASK_STATUS_INACTIVE:
+            list_move(&active, &inactive, &task->state.item);
+
+            task->state.status = TASK_STATUS_ACTIVE;
+
+            break;
+
+        case TASK_STATUS_BLOCKED:
+            list_move(&active, &blocked, &task->state.item);
+
+            task->state.status = TASK_STATUS_READY;
+
+            break;
+
+        case TASK_STATUS_READY:
+        case TASK_STATUS_ACTIVE:
+            list_move(&active, &active, &task->state.item);
+
+            break;
+
+        }
+
+        break;
+
+    case TASK_STATUS_INACTIVE:
+        switch (task->state.status)
+        {
+
+        case TASK_STATUS_READY:
+        case TASK_STATUS_ACTIVE:
+            list_move(&inactive, &active, &task->state.item);
+
+            task->state.status = TASK_STATUS_INACTIVE;
+
+            break;
+
+        }
+
+        break;
+
+    }
+
+}
 
 unsigned int task_rmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return buffer_rcfifo(&task->mailbox.buffer, size * count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, size * count, buffer);
+
+    task_setstatus(task, count ? TASK_STATUS_ACTIVE : TASK_STATUS_BLOCKED);
+
+    return count;
 
 }
 
 unsigned int task_wmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return buffer_wcfifo(&task->mailbox.buffer, size * count, buffer);
+    count = buffer_wcfifo(&task->mailbox.buffer, size * count, buffer);
+
+    task_setstatus(task, count ? TASK_STATUS_ACTIVE : TASK_STATUS_BLOCKED);
+
+    return count;
+
+}
+
+void task_register(struct task *task)
+{
+
+    list_add(&inactive, &task->state.item);
+
+}
+
+void task_unregister(struct task *task)
+{
+
+    list_remove(&inactive, &task->state.item);
 
 }
 
@@ -30,6 +145,15 @@ void task_init(struct task *task)
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
         vfs_initdescriptor(&task->descriptors[i]);
+
+}
+
+void task_setup()
+{
+
+    list_init(&active);
+    list_init(&inactive);
+    list_init(&blocked);
 
 }
 

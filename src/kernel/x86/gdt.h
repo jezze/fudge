@@ -10,9 +10,9 @@
 #define GDT_FLAG_32BIT                  0x40
 #define GDT_FLAG_GRANULARITY            0x80
 #define GDT_INDEX_KCODE                 0x01
-#define GDT_INDEX_KDATA                 0x02
+#define GDT_INDEX_KSTACK                0x02
 #define GDT_INDEX_UCODE                 0x03
-#define GDT_INDEX_UDATA                 0x04
+#define GDT_INDEX_USTACK                0x04
 #define GDT_INDEX_TLINK                 0x05
 
 struct gdt_descriptor

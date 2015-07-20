@@ -211,7 +211,7 @@ void arch_setup()
     swi_test();
 
     vfs_initbackend(&backend, 1000, backend_read, backend_write, backend_getphysical);
-    kernel_setup(spawn, despawn);
+    kernel_setup();
 
     current.container = setupcontainers();
     current.task = setuptasks();
@@ -219,6 +219,8 @@ void arch_setup()
     kernel_setupramdisk(current.container, current.task, &backend);
     kernel_copytask(current.task, current.task);
     kernel_setuptask(current.task, TASKVSTACKLIMIT);
+    scheduler_setstatus(current.task, TASK_STATUS_ACTIVE);
+    abi_setup(spawn, despawn);
 
     uart_puts("Loop forever...\n");
 

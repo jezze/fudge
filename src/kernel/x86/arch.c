@@ -13,27 +13,21 @@
 #define GDTDESCRIPTORS                  6
 #define IDTDESCRIPTORS                  256
 #define TSSDESCRIPTORS                  1
-#define KERNELBASE                      0x00000000
-#define KERNELSIZE                      0x00400000
-#define KERNELLIMIT                     (KERNELBASE + KERNELSIZE)
 #define MMUALIGN                        0x1000
+#define KERNELSTACK                     0x00400000
+#define TASKSTACK                       0x80000000
+#define CODEBASE                        0x01000000
+#define CODESIZE                        0x00080000
+#define STACKBASE                       0x02000000
+#define STACKSIZE                       0x00010000
 #define CONTAINERDIRECTORYCOUNT         1
-#define CONTAINERDIRECTORYBASE          KERNELLIMIT
-#define CONTAINERDIRECTORYLIMIT         (CONTAINERDIRECTORYBASE + CONTAINERS * (MMUALIGN * CONTAINERDIRECTORYCOUNT))
+#define CONTAINERDIRECTORYBASE          0x00400000
 #define CONTAINERTABLECOUNT             8
-#define CONTAINERTABLEBASE              CONTAINERDIRECTORYLIMIT
-#define CONTAINERTABLELIMIT             (CONTAINERTABLEBASE + CONTAINERS * (MMUALIGN * CONTAINERTABLECOUNT))
+#define CONTAINERTABLEBASE              (CONTAINERDIRECTORYBASE + CONTAINERS * (MMUALIGN * CONTAINERDIRECTORYCOUNT))
 #define TASKDIRECTORYCOUNT              1
-#define TASKDIRECTORYBASE               CONTAINERTABLELIMIT
-#define TASKDIRECTORYLIMIT              (TASKDIRECTORYBASE + TASKS * (MMUALIGN * TASKDIRECTORYCOUNT))
+#define TASKDIRECTORYBASE               (CONTAINERTABLEBASE + CONTAINERS * (MMUALIGN * CONTAINERTABLECOUNT))
 #define TASKTABLECOUNT                  2
-#define TASKTABLEBASE                   TASKDIRECTORYLIMIT
-#define TASKTABLELIMIT                  (TASKTABLEBASE + TASKS * (MMUALIGN * TASKTABLECOUNT))
-#define TASKCODEBASE                    0x01000000
-#define TASKCODESIZE                    0x00080000
-#define TASKSTACKBASE                   (TASKCODEBASE + TASKS * TASKCODESIZE)
-#define TASKSTACKSIZE                   0x00010000
-#define TASKVSTACKLIMIT                 0x80000000
+#define TASKTABLEBASE                   (TASKDIRECTORYBASE + TASKS * (MMUALIGN * TASKDIRECTORYCOUNT))
 
 static struct
 {
@@ -98,12 +92,12 @@ static struct
 
 } current;
 
-static void containermaptext(struct container *container)
+static void containermapcode(struct container *container)
 {
 
     struct arch_container *acontainer = (struct arch_container *)container;
 
-    mmu_map(acontainer->directory, &acontainer->table[0], KERNELBASE, KERNELBASE, KERNELSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(acontainer->directory, &acontainer->table[0], 0x00000000, 0x00000000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(acontainer->directory, &acontainer->table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(acontainer->directory, &acontainer->table[2], 0x00800000, 0x00800000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
@@ -119,13 +113,13 @@ static void taskmapcontainer(struct task *task, struct container *container)
 
 }
 
-static void taskmaptext(struct task *task, unsigned int address)
+static void taskmapcode(struct task *task, unsigned int address)
 {
 
     struct arch_task *atask = (struct arch_task *)task;
 
-    mmu_map(atask->directory, &atask->table[0], atask->mapping[0], address, TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], TASKVSTACKLIMIT - TASKSTACKSIZE, TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[0], atask->mapping[0], address, CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], TASKSTACK - STACKSIZE, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -159,14 +153,14 @@ static void taskload(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
-    struct task *next = scheduler_findinactive();
+    struct task *next = task_findinactive();
 
     if (!next)
         return 0;
 
     kernel_copytask(task, next);
-    kernel_setuptask(next, TASKVSTACKLIMIT);
-    scheduler_setstatus(next, TASK_STATUS_ACTIVE);
+    kernel_setuptask(next, TASKSTACK);
+    task_setstatus(next, TASK_STATUS_ACTIVE);
     taskmapcontainer(next, container);
 
     return 1;
@@ -176,7 +170,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 static unsigned int despawn(struct container *container, struct task *task, void *stack)
 {
 
-    scheduler_setstatus(task, TASK_STATUS_INACTIVE);
+    task_setstatus(task, TASK_STATUS_INACTIVE);
 
     return 1;
 
@@ -212,7 +206,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
     }
 
-    current.task = scheduler_findactive();
+    current.task = task_findactive();
 
     if (current.task)
     {
@@ -241,7 +235,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
         interrupt->cs = selector.kcode;
         interrupt->ss = selector.kdata;
         interrupt->eip = (unsigned int)cpu_halt;
-        interrupt->esp = KERNELLIMIT;
+        interrupt->esp = KERNELSTACK;
 
     }
 
@@ -266,7 +260,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (current.task)
     {
 
-        taskmaptext(current.task, 0x08048000);
+        taskmapcode(current.task, 0x08048000);
         kernel_copyprogram(current.task);
 
     }
@@ -278,7 +272,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    general.eax = kernel_call(general.eax, current.container, current.task, (void *)interrupt.esp);
+    general.eax = abi_call(general.eax, current.container, current.task, (void *)interrupt.esp);
 
     return arch_schedule(&general, &interrupt);
 
@@ -319,10 +313,10 @@ static struct task *setuptasks()
 
         task->directory = (struct mmu_directory *)TASKDIRECTORYBASE + index * TASKDIRECTORYCOUNT;
         task->table = (struct mmu_table *)TASKTABLEBASE + index * TASKTABLECOUNT;
-        task->mapping[0] = TASKCODEBASE + index * TASKCODESIZE;
-        task->mapping[1] = TASKSTACKBASE + index * TASKSTACKSIZE;
+        task->mapping[0] = CODEBASE + index * CODESIZE;
+        task->mapping[1] = STACKBASE + index * STACKSIZE;
 
-        scheduler_registertask(&task->base);
+        task_register(&task->base);
 
     }
 
@@ -340,31 +334,32 @@ void arch_setup(struct vfs_backend *backend)
     tss_initpointer(&tss.pointer, TSSDESCRIPTORS, tss.descriptors);
 
     selector.kcode = gdt_setdescriptor(&gdt.pointer, GDT_INDEX_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    selector.kdata = gdt_setdescriptor(&gdt.pointer, GDT_INDEX_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    selector.kdata = gdt_setdescriptor(&gdt.pointer, GDT_INDEX_KSTACK, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.ucode = gdt_setdescriptor(&gdt.pointer, GDT_INDEX_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    selector.udata = gdt_setdescriptor(&gdt.pointer, GDT_INDEX_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    selector.udata = gdt_setdescriptor(&gdt.pointer, GDT_INDEX_USTACK, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.tlink = gdt_setdescriptor(&gdt.pointer, GDT_INDEX_TLINK, (unsigned long)tss.pointer.descriptors, (unsigned long)tss.pointer.descriptors + tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
 
     idt_setdescriptor(&idt.pointer, IDT_INDEX_GF, isr_generalfault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, IDT_INDEX_PF, isr_pagefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, IDT_INDEX_SYSCALL, isr_syscall, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    tss_setdescriptor(&tss.pointer, TSS_INDEX_DEFAULT, selector.kdata, KERNELLIMIT);
+    tss_setdescriptor(&tss.pointer, TSS_INDEX_DEFAULT, selector.kdata, KERNELSTACK);
     cpu_setgdt(&gdt.pointer, selector.kcode, selector.kdata);
     cpu_setidt(&idt.pointer);
     cpu_settss(selector.tlink);
-    kernel_setup(spawn, despawn);
+    kernel_setup();
 
     current.container = setupcontainers();
     current.task = setuptasks();
 
     kernel_setupramdisk(current.container, current.task, backend);
     kernel_copytask(current.task, current.task);
-    kernel_setuptask(current.task, TASKVSTACKLIMIT);
-    scheduler_setstatus(current.task, TASK_STATUS_ACTIVE);
-    containermaptext(current.container);
+    kernel_setuptask(current.task, TASKSTACK);
+    task_setstatus(current.task, TASK_STATUS_ACTIVE);
+    containermapcode(current.container);
     taskmapcontainer(current.task, current.container);
     taskactivate(current.task);
     mmu_setup();
+    abi_setup(spawn, despawn);
 
     interrupt.cs = selector.ucode;
     interrupt.ss = selector.udata;

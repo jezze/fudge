@@ -20,7 +20,7 @@ static unsigned int node_open(struct system_node *self)
 static unsigned int node_openmailboxes(struct system_node *self)
 {
 
-    struct task *task = scheduler_findactive();
+    struct task *task = task_findactive();
 
     list_add(&self->mailboxes, &task->mailbox.item);
 
@@ -41,7 +41,7 @@ static unsigned int node_close(struct system_node *self)
 static unsigned int node_closemailboxes(struct system_node *self)
 {
 
-    struct task *task = scheduler_findactive();
+    struct task *task = task_findactive();
 
     list_remove(&self->mailboxes, &task->mailbox.item);
 
@@ -107,7 +107,7 @@ static unsigned int node_readgroup(struct system_node *self, unsigned int offset
 static unsigned int node_readmailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return kernel_rmessage(scheduler_findactive(), size, count, buffer);
+    return task_rmessage(task_findactive(), size, count, buffer);
 
 }
 
@@ -128,7 +128,7 @@ static unsigned int node_writemailboxes(struct system_node *self, unsigned int o
 
         struct task *task = current->data;
 
-        kernel_wmessage(task, size, count, buffer);
+        task_wmessage(task, size, count, buffer);
 
     }
 
