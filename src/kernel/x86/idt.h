@@ -8,26 +8,6 @@
 #define IDT_FLAG_RING2                  0x40
 #define IDT_FLAG_RING3                  0x60
 #define IDT_FLAG_PRESENT                0x80
-#define IDT_INDEX_DE                    0x00
-#define IDT_INDEX_DB                    0x01
-#define IDT_INDEX_NI                    0x02
-#define IDT_INDEX_BP                    0x03
-#define IDT_INDEX_OF                    0x04
-#define IDT_INDEX_BR                    0x05
-#define IDT_INDEX_UD                    0x06
-#define IDT_INDEX_NM                    0x07
-#define IDT_INDEX_DF                    0x08
-#define IDT_INDEX_CO                    0x09
-#define IDT_INDEX_TS                    0x0A
-#define IDT_INDEX_NP                    0x0B
-#define IDT_INDEX_SS                    0x0C
-#define IDT_INDEX_GF                    0x0D
-#define IDT_INDEX_PF                    0x0E
-#define IDT_INDEX_MF                    0x10
-#define IDT_INDEX_AC                    0x11
-#define IDT_INDEX_MC                    0x12
-#define IDT_INDEX_XM                    0x13
-#define IDT_INDEX_SYSCALL               0x80
 
 struct idt_descriptor
 {

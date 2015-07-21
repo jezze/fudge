@@ -1,5 +1,3 @@
-#define TSS_INDEX_DEFAULT               0x00
-
 struct tss_descriptor_ring
 {
 
