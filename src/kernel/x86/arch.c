@@ -57,9 +57,9 @@ static struct
 {
 
     unsigned short kcode;
-    unsigned short kdata;
+    unsigned short kstack;
     unsigned short ucode;
-    unsigned short udata;
+    unsigned short ustack;
     unsigned short tlink;
 
 } selector;
@@ -92,7 +92,7 @@ static struct
 
 } current;
 
-static void containermapcode(struct container *container)
+static void mapcontainercode(struct container *container)
 {
 
     struct arch_container *acontainer = (struct arch_container *)container;
@@ -103,7 +103,7 @@ static void containermapcode(struct container *container)
 
 }
 
-static void taskmapcontainer(struct task *task, struct container *container)
+static void maptaskcontainer(struct task *task, struct container *container)
 {
 
     struct arch_task *atask = (struct arch_task *)task;
@@ -113,7 +113,7 @@ static void taskmapcontainer(struct task *task, struct container *container)
 
 }
 
-static void taskmapcode(struct task *task, unsigned int address)
+static void maptaskcode(struct task *task, unsigned int address)
 {
 
     struct arch_task *atask = (struct arch_task *)task;
@@ -123,7 +123,7 @@ static void taskmapcode(struct task *task, unsigned int address)
 
 }
 
-static void taskactivate(struct task *task)
+static void activate(struct task *task)
 {
 
     struct arch_task *atask = (struct arch_task *)task;
@@ -132,7 +132,7 @@ static void taskactivate(struct task *task)
 
 }
 
-static void tasksave(struct task *task, struct cpu_general *general)
+static void saveregisters(struct task *task, struct cpu_general *general)
 {
 
     struct arch_task *atask = (struct arch_task *)task;
@@ -141,7 +141,7 @@ static void tasksave(struct task *task, struct cpu_general *general)
 
 }
 
-static void taskload(struct task *task, struct cpu_general *general)
+static void loadregisters(struct task *task, struct cpu_general *general)
 {
 
     struct arch_task *atask = (struct arch_task *)task;
@@ -161,7 +161,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     kernel_copytask(task, next);
     kernel_setuptask(next, TASKSTACK);
     task_setstatus(next, TASK_STATUS_ACTIVE);
-    taskmapcontainer(next, container);
+    maptaskcontainer(next, container);
 
     return 1;
 
@@ -202,7 +202,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
         current.task->state.registers.ip = interrupt->eip;
         current.task->state.registers.sp = interrupt->esp;
 
-        tasksave(current.task, general);
+        saveregisters(current.task, general);
 
     }
 
@@ -220,12 +220,12 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
         }
 
         interrupt->cs = selector.ucode;
-        interrupt->ss = selector.udata;
+        interrupt->ss = selector.ustack;
         interrupt->eip = current.task->state.registers.ip;
         interrupt->esp = current.task->state.registers.sp;
 
-        taskload(current.task, general);
-        taskactivate(current.task);
+        loadregisters(current.task, general);
+        activate(current.task);
 
     }
 
@@ -233,7 +233,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     {
 
         interrupt->cs = selector.kcode;
-        interrupt->ss = selector.kdata;
+        interrupt->ss = selector.kstack;
         interrupt->eip = (unsigned int)cpu_halt;
         interrupt->esp = KERNELSTACK;
 
@@ -260,7 +260,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (current.task)
     {
 
-        taskmapcode(current.task, 0x08048000);
+        maptaskcode(current.task, 0x08048000);
         kernel_copyprogram(current.task);
 
     }
@@ -334,16 +334,16 @@ void arch_setup(struct vfs_backend *backend)
     tss_initpointer(&tss.pointer, TSSDESCRIPTORS, tss.descriptors);
 
     selector.kcode = gdt_setdescriptor(&gdt.pointer, 0x01, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    selector.kdata = gdt_setdescriptor(&gdt.pointer, 0x02, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    selector.kstack = gdt_setdescriptor(&gdt.pointer, 0x02, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.ucode = gdt_setdescriptor(&gdt.pointer, 0x03, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    selector.udata = gdt_setdescriptor(&gdt.pointer, 0x04, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    selector.ustack = gdt_setdescriptor(&gdt.pointer, 0x04, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.tlink = gdt_setdescriptor(&gdt.pointer, 0x05, (unsigned long)tss.pointer.descriptors, (unsigned long)tss.pointer.descriptors + tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
 
     idt_setdescriptor(&idt.pointer, 0x0D, isr_generalfault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x0E, isr_pagefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x80, isr_syscall, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    tss_setdescriptor(&tss.pointer, 0x00, selector.kdata, KERNELSTACK);
-    cpu_setgdt(&gdt.pointer, selector.kcode, selector.kdata);
+    tss_setdescriptor(&tss.pointer, 0x00, selector.kstack, KERNELSTACK);
+    cpu_setgdt(&gdt.pointer, selector.kcode, selector.kstack);
     cpu_setidt(&idt.pointer);
     cpu_settss(selector.tlink);
     kernel_setup();
@@ -352,17 +352,17 @@ void arch_setup(struct vfs_backend *backend)
     current.task = setuptasks();
 
     kernel_setupramdisk(current.container, current.task, backend);
+    mapcontainercode(current.container);
     kernel_copytask(current.task, current.task);
     kernel_setuptask(current.task, TASKSTACK);
     task_setstatus(current.task, TASK_STATUS_ACTIVE);
-    containermapcode(current.container);
-    taskmapcontainer(current.task, current.container);
-    taskactivate(current.task);
+    maptaskcontainer(current.task, current.container);
+    activate(current.task);
     mmu_setup();
     abi_setup(spawn, despawn);
 
     interrupt.cs = selector.ucode;
-    interrupt.ss = selector.udata;
+    interrupt.ss = selector.ustack;
     interrupt.eip = current.task->state.registers.ip;
     interrupt.esp = current.task->state.registers.sp;
     interrupt.eflags = cpu_geteflags() | 0x200;
