@@ -158,8 +158,8 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!next)
         return 0;
 
-    kernel_copytask(task, next);
-    kernel_setuptask(next, TASKSTACK);
+    task_copydescriptors(task, next);
+    task_initbinary(next, TASKSTACK);
     task_setstatus(next, TASK_STATUS_ACTIVE);
     maptaskcontainer(next, container);
 
@@ -261,7 +261,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     {
 
         maptaskcode(current.task, 0x08048000);
-        kernel_copyprogram(current.task);
+        task_copybinary(current.task);
 
     }
 
@@ -353,8 +353,8 @@ void arch_setup(struct vfs_backend *backend)
 
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainercode(current.container);
-    kernel_copytask(current.task, current.task);
-    kernel_setuptask(current.task, TASKSTACK);
+    task_copydescriptors(current.task, current.task);
+    task_initbinary(current.task, TASKSTACK);
     task_setstatus(current.task, TASK_STATUS_ACTIVE);
     maptaskcontainer(current.task, current.container);
     activate(current.task);

@@ -36,6 +36,9 @@ struct task
 struct task *task_findactive();
 struct task *task_findinactive();
 void task_setstatus(struct task *task, unsigned int state);
+void task_copydescriptors(struct task *source, struct task *target);
+void task_copybinary(struct task *task);
+void task_initbinary(struct task *task, unsigned int sp);
 unsigned int task_rmessage(struct task *task, unsigned int size, unsigned int count, void *buffer);
 unsigned int task_wmessage(struct task *task, unsigned int size, unsigned int count, void *buffer);
 void task_register(struct task *task);

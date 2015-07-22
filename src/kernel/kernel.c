@@ -6,64 +6,6 @@
 #include "container.h"
 #include "kernel.h"
 
-void kernel_copytask(struct task *task, struct task *next)
-{
-
-    unsigned int i;
-
-    for (i = 0x00; i < 0x08; i++)
-    {
-
-        next->descriptors[i + 0x00].channel = task->descriptors[i + 0x08].channel;
-        next->descriptors[i + 0x00].id = task->descriptors[i + 0x08].id;
-        next->descriptors[i + 0x08].channel = task->descriptors[i + 0x08].channel;
-        next->descriptors[i + 0x08].id = task->descriptors[i + 0x08].id;
-        next->descriptors[i + 0x10].channel = 0;
-        next->descriptors[i + 0x10].id = 0;
-        next->descriptors[i + 0x18].channel = 0;
-        next->descriptors[i + 0x18].id = 0;
-
-    }
-
-}
-
-void kernel_copyprogram(struct task *task)
-{
-
-    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
-    struct binary_protocol *protocol;
-
-    if (!descriptor->id || !descriptor->channel)
-        return;
-
-    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
-
-    if (!protocol)
-        return;
-
-    protocol->copyprogram(descriptor->channel, descriptor->id);
-
-}
-
-void kernel_setuptask(struct task *task, unsigned int sp)
-{
-
-    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
-    struct binary_protocol *protocol;
-
-    if (!descriptor->id || !descriptor->channel)
-        return;
-
-    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
-
-    if (!protocol)
-        return;
-
-    task->state.registers.ip = protocol->findentry(descriptor->channel, descriptor->id);
-    task->state.registers.sp = sp;
-
-}
-
 unsigned int kernel_setupramdisk(struct container *container, struct task *task, struct vfs_backend *backend)
 {
 

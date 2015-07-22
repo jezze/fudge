@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include "resource.h"
 #include "vfs.h"
+#include "binary.h"
 #include "task.h"
 
 static struct list active;
@@ -94,6 +95,64 @@ void task_setstatus(struct task *task, unsigned int status)
         break;
 
     }
+
+}
+
+void task_copydescriptors(struct task *source, struct task *target)
+{
+
+    unsigned int i;
+
+    for (i = 0x00; i < 0x08; i++)
+    {
+
+        target->descriptors[i + 0x00].channel = source->descriptors[i + 0x08].channel;
+        target->descriptors[i + 0x00].id = source->descriptors[i + 0x08].id;
+        target->descriptors[i + 0x08].channel = source->descriptors[i + 0x08].channel;
+        target->descriptors[i + 0x08].id = source->descriptors[i + 0x08].id;
+        target->descriptors[i + 0x10].channel = 0;
+        target->descriptors[i + 0x10].id = 0;
+        target->descriptors[i + 0x18].channel = 0;
+        target->descriptors[i + 0x18].id = 0;
+
+    }
+
+}
+
+void task_copybinary(struct task *task)
+{
+
+    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
+    struct binary_protocol *protocol;
+
+    if (!descriptor->id || !descriptor->channel)
+        return;
+
+    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+
+    if (!protocol)
+        return;
+
+    protocol->copyprogram(descriptor->channel, descriptor->id);
+
+}
+
+void task_initbinary(struct task *task, unsigned int sp)
+{
+
+    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
+    struct binary_protocol *protocol;
+
+    if (!descriptor->id || !descriptor->channel)
+        return;
+
+    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+
+    if (!protocol)
+        return;
+
+    task->state.registers.ip = protocol->findentry(descriptor->channel, descriptor->id);
+    task->state.registers.sp = sp;
 
 }
 
