@@ -1,6 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
-#include "gfx.h"
+#include <format/pcx.h>
+#include <video/gfx.h>
 #include "pcx.h"
 
 static unsigned int size(unsigned int id)

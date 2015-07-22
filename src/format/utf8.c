@@ -18,7 +18,7 @@ unsigned int utf8_decode(char *s, long *u)
         return r;
 
     }
-    
+
     else if ((c & 0xE0) == 0xC0)
     {
 
@@ -26,7 +26,7 @@ unsigned int utf8_decode(char *s, long *u)
         n = 1;
 
     }
-    
+
     else if ((c & 0xF0) == 0xE0)
     {
 
@@ -34,7 +34,7 @@ unsigned int utf8_decode(char *s, long *u)
         n = 2;
 
     }
-    
+
     else if ((c & 0xF8) == 0xF0)
     {
 
@@ -42,7 +42,7 @@ unsigned int utf8_decode(char *s, long *u)
         n = 3;
 
     }
-    
+
     else
     {
 
@@ -91,7 +91,7 @@ unsigned int utf8_encode(long *u, char *s)
         return 1;
 
     }
-    
+
     else if (*u < 0x800)
     {
 
@@ -99,15 +99,15 @@ unsigned int utf8_encode(long *u, char *s)
         n = 1;
 
     }
-    
+
     else if (uc < 0x10000)
     {
 
         *sp = (uc >> 12) | 0xE0;
         n = 2;
-        
+
     }
-    
+
     else if (uc <= 0x10FFFF)
     {
 
@@ -115,7 +115,7 @@ unsigned int utf8_encode(long *u, char *s)
         n = 3;
 
     }
-    
+
     else
     {
 

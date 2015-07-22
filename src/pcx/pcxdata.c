@@ -1,7 +1,8 @@
 #include <abi.h>
 #include <fudge.h>
-#include <gfx/gfx.h>
-#include <gfx/pcx.h>
+#include <format/pcx.h>
+#include <video/gfx.h>
+#include "pcx.h"
 
 static struct pcx_surface pcx;
 
