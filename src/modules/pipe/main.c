@@ -3,55 +3,15 @@
 #include <modules/system/system.h>
 
 static struct system_node root;
-static struct task *t0;
-static struct task *t1;
 static struct system_node endpoint0;
 static struct system_node endpoint1;
-
-static struct task *openpipe(struct task *task)
-{
-
-    if (task)
-        return task;
-    else
-        return task_findactive();
-
-}
-
-static struct task *closepipe(struct task *task)
-{
-
-    if (task)
-        task_setstatus(task, TASK_STATUS_ACTIVE);
-
-    return 0;
-
-}
-
-static unsigned int readpipe(struct task *task, unsigned int size, unsigned int count, void *buffer)
-{
-
-    if (task)
-        return task_rmessage(task, size, count, buffer);
-    else
-        return 0;
-
-}
-
-static unsigned int writepipe(struct task *task, unsigned int size, unsigned int count, void *buffer)
-{
-
-    if (task)
-        return task_wmessage(task, size, count, buffer);
-    else
-        return 0;
-
-}
+static struct task *t0;
+static struct task *t1;
 
 static unsigned int endpoint0_open(struct system_node *self)
 {
 
-    t0 = openpipe(t0);
+    t0 = task_findactive();
     self->refcount++;
     self->parent->refcount++;
 
@@ -62,8 +22,11 @@ static unsigned int endpoint0_open(struct system_node *self)
 static unsigned int endpoint0_close(struct system_node *self)
 {
 
-    t0 = closepipe(t0);
-    t1 = closepipe(t1);
+    if (t1)
+        task_setstatus(t1, TASK_STATUS_ACTIVE);
+
+    t0 = 0;
+    t1 = 0;
     self->refcount--;
     self->parent->refcount--;
 
@@ -74,21 +37,27 @@ static unsigned int endpoint0_close(struct system_node *self)
 static unsigned int endpoint0_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return readpipe(t0, size, count, buffer);
+    if (t0)
+        return task_rmessage(t0, size, count, buffer);
+    else
+        return 0;
 
 }
 
 static unsigned int endpoint0_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return writepipe(t1, size, count, buffer);
+    if (t1)
+        return task_wmessage(t1, size, count, buffer);
+    else
+        return 0;
 
 }
 
 static unsigned int endpoint1_open(struct system_node *self)
 {
 
-    t1 = openpipe(t1);
+    t1 = task_findactive();
     self->refcount++;
     self->parent->refcount++;
 
@@ -99,8 +68,11 @@ static unsigned int endpoint1_open(struct system_node *self)
 static unsigned int endpoint1_close(struct system_node *self)
 {
 
-    t1 = closepipe(t1);
-    t0 = closepipe(t0);
+    if (t0)
+        task_setstatus(t0, TASK_STATUS_ACTIVE);
+
+    t1 = 0;
+    t0 = 0;
     self->refcount--;
     self->parent->refcount--;
 
@@ -111,14 +83,20 @@ static unsigned int endpoint1_close(struct system_node *self)
 static unsigned int endpoint1_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return readpipe(t1, size, count, buffer);
+    if (t1)
+        return task_rmessage(t1, size, count, buffer);
+    else
+        return 0;
 
 }
 
 static unsigned int endpoint1_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    return writepipe(t0, size, count, buffer);
+    if (t0)
+        return task_wmessage(t0, size, count, buffer);
+    else
+        return 0;
 
 }
 

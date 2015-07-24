@@ -41,8 +41,8 @@ static void interpret(struct buffer *buffer)
 
     call_walk(CALL_L1, CALL_L0, 1, "0");
     call_walk(CALL_C0, CALL_L0, 1, "1");
-    call_spawn();
     call_open(CALL_L1);
+    call_spawn();
     call_write(CALL_L1, 0, 1, count, command);
     call_close(CALL_L1);
 
