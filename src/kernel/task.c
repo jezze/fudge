@@ -161,7 +161,8 @@ unsigned int task_rmessage(struct task *task, unsigned int size, unsigned int co
 
     count = buffer_rcfifo(&task->mailbox.buffer, size * count, buffer);
 
-    task_setstatus(task, count ? TASK_STATUS_ACTIVE : TASK_STATUS_BLOCKED);
+    if (!count)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
 
     return count;
 
@@ -172,7 +173,8 @@ unsigned int task_wmessage(struct task *task, unsigned int size, unsigned int co
 
     count = buffer_wcfifo(&task->mailbox.buffer, size * count, buffer);
 
-    task_setstatus(task, count ? TASK_STATUS_ACTIVE : TASK_STATUS_BLOCKED);
+    if (count)
+        task_setstatus(task, TASK_STATUS_ACTIVE);
 
     return count;
 
