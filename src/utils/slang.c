@@ -167,7 +167,7 @@ static void tokenizebuffer(struct tokenlist *infix, struct buffer *stringtable, 
 
             unsigned int c;
 
-            tokenlist_add(infix, token, (char *)stringtable->memory + stringtable->head);
+            tokenlist_add(infix, token, (char *)stringtable->head);
 
             c = getidentlength(count - i, buffer + i);
 
@@ -337,7 +337,7 @@ void main()
     struct tokenlist postfix;
     struct tokenlist stack;
 
-    buffer_init(&stringtable, 32768, stringdata);
+    buffer_init(&stringtable, 1, 32768, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
