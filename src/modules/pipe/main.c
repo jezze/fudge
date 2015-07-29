@@ -26,7 +26,6 @@ static unsigned int endpoint0_close(struct system_node *self)
         task_setstatus(t1, TASK_STATUS_ACTIVE);
 
     t0 = 0;
-    t1 = 0;
     self->refcount--;
     self->parent->refcount--;
 
@@ -37,7 +36,7 @@ static unsigned int endpoint0_close(struct system_node *self)
 static unsigned int endpoint0_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    if (t0)
+    if (t1)
         return task_rmessage(t0, size, count, buffer);
     else
         return 0;
@@ -72,7 +71,6 @@ static unsigned int endpoint1_close(struct system_node *self)
         task_setstatus(t0, TASK_STATUS_ACTIVE);
 
     t1 = 0;
-    t0 = 0;
     self->refcount--;
     self->parent->refcount--;
 
@@ -83,7 +81,7 @@ static unsigned int endpoint1_close(struct system_node *self)
 static unsigned int endpoint1_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    if (t1)
+    if (t0)
         return task_rmessage(t1, size, count, buffer);
     else
         return 0;
