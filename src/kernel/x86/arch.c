@@ -211,7 +211,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     if (current.task)
     {
 
-        if (current.task->state.status == TASK_STATUS_READY)
+        if (current.task->state.status == TASK_STATUS_UNBLOCKED)
         {
 
             current.task->state.status = TASK_STATUS_ACTIVE;
