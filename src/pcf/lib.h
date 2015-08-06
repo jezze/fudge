@@ -103,16 +103,8 @@ struct pcf_metricsdata_compressed
 
 } __attribute__((packed));
 
-unsigned int pcf_loadheader(unsigned int descriptor, struct pcf_header *header);
-unsigned int pcf_loadentry(unsigned int descriptor, unsigned int type, struct pcf_entry *entry);
-void pcf_loadbitmap(unsigned int descriptor, struct pcf_entry *entry, struct pcf_bitmap *bitmap);
-void pcf_loadbitmapdata(unsigned int descriptor, struct pcf_entry *entry, struct pcf_bitmap *bitmap, unsigned int total, unsigned char *bitmapdata);
-void pcf_loadmetrics(unsigned int descriptor, struct pcf_entry *entry, struct pcf_metrics *metrics);
-void pcf_loadmetricsdata(unsigned int descriptor, struct pcf_entry *entry, struct pcf_metrics *metrics, unsigned int index, struct pcf_metricsdata_normal *data);
-void pcf_loadbdfencoding(unsigned int descriptor, struct pcf_entry *entry, struct pcf_bdfencoding *bdfencoding);
 unsigned int pcf_getbitmapoffset(unsigned int descriptor, unsigned short index);
-unsigned int pcf_getascent(unsigned int descriptor, unsigned short index);
-unsigned int pcf_getdescent(unsigned int descriptor, unsigned short index);
+void pcf_readmetrics(unsigned int descriptor, unsigned short index, struct pcf_metricsdata_normal *data);
 unsigned int pcf_getpadding(unsigned int descriptor);
 unsigned short pcf_getindex(unsigned int descriptor, unsigned short encoding);
 void pcf_readdata(unsigned int descriptor, unsigned int count, void *buffer);

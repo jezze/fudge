@@ -35,21 +35,20 @@ static void writedata(unsigned int size, unsigned int count, unsigned char *buff
 static void writestring(unsigned int count, char *text, unsigned char *data)
 {
 
-    unsigned int i;
     unsigned int padding = pcf_getpadding(CALL_P0);
+    unsigned int i;
 
     for (i = 0; i < count; i++)
     {
 
         unsigned short index = pcf_getindex(CALL_P0, text[i]);
-        unsigned int ascent = pcf_getascent(CALL_P0, index);
-        unsigned int descent = pcf_getdescent(CALL_P0, index);
         unsigned int offset = pcf_getbitmapoffset(CALL_P0, index);
+        struct pcf_metricsdata_normal metrics;
 
-        writenum(ascent, 10);
-        writenum(descent, 10);
-        writenum(padding, 10);
-        writedata(padding, (ascent + descent) * padding, data + offset);
+        pcf_readmetrics(CALL_P0, index, &metrics);
+        writenum(metrics.ascent, 10);
+        writenum(metrics.descent, 10);
+        writedata(padding, (metrics.ascent + metrics.descent) * padding, data + offset);
 
     }
 
