@@ -3,6 +3,7 @@
 #include <video/video.h>
 #include "box.h"
 #include "draw.h"
+#include "image.h"
 #include "mouse.h"
 #include "panel.h"
 #include "window.h"
@@ -140,7 +141,7 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb, unsigned i
     {
 
         fill(settings->bpp, WM_COLOR_TRANSPARENT, bb->x, bb->w);
-        mouse_draw(&mouse, settings->bpp, line);
+        image_draw(&mouse.image, settings->bpp, line);
         flush(settings->w * line, settings->bpp, bb->x, bb->w);
 
     }
@@ -289,7 +290,7 @@ static struct view *findview(struct list *views, struct mouse *mouse)
 
         struct view *view = current->data;
 
-        if (box_isinside(&view->panel.size, mouse->size.x, mouse->size.y))
+        if (box_isinside(&view->panel.size, mouse->image.size.x, mouse->image.size.y))
             return view;
 
     }
@@ -308,7 +309,7 @@ static struct window *findwindow(struct view *view, struct mouse *mouse)
 
         struct window *window = current->data;
 
-        if (box_isinside(&window->size, mouse->size.x, mouse->size.y))
+        if (box_isinside(&window->size, mouse->image.size.x, mouse->image.size.y))
             return window;
 
     }
@@ -333,7 +334,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
     for (roff = 0; (count = call_read(CALL_L1, roff, sizeof (struct event_header), 1, &event.header)); roff += count)
     {
 
-        box_setsize(&oldmouse, mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
+        box_setsize(&oldmouse, mouse.image.size.x, mouse.image.size.y, mouse.image.size.w, mouse.image.size.h);
 
         if (event.header.count)
             count += call_read(CALL_L1, roff + count, event.header.count, 1, event.data + sizeof (struct event_header));
@@ -373,13 +374,13 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 break;
 
             case 0x11:
-                mouse.size.y -= 4;
+                mouse.image.size.y -= 4;
 
-                if (mouse.size.y >= screen->h)
-                    mouse.size.y = 0;
+                if (mouse.image.size.y >= screen->h)
+                    mouse.image.size.y = 0;
 
                 draw(settings, &oldmouse, 1);
-                draw(settings, &mouse.size, 1);
+                draw(settings, &mouse.image.size, 1);
 
                 break;
 
@@ -389,35 +390,35 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 break;
 
             case 0x1E:
-                mouse.size.x -= 4;
+                mouse.image.size.x -= 4;
 
-                if (mouse.size.x >= screen->w)
-                    mouse.size.x = 0;
+                if (mouse.image.size.x >= screen->w)
+                    mouse.image.size.x = 0;
 
                 draw(settings, &oldmouse, 1);
-                draw(settings, &mouse.size, 1);
+                draw(settings, &mouse.image.size, 1);
 
                 break;
 
             case 0x1F:
-                mouse.size.y += 4;
+                mouse.image.size.y += 4;
 
-                if (mouse.size.y + mouse.size.h > screen->h)
-                    mouse.size.y = screen->h - mouse.size.h;
+                if (mouse.image.size.y + mouse.image.size.h > screen->h)
+                    mouse.image.size.y = screen->h - mouse.image.size.h;
 
                 draw(settings, &oldmouse, 1);
-                draw(settings, &mouse.size, 1);
+                draw(settings, &mouse.image.size, 1);
 
                 break;
 
             case 0x20:
-                mouse.size.x += 4;
+                mouse.image.size.x += 4;
 
-                if (mouse.size.x + mouse.size.w > screen->w)
-                    mouse.size.x = screen->w - mouse.size.w;
+                if (mouse.image.size.x + mouse.image.size.w > screen->w)
+                    mouse.image.size.x = screen->w - mouse.image.size.w;
 
                 draw(settings, &oldmouse, 1);
-                draw(settings, &mouse.size, 1);
+                draw(settings, &mouse.image.size, 1);
 
                 break;
 
@@ -493,23 +494,23 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
             break;
 
         case EVENT_MOUSEMOVE:
-            mouse.size.x += event.mousemove.relx;
-            mouse.size.y -= event.mousemove.rely;
+            mouse.image.size.x += event.mousemove.relx;
+            mouse.image.size.y -= event.mousemove.rely;
 
-            if (event.mousemove.relx > 0 && mouse.size.x + mouse.size.w > screen->w)
-                mouse.size.x = screen->w - mouse.size.w;
+            if (event.mousemove.relx > 0 && mouse.image.size.x + mouse.image.size.w > screen->w)
+                mouse.image.size.x = screen->w - mouse.image.size.w;
 
-            if (event.mousemove.relx < 0 && mouse.size.x >= screen->w)
-                mouse.size.x = 0;
+            if (event.mousemove.relx < 0 && mouse.image.size.x >= screen->w)
+                mouse.image.size.x = 0;
 
-            if (event.mousemove.rely < 0 && mouse.size.y + mouse.size.h > screen->h)
-                mouse.size.y = screen->h - mouse.size.h;
+            if (event.mousemove.rely < 0 && mouse.image.size.y + mouse.image.size.h > screen->h)
+                mouse.image.size.y = screen->h - mouse.image.size.h;
 
-            if (event.mousemove.rely > 0 && mouse.size.y >= screen->h)
-                mouse.size.y = 0;
+            if (event.mousemove.rely > 0 && mouse.image.size.y >= screen->h)
+                mouse.image.size.y = 0;
 
             draw(settings, &oldmouse, 1);
-            draw(settings, &mouse.size, 1);
+            draw(settings, &mouse.image.size, 1);
 
             break;
 
