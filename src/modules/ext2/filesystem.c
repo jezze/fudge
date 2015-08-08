@@ -88,7 +88,7 @@ static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned
 
 }
 
-static struct ext2_entry *finddir(struct vfs_backend *backend, unsigned int id, const char *name)
+static struct ext2_entry *finddir(struct vfs_backend *backend, unsigned int id, char *name)
 {
 
 /*
@@ -127,7 +127,7 @@ static struct ext2_entry *finddir(struct vfs_backend *backend, unsigned int id, 
 
 }
 
-static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
+static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, char *path)
 {
 
     struct ext2_entry *entry;

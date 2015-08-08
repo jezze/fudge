@@ -68,7 +68,7 @@ unsigned int call_unload(unsigned int index)
 
 }
 
-unsigned int call_walk(unsigned int index, unsigned int pindex, unsigned int count, const char *path)
+unsigned int call_walk(unsigned int index, unsigned int pindex, unsigned int count, char *path)
 {
 
     return 0;

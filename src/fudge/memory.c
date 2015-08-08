@@ -10,21 +10,21 @@ void memory_clear(void *out, unsigned int count)
 
 }
 
-void memory_copy(void *out, const void *in, unsigned int count)
+void memory_copy(void *out, void *in, unsigned int count)
 {
 
     unsigned char *op = out;
-    const unsigned char *ip = in;
+    unsigned char *ip = in;
 
     while (count--)
         *op++ = *ip++;
 
 }
 
-unsigned int memory_findbyte(const void *in, unsigned int count, char value)
+unsigned int memory_findbyte(void *in, unsigned int count, char value)
 {
 
-    const unsigned char *ip = in;
+    unsigned char *ip = in;
     unsigned int offset;
 
     if (!count)
@@ -36,11 +36,11 @@ unsigned int memory_findbyte(const void *in, unsigned int count, char value)
 
 }
 
-unsigned int memory_match(const void *in1, const void *in2, unsigned int count)
+unsigned int memory_match(void *in1, void *in2, unsigned int count)
 {
 
-    const unsigned char *ip1 = in1;
-    const unsigned char *ip2 = in2;
+    unsigned char *ip1 = in1;
+    unsigned char *ip2 = in2;
 
     while (count--)
     {
@@ -54,11 +54,11 @@ unsigned int memory_match(const void *in1, const void *in2, unsigned int count)
 
 }
 
-unsigned int memory_read(void *out, unsigned int ocount, const void *in, unsigned int icount, unsigned int size, unsigned int offset)
+unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int size, unsigned int offset)
 {
 
     unsigned char *op = out;
-    const unsigned char *ip = in;
+    unsigned char *ip = in;
 
     icount = icount * size;
     ocount = ocount * size;
@@ -78,11 +78,11 @@ unsigned int memory_read(void *out, unsigned int ocount, const void *in, unsigne
 
 }
 
-unsigned int memory_write(void *out, unsigned int ocount, const void *in, unsigned int icount, unsigned int size, unsigned int offset)
+unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int size, unsigned int offset)
 {
 
     unsigned char *op = out;
-    const unsigned char *ip = in;
+    unsigned char *ip = in;
 
     icount = icount * size;
     ocount = ocount * size;

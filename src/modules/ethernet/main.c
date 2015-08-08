@@ -117,7 +117,7 @@ void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, const char *name, unsigned int (*send)(unsigned int count, void *buffer))
+void ethernet_initinterface(struct ethernet_interface *interface, char *name, unsigned int (*send)(unsigned int count, void *buffer))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
@@ -133,7 +133,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, const char *na
 
 }
 
-void ethernet_initprotocol(struct ethernet_protocol *protocol, const char *name, unsigned short type, void (*addinterface)(struct ethernet_interface *interface), void (*removeinterface)(struct ethernet_interface *interface), void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*addinterface)(struct ethernet_interface *interface), void (*removeinterface)(struct ethernet_interface *interface), void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);

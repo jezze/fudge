@@ -18,7 +18,7 @@ static unsigned int protocol_match(struct vfs_channel *channel, unsigned int id)
 
 }
 
-static unsigned long protocol_findsymbol(struct vfs_channel *channel, unsigned int id, unsigned int count, const char *symbol)
+static unsigned long protocol_findsymbol(struct vfs_channel *channel, unsigned int id, unsigned int count, char *symbol)
 {
 
     struct elf_header header;

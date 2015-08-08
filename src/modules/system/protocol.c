@@ -42,7 +42,7 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
 
 }
 
-static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *path)
+static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id, unsigned int count, char *path)
 {
 
     struct system_node *node = getnode(id);
@@ -51,14 +51,14 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
 
 }
 
-static unsigned int protocol_create(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
+static unsigned int protocol_create(struct vfs_backend *backend, unsigned int id, unsigned int count, char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_destroy(struct vfs_backend *backend, unsigned int id, unsigned int count, const char *name)
+static unsigned int protocol_destroy(struct vfs_backend *backend, unsigned int id, unsigned int count, char *name)
 {
 
     return 0;

@@ -136,7 +136,7 @@ static unsigned int node_writemailboxes(struct system_node *self, unsigned int o
 
 }
 
-static unsigned int node_child(struct system_node *self, unsigned int count, const char *path)
+static unsigned int node_child(struct system_node *self, unsigned int count, char *path)
 {
 
     if (!count)
@@ -146,7 +146,7 @@ static unsigned int node_child(struct system_node *self, unsigned int count, con
 
 }
 
-static unsigned int node_childgroup(struct system_node *self, unsigned int count, const char *path)
+static unsigned int node_childgroup(struct system_node *self, unsigned int count, char *path)
 {
 
     struct list_item *current;
@@ -267,7 +267,7 @@ void system_removechild(struct system_node *group, struct system_node *node)
 
 }
 
-void system_initnode(struct system_node *node, unsigned int type, const char *name)
+void system_initnode(struct system_node *node, unsigned int type, char *name)
 {
 
     list_inititem(&node->item, node);

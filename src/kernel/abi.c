@@ -53,7 +53,7 @@ static unsigned int auth(struct container *container, struct task *task, void *s
 static unsigned int walk(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; unsigned int count; const char *path;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; unsigned int count; char *path;} *args = stack;
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
     struct vfs_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
     unsigned int offset;
@@ -68,7 +68,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
     for (offset = 0; (count = memory_findbyte(args->path + offset, args->count - offset, '/')); offset += count)
     {
 
-        const char *path = args->path + offset;
+        char *path = args->path + offset;
         unsigned int i;
 
         if (count == 3 && memory_match(path, "../", 3))
@@ -134,7 +134,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 static unsigned int create(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int pdescriptor; unsigned int count; const char *name;} *args = stack;
+    struct {void *caller; unsigned int pdescriptor; unsigned int count; char *name;} *args = stack;
     struct vfs_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
 
     if (!pdescriptor->id || !pdescriptor->channel)
@@ -147,7 +147,7 @@ static unsigned int create(struct container *container, struct task *task, void 
 static unsigned int destroy(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int pdescriptor; unsigned int count; const char *name;} *args = stack;
+    struct {void *caller; unsigned int pdescriptor; unsigned int count; char *name;} *args = stack;
     struct vfs_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
 
     if (!pdescriptor->id || !pdescriptor->channel)

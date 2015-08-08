@@ -34,8 +34,8 @@
 unsigned int call_auth(unsigned int channel, unsigned int backend);
 unsigned int call_bind(unsigned int mount, unsigned int pdescriptor, unsigned int cdescriptor);
 unsigned int call_close(unsigned int descriptor);
-unsigned int call_create(unsigned int pdescriptor, unsigned int count, const char *name);
-unsigned int call_destroy(unsigned int pdescriptor, unsigned int count, const char *name);
+unsigned int call_create(unsigned int pdescriptor, unsigned int count, char *name);
+unsigned int call_destroy(unsigned int pdescriptor, unsigned int count, char *name);
 unsigned int call_despawn();
 unsigned int call_load(unsigned int descriptor);
 unsigned int call_mount(unsigned int mount, unsigned int channel, unsigned int descriptor);
@@ -43,5 +43,5 @@ unsigned int call_open(unsigned int descriptor);
 unsigned int call_read(unsigned int descriptor, unsigned int offset, unsigned int size, unsigned int count, void *buffer);
 unsigned int call_spawn();
 unsigned int call_unload(unsigned int descriptor);
-unsigned int call_walk(unsigned int descriptor, unsigned int pdescriptor, unsigned int count, const char *path);
+unsigned int call_walk(unsigned int descriptor, unsigned int pdescriptor, unsigned int count, char *path);
 unsigned int call_write(unsigned int descriptor, unsigned int offset, unsigned int size, unsigned int count, void *buffer);

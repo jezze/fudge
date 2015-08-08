@@ -20,7 +20,7 @@ struct system_node
     struct list children;
     struct list mailboxes;
     unsigned int type;
-    const char *name;
+    char *name;
     struct resource *resource;
     unsigned int index;
     unsigned int refcount;
@@ -28,7 +28,7 @@ struct system_node
     unsigned int (*close)(struct system_node *self);
     unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer);
     unsigned int (*write)(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer);
-    unsigned int (*child)(struct system_node *self, unsigned int count, const char *path);
+    unsigned int (*child)(struct system_node *self, unsigned int count, char *path);
 
 };
 
@@ -40,4 +40,4 @@ void system_addchild(struct system_node *group, struct system_node *node);
 void system_removechild(struct system_node *group, struct system_node *node);
 void system_registernode(struct system_node *node);
 void system_unregisternode(struct system_node *node);
-void system_initnode(struct system_node *node, unsigned int type, const char *name);
+void system_initnode(struct system_node *node, unsigned int type, char *name);

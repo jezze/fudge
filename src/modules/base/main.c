@@ -79,7 +79,7 @@ void base_unregisterdriver(struct base_driver *driver, unsigned int type)
 
 }
 
-void base_initbus(struct base_bus *bus, unsigned int type, const char *name, void (*setup)(), unsigned int (*next)(unsigned int id))
+void base_initbus(struct base_bus *bus, unsigned int type, char *name, void (*setup)(), unsigned int (*next)(unsigned int id))
 {
 
     resource_init(&bus->resource, RESOURCE_BUS, bus);
@@ -91,7 +91,7 @@ void base_initbus(struct base_bus *bus, unsigned int type, const char *name, voi
 
 }
 
-void base_initdriver(struct base_driver *driver, const char *name, void (*init)(), unsigned int (*match)(unsigned int id), void (*attach)(unsigned int id), void (*detach)(unsigned int id))
+void base_initdriver(struct base_driver *driver, char *name, void (*init)(), unsigned int (*match)(unsigned int id), void (*attach)(unsigned int id), void (*detach)(unsigned int id))
 {
 
     resource_init(&driver->resource, RESOURCE_DRIVER, driver);

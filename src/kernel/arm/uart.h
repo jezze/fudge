@@ -4,5 +4,5 @@
 #define UART_FLAG_FULL                  (1 << 5)
 
 void uart_putc(char c);
-void uart_puts(const char *s);
+void uart_puts(char *s);
 void uart_setup();
