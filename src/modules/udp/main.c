@@ -13,21 +13,21 @@ void ipv4protocol_notify(struct ethernet_interface *interface, unsigned int size
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     ipv4_initprotocol(&ipv4protocol, "udp", 0x11, ipv4protocol_notify);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     ipv4_registerprotocol(&ipv4protocol);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     ipv4_unregisterprotocol(&ipv4protocol);

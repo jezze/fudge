@@ -5,7 +5,7 @@
 
 static struct smp_architecture architecture;
 
-static void setmadt()
+static void setmadt(void)
 {
 
     unsigned long madttable;
@@ -39,7 +39,7 @@ static void setmadt()
 
 }
 
-static void setsrat()
+static void setsrat(void)
 {
 
     unsigned long srattable;
@@ -68,7 +68,7 @@ static void setsrat()
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     unsigned int i;

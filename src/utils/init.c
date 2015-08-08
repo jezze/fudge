@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 
-void main()
+void main(void)
 {
 
     if (!call_walk(CALL_CW, CALL_PR, 5, "home/"))

@@ -26,7 +26,7 @@ void log_notify(unsigned int level, unsigned int size, unsigned int count, void 
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "log");
@@ -41,14 +41,14 @@ void module_init()
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     system_registernode(&root);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     system_unregisternode(&root);

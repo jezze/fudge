@@ -108,7 +108,7 @@ static struct keycode *scancode2keycode(unsigned char scancode)
 
 }
 
-void main()
+void main(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];

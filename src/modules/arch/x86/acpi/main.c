@@ -4,7 +4,7 @@
 #include <kernel/x86/arch.h>
 #include "acpi.h"
 
-static struct acpi_rsdp *findrsdp()
+static struct acpi_rsdp *findrsdp(void)
 {
 
     unsigned long rsdp;
@@ -53,7 +53,7 @@ struct acpi_sdth *acpi_findheader(char *name)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     struct acpi_rsdp *rsdp = findrsdp();

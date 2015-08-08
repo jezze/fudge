@@ -176,7 +176,7 @@ static unsigned int despawn(struct container *container, struct task *task, void
 
 }
 
-void arch_setinterrupt(unsigned char index, void (*callback)())
+void arch_setinterrupt(unsigned char index, void (*callback)(void))
 {
 
     idt_setdescriptor(&idt.pointer, index, callback, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
@@ -278,7 +278,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-static struct container *setupcontainers()
+static struct container *setupcontainers(void)
 {
 
     unsigned int index;
@@ -299,7 +299,7 @@ static struct container *setupcontainers()
 
 }
 
-static struct task *setuptasks()
+static struct task *setuptasks(void)
 {
 
     unsigned int index;

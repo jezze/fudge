@@ -13,7 +13,7 @@
 #define PIC_REG_FIQ_ENABLESET           0x14000028
 #define PIC_REG_FIQ_ENABLECLR           0x1400002C
 
-static void enableirq()
+static void enableirq(void)
 {
 
     cpu_set_cpsr(cpu_get_cpsr() & ~(1 << 7));
@@ -21,7 +21,7 @@ static void enableirq()
 }
 
 /*
-static void enablefiq()
+static void enablefiq(void)
 {
 
     cpu_set_cpsr(cpu_get_cpsr() & ~(1 << 6));
@@ -57,7 +57,7 @@ void pic_disablefiq(unsigned int fiq)
 
 }
 
-void pic_setup()
+void pic_setup(void)
 {
 
     enableirq();

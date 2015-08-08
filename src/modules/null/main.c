@@ -4,21 +4,21 @@
 
 static struct system_node root;
 
-void module_init()
+void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_NORMAL | SYSTEM_NODETYPE_MULTI, "null");
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     system_registernode(&root);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     system_unregisternode(&root);

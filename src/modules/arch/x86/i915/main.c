@@ -43,7 +43,7 @@ static void wait(unsigned int num)
 
 }
 
-static void waitvblank()
+static void waitvblank(void)
 {
 
     write(I915_PIPEB_STATUS, I915_PIPE_STATUS_VBLANK);
@@ -52,14 +52,14 @@ static void waitvblank()
 
 }
 
-static void disablevga()
+static void disablevga(void)
 {
 
     write(I915_VGA_CONTROL, I915_VGA_CONTROL_DISABLE);
 
 }
 
-static void enabledpll()
+static void enabledpll(void)
 {
 
     unsigned int pllb = read(I915_DPLLB_CONTROL);
@@ -81,14 +81,14 @@ static void enabledpll()
 
 }
 
-static void enablepipe()
+static void enablepipe(void)
 {
 
     write(I915_PIPEB_CONFIG, read(I915_PIPEB_CONFIG) & I915_PIPE_CONFIG_ENABLE);
 
 }
 
-static void enableplane()
+static void enableplane(void)
 {
 
     write(I915_DISPLAYB_CONTROL, read(I915_DISPLAYB_CONTROL) & I915_DISPLAY_CONTROL_ENPLANE);
@@ -142,7 +142,7 @@ static unsigned int videointerface_wdata(unsigned int offset, unsigned int size,
 
 }
 
-static void driver_init()
+static void driver_init(void)
 {
 
     video_initinterface(&videointerface, videointerface_setmode, videointerface_rdata, videointerface_wdata, 0, 0);
@@ -178,21 +178,21 @@ static void driver_detach(unsigned int id)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initdriver(&driver, "i915", driver_init, driver_match, driver_attach, driver_detach);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerdriver(&driver, PCI_BUS);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterdriver(&driver, PCI_BUS);

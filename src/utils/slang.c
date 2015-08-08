@@ -323,7 +323,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
 }
 
-void main()
+void main(void)
 {
 
     char buffer[FUDGE_BSIZE];

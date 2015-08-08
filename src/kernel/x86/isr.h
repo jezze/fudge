@@ -1,3 +1,3 @@
-void isr_generalfault();
-void isr_pagefault();
-void isr_syscall();
+void isr_generalfault(void);
+void isr_pagefault(void);
+void isr_syscall(void);

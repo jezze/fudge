@@ -306,7 +306,7 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     system_initbackend(&backend);
@@ -314,7 +314,7 @@ void module_init()
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     resource_register(&backend.resource);
@@ -322,7 +322,7 @@ void module_register()
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     resource_unregister(&backend.resource);

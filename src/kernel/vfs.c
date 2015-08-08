@@ -40,7 +40,7 @@ struct vfs_protocol *vfs_findprotocol(struct vfs_backend *backend)
 
 }
 
-void vfs_initbackend(struct vfs_backend *backend, unsigned int id, unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(unsigned int offset, unsigned int count, void *buffer), unsigned long (*getphysical)())
+void vfs_initbackend(struct vfs_backend *backend, unsigned int id, unsigned int (*read)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(unsigned int offset, unsigned int count, void *buffer), unsigned long (*getphysical)(void))
 {
 
     resource_init(&backend->resource, RESOURCE_VFSBACKEND, backend);

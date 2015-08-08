@@ -328,7 +328,7 @@ static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned 
 
 }
 
-void vfs_setupcpio()
+void vfs_setupcpio(void)
 {
 
     vfs_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_getphysical);

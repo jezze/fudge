@@ -43,7 +43,7 @@ static unsigned int colormap4[256] = {
     0xFFF898B8
 };
 
-static void spawn()
+static void spawn(void)
 {
 
     call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
@@ -532,7 +532,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
 }
 
-static void setupwindows()
+static void setupwindows(void)
 {
 
     unsigned int i;
@@ -566,7 +566,7 @@ static void setupviews(struct box *screen, struct box *menu)
 
 }
 
-void main()
+void main(void)
 {
 
     struct ctrl_videosettings oldsettings;

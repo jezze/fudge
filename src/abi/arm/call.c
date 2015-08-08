@@ -19,7 +19,7 @@ unsigned int call_close(unsigned int index)
 
 }
 
-unsigned int call_despawn()
+unsigned int call_despawn(void)
 {
 
     return 0;

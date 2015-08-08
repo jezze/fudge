@@ -35,7 +35,7 @@ static unsigned int parse(unsigned int count, void *buffer)
 
 }
 
-void main()
+void main(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];

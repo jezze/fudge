@@ -63,7 +63,7 @@ void outsr(unsigned char index, unsigned char value)
 
 }
 
-void vga_save()
+void vga_save(void)
 {
 
     io_inb(0x3DA);
@@ -86,7 +86,7 @@ void vga_save()
 
 }
 
-void vga_restore()
+void vga_restore(void)
 {
 
     io_inb(0x3DA);
@@ -109,7 +109,7 @@ void vga_restore()
 
 }
 
-void vga_settext()
+void vga_settext(void)
 {
 
     io_outb(0x3C2, 0x67);
@@ -172,7 +172,7 @@ void vga_settext()
 
 }
 
-void vga_setgraphic()
+void vga_setgraphic(void)
 {
 
     io_outb(0x3C2, 0x63);

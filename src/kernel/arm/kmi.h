@@ -15,4 +15,4 @@
 
 #define KMI_STATUS_FULL                 (1 << 4)
 
-void kmi_setup();
+void kmi_setup(void);

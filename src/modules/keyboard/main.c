@@ -63,7 +63,7 @@ void keyboard_initinterface(struct keyboard_interface *interface)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     keypress.header.type = EVENT_KEYPRESS;

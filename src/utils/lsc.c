@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 
-void main()
+void main(void)
 {
 
     struct record records[64];

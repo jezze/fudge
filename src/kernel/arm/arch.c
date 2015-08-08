@@ -11,7 +11,7 @@
 #define TASKS                           64
 #define TASKVSTACKLIMIT                 0x80000000
 
-extern void halt();
+extern void halt(void);
 
 struct atag_header
 {
@@ -59,7 +59,7 @@ static unsigned int backend_write(unsigned int offset, unsigned int count, void 
 
 }
 
-static unsigned long backend_getphysical()
+static unsigned long backend_getphysical(void)
 {
 
     return 0;
@@ -92,7 +92,7 @@ static void debugnum(unsigned int value, unsigned int base)
 
 }
 
-void arch_undefined()
+void arch_undefined(void)
 {
 
     uart_puts("ISR UNDEFINED\n");
@@ -101,7 +101,7 @@ void arch_undefined()
 
 }
 
-void arch_reset()
+void arch_reset(void)
 {
 
     uart_puts("ISR RESET\n");
@@ -110,7 +110,7 @@ void arch_reset()
 
 }
 
-__attribute__ ((interrupt("SWI"))) void arch_swi()
+__attribute__ ((interrupt("SWI"))) void arch_swi(void)
 {
 
     register unsigned int addr __asm__ ("r14");
@@ -122,14 +122,14 @@ __attribute__ ((interrupt("SWI"))) void arch_swi()
 
 }
 
-__attribute__ ((interrupt("IRQ"))) void arch_irq()
+__attribute__ ((interrupt("IRQ"))) void arch_irq(void)
 {
 
     uart_puts("ISR IRQ\n");
 
 }
 
-__attribute__ ((interrupt("FIQ"))) void arch_fiq()
+__attribute__ ((interrupt("FIQ"))) void arch_fiq(void)
 {
 
     uart_puts("ISR FIQ\n");
@@ -143,7 +143,7 @@ static void setupcontainer(struct arch_container *container, unsigned int i)
 
 }
 
-static struct container *setupcontainers()
+static struct container *setupcontainers(void)
 {
 
     unsigned int i;
@@ -164,7 +164,7 @@ static void setuptask(struct arch_task *task, unsigned int i)
 
 }
 
-static struct task *setuptasks()
+static struct task *setuptasks(void)
 {
 
     unsigned int i;
@@ -176,7 +176,7 @@ static struct task *setuptasks()
 
 }
 
-void pic_do()
+void pic_do(void)
 {
 
     unsigned int *mmio = (unsigned int *)0x14000000;
@@ -185,7 +185,7 @@ void pic_do()
 
 }
 
-void timer_do()
+void timer_do(void)
 {
 
     unsigned int *mmio = (unsigned int *)0x13000000;
@@ -197,7 +197,7 @@ void timer_do()
 
 }
 
-void arch_setup()
+void arch_setup(void)
 {
 
     pic_setup();

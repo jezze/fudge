@@ -42,7 +42,7 @@ static unsigned int blockinterface_wdata(unsigned int offset, unsigned int size,
 
 }
 
-static void driver_init()
+static void driver_init(void)
 {
 
     block_initinterface(&blockinterface, blockinterface_rdata, blockinterface_wdata);
@@ -72,21 +72,21 @@ static void driver_detach(unsigned int id)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initdriver(&driver, "ata", driver_init, driver_match, driver_attach, driver_detach);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerdriver(&driver, IDE_BUS);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterdriver(&driver, IDE_BUS);

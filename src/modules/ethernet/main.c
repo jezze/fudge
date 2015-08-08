@@ -148,21 +148,21 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "ethernet");
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     system_registernode(&root);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     system_unregisternode(&root);

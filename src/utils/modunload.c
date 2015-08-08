@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 
-void main()
+void main(void)
 {
 
     call_open(CALL_P0);

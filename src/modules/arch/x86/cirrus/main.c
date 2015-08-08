@@ -204,7 +204,7 @@ static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int s
 
 }
 
-static void driver_init()
+static void driver_init(void)
 {
 
     video_initinterface(&videointerface, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
@@ -232,21 +232,21 @@ static void driver_detach(unsigned int id)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initdriver(&driver, "cirrus", driver_init, driver_match, driver_attach, driver_detach);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerdriver(&driver, PCI_BUS);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterdriver(&driver, PCI_BUS);

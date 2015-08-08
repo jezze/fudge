@@ -40,7 +40,7 @@ unsigned int kernel_setupramdisk(struct container *container, struct task *task,
 
 }
 
-void kernel_setup()
+void kernel_setup(void)
 {
 
     resource_setup();

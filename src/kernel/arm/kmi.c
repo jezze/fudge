@@ -22,7 +22,7 @@ static char mapUS[256] =
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-void kmi_setup()
+void kmi_setup(void)
 {
 
     for (;;)

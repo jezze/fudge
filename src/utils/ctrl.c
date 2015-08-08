@@ -109,7 +109,7 @@ static unsigned int writevideosettings(unsigned int offset, struct ctrl_videoset
 
 }
 
-void main()
+void main(void)
 {
 
     union settings buffer;

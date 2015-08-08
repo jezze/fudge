@@ -5,4 +5,4 @@
 
 void uart_putc(char c);
 void uart_puts(char *s);
-void uart_setup();
+void uart_setup(void);

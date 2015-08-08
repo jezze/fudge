@@ -64,7 +64,7 @@ void mouse_initinterface(struct mouse_interface *interface)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     mousepress.header.type = EVENT_MOUSEPRESS;

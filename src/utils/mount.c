@@ -1,6 +1,6 @@
 #include <fudge.h>
 
-void main()
+void main(void)
 {
 
 }

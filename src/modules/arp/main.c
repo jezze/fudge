@@ -100,7 +100,7 @@ void arp_inithook(struct arp_hook *hook, unsigned short htype, unsigned short pt
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     list_init(&hooks);
@@ -108,14 +108,14 @@ void module_init()
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     ethernet_registerprotocol(&ethernetprotocol);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     ethernet_unregisterprotocol(&ethernetprotocol);

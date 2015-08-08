@@ -10,7 +10,7 @@ static struct base_driver driver;
 static struct base_bus bus;
 static unsigned int mmio;
 
-static void bus_setup()
+static void bus_setup(void)
 {
 
     log_notify(LOG_INFO, 1, 10, "AHCI INIT\n");
@@ -24,7 +24,7 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-static void driver_init()
+static void driver_init(void)
 {
 
     base_initbus(&bus, AHCI_BUS, "ahci", bus_setup, bus_next);
@@ -54,21 +54,21 @@ static void driver_detach(unsigned int id)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initdriver(&driver, "ahci", driver_init, driver_match, driver_attach, driver_detach);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerdriver(&driver, PCI_BUS);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterdriver(&driver, PCI_BUS);

@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 
-void main()
+void main(void)
 {
 
     if (!call_walk(CALL_L0, CALL_PR, 12, "system/reset"))

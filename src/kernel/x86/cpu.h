@@ -23,13 +23,13 @@ struct cpu_interrupt
 
 };
 
-unsigned int cpu_getcr0();
-unsigned int cpu_getcr2();
-unsigned int cpu_getcr3();
-unsigned int cpu_getcr4();
-unsigned int cpu_geteflags();
-void *cpu_getgdt();
-void *cpu_getidt();
+unsigned int cpu_getcr0(void);
+unsigned int cpu_getcr2(void);
+unsigned int cpu_getcr3(void);
+unsigned int cpu_getcr4(void);
+unsigned int cpu_geteflags(void);
+void *cpu_getgdt(void);
+void *cpu_getidt(void);
 void cpu_setcr0(unsigned int value);
 void cpu_setcr2(unsigned int value);
 void cpu_setcr3(unsigned int value);
@@ -38,5 +38,5 @@ void cpu_seteflags(unsigned int value);
 void cpu_setgdt(void *pointer, unsigned int code, unsigned int data);
 void cpu_setidt(void *pointer);
 void cpu_settss(unsigned int value);
-void cpu_halt();
+void cpu_halt(void);
 void cpu_leave(struct cpu_interrupt interrupt);

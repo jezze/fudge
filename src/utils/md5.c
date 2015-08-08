@@ -211,7 +211,7 @@ static void md5_init(struct md5 *s)
 
 }
 
-void main()
+void main(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];

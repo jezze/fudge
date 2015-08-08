@@ -21,4 +21,4 @@ void pic_enableirq(unsigned int irq);
 void pic_disableirq(unsigned int irq);
 void pic_enablefiq(unsigned int fiq);
 void pic_disablefiq(unsigned int fiq);
-void pic_setup();
+void pic_setup(void);

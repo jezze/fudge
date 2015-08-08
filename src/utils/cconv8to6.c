@@ -13,7 +13,7 @@ static unsigned int convert(unsigned char *out, unsigned int ocount, unsigned ch
 
 }
 
-void main()
+void main(void)
 {
 
     unsigned char out[FUDGE_BSIZE];

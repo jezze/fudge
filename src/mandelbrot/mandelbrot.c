@@ -68,7 +68,7 @@ void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, u
 
 }
 
-void main()
+void main(void)
 {
 
     struct ctrl_videosettings settings;

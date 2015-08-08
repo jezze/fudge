@@ -97,7 +97,7 @@ static void handle(struct buffer *buffer, unsigned char c)
 
 }
 
-void main()
+void main(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];

@@ -137,7 +137,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
 }
 
-void main()
+void main(void)
 {
 
     struct ctrl_videosettings settings;

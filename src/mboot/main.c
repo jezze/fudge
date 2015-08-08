@@ -24,7 +24,7 @@ static unsigned int write(unsigned int offset, unsigned int count, void *buffer)
 
 }
 
-static unsigned long getphysical()
+static unsigned long getphysical(void)
 {
 
     return address;

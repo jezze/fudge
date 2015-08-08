@@ -104,14 +104,14 @@ static unsigned char tx3[0x800];
 static unsigned short rxp;
 static unsigned short txp;
 
-static void poweron()
+static void poweron(void)
 {
 
     io_outb(io + REGISTERCONFIG1, 0x00);
 
 }
 
-static void reset()
+static void reset(void)
 {
 
     io_outb(io + REGISTERCR, CRRESET);
@@ -120,7 +120,7 @@ static void reset()
 
 }
 
-static void enable()
+static void enable(void)
 {
 
     io_outb(io + REGISTERCR, CRRENABLE | CRTENABLE);
@@ -134,7 +134,7 @@ static void setintflags(unsigned short flags)
 
 }
 
-static void setrx()
+static void setrx(void)
 {
 
     io_outd(io + REGISTERRBSTART, (unsigned long)rx);
@@ -142,7 +142,7 @@ static void setrx()
 
 }
 
-static void settx()
+static void settx(void)
 {
 
     io_outd(io + REGISTERTSAD0, (unsigned long)tx0);
@@ -221,7 +221,7 @@ static unsigned int ethernetinterface_send(unsigned int count, void *buffer)
 
 }
 
-static void driver_init()
+static void driver_init(void)
 {
 
     ethernet_initinterface(&ethernetinterface, driver.name, ethernetinterface_send);
@@ -269,21 +269,21 @@ static void driver_detach(unsigned int id)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initdriver(&driver, "rtl8139", driver_init, driver_match, driver_attach, driver_detach);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerdriver(&driver, PCI_BUS);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterdriver(&driver, PCI_BUS);

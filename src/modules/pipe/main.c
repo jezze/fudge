@@ -98,7 +98,7 @@ static unsigned int endpoint1_write(struct system_node *self, unsigned int offse
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     t0 = 0;
@@ -124,14 +124,14 @@ void module_init()
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     system_registernode(&root);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     system_unregisternode(&root);

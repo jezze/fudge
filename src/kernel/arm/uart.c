@@ -19,7 +19,7 @@ void uart_puts(char *s)
 
 }
 
-void uart_setup()
+void uart_setup(void)
 {
 
     pic_enableirq(PIC_IRQ_UART0);

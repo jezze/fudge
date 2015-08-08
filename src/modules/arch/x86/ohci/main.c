@@ -28,7 +28,7 @@
 
 static struct base_driver driver;
 
-static void driver_init()
+static void driver_init(void)
 {
 
 }
@@ -54,21 +54,21 @@ static void driver_detach(unsigned int id)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initdriver(&driver, "ohci", driver_init, driver_match, driver_attach, driver_detach);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerdriver(&driver, PCI_BUS);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterdriver(&driver, PCI_BUS);

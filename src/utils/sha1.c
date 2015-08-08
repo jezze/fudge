@@ -214,7 +214,7 @@ static void sha1_init(struct sha1 *s)
 
 }
 
-void main()
+void main(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];

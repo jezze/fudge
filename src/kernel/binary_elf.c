@@ -149,7 +149,7 @@ static unsigned int protocol_relocate(struct vfs_channel *channel, unsigned int 
 
 }
 
-void binary_setupelf()
+void binary_setupelf(void)
 {
 
     binary_initprotocol(&protocol, protocol_match, protocol_findsymbol, protocol_findentry, protocol_copyprogram, protocol_relocate);

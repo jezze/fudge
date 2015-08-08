@@ -28,7 +28,7 @@ struct mbr
 
 };
 
-void main()
+void main(void)
 {
 
     struct mbr mbr;

@@ -2,7 +2,7 @@
 #define PS2_KEYBOARD                    0x0001
 #define PS2_MOUSE                       0x0002
 
-unsigned char ps2_getdata();
+unsigned char ps2_getdata(void);
 unsigned short ps2_getirq(unsigned int id);
 void ps2_setcommand(unsigned char value);
 void ps2_setdata(unsigned char value);

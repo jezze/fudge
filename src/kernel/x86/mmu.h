@@ -39,4 +39,4 @@ struct mmu_directory
 
 void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
 void mmu_setdirectory(struct mmu_directory *directory);
-void mmu_setup();
+void mmu_setup(void);

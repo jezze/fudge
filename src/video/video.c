@@ -33,7 +33,7 @@ void video_setcolormap(unsigned int offset, unsigned int size, unsigned int coun
 
 }
 
-void video_open()
+void video_open(void)
 {
 
     call_walk(CALL_L0, CALL_PR, 19, "system/video:0/data");
@@ -41,7 +41,7 @@ void video_open()
 
 }
 
-void video_close()
+void video_close(void)
 {
 
     call_close(CALL_L0);

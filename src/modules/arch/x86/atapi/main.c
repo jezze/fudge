@@ -14,7 +14,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void driver_init()
+static void driver_init(void)
 {
 
     block_initinterface(&blockinterface, 0, 0);
@@ -44,21 +44,21 @@ static void driver_detach(unsigned int id)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initdriver(&driver, "atapi", driver_init, driver_match, driver_attach, driver_detach);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerdriver(&driver, IDE_BUS);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterdriver(&driver, IDE_BUS);

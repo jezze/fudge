@@ -98,7 +98,7 @@ static struct base_driver driver;
 static struct console_interface consoleinterface;
 static unsigned short io;
 
-static unsigned char read()
+static unsigned char read(void)
 {
 
     while (!(io_inb(io + REGISTERLSR) & LSRREADY));
@@ -138,7 +138,7 @@ static unsigned int consoleinterface_send(unsigned int offset, unsigned int coun
 
 }
 
-static void driver_init()
+static void driver_init(void)
 {
 
     console_initinterface(&consoleinterface, consoleinterface_send);
@@ -180,21 +180,21 @@ static void driver_detach(unsigned int id)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initdriver(&driver, "uart", driver_init, driver_match, driver_attach, driver_detach);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterdriver(&driver, PLATFORM_BUS);

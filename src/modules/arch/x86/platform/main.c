@@ -49,7 +49,7 @@ unsigned short platform_getirq(unsigned int id)
 
 }
 
-static void bus_setup()
+static void bus_setup(void)
 {
 
 }
@@ -61,21 +61,21 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initbus(&bus, PLATFORM_BUS, "platform", bus_setup, bus_next);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerbus(&bus);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterbus(&bus);

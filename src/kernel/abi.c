@@ -256,8 +256,8 @@ static unsigned int load(struct container *container, struct task *task, void *s
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
     struct binary_protocol *protocol;
     unsigned long physical;
-    void (*module_init)();
-    void (*module_register)();
+    void (*module_init)(void);
+    void (*module_register)(void);
 
     if (!descriptor->id || !descriptor->channel || !descriptor->channel->protocol->getphysical)
         return 0;
@@ -273,12 +273,12 @@ static unsigned int load(struct container *container, struct task *task, void *s
     if (!protocol || !protocol->relocate(descriptor->channel, descriptor->id, physical))
         return 0;
 
-    module_init = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 11, "module_init"));
+    module_init = (void (*)(void))(protocol->findsymbol(descriptor->channel, descriptor->id, 11, "module_init"));
 
     if (module_init)
         module_init();
 
-    module_register = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 15, "module_register"));
+    module_register = (void (*)(void))(protocol->findsymbol(descriptor->channel, descriptor->id, 15, "module_register"));
 
     if (module_register)
         module_register();
@@ -293,7 +293,7 @@ static unsigned int unload(struct container *container, struct task *task, void 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
     struct binary_protocol *protocol;
-    void (*module_unregister)();
+    void (*module_unregister)(void);
 
     if (!descriptor->id || !descriptor->channel)
         return 0;
@@ -303,7 +303,7 @@ static unsigned int unload(struct container *container, struct task *task, void 
     if (!protocol)
         return 0;
 
-    module_unregister = (void (*)())(protocol->findsymbol(descriptor->channel, descriptor->id, 17, "module_unregister"));
+    module_unregister = (void (*)(void))(protocol->findsymbol(descriptor->channel, descriptor->id, 17, "module_unregister"));
 
     if (module_unregister)
         module_unregister();

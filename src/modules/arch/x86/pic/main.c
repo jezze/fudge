@@ -108,7 +108,7 @@ unsigned int pic_unsetroutine(unsigned int irq)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     setchip(REGISTERCOMMAND0, REGISTERDATA0, DATAVECTOR0, 0x04);

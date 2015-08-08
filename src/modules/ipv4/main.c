@@ -102,7 +102,7 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     buffer_init(&local, sizeof (struct ipv4_ethernetentry), LOCALS, &localbuffer);
@@ -114,7 +114,7 @@ void module_init()
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     ethernet_registerprotocol(&ethernetprotocol);
@@ -123,7 +123,7 @@ void module_register()
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     ethernet_unregisterprotocol(&ethernetprotocol);

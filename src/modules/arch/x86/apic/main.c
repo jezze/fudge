@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 
-void module_init()
+void module_init(void)
 {
 
     struct cpuid_data data;

@@ -42,7 +42,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     system_initnode(&poll, SYSTEM_NODETYPE_MAILBOX, "poll");
@@ -56,14 +56,14 @@ void module_init()
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     system_registernode(&root);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     system_unregisternode(&root);

@@ -7,7 +7,7 @@ static struct system_node root;
 static struct system_node data;
 static struct system_node ctrl;
 
-static struct video_interface *findinterface()
+static struct video_interface *findinterface(void)
 {
 
     struct resource *resource = resource_findtype(0, RESOURCE_VIDEOINTERFACE);
@@ -52,7 +52,7 @@ static unsigned int data_write(struct system_node *self, unsigned int offset, un
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     system_initnode(&data, SYSTEM_NODETYPE_NORMAL, "data");
@@ -70,14 +70,14 @@ void module_init()
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     system_registernode(&root);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     system_unregisternode(&root);

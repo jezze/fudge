@@ -8,7 +8,7 @@ static struct list active;
 static struct list inactive;
 static struct list blocked;
 
-struct task *task_findactive()
+struct task *task_findactive(void)
 {
 
     if (!active.tail)
@@ -18,7 +18,7 @@ struct task *task_findactive()
 
 }
 
-struct task *task_findinactive()
+struct task *task_findinactive(void)
 {
 
     if (!inactive.tail)
@@ -209,7 +209,7 @@ void task_init(struct task *task)
 
 }
 
-void task_setup()
+void task_setup(void)
 {
 
     list_init(&active);

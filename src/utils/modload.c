@@ -189,7 +189,7 @@ static unsigned int resolve(unsigned int id)
 
 }
 
-void main()
+void main(void)
 {
 
     if (!call_walk(CALL_L0, CALL_PR, 9, "bin/fudge"))

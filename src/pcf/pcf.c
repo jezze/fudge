@@ -53,7 +53,7 @@ static void writestring(unsigned int count, char *text, unsigned char *data)
 
 }
 
-void main()
+void main(void)
 {
 
     unsigned char data[0x8000];

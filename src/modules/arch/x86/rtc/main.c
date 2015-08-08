@@ -41,56 +41,56 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned char clockinterface_getseconds()
+static unsigned char clockinterface_getseconds(void)
 {
 
     return read(0x00);
 
 }
 
-static unsigned char clockinterface_getminutes()
+static unsigned char clockinterface_getminutes(void)
 {
 
     return read(0x02);
 
 }
 
-static unsigned char clockinterface_gethours()
+static unsigned char clockinterface_gethours(void)
 {
 
     return read(0x04);
 
 }
 
-static unsigned char clockinterface_getweekday()
+static unsigned char clockinterface_getweekday(void)
 {
 
     return read(0x06);
 
 }
 
-static unsigned char clockinterface_getday()
+static unsigned char clockinterface_getday(void)
 {
 
     return read(0x07);
 
 }
 
-static unsigned char clockinterface_getmonth()
+static unsigned char clockinterface_getmonth(void)
 {
 
     return read(0x08);
 
 }
 
-static unsigned short clockinterface_getyear()
+static unsigned short clockinterface_getyear(void)
 {
 
     return 2000 + read(0x09);
 
 }
 
-static void driver_init()
+static void driver_init(void)
 {
 
     clock_initinterface(&clockinterface, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
@@ -122,21 +122,21 @@ static void driver_detach(unsigned int id)
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initdriver(&driver, "rtc", driver_init, driver_match, driver_attach, driver_detach);
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterdriver(&driver, PLATFORM_BUS);

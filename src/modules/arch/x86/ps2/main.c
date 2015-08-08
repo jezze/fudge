@@ -72,14 +72,14 @@ static struct device devices[] = {
     {0, IRQMOUSE, COMMANDDEV2DISABLE, COMMANDDEV2ENABLE, COMMANDDEV2TEST, COMMANDDEV2WI, CONFIGFLAG_DEV2INT, CONFIGFLAG_DEV2CLOCK}
 };
 
-static unsigned char getstatus()
+static unsigned char getstatus(void)
 {
 
     return io_inb(REGISTERCONTROL);
 
 }
 
-static unsigned char polldata()
+static unsigned char polldata(void)
 {
 
     while ((getstatus() & STATUSOFULL) != 1);
@@ -88,7 +88,7 @@ static unsigned char polldata()
 
 }
 
-unsigned char ps2_getdata()
+unsigned char ps2_getdata(void)
 {
 
     return io_inb(REGISTERDATA);
@@ -197,7 +197,7 @@ void ps2_default(unsigned int id)
 
 }
 
-static void bus_setup()
+static void bus_setup(void)
 {
 
     unsigned char config;
@@ -260,7 +260,7 @@ static unsigned int reset_write(struct system_node *self, unsigned int offset, u
 
 }
 
-void module_init()
+void module_init(void)
 {
 
     base_initbus(&bus, PS2_BUS, "ps2", bus_setup, bus_next);
@@ -270,7 +270,7 @@ void module_init()
 
 }
 
-void module_register()
+void module_register(void)
 {
 
     base_registerbus(&bus);
@@ -278,7 +278,7 @@ void module_register()
 
 }
 
-void module_unregister()
+void module_unregister(void)
 {
 
     base_unregisterbus(&bus);

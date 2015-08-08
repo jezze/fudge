@@ -6,7 +6,7 @@
 
 static struct pcx_surface pcx;
 
-void main()
+void main(void)
 {
 
     call_open(CALL_P0);

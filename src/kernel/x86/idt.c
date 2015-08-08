@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "idt.h"
 
-void idt_setdescriptor(struct idt_pointer *pointer, unsigned char index, void (*callback)(), unsigned short selector, unsigned char flags)
+void idt_setdescriptor(struct idt_pointer *pointer, unsigned char index, void (*callback)(void), unsigned short selector, unsigned char flags)
 {
 
     struct idt_descriptor *descriptor = (struct idt_descriptor *)(pointer->base0 | pointer->base1 << 8 | pointer->base2 << 16 | pointer->base3 << 24) + index;

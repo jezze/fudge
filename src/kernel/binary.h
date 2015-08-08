@@ -12,4 +12,4 @@ struct binary_protocol
 
 struct binary_protocol *binary_findprotocol(struct vfs_channel *channel, unsigned int id);
 void binary_initprotocol(struct binary_protocol *protocol, unsigned int (*match)(struct vfs_channel *channel, unsigned int id), unsigned long (*findsymbol)(struct vfs_channel *channel, unsigned int id, unsigned int count, char *symbol), unsigned long (*findentry)(struct vfs_channel *channel, unsigned int id), unsigned long (*copyprogram)(struct vfs_channel *channel, unsigned int id), unsigned int (*relocate)(struct vfs_channel *channel, unsigned int id, unsigned int address));
-void binary_setupelf();
+void binary_setupelf(void);
