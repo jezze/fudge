@@ -24,7 +24,7 @@ static void writechar(char c, unsigned int padding, unsigned char *data)
 
     unsigned short index = pcf_getindex(CALL_P0, c);
     unsigned int offset = pcf_getbitmapoffset(CALL_P0, index);
-    struct pcf_metricsdata_normal metrics;
+    struct pcf_metricsdata metrics;
     unsigned int x;
     unsigned int y;
 

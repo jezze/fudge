@@ -25,7 +25,7 @@ struct pcf_header
     unsigned char magic[4];
     unsigned int entries;
 
-} __attribute__((packed));
+};
 
 struct pcf_entry
 {
@@ -35,12 +35,11 @@ struct pcf_entry
     unsigned int size;
     unsigned int offset;
 
-} __attribute__((packed));
+};
 
 struct pcf_bitmap
 {
 
-    unsigned int format;
     unsigned int count;
 
 };
@@ -48,39 +47,29 @@ struct pcf_bitmap
 struct pcf_bdfencoding
 {
 
-    unsigned int format;
     unsigned short mincharorbyte2;
     unsigned short maxcharorbyte2;
     unsigned short minbyte1;
     unsigned short maxbyte1;
     unsigned short defaultchar;
 
-} __attribute__((packed));
+};
 
 struct pcf_metrics
 {
 
-    unsigned int format;
-
-} __attribute__((packed));
-
-struct pcf_metrics_normal
-{
-
-    struct pcf_metrics header;
     unsigned int count;
 
-} __attribute__((packed));
+};
 
 struct pcf_metrics_compressed
 {
 
-    struct pcf_metrics header;
     unsigned short count;
 
-} __attribute__((packed));
+};
 
-struct pcf_metricsdata_normal
+struct pcf_metricsdata
 {
 
     unsigned short lbearing;
@@ -90,7 +79,7 @@ struct pcf_metricsdata_normal
     unsigned short descent;
     unsigned short attributes;
 
-} __attribute__((packed));
+};
 
 struct pcf_metricsdata_compressed
 {
@@ -101,10 +90,10 @@ struct pcf_metricsdata_compressed
     unsigned char ascent;
     unsigned char descent;
 
-} __attribute__((packed));
+};
 
 unsigned int pcf_getbitmapoffset(unsigned int descriptor, unsigned short index);
-void pcf_readmetrics(unsigned int descriptor, unsigned short index, struct pcf_metricsdata_normal *data);
+void pcf_readmetrics(unsigned int descriptor, unsigned short index, struct pcf_metricsdata *data);
 unsigned int pcf_getpadding(unsigned int descriptor);
 unsigned short pcf_getindex(unsigned int descriptor, unsigned short encoding);
 void pcf_readdata(unsigned int descriptor, unsigned int count, void *buffer);
