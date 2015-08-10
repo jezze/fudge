@@ -19,71 +19,11 @@ static struct list windows;
 static struct view view[VIEWS];
 static struct list views;
 
-static unsigned char colormap[] = {
-    0x00, 0x00, 0x00,
-    0xFF, 0xFF, 0xFF,
-    0x03, 0x02, 0x02,
-    0x05, 0x04, 0x04,
-    0x07, 0x06, 0x06,
-    0x08, 0x10, 0x18,
-    0x0C, 0x14, 0x1C,
-    0x28, 0x10, 0x18,
-    0x38, 0x20, 0x28
-};
-
-static unsigned int colormap4[256] = {
-    0xFF000000,
-    0xFFFFFFFF,
-    0xFF181014,
-    0xFF20181C,
-    0xFF30282C,
-    0xFF105070,
-    0xFF307090,
-    0xFFB05070,
-    0xFFF898B8
-};
-
 static void spawn(void)
 {
 
     call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
     call_spawn();
-
-}
-
-void fill(unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count)
-{
-
-    switch (bpp)
-    {
-
-    case 8:
-        fill8(color, offset, count);
-
-        break;
-
-    case 32:
-        fill32(colormap4[color], offset, count);
-
-        break;
-
-    }
-
-}
-
-static void drawviews(unsigned int bpp, unsigned int line)
-{
-
-    struct list_item *current;
-
-    for (current = views.head; current; current = current->next)
-    {
-
-        struct view *view = current->data;
-
-        view_draw(view, bpp, line);
-
-    }
 
 }
 
@@ -124,9 +64,20 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb, unsigned i
     for (line = bb->y; line < bb->y + bb->h; line++)
     {
 
-        fill(settings->bpp, WM_COLOR_TRANSPARENT, bb->x, bb->w);
-        drawviews(settings->bpp, line);
-        flush(settings->w * line, settings->bpp, bb->x, bb->w);
+        struct list_item *current;
+
+        draw_fill(settings->bpp, WM_COLOR_TRANSPARENT, bb->x, bb->w);
+
+        for (current = views.head; current; current = current->next)
+        {
+
+            struct view *view = current->data;
+
+            view_draw(view, settings, line);
+
+        }
+
+        draw_flush(settings->w * line, settings->bpp, bb->x, bb->w);
 
     }
 
@@ -140,9 +91,9 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb, unsigned i
     for (line = bb->y; line < bb->y + bb->h; line++)
     {
 
-        fill(settings->bpp, WM_COLOR_TRANSPARENT, bb->x, bb->w);
-        image_draw(&mouse.image, settings->bpp, line);
-        flush(settings->w * line, settings->bpp, bb->x, bb->w);
+        draw_fill(settings->bpp, WM_COLOR_TRANSPARENT, bb->x, bb->w);
+        image_draw(&mouse.image, settings, line);
+        draw_flush(settings->w * line, settings->bpp, bb->x, bb->w);
 
     }
 
@@ -574,12 +525,10 @@ void main(void)
     struct box screen;
     struct box menu;
 
-    colormap4[WM_COLOR_TRANSPARENT] = 0x00FF00FF;
-
     ctrl_setvideosettings(&settings, 1024, 768, 32);
     video_getmode(&oldsettings);
     video_setmode(&settings);
-    video_setcolormap(0, 3, 9, colormap);
+    draw_init();
     box_setsize(&screen, 0, 0, settings.w, settings.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, 32);
     mouse_init(&mouse, &screen);

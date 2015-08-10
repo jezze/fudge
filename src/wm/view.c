@@ -6,10 +6,10 @@
 #include "window.h"
 #include "view.h"
 
-void view_draw(struct view *view, unsigned int bpp, unsigned int line)
+void view_draw(struct view *view, struct ctrl_videosettings *settings, unsigned int line)
 {
 
-    panel_draw(&view->panel, bpp, line);
+    panel_draw(&view->panel, settings, line);
 
     if (!view->active)
         return;
@@ -24,7 +24,7 @@ void view_draw(struct view *view, unsigned int bpp, unsigned int line)
 
             struct window *window = current->data;
 
-            window_draw(window, bpp, line);
+            window_draw(window, settings, line);
 
         }
 
@@ -36,7 +36,7 @@ void view_draw(struct view *view, unsigned int bpp, unsigned int line)
         if (line < view->body.y || line >= view->body.y + view->body.h)
             return;
 
-        fill(bpp, WM_COLOR_BODY, view->body.x, view->body.w);
+        draw_fill(settings->bpp, WM_COLOR_BODY, view->body.x, view->body.w);
 
     }
 

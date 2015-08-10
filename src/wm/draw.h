@@ -9,7 +9,6 @@
 #define WM_COLOR_POINTERFRAME           0x08
 #define WM_COLOR_TRANSPARENT            0xFF
 
-void flush(unsigned int line, unsigned int bpp, unsigned int offset, unsigned int count);
-void fill(unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count);
-void fill8(unsigned int color, unsigned int offset, unsigned int count);
-void fill32(unsigned int color, unsigned int offset, unsigned int count);
+void draw_fill(unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count);
+void draw_flush(unsigned int line, unsigned int bpp, unsigned int offset, unsigned int count);
+void draw_init();

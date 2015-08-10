@@ -4,7 +4,7 @@
 #include "draw.h"
 #include "image.h"
 
-void image_draw(struct image *image, unsigned int bpp, unsigned int line)
+void image_draw(struct image *image, struct ctrl_videosettings *settings, unsigned int line)
 {
 
     unsigned int i;
@@ -16,7 +16,7 @@ void image_draw(struct image *image, unsigned int bpp, unsigned int line)
     off = (line - image->size.y) * image->size.w;
 
     for (i = 0; i < image->size.w; i++)
-        fill(bpp, image->data[off + i], image->size.x + i, 1);
+        draw_fill(settings->bpp, image->data[off + i], image->size.x + i, 1);
 
 }
 

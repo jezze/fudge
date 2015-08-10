@@ -5,38 +5,6 @@
 #include "draw.h"
 #include "send.h"
 
-static unsigned int colormap4[256] = {
-    0xFF000000,
-    0xFFFFFFFF,
-    0xFF181014,
-    0xFF20181C,
-    0xFF30282C,
-    0xFF105070,
-    0xFF307090,
-    0xFFB05070,
-    0xFFF898B8
-};
-
-void fill(unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count)
-{
-
-    switch (bpp)
-    {
-
-    case 8:
-        fill8(color, offset, count);
-
-        break;
-
-    case 32:
-        fill32(colormap4[color], offset, count);
-
-        break;
-
-    }
-
-}
-
 static void draw(struct ctrl_videosettings *settings, struct box *bb)
 {
 
@@ -47,7 +15,7 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb)
     for (line = bb->y; line < bb->y + bb->h; line++)
     {
 
-        flush(settings->w * line, settings->bpp, bb->x, bb->w);
+        draw_flush(settings->w * line, settings->bpp, bb->x, bb->w);
 
     }
 
@@ -143,11 +111,10 @@ void main(void)
     struct ctrl_videosettings settings;
     struct box screen;
 
-    colormap4[WM_COLOR_TRANSPARENT] = 0x00FF00FF;
-
     video_getmode(&settings);
+    draw_init();
     box_setsize(&screen, 0, 0, settings.w, settings.h);
-    fill(settings.bpp, WM_COLOR_BODY, 0, screen.w);
+    draw_fill(settings.bpp, WM_COLOR_BODY, 0, screen.w);
     send_wmmap(0xFFFFFFFF);
     pollevent(&settings, &screen);
 
