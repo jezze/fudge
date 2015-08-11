@@ -20,14 +20,6 @@ static struct view view[VIEWS];
 static struct list views;
 static struct view *viewfocus;
 
-static void spawn(void)
-{
-
-    call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
-    call_spawn();
-
-}
-
 static void sendwmdrawall(struct box *bb)
 {
 
@@ -334,7 +326,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 break;
 
             case 0x19:
-                spawn();
+                call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
+                call_spawn();
 
                 break;
 
