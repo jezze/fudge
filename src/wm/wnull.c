@@ -112,8 +112,8 @@ void main(void)
     struct box screen;
 
     video_getmode(&settings);
-    draw_init();
     box_setsize(&screen, 0, 0, settings.w, settings.h);
+    draw_init();
     draw_fill(settings.bpp, WM_COLOR_BODY, 0, screen.w);
     send_wmmap(0xFFFFFFFF);
     pollevent(&settings, &screen);

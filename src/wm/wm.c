@@ -506,20 +506,24 @@ static void setupwindows(void)
 
 }
 
-static void setupviews(struct box *screen, struct box *menu)
+static struct view *setupviews(struct box *screen)
 {
 
+    struct box menu;
     unsigned int i;
 
+    box_setsize(&menu, screen->x, screen->y, screen->w, 32);
     list_init(&views);
 
     for (i = 0; i < VIEWS; i++)
     {
 
-        view_init(&view[i], screen, menu, i, VIEWS);
+        view_init(&view[i], screen, &menu, i, VIEWS);
         list_add(&views, &view[i].item);
 
     }
+
+    return views.head->data;
 
 }
 
@@ -529,21 +533,18 @@ void main(void)
     struct ctrl_videosettings oldsettings;
     struct ctrl_videosettings settings;
     struct box screen;
-    struct box menu;
 
     ctrl_setvideosettings(&settings, 1024, 768, 32);
     video_getmode(&oldsettings);
     video_setmode(&settings);
-    draw_init();
     box_setsize(&screen, 0, 0, settings.w, settings.h);
-    box_setsize(&menu, screen.x, screen.y, screen.w, 32);
     mouse_init(&mouse, &screen);
     setupwindows();
-    setupviews(&screen, &menu);
 
-    viewfocus = views.head->data;
+    viewfocus = setupviews(&screen);
 
     view_activate(viewfocus);
+    draw_init();
     draw(&settings, &screen, 0);
     pollevent(&settings, &screen);
     video_setmode(&oldsettings);
