@@ -18,6 +18,7 @@ static struct window window[WINDOWS];
 static struct list windows;
 static struct view view[VIEWS];
 static struct list views;
+static struct view *viewfocus;
 
 static void spawn(void)
 {
@@ -231,7 +232,7 @@ static struct view *focusview(struct view *old, struct view *new)
 
 }
 
-static struct view *findview(struct list *views, struct mouse *mouse)
+static struct view *findview(struct list *views, unsigned int x, unsigned int y)
 {
 
     struct list_item *current;
@@ -241,7 +242,7 @@ static struct view *findview(struct list *views, struct mouse *mouse)
 
         struct view *view = current->data;
 
-        if (box_isinside(&view->panel.size, mouse->image.size.x, mouse->image.size.y))
+        if (box_isinside(&view->panel.size, x, y))
             return view;
 
     }
@@ -250,7 +251,7 @@ static struct view *findview(struct list *views, struct mouse *mouse)
 
 }
 
-static struct window *findwindow(struct view *view, struct mouse *mouse)
+static struct window *findwindow(struct view *view, unsigned int x, unsigned int y)
 {
 
     struct list_item *current;
@@ -260,7 +261,7 @@ static struct window *findwindow(struct view *view, struct mouse *mouse)
 
         struct window *window = current->data;
 
-        if (box_isinside(&window->size, mouse->image.size.x, mouse->image.size.y))
+        if (box_isinside(&window->size, x, y))
             return window;
 
     }
@@ -274,18 +275,13 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
     union event event;
     unsigned int count, roff, quit = 0;
-    struct view *viewfocus = views.head->data;
     struct box oldmouse;
 
-    view_activate(viewfocus);
-    draw(settings, screen, 0);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
 
     for (roff = 0; (count = call_read(CALL_L1, roff, sizeof (struct event_header), 1, &event.header)); roff += count)
     {
-
-        box_setsize(&oldmouse, mouse.image.size.x, mouse.image.size.y, mouse.image.size.w, mouse.image.size.h);
 
         if (event.header.count)
             count += call_read(CALL_L1, roff + count, event.header.count, 1, event.data + sizeof (struct event_header));
@@ -325,6 +321,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 break;
 
             case 0x11:
+                box_setsize(&oldmouse, mouse.image.size.x, mouse.image.size.y, mouse.image.size.w, mouse.image.size.h);
+
                 mouse.image.size.y -= 4;
 
                 if (mouse.image.size.y >= screen->h)
@@ -341,6 +339,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 break;
 
             case 0x1E:
+                box_setsize(&oldmouse, mouse.image.size.x, mouse.image.size.y, mouse.image.size.w, mouse.image.size.h);
+
                 mouse.image.size.x -= 4;
 
                 if (mouse.image.size.x >= screen->w)
@@ -352,6 +352,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 break;
 
             case 0x1F:
+                box_setsize(&oldmouse, mouse.image.size.x, mouse.image.size.y, mouse.image.size.w, mouse.image.size.h);
+
                 mouse.image.size.y += 4;
 
                 if (mouse.image.size.y + mouse.image.size.h > screen->h)
@@ -363,6 +365,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 break;
 
             case 0x20:
+                box_setsize(&oldmouse, mouse.image.size.x, mouse.image.size.y, mouse.image.size.w, mouse.image.size.h);
+
                 mouse.image.size.x += 4;
 
                 if (mouse.image.size.x + mouse.image.size.w > screen->w)
@@ -415,8 +419,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
             case 0x01:
                 {
 
-                    struct view *view = findview(&views, &mouse);
-                    struct window *window = findwindow(viewfocus, &mouse);
+                    struct view *view = findview(&views, mouse.image.size.x, mouse.image.size.y);
+                    struct window *window = findwindow(viewfocus, mouse.image.size.x, mouse.image.size.y);
 
                     if (view && view != viewfocus)
                     {
@@ -445,6 +449,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
             break;
 
         case EVENT_MOUSEMOVE:
+            box_setsize(&oldmouse, mouse.image.size.x, mouse.image.size.y, mouse.image.size.w, mouse.image.size.h);
+
             mouse.image.size.x += event.mousemove.relx;
             mouse.image.size.y -= event.mousemove.rely;
 
@@ -534,6 +540,11 @@ void main(void)
     mouse_init(&mouse, &screen);
     setupwindows();
     setupviews(&screen, &menu);
+
+    viewfocus = views.head->data;
+
+    view_activate(viewfocus);
+    draw(&settings, &screen, 0);
     pollevent(&settings, &screen);
     video_setmode(&oldsettings);
 
