@@ -4,9 +4,7 @@
 #define EVENT_MOUSERELEASE              0x0202
 #define EVENT_MOUSEMOVE                 0x0203
 #define EVENT_WMMAP                     0x0301
-#define EVENT_WMRESIZE                  0x0302
-#define EVENT_WMDRAW                    0x0303
-#define EVENT_WMQUIT                    0x0304
+#define EVENT_WMUNMAP                   0x0302
 
 struct event_header
 {
@@ -66,29 +64,7 @@ struct event_wmmap
 
 };
 
-struct event_wmresize
-{
-
-    struct event_header header;
-    unsigned int x;
-    unsigned int y;
-    unsigned int w;
-    unsigned int h;
-
-};
-
-struct event_wmdraw
-{
-
-    struct event_header header;
-    unsigned int x;
-    unsigned int y;
-    unsigned int w;
-    unsigned int h;
-
-};
-
-struct event_wmquit
+struct event_wmunmap
 {
 
     struct event_header header;
@@ -106,8 +82,6 @@ union event
     struct event_mouserelease mouserelease;
     struct event_mousemove mousemove;
     struct event_wmmap wmmap;
-    struct event_wmresize wmresize;
-    struct event_wmdraw wmdraw;
-    struct event_wmquit wmquit;
+    struct event_wmunmap wmunmap;
 
 };

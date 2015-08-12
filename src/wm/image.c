@@ -16,7 +16,12 @@ void image_draw(struct image *image, struct ctrl_videosettings *settings, unsign
     off = (line - image->size.y) * image->size.w;
 
     for (i = 0; i < image->size.w; i++)
-        draw_fill(settings->bpp, image->data[off + i], image->size.x + i, 1);
+    {
+
+        if (image->data[off + i] != 0xFF)
+            draw_fill(settings->bpp, image->data[off + i], image->size.x + i, 1);
+
+    }
 
 }
 

@@ -46,6 +46,7 @@ void window_draw(struct window *window, struct ctrl_videosettings *settings, uns
         draw_fill(settings->bpp, window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, window->size.x + window->size.w - 2, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, window->size.x + 2, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, window->size.x + window->size.w - 3, 1);
+        draw_fill(settings->bpp, WM_COLOR_BODY, window->size.x + 3, window->size.w - 6);
 
     }
 

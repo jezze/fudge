@@ -143,12 +143,7 @@ static unsigned int videointerface_wdata(unsigned int offset, unsigned int size,
     unsigned int i;
 
     for (i = 0; i < count; i++)
-    {
-
-        if (b[i] != 0xFF)
-            g[i + offset] = b[i];
-
-    }
+        g[i + offset] = b[i];
 
     return count;
 

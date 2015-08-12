@@ -17,7 +17,7 @@ static unsigned char colormap[] = {
     0x38, 0x20, 0x28
 };
 
-static unsigned int colormap4[256] = {
+static unsigned int colormap4[] = {
     0xFF000000,
     0xFFFFFFFF,
     0xFF181014,
@@ -80,8 +80,6 @@ void draw_flush(unsigned int line, unsigned int bpp, unsigned int offset, unsign
 
 void draw_init()
 {
-
-    colormap4[WM_COLOR_TRANSPARENT] = 0x00FF00FF;
 
     video_setcolormap(0, 3, 9, colormap);
 
