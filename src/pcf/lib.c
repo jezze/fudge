@@ -213,21 +213,7 @@ unsigned int pcf_getpadding(unsigned int descriptor)
 
     format = pcf_loadformat(descriptor, entry.offset);
 
-    switch (format & 3)
-    {
-
-        case 0:
-            return 1;
-
-        case 1:
-            return 2;
-
-        case 2:
-            return 4;
-
-    }
-
-    return 0;
+    return 1 << (format & 3);
 
 }
 
