@@ -92,8 +92,13 @@ struct pcf_metricsdata_compressed
 
 };
 
-unsigned int pcf_getbitmapoffset(unsigned int descriptor, unsigned short index);
-void pcf_readmetrics(unsigned int descriptor, unsigned short index, struct pcf_metricsdata *data);
-unsigned int pcf_getpadding(unsigned int descriptor);
-unsigned short pcf_getindex(unsigned int descriptor, unsigned short encoding);
-void pcf_readdata(unsigned int descriptor, unsigned int count, void *buffer);
+void pcf_getbitmap(void *base, struct pcf_bitmap *data);
+unsigned int pcf_getbitmapoffset(void *base, unsigned short index);
+unsigned int *pcf_getbitmapsizes(void *base);
+unsigned char *pcf_getbitmapdata(void *base);
+void pcf_getmetricsdatacompressed(void *base, unsigned int index, struct pcf_metricsdata_compressed *data);
+void pcf_getmetricsdatanormal(void *base, unsigned int index, struct pcf_metricsdata *data);
+void pcf_getmetricsdata(void *base, unsigned int index, struct pcf_metricsdata *data);
+void pcf_getbdfencoding(void *base, struct pcf_bdfencoding *data);
+unsigned int pcf_getpadding(void *base);
+unsigned short pcf_getindex(void *base, unsigned short encoding);

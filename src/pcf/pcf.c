@@ -19,16 +19,17 @@ static void writebyte(unsigned char c)
 
 }
 
-static void writechar(char c, unsigned int padding, unsigned char *data)
+static void writechar(char c, unsigned int padding, void *buffer)
 {
 
-    unsigned short index = pcf_getindex(CALL_P0, c);
-    unsigned int offset = pcf_getbitmapoffset(CALL_P0, index);
+    unsigned short index = pcf_getindex(buffer, c);
+    unsigned int offset = pcf_getbitmapoffset(buffer, index);
+    unsigned char *data = pcf_getbitmapdata(buffer);
     struct pcf_metricsdata metrics;
     unsigned int x;
     unsigned int y;
 
-    pcf_readmetrics(CALL_P0, index, &metrics);
+    pcf_getmetricsdata(buffer, index, &metrics);
 
     for (y = 0; y < metrics.ascent + metrics.descent; y++)
     {
@@ -42,26 +43,26 @@ static void writechar(char c, unsigned int padding, unsigned char *data)
 
 }
 
-static void writestring(unsigned int count, char *text, unsigned char *data)
+static void writestring(unsigned int count, char *text, void *buffer)
 {
 
-    unsigned int padding = pcf_getpadding(CALL_P0);
+    unsigned int padding = pcf_getpadding(buffer);
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        writechar(text[i], padding, data);
+        writechar(text[i], padding, buffer);
 
 }
 
 void main(void)
 {
 
-    unsigned char data[0x8000];
+    unsigned char buffer[0x8000];
 
     call_open(CALL_P0);
-    pcf_readdata(CALL_P0, 0x8000, data);
+    call_read(CALL_P0, 0, 1, 0x8000, buffer);
     call_close(CALL_P0);
-    writestring(12, "Hello World!", data);
+    writestring(12, "Hello World!", buffer);
 
 }
 

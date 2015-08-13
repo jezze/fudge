@@ -16,38 +16,18 @@ static unsigned int convert32(unsigned int value, unsigned int format)
 
 }
 
-static unsigned int pcf_loadheader(unsigned int descriptor, struct pcf_header *header)
+static struct pcf_entry *getentry(void *base, unsigned int type)
 {
 
-    return call_read(descriptor, 0, sizeof (struct pcf_header), 1, header);
-
-}
-
-static unsigned int pcf_loadentry(unsigned int descriptor, unsigned int type, struct pcf_entry *entry)
-{
-
-    struct pcf_header header;
-    struct pcf_entry entries[16];
+    struct pcf_header *header = base;
+    struct pcf_entry *entries = (struct pcf_entry *)(header + 1);
     unsigned int i;
 
-    pcf_loadheader(descriptor, &header);
-
-    if (header.entries > 16)
-        return 0;
-
-    call_read(descriptor, sizeof (struct pcf_header), sizeof (struct pcf_entry), header.entries, entries);
-
-    for (i = 0; i < header.entries; i++)
+    for (i = 0; i < header->entries; i++)
     {
 
         if (entries[i].type == type)
-        {
-
-            memory_copy(entry, &entries[i], sizeof (struct pcf_entry));
-
-            return sizeof (struct pcf_entry);
-
-        }
+            return &entries[i];
 
     }
 
@@ -55,91 +35,103 @@ static unsigned int pcf_loadentry(unsigned int descriptor, unsigned int type, st
 
 }
 
-static unsigned int pcf_loadformat(unsigned int descriptor, unsigned int offset)
+static unsigned int getformat(void *base, struct pcf_entry *entry)
 {
 
-    unsigned int format;
-
-    call_read(descriptor, offset, sizeof (unsigned int), 1, &format);
-
-    return format;
+    return *((unsigned int *)((unsigned char *)base + entry->offset));
 
 }
 
-static void pcf_loadbitmap(unsigned int descriptor, unsigned int offset, struct pcf_bitmap *bitmap)
+void pcf_getbitmap(void *base, struct pcf_bitmap *data)
 {
 
-    unsigned int format = pcf_loadformat(descriptor, offset);
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_BITMAPS);
+    unsigned int format = getformat(base, entry);
+    struct pcf_bitmap *bitmap = (struct pcf_bitmap *)((unsigned char *)base + entry->offset + sizeof (unsigned int));
 
-    call_read(descriptor, offset + sizeof (unsigned int), sizeof (struct pcf_bitmap), 1, bitmap);
-
-    bitmap->count = convert32(bitmap->count, format);
+    data->count = convert32(bitmap->count, format);
 
 }
 
-static void pcf_loadbitmapdata(unsigned int descriptor, unsigned int offset, unsigned int total, unsigned char *bitmapdata)
+unsigned int pcf_getbitmapoffset(void *base, unsigned short index)
 {
 
-    unsigned int format = pcf_loadformat(descriptor, offset);
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_BITMAPS);
+    unsigned int format = getformat(base, entry);
     struct pcf_bitmap bitmap;
-    unsigned int bitmapsizes[4];
-    unsigned int i;
 
-    pcf_loadbitmap(descriptor, offset, &bitmap);
-    call_read(descriptor, offset + sizeof (unsigned int) + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * bitmap.count, sizeof (unsigned int), 4, bitmapsizes);
+    pcf_getbitmap(base, &bitmap);
 
-    for (i = 0; i < 4; i++)
-        bitmapsizes[i] = convert32(bitmapsizes[i], format);
-
-    if (bitmapsizes[format & 3] > total)
-        return;
-
-    call_read(descriptor, offset + sizeof (unsigned int) + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * bitmap.count + sizeof (unsigned int) * 4, sizeof (unsigned char), bitmapsizes[format & 3], bitmapdata);
+    return convert32(*((unsigned int *)((unsigned char *)base + entry->offset + sizeof (unsigned int) + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * index)), format);
 
 }
 
-static void pcf_loadmetricsdatacompressed(unsigned int descriptor, unsigned int offset, unsigned int index, struct pcf_metricsdata_compressed *data)
+unsigned int *pcf_getbitmapsizes(void *base)
 {
 
-    call_read(descriptor, offset + sizeof (unsigned int) + sizeof (struct pcf_metrics_compressed) + sizeof (struct pcf_metricsdata_compressed) * index, sizeof (struct pcf_metricsdata_compressed), 1, data);
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_BITMAPS);
+    struct pcf_bitmap bitmap;
 
-    data->lbearing = data->lbearing - 0x80;
-    data->rbearing = data->rbearing - 0x80;
-    data->width = data->width - 0x80;
-    data->ascent = data->ascent - 0x80;
-    data->descent = data->descent - 0x80;
+    pcf_getbitmap(base, &bitmap);
+
+    return (unsigned int *)((unsigned char *)base + entry->offset + sizeof (unsigned int) + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * bitmap.count);
 
 }
 
-static void pcf_loadmetricsdatanormal(unsigned int descriptor, unsigned int offset, unsigned int index, struct pcf_metricsdata *data)
+unsigned char *pcf_getbitmapdata(void *base)
 {
 
-    unsigned int format = pcf_loadformat(descriptor, offset);
-    struct pcf_metrics metricsnormal;
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_BITMAPS);
+    struct pcf_bitmap bitmap;
 
-    call_read(descriptor, offset + sizeof (unsigned int), sizeof (struct pcf_metrics), 1, &metricsnormal);
-    call_read(descriptor, offset + sizeof (unsigned int) + sizeof (struct pcf_metrics) + sizeof (struct pcf_metricsdata) * index, sizeof (struct pcf_metricsdata), 1, data);
+    pcf_getbitmap(base, &bitmap);
 
-    data->lbearing = convert16(data->lbearing, format);
-    data->rbearing = convert16(data->rbearing, format);
-    data->width = convert16(data->width, format);
-    data->ascent = convert16(data->ascent, format);
-    data->descent = convert16(data->descent, format);
-    data->attributes = convert16(data->attributes, format);
+    return (unsigned char *)((unsigned char *)base + entry->offset + sizeof (unsigned int) + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * bitmap.count + sizeof (unsigned int) * 4);
 
 }
 
-static void pcf_loadmetricsdata(unsigned int descriptor, unsigned int offset, unsigned int index, struct pcf_metricsdata *data)
+void pcf_getmetricsdatacompressed(void *base, unsigned int index, struct pcf_metricsdata_compressed *data)
 {
 
-    unsigned int format = pcf_loadformat(descriptor, offset);
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_METRICS);
+    struct pcf_metricsdata_compressed *metrics = (struct pcf_metricsdata_compressed *)((unsigned char *)base + entry->offset + sizeof (unsigned int) + sizeof (struct pcf_metrics_compressed) + sizeof (struct pcf_metricsdata_compressed) * index);
+
+    data->lbearing = metrics->lbearing - 0x80;
+    data->rbearing = metrics->rbearing - 0x80;
+    data->width = metrics->width - 0x80;
+    data->ascent = metrics->ascent - 0x80;
+    data->descent = metrics->descent - 0x80;
+
+}
+
+void pcf_getmetricsdatanormal(void *base, unsigned int index, struct pcf_metricsdata *data)
+{
+
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_METRICS);
+    unsigned int format = getformat(base, entry);
+    struct pcf_metricsdata *metrics = (struct pcf_metricsdata *)((unsigned char *)base + entry->offset + sizeof (unsigned int) + sizeof (struct pcf_metrics) + sizeof (struct pcf_metricsdata) * index);
+
+    data->lbearing = convert16(metrics->lbearing, format);
+    data->rbearing = convert16(metrics->rbearing, format);
+    data->width = convert16(metrics->width, format);
+    data->ascent = convert16(metrics->ascent, format);
+    data->descent = convert16(metrics->descent, format);
+    data->attributes = convert16(metrics->attributes, format);
+
+}
+
+void pcf_getmetricsdata(void *base, unsigned int index, struct pcf_metricsdata *data)
+{
+
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_METRICS);
+    unsigned int format = getformat(base, entry);
 
     if (format & PCF_FORMAT_COMPRESSED)
     {
 
         struct pcf_metricsdata_compressed compressed;
 
-        pcf_loadmetricsdatacompressed(descriptor, offset, index, &compressed);
+        pcf_getmetricsdatacompressed(base, index, &compressed);
 
         data->lbearing = compressed.lbearing;
         data->rbearing = compressed.rbearing;
@@ -153,84 +145,46 @@ static void pcf_loadmetricsdata(unsigned int descriptor, unsigned int offset, un
     else
     {
 
-        pcf_loadmetricsdatanormal(descriptor, offset, index, data);
+        pcf_getmetricsdatanormal(base, index, data);
 
     }
 
 }
 
-static void pcf_loadbdfencoding(unsigned int descriptor, unsigned int offset, struct pcf_bdfencoding *bdfencoding)
+void pcf_getbdfencoding(void *base, struct pcf_bdfencoding *data)
 {
 
-    unsigned int format = pcf_loadformat(descriptor, offset);
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_BDFENCODINGS);
+    unsigned int format = getformat(base, entry);
+    struct pcf_bdfencoding *bdfencoding = (struct pcf_bdfencoding *)((unsigned char *)base + entry->offset + sizeof (unsigned int));
 
-    call_read(descriptor, offset + sizeof (unsigned int), sizeof (struct pcf_bdfencoding), 1, bdfencoding);
-
-    bdfencoding->mincharorbyte2 = convert16(bdfencoding->mincharorbyte2, format);
-    bdfencoding->maxcharorbyte2 = convert16(bdfencoding->maxcharorbyte2, format);
-    bdfencoding->minbyte1 = convert16(bdfencoding->minbyte1, format);
-    bdfencoding->maxbyte1 = convert16(bdfencoding->maxbyte1, format);
-    bdfencoding->defaultchar = convert16(bdfencoding->defaultchar, format);
+    data->mincharorbyte2 = convert16(bdfencoding->mincharorbyte2, format);
+    data->maxcharorbyte2 = convert16(bdfencoding->maxcharorbyte2, format);
+    data->minbyte1 = convert16(bdfencoding->minbyte1, format);
+    data->maxbyte1 = convert16(bdfencoding->maxbyte1, format);
+    data->defaultchar = convert16(bdfencoding->defaultchar, format);
 
 }
 
-unsigned int pcf_getbitmapoffset(unsigned int descriptor, unsigned short index)
+unsigned int pcf_getpadding(void *base)
 {
 
-    struct pcf_entry entry;
-    struct pcf_bitmap bitmap;
-    unsigned int bitmapoffset;
-    unsigned int format;
-
-    pcf_loadentry(descriptor, PCF_TYPE_BITMAPS, &entry);
-
-    format = pcf_loadformat(descriptor, entry.offset);
-
-    pcf_loadbitmap(descriptor, entry.offset, &bitmap);
-    call_read(descriptor, entry.offset + sizeof (unsigned int) + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * index, sizeof (unsigned int), 1, &bitmapoffset);
-
-    return convert32(bitmapoffset, format);
-
-}
-
-void pcf_readmetrics(unsigned int descriptor, unsigned short index, struct pcf_metricsdata *data)
-{
-
-    struct pcf_entry entry;
-
-    pcf_loadentry(descriptor, PCF_TYPE_METRICS, &entry);
-    pcf_loadmetricsdata(descriptor, entry.offset, index, data);
-
-}
-
-unsigned int pcf_getpadding(unsigned int descriptor)
-{
-
-    struct pcf_entry entry;
-    unsigned int format;
-
-    pcf_loadentry(descriptor, PCF_TYPE_BITMAPS, &entry);
-
-    format = pcf_loadformat(descriptor, entry.offset);
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_BITMAPS);
+    unsigned int format = getformat(base, entry);
 
     return 1 << (format & 3);
 
 }
 
-unsigned short pcf_getindex(unsigned int descriptor, unsigned short encoding)
+unsigned short pcf_getindex(void *base, unsigned short encoding)
 {
 
-    struct pcf_entry entry;
-    struct pcf_bdfencoding bdfencoding;
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_BDFENCODINGS);
+    unsigned int format = getformat(base, entry);
+    struct pcf_bdfencoding bdfencoding;    
     unsigned int index;
-    unsigned short glyphindex;
-    unsigned int format;
 
-    pcf_loadentry(descriptor, PCF_TYPE_BDFENCODINGS, &entry);
-
-    format = pcf_loadformat(descriptor, entry.offset);
-
-    pcf_loadbdfencoding(descriptor, entry.offset, &bdfencoding);
+    pcf_getbdfencoding(base, &bdfencoding);
 
     if (encoding & 0xFF00)
     {
@@ -249,19 +203,7 @@ unsigned short pcf_getindex(unsigned int descriptor, unsigned short encoding)
 
     }
 
-    call_read(descriptor, entry.offset + sizeof (unsigned int) + sizeof (struct pcf_bdfencoding) + sizeof (unsigned short) * index, sizeof (unsigned short), 1, &glyphindex);
-
-    return convert16(glyphindex, format);
-
-}
-
-void pcf_readdata(unsigned int descriptor, unsigned int count, void *buffer)
-{
-
-    struct pcf_entry entry;
-
-    pcf_loadentry(descriptor, PCF_TYPE_BITMAPS, &entry);
-    pcf_loadbitmapdata(CALL_P0, entry.offset, count, buffer);
+    return convert16(*((unsigned short *)((unsigned char *)base + entry->offset + sizeof (unsigned int) + sizeof (struct pcf_bdfencoding) + sizeof (unsigned short) * index)), format);
 
 }
 
