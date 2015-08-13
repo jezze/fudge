@@ -55,6 +55,7 @@ void view_init(struct view *view, struct box *screen, struct box *menu, unsigned
 
     view->center = screen->w / 2;
     view->clientfocus = 0;
+    view->panel.base.visible = 1;
 
 }
 

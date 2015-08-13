@@ -17,7 +17,6 @@ void renderable_init(struct renderable *renderable, void *data, void (*render)(s
     list_inititem(&renderable->item, renderable);
 
     renderable->data = data;
-    renderable->visible = 1;
     renderable->render = render;
 
 }

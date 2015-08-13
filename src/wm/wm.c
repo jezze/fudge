@@ -147,6 +147,7 @@ static void mapclient(struct view *view, unsigned int source)
     list_move(&view->clients, &clients, &client->item);
 
     view->clientfocus = focusclient(view->clientfocus, client);
+    view->clientfocus->window.base.visible = 1;
 
 }
 
@@ -155,6 +156,8 @@ static void unmapclient(struct view *view)
 
     if (!view->clientfocus)
         return;
+
+    view->clientfocus->window.base.visible = 0;
 
     list_move(&clients, &view->clients, &view->clientfocus->item);
 
@@ -481,6 +484,8 @@ static void setupmouse(struct box *screen)
 
     mouse_init(&mouse, screen);
     list_add(&renderables, &mouse.image.base.item);
+
+    mouse.image.base.visible = 1;
 
 }
 
