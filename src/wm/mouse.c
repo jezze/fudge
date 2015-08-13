@@ -1,6 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 #include "box.h"
+#include "renderable.h"
 #include "draw.h"
 #include "image.h"
 #include "mouse.h"
@@ -36,11 +37,7 @@ void mouse_init(struct mouse *mouse, struct box *screen)
 {
 
     image_init(&mouse->image, pointer);
-
-    mouse->image.size.x = screen->x + screen->w / 4;
-    mouse->image.size.y = screen->y + screen->h / 4;
-    mouse->image.size.w = 24;
-    mouse->image.size.h = 24;
+    box_setsize(&mouse->image.base.size, screen->x + screen->w / 4, screen->y + screen->h / 4, 24, 24);
 
 }
 

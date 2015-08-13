@@ -1,62 +1,46 @@
 #include <abi.h>
 #include <fudge.h>
 #include "box.h"
+#include "renderable.h"
 #include "draw.h"
 #include "panel.h"
 #include "window.h"
+#include "client.h"
 #include "view.h"
-
-void view_draw(struct view *view, struct ctrl_videosettings *settings, unsigned int line)
-{
-
-    panel_draw(&view->panel, settings, line);
-
-    if (!view->active)
-        return;
-
-    if (view->windows.head)
-    {
-
-        struct list_item *current;
-
-        for (current = view->windows.head; current; current = current->next)
-        {
-
-            struct window *window = current->data;
-
-            window_draw(window, settings, line);
-
-        }
-
-    }
-
-    else
-    {
-
-        if (line < view->body.y || line >= view->body.y + view->body.h)
-            return;
-
-        draw_fill(settings->bpp, WM_COLOR_BODY, view->body.x, view->body.w);
-
-    }
-
-}
 
 void view_activate(struct view *view)
 {
 
+    struct list_item *current;
+
     panel_activate(&view->panel);
 
-    view->active = 1;
+    for (current = view->clients.head; current; current = current->next)
+    {
+
+        struct client *client = current->data;
+
+        client->window.base.visible = 1;
+
+    }
 
 }
 
 void view_deactivate(struct view *view)
 {
 
+    struct list_item *current;
+
     panel_deactivate(&view->panel);
 
-    view->active = 0;
+    for (current = view->clients.head; current; current = current->next)
+    {
+
+        struct client *client = current->data;
+
+        client->window.base.visible = 0;
+
+    }
 
 }
 
@@ -64,14 +48,13 @@ void view_init(struct view *view, struct box *screen, struct box *menu, unsigned
 {
 
     list_inititem(&view->item, view);
-    list_init(&view->windows);
+    list_init(&view->clients);
     panel_init(&view->panel);
     box_setsize(&view->body, screen->x, screen->y + menu->h, screen->w, screen->h - menu->h);
-    box_setsize(&view->panel.size, menu->x + num * menu->w / total, menu->y, menu->w / total, menu->h);
+    box_setsize(&view->panel.base.size, menu->x + num * menu->w / total, menu->y, menu->w / total, menu->h);
 
     view->center = screen->w / 2;
-    view->active = 0;
-    view->windowfocus = 0;
+    view->clientfocus = 0;
 
 }
 
