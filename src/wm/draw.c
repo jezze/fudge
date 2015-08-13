@@ -74,14 +74,14 @@ void draw_fill(unsigned int bpp, unsigned int color, unsigned int offset, unsign
 void draw_flush(unsigned int line, unsigned int bpp, unsigned int offset, unsigned int count)
 {
 
-    video_draw(line + offset, count, backbuffer + offset * bpp / 8);
+    video_draw(CALL_L0, line + offset, count, backbuffer + offset * bpp / 8);
 
 }
 
 void draw_init()
 {
 
-    video_setcolormap(0, 3, 9, colormap);
+    video_setcolormap(CALL_L0, 0, 3, 9, colormap);
 
 }
 

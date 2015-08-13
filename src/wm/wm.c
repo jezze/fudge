@@ -31,7 +31,7 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb)
 
     unsigned int line;
 
-    video_open();
+    video_open(CALL_L0);
 
     for (line = bb->y; line < bb->y + bb->h; line++)
     {
@@ -53,7 +53,7 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb)
 
     }
 
-    video_close();
+    video_close(CALL_L0);
 
 }
 
@@ -511,8 +511,8 @@ void main(void)
     struct box screen;
 
     ctrl_setvideosettings(&settings, 1024, 768, 32);
-    video_getmode(&oldsettings);
-    video_setmode(&settings);
+    video_getmode(CALL_L0, &oldsettings);
+    video_setmode(CALL_L0, &settings);
     box_setsize(&screen, 0, 0, settings.w, settings.h);
     setupfont();
     setupclients();
@@ -524,7 +524,7 @@ void main(void)
     draw_init();
     draw(&settings, &screen);
     pollevent(&settings, &screen);
-    video_setmode(&oldsettings);
+    video_setmode(CALL_L0, &oldsettings);
 
 }
 

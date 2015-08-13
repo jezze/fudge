@@ -22,7 +22,7 @@ void setup(struct ctrl_videosettings *settings)
 
     }
 
-    video_setcolormap(0, 3, 256, colormap);
+    video_setcolormap(CALL_L0, 0, 3, 256, colormap);
 
 }
 
@@ -62,7 +62,7 @@ void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, u
 
         }
 
-        video_draw(y * settings->w, settings->w, buffer);
+        video_draw(CALL_L0, y * settings->w, settings->w, buffer);
 
     }
 
@@ -74,11 +74,11 @@ void main(void)
     struct ctrl_videosettings settings;
 
     ctrl_setvideosettings(&settings, 320, 200, 8);
-    video_setmode(&settings);
+    video_setmode(CALL_L0, &settings);
     setup(&settings);
-    video_open();
+    video_open(CALL_L0);
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    video_close();
+    video_close(CALL_L0);
 
 }
 
