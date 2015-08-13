@@ -3,6 +3,7 @@
 #include "box.h"
 #include "renderable.h"
 #include "draw.h"
+#include "glyph.h"
 #include "panel.h"
 #include "window.h"
 #include "client.h"
@@ -44,12 +45,13 @@ void view_deactivate(struct view *view)
 
 }
 
-void view_init(struct view *view, struct box *screen, struct box *menu, unsigned int num, unsigned int total)
+void view_init(struct view *view, struct box *screen, struct box *menu, unsigned int num, unsigned int total, char *text)
 {
 
     list_inititem(&view->item, view);
     list_init(&view->clients);
     panel_init(&view->panel);
+    glyph_init(&view->number, text);
     box_setsize(&view->body, screen->x, screen->y + menu->h, screen->w, screen->h - menu->h);
     box_setsize(&view->panel.base.size, menu->x + num * menu->w / total, menu->y, menu->w / total, menu->h);
 

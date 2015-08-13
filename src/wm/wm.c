@@ -1,11 +1,13 @@
 #include <abi.h>
 #include <fudge.h>
 #include <video/video.h>
+#include <pcf/lib.h>
 #include "box.h"
 #include "renderable.h"
 #include "draw.h"
 #include "image.h"
 #include "mouse.h"
+#include "glyph.h"
 #include "panel.h"
 #include "window.h"
 #include "client.h"
@@ -22,6 +24,7 @@ static struct view view[VIEWS];
 static struct list views;
 static struct view *viewfocus;
 static struct list renderables;
+static unsigned char fontdata[0x8000];
 
 static void draw(struct ctrl_videosettings *settings, struct box *bb)
 {
@@ -462,6 +465,7 @@ static struct view *setupviews(struct box *screen)
 
     struct box menu;
     unsigned int i;
+    char *numbers = "12345678";
 
     box_setsize(&menu, screen->x, screen->y, screen->w, 32);
     list_init(&views);
@@ -469,7 +473,7 @@ static struct view *setupviews(struct box *screen)
     for (i = 0; i < VIEWS; i++)
     {
 
-        view_init(&view[i], screen, &menu, i, VIEWS);
+        view_init(&view[i], screen, &menu, i, VIEWS, numbers + i);
         list_add(&views, &view[i].item);
         list_add(&renderables, &view[i].panel.base.item);
 
@@ -489,6 +493,16 @@ static void setupmouse(struct box *screen)
 
 }
 
+static void setupfont()
+{
+
+    call_walk(CALL_L4, CALL_PR, 18, "share/ter-u16n.pcf");
+    call_open(CALL_L4);
+    call_read(CALL_L4, 0, 1, 0x8000, fontdata);
+    call_close(CALL_L4);
+
+}
+
 void main(void)
 {
 
@@ -500,6 +514,7 @@ void main(void)
     video_getmode(&oldsettings);
     video_setmode(&settings);
     box_setsize(&screen, 0, 0, settings.w, settings.h);
+    setupfont();
     setupclients();
 
     viewfocus = setupviews(&screen);
