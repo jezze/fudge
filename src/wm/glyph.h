@@ -3,6 +3,7 @@ struct glyph
 
     struct renderable base;
     unsigned char *data;
+    char value;
 
 };
 

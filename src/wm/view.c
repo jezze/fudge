@@ -45,18 +45,21 @@ void view_deactivate(struct view *view)
 
 }
 
-void view_init(struct view *view, struct box *screen, struct box *menu, unsigned int num, unsigned int total, char *text)
+void view_init(struct view *view, struct box *screen, struct box *menu, unsigned int num, unsigned int total, unsigned char *fontdata)
 {
 
     list_inititem(&view->item, view);
     panel_init(&view->panel);
-    glyph_init(&view->number, text);
+    glyph_init(&view->number, fontdata);
     box_setsize(&view->body, screen->x, screen->y + menu->h, screen->w, screen->h - menu->h);
     box_setsize(&view->panel.base.size, menu->x + num * menu->w / total, menu->y, menu->w / total, menu->h);
+    box_setsize(&view->number.base.size, view->panel.base.size.x + 16, view->panel.base.size.y + 8, 16, 16);
 
     view->center = screen->w / 2;
     view->clientfocus = 0;
     view->panel.base.visible = 1;
+    view->number.base.visible = 1;
+    view->number.value = '0' + num;
 
 }
 
