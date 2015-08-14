@@ -93,7 +93,13 @@ static unsigned long protocol_copyprogram(struct vfs_channel *channel, unsigned 
     channel->protocol->read(channel->backend, id, header.phoffset, header.phsize, header.phcount, programheader);
 
     for (i = 0; i < header.phcount; i++)
+    {
+
+        memory_clear((void *)(programheader[i].vaddress + programheader[i].offset), programheader[i].msize);
+
         channel->protocol->read(channel->backend, id, programheader[i].offset, programheader[i].fsize, 1, (void *)programheader[i].vaddress);
+
+    }
 
     return header.entry;
 
