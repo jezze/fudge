@@ -49,7 +49,6 @@ void view_init(struct view *view, struct box *screen, struct box *menu, unsigned
 {
 
     list_inititem(&view->item, view);
-    list_init(&view->clients);
     panel_init(&view->panel);
     glyph_init(&view->number, text);
     box_setsize(&view->body, screen->x, screen->y + menu->h, screen->w, screen->h - menu->h);

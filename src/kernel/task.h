@@ -44,4 +44,3 @@ unsigned int task_wmessage(struct task *task, unsigned int size, unsigned int co
 void task_register(struct task *task);
 void task_unregister(struct task *task);
 void task_init(struct task *task);
-void task_setup(void);

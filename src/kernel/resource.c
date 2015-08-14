@@ -56,10 +56,3 @@ void resource_init(struct resource *resource, unsigned int type, void *data)
 
 }
 
-void resource_setup(void)
-{
-
-    list_init(&resources);
-
-}
-

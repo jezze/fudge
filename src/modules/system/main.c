@@ -271,8 +271,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 {
 
     list_inititem(&node->item, node);
-    list_init(&node->children);
-    list_init(&node->mailboxes);
 
     node->type = type;
     node->name = name;

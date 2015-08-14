@@ -103,7 +103,6 @@ void arp_inithook(struct arp_hook *hook, unsigned short htype, unsigned short pt
 void module_init(void)
 {
 
-    list_init(&hooks);
     ethernet_initprotocol(&ethernetprotocol, "arp", 0x0806, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
 
 }

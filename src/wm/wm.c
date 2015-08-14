@@ -447,8 +447,6 @@ static void setupclients(void)
 
     unsigned int i;
 
-    list_init(&clients);
-
     for (i = 0; i < CLIENTS; i++)
     {
 
@@ -468,7 +466,6 @@ static struct view *setupviews(struct box *screen)
     char *numbers = "12345678";
 
     box_setsize(&menu, screen->x, screen->y, screen->w, 32);
-    list_init(&views);
 
     for (i = 0; i < VIEWS; i++)
     {

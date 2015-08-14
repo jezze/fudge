@@ -74,16 +74,7 @@ unsigned int list_count(struct list *list)
 void list_inititem(struct list_item *item, void *data)
 {
 
-    memory_clear(item, sizeof (struct list_item));
-
     item->data = data;
-
-}
-
-void list_init(struct list *list)
-{
-
-    memory_clear(list, sizeof (struct list));
 
 }
 

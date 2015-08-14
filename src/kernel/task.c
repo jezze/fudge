@@ -209,12 +209,3 @@ void task_init(struct task *task)
 
 }
 
-void task_setup(void)
-{
-
-    list_init(&active);
-    list_init(&inactive);
-    list_init(&blocked);
-
-}
-
