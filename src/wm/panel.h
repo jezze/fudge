@@ -7,6 +7,4 @@ struct panel
 
 };
 
-void panel_activate(struct panel *panel);
-void panel_deactivate(struct panel *panel);
 void panel_init(struct panel *panel);

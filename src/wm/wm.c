@@ -97,42 +97,61 @@ static void arrangeclients(struct view *view)
 
 }
 
-static struct client *focusclient(struct client *old, struct client *new)
+static struct client *focusclient(struct client *focus, struct client *new)
 {
 
-    if (old)
-        window_deactivate(&old->window);
+    if (focus)
+        focus->window.framecolor = WM_COLOR_PASSIVEFRAME;
 
     if (new)
-        window_activate(&new->window);
+        new->window.framecolor = WM_COLOR_ACTIVEFRAME;
 
     return new;
 
 }
 
-static void nextclient(struct view *view)
+static struct client *nextclient(struct client *focus, struct client *head)
 {
 
-    if (!view->clientfocus)
-        return;
+    if (!focus)
+        return 0;
 
-    if (view->clientfocus->item.next)
-        view->clientfocus = focusclient(view->clientfocus, view->clientfocus->item.next->data);
+    if (focus->item.next)
+        return focusclient(focus, focus->item.next->data);
     else
-        view->clientfocus = focusclient(view->clientfocus, view->clients.head->data);
+        return focusclient(focus, head);
 
 }
 
-static void prevclient(struct view *view)
+static struct client *prevclient(struct client *focus, struct client *tail)
 {
 
-    if (!view->clientfocus)
-        return;
+    if (!focus)
+        return 0;
 
-    if (view->clientfocus->item.prev)
-        view->clientfocus = focusclient(view->clientfocus, view->clientfocus->item.prev->data);
+    if (focus->item.prev)
+        return focusclient(focus, focus->item.prev->data);
     else
-        view->clientfocus = focusclient(view->clientfocus, view->clients.tail->data);
+        return focusclient(focus, tail);
+
+}
+
+static struct client *findclient(struct view *view, unsigned int x, unsigned int y)
+{
+
+    struct list_item *current;
+
+    for (current = view->clients.head; current; current = current->next)
+    {
+
+        struct client *client = current->data;
+
+        if (box_isinside(&client->window.base.size, x, y))
+            return client;
+
+    }
+
+    return 0;
 
 }
 
@@ -171,11 +190,11 @@ static void unmapclient(struct view *view)
 
 }
 
-static struct view *focusview(struct view *old, struct view *new)
+static struct view *focusview(struct view *focus, struct view *new)
 {
 
-    if (old)
-        view_deactivate(old);
+    if (focus)
+        view_deactivate(focus);
 
     if (new)
         view_activate(new);
@@ -196,25 +215,6 @@ static struct view *findview(struct list *views, unsigned int x, unsigned int y)
 
         if (box_isinside(&view->panel.base.size, x, y))
             return view;
-
-    }
-
-    return 0;
-
-}
-
-static struct client *findclient(struct view *view, unsigned int x, unsigned int y)
-{
-
-    struct list_item *current;
-
-    for (current = view->clients.head; current; current = current->next)
-    {
-
-        struct client *client = current->data;
-
-        if (box_isinside(&client->window.base.size, x, y))
-            return client;
 
     }
 
@@ -339,13 +339,13 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 break;
 
             case 0x24:
-                nextclient(viewfocus);
+                viewfocus->clientfocus = nextclient(viewfocus->clientfocus, viewfocus->clients.head->data);
                 draw(settings, &viewfocus->body);
 
                 break;
 
             case 0x25:
-                prevclient(viewfocus);
+                viewfocus->clientfocus = prevclient(viewfocus->clientfocus, viewfocus->clients.tail->data);
                 draw(settings, &viewfocus->body);
 
                 break;

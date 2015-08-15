@@ -25,7 +25,7 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
-        draw_fill(settings->bpp, window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, self->size.x + 1, self->size.w - 2);
+        draw_fill(settings->bpp, window->framecolor, self->size.x + 1, self->size.w - 2);
 
     }
 
@@ -34,8 +34,8 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
-        draw_fill(settings->bpp, window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, self->size.x + 1, 1);
-        draw_fill(settings->bpp, window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, self->size.x + self->size.w - 2, 1);
+        draw_fill(settings->bpp, window->framecolor, self->size.x + 1, 1);
+        draw_fill(settings->bpp, window->framecolor, self->size.x + self->size.w - 2, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 2, self->size.w - 4);
 
     }
@@ -45,8 +45,8 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
-        draw_fill(settings->bpp, window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, self->size.x + 1, 1);
-        draw_fill(settings->bpp, window->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, self->size.x + self->size.w - 2, 1);
+        draw_fill(settings->bpp, window->framecolor, self->size.x + 1, 1);
+        draw_fill(settings->bpp, window->framecolor, self->size.x + self->size.w - 2, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 2, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 3, 1);
 
@@ -54,24 +54,12 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 
 }
 
-void window_activate(struct window *window)
-{
-
-    window->active = 1;
-
-}
-
-void window_deactivate(struct window *window)
-{
-
-    window->active = 0;
-
-}
-
 void window_init(struct window *window)
 {
 
     renderable_init(&window->base, window, render);
+
+    window->framecolor = WM_COLOR_PASSIVEFRAME;
 
 }
 
