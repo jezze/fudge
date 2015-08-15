@@ -57,7 +57,7 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb)
 
 }
 
-static void arrangeclients(struct view *view)
+static void arrangeclients(struct view *view, struct box *body)
 {
 
     unsigned int count = list_count(&view->clients);
@@ -73,15 +73,15 @@ static void arrangeclients(struct view *view)
     if (count == 1)
     {
 
-        box_setsize(&client->window.base.size, view->body.x, view->body.y, view->body.w, view->body.h);
+        box_setsize(&client->window.base.size, body->x, body->y, body->w, body->h);
 
         return;
 
     }
 
-    box_setsize(&client->window.base.size, view->body.x, view->body.y, view->center, view->body.h);
+    box_setsize(&client->window.base.size, body->x, body->y, view->center, body->h);
 
-    a = view->body.h / (count - 1);
+    a = body->h / (count - 1);
     i = 0;
 
     for (current = current->prev; current; current = current->prev)
@@ -89,7 +89,7 @@ static void arrangeclients(struct view *view)
 
         client = current->data;
 
-        box_setsize(&client->window.base.size, view->body.x + view->center, view->body.y + i * a, view->body.w - view->center, a);
+        box_setsize(&client->window.base.size, body->x + view->center, body->y + i * a, body->w - view->center, a);
 
         i++;
 
@@ -222,7 +222,7 @@ static struct view *findview(struct list *views, unsigned int x, unsigned int y)
 
 }
 
-static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
+static void pollevent(struct ctrl_videosettings *settings, struct box *screen, struct box *menu, struct box *body)
 {
 
     union event event;
@@ -265,8 +265,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
                     send_wmunmap(viewfocus->clientfocus->source);
                     unmapclient(viewfocus);
-                    arrangeclients(viewfocus);
-                    draw(settings, &viewfocus->body);
+                    arrangeclients(viewfocus, body);
+                    draw(settings, body);
 
                 }
 
@@ -331,30 +331,30 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
                 break;
 
             case 0x23:
-                viewfocus->center -= (viewfocus->body.w / 32);
+                viewfocus->center -= (body->w / 32);
 
-                arrangeclients(viewfocus);
-                draw(settings, &viewfocus->body);
+                arrangeclients(viewfocus, body);
+                draw(settings, body);
 
                 break;
 
             case 0x24:
                 viewfocus->clientfocus = nextclient(viewfocus->clientfocus, viewfocus->clients.head->data);
-                draw(settings, &viewfocus->body);
+                draw(settings, body);
 
                 break;
 
             case 0x25:
                 viewfocus->clientfocus = prevclient(viewfocus->clientfocus, viewfocus->clients.tail->data);
-                draw(settings, &viewfocus->body);
+                draw(settings, body);
 
                 break;
 
             case 0x26:
-                viewfocus->center += (viewfocus->body.w / 32);
+                viewfocus->center += (body->w / 32);
 
-                arrangeclients(viewfocus);
-                draw(settings, &viewfocus->body);
+                arrangeclients(viewfocus, body);
+                draw(settings, body);
 
                 break;
 
@@ -389,7 +389,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
                         viewfocus->clientfocus = focusclient(viewfocus->clientfocus, client);
 
-                        draw(settings, &viewfocus->body);
+                        draw(settings, body);
 
                     }
 
@@ -426,8 +426,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen)
 
         case EVENT_WMMAP:
             mapclient(viewfocus, event.header.source);
-            arrangeclients(viewfocus);
-            draw(settings, &viewfocus->body);
+            arrangeclients(viewfocus, body);
+            draw(settings, body);
 
             break;
 
@@ -458,7 +458,7 @@ static void setupclients(void)
 
 }
 
-static struct view *setupviews(struct box *screen)
+static struct view *setupviews(struct box *screen, struct box *menu, struct box *body)
 {
 
     unsigned int i;
@@ -466,7 +466,7 @@ static struct view *setupviews(struct box *screen)
     for (i = 0; i < VIEWS; i++)
     {
 
-        view_init(&view[i], screen, i, VIEWS, fontdata);
+        view_init(&view[i], menu, body, i, VIEWS, fontdata);
         list_add(&views, &view[i].item);
         list_add(&renderables, &view[i].panel.base.item);
         list_add(&renderables, &view[i].number.base.item);
@@ -503,21 +503,25 @@ void main(void)
     struct ctrl_videosettings oldsettings;
     struct ctrl_videosettings settings;
     struct box screen;
+    struct box menu;
+    struct box body;
 
     ctrl_setvideosettings(&settings, 1024, 768, 32);
     video_getmode(CALL_L0, &oldsettings);
     video_setmode(CALL_L0, &settings);
     box_setsize(&screen, 0, 0, settings.w, settings.h);
+    box_setsize(&menu, screen.x, screen.y, screen.w, 32);
+    box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
     setupfont();
     setupclients();
 
-    viewfocus = setupviews(&screen);
+    viewfocus = setupviews(&screen, &menu, &body);
 
     view_activate(viewfocus);
     setupmouse(&screen);
     draw_init();
     draw(&settings, &screen);
-    pollevent(&settings, &screen);
+    pollevent(&settings, &screen, &menu, &body);
     video_setmode(CALL_L0, &oldsettings);
 
 }
