@@ -461,15 +461,12 @@ static void setupclients(void)
 static struct view *setupviews(struct box *screen)
 {
 
-    struct box menu;
     unsigned int i;
-
-    box_setsize(&menu, screen->x, screen->y, screen->w, 32);
 
     for (i = 0; i < VIEWS; i++)
     {
 
-        view_init(&view[i], screen, &menu, i, VIEWS, fontdata);
+        view_init(&view[i], screen, i, VIEWS, fontdata);
         list_add(&views, &view[i].item);
         list_add(&renderables, &view[i].panel.base.item);
         list_add(&renderables, &view[i].number.base.item);
