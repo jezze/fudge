@@ -7,6 +7,8 @@
 #define WM_COLOR_ACTIVEFRAME            0x06
 #define WM_COLOR_POINTERBACK            0x07
 #define WM_COLOR_POINTERFRAME           0x08
+#define WM_COLOR_TEXTDARK               0x09
+#define WM_COLOR_TEXTLIGHT              0x0A
 
 void draw_fill(unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count);
 void draw_flush(unsigned int line, unsigned int bpp, unsigned int offset, unsigned int count);

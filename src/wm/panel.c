@@ -25,7 +25,7 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
-        draw_fill(settings->bpp, panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, self->size.x + 1, self->size.w - 2);
+        draw_fill(settings->bpp, panel->framecolor, self->size.x + 1, self->size.w - 2);
 
     }
 
@@ -34,25 +34,11 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
-        draw_fill(settings->bpp, panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, self->size.x + 1, 1);
-        draw_fill(settings->bpp, panel->active ? WM_COLOR_ACTIVEFRAME : WM_COLOR_PASSIVEFRAME, self->size.x + self->size.w - 2, 1);
-        draw_fill(settings->bpp, panel->active ? WM_COLOR_ACTIVEBACK : WM_COLOR_PASSIVEBACK, self->size.x + 2, self->size.w - 4);
+        draw_fill(settings->bpp, panel->framecolor, self->size.x + 1, 1);
+        draw_fill(settings->bpp, panel->framecolor, self->size.x + self->size.w - 2, 1);
+        draw_fill(settings->bpp, panel->backgroundcolor, self->size.x + 2, self->size.w - 4);
 
     }
-
-}
-
-void panel_activate(struct panel *panel)
-{
-
-    panel->active = 1;
-
-}
-
-void panel_deactivate(struct panel *panel)
-{
-
-    panel->active = 0;
 
 }
 
@@ -60,6 +46,9 @@ void panel_init(struct panel *panel)
 {
 
     renderable_init(&panel->base, panel, render);
+
+    panel->backgroundcolor = WM_COLOR_PASSIVEBACK;
+    panel->framecolor = WM_COLOR_PASSIVEFRAME;
 
 }
 

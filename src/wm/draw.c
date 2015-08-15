@@ -14,7 +14,9 @@ static unsigned char colormap[] = {
     0x08, 0x10, 0x18,
     0x0C, 0x14, 0x1C,
     0x28, 0x10, 0x18,
-    0x38, 0x20, 0x28
+    0x38, 0x20, 0x28,
+    0x1C, 0x18, 0x18,
+    0xFF, 0xFF, 0xFF
 };
 
 static unsigned int colormap4[] = {
@@ -26,7 +28,9 @@ static unsigned int colormap4[] = {
     0xFF105070,
     0xFF307090,
     0xFFB05070,
-    0xFFF898B8
+    0xFFF898B8,
+    0xFF80787C,
+    0xFFFFFFFF
 };
 
 static void fill8(unsigned int color, unsigned int offset, unsigned int count)
@@ -81,7 +85,7 @@ void draw_flush(unsigned int line, unsigned int bpp, unsigned int offset, unsign
 void draw_init()
 {
 
-    video_setcolormap(CALL_L0, 0, 3, 9, colormap);
+    video_setcolormap(CALL_L0, 0, 3, 11, colormap);
 
 }
 

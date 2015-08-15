@@ -14,7 +14,9 @@ void view_activate(struct view *view)
 
     struct list_item *current;
 
-    panel_activate(&view->panel);
+    view->panel.backgroundcolor = WM_COLOR_ACTIVEBACK;
+    view->panel.framecolor = WM_COLOR_ACTIVEFRAME;
+    view->number.color = WM_COLOR_TEXTLIGHT;
 
     for (current = view->clients.head; current; current = current->next)
     {
@@ -32,7 +34,9 @@ void view_deactivate(struct view *view)
 
     struct list_item *current;
 
-    panel_deactivate(&view->panel);
+    view->panel.backgroundcolor = WM_COLOR_PASSIVEBACK;
+    view->panel.framecolor = WM_COLOR_PASSIVEFRAME;
+    view->number.color = WM_COLOR_TEXTDARK;
 
     for (current = view->clients.head; current; current = current->next)
     {
@@ -59,7 +63,8 @@ void view_init(struct view *view, struct box *screen, struct box *menu, unsigned
     view->clientfocus = 0;
     view->panel.base.visible = 1;
     view->number.base.visible = 1;
-    view->number.value = '0' + num;
+    view->number.value = '1' + num;
+    view->number.color = WM_COLOR_TEXTDARK;
 
 }
 

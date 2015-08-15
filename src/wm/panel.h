@@ -2,7 +2,8 @@ struct panel
 {
 
     struct renderable base;
-    unsigned int active;
+    unsigned int backgroundcolor;
+    unsigned int framecolor;
 
 };
 

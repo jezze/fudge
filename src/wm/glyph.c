@@ -16,7 +16,7 @@ static void writebyte(struct glyph *glyph, struct ctrl_videosettings *settings, 
     {
 
         if (c & i)
-            draw_fill(settings->bpp, 0x01, glyph->base.size.x + k, 1);
+            draw_fill(settings->bpp, glyph->color, glyph->base.size.x + k, 1);
 
         k++;
 
@@ -60,6 +60,7 @@ void glyph_init(struct glyph *glyph, void *data)
 
     glyph->data = data;
     glyph->value = '0';
+    glyph->color = WM_COLOR_LIGHT;
 
 }
 
