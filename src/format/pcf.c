@@ -1,6 +1,4 @@
-#include <abi.h>
-#include <fudge.h>
-#include "lib.h"
+#include "pcf.h"
 
 static unsigned short convert16(unsigned short value, unsigned int format)
 {
