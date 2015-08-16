@@ -60,17 +60,16 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb)
 static void arrangeclients(struct view *view, struct box *body)
 {
 
-    unsigned int count = list_count(&view->clients);
     struct list_item *current = view->clients.tail;
     struct client *client;
     unsigned int a, i;
 
-    if (!count)
+    if (!view->clients.count)
         return;
 
     client = current->data;
 
-    if (count == 1)
+    if (view->clients.count == 1)
     {
 
         box_setsize(&client->window.base.size, body->x, body->y, body->w, body->h);
@@ -81,7 +80,7 @@ static void arrangeclients(struct view *view, struct box *body)
 
     box_setsize(&client->window.base.size, body->x, body->y, view->center, body->h);
 
-    a = body->h / (count - 1);
+    a = body->h / (view->clients.count - 1);
     i = 0;
 
     for (current = current->prev; current; current = current->prev)

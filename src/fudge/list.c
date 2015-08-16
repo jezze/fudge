@@ -9,6 +9,7 @@ void list_add(struct list *list, struct list_item *item)
 
         list->head = item;
         list->tail = item;
+        list->count++;
 
         return;
 
@@ -18,6 +19,7 @@ void list_add(struct list *list, struct list_item *item)
     item->next = 0;
     list->tail->next = item;
     list->tail = item;
+    list->count++;
 
 }
 
@@ -47,6 +49,7 @@ void list_remove(struct list *list, struct list_item *item)
 
     item->next = 0;
     item->prev = 0;
+    list->count--;
 
 }
 
@@ -55,19 +58,6 @@ void list_move(struct list *out, struct list *in, struct list_item *item)
 
     list_remove(in, item);
     list_add(out, item);
-
-}
-
-unsigned int list_count(struct list *list)
-{
-
-    struct list_item *current;
-    unsigned int count = 0;
-
-    for (current = list->head; current; current = current->next)
-        count++;
- 
-    return count;
 
 }
 
