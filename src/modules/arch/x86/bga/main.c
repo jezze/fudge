@@ -112,6 +112,7 @@ static void driver_attach(unsigned int id)
     lfb = (void *)(unsigned long)(pci_ind(id, PCI_CONFIG_BAR0) & 0xFFFFFFF0);
 
     arch_setmap(4, (unsigned int)lfb, (unsigned int)lfb, 0x00400000);
+    arch_setmap(5, (unsigned int)lfb + 0x00400000, (unsigned int)lfb + 0x00400000, 0x00400000);
     video_registerinterface(&videointerface, id);
 
 }

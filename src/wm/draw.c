@@ -3,7 +3,7 @@
 #include <video/video.h>
 #include "draw.h"
 
-static unsigned char backbuffer[4096];
+static unsigned char backbuffer[0x2000];
 
 static unsigned char colormap[] = {
     0x00, 0x00, 0x00,

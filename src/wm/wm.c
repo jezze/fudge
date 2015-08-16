@@ -503,7 +503,7 @@ void main(void)
     struct box menu;
     struct box body;
 
-    ctrl_setvideosettings(&settings, 1024, 768, 32);
+    ctrl_setvideosettings(&settings, 1920, 1080, 32);
     video_getmode(CALL_L0, &oldsettings);
     video_setmode(CALL_L0, &settings);
     box_setsize(&screen, 0, 0, settings.w, settings.h);
