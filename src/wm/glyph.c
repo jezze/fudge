@@ -50,9 +50,15 @@ void glyph_assign(struct glyph *glyph, void *data, unsigned short encoding)
 {
 
     unsigned short index = pcf_getindex(data, encoding);
+    struct pcf_metricsdata metricsdata;
 
     glyph->padding = pcf_getpadding(data);
     glyph->data = pcf_getbitmapdata(data) + pcf_getbitmapoffset(data, index);
+
+    pcf_getmetricsdata(data, encoding, &metricsdata);
+
+    glyph->base.size.w = metricsdata.width;
+    glyph->base.size.h = metricsdata.ascent + metricsdata.descent;
 
 }
 
