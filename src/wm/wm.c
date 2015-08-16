@@ -457,7 +457,7 @@ static void setupclients(void)
 
 }
 
-static struct view *setupviews(struct box *screen, struct box *menu, struct box *body)
+static void setupviews(struct box *menu, struct box *body)
 {
 
     unsigned int i;
@@ -471,8 +471,6 @@ static struct view *setupviews(struct box *screen, struct box *menu, struct box 
         list_add(&renderables, &view[i].number.base.item);
 
     }
-
-    return views.head->data;
 
 }
 
@@ -513,8 +511,9 @@ void main(void)
     box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
     setupfont();
     setupclients();
+    setupviews(&menu, &body);
 
-    viewfocus = setupviews(&screen, &menu, &body);
+    viewfocus = views.head->data;
 
     view_activate(viewfocus);
     setupmouse(&screen);
