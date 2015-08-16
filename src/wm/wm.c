@@ -115,10 +115,7 @@ static struct client *nextclient(struct client *focus, struct client *head)
     if (!focus)
         return 0;
 
-    if (focus->item.next)
-        return focusclient(focus, focus->item.next->data);
-    else
-        return focusclient(focus, head);
+    return focusclient(focus, (focus->item.next) ? focus->item.next->data : head);
 
 }
 
@@ -128,10 +125,7 @@ static struct client *prevclient(struct client *focus, struct client *tail)
     if (!focus)
         return 0;
 
-    if (focus->item.prev)
-        return focusclient(focus, focus->item.prev->data);
-    else
-        return focusclient(focus, tail);
+    return focusclient(focus, (focus->item.prev) ? focus->item.prev->data : tail);
 
 }
 
@@ -182,10 +176,7 @@ static void unmapclient(struct view *view)
 
     list_move(&clients, &view->clients, &view->clientfocus->item);
 
-    if (view->clients.tail)
-        view->clientfocus = focusclient(view->clientfocus, view->clients.tail->data);
-    else
-        view->clientfocus = focusclient(view->clientfocus, 0);
+    view->clientfocus = focusclient(view->clientfocus, (view->clients.tail) ? view->clients.tail->data : 0);
 
 }
 
