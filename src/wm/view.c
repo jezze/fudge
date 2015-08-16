@@ -57,7 +57,7 @@ void view_init(struct view *view, struct box *menu, struct box *body, unsigned i
     glyph_init(&view->number, WM_COLOR_TEXTDARK);
     glyph_assign(&view->number, fontdata, '1' + num);
     box_setsize(&view->panel.base.size, menu->x + num * menu->w / total, menu->y, menu->w / total, menu->h);
-    box_setsize(&view->number.base.size, view->panel.base.size.x + 8 + 1, view->panel.base.size.y + 8 + 1, view->number.base.size.w, view->number.base.size.h);
+    box_setsize(&view->number.base.size, view->panel.base.size.x + (view->number.base.size.h / 2) + 1, view->panel.base.size.y + (view->number.base.size.h / 2) + 1, view->number.base.size.w, view->number.base.size.h);
 
     view->center = body->w / 2;
     view->clientfocus = 0;
