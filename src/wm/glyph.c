@@ -27,17 +27,10 @@ static void writebyte(struct glyph *glyph, struct ctrl_videosettings *settings, 
 static void writechar(struct glyph *glyph, struct ctrl_videosettings *settings, unsigned int y)
 {
 
-    unsigned int padding = pcf_getpadding(glyph->data);
-    unsigned short index = pcf_getindex(glyph->data, glyph->value);
-    unsigned int offset = pcf_getbitmapoffset(glyph->data, index);
-    unsigned char *data = pcf_getbitmapdata(glyph->data);
-    struct pcf_metricsdata metrics;
     unsigned int x;
 
-    pcf_getmetricsdata(glyph->data, index, &metrics);
-
-    for (x = 0; x < padding; x++)
-        writebyte(glyph, settings, data[offset + y * padding + x]);
+    for (x = 0; x < glyph->padding; x++)
+        writebyte(glyph, settings, glyph->data[y * glyph->padding + x]);
 
 }
 
@@ -53,14 +46,22 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 
 }
 
-void glyph_init(struct glyph *glyph, void *data)
+void glyph_assign(struct glyph *glyph, void *data, unsigned short encoding)
+{
+
+    unsigned short index = pcf_getindex(data, encoding);
+
+    glyph->padding = pcf_getpadding(data);
+    glyph->data = pcf_getbitmapdata(data) + pcf_getbitmapoffset(data, index);
+
+}
+
+void glyph_init(struct glyph *glyph, unsigned int color)
 {
 
     renderable_init(&glyph->base, glyph, render);
 
-    glyph->data = data;
-    glyph->value = '0';
-    glyph->color = WM_COLOR_LIGHT;
+    glyph->color = color;
 
 }
 

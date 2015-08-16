@@ -54,7 +54,8 @@ void view_init(struct view *view, struct box *menu, struct box *body, unsigned i
 
     list_inititem(&view->item, view);
     panel_init(&view->panel);
-    glyph_init(&view->number, fontdata);
+    glyph_init(&view->number, WM_COLOR_TEXTDARK);
+    glyph_assign(&view->number, fontdata, '1' + num);
     box_setsize(&view->panel.base.size, menu->x + num * menu->w / total, menu->y, menu->w / total, menu->h);
     box_setsize(&view->number.base.size, view->panel.base.size.x + 8 + 1, view->panel.base.size.y + 8 + 1, 8, 16);
 
@@ -62,8 +63,6 @@ void view_init(struct view *view, struct box *menu, struct box *body, unsigned i
     view->clientfocus = 0;
     view->panel.base.visible = 1;
     view->number.base.visible = 1;
-    view->number.value = '1' + num;
-    view->number.color = WM_COLOR_TEXTDARK;
 
 }
 

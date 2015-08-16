@@ -2,10 +2,11 @@ struct glyph
 {
 
     struct renderable base;
+    unsigned int padding;
     unsigned char *data;
-    char value;
     unsigned int color;
 
 };
 
-void glyph_init(struct glyph *glyph, void *data);
+void glyph_assign(struct glyph *glyph, void *data, unsigned short encoding);
+void glyph_init(struct glyph *glyph, unsigned int color);
