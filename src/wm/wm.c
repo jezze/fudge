@@ -107,10 +107,10 @@ static struct client *focusclient(struct client *focus, struct client *new)
 {
 
     if (focus)
-        focus->window.framecolor = WM_COLOR_PASSIVEFRAME;
+        client_deactivate(focus);
 
     if (new)
-        new->window.framecolor = WM_COLOR_ACTIVEFRAME;
+        client_activate(new);
 
     return new;
 

@@ -6,4 +6,4 @@ struct window
 
 };
 
-void window_init(struct window *window);
+void window_init(struct window *window, unsigned int color);

@@ -54,12 +54,10 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 
 }
 
-void window_init(struct window *window)
+void window_init(struct window *window, unsigned int color)
 {
 
     renderable_init(&window->base, window, render);
-
-    window->framecolor = WM_COLOR_PASSIVEFRAME;
 
 }
 
