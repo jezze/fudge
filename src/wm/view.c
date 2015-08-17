@@ -4,6 +4,7 @@
 #include "renderable.h"
 #include "draw.h"
 #include "glyph.h"
+#include "text.h"
 #include "panel.h"
 #include "window.h"
 #include "client.h"
@@ -16,7 +17,7 @@ void view_activate(struct view *view)
 
     view->panel.backgroundcolor = WM_COLOR_ACTIVEBACK;
     view->panel.framecolor = WM_COLOR_ACTIVEFRAME;
-    view->number.color = WM_COLOR_TEXTLIGHT;
+    view->number.glyph.color = WM_COLOR_TEXTLIGHT;
 
     for (current = view->clients.head; current; current = current->next)
     {
@@ -36,7 +37,7 @@ void view_deactivate(struct view *view)
 
     view->panel.backgroundcolor = WM_COLOR_PASSIVEBACK;
     view->panel.framecolor = WM_COLOR_PASSIVEFRAME;
-    view->number.color = WM_COLOR_TEXTDARK;
+    view->number.glyph.color = WM_COLOR_TEXTDARK;
 
     for (current = view->clients.head; current; current = current->next)
     {
@@ -54,10 +55,10 @@ void view_init(struct view *view, struct box *menu, struct box *body, unsigned i
 
     list_inititem(&view->item, view);
     panel_init(&view->panel);
-    glyph_init(&view->number, WM_COLOR_TEXTDARK);
-    glyph_assign(&view->number, fontdata, '1' + num);
+    text_init(&view->number, WM_COLOR_TEXTDARK);
+    text_assign(&view->number, fontdata, 1, "12345678" + num);
     box_setsize(&view->panel.base.size, menu->x + num * menu->w / total, menu->y, menu->w / total, menu->h);
-    box_setsize(&view->number.base.size, view->panel.base.size.x + (view->panel.base.size.h / 2) - (view->number.base.size.h / 2) + 1, view->panel.base.size.y + (view->panel.base.size.h / 2) - (view->number.base.size.h / 2) + 1, view->number.base.size.w, view->number.base.size.h);
+    box_setsize(&view->number.base.size, view->panel.base.size.x + 8, view->panel.base.size.y + 8, view->panel.base.size.w, view->panel.base.size.h);
 
     view->center = body->w / 2;
     view->clientfocus = 0;

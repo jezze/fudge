@@ -5,7 +5,7 @@ struct view
     struct list clients;
     unsigned int center;
     struct panel panel;
-    struct glyph number;
+    struct text number;
     struct client *clientfocus;
 
 };
