@@ -480,10 +480,22 @@ static void setupmouse(struct box *screen)
 static void setupfont(void)
 {
 
-    call_walk(CALL_L4, CALL_PR, 18, "share/ter-u16n.pcf");
+    call_walk(CALL_L4, CALL_PR, 18, "share/ter-u18n.pcf");
     call_open(CALL_L4);
     call_read(CALL_L4, 0, 1, 0x8000, fontdata);
     call_close(CALL_L4);
+
+}
+
+static void setuptext(struct box *screen)
+{
+
+    text_init(&temp, WM_COLOR_TEXTLIGHT);
+    text_assign(&temp, fontdata, 22, "FUDGE OPERATING SYSTEM");
+    box_setsize(&temp.base.size, 16, screen->h - 32, screen->w, 32);
+    list_add(&renderables, &temp.base.item);
+
+    temp.base.visible = 1;
 
 }
 
@@ -510,16 +522,7 @@ void main(void)
 
     view_activate(viewfocus);
     setupmouse(&screen);
-
-
-    text_init(&temp, WM_COLOR_TEXTLIGHT);
-    text_assign(&temp, fontdata, 22, "FUDGE OPERATING SYSTEM");
-    box_setsize(&temp.base.size, 32, screen.h - 32, screen.w, 32);
-    list_add(&renderables, &temp.base.item);
-
-    temp.base.visible = 1;
-
-
+    setuptext(&screen);
     draw_init();
     draw(&settings, &screen);
     pollevent(&settings, &screen, &menu, &body);
