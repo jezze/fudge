@@ -6,7 +6,7 @@
 #include "draw.h"
 #include "glyph.h"
 
-static void writebyte(struct glyph *glyph, struct ctrl_videosettings *settings, unsigned char c)
+static void renderbyte(struct glyph *glyph, struct ctrl_videosettings *settings, unsigned char c)
 {
 
     unsigned char i = 0x80;
@@ -24,25 +24,20 @@ static void writebyte(struct glyph *glyph, struct ctrl_videosettings *settings, 
 
 }
 
-static void writechar(struct glyph *glyph, struct ctrl_videosettings *settings, unsigned int y)
-{
-
-    unsigned int x;
-
-    for (x = 0; x < glyph->padding; x++)
-        writebyte(glyph, settings, glyph->data[y * glyph->padding + x]);
-
-}
-
 static void render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
 {
 
     struct glyph *glyph = self->data;
+    unsigned int x;
+    unsigned int y;
 
     if (line < self->size.y || line >= self->size.y + self->size.h)
         return;
 
-    writechar(glyph, settings, line - self->size.y);
+    y = line - self->size.y;
+
+    for (x = 0; x < glyph->padding; x++)
+        renderbyte(glyph, settings, glyph->data[y * glyph->padding + x]);
 
 }
 

@@ -39,5 +39,7 @@ void mouse_init(struct mouse *mouse, struct box *screen)
     image_init(&mouse->image, pointer);
     box_setsize(&mouse->image.base.size, screen->x + screen->w / 4, screen->y + screen->h / 4, 24, 24);
 
+    mouse->image.base.visible = 1;
+
 }
 

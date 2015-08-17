@@ -478,8 +478,6 @@ static void setupmouse(struct box *screen)
     mouse_init(&mouse, screen);
     list_add(&renderables, &mouse.image.base.item);
 
-    mouse.image.base.visible = 1;
-
 }
 
 static void setupfont(void)
