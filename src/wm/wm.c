@@ -8,6 +8,7 @@
 #include "image.h"
 #include "mouse.h"
 #include "glyph.h"
+#include "text.h"
 #include "panel.h"
 #include "window.h"
 #include "client.h"
@@ -25,6 +26,8 @@ static struct list views;
 static struct view *viewfocus;
 static struct list renderables;
 static unsigned char fontdata[0x8000];
+
+static struct text temp;
 
 static void draw(struct ctrl_videosettings *settings, struct box *bb)
 {
@@ -507,6 +510,16 @@ void main(void)
 
     view_activate(viewfocus);
     setupmouse(&screen);
+
+
+    text_init(&temp, WM_COLOR_TEXTLIGHT);
+    text_assign(&temp, fontdata, 22, "FUDGE OPERATING SYSTEM");
+    box_setsize(&temp.base.size, 32, screen.h - 32, screen.w, 32);
+    list_add(&renderables, &temp.base.item);
+
+    temp.base.visible = 1;
+
+
     draw_init();
     draw(&settings, &screen);
     pollevent(&settings, &screen, &menu, &body);
