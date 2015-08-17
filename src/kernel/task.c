@@ -11,20 +11,14 @@ static struct list blocked;
 struct task *task_findactive(void)
 {
 
-    if (!active.tail)
-        return 0;
-
-    return active.tail->data;
+    return (active.tail) ? active.tail->data : 0;
 
 }
 
 struct task *task_findinactive(void)
 {
 
-    if (!inactive.tail)
-        return 0;
-
-    return inactive.tail->data;
+    return (inactive.tail) ? inactive.tail->data : 0;
 
 }
 
