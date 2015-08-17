@@ -482,7 +482,7 @@ static void setupmouse(struct box *screen)
 
 }
 
-static void setupfont()
+static void setupfont(void)
 {
 
     call_walk(CALL_L4, CALL_PR, 18, "share/ter-u16n.pcf");

@@ -3,7 +3,7 @@
 #include "box.h"
 #include "send.h"
 
-static void pollevent()
+static void pollevent(void)
 {
 
     union event event;

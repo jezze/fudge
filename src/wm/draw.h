@@ -12,4 +12,4 @@
 
 void draw_fill(unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count);
 void draw_flush(unsigned int line, unsigned int bpp, unsigned int offset, unsigned int count);
-void draw_init();
+void draw_init(void);
