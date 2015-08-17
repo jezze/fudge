@@ -119,20 +119,14 @@ static struct client *focusclient(struct client *focus, struct client *new)
 static struct client *nextclient(struct client *focus, struct client *head)
 {
 
-    if (!focus)
-        return 0;
-
-    return focusclient(focus, (focus->item.next) ? focus->item.next->data : head);
+    return (focus) ? focusclient(focus, (focus->item.next) ? focus->item.next->data : head) : 0;
 
 }
 
 static struct client *prevclient(struct client *focus, struct client *tail)
 {
 
-    if (!focus)
-        return 0;
-
-    return focusclient(focus, (focus->item.prev) ? focus->item.prev->data : tail);
+    return (focus) ? focusclient(focus, (focus->item.prev) ? focus->item.prev->data : tail) : 0;
 
 }
 
