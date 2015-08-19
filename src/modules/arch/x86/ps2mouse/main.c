@@ -60,8 +60,6 @@ static void handleirq(unsigned int irq)
 static void driver_init(void)
 {
 
-    sequence = 2;
-
     mouse_initinterface(&mouseinterface);
 
 }
@@ -76,11 +74,9 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    ps2_enable(id);
     ps2_reset(id);
-    ps2_disablescanning(id);
     ps2_default(id);
-    ps2_identify(id);
+    ps2_enable(id);
     ps2_enablescanning(id);
     ps2_enableinterrupt(id);
     mouse_registerinterface(&mouseinterface, id);

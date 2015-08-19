@@ -56,10 +56,7 @@ struct device
     unsigned short irq;
     unsigned char disable;
     unsigned char enable;
-    unsigned char test;
-    unsigned char write;
     unsigned char interrupt;
-    unsigned char clock;
 
 };
 
@@ -68,23 +65,34 @@ static struct system_node reset;
 
 static struct device devices[] = {
     {0},
-    {0, IRQKEYBOARD, COMMANDDEV1DISABLE, COMMANDDEV1ENABLE, COMMANDDEV1TEST, 0x00, CONFIGFLAG_DEV1INT, CONFIGFLAG_DEV1CLOCK},
-    {0, IRQMOUSE, COMMANDDEV2DISABLE, COMMANDDEV2ENABLE, COMMANDDEV2TEST, COMMANDDEV2WI, CONFIGFLAG_DEV2INT, CONFIGFLAG_DEV2CLOCK}
+    {0, IRQKEYBOARD, COMMANDDEV1DISABLE, COMMANDDEV1ENABLE, CONFIGFLAG_DEV1INT},
+    {0, IRQMOUSE, COMMANDDEV2DISABLE, COMMANDDEV2ENABLE, CONFIGFLAG_DEV2INT}
 };
-
-static unsigned char getstatus(void)
-{
-
-    return io_inb(REGISTERCONTROL);
-
-}
 
 static unsigned char polldata(void)
 {
 
-    while ((getstatus() & STATUSOFULL) != 1);
+    while (!(io_inb(REGISTERCONTROL) & STATUSOFULL));
 
     return io_inb(REGISTERDATA);
+
+}
+
+static void setcommand(unsigned char value)
+{
+
+    while ((io_inb(REGISTERCONTROL) & STATUSIFULL));
+
+    io_outb(REGISTERCONTROL, value);
+
+}
+
+static void setdata(unsigned char value)
+{
+
+    while ((io_inb(REGISTERCONTROL) & STATUSIFULL));
+
+    io_outb(REGISTERDATA, value);
 
 }
 
@@ -102,28 +110,10 @@ unsigned short ps2_getirq(unsigned int id)
 
 }
 
-void ps2_setcommand(unsigned char value)
-{
-
-    while ((getstatus() & STATUSIFULL) != 0);
-
-    io_outb(REGISTERCONTROL, value);
-
-}
-
-void ps2_setdata(unsigned char value)
-{
-
-    while ((getstatus() & STATUSIFULL) != 0);
-
-    io_outb(REGISTERDATA, value);
-
-}
-
 void ps2_enable(unsigned int id)
 {
 
-    ps2_setcommand(devices[id].enable);
+    setcommand(devices[id].enable);
 
 }
 
@@ -132,33 +122,37 @@ void ps2_enableinterrupt(unsigned int id)
 
     unsigned char config;
 
-    ps2_setcommand(COMMANDCONFIGR);
+    setcommand(COMMANDCONFIGR);
 
     config = polldata() | devices[id].interrupt;
 
-    ps2_setcommand(COMMANDCONFIGW);
-    ps2_setdata(config);
+    setcommand(COMMANDCONFIGW);
+    setdata(config);
 
 }
 
 void ps2_reset(unsigned int id)
 {
 
-    if (devices[id].write)
-        ps2_setcommand(devices[id].write);
+    if (id == PS2_MOUSE)
+        setcommand(COMMANDDEV2WI);
 
-    ps2_setdata(COMMANDDEVRESET);
+    setdata(COMMANDDEVRESET);
     polldata();
+    polldata();
+
+    if (id == PS2_MOUSE)
+        polldata();
 
 }
 
 void ps2_identify(unsigned int id)
 {
 
-    if (devices[id].write)
-        ps2_setcommand(devices[id].write);
+    if (id == PS2_MOUSE)
+        setcommand(COMMANDDEV2WI);
 
-    ps2_setdata(COMMANDDEVIDENTIFY);
+    setdata(COMMANDDEVIDENTIFY);
     polldata();
     polldata();
 
@@ -167,10 +161,10 @@ void ps2_identify(unsigned int id)
 void ps2_enablescanning(unsigned int id)
 {
 
-    if (devices[id].write)
-        ps2_setcommand(devices[id].write);
+    if (id == PS2_MOUSE)
+        setcommand(COMMANDDEV2WI);
 
-    ps2_setdata(COMMANDDEVENABLESCAN);
+    setdata(COMMANDDEVENABLESCAN);
     polldata();
 
 }
@@ -178,10 +172,10 @@ void ps2_enablescanning(unsigned int id)
 void ps2_disablescanning(unsigned int id)
 {
 
-    if (devices[id].write)
-        ps2_setcommand(devices[id].write);
+    if (id == PS2_MOUSE)
+        setcommand(COMMANDDEV2WI);
 
-    ps2_setdata(COMMANDDEVDISABLESCAN);
+    setdata(COMMANDDEVDISABLESCAN);
     polldata();
 
 }
@@ -189,10 +183,10 @@ void ps2_disablescanning(unsigned int id)
 void ps2_default(unsigned int id)
 {
 
-    if (devices[id].write)
-        ps2_setcommand(devices[id].write);
+    if (id == PS2_MOUSE)
+        setcommand(COMMANDDEV2WI);
 
-    ps2_setdata(COMMANDDEVDEFAULT);
+    setdata(COMMANDDEVDEFAULT);
     polldata();
 
 }
@@ -203,39 +197,35 @@ static void bus_setup(void)
     unsigned char config;
     unsigned char status;
 
-    ps2_setcommand(devices[PS2_KEYBOARD].disable);
-    ps2_setcommand(devices[PS2_MOUSE].disable);
+    setcommand(devices[PS2_KEYBOARD].disable);
+    setcommand(devices[PS2_MOUSE].disable);
+    setcommand(COMMANDCONFIGR);
 
-    while (getstatus() & 1)
-        ps2_getdata();
+    config = polldata() & ~(CONFIGFLAG_DEV1INT | CONFIGFLAG_DEV2INT);
 
-    ps2_setcommand(COMMANDCONFIGR);
-
-    config = polldata() & 0xDC;
-
-    ps2_setcommand(COMMANDCONFIGW);
-    ps2_setdata(config);
-    ps2_setcommand(COMMANDCTEST);
+    setcommand(COMMANDCONFIGW);
+    setdata(config);
+    setcommand(COMMANDCTEST);
 
     status = polldata();
 
     if (status != CTESTOK)
         return;
 
-    if (config & devices[PS2_KEYBOARD].clock)
+    if (config & CONFIGFLAG_DEV1CLOCK)
     {
 
-        ps2_setcommand(devices[PS2_KEYBOARD].test);
+        setcommand(COMMANDDEV1TEST);
 
         if (polldata() == PTESTOK)
             devices[PS2_KEYBOARD].present = 1;
 
     }
 
-    if (config & devices[PS2_MOUSE].clock)
+    if (config & CONFIGFLAG_DEV2CLOCK)
     {
 
-        ps2_setcommand(devices[PS2_MOUSE].test);
+        setcommand(COMMANDDEV2TEST);
 
         if (polldata() == PTESTOK)
             devices[PS2_MOUSE].present = 1;
@@ -254,7 +244,7 @@ static unsigned int bus_next(unsigned int id)
 static unsigned int reset_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
 {
 
-    ps2_setcommand(COMMANDCTRLRESET);
+    setcommand(COMMANDCTRLRESET);
 
     return 0;
 

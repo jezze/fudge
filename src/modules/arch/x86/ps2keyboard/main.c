@@ -40,11 +40,9 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    ps2_enable(id);
     ps2_reset(id);
-    ps2_disablescanning(id);
     ps2_default(id);
-    ps2_identify(id);
+    ps2_enable(id);
     ps2_enablescanning(id);
     ps2_enableinterrupt(id);
     keyboard_registerinterface(&keyboardinterface, id);
