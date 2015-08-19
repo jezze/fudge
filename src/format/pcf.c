@@ -179,7 +179,7 @@ unsigned short pcf_getindex(void *base, unsigned short encoding)
 
     struct pcf_entry *entry = getentry(base, PCF_TYPE_BDFENCODINGS);
     unsigned int format = getformat(base, entry);
-    struct pcf_bdfencoding bdfencoding;    
+    struct pcf_bdfencoding bdfencoding;
     unsigned int index;
 
     pcf_getbdfencoding(base, &bdfencoding);

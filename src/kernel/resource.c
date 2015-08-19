@@ -8,10 +8,7 @@ struct resource *resource_find(struct resource *resource)
 
     struct list_item *current = (resource) ? resource->item.next : resources.head;
 
-    if (!current)
-        return 0;
-
-    return current->data;
+    return (current) ? current->data : 0;
 
 }
 

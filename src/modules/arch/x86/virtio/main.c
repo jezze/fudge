@@ -33,8 +33,8 @@ static unsigned short io;
 static void reset(void)
 {
 
-    io_outb(io + REGISTERSTATUS, 0); 
-    io_inb(io + REGISTERSTATUS); 
+    io_outb(io + REGISTERSTATUS, 0);
+    io_inb(io + REGISTERSTATUS);
 
 }
 

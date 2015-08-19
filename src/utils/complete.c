@@ -16,7 +16,7 @@ void main(void)
     call_close(CALL_P1);
     call_open(CALL_PO);
     call_open(CALL_P0);
- 
+
     for (roff0 = 0; (count0 = call_read(CALL_P0, roff0, 1, FUDGE_BSIZE, buffer)); roff0 += roff1)
     {
 

@@ -102,5 +102,5 @@ struct ahci_dmasetup
     unsigned char DMAbufOffset[4];
     unsigned char TransferCount[4];
     unsigned char resvd[4];
- 
+
 };

@@ -14,7 +14,7 @@ static unsigned int protocol_match(struct vfs_backend *backend)
 {
 
     struct system_header header;
-    
+
     if (backend->read(0, sizeof (struct system_header), &header) < sizeof (struct system_header))
         return 0;
 

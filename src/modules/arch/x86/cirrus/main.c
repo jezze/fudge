@@ -95,7 +95,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
     cardspecs.maxPixelClock4bpp = 75000;
     cardspecs.maxPixelClock8bpp = 45000;
     cardspecs.maxPixelClock16bpp = 0;
-    cardspecs.maxPixelClock24bpp = 0; 
+    cardspecs.maxPixelClock24bpp = 0;
     cardspecs.maxPixelClock32bpp = 0;
 
     if (chiptype == CLGD5420B)
