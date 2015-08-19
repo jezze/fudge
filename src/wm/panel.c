@@ -9,34 +9,34 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 {
 
     struct panel *panel = self->data;
+    unsigned int offset = (line - self->size.y);
 
-    if (line < self->size.y || line >= self->size.y + self->size.h)
-        return;
+    if (offset > self->size.h / 2)
+        offset = self->size.h - offset - 1;
 
-    if (line == self->size.y + 0 || line >= self->size.y + self->size.h - 1)
+    switch (offset)
     {
 
+    case 0:
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x, self->size.w);
 
-    }
+        break;
 
-    else if (line == self->size.y + 1 || line >= self->size.y + self->size.h - 2)
-    {
-
+    case 1:
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
         draw_fill(settings->bpp, panel->framecolor, self->size.x + 1, self->size.w - 2);
 
-    }
+        break;
 
-    else
-    {
-
+    default:
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
         draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
         draw_fill(settings->bpp, panel->framecolor, self->size.x + 1, 1);
         draw_fill(settings->bpp, panel->framecolor, self->size.x + self->size.w - 2, 1);
         draw_fill(settings->bpp, panel->backgroundcolor, self->size.x + 2, self->size.w - 4);
+
+        break;
 
     }
 

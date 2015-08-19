@@ -6,38 +6,31 @@
 #include "draw.h"
 #include "glyph.h"
 
-static void renderbyte(struct glyph *glyph, struct ctrl_videosettings *settings, unsigned int n, unsigned char c)
-{
-
-    unsigned int k = 0;
-    unsigned char i;
-
-    for (i = 0x80; i; i >>= 1)
-    {
-
-        if (c & i)
-            draw_fill(settings->bpp, glyph->color, glyph->base.size.x + n + k, 1);
-
-        k++;
-
-    }
-
-}
-
 static void render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
 {
 
     struct glyph *glyph = self->data;
+    unsigned int offset = (line - self->size.y) * glyph->padding;
     unsigned int x;
-    unsigned int y;
-
-    if (line < self->size.y || line >= self->size.y + self->size.h)
-        return;
-
-    y = line - self->size.y;
 
     for (x = 0; x < glyph->padding; x++)
-        renderbyte(glyph, settings, x * 8, glyph->data[y * glyph->padding + x]);
+    {
+
+        unsigned char c = glyph->data[offset + x];
+        unsigned int k = 0;
+        unsigned char i;
+
+        for (i = 0x80; i; i >>= 1)
+        {
+
+            if (c & i)
+                draw_fill(settings->bpp, glyph->color, glyph->base.size.x + x * 8 + k, 1);
+
+            k++;
+
+        }
+
+    }
 
 }
 

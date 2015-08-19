@@ -6,8 +6,13 @@
 void renderable_render(struct renderable *renderable, struct ctrl_videosettings *settings, unsigned int line)
 {
 
-    if (renderable->visible)
-        renderable->render(renderable, settings, line);
+    if (line < renderable->size.y || line >= renderable->size.y + renderable->size.h)
+        return;
+
+    if (!renderable->visible)
+        return;
+
+    renderable->render(renderable, settings, line);
 
 }
 

@@ -13,9 +13,6 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
     struct text *text = self->data;
     unsigned int i;
 
-    if (line < self->size.y || line >= self->size.y + self->size.h)
-        return;
-
     text->glyph.base.size.x = text->base.size.x;
     text->glyph.base.size.y = text->base.size.y;
 
