@@ -1,29 +1,22 @@
-/*
- * strncmp.S
- */
-    .text
+.text
 
-    .global strncmp
-    .type strncmp, %function
-    .align 4
+.type strncmp, %function
+.align 4
 
+.global strncmp
 strncmp:
-    /* if (len == 0) return 0 */
-    cmp    r2, #0
-    moveq    r0, #0
-    moveq    pc, lr
+    cmp r2, #0
+    moveq r0, #0
+    moveq pc, lr
+    sub r2, r2, #1
+    add ip, r0, r2
+1:
+    ldrb r2, [r0], #1
+    ldrb r3, [r1], #1
+    cmp ip, r0
+    cmpcs r2, #1
+    cmpcs r2, r3
+    beq 1b
+    sub r0, r2, r3
+    mov pc, lr
 
-    /* subtract one to have the index of the last character to check */
-    sub    r2, r2, #1
-
-    /* ip == last src address to compare */
-    add    ip, r0, r2
-
-1:    ldrb    r2, [r0], #1
-    ldrb    r3, [r1], #1
-    cmp    ip, r0
-    cmpcs    r2, #1
-    cmpcs    r2, r3
-    beq    1b
-    sub    r0, r2, r3
-    mov    pc, lr
