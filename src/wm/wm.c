@@ -32,16 +32,20 @@ static struct text temp;
 static void draw(struct ctrl_videosettings *settings, struct box *bb)
 {
 
+    unsigned int x = bb->x;
+    unsigned int w = bb->x + bb->w > settings->w ? settings->w - bb->x : bb->w;
+    unsigned int y = bb->y;
+    unsigned int h = bb->y + bb->h > settings->h ? settings->h - bb->y : bb->h;
     unsigned int line;
 
     video_open(CALL_L0);
 
-    for (line = bb->y; line < bb->y + bb->h; line++)
+    for (line = y; line < y + h; line++)
     {
 
         struct list_item *current;
 
-        draw_fill(settings->bpp, WM_COLOR_BODY, bb->x, bb->w);
+        draw_fill(settings->bpp, WM_COLOR_BODY, x, w);
 
         for (current = renderables.head; current; current = current->next)
         {
@@ -52,7 +56,7 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb)
 
         }
 
-        draw_flush(settings->w * line, settings->bpp, bb->x, bb->w);
+        draw_flush(settings->w * line, settings->bpp, x, w);
 
     }
 
@@ -401,14 +405,14 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
             mouse.image.base.size.x += event.mousemove.relx;
             mouse.image.base.size.y -= event.mousemove.rely;
 
-            if (event.mousemove.relx > 0 && mouse.image.base.size.x + mouse.image.base.size.w > screen->w)
-                mouse.image.base.size.x = screen->w - mouse.image.base.size.w;
+            if (event.mousemove.relx > 0 && mouse.image.base.size.x >= screen->w)
+                mouse.image.base.size.x = screen->w - 1;
 
             if (event.mousemove.relx < 0 && mouse.image.base.size.x >= screen->w)
                 mouse.image.base.size.x = 0;
 
-            if (event.mousemove.rely < 0 && mouse.image.base.size.y + mouse.image.base.size.h > screen->h)
-                mouse.image.base.size.y = screen->h - mouse.image.base.size.h;
+            if (event.mousemove.rely < 0 && mouse.image.base.size.y >= screen->h)
+                mouse.image.base.size.y = screen->h - 1;
 
             if (event.mousemove.rely > 0 && mouse.image.base.size.y >= screen->h)
                 mouse.image.base.size.y = 0;
