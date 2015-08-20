@@ -24,7 +24,7 @@ static void pollevent(void)
         {
 
         case EVENT_MOUSEPRESS:
-            send_wmadd(root, 22, "text test Hello World!");
+            send_wmadd(CALL_L2, root, 22, "text test Hello World!");
 
             break;
 
@@ -52,7 +52,7 @@ static void pollevent(void)
 void main(void)
 {
 
-    send_wmmap(0xFFFFFFFF);
+    send_wmmap(CALL_L2, 0xFFFFFFFF);
     pollevent();
 
 }

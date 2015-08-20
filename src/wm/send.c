@@ -1,69 +1,63 @@
 #include <abi.h>
 #include <fudge.h>
 
-static void send(unsigned int size, unsigned int count, void *buffer)
+static void send(unsigned int descriptor, unsigned int size, unsigned int count, void *buffer)
 {
 
-    call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
-    call_open(CALL_L2);
-    call_write(CALL_L2, 0, size, count, buffer);
-    call_close(CALL_L2);
+    call_walk(descriptor, CALL_PR, 17, "system/event/send");
+    call_open(descriptor);
+    call_write(descriptor, 0, size, count, buffer);
+    call_close(descriptor);
 
 }
 
-void send_wmmap(unsigned int destination)
+static void setheader(struct event_header *header, unsigned int destination, unsigned int type, unsigned int count)
+{
+
+    header->source = 0;
+    header->destination = destination;
+    header->type = type;
+    header->count = count;
+
+}
+
+void send_wmmap(unsigned int descriptor, unsigned int destination)
 {
 
     struct event_wmmap wmmap;
 
-    wmmap.header.source = 0;
-    wmmap.header.destination = destination;
-    wmmap.header.type = EVENT_WMMAP;
-    wmmap.header.count = sizeof (struct event_wmmap) - sizeof (struct event_header);
-
-    send(sizeof (struct event_wmmap), 1, &wmmap);
+    setheader(&wmmap.header, destination, EVENT_WMMAP, 0);
+    send(descriptor, sizeof (struct event_wmmap), 1, &wmmap);
 
 }
 
-void send_wmunmap(unsigned int destination)
+void send_wmunmap(unsigned int descriptor, unsigned int destination)
 {
 
     struct event_wmunmap wmunmap;
 
-    wmunmap.header.source = 0;
-    wmunmap.header.destination = destination;
-    wmunmap.header.type = EVENT_WMUNMAP;
-    wmunmap.header.count = sizeof (struct event_wmunmap) - sizeof (struct event_header);
-
-    send(sizeof (struct event_wmunmap), 1, &wmunmap);
+    setheader(&wmunmap.header, destination, EVENT_WMUNMAP, 0);
+    send(descriptor, sizeof (struct event_wmunmap), 1, &wmunmap);
 
 }
 
-void send_wmready(unsigned int destination)
+void send_wmready(unsigned int descriptor, unsigned int destination)
 {
 
     struct event_wmready wmready;
 
-    wmready.header.source = 0;
-    wmready.header.destination = destination;
-    wmready.header.type = EVENT_WMREADY;
-    wmready.header.count = sizeof (struct event_wmready) - sizeof (struct event_header);
-
-    send(sizeof (struct event_wmready), 1, &wmready);
+    setheader(&wmready.header, destination, EVENT_WMREADY, 0);
+    send(descriptor, sizeof (struct event_wmready), 1, &wmready);
 
 }
 
-void send_wmadd(unsigned int destination, unsigned int count, void *data)
+void send_wmadd(unsigned int descriptor, unsigned int destination, unsigned int count, void *data)
 {
 
     struct event_wmadd wmadd;
 
-    wmadd.header.source = 0;
-    wmadd.header.destination = destination;
-    wmadd.header.type = EVENT_WMADD;
-    wmadd.header.count = sizeof (struct event_wmadd) - sizeof (struct event_header);
-
-    send(sizeof (struct event_wmadd), 1, &wmadd);
+    setheader(&wmadd.header, destination, EVENT_WMADD, 0);
+    send(descriptor, sizeof (struct event_wmadd), 1, &wmadd);
 
 }
 

@@ -261,7 +261,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
                 if (viewfocus->clientfocus)
                 {
 
-                    send_wmunmap(viewfocus->clientfocus->source);
+                    send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
                     unmapclient(viewfocus);
                     arrangeclients(viewfocus, body);
                     draw(settings, body);
@@ -426,7 +426,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
             mapclient(viewfocus, event.header.source);
             arrangeclients(viewfocus, body);
             draw(settings, body);
-            send_wmready(event.header.source);
+            send_wmready(CALL_L2, event.header.source);
 
             break;
 
