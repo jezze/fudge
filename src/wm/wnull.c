@@ -27,7 +27,6 @@ static void pollevent(void)
             break;
 
         case EVENT_WMUNMAP:
-            send_wmadd(CALL_L2, event.header.source, 9, "Good Bye!");
             quit = 1;
 
             break;
