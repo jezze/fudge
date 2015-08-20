@@ -3,6 +3,8 @@
 #include "box.h"
 #include "send.h"
 
+static unsigned int root;
+
 static void pollevent(void)
 {
 
@@ -20,6 +22,16 @@ static void pollevent(void)
 
         switch (event.header.type)
         {
+
+        case EVENT_MOUSEPRESS:
+            send_wmadd(root, 22, "text test Hello World!");
+
+            break;
+
+        case EVENT_WMREADY:
+            root = event.header.source;
+
+            break;
 
         case EVENT_WMUNMAP:
             quit = 1;

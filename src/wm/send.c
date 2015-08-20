@@ -39,3 +39,31 @@ void send_wmunmap(unsigned int destination)
 
 }
 
+void send_wmready(unsigned int destination)
+{
+
+    struct event_wmready wmready;
+
+    wmready.header.source = 0;
+    wmready.header.destination = destination;
+    wmready.header.type = EVENT_WMREADY;
+    wmready.header.count = sizeof (struct event_wmready) - sizeof (struct event_header);
+
+    send(sizeof (struct event_wmready), 1, &wmready);
+
+}
+
+void send_wmadd(unsigned int destination, unsigned int count, void *data)
+{
+
+    struct event_wmadd wmadd;
+
+    wmadd.header.source = 0;
+    wmadd.header.destination = destination;
+    wmadd.header.type = EVENT_WMADD;
+    wmadd.header.count = sizeof (struct event_wmadd) - sizeof (struct event_header);
+
+    send(sizeof (struct event_wmadd), 1, &wmadd);
+
+}
+

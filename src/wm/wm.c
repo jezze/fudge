@@ -426,6 +426,13 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
             mapclient(viewfocus, event.header.source);
             arrangeclients(viewfocus, body);
             draw(settings, body);
+            send_wmready(event.header.source);
+
+            break;
+
+        case EVENT_WMADD:
+            text_assign(&temp, fontdata, 4, "COOL");
+            draw(settings, body);
 
             break;
 
