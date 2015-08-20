@@ -434,7 +434,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
         case EVENT_WMADD:
             memory_copy(textdata, event.wmadd.data, event.header.count);
             text_assign(&temp, fontdata, event.header.count, textdata);
-            draw(settings, body);
+            draw(settings, &temp.base.size);
 
             break;
 

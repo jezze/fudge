@@ -14,7 +14,6 @@ static void send(unsigned int descriptor, unsigned int size, unsigned int count,
 static void setheader(struct event_header *header, unsigned int destination, unsigned int type, unsigned int count)
 {
 
-    header->source = 0;
     header->destination = destination;
     header->type = type;
     header->count = count;
