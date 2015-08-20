@@ -84,6 +84,7 @@ struct event_wmadd
 {
 
     struct event_header header;
+    char data[496];
 
 };
 
@@ -100,5 +101,6 @@ union event
     struct event_wmmap wmmap;
     struct event_wmunmap wmunmap;
     struct event_wmready wmready;
+    struct event_wmadd wmadd;
 
 };

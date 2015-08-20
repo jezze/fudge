@@ -28,6 +28,7 @@ static struct list renderables;
 static unsigned char fontdata[0x8000];
 
 static struct text temp;
+static char textdata[512];
 
 static void draw(struct ctrl_videosettings *settings, struct box *bb)
 {
@@ -431,7 +432,8 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
             break;
 
         case EVENT_WMADD:
-            text_assign(&temp, fontdata, 4, "COOL");
+            memory_copy(textdata, event.wmadd.data, event.header.count);
+            text_assign(&temp, fontdata, event.header.count, textdata);
             draw(settings, body);
 
             break;
@@ -501,8 +503,9 @@ static void setupfont(void)
 static void setuptext(struct box *screen)
 {
 
+    memory_copy(textdata, "FUDGE OPERATING SYSTEM", 22);
     text_init(&temp, WM_COLOR_TEXTLIGHT);
-    text_assign(&temp, fontdata, 22, "FUDGE OPERATING SYSTEM");
+    text_assign(&temp, fontdata, 22, textdata);
     box_setsize(&temp.base.size, 16, screen->h - 32, screen->w, 32);
     list_add(&renderables, &temp.base.item);
 

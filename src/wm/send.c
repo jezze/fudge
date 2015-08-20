@@ -56,8 +56,9 @@ void send_wmadd(unsigned int descriptor, unsigned int destination, unsigned int 
 
     struct event_wmadd wmadd;
 
-    setheader(&wmadd.header, destination, EVENT_WMADD, 0);
-    send(descriptor, sizeof (struct event_wmadd), 1, &wmadd);
+    setheader(&wmadd.header, destination, EVENT_WMADD, count);
+    memory_copy(wmadd.data, data, count);
+    send(descriptor, sizeof (struct event_header) + count, 1, &wmadd);
 
 }
 
