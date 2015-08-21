@@ -5,7 +5,7 @@
 #include "draw.h"
 #include "panel.h"
 
-static void render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
+void panel_render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
 {
 
     struct panel *panel = self->data;
@@ -45,7 +45,7 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 void panel_init(struct panel *panel)
 {
 
-    renderable_init(&panel->base, panel, render);
+    renderable_init(&panel->base, RENDERABLE_TYPE_PANEL, sizeof (struct panel) - sizeof (struct renderable), panel);
 
     panel->backgroundcolor = WM_COLOR_PASSIVEBACK;
     panel->framecolor = WM_COLOR_PASSIVEFRAME;

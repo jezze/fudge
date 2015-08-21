@@ -7,4 +7,5 @@ struct panel
 
 };
 
+void panel_render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line);
 void panel_init(struct panel *panel);

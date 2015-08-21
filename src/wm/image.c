@@ -5,7 +5,7 @@
 #include "draw.h"
 #include "image.h"
 
-static void render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
+void image_render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
 {
 
     struct image *image = self->data;
@@ -25,7 +25,7 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 void image_init(struct image *image, void *data)
 {
 
-    renderable_init(&image->base, image, render);
+    renderable_init(&image->base, RENDERABLE_TYPE_IMAGE, sizeof (struct image) - sizeof (struct renderable), image);
 
     image->data = data;
 

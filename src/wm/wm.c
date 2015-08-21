@@ -7,7 +7,6 @@
 #include "draw.h"
 #include "image.h"
 #include "mouse.h"
-#include "glyph.h"
 #include "text.h"
 #include "panel.h"
 #include "window.h"
@@ -506,10 +505,20 @@ static void setuptext(struct box *screen)
     memory_copy(textdata, "FUDGE OPERATING SYSTEM", 22);
     text_init(&temp, WM_COLOR_TEXTLIGHT);
     text_assign(&temp, fontdata, 22, textdata);
-    box_setsize(&temp.base.size, 16, screen->h - 32, screen->w, 32);
+    box_setsize(&temp.base.size, 16, screen->h - 32, screen->w, 16);
     list_add(&renderables, &temp.base.item);
 
     temp.base.visible = 1;
+
+}
+
+static void setuprenderers()
+{
+
+    renderable_register(RENDERABLE_TYPE_WINDOW, window_render);
+    renderable_register(RENDERABLE_TYPE_TEXT, text_render);
+    renderable_register(RENDERABLE_TYPE_PANEL, panel_render);
+    renderable_register(RENDERABLE_TYPE_IMAGE, image_render);
 
 }
 
@@ -528,6 +537,7 @@ void main(void)
     box_setsize(&screen, 0, 0, settings.w, settings.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, 32);
     box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
+    setuprenderers();
     setupfont();
     setupclients();
     setupviews(&menu, &body);

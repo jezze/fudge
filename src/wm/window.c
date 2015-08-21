@@ -5,7 +5,7 @@
 #include "draw.h"
 #include "window.h"
 
-static void render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
+void window_render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
 {
 
     struct window *window = self->data;
@@ -55,7 +55,7 @@ static void render(struct renderable *self, struct ctrl_videosettings *settings,
 void window_init(struct window *window, unsigned int color)
 {
 
-    renderable_init(&window->base, window, render);
+    renderable_init(&window->base, RENDERABLE_TYPE_WINDOW, sizeof (struct window) - sizeof (struct renderable), window);
 
 }
 
