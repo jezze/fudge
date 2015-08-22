@@ -9,7 +9,7 @@
 void text_render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
 {
 
-    struct text *text = self->data;
+    struct text *text = (struct text *)self;
     unsigned int padding = pcf_getpadding(text->data);
     struct box size;
     unsigned int i;
@@ -69,7 +69,7 @@ void text_assign(struct text *text, void *data, unsigned int count, char *string
 void text_init(struct text *text, unsigned int color)
 {
 
-    renderable_init(&text->base, RENDERABLE_TYPE_TEXT, sizeof (struct text) - sizeof (struct renderable), text);
+    renderable_init(&text->base, RENDERABLE_TYPE_TEXT, sizeof (struct text) - sizeof (struct renderable));
 
     text->color = color;
 

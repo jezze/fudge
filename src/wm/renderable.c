@@ -25,14 +25,13 @@ void renderable_render(struct renderable *renderable, struct ctrl_videosettings 
 
 }
 
-void renderable_init(struct renderable *renderable, unsigned int type, unsigned int count, void *data)
+void renderable_init(struct renderable *renderable, unsigned int type, unsigned int count)
 {
 
     list_inititem(&renderable->item, renderable);
 
     renderable->type = type;
     renderable->count = count;
-    renderable->data = data;
 
 }
 

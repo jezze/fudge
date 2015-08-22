@@ -10,11 +10,10 @@ struct renderable
     struct box size;
     unsigned int type;
     unsigned int count;
-    void *data;
     unsigned int visible;
 
 };
 
 void renderable_register(unsigned int type, void (*renderer)(struct renderable *renderable, struct ctrl_videosettings *settings, unsigned int line));
 void renderable_render(struct renderable *renderable, struct ctrl_videosettings *settings, unsigned int line);
-void renderable_init(struct renderable *renderable, unsigned int type, unsigned int count, void *data);
+void renderable_init(struct renderable *renderable, unsigned int type, unsigned int count);
