@@ -14,6 +14,6 @@ struct renderable
 
 };
 
-void renderable_register(unsigned int type, void (*renderer)(struct renderable *renderable, struct ctrl_videosettings *settings, unsigned int line));
-void renderable_render(struct renderable *renderable, struct ctrl_videosettings *settings, unsigned int line);
+void renderable_register(unsigned int type, void (*renderer)(struct renderable *renderable, struct ctrl_videosettings *settings, void *drawdata, void *fontdata, unsigned int line));
+void renderable_render(struct renderable *renderable, struct ctrl_videosettings *settings, void *drawdata, void *fontdata, unsigned int line);
 void renderable_init(struct renderable *renderable, unsigned int type, unsigned int count);

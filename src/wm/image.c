@@ -5,7 +5,7 @@
 #include "draw.h"
 #include "image.h"
 
-void image_render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
+void image_render(struct renderable *self, struct ctrl_videosettings *settings, void *drawdata, void *fontdata, unsigned int line)
 {
 
     struct image *image = (struct image *)self;
@@ -16,7 +16,7 @@ void image_render(struct renderable *self, struct ctrl_videosettings *settings, 
     {
 
         if (image->data[offset + i] != 0xFF)
-            draw_fill(settings->bpp, image->data[offset + i], self->size.x + i, 1);
+            draw_fill(drawdata, settings->bpp, image->data[offset + i], self->size.x + i, 1);
 
     }
 

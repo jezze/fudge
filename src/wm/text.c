@@ -6,11 +6,11 @@
 #include "draw.h"
 #include "text.h"
 
-void text_render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
+void text_render(struct renderable *self, struct ctrl_videosettings *settings, void *drawdata, void *fontdata, unsigned int line)
 {
 
     struct text *text = (struct text *)self;
-    unsigned int padding = pcf_getpadding(text->data);
+    unsigned int padding = pcf_getpadding(fontdata);
     struct box size;
     unsigned int i;
 
@@ -20,15 +20,15 @@ void text_render(struct renderable *self, struct ctrl_videosettings *settings, u
     for (i = 0; i < text->count; i++)
     {
 
-        unsigned short index = pcf_getindex(text->data, text->string[i]);
+        unsigned short index = pcf_getindex(fontdata, text->string[i]);
         unsigned int offset = (line - size.y) * padding;
         unsigned char *data;
         struct pcf_metricsdata metricsdata;
         unsigned int x;
 
-        pcf_readmetricsdata(text->data, index, &metricsdata);
+        pcf_readmetricsdata(fontdata, index, &metricsdata);
 
-        data = pcf_getbitmapdata(text->data) + pcf_getbitmapoffset(text->data, index);
+        data = pcf_getbitmapdata(fontdata) + pcf_getbitmapoffset(fontdata, index);
         size.w = metricsdata.width;
         size.h = metricsdata.ascent + metricsdata.descent;
 
@@ -43,7 +43,7 @@ void text_render(struct renderable *self, struct ctrl_videosettings *settings, u
             {
 
                 if (c & b)
-                    draw_fill(settings->bpp, text->color, size.x + x * 8 + k, 1);
+                    draw_fill(drawdata, settings->bpp, text->color, size.x + x * 8 + k, 1);
 
                 k++;
                 
@@ -57,10 +57,9 @@ void text_render(struct renderable *self, struct ctrl_videosettings *settings, u
 
 }
 
-void text_assign(struct text *text, void *data, unsigned int count, char *string)
+void text_assign(struct text *text, unsigned int count, char *string)
 {
 
-    text->data = data;
     text->count = count;
     text->string = string;
 

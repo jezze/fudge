@@ -49,13 +49,13 @@ void view_deactivate(struct view *view)
 
 }
 
-void view_init(struct view *view, struct box *menu, struct box *body, unsigned int num, unsigned int total, unsigned char *fontdata)
+void view_init(struct view *view, struct box *menu, struct box *body, unsigned int num, unsigned int total)
 {
 
     list_inititem(&view->item, view);
     panel_init(&view->panel);
     text_init(&view->number, WM_COLOR_TEXTDARK);
-    text_assign(&view->number, fontdata, 1, "12345678" + num);
+    text_assign(&view->number, 1, "12345678" + num);
     box_setsize(&view->panel.base.size, menu->x + num * menu->w / total, menu->y, menu->w / total, menu->h);
     box_setsize(&view->number.base.size, view->panel.base.size.x + 8, view->panel.base.size.y + 8, view->panel.base.size.w, 16);
 

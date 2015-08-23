@@ -25,6 +25,7 @@ static struct list views;
 static struct view *viewfocus;
 static struct list renderables;
 static unsigned char fontdata[0x8000];
+static unsigned char drawdata[0x2000];
 
 static struct text temp;
 static char textdata[512];
@@ -45,18 +46,18 @@ static void draw(struct ctrl_videosettings *settings, struct box *bb)
 
         struct list_item *current;
 
-        draw_fill(settings->bpp, WM_COLOR_BODY, x, w);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_BODY, x, w);
 
         for (current = renderables.head; current; current = current->next)
         {
 
             struct renderable *renderable = current->data;
 
-            renderable_render(renderable, settings, line);
+            renderable_render(renderable, settings, drawdata, fontdata, line);
 
         }
 
-        draw_flush(settings->w * line, settings->bpp, x, w);
+        draw_flush(drawdata, settings->w * line, settings->bpp, x, w);
 
     }
 
@@ -432,7 +433,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
 
         case EVENT_WMADD:
             memory_copy(textdata, event.wmadd.data, event.header.count);
-            text_assign(&temp, fontdata, event.header.count, textdata);
+            text_assign(&temp, event.header.count, textdata);
             draw(settings, &temp.base.size);
 
             break;
@@ -472,7 +473,7 @@ static void setupviews(struct box *menu, struct box *body)
     for (i = 0; i < VIEWS; i++)
     {
 
-        view_init(&view[i], menu, body, i, VIEWS, fontdata);
+        view_init(&view[i], menu, body, i, VIEWS);
         list_add(&views, &view[i].item);
         list_add(&renderables, &view[i].panel.base.item);
         list_add(&renderables, &view[i].number.base.item);
@@ -504,7 +505,7 @@ static void setuptext(struct box *screen)
 
     memory_copy(textdata, "FUDGE OPERATING SYSTEM", 22);
     text_init(&temp, WM_COLOR_TEXTLIGHT);
-    text_assign(&temp, fontdata, 22, textdata);
+    text_assign(&temp, 22, textdata);
     box_setsize(&temp.base.size, 16, screen->h - 32, screen->w, 16);
     list_add(&renderables, &temp.base.item);
 

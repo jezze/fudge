@@ -10,6 +10,6 @@
 #define WM_COLOR_TEXTDARK               0x09
 #define WM_COLOR_TEXTLIGHT              0x0A
 
-void draw_fill(unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count);
-void draw_flush(unsigned int line, unsigned int bpp, unsigned int offset, unsigned int count);
+void draw_fill(void *buffer, unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count);
+void draw_flush(void *buffer, unsigned int line, unsigned int bpp, unsigned int offset, unsigned int count);
 void draw_init(void);

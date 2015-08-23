@@ -3,8 +3,6 @@
 #include <video/video.h>
 #include "draw.h"
 
-static unsigned char backbuffer[0x2000];
-
 static unsigned char colormap[] = {
     0x00, 0x00, 0x00,
     0xFF, 0xFF, 0xFF,
@@ -33,10 +31,10 @@ static unsigned int colormap4[] = {
     0xFFFFFFFF
 };
 
-static void fill8(unsigned int color, unsigned int offset, unsigned int count)
+static void fill8(void *buffer, unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned char *b = (unsigned char *)backbuffer;
+    unsigned char *b = buffer;
     unsigned int i;
 
     for (i = offset; i < count + offset; i++)
@@ -44,10 +42,10 @@ static void fill8(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static void fill32(unsigned int color, unsigned int offset, unsigned int count)
+static void fill32(void *buffer, unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned int *b = (unsigned int *)backbuffer;
+    unsigned int *b = buffer;
     unsigned int i;
 
     for (i = offset; i < count + offset; i++)
@@ -55,19 +53,19 @@ static void fill32(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-void draw_fill(unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count)
+void draw_fill(void *buffer, unsigned int bpp, unsigned int color, unsigned int offset, unsigned int count)
 {
 
     switch (bpp)
     {
 
     case 8:
-        fill8(color, offset, count);
+        fill8(buffer, color, offset, count);
 
         break;
 
     case 32:
-        fill32(colormap4[color], offset, count);
+        fill32(buffer, colormap4[color], offset, count);
 
         break;
 
@@ -75,10 +73,12 @@ void draw_fill(unsigned int bpp, unsigned int color, unsigned int offset, unsign
 
 }
 
-void draw_flush(unsigned int line, unsigned int bpp, unsigned int offset, unsigned int count)
+void draw_flush(void *buffer, unsigned int line, unsigned int bpp, unsigned int offset, unsigned int count)
 {
 
-    video_draw(CALL_L0, line + offset, count, backbuffer + offset * bpp / 8);
+    unsigned char *b = buffer;
+
+    video_draw(CALL_L0, line + offset, count, b + offset * bpp / 8);
 
 }
 

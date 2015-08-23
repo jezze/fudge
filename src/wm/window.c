@@ -5,7 +5,7 @@
 #include "draw.h"
 #include "window.h"
 
-void window_render(struct renderable *self, struct ctrl_videosettings *settings, unsigned int line)
+void window_render(struct renderable *self, struct ctrl_videosettings *settings, void *drawdata, void *fontdata, unsigned int line)
 {
 
     struct window *window = (struct window *)self;
@@ -18,33 +18,33 @@ void window_render(struct renderable *self, struct ctrl_videosettings *settings,
     {
 
     case 0:
-        draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x, self->size.w);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_DARK, self->size.x, self->size.w);
 
         break;
 
     case 1:
-        draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
-        draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
-        draw_fill(settings->bpp, window->framecolor, self->size.x + 1, self->size.w - 2);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
+        draw_fill(drawdata, settings->bpp, window->framecolor, self->size.x + 1, self->size.w - 2);
 
         break;
 
     case 2:
-        draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
-        draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
-        draw_fill(settings->bpp, window->framecolor, self->size.x + 1, 1);
-        draw_fill(settings->bpp, window->framecolor, self->size.x + self->size.w - 2, 1);
-        draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 2, self->size.w - 4);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
+        draw_fill(drawdata, settings->bpp, window->framecolor, self->size.x + 1, 1);
+        draw_fill(drawdata, settings->bpp, window->framecolor, self->size.x + self->size.w - 2, 1);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_DARK, self->size.x + 2, self->size.w - 4);
 
         break;
 
     default:
-        draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
-        draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
-        draw_fill(settings->bpp, window->framecolor, self->size.x + 1, 1);
-        draw_fill(settings->bpp, window->framecolor, self->size.x + self->size.w - 2, 1);
-        draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + 2, 1);
-        draw_fill(settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 3, 1);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_DARK, self->size.x + 0, 1);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 1, 1);
+        draw_fill(drawdata, settings->bpp, window->framecolor, self->size.x + 1, 1);
+        draw_fill(drawdata, settings->bpp, window->framecolor, self->size.x + self->size.w - 2, 1);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_DARK, self->size.x + 2, 1);
+        draw_fill(drawdata, settings->bpp, WM_COLOR_DARK, self->size.x + self->size.w - 3, 1);
 
         break;
 

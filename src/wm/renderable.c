@@ -3,16 +3,16 @@
 #include "box.h"
 #include "renderable.h"
 
-static void (*renderers[16])(struct renderable *renderable, struct ctrl_videosettings *settings, unsigned int line);
+static void (*renderers[16])(struct renderable *renderable, struct ctrl_videosettings *settings, void *drawdata, void *fontdata, unsigned int line);
 
-void renderable_register(unsigned int type, void (*renderer)(struct renderable *renderable, struct ctrl_videosettings *settings, unsigned int line))
+void renderable_register(unsigned int type, void (*renderer)(struct renderable *renderable, struct ctrl_videosettings *settings, void *drawdata, void *fontdata, unsigned int line))
 {
 
     renderers[type] = renderer;
 
 }
 
-void renderable_render(struct renderable *renderable, struct ctrl_videosettings *settings, unsigned int line)
+void renderable_render(struct renderable *renderable, struct ctrl_videosettings *settings, void *drawdata, void *fontdata, unsigned int line)
 {
 
     if (line < renderable->size.y || line >= renderable->size.y + renderable->size.h)
@@ -21,7 +21,7 @@ void renderable_render(struct renderable *renderable, struct ctrl_videosettings 
     if (!renderable->visible)
         return;
 
-    renderers[renderable->type](renderable, settings, line);
+    renderers[renderable->type](renderable, settings, drawdata, fontdata, line);
 
 }
 

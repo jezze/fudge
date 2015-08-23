@@ -12,4 +12,4 @@ struct view
 
 void view_activate(struct view *view);
 void view_deactivate(struct view *view);
-void view_init(struct view *view, struct box *menu, struct box *body, unsigned int num, unsigned int total, unsigned char *fontdata);
+void view_init(struct view *view, struct box *menu, struct box *body, unsigned int num, unsigned int total);
