@@ -36,6 +36,9 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     }
 
+    if (header->destination == 0)
+        header->destination = header->source;
+
     destination = (struct task *)header->destination;
 
     return task_wmessage(destination, size, count, buffer);
