@@ -87,21 +87,20 @@ static void arrangeclients(struct view *view, struct box *body)
         break;
 
     default:
+        y = body->y;
+        h = body->h / (view->clients.count - 1);
         client = view->clients.tail->data;
 
         box_setsize(&client->window.base.size, body->x, body->y, view->center, body->h);
-
-        y = 0;
-        h = body->h / (view->clients.count - 1);
 
         for (current = view->clients.tail->prev; current; current = current->prev)
         {
 
             client = current->data;
 
-            box_setsize(&client->window.base.size, body->x + view->center, body->y + y * h, body->w - view->center, h);
+            box_setsize(&client->window.base.size, body->x + view->center, y, body->w - view->center, h);
 
-            y++;
+            y += h;
 
         }
 
