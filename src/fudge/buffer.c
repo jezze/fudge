@@ -8,9 +8,9 @@ static unsigned int e(struct buffer *buffer)
         return 0;
 
     if (buffer->head == buffer->memory)
-        buffer->head = buffer->memory + buffer->size * buffer->capacity;
+        buffer->head = buffer->memory + buffer->capacity;
     else
-        buffer->head -= buffer->size;
+        buffer->head -= 1;
 
     buffer->count--;
 
@@ -24,11 +24,11 @@ static unsigned int r(struct buffer *buffer, void *item)
     if (buffer->count == 0)
         return 0;
 
-    memory_copy(item, buffer->tail, buffer->size);
+    memory_copy(item, buffer->tail, 1);
 
-    buffer->tail += buffer->size;
+    buffer->tail++;
 
-    if (buffer->tail == buffer->memory + buffer->size * buffer->capacity)
+    if (buffer->tail == buffer->memory + buffer->capacity)
         buffer->tail = buffer->memory;
 
     buffer->count--;
@@ -43,11 +43,11 @@ static unsigned int w(struct buffer *buffer, void *item)
     if (buffer->count == buffer->capacity)
         return 0;
 
-    memory_copy(buffer->head, item, buffer->size);
+    memory_copy(buffer->head, item, 1);
 
-    buffer->head += buffer->size;
+    buffer->head++;
 
-    if (buffer->head == buffer->memory + buffer->size * buffer->capacity)
+    if (buffer->head == buffer->memory + buffer->capacity)
         buffer->head = buffer->memory;
 
     buffer->count++;
@@ -84,7 +84,7 @@ unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int count, void *memo
     {
 
         c += r(buffer, m);
-        m += buffer->size;
+        m++;
 
     }
 
@@ -103,7 +103,7 @@ unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memo
     {
 
         c += w(buffer, m);
-        m += buffer->size;
+        m++;
 
     }
 
@@ -111,12 +111,11 @@ unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memo
 
 }
 
-void buffer_init(struct buffer *buffer, unsigned int size, unsigned int capacity, void *memory)
+void buffer_init(struct buffer *buffer, unsigned int capacity, void *memory)
 {
 
     memory_clear(buffer, sizeof (struct buffer));
 
-    buffer->size = size;
     buffer->capacity = capacity;
     buffer->memory = memory;
     buffer->head = memory;

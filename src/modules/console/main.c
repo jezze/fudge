@@ -17,9 +17,7 @@ static unsigned int interfacectrl_read(struct system_node *self, unsigned int of
     struct console_interface *interface = self->resource->data;
     struct ctrl_consolesettings *settings = buffer;
 
-        return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_consolesettings), 1, offset);
-
-    return 0;
+    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 

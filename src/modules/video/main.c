@@ -9,7 +9,7 @@ static unsigned int interfacectrl_read(struct system_node *self, unsigned int of
     struct video_interface *interface = self->resource->data;
     struct ctrl_videosettings *settings = buffer;
 
-    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_videosettings), 1, offset);
+    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 

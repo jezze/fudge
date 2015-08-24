@@ -79,7 +79,7 @@ static unsigned int consoleinterface_wout(unsigned int offset, unsigned int coun
         if (cursor.offset >= total)
         {
 
-            memory_read(taddress, videointerface.settings.w * videointerface.settings.h, taddress, videointerface.settings.w * videointerface.settings.h, sizeof (struct vga_character), videointerface.settings.w);
+            memory_copy(taddress, taddress + videointerface.settings.w, videointerface.settings.w * (videointerface.settings.h - 1) * sizeof (struct vga_character));
             clear(videointerface.settings.w * (videointerface.settings.h - 1));
 
             cursor.offset -= videointerface.settings.w;
@@ -127,7 +127,7 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int count
 
     unsigned int s = videointerface.settings.h * videointerface.settings.w * videointerface.settings.bpp / 8;
 
-    return memory_read(buffer, count, gaddress, s, 1, offset);
+    return memory_read(buffer, count, gaddress, s, offset);
 
 }
 

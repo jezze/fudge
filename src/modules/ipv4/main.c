@@ -50,7 +50,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 static unsigned int localnode_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, localbuffer, sizeof (struct ipv4_ethernetentry) * LOCALS, 1, offset);
+    return memory_read(buffer, count, localbuffer, sizeof (struct ipv4_ethernetentry) * LOCALS, offset);
 
 }
 
@@ -105,7 +105,7 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 void module_init(void)
 {
 
-    buffer_init(&local, sizeof (struct ipv4_ethernetentry), LOCALS, &localbuffer);
+    buffer_init(&local, sizeof (struct ipv4_ethernetentry) * LOCALS, &localbuffer);
     ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
     arp_inithook(&arphook, 0x0001, ethernetprotocol.type, arphook_gethardwareaddress);
     system_initnode(&localnode, SYSTEM_NODETYPE_NORMAL, "local");

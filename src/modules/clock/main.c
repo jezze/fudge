@@ -34,7 +34,7 @@ static unsigned int interfacetimestamp_read(struct system_node *self, unsigned i
     unsigned int timestamp = ((dyear + dmonth + day) * 86400) + ((hour * 3600) + (minute * 60) + second);
     char num[32];
 
-    return memory_read(buffer, count, num, ascii_wvalue(num, 32, timestamp, 10, 0), 1, offset);
+    return memory_read(buffer, count, num, ascii_wvalue(num, 32, timestamp, 10, 0), offset);
 
 }
 
@@ -48,7 +48,7 @@ static unsigned int interfacedate_read(struct system_node *self, unsigned int of
     ascii_wzerovalue(num, 10, interface->getmonth(), 10, 2, 5);
     ascii_wzerovalue(num, 10, interface->getday(), 10, 2, 8);
 
-    return memory_read(buffer, count, num, 10, 1, offset);
+    return memory_read(buffer, count, num, 10, offset);
 
 }
 
@@ -62,7 +62,7 @@ static unsigned int interfacetime_read(struct system_node *self, unsigned int of
     ascii_wzerovalue(num, 8, interface->getminutes(), 10, 2, 3);
     ascii_wzerovalue(num, 8, interface->getseconds(), 10, 2, 6);
 
-    return memory_read(buffer, count, num, 8, 1, offset);
+    return memory_read(buffer, count, num, 8, offset);
 
 }
 

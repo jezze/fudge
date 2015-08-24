@@ -337,7 +337,7 @@ void main(void)
     struct tokenlist postfix;
     struct tokenlist stack;
 
-    buffer_init(&stringtable, 1, 32768, stringdata);
+    buffer_init(&stringtable, 32768, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);

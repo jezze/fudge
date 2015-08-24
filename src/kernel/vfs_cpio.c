@@ -236,7 +236,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
             return 0;
 
         records[i].size = 0;
-        records[i].length = memory_read(records[i].name, RECORD_NAMESIZE, "../", 3, 1, 0);
+        records[i].length = memory_read(records[i].name, RECORD_NAMESIZE, "../", 3, 0);
 
         i++;
 
@@ -262,10 +262,10 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
                     break;
 
                 records[i].size = cpio_filesize(&header);
-                records[i].length = memory_read(records[i].name, RECORD_NAMESIZE, name, header.namesize, 1, length);
+                records[i].length = memory_read(records[i].name, RECORD_NAMESIZE, name, header.namesize, length);
 
                 if ((header.mode & 0xF000) == 0x4000)
-                    records[i].length += memory_write(records[i].name, RECORD_NAMESIZE, "/", 1, 1, records[i].length);
+                    records[i].length += memory_write(records[i].name, RECORD_NAMESIZE, "/", 1, records[i].length);
 
                 i++;
 

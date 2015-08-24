@@ -200,7 +200,7 @@ void task_init(struct task *task)
     resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
     list_inititem(&task->mailbox.item, task);
-    buffer_init(&task->mailbox.buffer, 1, TASK_MAILBOXSIZE, task->mailbox.data);
+    buffer_init(&task->mailbox.buffer, TASK_MAILBOXSIZE, task->mailbox.data);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
         vfs_initdescriptor(&task->descriptors[i]);

@@ -13,14 +13,14 @@ static unsigned int limit;
 static unsigned int read(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, (void *)address, limit, 1, offset);
+    return memory_read(buffer, count, (void *)address, limit, offset);
 
 }
 
 static unsigned int write(unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_write((void *)address, limit, buffer, count, 1, offset);
+    return memory_write((void *)address, limit, buffer, count, offset);
 
 }
 

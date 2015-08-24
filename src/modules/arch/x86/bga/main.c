@@ -59,7 +59,7 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int count
 
     unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
 
-    return memory_read(buffer, count, lfb, s, 1, offset);
+    return memory_read(buffer, count, lfb, s, offset);
 
 }
 

@@ -54,14 +54,11 @@ unsigned int memory_match(void *in1, void *in2, unsigned int count)
 
 }
 
-unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int size, unsigned int offset)
+unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
 {
 
     unsigned char *op = out;
     unsigned char *ip = in;
-
-    icount = icount * size;
-    ocount = ocount * size;
 
     if (offset >= icount)
         return 0;
@@ -69,7 +66,7 @@ unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int 
     if (ocount > icount - offset)
         ocount = icount - offset;
 
-    ip += offset * size;
+    ip += offset;
 
     for (offset = ocount; offset; offset--)
         *op++ = *ip++;
@@ -78,14 +75,11 @@ unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int 
 
 }
 
-unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int size, unsigned int offset)
+unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
 {
 
     unsigned char *op = out;
     unsigned char *ip = in;
-
-    icount = icount * size;
-    ocount = ocount * size;
 
     if (offset >= ocount)
         return 0;
@@ -93,7 +87,7 @@ unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int
     if (icount > ocount - offset)
         icount = ocount - offset;
 
-    op += offset * size;
+    op += offset;
 
     for (offset = icount; offset; offset--)
         *op++ = *ip++;

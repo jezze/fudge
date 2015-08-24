@@ -66,7 +66,7 @@ unsigned int ascii_wvalue(void *out, unsigned int count, unsigned int value, uns
     unsigned char buffer[32];
     unsigned int bcount = ascii_fromint(buffer, 32, value, base);
 
-    return memory_write(out, count, buffer, bcount, 1, offset);
+    return memory_write(out, count, buffer, bcount, offset);
 
 }
 
@@ -76,8 +76,8 @@ unsigned int ascii_wzerovalue(void *out, unsigned int count, unsigned int value,
     unsigned char buffer[32];
     unsigned int bcount = ascii_fromint(buffer, 32, value, base);
 
-    memory_write(out, count, "00000000000000000000000000000000", padding, 1, offset);
-    memory_write(out, count, buffer, bcount, 1, offset + padding - bcount);
+    memory_write(out, count, "00000000000000000000000000000000", padding, offset);
+    memory_write(out, count, buffer, bcount, offset + padding - bcount);
 
     return padding;
 

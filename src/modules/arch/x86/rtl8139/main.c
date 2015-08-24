@@ -189,25 +189,25 @@ static unsigned int ethernetinterface_send(unsigned int count, void *buffer)
     {
 
     case 0:
-        memory_write(tx0, 0x800, buffer, count, 1, 0);
+        memory_write(tx0, 0x800, buffer, count, 0);
         io_outd(io + REGISTERTSD0, status);
 
         break;
 
     case 1:
-        memory_write(tx1, 0x800, buffer, count, 1, 0);
+        memory_write(tx1, 0x800, buffer, count, 0);
         io_outd(io + REGISTERTSD1, status);
 
         break;
 
     case 2:
-        memory_write(tx2, 0x800, buffer, count, 1, 0);
+        memory_write(tx2, 0x800, buffer, count, 0);
         io_outd(io + REGISTERTSD2, status);
 
         break;
 
     case 3:
-        memory_write(tx3, 0x800, buffer, count, 1, 0);
+        memory_write(tx3, 0x800, buffer, count, 0);
         io_outd(io + REGISTERTSD3, status);
 
         break;

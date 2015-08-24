@@ -56,10 +56,10 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
             if (!hardwareaddress)
                 continue;
 
-            memory_write(response, 512, header, sizeof (struct arp_header), 1, 0);
-            memory_write(response, 512, (unsigned char *)buffer + sizeof (struct arp_header), length, 1, sizeof (struct arp_header) + length);
-            memory_write(response, 512, (unsigned char *)buffer + sizeof (struct arp_header) + length, length, 1, sizeof (struct arp_header));
-            memory_write(response, 512, hardwareaddress, header->hlength, 1, sizeof (struct arp_header));
+            memory_write(response, 512, header, sizeof (struct arp_header), 0);
+            memory_write(response, 512, (unsigned char *)buffer + sizeof (struct arp_header), length, sizeof (struct arp_header) + length);
+            memory_write(response, 512, (unsigned char *)buffer + sizeof (struct arp_header) + length, length, sizeof (struct arp_header));
+            memory_write(response, 512, hardwareaddress, header->hlength, sizeof (struct arp_header));
 
             responseheader->operation[1] = 2;
 
