@@ -33,7 +33,7 @@ static unsigned int interfaceout_write(struct system_node *self, unsigned int of
 
     struct console_interface *interface = self->resource->data;
 
-    return interface->send(offset, count, buffer);
+    return interface->send(count, buffer);
 
 }
 
@@ -61,7 +61,7 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface, unsigned int (*send)(unsigned int offset, unsigned int count, void *buffer))
+void console_initinterface(struct console_interface *interface, unsigned int (*send)(unsigned int count, void *buffer))
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);

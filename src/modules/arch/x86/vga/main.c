@@ -41,7 +41,7 @@ static void clear(unsigned int offset)
 
 }
 
-static unsigned int consoleinterface_wout(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int consoleinterface_wout(unsigned int count, void *buffer)
 {
 
     unsigned int total = videointerface.settings.w * videointerface.settings.h;

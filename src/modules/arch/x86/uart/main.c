@@ -125,7 +125,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int consoleinterface_send(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int consoleinterface_send(unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
