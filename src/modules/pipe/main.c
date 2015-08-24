@@ -102,7 +102,6 @@ void module_init(void)
 {
 
     t0 = 0;
-    t1 = 0;
 
     system_initnode(&endpoint0, SYSTEM_NODETYPE_NORMAL, "0");
 
@@ -110,6 +109,8 @@ void module_init(void)
     endpoint0.close = endpoint0_close;
     endpoint0.read = endpoint0_read;
     endpoint0.write = endpoint0_write;
+
+    t1 = 0;
 
     system_initnode(&endpoint1, SYSTEM_NODETYPE_NORMAL, "1");
 
