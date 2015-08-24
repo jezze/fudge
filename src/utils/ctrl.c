@@ -11,34 +11,26 @@ union settings
 
 };
 
-static unsigned int writestring(unsigned int offset, char *value)
+static unsigned int writestring(char *value)
 {
-
-    call_seek(CALL_PO, offset);
 
     return call_write(CALL_PO, ascii_length(value), value);
 
 }
 
-static unsigned int writeboolean(unsigned int offset, unsigned int value)
+static unsigned int writeboolean(unsigned int value)
 {
 
-    if (value)
-        return writestring(offset, "yes");
-    else
-        return writestring(offset, "no");
+    return (value) ? writestring("yes") : writestring("no");
 
 }
 
-static unsigned int writedec(unsigned int offset, unsigned int value)
+static unsigned int writedec(unsigned int value)
 {
 
     char num[32];
-    unsigned int count = ascii_wvalue(num, 32, value, 10, 0);
 
-    call_seek(CALL_PO, offset);
-
-    return call_write(offset, count, num);
+    return call_write(CALL_PO, ascii_wvalue(num, 32, value, 10, 0), num);
 
 }
 
@@ -54,62 +46,56 @@ static unsigned int writehex2(unsigned int offset, unsigned char value)
 }
 */
 
-static unsigned int writeheader(unsigned int offset, struct ctrl_header *header)
+static void writeheader(struct ctrl_header *header)
 {
 
-    offset += writestring(offset, "type: ");
+    writestring("type: ");
 
     switch (header->type)
     {
 
     case CTRL_TYPE_CONSOLE:
-        offset += writestring(offset, "consolesettings");
+        writestring("consolesettings");
 
         break;
 
     case CTRL_TYPE_VIDEO:
-        offset += writestring(offset, "videosettings");
+        writestring("videosettings");
 
         break;
 
     default:
-        offset += writestring(offset, "<null>");
+        writestring("<null>");
 
         break;
 
     }
 
-    offset += writestring(offset, "\n");
-
-    return offset;
+    writestring("\n");
 
 }
 
-static unsigned int writeconsolesettings(unsigned int offset, struct ctrl_consolesettings *settings)
+static void writeconsolesettings(struct ctrl_consolesettings *settings)
 {
 
-    offset += writestring(offset, "scroll: ");
-    offset += writeboolean(offset, settings->scroll);
-    offset += writestring(offset, "\n");
-
-    return offset;
+    writestring("scroll: ");
+    writeboolean(settings->scroll);
+    writestring("\n");
 
 }
 
-static unsigned int writevideosettings(unsigned int offset, struct ctrl_videosettings *settings)
+static void writevideosettings(struct ctrl_videosettings *settings)
 {
 
-    offset += writestring(offset, "width: ");
-    offset += writedec(offset, settings->w);
-    offset += writestring(offset, "\n");
-    offset += writestring(offset, "height: ");
-    offset += writedec(offset, settings->h);
-    offset += writestring(offset, "\n");
-    offset += writestring(offset, "bpp: ");
-    offset += writedec(offset, settings->bpp);
-    offset += writestring(offset, "\n");
-
-    return offset;
+    writestring("width: ");
+    writedec(settings->w);
+    writestring("\n");
+    writestring("height: ");
+    writedec(settings->h);
+    writestring("\n");
+    writestring("bpp: ");
+    writedec(settings->bpp);
+    writestring("\n");
 
 }
 
@@ -117,26 +103,25 @@ void main(void)
 {
 
     union settings buffer;
-    unsigned int woff;
 
     call_open(CALL_PO);
     call_open(CALL_P0);
     call_read(CALL_P0, sizeof (struct ctrl_header), &buffer.header);
 
-    woff = writeheader(0, &buffer.header);
+    writeheader(&buffer.header);
 
     switch (buffer.header.type)
     {
 
     case CTRL_TYPE_CONSOLE:
         call_read(CALL_P0, sizeof (struct ctrl_consolesettings), &buffer.consolesettings);
-        writeconsolesettings(woff, &buffer.consolesettings);
+        writeconsolesettings(&buffer.consolesettings);
 
         break;
 
     case CTRL_TYPE_VIDEO:
         call_read(CALL_P0, sizeof (struct ctrl_videosettings), &buffer.videosettings);
-        writevideosettings(woff, &buffer.videosettings);
+        writevideosettings(&buffer.videosettings);
 
         break;
 
