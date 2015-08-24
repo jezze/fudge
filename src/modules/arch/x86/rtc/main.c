@@ -94,6 +94,7 @@ static void driver_init(void)
 {
 
     clock_initinterface(&clockinterface, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
+    ctrl_setclocksettings(&clockinterface.settings, 0, 0, 0, 0, 0, 0, 0);
 
 }
 

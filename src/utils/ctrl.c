@@ -6,6 +6,7 @@ union settings
 
     unsigned char raw[FUDGE_BSIZE];
     struct ctrl_header header;
+    struct ctrl_clocksettings clocksettings;
     struct ctrl_consolesettings consolesettings;
     struct ctrl_videosettings videosettings;
 
@@ -54,6 +55,11 @@ static void writeheader(struct ctrl_header *header)
     switch (header->type)
     {
 
+    case CTRL_TYPE_CLOCK:
+        writestring("clocksettings");
+
+        break;
+
     case CTRL_TYPE_CONSOLE:
         writestring("consolesettings");
 
@@ -71,6 +77,33 @@ static void writeheader(struct ctrl_header *header)
 
     }
 
+    writestring("\n");
+
+}
+
+static void writeclocksettings(struct ctrl_clocksettings *settings)
+{
+
+    writestring("seconds: ");
+    writedec(settings->seconds);
+    writestring("\n");
+    writestring("minutes: ");
+    writedec(settings->minutes);
+    writestring("\n");
+    writestring("hours: ");
+    writedec(settings->hours);
+    writestring("\n");
+    writestring("weekday: ");
+    writedec(settings->weekday);
+    writestring("\n");
+    writestring("day: ");
+    writedec(settings->day);
+    writestring("\n");
+    writestring("month: ");
+    writedec(settings->month);
+    writestring("\n");
+    writestring("year: ");
+    writedec(settings->year);
     writestring("\n");
 
 }
@@ -107,11 +140,17 @@ void main(void)
     call_open(CALL_PO);
     call_open(CALL_P0);
     call_read(CALL_P0, sizeof (struct ctrl_header), &buffer.header);
-
     writeheader(&buffer.header);
+    call_seek(CALL_P0, 0);
 
     switch (buffer.header.type)
     {
+
+    case CTRL_TYPE_CLOCK:
+        call_read(CALL_P0, sizeof (struct ctrl_clocksettings), &buffer.clocksettings);
+        writeclocksettings(&buffer.clocksettings);
+
+        break;
 
     case CTRL_TYPE_CONSOLE:
         call_read(CALL_P0, sizeof (struct ctrl_consolesettings), &buffer.consolesettings);

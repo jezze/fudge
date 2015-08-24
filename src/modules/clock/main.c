@@ -19,6 +19,31 @@ static unsigned int isleapyear(unsigned short year)
 
 }
 
+static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct clock_interface *interface = self->resource->data;
+    struct ctrl_clocksettings *settings = buffer;
+
+    interface->settings.seconds = interface->getseconds();
+    interface->settings.minutes = interface->getminutes();
+    interface->settings.hours = interface->gethours();
+    interface->settings.weekday = interface->getweekday();
+    interface->settings.day = interface->getday();
+    interface->settings.month = interface->getmonth();
+    interface->settings.year = interface->getyear();
+
+    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_clocksettings), offset);
+
+}
+
+static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return 0;
+
+}
+
 static unsigned int interfacetimestamp_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -70,6 +95,7 @@ void clock_registerinterface(struct clock_interface *interface, unsigned int id)
 {
 
     resource_register(&interface->resource);
+    system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&interface->root, &interface->timestamp);
     system_addchild(&interface->root, &interface->date);
     system_addchild(&interface->root, &interface->time);
@@ -83,6 +109,7 @@ void clock_unregisterinterface(struct clock_interface *interface)
 {
 
     resource_unregister(&interface->resource);
+    system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->timestamp);
     system_removechild(&interface->root, &interface->date);
     system_removechild(&interface->root, &interface->time);
@@ -95,6 +122,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned char (*gets
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "clock");
+    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
     system_initnode(&interface->date, SYSTEM_NODETYPE_NORMAL, "date");
     system_initnode(&interface->time, SYSTEM_NODETYPE_NORMAL, "time");
@@ -106,6 +134,9 @@ void clock_initinterface(struct clock_interface *interface, unsigned char (*gets
     interface->getday = getday;
     interface->getmonth = getmonth;
     interface->getyear = getyear;
+    interface->ctrl.resource = &interface->resource;
+    interface->ctrl.read = interfacectrl_read;
+    interface->ctrl.write = interfacectrl_write;
     interface->timestamp.resource = &interface->resource;
     interface->timestamp.read = interfacetimestamp_read;
     interface->date.resource = &interface->resource;
