@@ -210,17 +210,17 @@ unsigned int system_close(struct system_node *node)
 
 }
 
-unsigned int system_read(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
+unsigned int system_read(struct system_node *node, unsigned int count, void *buffer)
 {
 
-    return node->read(node, offset, count, buffer);
+    return node->read(node, 0, count, buffer);
 
 }
 
-unsigned int system_write(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
+unsigned int system_write(struct system_node *node, unsigned int count, void *buffer)
 {
 
-    return node->write(node, offset, count, buffer);
+    return node->write(node, 0, count, buffer);
 
 }
 

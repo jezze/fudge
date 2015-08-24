@@ -6,7 +6,7 @@
 void timer_notify(struct timer_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&interface->sleep, 0, count, buffer);
+    system_write(&interface->sleep, count, buffer);
 
 }
 

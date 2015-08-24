@@ -10,7 +10,7 @@ static struct event_keyrelease keyrelease;
 void keyboard_notify(struct keyboard_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&interface->data, 0, count, buffer);
+    system_write(&interface->data, count, buffer);
 
 }
 

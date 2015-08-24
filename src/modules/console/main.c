@@ -7,7 +7,7 @@
 void console_notify(struct console_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&interface->in, 0, count, buffer);
+    system_write(&interface->in, count, buffer);
 
 }
 
