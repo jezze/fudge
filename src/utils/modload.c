@@ -9,8 +9,6 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
     struct elf_sectionheader sectionheader[32];
     unsigned int i;
 
-    call_seek(id, 0);
-
     if (!call_read(id, ELF_HEADER_SIZE, &header))
         return 0;
 
@@ -110,7 +108,12 @@ static unsigned int resolve_symbols(unsigned int id, struct elf_sectionheader *r
 
         symbol = strings + symbols[index].name;
         count = ascii_length(symbol);
+
+        call_open(CALL_L0);
+
         address = find_symbol(CALL_L0, count, symbol);
+
+        call_close(CALL_L0);
 
         if (!address)
             address = find_symbol_module(count, symbol);
@@ -145,8 +148,6 @@ static unsigned int resolve(unsigned int id)
     struct elf_symbol symbols[1024];
     char strings[4096];
     unsigned int i;
-
-    call_seek(id, 0);
 
     if (!call_read(id, ELF_HEADER_SIZE, &header))
         return 0;
@@ -220,14 +221,12 @@ void main(void)
     if (!call_walk(CALL_L1, CALL_PR, 4, "mod/"))
         return;
 
-    call_open(CALL_L0);
     call_open(CALL_P0);
 
     if (resolve(CALL_P0))
         call_load(CALL_P0);
 
     call_close(CALL_P0);
-    call_close(CALL_L0);
 
 }
 
