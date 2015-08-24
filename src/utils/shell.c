@@ -106,7 +106,6 @@ void main(void)
     struct buffer input;
 
     buffer_init(&input, 1, FUDGE_BSIZE, inputbuffer);
-
     call_open(CALL_P0);
     call_open(CALL_PO);
     call_write(CALL_PO, 2, "$ ");

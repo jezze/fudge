@@ -198,7 +198,6 @@ static unsigned int read(struct container *container, struct task *task, void *s
         return 0;
 
     count = descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, descriptor->offset, args->count, args->buffer);
-
     descriptor->offset += count;
 
     return count;
@@ -216,7 +215,6 @@ static unsigned int write(struct container *container, struct task *task, void *
         return 0;
 
     count = descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, descriptor->offset, args->count, args->buffer);
-
     descriptor->offset += count;
 
     return count;
