@@ -512,7 +512,7 @@ static void setuptext(struct box *screen)
 
 }
 
-static void setuprenderers()
+static void setuprenderers(void)
 {
 
     renderable_register(RENDERABLE_TYPE_WINDOW, window_render);
