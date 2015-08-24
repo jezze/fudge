@@ -14,7 +14,7 @@ static void handleirq(unsigned int irq)
 
     unsigned char data = ps2_getdata();
 
-    keyboard_notify(&keyboardinterface, 1, 1, &data);
+    keyboard_notify(&keyboardinterface, 1, &data);
 
     if (data & 0x80)
         keyboard_notifykeyrelease(&keyboardinterface, data & ~0x80);

@@ -14,7 +14,9 @@ union settings
 static unsigned int writestring(unsigned int offset, char *value)
 {
 
-    return call_write(CALL_PO, offset, ascii_length(value), 1, value);
+    call_seek(CALL_PO, offset);
+
+    return call_write(CALL_PO, ascii_length(value), value);
 
 }
 
@@ -34,7 +36,9 @@ static unsigned int writedec(unsigned int offset, unsigned int value)
     char num[32];
     unsigned int count = ascii_wvalue(num, 32, value, 10, 0);
 
-    return call_write(CALL_PO, offset, count, 1, num);
+    call_seek(CALL_PO, offset);
+
+    return call_write(offset, count, num);
 
 }
 
@@ -117,7 +121,7 @@ void main(void)
 
     call_open(CALL_PO);
     call_open(CALL_P0);
-    call_read(CALL_P0, 0, sizeof (struct ctrl_header), 1, &buffer.header);
+    call_read(CALL_P0, sizeof (struct ctrl_header), &buffer.header);
 
     woff = writeheader(0, &buffer.header);
 
@@ -125,13 +129,13 @@ void main(void)
     {
 
     case CTRL_TYPE_CONSOLE:
-        call_read(CALL_P0, 0, sizeof (struct ctrl_consolesettings), 1, &buffer.consolesettings);
+        call_read(CALL_P0, sizeof (struct ctrl_consolesettings), &buffer.consolesettings);
         writeconsolesettings(woff, &buffer.consolesettings);
 
         break;
 
     case CTRL_TYPE_VIDEO:
-        call_read(CALL_P0, 0, sizeof (struct ctrl_videosettings), 1, &buffer.videosettings);
+        call_read(CALL_P0, sizeof (struct ctrl_videosettings), &buffer.videosettings);
         writevideosettings(woff, &buffer.videosettings);
 
         break;

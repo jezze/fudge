@@ -6,10 +6,10 @@
 
 static struct ipv4_protocol ipv4protocol;
 
-void ipv4protocol_notify(struct ethernet_interface *interface, unsigned int size, unsigned int count, void *buffer)
+void ipv4protocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&ipv4protocol.data, 0, size, count, buffer);
+    system_write(&ipv4protocol.data, 0, count, buffer);
 
 }
 

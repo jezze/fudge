@@ -3,21 +3,21 @@
 #include <modules/system/system.h>
 #include "audio.h"
 
-static unsigned int interfacedata_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacedata_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct audio_interface *interface = self->resource->data;
 
-    return interface->rdata(offset, size, count, buffer);
+    return interface->rdata(offset, count, buffer);
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacedata_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct audio_interface *interface = self->resource->data;
 
-    return interface->wdata(offset, size, count, buffer);
+    return interface->wdata(offset, count, buffer);
 
 }
 
@@ -41,7 +41,7 @@ void audio_unregisterinterface(struct audio_interface *interface)
 
 }
 
-void audio_initinterface(struct audio_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer))
+void audio_initinterface(struct audio_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface);

@@ -5,12 +5,12 @@ void main(void)
 {
 
     struct record records[64];
-    unsigned int count, roff, woff = 0;
+    unsigned int count;
 
     call_open(CALL_PO);
     call_open(CALL_PW);
 
-    for (roff = 0; (count = call_read(CALL_PW, roff, sizeof (struct record), 64, records)); roff += count)
+    while ((count = call_read(CALL_PW, sizeof (struct record) * 64, records)))
     {
 
         unsigned int i;
@@ -18,8 +18,8 @@ void main(void)
         for (i = 0; i < count; i++)
         {
 
-            woff += call_write(CALL_PO, woff, records[i].length, 1, records[i].name);
-            woff += call_write(CALL_PO, woff, 1, 1, "\n");
+            call_write(CALL_PO, records[i].length, records[i].name);
+            call_write(CALL_PO, 1, "\n");
 
         }
 

@@ -3,7 +3,7 @@
 
 void main(void)
 {
-
+/*
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count0, count1, roff0, roff1;
     unsigned int lines = 0;
@@ -22,6 +22,6 @@ void main(void)
     call_open(CALL_PO);
     call_write(CALL_PO, 0, ascii_fromint(buffer, FUDGE_BSIZE, lines, 10), 1, buffer);
     call_close(CALL_PO);
-
+*/
 }
 

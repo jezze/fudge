@@ -122,7 +122,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 
 }
 
-static unsigned int videointerface_rdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int s = videointerface.settings.h * videointerface.settings.w * videointerface.settings.bpp / 8;
@@ -131,7 +131,7 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int size,
 
 }
 
-static unsigned int videointerface_wdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     /*
@@ -149,14 +149,11 @@ static unsigned int videointerface_wdata(unsigned int offset, unsigned int size,
 
 }
 
-static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
     unsigned int i;
-
-    if (size != 3)
-        return 0;
 
     if (count > VGA_COLORMAP_LIMIT)
         count = VGA_COLORMAP_LIMIT;
@@ -164,10 +161,10 @@ static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int s
     if (offset > count)
         return 0;
 
-    for (i = offset; i < count * size; i += size)
+    for (i = offset; i < count * 3; i += 3)
     {
 
-        io_outb(VGA_REGISTER_DACRINDEX, i / size);
+        io_outb(VGA_REGISTER_DACRINDEX, i / 3);
         c[i + 0] = io_inb(VGA_REGISTER_DACDATA);
         c[i + 1] = io_inb(VGA_REGISTER_DACDATA);
         c[i + 2] = io_inb(VGA_REGISTER_DACDATA);
@@ -178,14 +175,11 @@ static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int s
 
 }
 
-static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
     unsigned int i;
-
-    if (size != 3)
-        return 0;
 
     if (count > VGA_COLORMAP_LIMIT)
         count = VGA_COLORMAP_LIMIT;
@@ -193,10 +187,10 @@ static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int s
     if (offset > count)
         return 0;
 
-    for (i = offset; i < count * size; i += size)
+    for (i = offset; i < count * 3; i += 3)
     {
 
-        io_outb(VGA_REGISTER_DACWINDEX, i / size);
+        io_outb(VGA_REGISTER_DACWINDEX, i / 3);
         io_outb(VGA_REGISTER_DACDATA, c[i + 0]);
         io_outb(VGA_REGISTER_DACDATA, c[i + 1]);
         io_outb(VGA_REGISTER_DACDATA, c[i + 2]);

@@ -5,16 +5,16 @@
 
 static unsigned int wait;
 
-void block_notify(struct block_interface *interface, unsigned int size, unsigned int count, void *buffer)
+void block_notify(struct block_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&interface->data, 0, size, count, buffer);
+    system_write(&interface->data, 0, count, buffer);
 
     wait = 0;
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacedata_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct block_interface *interface = self->resource->data;
@@ -25,12 +25,12 @@ static unsigned int interfacedata_read(struct system_node *self, unsigned int of
     if (wait == 0)
     {
 
-        interface->rdata(offset, size, count, buffer);
+        interface->rdata(offset, count, buffer);
         wait = 1;
 
     }
 
-    return task_rmessage(task_findactive(), size, count, buffer);
+    return task_rmessage(task_findactive(), count, buffer);
 
 }
 
@@ -54,7 +54,7 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer))
+void block_initinterface(struct block_interface *interface, unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);

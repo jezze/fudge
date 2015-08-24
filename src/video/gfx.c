@@ -86,7 +86,8 @@ void gfx_wsurface(unsigned int id, struct gfx_surface *in)
 
         offset += in->read(in, offset, in->width, buffer);
 
-        call_write(id, scanline * in->width, in->width, 1, buffer);
+        call_seek(id, scanline * in->width);
+        call_write(id, in->width, buffer);
 
     }
 

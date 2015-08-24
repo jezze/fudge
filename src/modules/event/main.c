@@ -7,7 +7,7 @@ static struct system_node root;
 static struct system_node poll;
 static struct system_node send;
 
-void event_notify(unsigned int size, unsigned int count, void *buffer)
+void event_notify(unsigned int count, void *buffer)
 {
 
     struct event_header *header = buffer;
@@ -15,11 +15,11 @@ void event_notify(unsigned int size, unsigned int count, void *buffer)
     header->destination = 0xFFFFFFFF;
     header->source = 0;
 
-    system_write(&poll, 0, size, count, buffer);
+    system_write(&poll, 0, count, buffer);
 
 }
 
-static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct event_header *header = buffer;
@@ -30,7 +30,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
     if (header->destination == 0xFFFFFFFF)
     {
 
-        system_write(&poll, 0, size, count, buffer);
+        system_write(&poll, 0, count, buffer);
 
         return count;
 
@@ -41,7 +41,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     destination = (struct task *)header->destination;
 
-    return task_wmessage(destination, size, count, buffer);
+    return task_wmessage(destination, count, buffer);
 
 }
 

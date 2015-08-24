@@ -24,7 +24,7 @@ struct ethernet_protocol
 
 };
 
-void ethernet_notify(struct ethernet_interface *interface, unsigned int size, unsigned int count, void *buffer);
+void ethernet_notify(struct ethernet_interface *interface, unsigned int count, void *buffer);
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id);
 void ethernet_registerprotocol(struct ethernet_protocol *protocol);
 void ethernet_unregisterinterface(struct ethernet_interface *interface);

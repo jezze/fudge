@@ -4,6 +4,7 @@
 void main(void)
 {
 
+/*
     char buffer[FUDGE_BSIZE];
     unsigned int count0, count1, roff0, roff1, woff = 0;
     unsigned int lines = 0;
@@ -29,6 +30,7 @@ void main(void)
 
     call_close(CALL_P0);
     call_close(CALL_PO);
+*/
 
 }
 

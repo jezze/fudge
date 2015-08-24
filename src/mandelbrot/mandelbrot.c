@@ -22,7 +22,7 @@ void setup(struct ctrl_videosettings *settings)
 
     }
 
-    video_setcolormap(CALL_L0, 0, 3, 256, colormap);
+    video_setcolormap(CALL_L0, 0, 768, colormap);
 
 }
 

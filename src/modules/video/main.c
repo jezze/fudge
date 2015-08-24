@@ -3,71 +3,61 @@
 #include <modules/system/system.h>
 #include "video.h"
 
-static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
     struct ctrl_videosettings *settings = buffer;
 
-    if (size == sizeof (struct ctrl_header) || size == sizeof (struct ctrl_videosettings))
-        return memory_read(settings, 1, &interface->settings, 1, size, offset);
-
-    return 0;
+    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_videosettings), 1, offset);
 
 }
 
-static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
     struct ctrl_videosettings *settings = buffer;
 
-    if (size == sizeof (struct ctrl_videosettings))
-    {
+    interface->setmode(settings);
 
-        interface->setmode(settings);
-
-        return 1;
-
-    }
-
-    return 0;
+    return 1;
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacedata_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->rdata(offset, size, count, buffer);
+    return interface->rdata(offset, count, buffer);
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacedata_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->wdata(offset, size, count, buffer);
+    return interface->wdata(offset, count, buffer);
 
 }
 
-static unsigned int interfacecolormap_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacecolormap_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->rcolormap(offset, size, count, buffer);
+    return interface->rcolormap(offset, count, buffer);
 
 }
 
-static unsigned int interfacecolormap_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacecolormap_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->wcolormap(offset, size, count, buffer);
+    return interface->wcolormap(offset, count, buffer);
 
 }
 
@@ -95,7 +85,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, void (*setmode)(struct ctrl_videosettings *settings), unsigned int (*rdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int size, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int size, unsigned int count, void *buffer))
+void video_initinterface(struct video_interface *interface, void (*setmode)(struct ctrl_videosettings *settings), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer))
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);

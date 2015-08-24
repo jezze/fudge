@@ -112,7 +112,7 @@ void main(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff, woff = 0;
+    unsigned int count;
 
     escaped = 0;
     modifier = 0;
@@ -120,7 +120,7 @@ void main(void)
     call_open(CALL_PO);
     call_open(CALL_P0);
 
-    for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
+    while ((count = call_read(CALL_P0, FUDGE_BSIZE, buffer)))
     {
 
         unsigned int i;
@@ -134,7 +134,7 @@ void main(void)
                 continue;
 
             if (keycode->length)
-                woff += call_write(CALL_PO, woff, keycode->length, 1, keycode->value);
+                call_write(CALL_PO, keycode->length, keycode->value);
 
         }
 

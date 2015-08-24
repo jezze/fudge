@@ -7,10 +7,10 @@
 static struct event_mousepress mousepress;
 static struct event_mousemove mousemove;
 
-void mouse_notify(struct mouse_interface *interface, unsigned int size, unsigned int count, void *buffer)
+void mouse_notify(struct mouse_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&interface->data, 0, size, count, buffer);
+    system_write(&interface->data, 0, count, buffer);
 
 }
 
@@ -19,7 +19,7 @@ void mouse_notifymousepress(struct mouse_interface *interface, unsigned int butt
 
     mousepress.button = button;
 
-    event_notify(sizeof (struct event_mousepress), 1, &mousepress);
+    event_notify(sizeof (struct event_mousepress), &mousepress);
 
 }
 
@@ -29,7 +29,7 @@ void mouse_notifymousemove(struct mouse_interface *interface, char relx, char re
     mousemove.relx = relx;
     mousemove.rely = rely;
 
-    event_notify(sizeof (struct event_mousemove), 1, &mousemove);
+    event_notify(sizeof (struct event_mousemove), &mousemove);
 
 }
 

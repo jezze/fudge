@@ -4,39 +4,38 @@
 #include <modules/event/event.h>
 #include "console.h"
 
-void console_notify(struct console_interface *interface, unsigned int size, unsigned int count, void *buffer)
+void console_notify(struct console_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&interface->in, 0, size, count, buffer);
+    system_write(&interface->in, 0, count, buffer);
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct console_interface *interface = self->resource->data;
     struct ctrl_consolesettings *settings = buffer;
 
-    if (size == sizeof (struct ctrl_header) || size == sizeof (struct ctrl_consolesettings))
-        return memory_read(settings, 1, &interface->settings, 1, size, offset);
+        return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_consolesettings), 1, offset);
 
     return 0;
 
 }
 
-static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int interfaceout_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfaceout_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct console_interface *interface = self->resource->data;
 
-    return interface->send(offset, size * count, buffer);
+    return interface->send(offset, count, buffer);
 
 }
 

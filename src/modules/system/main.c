@@ -49,22 +49,19 @@ static unsigned int node_closemailboxes(struct system_node *self)
 
 }
 
-static unsigned int node_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int node_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int node_readgroup(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int node_readgroup(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct list_item *current;
     struct record *records = buffer;
     unsigned int i = 0;
-
-    if (size != sizeof (struct record))
-        return 0;
 
     if (offset > 0)
         return 0;
@@ -104,21 +101,21 @@ static unsigned int node_readgroup(struct system_node *self, unsigned int offset
 
 }
 
-static unsigned int node_readmailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int node_readmailboxes(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return task_rmessage(task_findactive(), size, count, buffer);
+    return task_rmessage(task_findactive(), count, buffer);
 
 }
 
-static unsigned int node_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int node_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int node_writemailboxes(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int node_writemailboxes(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct list_item *current;
@@ -128,7 +125,7 @@ static unsigned int node_writemailboxes(struct system_node *self, unsigned int o
 
         struct task *task = current->data;
 
-        task_wmessage(task, size, count, buffer);
+        task_wmessage(task, count, buffer);
 
     }
 
@@ -213,17 +210,17 @@ unsigned int system_close(struct system_node *node)
 
 }
 
-unsigned int system_read(struct system_node *node, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+unsigned int system_read(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return node->read(node, offset, size, count, buffer);
+    return node->read(node, offset, count, buffer);
 
 }
 
-unsigned int system_write(struct system_node *node, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+unsigned int system_write(struct system_node *node, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return node->write(node, offset, size, count, buffer);
+    return node->write(node, offset, count, buffer);
 
 }
 

@@ -43,14 +43,14 @@ static void ethernetprotocol_removeinterface(struct ethernet_interface *interfac
 static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&ethernetprotocol.data, 0, count, 1, buffer);
+    system_write(&ethernetprotocol.data, 0, count, buffer);
 
 }
 
-static unsigned int localnode_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int localnode_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, localbuffer, sizeof (struct ipv4_ethernetentry) * LOCALS, size, offset);
+    return memory_read(buffer, count, localbuffer, sizeof (struct ipv4_ethernetentry) * LOCALS, 1, offset);
 
 }
 
@@ -89,7 +89,7 @@ void ipv4_unregisterprotocol(struct ipv4_protocol *protocol)
 
 }
 
-void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, unsigned int size, unsigned int count, void *buffer))
+void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
     resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);

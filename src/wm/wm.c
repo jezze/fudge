@@ -224,17 +224,17 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
 {
 
     union event event;
-    unsigned int count, roff, quit = 0;
+    unsigned int count, quit = 0;
     struct box oldmouse;
 
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
 
-    for (roff = 0; (count = call_read(CALL_L1, roff, sizeof (struct event_header), 1, &event.header)); roff += count)
+    while ((count = call_read(CALL_L1, sizeof (struct event_header), &event.header)))
     {
 
         if (event.header.count)
-            count += call_read(CALL_L1, roff + count, event.header.count, 1, event.data + sizeof (struct event_header));
+            call_read(CALL_L1, event.header.count, event.data + sizeof (struct event_header));
 
         switch (event.header.type)
         {
@@ -494,7 +494,7 @@ static void setupfont(void)
 
     call_walk(CALL_L4, CALL_PR, 18, "share/ter-u18n.pcf");
     call_open(CALL_L4);
-    call_read(CALL_L4, 0, 1, 0x8000, fontdata);
+    call_read(CALL_L4, 0x8000, fontdata);
     call_close(CALL_L4);
 
 }

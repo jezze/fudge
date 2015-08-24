@@ -215,22 +215,23 @@ void main(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff, woff = 0;
+    unsigned int count;
     unsigned char digest[16];
+    unsigned int i;
     struct md5 s;
 
     md5_init(&s);
     call_open(CALL_P0);
 
-    for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
+    while ((count = call_read(CALL_P0, FUDGE_BSIZE, buffer)))
         md5_read(&s, count, buffer);
 
     call_close(CALL_P0);
     md5_write(&s, digest);
     call_open(CALL_PO);
 
-    for (roff = 0; roff < 16; roff++)
-        woff += call_write(CALL_PO, woff, ascii_wzerovalue(buffer, 32, digest[roff], 16, 2, 0), 1, buffer);
+    for (i = 0; i < 16; i++)
+        call_write(CALL_PO, ascii_wzerovalue(buffer, 32, digest[i], 16, 2, 0), buffer);
 
     call_close(CALL_PO);
 

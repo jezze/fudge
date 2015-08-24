@@ -83,21 +83,21 @@ static unsigned int protocol_close(struct vfs_backend *backend, unsigned int id)
 
 }
 
-static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct system_node *node = getnode(id);
 
-    return node->read(node, offset, size, count, buffer);
+    return node->read(node, offset, count, buffer);
 
 }
 
-static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct system_node *node = getnode(id);
 
-    return node->write(node, offset, size, count, buffer);
+    return node->write(node, offset, count, buffer);
 
 }
 

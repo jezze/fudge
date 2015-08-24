@@ -3,7 +3,7 @@
 
 void main(void)
 {
-
+/*
     char buffer[FUDGE_BSIZE];
     unsigned int count0, count1, roff0, roff1;
 
@@ -31,6 +31,6 @@ void main(void)
     }
 
     call_close(CALL_P0);
-
+*/
 }
 

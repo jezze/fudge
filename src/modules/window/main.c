@@ -16,7 +16,7 @@ static struct video_interface *findinterface(void)
 
 }
 
-static unsigned int ctrl_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int ctrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = findinterface();
@@ -25,30 +25,28 @@ static unsigned int ctrl_read(struct system_node *self, unsigned int offset, uns
     if (!interface)
         return 0;
 
-    count = interface->ctrl.read(&interface->ctrl, offset, size, count, buffer);
-
-    if (count && size == sizeof (struct ctrl_videosettings))
-        settings->h = settings->h / 2;
+    count = interface->ctrl.read(&interface->ctrl, offset, count, buffer);
+    settings->h = settings->h / 2;
 
     return count;
 
 }
 
-static unsigned int ctrl_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int ctrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = findinterface();
 
-    return interface->ctrl.write(&interface->ctrl, offset, size, count, buffer);
+    return interface->ctrl.write(&interface->ctrl, offset, count, buffer);
 
 }
 
-static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int data_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = findinterface();
 
-    return interface->data.write(&interface->data, offset + 320 * 100, size, count, buffer);
+    return interface->data.write(&interface->data, offset + 320 * 100, count, buffer);
 
 }
 

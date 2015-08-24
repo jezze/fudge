@@ -7,10 +7,10 @@
 static struct event_keypress keypress;
 static struct event_keyrelease keyrelease;
 
-void keyboard_notify(struct keyboard_interface *interface, unsigned int size, unsigned int count, void *buffer)
+void keyboard_notify(struct keyboard_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&interface->data, 0, size, count, buffer);
+    system_write(&interface->data, 0, count, buffer);
 
 }
 
@@ -19,7 +19,7 @@ void keyboard_notifykeypress(struct keyboard_interface *interface, unsigned char
 
     keypress.scancode = scancode;
 
-    event_notify(sizeof (struct event_keypress), 1, &keypress);
+    event_notify(sizeof (struct event_keypress), &keypress);
 
 }
 
@@ -28,7 +28,7 @@ void keyboard_notifykeyrelease(struct keyboard_interface *interface, unsigned ch
 
     keyrelease.scancode = scancode;
 
-    event_notify(sizeof (struct event_keyrelease), 1, &keyrelease);
+    event_notify(sizeof (struct event_keyrelease), &keyrelease);
 
 }
 

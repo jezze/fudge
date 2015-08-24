@@ -85,7 +85,7 @@ void draw_flush(void *buffer, unsigned int line, unsigned int bpp, unsigned int 
 void draw_init(void)
 {
 
-    video_setcolormap(CALL_L0, 0, 3, 11, colormap);
+    video_setcolormap(CALL_L0, 0, 3 * 11, colormap);
 
 }
 

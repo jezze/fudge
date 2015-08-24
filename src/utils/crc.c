@@ -40,27 +40,29 @@ void main(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff;
+    unsigned int count, total = 0;
     unsigned int i;
     unsigned int crc = 0;
 
     call_open(CALL_P0);
 
-    for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
+    while ((count = call_read(CALL_P0, FUDGE_BSIZE, buffer)))
     {
 
         for (i = 0; i < count; i++)
             crc = (crc << 8) ^ tab[(crc >> 24) ^ buffer[i]];
 
+        total += count;
+
     }
 
     call_close(CALL_P0);
 
-    for (i = roff; i > 0; i >>= 8)
+    for (i = total; i > 0; i >>= 8)
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 0, ascii_fromint(buffer, 32, ~crc, 10), 1, buffer);
+    call_write(CALL_PO, ascii_fromint(buffer, 32, ~crc, 10), buffer);
     call_close(CALL_PO);
 
 }

@@ -8,7 +8,7 @@ struct mouse_interface
 
 };
 
-void mouse_notify(struct mouse_interface *interface, unsigned int size, unsigned int count, void *buffer);
+void mouse_notify(struct mouse_interface *interface, unsigned int count, void *buffer);
 void mouse_notifymousepress(struct mouse_interface *interface, unsigned int button);
 void mouse_notifymousemove(struct mouse_interface *interface, char relx, char rely);
 void mouse_registerinterface(struct mouse_interface *interface, unsigned int id);

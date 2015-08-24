@@ -3,10 +3,10 @@
 #include <modules/system/system.h>
 #include "timer.h"
 
-void timer_notify(struct timer_interface *interface, unsigned int size, unsigned int count, void *buffer)
+void timer_notify(struct timer_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&interface->sleep, 0, size, count, buffer);
+    system_write(&interface->sleep, 0, count, buffer);
 
 }
 

@@ -241,7 +241,7 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-static unsigned int reset_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int reset_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     setcommand(COMMANDCTRLRESET);

@@ -166,6 +166,8 @@ static unsigned int open(struct container *container, struct task *task, void *s
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
+    descriptor->offset = 0;
+
     return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
 
 }
@@ -179,6 +181,8 @@ static unsigned int close(struct container *container, struct task *task, void *
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
+    descriptor->offset = 0;
+
     return descriptor->id = descriptor->channel->protocol->close(descriptor->channel->backend, descriptor->id);
 
 }
@@ -186,26 +190,36 @@ static unsigned int close(struct container *container, struct task *task, void *
 static unsigned int read(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int offset; unsigned int size; unsigned int count; void *buffer;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int count; void *buffer;} *args = stack;
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    unsigned int count;
 
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    return descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, args->offset, args->size, args->count, args->buffer);
+    count = descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, descriptor->offset, args->count, args->buffer);
+
+    descriptor->offset += count;
+
+    return count;
 
 }
 
 static unsigned int write(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int offset; unsigned int size; unsigned int count; void *buffer;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int count; void *buffer;} *args = stack;
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    unsigned int count;
 
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    return descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, args->offset, args->size, args->count, args->buffer);
+    count = descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, descriptor->offset, args->count, args->buffer);
+
+    descriptor->offset += count;
+
+    return count;
 
 }
 
@@ -312,6 +326,19 @@ static unsigned int unload(struct container *container, struct task *task, void 
 
 }
 
+static unsigned int seek(struct container *container, struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int descriptor; unsigned int offset;} *args = stack;
+    struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
+
+    if (!descriptor->id || !descriptor->channel)
+        return 0;
+
+    return descriptor->offset = args->offset;
+
+}
+
 static unsigned int undefined(struct container *container, struct task *task, void *stack)
 {
 
@@ -343,7 +370,7 @@ void abi_setup(unsigned int (*spawn)(struct container *container, struct task *t
     calls[0x0B] = unload;
     calls[0x0C] = spawn;
     calls[0x0D] = despawn;
-    calls[0x0E] = undefined;
+    calls[0x0E] = seek;
     calls[0x0F] = undefined;
 
 }

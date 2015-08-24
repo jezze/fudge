@@ -19,11 +19,11 @@ static void handleirq(unsigned int irq)
         return;
 
     ide_rblock(blockinterface.id, 1, data);
-    block_notify(&blockinterface, 512, 1, data);
+    block_notify(&blockinterface, 512, data);
 
 }
 
-static unsigned int blockinterface_rdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int blockinterface_rdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     offset = offset / 512;
@@ -35,7 +35,7 @@ static unsigned int blockinterface_rdata(unsigned int offset, unsigned int size,
 
 }
 
-static unsigned int blockinterface_wdata(unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int blockinterface_wdata(unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;

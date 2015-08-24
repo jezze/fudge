@@ -9,7 +9,9 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
     struct elf_sectionheader sectionheader[32];
     unsigned int i;
 
-    if (!call_read(id, 0, ELF_HEADER_SIZE, 1, &header))
+    call_seek(id, 0);
+
+    if (!call_read(id, ELF_HEADER_SIZE, &header))
         return 0;
 
     if (!elf_validate(&header))
@@ -18,7 +20,9 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
     if (header.shcount > 32)
         return 0;
 
-    if (!call_read(id, header.shoffset, header.shsize, header.shcount, sectionheader))
+    call_seek(id, header.shoffset);
+
+    if (!call_read(id, header.shsize * header.shcount, sectionheader))
         return 0;
 
     for (i = 0; i < header.shcount; i++)
@@ -42,10 +46,14 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
         if (stringheader->size > 4096)
             return 0;
 
-        if (!call_read(id, symbolheader->offset, symbolheader->size, 1, symbols))
+        call_seek(id, symbolheader->offset);
+
+        if (!call_read(id, symbolheader->size, symbols))
             return 0;
 
-        if (!call_read(id, stringheader->offset, stringheader->size, 1, strings))
+        call_seek(id, stringheader->offset);
+
+        if (!call_read(id, stringheader->size, strings))
             return 0;
 
         address = elf_findsymbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
@@ -110,12 +118,16 @@ static unsigned int resolve_symbols(unsigned int id, struct elf_sectionheader *r
         if (!address)
             return 0;
 
-        if (!call_read(id, offset + relocations[i].offset, 4, 1, &value))
+        call_seek(id, offset + relocations[i].offset);
+
+        if (!call_read(id, 4, &value))
             return 0;
 
         value += address;
 
-        if (!call_write(id, offset + relocations[i].offset, 4, 1, &value))
+        call_seek(id, offset + relocations[i].offset);
+
+        if (!call_write(id, 4, &value))
             return 0;
 
     }
@@ -134,7 +146,9 @@ static unsigned int resolve(unsigned int id)
     char strings[4096];
     unsigned int i;
 
-    if (!call_read(id, 0, ELF_HEADER_SIZE, 1, &header))
+    call_seek(id, 0);
+
+    if (!call_read(id, ELF_HEADER_SIZE, &header))
         return 0;
 
     if (!elf_validate(&header))
@@ -143,7 +157,9 @@ static unsigned int resolve(unsigned int id)
     if (header.shcount > 32)
         return 0;
 
-    if (!call_read(id, header.shoffset, header.shsize, header.shcount, sectionheader))
+    call_seek(id, header.shoffset);
+
+    if (!call_read(id, header.shsize * header.shcount, sectionheader))
         return 0;
 
     for (i = 0; i < header.shcount; i++)
@@ -171,13 +187,19 @@ static unsigned int resolve(unsigned int id)
         if (stringheader->size > 4096)
             return 0;
 
-        if (!call_read(id, relocationheader->offset, relocationheader->size, 1, relocations))
+        call_seek(id, relocationheader->offset);
+
+        if (!call_read(id, relocationheader->size, relocations))
             return 0;
 
-        if (!call_read(id, symbolheader->offset, symbolheader->size, 1, symbols))
+        call_seek(id, symbolheader->offset);
+
+        if (!call_read(id, symbolheader->size, symbols))
             return 0;
 
-        if (!call_read(id, stringheader->offset, stringheader->size, 1, strings))
+        call_seek(id, stringheader->offset);
+
+        if (!call_read(id, stringheader->size, strings))
             return 0;
 
         if (!resolve_symbols(id, relocationheader, relocations, symbols, strings, dataheader->offset))

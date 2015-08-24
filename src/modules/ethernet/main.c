@@ -7,7 +7,7 @@
 
 static struct system_node root;
 
-void ethernet_notify(struct ethernet_interface *interface, unsigned int size, unsigned int count, void *buffer)
+void ethernet_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
     struct ethernet_header *header = buffer;
@@ -20,11 +20,11 @@ void ethernet_notify(struct ethernet_interface *interface, unsigned int size, un
         struct ethernet_protocol *protocol = current->data;
 
         if (protocol->type == type)
-            protocol->notify(interface, size - 18, header + 1);
+            protocol->notify(interface, count - 18, header + 1);
 
     }
 
-    system_write(&interface->data, 0, size, count, buffer);
+    system_write(&interface->data, 0, count, buffer);
 
 }
 
@@ -60,14 +60,14 @@ static void notifyremoveinterface(struct ethernet_interface *interface)
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;

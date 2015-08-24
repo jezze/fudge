@@ -201,7 +201,7 @@ static unsigned int protocol_close(struct vfs_backend *backend, unsigned int id)
 
 }
 
-static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -219,7 +219,6 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
         if (offset >= s)
             return 0;
 
-        count = size * count;
         s -= offset;
 
         return backend->read(d + offset, (count > s) ? s : count, buffer);
@@ -232,9 +231,6 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
         struct record *records = buffer;
         unsigned int length = header.namesize;
         unsigned int i = 0;
-
-        if (size != sizeof (struct record))
-            return 0;
 
         if (offset > 0)
             return 0;
@@ -285,7 +281,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
 
 }
 
-static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -303,7 +299,6 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
         if (offset >= s)
             return 0;
 
-        count = size * count;
         s -= offset;
 
         return backend->write(d + offset, (count > s) ? s : count, buffer);

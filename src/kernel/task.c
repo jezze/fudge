@@ -102,12 +102,16 @@ void task_copydescriptors(struct task *source, struct task *target)
 
         target->descriptors[i + 0x00].channel = source->descriptors[i + 0x08].channel;
         target->descriptors[i + 0x00].id = source->descriptors[i + 0x08].id;
+        target->descriptors[i + 0x00].offset = 0;
         target->descriptors[i + 0x08].channel = source->descriptors[i + 0x08].channel;
         target->descriptors[i + 0x08].id = source->descriptors[i + 0x08].id;
+        target->descriptors[i + 0x08].offset = 0;
         target->descriptors[i + 0x10].channel = 0;
         target->descriptors[i + 0x10].id = 0;
+        target->descriptors[i + 0x10].offset = 0;
         target->descriptors[i + 0x18].channel = 0;
         target->descriptors[i + 0x18].id = 0;
+        target->descriptors[i + 0x18].offset = 0;
 
     }
 
@@ -150,10 +154,10 @@ void task_initbinary(struct task *task, unsigned int sp)
 
 }
 
-unsigned int task_rmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
+unsigned int task_rmessage(struct task *task, unsigned int count, void *buffer)
 {
 
-    count = buffer_rcfifo(&task->mailbox.buffer, size * count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
     if (!count)
         task_setstatus(task, TASK_STATUS_BLOCKED);
@@ -162,10 +166,10 @@ unsigned int task_rmessage(struct task *task, unsigned int size, unsigned int co
 
 }
 
-unsigned int task_wmessage(struct task *task, unsigned int size, unsigned int count, void *buffer)
+unsigned int task_wmessage(struct task *task, unsigned int count, void *buffer)
 {
 
-    count = buffer_wcfifo(&task->mailbox.buffer, size * count, buffer);
+    count = buffer_wcfifo(&task->mailbox.buffer, count, buffer);
 
     if (count)
         task_setstatus(task, TASK_STATUS_ACTIVE);

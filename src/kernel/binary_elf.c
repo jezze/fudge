@@ -11,7 +11,7 @@ static unsigned int protocol_match(struct vfs_channel *channel, unsigned int id)
 
     struct elf_header header;
 
-    if (!channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, 1, &header))
+    if (!channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header))
         return 0;
 
     return elf_validate(&header);
@@ -25,12 +25,12 @@ static unsigned long protocol_findsymbol(struct vfs_channel *channel, unsigned i
     struct elf_sectionheader sectionheader[32];
     unsigned int i;
 
-    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, 1, &header);
+    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
 
     if (header.shcount > 32)
         return 0;
 
-    channel->protocol->read(channel->backend, id, header.shoffset, header.shsize, header.shcount, sectionheader);
+    channel->protocol->read(channel->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -53,8 +53,8 @@ static unsigned long protocol_findsymbol(struct vfs_channel *channel, unsigned i
         if (stringheader->size > 4096)
             return 0;
 
-        channel->protocol->read(channel->backend, id, symbolheader->offset, symbolheader->size, 1, symbols);
-        channel->protocol->read(channel->backend, id, stringheader->offset, stringheader->size, 1, strings);
+        channel->protocol->read(channel->backend, id, symbolheader->offset, symbolheader->size, symbols);
+        channel->protocol->read(channel->backend, id, stringheader->offset, stringheader->size, strings);
 
         address = elf_findsymbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
 
@@ -72,7 +72,7 @@ static unsigned long protocol_findentry(struct vfs_channel *channel, unsigned in
 
     struct elf_header header;
 
-    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, 1, &header);
+    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
 
     return header.entry;
 
@@ -85,19 +85,19 @@ static unsigned long protocol_copyprogram(struct vfs_channel *channel, unsigned 
     struct elf_programheader programheader[8];
     unsigned int i;
 
-    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, 1, &header);
+    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
 
     if (header.phcount > 8)
         return 0;
 
-    channel->protocol->read(channel->backend, id, header.phoffset, header.phsize, header.phcount, programheader);
+    channel->protocol->read(channel->backend, id, header.phoffset, header.phsize * header.phcount, programheader);
 
     for (i = 0; i < header.phcount; i++)
     {
 
         memory_clear((void *)(programheader[i].vaddress + programheader[i].offset), programheader[i].msize);
 
-        channel->protocol->read(channel->backend, id, programheader[i].offset, programheader[i].fsize, 1, (void *)programheader[i].vaddress);
+        channel->protocol->read(channel->backend, id, programheader[i].offset, programheader[i].fsize, (void *)programheader[i].vaddress);
 
     }
 
@@ -112,12 +112,12 @@ static unsigned int protocol_relocate(struct vfs_channel *channel, unsigned int 
     struct elf_sectionheader sectionheader[32];
     unsigned int i;
 
-    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, 1, &header);
+    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
 
     if (header.shcount > 32)
         return 0;
 
-    channel->protocol->read(channel->backend, id, header.shoffset, header.shsize, header.shcount, sectionheader);
+    channel->protocol->read(channel->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     for (i = 0; i < header.shcount; i++)
     {
@@ -143,13 +143,13 @@ static unsigned int protocol_relocate(struct vfs_channel *channel, unsigned int 
         if (symbolheader->size > sizeof (struct elf_symbol) * 1024)
             return 0;
 
-        channel->protocol->read(channel->backend, id, relocationheader->offset, relocationheader->size, 1, relocations);
-        channel->protocol->read(channel->backend, id, symbolheader->offset, symbolheader->size, 1, symbols);
+        channel->protocol->read(channel->backend, id, relocationheader->offset, relocationheader->size, relocations);
+        channel->protocol->read(channel->backend, id, symbolheader->offset, symbolheader->size, symbols);
         elf_relocatesection(sectionheader, relocationheader, dataheader, relocations, symbols, address);
 
     }
 
-    channel->protocol->write(channel->backend, id, header.shoffset, header.shsize, header.shcount, sectionheader);
+    channel->protocol->write(channel->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader);
 
     return 1;
 

@@ -1,6 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 
+/*
 static unsigned int convert(unsigned char *out, unsigned int ocount, unsigned char *in, unsigned int icount)
 {
 
@@ -12,10 +13,11 @@ static unsigned int convert(unsigned char *out, unsigned int ocount, unsigned ch
     return offset;
 
 }
+*/
 
 void main(void)
 {
-
+/*
     unsigned char out[FUDGE_BSIZE];
     unsigned char in[FUDGE_BSIZE];
     unsigned int count, roff, woff = 0;
@@ -28,6 +30,6 @@ void main(void)
 
     call_close(CALL_P0);
     call_close(CALL_PO);
-
+*/
 }
 

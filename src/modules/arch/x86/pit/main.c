@@ -43,7 +43,7 @@ static void handleirq(unsigned int irq)
     if (jiffies < 1000)
         return;
 
-    timer_notify(&timerinterface, 4, 1, &jiffies);
+    timer_notify(&timerinterface, 4, &jiffies);
 
     jiffies = 0;
 

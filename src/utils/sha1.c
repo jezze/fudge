@@ -218,22 +218,23 @@ void main(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, roff, woff = 0;
+    unsigned int count;
     unsigned char digest[20];
+    unsigned int i;
     struct sha1 s;
 
     sha1_init(&s);
     call_open(CALL_P0);
 
-    for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, buffer)); roff += count)
+    while ((count = call_read(CALL_P0, FUDGE_BSIZE, buffer)))
         sha1_read(&s, count, buffer);
 
     call_close(CALL_P0);
     sha1_write(&s, digest);
     call_open(CALL_PO);
 
-    for (roff = 0; roff < 20; roff++)
-        woff += call_write(CALL_PO, woff, ascii_wzerovalue(buffer, 32, digest[roff], 16, 2, 0), 1, buffer);
+    for (i = 0; i < 20; i++)
+        call_write(CALL_PO, ascii_wzerovalue(buffer, 32, digest[i], 16, 2, 0), buffer);
 
     call_close(CALL_PO);
 

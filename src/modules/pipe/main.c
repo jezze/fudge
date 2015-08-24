@@ -33,21 +33,21 @@ static unsigned int endpoint0_close(struct system_node *self)
 
 }
 
-static unsigned int endpoint0_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int endpoint0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (t1)
-        return task_rmessage(t0, size, count, buffer);
+        return task_rmessage(t0, count, buffer);
     else
         return 0;
 
 }
 
-static unsigned int endpoint0_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int endpoint0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (t1)
-        return task_wmessage(t1, size, count, buffer);
+        return task_wmessage(t1, count, buffer);
     else
         return 0;
 
@@ -78,21 +78,21 @@ static unsigned int endpoint1_close(struct system_node *self)
 
 }
 
-static unsigned int endpoint1_read(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int endpoint1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (t0)
-        return task_rmessage(t1, size, count, buffer);
+        return task_rmessage(t1, count, buffer);
     else
         return 0;
 
 }
 
-static unsigned int endpoint1_write(struct system_node *self, unsigned int offset, unsigned int size, unsigned int count, void *buffer)
+static unsigned int endpoint1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     if (t0)
-        return task_wmessage(t0, size, count, buffer);
+        return task_wmessage(t0, count, buffer);
     else
         return 0;
 

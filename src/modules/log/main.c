@@ -9,20 +9,20 @@ static struct system_node error;
 static struct system_node warning;
 static struct system_node info;
 
-void log_notify(unsigned int level, unsigned int size, unsigned int count, void *buffer)
+void log_notify(unsigned int level, unsigned int count, void *buffer)
 {
 
     if (level <= LOG_CRITICAL)
-        system_write(&critical, 0, size, count, buffer);
+        system_write(&critical, 0, count, buffer);
 
     if (level <= LOG_ERROR)
-        system_write(&error, 0, size, count, buffer);
+        system_write(&error, 0, count, buffer);
 
     if (level <= LOG_WARNING)
-        system_write(&warning, 0, size, count, buffer);
+        system_write(&warning, 0, count, buffer);
 
     if (level <= LOG_INFO)
-        system_write(&info, 0, size, count, buffer);
+        system_write(&info, 0, count, buffer);
 
 }
 
