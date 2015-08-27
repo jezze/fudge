@@ -78,7 +78,7 @@ static unsigned long protocol_findentry(struct vfs_channel *channel, unsigned in
 
 }
 
-static unsigned long protocol_copyprogram(struct vfs_channel *channel, unsigned int id)
+static unsigned long protocol_findbase(struct vfs_channel *channel, unsigned int id, unsigned long address)
 {
 
     struct elf_header header;
@@ -95,13 +95,37 @@ static unsigned long protocol_copyprogram(struct vfs_channel *channel, unsigned 
     for (i = 0; i < header.phcount; i++)
     {
 
+        if (programheader[i].vaddress <= address && programheader[i].vaddress + programheader[i].msize > address)
+            return programheader[i].vaddress;
+
+    }
+
+    return 0;
+
+}
+
+static void protocol_copyprogram(struct vfs_channel *channel, unsigned int id)
+{
+
+    struct elf_header header;
+    struct elf_programheader programheader[8];
+    unsigned int i;
+
+    channel->protocol->read(channel->backend, id, 0, ELF_HEADER_SIZE, &header);
+
+    if (header.phcount > 8)
+        return;
+
+    channel->protocol->read(channel->backend, id, header.phoffset, header.phsize * header.phcount, programheader);
+
+    for (i = 0; i < header.phcount; i++)
+    {
+
         memory_clear((void *)(programheader[i].vaddress + programheader[i].offset), programheader[i].msize);
 
         channel->protocol->read(channel->backend, id, programheader[i].offset, programheader[i].fsize, (void *)programheader[i].vaddress);
 
     }
-
-    return header.entry;
 
 }
 
@@ -158,7 +182,7 @@ static unsigned int protocol_relocate(struct vfs_channel *channel, unsigned int 
 void binary_setupelf(void)
 {
 
-    binary_initprotocol(&protocol, protocol_match, protocol_findsymbol, protocol_findentry, protocol_copyprogram, protocol_relocate);
+    binary_initprotocol(&protocol, protocol_match, protocol_findsymbol, protocol_findentry, protocol_findbase, protocol_copyprogram, protocol_relocate);
     resource_register(&protocol.resource);
 
 }

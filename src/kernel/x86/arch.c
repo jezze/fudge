@@ -254,15 +254,27 @@ unsigned short arch_generalfault(struct cpu_general general, unsigned int select
 unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
 {
 
-    /*
     unsigned int address = cpu_getcr2();
-    */
 
     if (current.task)
     {
 
-        maptaskcode(current.task, 0x08048000);
-        task_copybinary(current.task);
+        address = task_findbase(current.task, address);
+
+        if (address)
+        {
+
+            maptaskcode(current.task, address);
+            task_copybinary(current.task);
+
+        }
+
+        else
+        {
+
+            task_setstatus(current.task, TASK_STATUS_INACTIVE);
+
+        }
 
     }
 

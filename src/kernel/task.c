@@ -154,6 +154,24 @@ void task_initbinary(struct task *task, unsigned int sp)
 
 }
 
+unsigned long task_findbase(struct task *task, unsigned long address)
+{
+
+    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
+    struct binary_protocol *protocol;
+
+    if (!descriptor->id || !descriptor->channel)
+        return 0;
+
+    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+
+    if (!protocol)
+        return 0;
+
+    return protocol->findbase(descriptor->channel, descriptor->id, address);
+
+}
+
 unsigned int task_rmessage(struct task *task, unsigned int count, void *buffer)
 {
 
