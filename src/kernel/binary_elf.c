@@ -121,7 +121,7 @@ static void protocol_copyprogram(struct vfs_channel *channel, unsigned int id)
     for (i = 0; i < header.phcount; i++)
     {
 
-        memory_clear((void *)(programheader[i].vaddress + programheader[i].offset), programheader[i].msize);
+        memory_clear((void *)(programheader[i].vaddress + programheader[i].offset + programheader[i].fsize), programheader[i].msize - programheader[i].fsize);
 
         channel->protocol->read(channel->backend, id, programheader[i].offset, programheader[i].fsize, (void *)programheader[i].vaddress);
 
