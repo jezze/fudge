@@ -16,18 +16,17 @@
 #define MMUALIGN                        0x1000
 #define KERNELSTACK                     0x00400000
 #define TASKSTACK                       0x80000000
-#define CODEBASE                        0x01000000
-#define CODESIZE                        0x00080000
-#define STACKBASE                       0x02000000
-#define STACKSIZE                       0x00010000
 #define CONTAINERDIRECTORYCOUNT         1
 #define CONTAINERDIRECTORYBASE          0x00400000
-#define CONTAINERTABLECOUNT             8
+#define CONTAINERTABLECOUNT             7
 #define CONTAINERTABLEBASE              (CONTAINERDIRECTORYBASE + CONTAINERS * (MMUALIGN * CONTAINERDIRECTORYCOUNT))
 #define TASKDIRECTORYCOUNT              1
 #define TASKDIRECTORYBASE               (CONTAINERTABLEBASE + CONTAINERS * (MMUALIGN * CONTAINERTABLECOUNT))
-#define TASKTABLECOUNT                  2
+#define TASKTABLECOUNT                  3
 #define TASKTABLEBASE                   (TASKDIRECTORYBASE + TASKS * (MMUALIGN * TASKDIRECTORYCOUNT))
+#define PHYSBASE                        0x01000000
+#define CODESIZE                        0x00080000
+#define STACKSIZE                       0x00010000
 
 static struct
 {
@@ -78,9 +77,10 @@ static struct arch_task
 
     struct task base;
     struct cpu_general general;
+    unsigned int code;
+    unsigned int stack;
     struct mmu_directory *directory;
     struct mmu_table *table;
-    unsigned int mapping[TASKTABLECOUNT];
 
 } tasks[TASKS];
 
@@ -100,6 +100,7 @@ static void mapcontainercode(struct container *container)
     mmu_map(acontainer->directory, &acontainer->table[0], 0x00000000, 0x00000000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(acontainer->directory, &acontainer->table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(acontainer->directory, &acontainer->table[2], 0x00800000, 0x00800000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(acontainer->directory, &acontainer->table[3], 0x00C00000, 0x00C00000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
@@ -118,8 +119,8 @@ static void maptaskcode(struct task *task, unsigned int address)
 
     struct arch_task *atask = (struct arch_task *)task;
 
-    mmu_map(atask->directory, &atask->table[0], atask->mapping[0], address, CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(atask->directory, &atask->table[1], atask->mapping[1], TASKSTACK - STACKSIZE, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[0], atask->code, address, CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[1], atask->stack, TASKSTACK - STACKSIZE, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -311,10 +312,10 @@ static struct task *setuptasks(void)
 
         task_init(&task->base);
 
+        task->code = PHYSBASE + index * (CODESIZE + STACKSIZE);
+        task->stack = task->code + CODESIZE;
         task->directory = (struct mmu_directory *)TASKDIRECTORYBASE + index * TASKDIRECTORYCOUNT;
         task->table = (struct mmu_table *)TASKTABLEBASE + index * TASKTABLECOUNT;
-        task->mapping[0] = CODEBASE + index * CODESIZE;
-        task->mapping[1] = STACKBASE + index * STACKSIZE;
 
         task_register(&task->base);
 
