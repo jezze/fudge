@@ -65,6 +65,21 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
 
 }
 
+static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
+{
+
+    unsigned int address;
+
+    call_open(CALL_L0);
+
+    address = find_symbol(CALL_L0, count, symbol);
+
+    call_close(CALL_L0);
+
+    return address;
+
+}
+
 static unsigned int find_symbol_module(unsigned int count, char *symbol)
 {
 
@@ -108,15 +123,10 @@ static unsigned int resolve_symbols(unsigned int id, struct elf_sectionheader *r
 
         symbol = strings + symbols[index].name;
         count = ascii_length(symbol);
-
-        call_open(CALL_L0);
-
-        address = find_symbol(CALL_L0, count, symbol);
-
-        call_close(CALL_L0);
+        address = find_symbol_module(count, symbol);
 
         if (!address)
-            address = find_symbol_module(count, symbol);
+            address = find_symbol_kernel(count, symbol);
 
         if (!address)
             return 0;
