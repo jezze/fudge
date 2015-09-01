@@ -26,7 +26,7 @@
 #define TASKTABLEBASE                   (TASKDIRECTORYBASE + TASKS * (MMUALIGN * TASKDIRECTORYCOUNT))
 #define PHYSBASE                        0x01000000
 #define CODESIZE                        0x00080000
-#define STACKSIZE                       0x00010000
+#define STACKSIZE                       0x00008000
 
 static struct
 {

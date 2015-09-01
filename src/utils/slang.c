@@ -328,7 +328,7 @@ void main(void)
 
     char buffer[FUDGE_BSIZE];
     unsigned int count;
-    char stringdata[32768];
+    char stringdata[FUDGE_BSIZE];
     struct buffer stringtable;
     struct token infixdata[1024];
     struct token postfixdata[1024];
@@ -337,7 +337,7 @@ void main(void)
     struct tokenlist postfix;
     struct tokenlist stack;
 
-    buffer_init(&stringtable, 32768, stringdata);
+    buffer_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
