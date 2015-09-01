@@ -2,6 +2,25 @@
 #include <fudge.h>
 #include <format/elf.h>
 
+unsigned int findsymbol(struct elf_header *header, struct elf_sectionheader *sectionheader, struct elf_sectionheader *symbolheader, struct elf_symbol *symbols, char *strings, unsigned int count, char *symbol)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < symbolheader->size / symbolheader->esize; i++)
+    {
+
+        char *s = strings + symbols[i].name;
+
+        if (s[count] == '\0' && memory_match(symbol, s, count))
+            return (header->type == ELF_TYPE_RELOCATABLE) ? sectionheader[symbols[i].shindex].address + sectionheader[symbols[i].shindex].offset + symbols[i].value : symbols[i].value;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbol)
 {
 
@@ -54,7 +73,7 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
         if (!call_read(id, stringheader->size, strings))
             return 0;
 
-        address = elf_findsymbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
+        address = findsymbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
 
         if (address)
             return address;
