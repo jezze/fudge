@@ -2,81 +2,102 @@
 #include <fudge.h>
 #include <format/elf.h>
 
-unsigned int findsymbol(struct elf_header *header, struct elf_sectionheader *sectionheader, struct elf_sectionheader *symbolheader, struct elf_symbol *symbols, char *strings, unsigned int count, char *symbol)
+static unsigned int readheader(unsigned int id, struct elf_header *header)
 {
 
-    unsigned int i;
+    call_seek(id, 0);
 
-    for (i = 0; i < symbolheader->size / symbolheader->esize; i++)
-    {
-
-        char *s = strings + symbols[i].name;
-
-        if (s[count] == '\0' && memory_match(symbol, s, count))
-            return (header->type == ELF_TYPE_RELOCATABLE) ? sectionheader[symbols[i].shindex].address + sectionheader[symbols[i].shindex].offset + symbols[i].value : symbols[i].value;
-
-    }
-
-    return 0;
+    return call_read(id, ELF_HEADER_SIZE, header);
 
 }
 
-static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbol)
+static unsigned int readsectionheader(unsigned int id, struct elf_header *header, unsigned int index, struct elf_sectionheader *sectionheader)
+{
+
+    call_seek(id, header->shoffset + index * header->shsize);
+
+    return call_read(id, header->shsize, sectionheader);
+
+}
+
+static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbolname)
 {
 
     struct elf_header header;
-    struct elf_sectionheader sectionheader[32];
     unsigned int i;
 
-    if (!call_read(id, ELF_HEADER_SIZE, &header))
+    if (!readheader(id, &header))
         return 0;
 
     if (!elf_validate(&header))
         return 0;
 
-    if (header.shcount > 32)
-        return 0;
-
-    call_seek(id, header.shoffset);
-
-    if (!call_read(id, header.shsize * header.shcount, sectionheader))
-        return 0;
-
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_symbol symbols[1024];
+        struct elf_sectionheader symbolheader;
+        struct elf_sectionheader stringheader;
         char strings[FUDGE_BSIZE];
-        unsigned int address;
-        struct elf_sectionheader *symbolheader;
-        struct elf_sectionheader *stringheader;
+        unsigned int j;
 
-        if (sectionheader[i].type != ELF_SECTION_TYPE_SYMTAB)
+        if (!readsectionheader(id, &header, i, &symbolheader))
+            return 0;
+
+        if (!call_read(id, header.shsize, &symbolheader))
+            return 0;
+
+        if (symbolheader.type != ELF_SECTION_TYPE_SYMTAB)
             continue;
 
-        symbolheader = &sectionheader[i];
-        stringheader = &sectionheader[symbolheader->link];
-
-        if (symbolheader->size > sizeof (struct elf_symbol) * 1024)
+        if (!readsectionheader(id, &header, symbolheader.link, &stringheader))
             return 0;
 
-        if (stringheader->size > FUDGE_BSIZE)
+        if (stringheader.size > FUDGE_BSIZE)
             return 0;
 
-        call_seek(id, symbolheader->offset);
+        call_seek(id, stringheader.offset);
 
-        if (!call_read(id, symbolheader->size, symbols))
+        if (!call_read(id, stringheader.size, strings))
             return 0;
 
-        call_seek(id, stringheader->offset);
+        call_seek(id, symbolheader.offset);
 
-        if (!call_read(id, stringheader->size, strings))
-            return 0;
+        for (j = 0; j < symbolheader.size / symbolheader.esize; j++)
+        {
 
-        address = findsymbol(&header, sectionheader, symbolheader, symbols, strings, count, symbol);
+            struct elf_symbol symbol;
+            char *s;
 
-        if (address)
-            return address;
+            if (!call_read(id, symbolheader.esize, &symbol))
+                return 0;
+
+            s = strings + symbol.name;
+
+            if (s[count] == '\0' && memory_match(symbolname, s, count))
+            {
+
+                if (header.type == ELF_TYPE_RELOCATABLE)
+                {
+
+                    struct elf_sectionheader referenceheader;
+
+                    if (!readsectionheader(id, &header, symbol.shindex, &referenceheader))
+                        return 0;
+
+                    return referenceheader.address + referenceheader.offset + symbol.value;
+
+                }
+
+                else
+                {
+
+                    return symbol.value;
+
+                }
+
+            }
+
+        }
 
     }
 
@@ -84,14 +105,14 @@ static unsigned int find_symbol(unsigned int id, unsigned int count, char *symbo
 
 }
 
-static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
+static unsigned int findkernelsymbol(unsigned int count, char *symbolname)
 {
 
     unsigned int address;
 
     call_open(CALL_L0);
 
-    address = find_symbol(CALL_L0, count, symbol);
+    address = findsymbol(CALL_L0, count, symbolname);
 
     call_close(CALL_L0);
 
@@ -99,15 +120,15 @@ static unsigned int find_symbol_kernel(unsigned int count, char *symbol)
 
 }
 
-static unsigned int find_symbol_module(unsigned int count, char *symbol)
+static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 {
 
-    unsigned int length = memory_findbyte(symbol, count, '_') - 1;
+    unsigned int length = memory_findbyte(symbolname, count, '_') - 1;
     unsigned int offset = 0;
     unsigned int address;
     char module[32];
 
-    offset += memory_write(module, 32, symbol, length, offset);
+    offset += memory_write(module, 32, symbolname, length, offset);
     offset += memory_write(module, 32, ".ko", 3, offset);
 
     if (!call_walk(CALL_L2, CALL_L1, offset, module))
@@ -115,7 +136,7 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
 
     call_open(CALL_L2);
 
-    address = find_symbol(CALL_L2, count, symbol);
+    address = findsymbol(CALL_L2, count, symbolname);
 
     call_close(CALL_L2);
 
@@ -123,7 +144,7 @@ static unsigned int find_symbol_module(unsigned int count, char *symbol)
 
 }
 
-static unsigned int resolve_symbols(unsigned int id, struct elf_sectionheader *relocationheader, struct elf_sectionheader *symbolheader, char *strings, unsigned int offset)
+static unsigned int resolvesymbols(unsigned int id, struct elf_sectionheader *relocationheader, struct elf_sectionheader *symbolheader, char *strings, unsigned int offset)
 {
 
     unsigned int i;
@@ -156,10 +177,10 @@ static unsigned int resolve_symbols(unsigned int id, struct elf_sectionheader *r
 
         symbolname = strings + symbol.name;
         count = ascii_length(symbolname);
-        address = find_symbol_module(count, symbolname);
+        address = findmodulesymbol(count, symbolname);
 
         if (!address)
-            address = find_symbol_kernel(count, symbolname);
+            address = findkernelsymbol(count, symbolname);
 
         if (!address)
             return 0;
@@ -186,49 +207,47 @@ static unsigned int resolve(unsigned int id)
 {
 
     struct elf_header header;
-    struct elf_sectionheader sectionheader[32];
-    char strings[FUDGE_BSIZE];
     unsigned int i;
 
-    if (!call_read(id, ELF_HEADER_SIZE, &header))
+    if (!readheader(id, &header))
         return 0;
 
     if (!elf_validate(&header))
         return 0;
 
-    if (header.shcount > 32)
-        return 0;
-
-    call_seek(id, header.shoffset);
-
-    if (!call_read(id, header.shsize * header.shcount, sectionheader))
-        return 0;
-
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_sectionheader *relocationheader;
-        struct elf_sectionheader *dataheader;
-        struct elf_sectionheader *symbolheader;
-        struct elf_sectionheader *stringheader;
+        struct elf_sectionheader relocationheader;
+        struct elf_sectionheader dataheader;
+        struct elf_sectionheader symbolheader;
+        struct elf_sectionheader stringheader;
+        char strings[FUDGE_BSIZE];
 
-        if (sectionheader[i].type != ELF_SECTION_TYPE_REL)
+        if (!readsectionheader(id, &header, i, &relocationheader))
+            return 0;
+
+        if (relocationheader.type != ELF_SECTION_TYPE_REL)
             continue;
 
-        relocationheader = &sectionheader[i];
-        dataheader = &sectionheader[relocationheader->info];
-        symbolheader = &sectionheader[relocationheader->link];
-        stringheader = &sectionheader[symbolheader->link];
-
-        if (stringheader->size > FUDGE_BSIZE)
+        if (!readsectionheader(id, &header, relocationheader.info, &dataheader))
             return 0;
 
-        call_seek(id, stringheader->offset);
-
-        if (!call_read(id, stringheader->size, strings))
+        if (!readsectionheader(id, &header, relocationheader.link, &symbolheader))
             return 0;
 
-        if (!resolve_symbols(id, relocationheader, symbolheader, strings, dataheader->offset))
+        if (!readsectionheader(id, &header, symbolheader.link, &stringheader))
+            return 0;
+
+        if (stringheader.size > FUDGE_BSIZE)
+            return 0;
+
+        call_seek(id, stringheader.offset);
+
+        if (!call_read(id, stringheader.size, strings))
+            return 0;
+
+        if (!resolvesymbols(id, &relocationheader, &symbolheader, strings, dataheader.offset))
             return 0;
 
     }
