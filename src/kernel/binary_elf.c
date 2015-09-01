@@ -188,22 +188,23 @@ static unsigned int protocol_relocate(struct vfs_channel *channel, unsigned int 
     struct elf_sectionheader relocationheader;
     struct elf_sectionheader dataheader;
     struct elf_sectionheader symbolheader;
-    struct elf_sectionheader sectionheader[32];
     unsigned int i;
 
     if (!readheader(channel, id, &header))
-        return 0;
-
-    if (!channel->protocol->read(channel->backend, id, header.shoffset, header.shsize * header.shcount, sectionheader))
         return 0;
 
     /* REMOVE */
     for (i = 0; i < header.shcount; i++)
     {
 
-        sectionheader[i].address += address;
+        struct elf_sectionheader referenceheader;
 
-        if (!channel->protocol->write(channel->backend, id, header.shoffset + i * header.shsize, header.shsize, &sectionheader[i]))
+        if (!readsectionheader(channel, id, &header, i, &referenceheader))
+            return 0;
+
+        referenceheader.address += address;
+
+        if (!channel->protocol->write(channel->backend, id, header.shoffset + i * header.shsize, header.shsize, &referenceheader))
             return 0;
 
     }
