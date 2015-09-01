@@ -57,6 +57,7 @@ struct device
     unsigned char disable;
     unsigned char enable;
     unsigned char interrupt;
+    unsigned char test;
 
 };
 
@@ -65,9 +66,17 @@ static struct system_node reset;
 
 static struct device devices[] = {
     {0},
-    {0, IRQKEYBOARD, COMMANDDEV1DISABLE, COMMANDDEV1ENABLE, CONFIGFLAG_DEV1INT},
-    {0, IRQMOUSE, COMMANDDEV2DISABLE, COMMANDDEV2ENABLE, CONFIGFLAG_DEV2INT}
+    {0, IRQKEYBOARD, COMMANDDEV1DISABLE, COMMANDDEV1ENABLE, CONFIGFLAG_DEV1INT, COMMANDDEV1TEST},
+    {0, IRQMOUSE, COMMANDDEV2DISABLE, COMMANDDEV2ENABLE, CONFIGFLAG_DEV2INT, COMMANDDEV2TEST}
 };
+
+static void flushdata(void)
+{
+
+    while ((io_inb(REGISTERCONTROL) & STATUSOFULL))
+        io_inb(REGISTERDATA);
+
+}
 
 static unsigned char polldata(void)
 {
@@ -96,6 +105,51 @@ static void setdata(unsigned char value)
 
 }
 
+static void setdevicedata(unsigned int id, unsigned char value)
+{
+
+    if (id == PS2_MOUSE)
+        setcommand(COMMANDDEV2WI);
+
+    setdata(value);
+
+}
+
+static unsigned char rconfig()
+{
+
+    setcommand(COMMANDCONFIGR);
+
+    return polldata();
+
+}
+
+static void wconfig(unsigned char config)
+{
+
+    setcommand(COMMANDCONFIGW);
+    setdata(config);
+
+}
+
+static unsigned int testbus()
+{
+
+    setcommand(COMMANDCTEST);
+
+    return polldata() == CTESTOK;
+
+}
+
+static unsigned int testdevice(unsigned int id)
+{
+
+    setcommand(devices[id].test);
+
+    return polldata() == PTESTOK;
+
+}
+
 unsigned char ps2_getdata(void)
 {
 
@@ -117,27 +171,31 @@ void ps2_enable(unsigned int id)
 
 }
 
+void ps2_disable(unsigned int id)
+{
+
+    setcommand(devices[id].disable);
+
+}
+
 void ps2_enableinterrupt(unsigned int id)
 {
 
-    unsigned char config;
+    wconfig(rconfig() | devices[id].interrupt);
 
-    setcommand(COMMANDCONFIGR);
+}
 
-    config = polldata() | devices[id].interrupt;
+void ps2_disableinterrupt(unsigned int id)
+{
 
-    setcommand(COMMANDCONFIGW);
-    setdata(config);
+    wconfig(rconfig() & ~devices[id].interrupt);
 
 }
 
 void ps2_reset(unsigned int id)
 {
 
-    if (id == PS2_MOUSE)
-        setcommand(COMMANDDEV2WI);
-
-    setdata(COMMANDDEVRESET);
+    setdevicedata(id, COMMANDDEVRESET);
     polldata();
     polldata();
 
@@ -149,10 +207,7 @@ void ps2_reset(unsigned int id)
 void ps2_identify(unsigned int id)
 {
 
-    if (id == PS2_MOUSE)
-        setcommand(COMMANDDEV2WI);
-
-    setdata(COMMANDDEVIDENTIFY);
+    setdevicedata(id, COMMANDDEVIDENTIFY);
     polldata();
     polldata();
 
@@ -161,10 +216,7 @@ void ps2_identify(unsigned int id)
 void ps2_enablescanning(unsigned int id)
 {
 
-    if (id == PS2_MOUSE)
-        setcommand(COMMANDDEV2WI);
-
-    setdata(COMMANDDEVENABLESCAN);
+    setdevicedata(id, COMMANDDEVENABLESCAN);
     polldata();
 
 }
@@ -172,10 +224,7 @@ void ps2_enablescanning(unsigned int id)
 void ps2_disablescanning(unsigned int id)
 {
 
-    if (id == PS2_MOUSE)
-        setcommand(COMMANDDEV2WI);
-
-    setdata(COMMANDDEVDISABLESCAN);
+    setdevicedata(id, COMMANDDEVDISABLESCAN);
     polldata();
 
 }
@@ -183,10 +232,7 @@ void ps2_disablescanning(unsigned int id)
 void ps2_default(unsigned int id)
 {
 
-    if (id == PS2_MOUSE)
-        setcommand(COMMANDDEV2WI);
-
-    setdata(COMMANDDEVDEFAULT);
+    setdevicedata(id, COMMANDDEVDEFAULT);
     polldata();
 
 }
@@ -194,41 +240,18 @@ void ps2_default(unsigned int id)
 static void bus_setup(void)
 {
 
-    unsigned char config;
-    unsigned char status;
+    flushdata();
 
-    setcommand(devices[PS2_KEYBOARD].disable);
-    setcommand(devices[PS2_MOUSE].disable);
-    setcommand(COMMANDCONFIGR);
-
-    config = polldata() & ~(CONFIGFLAG_DEV1INT | CONFIGFLAG_DEV2INT);
-
-    setcommand(COMMANDCONFIGW);
-    setdata(config);
-    setcommand(COMMANDCTEST);
-
-    status = polldata();
-
-    if (status != CTESTOK)
-        return;
-
-    if (config & CONFIGFLAG_DEV1CLOCK)
+    if (testbus())
     {
 
-        setcommand(COMMANDDEV1TEST);
+        unsigned char config = rconfig();
 
-        if (polldata() == PTESTOK)
-            devices[PS2_KEYBOARD].present = 1;
+        if (config & CONFIGFLAG_DEV1CLOCK)
+            devices[PS2_KEYBOARD].present = testdevice(PS2_KEYBOARD);
 
-    }
-
-    if (config & CONFIGFLAG_DEV2CLOCK)
-    {
-
-        setcommand(COMMANDDEV2TEST);
-
-        if (polldata() == PTESTOK)
-            devices[PS2_MOUSE].present = 1;
+        if (config & CONFIGFLAG_DEV2CLOCK)
+            devices[PS2_MOUSE].present = testdevice(PS2_MOUSE);
 
     }
 

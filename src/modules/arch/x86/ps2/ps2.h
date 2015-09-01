@@ -5,7 +5,9 @@
 unsigned char ps2_getdata(void);
 unsigned short ps2_getirq(unsigned int id);
 void ps2_enable(unsigned int id);
+void ps2_disable(unsigned int id);
 void ps2_enableinterrupt(unsigned int id);
+void ps2_disableinterrupt(unsigned int id);
 void ps2_reset(unsigned int id);
 void ps2_identify(unsigned int id);
 void ps2_enablescanning(unsigned int id);

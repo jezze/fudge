@@ -74,6 +74,7 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    ps2_disable(id);
     ps2_reset(id);
     ps2_default(id);
     ps2_enable(id);
