@@ -5,7 +5,7 @@
 static void setdirectorytable(struct mmu_directory *directory, unsigned long paddress, unsigned long vaddress, unsigned int tflags)
 {
 
-    unsigned int index = (vaddress / MMU_PAGESIZE) / MMU_TABLES;
+    unsigned int index = vaddress >> 22;
 
     directory->tables[index] = (struct mmu_table *)(paddress | tflags);
 
@@ -14,7 +14,7 @@ static void setdirectorytable(struct mmu_directory *directory, unsigned long pad
 static void settablepage(struct mmu_table *table, unsigned long paddress, unsigned long vaddress, unsigned int pflags)
 {
 
-    unsigned int index = (vaddress / MMU_PAGESIZE) % MMU_PAGES;
+    unsigned int index = (vaddress << 10) >> 22;
 
     table->pages[index] = (void *)(paddress | pflags);
 
