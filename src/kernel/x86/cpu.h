@@ -1,3 +1,20 @@
+#define CPU_FLAGS_CF                    (1 << 0)
+#define CPU_FLAGS_PF                    (1 << 2)
+#define CPU_FLAGS_AF                    (1 << 4)
+#define CPU_FLAGS_ZF                    (1 << 6)
+#define CPU_FLAGS_SF                    (1 << 7)
+#define CPU_FLAGS_TF                    (1 << 8)
+#define CPU_FLAGS_IF                    (1 << 9)
+#define CPU_FLAGS_DF                    (1 << 10)
+#define CPU_FLAGS_OF                    (1 << 11)
+#define CPU_FLAGS_NT                    (1 << 14)
+#define CPU_FLAGS_RF                    (1 << 16)
+#define CPU_FLAGS_VM                    (1 << 17)
+#define CPU_FLAGS_AC                    (1 << 18)
+#define CPU_FLAGS_VIF                   (1 << 19)
+#define CPU_FLAGS_VIP                   (1 << 20)
+#define CPU_FLAGS_ID                    (1 << 21)
+
 struct cpu_general
 {
 

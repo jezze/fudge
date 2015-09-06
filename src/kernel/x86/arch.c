@@ -377,7 +377,7 @@ void arch_setup(struct vfs_backend *backend)
     interrupt.ss = selector.ustack;
     interrupt.eip = current.task->state.registers.ip;
     interrupt.esp = current.task->state.registers.sp;
-    interrupt.eflags = cpu_geteflags() | 0x200;
+    interrupt.eflags = cpu_geteflags() | CPU_FLAGS_IF;
 
     cpu_leave(interrupt);
 
