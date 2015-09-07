@@ -260,13 +260,13 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
         struct vfs_descriptor *descriptor = &current.task->descriptors[0];
 
-        address = current.task->protocol->findbase(descriptor->channel, descriptor->id, address);
+        address = current.task->format->findbase(descriptor->channel, descriptor->id, address);
 
         if (address)
         {
 
             maptaskcode(current.task, address);
-            current.task->protocol->copyprogram(descriptor->channel, descriptor->id);
+            current.task->format->copyprogram(descriptor->channel, descriptor->id);
 
         }
 

@@ -29,7 +29,7 @@ struct task
     struct resource resource;
     struct task_state state;
     struct task_mailbox mailbox;
-    struct binary_protocol *protocol;
+    struct binary_format *format;
     struct vfs_descriptor descriptors[TASK_DESCRIPTORS];
 
 };

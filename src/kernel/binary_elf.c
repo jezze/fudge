@@ -4,7 +4,7 @@
 #include "vfs.h"
 #include "binary.h"
 
-static struct binary_protocol protocol;
+static struct binary_format format;
 
 static unsigned int readheader(struct vfs_channel *channel, unsigned int id, struct elf_header *header)
 {
@@ -143,7 +143,7 @@ static unsigned long findsymbol(struct vfs_channel *channel, unsigned int id, st
 
 }
 
-static unsigned int protocol_match(struct vfs_channel *channel, unsigned int id)
+static unsigned int format_match(struct vfs_channel *channel, unsigned int id)
 {
 
     struct elf_header header;
@@ -155,7 +155,7 @@ static unsigned int protocol_match(struct vfs_channel *channel, unsigned int id)
 
 }
 
-static unsigned long protocol_findsymbol(struct vfs_channel *channel, unsigned int id, unsigned int count, char *symbolname)
+static unsigned long format_findsymbol(struct vfs_channel *channel, unsigned int id, unsigned int count, char *symbolname)
 {
 
     struct elf_header header;
@@ -187,7 +187,7 @@ static unsigned long protocol_findsymbol(struct vfs_channel *channel, unsigned i
 
 }
 
-static unsigned long protocol_findentry(struct vfs_channel *channel, unsigned int id)
+static unsigned long format_findentry(struct vfs_channel *channel, unsigned int id)
 {
 
     struct elf_header header;
@@ -199,7 +199,7 @@ static unsigned long protocol_findentry(struct vfs_channel *channel, unsigned in
 
 }
 
-static unsigned long protocol_findbase(struct vfs_channel *channel, unsigned int id, unsigned long address)
+static unsigned long format_findbase(struct vfs_channel *channel, unsigned int id, unsigned long address)
 {
 
     struct elf_header header;
@@ -225,7 +225,7 @@ static unsigned long protocol_findbase(struct vfs_channel *channel, unsigned int
 
 }
 
-static unsigned int protocol_copyprogram(struct vfs_channel *channel, unsigned int id)
+static unsigned int format_copyprogram(struct vfs_channel *channel, unsigned int id)
 {
 
     struct elf_header header;
@@ -253,7 +253,7 @@ static unsigned int protocol_copyprogram(struct vfs_channel *channel, unsigned i
 
 }
 
-static unsigned int protocol_relocate(struct vfs_channel *channel, unsigned int id, unsigned int address)
+static unsigned int format_relocate(struct vfs_channel *channel, unsigned int id, unsigned int address)
 {
 
     struct elf_header header;
@@ -290,8 +290,8 @@ static unsigned int protocol_relocate(struct vfs_channel *channel, unsigned int 
 void binary_setupelf(void)
 {
 
-    binary_initprotocol(&protocol, protocol_match, protocol_findsymbol, protocol_findentry, protocol_findbase, protocol_copyprogram, protocol_relocate);
-    resource_register(&protocol.resource);
+    binary_initformat(&format, format_match, format_findsymbol, format_findentry, format_findbase, format_copyprogram, format_relocate);
+    resource_register(&format.resource);
 
 }
 

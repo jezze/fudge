@@ -125,12 +125,12 @@ void task_initbinary(struct task *task, unsigned int sp)
     if (!descriptor->id || !descriptor->channel)
         return;
 
-    task->protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+    task->format = binary_findformat(descriptor->channel, descriptor->id);
 
-    if (!task->protocol)
+    if (!task->format)
         return;
 
-    task->state.registers.ip = task->protocol->findentry(descriptor->channel, descriptor->id);
+    task->state.registers.ip = task->format->findentry(descriptor->channel, descriptor->id);
     task->state.registers.sp = sp;
 
 }

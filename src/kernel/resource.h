@@ -5,7 +5,7 @@
 #define RESOURCE_VFSCHANNEL             5
 #define RESOURCE_VFSMOUNT               6
 #define RESOURCE_VFSDESCRIPTOR          7
-#define RESOURCE_BINARYPROTOCOL         8
+#define RESOURCE_BINARYFORMAT           8
 #define RESOURCE_BUS                    9
 #define RESOURCE_DRIVER                 10
 #define RESOURCE_ETHERNETINTERFACE      11
