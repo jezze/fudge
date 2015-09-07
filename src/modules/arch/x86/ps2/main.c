@@ -115,7 +115,7 @@ static void setdevicedata(unsigned int id, unsigned char value)
 
 }
 
-static unsigned char rconfig()
+static unsigned char rconfig(void)
 {
 
     setcommand(COMMANDCONFIGR);
@@ -132,7 +132,7 @@ static void wconfig(unsigned char config)
 
 }
 
-static unsigned int testbus()
+static unsigned int testbus(void)
 {
 
     setcommand(COMMANDCTEST);
