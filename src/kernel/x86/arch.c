@@ -258,13 +258,15 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (current.task)
     {
 
-        address = task_findbase(current.task, address);
+        struct vfs_descriptor *descriptor = &current.task->descriptors[0];
+
+        address = current.task->protocol->findbase(descriptor->channel, descriptor->id, address);
 
         if (address)
         {
 
             maptaskcode(current.task, address);
-            task_copybinary(current.task);
+            current.task->protocol->copyprogram(descriptor->channel, descriptor->id);
 
         }
 

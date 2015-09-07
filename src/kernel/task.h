@@ -29,6 +29,7 @@ struct task
     struct resource resource;
     struct task_state state;
     struct task_mailbox mailbox;
+    struct binary_protocol *protocol;
     struct vfs_descriptor descriptors[TASK_DESCRIPTORS];
 
 };
@@ -37,9 +38,7 @@ struct task *task_findactive(void);
 struct task *task_findinactive(void);
 void task_setstatus(struct task *task, unsigned int state);
 void task_copydescriptors(struct task *source, struct task *target);
-void task_copybinary(struct task *task);
 void task_initbinary(struct task *task, unsigned int sp);
-unsigned long task_findbase(struct task *task, unsigned long address);
 unsigned int task_rmessage(struct task *task, unsigned int count, void *buffer);
 unsigned int task_wmessage(struct task *task, unsigned int count, void *buffer);
 void task_register(struct task *task);

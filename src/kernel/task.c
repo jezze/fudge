@@ -117,58 +117,21 @@ void task_copydescriptors(struct task *source, struct task *target)
 
 }
 
-void task_copybinary(struct task *task)
-{
-
-    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
-    struct binary_protocol *protocol;
-
-    if (!descriptor->id || !descriptor->channel)
-        return;
-
-    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
-
-    if (!protocol)
-        return;
-
-    protocol->copyprogram(descriptor->channel, descriptor->id);
-
-}
-
 void task_initbinary(struct task *task, unsigned int sp)
 {
 
-    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
-    struct binary_protocol *protocol;
+    struct vfs_descriptor *descriptor = &task->descriptors[0];
 
     if (!descriptor->id || !descriptor->channel)
         return;
 
-    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
+    task->protocol = binary_findprotocol(descriptor->channel, descriptor->id);
 
-    if (!protocol)
+    if (!task->protocol)
         return;
 
-    task->state.registers.ip = protocol->findentry(descriptor->channel, descriptor->id);
+    task->state.registers.ip = task->protocol->findentry(descriptor->channel, descriptor->id);
     task->state.registers.sp = sp;
-
-}
-
-unsigned long task_findbase(struct task *task, unsigned long address)
-{
-
-    struct vfs_descriptor *descriptor = &task->descriptors[0x00];
-    struct binary_protocol *protocol;
-
-    if (!descriptor->id || !descriptor->channel)
-        return 0;
-
-    protocol = binary_findprotocol(descriptor->channel, descriptor->id);
-
-    if (!protocol)
-        return 0;
-
-    return protocol->findbase(descriptor->channel, descriptor->id, address);
 
 }
 
