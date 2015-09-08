@@ -337,10 +337,16 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int undefined(struct container *container, struct task *task, void *stack)
+static unsigned int scan(struct container *container, struct task *task, void *stack)
 {
 
-    return 0;
+    struct {void *caller; unsigned int descriptor; unsigned int index;} *args = stack;
+    struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
+
+    if (!descriptor->id || !descriptor->channel)
+        return 0;
+
+    return descriptor->channel->protocol->scan(descriptor->channel->backend, descriptor->id, args->index);
 
 }
 
@@ -369,7 +375,7 @@ void abi_setup(unsigned int (*spawn)(struct container *container, struct task *t
     calls[0x0C] = spawn;
     calls[0x0D] = despawn;
     calls[0x0E] = seek;
-    calls[0x0F] = undefined;
+    calls[0x0F] = scan;
 
 }
 

@@ -101,10 +101,17 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
 
 }
 
+static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, unsigned int index)
+{
+
+    return 0;
+
+}
+
 void system_initprotocol(struct vfs_protocol *protocol)
 {
 
-    vfs_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, 0);
+    vfs_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_scan, 0);
 
 }
 

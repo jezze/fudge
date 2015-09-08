@@ -41,6 +41,7 @@ unsigned int call_load(unsigned int descriptor);
 unsigned int call_mount(unsigned int mount, unsigned int channel, unsigned int descriptor);
 unsigned int call_open(unsigned int descriptor);
 unsigned int call_read(unsigned int descriptor, unsigned int count, void *buffer);
+unsigned int call_scan(unsigned int descriptor, unsigned int index);
 unsigned int call_seek(unsigned int descriptor, unsigned int offset);
 unsigned int call_spawn(void);
 unsigned int call_unload(unsigned int descriptor);

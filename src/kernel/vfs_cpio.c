@@ -309,6 +309,30 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
 
 }
 
+static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, unsigned int index)
+{
+
+    struct cpio_header parent;
+    struct cpio_header header;
+
+    if (!getheader(backend, &parent, decode(id)))
+        return 0;
+
+    if ((parent.mode & 0xF000) != 0x4000)
+        return 0;
+
+    if (!getheader(backend, &header, decode(index)))
+        return 0;
+
+    index = encode(cpio_next(&header, decode(index)));
+
+    if (protocol_parent(backend, index) != id)
+        return 0;
+
+    return index;
+
+}
+
 static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned int id)
 {
 
@@ -326,7 +350,7 @@ static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned 
 void vfs_setupcpio(void)
 {
 
-    vfs_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_getphysical);
+    vfs_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_scan, protocol_getphysical);
     resource_register(&protocol.resource);
 
 }

@@ -16,6 +16,7 @@
 .set CALL_INDEX_SPAWN,                  0x0C
 .set CALL_INDEX_DESPAWN,                0x0D
 .set CALL_INDEX_SEEK,                   0x0E
+.set CALL_INDEX_SCAN,                   0x0F
 
 .global call_auth
 call_auth:
@@ -74,6 +75,12 @@ call_open:
 .global call_read
 call_read:
     movl $CALL_INDEX_READ, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_scan
+call_scan:
+    movl $CALL_INDEX_SCAN, %eax
     int $CALL_INTERRUPT
     ret
 
