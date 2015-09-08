@@ -59,45 +59,27 @@ static unsigned int node_read(struct system_node *self, unsigned int offset, uns
 static unsigned int node_readgroup(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct list_item *current;
-    struct record *records = buffer;
-    unsigned int i = 0;
+    struct record *record = buffer;
+    struct system_node *node = (struct system_node *)offset;
 
-    if (offset > 0)
-        return 0;
+    record->size = 0;
+    record->length = memory_read(record->name, RECORD_NAMESIZE, node->name, ascii_length(node->name), 0);
 
-    records[i].size = 0;
-    records[i].length = memory_read(records[i].name, RECORD_NAMESIZE, "../", 3, 0);
-
-    i++;
-
-    for (current = self->children.head; current; current = current->next)
+    if (node->type & SYSTEM_NODETYPE_MULTI)
     {
 
-        struct system_node *node = current->data;
+        char *index = ":0";
 
-        records[i].size = 0;
-        records[i].length = memory_read(records[i].name, RECORD_NAMESIZE, node->name, ascii_length(node->name), 0);
+        index[1] = '0' + node->index;
 
-        if (node->type & SYSTEM_NODETYPE_MULTI)
-        {
-
-            char *index = ":0";
-
-            index[1] = '0' + node->index;
-
-            records[i].length += memory_write(records[i].name, RECORD_NAMESIZE, index, 2, records[i].length);
-
-        }
-
-        if (node->type & SYSTEM_NODETYPE_GROUP)
-            records[i].length += memory_write(records[i].name, RECORD_NAMESIZE, "/", 1, records[i].length);
-
-        i++;
+        record->length += memory_write(record->name, RECORD_NAMESIZE, index, 2, record->length);
 
     }
 
-    return i;
+    if (node->type & SYSTEM_NODETYPE_GROUP)
+        record->length += memory_write(record->name, RECORD_NAMESIZE, "/", 1, record->length);
+
+    return sizeof (struct record);
 
 }
 
@@ -196,6 +178,38 @@ static unsigned int node_childgroup(struct system_node *self, unsigned int count
 
 }
 
+static unsigned int node_scan(struct system_node *self, unsigned int index)
+{
+
+    return 0;
+
+}
+
+static unsigned int node_scangroup(struct system_node *self, unsigned int index)
+{
+
+    if (index)
+    {
+
+        struct system_node *n = (struct system_node *)index;
+
+        if (n->item.next)
+            return (unsigned int)n->item.next->data;
+
+    }
+
+    else
+    {
+
+        if (self->children.head)
+            return (unsigned int)self->children.head->data;
+
+    }
+
+    return 0;
+
+}
+
 void system_addchild(struct system_node *group, struct system_node *node)
 {
 
@@ -248,6 +262,7 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     node->read = node_read;
     node->write = node_write;
     node->child = node_child;
+    node->scan = node_scan;
 
     if (type & SYSTEM_NODETYPE_MAILBOX)
     {
@@ -264,6 +279,7 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
         node->read = node_readgroup;
         node->child = node_childgroup;
+        node->scan = node_scangroup;
 
     }
 

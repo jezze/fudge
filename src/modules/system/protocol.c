@@ -104,7 +104,9 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
 static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, unsigned int index)
 {
 
-    return 0;
+    struct system_node *node = getnode(id);
+
+    return node->scan(node, index);
 
 }
 

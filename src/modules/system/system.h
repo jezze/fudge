@@ -29,6 +29,7 @@ struct system_node
     unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*child)(struct system_node *self, unsigned int count, char *path);
+    unsigned int (*scan)(struct system_node *self, unsigned int index);
 
 };
 

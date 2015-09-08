@@ -4,24 +4,20 @@
 void main(void)
 {
 
-    struct record records[64];
-    unsigned int count;
+    unsigned int index = 0;
 
     call_open(CALL_PO);
     call_open(CALL_PW);
 
-    while ((count = call_read(CALL_PW, sizeof (struct record) * 64, records)))
+    while ((index = call_scan(CALL_PW, index)))
     {
 
-        unsigned int i;
+        struct record record;
 
-        for (i = 0; i < count; i++)
-        {
-
-            call_write(CALL_PO, records[i].length, records[i].name);
-            call_write(CALL_PO, 1, "\n");
-
-        }
+        call_seek(CALL_PW, index);
+        call_read(CALL_PW, sizeof (struct record), &record);
+        call_write(CALL_PO, record.length, record.name);
+        call_write(CALL_PO, 1, "\n");
 
     }
 

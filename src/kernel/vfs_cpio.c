@@ -228,52 +228,25 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
     if ((header.mode & 0xF000) == 0x4000)
     {
 
-        struct record *records = buffer;
+        struct record *record = buffer;
         unsigned int length = header.namesize;
-        unsigned int i = 0;
+        unsigned char name[1024];
 
-        if (offset > 0)
+        address = decode(offset);
+
+        if (!getheader(backend, &header, address))
             return 0;
 
-        records[i].size = 0;
-        records[i].length = memory_read(records[i].name, RECORD_NAMESIZE, "../", 3, 0);
+        if (!getname(backend, &header, address, 1024, name))
+            return 0;
 
-        i++;
+        record->size = cpio_filesize(&header);
+        record->length = memory_read(record->name, RECORD_NAMESIZE, name, header.namesize, length);
 
-        address = 0;
+        if ((header.mode & 0xF000) == 0x4000)
+            record->length += memory_write(record->name, RECORD_NAMESIZE, "/", 1, record->length);
 
-        do
-        {
-
-            unsigned int cid = encode(address);
-
-            if (cid == id)
-                break;
-
-            if (!getheader(backend, &header, address))
-                break;
-
-            if (protocol_parent(backend, cid) == id)
-            {
-
-                unsigned char name[1024];
-
-                if (!getname(backend, &header, address, 1024, name))
-                    break;
-
-                records[i].size = cpio_filesize(&header);
-                records[i].length = memory_read(records[i].name, RECORD_NAMESIZE, name, header.namesize, length);
-
-                if ((header.mode & 0xF000) == 0x4000)
-                    records[i].length += memory_write(records[i].name, RECORD_NAMESIZE, "/", 1, records[i].length);
-
-                i++;
-
-            }
-
-        } while ((address = cpio_next(&header, address)));
-
-        return i;
+        return sizeof (struct record);
 
     }
 
@@ -312,24 +285,36 @@ static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id,
 static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, unsigned int index)
 {
 
-    struct cpio_header parent;
     struct cpio_header header;
+    unsigned int address = (index) ? decode(index) : 0;
 
-    if (!getheader(backend, &parent, decode(id)))
+    if (!getheader(backend, &header, decode(id)))
         return 0;
 
-    if ((parent.mode & 0xF000) != 0x4000)
+    if ((header.mode & 0xF000) != 0x4000)
         return 0;
 
-    if (!getheader(backend, &header, decode(index)))
+    if (!getheader(backend, &header, address))
         return 0;
 
-    index = encode(cpio_next(&header, decode(index)));
-
-    if (protocol_parent(backend, index) != id)
+    if (!cpio_validate(&header))
         return 0;
 
-    return index;
+    while ((address = cpio_next(&header, address)))
+    {
+
+        if (!getheader(backend, &header, address))
+            break;
+
+        if (!cpio_validate(&header))
+            break;
+
+        if (protocol_parent(backend, encode(address)) == id)
+            return encode(address);
+
+    }
+
+    return 0;
 
 }
 
