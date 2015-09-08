@@ -232,7 +232,10 @@ static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, 
         unsigned int length = header.namesize;
         unsigned char name[1024];
 
-        address = decode(offset);
+        if (offset)
+            address = decode(offset);
+        else
+            address = decode(protocol_parent(backend, id));
 
         if (!getheader(backend, &header, address))
             return 0;
