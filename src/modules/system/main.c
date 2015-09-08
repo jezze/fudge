@@ -196,34 +196,6 @@ static unsigned int node_childgroup(struct system_node *self, unsigned int count
 
 }
 
-unsigned int system_open(struct system_node *node)
-{
-
-    return node->open(node);
-
-}
-
-unsigned int system_close(struct system_node *node)
-{
-
-    return node->close(node);
-
-}
-
-unsigned int system_read(struct system_node *node, unsigned int count, void *buffer)
-{
-
-    return node->read(node, 0, count, buffer);
-
-}
-
-unsigned int system_write(struct system_node *node, unsigned int count, void *buffer)
-{
-
-    return node->write(node, 0, count, buffer);
-
-}
-
 void system_addchild(struct system_node *group, struct system_node *node)
 {
 

@@ -8,7 +8,7 @@ static unsigned int wait;
 void block_notify(struct block_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&interface->data, count, buffer);
+    interface->data.write(&interface->data, 0, count, buffer);
 
     wait = 0;
 

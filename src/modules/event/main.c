@@ -15,7 +15,7 @@ void event_notify(unsigned int count, void *buffer)
     header->destination = 0xFFFFFFFF;
     header->source = 0;
 
-    system_write(&poll, count, buffer);
+    poll.write(&poll, 0, count, buffer);
 
 }
 
@@ -30,7 +30,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
     if (header->destination == 0xFFFFFFFF)
     {
 
-        system_write(&poll, count, buffer);
+        poll.write(&poll, 0, count, buffer);
 
         return count;
 

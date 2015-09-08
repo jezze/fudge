@@ -32,10 +32,6 @@ struct system_node
 
 };
 
-unsigned int system_open(struct system_node *node);
-unsigned int system_close(struct system_node *node);
-unsigned int system_read(struct system_node *node, unsigned int count, void *buffer);
-unsigned int system_write(struct system_node *node, unsigned int count, void *buffer);
 void system_addchild(struct system_node *group, struct system_node *node);
 void system_removechild(struct system_node *group, struct system_node *node);
 void system_registernode(struct system_node *node);

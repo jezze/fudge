@@ -43,7 +43,7 @@ static void ethernetprotocol_removeinterface(struct ethernet_interface *interfac
 static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_write(&ethernetprotocol.data, count, buffer);
+    ethernetprotocol.data.write(&ethernetprotocol.data, 0, count, buffer);
 
 }
 
