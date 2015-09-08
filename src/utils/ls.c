@@ -9,7 +9,7 @@ void main(void)
 
     call_open(CALL_PO);
     call_open(CALL_PW);
-    call_seek(CALL_PW, 0);
+    call_seek(CALL_PW, index);
     call_read(CALL_PW, sizeof (struct record), &record);
     call_write(CALL_PO, 3, "../");
     call_write(CALL_PO, 1, "\n");
