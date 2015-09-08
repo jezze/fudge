@@ -22,7 +22,12 @@ static unsigned int encode(unsigned int address)
 static unsigned int getheader(struct vfs_backend *backend, struct cpio_header *header, unsigned int address)
 {
 
-    return backend->read(address, sizeof (struct cpio_header), header) == sizeof (struct cpio_header);
+    unsigned int count = backend->read(address, sizeof (struct cpio_header), header);
+
+    if (count != sizeof (struct cpio_header))
+        return 0;
+
+    return cpio_validate(header);
 
 }
 
@@ -41,10 +46,7 @@ static unsigned int protocol_match(struct vfs_backend *backend)
 
     struct cpio_header header;
 
-    if (!getheader(backend, &header, 0))
-        return 0;
-
-    return cpio_validate(&header);
+    return getheader(backend, &header, 0);
 
 }
 
@@ -59,9 +61,6 @@ static unsigned int protocol_root(struct vfs_backend *backend)
     {
 
         if (!getheader(backend, &header, address))
-            break;
-
-        if (!cpio_validate(&header))
             break;
 
         if ((header.mode & 0xF000) != 0x4000)
@@ -97,9 +96,6 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
     {
 
         if (!getheader(backend, &header, address))
-            break;
-
-        if (!cpio_validate(&header))
             break;
 
         if ((header.mode & 0xF000) != 0x4000)
@@ -297,16 +293,10 @@ static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, 
     if (!getheader(backend, &header, address))
         return 0;
 
-    if (!cpio_validate(&header))
-        return 0;
-
     while ((address = cpio_next(&header, address)))
     {
 
         if (!getheader(backend, &header, address))
-            break;
-
-        if (!cpio_validate(&header))
             break;
 
         if (protocol_parent(backend, encode(address)) == id)
