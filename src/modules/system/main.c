@@ -243,33 +243,29 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
     node->type = type;
     node->name = name;
+    node->open = node_open;
+    node->close = node_close;
+    node->read = node_read;
+    node->write = node_write;
+    node->child = node_child;
 
     if (type & SYSTEM_NODETYPE_MAILBOX)
+    {
+
         node->open = node_openmailboxes;
-    else
-        node->open = node_open;
-
-    if (type & SYSTEM_NODETYPE_MAILBOX)
         node->close = node_closemailboxes;
-    else
-        node->close = node_close;
-
-    if (type & SYSTEM_NODETYPE_GROUP)
-        node->read = node_readgroup;
-    else if (type & SYSTEM_NODETYPE_MAILBOX)
         node->read = node_readmailboxes;
-    else
-        node->read = node_read;
-
-    if (type & SYSTEM_NODETYPE_MAILBOX)
         node->write = node_writemailboxes;
-    else
-        node->write = node_write;
+
+    }
 
     if (type & SYSTEM_NODETYPE_GROUP)
+    {
+
+        node->read = node_readgroup;
         node->child = node_childgroup;
-    else
-        node->child = node_child;
+
+    }
 
 }
 
