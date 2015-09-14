@@ -4,28 +4,43 @@
 void main(void)
 {
 
-    struct record records[64];
-    unsigned int count, roff, woff = 0;
+    unsigned int index = 0;
+    unsigned int count;
+    struct record record;
+    char num[8];
 
     call_open(CALL_PO);
     call_open(CALL_PW);
+    call_seek(CALL_PW, index);
+    call_read(CALL_PW, sizeof (struct record), &record);
 
-    for (roff = 0; (count = call_read(CALL_PW, roff, sizeof (struct record), 64, records)); roff += count)
+    count = ascii_wzerovalue(num, 8, record.id, 16, 8, 0);
+
+    call_write(CALL_PO, count, num);
+    call_write(CALL_PO, 1, " ");
+
+    count = ascii_wzerovalue(num, 8, record.size, 16, 8, 0);
+
+    call_write(CALL_PO, count, num);
+    call_write(CALL_PO, 5, " ../\n");
+
+    while ((index = call_scan(CALL_PW, index)))
     {
 
-        unsigned int i;
+        call_seek(CALL_PW, index);
+        call_read(CALL_PW, sizeof (struct record), &record);
 
-        for (i = 0; i < count; i++)
-        {
+        count = ascii_wzerovalue(num, 8, record.id, 16, 8, 0);
 
-            unsigned char num[32];
+        call_write(CALL_PO, count, num);
+        call_write(CALL_PO, 1, " ");
 
-            woff += call_write(CALL_PO, woff, ascii_wzerovalue(num, 32, records[i].size, 16, 8, 0), 1, num);
-            woff += call_write(CALL_PO, woff, 2, 1, "  ");
-            woff += call_write(CALL_PO, woff, records[i].length, 1, records[i].name);
-            woff += call_write(CALL_PO, woff, 1, 1, "\n");
+        count = ascii_wzerovalue(num, 8, record.size, 16, 8, 0);
 
-        }
+        call_write(CALL_PO, count, num);
+        call_write(CALL_PO, 1, " ");
+        call_write(CALL_PO, record.length, record.name);
+        call_write(CALL_PO, 1, "\n");
 
     }
 

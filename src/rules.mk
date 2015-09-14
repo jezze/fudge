@@ -33,6 +33,7 @@ include $(DIR)/initmod.mk
 include $(DIR)/keymapse.mk
 include $(DIR)/keymapus.mk
 include $(DIR)/ls.mk
+include $(DIR)/lsc.mk
 include $(DIR)/mbr.mk
 include $(DIR)/md5.mk
 include $(DIR)/modload.mk

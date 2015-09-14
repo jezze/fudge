@@ -224,6 +224,7 @@ static unsigned int readdirectory(struct vfs_backend *backend, unsigned int addr
     if (!readname(backend, header, address, 1024, name))
         return 0;
 
+    record->id = encode(address);
     record->size = cpio_filesize(header);
     record->length = memory_read(record->name, RECORD_NAMESIZE, name, header->namesize, length);
 

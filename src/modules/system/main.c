@@ -62,6 +62,7 @@ static unsigned int node_readgroup(struct system_node *self, unsigned int offset
     struct record *record = buffer;
     struct system_node *node = (offset) ? (struct system_node *)offset : self->parent;
 
+    record->id = (unsigned int)node;
     record->size = 0;
     record->length = memory_read(record->name, RECORD_NAMESIZE, node->name, ascii_length(node->name), 0);
 
