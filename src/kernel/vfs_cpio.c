@@ -79,6 +79,9 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
     unsigned int address = decode(id);
     unsigned int length;
 
+    if (id == protocol_root(backend))
+        return id;
+
     if (!readheader(backend, &header, address))
         return 0;
 
@@ -319,6 +322,9 @@ static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, 
 
     while ((address = cpio_next(&header, address)))
     {
+
+        if (encode(address) == id)
+            break;
 
         if (!readheader(backend, &header, address))
             break;
