@@ -3,13 +3,6 @@
 #include "system.h"
 #include "protocol.h"
 
-static struct system_node *getnode(unsigned int id)
-{
-
-    return (struct system_node *)id;
-
-}
-
 static unsigned int protocol_match(struct vfs_backend *backend)
 {
 
@@ -36,7 +29,7 @@ static unsigned int protocol_root(struct vfs_backend *backend)
 static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id)
 {
 
-    struct system_node *node = getnode(id);
+    struct system_node *node = (struct system_node *)id;
 
     return (unsigned int)node->parent;
 
@@ -45,9 +38,9 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
 static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id, unsigned int count, char *path)
 {
 
-    struct system_node *node = getnode(id);
+    struct system_node *node = (struct system_node *)id;
 
-    return node->child(node, count, path);
+    return (node->child) ? node->child(node, count, path) : (count ? 0 : id);
 
 }
 
@@ -68,45 +61,45 @@ static unsigned int protocol_destroy(struct vfs_backend *backend, unsigned int i
 static unsigned int protocol_open(struct vfs_backend *backend, unsigned int id)
 {
 
-    struct system_node *node = getnode(id);
+    struct system_node *node = (struct system_node *)id;
 
-    return node->open(node);
+    return (node->open) ? node->open(node) : id;
 
 }
 
 static unsigned int protocol_close(struct vfs_backend *backend, unsigned int id)
 {
 
-    struct system_node *node = getnode(id);
+    struct system_node *node = (struct system_node *)id;
 
-    return node->close(node);
+    return (node->close) ? node->close(node) : id;
 
 }
 
 static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct system_node *node = getnode(id);
+    struct system_node *node = (struct system_node *)id;
 
-    return node->read(node, offset, count, buffer);
+    return (node->read) ? node->read(node, offset, count, buffer) : 0;
 
 }
 
 static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct system_node *node = getnode(id);
+    struct system_node *node = (struct system_node *)id;
 
-    return node->write(node, offset, count, buffer);
+    return (node->write) ? node->write(node, offset, count, buffer) : 0;
 
 }
 
 static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, unsigned int index)
 {
 
-    struct system_node *node = getnode(id);
+    struct system_node *node = (struct system_node *)id;
 
-    return node->scan(node, index);
+    return (node->scan) ? node->scan(node, index) : 0;
 
 }
 

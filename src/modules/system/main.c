@@ -7,26 +7,12 @@
 static struct vfs_backend backend;
 static struct vfs_protocol protocol;
 
-static unsigned int node_open(struct system_node *self)
-{
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int node_openmailboxes(struct system_node *self)
 {
 
     struct task *task = task_findactive();
 
     list_add(&self->mailboxes, &task->mailbox.item);
-
-    return node_open(self);
-
-}
-
-static unsigned int node_close(struct system_node *self)
-{
 
     return (unsigned int)self;
 
@@ -39,14 +25,7 @@ static unsigned int node_closemailboxes(struct system_node *self)
 
     list_remove(&self->mailboxes, &task->mailbox.item);
 
-    return node_close(self);
-
-}
-
-static unsigned int node_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
+    return (unsigned int)self;
 
 }
 
@@ -85,13 +64,6 @@ static unsigned int node_readmailboxes(struct system_node *self, unsigned int of
 
 }
 
-static unsigned int node_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 static unsigned int node_writemailboxes(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -105,16 +77,6 @@ static unsigned int node_writemailboxes(struct system_node *self, unsigned int o
         task_wmessage(task, count, buffer);
 
     }
-
-    return 0;
-
-}
-
-static unsigned int node_child(struct system_node *self, unsigned int count, char *path)
-{
-
-    if (!count)
-        return (unsigned int)self;
 
     return 0;
 
@@ -157,16 +119,12 @@ static unsigned int node_childgroup(struct system_node *self, unsigned int count
         if (node->type & SYSTEM_NODETYPE_GROUP)
             length += 1;
 
-        return node->child(node, count - length, path + length);
+        count -= length;
+        path += length;
+
+        return (node->child) ? node->child(node, count, path) : (count ? 0 : (unsigned int)node);
 
     }
-
-    return 0;
-
-}
-
-static unsigned int node_scan(struct system_node *self, unsigned int index)
-{
 
     return 0;
 
@@ -244,12 +202,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
     node->type = type;
     node->name = name;
-    node->open = node_open;
-    node->close = node_close;
-    node->read = node_read;
-    node->write = node_write;
-    node->child = node_child;
-    node->scan = node_scan;
 
     if (type & SYSTEM_NODETYPE_MAILBOX)
     {
