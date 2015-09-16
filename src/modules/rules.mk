@@ -14,6 +14,7 @@ MODULES += \
     src/modules/mouse/mouse.ko \
     src/modules/mtwist/mtwist.ko \
     src/modules/null/null.ko.0 \
+    src/modules/pipe/pipe.ko \
     src/modules/pipe/pipe.ko.0 \
     src/modules/pipe/pipe.ko.1 \
     src/modules/pipe/pipe.ko.2 \
@@ -44,14 +45,15 @@ CLEAN += \
     src/modules/mouse/mouse.ko src/modules/mouse/main.o \
     src/modules/mtwist/mtwist.ko src/modules/mtwist/main.o \
     src/modules/null/null.ko.0 src/modules/null/main.o \
-    src/modules/pipe/pipe.ko.0 src/modules/pipe/main.o \
-    src/modules/pipe/pipe.ko.1 src/modules/pipe/main.o \
-    src/modules/pipe/pipe.ko.2 src/modules/pipe/main.o \
-    src/modules/pipe/pipe.ko.3 src/modules/pipe/main.o \
-    src/modules/pipe/pipe.ko.4 src/modules/pipe/main.o \
-    src/modules/pipe/pipe.ko.5 src/modules/pipe/main.o \
-    src/modules/pipe/pipe.ko.6 src/modules/pipe/main.o \
-    src/modules/pipe/pipe.ko.7 src/modules/pipe/main.o \
+    src/modules/pipe/pipe.ko src/modules/pipe/main.o \
+    src/modules/pipe/pipe.ko.0 src/modules/pipe/node.o \
+    src/modules/pipe/pipe.ko.1 src/modules/pipe/node.o \
+    src/modules/pipe/pipe.ko.2 src/modules/pipe/node.o \
+    src/modules/pipe/pipe.ko.3 src/modules/pipe/node.o \
+    src/modules/pipe/pipe.ko.4 src/modules/pipe/node.o \
+    src/modules/pipe/pipe.ko.5 src/modules/pipe/node.o \
+    src/modules/pipe/pipe.ko.6 src/modules/pipe/node.o \
+    src/modules/pipe/pipe.ko.7 src/modules/pipe/node.o \
     src/modules/system/system.ko src/modules/system/main.o src/modules/system/backend.o src/modules/system/protocol.o \
     src/modules/timer/timer.ko src/modules/timer/main.o \
     src/modules/udp/udp.ko src/modules/udp/main.o \
@@ -73,14 +75,15 @@ src/modules/log/log.ko: src/modules/log/main.o
 src/modules/mouse/mouse.ko: src/modules/mouse/main.o
 src/modules/mtwist/mtwist.ko: src/modules/mtwist/main.o
 src/modules/null/null.ko.0: src/modules/null/main.o
-src/modules/pipe/pipe.ko.0: src/modules/pipe/main.o
-src/modules/pipe/pipe.ko.1: src/modules/pipe/main.o
-src/modules/pipe/pipe.ko.2: src/modules/pipe/main.o
-src/modules/pipe/pipe.ko.3: src/modules/pipe/main.o
-src/modules/pipe/pipe.ko.4: src/modules/pipe/main.o
-src/modules/pipe/pipe.ko.5: src/modules/pipe/main.o
-src/modules/pipe/pipe.ko.6: src/modules/pipe/main.o
-src/modules/pipe/pipe.ko.7: src/modules/pipe/main.o
+src/modules/pipe/pipe.ko: src/modules/pipe/main.o
+src/modules/pipe/pipe.ko.0: src/modules/pipe/node.o
+src/modules/pipe/pipe.ko.1: src/modules/pipe/node.o
+src/modules/pipe/pipe.ko.2: src/modules/pipe/node.o
+src/modules/pipe/pipe.ko.3: src/modules/pipe/node.o
+src/modules/pipe/pipe.ko.4: src/modules/pipe/node.o
+src/modules/pipe/pipe.ko.5: src/modules/pipe/node.o
+src/modules/pipe/pipe.ko.6: src/modules/pipe/node.o
+src/modules/pipe/pipe.ko.7: src/modules/pipe/node.o
 src/modules/system/system.ko: src/modules/system/main.o src/modules/system/backend.o src/modules/system/protocol.o
 src/modules/timer/timer.ko: src/modules/timer/main.o
 src/modules/udp/udp.ko: src/modules/udp/main.o

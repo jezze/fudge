@@ -23,7 +23,6 @@ struct system_node
     char *name;
     struct resource *resource;
     unsigned int index;
-    unsigned int refcount;
     unsigned int (*open)(struct system_node *self);
     unsigned int (*close)(struct system_node *self);
     unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);

@@ -16,6 +16,7 @@
 /bin/modload < /mod/ipv6.ko
 /bin/modload < /mod/udp.ko
 /bin/modload < /mod/null.ko.0
+/bin/modload < /mod/pipe.ko
 /bin/modload < /mod/pipe.ko.0
 /bin/modload < /mod/pipe.ko.1
 /bin/modload < /mod/pipe.ko.2

@@ -293,14 +293,12 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!walk_path(CALL_CP, CALL_L0, ascii_length(t->str), t->str))
                 return;
 
-            if (!call_walk(CALL_L1, CALL_PR, 12, "system/pipe/"))
+            if (!call_walk(CALL_L1, CALL_PR, 18, "system/pipe/clone/"))
                 return;
 
-            call_open(CALL_L1);
             call_walk(CALL_CO, CALL_L1, 1, "0");
             call_spawn();
             call_walk(CALL_C0, CALL_L1, 1, "1");
-            call_close(CALL_L1);
 
             break;
 

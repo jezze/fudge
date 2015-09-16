@@ -10,9 +10,6 @@ static struct vfs_protocol protocol;
 static unsigned int node_open(struct system_node *self)
 {
 
-    self->refcount++;
-    self->parent->refcount++;
-
     return (unsigned int)self;
 
 }
@@ -30,9 +27,6 @@ static unsigned int node_openmailboxes(struct system_node *self)
 
 static unsigned int node_close(struct system_node *self)
 {
-
-    self->refcount--;
-    self->parent->refcount--;
 
     return (unsigned int)self;
 
@@ -146,25 +140,17 @@ static unsigned int node_childgroup(struct system_node *self, unsigned int count
         if (node->type & SYSTEM_NODETYPE_MULTI)
         {
 
-            if (path[length] == ':')
-            {
+            unsigned int val;
 
-                unsigned int val = path[length + 1] - '0';
+            if (path[length] != ':')
+                continue;
 
-                if (val != node->index)
-                    continue;
+            val = path[length + 1] - '0';
 
-                length += 2;
+            if (val != node->index)
+                continue;
 
-            }
-
-            else
-            {
-
-                if (node->refcount)
-                    continue;
-
-            }
+            length += 2;
 
         }
 

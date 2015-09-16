@@ -1,127 +1,184 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
+#include "pipe.h"
 
 static struct system_node root;
-static struct system_node endpoint0;
-static struct system_node endpoint1;
-static struct task *t0;
-static struct task *t1;
+static struct system_node clone;
 
-static unsigned int endpoint0_open(struct system_node *self)
+static unsigned int p0_open(struct system_node *self)
 {
 
-    t0 = task_findactive();
-    self->refcount++;
-    self->parent->refcount++;
+    struct pipe *pipe = (struct pipe *)self->parent;
+
+    pipe->t0 = task_findactive();
 
     return (unsigned int)self;
 
 }
 
-static unsigned int endpoint0_close(struct system_node *self)
+static unsigned int p0_close(struct system_node *self)
 {
 
-    if (t1)
-        task_setstatus(t1, TASK_STATUS_ACTIVE);
+    struct pipe *pipe = (struct pipe *)self->parent;
 
-    t0 = 0;
-    self->refcount--;
-    self->parent->refcount--;
+    if (pipe->t1)
+        task_setstatus(pipe->t1, TASK_STATUS_ACTIVE);
+
+    pipe->t0 = 0;
 
     return (unsigned int)self;
 
 }
 
-static unsigned int endpoint0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int p0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (t1)
-        return task_rmessage(t0, count, buffer);
+    struct pipe *pipe = (struct pipe *)self->parent;
+
+    if (pipe->t1)
+        return task_rmessage(pipe->t0, count, buffer);
     else
         return 0;
 
 }
 
-static unsigned int endpoint0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int p0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (t1)
-        return task_wmessage(t1, count, buffer);
+    struct pipe *pipe = (struct pipe *)self->parent;
+
+    if (pipe->t1)
+        return task_wmessage(pipe->t1, count, buffer);
     else
         return 0;
 
 }
 
-static unsigned int endpoint1_open(struct system_node *self)
+static unsigned int p1_open(struct system_node *self)
 {
 
-    t1 = task_findactive();
-    self->refcount++;
-    self->parent->refcount++;
+    struct pipe *pipe = (struct pipe *)self->parent;
+
+    pipe->t1 = task_findactive();
 
     return (unsigned int)self;
 
 }
 
-static unsigned int endpoint1_close(struct system_node *self)
+static unsigned int p1_close(struct system_node *self)
 {
 
-    if (t0)
-        task_setstatus(t0, TASK_STATUS_ACTIVE);
+    struct pipe *pipe = (struct pipe *)self->parent;
 
-    t1 = 0;
-    self->refcount--;
-    self->parent->refcount--;
+    if (pipe->t0)
+        task_setstatus(pipe->t0, TASK_STATUS_ACTIVE);
+
+    pipe->t1 = 0;
 
     return (unsigned int)self;
 
 }
 
-static unsigned int endpoint1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int p1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (t0)
-        return task_rmessage(t1, count, buffer);
+    struct pipe *pipe = (struct pipe *)self->parent;
+
+    if (pipe->t0)
+        return task_rmessage(pipe->t1, count, buffer);
     else
         return 0;
 
 }
 
-static unsigned int endpoint1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int p1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    if (t0)
-        return task_wmessage(t0, count, buffer);
+    struct pipe *pipe = (struct pipe *)self->parent;
+
+    if (pipe->t0)
+        return task_wmessage(pipe->t0, count, buffer);
     else
         return 0;
+
+}
+
+static unsigned int clone_child(struct system_node *self, unsigned int count, char *path)
+{
+
+    struct list_item *current;
+
+    for (current = root.children.head; current; current = current->next)
+    {
+
+        struct system_node *node = current->data;
+        struct pipe *pipe = current->data;
+
+        if (node == self)
+            continue;
+
+        if (pipe->t0 || pipe->t1)
+            continue;
+
+        return node->child(node, count, path);
+
+    }
+
+    return 0;
+
+}
+
+void pipe_init(struct pipe *pipe)
+{
+
+    pipe->t0 = 0;
+
+    system_initnode(&pipe->p0, SYSTEM_NODETYPE_NORMAL, "0");
+
+    pipe->p0.open = p0_open;
+    pipe->p0.close = p0_close;
+    pipe->p0.read = p0_read;
+    pipe->p0.write = p0_write;
+
+    pipe->t1 = 0;
+
+    system_initnode(&pipe->p1, SYSTEM_NODETYPE_NORMAL, "1");
+
+    pipe->p1.open = p1_open;
+    pipe->p1.close = p1_close;
+    pipe->p1.read = p1_read;
+    pipe->p1.write = p1_write;
+
+    system_initnode(&pipe->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "pipe");
+    system_addchild(&pipe->root, &pipe->p0);
+    system_addchild(&pipe->root, &pipe->p1);
+
+}
+
+void pipe_register(struct pipe *pipe)
+{
+
+    system_addchild(&root, &pipe->root);
+
+}
+
+void pipe_unregister(struct pipe *pipe)
+{
+
+    system_removechild(&root, &pipe->root);
 
 }
 
 void module_init(void)
 {
 
-    t0 = 0;
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "pipe");
+    system_initnode(&clone, SYSTEM_NODETYPE_GROUP, "clone");
 
-    system_initnode(&endpoint0, SYSTEM_NODETYPE_NORMAL, "0");
+    clone.child = clone_child;
 
-    endpoint0.open = endpoint0_open;
-    endpoint0.close = endpoint0_close;
-    endpoint0.read = endpoint0_read;
-    endpoint0.write = endpoint0_write;
-
-    t1 = 0;
-
-    system_initnode(&endpoint1, SYSTEM_NODETYPE_NORMAL, "1");
-
-    endpoint1.open = endpoint1_open;
-    endpoint1.close = endpoint1_close;
-    endpoint1.read = endpoint1_read;
-    endpoint1.write = endpoint1_write;
-
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "pipe");
-    system_addchild(&root, &endpoint0);
-    system_addchild(&root, &endpoint1);
+    system_addchild(&root, &clone);
 
 }
 
