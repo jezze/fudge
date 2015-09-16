@@ -39,12 +39,14 @@ static void interpret(struct buffer *buffer)
     if (!call_walk(CALL_L0, CALL_PR, 12, "system/pipe/"))
         return;
 
+    call_open(CALL_L0);
     call_walk(CALL_L1, CALL_L0, 1, "0");
     call_walk(CALL_C0, CALL_L0, 1, "1");
     call_open(CALL_L1);
     call_spawn();
     call_write(CALL_L1, count, command);
     call_close(CALL_L1);
+    call_close(CALL_L0);
 
 }
 

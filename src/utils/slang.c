@@ -296,9 +296,11 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!call_walk(CALL_L1, CALL_PR, 12, "system/pipe/"))
                 return;
 
+            call_open(CALL_L1);
             call_walk(CALL_CO, CALL_L1, 1, "0");
             call_spawn();
             call_walk(CALL_C0, CALL_L1, 1, "1");
+            call_close(CALL_L1);
 
             break;
 
