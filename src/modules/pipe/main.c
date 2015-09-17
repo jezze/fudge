@@ -36,10 +36,7 @@ static unsigned int p0_read(struct system_node *self, unsigned int offset, unsig
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    if (pipe->t1)
-        return task_rmessage(pipe->t0, count, buffer);
-    else
-        return 0;
+    return (pipe->t1) ? task_rmessage(pipe->t0, count, buffer) : 0;
 
 }
 
@@ -48,10 +45,7 @@ static unsigned int p0_write(struct system_node *self, unsigned int offset, unsi
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    if (pipe->t1)
-        return task_wmessage(pipe->t1, count, buffer);
-    else
-        return 0;
+    return (pipe->t1) ? task_wmessage(pipe->t1, count, buffer) : 0;
 
 }
 
@@ -85,10 +79,7 @@ static unsigned int p1_read(struct system_node *self, unsigned int offset, unsig
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    if (pipe->t0)
-        return task_rmessage(pipe->t1, count, buffer);
-    else
-        return 0;
+    return (pipe->t0) ? task_rmessage(pipe->t1, count, buffer) : 0;
 
 }
 
@@ -97,10 +88,7 @@ static unsigned int p1_write(struct system_node *self, unsigned int offset, unsi
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    if (pipe->t0)
-        return task_wmessage(pipe->t0, count, buffer);
-    else
-        return 0;
+    return (pipe->t0) ? task_wmessage(pipe->t0, count, buffer) : 0;
 
 }
 
