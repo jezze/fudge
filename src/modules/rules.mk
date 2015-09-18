@@ -1,132 +1,132 @@
-MODULES+=\
-    src/modules/arp/arp.ko \
-    src/modules/audio/audio.ko \
-    src/modules/base/base.ko \
-    src/modules/block/block.ko \
-    src/modules/clock/clock.ko \
-    src/modules/console/console.ko \
-    src/modules/ethernet/ethernet.ko \
-    src/modules/event/event.ko \
-    src/modules/ipv4/ipv4.ko \
-    src/modules/ipv6/ipv6.ko \
-    src/modules/keyboard/keyboard.ko \
-    src/modules/log/log.ko \
-    src/modules/mouse/mouse.ko \
-    src/modules/mtwist/mtwist.ko \
-    src/modules/null/null.ko.0 \
-    src/modules/pipe/pipe.ko \
-    src/modules/pipe/pipe.ko.0 \
-    src/modules/pipe/pipe.ko.1 \
-    src/modules/pipe/pipe.ko.2 \
-    src/modules/pipe/pipe.ko.3 \
-    src/modules/pipe/pipe.ko.4 \
-    src/modules/pipe/pipe.ko.5 \
-    src/modules/pipe/pipe.ko.6 \
-    src/modules/pipe/pipe.ko.7 \
-    src/modules/system/system.ko \
-    src/modules/timer/timer.ko \
-    src/modules/udp/udp.ko \
-    src/modules/video/video.ko \
-    src/modules/window/window.ko.0 \
+MODULES:=\
+    $(SRC_PATH)/modules/arp/arp.ko \
+    $(SRC_PATH)/modules/audio/audio.ko \
+    $(SRC_PATH)/modules/base/base.ko \
+    $(SRC_PATH)/modules/block/block.ko \
+    $(SRC_PATH)/modules/clock/clock.ko \
+    $(SRC_PATH)/modules/console/console.ko \
+    $(SRC_PATH)/modules/ethernet/ethernet.ko \
+    $(SRC_PATH)/modules/event/event.ko \
+    $(SRC_PATH)/modules/ipv4/ipv4.ko \
+    $(SRC_PATH)/modules/ipv6/ipv6.ko \
+    $(SRC_PATH)/modules/keyboard/keyboard.ko \
+    $(SRC_PATH)/modules/log/log.ko \
+    $(SRC_PATH)/modules/mouse/mouse.ko \
+    $(SRC_PATH)/modules/mtwist/mtwist.ko \
+    $(SRC_PATH)/modules/null/null.ko.0 \
+    $(SRC_PATH)/modules/pipe/pipe.ko \
+    $(SRC_PATH)/modules/pipe/pipe.ko.0 \
+    $(SRC_PATH)/modules/pipe/pipe.ko.1 \
+    $(SRC_PATH)/modules/pipe/pipe.ko.2 \
+    $(SRC_PATH)/modules/pipe/pipe.ko.3 \
+    $(SRC_PATH)/modules/pipe/pipe.ko.4 \
+    $(SRC_PATH)/modules/pipe/pipe.ko.5 \
+    $(SRC_PATH)/modules/pipe/pipe.ko.6 \
+    $(SRC_PATH)/modules/pipe/pipe.ko.7 \
+    $(SRC_PATH)/modules/system/system.ko \
+    $(SRC_PATH)/modules/timer/timer.ko \
+    $(SRC_PATH)/modules/udp/udp.ko \
+    $(SRC_PATH)/modules/video/video.ko \
+    $(SRC_PATH)/modules/window/window.ko.0 \
 
-OBJ_MODULES+=\
-    src/modules/arp/main.o \
-    src/modules/audio/main.o \
-    src/modules/base/main.o \
-    src/modules/block/main.o \
-    src/modules/clock/main.o \
-    src/modules/console/main.o \
-    src/modules/ethernet/main.o \
-    src/modules/event/main.o \
-    src/modules/ipv4/main.o \
-    src/modules/ipv6/main.o \
-    src/modules/keyboard/main.o \
-    src/modules/log/main.o \
-    src/modules/mouse/main.o \
-    src/modules/mtwist/main.o \
-    src/modules/null/main.o \
-    src/modules/pipe/main.o \
-    src/modules/pipe/node.o \
-    src/modules/pipe/node.o \
-    src/modules/pipe/node.o \
-    src/modules/pipe/node.o \
-    src/modules/pipe/node.o \
-    src/modules/pipe/node.o \
-    src/modules/pipe/node.o \
-    src/modules/pipe/node.o \
-    src/modules/system/main.o src/modules/system/backend.o src/modules/system/protocol.o \
-    src/modules/timer/main.o \
-    src/modules/udp/main.o \
-    src/modules/video/main.o \
-    src/modules/window/main.o \
+OBJ_MODULES:=\
+    $(SRC_PATH)/modules/arp/main.o \
+    $(SRC_PATH)/modules/audio/main.o \
+    $(SRC_PATH)/modules/base/main.o \
+    $(SRC_PATH)/modules/block/main.o \
+    $(SRC_PATH)/modules/clock/main.o \
+    $(SRC_PATH)/modules/console/main.o \
+    $(SRC_PATH)/modules/ethernet/main.o \
+    $(SRC_PATH)/modules/event/main.o \
+    $(SRC_PATH)/modules/ipv4/main.o \
+    $(SRC_PATH)/modules/ipv6/main.o \
+    $(SRC_PATH)/modules/keyboard/main.o \
+    $(SRC_PATH)/modules/log/main.o \
+    $(SRC_PATH)/modules/mouse/main.o \
+    $(SRC_PATH)/modules/mtwist/main.o \
+    $(SRC_PATH)/modules/null/main.o \
+    $(SRC_PATH)/modules/pipe/main.o \
+    $(SRC_PATH)/modules/pipe/node.o \
+    $(SRC_PATH)/modules/pipe/node.o \
+    $(SRC_PATH)/modules/pipe/node.o \
+    $(SRC_PATH)/modules/pipe/node.o \
+    $(SRC_PATH)/modules/pipe/node.o \
+    $(SRC_PATH)/modules/pipe/node.o \
+    $(SRC_PATH)/modules/pipe/node.o \
+    $(SRC_PATH)/modules/pipe/node.o \
+    $(SRC_PATH)/modules/system/main.o $(SRC_PATH)/modules/system/backend.o $(SRC_PATH)/modules/system/protocol.o \
+    $(SRC_PATH)/modules/timer/main.o \
+    $(SRC_PATH)/modules/udp/main.o \
+    $(SRC_PATH)/modules/video/main.o \
+    $(SRC_PATH)/modules/window/main.o \
 
-src/modules/arp/arp.ko: src/modules/arp/main.o
-src/modules/audio/audio.ko: src/modules/audio/main.o
-src/modules/base/base.ko: src/modules/base/main.o
-src/modules/block/block.ko: src/modules/block/main.o
-src/modules/clock/clock.ko: src/modules/clock/main.o
-src/modules/console/console.ko: src/modules/console/main.o
-src/modules/ethernet/ethernet.ko: src/modules/ethernet/main.o
-src/modules/event/event.ko: src/modules/event/main.o
-src/modules/ipv4/ipv4.ko: src/modules/ipv4/main.o
-src/modules/ipv6/ipv6.ko: src/modules/ipv6/main.o
-src/modules/keyboard/keyboard.ko: src/modules/keyboard/main.o
-src/modules/log/log.ko: src/modules/log/main.o
-src/modules/mouse/mouse.ko: src/modules/mouse/main.o
-src/modules/mtwist/mtwist.ko: src/modules/mtwist/main.o
-src/modules/null/null.ko.0: src/modules/null/main.o
-src/modules/pipe/pipe.ko: src/modules/pipe/main.o
-src/modules/pipe/pipe.ko.0: src/modules/pipe/node.o
-src/modules/pipe/pipe.ko.1: src/modules/pipe/node.o
-src/modules/pipe/pipe.ko.2: src/modules/pipe/node.o
-src/modules/pipe/pipe.ko.3: src/modules/pipe/node.o
-src/modules/pipe/pipe.ko.4: src/modules/pipe/node.o
-src/modules/pipe/pipe.ko.5: src/modules/pipe/node.o
-src/modules/pipe/pipe.ko.6: src/modules/pipe/node.o
-src/modules/pipe/pipe.ko.7: src/modules/pipe/node.o
-src/modules/system/system.ko: src/modules/system/main.o src/modules/system/backend.o src/modules/system/protocol.o
-src/modules/timer/timer.ko: src/modules/timer/main.o
-src/modules/udp/udp.ko: src/modules/udp/main.o
-src/modules/video/video.ko: src/modules/video/main.o
-src/modules/window/window.ko.0: src/modules/window/main.o
+$(SRC_PATH)/modules/arp/arp.ko: $(SRC_PATH)/modules/arp/main.o
+$(SRC_PATH)/modules/audio/audio.ko: $(SRC_PATH)/modules/audio/main.o
+$(SRC_PATH)/modules/base/base.ko: $(SRC_PATH)/modules/base/main.o
+$(SRC_PATH)/modules/block/block.ko: $(SRC_PATH)/modules/block/main.o
+$(SRC_PATH)/modules/clock/clock.ko: $(SRC_PATH)/modules/clock/main.o
+$(SRC_PATH)/modules/console/console.ko: $(SRC_PATH)/modules/console/main.o
+$(SRC_PATH)/modules/ethernet/ethernet.ko: $(SRC_PATH)/modules/ethernet/main.o
+$(SRC_PATH)/modules/event/event.ko: $(SRC_PATH)/modules/event/main.o
+$(SRC_PATH)/modules/ipv4/ipv4.ko: $(SRC_PATH)/modules/ipv4/main.o
+$(SRC_PATH)/modules/ipv6/ipv6.ko: $(SRC_PATH)/modules/ipv6/main.o
+$(SRC_PATH)/modules/keyboard/keyboard.ko: $(SRC_PATH)/modules/keyboard/main.o
+$(SRC_PATH)/modules/log/log.ko: $(SRC_PATH)/modules/log/main.o
+$(SRC_PATH)/modules/mouse/mouse.ko: $(SRC_PATH)/modules/mouse/main.o
+$(SRC_PATH)/modules/mtwist/mtwist.ko: $(SRC_PATH)/modules/mtwist/main.o
+$(SRC_PATH)/modules/null/null.ko.0: $(SRC_PATH)/modules/null/main.o
+$(SRC_PATH)/modules/pipe/pipe.ko: $(SRC_PATH)/modules/pipe/main.o
+$(SRC_PATH)/modules/pipe/pipe.ko.0: $(SRC_PATH)/modules/pipe/node.o
+$(SRC_PATH)/modules/pipe/pipe.ko.1: $(SRC_PATH)/modules/pipe/node.o
+$(SRC_PATH)/modules/pipe/pipe.ko.2: $(SRC_PATH)/modules/pipe/node.o
+$(SRC_PATH)/modules/pipe/pipe.ko.3: $(SRC_PATH)/modules/pipe/node.o
+$(SRC_PATH)/modules/pipe/pipe.ko.4: $(SRC_PATH)/modules/pipe/node.o
+$(SRC_PATH)/modules/pipe/pipe.ko.5: $(SRC_PATH)/modules/pipe/node.o
+$(SRC_PATH)/modules/pipe/pipe.ko.6: $(SRC_PATH)/modules/pipe/node.o
+$(SRC_PATH)/modules/pipe/pipe.ko.7: $(SRC_PATH)/modules/pipe/node.o
+$(SRC_PATH)/modules/system/system.ko: $(SRC_PATH)/modules/system/main.o $(SRC_PATH)/modules/system/backend.o $(SRC_PATH)/modules/system/protocol.o
+$(SRC_PATH)/modules/timer/timer.ko: $(SRC_PATH)/modules/timer/main.o
+$(SRC_PATH)/modules/udp/udp.ko: $(SRC_PATH)/modules/udp/main.o
+$(SRC_PATH)/modules/video/video.ko: $(SRC_PATH)/modules/video/main.o
+$(SRC_PATH)/modules/window/window.ko.0: $(SRC_PATH)/modules/window/main.o
 
-include src/modules/arch/$(ARCH)/rules.mk
+include $(SRC_PATH)/modules/arch/$(ARCH)/rules.mk
 
 CLEAN:=$(CLEAN) $(MODULES) $(OBJ_MODULES)
 
-src/modules/%.ko: LDFLAGS+=-Tsrc/modules/linker.ld -r
-src/modules/%.ko:
+$(SRC_PATH)/modules/%.ko: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
+$(SRC_PATH)/modules/%.ko:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-src/modules/%.ko.0: LDFLAGS+=-Tsrc/modules/linker.ld -r
-src/modules/%.ko.0:
+$(SRC_PATH)/modules/%.ko.0: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
+$(SRC_PATH)/modules/%.ko.0:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-src/modules/%.ko.1: LDFLAGS+=-Tsrc/modules/linker.ld -r
-src/modules/%.ko.1:
+$(SRC_PATH)/modules/%.ko.1: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
+$(SRC_PATH)/modules/%.ko.1:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-src/modules/%.ko.2: LDFLAGS+=-Tsrc/modules/linker.ld -r
-src/modules/%.ko.2:
+$(SRC_PATH)/modules/%.ko.2: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
+$(SRC_PATH)/modules/%.ko.2:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-src/modules/%.ko.3: LDFLAGS+=-Tsrc/modules/linker.ld -r
-src/modules/%.ko.3:
+$(SRC_PATH)/modules/%.ko.3: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
+$(SRC_PATH)/modules/%.ko.3:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-src/modules/%.ko.4: LDFLAGS+=-Tsrc/modules/linker.ld -r
-src/modules/%.ko.4:
+$(SRC_PATH)/modules/%.ko.4: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
+$(SRC_PATH)/modules/%.ko.4:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-src/modules/%.ko.5: LDFLAGS+=-Tsrc/modules/linker.ld -r
-src/modules/%.ko.5:
+$(SRC_PATH)/modules/%.ko.5: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
+$(SRC_PATH)/modules/%.ko.5:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-src/modules/%.ko.6: LDFLAGS+=-Tsrc/modules/linker.ld -r
-src/modules/%.ko.6:
+$(SRC_PATH)/modules/%.ko.6: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
+$(SRC_PATH)/modules/%.ko.6:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-src/modules/%.ko.7: LDFLAGS+=-Tsrc/modules/linker.ld -r
-src/modules/%.ko.7:
+$(SRC_PATH)/modules/%.ko.7: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
+$(SRC_PATH)/modules/%.ko.7:
 	$(LD) -o $@ $(LDFLAGS) $^
 

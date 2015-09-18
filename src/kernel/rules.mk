@@ -1,11 +1,28 @@
-BIN_$(DIR):=$(DIR)/fudge
-OBJ_$(DIR):=$(DIR)/abi.o $(DIR)/binary.o $(DIR)/binary_elf.o $(DIR)/container.o $(DIR)/kernel.o $(DIR)/resource.o $(DIR)/task.o $(DIR)/vfs.o $(DIR)/vfs_cpio.o
-OBJ_$(DIR)+=$(SRC_PATH)/format/elf.o $(SRC_PATH)/format/cpio.o $(SRC_PATH)/fudge/ascii.o $(SRC_PATH)/fudge/buffer.o $(SRC_PATH)/fudge/ctrl.o $(SRC_PATH)/fudge/memory.o $(SRC_PATH)/fudge/list.o
+BIN_KERNEL:=\
+    $(SRC_PATH)/kernel/fudge \
 
-include $(DIR)/$(ARCH)/rules.mk
+OBJ_KERNEL:=\
+    $(SRC_PATH)/kernel/abi.o \
+    $(SRC_PATH)/kernel/binary.o \
+    $(SRC_PATH)/kernel/binary_elf.o \
+    $(SRC_PATH)/kernel/container.o \
+    $(SRC_PATH)/kernel/kernel.o \
+    $(SRC_PATH)/kernel/resource.o \
+    $(SRC_PATH)/kernel/task.o \
+    $(SRC_PATH)/kernel/vfs.o \
+    $(SRC_PATH)/kernel/vfs_cpio.o \
+    $(SRC_PATH)/format/elf.o \
+    $(SRC_PATH)/format/cpio.o \
+    $(SRC_PATH)/fudge/ascii.o \
+    $(SRC_PATH)/fudge/buffer.o \
+    $(SRC_PATH)/fudge/ctrl.o \
+    $(SRC_PATH)/fudge/memory.o \
+    $(SRC_PATH)/fudge/list.o \
 
-$(BIN_$(DIR)): $(OBJ_$(DIR))
+include $(SRC_PATH)/kernel/$(ARCH)/rules.mk
+
+$(BIN_KERNEL): $(OBJ_KERNEL)
 	$(LD) -o $@ $(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld $^
 
-BINS:=$(BINS) $(BIN_$(DIR))
-CLEAN:=$(CLEAN) $(BIN_$(DIR)) $(OBJ_$(DIR))
+BINS:=$(BINS) $(BIN_KERNEL)
+CLEAN:=$(CLEAN) $(BIN_KERNEL) $(OBJ_KERNEL)

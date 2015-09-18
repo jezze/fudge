@@ -55,8 +55,7 @@ clean:
 .c.o:
 	$(CC) -o $@ $(CFLAGS) $<
 
-DIR:=$(SRC_PATH)
-include $(DIR)/rules.mk
+include $(SRC_PATH)/rules.mk
 
 $(BUILD_PATH): $(BINS) $(MODULES)
 	mkdir -p $@
