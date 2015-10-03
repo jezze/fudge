@@ -177,18 +177,15 @@ void pipe_init(struct pipe *pipe)
 {
 
     pipe->t0 = 0;
+    pipe->t1 = 0;
 
     system_initnode(&pipe->p0, SYSTEM_NODETYPE_NORMAL, "0");
+    system_initnode(&pipe->p1, SYSTEM_NODETYPE_NORMAL, "1");
 
     pipe->p0.open = p0_open;
     pipe->p0.close = p0_close;
     pipe->p0.read = p0_read;
     pipe->p0.write = p0_write;
-
-    pipe->t1 = 0;
-
-    system_initnode(&pipe->p1, SYSTEM_NODETYPE_NORMAL, "1");
-
     pipe->p1.open = p1_open;
     pipe->p1.close = p1_close;
     pipe->p1.read = p1_read;
