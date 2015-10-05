@@ -36,6 +36,9 @@ static unsigned int p0_read(struct system_node *self, unsigned int offset, unsig
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
+    if (!count)
+        return 0;
+
     if (pipe->t1)
     {
 
@@ -55,6 +58,9 @@ static unsigned int p0_write(struct system_node *self, unsigned int offset, unsi
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
+
+    if (!count)
+        return 0;
 
     if (pipe->t1)
     {
@@ -109,6 +115,9 @@ static unsigned int p1_read(struct system_node *self, unsigned int offset, unsig
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
+    if (!count)
+        return 0;
+
     if (pipe->t0)
     {
 
@@ -128,6 +137,9 @@ static unsigned int p1_write(struct system_node *self, unsigned int offset, unsi
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
+
+    if (!count)
+        return 0;
 
     if (pipe->t0)
     {
