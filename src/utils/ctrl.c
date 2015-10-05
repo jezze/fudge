@@ -138,35 +138,35 @@ void main(void)
     union settings buffer;
 
     call_open(CALL_PO);
-    call_open(CALL_P0);
-    call_read(CALL_P0, sizeof (struct ctrl_header), &buffer.header);
+    call_open(CALL_PI);
+    call_read(CALL_PI, sizeof (struct ctrl_header), &buffer.header);
     writeheader(&buffer.header);
-    call_seek(CALL_P0, 0);
+    call_seek(CALL_PI, 0);
 
     switch (buffer.header.type)
     {
 
     case CTRL_TYPE_CLOCK:
-        call_read(CALL_P0, sizeof (struct ctrl_clocksettings), &buffer.clocksettings);
+        call_read(CALL_PI, sizeof (struct ctrl_clocksettings), &buffer.clocksettings);
         writeclocksettings(&buffer.clocksettings);
 
         break;
 
     case CTRL_TYPE_CONSOLE:
-        call_read(CALL_P0, sizeof (struct ctrl_consolesettings), &buffer.consolesettings);
+        call_read(CALL_PI, sizeof (struct ctrl_consolesettings), &buffer.consolesettings);
         writeconsolesettings(&buffer.consolesettings);
 
         break;
 
     case CTRL_TYPE_VIDEO:
-        call_read(CALL_P0, sizeof (struct ctrl_videosettings), &buffer.videosettings);
+        call_read(CALL_PI, sizeof (struct ctrl_videosettings), &buffer.videosettings);
         writevideosettings(&buffer.videosettings);
 
         break;
 
     }
 
-    call_close(CALL_P0);
+    call_close(CALL_PI);
     call_close(CALL_PO);
 
 }

@@ -118,9 +118,9 @@ void main(void)
     modifier = 0;
 
     call_open(CALL_PO);
-    call_open(CALL_P0);
+    call_open(CALL_PI);
 
-    while ((count = call_read(CALL_P0, FUDGE_BSIZE, buffer)))
+    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
     {
 
         unsigned int i;
@@ -140,7 +140,7 @@ void main(void)
 
     }
 
-    call_close(CALL_P0);
+    call_close(CALL_PI);
     call_close(CALL_PO);
 
 }

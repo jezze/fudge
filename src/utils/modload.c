@@ -265,12 +265,12 @@ void main(void)
     if (!call_walk(CALL_L1, CALL_PR, 4, "mod/"))
         return;
 
-    call_open(CALL_P0);
+    call_open(CALL_PI);
 
-    if (resolve(CALL_P0))
-        call_load(CALL_P0);
+    if (resolve(CALL_PI))
+        call_load(CALL_PI);
 
-    call_close(CALL_P0);
+    call_close(CALL_PI);
 
 }
 

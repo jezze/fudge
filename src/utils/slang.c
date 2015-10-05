@@ -268,7 +268,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_C0, CALL_PW, ascii_length(t->str), t->str))
+            if (!walk_path(CALL_CI, CALL_PW, ascii_length(t->str), t->str))
                 return;
 
             break;
@@ -298,7 +298,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             call_walk(CALL_CO, CALL_L1, 1, "0");
             call_spawn();
-            call_walk(CALL_C0, CALL_L1, 1, "1");
+            call_walk(CALL_CI, CALL_L1, 1, "1");
 
             break;
 
@@ -313,7 +313,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             call_walk(CALL_CO, CALL_PO, 0, 0);
             call_spawn();
-            call_walk(CALL_C0, CALL_P0, 0, 0);
+            call_walk(CALL_CI, CALL_PI, 0, 0);
 
             break;
 
@@ -345,12 +345,12 @@ void main(void)
     if (!call_walk(CALL_L0, CALL_PR, 4, "bin/"))
         return;
 
-    call_open(CALL_P0);
+    call_open(CALL_PI);
 
-    while ((count = call_read(CALL_P0, FUDGE_BSIZE, buffer)))
+    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    call_close(CALL_P0);
+    call_close(CALL_PI);
 
     if (stack.head)
         return;

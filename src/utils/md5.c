@@ -221,12 +221,12 @@ void main(void)
     struct md5 s;
 
     md5_init(&s);
-    call_open(CALL_P0);
+    call_open(CALL_PI);
 
-    while ((count = call_read(CALL_P0, FUDGE_BSIZE, buffer)))
+    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
         md5_read(&s, count, buffer);
 
-    call_close(CALL_P0);
+    call_close(CALL_PI);
     md5_write(&s, digest);
     call_open(CALL_PO);
 

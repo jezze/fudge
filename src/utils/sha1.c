@@ -224,12 +224,12 @@ void main(void)
     struct sha1 s;
 
     sha1_init(&s);
-    call_open(CALL_P0);
+    call_open(CALL_PI);
 
-    while ((count = call_read(CALL_P0, FUDGE_BSIZE, buffer)))
+    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
         sha1_read(&s, count, buffer);
 
-    call_close(CALL_P0);
+    call_close(CALL_PI);
     sha1_write(&s, digest);
     call_open(CALL_PO);
 

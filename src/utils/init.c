@@ -10,7 +10,7 @@ void main(void)
     if (!call_walk(CALL_CP, CALL_PR, 9, "bin/slang"))
         return;
 
-    if (!call_walk(CALL_C0, CALL_PR, 17, "config/init.slang"))
+    if (!call_walk(CALL_CI, CALL_PR, 17, "config/init.slang"))
         return;
 
     call_spawn();

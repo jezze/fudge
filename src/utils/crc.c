@@ -44,9 +44,9 @@ void main(void)
     unsigned int i;
     unsigned int crc = 0;
 
-    call_open(CALL_P0);
+    call_open(CALL_PI);
 
-    while ((count = call_read(CALL_P0, FUDGE_BSIZE, buffer)))
+    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
     {
 
         for (i = 0; i < count; i++)
@@ -56,7 +56,7 @@ void main(void)
 
     }
 
-    call_close(CALL_P0);
+    call_close(CALL_PI);
 
     for (i = total; i > 0; i >>= 8)
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];

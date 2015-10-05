@@ -40,7 +40,7 @@ static void interpret(struct buffer *buffer)
         return;
 
     call_walk(CALL_L1, CALL_L0, 1, "0");
-    call_walk(CALL_C0, CALL_L0, 1, "1");
+    call_walk(CALL_CI, CALL_L0, 1, "1");
     call_open(CALL_L1);
     call_spawn();
     call_write(CALL_L1, count, command);
@@ -106,11 +106,11 @@ void main(void)
     struct buffer input;
 
     buffer_init(&input, FUDGE_BSIZE, inputbuffer);
-    call_open(CALL_P0);
+    call_open(CALL_PI);
     call_open(CALL_PO);
     call_write(CALL_PO, 2, "$ ");
 
-    while ((count = call_read(CALL_P0, FUDGE_BSIZE, buffer)))
+    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
     {
 
         unsigned int i;
@@ -121,7 +121,7 @@ void main(void)
     }
 
     call_close(CALL_PO);
-    call_close(CALL_P0);
+    call_close(CALL_PI);
 
 }
 

@@ -8,11 +8,11 @@ void main(void)
     unsigned int count;
     unsigned int offset;
 
-    call_open(CALL_P0);
+    call_open(CALL_PI);
 
-    count = call_read(CALL_P0, FUDGE_BSIZE, buffer);
+    count = call_read(CALL_PI, FUDGE_BSIZE, buffer);
 
-    call_close(CALL_P0);
+    call_close(CALL_PI);
 
     offset = count;
 

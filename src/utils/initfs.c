@@ -43,10 +43,10 @@ void main(void)
     unsigned int nargs;
     unsigned int i;
 
-    call_open(CALL_P0);
-    count = call_read(CALL_P0, FUDGE_BSIZE, buffer);
+    call_open(CALL_PI);
+    count = call_read(CALL_PI, FUDGE_BSIZE, buffer);
     nargs = parse(count, buffer);
-    call_close(CALL_P0);
+    call_close(CALL_PI);
 
     for (i = 0; i < nargs; i += 4)
     {

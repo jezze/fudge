@@ -34,9 +34,9 @@ void main(void)
     struct mbr mbr;
     unsigned int i;
 
-    call_open(CALL_P0);
-    call_read(CALL_P0, 512, &mbr);
-    call_close(CALL_P0);
+    call_open(CALL_PI);
+    call_read(CALL_PI, 512, &mbr);
+    call_close(CALL_PI);
 
     if (mbr.signature[0] != 0x55 || mbr.signature[1] != 0xAA)
         return;
