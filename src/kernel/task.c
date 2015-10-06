@@ -138,24 +138,14 @@ void task_initbinary(struct task *task, unsigned int sp)
 unsigned int task_rmessage(struct task *task, unsigned int count, void *buffer)
 {
 
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
-
-    if (!count)
-        task_setstatus(task, TASK_STATUS_BLOCKED);
-
-    return count;
+    return buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
 }
 
 unsigned int task_wmessage(struct task *task, unsigned int count, void *buffer)
 {
 
-    count = buffer_wcfifo(&task->mailbox.buffer, count, buffer);
-
-    if (count)
-        task_setstatus(task, TASK_STATUS_ACTIVE);
-
-    return count;
+    return buffer_wcfifo(&task->mailbox.buffer, count, buffer);
 
 }
 

@@ -41,6 +41,8 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     destination = (struct task *)header->destination;
 
+    task_setstatus(destination, TASK_STATUS_ACTIVE);
+
     return task_wmessage(destination, count, buffer);
 
 }

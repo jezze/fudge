@@ -60,7 +60,14 @@ static unsigned int node_readgroup(struct system_node *self, unsigned int offset
 static unsigned int node_readmailboxes(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return task_rmessage(task_findactive(), count, buffer);
+    struct task *task = task_findactive();
+
+    count = task_rmessage(task, count, buffer);
+
+    if (!count)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    return count;
 
 }
 
@@ -74,7 +81,9 @@ static unsigned int node_writemailboxes(struct system_node *self, unsigned int o
 
         struct task *task = current->data;
 
-        task_wmessage(task, count, buffer);
+        task_setstatus(task, TASK_STATUS_ACTIVE);
+
+        return task_wmessage(task, count, buffer);
 
     }
 

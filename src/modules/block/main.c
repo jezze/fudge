@@ -18,6 +18,7 @@ static unsigned int interfacedata_read(struct system_node *self, unsigned int of
 {
 
     struct block_interface *interface = self->resource->data;
+    struct task *task = task_findactive();
 
     if (offset > 512)
         return 0;
@@ -30,7 +31,12 @@ static unsigned int interfacedata_read(struct system_node *self, unsigned int of
 
     }
 
-    return task_rmessage(task_findactive(), count, buffer);
+    count = task_rmessage(task, count, buffer);
+
+    if (!count)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    return count;
 
 }
 
