@@ -39,21 +39,19 @@ static unsigned int p0_read(struct system_node *self, unsigned int offset, unsig
     if (!count)
         return 0;
 
+    count = task_rmessage(pipe->t0, count, buffer);
+
     if (pipe->t1)
     {
 
         task_setstatus(pipe->t1, TASK_STATUS_ACTIVE);
 
-        count = task_rmessage(pipe->t0, count, buffer);
-
         if (!count)
             task_setstatus(pipe->t0, TASK_STATUS_BLOCKED);
 
-        return count;
-
     }
 
-    return 0;
+    return count;
 
 }
 
@@ -123,21 +121,19 @@ static unsigned int p1_read(struct system_node *self, unsigned int offset, unsig
     if (!count)
         return 0;
 
+    count = task_rmessage(pipe->t1, count, buffer);
+
     if (pipe->t0)
     {
 
         task_setstatus(pipe->t0, TASK_STATUS_ACTIVE);
 
-        count = task_rmessage(pipe->t1, count, buffer);
-
         if (!count)
             task_setstatus(pipe->t1, TASK_STATUS_BLOCKED);
 
-        return count;
-
     }
 
-    return 0;
+    return count;
 
 }
 
