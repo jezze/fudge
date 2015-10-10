@@ -75,6 +75,7 @@ void main(void)
 
     ctrl_setvideosettings(&settings, 320, 200, 8);
     video_setmode(CALL_L0, &settings);
+    video_getmode(CALL_L0, &settings);
     setup(&settings);
     video_open(CALL_L0);
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);

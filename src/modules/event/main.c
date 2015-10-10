@@ -12,7 +12,7 @@ void event_notify(unsigned int count, void *buffer)
 
     struct event_header *header = buffer;
 
-    header->destination = 0xFFFFFFFF;
+    header->destination = 0;
     header->source = 0;
 
     poll.write(&poll, 0, count, buffer);
@@ -27,17 +27,8 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     header->source = (unsigned int)task_findactive();
 
-    if (header->destination == 0xFFFFFFFF)
-    {
-
-        poll.write(&poll, 0, count, buffer);
-
-        return count;
-
-    }
-
-    if (header->destination == 0)
-        header->destination = header->source;
+    if (!header->destination)
+        header->destination = (unsigned int)poll.mailboxes.head->data;
 
     destination = (struct task *)header->destination;
 

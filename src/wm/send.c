@@ -40,24 +40,35 @@ void send_wmunmap(unsigned int descriptor, unsigned int destination)
 
 }
 
-void send_wmready(unsigned int descriptor, unsigned int destination)
+void send_wmready(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
     struct event_wmready wmready;
 
-    setheader(&wmready.header, destination, EVENT_WMREADY, 0);
+    setheader(&wmready.header, destination, EVENT_WMREADY, 16);
+
+    wmready.x = x;
+    wmready.y = y;
+    wmready.w = w;
+    wmready.h = h;
+
     send(descriptor, sizeof (struct event_wmready), &wmready);
 
 }
 
-void send_wmadd(unsigned int descriptor, unsigned int destination, unsigned int count, void *data)
+void send_wmexpose(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
-    struct event_wmadd wmadd;
+    struct event_wmexpose wmexpose;
 
-    setheader(&wmadd.header, destination, EVENT_WMADD, count);
-    memory_copy(wmadd.data, data, count);
-    send(descriptor, sizeof (struct event_header) + count, &wmadd);
+    setheader(&wmexpose.header, destination, EVENT_WMEXPOSE, 16);
+
+    wmexpose.x = x;
+    wmexpose.y = y;
+    wmexpose.w = w;
+    wmexpose.h = h;
+
+    send(descriptor, sizeof (struct event_wmexpose), &wmexpose);
 
 }
 

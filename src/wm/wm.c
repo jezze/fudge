@@ -1,11 +1,8 @@
 #include <abi.h>
 #include <fudge.h>
 #include <video/video.h>
-#include <format/pcf.h>
 #include "box.h"
 #include "renderable.h"
-#include "draw.h"
-#include "image.h"
 #include "mouse.h"
 #include "text.h"
 #include "panel.h"
@@ -21,47 +18,96 @@ static struct mouse mouse;
 static struct client client[CLIENTS];
 static struct list clients;
 static struct view view[VIEWS];
-static struct list views;
-static struct view *viewfocus;
 static struct list renderables;
-static unsigned char fontdata[0x8000];
-static unsigned char drawdata[0x2000];
+static struct ctrl_videosettings oldsettings;
+static struct ctrl_videosettings settings;
+static struct box screen;
+static struct box menu;
+static struct box body;
 
-static struct text temp;
-static char textdata[512];
-
-static void draw(struct ctrl_videosettings *settings, struct box *bb)
+static unsigned int writerenderable(unsigned int source, void *buffer, unsigned int count, struct renderable *renderable)
 {
 
-    unsigned int x = bb->x;
-    unsigned int w = bb->x + bb->w > settings->w ? settings->w - bb->x : bb->w;
-    unsigned int y = bb->y;
-    unsigned int h = bb->y + bb->h > settings->h ? settings->h - bb->y : bb->h;
-    unsigned int line;
+    renderable->header.source = source;
 
-    video_open(CALL_L0);
+    return memory_write(buffer, FUDGE_BSIZE, &renderable->header, sizeof (struct renderable_header), count);
 
-    for (line = y; line < y + h; line++)
+}
+
+static unsigned int writepanel(void *buffer, unsigned int count, struct panel *panel)
+{
+
+    return memory_write(buffer, FUDGE_BSIZE, &panel->header, sizeof (struct panel_header), count);
+
+}
+
+static unsigned int writetext(void *buffer, unsigned int count, struct text *text)
+{
+
+    return memory_write(buffer, FUDGE_BSIZE, &text->header, sizeof (struct text_header), count);
+
+}
+
+static unsigned int writewindow(void *buffer, unsigned int count, struct window *window)
+{
+
+    return memory_write(buffer, FUDGE_BSIZE, &window->header, sizeof (struct window_header), count);
+
+}
+
+static unsigned int writepayload(void *buffer, unsigned int count, void *payload, unsigned int payloadcount)
+{
+
+    return memory_write(buffer, FUDGE_BSIZE, payload, payloadcount, count);
+
+}
+
+static void render(unsigned int source, struct box *bb)
+{
+
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int count = 0;
+    struct list_item *current;
+
+    for (current = renderables.head; current; current = current->next)
     {
 
-        struct list_item *current;
+        struct renderable *renderable = current->data;
+        struct text *text;
 
-        draw_fill(drawdata, settings->bpp, WM_COLOR_BODY, x, w);
+        if (!renderable->modified)
+            continue;
 
-        for (current = renderables.head; current; current = current->next)
+        count += writerenderable(source, buffer, count, renderable);
+
+        switch (renderable->header.type)
         {
 
-            struct renderable *renderable = current->data;
+        case RENDERABLE_TYPE_PANEL:
+            count += writepanel(buffer, count, current->data);
 
-            renderable_render(renderable, settings, drawdata, fontdata, line);
+            break;
+
+        case RENDERABLE_TYPE_TEXT:
+            text = current->data;
+
+            count += writetext(buffer, count, text);
+            count += writepayload(buffer, count, text->string, text->count);
+
+            break;
+
+        case RENDERABLE_TYPE_WINDOW:
+            count += writewindow(buffer, count, current->data);
+
+            break;
 
         }
 
-        draw_flush(drawdata, settings->w * line, settings->bpp, x, w);
+        renderable->modified = 0;
 
     }
 
-    video_close(CALL_L0);
+    call_write(CALL_PO, count, buffer);
 
 }
 
@@ -81,8 +127,11 @@ static void arrangeclients(struct view *view, struct box *body)
 
     case 1:
         client = view->clients.tail->data;
+        client->window.base.modified = 1;
 
-        box_setsize(&client->window.base.size, body->x, body->y, body->w, body->h);
+        box_setsize(&client->window.base.header.size, body->x, body->y, body->w, body->h);
+        send_wmready(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
+        send_wmexpose(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
 
         break;
 
@@ -90,15 +139,21 @@ static void arrangeclients(struct view *view, struct box *body)
         y = body->y;
         h = body->h / (view->clients.count - 1);
         client = view->clients.tail->data;
+        client->window.base.modified = 1;
 
-        box_setsize(&client->window.base.size, body->x, body->y, view->center, body->h);
+        box_setsize(&client->window.base.header.size, body->x, body->y, view->center, body->h);
+        send_wmready(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
+        send_wmexpose(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
 
         for (current = view->clients.tail->prev; current; current = current->prev)
         {
 
             client = current->data;
+            client->window.base.modified = 1;
 
-            box_setsize(&client->window.base.size, body->x + view->center, y, body->w - view->center, h);
+            box_setsize(&client->window.base.header.size, body->x + view->center, y, body->w - view->center, h);
+            send_wmready(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
+            send_wmexpose(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
 
             y += h;
 
@@ -126,14 +181,14 @@ static struct client *focusclient(struct client *focus, struct client *new)
 static struct client *nextclient(struct client *focus, struct client *head)
 {
 
-    return focusclient(focus, (focus->item.next) ? focus->item.next->data : head);
+    return focusclient(focus, (focus && focus->item.next) ? focus->item.next->data : head);
 
 }
 
 static struct client *prevclient(struct client *focus, struct client *tail)
 {
 
-    return focusclient(focus, (focus->item.prev) ? focus->item.prev->data : tail);
+    return focusclient(focus, (focus && focus->item.prev) ? focus->item.prev->data : tail);
 
 }
 
@@ -147,7 +202,7 @@ static struct client *findclient(struct view *view, unsigned int x, unsigned int
 
         struct client *client = current->data;
 
-        if (box_isinside(&client->window.base.size, x, y))
+        if (box_isinside(&client->window.base.header.size, x, y))
             return client;
 
     }
@@ -170,7 +225,6 @@ static void mapclient(struct view *view, unsigned int source)
     list_move(&view->clients, &clients, &client->item);
 
     view->clientfocus = focusclient(view->clientfocus, client);
-    view->clientfocus->window.base.visible = 1;
 
 }
 
@@ -180,11 +234,29 @@ static void unmapclient(struct view *view)
     if (!view->clientfocus)
         return;
 
-    view->clientfocus->window.base.visible = 0;
-
     list_move(&clients, &view->clients, &view->clientfocus->item);
 
     view->clientfocus = focusclient(view->clientfocus, (view->clients.tail) ? view->clients.tail->data : 0);
+
+}
+
+static void unmapall(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < VIEWS; i++)
+    {
+
+        while (view[i].clientfocus)
+        {
+
+            send_wmunmap(CALL_L2, view[i].clientfocus->source);
+            unmapclient(&view[i]);
+
+        }
+
+    }
 
 }
 
@@ -201,18 +273,16 @@ static struct view *focusview(struct view *focus, struct view *new)
 
 }
 
-static struct view *findview(struct list *views, unsigned int x, unsigned int y)
+static struct view *findview(unsigned int x, unsigned int y)
 {
 
-    struct list_item *current;
+    unsigned int i;
 
-    for (current = views->head; current; current = current->next)
+    for (i = 0; i < VIEWS; i++)
     {
 
-        struct view *view = current->data;
-
-        if (box_isinside(&view->panel.base.size, x, y))
-            return view;
+        if (box_isinside(&view[i].panel.base.header.size, x, y))
+            return &view[i];
 
     }
 
@@ -220,15 +290,80 @@ static struct view *findview(struct list *views, unsigned int x, unsigned int y)
 
 }
 
-static void pollevent(struct ctrl_videosettings *settings, struct box *screen, struct box *menu, struct box *body)
+static void setupclients(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < CLIENTS; i++)
+    {
+
+        client_init(&client[i]);
+        list_add(&clients, &client[i].item);
+        list_add(&renderables, &client[i].window.base.item);
+
+    }
+
+}
+
+static void setupviews(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < VIEWS; i++)
+    {
+
+        view_init(&view[i], i);
+        list_add(&renderables, &view[i].panel.base.item);
+        list_add(&renderables, &view[i].number.base.item);
+
+    }
+
+}
+
+static void setupmouse(void)
+{
+
+    mouse_init(&mouse);
+    list_add(&renderables, &mouse.base.item);
+
+}
+
+static void setviewsize(struct box *menu, struct box *body)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < VIEWS; i++)
+    {
+
+        view[i].center = body->w / 2;
+
+        box_setsize(&view[i].panel.base.header.size, menu->x + i * menu->w / VIEWS, menu->y, menu->w / VIEWS, menu->h);
+        box_setsize(&view[i].number.base.header.size, view[i].panel.base.header.size.x + 8, view[i].panel.base.header.size.y + 8, view[i].panel.base.header.size.w, 16);
+
+    }
+
+}
+
+void main(void)
 {
 
     union event event;
-    unsigned int count, quit = 0;
     struct box oldmouse;
+    unsigned int count, quit = 0;
+    struct view *viewfocus = &view[0];
+    unsigned int source = 0;
 
+    setupclients();
+    setupviews();
+    setupmouse();
+    view_activate(viewfocus);
+    call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
+    send_wmmap(CALL_L2, 0);
 
     while ((count = call_read(CALL_L1, sizeof (struct event_header), &event.header)))
     {
@@ -253,7 +388,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
             case 0x09:
                 viewfocus = focusview(viewfocus, &view[event.keypress.scancode - 0x02]);
 
-                draw(settings, screen);
+                render(source, &screen);
 
                 break;
 
@@ -263,23 +398,10 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
 
                     send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
                     unmapclient(viewfocus);
-                    arrangeclients(viewfocus, body);
-                    draw(settings, body);
+                    arrangeclients(viewfocus, &body);
+                    render(source, &body);
 
                 }
-
-                break;
-
-            case 0x11:
-                box_setsize(&oldmouse, mouse.image.base.size.x, mouse.image.base.size.y, mouse.image.base.size.w, mouse.image.base.size.h);
-
-                mouse.image.base.size.y -= 4;
-
-                if (mouse.image.base.size.y >= screen->h)
-                    mouse.image.base.size.y = 0;
-
-                draw(settings, &oldmouse);
-                draw(settings, &mouse.image.base.size);
 
                 break;
 
@@ -289,75 +411,38 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
 
                 break;
 
-            case 0x1E:
-                box_setsize(&oldmouse, mouse.image.base.size.x, mouse.image.base.size.y, mouse.image.base.size.w, mouse.image.base.size.h);
-
-                mouse.image.base.size.x -= 4;
-
-                if (mouse.image.base.size.x >= screen->w)
-                    mouse.image.base.size.x = 0;
-
-                draw(settings, &oldmouse);
-                draw(settings, &mouse.image.base.size);
-
-                break;
-
-            case 0x1F:
-                box_setsize(&oldmouse, mouse.image.base.size.x, mouse.image.base.size.y, mouse.image.base.size.w, mouse.image.base.size.h);
-
-                mouse.image.base.size.y += 4;
-
-                if (mouse.image.base.size.y + mouse.image.base.size.h > screen->h)
-                    mouse.image.base.size.y = screen->h - mouse.image.base.size.h;
-
-                draw(settings, &oldmouse);
-                draw(settings, &mouse.image.base.size);
-
-                break;
-
-            case 0x20:
-                box_setsize(&oldmouse, mouse.image.base.size.x, mouse.image.base.size.y, mouse.image.base.size.w, mouse.image.base.size.h);
-
-                mouse.image.base.size.x += 4;
-
-                if (mouse.image.base.size.x + mouse.image.base.size.w > screen->w)
-                    mouse.image.base.size.x = screen->w - mouse.image.base.size.w;
-
-                draw(settings, &oldmouse);
-                draw(settings, &mouse.image.base.size);
-
-                break;
-
             case 0x23:
-                viewfocus->center -= (body->w / 32);
+                viewfocus->center -= (body.w / 32);
 
-                arrangeclients(viewfocus, body);
-                draw(settings, body);
+                arrangeclients(viewfocus, &body);
+                render(source, &body);
 
                 break;
 
             case 0x24:
-                viewfocus->clientfocus = nextclient(viewfocus->clientfocus, viewfocus->clients.head->data);
-                draw(settings, body);
+                viewfocus->clientfocus = nextclient(viewfocus->clientfocus, viewfocus->clients.head ? viewfocus->clients.head->data : 0);
+
+                render(source, &body);
 
                 break;
 
             case 0x25:
-                viewfocus->clientfocus = prevclient(viewfocus->clientfocus, viewfocus->clients.tail->data);
-                draw(settings, body);
+                viewfocus->clientfocus = prevclient(viewfocus->clientfocus, viewfocus->clients.tail ? viewfocus->clients.tail->data : 0);
+
+                render(source, &body);
 
                 break;
 
             case 0x26:
-                viewfocus->center += (body->w / 32);
+                viewfocus->center += (body.w / 32);
 
-                arrangeclients(viewfocus, body);
-                draw(settings, body);
+                arrangeclients(viewfocus, &body);
+                render(source, &body);
 
                 break;
 
             case 0x2C:
-                quit = 1;
+                send_wmunmap(CALL_L2, 0);
 
                 break;
 
@@ -370,15 +455,15 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
             case 0x01:
                 {
 
-                    struct view *view = findview(&views, mouse.image.base.size.x, mouse.image.base.size.y);
-                    struct client *client = findclient(viewfocus, mouse.image.base.size.x, mouse.image.base.size.y);
+                    struct view *view = findview(mouse.base.header.size.x, mouse.base.header.size.y);
+                    struct client *client = findclient(viewfocus, mouse.base.header.size.x, mouse.base.header.size.y);
 
                     if (view && view != viewfocus)
                     {
 
                         viewfocus = focusview(viewfocus, view);
 
-                        draw(settings, screen);
+                        render(source, &screen);
 
                     }
 
@@ -387,7 +472,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
 
                         viewfocus->clientfocus = focusclient(viewfocus->clientfocus, client);
 
-                        draw(settings, body);
+                        render(source, &body);
 
                     }
 
@@ -400,40 +485,77 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
             break;
 
         case EVENT_MOUSEMOVE:
-            box_setsize(&oldmouse, mouse.image.base.size.x, mouse.image.base.size.y, mouse.image.base.size.w, mouse.image.base.size.h);
+            box_setsize(&oldmouse, mouse.base.header.size.x, mouse.base.header.size.y, mouse.base.header.size.w, mouse.base.header.size.h);
 
-            mouse.image.base.size.x += event.mousemove.relx;
-            mouse.image.base.size.y -= event.mousemove.rely;
+            mouse.base.header.size.x += event.mousemove.relx;
+            mouse.base.header.size.y -= event.mousemove.rely;
 
-            if (event.mousemove.relx > 0 && mouse.image.base.size.x >= screen->w)
-                mouse.image.base.size.x = screen->w - 1;
+            if (event.mousemove.relx > 0 && mouse.base.header.size.x >= screen.w)
+                mouse.base.header.size.x = screen.w - 1;
 
-            if (event.mousemove.relx < 0 && mouse.image.base.size.x >= screen->w)
-                mouse.image.base.size.x = 0;
+            if (event.mousemove.relx < 0 && mouse.base.header.size.x >= screen.w)
+                mouse.base.header.size.x = 0;
 
-            if (event.mousemove.rely < 0 && mouse.image.base.size.y >= screen->h)
-                mouse.image.base.size.y = screen->h - 1;
+            if (event.mousemove.rely < 0 && mouse.base.header.size.y >= screen.h)
+                mouse.base.header.size.y = screen.h - 1;
 
-            if (event.mousemove.rely > 0 && mouse.image.base.size.y >= screen->h)
-                mouse.image.base.size.y = 0;
+            if (event.mousemove.rely > 0 && mouse.base.header.size.y >= screen.h)
+                mouse.base.header.size.y = 0;
 
-            draw(settings, &oldmouse);
-            draw(settings, &mouse.image.base.size);
+            render(source, &oldmouse);
+            render(source, &mouse.base.header.size);
 
             break;
 
         case EVENT_WMMAP:
-            mapclient(viewfocus, event.header.source);
-            arrangeclients(viewfocus, body);
-            draw(settings, body);
-            send_wmready(CALL_L2, event.header.source);
+            if (event.header.source == event.header.destination)
+            {
+
+                ctrl_setvideosettings(&settings, 1920, 1080, 32);
+                video_getmode(CALL_L0, &oldsettings);
+                video_setmode(CALL_L0, &settings);
+                video_getmode(CALL_L0, &settings);
+                send_wmready(CALL_L2, event.header.source, 0, 0, settings.w, settings.h);
+                send_wmexpose(CALL_L2, event.header.source, 0, 0, settings.w, settings.h);
+
+            }
+            
+            else
+            {
+
+                mapclient(viewfocus, event.header.source);
+                arrangeclients(viewfocus, &body);
+                send_wmready(CALL_L2, event.header.source, viewfocus->clientfocus->window.base.header.size.x, viewfocus->clientfocus->window.base.header.size.y, viewfocus->clientfocus->window.base.header.size.w, viewfocus->clientfocus->window.base.header.size.h);
+                send_wmexpose(CALL_L2, event.header.source, viewfocus->clientfocus->window.base.header.size.x, viewfocus->clientfocus->window.base.header.size.y, viewfocus->clientfocus->window.base.header.size.w, viewfocus->clientfocus->window.base.header.size.h);
+                render(source, &body);
+
+            }
 
             break;
 
-        case EVENT_WMADD:
-            memory_copy(textdata, event.wmadd.data, event.header.count);
-            text_assign(&temp, event.header.count, textdata);
-            draw(settings, &temp.base.size);
+        case EVENT_WMREADY:
+            source = event.header.destination;
+
+            box_setsize(&screen, event.wmready.x, event.wmready.y, event.wmready.w, event.wmready.h);
+            box_setsize(&menu, screen.x, screen.y, screen.w, 32);
+            box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
+            setviewsize(&menu, &body);
+            box_setsize(&mouse.base.header.size, screen.x + screen.w / 4, screen.y + screen.h / 4, 24, 24);
+
+            break;
+
+        case EVENT_WMEXPOSE:
+            render(source, &screen);
+
+            break;
+
+        case EVENT_WMUNMAP:
+            if (event.header.source == event.header.destination)
+                video_setmode(CALL_L0, &oldsettings);
+
+            unmapall();
+
+            quit = 1;
 
             break;
 
@@ -445,112 +567,7 @@ static void pollevent(struct ctrl_videosettings *settings, struct box *screen, s
     }
 
     call_close(CALL_L1);
-
-}
-
-static void setupclients(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < CLIENTS; i++)
-    {
-
-        client_init(&client[i]);
-        list_add(&clients, &client[i].item);
-        list_add(&renderables, &client[i].window.base.item);
-
-    }
-
-}
-
-static void setupviews(struct box *menu, struct box *body)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < VIEWS; i++)
-    {
-
-        view_init(&view[i], menu, body, i, VIEWS);
-        list_add(&views, &view[i].item);
-        list_add(&renderables, &view[i].panel.base.item);
-        list_add(&renderables, &view[i].number.base.item);
-
-    }
-
-}
-
-static void setupmouse(struct box *screen)
-{
-
-    mouse_init(&mouse, screen);
-    list_add(&renderables, &mouse.image.base.item);
-
-}
-
-static void setupfont(void)
-{
-
-    call_walk(CALL_L4, CALL_PR, 18, "share/ter-u18n.pcf");
-    call_open(CALL_L4);
-    call_read(CALL_L4, 0x8000, fontdata);
-    call_close(CALL_L4);
-
-}
-
-static void setuptext(struct box *screen)
-{
-
-    memory_copy(textdata, "FUDGE OPERATING SYSTEM", 22);
-    text_init(&temp, WM_COLOR_TEXTLIGHT);
-    text_assign(&temp, 22, textdata);
-    box_setsize(&temp.base.size, 16, screen->h - 32, screen->w, 16);
-    list_add(&renderables, &temp.base.item);
-
-    temp.base.visible = 1;
-
-}
-
-static void setuprenderers(void)
-{
-
-    renderable_register(RENDERABLE_TYPE_WINDOW, window_render);
-    renderable_register(RENDERABLE_TYPE_TEXT, text_render);
-    renderable_register(RENDERABLE_TYPE_PANEL, panel_render);
-    renderable_register(RENDERABLE_TYPE_IMAGE, image_render);
-
-}
-
-void main(void)
-{
-
-    struct ctrl_videosettings oldsettings;
-    struct ctrl_videosettings settings;
-    struct box screen;
-    struct box menu;
-    struct box body;
-
-    ctrl_setvideosettings(&settings, 1920, 1080, 32);
-    video_getmode(CALL_L0, &oldsettings);
-    video_setmode(CALL_L0, &settings);
-    box_setsize(&screen, 0, 0, settings.w, settings.h);
-    box_setsize(&menu, screen.x, screen.y, screen.w, 32);
-    box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
-    setuprenderers();
-    setupfont();
-    setupclients();
-    setupviews(&menu, &body);
-
-    viewfocus = views.head->data;
-
-    view_activate(viewfocus);
-    setupmouse(&screen);
-    setuptext(&screen);
-    draw_init();
-    draw(&settings, &screen);
-    pollevent(&settings, &screen, &menu, &body);
-    video_setmode(CALL_L0, &oldsettings);
+    call_close(CALL_PO);
 
 }
 

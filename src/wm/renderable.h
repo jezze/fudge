@@ -1,19 +1,26 @@
 #define RENDERABLE_TYPE_WINDOW          1
 #define RENDERABLE_TYPE_TEXT            2
 #define RENDERABLE_TYPE_PANEL           3
-#define RENDERABLE_TYPE_IMAGE           4
+#define RENDERABLE_TYPE_MOUSE           4
+
+struct renderable_header
+{
+
+    struct box size;
+    unsigned int id;
+    unsigned int type;
+    unsigned int source;
+    unsigned int count;
+
+};
 
 struct renderable
 {
 
+    struct renderable_header header;
     struct list_item item;
-    struct box size;
-    unsigned int type;
-    unsigned int count;
-    unsigned int visible;
+    unsigned int modified;
 
 };
 
-void renderable_register(unsigned int type, void (*renderer)(struct renderable *renderable, struct ctrl_videosettings *settings, void *drawdata, void *fontdata, unsigned int line));
-void renderable_render(struct renderable *renderable, struct ctrl_videosettings *settings, void *drawdata, void *fontdata, unsigned int line);
 void renderable_init(struct renderable *renderable, unsigned int type, unsigned int count);

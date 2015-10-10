@@ -170,7 +170,7 @@ void task_init(struct task *task)
 
     resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
-    list_inititem(&task->mailbox.item, task);
+    list_inititem(&task->blockitem, task);
     buffer_init(&task->mailbox.buffer, TASK_MAILBOXSIZE, task->mailbox.data);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)

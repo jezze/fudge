@@ -1,8 +1,8 @@
 struct mouse
 {
 
-    struct image image;
+    struct renderable base;
 
 };
 
-void mouse_init(struct mouse *mouse, struct box *screen);
+void mouse_init(struct mouse *mouse);

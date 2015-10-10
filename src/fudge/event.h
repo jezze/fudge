@@ -6,7 +6,7 @@
 #define EVENT_WMMAP                     0x0301
 #define EVENT_WMUNMAP                   0x0302
 #define EVENT_WMREADY                   0x0303
-#define EVENT_WMADD                     0x0304
+#define EVENT_WMEXPOSE                  0x0304
 
 struct event_header
 {
@@ -77,14 +77,21 @@ struct event_wmready
 {
 
     struct event_header header;
+    unsigned int x;
+    unsigned int y;
+    unsigned int w;
+    unsigned int h;
 
 };
 
-struct event_wmadd
+struct event_wmexpose
 {
 
     struct event_header header;
-    char data[496];
+    unsigned int x;
+    unsigned int y;
+    unsigned int w;
+    unsigned int h;
 
 };
 
@@ -101,6 +108,6 @@ union event
     struct event_wmmap wmmap;
     struct event_wmunmap wmunmap;
     struct event_wmready wmready;
-    struct event_wmadd wmadd;
+    struct event_wmexpose wmexpose;
 
 };

@@ -17,7 +17,6 @@ struct task_state
 struct task_mailbox
 {
 
-    struct list_item item;
     struct buffer buffer;
     unsigned char data[TASK_MAILBOXSIZE];
 
@@ -28,6 +27,7 @@ struct task
 
     struct resource resource;
     struct task_state state;
+    struct list_item blockitem;
     struct task_mailbox mailbox;
     struct binary_format *format;
     struct vfs_descriptor descriptors[TASK_DESCRIPTORS];
