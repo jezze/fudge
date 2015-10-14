@@ -242,10 +242,15 @@ static unsigned int format_copyprogram(struct vfs_channel *channel, unsigned int
         if (!readprogramheader(channel, id, &header, i, &programheader))
             return 0;
 
-        if (!channel->protocol->read(channel->backend, id, programheader.offset, programheader.fsize, (void *)programheader.vaddress))
-            return 0;
+        if (programheader.fsize)
+        {
 
-        memory_clear((void *)(programheader.vaddress + programheader.offset + programheader.fsize), programheader.msize - programheader.fsize);
+            if (!channel->protocol->read(channel->backend, id, programheader.offset, programheader.fsize, (void *)programheader.vaddress))
+                return 0;
+
+        }
+
+        memory_clear((void *)(programheader.vaddress + programheader.fsize), programheader.msize - programheader.fsize);
 
     }
 
