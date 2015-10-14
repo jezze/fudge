@@ -166,6 +166,8 @@ static unsigned int open(struct container *container, struct task *task, void *s
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
+    descriptor->offset = 0;
+
     return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
 
 }
@@ -178,6 +180,8 @@ static unsigned int close(struct container *container, struct task *task, void *
 
     if (!descriptor->id || !descriptor->channel)
         return 0;
+
+    descriptor->offset = 0;
 
     return descriptor->id = descriptor->channel->protocol->close(descriptor->channel->backend, descriptor->id);
 
