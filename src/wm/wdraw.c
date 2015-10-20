@@ -367,12 +367,12 @@ void main(void)
         while ((renderable = nextrenderable(count, buffer, renderable)))
             addrenderable(renderable);
 
-        renderable = 0;
-
         for (line = 0; line < settings.h; line++)
         {
 
             fill(COLOR_BODY, 0, settings.w);
+
+            renderable = 0;
 
             while ((renderable = nextrenderable(datacount, data, renderable)))
             {
@@ -384,6 +384,8 @@ void main(void)
                     renderers[renderable->type](renderable, line);
 
             }
+
+            renderable = 0;
 
             while ((renderable = nextrenderable(datacount, data, renderable)))
             {
