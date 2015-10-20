@@ -428,6 +428,8 @@ static void expose(unsigned int source, struct view *viewfocus, struct box *bb)
 
     }
 
+    writerenderable(source, &mouse.base);
+
 }
 
 void main(void)
