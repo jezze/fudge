@@ -32,7 +32,7 @@ static unsigned int writepayload(void *buffer, unsigned int count, void *payload
 
 }
 
-static void render(unsigned int source, struct box *bb)
+static void render(unsigned int source)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
@@ -114,7 +114,7 @@ void main(void)
         case EVENT_WMEXPOSE:
             content.base.modified = 1;
 
-            render(source, &screen);
+            render(source);
 
             break;
             

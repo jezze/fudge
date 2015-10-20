@@ -62,7 +62,7 @@ static unsigned int writepayload(void *buffer, unsigned int count, void *payload
 
 }
 
-static void render(unsigned int source, struct box *bb)
+static void render(unsigned int source)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
@@ -328,6 +328,8 @@ static void setupmouse(void)
     mouse_init(&mouse);
     list_add(&renderables, &mouse.base.item);
 
+    mouse.base.modified = 1;
+
 }
 
 static void setviewsize(struct box *menu, struct box *body)
@@ -351,7 +353,6 @@ void main(void)
 {
 
     union event event;
-    struct box oldmouse;
     unsigned int count, quit = 0;
     struct view *viewfocus = &view[0];
     unsigned int source = 0;
@@ -388,7 +389,7 @@ void main(void)
             case 0x09:
                 viewfocus = focusview(viewfocus, &view[event.keypress.scancode - 0x02]);
 
-                render(source, &screen);
+                render(source);
 
                 break;
 
@@ -399,7 +400,7 @@ void main(void)
                     send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
                     unmapclient(viewfocus);
                     arrangeclients(viewfocus, &body);
-                    render(source, &body);
+                    render(source);
 
                 }
 
@@ -415,21 +416,21 @@ void main(void)
                 viewfocus->center -= (body.w / 32);
 
                 arrangeclients(viewfocus, &body);
-                render(source, &body);
+                render(source);
 
                 break;
 
             case 0x24:
                 viewfocus->clientfocus = nextclient(viewfocus->clientfocus, viewfocus->clients.head ? viewfocus->clients.head->data : 0);
 
-                render(source, &body);
+                render(source);
 
                 break;
 
             case 0x25:
                 viewfocus->clientfocus = prevclient(viewfocus->clientfocus, viewfocus->clients.tail ? viewfocus->clients.tail->data : 0);
 
-                render(source, &body);
+                render(source);
 
                 break;
 
@@ -437,7 +438,7 @@ void main(void)
                 viewfocus->center += (body.w / 32);
 
                 arrangeclients(viewfocus, &body);
-                render(source, &body);
+                render(source);
 
                 break;
 
@@ -463,7 +464,7 @@ void main(void)
 
                         viewfocus = focusview(viewfocus, view);
 
-                        render(source, &screen);
+                        render(source);
 
                     }
 
@@ -472,7 +473,7 @@ void main(void)
 
                         viewfocus->clientfocus = focusclient(viewfocus->clientfocus, client);
 
-                        render(source, &body);
+                        render(source);
 
                     }
 
@@ -485,8 +486,7 @@ void main(void)
             break;
 
         case EVENT_MOUSEMOVE:
-            box_setsize(&oldmouse, mouse.base.header.size.x, mouse.base.header.size.y, mouse.base.header.size.w, mouse.base.header.size.h);
-
+            mouse.base.modified = 1;
             mouse.base.header.size.x += event.mousemove.relx;
             mouse.base.header.size.y -= event.mousemove.rely;
 
@@ -502,8 +502,7 @@ void main(void)
             if (event.mousemove.rely > 0 && mouse.base.header.size.y >= screen.h)
                 mouse.base.header.size.y = 0;
 
-            render(source, &oldmouse);
-            render(source, &mouse.base.header.size);
+            render(source);
 
             break;
 
@@ -527,7 +526,7 @@ void main(void)
                 arrangeclients(viewfocus, &body);
                 send_wmready(CALL_L2, event.header.source, viewfocus->clientfocus->window.base.header.size.x, viewfocus->clientfocus->window.base.header.size.y, viewfocus->clientfocus->window.base.header.size.w, viewfocus->clientfocus->window.base.header.size.h);
                 send_wmexpose(CALL_L2, event.header.source, viewfocus->clientfocus->window.base.header.size.x, viewfocus->clientfocus->window.base.header.size.y, viewfocus->clientfocus->window.base.header.size.w, viewfocus->clientfocus->window.base.header.size.h);
-                render(source, &body);
+                render(source);
 
             }
 
@@ -545,7 +544,7 @@ void main(void)
             break;
 
         case EVENT_WMEXPOSE:
-            render(source, &screen);
+            render(source);
 
             break;
 
