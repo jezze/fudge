@@ -22,7 +22,7 @@
 #define COLOR_TEXTLIGHT                 0x0A
 
 static struct ctrl_videosettings settings;
-static void (*renderers[16])(struct renderable_header *renderable, unsigned int line);
+static void (*renderers[16])(struct renderable *renderable, unsigned int line);
 static unsigned char fontdata[0x8000];
 static unsigned char drawdata[0x2000];
 static unsigned char data[0x8000];
@@ -122,7 +122,7 @@ static void fill(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static void rendermouse(struct renderable_header *renderable, unsigned int line)
+static void rendermouse(struct renderable *renderable, unsigned int line)
 {
 
     unsigned int offset = (line - renderable->size.y) * renderable->size.w;
@@ -138,7 +138,7 @@ static void rendermouse(struct renderable_header *renderable, unsigned int line)
 
 }
 
-static void renderpanel(struct renderable_header *renderable, unsigned int line)
+static void renderpanel(struct renderable *renderable, unsigned int line)
 {
 
     struct panel_header *panel = (struct panel_header *)(renderable + 1);
@@ -177,7 +177,7 @@ static void renderpanel(struct renderable_header *renderable, unsigned int line)
 
 }
 
-static void rendertext(struct renderable_header *renderable, unsigned int line)
+static void rendertext(struct renderable *renderable, unsigned int line)
 {
 
     struct text_header *text = (struct text_header *)(renderable + 1);
@@ -247,7 +247,7 @@ static void rendertext(struct renderable_header *renderable, unsigned int line)
 
 }
 
-static void renderwindow(struct renderable_header *renderable, unsigned int line)
+static void renderwindow(struct renderable *renderable, unsigned int line)
 {
 
     struct window_header *window = (struct window_header *)(renderable + 1);
@@ -295,13 +295,13 @@ static void renderwindow(struct renderable_header *renderable, unsigned int line
 
 }
 
-static struct renderable_header *nextrenderable(unsigned int count, void *data, struct renderable_header *renderable)
+static struct renderable *nextrenderable(unsigned int count, void *data, struct renderable *renderable)
 {
 
     if (renderable == 0)
         renderable = data;
     else
-        renderable = (struct renderable_header *)((unsigned char *)renderable + sizeof (struct renderable_header) + renderable->count);
+        renderable = (struct renderable *)((unsigned char *)renderable + sizeof (struct renderable) + renderable->count);
 
     if ((unsigned int)renderable >= (unsigned int)data + count)
         return 0;
@@ -310,10 +310,10 @@ static struct renderable_header *nextrenderable(unsigned int count, void *data, 
 
 }
 
-static void addrenderable(struct renderable_header *renderable)
+static void addrenderable(struct renderable *renderable)
 {
 
-    struct renderable_header *current = 0;
+    struct renderable *current = 0;
 
     while ((current = nextrenderable(datacount, data, current)))
     {
@@ -323,7 +323,7 @@ static void addrenderable(struct renderable_header *renderable)
         if (current->source != renderable->source || current->id != renderable->id)
             continue;
 
-        length = sizeof (struct renderable_header) + current->count;
+        length = sizeof (struct renderable) + current->count;
 
         memory_copy(current, (unsigned char *)current + length, datacount - ((unsigned char *)current - data) - length);
 
@@ -331,7 +331,7 @@ static void addrenderable(struct renderable_header *renderable)
 
     }
 
-    datacount += memory_write(data, 0x8000, renderable, sizeof (struct renderable_header) + renderable->count, datacount);
+    datacount += memory_write(data, 0x8000, renderable, sizeof (struct renderable) + renderable->count, datacount);
 
 }
 
@@ -359,7 +359,7 @@ void main(void)
     while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
     {
 
-        struct renderable_header *renderable;
+        struct renderable *renderable;
         unsigned int line;
 
         renderable = 0;

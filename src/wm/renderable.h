@@ -3,7 +3,7 @@
 #define RENDERABLE_TYPE_PANEL           3
 #define RENDERABLE_TYPE_MOUSE           4
 
-struct renderable_header
+struct renderable
 {
 
     struct box size;
@@ -12,15 +12,6 @@ struct renderable_header
     unsigned int source;
     unsigned int z;
     unsigned int count;
-
-};
-
-struct renderable
-{
-
-    struct renderable_header header;
-    struct list_item item;
-    unsigned int modified;
 
 };
 

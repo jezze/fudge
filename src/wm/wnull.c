@@ -6,68 +6,40 @@
 #include "send.h"
 
 static struct text content;
-static struct list renderables;
 static struct box screen;
+static unsigned char databuffer[FUDGE_BSIZE];
+static unsigned int datacount;
 
-static unsigned int writerenderable(unsigned int source, void *buffer, unsigned int count, struct renderable *renderable)
+static void writerenderable(unsigned int source, struct renderable *renderable)
 {
 
-    renderable->header.source = source;
+    renderable->source = source;
 
-    return memory_write(buffer, FUDGE_BSIZE, &renderable->header, sizeof (struct renderable_header), count);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, renderable, sizeof (struct renderable), datacount);
 
 }
 
-static unsigned int writetext(void *buffer, unsigned int count, struct text *text)
+static void writetext(unsigned int source, struct text *text, unsigned int count, void *buffer)
 {
 
-    return memory_write(buffer, FUDGE_BSIZE, &text->header, sizeof (struct text_header), count);
+    writerenderable(source, &text->base);
+
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &text->header, sizeof (struct text_header), datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
 
 }
 
-static unsigned int writepayload(void *buffer, unsigned int count, void *payload, unsigned int payloadcount)
+static void flush()
 {
 
-    return memory_write(buffer, FUDGE_BSIZE, payload, payloadcount, count);
-
-}
-
-static void render(unsigned int source)
-{
-
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count = 0;
-    struct list_item *current;
-
-    for (current = renderables.head; current; current = current->next)
+    if (datacount)
     {
 
-        struct renderable *renderable = current->data;
-        struct text *text;
+        call_write(CALL_PO, datacount, databuffer);
 
-        if (!renderable->modified)
-            continue;
-
-        count += writerenderable(source, buffer, count, renderable);
-
-        switch (renderable->header.type)
-        {
-
-        case RENDERABLE_TYPE_TEXT:
-            text = current->data;
-
-            count += writetext(buffer, count, text);
-            count += writepayload(buffer, count, text->string, text->count);
-
-            break;
-
-        }
-
-        content.base.modified = 0;
+        datacount = 0;
 
     }
-
-    call_write(CALL_PO, count, buffer);
 
 }
 
@@ -81,11 +53,9 @@ void main(void)
     text_init(&content, TEXT_TYPE_NORMAL);
     text_assign(&content, 6, "Hello!");
 
-    content.base.modified = 1;
-    content.base.header.size.h = 16;
-    content.base.header.size.w = 64;
+    content.base.size.h = 16;
+    content.base.size.w = 64;
 
-    list_add(&renderables, &content.base.item);
     call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
@@ -105,16 +75,14 @@ void main(void)
 
             box_setsize(&screen, event.wmready.x, event.wmready.y, event.wmready.w, event.wmready.h);
 
-            content.base.modified = 1;
-            content.base.header.size.x = screen.x + 8;
-            content.base.header.size.y = screen.y + 8;
+            content.base.size.x = screen.x + 8;
+            content.base.size.y = screen.y + 8;
 
             break;
 
         case EVENT_WMEXPOSE:
-            content.base.modified = 1;
-
-            render(source);
+            writetext(source, &content, content.count, content.string);
+            flush();
 
             break;
             

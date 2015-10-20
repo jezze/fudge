@@ -9,7 +9,7 @@ void mouse_init(struct mouse *mouse)
 
     renderable_init(&mouse->base, RENDERABLE_TYPE_MOUSE, 0);
 
-    mouse->base.header.z = 2;
+    mouse->base.z = 2;
 
 }
 

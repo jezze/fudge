@@ -9,7 +9,7 @@ void text_assign(struct text *text, unsigned int count, char *string)
 
     text->count = count;
     text->string = string;
-    text->base.header.count += count;
+    text->base.count += count;
 
 }
 

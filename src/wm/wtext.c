@@ -7,7 +7,7 @@
 #include "panel.h"
 #include "window.h"
 
-static void (*renderers[16])(struct renderable_header *renderable);
+static void (*renderers[16])(struct renderable *renderable);
 static unsigned char data[0x8000];
 static unsigned int datacount;
 
@@ -92,7 +92,7 @@ static void printbox(struct box *box)
 
 }
 
-static void printmouse(struct renderable_header *renderable)
+static void printmouse(struct renderable *renderable)
 {
 
     printblockstart();
@@ -110,7 +110,7 @@ static void printmouse(struct renderable_header *renderable)
 
 }
 
-static void printpanel(struct renderable_header *renderable)
+static void printpanel(struct renderable *renderable)
 {
 
     struct panel_header *header = (struct panel_header *)(renderable + 1);
@@ -132,7 +132,7 @@ static void printpanel(struct renderable_header *renderable)
 
 }
 
-static void printtext(struct renderable_header *renderable)
+static void printtext(struct renderable *renderable)
 {
 
     struct text_header *header = (struct text_header *)(renderable + 1);
@@ -156,7 +156,7 @@ static void printtext(struct renderable_header *renderable)
 
 }
 
-static void printwindow(struct renderable_header *renderable)
+static void printwindow(struct renderable *renderable)
 {
 
     struct window_header *header = (struct window_header *)(renderable + 1);
@@ -178,13 +178,13 @@ static void printwindow(struct renderable_header *renderable)
 
 }
 
-static struct renderable_header *nextrenderable(unsigned int count, void *data, struct renderable_header *renderable)
+static struct renderable *nextrenderable(unsigned int count, void *data, struct renderable *renderable)
 {
 
     if (renderable == 0)
         renderable = data;
     else
-        renderable = (struct renderable_header *)((unsigned char *)renderable + sizeof (struct renderable_header) + renderable->count);
+        renderable = (struct renderable *)((unsigned char *)renderable + sizeof (struct renderable) + renderable->count);
 
     if ((unsigned int)renderable >= (unsigned int)data + count)
         return 0;
@@ -193,10 +193,10 @@ static struct renderable_header *nextrenderable(unsigned int count, void *data, 
 
 }
 
-static void addrenderable(struct renderable_header *renderable)
+static void addrenderable(struct renderable *renderable)
 {
 
-    struct renderable_header *current = 0;
+    struct renderable *current = 0;
 
     while ((current = nextrenderable(datacount, data, current)))
     {
@@ -206,7 +206,7 @@ static void addrenderable(struct renderable_header *renderable)
         if (current->source != renderable->source || current->id != renderable->id)
             continue;
 
-        length = sizeof (struct renderable_header) + current->count;
+        length = sizeof (struct renderable) + current->count;
 
         memory_copy(current, (unsigned char *)current + length, datacount - ((unsigned char *)current - data) - length);
 
@@ -214,7 +214,7 @@ static void addrenderable(struct renderable_header *renderable)
 
     }
 
-    datacount += memory_write(data, 0x8000, renderable, sizeof (struct renderable_header) + renderable->count, datacount);
+    datacount += memory_write(data, 0x8000, renderable, sizeof (struct renderable) + renderable->count, datacount);
 
 }
 
@@ -235,7 +235,7 @@ void main(void)
     while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
     {
 
-        struct renderable_header *renderable;
+        struct renderable *renderable;
 
         renderable = 0;
 
