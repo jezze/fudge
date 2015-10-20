@@ -12,7 +12,7 @@
 #define CLIENTS                         64
 #define VIEWS                           8
 
-struct client
+static struct client
 {
 
     struct list_item item;
@@ -21,7 +21,7 @@ struct client
 
 } client[CLIENTS];
 
-struct view
+static struct view
 {
 
     struct list_item item;
