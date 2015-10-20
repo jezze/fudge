@@ -37,9 +37,6 @@ static struct mouse mouse;
 static struct list clients;
 static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
-static struct box screen;
-static struct box menu;
-static struct box body;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
 
@@ -439,6 +436,9 @@ void main(void)
     unsigned int count, quit = 0;
     struct view *viewfocus = &view[0];
     unsigned int source = 0;
+    struct box screen;
+    struct box menu;
+    struct box body;
 
     setupclients();
     setupviews();

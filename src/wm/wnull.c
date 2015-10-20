@@ -6,7 +6,6 @@
 #include "send.h"
 
 static struct text content;
-static struct box screen;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
 
@@ -49,6 +48,7 @@ void main(void)
     union event event;
     unsigned int count, quit = 0;
     unsigned int source = 0;
+    struct box screen;
 
     text_init(&content, TEXT_TYPE_NORMAL);
     text_assign(&content, 6, "Hello!");
