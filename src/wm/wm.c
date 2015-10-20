@@ -7,17 +7,34 @@
 #include "text.h"
 #include "panel.h"
 #include "window.h"
-#include "client.h"
-#include "view.h"
 #include "send.h"
 
 #define CLIENTS                         64
 #define VIEWS                           8
 
+struct client
+{
+
+    struct list_item item;
+    struct window window;
+    unsigned int source;
+
+} client[CLIENTS];
+
+struct view
+{
+
+    struct list_item item;
+    struct list clients;
+    unsigned int center;
+    struct panel panel;
+    struct text number;
+    struct client *clientfocus;
+
+} view[VIEWS];
+
 static struct mouse mouse;
-static struct client client[CLIENTS];
 static struct list clients;
-static struct view view[VIEWS];
 static struct list renderables;
 static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
@@ -111,6 +128,22 @@ static void render(unsigned int source)
 
 }
 
+static void activateclient(struct client *client)
+{
+
+    client->window.header.active = 1;
+    client->window.base.modified = 1;
+
+}
+
+static void deactivateclient(struct client *client)
+{
+
+    client->window.header.active = 0;
+    client->window.base.modified = 1;
+
+}
+
 static void arrangeclients(struct view *view, struct box *body)
 {
 
@@ -127,9 +160,11 @@ static void arrangeclients(struct view *view, struct box *body)
 
     case 1:
         client = view->clients.tail->data;
-        client->window.base.modified = 1;
 
         box_setsize(&client->window.base.header.size, body->x, body->y, body->w, body->h);
+
+        client->window.base.modified = 1;
+
         send_wmready(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
         send_wmexpose(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
 
@@ -139,9 +174,11 @@ static void arrangeclients(struct view *view, struct box *body)
         y = body->y;
         h = body->h / (view->clients.count - 1);
         client = view->clients.tail->data;
-        client->window.base.modified = 1;
 
         box_setsize(&client->window.base.header.size, body->x, body->y, view->center, body->h);
+
+        client->window.base.modified = 1;
+
         send_wmready(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
         send_wmexpose(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
 
@@ -149,9 +186,11 @@ static void arrangeclients(struct view *view, struct box *body)
         {
 
             client = current->data;
-            client->window.base.modified = 1;
 
             box_setsize(&client->window.base.header.size, body->x + view->center, y, body->w - view->center, h);
+
+            client->window.base.modified = 1;
+
             send_wmready(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
             send_wmexpose(CALL_L2, client->source, client->window.base.header.size.x, client->window.base.header.size.y, client->window.base.header.size.w, client->window.base.header.size.h);
 
@@ -169,10 +208,10 @@ static struct client *focusclient(struct client *focus, struct client *new)
 {
 
     if (focus)
-        client_deactivate(focus);
+        deactivateclient(focus);
 
     if (new)
-        client_activate(new);
+        activateclient(new);
 
     return new;
 
@@ -264,14 +303,58 @@ static void unmapall(unsigned int source)
 
 }
 
+static void activateview(struct view *view)
+{
+
+    struct list_item *current;
+
+    view->panel.header.active = 1;
+    view->panel.base.modified = 1;
+    view->number.header.type = TEXT_TYPE_HIGHLIGHT;
+    view->number.base.modified = 1;
+
+    for (current = view->clients.head; current; current = current->next)
+    {
+
+        struct client *client = current->data;
+
+        client->window.base.header.z = 1;
+        client->window.base.modified = 1;
+
+    }
+
+}
+
+static void deactivateview(struct view *view)
+{
+
+    struct list_item *current;
+
+    view->panel.header.active = 0;
+    view->panel.base.modified = 1;
+    view->number.header.type = TEXT_TYPE_NORMAL;
+    view->number.base.modified = 1;
+
+    for (current = view->clients.head; current; current = current->next)
+    {
+
+        struct client *client = current->data;
+
+        client->window.base.header.z = 0;
+        client->window.base.modified = 1;
+
+    }
+
+}
+
 static struct view *focusview(struct view *focus, struct view *new)
 {
 
     if (focus)
-        view_deactivate(focus);
+        deactivateview(focus);
 
     if (new)
-        view_activate(new);
+        activateview(new);
 
     return new;
 
@@ -302,7 +385,8 @@ static void setupclients(void)
     for (i = 0; i < CLIENTS; i++)
     {
 
-        client_init(&client[i]);
+        list_inititem(&client[i].item, &client[i]);
+        window_init(&client[i].window);
         list_add(&clients, &client[i].item);
         list_add(&renderables, &client[i].window.base.item);
 
@@ -318,7 +402,15 @@ static void setupviews(void)
     for (i = 0; i < VIEWS; i++)
     {
 
-        view_init(&view[i], i);
+        list_inititem(&view[i].item, &view[i]);
+        panel_init(&view[i].panel);
+        text_init(&view[i].number, TEXT_TYPE_NORMAL);
+        text_assign(&view[i].number, 1, "12345678" + i);
+
+        view[i].clientfocus = 0;
+        view[i].panel.base.modified = 1;
+        view[i].number.base.modified = 1;
+
         list_add(&renderables, &view[i].panel.base.item);
         list_add(&renderables, &view[i].number.base.item);
 
@@ -364,7 +456,7 @@ void main(void)
     setupclients();
     setupviews();
     setupmouse();
-    view_activate(viewfocus);
+    activateview(viewfocus);
     call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
@@ -490,9 +582,9 @@ void main(void)
             break;
 
         case EVENT_MOUSEMOVE:
-            mouse.base.modified = 1;
             mouse.base.header.size.x += event.mousemove.relx;
             mouse.base.header.size.y -= event.mousemove.rely;
+            mouse.base.modified = 1;
 
             if (event.mousemove.relx > 0 && mouse.base.header.size.x >= screen.w)
                 mouse.base.header.size.x = screen.w - 1;
