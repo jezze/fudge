@@ -132,7 +132,7 @@ static void arrangeclients(unsigned int source, struct view *view, struct box *b
         box_setsize(&client->window.base.size, body->x, body->y, body->w, body->h);
         writewindow(source, &client->window);
 
-        send_wmready(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
+        send_wmmapnotify(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
         send_wmexpose(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
 
         break;
@@ -145,7 +145,7 @@ static void arrangeclients(unsigned int source, struct view *view, struct box *b
         box_setsize(&client->window.base.size, body->x, body->y, view->center, body->h);
         writewindow(source, &client->window);
 
-        send_wmready(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
+        send_wmmapnotify(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
         send_wmexpose(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
 
         for (current = view->clients.tail->prev; current; current = current->prev)
@@ -156,7 +156,7 @@ static void arrangeclients(unsigned int source, struct view *view, struct box *b
             box_setsize(&client->window.base.size, body->x + view->center, y, body->w - view->center, h);
             writewindow(source, &client->window);
 
-            send_wmready(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
+            send_wmmapnotify(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
             send_wmexpose(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
 
             y += h;
@@ -596,7 +596,7 @@ void main(void)
                 video_getmode(CALL_L0, &oldsettings);
                 video_setmode(CALL_L0, &settings);
                 video_getmode(CALL_L0, &settings);
-                send_wmready(CALL_L2, event.header.source, 0, 0, settings.w, settings.h);
+                send_wmmapnotify(CALL_L2, event.header.source, 0, 0, settings.w, settings.h);
                 send_wmexpose(CALL_L2, event.header.source, 0, 0, settings.w, settings.h);
 
             }
@@ -606,7 +606,7 @@ void main(void)
 
                 mapclient(source, viewfocus, event.header.source);
                 arrangeclients(source, viewfocus, &body);
-                send_wmready(CALL_L2, event.header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
+                send_wmmapnotify(CALL_L2, event.header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
                 send_wmexpose(CALL_L2, event.header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
                 flush();
 
@@ -614,10 +614,10 @@ void main(void)
 
             break;
 
-        case EVENT_WMREADY:
+        case EVENT_WMMAPNOTIFY:
             source = event.header.destination;
 
-            box_setsize(&screen, event.wmready.x, event.wmready.y, event.wmready.w, event.wmready.h);
+            box_setsize(&screen, event.wmmapnotify.x, event.wmmapnotify.y, event.wmmapnotify.w, event.wmmapnotify.h);
             box_setsize(&menu, screen.x, screen.y, screen.w, 32);
             box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
             setviewsize(&menu, &body);

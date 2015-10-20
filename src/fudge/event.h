@@ -5,7 +5,7 @@
 #define EVENT_MOUSEMOVE                 0x0203
 #define EVENT_WMMAP                     0x0301
 #define EVENT_WMUNMAP                   0x0302
-#define EVENT_WMREADY                   0x0303
+#define EVENT_WMMAPNOTIFY               0x0303
 #define EVENT_WMEXPOSE                  0x0304
 
 struct event_header
@@ -73,7 +73,7 @@ struct event_wmunmap
 
 };
 
-struct event_wmready
+struct event_wmmapnotify
 {
 
     struct event_header header;
@@ -107,7 +107,7 @@ union event
     struct event_mousemove mousemove;
     struct event_wmmap wmmap;
     struct event_wmunmap wmunmap;
-    struct event_wmready wmready;
+    struct event_wmmapnotify wmmapnotify;
     struct event_wmexpose wmexpose;
 
 };

@@ -70,10 +70,10 @@ void main(void)
         switch (event.header.type)
         {
 
-        case EVENT_WMREADY:
+        case EVENT_WMMAPNOTIFY:
             source = event.header.destination;
 
-            box_setsize(&screen, event.wmready.x, event.wmready.y, event.wmready.w, event.wmready.h);
+            box_setsize(&screen, event.wmmapnotify.x, event.wmmapnotify.y, event.wmmapnotify.w, event.wmmapnotify.h);
 
             content.base.size.x = screen.x + 8;
             content.base.size.y = screen.y + 8;
