@@ -228,11 +228,15 @@ static void mapclient(struct view *view, unsigned int source)
 
 }
 
-static void unmapclient(struct view *view)
+static void unmapclient(unsigned int source, struct view *view)
 {
 
     if (!view->clientfocus)
         return;
+
+    view->clientfocus->window.base.header.z = 0;
+
+    render(source);
 
     list_move(&clients, &view->clients, &view->clientfocus->item);
 
@@ -240,7 +244,7 @@ static void unmapclient(struct view *view)
 
 }
 
-static void unmapall(void)
+static void unmapall(unsigned int source)
 {
 
     unsigned int i;
@@ -252,7 +256,7 @@ static void unmapall(void)
         {
 
             send_wmunmap(CALL_L2, view[i].clientfocus->source);
-            unmapclient(&view[i]);
+            unmapclient(source, &view[i]);
 
         }
 
@@ -398,7 +402,7 @@ void main(void)
                 {
 
                     send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
-                    unmapclient(viewfocus);
+                    unmapclient(source, viewfocus);
                     arrangeclients(viewfocus, &body);
                     render(source);
 
@@ -552,7 +556,7 @@ void main(void)
             if (event.header.source == event.header.destination)
                 video_setmode(CALL_L0, &oldsettings);
 
-            unmapall();
+            unmapall(source);
 
             quit = 1;
 

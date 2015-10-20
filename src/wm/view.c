@@ -24,6 +24,7 @@ void view_activate(struct view *view)
         struct client *client = current->data;
 
         client->window.base.modified = 1;
+        client->window.base.header.z = 1;
 
     }
 
@@ -45,6 +46,7 @@ void view_deactivate(struct view *view)
         struct client *client = current->data;
 
         client->window.base.modified = 1;
+        client->window.base.header.z = 0;
 
     }
 

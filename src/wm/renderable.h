@@ -10,6 +10,7 @@ struct renderable_header
     unsigned int id;
     unsigned int type;
     unsigned int source;
+    unsigned int z;
     unsigned int count;
 
 };

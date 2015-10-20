@@ -377,6 +377,20 @@ void main(void)
             while ((renderable = nextrenderable(datacount, data, renderable)))
             {
 
+                if (renderable->z != 1)
+                    continue;
+
+                if (line >= renderable->size.y && line < renderable->size.y + renderable->size.h)
+                    renderers[renderable->type](renderable, line);
+
+            }
+
+            while ((renderable = nextrenderable(datacount, data, renderable)))
+            {
+
+                if (renderable->z != 2)
+                    continue;
+
                 if (line >= renderable->size.y && line < renderable->size.y + renderable->size.h)
                     renderers[renderable->type](renderable, line);
 
