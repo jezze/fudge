@@ -380,13 +380,6 @@ static void setupviews(void)
 
 }
 
-static void setupmouse(void)
-{
-
-    mouse_init(&mouse);
-
-}
-
 static void setviewsize(struct box *menu, struct box *body)
 {
 
@@ -444,7 +437,7 @@ void main(void)
 
     setupclients();
     setupviews();
-    setupmouse();
+    mouse_init(&mouse);
     call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
