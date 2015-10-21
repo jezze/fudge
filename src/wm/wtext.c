@@ -109,7 +109,7 @@ static void printmouse(struct element *element)
 static void printpanel(struct element *element)
 {
 
-    struct element_panelheader *header = (struct element_panelheader *)(element + 1);
+    struct element_panel *panel = (struct element_panel *)element;
 
     printblockstart();
     printvalue("id", element->id);
@@ -123,7 +123,7 @@ static void printpanel(struct element *element)
     printname("size");
     printbox(&element->size);
     printseperator();
-    printvalue("active", header->active);
+    printvalue("active", panel->active);
     printblockend();
 
 }
@@ -131,7 +131,7 @@ static void printpanel(struct element *element)
 static void printtext(struct element *element)
 {
 
-    struct element_textheader *header = (struct element_textheader *)(element + 1);
+    struct element_text *text = (struct element_text *)element;
 
     printblockstart();
     printvalue("id", element->id);
@@ -145,9 +145,9 @@ static void printtext(struct element *element)
     printname("size");
     printbox(&element->size);
     printseperator();
-    printvalue("type", header->type);
+    printvalue("type", text->type);
     printseperator();
-    printdata("string", element->count - sizeof (struct element_textheader), header + 1);
+    printdata("string", element->count - (sizeof (struct element_text) - sizeof (struct element)), text + 1);
     printblockend();
 
 }
@@ -155,7 +155,7 @@ static void printtext(struct element *element)
 static void printwindow(struct element *element)
 {
 
-    struct element_windowheader *header = (struct element_windowheader *)(element + 1);
+    struct element_window *window = (struct element_window *)element;
 
     printblockstart();
     printvalue("id", element->id);
@@ -169,7 +169,7 @@ static void printwindow(struct element *element)
     printname("size");
     printbox(&element->size);
     printseperator();
-    printvalue("active", header->active);
+    printvalue("active", window->active);
     printblockend();
 
 }

@@ -8,21 +8,11 @@ static struct element_text content;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
 
-static void writeelement(unsigned int source, struct element *element)
-{
-
-    element->source = source;
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, element, sizeof (struct element), datacount);
-
-}
-
 static void writetext(unsigned int source, struct element_text *text, unsigned int count, void *buffer)
 {
 
-    writeelement(source, &text->base);
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &text->header, sizeof (struct element_textheader), datacount);
+    text->base.source = source;
+    datacount += memory_write(databuffer, FUDGE_BSIZE, text, sizeof (struct element_text), datacount);
     datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
 
 }

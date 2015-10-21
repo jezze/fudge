@@ -37,30 +37,27 @@ static struct ctrl_videosettings settings;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
 
-static void writeelement(unsigned int source, struct element *element)
+static void writemouse(unsigned int source, struct element_mouse *mouse)
 {
 
-    element->source = source;
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, element, sizeof (struct element), datacount);
+    mouse->base.source = source;
+    datacount += memory_write(databuffer, FUDGE_BSIZE, mouse, sizeof (struct element_mouse), datacount);
 
 }
 
 static void writepanel(unsigned int source, struct element_panel *panel)
 {
 
-    writeelement(source, &panel->base);
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &panel->header, sizeof (struct element_panelheader), datacount);
+    panel->base.source = source;
+    datacount += memory_write(databuffer, FUDGE_BSIZE, panel, sizeof (struct element_panel), datacount);
 
 }
 
 static void writetext(unsigned int source, struct element_text *text, unsigned int count, void *buffer)
 {
 
-    writeelement(source, &text->base);
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &text->header, sizeof (struct element_textheader), datacount);
+    text->base.source = source;
+    datacount += memory_write(databuffer, FUDGE_BSIZE, text, sizeof (struct element_text), datacount);
     datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
 
 }
@@ -68,9 +65,8 @@ static void writetext(unsigned int source, struct element_text *text, unsigned i
 static void writewindow(unsigned int source, struct element_window *window)
 {
 
-    writeelement(source, &window->base);
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &window->header, sizeof (struct element_windowheader), datacount);
+    window->base.source = source;
+    datacount += memory_write(databuffer, FUDGE_BSIZE, window, sizeof (struct element_window), datacount);
 
 }
 
@@ -91,7 +87,7 @@ static void flush()
 static void activateclient(unsigned int source, struct client *client)
 {
 
-    client->window.header.active = 1;
+    client->window.active = 1;
 
     writewindow(source, &client->window);
 
@@ -100,7 +96,7 @@ static void activateclient(unsigned int source, struct client *client)
 static void deactivateclient(unsigned int source, struct client *client)
 {
 
-    client->window.header.active = 0;
+    client->window.active = 0;
 
     writewindow(source, &client->window);
 
@@ -267,8 +263,8 @@ static void activateview(unsigned int source, struct view *view)
 
     struct list_item *current;
 
-    view->panel.header.active = 1;
-    view->number.header.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
+    view->panel.active = 1;
+    view->number.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
 
     writepanel(source, &view->panel);
     writetext(source, &view->number, 1, view->numberstring);
@@ -291,8 +287,8 @@ static void deactivateview(unsigned int source, struct view *view)
 
     struct list_item *current;
 
-    view->panel.header.active = 0;
-    view->number.header.type = ELEMENT_TEXTTYPE_NORMAL;
+    view->panel.active = 0;
+    view->number.type = ELEMENT_TEXTTYPE_NORMAL;
 
     writepanel(source, &view->panel);
     writetext(source, &view->number, 1, view->numberstring);
@@ -416,7 +412,7 @@ static void expose(unsigned int source, struct view *viewfocus, struct box *bb)
 
     }
 
-    writeelement(source, &mouse.base);
+    writemouse(source, &mouse);
 
 }
 
@@ -574,7 +570,7 @@ void main(void)
             if (event.mousemove.rely > 0 && mouse.base.size.y >= screen.h)
                 mouse.base.size.y = 0;
 
-            writeelement(source, &mouse.base);
+            writemouse(source, &mouse);
             flush();
 
             break;

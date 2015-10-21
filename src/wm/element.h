@@ -24,25 +24,11 @@ struct element_mouse
 
 };
 
-struct element_panelheader
-{
-
-    unsigned int active;
-
-};
-
 struct element_panel
 {
 
     struct element base;
-    struct element_panelheader header;
-
-};
-
-struct element_textheader
-{
-
-    unsigned int type;
+    unsigned int active;
 
 };
 
@@ -50,14 +36,7 @@ struct element_text
 {
 
     struct element base;
-    struct element_textheader header;
-
-};
-
-struct element_windowheader
-{
-
-    unsigned int active;
+    unsigned int type;
 
 };
 
@@ -65,7 +44,7 @@ struct element_window
 {
 
     struct element base;
-    struct element_windowheader header;
+    unsigned int active;
 
 };
 

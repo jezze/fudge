@@ -137,7 +137,7 @@ static void rendermouse(struct element *element, unsigned int line)
 static void renderpanel(struct element *element, unsigned int line)
 {
 
-    struct element_panelheader *panel = (struct element_panelheader *)(element + 1);
+    struct element_panel *panel = (struct element_panel *)element;
     unsigned int offset = (line - element->size.y);
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
@@ -176,9 +176,9 @@ static void renderpanel(struct element *element, unsigned int line)
 static void rendertext(struct element *element, unsigned int line)
 {
 
-    struct element_textheader *text = (struct element_textheader *)(element + 1);
+    struct element_text *text = (struct element_text *)element;
     unsigned int padding = pcf_getpadding(fontdata);
-    unsigned int count = element->count - sizeof (struct element_textheader);
+    unsigned int count = element->count - (sizeof (struct element_text) - sizeof (struct element));
     unsigned char *string = (unsigned char *)(text + 1);
     struct box size;
     unsigned int color;
@@ -246,7 +246,7 @@ static void rendertext(struct element *element, unsigned int line)
 static void renderwindow(struct element *element, unsigned int line)
 {
 
-    struct element_windowheader *window = (struct element_windowheader *)(element + 1);
+    struct element_window *window = (struct element_window *)element;
     unsigned int offset = (line - element->size.y);
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
