@@ -51,8 +51,8 @@ void main(void)
     struct box screen;
 
     text_init(&content, TEXT_TYPE_NORMAL);
-    text_assign(&content, 6, "Hello!");
 
+    content.base.count += 6;
     content.base.size.h = 16;
     content.base.size.w = 64;
 
@@ -81,7 +81,7 @@ void main(void)
             break;
 
         case EVENT_WMEXPOSE:
-            writetext(source, &content, content.count, content.string);
+            writetext(source, &content, 6, "Hello!");
             flush();
 
             break;

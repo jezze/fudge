@@ -13,10 +13,7 @@ struct text
 
     struct renderable base;
     struct text_header header;
-    unsigned int count;
-    char *string;
 
 };
 
-void text_assign(struct text *text, unsigned int count, char *string);
 void text_init(struct text *text, unsigned int type);

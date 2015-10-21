@@ -4,15 +4,6 @@
 #include "renderable.h"
 #include "text.h"
 
-void text_assign(struct text *text, unsigned int count, char *string)
-{
-
-    text->count = count;
-    text->string = string;
-    text->base.count += count;
-
-}
-
 void text_init(struct text *text, unsigned int type)
 {
 

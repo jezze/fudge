@@ -29,6 +29,7 @@ static struct view
     unsigned int center;
     struct panel panel;
     struct text number;
+    char *numberstring;
     struct client *clientfocus;
 
 } view[VIEWS];
@@ -274,7 +275,7 @@ static void activateview(unsigned int source, struct view *view)
     view->number.header.type = TEXT_TYPE_HIGHLIGHT;
 
     writepanel(source, &view->panel);
-    writetext(source, &view->number, view->number.count, view->number.string);
+    writetext(source, &view->number, 1, view->numberstring);
 
     for (current = view->clients.head; current; current = current->next)
     {
@@ -298,7 +299,7 @@ static void deactivateview(unsigned int source, struct view *view)
     view->number.header.type = TEXT_TYPE_NORMAL;
 
     writepanel(source, &view->panel);
-    writetext(source, &view->number, view->number.count, view->number.string);
+    writetext(source, &view->number, 1, view->numberstring);
 
     for (current = view->clients.head; current; current = current->next)
     {
@@ -370,8 +371,9 @@ static void setupviews(void)
         list_inititem(&view[i].item, &view[i]);
         panel_init(&view[i].panel);
         text_init(&view[i].number, TEXT_TYPE_NORMAL);
-        text_assign(&view[i].number, 1, "12345678" + i);
 
+        view[i].number.base.count += 1;
+        view[i].numberstring = "12345678" + i;
         view[i].clientfocus = 0;
 
     }
@@ -412,7 +414,7 @@ static void expose(unsigned int source, struct view *viewfocus, struct box *bb)
     {
 
         writepanel(source, &view[i].panel);
-        writetext(source, &view[i].number, view[i].number.count, view[i].number.string);
+        writetext(source, &view[i].number, 1, view[i].numberstring);
 
     }
 
