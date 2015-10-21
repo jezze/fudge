@@ -1,9 +1,9 @@
 #include <abi.h>
 #include <fudge.h>
 #include "box.h"
-#include "renderable.h"
+#include "element.h"
 
-static void (*renderers[16])(struct renderable *renderable);
+static void (*renderers[16])(struct element *element);
 static unsigned char data[0x8000];
 static unsigned int datacount;
 
@@ -88,121 +88,121 @@ static void printbox(struct box *box)
 
 }
 
-static void printmouse(struct renderable *renderable)
+static void printmouse(struct element *element)
 {
 
     printblockstart();
-    printvalue("id", renderable->id);
+    printvalue("id", element->id);
     printseperator();
     printstring("type", "mouse");
     printseperator();
-    printvalue("source", renderable->source);
+    printvalue("source", element->source);
     printseperator();
-    printvalue("count", renderable->count);
+    printvalue("count", element->count);
     printseperator();
     printname("size");
-    printbox(&renderable->size);
+    printbox(&element->size);
     printblockend();
 
 }
 
-static void printpanel(struct renderable *renderable)
+static void printpanel(struct element *element)
 {
 
-    struct renderable_panelheader *header = (struct renderable_panelheader *)(renderable + 1);
+    struct element_panelheader *header = (struct element_panelheader *)(element + 1);
 
     printblockstart();
-    printvalue("id", renderable->id);
+    printvalue("id", element->id);
     printseperator();
     printstring("type", "panel");
     printseperator();
-    printvalue("source", renderable->source);
+    printvalue("source", element->source);
     printseperator();
-    printvalue("count", renderable->count);
+    printvalue("count", element->count);
     printseperator();
     printname("size");
-    printbox(&renderable->size);
+    printbox(&element->size);
     printseperator();
     printvalue("active", header->active);
     printblockend();
 
 }
 
-static void printtext(struct renderable *renderable)
+static void printtext(struct element *element)
 {
 
-    struct renderable_textheader *header = (struct renderable_textheader *)(renderable + 1);
+    struct element_textheader *header = (struct element_textheader *)(element + 1);
 
     printblockstart();
-    printvalue("id", renderable->id);
+    printvalue("id", element->id);
     printseperator();
     printstring("type", "text");
     printseperator();
-    printvalue("source", renderable->source);
+    printvalue("source", element->source);
     printseperator();
-    printvalue("count", renderable->count);
+    printvalue("count", element->count);
     printseperator();
     printname("size");
-    printbox(&renderable->size);
+    printbox(&element->size);
     printseperator();
     printvalue("type", header->type);
     printseperator();
-    printdata("string", renderable->count - sizeof (struct renderable_textheader), header + 1);
+    printdata("string", element->count - sizeof (struct element_textheader), header + 1);
     printblockend();
 
 }
 
-static void printwindow(struct renderable *renderable)
+static void printwindow(struct element *element)
 {
 
-    struct renderable_windowheader *header = (struct renderable_windowheader *)(renderable + 1);
+    struct element_windowheader *header = (struct element_windowheader *)(element + 1);
 
     printblockstart();
-    printvalue("id", renderable->id);
+    printvalue("id", element->id);
     printseperator();
     printstring("type", "window");
     printseperator();
-    printvalue("source", renderable->source);
+    printvalue("source", element->source);
     printseperator();
-    printvalue("count", renderable->count);
+    printvalue("count", element->count);
     printseperator();
     printname("size");
-    printbox(&renderable->size);
+    printbox(&element->size);
     printseperator();
     printvalue("active", header->active);
     printblockend();
 
 }
 
-static struct renderable *nextrenderable(unsigned int count, void *data, struct renderable *renderable)
+static struct element *nextelement(unsigned int count, void *data, struct element *element)
 {
 
-    if (renderable == 0)
-        renderable = data;
+    if (element == 0)
+        element = data;
     else
-        renderable = (struct renderable *)((unsigned char *)renderable + sizeof (struct renderable) + renderable->count);
+        element = (struct element *)((unsigned char *)element + sizeof (struct element) + element->count);
 
-    if ((unsigned int)renderable >= (unsigned int)data + count)
+    if ((unsigned int)element >= (unsigned int)data + count)
         return 0;
 
-    return renderable;
+    return element;
 
 }
 
-static void addrenderable(struct renderable *renderable)
+static void addelement(struct element *element)
 {
 
-    struct renderable *current = 0;
+    struct element *current = 0;
 
-    while ((current = nextrenderable(datacount, data, current)))
+    while ((current = nextelement(datacount, data, current)))
     {
 
         unsigned int length;
 
-        if (current->source != renderable->source || current->id != renderable->id)
+        if (current->source != element->source || current->id != element->id)
             continue;
 
-        length = sizeof (struct renderable) + current->count;
+        length = sizeof (struct element) + current->count;
 
         memory_copy(current, (unsigned char *)current + length, datacount - ((unsigned char *)current - data) - length);
 
@@ -210,7 +210,7 @@ static void addrenderable(struct renderable *renderable)
 
     }
 
-    datacount += memory_write(data, 0x8000, renderable, sizeof (struct renderable) + renderable->count, datacount);
+    datacount += memory_write(data, 0x8000, element, sizeof (struct element) + element->count, datacount);
 
 }
 
@@ -220,10 +220,10 @@ void main(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    renderers[RENDERABLE_TYPE_MOUSE] = printmouse;
-    renderers[RENDERABLE_TYPE_PANEL] = printpanel;
-    renderers[RENDERABLE_TYPE_TEXT] = printtext;
-    renderers[RENDERABLE_TYPE_WINDOW] = printwindow;
+    renderers[ELEMENT_TYPE_MOUSE] = printmouse;
+    renderers[ELEMENT_TYPE_PANEL] = printpanel;
+    renderers[ELEMENT_TYPE_TEXT] = printtext;
+    renderers[ELEMENT_TYPE_WINDOW] = printwindow;
 
     call_open(CALL_PI);
     call_open(CALL_PO);
@@ -231,19 +231,19 @@ void main(void)
     while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
     {
 
-        struct renderable *renderable;
+        struct element *element;
 
-        renderable = 0;
+        element = 0;
 
-        while ((renderable = nextrenderable(count, buffer, renderable)))
-            addrenderable(renderable);
+        while ((element = nextelement(count, buffer, element)))
+            addelement(element);
 
-        renderable = 0;
+        element = 0;
 
-        while ((renderable = nextrenderable(datacount, data, renderable)))
+        while ((element = nextelement(datacount, data, element)))
         {
 
-            renderers[renderable->type](renderable);
+            renderers[element->type](element);
             printnewline();
 
         }

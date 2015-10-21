@@ -2,7 +2,7 @@
 #include <fudge.h>
 #include <video/video.h>
 #include "box.h"
-#include "renderable.h"
+#include "element.h"
 #include "send.h"
 
 #define CLIENTS                         64
@@ -12,7 +12,7 @@ static struct client
 {
 
     struct list_item item;
-    struct renderable_window window;
+    struct element_window window;
     unsigned int source;
 
 } client[CLIENTS];
@@ -23,54 +23,54 @@ static struct view
     struct list_item item;
     struct list clients;
     unsigned int center;
-    struct renderable_panel panel;
-    struct renderable_text number;
+    struct element_panel panel;
+    struct element_text number;
     char *numberstring;
     struct client *clientfocus;
 
 } view[VIEWS];
 
-static struct renderable_mouse mouse;
+static struct element_mouse mouse;
 static struct list clients;
 static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
 
-static void writerenderable(unsigned int source, struct renderable *renderable)
+static void writeelement(unsigned int source, struct element *element)
 {
 
-    renderable->source = source;
+    element->source = source;
 
-    datacount += memory_write(databuffer, FUDGE_BSIZE, renderable, sizeof (struct renderable), datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, element, sizeof (struct element), datacount);
 
 }
 
-static void writepanel(unsigned int source, struct renderable_panel *panel)
+static void writepanel(unsigned int source, struct element_panel *panel)
 {
 
-    writerenderable(source, &panel->base);
+    writeelement(source, &panel->base);
 
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &panel->header, sizeof (struct renderable_panelheader), datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &panel->header, sizeof (struct element_panelheader), datacount);
 
 }
 
-static void writetext(unsigned int source, struct renderable_text *text, unsigned int count, void *buffer)
+static void writetext(unsigned int source, struct element_text *text, unsigned int count, void *buffer)
 {
 
-    writerenderable(source, &text->base);
+    writeelement(source, &text->base);
 
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &text->header, sizeof (struct renderable_textheader), datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &text->header, sizeof (struct element_textheader), datacount);
     datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
 
 }
 
-static void writewindow(unsigned int source, struct renderable_window *window)
+static void writewindow(unsigned int source, struct element_window *window)
 {
 
-    writerenderable(source, &window->base);
+    writeelement(source, &window->base);
 
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &window->header, sizeof (struct renderable_windowheader), datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &window->header, sizeof (struct element_windowheader), datacount);
 
 }
 
@@ -268,7 +268,7 @@ static void activateview(unsigned int source, struct view *view)
     struct list_item *current;
 
     view->panel.header.active = 1;
-    view->number.header.type = RENDERABLE_TEXTTYPE_HIGHLIGHT;
+    view->number.header.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
 
     writepanel(source, &view->panel);
     writetext(source, &view->number, 1, view->numberstring);
@@ -292,7 +292,7 @@ static void deactivateview(unsigned int source, struct view *view)
     struct list_item *current;
 
     view->panel.header.active = 0;
-    view->number.header.type = RENDERABLE_TEXTTYPE_NORMAL;
+    view->number.header.type = ELEMENT_TEXTTYPE_NORMAL;
 
     writepanel(source, &view->panel);
     writetext(source, &view->number, 1, view->numberstring);
@@ -349,7 +349,7 @@ static void setupclients(void)
     {
 
         list_inititem(&client[i].item, &client[i]);
-        renderable_initwindow(&client[i].window);
+        element_initwindow(&client[i].window);
         list_add(&clients, &client[i].item);
 
     }
@@ -365,8 +365,8 @@ static void setupviews(void)
     {
 
         list_inititem(&view[i].item, &view[i]);
-        renderable_initpanel(&view[i].panel);
-        renderable_inittext(&view[i].number, RENDERABLE_TEXTTYPE_NORMAL);
+        element_initpanel(&view[i].panel);
+        element_inittext(&view[i].number, ELEMENT_TEXTTYPE_NORMAL);
 
         view[i].number.base.count += 1;
         view[i].numberstring = "12345678" + i;
@@ -416,7 +416,7 @@ static void expose(unsigned int source, struct view *viewfocus, struct box *bb)
 
     }
 
-    writerenderable(source, &mouse.base);
+    writeelement(source, &mouse.base);
 
 }
 
@@ -433,7 +433,7 @@ void main(void)
 
     setupclients();
     setupviews();
-    renderable_initmouse(&mouse);
+    element_initmouse(&mouse);
     call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
@@ -574,7 +574,7 @@ void main(void)
             if (event.mousemove.rely > 0 && mouse.base.size.y >= screen.h)
                 mouse.base.size.y = 0;
 
-            writerenderable(source, &mouse.base);
+            writeelement(source, &mouse.base);
             flush();
 
             break;

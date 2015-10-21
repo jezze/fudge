@@ -4,7 +4,7 @@ BIN_WM:=\
 OBJ_WM:=\
     $(SRC_PATH)/wm/wm.o \
     $(SRC_PATH)/wm/box.o \
-    $(SRC_PATH)/wm/renderable.o \
+    $(SRC_PATH)/wm/element.o \
     $(SRC_PATH)/wm/send.o \
     $(SRC_PATH)/video/video.o \
 
@@ -17,7 +17,7 @@ BIN_WDRAW:=\
 OBJ_WDRAW:=\
     $(SRC_PATH)/wm/wdraw.o \
     $(SRC_PATH)/wm/box.o \
-    $(SRC_PATH)/wm/renderable.o \
+    $(SRC_PATH)/wm/element.o \
     $(SRC_PATH)/video/video.o \
     $(SRC_PATH)/format/pcf.o \
 
@@ -30,7 +30,7 @@ BIN_WTEXT:=\
 OBJ_WTEXT:=\
     $(SRC_PATH)/wm/wtext.o \
     $(SRC_PATH)/wm/box.o \
-    $(SRC_PATH)/wm/renderable.o \
+    $(SRC_PATH)/wm/element.o \
 
 $(BIN_WTEXT): $(OBJ_WTEXT) $(SRC_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
@@ -41,7 +41,7 @@ BIN_WNULL:=\
 OBJ_WNULL:=\
     $(SRC_PATH)/wm/wnull.o \
     $(SRC_PATH)/wm/box.o \
-    $(SRC_PATH)/wm/renderable.o \
+    $(SRC_PATH)/wm/element.o \
     $(SRC_PATH)/wm/send.o \
 
 $(BIN_WNULL): $(OBJ_WNULL) $(SRC_DEPS)

@@ -3,7 +3,7 @@
 #include <video/video.h>
 #include <format/pcf.h>
 #include "box.h"
-#include "renderable.h"
+#include "element.h"
 
 #define COLOR_DARK                      0x00
 #define COLOR_LIGHT                     0x01
@@ -18,7 +18,7 @@
 #define COLOR_TEXTLIGHT                 0x0A
 
 static struct ctrl_videosettings settings;
-static void (*renderers[16])(struct renderable *renderable, unsigned int line);
+static void (*renderers[16])(struct element *element, unsigned int line);
 static unsigned char fontdata[0x8000];
 static unsigned char drawdata[0x2000];
 static unsigned char data[0x8000];
@@ -118,54 +118,54 @@ static void fill(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static void rendermouse(struct renderable *renderable, unsigned int line)
+static void rendermouse(struct element *element, unsigned int line)
 {
 
-    unsigned int offset = (line - renderable->size.y) * renderable->size.w;
+    unsigned int offset = (line - element->size.y) * element->size.w;
     unsigned int i;
 
-    for (i = 0; i < renderable->size.w; i++)
+    for (i = 0; i < element->size.w; i++)
     {
 
         if (mousedata[offset + i] != 0xFF)
-            fill(mousedata[offset + i], renderable->size.x + i, 1);
+            fill(mousedata[offset + i], element->size.x + i, 1);
 
     }
 
 }
 
-static void renderpanel(struct renderable *renderable, unsigned int line)
+static void renderpanel(struct element *element, unsigned int line)
 {
 
-    struct renderable_panelheader *panel = (struct renderable_panelheader *)(renderable + 1);
-    unsigned int offset = (line - renderable->size.y);
+    struct element_panelheader *panel = (struct element_panelheader *)(element + 1);
+    unsigned int offset = (line - element->size.y);
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
 
-    if (offset > renderable->size.h / 2)
-        offset = renderable->size.h - offset - 1;
+    if (offset > element->size.h / 2)
+        offset = element->size.h - offset - 1;
 
     switch (offset)
     {
 
     case 0:
-        fill(COLOR_DARK, renderable->size.x, renderable->size.w);
+        fill(COLOR_DARK, element->size.x, element->size.w);
 
         break;
 
     case 1:
-        fill(COLOR_DARK, renderable->size.x + 0, 1);
-        fill(COLOR_DARK, renderable->size.x + renderable->size.w - 1, 1);
-        fill(framecolor, renderable->size.x + 1, renderable->size.w - 2);
+        fill(COLOR_DARK, element->size.x + 0, 1);
+        fill(COLOR_DARK, element->size.x + element->size.w - 1, 1);
+        fill(framecolor, element->size.x + 1, element->size.w - 2);
 
         break;
 
     default:
-        fill(COLOR_DARK, renderable->size.x + 0, 1);
-        fill(COLOR_DARK, renderable->size.x + renderable->size.w - 1, 1);
-        fill(framecolor, renderable->size.x + 1, 1);
-        fill(framecolor, renderable->size.x + renderable->size.w - 2, 1);
-        fill(backgroundcolor, renderable->size.x + 2, renderable->size.w - 4);
+        fill(COLOR_DARK, element->size.x + 0, 1);
+        fill(COLOR_DARK, element->size.x + element->size.w - 1, 1);
+        fill(framecolor, element->size.x + 1, 1);
+        fill(framecolor, element->size.x + element->size.w - 2, 1);
+        fill(backgroundcolor, element->size.x + 2, element->size.w - 4);
 
         break;
 
@@ -173,29 +173,29 @@ static void renderpanel(struct renderable *renderable, unsigned int line)
 
 }
 
-static void rendertext(struct renderable *renderable, unsigned int line)
+static void rendertext(struct element *element, unsigned int line)
 {
 
-    struct renderable_textheader *text = (struct renderable_textheader *)(renderable + 1);
+    struct element_textheader *text = (struct element_textheader *)(element + 1);
     unsigned int padding = pcf_getpadding(fontdata);
-    unsigned int count = renderable->count - sizeof (struct renderable_textheader);
+    unsigned int count = element->count - sizeof (struct element_textheader);
     unsigned char *string = (unsigned char *)(text + 1);
     struct box size;
     unsigned int color;
     unsigned int i;
 
-    size.x = renderable->size.x;
-    size.y = renderable->size.y;
+    size.x = element->size.x;
+    size.y = element->size.y;
 
     switch (text->type)
     {
 
-    case RENDERABLE_TEXTTYPE_HIGHLIGHT:
+    case ELEMENT_TEXTTYPE_HIGHLIGHT:
         color = COLOR_TEXTLIGHT;
 
         break;
 
-    case RENDERABLE_TEXTTYPE_NORMAL:
+    case ELEMENT_TEXTTYPE_NORMAL:
     default:
         color = COLOR_TEXTNORMAL;
 
@@ -243,47 +243,47 @@ static void rendertext(struct renderable *renderable, unsigned int line)
 
 }
 
-static void renderwindow(struct renderable *renderable, unsigned int line)
+static void renderwindow(struct element *element, unsigned int line)
 {
 
-    struct renderable_windowheader *window = (struct renderable_windowheader *)(renderable + 1);
-    unsigned int offset = (line - renderable->size.y);
+    struct element_windowheader *window = (struct element_windowheader *)(element + 1);
+    unsigned int offset = (line - element->size.y);
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
-    if (offset > renderable->size.h / 2)
-        offset = renderable->size.h - offset - 1;
+    if (offset > element->size.h / 2)
+        offset = element->size.h - offset - 1;
 
     switch (offset)
     {
 
     case 0:
-        fill(COLOR_DARK, renderable->size.x, renderable->size.w);
+        fill(COLOR_DARK, element->size.x, element->size.w);
 
         break;
 
     case 1:
-        fill(COLOR_DARK, renderable->size.x + 0, 1);
-        fill(COLOR_DARK, renderable->size.x + renderable->size.w - 1, 1);
-        fill(framecolor, renderable->size.x + 1, renderable->size.w - 2);
+        fill(COLOR_DARK, element->size.x + 0, 1);
+        fill(COLOR_DARK, element->size.x + element->size.w - 1, 1);
+        fill(framecolor, element->size.x + 1, element->size.w - 2);
 
         break;
 
     case 2:
-        fill(COLOR_DARK, renderable->size.x + 0, 1);
-        fill(COLOR_DARK, renderable->size.x + renderable->size.w - 1, 1);
-        fill(framecolor, renderable->size.x + 1, 1);
-        fill(framecolor, renderable->size.x + renderable->size.w - 2, 1);
-        fill(COLOR_DARK, renderable->size.x + 2, renderable->size.w - 4);
+        fill(COLOR_DARK, element->size.x + 0, 1);
+        fill(COLOR_DARK, element->size.x + element->size.w - 1, 1);
+        fill(framecolor, element->size.x + 1, 1);
+        fill(framecolor, element->size.x + element->size.w - 2, 1);
+        fill(COLOR_DARK, element->size.x + 2, element->size.w - 4);
 
         break;
 
     default:
-        fill(COLOR_DARK, renderable->size.x + 0, 1);
-        fill(COLOR_DARK, renderable->size.x + renderable->size.w - 1, 1);
-        fill(framecolor, renderable->size.x + 1, 1);
-        fill(framecolor, renderable->size.x + renderable->size.w - 2, 1);
-        fill(COLOR_DARK, renderable->size.x + 2, 1);
-        fill(COLOR_DARK, renderable->size.x + renderable->size.w - 3, 1);
+        fill(COLOR_DARK, element->size.x + 0, 1);
+        fill(COLOR_DARK, element->size.x + element->size.w - 1, 1);
+        fill(framecolor, element->size.x + 1, 1);
+        fill(framecolor, element->size.x + element->size.w - 2, 1);
+        fill(COLOR_DARK, element->size.x + 2, 1);
+        fill(COLOR_DARK, element->size.x + element->size.w - 3, 1);
 
         break;
 
@@ -291,35 +291,35 @@ static void renderwindow(struct renderable *renderable, unsigned int line)
 
 }
 
-static struct renderable *nextrenderable(unsigned int count, void *data, struct renderable *renderable)
+static struct element *nextelement(unsigned int count, void *data, struct element *element)
 {
 
-    if (renderable == 0)
-        renderable = data;
+    if (element == 0)
+        element = data;
     else
-        renderable = (struct renderable *)((unsigned char *)renderable + sizeof (struct renderable) + renderable->count);
+        element = (struct element *)((unsigned char *)element + sizeof (struct element) + element->count);
 
-    if ((unsigned int)renderable >= (unsigned int)data + count)
+    if ((unsigned int)element >= (unsigned int)data + count)
         return 0;
 
-    return renderable;
+    return element;
 
 }
 
-static void addrenderable(struct renderable *renderable)
+static void addelement(struct element *element)
 {
 
-    struct renderable *current = 0;
+    struct element *current = 0;
 
-    while ((current = nextrenderable(datacount, data, current)))
+    while ((current = nextelement(datacount, data, current)))
     {
 
         unsigned int length;
 
-        if (current->source != renderable->source || current->id != renderable->id)
+        if (current->source != element->source || current->id != element->id)
             continue;
 
-        length = sizeof (struct renderable) + current->count;
+        length = sizeof (struct element) + current->count;
 
         memory_copy(current, (unsigned char *)current + length, datacount - ((unsigned char *)current - data) - length);
 
@@ -327,7 +327,7 @@ static void addrenderable(struct renderable *renderable)
 
     }
 
-    datacount += memory_write(data, 0x8000, renderable, sizeof (struct renderable) + renderable->count, datacount);
+    datacount += memory_write(data, 0x8000, element, sizeof (struct element) + element->count, datacount);
 
 }
 
@@ -342,10 +342,10 @@ void main(void)
     call_read(CALL_L0, 0x8000, fontdata);
     call_close(CALL_L0);
 
-    renderers[RENDERABLE_TYPE_MOUSE] = rendermouse;
-    renderers[RENDERABLE_TYPE_PANEL] = renderpanel;
-    renderers[RENDERABLE_TYPE_TEXT] = rendertext;
-    renderers[RENDERABLE_TYPE_WINDOW] = renderwindow;
+    renderers[ELEMENT_TYPE_MOUSE] = rendermouse;
+    renderers[ELEMENT_TYPE_PANEL] = renderpanel;
+    renderers[ELEMENT_TYPE_TEXT] = rendertext;
+    renderers[ELEMENT_TYPE_WINDOW] = renderwindow;
 
     video_getmode(CALL_L0, &settings);
     video_setcolormap(CALL_L0, 0, 3 * 11, colormap8);
@@ -355,42 +355,42 @@ void main(void)
     while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
     {
 
-        struct renderable *renderable;
+        struct element *element;
         unsigned int line;
 
-        renderable = 0;
+        element = 0;
 
-        while ((renderable = nextrenderable(count, buffer, renderable)))
-            addrenderable(renderable);
+        while ((element = nextelement(count, buffer, element)))
+            addelement(element);
 
         for (line = 0; line < settings.h; line++)
         {
 
             fill(COLOR_BODY, 0, settings.w);
 
-            renderable = 0;
+            element = 0;
 
-            while ((renderable = nextrenderable(datacount, data, renderable)))
+            while ((element = nextelement(datacount, data, element)))
             {
 
-                if (renderable->z != 1)
+                if (element->z != 1)
                     continue;
 
-                if (line >= renderable->size.y && line < renderable->size.y + renderable->size.h)
-                    renderers[renderable->type](renderable, line);
+                if (line >= element->size.y && line < element->size.y + element->size.h)
+                    renderers[element->type](element, line);
 
             }
 
-            renderable = 0;
+            element = 0;
 
-            while ((renderable = nextrenderable(datacount, data, renderable)))
+            while ((element = nextelement(datacount, data, element)))
             {
 
-                if (renderable->z != 2)
+                if (element->z != 2)
                     continue;
 
-                if (line >= renderable->size.y && line < renderable->size.y + renderable->size.h)
-                    renderers[renderable->type](renderable, line);
+                if (line >= element->size.y && line < element->size.y + element->size.h)
+                    renderers[element->type](element, line);
 
             }
 
