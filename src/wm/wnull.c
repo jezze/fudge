@@ -2,10 +2,9 @@
 #include <fudge.h>
 #include "box.h"
 #include "renderable.h"
-#include "text.h"
 #include "send.h"
 
-static struct text content;
+static struct renderable_text content;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
 
@@ -18,12 +17,12 @@ static void writerenderable(unsigned int source, struct renderable *renderable)
 
 }
 
-static void writetext(unsigned int source, struct text *text, unsigned int count, void *buffer)
+static void writetext(unsigned int source, struct renderable_text *text, unsigned int count, void *buffer)
 {
 
     writerenderable(source, &text->base);
 
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &text->header, sizeof (struct text_header), datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &text->header, sizeof (struct renderable_textheader), datacount);
     datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
 
 }
@@ -50,7 +49,7 @@ void main(void)
     unsigned int source = 0;
     struct box screen;
 
-    text_init(&content, TEXT_TYPE_NORMAL);
+    renderable_inittext(&content, RENDERABLE_TEXTTYPE_NORMAL);
 
     content.base.count += 6;
     content.base.size.h = 16;

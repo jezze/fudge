@@ -2,10 +2,6 @@
 #include <fudge.h>
 #include "box.h"
 #include "renderable.h"
-#include "mouse.h"
-#include "text.h"
-#include "panel.h"
-#include "window.h"
 
 static void (*renderers[16])(struct renderable *renderable);
 static unsigned char data[0x8000];
@@ -113,7 +109,7 @@ static void printmouse(struct renderable *renderable)
 static void printpanel(struct renderable *renderable)
 {
 
-    struct panel_header *header = (struct panel_header *)(renderable + 1);
+    struct renderable_panelheader *header = (struct renderable_panelheader *)(renderable + 1);
 
     printblockstart();
     printvalue("id", renderable->id);
@@ -135,7 +131,7 @@ static void printpanel(struct renderable *renderable)
 static void printtext(struct renderable *renderable)
 {
 
-    struct text_header *header = (struct text_header *)(renderable + 1);
+    struct renderable_textheader *header = (struct renderable_textheader *)(renderable + 1);
 
     printblockstart();
     printvalue("id", renderable->id);
@@ -151,7 +147,7 @@ static void printtext(struct renderable *renderable)
     printseperator();
     printvalue("type", header->type);
     printseperator();
-    printdata("string", renderable->count - sizeof (struct text_header), header + 1);
+    printdata("string", renderable->count - sizeof (struct renderable_textheader), header + 1);
     printblockend();
 
 }
@@ -159,7 +155,7 @@ static void printtext(struct renderable *renderable)
 static void printwindow(struct renderable *renderable)
 {
 
-    struct window_header *header = (struct window_header *)(renderable + 1);
+    struct renderable_windowheader *header = (struct renderable_windowheader *)(renderable + 1);
 
     printblockstart();
     printvalue("id", renderable->id);

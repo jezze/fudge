@@ -3,10 +3,6 @@
 #include <video/video.h>
 #include "box.h"
 #include "renderable.h"
-#include "mouse.h"
-#include "text.h"
-#include "panel.h"
-#include "window.h"
 #include "send.h"
 
 #define CLIENTS                         64
@@ -16,7 +12,7 @@ static struct client
 {
 
     struct list_item item;
-    struct window window;
+    struct renderable_window window;
     unsigned int source;
 
 } client[CLIENTS];
@@ -27,14 +23,14 @@ static struct view
     struct list_item item;
     struct list clients;
     unsigned int center;
-    struct panel panel;
-    struct text number;
+    struct renderable_panel panel;
+    struct renderable_text number;
     char *numberstring;
     struct client *clientfocus;
 
 } view[VIEWS];
 
-static struct mouse mouse;
+static struct renderable_mouse mouse;
 static struct list clients;
 static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
@@ -50,31 +46,31 @@ static void writerenderable(unsigned int source, struct renderable *renderable)
 
 }
 
-static void writepanel(unsigned int source, struct panel *panel)
+static void writepanel(unsigned int source, struct renderable_panel *panel)
 {
 
     writerenderable(source, &panel->base);
 
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &panel->header, sizeof (struct panel_header), datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &panel->header, sizeof (struct renderable_panelheader), datacount);
 
 }
 
-static void writetext(unsigned int source, struct text *text, unsigned int count, void *buffer)
+static void writetext(unsigned int source, struct renderable_text *text, unsigned int count, void *buffer)
 {
 
     writerenderable(source, &text->base);
 
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &text->header, sizeof (struct text_header), datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &text->header, sizeof (struct renderable_textheader), datacount);
     datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
 
 }
 
-static void writewindow(unsigned int source, struct window *window)
+static void writewindow(unsigned int source, struct renderable_window *window)
 {
 
     writerenderable(source, &window->base);
 
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &window->header, sizeof (struct window_header), datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &window->header, sizeof (struct renderable_windowheader), datacount);
 
 }
 
@@ -272,7 +268,7 @@ static void activateview(unsigned int source, struct view *view)
     struct list_item *current;
 
     view->panel.header.active = 1;
-    view->number.header.type = TEXT_TYPE_HIGHLIGHT;
+    view->number.header.type = RENDERABLE_TEXTTYPE_HIGHLIGHT;
 
     writepanel(source, &view->panel);
     writetext(source, &view->number, 1, view->numberstring);
@@ -296,7 +292,7 @@ static void deactivateview(unsigned int source, struct view *view)
     struct list_item *current;
 
     view->panel.header.active = 0;
-    view->number.header.type = TEXT_TYPE_NORMAL;
+    view->number.header.type = RENDERABLE_TEXTTYPE_NORMAL;
 
     writepanel(source, &view->panel);
     writetext(source, &view->number, 1, view->numberstring);
@@ -353,7 +349,7 @@ static void setupclients(void)
     {
 
         list_inititem(&client[i].item, &client[i]);
-        window_init(&client[i].window);
+        renderable_initwindow(&client[i].window);
         list_add(&clients, &client[i].item);
 
     }
@@ -369,8 +365,8 @@ static void setupviews(void)
     {
 
         list_inititem(&view[i].item, &view[i]);
-        panel_init(&view[i].panel);
-        text_init(&view[i].number, TEXT_TYPE_NORMAL);
+        renderable_initpanel(&view[i].panel);
+        renderable_inittext(&view[i].number, RENDERABLE_TEXTTYPE_NORMAL);
 
         view[i].number.base.count += 1;
         view[i].numberstring = "12345678" + i;
@@ -437,7 +433,7 @@ void main(void)
 
     setupclients();
     setupviews();
-    mouse_init(&mouse);
+    renderable_initmouse(&mouse);
     call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);

@@ -4,10 +4,6 @@
 #include <format/pcf.h>
 #include "box.h"
 #include "renderable.h"
-#include "mouse.h"
-#include "text.h"
-#include "panel.h"
-#include "window.h"
 
 #define COLOR_DARK                      0x00
 #define COLOR_LIGHT                     0x01
@@ -141,7 +137,7 @@ static void rendermouse(struct renderable *renderable, unsigned int line)
 static void renderpanel(struct renderable *renderable, unsigned int line)
 {
 
-    struct panel_header *panel = (struct panel_header *)(renderable + 1);
+    struct renderable_panelheader *panel = (struct renderable_panelheader *)(renderable + 1);
     unsigned int offset = (line - renderable->size.y);
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
@@ -180,9 +176,9 @@ static void renderpanel(struct renderable *renderable, unsigned int line)
 static void rendertext(struct renderable *renderable, unsigned int line)
 {
 
-    struct text_header *text = (struct text_header *)(renderable + 1);
+    struct renderable_textheader *text = (struct renderable_textheader *)(renderable + 1);
     unsigned int padding = pcf_getpadding(fontdata);
-    unsigned int count = renderable->count - sizeof (struct text_header);
+    unsigned int count = renderable->count - sizeof (struct renderable_textheader);
     unsigned char *string = (unsigned char *)(text + 1);
     struct box size;
     unsigned int color;
@@ -194,12 +190,12 @@ static void rendertext(struct renderable *renderable, unsigned int line)
     switch (text->type)
     {
 
-    case TEXT_TYPE_HIGHLIGHT:
+    case RENDERABLE_TEXTTYPE_HIGHLIGHT:
         color = COLOR_TEXTLIGHT;
 
         break;
 
-    case TEXT_TYPE_NORMAL:
+    case RENDERABLE_TEXTTYPE_NORMAL:
     default:
         color = COLOR_TEXTNORMAL;
 
@@ -250,7 +246,7 @@ static void rendertext(struct renderable *renderable, unsigned int line)
 static void renderwindow(struct renderable *renderable, unsigned int line)
 {
 
-    struct window_header *window = (struct window_header *)(renderable + 1);
+    struct renderable_windowheader *window = (struct renderable_windowheader *)(renderable + 1);
     unsigned int offset = (line - renderable->size.y);
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
