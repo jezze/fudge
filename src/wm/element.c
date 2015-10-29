@@ -18,7 +18,7 @@ void element_initmouse(struct element_mouse *mouse)
 
     element_init(&mouse->base, ELEMENT_TYPE_MOUSE, sizeof (struct element_mouse) - sizeof (struct element));
 
-    mouse->base.z = 2;
+    mouse->base.z = 3;
 
 }
 

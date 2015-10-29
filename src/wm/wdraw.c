@@ -291,6 +291,18 @@ static void renderwindow(struct element *element, unsigned int line)
 
 }
 
+/*
+static void boxunion(struct box *box, struct box *a, struct box *b)
+{
+
+    box->x = (a->x < b->x) ? a->x : b->x;
+    box->y = (a->y < b->y) ? a->y : b->y;
+    box->w = 320 - box->x;
+    box->h = 200 - box->y;
+
+}
+*/
+
 static struct element *nextelement(unsigned int count, void *data, struct element *element)
 {
 
@@ -306,7 +318,7 @@ static struct element *nextelement(unsigned int count, void *data, struct elemen
 
 }
 
-static void addelement(struct element *element)
+static struct element *findelement(unsigned int source, unsigned int id)
 {
 
     struct element *current = 0;
@@ -314,20 +326,68 @@ static void addelement(struct element *element)
     while ((current = nextelement(datacount, data, current)))
     {
 
-        unsigned int length;
-
-        if (current->source != element->source || current->id != element->id)
+        if (current->source != source || current->id != id)
             continue;
 
-        length = sizeof (struct element) + current->count;
-
-        memory_copy(current, (unsigned char *)current + length, datacount - ((unsigned char *)current - data) - length);
-
-        datacount -= length;
+        return current;
 
     }
 
+    return 0;
+
+}
+
+static void removeelement(struct element *element)
+{
+
+    unsigned int length = sizeof (struct element) + element->count;
+
+    memory_copy(element, (unsigned char *)element + length, datacount - ((unsigned char *)element - data) - length);
+
+    datacount -= length;
+
+}
+
+static void addelement(struct element *element)
+{
+
     datacount += memory_write(data, 0x8000, element, sizeof (struct element) + element->count, datacount);
+
+}
+
+static void render(struct box *damage)
+{
+
+    unsigned int line;
+
+    for (line = damage->y; line < damage->y + damage->h; line++)
+    {
+
+        unsigned int z;
+
+        fill(COLOR_BODY, 0, settings.w);
+
+        for (z = 1; z < 4; z++)
+        {
+
+            struct element *element = 0;
+
+            while ((element = nextelement(datacount, data, element)))
+            {
+
+                if (element->z != z)
+                    continue;
+
+                if (line >= element->size.y && line < element->size.y + element->size.h)
+                    renderers[element->type](element, line);
+
+            }
+
+        }
+
+        video_draw(CALL_L0, settings.w * line + damage->x, damage->w, drawdata);
+
+    }
 
 }
 
@@ -336,6 +396,7 @@ void main(void)
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
+    struct box damage;
 
     call_walk(CALL_L0, CALL_PR, 18, "share/ter-u18n.pcf");
     call_open(CALL_L0);
@@ -351,52 +412,46 @@ void main(void)
     video_setcolormap(CALL_L0, 0, 3 * 11, colormap8);
     video_open(CALL_L0);
     call_open(CALL_PI);
+    box_setsize(&damage, 0, 0, settings.w, settings.h);
+    render(&damage);
 
     while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
     {
 
-        struct element *element;
-        unsigned int line;
+        struct element *element = 0;
 
-        element = 0;
+        box_setsize(&damage, 0, 0, settings.w, settings.h);
 
         while ((element = nextelement(count, buffer, element)))
-            addelement(element);
-
-        for (line = 0; line < settings.h; line++)
         {
 
-            fill(COLOR_BODY, 0, settings.w);
+            struct element *previous = findelement(element->source, element->id);
 
-            element = 0;
-
-            while ((element = nextelement(datacount, data, element)))
+            if (previous)
             {
 
-                if (element->z != 1)
-                    continue;
+/*
+                boxunion(&damage, &damage, &previous->size);
+*/
 
-                if (line >= element->size.y && line < element->size.y + element->size.h)
-                    renderers[element->type](element, line);
+                removeelement(previous);
 
             }
 
-            element = 0;
-
-            while ((element = nextelement(datacount, data, element)))
+            if (element->z)
             {
 
-                if (element->z != 2)
-                    continue;
+/*
+                boxunion(&damage, &damage, &element->size);
+*/
 
-                if (line >= element->size.y && line < element->size.y + element->size.h)
-                    renderers[element->type](element, line);
+                addelement(element);
 
             }
-
-            video_draw(CALL_L0, settings.w * line, settings.w, drawdata);
 
         }
+
+        render(&damage);
 
     }
 
