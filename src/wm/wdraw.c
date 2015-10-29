@@ -385,7 +385,7 @@ static void render(struct box *damage)
 
         }
 
-        video_draw(CALL_L0, settings.w * line + damage->x, damage->w, drawdata + damage->x);
+        video_draw(CALL_L0, settings.w * line + damage->x, damage->w, drawdata + damage->x * settings.bpp / 4);
 
     }
 
