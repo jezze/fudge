@@ -291,17 +291,34 @@ static void renderwindow(struct element *element, unsigned int line)
 
 }
 
-/*
 static void boxunion(struct box *box, struct box *a, struct box *b)
 {
 
+    unsigned int ax = a->x + a->w;
+    unsigned int ay = a->y + a->h;
+    unsigned int bx = b->x + b->w;
+    unsigned int by = b->y + b->h;
+
     box->x = (a->x < b->x) ? a->x : b->x;
     box->y = (a->y < b->y) ? a->y : b->y;
-    box->w = 320 - box->x;
-    box->h = 200 - box->y;
+    box->w = (ax > bx) ? ax - box->x : bx - box->x;
+    box->h = (ay > by) ? ay - box->y : by - box->y;
 
 }
-*/
+
+static void boxclamp(struct box *box, unsigned int w, unsigned int h)
+{
+
+    unsigned int ax = box->x + box->w;
+    unsigned int ay = box->y + box->h;
+
+    if (ax > w)
+        box->w = w - box->x;
+
+    if (ay > h)
+        box->h = h - box->y;
+
+}
 
 static struct element *nextelement(unsigned int count, void *data, struct element *element)
 {
@@ -365,7 +382,7 @@ static void render(struct box *damage)
 
         unsigned int z;
 
-        fill(COLOR_BODY, 0, settings.w);
+        fill(COLOR_BODY, damage->x, damage->w);
 
         for (z = 1; z < 4; z++)
         {
@@ -420,7 +437,7 @@ void main(void)
 
         struct element *element = 0;
 
-        box_setsize(&damage, 0, 0, settings.w, settings.h);
+        box_setsize(&damage, settings.w, settings.h, 0, 0);
 
         while ((element = nextelement(count, buffer, element)))
         {
@@ -430,10 +447,7 @@ void main(void)
             if (previous)
             {
 
-/*
                 boxunion(&damage, &damage, &previous->size);
-*/
-
                 removeelement(previous);
 
             }
@@ -441,16 +455,14 @@ void main(void)
             if (element->z)
             {
 
-/*
                 boxunion(&damage, &damage, &element->size);
-*/
-
                 addelement(element);
 
             }
 
         }
 
+        boxclamp(&damage, settings.w, settings.h);
         render(&damage);
 
     }
