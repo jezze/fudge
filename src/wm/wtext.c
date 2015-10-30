@@ -4,8 +4,6 @@
 #include "element.h"
 
 static void (*renderers[16])(struct element *element);
-static unsigned char data[0x8000];
-static unsigned int datacount;
 
 static void printname(char *name)
 {
@@ -189,31 +187,6 @@ static struct element *nextelement(unsigned int count, void *data, struct elemen
 
 }
 
-static void addelement(struct element *element)
-{
-
-    struct element *current = 0;
-
-    while ((current = nextelement(datacount, data, current)))
-    {
-
-        unsigned int length;
-
-        if (current->source != element->source || current->id != element->id)
-            continue;
-
-        length = sizeof (struct element) + current->count;
-
-        memory_copy(current, (unsigned char *)current + length, datacount - ((unsigned char *)current - data) - length);
-
-        datacount -= length;
-
-    }
-
-    datacount += memory_write(data, 0x8000, element, sizeof (struct element) + element->count, datacount);
-
-}
-
 void main(void)
 {
 
@@ -233,14 +206,7 @@ void main(void)
 
         struct element *element;
 
-        element = 0;
-
         while ((element = nextelement(count, buffer, element)))
-            addelement(element);
-
-        element = 0;
-
-        while ((element = nextelement(datacount, data, element)))
         {
 
             renderers[element->type](element);
