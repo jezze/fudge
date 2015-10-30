@@ -237,8 +237,6 @@ static void unmapclient(unsigned int source, struct view *view)
 
     view->clientfocus->window.base.z = 0;
 
-    flush();
-
     list_move(&clients, &view->clients, &view->clientfocus->item);
 
     view->clientfocus = focusclient(source, view->clientfocus, (view->clients.tail) ? view->clients.tail->data : 0);
