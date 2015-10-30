@@ -43,6 +43,7 @@ static struct box body;
 static unsigned int source;
 static unsigned int quit;
 static void (*handlers[EVENTS])(union event *event);
+static unsigned int actionkey;
 
 static void writemouse(unsigned int source, struct element_mouse *mouse)
 {
@@ -380,6 +381,19 @@ static void onkeypress(union event *event)
     switch (event->keypress.scancode)
     {
 
+    case 0x38:
+        actionkey = 1;
+
+        break;
+
+    }
+
+    if (!actionkey)
+        return;
+
+    switch (event->keypress.scancode)
+    {
+
     case 0x02:
     case 0x03:
     case 0x04:
@@ -404,7 +418,7 @@ static void onkeypress(union event *event)
 
         break;
 
-    case 0x19:
+    case 0x1C:
         call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
         call_spawn();
 
@@ -436,6 +450,21 @@ static void onkeypress(union event *event)
 
     case 0x2C:
         send_wmunmap(CALL_L2, 0);
+
+        break;
+
+    }
+
+}
+
+static void onkeyrelease(union event *event)
+{
+
+    switch (event->keyrelease.scancode)
+    {
+
+    case 0x38:
+        actionkey = 0;
 
         break;
 
@@ -587,6 +616,7 @@ void main(void)
     unsigned int count;
 
     handlers[EVENT_KEYPRESS] = onkeypress;
+    handlers[EVENT_KEYRELEASE] = onkeyrelease;
     handlers[EVENT_MOUSEPRESS] = onmousepress;
     handlers[EVENT_MOUSEMOVE] = onmousemove;
     handlers[EVENT_WMMAP] = onwmmap;
