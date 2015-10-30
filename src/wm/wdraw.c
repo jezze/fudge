@@ -348,6 +348,12 @@ static void render(struct box *damage)
 
     unsigned int line;
 
+    if (damage->x + damage->w > settings.w)
+        damage->w = settings.w - damage->x;
+
+    if (damage->y + damage->h > settings.h)
+        damage->h = settings.h - damage->y;
+
     for (line = damage->y; line < damage->y + damage->h; line++)
     {
 
