@@ -389,7 +389,14 @@ static void onkeypress(union event *event)
     }
 
     if (!actionkey)
+    {
+
+        if (viewfocus->clientfocus)
+            send_keypress(CALL_L2, viewfocus->clientfocus->source, event->keypress.scancode);
+
         return;
+
+    }
 
     switch (event->keypress.scancode)
     {
@@ -467,6 +474,16 @@ static void onkeyrelease(union event *event)
         actionkey = 0;
 
         break;
+
+    }
+
+    if (!actionkey)
+    {
+
+        if (viewfocus->clientfocus)
+            send_keyrelease(CALL_L2, viewfocus->clientfocus->source, event->keyrelease.scancode);
+
+        return;
 
     }
 

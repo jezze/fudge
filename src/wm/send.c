@@ -20,6 +20,32 @@ static void setheader(struct event_header *header, unsigned int destination, uns
 
 }
 
+void send_keypress(unsigned int descriptor, unsigned int destination, unsigned char scancode)
+{
+
+    struct event_keypress keypress;
+
+    setheader(&keypress.header, destination, EVENT_KEYPRESS, sizeof (struct event_keypress) - sizeof (struct event_header));
+
+    keypress.scancode = scancode;
+
+    send(descriptor, sizeof (struct event_keypress), &keypress);
+
+}
+
+void send_keyrelease(unsigned int descriptor, unsigned int destination, unsigned char scancode)
+{
+
+    struct event_keyrelease keyrelease;
+
+    setheader(&keyrelease.header, destination, EVENT_KEYRELEASE, sizeof (struct event_keyrelease) - sizeof (struct event_header));
+
+    keyrelease.scancode = scancode;
+
+    send(descriptor, sizeof (struct event_keyrelease), &keyrelease);
+
+}
+
 void send_wmmap(unsigned int descriptor, unsigned int destination)
 {
 
