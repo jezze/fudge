@@ -439,8 +439,6 @@ static void onkeypress(union event *event)
     case 0x09:
         viewfocus = focusview(source, viewfocus, &view[event->keypress.scancode - 0x02]);
 
-        flush();
-
         break;
 
     case 0x10:
@@ -450,7 +448,6 @@ static void onkeypress(union event *event)
             send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
             unmapclient(source, viewfocus);
             arrangeclients(source, viewfocus, &body);
-            flush();
 
         }
 
@@ -466,21 +463,16 @@ static void onkeypress(union event *event)
         viewfocus->center -= (body.w / 32);
 
         arrangeclients(source, viewfocus, &body);
-        flush();
 
         break;
 
     case 0x24:
         viewfocus->clientfocus = nextclient(source, viewfocus->clientfocus, viewfocus->clients.head ? viewfocus->clients.head->data : 0);
 
-        flush();
-
         break;
 
     case 0x25:
         viewfocus->clientfocus = prevclient(source, viewfocus->clientfocus, viewfocus->clients.tail ? viewfocus->clients.tail->data : 0);
-
-        flush();
 
         break;
 
@@ -488,7 +480,6 @@ static void onkeypress(union event *event)
         viewfocus->center += (body.w / 32);
 
         arrangeclients(source, viewfocus, &body);
-        flush();
 
         break;
 
@@ -512,22 +503,10 @@ static void onmousepress(union event *event)
 
     case 0x01:
         if (view && view != viewfocus)
-        {
-
             viewfocus = focusview(source, viewfocus, view);
 
-            flush();
-
-        }
-
         if (client && client != viewfocus->clientfocus)
-        {
-
             viewfocus->clientfocus = focusclient(source, viewfocus->clientfocus, client);
-
-            flush();
-
-        }
 
         break;
 
@@ -554,7 +533,6 @@ static void onmousemove(union event *event)
         mouse.base.size.y = 0;
 
     writemouse(source, &mouse);
-    flush();
 
 }
 
@@ -580,7 +558,6 @@ static void onwmmap(union event *event)
         arrangeclients(source, viewfocus, &body);
         send_wmmapnotify(CALL_L2, event->header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
         send_wmexpose(CALL_L2, event->header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
-        flush();
 
     }
 
@@ -604,7 +581,6 @@ static void onwmexpose(union event *event)
 {
 
     expose(source, viewfocus, &screen);
-    flush();
 
 }
 
@@ -649,7 +625,12 @@ void main(void)
             call_read(CALL_L1, event.header.count, event.data + sizeof (struct event_header));
 
         if (handlers[event.header.type])
+        {
+
             handlers[event.header.type](&event);
+            flush();
+
+        }
 
         if (quit)
             break;

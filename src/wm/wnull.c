@@ -51,7 +51,6 @@ static void onwmexpose(union event *event)
 {
 
     writetext(source, &content, 6, "Hello!");
-    flush();
 
 }
 
@@ -90,7 +89,12 @@ void main(void)
             call_read(CALL_L1, event.header.count, event.data + sizeof (struct event_header));
 
         if (handlers[event.header.type])
+        {
+
             handlers[event.header.type](&event);
+            flush();
+
+        }
 
         if (quit)
             break;
