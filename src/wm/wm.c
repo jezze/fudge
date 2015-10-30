@@ -109,7 +109,7 @@ static void deactivateclient(unsigned int source, struct client *client)
 
 }
 
-static void arrangeclients(unsigned int source, struct view *view, struct box *body)
+static void arrangeclients(unsigned int source, struct view *view)
 {
 
     struct list_item *current;
@@ -126,7 +126,7 @@ static void arrangeclients(unsigned int source, struct view *view, struct box *b
     case 1:
         client = view->clients.tail->data;
 
-        box_setsize(&client->window.base.size, body->x, body->y, body->w, body->h);
+        box_setsize(&client->window.base.size, body.x, body.y, body.w, body.h);
         writewindow(source, &client->window);
 
         send_wmmapnotify(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
@@ -135,11 +135,11 @@ static void arrangeclients(unsigned int source, struct view *view, struct box *b
         break;
 
     default:
-        y = body->y;
-        h = body->h / (view->clients.count - 1);
+        y = body.y;
+        h = body.h / (view->clients.count - 1);
         client = view->clients.tail->data;
 
-        box_setsize(&client->window.base.size, body->x, body->y, view->center, body->h);
+        box_setsize(&client->window.base.size, body.x, body.y, view->center, body.h);
         writewindow(source, &client->window);
 
         send_wmmapnotify(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
@@ -150,7 +150,7 @@ static void arrangeclients(unsigned int source, struct view *view, struct box *b
 
             client = current->data;
 
-            box_setsize(&client->window.base.size, body->x + view->center, y, body->w - view->center, h);
+            box_setsize(&client->window.base.size, body.x + view->center, y, body.w - view->center, h);
             writewindow(source, &client->window);
 
             send_wmmapnotify(CALL_L2, client->source, client->window.base.size.x, client->window.base.size.y, client->window.base.size.w, client->window.base.size.h);
@@ -357,7 +357,7 @@ static void setupviews(void)
 
 }
 
-static void setviewsize(struct box *menu, struct box *body)
+static void setviewsize(void)
 {
 
     unsigned int i;
@@ -365,9 +365,9 @@ static void setviewsize(struct box *menu, struct box *body)
     for (i = 0; i < VIEWS; i++)
     {
 
-        view[i].center = body->w / 2;
+        view[i].center = body.w / 2;
 
-        box_setsize(&view[i].panel.base.size, menu->x + i * menu->w / VIEWS, menu->y, menu->w / VIEWS, menu->h);
+        box_setsize(&view[i].panel.base.size, menu.x + i * menu.w / VIEWS, menu.y, menu.w / VIEWS, menu.h);
         box_setsize(&view[i].number.base.size, view[i].panel.base.size.x + 8, view[i].panel.base.size.y + 8, view[i].panel.base.size.w, 16);
 
     }
@@ -398,7 +398,7 @@ static void onkeypress(union event *event)
 
             send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
             unmapclient(source, viewfocus);
-            arrangeclients(source, viewfocus, &body);
+            arrangeclients(source, viewfocus);
 
         }
 
@@ -413,7 +413,7 @@ static void onkeypress(union event *event)
     case 0x23:
         viewfocus->center -= (body.w / 32);
 
-        arrangeclients(source, viewfocus, &body);
+        arrangeclients(source, viewfocus);
 
         break;
 
@@ -430,7 +430,7 @@ static void onkeypress(union event *event)
     case 0x26:
         viewfocus->center += (body.w / 32);
 
-        arrangeclients(source, viewfocus, &body);
+        arrangeclients(source, viewfocus);
 
         break;
 
@@ -506,7 +506,7 @@ static void onwmmap(union event *event)
     {
 
         mapclient(source, viewfocus, event->header.source);
-        arrangeclients(source, viewfocus, &body);
+        arrangeclients(source, viewfocus);
         send_wmmapnotify(CALL_L2, event->header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
         send_wmexpose(CALL_L2, event->header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
 
@@ -522,7 +522,7 @@ static void onwmmapnotify(union event *event)
     box_setsize(&screen, event->wmmapnotify.x, event->wmmapnotify.y, event->wmmapnotify.w, event->wmmapnotify.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, 32);
     box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
-    setviewsize(&menu, &body);
+    setviewsize();
     box_setsize(&mouse.base.size, screen.x + screen.w / 4, screen.y + screen.h / 4, 24, 24);
     activateview(source, viewfocus);
 
