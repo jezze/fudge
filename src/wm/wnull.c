@@ -179,7 +179,7 @@ static void onwmmapnotify(union event *event)
     content.base.size.x = screen.x + 8;
     content.base.size.y = screen.y + 8;
     content.base.size.w = screen.w - 16;
-    content.base.size.h = 16;
+    content.base.size.h = 18;
 
 }
 
@@ -210,10 +210,6 @@ void main(void)
     handlers[EVENT_WMUNMAP] = onwmunmap;
 
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
-
-    content.base.size.w = 256;
-    content.base.size.h = 16;
-
     call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);

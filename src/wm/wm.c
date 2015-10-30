@@ -369,7 +369,7 @@ static void setviewsize(void)
         view[i].center = body.w / 2;
 
         box_setsize(&view[i].panel.base.size, menu.x + i * menu.w / VIEWS, menu.y, menu.w / VIEWS, menu.h);
-        box_setsize(&view[i].number.base.size, view[i].panel.base.size.x + 8, view[i].panel.base.size.y + 8, view[i].panel.base.size.w, 16);
+        box_setsize(&view[i].number.base.size, view[i].panel.base.size.x + 8, view[i].panel.base.size.y + 8, view[i].panel.base.size.w, 18);
 
     }
 
