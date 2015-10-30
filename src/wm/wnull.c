@@ -175,11 +175,7 @@ static void onwmmapnotify(union event *event)
     source = event->header.destination;
 
     box_setsize(&screen, event->wmmapnotify.x, event->wmmapnotify.y, event->wmmapnotify.w, event->wmmapnotify.h);
-
-    content.base.size.x = screen.x + 8;
-    content.base.size.y = screen.y + 8;
-    content.base.size.w = screen.w - 16;
-    content.base.size.h = 18;
+    box_setsize(&content.base.size, screen.x + 8, screen.y + 8, screen.w - 16, 18);
 
 }
 
