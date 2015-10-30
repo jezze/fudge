@@ -243,26 +243,6 @@ static void unmapclient(unsigned int source, struct view *view)
 
 }
 
-static void unmapall(unsigned int source)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < VIEWS; i++)
-    {
-
-        while (view[i].clientfocus)
-        {
-
-            send_wmunmap(CALL_L2, view[i].clientfocus->source);
-            unmapclient(source, &view[i]);
-
-        }
-
-    }
-
-}
-
 static void activateview(unsigned int source, struct view *view)
 {
 
@@ -391,33 +371,6 @@ static void setviewsize(struct box *menu, struct box *body)
         box_setsize(&view[i].number.base.size, view[i].panel.base.size.x + 8, view[i].panel.base.size.y + 8, view[i].panel.base.size.w, 16);
 
     }
-
-}
-
-static void expose(unsigned int source, struct view *viewfocus, struct box *bb)
-{
-
-    struct list_item *current;
-    unsigned int i;
-
-    for (i = 0; i < VIEWS; i++)
-    {
-
-        writepanel(source, &view[i].panel);
-        writetext(source, &view[i].number, 1, view[i].numberstring);
-
-    }
-
-    for (current = view->clients.head; current; current = current->next)
-    {
-
-        struct client *client = current->data;
-
-        writewindow(source, &client->window);
-
-    }
-
-    writemouse(source, &mouse);
 
 }
 
@@ -578,17 +531,50 @@ static void onwmmapnotify(union event *event)
 static void onwmexpose(union event *event)
 {
 
-    expose(source, viewfocus, &screen);
+    struct list_item *current;
+    unsigned int i;
+
+    for (i = 0; i < VIEWS; i++)
+    {
+
+        writepanel(source, &view[i].panel);
+        writetext(source, &view[i].number, 1, view[i].numberstring);
+
+    }
+
+    for (current = view->clients.head; current; current = current->next)
+    {
+
+        struct client *client = current->data;
+
+        writewindow(source, &client->window);
+
+    }
+
+    writemouse(source, &mouse);
 
 }
 
 static void onwmunmap(union event *event)
 {
 
+    unsigned int i;
+
     if (event->header.source == event->header.destination)
         video_setmode(CALL_L0, &oldsettings);
 
-    unmapall(source);
+    for (i = 0; i < VIEWS; i++)
+    {
+
+        while (view[i].clientfocus)
+        {
+
+            send_wmunmap(CALL_L2, view[i].clientfocus->source);
+            unmapclient(source, &view[i]);
+
+        }
+
+    }
 
     quit = 1;
 
