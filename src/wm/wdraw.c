@@ -291,35 +291,6 @@ static void renderwindow(struct element *element, unsigned int line)
 
 }
 
-static void boxunion(struct box *box, struct box *a, struct box *b)
-{
-
-    unsigned int ax = a->x + a->w;
-    unsigned int ay = a->y + a->h;
-    unsigned int bx = b->x + b->w;
-    unsigned int by = b->y + b->h;
-
-    box->x = (a->x < b->x) ? a->x : b->x;
-    box->y = (a->y < b->y) ? a->y : b->y;
-    box->w = (ax > bx) ? ax - box->x : bx - box->x;
-    box->h = (ay > by) ? ay - box->y : by - box->y;
-
-}
-
-static void boxclamp(struct box *box, unsigned int w, unsigned int h)
-{
-
-    unsigned int ax = box->x + box->w;
-    unsigned int ay = box->y + box->h;
-
-    if (ax > w)
-        box->w = w - box->x;
-
-    if (ay > h)
-        box->h = h - box->y;
-
-}
-
 static struct element *nextelement(unsigned int count, void *data, struct element *element)
 {
 
@@ -413,7 +384,7 @@ void main(void)
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
-    struct box damage;
+    struct box screen;
 
     call_walk(CALL_L0, CALL_PR, 18, "share/ter-u18n.pcf");
     call_open(CALL_L0);
@@ -429,15 +400,13 @@ void main(void)
     video_setcolormap(CALL_L0, 0, 3 * 11, colormap8);
     video_open(CALL_L0);
     call_open(CALL_PI);
-    box_setsize(&damage, 0, 0, settings.w, settings.h);
-    render(&damage);
+    box_setsize(&screen, 0, 0, settings.w, settings.h);
+    render(&screen);
 
     while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
     {
 
         struct element *element = 0;
-
-        box_setsize(&damage, settings.w, settings.h, 0, 0);
 
         while ((element = nextelement(count, buffer, element)))
         {
@@ -447,7 +416,9 @@ void main(void)
             if (previous)
             {
 
-                boxunion(&damage, &damage, &previous->size);
+                previous->z = 0;
+
+                render(&previous->size);
                 removeelement(previous);
 
             }
@@ -455,15 +426,12 @@ void main(void)
             if (element->z)
             {
 
-                boxunion(&damage, &damage, &element->size);
                 addelement(element);
+                render(&element->size);
 
             }
 
         }
-
-        boxclamp(&damage, settings.w, settings.h);
-        render(&damage);
 
     }
 
