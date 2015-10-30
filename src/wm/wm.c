@@ -36,6 +36,13 @@ static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
+static struct view *viewfocus = &view[0];
+static struct box screen;
+static struct box menu;
+static struct box body;
+static unsigned int source;
+static unsigned int quit;
+static void (*handlers[EVENTS])(union event *event);
 
 static void writemouse(unsigned int source, struct element_mouse *mouse)
 {
@@ -416,16 +423,216 @@ static void expose(unsigned int source, struct view *viewfocus, struct box *bb)
 
 }
 
+static void onkeypress(union event *event)
+{
+
+    switch (event->keypress.scancode)
+    {
+
+    case 0x02:
+    case 0x03:
+    case 0x04:
+    case 0x05:
+    case 0x06:
+    case 0x07:
+    case 0x08:
+    case 0x09:
+        viewfocus = focusview(source, viewfocus, &view[event->keypress.scancode - 0x02]);
+
+        flush();
+
+        break;
+
+    case 0x10:
+        if (viewfocus->clientfocus)
+        {
+
+            send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
+            unmapclient(source, viewfocus);
+            arrangeclients(source, viewfocus, &body);
+            flush();
+
+        }
+
+        break;
+
+    case 0x19:
+        call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
+        call_spawn();
+
+        break;
+
+    case 0x23:
+        viewfocus->center -= (body.w / 32);
+
+        arrangeclients(source, viewfocus, &body);
+        flush();
+
+        break;
+
+    case 0x24:
+        viewfocus->clientfocus = nextclient(source, viewfocus->clientfocus, viewfocus->clients.head ? viewfocus->clients.head->data : 0);
+
+        flush();
+
+        break;
+
+    case 0x25:
+        viewfocus->clientfocus = prevclient(source, viewfocus->clientfocus, viewfocus->clients.tail ? viewfocus->clients.tail->data : 0);
+
+        flush();
+
+        break;
+
+    case 0x26:
+        viewfocus->center += (body.w / 32);
+
+        arrangeclients(source, viewfocus, &body);
+        flush();
+
+        break;
+
+    case 0x2C:
+        send_wmunmap(CALL_L2, 0);
+
+        break;
+
+    }
+
+}
+
+static void onmousepress(union event *event)
+{
+
+    struct view *view = findview(mouse.base.size.x, mouse.base.size.y);
+    struct client *client = findclient(viewfocus, mouse.base.size.x, mouse.base.size.y);
+
+    switch (event->mousepress.button)
+    {
+
+    case 0x01:
+        if (view && view != viewfocus)
+        {
+
+            viewfocus = focusview(source, viewfocus, view);
+
+            flush();
+
+        }
+
+        if (client && client != viewfocus->clientfocus)
+        {
+
+            viewfocus->clientfocus = focusclient(source, viewfocus->clientfocus, client);
+
+            flush();
+
+        }
+
+        break;
+
+    }
+
+}
+
+static void onmousemove(union event *event)
+{
+
+    mouse.base.size.x += event->mousemove.relx;
+    mouse.base.size.y -= event->mousemove.rely;
+
+    if (event->mousemove.relx > 0 && mouse.base.size.x >= screen.w)
+        mouse.base.size.x = screen.w - 1;
+
+    if (event->mousemove.relx < 0 && mouse.base.size.x >= screen.w)
+        mouse.base.size.x = 0;
+
+    if (event->mousemove.rely < 0 && mouse.base.size.y >= screen.h)
+        mouse.base.size.y = screen.h - 1;
+
+    if (event->mousemove.rely > 0 && mouse.base.size.y >= screen.h)
+        mouse.base.size.y = 0;
+
+    writemouse(source, &mouse);
+    flush();
+
+}
+
+static void onwmmap(union event *event)
+{
+
+    if (event->header.source == event->header.destination)
+    {
+
+        ctrl_setvideosettings(&settings, 1920, 1080, 32);
+        video_getmode(CALL_L0, &oldsettings);
+        video_setmode(CALL_L0, &settings);
+        video_getmode(CALL_L0, &settings);
+        send_wmmapnotify(CALL_L2, event->header.source, 0, 0, settings.w, settings.h);
+        send_wmexpose(CALL_L2, event->header.source, 0, 0, settings.w, settings.h);
+
+    }
+            
+    else
+    {
+
+        mapclient(source, viewfocus, event->header.source);
+        arrangeclients(source, viewfocus, &body);
+        send_wmmapnotify(CALL_L2, event->header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
+        send_wmexpose(CALL_L2, event->header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
+        flush();
+
+    }
+
+}
+
+static void onwmmapnotify(union event *event)
+{
+
+    source = event->header.destination;
+
+    box_setsize(&screen, event->wmmapnotify.x, event->wmmapnotify.y, event->wmmapnotify.w, event->wmmapnotify.h);
+    box_setsize(&menu, screen.x, screen.y, screen.w, 32);
+    box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
+    setviewsize(&menu, &body);
+    box_setsize(&mouse.base.size, screen.x + screen.w / 4, screen.y + screen.h / 4, 24, 24);
+    activateview(source, viewfocus);
+
+}
+
+static void onwmexpose(union event *event)
+{
+
+    expose(source, viewfocus, &screen);
+    flush();
+
+}
+
+static void onwmunmap(union event *event)
+{
+
+    if (event->header.source == event->header.destination)
+        video_setmode(CALL_L0, &oldsettings);
+
+    unmapall(source);
+
+    quit = 1;
+
+}
+
 void main(void)
 {
 
     union event event;
-    unsigned int count, quit = 0;
-    struct view *viewfocus = &view[0];
-    unsigned int source = 0;
-    struct box screen;
-    struct box menu;
-    struct box body;
+    unsigned int count;
+
+    handlers[EVENT_KEYPRESS] = onkeypress;
+    handlers[EVENT_MOUSEPRESS] = onmousepress;
+    handlers[EVENT_MOUSEMOVE] = onmousemove;
+    handlers[EVENT_WMMAP] = onwmmap;
+    handlers[EVENT_WMMAPNOTIFY] = onwmmapnotify;
+    handlers[EVENT_WMEXPOSE] = onwmexpose;
+    handlers[EVENT_WMUNMAP] = onwmunmap;
 
     setupclients();
     setupviews();
@@ -441,195 +648,8 @@ void main(void)
         if (event.header.count)
             call_read(CALL_L1, event.header.count, event.data + sizeof (struct event_header));
 
-        switch (event.header.type)
-        {
-
-        case EVENT_KEYPRESS:
-            switch (event.keypress.scancode)
-            {
-
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-            case 0x08:
-            case 0x09:
-                viewfocus = focusview(source, viewfocus, &view[event.keypress.scancode - 0x02]);
-
-                flush();
-
-                break;
-
-            case 0x10:
-                if (viewfocus->clientfocus)
-                {
-
-                    send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
-                    unmapclient(source, viewfocus);
-                    arrangeclients(source, viewfocus, &body);
-                    flush();
-
-                }
-
-                break;
-
-            case 0x19:
-                call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
-                call_spawn();
-
-                break;
-
-            case 0x23:
-                viewfocus->center -= (body.w / 32);
-
-                arrangeclients(source, viewfocus, &body);
-                flush();
-
-                break;
-
-            case 0x24:
-                viewfocus->clientfocus = nextclient(source, viewfocus->clientfocus, viewfocus->clients.head ? viewfocus->clients.head->data : 0);
-
-                flush();
-
-                break;
-
-            case 0x25:
-                viewfocus->clientfocus = prevclient(source, viewfocus->clientfocus, viewfocus->clients.tail ? viewfocus->clients.tail->data : 0);
-
-                flush();
-
-                break;
-
-            case 0x26:
-                viewfocus->center += (body.w / 32);
-
-                arrangeclients(source, viewfocus, &body);
-                flush();
-
-                break;
-
-            case 0x2C:
-                send_wmunmap(CALL_L2, 0);
-
-                break;
-
-            }
-
-        case EVENT_MOUSEPRESS:
-            switch (event.mousepress.button)
-            {
-
-            case 0x01:
-                {
-
-                    struct view *view = findview(mouse.base.size.x, mouse.base.size.y);
-                    struct client *client = findclient(viewfocus, mouse.base.size.x, mouse.base.size.y);
-
-                    if (view && view != viewfocus)
-                    {
-
-                        viewfocus = focusview(source, viewfocus, view);
-
-                        flush();
-
-                    }
-
-                    if (client && client != viewfocus->clientfocus)
-                    {
-
-                        viewfocus->clientfocus = focusclient(source, viewfocus->clientfocus, client);
-
-                        flush();
-
-                    }
-
-                    break;
-
-                }
-
-            }
-
-            break;
-
-        case EVENT_MOUSEMOVE:
-            mouse.base.size.x += event.mousemove.relx;
-            mouse.base.size.y -= event.mousemove.rely;
-
-            if (event.mousemove.relx > 0 && mouse.base.size.x >= screen.w)
-                mouse.base.size.x = screen.w - 1;
-
-            if (event.mousemove.relx < 0 && mouse.base.size.x >= screen.w)
-                mouse.base.size.x = 0;
-
-            if (event.mousemove.rely < 0 && mouse.base.size.y >= screen.h)
-                mouse.base.size.y = screen.h - 1;
-
-            if (event.mousemove.rely > 0 && mouse.base.size.y >= screen.h)
-                mouse.base.size.y = 0;
-
-            writemouse(source, &mouse);
-            flush();
-
-            break;
-
-        case EVENT_WMMAP:
-            if (event.header.source == event.header.destination)
-            {
-
-                ctrl_setvideosettings(&settings, 1920, 1080, 32);
-                video_getmode(CALL_L0, &oldsettings);
-                video_setmode(CALL_L0, &settings);
-                video_getmode(CALL_L0, &settings);
-                send_wmmapnotify(CALL_L2, event.header.source, 0, 0, settings.w, settings.h);
-                send_wmexpose(CALL_L2, event.header.source, 0, 0, settings.w, settings.h);
-
-            }
-            
-            else
-            {
-
-                mapclient(source, viewfocus, event.header.source);
-                arrangeclients(source, viewfocus, &body);
-                send_wmmapnotify(CALL_L2, event.header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
-                send_wmexpose(CALL_L2, event.header.source, viewfocus->clientfocus->window.base.size.x, viewfocus->clientfocus->window.base.size.y, viewfocus->clientfocus->window.base.size.w, viewfocus->clientfocus->window.base.size.h);
-                flush();
-
-            }
-
-            break;
-
-        case EVENT_WMMAPNOTIFY:
-            source = event.header.destination;
-
-            box_setsize(&screen, event.wmmapnotify.x, event.wmmapnotify.y, event.wmmapnotify.w, event.wmmapnotify.h);
-            box_setsize(&menu, screen.x, screen.y, screen.w, 32);
-            box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
-            setviewsize(&menu, &body);
-            box_setsize(&mouse.base.size, screen.x + screen.w / 4, screen.y + screen.h / 4, 24, 24);
-            activateview(source, viewfocus);
-
-            break;
-
-        case EVENT_WMEXPOSE:
-            expose(source, viewfocus, &screen);
-            flush();
-
-            break;
-
-        case EVENT_WMUNMAP:
-            if (event.header.source == event.header.destination)
-                video_setmode(CALL_L0, &oldsettings);
-
-            unmapall(source);
-
-            quit = 1;
-
-            break;
-
-        }
+        if (handlers[event.header.type])
+            handlers[event.header.type](&event);
 
         if (quit)
             break;

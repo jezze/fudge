@@ -7,6 +7,10 @@
 static struct element_text content;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
+static struct box screen;
+static unsigned int source;
+static unsigned int quit;
+static void (*handlers[EVENTS])(union event *event);
 
 static void writetext(unsigned int source, struct element_text *text, unsigned int count, void *buffer)
 {
@@ -31,13 +35,42 @@ static void flush()
 
 }
 
+static void onwmmapnotify(union event *event)
+{
+
+    source = event->header.destination;
+
+    box_setsize(&screen, event->wmmapnotify.x, event->wmmapnotify.y, event->wmmapnotify.w, event->wmmapnotify.h);
+
+    content.base.size.x = screen.x + 8;
+    content.base.size.y = screen.y + 8;
+
+}
+
+static void onwmexpose(union event *event)
+{
+
+    writetext(source, &content, 6, "Hello!");
+    flush();
+
+}
+
+static void onwmunmap(union event *event)
+{
+
+    quit = 1;
+
+}
+
 void main(void)
 {
 
     union event event;
-    unsigned int count, quit = 0;
-    unsigned int source = 0;
-    struct box screen;
+    unsigned int count;
+
+    handlers[EVENT_WMMAPNOTIFY] = onwmmapnotify;
+    handlers[EVENT_WMEXPOSE] = onwmexpose;
+    handlers[EVENT_WMUNMAP] = onwmunmap;
 
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
 
@@ -56,31 +89,8 @@ void main(void)
         if (event.header.count)
             call_read(CALL_L1, event.header.count, event.data + sizeof (struct event_header));
 
-        switch (event.header.type)
-        {
-
-        case EVENT_WMMAPNOTIFY:
-            source = event.header.destination;
-
-            box_setsize(&screen, event.wmmapnotify.x, event.wmmapnotify.y, event.wmmapnotify.w, event.wmmapnotify.h);
-
-            content.base.size.x = screen.x + 8;
-            content.base.size.y = screen.y + 8;
-
-            break;
-
-        case EVENT_WMEXPOSE:
-            writetext(source, &content, 6, "Hello!");
-            flush();
-
-            break;
-            
-        case EVENT_WMUNMAP:
-            quit = 1;
-
-            break;
-
-        }
+        if (handlers[event.header.type])
+            handlers[event.header.type](&event);
 
         if (quit)
             break;

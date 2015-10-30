@@ -1,12 +1,13 @@
-#define EVENT_KEYPRESS                  0x0101
-#define EVENT_KEYRELEASE                0x0102
-#define EVENT_MOUSEPRESS                0x0201
-#define EVENT_MOUSERELEASE              0x0202
-#define EVENT_MOUSEMOVE                 0x0203
-#define EVENT_WMMAP                     0x0301
-#define EVENT_WMUNMAP                   0x0302
-#define EVENT_WMMAPNOTIFY               0x0303
-#define EVENT_WMEXPOSE                  0x0304
+#define EVENTS                          16
+#define EVENT_KEYPRESS                  0x01
+#define EVENT_KEYRELEASE                0x02
+#define EVENT_MOUSEPRESS                0x03
+#define EVENT_MOUSERELEASE              0x04
+#define EVENT_MOUSEMOVE                 0x05
+#define EVENT_WMMAP                     0x06
+#define EVENT_WMUNMAP                   0x07
+#define EVENT_WMMAPNOTIFY               0x08
+#define EVENT_WMEXPOSE                  0x09
 
 struct event_header
 {
