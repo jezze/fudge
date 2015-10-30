@@ -588,7 +588,7 @@ static void onwmexpose(union event *event)
 
     }
 
-    for (current = view->clients.head; current; current = current->next)
+    for (current = viewfocus->clients.head; current; current = current->next)
     {
 
         struct client *client = current->data;
