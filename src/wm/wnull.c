@@ -187,12 +187,6 @@ static void onwmmapnotify(union event *event)
 
     box_setsize(&screen, event->wmmapnotify.x, event->wmmapnotify.y, event->wmmapnotify.w, event->wmmapnotify.h);
     box_setsize(&content.size, screen.x + 8, screen.y + 8, screen.w - 16, 18);
-
-}
-
-static void onwmexpose(union event *event)
-{
-
     writetext(source, 1, &content, textcount, text);
 
 }
@@ -213,7 +207,6 @@ void main(void)
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;
     handlers[EVENT_WMMAPNOTIFY] = onwmmapnotify;
-    handlers[EVENT_WMEXPOSE] = onwmexpose;
     handlers[EVENT_WMUNMAP] = onwmunmap;
 
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);

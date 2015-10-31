@@ -118,7 +118,6 @@ static void notifyarrange(struct view *view)
         struct client *client = current->data;
 
         send_wmmapnotify(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
-        send_wmexpose(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
 
     }
 
@@ -559,7 +558,6 @@ static void onwmmap(union event *event)
         video_setmode(CALL_L0, &settings);
         video_getmode(CALL_L0, &settings);
         send_wmmapnotify(CALL_L2, event->header.source, 0, 0, settings.w, settings.h);
-        send_wmexpose(CALL_L2, event->header.source, 0, 0, settings.w, settings.h);
 
     }
             
@@ -577,6 +575,9 @@ static void onwmmap(union event *event)
 static void onwmmapnotify(union event *event)
 {
 
+    struct list_item *current;
+    unsigned int i;
+
     source = event->header.destination;
 
     box_setsize(&screen, event->wmmapnotify.x, event->wmmapnotify.y, event->wmmapnotify.w, event->wmmapnotify.h);
@@ -584,14 +585,6 @@ static void onwmmapnotify(union event *event)
     box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
     setviewsize();
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, 24, 24);
-
-}
-
-static void onwmexpose(union event *event)
-{
-
-    struct list_item *current;
-    unsigned int i;
 
     for (i = 0; i < VIEWS; i++)
     {
@@ -651,7 +644,6 @@ void main(void)
     handlers[EVENT_MOUSEMOVE] = onmousemove;
     handlers[EVENT_WMMAP] = onwmmap;
     handlers[EVENT_WMMAPNOTIFY] = onwmmapnotify;
-    handlers[EVENT_WMEXPOSE] = onwmexpose;
     handlers[EVENT_WMUNMAP] = onwmunmap;
 
     setupclients();
