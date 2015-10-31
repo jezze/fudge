@@ -3,7 +3,7 @@
 #include "box.h"
 #include "element.h"
 
-static void (*renderers[16])(struct element *element);
+static void (*renderers[16])(struct element *element, void *data);
 
 static void printname(char *name)
 {
@@ -86,8 +86,10 @@ static void printbox(struct box *box)
 
 }
 
-static void printmouse(struct element *element)
+static void printmouse(struct element *element, void *data)
 {
+
+    struct element_mouse *mouse = data;
 
     printblockstart();
     printvalue("id", element->id);
@@ -99,15 +101,15 @@ static void printmouse(struct element *element)
     printvalue("count", element->count);
     printseperator();
     printname("size");
-    printbox(&element->size);
+    printbox(&mouse->size);
     printblockend();
 
 }
 
-static void printpanel(struct element *element)
+static void printpanel(struct element *element, void *data)
 {
 
-    struct element_panel *panel = (struct element_panel *)element;
+    struct element_panel *panel = data;
 
     printblockstart();
     printvalue("id", element->id);
@@ -119,17 +121,17 @@ static void printpanel(struct element *element)
     printvalue("count", element->count);
     printseperator();
     printname("size");
-    printbox(&element->size);
+    printbox(&panel->size);
     printseperator();
     printvalue("active", panel->active);
     printblockend();
 
 }
 
-static void printtext(struct element *element)
+static void printtext(struct element *element, void *data)
 {
 
-    struct element_text *text = (struct element_text *)element;
+    struct element_text *text = data;
 
     printblockstart();
     printvalue("id", element->id);
@@ -141,19 +143,19 @@ static void printtext(struct element *element)
     printvalue("count", element->count);
     printseperator();
     printname("size");
-    printbox(&element->size);
+    printbox(&text->size);
     printseperator();
     printvalue("type", text->type);
     printseperator();
-    printdata("string", element->count - (sizeof (struct element_text) - sizeof (struct element)), text + 1);
+    printdata("string", element->count - sizeof (struct element_text), text + 1);
     printblockend();
 
 }
 
-static void printwindow(struct element *element)
+static void printwindow(struct element *element, void *data)
 {
 
-    struct element_window *window = (struct element_window *)element;
+    struct element_window *window = data;
 
     printblockstart();
     printvalue("id", element->id);
@@ -165,7 +167,7 @@ static void printwindow(struct element *element)
     printvalue("count", element->count);
     printseperator();
     printname("size");
-    printbox(&element->size);
+    printbox(&window->size);
     printseperator();
     printvalue("active", window->active);
     printblockend();
@@ -178,7 +180,7 @@ static struct element *nextelement(unsigned int count, void *data, struct elemen
     if (element == 0)
         element = data;
     else
-        element = (struct element *)((unsigned char *)element + sizeof (struct element) + element->count);
+        element = (struct element *)((unsigned char *)(element + 1) + element->count);
 
     if ((unsigned int)element >= (unsigned int)data + count)
         return 0;
@@ -209,7 +211,7 @@ void main(void)
         while ((element = nextelement(count, buffer, element)))
         {
 
-            renderers[element->type](element);
+            renderers[element->type](element, element + 1);
             printnewline();
 
         }

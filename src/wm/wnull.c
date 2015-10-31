@@ -95,10 +95,22 @@ static struct keyset map[256] = {
 
 static unsigned int modifier;
 
-static void writetext(unsigned int source, struct element_text *text, unsigned int count, void *buffer)
+static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
 
-    text->base.source = source;
+    struct element element;
+
+    element_init(&element, id, type, source, z, count);
+
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &element, sizeof (struct element), datacount);
+
+}
+
+static void writetext(unsigned int source, unsigned int z, struct element_text *text, unsigned int count, void *buffer)
+{
+
+    writeelement((unsigned int)text, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + count);
+
     datacount += memory_write(databuffer, FUDGE_BSIZE, text, sizeof (struct element_text), datacount);
     datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
 
@@ -142,9 +154,8 @@ static void onkeypress(union event *event)
     keycode = &map[event->keypress.scancode].keycode[modifier];
 
     textcount += memory_write(text, 256, keycode->value, keycode->length, textcount);
-    content.base.count = (sizeof (struct element_text) - sizeof (struct element)) + textcount;
 
-    writetext(source, &content, textcount, text);
+    writetext(source, 1, &content, textcount, text);
 
 }
 
@@ -175,14 +186,14 @@ static void onwmmapnotify(union event *event)
     source = event->header.destination;
 
     box_setsize(&screen, event->wmmapnotify.x, event->wmmapnotify.y, event->wmmapnotify.w, event->wmmapnotify.h);
-    box_setsize(&content.base.size, screen.x + 8, screen.y + 8, screen.w - 16, 18);
+    box_setsize(&content.size, screen.x + 8, screen.y + 8, screen.w - 16, 18);
 
 }
 
 static void onwmexpose(union event *event)
 {
 
-    writetext(source, &content, textcount, text);
+    writetext(source, 1, &content, textcount, text);
 
 }
 

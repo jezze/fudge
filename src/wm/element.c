@@ -3,36 +3,29 @@
 #include "box.h"
 #include "element.h"
 
-void element_init(struct element *element, unsigned int type, unsigned int count)
+void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
 
-    element->id = (unsigned int)element;
+    element->id = id;
     element->type = type;
+    element->source = source;
+    element->z = z;
     element->count = count;
-    element->z = 1;
 
 }
 
 void element_initmouse(struct element_mouse *mouse)
 {
 
-    element_init(&mouse->base, ELEMENT_TYPE_MOUSE, sizeof (struct element_mouse) - sizeof (struct element));
-
-    mouse->base.z = 3;
-
 }
 
 void element_initpanel(struct element_panel *panel)
 {
 
-    element_init(&panel->base, ELEMENT_TYPE_PANEL, sizeof (struct element_panel) - sizeof (struct element));
-
 }
 
 void element_inittext(struct element_text *text, unsigned int type)
 {
-
-    element_init(&text->base, ELEMENT_TYPE_TEXT, sizeof (struct element_text) - sizeof (struct element));
 
     text->type = type;
 
@@ -40,8 +33,6 @@ void element_inittext(struct element_text *text, unsigned int type)
 
 void element_initwindow(struct element_window *window)
 {
-
-    element_init(&window->base, ELEMENT_TYPE_WINDOW, sizeof (struct element_window) - sizeof (struct element));
 
 }
 

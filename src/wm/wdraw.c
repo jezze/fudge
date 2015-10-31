@@ -18,7 +18,7 @@
 #define COLOR_TEXTLIGHT                 0x0A
 
 static struct ctrl_videosettings settings;
-static void (*renderers[16])(struct element *element, unsigned int line);
+static void (*renderers[16])(struct element *element, void *data, unsigned int line);
 static unsigned char fontdata[0x8000];
 static unsigned char drawdata[0x2000];
 static unsigned char data[0x8000];
@@ -118,54 +118,61 @@ static void fill(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static void rendermouse(struct element *element, unsigned int line)
+static void rendermouse(struct element *element, void *data, unsigned int line)
 {
 
-    unsigned int offset = (line - element->size.y) * element->size.w;
+    struct element_mouse *mouse = data;
+    unsigned int offset = (line - mouse->size.y) * mouse->size.w;
     unsigned int i;
 
-    for (i = 0; i < element->size.w; i++)
+    if (line < mouse->size.y || line >= mouse->size.y + mouse->size.h)
+        return;
+
+    for (i = 0; i < mouse->size.w; i++)
     {
 
         if (mousedata[offset + i] != 0xFF)
-            fill(mousedata[offset + i], element->size.x + i, 1);
+            fill(mousedata[offset + i], mouse->size.x + i, 1);
 
     }
 
 }
 
-static void renderpanel(struct element *element, unsigned int line)
+static void renderpanel(struct element *element, void *data, unsigned int line)
 {
 
-    struct element_panel *panel = (struct element_panel *)element;
-    unsigned int offset = (line - element->size.y);
+    struct element_panel *panel = data;
+    unsigned int offset = (line - panel->size.y);
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
 
-    if (offset > element->size.h / 2)
-        offset = element->size.h - offset - 1;
+    if (line < panel->size.y || line >= panel->size.y + panel->size.h)
+        return;
+
+    if (offset > panel->size.h / 2)
+        offset = panel->size.h - offset - 1;
 
     switch (offset)
     {
 
     case 0:
-        fill(COLOR_DARK, element->size.x, element->size.w);
+        fill(COLOR_DARK, panel->size.x, panel->size.w);
 
         break;
 
     case 1:
-        fill(COLOR_DARK, element->size.x + 0, 1);
-        fill(COLOR_DARK, element->size.x + element->size.w - 1, 1);
-        fill(framecolor, element->size.x + 1, element->size.w - 2);
+        fill(COLOR_DARK, panel->size.x + 0, 1);
+        fill(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
+        fill(framecolor, panel->size.x + 1, panel->size.w - 2);
 
         break;
 
     default:
-        fill(COLOR_DARK, element->size.x + 0, 1);
-        fill(COLOR_DARK, element->size.x + element->size.w - 1, 1);
-        fill(framecolor, element->size.x + 1, 1);
-        fill(framecolor, element->size.x + element->size.w - 2, 1);
-        fill(backgroundcolor, element->size.x + 2, element->size.w - 4);
+        fill(COLOR_DARK, panel->size.x + 0, 1);
+        fill(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
+        fill(framecolor, panel->size.x + 1, 1);
+        fill(framecolor, panel->size.x + panel->size.w - 2, 1);
+        fill(backgroundcolor, panel->size.x + 2, panel->size.w - 4);
 
         break;
 
@@ -173,19 +180,22 @@ static void renderpanel(struct element *element, unsigned int line)
 
 }
 
-static void rendertext(struct element *element, unsigned int line)
+static void rendertext(struct element *element, void *data, unsigned int line)
 {
 
-    struct element_text *text = (struct element_text *)element;
+    struct element_text *text = data;
     unsigned int padding = pcf_getpadding(fontdata);
-    unsigned int count = element->count - (sizeof (struct element_text) - sizeof (struct element));
+    unsigned int count = element->count - sizeof (struct element_text);
     unsigned char *string = (unsigned char *)(text + 1);
     struct box size;
     unsigned int color;
     unsigned int i;
 
-    size.x = element->size.x;
-    size.y = element->size.y;
+    if (line < text->size.y || line >= text->size.y + text->size.h)
+        return;
+
+    size.x = text->size.x;
+    size.y = text->size.y;
 
     switch (text->type)
     {
@@ -243,47 +253,50 @@ static void rendertext(struct element *element, unsigned int line)
 
 }
 
-static void renderwindow(struct element *element, unsigned int line)
+static void renderwindow(struct element *element, void *data, unsigned int line)
 {
 
-    struct element_window *window = (struct element_window *)element;
-    unsigned int offset = (line - element->size.y);
+    struct element_window *window = data;
+    unsigned int offset = (line - window->size.y);
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
-    if (offset > element->size.h / 2)
-        offset = element->size.h - offset - 1;
+    if (line < window->size.y || line >= window->size.y + window->size.h)
+        return;
+
+    if (offset > window->size.h / 2)
+        offset = window->size.h - offset - 1;
 
     switch (offset)
     {
 
     case 0:
-        fill(COLOR_DARK, element->size.x, element->size.w);
+        fill(COLOR_DARK, window->size.x, window->size.w);
 
         break;
 
     case 1:
-        fill(COLOR_DARK, element->size.x + 0, 1);
-        fill(COLOR_DARK, element->size.x + element->size.w - 1, 1);
-        fill(framecolor, element->size.x + 1, element->size.w - 2);
+        fill(COLOR_DARK, window->size.x + 0, 1);
+        fill(COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        fill(framecolor, window->size.x + 1, window->size.w - 2);
 
         break;
 
     case 2:
-        fill(COLOR_DARK, element->size.x + 0, 1);
-        fill(COLOR_DARK, element->size.x + element->size.w - 1, 1);
-        fill(framecolor, element->size.x + 1, 1);
-        fill(framecolor, element->size.x + element->size.w - 2, 1);
-        fill(COLOR_DARK, element->size.x + 2, element->size.w - 4);
+        fill(COLOR_DARK, window->size.x + 0, 1);
+        fill(COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        fill(framecolor, window->size.x + 1, 1);
+        fill(framecolor, window->size.x + window->size.w - 2, 1);
+        fill(COLOR_DARK, window->size.x + 2, window->size.w - 4);
 
         break;
 
     default:
-        fill(COLOR_DARK, element->size.x + 0, 1);
-        fill(COLOR_DARK, element->size.x + element->size.w - 1, 1);
-        fill(framecolor, element->size.x + 1, 1);
-        fill(framecolor, element->size.x + element->size.w - 2, 1);
-        fill(COLOR_DARK, element->size.x + 2, 1);
-        fill(COLOR_DARK, element->size.x + element->size.w - 3, 1);
+        fill(COLOR_DARK, window->size.x + 0, 1);
+        fill(COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        fill(framecolor, window->size.x + 1, 1);
+        fill(framecolor, window->size.x + window->size.w - 2, 1);
+        fill(COLOR_DARK, window->size.x + 2, 1);
+        fill(COLOR_DARK, window->size.x + window->size.w - 3, 1);
 
         break;
 
@@ -297,7 +310,7 @@ static struct element *nextelement(unsigned int count, void *data, struct elemen
     if (element == 0)
         element = data;
     else
-        element = (struct element *)((unsigned char *)element + sizeof (struct element) + element->count);
+        element = (struct element *)((unsigned char *)(element + 1) + element->count);
 
     if ((unsigned int)element >= (unsigned int)data + count)
         return 0;
@@ -372,8 +385,7 @@ static void render(struct box *damage)
                 if (element->z != z)
                     continue;
 
-                if (line >= element->size.y && line < element->size.y + element->size.h)
-                    renderers[element->type](element, line);
+                renderers[element->type](element, element + 1, line);
 
             }
 
@@ -422,9 +434,11 @@ void main(void)
             if (previous)
             {
 
+                struct box *temp = (struct box *)(previous + 1);
+
                 previous->z = 0;
 
-                render(&previous->size);
+                render(temp);
                 removeelement(previous);
 
             }
@@ -432,8 +446,10 @@ void main(void)
             if (element->z)
             {
 
+                struct box *temp = (struct box *)(element + 1);
+
                 addelement(element);
-                render(&element->size);
+                render(temp);
 
             }
 

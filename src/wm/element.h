@@ -8,7 +8,6 @@
 struct element
 {
 
-    struct box size;
     unsigned int id;
     unsigned int type;
     unsigned int source;
@@ -20,14 +19,14 @@ struct element
 struct element_mouse
 {
 
-    struct element base;
+    struct box size;
 
 };
 
 struct element_panel
 {
 
-    struct element base;
+    struct box size;
     unsigned int active;
 
 };
@@ -35,7 +34,7 @@ struct element_panel
 struct element_text
 {
 
-    struct element base;
+    struct box size;
     unsigned int type;
 
 };
@@ -43,12 +42,12 @@ struct element_text
 struct element_window
 {
 
-    struct element base;
+    struct box size;
     unsigned int active;
 
 };
 
-void element_init(struct element *element, unsigned int type, unsigned int count);
+void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count);
 void element_initmouse(struct element_mouse *mouse);
 void element_initpanel(struct element_panel *panel);
 void element_inittext(struct element_text *text, unsigned int type);
