@@ -36,7 +36,7 @@ static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
-static struct view *viewfocus = &view[0];
+static struct view *viewfocus;
 static struct box screen;
 static struct box menu;
 static struct box body;
@@ -107,21 +107,20 @@ static void flush()
 
 }
 
-static void activateclient(unsigned int source, struct client *client)
+static void notifyarrange(struct view *view)
 {
 
-    client->window.active = 1;
+    struct list_item *current;
 
-    writewindow(source, 1, &client->window);
+    for (current = view->clients.head; current; current = current->next)
+    {
 
-}
+        struct client *client = current->data;
 
-static void deactivateclient(unsigned int source, struct client *client)
-{
+        send_wmmapnotify(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
+        send_wmexpose(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
 
-    client->window.active = 0;
-
-    writewindow(source, 1, &client->window);
+    }
 
 }
 
@@ -145,9 +144,6 @@ static void arrangeclients(unsigned int source, struct view *view)
         box_setsize(&client->window.size, body.x, body.y, body.w, body.h);
         writewindow(source, 1, &client->window);
 
-        send_wmmapnotify(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
-        send_wmexpose(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
-
         break;
 
     default:
@@ -158,9 +154,6 @@ static void arrangeclients(unsigned int source, struct view *view)
         box_setsize(&client->window.size, body.x, body.y, view->center, body.h);
         writewindow(source, 1, &client->window);
 
-        send_wmmapnotify(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
-        send_wmexpose(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
-
         for (current = view->clients.tail->prev; current; current = current->prev)
         {
 
@@ -168,9 +161,6 @@ static void arrangeclients(unsigned int source, struct view *view)
 
             box_setsize(&client->window.size, body.x + view->center, y, body.w - view->center, h);
             writewindow(source, 1, &client->window);
-
-            send_wmmapnotify(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
-            send_wmexpose(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
 
             y += h;
 
@@ -186,10 +176,22 @@ static struct client *focusclient(unsigned int source, struct client *focus, str
 {
 
     if (focus)
-        deactivateclient(source, focus);
+    {
+
+        focus->window.active = 0;
+
+        writewindow(source, 1, &focus->window);
+
+    }
 
     if (new)
-        activateclient(source, new);
+    {
+
+        new->window.active = 1;
+
+        writewindow(source, 1, &new->window);
+
+    }
 
     return new;
 
@@ -364,6 +366,8 @@ static void setupviews(void)
 
     }
 
+    viewfocus = focusview(source, &view[0], &view[0]);
+
 }
 
 static void setviewsize(void)
@@ -428,6 +432,7 @@ static void onkeypress(union event *event)
             send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
             unmapclient(source, viewfocus);
             arrangeclients(source, viewfocus);
+            notifyarrange(viewfocus);
 
         }
 
@@ -443,6 +448,7 @@ static void onkeypress(union event *event)
         viewfocus->center -= (body.w / 32);
 
         arrangeclients(source, viewfocus);
+        notifyarrange(viewfocus);
 
         break;
 
@@ -460,6 +466,7 @@ static void onkeypress(union event *event)
         viewfocus->center += (body.w / 32);
 
         arrangeclients(source, viewfocus);
+        notifyarrange(viewfocus);
 
         break;
 
@@ -561,8 +568,7 @@ static void onwmmap(union event *event)
 
         mapclient(source, viewfocus, event->header.source);
         arrangeclients(source, viewfocus);
-        send_wmmapnotify(CALL_L2, event->header.source, viewfocus->clientfocus->window.size.x, viewfocus->clientfocus->window.size.y, viewfocus->clientfocus->window.size.w, viewfocus->clientfocus->window.size.h);
-        send_wmexpose(CALL_L2, event->header.source, viewfocus->clientfocus->window.size.x, viewfocus->clientfocus->window.size.y, viewfocus->clientfocus->window.size.w, viewfocus->clientfocus->window.size.h);
+        notifyarrange(viewfocus);
 
     }
 
@@ -578,7 +584,6 @@ static void onwmmapnotify(union event *event)
     box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
     setviewsize();
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, 24, 24);
-    activateview(source, viewfocus);
 
 }
 
