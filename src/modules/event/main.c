@@ -12,7 +12,10 @@ void event_notify(unsigned int count, void *buffer)
 
     struct event_header *header = buffer;
 
-    header->destination = 0;
+    if (!poll.mailboxes.count)
+        return;
+
+    header->destination = (unsigned int)poll.mailboxes.head->data;
     header->source = 0;
 
     poll.write(&poll, 0, count, buffer);

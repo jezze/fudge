@@ -40,7 +40,6 @@ static struct view *viewfocus;
 static struct box screen;
 static struct box menu;
 static struct box body;
-static unsigned int source;
 static unsigned int quit;
 static void (*handlers[EVENTS])(union event *event);
 static unsigned int actionkey;
@@ -365,8 +364,6 @@ static void setupviews(void)
 
     }
 
-    viewfocus = focusview(source, &view[0], &view[0]);
-
 }
 
 static void setviewsize(void)
@@ -420,7 +417,7 @@ static void onkeypress(union event *event)
     case 0x07:
     case 0x08:
     case 0x09:
-        viewfocus = focusview(source, viewfocus, &view[event->keypress.scancode - 0x02]);
+        viewfocus = focusview(event->header.destination, viewfocus, &view[event->keypress.scancode - 0x02]);
 
         break;
 
@@ -429,8 +426,8 @@ static void onkeypress(union event *event)
         {
 
             send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
-            unmapclient(source, viewfocus);
-            arrangeclients(source, viewfocus);
+            unmapclient(event->header.destination, viewfocus);
+            arrangeclients(event->header.destination, viewfocus);
             notifyarrange(viewfocus);
 
         }
@@ -446,25 +443,25 @@ static void onkeypress(union event *event)
     case 0x23:
         viewfocus->center -= (body.w / 32);
 
-        arrangeclients(source, viewfocus);
+        arrangeclients(event->header.destination, viewfocus);
         notifyarrange(viewfocus);
 
         break;
 
     case 0x24:
-        viewfocus->clientfocus = nextclient(source, viewfocus->clientfocus, viewfocus->clients.head ? viewfocus->clients.head->data : 0);
+        viewfocus->clientfocus = nextclient(event->header.destination, viewfocus->clientfocus, viewfocus->clients.head ? viewfocus->clients.head->data : 0);
 
         break;
 
     case 0x25:
-        viewfocus->clientfocus = prevclient(source, viewfocus->clientfocus, viewfocus->clients.tail ? viewfocus->clients.tail->data : 0);
+        viewfocus->clientfocus = prevclient(event->header.destination, viewfocus->clientfocus, viewfocus->clients.tail ? viewfocus->clients.tail->data : 0);
 
         break;
 
     case 0x26:
         viewfocus->center += (body.w / 32);
 
-        arrangeclients(source, viewfocus);
+        arrangeclients(event->header.destination, viewfocus);
         notifyarrange(viewfocus);
 
         break;
@@ -514,10 +511,10 @@ static void onmousepress(union event *event)
 
     case 0x01:
         if (view && view != viewfocus)
-            viewfocus = focusview(source, viewfocus, view);
+            viewfocus = focusview(event->header.destination, viewfocus, view);
 
         if (client && client != viewfocus->clientfocus)
-            viewfocus->clientfocus = focusclient(source, viewfocus->clientfocus, client);
+            viewfocus->clientfocus = focusclient(event->header.destination, viewfocus->clientfocus, client);
 
         break;
 
@@ -543,7 +540,7 @@ static void onmousemove(union event *event)
     if (event->mousemove.rely > 0 && mouse.size.y >= screen.h)
         mouse.size.y = 0;
 
-    writemouse(source, 3, &mouse);
+    writemouse(event->header.destination, 3, &mouse);
 
 }
 
@@ -557,15 +554,15 @@ static void onwmmap(union event *event)
         video_getmode(CALL_L0, &oldsettings);
         video_setmode(CALL_L0, &settings);
         video_getmode(CALL_L0, &settings);
-        send_wmmapnotify(CALL_L2, event->header.source, 0, 0, settings.w, settings.h);
+        send_wmmapnotify(CALL_L2, event->header.destination, 0, 0, settings.w, settings.h);
 
     }
             
     else
     {
 
-        mapclient(source, viewfocus, event->header.source);
-        arrangeclients(source, viewfocus);
+        mapclient(event->header.destination, viewfocus, event->header.source);
+        arrangeclients(event->header.destination, viewfocus);
         notifyarrange(viewfocus);
 
     }
@@ -578,8 +575,6 @@ static void onwmmapnotify(union event *event)
     struct list_item *current;
     unsigned int i;
 
-    source = event->header.destination;
-
     box_setsize(&screen, event->wmmapnotify.x, event->wmmapnotify.y, event->wmmapnotify.w, event->wmmapnotify.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, 32);
     box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
@@ -589,21 +584,23 @@ static void onwmmapnotify(union event *event)
     for (i = 0; i < VIEWS; i++)
     {
 
-        writepanel(source, 1, &view[i].panel);
-        writetext(source, 1, &view[i].number, 1, view[i].numberstring);
+        writepanel(event->header.destination, 1, &view[i].panel);
+        writetext(event->header.destination, 1, &view[i].number, 1, view[i].numberstring);
 
     }
+
+    viewfocus = focusview(event->header.destination, &view[0], &view[0]);
 
     for (current = viewfocus->clients.head; current; current = current->next)
     {
 
         struct client *client = current->data;
 
-        writewindow(source, 1, &client->window);
+        writewindow(event->header.destination, 1, &client->window);
 
     }
 
-    writemouse(source, 3, &mouse);
+    writemouse(event->header.destination, 3, &mouse);
 
 }
 
@@ -622,7 +619,7 @@ static void onwmunmap(union event *event)
         {
 
             send_wmunmap(CALL_L2, view[i].clientfocus->source);
-            unmapclient(source, &view[i]);
+            unmapclient(event->header.destination, &view[i]);
 
         }
 

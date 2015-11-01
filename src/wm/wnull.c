@@ -27,7 +27,6 @@ static struct element_text content;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
 static struct box screen;
-static unsigned int source;
 static unsigned int quit;
 static void (*handlers[EVENTS])(union event *event);
 static unsigned char text[256];
@@ -152,10 +151,9 @@ static void onkeypress(union event *event)
     }
 
     keycode = &map[event->keypress.scancode].keycode[modifier];
-
     textcount += memory_write(text, 256, keycode->value, keycode->length, textcount);
 
-    writetext(source, 1, &content, textcount, text);
+    writetext(event->header.destination, 1, &content, textcount, text);
 
 }
 
@@ -183,11 +181,9 @@ static void onkeyrelease(union event *event)
 static void onwmmapnotify(union event *event)
 {
 
-    source = event->header.destination;
-
     box_setsize(&screen, event->wmmapnotify.x, event->wmmapnotify.y, event->wmmapnotify.w, event->wmmapnotify.h);
     box_setsize(&content.size, screen.x + 8, screen.y + 8, screen.w - 16, 18);
-    writetext(source, 1, &content, textcount, text);
+    writetext(event->header.destination, 1, &content, textcount, text);
 
 }
 
