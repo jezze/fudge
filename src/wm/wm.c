@@ -124,8 +124,8 @@ static void arrangeclients(unsigned int source, struct view *view)
         client = view->clients.tail->data;
 
         box_setsize(&client->window.size, body.x, body.y, body.w, body.h);
-        send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
         writewindow(source, 1, &client->window);
+        send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
 
         break;
 
@@ -135,8 +135,8 @@ static void arrangeclients(unsigned int source, struct view *view)
         client = view->clients.tail->data;
 
         box_setsize(&client->window.size, body.x, body.y, view->center, body.h);
-        send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
         writewindow(source, 1, &client->window);
+        send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
 
         for (current = view->clients.tail->prev; current; current = current->prev)
         {
@@ -144,8 +144,8 @@ static void arrangeclients(unsigned int source, struct view *view)
             client = current->data;
 
             box_setsize(&client->window.size, body.x + view->center, y, body.w - view->center, h);
-            send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
             writewindow(source, 1, &client->window);
+            send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
 
             y += h;
 
@@ -589,8 +589,8 @@ static void onwmresize(union event *event)
         view[i].center = body.w / 2;
 
         box_setsize(&view[i].panel.size, menu.x + i * menu.w / VIEWS, menu.y, menu.w / VIEWS, menu.h);
-        box_setsize(&view[i].number.size, view[i].panel.size.x + 8, view[i].panel.size.y + 8, view[i].panel.size.w, 18);
         writepanel(event->header.destination, 1, &view[i].panel);
+        box_setsize(&view[i].number.size, view[i].panel.size.x + 8, view[i].panel.size.y + 8, view[i].panel.size.w, 18);
         writetext(event->header.destination, 1, &view[i].number, 1, view[i].numberstring);
 
     }
