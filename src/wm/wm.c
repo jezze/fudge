@@ -106,24 +106,7 @@ static void flush()
 
 }
 
-static void notifyclients(unsigned int source, struct view *view)
-{
-
-    struct list_item *current;
-
-    for (current = view->clients.head; current; current = current->next)
-    {
-
-        struct client *client = current->data;
-
-        send_wmmapnotify(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
-        writewindow(source, 1, &client->window);
-
-    }
-
-}
-
-static void arrangeclients(struct view *view)
+static void arrangeclients(unsigned int source, struct view *view)
 {
 
     struct list_item *current;
@@ -141,6 +124,8 @@ static void arrangeclients(struct view *view)
         client = view->clients.tail->data;
 
         box_setsize(&client->window.size, body.x, body.y, body.w, body.h);
+        send_wmmapnotify(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
+        writewindow(source, 1, &client->window);
 
         break;
 
@@ -150,6 +135,8 @@ static void arrangeclients(struct view *view)
         client = view->clients.tail->data;
 
         box_setsize(&client->window.size, body.x, body.y, view->center, body.h);
+        send_wmmapnotify(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
+        writewindow(source, 1, &client->window);
 
         for (current = view->clients.tail->prev; current; current = current->prev)
         {
@@ -157,6 +144,8 @@ static void arrangeclients(struct view *view)
             client = current->data;
 
             box_setsize(&client->window.size, body.x + view->center, y, body.w - view->center, h);
+            send_wmmapnotify(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
+            writewindow(source, 1, &client->window);
 
             y += h;
 
@@ -425,8 +414,7 @@ static void onkeypress(union event *event)
 
             send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
             unmapclient(event->header.destination, viewfocus);
-            arrangeclients(viewfocus);
-            notifyclients(event->header.destination, viewfocus);
+            arrangeclients(event->header.destination, viewfocus);
 
         }
 
@@ -441,8 +429,7 @@ static void onkeypress(union event *event)
     case 0x23:
         viewfocus->center -= (body.w / 32);
 
-        arrangeclients(viewfocus);
-        notifyclients(event->header.destination, viewfocus);
+        arrangeclients(event->header.destination, viewfocus);
 
         break;
 
@@ -459,8 +446,7 @@ static void onkeypress(union event *event)
     case 0x26:
         viewfocus->center += (body.w / 32);
 
-        arrangeclients(viewfocus);
-        notifyclients(event->header.destination, viewfocus);
+        arrangeclients(event->header.destination, viewfocus);
 
         break;
 
@@ -560,8 +546,7 @@ static void onwmmap(union event *event)
     {
 
         mapclient(event->header.destination, viewfocus, event->header.source);
-        arrangeclients(viewfocus);
-        notifyclients(event->header.destination, viewfocus);
+        arrangeclients(event->header.destination, viewfocus);
 
     }
 
@@ -613,11 +598,13 @@ static void onwmunmap(union event *event)
     for (i = 0; i < VIEWS; i++)
     {
 
-        while (view[i].clientfocus)
+        while (view[i].clients.count)
         {
 
-            send_wmunmap(CALL_L2, view[i].clientfocus->source);
-            unmapclient(event->header.destination, &view[i]);
+            struct client *client = view[i].clients.head->data;
+
+            send_wmunmap(CALL_L2, client->source);
+            list_move(&clients, &view[i].clients, &client->item);
 
         }
 
