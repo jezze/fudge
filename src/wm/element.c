@@ -17,8 +17,6 @@ void element_init(struct element *element, unsigned int id, unsigned int type, u
 void element_initmouse(struct element_mouse *mouse)
 {
 
-    box_setsize(&mouse->size, 0, 0, 0, 0);
-
 }
 
 void element_initpanel(struct element_panel *panel)

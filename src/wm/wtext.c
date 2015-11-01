@@ -100,8 +100,9 @@ static void printmouse(struct element *element, void *data)
     printseperator();
     printvalue("count", element->count);
     printseperator();
-    printname("size");
-    printbox(&mouse->size);
+    printvalue("x", mouse->x);
+    printseperator();
+    printvalue("y", mouse->y);
     printblockend();
 
 }

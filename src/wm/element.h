@@ -19,7 +19,8 @@ struct element
 struct element_mouse
 {
 
-    struct box size;
+    unsigned int x;
+    unsigned int y;
 
 };
 

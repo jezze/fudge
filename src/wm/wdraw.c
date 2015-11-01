@@ -122,17 +122,17 @@ static void rendermouse(struct element *element, void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
-    unsigned int offset = (line - mouse->size.y) * mouse->size.w;
+    unsigned int offset = (line - mouse->y) * 24;
     unsigned int i;
 
-    if (line < mouse->size.y || line >= mouse->size.y + mouse->size.h)
+    if (line < mouse->y || line >= mouse->y + 24)
         return;
 
-    for (i = 0; i < mouse->size.w; i++)
+    for (i = 0; i < 24; i++)
     {
 
         if (mousedata[offset + i] != 0xFF)
-            fill(mousedata[offset + i], mouse->size.x + i, 1);
+            fill(mousedata[offset + i], mouse->x + i, 1);
 
     }
 
@@ -319,7 +319,19 @@ static struct element *nextelement(unsigned int count, void *data, struct elemen
 
 }
 
-static struct element *findelement(unsigned int source, unsigned int id)
+static void removeelement(struct element *element)
+{
+
+    unsigned int length = sizeof (struct element) + element->count;
+
+    memory_copy(element, (unsigned char *)element + length, datacount - ((unsigned char *)element - data) - length);
+
+    datacount -= length;
+
+}
+
+
+static void removeelements(unsigned int source, unsigned int id)
 {
 
     struct element *current = 0;
@@ -330,22 +342,9 @@ static struct element *findelement(unsigned int source, unsigned int id)
         if (current->source != source || current->id != id)
             continue;
 
-        return current;
+        removeelement(current);
 
     }
-
-    return 0;
-
-}
-
-static void removeelement(struct element *element)
-{
-
-    unsigned int length = sizeof (struct element) + element->count;
-
-    memory_copy(element, (unsigned char *)element + length, datacount - ((unsigned char *)element - data) - length);
-
-    datacount -= length;
 
 }
 
@@ -429,31 +428,14 @@ void main(void)
         while ((element = nextelement(count, buffer, element)))
         {
 
-            struct element *previous = findelement(element->source, element->id);
-
-            if (previous)
-            {
-
-                struct box *temp = (struct box *)(previous + 1);
-
-                previous->z = 0;
-
-                render(temp);
-                removeelement(previous);
-
-            }
+            removeelements(element->source, element->id);
 
             if (element->z)
-            {
-
-                struct box *temp = (struct box *)(element + 1);
-
                 addelement(element);
-                render(temp);
-
-            }
 
         }
+
+        render(&screen);
 
     }
 

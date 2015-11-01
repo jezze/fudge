@@ -185,17 +185,27 @@ static struct client *focusclient(unsigned int source, struct client *focus, str
 
 }
 
-static struct client *nextclient(unsigned int source, struct client *focus, struct client *head)
+static struct client *nextclient(unsigned int source, struct view *view)
 {
 
-    return focusclient(source, focus, (focus && focus->item.next) ? focus->item.next->data : head);
+    struct client *client = view->clientfocus;
+
+    if (!client)
+        return 0;
+
+    return focusclient(source, client, (client->item.next) ? client->item.next->data : view->clients.head);
 
 }
 
-static struct client *prevclient(unsigned int source, struct client *focus, struct client *tail)
+static struct client *prevclient(unsigned int source, struct view *view)
 {
 
-    return focusclient(source, focus, (focus && focus->item.prev) ? focus->item.prev->data : tail);
+    struct client *client = view->clientfocus;
+
+    if (!client)
+        return 0;
+
+    return focusclient(source, client, (client->item.prev) ? client->item.prev->data : view->clients.tail);
 
 }
 
@@ -399,12 +409,12 @@ static void onkeypress(union event *event)
         break;
 
     case 0x24:
-        viewfocus->clientfocus = nextclient(event->header.destination, viewfocus->clientfocus, viewfocus->clients.head ? viewfocus->clients.head->data : 0);
+        viewfocus->clientfocus = nextclient(event->header.destination, viewfocus);
 
         break;
 
     case 0x25:
-        viewfocus->clientfocus = prevclient(event->header.destination, viewfocus->clientfocus, viewfocus->clients.tail ? viewfocus->clients.tail->data : 0);
+        viewfocus->clientfocus = prevclient(event->header.destination, viewfocus);
 
         break;
 
@@ -452,8 +462,8 @@ static void onkeyrelease(union event *event)
 static void onmousepress(union event *event)
 {
 
-    struct view *view = findview(mouse.size.x, mouse.size.y);
-    struct client *client = findclient(viewfocus, mouse.size.x, mouse.size.y);
+    struct view *view = findview(mouse.x, mouse.y);
+    struct client *client = findclient(viewfocus, mouse.x, mouse.y);
 
     switch (event->mousepress.button)
     {
@@ -474,20 +484,20 @@ static void onmousepress(union event *event)
 static void onmousemove(union event *event)
 {
 
-    mouse.size.x += event->mousemove.relx;
-    mouse.size.y -= event->mousemove.rely;
+    mouse.x += event->mousemove.relx;
+    mouse.y -= event->mousemove.rely;
 
-    if (event->mousemove.relx > 0 && mouse.size.x >= screen.w)
-        mouse.size.x = screen.w - 1;
+    if (event->mousemove.relx > 0 && mouse.x >= screen.w)
+        mouse.x = screen.w - 1;
 
-    if (event->mousemove.relx < 0 && mouse.size.x >= screen.w)
-        mouse.size.x = 0;
+    if (event->mousemove.relx < 0 && mouse.x >= screen.w)
+        mouse.x = 0;
 
-    if (event->mousemove.rely < 0 && mouse.size.y >= screen.h)
-        mouse.size.y = screen.h - 1;
+    if (event->mousemove.rely < 0 && mouse.y >= screen.h)
+        mouse.y = screen.h - 1;
 
-    if (event->mousemove.rely > 0 && mouse.size.y >= screen.h)
-        mouse.size.y = 0;
+    if (event->mousemove.rely > 0 && mouse.y >= screen.h)
+        mouse.y = 0;
 
     writemouse(event->header.destination, 3, &mouse);
 
@@ -566,7 +576,9 @@ static void onwmresize(union event *event)
 
     }
 
-    box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, 24, 24);
+    mouse.x = screen.x + screen.w / 4;
+    mouse.y = screen.y + screen.h / 4;
+
     writemouse(event->header.destination, 3, &mouse);
 
 }
