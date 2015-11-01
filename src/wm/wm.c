@@ -160,6 +160,9 @@ static void arrangeclients(unsigned int source, struct view *view)
 static struct client *focusclient(unsigned int source, struct client *focus, struct client *new)
 {
 
+    if (focus == new)
+        return new;
+
     if (focus)
     {
 
@@ -290,6 +293,9 @@ static void deactivateview(unsigned int source, struct view *view)
 
 static struct view *focusview(unsigned int source, struct view *focus, struct view *new)
 {
+
+    if (focus == new)
+        return new;
 
     if (focus)
         deactivateview(source, focus);
@@ -453,10 +459,10 @@ static void onmousepress(union event *event)
     {
 
     case 0x01:
-        if (view && view != viewfocus)
+        if (view)
             viewfocus = focusview(event->header.destination, viewfocus, view);
 
-        if (client && client != viewfocus->clientfocus)
+        if (client)
             viewfocus->clientfocus = focusclient(event->header.destination, viewfocus->clientfocus, client);
 
         break;
