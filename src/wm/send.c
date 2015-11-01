@@ -66,35 +66,19 @@ void send_wmunmap(unsigned int descriptor, unsigned int destination)
 
 }
 
-void send_wmmapnotify(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void send_wmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
-    struct event_wmmapnotify wmmapnotify;
+    struct event_wmresize wmresize;
 
-    setheader(&wmmapnotify.header, destination, EVENT_WMMAPNOTIFY, sizeof (struct event_wmmapnotify) - sizeof (struct event_header));
+    setheader(&wmresize.header, destination, EVENT_WMRESIZE, sizeof (struct event_wmresize) - sizeof (struct event_header));
 
-    wmmapnotify.x = x;
-    wmmapnotify.y = y;
-    wmmapnotify.w = w;
-    wmmapnotify.h = h;
+    wmresize.x = x;
+    wmresize.y = y;
+    wmresize.w = w;
+    wmresize.h = h;
 
-    send(descriptor, sizeof (struct event_wmmapnotify), &wmmapnotify);
-
-}
-
-void send_wmexpose(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
-{
-
-    struct event_wmexpose wmexpose;
-
-    setheader(&wmexpose.header, destination, EVENT_WMEXPOSE, sizeof (struct event_wmexpose) - sizeof (struct event_header));
-
-    wmexpose.x = x;
-    wmexpose.y = y;
-    wmexpose.w = w;
-    wmexpose.h = h;
-
-    send(descriptor, sizeof (struct event_wmexpose), &wmexpose);
+    send(descriptor, sizeof (struct event_wmresize), &wmresize);
 
 }
 
