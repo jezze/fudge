@@ -353,23 +353,6 @@ static void setupviews(void)
 
 }
 
-static void setviewsize(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < VIEWS; i++)
-    {
-
-        view[i].center = body.w / 2;
-
-        box_setsize(&view[i].panel.size, menu.x + i * menu.w / VIEWS, menu.y, menu.w / VIEWS, menu.h);
-        box_setsize(&view[i].number.size, view[i].panel.size.x + 8, view[i].panel.size.y + 8, view[i].panel.size.w, 18);
-
-    }
-
-}
-
 static void onkeypress(union event *event)
 {
 
@@ -599,12 +582,14 @@ static void onwmresize(union event *event)
     box_setsize(&screen, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, 32);
     box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
-    setviewsize();
-    box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, 24, 24);
 
     for (i = 0; i < VIEWS; i++)
     {
 
+        view[i].center = body.w / 2;
+
+        box_setsize(&view[i].panel.size, menu.x + i * menu.w / VIEWS, menu.y, menu.w / VIEWS, menu.h);
+        box_setsize(&view[i].number.size, view[i].panel.size.x + 8, view[i].panel.size.y + 8, view[i].panel.size.w, 18);
         writepanel(event->header.destination, 1, &view[i].panel);
         writetext(event->header.destination, 1, &view[i].number, 1, view[i].numberstring);
 
@@ -621,6 +606,7 @@ static void onwmresize(union event *event)
 
     }
 
+    box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, 24, 24);
     writemouse(event->header.destination, 3, &mouse);
 
 }
