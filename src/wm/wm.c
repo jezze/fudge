@@ -318,41 +318,6 @@ static struct view *findview(unsigned int x, unsigned int y)
 
 }
 
-static void setupclients(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < CLIENTS; i++)
-    {
-
-        list_inititem(&client[i].item, &client[i]);
-        element_initwindow(&client[i].window);
-        list_add(&clients, &client[i].item);
-
-    }
-
-}
-
-static void setupviews(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < VIEWS; i++)
-    {
-
-        list_inititem(&view[i].item, &view[i]);
-        element_initpanel(&view[i].panel);
-        element_inittext(&view[i].number, ELEMENT_TEXTTYPE_NORMAL);
-
-        view[i].numberstring = "12345678" + i;
-        view[i].clientfocus = 0;
-
-    }
-
-}
-
 static void onkeypress(union event *event)
 {
 
@@ -576,7 +541,6 @@ static void onwmunmap(union event *event)
 static void onwmresize(union event *event)
 {
 
-    struct list_item *current;
     unsigned int i;
 
     box_setsize(&screen, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
@@ -592,22 +556,46 @@ static void onwmresize(union event *event)
         writepanel(event->header.destination, 1, &view[i].panel);
         box_setsize(&view[i].number.size, view[i].panel.size.x + 8, view[i].panel.size.y + 8, view[i].panel.size.w, 18);
         writetext(event->header.destination, 1, &view[i].number, 1, view[i].numberstring);
-
-    }
-
-    viewfocus = focusview(event->header.destination, &view[0], &view[0]);
-
-    for (current = viewfocus->clients.head; current; current = current->next)
-    {
-
-        struct client *client = current->data;
-
-        writewindow(event->header.destination, 1, &client->window);
+        arrangeclients(event->header.destination, &view[i]);
 
     }
 
     box_setsize(&mouse.size, screen.x + screen.w / 4, screen.y + screen.h / 4, 24, 24);
     writemouse(event->header.destination, 3, &mouse);
+
+}
+
+static void setup(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < CLIENTS; i++)
+    {
+
+        list_inititem(&client[i].item, &client[i]);
+        element_initwindow(&client[i].window);
+        list_add(&clients, &client[i].item);
+
+    }
+
+    for (i = 0; i < VIEWS; i++)
+    {
+
+        list_inititem(&view[i].item, &view[i]);
+        element_initpanel(&view[i].panel);
+        element_inittext(&view[i].number, ELEMENT_TEXTTYPE_NORMAL);
+
+        view[i].numberstring = "12345678" + i;
+        view[i].clientfocus = 0;
+
+    }
+
+    viewfocus = &view[0];
+    viewfocus->panel.active = 1;
+    viewfocus->number.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
+
+    element_initmouse(&mouse);
 
 }
 
@@ -617,6 +605,8 @@ void main(void)
     union event event;
     unsigned int count;
 
+    setup();
+
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;
     handlers[EVENT_MOUSEPRESS] = onmousepress;
@@ -625,9 +615,6 @@ void main(void)
     handlers[EVENT_WMUNMAP] = onwmunmap;
     handlers[EVENT_WMRESIZE] = onwmresize;
 
-    setupclients();
-    setupviews();
-    element_initmouse(&mouse);
     call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
