@@ -420,9 +420,20 @@ static void onkeypress(union event *event)
 
         break;
 
-    case 0x1C:
+    case 0x19:
         call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
         call_spawn();
+
+        break;
+
+    case 0x1C:
+        if (viewfocus->clientfocus)
+        {
+
+            list_move(&viewfocus->clients, &viewfocus->clients, &viewfocus->clientfocus->item);
+            arrangeclients(event->header.destination, viewfocus);
+
+        }
 
         break;
 
