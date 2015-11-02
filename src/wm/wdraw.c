@@ -465,7 +465,7 @@ static void render(unsigned int width, unsigned int height)
 
         }
 
-        video_draw(CALL_L0, settings.w * line, width, drawdata + settings.bpp / 8);
+        video_draw(CALL_L0, settings.w * line, width, drawdata);
 
     }
 
