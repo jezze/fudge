@@ -399,19 +399,13 @@ static void addelement(struct element *element)
 
 }
 
-static void render(struct box *damage)
+static void render(unsigned int width, unsigned int height)
 {
 
     struct element *element;
     unsigned int line;
 
-    if (damage->x + damage->w > settings.w)
-        damage->w = settings.w - damage->x;
-
-    if (damage->y + damage->h > settings.h)
-        damage->h = settings.h - damage->y;
-
-    for (line = damage->y; line < damage->y + damage->h; line++)
+    for (line = 0; line < height; line++)
     {
 
         unsigned int drawline = 0;
@@ -436,7 +430,7 @@ static void render(struct box *damage)
         if (!drawline)
             continue;
 
-        fill(COLOR_BODY, damage->x, damage->w);
+        fill(COLOR_BODY, 0, width);
 
         for (z = 1; z < 4; z++)
         {
@@ -456,7 +450,7 @@ static void render(struct box *damage)
 
         }
 
-        video_draw(CALL_L0, settings.w * line + damage->x, damage->w, drawdata + damage->x * settings.bpp / 8);
+        video_draw(CALL_L0, settings.w * line, width, drawdata + settings.bpp / 8);
 
     }
 
@@ -470,7 +464,6 @@ void main(void)
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
-    struct box screen;
 
     call_walk(CALL_L0, CALL_PR, 18, "share/ter-u18n.pcf");
     call_open(CALL_L0);
@@ -490,8 +483,6 @@ void main(void)
     video_setcolormap(CALL_L0, 0, 3 * 11, colormap8);
     video_open(CALL_L0);
     call_open(CALL_PI);
-    box_setsize(&screen, 0, 0, settings.w, settings.h);
-    render(&screen);
 
     while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
     {
@@ -506,7 +497,7 @@ void main(void)
 
         }
 
-        render(&screen);
+        render(settings.w, settings.h);
         removeelements();
 
     }
