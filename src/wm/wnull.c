@@ -181,6 +181,8 @@ static void onkeyrelease(union event *event)
 static void onwmunmap(union event *event)
 {
 
+    writetext(event->header.destination, 0, &content, textcount, text);
+
     quit = 1;
 
 }

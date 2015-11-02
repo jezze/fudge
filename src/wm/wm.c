@@ -261,9 +261,12 @@ static void unmapclient(unsigned int source, struct view *view)
     if (!view->clientfocus)
         return;
 
+    writewindow(source, 0, &viewfocus->clientfocus->window);
+    send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
+
     list_move(&clients, &view->clients, &view->clientfocus->item);
 
-    view->clientfocus = focusclient(source, view->clientfocus, (view->clients.tail) ? view->clients.tail->data : 0);
+    view->clientfocus = focusclient(source, 0, (view->clients.tail) ? view->clients.tail->data : 0);
 
 }
 
@@ -388,7 +391,6 @@ static void onkeypress(union event *event)
         if (viewfocus->clientfocus)
         {
 
-            send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
             unmapclient(event->header.destination, viewfocus);
             arrangeclients(event->header.destination, viewfocus);
 
