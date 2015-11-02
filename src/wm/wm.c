@@ -284,6 +284,7 @@ static void activateview(unsigned int source, struct view *view)
         struct client *client = current->data;
 
         writewindow(source, 1, &client->window);
+        send_wmshow(CALL_L2, client->source);
 
     }
 
@@ -306,6 +307,7 @@ static void deactivateview(unsigned int source, struct view *view)
         struct client *client = current->data;
 
         writewindow(source, 0, &client->window);
+        send_wmhide(CALL_L2, client->source);
 
     }
 
@@ -595,6 +597,16 @@ static void onwmresize(union event *event)
 
 }
 
+static void onwmshow(union event *event)
+{
+
+}
+
+static void onwmhide(union event *event)
+{
+
+}
+
 static void setup(void)
 {
 
@@ -645,6 +657,8 @@ void main(void)
     handlers[EVENT_WMMAP] = onwmmap;
     handlers[EVENT_WMUNMAP] = onwmunmap;
     handlers[EVENT_WMRESIZE] = onwmresize;
+    handlers[EVENT_WMSHOW] = onwmshow;
+    handlers[EVENT_WMHIDE] = onwmhide;
 
     call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");

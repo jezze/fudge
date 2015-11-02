@@ -178,6 +178,13 @@ static void onkeyrelease(union event *event)
 
 }
 
+static void onwmunmap(union event *event)
+{
+
+    quit = 1;
+
+}
+
 static void onwmresize(union event *event)
 {
 
@@ -187,10 +194,17 @@ static void onwmresize(union event *event)
 
 }
 
-static void onwmunmap(union event *event)
+static void onwmshow(union event *event)
 {
 
-    quit = 1;
+    writetext(event->header.destination, 1, &content, textcount, text);
+
+}
+
+static void onwmhide(union event *event)
+{
+
+    writetext(event->header.destination, 0, &content, textcount, text);
 
 }
 
@@ -204,6 +218,8 @@ void main(void)
     handlers[EVENT_KEYRELEASE] = onkeyrelease;
     handlers[EVENT_WMUNMAP] = onwmunmap;
     handlers[EVENT_WMRESIZE] = onwmresize;
+    handlers[EVENT_WMSHOW] = onwmshow;
+    handlers[EVENT_WMHIDE] = onwmhide;
 
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
     call_open(CALL_PO);

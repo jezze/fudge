@@ -82,3 +82,23 @@ void send_wmresize(unsigned int descriptor, unsigned int destination, unsigned i
 
 }
 
+void send_wmshow(unsigned int descriptor, unsigned int destination)
+{
+
+    struct event_wmshow wmshow;
+
+    setheader(&wmshow.header, destination, EVENT_WMSHOW, sizeof (struct event_wmshow) - sizeof (struct event_header));
+    send(descriptor, sizeof (struct event_wmshow), &wmshow);
+
+}
+
+void send_wmhide(unsigned int descriptor, unsigned int destination)
+{
+
+    struct event_wmhide wmhide;
+
+    setheader(&wmhide.header, destination, EVENT_WMHIDE, sizeof (struct event_wmhide) - sizeof (struct event_header));
+    send(descriptor, sizeof (struct event_wmhide), &wmhide);
+
+}
+

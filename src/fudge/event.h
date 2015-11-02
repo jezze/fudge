@@ -7,6 +7,8 @@
 #define EVENT_WMMAP                     0x06
 #define EVENT_WMUNMAP                   0x07
 #define EVENT_WMRESIZE                  0x08
+#define EVENT_WMSHOW                    0x09
+#define EVENT_WMHIDE                    0x0A
 
 struct event_header
 {
@@ -84,6 +86,20 @@ struct event_wmresize
 
 };
 
+struct event_wmshow
+{
+
+    struct event_header header;
+
+};
+
+struct event_wmhide
+{
+
+    struct event_header header;
+
+};
+
 union event
 {
 
@@ -97,5 +113,7 @@ union event
     struct event_wmmap wmmap;
     struct event_wmunmap wmunmap;
     struct event_wmresize wmresize;
+    struct event_wmshow wmshow;
+    struct event_wmhide wmhide;
 
 };
