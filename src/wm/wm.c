@@ -30,6 +30,7 @@ static struct view
 
 } view[VIEWS];
 
+static struct element_fill background;
 static struct element_mouse mouse;
 static struct list clients;
 static struct ctrl_videosettings oldsettings;
@@ -52,6 +53,15 @@ static void writeelement(unsigned int id, unsigned int type, unsigned int source
     element_init(&element, id, type, source, z, count);
 
     datacount += memory_write(databuffer, FUDGE_BSIZE, &element, sizeof (struct element), datacount);
+
+}
+
+static void writefill(unsigned int source, unsigned int z, struct element_fill *fill)
+{
+
+    writeelement((unsigned int)fill, ELEMENT_TYPE_FILL, source, z, sizeof (struct element_fill));
+
+    datacount += memory_write(databuffer, FUDGE_BSIZE, fill, sizeof (struct element_fill), datacount);
 
 }
 
@@ -562,6 +572,8 @@ static void onwmresize(union event *event)
     box_setsize(&screen, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
     box_setsize(&menu, screen.x, screen.y, screen.w, 32);
     box_setsize(&body, screen.x, screen.y + 32, screen.w, screen.h - 32);
+    box_setsize(&background.size, screen.x, screen.y, screen.w, screen.h);
+    writefill(event->header.destination, 1, &background);
 
     for (i = 0; i < VIEWS; i++)
     {
@@ -588,6 +600,9 @@ static void setup(void)
 
     unsigned int i;
 
+    element_initfill(&background, 2);
+    element_initmouse(&mouse);
+
     for (i = 0; i < CLIENTS; i++)
     {
 
@@ -612,8 +627,6 @@ static void setup(void)
     viewfocus = &view[0];
     viewfocus->panel.active = 1;
     viewfocus->number.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
-
-    element_initmouse(&mouse);
 
 }
 

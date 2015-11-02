@@ -15,6 +15,15 @@ void element_init(struct element *element, unsigned int id, unsigned int type, u
 
 }
 
+void element_initfill(struct element_fill *fill, unsigned int color)
+{
+
+    box_setsize(&fill->size, 0, 0, 0, 0);
+
+    fill->color = color;
+
+}
+
 void element_initmouse(struct element_mouse *mouse)
 {
 

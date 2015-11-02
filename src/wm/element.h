@@ -1,7 +1,8 @@
-#define ELEMENT_TYPE_WINDOW             1
-#define ELEMENT_TYPE_TEXT               2
-#define ELEMENT_TYPE_PANEL              3
-#define ELEMENT_TYPE_MOUSE              4
+#define ELEMENT_TYPE_FILL               1
+#define ELEMENT_TYPE_WINDOW             2
+#define ELEMENT_TYPE_TEXT               3
+#define ELEMENT_TYPE_PANEL              4
+#define ELEMENT_TYPE_MOUSE              5
 #define ELEMENT_TEXTTYPE_NORMAL         0x00
 #define ELEMENT_TEXTTYPE_HIGHLIGHT      0x01
 
@@ -14,6 +15,14 @@ struct element
     unsigned int z;
     unsigned int damaged;
     unsigned int count;
+
+};
+
+struct element_fill
+{
+
+    struct box size;
+    unsigned int color;
 
 };
 
@@ -50,6 +59,7 @@ struct element_window
 };
 
 void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count);
+void element_initfill(struct element_fill *fill, unsigned int color);
 void element_initmouse(struct element_mouse *mouse);
 void element_initpanel(struct element_panel *panel);
 void element_inittext(struct element_text *text, unsigned int type);

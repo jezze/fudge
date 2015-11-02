@@ -86,6 +86,28 @@ static void printbox(struct box *box)
 
 }
 
+static void printfill(struct element *element, void *data)
+{
+
+    struct element_fill *fill = data;
+
+    printblockstart();
+    printvalue("id", element->id);
+    printseperator();
+    printstring("type", "panel");
+    printseperator();
+    printvalue("source", element->source);
+    printseperator();
+    printvalue("count", element->count);
+    printseperator();
+    printname("size");
+    printbox(&fill->size);
+    printseperator();
+    printvalue("color", fill->color);
+    printblockend();
+
+}
+
 static void printmouse(struct element *element, void *data)
 {
 
@@ -196,6 +218,7 @@ void main(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
+    renderers[ELEMENT_TYPE_FILL] = printfill;
     renderers[ELEMENT_TYPE_MOUSE] = printmouse;
     renderers[ELEMENT_TYPE_PANEL] = printpanel;
     renderers[ELEMENT_TYPE_TEXT] = printtext;

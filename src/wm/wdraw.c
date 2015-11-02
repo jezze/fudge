@@ -77,7 +77,7 @@ static unsigned int colormap32[] = {
     0xFFFFFFFF
 };
 
-static void fill8(unsigned int color, unsigned int offset, unsigned int count)
+static void paint8(unsigned int color, unsigned int offset, unsigned int count)
 {
 
     unsigned char *buffer = drawdata;
@@ -88,7 +88,7 @@ static void fill8(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static void fill32(unsigned int color, unsigned int offset, unsigned int count)
+static void paint32(unsigned int color, unsigned int offset, unsigned int count)
 {
 
     unsigned int *buffer = (unsigned int *)drawdata;
@@ -99,23 +99,41 @@ static void fill32(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static void fill(unsigned int color, unsigned int offset, unsigned int count)
+static void paint(unsigned int color, unsigned int offset, unsigned int count)
 {
 
     switch (settings.bpp)
     {
 
     case 8:
-        fill8(color, offset, count);
+        paint8(color, offset, count);
 
         break;
 
     case 32:
-        fill32(colormap32[color], offset, count);
+        paint32(colormap32[color], offset, count);
 
         break;
 
     }
+
+}
+
+static unsigned int testfill(struct element *element, void *data, unsigned int line)
+{
+
+    struct element_fill *fill = data;
+
+    return line > fill->size.y && line < fill->size.y + fill->size.h;
+
+}
+
+static void renderfill(struct element *element, void *data, unsigned int line)
+{
+
+    struct element_fill *fill = data;
+
+    paint(fill->color, fill->size.x, fill->size.w);
 
 }
 
@@ -139,7 +157,7 @@ static void rendermouse(struct element *element, void *data, unsigned int line)
     {
 
         if (mousedata[offset + i] != 0xFF)
-            fill(mousedata[offset + i], mouse->x + i, 1);
+            paint(mousedata[offset + i], mouse->x + i, 1);
 
     }
 
@@ -169,23 +187,23 @@ static void renderpanel(struct element *element, void *data, unsigned int line)
     {
 
     case 0:
-        fill(COLOR_DARK, panel->size.x, panel->size.w);
+        paint(COLOR_DARK, panel->size.x, panel->size.w);
 
         break;
 
     case 1:
-        fill(COLOR_DARK, panel->size.x + 0, 1);
-        fill(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
-        fill(framecolor, panel->size.x + 1, panel->size.w - 2);
+        paint(COLOR_DARK, panel->size.x + 0, 1);
+        paint(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
+        paint(framecolor, panel->size.x + 1, panel->size.w - 2);
 
         break;
 
     default:
-        fill(COLOR_DARK, panel->size.x + 0, 1);
-        fill(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
-        fill(framecolor, panel->size.x + 1, 1);
-        fill(framecolor, panel->size.x + panel->size.w - 2, 1);
-        fill(backgroundcolor, panel->size.x + 2, panel->size.w - 4);
+        paint(COLOR_DARK, panel->size.x + 0, 1);
+        paint(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
+        paint(framecolor, panel->size.x + 1, 1);
+        paint(framecolor, panel->size.x + panel->size.w - 2, 1);
+        paint(backgroundcolor, panel->size.x + 2, panel->size.w - 4);
 
         break;
 
@@ -258,7 +276,7 @@ static void rendertext(struct element *element, void *data, unsigned int line)
             {
 
                 if (c & b)
-                    fill(color, size.x + x * 8 + k, 1);
+                    paint(color, size.x + x * 8 + k, 1);
 
                 k++;
                 
@@ -295,33 +313,33 @@ static void renderwindow(struct element *element, void *data, unsigned int line)
     {
 
     case 0:
-        fill(COLOR_DARK, window->size.x, window->size.w);
+        paint(COLOR_DARK, window->size.x, window->size.w);
 
         break;
 
     case 1:
-        fill(COLOR_DARK, window->size.x + 0, 1);
-        fill(COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        fill(framecolor, window->size.x + 1, window->size.w - 2);
+        paint(COLOR_DARK, window->size.x + 0, 1);
+        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        paint(framecolor, window->size.x + 1, window->size.w - 2);
 
         break;
 
     case 2:
-        fill(COLOR_DARK, window->size.x + 0, 1);
-        fill(COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        fill(framecolor, window->size.x + 1, 1);
-        fill(framecolor, window->size.x + window->size.w - 2, 1);
-        fill(COLOR_DARK, window->size.x + 2, window->size.w - 4);
+        paint(COLOR_DARK, window->size.x + 0, 1);
+        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        paint(framecolor, window->size.x + 1, 1);
+        paint(framecolor, window->size.x + window->size.w - 2, 1);
+        paint(COLOR_DARK, window->size.x + 2, window->size.w - 4);
 
         break;
 
     default:
-        fill(COLOR_DARK, window->size.x + 0, 1);
-        fill(COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        fill(framecolor, window->size.x + 1, 1);
-        fill(framecolor, window->size.x + window->size.w - 2, 1);
-        fill(COLOR_DARK, window->size.x + 2, 1);
-        fill(COLOR_DARK, window->size.x + window->size.w - 3, 1);
+        paint(COLOR_DARK, window->size.x + 0, 1);
+        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        paint(framecolor, window->size.x + 1, 1);
+        paint(framecolor, window->size.x + window->size.w - 2, 1);
+        paint(COLOR_DARK, window->size.x + 2, 1);
+        paint(COLOR_DARK, window->size.x + window->size.w - 3, 1);
 
         break;
 
@@ -429,8 +447,6 @@ static void render(unsigned int width, unsigned int height)
         if (!testline(line))
             continue;
 
-        fill(COLOR_BODY, 0, width);
-
         for (z = 1; z < 4; z++)
         {
 
@@ -466,10 +482,12 @@ void main(void)
     call_read(CALL_L0, 0x8000, fontdata);
     call_close(CALL_L0);
 
+    tests[ELEMENT_TYPE_FILL] = testfill;
     tests[ELEMENT_TYPE_MOUSE] = testmouse;
     tests[ELEMENT_TYPE_PANEL] = testpanel;
     tests[ELEMENT_TYPE_TEXT] = testtext;
     tests[ELEMENT_TYPE_WINDOW] = testwindow;
+    renderers[ELEMENT_TYPE_FILL] = renderfill;
     renderers[ELEMENT_TYPE_MOUSE] = rendermouse;
     renderers[ELEMENT_TYPE_PANEL] = renderpanel;
     renderers[ELEMENT_TYPE_TEXT] = rendertext;
