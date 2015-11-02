@@ -10,6 +10,7 @@ void element_init(struct element *element, unsigned int id, unsigned int type, u
     element->type = type;
     element->source = source;
     element->z = z;
+    element->damaged = 0;
     element->count = count;
 
 }

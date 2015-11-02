@@ -3,7 +3,7 @@
 #include "box.h"
 #include "element.h"
 
-static void (*renderers[16])(struct element *element, void *data);
+static void (*renderers[EVENTS])(struct element *element, void *data);
 
 static void printname(char *name)
 {

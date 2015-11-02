@@ -18,7 +18,8 @@
 #define COLOR_TEXTLIGHT                 0x0A
 
 static struct ctrl_videosettings settings;
-static void (*renderers[16])(struct element *element, void *data, unsigned int line);
+static unsigned int (*tests[EVENTS])(struct element *element, void *data, unsigned int line);
+static void (*renderers[EVENTS])(struct element *element, void *data, unsigned int line);
 static unsigned char fontdata[0x8000];
 static unsigned char drawdata[0x2000];
 static unsigned char data[0x8000];
@@ -118,15 +119,21 @@ static void fill(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
+static unsigned int testmouse(struct element *element, void *data, unsigned int line)
+{
+
+    struct element_mouse *mouse = data;
+
+    return line >= mouse->y && line < mouse->y + 24;
+
+}
+
 static void rendermouse(struct element *element, void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
     unsigned int offset = (line - mouse->y) * 24;
     unsigned int i;
-
-    if (line < mouse->y || line >= mouse->y + 24)
-        return;
 
     for (i = 0; i < 24; i++)
     {
@@ -138,6 +145,15 @@ static void rendermouse(struct element *element, void *data, unsigned int line)
 
 }
 
+static unsigned int testpanel(struct element *element, void *data, unsigned int line)
+{
+
+    struct element_panel *panel = data;
+
+    return line > panel->size.y && line < panel->size.y + panel->size.h;
+
+}
+
 static void renderpanel(struct element *element, void *data, unsigned int line)
 {
 
@@ -145,9 +161,6 @@ static void renderpanel(struct element *element, void *data, unsigned int line)
     unsigned int offset = (line - panel->size.y);
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
-
-    if (line < panel->size.y || line >= panel->size.y + panel->size.h)
-        return;
 
     if (offset > panel->size.h / 2)
         offset = panel->size.h - offset - 1;
@@ -180,6 +193,15 @@ static void renderpanel(struct element *element, void *data, unsigned int line)
 
 }
 
+static unsigned int testtext(struct element *element, void *data, unsigned int line)
+{
+
+    struct element_text *text = data;
+
+    return line > text->size.y && line < text->size.y + text->size.h;
+
+}
+
 static void rendertext(struct element *element, void *data, unsigned int line)
 {
 
@@ -190,9 +212,6 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     struct box size;
     unsigned int color;
     unsigned int i;
-
-    if (line < text->size.y || line >= text->size.y + text->size.h)
-        return;
 
     size.x = text->size.x;
     size.y = text->size.y;
@@ -253,15 +272,21 @@ static void rendertext(struct element *element, void *data, unsigned int line)
 
 }
 
+static unsigned int testwindow(struct element *element, void *data, unsigned int line)
+{
+
+    struct element_window *window = data;
+
+    return line > window->size.y && line < window->size.y + window->size.h;
+
+}
+
 static void renderwindow(struct element *element, void *data, unsigned int line)
 {
 
     struct element_window *window = data;
     unsigned int offset = (line - window->size.y);
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
-
-    if (line < window->size.y || line >= window->size.y + window->size.h)
-        return;
 
     if (offset > window->size.h / 2)
         offset = window->size.h - offset - 1;
@@ -330,8 +355,24 @@ static void removeelement(struct element *element)
 
 }
 
+static void removeelements()
+{
 
-static void removeelements(unsigned int source, unsigned int id)
+    struct element *current = 0;
+
+    while ((current = nextelement(datacount, data, current)))
+    {
+
+        if (current->z)
+            continue;
+
+        removeelement(current);
+
+    }
+
+}
+
+static void destroyelements(unsigned int source, unsigned int id)
 {
 
     struct element *current = 0;
@@ -342,7 +383,8 @@ static void removeelements(unsigned int source, unsigned int id)
         if (current->source != source || current->id != id)
             continue;
 
-        removeelement(current);
+        current->z = 0;
+        current->damaged = 1;
 
     }
 
@@ -351,6 +393,8 @@ static void removeelements(unsigned int source, unsigned int id)
 static void addelement(struct element *element)
 {
 
+    element->damaged = 1;
+
     datacount += memory_write(data, 0x8000, element, sizeof (struct element) + element->count, datacount);
 
 }
@@ -358,6 +402,7 @@ static void addelement(struct element *element)
 static void render(struct box *damage)
 {
 
+    struct element *element;
     unsigned int line;
 
     if (damage->x + damage->w > settings.w)
@@ -369,14 +414,34 @@ static void render(struct box *damage)
     for (line = damage->y; line < damage->y + damage->h; line++)
     {
 
+        unsigned int drawline = 0;
         unsigned int z;
+
+        element = 0;
+
+        while ((element = nextelement(datacount, data, element)))
+        {
+
+            if (element->damaged && tests[element->type](element, element + 1, line))
+            {
+
+                drawline = 1;
+
+                break;
+
+            }
+
+        }
+
+        if (!drawline)
+            continue;
 
         fill(COLOR_BODY, damage->x, damage->w);
 
         for (z = 1; z < 4; z++)
         {
 
-            struct element *element = 0;
+            element = 0;
 
             while ((element = nextelement(datacount, data, element)))
             {
@@ -384,7 +449,8 @@ static void render(struct box *damage)
                 if (element->z != z)
                     continue;
 
-                renderers[element->type](element, element + 1, line);
+                if (tests[element->type](element, element + 1, line))
+                    renderers[element->type](element, element + 1, line);
 
             }
 
@@ -393,6 +459,9 @@ static void render(struct box *damage)
         video_draw(CALL_L0, settings.w * line + damage->x, damage->w, drawdata + damage->x * settings.bpp / 8);
 
     }
+
+    while ((element = nextelement(datacount, data, element)))
+        element->damaged = 0;
 
 }
 
@@ -408,6 +477,10 @@ void main(void)
     call_read(CALL_L0, 0x8000, fontdata);
     call_close(CALL_L0);
 
+    tests[ELEMENT_TYPE_MOUSE] = testmouse;
+    tests[ELEMENT_TYPE_PANEL] = testpanel;
+    tests[ELEMENT_TYPE_TEXT] = testtext;
+    tests[ELEMENT_TYPE_WINDOW] = testwindow;
     renderers[ELEMENT_TYPE_MOUSE] = rendermouse;
     renderers[ELEMENT_TYPE_PANEL] = renderpanel;
     renderers[ELEMENT_TYPE_TEXT] = rendertext;
@@ -428,14 +501,13 @@ void main(void)
         while ((element = nextelement(count, buffer, element)))
         {
 
-            removeelements(element->source, element->id);
-
-            if (element->z)
-                addelement(element);
+            destroyelements(element->source, element->id);
+            addelement(element);
 
         }
 
         render(&screen);
+        removeelements();
 
     }
 

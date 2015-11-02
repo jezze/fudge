@@ -12,6 +12,7 @@ struct element
     unsigned int type;
     unsigned int source;
     unsigned int z;
+    unsigned int damaged;
     unsigned int count;
 
 };
