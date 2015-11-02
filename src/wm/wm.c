@@ -92,7 +92,7 @@ static void writewindow(unsigned int source, unsigned int z, struct element_wind
 
 }
 
-static void flush()
+static void flush(void)
 {
 
     if (datacount)

@@ -115,7 +115,7 @@ static void writetext(unsigned int source, unsigned int z, struct element_text *
 
 }
 
-static void flush()
+static void flush(void)
 {
 
     if (datacount)

@@ -355,7 +355,7 @@ static void removeelement(struct element *element)
 
 }
 
-static void cleanelements()
+static void cleanelements(void)
 {
 
     struct element *current = 0;
