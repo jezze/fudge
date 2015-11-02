@@ -263,7 +263,6 @@ static void unmapclient(unsigned int source, struct view *view)
 
     writewindow(source, 0, &viewfocus->clientfocus->window);
     send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
-
     list_move(&clients, &view->clients, &view->clientfocus->item);
 
     view->clientfocus = focusclient(source, 0, (view->clients.tail) ? view->clients.tail->data : 0);

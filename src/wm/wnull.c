@@ -216,6 +216,8 @@ void main(void)
     union event event;
     unsigned int count;
 
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
+
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;
     handlers[EVENT_WMUNMAP] = onwmunmap;
@@ -223,7 +225,6 @@ void main(void)
     handlers[EVENT_WMSHOW] = onwmshow;
     handlers[EVENT_WMHIDE] = onwmhide;
 
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
     call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
