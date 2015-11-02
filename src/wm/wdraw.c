@@ -124,7 +124,7 @@ static unsigned int testfill(struct element *element, void *data, unsigned int l
 
     struct element_fill *fill = data;
 
-    return line > fill->size.y && line < fill->size.y + fill->size.h;
+    return line >= fill->size.y && line < fill->size.y + fill->size.h;
 
 }
 
@@ -168,7 +168,7 @@ static unsigned int testpanel(struct element *element, void *data, unsigned int 
 
     struct element_panel *panel = data;
 
-    return line > panel->size.y && line < panel->size.y + panel->size.h;
+    return line >= panel->size.y && line < panel->size.y + panel->size.h;
 
 }
 
@@ -216,7 +216,7 @@ static unsigned int testtext(struct element *element, void *data, unsigned int l
 
     struct element_text *text = data;
 
-    return line > text->size.y && line < text->size.y + text->size.h;
+    return line >= text->size.y && line < text->size.y + text->size.h;
 
 }
 
