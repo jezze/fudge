@@ -355,7 +355,7 @@ static void removeelement(struct element *element)
 
 }
 
-static void removeelements()
+static void cleanelements()
 {
 
     struct element *current = 0;
@@ -363,10 +363,10 @@ static void removeelements()
     while ((current = nextelement(datacount, data, current)))
     {
 
-        if (current->z)
-            continue;
+        current->damaged = 0;
 
-        removeelement(current);
+        if (!current->z)
+            removeelement(current);
 
     }
 
@@ -399,35 +399,34 @@ static void addelement(struct element *element)
 
 }
 
+static unsigned int testline(unsigned int line)
+{
+
+    struct element *element = 0;
+
+    while ((element = nextelement(datacount, data, element)))
+    {
+
+        if (element->damaged && tests[element->type](element, element + 1, line))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
 static void render(unsigned int width, unsigned int height)
 {
 
-    struct element *element;
     unsigned int line;
 
     for (line = 0; line < height; line++)
     {
 
-        unsigned int drawline = 0;
         unsigned int z;
 
-        element = 0;
-
-        while ((element = nextelement(datacount, data, element)))
-        {
-
-            if (element->damaged && tests[element->type](element, element + 1, line))
-            {
-
-                drawline = 1;
-
-                break;
-
-            }
-
-        }
-
-        if (!drawline)
+        if (!testline(line))
             continue;
 
         fill(COLOR_BODY, 0, width);
@@ -435,7 +434,7 @@ static void render(unsigned int width, unsigned int height)
         for (z = 1; z < 4; z++)
         {
 
-            element = 0;
+            struct element *element = 0;
 
             while ((element = nextelement(datacount, data, element)))
             {
@@ -453,9 +452,6 @@ static void render(unsigned int width, unsigned int height)
         video_draw(CALL_L0, settings.w * line, width, drawdata + settings.bpp / 8);
 
     }
-
-    while ((element = nextelement(datacount, data, element)))
-        element->damaged = 0;
 
 }
 
@@ -498,7 +494,7 @@ void main(void)
         }
 
         render(settings.w, settings.h);
-        removeelements();
+        cleanelements();
 
     }
 
