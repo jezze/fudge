@@ -268,7 +268,7 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         size.w = metricsdata.width;
         size.h = metricsdata.ascent + metricsdata.descent;
 
-        if (line >= size.h)
+        if (line % 32 >= size.h)
             continue;
 
         for (x = 0; x < padding; x++)
