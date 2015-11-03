@@ -298,7 +298,7 @@ static unsigned int testwindow(struct element *element, void *data, unsigned int
 
     struct element_window *window = data;
 
-    return line > window->size.y && line < window->size.y + window->size.h;
+    return line >= window->size.y && line < window->size.y + window->size.h;
 
 }
 
