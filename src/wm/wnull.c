@@ -148,6 +148,18 @@ static void onkeypress(union event *event)
 
         break;
 
+    case 0x0E:
+        if (textcount)
+        {
+
+            textcount -= 1;
+
+            writetext(event->header.destination, 1, &content, textcount, text);
+
+        }
+
+        break;
+
     default:
         keycode = &map[event->keypress.scancode].keycode[modifier];
         textcount += memory_write(text, FUDGE_BSIZE, keycode->value, keycode->length, textcount);
