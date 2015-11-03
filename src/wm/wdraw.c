@@ -150,14 +150,15 @@ static void rendermouse(struct element *element, void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
-    unsigned int offset = (line - mouse->y) * 24;
     unsigned int i;
+
+    line = (line - mouse->y);
 
     for (i = 0; i < 24; i++)
     {
 
-        if (mousedata[offset + i] != 0xFF)
-            paint(mousedata[offset + i], mouse->x + i, 1);
+        if (mousedata[line * 24 + i] != 0xFF)
+            paint(mousedata[line * 24 + i], mouse->x + i, 1);
 
     }
 
@@ -176,14 +177,15 @@ static void renderpanel(struct element *element, void *data, unsigned int line)
 {
 
     struct element_panel *panel = data;
-    unsigned int offset = (line - panel->size.y);
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
 
-    if (offset > panel->size.h / 2)
-        offset = panel->size.h - offset - 1;
+    line = (line - panel->size.y);
 
-    switch (offset)
+    if (line > panel->size.h / 2)
+        line = panel->size.h - line - 1;
+
+    switch (line)
     {
 
     case 0:
@@ -224,15 +226,18 @@ static void rendertext(struct element *element, void *data, unsigned int line)
 {
 
     struct element_text *text = data;
-    unsigned int padding = pcf_getpadding(fontdata);
     unsigned int count = element->count - sizeof (struct element_text);
     unsigned char *string = (unsigned char *)(text + 1);
+    unsigned int padding = pcf_getpadding(fontdata);
     struct box size;
+    unsigned int row;
     unsigned int color;
     unsigned int i;
 
+    line = (line - text->size.y);
+    row = line / 18;
     size.x = text->size.x;
-    size.y = text->size.y;
+    size.y = text->size.y + row * 18;
 
     switch (text->type)
     {
@@ -254,21 +259,19 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     {
 
         unsigned short index = pcf_getindex(fontdata, string[i]);
-        unsigned int offset = (line - size.y) * padding;
-        unsigned char *data;
+        unsigned char *data = pcf_getbitmapdata(fontdata) + pcf_getbitmapoffset(fontdata, index);
         struct pcf_metricsdata metricsdata;
         unsigned int x;
 
         pcf_readmetricsdata(fontdata, index, &metricsdata);
 
-        data = pcf_getbitmapdata(fontdata) + pcf_getbitmapoffset(fontdata, index);
         size.w = metricsdata.width;
         size.h = metricsdata.ascent + metricsdata.descent;
 
         for (x = 0; x < padding; x++)
         {
 
-            unsigned char c = data[offset + x];
+            unsigned char c = data[(line % 18) * padding + x];
             unsigned int k = 0;
             unsigned char b;
 
@@ -303,13 +306,14 @@ static void renderwindow(struct element *element, void *data, unsigned int line)
 {
 
     struct element_window *window = data;
-    unsigned int offset = (line - window->size.y);
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
-    if (offset > window->size.h / 2)
-        offset = window->size.h - offset - 1;
+    line = (line - window->size.y);
 
-    switch (offset)
+    if (line > window->size.h / 2)
+        line = window->size.h - line - 1;
+
+    switch (line)
     {
 
     case 0:

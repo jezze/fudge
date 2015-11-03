@@ -137,24 +137,34 @@ static void onkeypress(union event *event)
     switch (event->keypress.scancode)
     {
 
+    case 0x1C:
+        keycode = &map[event->keypress.scancode].keycode[modifier];
+        textcount += memory_write(text, 256, keycode->value, keycode->length, textcount);
+        content.rows += 1;
+
+        writetext(event->header.destination, 1, &content, textcount, text);
+
+        break;
+
     case 0x2A:
     case 0x36:
         modifier |= KEYMOD_SHIFT;
 
-        return;
+        break;
 
     case 0x38:
         modifier |= KEYMOD_ALT;
 
-        return;
+        break;
 
+    default:
+        keycode = &map[event->keypress.scancode].keycode[modifier];
+        textcount += memory_write(text, 256, keycode->value, keycode->length, textcount);
+
+        writetext(event->header.destination, 1, &content, textcount, text);
+
+        break;
     }
-
-    keycode = &map[event->keypress.scancode].keycode[modifier];
-    textcount += memory_write(text, 256, keycode->value, keycode->length, textcount);
-    content.rows = 1;
-
-    writetext(event->header.destination, 1, &content, textcount, text);
 
 }
 
@@ -217,7 +227,7 @@ void main(void)
     union event event;
     unsigned int count;
 
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, 0);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, 1);
 
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;
