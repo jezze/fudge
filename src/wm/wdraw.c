@@ -218,7 +218,7 @@ static unsigned int testtext(struct element *element, void *data, unsigned int l
 
     struct element_text *text = data;
 
-    return line >= text->size.y && line < text->size.y + text->size.h && line < text->size.y + text->rows * 18;
+    return line >= text->size.y && line < text->size.y + text->size.h && line < text->size.y + text->rows * 32;
 
 }
 
@@ -235,9 +235,9 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     unsigned int i;
 
     line = (line - text->size.y);
-    row = line / 18;
+    row = line / 32;
     size.x = text->size.x;
-    size.y = text->size.y + row * 18;
+    size.y = text->size.y + row * 32;
 
     switch (text->type)
     {
@@ -268,10 +268,13 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         size.w = metricsdata.width;
         size.h = metricsdata.ascent + metricsdata.descent;
 
+        if (line >= size.h)
+            continue;
+
         for (x = 0; x < padding; x++)
         {
 
-            unsigned char c = data[(line % 18) * padding + x];
+            unsigned char c = data[(line % 32) * padding + x];
             unsigned int k = 0;
             unsigned char b;
 
