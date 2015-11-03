@@ -193,7 +193,7 @@ static void onwmresize(union event *event)
 {
 
     box_setsize(&screen, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
-    box_setsize(&content.size, screen.x + 8, screen.y + 8, screen.w - 16, screen.h - 16);
+    box_setsize(&content.size, screen.x + 12, screen.y + 12, screen.w - 24, screen.h - 24);
     writetext(event->header.destination, 1, &content, textcount, text);
 
 }

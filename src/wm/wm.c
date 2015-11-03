@@ -585,7 +585,7 @@ static void onwmresize(union event *event)
 
         box_setsize(&view[i].panel.size, menu.x + i * menu.w / VIEWS, menu.y, menu.w / VIEWS, menu.h);
         writepanel(event->header.destination, 1, &view[i].panel);
-        box_setsize(&view[i].number.size, view[i].panel.size.x + menu.h / 4, view[i].panel.size.y + menu.h / 4, view[i].panel.size.w - menu.h / 2, view[i].panel.size.h - menu.h / 2);
+        box_setsize(&view[i].number.size, view[i].panel.size.x + 12, view[i].panel.size.y + 6, view[i].panel.size.w - 24, view[i].panel.size.h - 12);
         writetext(event->header.destination, 1, &view[i].number, 1, view[i].numberstring);
         arrangeclients(event->header.destination, &view[i]);
 

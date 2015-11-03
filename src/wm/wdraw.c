@@ -327,6 +327,12 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         size.w = metricsdata.width;
         size.h = metricsdata.ascent + metricsdata.descent;
 
+        if (size.x + size.w >= text->size.x + text->size.w)
+            return;
+
+        if (size.y + size.h >= text->size.y + text->size.h)
+            return;
+
         if (rowline >= size.h)
             continue;
 
