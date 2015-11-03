@@ -231,11 +231,13 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     unsigned int padding = pcf_getpadding(fontdata);
     struct box size;
     unsigned int row;
+    unsigned int rowline;
     unsigned int color;
     unsigned int i;
 
     line = (line - text->size.y);
     row = line / 32;
+    rowline = line % 32;
     size.x = text->size.x;
     size.y = text->size.y + row * 32;
 
@@ -268,13 +270,13 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         size.w = metricsdata.width;
         size.h = metricsdata.ascent + metricsdata.descent;
 
-        if (line % 32 >= size.h)
+        if (rowline >= size.h)
             continue;
 
         for (x = 0; x < padding; x++)
         {
 
-            unsigned char c = data[(line % 32) * padding + x];
+            unsigned char c = data[rowline * padding + x];
             unsigned int k = 0;
             unsigned char b;
 
