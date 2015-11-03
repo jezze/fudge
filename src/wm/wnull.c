@@ -29,7 +29,7 @@ static unsigned int datacount;
 static struct box screen;
 static unsigned int quit;
 static void (*handlers[EVENTS])(union event *event);
-static unsigned char text[256];
+static unsigned char text[FUDGE_BSIZE];
 static unsigned int textcount;
 static struct keyset map[256] = {
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
@@ -137,15 +137,6 @@ static void onkeypress(union event *event)
     switch (event->keypress.scancode)
     {
 
-    case 0x1C:
-        keycode = &map[event->keypress.scancode].keycode[modifier];
-        textcount += memory_write(text, 256, keycode->value, keycode->length, textcount);
-        content.rows += 1;
-
-        writetext(event->header.destination, 1, &content, textcount, text);
-
-        break;
-
     case 0x2A:
     case 0x36:
         modifier |= KEYMOD_SHIFT;
@@ -159,7 +150,7 @@ static void onkeypress(union event *event)
 
     default:
         keycode = &map[event->keypress.scancode].keycode[modifier];
-        textcount += memory_write(text, 256, keycode->value, keycode->length, textcount);
+        textcount += memory_write(text, FUDGE_BSIZE, keycode->value, keycode->length, textcount);
 
         writetext(event->header.destination, 1, &content, textcount, text);
 
@@ -227,7 +218,7 @@ void main(void)
     union event event;
     unsigned int count;
 
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, 1);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
 
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;

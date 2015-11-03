@@ -218,7 +218,49 @@ static unsigned int testtext(struct element *element, void *data, unsigned int l
 
     struct element_text *text = data;
 
-    return line >= text->size.y && line < text->size.y + text->size.h && line < text->size.y + text->rows * 32;
+    return line >= text->size.y && line < text->size.y + text->size.h;
+
+}
+
+static unsigned int findrowcount(struct element_text *text, unsigned int count, unsigned char *string)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (string[i] == '\n')
+            return i;
+
+    }
+
+    return count;
+
+}
+
+static unsigned int findrowstart(struct element_text *text, unsigned int row, unsigned int count, unsigned char *string)
+{
+
+    unsigned int i;
+
+    if (!row)
+        return 0;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (string[i] == '\n')
+        {
+
+            if (!--row)
+                return i + 1;
+
+        }
+
+    }
+
+    return 0;
 
 }
 
@@ -232,14 +274,29 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     struct box size;
     unsigned int row;
     unsigned int rowline;
+    unsigned int rowstart;
+    unsigned int rowcount;
     unsigned int color;
     unsigned int i;
 
+    if (!count)
+        return;
+
     line = (line - text->size.y);
-    row = line / 32;
-    rowline = line % 32;
+    row = line / 24;
+    rowline = line % 24;
+    rowstart = findrowstart(text, row, count, string);
+
+    if (row && !rowstart)
+        return;
+
+    rowcount = findrowcount(text, count - rowstart, string + rowstart);
+
+    if (!rowcount)
+        return;
+
     size.x = text->size.x;
-    size.y = text->size.y + row * 32;
+    size.y = text->size.y + row * 24;
 
     switch (text->type)
     {
@@ -257,7 +314,7 @@ static void rendertext(struct element *element, void *data, unsigned int line)
 
     }
 
-    for (i = 0; i < count; i++)
+    for (i = rowstart; i < rowstart + rowcount; i++)
     {
 
         unsigned short index = pcf_getindex(fontdata, string[i]);
@@ -396,28 +453,23 @@ static void cleanelements(void)
 
 }
 
-static void destroyelements(unsigned int source, unsigned int id)
+static void addelement(struct element *element)
 {
 
     struct element *current = 0;
 
+    element->damaged = 1;
+
     while ((current = nextelement(datacount, data, current)))
     {
 
-        if (current->source != source || current->id != id)
+        if (current->source != element->source || current->id != element->id)
             continue;
 
         current->z = 0;
         current->damaged = 1;
 
     }
-
-}
-
-static void addelement(struct element *element)
-{
-
-    element->damaged = 1;
 
     datacount += memory_write(data, 0x8000, element, sizeof (struct element) + element->count, datacount);
 
@@ -510,12 +562,7 @@ void main(void)
         struct element *element = 0;
 
         while ((element = nextelement(count, buffer, element)))
-        {
-
-            destroyelements(element->source, element->id);
             addelement(element);
-
-        }
 
         render(settings.w, settings.h);
         cleanelements();
