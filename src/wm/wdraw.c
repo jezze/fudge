@@ -216,7 +216,7 @@ static unsigned int testtext(struct element *element, void *data, unsigned int l
 
     struct element_text *text = data;
 
-    return line >= text->size.y && line < text->size.y + text->size.h;
+    return line >= text->size.y && line < text->size.y + text->size.h && line < text->size.y + text->rows * 18;
 
 }
 

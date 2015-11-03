@@ -36,12 +36,13 @@ void element_initpanel(struct element_panel *panel)
 
 }
 
-void element_inittext(struct element_text *text, unsigned int type)
+void element_inittext(struct element_text *text, unsigned int type, unsigned int rows)
 {
 
     box_setsize(&text->size, 0, 0, 0, 0);
 
     text->type = type;
+    text->rows = rows;
 
 }
 

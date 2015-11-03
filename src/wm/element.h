@@ -47,6 +47,7 @@ struct element_text
 
     struct box size;
     unsigned int type;
+    unsigned int rows;
 
 };
 
@@ -62,5 +63,5 @@ void element_init(struct element *element, unsigned int id, unsigned int type, u
 void element_initfill(struct element_fill *fill, unsigned int color);
 void element_initmouse(struct element_mouse *mouse);
 void element_initpanel(struct element_panel *panel);
-void element_inittext(struct element_text *text, unsigned int type);
+void element_inittext(struct element_text *text, unsigned int type, unsigned int rows);
 void element_initwindow(struct element_window *window);

@@ -152,6 +152,7 @@ static void onkeypress(union event *event)
 
     keycode = &map[event->keypress.scancode].keycode[modifier];
     textcount += memory_write(text, 256, keycode->value, keycode->length, textcount);
+    content.rows = 1;
 
     writetext(event->header.destination, 1, &content, textcount, text);
 
@@ -191,7 +192,7 @@ static void onwmresize(union event *event)
 {
 
     box_setsize(&screen, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
-    box_setsize(&content.size, screen.x + 8, screen.y + 8, screen.w - 16, 18);
+    box_setsize(&content.size, screen.x + 8, screen.y + 8, screen.w - 16, screen.h - 16);
     writetext(event->header.destination, 1, &content, textcount, text);
 
 }
@@ -216,7 +217,7 @@ void main(void)
     union event event;
     unsigned int count;
 
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, 0);
 
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;

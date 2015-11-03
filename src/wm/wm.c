@@ -630,7 +630,7 @@ static void setup(void)
 
         list_inititem(&view[i].item, &view[i]);
         element_initpanel(&view[i].panel);
-        element_inittext(&view[i].number, ELEMENT_TEXTTYPE_NORMAL);
+        element_inittext(&view[i].number, ELEMENT_TEXTTYPE_NORMAL, 1);
 
         view[i].numberstring = "12345678" + i;
         view[i].clientfocus = 0;
