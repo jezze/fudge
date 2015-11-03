@@ -200,10 +200,7 @@ static void printwindow(struct element *element, void *data)
 static struct element *nextelement(unsigned int count, void *data, struct element *element)
 {
 
-    if (element == 0)
-        element = data;
-    else
-        element = (struct element *)((unsigned char *)(element + 1) + element->count);
+    element = (element) ? (struct element *)((unsigned char *)(element + 1) + element->count) : data;
 
     if ((unsigned int)element >= (unsigned int)data + count)
         return 0;
