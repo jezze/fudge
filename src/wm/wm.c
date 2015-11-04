@@ -375,9 +375,14 @@ static void onkeypress(union event *event)
         break;
 
     case 0x23:
-        viewfocus->center -= (body.w / 32);
+        if (viewfocus->center > 1 * (screen.w / 8))
+        {
 
-        arrange(event->header.destination, viewfocus);
+            viewfocus->center -= (body.w / 32);
+
+            arrange(event->header.destination, viewfocus);
+
+        }
 
         break;
 
@@ -394,9 +399,14 @@ static void onkeypress(union event *event)
         break;
 
     case 0x26:
-        viewfocus->center += (body.w / 32);
+        if (viewfocus->center < 7 * (screen.w / 8))
+        {
 
-        arrange(event->header.destination, viewfocus);
+            viewfocus->center += (body.w / 32);
+
+            arrange(event->header.destination, viewfocus);
+
+        }
 
         break;
 
