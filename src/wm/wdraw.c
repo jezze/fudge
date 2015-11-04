@@ -50,6 +50,7 @@ static unsigned char mousedata[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
+static unsigned char textcolor[2];
 static unsigned char colormap8[] = {
     0x00, 0x00, 0x00,
     0xFF, 0xFF, 0xFF,
@@ -264,19 +265,45 @@ static unsigned int findrowstart(struct element_text *text, unsigned int row, un
 
 }
 
+static void rendertextglyph(unsigned char *data, unsigned int offset, unsigned int count, unsigned int color)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned char c = data[i];
+        unsigned int k = 0;
+        unsigned char b;
+
+        for (b = 0x80; b; b >>= 1)
+        {
+
+            if (c & b)
+                paint(color, offset + i * 8 + k, 1);
+
+            k++;
+                
+        }
+
+    }
+
+}
+
 static void rendertext(struct element *element, void *data, unsigned int line)
 {
 
     struct element_text *text = data;
     unsigned int count = element->count - sizeof (struct element_text);
     unsigned char *string = (unsigned char *)(text + 1);
-    unsigned int padding = pcf_getpadding(fontdata);
+    unsigned char *bitmapdata = pcf_getbitmapdata(fontdata);
+    unsigned int fontpadding = pcf_getpadding(fontdata);
     struct box size;
     unsigned int row;
     unsigned int rowline;
     unsigned int rowstart;
     unsigned int rowcount;
-    unsigned int color;
     unsigned int i;
 
     if (!count)
@@ -298,29 +325,12 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     size.x = text->size.x;
     size.y = text->size.y + row * 24;
 
-    switch (text->type)
-    {
-
-    case ELEMENT_TEXTTYPE_HIGHLIGHT:
-        color = COLOR_TEXTLIGHT;
-
-        break;
-
-    case ELEMENT_TEXTTYPE_NORMAL:
-    default:
-        color = COLOR_TEXTNORMAL;
-
-        break;
-
-    }
-
     for (i = rowstart; i < rowstart + rowcount; i++)
     {
 
         unsigned short index = pcf_getindex(fontdata, string[i]);
-        unsigned char *data = pcf_getbitmapdata(fontdata) + pcf_getbitmapoffset(fontdata, index);
+        unsigned char *data = bitmapdata + pcf_getbitmapoffset(fontdata, index);
         struct pcf_metricsdata metricsdata;
-        unsigned int x;
 
         pcf_readmetricsdata(fontdata, index, &metricsdata);
 
@@ -333,27 +343,8 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         if (size.y + size.h >= text->size.y + text->size.h)
             return;
 
-        if (rowline >= size.h)
-            continue;
-
-        for (x = 0; x < padding; x++)
-        {
-
-            unsigned char c = data[rowline * padding + x];
-            unsigned int k = 0;
-            unsigned char b;
-
-            for (b = 0x80; b; b >>= 1)
-            {
-
-                if (c & b)
-                    paint(color, size.x + x * 8 + k, 1);
-
-                k++;
-                
-            }
-
-        }
+        if (rowline < size.h)
+            rendertextglyph(data + rowline * fontpadding, size.x, fontpadding, textcolor[text->type]);
 
         size.x += size.w;
 
@@ -556,6 +547,8 @@ void main(void)
     renderers[ELEMENT_TYPE_PANEL] = renderpanel;
     renderers[ELEMENT_TYPE_TEXT] = rendertext;
     renderers[ELEMENT_TYPE_WINDOW] = renderwindow;
+    textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
+    textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
 
     video_getmode(CALL_L0, &settings);
     video_setcolormap(CALL_L0, 0, 3 * 11, colormap8);

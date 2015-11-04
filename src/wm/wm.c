@@ -116,7 +116,7 @@ static void flush(void)
 
 }
 
-static void arrangeclients(unsigned int source, struct view *view)
+static void arrange(unsigned int source, struct view *view)
 {
 
     struct list_item *current;
@@ -167,55 +167,39 @@ static void arrangeclients(unsigned int source, struct view *view)
 
 }
 
-static struct client *focusclient(unsigned int source, struct client *focus, struct client *new)
+static void activateclient(unsigned int source, struct client *client)
 {
 
-    if (focus == new)
-        return new;
+    client->window.active = 1;
 
-    if (focus)
-    {
-
-        focus->window.active = 0;
-
-        writewindow(source, 1, &focus->window);
-
-    }
-
-    if (new)
-    {
-
-        new->window.active = 1;
-
-        writewindow(source, 1, &new->window);
-
-    }
-
-    return new;
+    writewindow(source, 1, &client->window);
 
 }
 
-static struct client *nextclient(unsigned int source, struct view *view)
+static void deactivateclient(unsigned int source, struct client *client)
 {
 
-    struct client *client = view->clientfocus;
+    client->window.active = 0;
 
-    if (!client)
-        return 0;
-
-    return focusclient(source, client, (client->item.next) ? client->item.next->data : view->clients.head);
+    writewindow(source, 1, &client->window);
 
 }
 
-static struct client *prevclient(unsigned int source, struct view *view)
+static struct client *focusclient(unsigned int source, struct client *current, struct client *next)
 {
 
-    struct client *client = view->clientfocus;
+    if (current != next)
+    {
 
-    if (!client)
-        return 0;
+        if (current)
+            deactivateclient(source, current);
 
-    return focusclient(source, client, (client->item.prev) ? client->item.prev->data : view->clients.tail);
+        if (next)
+            activateclient(source, next);
+
+    }
+
+    return next;
 
 }
 
@@ -235,37 +219,6 @@ static struct client *findclient(struct view *view, unsigned int x, unsigned int
     }
 
     return 0;
-
-}
-
-static void mapclient(unsigned int source, struct view *view, unsigned int newsource)
-{
-
-    struct client *client;
-
-    if (!clients.head)
-        return;
-
-    client = clients.head->data;
-    client->source = newsource;
-
-    list_move(&view->clients, &clients, &client->item);
-
-    view->clientfocus = focusclient(source, view->clientfocus, client);
-
-}
-
-static void unmapclient(unsigned int source, struct view *view)
-{
-
-    if (!view->clientfocus)
-        return;
-
-    writewindow(source, 0, &viewfocus->clientfocus->window);
-    send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
-    list_move(&clients, &view->clients, &view->clientfocus->item);
-
-    view->clientfocus = focusclient(source, 0, (view->clients.tail) ? view->clients.tail->data : 0);
 
 }
 
@@ -315,19 +268,21 @@ static void deactivateview(unsigned int source, struct view *view)
 
 }
 
-static struct view *focusview(unsigned int source, struct view *focus, struct view *new)
+static struct view *focusview(unsigned int source, struct view *current, struct view *next)
 {
 
-    if (focus == new)
-        return new;
+    if (current != next)
+    {
 
-    if (focus)
-        deactivateview(source, focus);
+        if (current)
+            deactivateview(source, current);
 
-    if (new)
-        activateview(source, new);
+        if (next)
+            activateview(source, next);
 
-    return new;
+    }
+
+    return next;
 
 }
 
@@ -390,8 +345,13 @@ static void onkeypress(union event *event)
         if (viewfocus->clientfocus)
         {
 
-            unmapclient(event->header.destination, viewfocus);
-            arrangeclients(event->header.destination, viewfocus);
+            writewindow(event->header.destination, 0, &viewfocus->clientfocus->window);
+            send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
+            list_move(&clients, &viewfocus->clients, &viewfocus->clientfocus->item);
+
+            viewfocus->clientfocus = focusclient(event->header.destination, 0, (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0);
+
+            arrange(event->header.destination, viewfocus);
 
         }
 
@@ -408,7 +368,7 @@ static void onkeypress(union event *event)
         {
 
             list_move(&viewfocus->clients, &viewfocus->clients, &viewfocus->clientfocus->item);
-            arrangeclients(event->header.destination, viewfocus);
+            arrange(event->header.destination, viewfocus);
 
         }
 
@@ -417,24 +377,26 @@ static void onkeypress(union event *event)
     case 0x23:
         viewfocus->center -= (body.w / 32);
 
-        arrangeclients(event->header.destination, viewfocus);
+        arrange(event->header.destination, viewfocus);
 
         break;
 
     case 0x24:
-        viewfocus->clientfocus = nextclient(event->header.destination, viewfocus);
+        if (viewfocus->clientfocus)
+            viewfocus->clientfocus = focusclient(event->header.destination, viewfocus->clientfocus, (viewfocus->clientfocus->item.next) ? viewfocus->clientfocus->item.next->data : viewfocus->clients.head);
 
         break;
 
     case 0x25:
-        viewfocus->clientfocus = prevclient(event->header.destination, viewfocus);
+        if (viewfocus->clientfocus)
+            viewfocus->clientfocus = focusclient(event->header.destination, viewfocus->clientfocus, (viewfocus->clientfocus->item.prev) ? viewfocus->clientfocus->item.prev->data : viewfocus->clients.tail);
 
         break;
 
     case 0x26:
         viewfocus->center += (body.w / 32);
 
-        arrangeclients(event->header.destination, viewfocus);
+        arrange(event->header.destination, viewfocus);
 
         break;
 
@@ -533,8 +495,19 @@ static void onwmmap(union event *event)
     else
     {
 
-        mapclient(event->header.destination, viewfocus, event->header.source);
-        arrangeclients(event->header.destination, viewfocus);
+        struct client *client;
+
+        if (!clients.head)
+            return;
+
+        client = clients.head->data;
+        client->source = event->header.source;
+
+        list_move(&viewfocus->clients, &clients, &client->item);
+
+        viewfocus->clientfocus = focusclient(event->header.destination, viewfocus->clientfocus, client);
+
+        arrange(event->header.destination, viewfocus);
 
     }
 
@@ -587,7 +560,7 @@ static void onwmresize(union event *event)
         writepanel(event->header.destination, 1, &view[i].panel);
         box_setsize(&view[i].number.size, view[i].panel.size.x + 12, view[i].panel.size.y + 6, view[i].panel.size.w - 24, view[i].panel.size.h - 12);
         writetext(event->header.destination, 1, &view[i].number, 1, view[i].numberstring);
-        arrangeclients(event->header.destination, &view[i]);
+        arrange(event->header.destination, &view[i]);
 
     }
 
@@ -601,10 +574,52 @@ static void onwmresize(union event *event)
 static void onwmshow(union event *event)
 {
 
+    struct list_item *current;
+    unsigned int i;
+
+    for (i = 0; i < VIEWS; i++)
+    {
+
+        writepanel(event->header.destination, 1, &view[i].panel);
+        writetext(event->header.destination, 1, &view[i].number, 1, view[i].numberstring);
+
+    }
+
+    for (current = viewfocus->clients.head; current; current = current->next)
+    {
+
+        struct client *client = current->data;
+
+        writewindow(event->header.destination, 1, &client->window);
+        send_wmshow(CALL_L2, client->source);
+
+    }
+
 }
 
 static void onwmhide(union event *event)
 {
+
+    struct list_item *current;
+    unsigned int i;
+
+    for (i = 0; i < VIEWS; i++)
+    {
+
+        writepanel(event->header.destination, 0, &view[i].panel);
+        writetext(event->header.destination, 0, &view[i].number, 1, view[i].numberstring);
+
+    }
+
+    for (current = viewfocus->clients.head; current; current = current->next)
+    {
+
+        struct client *client = current->data;
+
+        writewindow(event->header.destination, 0, &client->window);
+        send_wmhide(CALL_L2, client->source);
+
+    }
 
 }
 
