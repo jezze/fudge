@@ -119,57 +119,6 @@ static void flush(void)
 
 }
 
-static void arrange(unsigned int source, struct view *view)
-{
-
-    struct list_item *current;
-    struct client *client;
-    unsigned int y;
-    unsigned int h;
-
-    switch (view->clients.count)
-    {
-
-    case 0:
-        break;
-
-    case 1:
-        client = view->clients.tail->data;
-
-        box_setsize(&client->window.size, body.x, body.y, body.w, body.h);
-        writewindow(source, 1, &client->window);
-        send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
-
-        break;
-
-    default:
-        y = body.y;
-        h = body.h / (view->clients.count - 1);
-        client = view->clients.tail->data;
-
-        box_setsize(&client->window.size, body.x, body.y, view->center, body.h);
-        writewindow(source, 1, &client->window);
-        send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
-
-        for (current = view->clients.tail->prev; current; current = current->prev)
-        {
-
-            client = current->data;
-
-            box_setsize(&client->window.size, body.x + view->center, y, body.w - view->center, h);
-            writewindow(source, 1, &client->window);
-            send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
-
-            y += h;
-
-        }
-
-        break;
-
-    }
-
-}
-
 static void activateclient(unsigned int source, struct client *client)
 {
 
@@ -185,6 +134,15 @@ static void deactivateclient(unsigned int source, struct client *client)
     client->window.active = 0;
 
     writewindow(source, 1, &client->window);
+
+}
+
+static void resizeclient(unsigned int source, struct client *client, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+{
+
+    box_setsize(&client->window.size, x, y, w, h);
+    writewindow(source, 1, &client->window);
+    send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
 
 }
 
@@ -229,6 +187,51 @@ static void deactivateview(unsigned int source, struct view *view)
 
         writewindow(source, 0, &client->window);
         send_wmhide(CALL_L2, client->source);
+
+    }
+
+}
+
+static void arrangeview(unsigned int source, struct view *view)
+{
+
+    struct list_item *current = view->clients.tail;
+    struct client *client;
+    unsigned int y;
+    unsigned int h;
+
+    switch (view->clients.count)
+    {
+
+    case 0:
+        break;
+
+    case 1:
+        client = current->data;
+
+        resizeclient(source, client, body.x, body.y, body.w, body.h);
+
+        break;
+
+    default:
+        y = body.y;
+        h = body.h / (view->clients.count - 1);
+        client = current->data;
+
+        resizeclient(source, client, body.x, body.y, view->center, body.h);
+
+        for (current = view->clients.tail->prev; current; current = current->prev)
+        {
+
+            client = current->data;
+
+            resizeclient(source, client, body.x + view->center, y, body.w - view->center, h);
+
+            y += h;
+
+        }
+
+        break;
 
     }
 
@@ -295,7 +298,7 @@ static void onkeypress(union event *event)
             if (viewfocus->clientfocus)
                 activateclient(event->header.destination, viewfocus->clientfocus);
 
-            arrange(event->header.destination, viewfocus);
+            arrangeview(event->header.destination, viewfocus);
 
         }
 
@@ -312,7 +315,7 @@ static void onkeypress(union event *event)
         {
 
             list_move(&viewfocus->clients, &viewfocus->clients, &viewfocus->clientfocus->item);
-            arrange(event->header.destination, viewfocus);
+            arrangeview(event->header.destination, viewfocus);
 
         }
 
@@ -324,7 +327,7 @@ static void onkeypress(union event *event)
 
             viewfocus->center -= (body.w / 32);
 
-            arrange(event->header.destination, viewfocus);
+            arrangeview(event->header.destination, viewfocus);
 
         }
 
@@ -374,7 +377,7 @@ static void onkeypress(union event *event)
 
             viewfocus->center += (body.w / 32);
 
-            arrange(event->header.destination, viewfocus);
+            arrangeview(event->header.destination, viewfocus);
 
         }
 
@@ -531,7 +534,7 @@ static void onwmmap(union event *event)
 
         list_move(&viewfocus->clients, &clients, &viewfocus->clientfocus->item);
         activateclient(event->header.destination, viewfocus->clientfocus);
-        arrange(event->header.destination, viewfocus);
+        arrangeview(event->header.destination, viewfocus);
 
     }
 
@@ -584,7 +587,7 @@ static void onwmresize(union event *event)
         writepanel(event->header.destination, 1, &view[i].panel);
         box_setsize(&view[i].number.size, view[i].panel.size.x + 12, view[i].panel.size.y + 6, view[i].panel.size.w - 24, view[i].panel.size.h - 12);
         writetext(event->header.destination, 1, &view[i].number, 1, view[i].numberstring);
-        arrange(event->header.destination, &view[i]);
+        arrangeview(event->header.destination, &view[i]);
 
     }
 
