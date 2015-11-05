@@ -296,6 +296,9 @@ static void onkeypress(union event *event)
     case 0x07:
     case 0x08:
     case 0x09:
+        if (&view[event->keypress.scancode - 0x02] == viewfocus)
+            break;
+
         deactivateview(event->header.destination, viewfocus);
 
         viewfocus = &view[event->keypress.scancode - 0x02];
