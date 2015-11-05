@@ -5,6 +5,9 @@
 #include "element.h"
 #include "send.h"
 
+#define KEYMOD_NONE                     0
+#define KEYMOD_SHIFT                    1
+#define KEYMOD_ALT                      2
 #define CLIENTS                         64
 #define VIEWS                           8
 
@@ -43,7 +46,7 @@ static struct box menu;
 static struct box body;
 static unsigned int quit;
 static void (*handlers[EVENTS])(union event *event);
-static unsigned int actionkey;
+static unsigned int modifier;
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
@@ -185,24 +188,6 @@ static void deactivateclient(unsigned int source, struct client *client)
 
 }
 
-static struct client *focusclient(unsigned int source, struct client *current, struct client *next)
-{
-
-    if (current != next)
-    {
-
-        if (current)
-            deactivateclient(source, current);
-
-        if (next)
-            activateclient(source, next);
-
-    }
-
-    return next;
-
-}
-
 static struct client *findclient(struct view *view, unsigned int x, unsigned int y)
 {
 
@@ -268,24 +253,6 @@ static void deactivateview(unsigned int source, struct view *view)
 
 }
 
-static struct view *focusview(unsigned int source, struct view *current, struct view *next)
-{
-
-    if (current != next)
-    {
-
-        if (current)
-            deactivateview(source, current);
-
-        if (next)
-            activateview(source, next);
-
-    }
-
-    return next;
-
-}
-
 static struct view *findview(unsigned int x, unsigned int y)
 {
 
@@ -309,14 +276,20 @@ static void onkeypress(union event *event)
     switch (event->keypress.scancode)
     {
 
+    case 0x2A:
+    case 0x36:
+        modifier |= KEYMOD_SHIFT;
+
+        break;
+
     case 0x38:
-        actionkey = 1;
+        modifier |= KEYMOD_ALT;
 
         break;
 
     }
 
-    if (!actionkey)
+    if (!(modifier & KEYMOD_ALT))
     {
 
         if (viewfocus->clientfocus)
@@ -337,7 +310,11 @@ static void onkeypress(union event *event)
     case 0x07:
     case 0x08:
     case 0x09:
-        viewfocus = focusview(event->header.destination, viewfocus, &view[event->keypress.scancode - 0x02]);
+        deactivateview(event->header.destination, viewfocus);
+
+        viewfocus = &view[event->keypress.scancode - 0x02];
+
+        activateview(event->header.destination, viewfocus);
 
         break;
 
@@ -349,7 +326,10 @@ static void onkeypress(union event *event)
             send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
             list_move(&clients, &viewfocus->clients, &viewfocus->clientfocus->item);
 
-            viewfocus->clientfocus = focusclient(event->header.destination, 0, (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0);
+            viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
+
+            if (viewfocus->clientfocus)
+                activateclient(event->header.destination, viewfocus->clientfocus);
 
             arrange(event->header.destination, viewfocus);
 
@@ -388,13 +368,39 @@ static void onkeypress(union event *event)
 
     case 0x24:
         if (viewfocus->clientfocus)
-            viewfocus->clientfocus = focusclient(event->header.destination, viewfocus->clientfocus, (viewfocus->clientfocus->item.next) ? viewfocus->clientfocus->item.next->data : viewfocus->clients.head);
+        {
+
+            struct client *next = viewfocus->clientfocus->item.next ? viewfocus->clientfocus->item.next->data : viewfocus->clients.head;
+
+            if (!next || next == viewfocus->clientfocus)
+                break;
+
+            deactivateclient(event->header.destination, viewfocus->clientfocus);
+
+            viewfocus->clientfocus = next;
+
+            activateclient(event->header.destination, viewfocus->clientfocus);
+
+        }
 
         break;
 
     case 0x25:
         if (viewfocus->clientfocus)
-            viewfocus->clientfocus = focusclient(event->header.destination, viewfocus->clientfocus, (viewfocus->clientfocus->item.prev) ? viewfocus->clientfocus->item.prev->data : viewfocus->clients.tail);
+        {
+
+            struct client *next = viewfocus->clientfocus->item.prev ? viewfocus->clientfocus->item.prev->data : viewfocus->clients.tail;
+
+            if (!next || next == viewfocus->clientfocus)
+                break;
+
+            deactivateclient(event->header.destination, viewfocus->clientfocus);
+
+            viewfocus->clientfocus = next;
+
+            activateclient(event->header.destination, viewfocus->clientfocus);
+
+        }
 
         break;
 
@@ -425,14 +431,20 @@ static void onkeyrelease(union event *event)
     switch (event->keyrelease.scancode)
     {
 
-    case 0x38:
-        actionkey = 0;
+    case 0x2A:
+    case 0x36:
+        modifier &= ~KEYMOD_SHIFT;
 
-        break;
+        return;
+
+    case 0x38:
+        modifier &= ~KEYMOD_ALT;
+
+        return;
 
     }
 
-    if (!actionkey)
+    if (!(modifier & KEYMOD_ALT))
     {
 
         if (viewfocus->clientfocus)
@@ -447,18 +459,43 @@ static void onkeyrelease(union event *event)
 static void onmousepress(union event *event)
 {
 
-    struct view *view = findview(mouse.x, mouse.y);
-    struct client *client = findclient(viewfocus, mouse.x, mouse.y);
+    struct view *view;
+    struct client *client;
 
     switch (event->mousepress.button)
     {
 
     case 0x01:
-        if (view)
-            viewfocus = focusview(event->header.destination, viewfocus, view);
+        view = findview(mouse.x, mouse.y);
 
-        if (client)
-            viewfocus->clientfocus = focusclient(event->header.destination, viewfocus->clientfocus, client);
+        if (view && view != viewfocus)
+        {
+
+            deactivateview(event->header.destination, viewfocus);
+
+            viewfocus = view;
+
+            activateview(event->header.destination, viewfocus);
+
+            return;
+
+        }
+
+        client = findclient(viewfocus, mouse.x, mouse.y);
+
+        if (client && client != viewfocus->clientfocus)
+        {
+
+            if (viewfocus->clientfocus)
+                deactivateclient(event->header.destination, viewfocus->clientfocus);
+
+            viewfocus->clientfocus = client;
+
+            activateclient(event->header.destination, viewfocus->clientfocus);
+
+            return;
+
+        }
 
         break;
 
@@ -505,18 +542,17 @@ static void onwmmap(union event *event)
     else
     {
 
-        struct client *client;
-
-        if (!clients.head)
+        if (!clients.count)
             return;
 
-        client = clients.head->data;
-        client->source = event->header.source;
+        if (viewfocus->clientfocus)
+            deactivateclient(event->header.destination, viewfocus->clientfocus);
 
-        list_move(&viewfocus->clients, &clients, &client->item);
+        viewfocus->clientfocus = clients.head->data;
+        viewfocus->clientfocus->source = event->header.source;
 
-        viewfocus->clientfocus = focusclient(event->header.destination, viewfocus->clientfocus, client);
-
+        list_move(&viewfocus->clients, &clients, &viewfocus->clientfocus->item);
+        activateclient(event->header.destination, viewfocus->clientfocus);
         arrange(event->header.destination, viewfocus);
 
     }
