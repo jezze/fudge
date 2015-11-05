@@ -43,9 +43,6 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
         if (!readsectionheader(id, &header, i, &symbolheader))
             return 0;
 
-        if (!call_read(id, header.shsize, &symbolheader))
-            return 0;
-
         if (symbolheader.type != ELF_SECTION_TYPE_SYMTAB)
             continue;
 
@@ -60,13 +57,13 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
         if (!call_read(id, stringheader.size, strings))
             return 0;
 
-        call_seek(id, symbolheader.offset);
-
         for (j = 0; j < symbolheader.size / symbolheader.esize; j++)
         {
 
             struct elf_symbol symbol;
             char *s;
+
+            call_seek(id, symbolheader.offset + j * symbolheader.esize);
 
             if (!call_read(id, symbolheader.esize, &symbol))
                 return 0;
