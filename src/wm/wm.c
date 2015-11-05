@@ -188,25 +188,6 @@ static void deactivateclient(unsigned int source, struct client *client)
 
 }
 
-static struct client *findclient(struct view *view, unsigned int x, unsigned int y)
-{
-
-    struct list_item *current;
-
-    for (current = view->clients.head; current; current = current->next)
-    {
-
-        struct client *client = current->data;
-
-        if (box_isinside(&client->window.size, x, y))
-            return client;
-
-    }
-
-    return 0;
-
-}
-
 static void activateview(unsigned int source, struct view *view)
 {
 
@@ -250,23 +231,6 @@ static void deactivateview(unsigned int source, struct view *view)
         send_wmhide(CALL_L2, client->source);
 
     }
-
-}
-
-static struct view *findview(unsigned int x, unsigned int y)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < VIEWS; i++)
-    {
-
-        if (box_isinside(&view[i].panel.size, x, y))
-            return &view[i];
-
-    }
-
-    return 0;
 
 }
 
@@ -435,12 +399,12 @@ static void onkeyrelease(union event *event)
     case 0x36:
         modifier &= ~KEYMOD_SHIFT;
 
-        return;
+        break;
 
     case 0x38:
         modifier &= ~KEYMOD_ALT;
 
-        return;
+        break;
 
     }
 
@@ -459,39 +423,53 @@ static void onkeyrelease(union event *event)
 static void onmousepress(union event *event)
 {
 
-    struct view *view;
-    struct client *client;
+    struct list_item *current;
+    unsigned int i;
 
     switch (event->mousepress.button)
     {
 
     case 0x01:
-        view = findview(mouse.x, mouse.y);
-
-        if (view && view != viewfocus)
+        for (i = 0; i < VIEWS; i++)
         {
 
-            deactivateview(event->header.destination, viewfocus);
+            if (!box_isinside(&view[i].panel.size, mouse.x, mouse.y))
+                continue;
 
-            viewfocus = view;
+            if (&view[i] != viewfocus)
+            {
 
-            activateview(event->header.destination, viewfocus);
+                deactivateview(event->header.destination, viewfocus);
+
+                viewfocus = &view[i];
+
+                activateview(event->header.destination, viewfocus);
+
+            }
 
             return;
 
         }
 
-        client = findclient(viewfocus, mouse.x, mouse.y);
-
-        if (client && client != viewfocus->clientfocus)
+        for (current = viewfocus->clients.head; current; current = current->next)
         {
 
-            if (viewfocus->clientfocus)
-                deactivateclient(event->header.destination, viewfocus->clientfocus);
+            struct client *client = current->data;
 
-            viewfocus->clientfocus = client;
+            if (!box_isinside(&client->window.size, mouse.x, mouse.y))
+                continue;
 
-            activateclient(event->header.destination, viewfocus->clientfocus);
+            if (client != viewfocus->clientfocus)
+            {
+
+                if (viewfocus->clientfocus)
+                    deactivateclient(event->header.destination, viewfocus->clientfocus);
+
+                viewfocus->clientfocus = client;
+
+                activateclient(event->header.destination, viewfocus->clientfocus);
+
+            }
 
             return;
 

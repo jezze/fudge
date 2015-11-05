@@ -181,12 +181,12 @@ static void onkeyrelease(union event *event)
     case 0x36:
         modifier &= ~KEYMOD_SHIFT;
 
-        return;
+        break;
 
     case 0x38:
         modifier &= ~KEYMOD_ALT;
 
-        return;
+        break;
 
     }
 
