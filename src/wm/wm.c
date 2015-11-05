@@ -305,36 +305,42 @@ static void onkeypress(union event *event)
         break;
 
     case 0x10:
+        if (!viewfocus->clientfocus)
+            break;
+
+        writewindow(event->header.destination, 0, &viewfocus->clientfocus->window);
+        send_wmhide(CALL_L2, viewfocus->clientfocus->source);
+        send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
+        list_move(&clients, &viewfocus->clients, &viewfocus->clientfocus->item);
+
+        viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
+
         if (viewfocus->clientfocus)
-        {
+            activateclient(event->header.destination, viewfocus->clientfocus);
 
-            writewindow(event->header.destination, 0, &viewfocus->clientfocus->window);
-            send_wmhide(CALL_L2, viewfocus->clientfocus->source);
-            send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
-            list_move(&clients, &viewfocus->clients, &viewfocus->clientfocus->item);
-
-            viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
-
-            if (viewfocus->clientfocus)
-                activateclient(event->header.destination, viewfocus->clientfocus);
-
-            arrange(viewfocus);
-            notifyresize(event->header.destination, &viewfocus->clients);
-            notifyshow(event->header.destination, &viewfocus->clients);
-
-        }
+        arrange(viewfocus);
+        notifyresize(event->header.destination, &viewfocus->clients);
+        notifyshow(event->header.destination, &viewfocus->clients);
 
         break;
 
     case 0x19:
-        call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
-        call_spawn();
-
         break;
 
     case 0x1C:
-        if (viewfocus->clientfocus)
+        if (modifier & KEYMOD_SHIFT)
         {
+
+            call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
+            call_spawn();
+
+        }
+
+        else
+        {
+
+            if (!viewfocus->clientfocus)
+                break;
 
             list_move(&viewfocus->clients, &viewfocus->clients, &viewfocus->clientfocus->item);
             arrange(viewfocus);
