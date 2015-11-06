@@ -105,6 +105,37 @@ static void writewindow(unsigned int source, unsigned int z, struct element_wind
 
 }
 
+static void writeclient(unsigned int source, unsigned int z, struct client *client)
+{
+
+    writewindow(source, z, &client->window);
+
+}
+
+static void writeclients(unsigned int source, unsigned int z, struct list *clients)
+{
+
+    struct list_item *current;
+
+    for (current = clients->head; current; current = current->next)
+    {
+
+        struct client *client = current->data;
+
+        writeclient(source, z, client);
+
+    }
+
+}
+
+static void writeview(unsigned int source, unsigned int z, struct view *view)
+{
+
+    writepanel(source, z, &view->panel);
+    writetext(source, z, &view->number, 1, view->numberstring);
+
+}
+
 static void flush(void)
 {
 
@@ -119,25 +150,21 @@ static void flush(void)
 
 }
 
-static void activateclient(unsigned int source, struct client *client)
+static void activateclient(struct client *client)
 {
 
     client->window.active = 1;
 
-    writewindow(source, 1, &client->window);
-
 }
 
-static void deactivateclient(unsigned int source, struct client *client)
+static void deactivateclient(struct client *client)
 {
 
     client->window.active = 0;
 
-    writewindow(source, 1, &client->window);
-
 }
 
-static void showclients(unsigned int source, struct list *clients)
+static void showclients(struct list *clients)
 {
 
     struct list_item *current;
@@ -147,14 +174,13 @@ static void showclients(unsigned int source, struct list *clients)
 
         struct client *client = current->data;
 
-        writewindow(source, 1, &client->window);
         send_wmshow(CALL_L2, client->source);
 
     }
 
 }
 
-static void hideclients(unsigned int source, struct list *clients)
+static void hideclients(struct list *clients)
 {
 
     struct list_item *current;
@@ -164,7 +190,6 @@ static void hideclients(unsigned int source, struct list *clients)
 
         struct client *client = current->data;
 
-        writewindow(source, 0, &client->window);
         send_wmhide(CALL_L2, client->source);
 
     }
@@ -219,27 +244,19 @@ static void arrangeview(struct view *view)
 
 }
 
-static void activateview(unsigned int source, struct view *view)
+static void activateview(struct view *view)
 {
 
     view->panel.active = 1;
     view->number.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
 
-    writepanel(source, 1, &view->panel);
-    writetext(source, 1, &view->number, 1, view->numberstring);
-    showclients(source, &view->clients);
-
 }
 
-static void deactivateview(unsigned int source, struct view *view)
+static void deactivateview(struct view *view)
 {
 
     view->panel.active = 0;
     view->number.type = ELEMENT_TEXTTYPE_NORMAL;
-
-    writepanel(source, 1, &view->panel);
-    writetext(source, 1, &view->number, 1, view->numberstring);
-    hideclients(source, &view->clients);
 
 }
 
@@ -292,37 +309,49 @@ static void onkeypress(union event *event)
             if (!viewfocus->clientfocus)
                 break;
 
-            deactivateview(event->header.destination, viewfocus);
+            deactivateview(viewfocus);
+            hideclients(&viewfocus->clients);
+            writeview(event->header.destination, 1, viewfocus);
+            writeclients(event->header.destination, 0, &viewfocus->clients);
             list_move(&view[event->keypress.scancode - 0x02].clients, &viewfocus->clients, &viewfocus->clientfocus->item);
 
             viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
 
-            /* FIXME */
             if (viewfocus->clientfocus)
-                viewfocus->clientfocus->window.active = 1;
+                activateclient(viewfocus->clientfocus);
 
             arrangeview(viewfocus);
 
             viewfocus = &view[event->keypress.scancode - 0x02];
 
+            arrangeview(viewfocus);
+
             if (viewfocus->clientfocus)
-                deactivateclient(event->header.destination, viewfocus->clientfocus);
+                deactivateclient(viewfocus->clientfocus);
 
             viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
 
-            arrangeview(viewfocus);
-            activateview(event->header.destination, viewfocus);
+            activateview(viewfocus);
+            showclients(&viewfocus->clients);
+            writeview(event->header.destination, 1, viewfocus);
+            writeclients(event->header.destination, 1, &viewfocus->clients);
 
         }
 
         else
         {
 
-            deactivateview(event->header.destination, viewfocus);
+            deactivateview(viewfocus);
+            hideclients(&viewfocus->clients);
+            writeview(event->header.destination, 1, viewfocus);
+            writeclients(event->header.destination, 0, &viewfocus->clients);
 
             viewfocus = &view[event->keypress.scancode - 0x02];
 
-            activateview(event->header.destination, viewfocus);
+            activateview(viewfocus);
+            showclients(&viewfocus->clients);
+            writeview(event->header.destination, 1, viewfocus);
+            writeclients(event->header.destination, 1, &viewfocus->clients);
 
         }
 
@@ -332,18 +361,19 @@ static void onkeypress(union event *event)
         if (!viewfocus->clientfocus)
             break;
 
-        writewindow(event->header.destination, 0, &viewfocus->clientfocus->window);
         send_wmhide(CALL_L2, viewfocus->clientfocus->source);
         send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
+        writewindow(event->header.destination, 0, &viewfocus->clientfocus->window);
         list_move(&clients, &viewfocus->clients, &viewfocus->clientfocus->item);
 
         viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
 
         if (viewfocus->clientfocus)
-            activateclient(event->header.destination, viewfocus->clientfocus);
+            activateclient(viewfocus->clientfocus);
 
         arrangeview(viewfocus);
-        showclients(event->header.destination, &viewfocus->clients);
+        showclients(&viewfocus->clients);
+        writeclients(event->header.destination, 1, &viewfocus->clients);
 
         break;
 
@@ -367,7 +397,8 @@ static void onkeypress(union event *event)
 
             list_move(&viewfocus->clients, &viewfocus->clients, &viewfocus->clientfocus->item);
             arrangeview(viewfocus);
-            showclients(event->header.destination, &viewfocus->clients);
+            showclients(&viewfocus->clients);
+            writeclients(event->header.destination, 1, &viewfocus->clients);
 
         }
 
@@ -380,7 +411,8 @@ static void onkeypress(union event *event)
             viewfocus->center -= (body.w / 32);
 
             arrangeview(viewfocus);
-            showclients(event->header.destination, &viewfocus->clients);
+            showclients(&viewfocus->clients);
+            writeclients(event->header.destination, 1, &viewfocus->clients);
 
         }
 
@@ -395,11 +427,13 @@ static void onkeypress(union event *event)
             if (!next || next == viewfocus->clientfocus)
                 break;
 
-            deactivateclient(event->header.destination, viewfocus->clientfocus);
+            deactivateclient(viewfocus->clientfocus);
+            writeclient(event->header.destination, 1, viewfocus->clientfocus);
 
             viewfocus->clientfocus = next;
 
-            activateclient(event->header.destination, viewfocus->clientfocus);
+            activateclient(viewfocus->clientfocus);
+            writeclient(event->header.destination, 1, viewfocus->clientfocus);
 
         }
 
@@ -414,11 +448,13 @@ static void onkeypress(union event *event)
             if (!next || next == viewfocus->clientfocus)
                 break;
 
-            deactivateclient(event->header.destination, viewfocus->clientfocus);
+            deactivateclient(viewfocus->clientfocus);
+            writeclient(event->header.destination, 1, viewfocus->clientfocus);
 
             viewfocus->clientfocus = next;
 
-            activateclient(event->header.destination, viewfocus->clientfocus);
+            activateclient(viewfocus->clientfocus);
+            writeclient(event->header.destination, 1, viewfocus->clientfocus);
 
         }
 
@@ -431,7 +467,8 @@ static void onkeypress(union event *event)
             viewfocus->center += (body.w / 32);
 
             arrangeview(viewfocus);
-            showclients(event->header.destination, &viewfocus->clients);
+            showclients(&viewfocus->clients);
+            writeclients(event->header.destination, 1, &viewfocus->clients);
 
         }
 
@@ -497,11 +534,17 @@ static void onmousepress(union event *event)
             if (&view[i] != viewfocus)
             {
 
-                deactivateview(event->header.destination, viewfocus);
+                deactivateview(viewfocus);
+                hideclients(&viewfocus->clients);
+                writeview(event->header.destination, 1, viewfocus);
+                writeclients(event->header.destination, 0, &viewfocus->clients);
 
                 viewfocus = &view[i];
 
-                activateview(event->header.destination, viewfocus);
+                activateview(viewfocus);
+                showclients(&viewfocus->clients);
+                writeview(event->header.destination, 1, viewfocus);
+                writeclients(event->header.destination, 1, &viewfocus->clients);
 
             }
 
@@ -521,11 +564,17 @@ static void onmousepress(union event *event)
             {
 
                 if (viewfocus->clientfocus)
-                    deactivateclient(event->header.destination, viewfocus->clientfocus);
+                {
+
+                    deactivateclient(viewfocus->clientfocus);
+                    writeclient(event->header.destination, 1, viewfocus->clientfocus);
+
+                }
 
                 viewfocus->clientfocus = client;
 
-                activateclient(event->header.destination, viewfocus->clientfocus);
+                activateclient(viewfocus->clientfocus);
+                writeclient(event->header.destination, 1, viewfocus->clientfocus);
 
             }
 
@@ -583,15 +632,22 @@ static void onwmmap(union event *event)
             return;
 
         if (viewfocus->clientfocus)
-            deactivateclient(event->header.destination, viewfocus->clientfocus);
+        {
+
+            deactivateclient(viewfocus->clientfocus);
+            writeclient(event->header.destination, 1, viewfocus->clientfocus);
+
+        }
 
         viewfocus->clientfocus = clients.head->data;
         viewfocus->clientfocus->source = event->header.source;
 
         list_move(&viewfocus->clients, &clients, &viewfocus->clientfocus->item);
-        activateclient(event->header.destination, viewfocus->clientfocus);
+        activateclient(viewfocus->clientfocus);
+        writeclient(event->header.destination, 1, viewfocus->clientfocus);
         arrangeview(viewfocus);
-        showclients(event->header.destination, &viewfocus->clients);
+        showclients(&viewfocus->clients);
+        writeclients(event->header.destination, 1, &viewfocus->clients);
 
     }
 
@@ -658,15 +714,11 @@ static void onwmshow(union event *event)
     writefill(event->header.destination, 1, &background);
 
     for (i = 0; i < VIEWS; i++)
-    {
-
-        writepanel(event->header.destination, 1, &view[i].panel);
-        writetext(event->header.destination, 1, &view[i].number, 1, view[i].numberstring);
-
-    }
+        writeview(event->header.destination, 1, &view[i]);
 
     writemouse(event->header.destination, 3, &mouse);
-    showclients(event->header.destination, &viewfocus->clients);
+    showclients(&viewfocus->clients);
+    writeclients(event->header.destination, 1, &viewfocus->clients);
 
 }
 
@@ -678,15 +730,11 @@ static void onwmhide(union event *event)
     writefill(event->header.destination, 0, &background);
 
     for (i = 0; i < VIEWS; i++)
-    {
-
-        writepanel(event->header.destination, 0, &view[i].panel);
-        writetext(event->header.destination, 0, &view[i].number, 1, view[i].numberstring);
-
-    }
+        writeview(event->header.destination, 0, &view[i]);
 
     writemouse(event->header.destination, 0, &mouse);
-    hideclients(event->header.destination, &viewfocus->clients);
+    hideclients(&viewfocus->clients);
+    writeclients(event->header.destination, 0, &viewfocus->clients);
 
 }
 
