@@ -4,10 +4,8 @@
 #include "box.h"
 #include "element.h"
 #include "send.h"
+#include "keymap.h"
 
-#define KEYMOD_NONE                     0
-#define KEYMOD_SHIFT                    1
-#define KEYMOD_ALT                      2
 #define CLIENTS                         64
 #define VIEWS                           8
 

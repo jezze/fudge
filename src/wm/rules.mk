@@ -43,6 +43,7 @@ OBJ_WNULL:=\
     $(SRC_PATH)/wm/box.o \
     $(SRC_PATH)/wm/element.o \
     $(SRC_PATH)/wm/send.o \
+    $(SRC_PATH)/wm/keymap.o \
 
 $(BIN_WNULL): $(OBJ_WNULL) $(SRC_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^

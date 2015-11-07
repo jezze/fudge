@@ -532,7 +532,7 @@ void main(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    call_walk(CALL_L0, CALL_PR, 18, "share/ter-u18n.pcf");
+    call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf");
     call_open(CALL_L0);
     call_read(CALL_L0, 0x8000, fontdata);
     call_close(CALL_L0);
