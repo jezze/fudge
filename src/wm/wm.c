@@ -613,12 +613,7 @@ static void onwmmap(union event *event)
             return;
 
         if (viewfocus->clientfocus)
-        {
-
             deactivateclient(viewfocus->clientfocus);
-            writeclient(event->header.destination, 1, viewfocus->clientfocus);
-
-        }
 
         viewfocus->clientfocus = clients.head->data;
         viewfocus->clientfocus->source = event->header.source;
