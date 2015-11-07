@@ -23,7 +23,6 @@ static struct client
 static struct view
 {
 
-    struct list_item item;
     struct list clients;
     unsigned int center;
     struct element_panel panel;
@@ -758,7 +757,6 @@ static void setup(void)
     for (i = 0; i < VIEWS; i++)
     {
 
-        list_inititem(&view[i].item, &view[i]);
         element_initpanel(&view[i].panel);
         element_inittext(&view[i].number, ELEMENT_TEXTTYPE_NORMAL);
 
