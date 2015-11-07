@@ -643,7 +643,6 @@ static void onwmmap(union event *event)
 
         list_move(&viewfocus->clients, &clients, &viewfocus->clientfocus->item);
         activateclient(viewfocus->clientfocus);
-        writeclient(event->header.destination, 1, viewfocus->clientfocus);
         arrangeview(viewfocus);
         showclients(&viewfocus->clients);
         writeclients(event->header.destination, 1, &viewfocus->clients);
