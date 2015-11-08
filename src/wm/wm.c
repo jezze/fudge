@@ -304,14 +304,14 @@ static void onkeypress(union event *event)
         if (&view[event->keypress.scancode - 0x02] == viewfocus)
             break;
 
-        if (modifier & KEYMOD_SHIFT)
+        hideview(event->header.destination, viewfocus);
+
+        if (viewfocus->clientfocus && modifier & KEYMOD_SHIFT)
         {
 
-            if (!viewfocus->clientfocus)
-                break;
+            struct view *next = &view[event->keypress.scancode - 0x02];
 
-            hideview(event->header.destination, viewfocus);
-            list_move(&view[event->keypress.scancode - 0x02].clients, &viewfocus->clients, &viewfocus->clientfocus->item);
+            list_move(&next->clients, &viewfocus->clients, &viewfocus->clientfocus->item);
 
             viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
 
@@ -319,30 +319,18 @@ static void onkeypress(union event *event)
                 activateclient(viewfocus->clientfocus);
 
             arrangeview(viewfocus);
+            arrangeview(next);
 
-            viewfocus = &view[event->keypress.scancode - 0x02];
+            if (next->clientfocus)
+                deactivateclient(next->clientfocus);
 
-            arrangeview(viewfocus);
-
-            if (viewfocus->clientfocus)
-                deactivateclient(viewfocus->clientfocus);
-
-            viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
-
-            showview(event->header.destination, viewfocus);
+            next->clientfocus = (next->clients.tail) ? next->clients.tail->data : 0;
 
         }
 
-        else
-        {
+        viewfocus = &view[event->keypress.scancode - 0x02];
 
-            hideview(event->header.destination, viewfocus);
-
-            viewfocus = &view[event->keypress.scancode - 0x02];
-
-            showview(event->header.destination, viewfocus);
-
-        }
+        showview(event->header.destination, viewfocus);
 
         break;
 
