@@ -264,6 +264,9 @@ static void hideview(unsigned int source, struct view *view)
 static void onkeypress(union event *event)
 {
 
+    struct view *nextview;
+    struct client *nextclient;
+
     switch (event->keypress.scancode)
     {
 
@@ -301,7 +304,9 @@ static void onkeypress(union event *event)
     case 0x07:
     case 0x08:
     case 0x09:
-        if (&view[event->keypress.scancode - 0x02] == viewfocus)
+        nextview = &view[event->keypress.scancode - 0x02];
+
+        if (nextview == viewfocus)
             break;
 
         hideview(event->header.destination, viewfocus);
@@ -309,9 +314,7 @@ static void onkeypress(union event *event)
         if (viewfocus->clientfocus && modifier & KEYMOD_SHIFT)
         {
 
-            struct view *next = &view[event->keypress.scancode - 0x02];
-
-            list_move(&next->clients, &viewfocus->clients, &viewfocus->clientfocus->item);
+            list_move(&nextview->clients, &viewfocus->clients, &viewfocus->clientfocus->item);
 
             viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
 
@@ -319,16 +322,16 @@ static void onkeypress(union event *event)
                 activateclient(viewfocus->clientfocus);
 
             arrangeview(viewfocus);
-            arrangeview(next);
+            arrangeview(nextview);
 
-            if (next->clientfocus)
-                deactivateclient(next->clientfocus);
+            if (nextview->clientfocus)
+                deactivateclient(nextview->clientfocus);
 
-            next->clientfocus = (next->clients.tail) ? next->clients.tail->data : 0;
+            nextview->clientfocus = (nextview->clients.tail) ? nextview->clients.tail->data : 0;
 
         }
 
-        viewfocus = &view[event->keypress.scancode - 0x02];
+        viewfocus = nextview;
 
         showview(event->header.destination, viewfocus);
 
@@ -380,70 +383,56 @@ static void onkeypress(union event *event)
         break;
 
     case 0x23:
-        if (viewfocus->center > 1 * (screen.w / 8))
-        {
+        if (viewfocus->center <= 1 * (screen.w / 8))
+            break;
 
-            viewfocus->center -= (body.w / 32);
+        viewfocus->center -= (body.w / 32);
 
-            arrangeview(viewfocus);
-            showclients(event->header.destination, &viewfocus->clients);
-
-        }
+        arrangeview(viewfocus);
+        showclients(event->header.destination, &viewfocus->clients);
 
         break;
 
     case 0x24:
-        if (viewfocus->clientfocus)
-        {
+        nextclient = viewfocus->clientfocus->item.next ? viewfocus->clientfocus->item.next->data : viewfocus->clients.head;
 
-            struct client *next = viewfocus->clientfocus->item.next ? viewfocus->clientfocus->item.next->data : viewfocus->clients.head;
+        if (!viewfocus->clientfocus || !nextclient || nextclient == viewfocus->clientfocus)
+            break;
 
-            if (!next || next == viewfocus->clientfocus)
-                break;
+        deactivateclient(viewfocus->clientfocus);
+        writeclient(event->header.destination, 1, viewfocus->clientfocus);
 
-            deactivateclient(viewfocus->clientfocus);
-            writeclient(event->header.destination, 1, viewfocus->clientfocus);
+        viewfocus->clientfocus = nextclient;
 
-            viewfocus->clientfocus = next;
-
-            activateclient(viewfocus->clientfocus);
-            writeclient(event->header.destination, 1, viewfocus->clientfocus);
-
-        }
+        activateclient(viewfocus->clientfocus);
+        writeclient(event->header.destination, 1, viewfocus->clientfocus);
 
         break;
 
     case 0x25:
-        if (viewfocus->clientfocus)
-        {
+        nextclient = viewfocus->clientfocus->item.prev ? viewfocus->clientfocus->item.prev->data : viewfocus->clients.tail;
 
-            struct client *next = viewfocus->clientfocus->item.prev ? viewfocus->clientfocus->item.prev->data : viewfocus->clients.tail;
+        if (!viewfocus->clientfocus || !nextclient || nextclient == viewfocus->clientfocus)
+            break;
 
-            if (!next || next == viewfocus->clientfocus)
-                break;
+        deactivateclient(viewfocus->clientfocus);
+        writeclient(event->header.destination, 1, viewfocus->clientfocus);
 
-            deactivateclient(viewfocus->clientfocus);
-            writeclient(event->header.destination, 1, viewfocus->clientfocus);
+        viewfocus->clientfocus = nextclient;
 
-            viewfocus->clientfocus = next;
-
-            activateclient(viewfocus->clientfocus);
-            writeclient(event->header.destination, 1, viewfocus->clientfocus);
-
-        }
+        activateclient(viewfocus->clientfocus);
+        writeclient(event->header.destination, 1, viewfocus->clientfocus);
 
         break;
 
     case 0x26:
-        if (viewfocus->center < 7 * (screen.w / 8))
-        {
+        if (viewfocus->center >= 7 * (screen.w / 8))
+            break;
 
-            viewfocus->center += (body.w / 32);
+        viewfocus->center += (body.w / 32);
 
-            arrangeview(viewfocus);
-            showclients(event->header.destination, &viewfocus->clients);
-
-        }
+        arrangeview(viewfocus);
+        showclients(event->header.destination, &viewfocus->clients);
 
         break;
 
