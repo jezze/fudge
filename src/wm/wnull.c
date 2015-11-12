@@ -5,15 +5,21 @@
 #include "send.h"
 #include "keymap.h"
 
-static struct element_text content;
+struct client
+{
+
+    struct element_text content;
+    unsigned int quit;
+    unsigned int keymod;
+    unsigned char text[FUDGE_BSIZE];
+    unsigned int textcount;
+    struct box size;
+
+};
+
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
-static struct box screen;
-static unsigned int quit;
-static void (*handlers[EVENTS])(union event *event);
-static unsigned char text[FUDGE_BSIZE];
-static unsigned int textcount;
-static unsigned int modifier;
+static void (*handlers[EVENTS])(struct client *client, union event *event);
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
@@ -50,7 +56,7 @@ static void flush(void)
 
 }
 
-static void onkeypress(union event *event)
+static void onkeypress(struct client *client, union event *event)
 {
 
     struct keycode *keycode;
@@ -60,39 +66,39 @@ static void onkeypress(union event *event)
 
     case 0x2A:
     case 0x36:
-        modifier |= KEYMOD_SHIFT;
+        client->keymod |= KEYMOD_SHIFT;
 
         break;
 
     case 0x38:
-        modifier |= KEYMOD_ALT;
+        client->keymod |= KEYMOD_ALT;
 
         break;
 
     case 0x0E:
-        if (textcount)
+        if (client->textcount)
         {
 
-            textcount -= 1;
+            client->textcount -= 1;
 
-            writetext(event->header.destination, 1, &content, textcount, text);
+            writetext(event->header.destination, 1, &client->content, client->textcount, client->text);
 
         }
 
         break;
 
     default:
-        keycode = getkeycode(KEYMAP_US, event->keypress.scancode, modifier);
-        textcount += memory_write(text, FUDGE_BSIZE, keycode->value, keycode->length, textcount);
+        keycode = getkeycode(KEYMAP_US, event->keypress.scancode, client->keymod);
+        client->textcount += memory_write(client->text, FUDGE_BSIZE, keycode->value, keycode->length, client->textcount);
 
-        writetext(event->header.destination, 1, &content, textcount, text);
+        writetext(event->header.destination, 1, &client->content, client->textcount, client->text);
 
         break;
     }
 
 }
 
-static void onkeyrelease(union event *event)
+static void onkeyrelease(struct client *client, union event *event)
 {
 
     switch (event->keypress.scancode)
@@ -100,12 +106,12 @@ static void onkeyrelease(union event *event)
 
     case 0x2A:
     case 0x36:
-        modifier &= ~KEYMOD_SHIFT;
+        client->keymod &= ~KEYMOD_SHIFT;
 
         break;
 
     case 0x38:
-        modifier &= ~KEYMOD_ALT;
+        client->keymod &= ~KEYMOD_ALT;
 
         break;
 
@@ -113,44 +119,56 @@ static void onkeyrelease(union event *event)
 
 }
 
-static void onwmunmap(union event *event)
+static void onwmunmap(struct client *client, union event *event)
 {
 
-    writetext(event->header.destination, 0, &content, textcount, text);
+    writetext(event->header.destination, 0, &client->content, client->textcount, client->text);
 
-    quit = 1;
+    client->quit = 1;
 
 }
 
-static void onwmresize(union event *event)
+static void onwmresize(struct client *client, union event *event)
 {
 
-    box_setsize(&screen, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
-    box_setsize(&content.size, screen.x + 12, screen.y + 12, screen.w - 24, screen.h - 24);
+    box_setsize(&client->size, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
+    box_setsize(&client->content.size, client->size.x + 12, client->size.y + 12, client->size.w - 24, client->size.h - 24);
 
 }
 
-static void onwmshow(union event *event)
+static void onwmshow(struct client *client, union event *event)
 {
 
-    writetext(event->header.destination, 1, &content, textcount, text);
+    writetext(event->header.destination, 1, &client->content, client->textcount, client->text);
 
 }
 
-static void onwmhide(union event *event)
+static void onwmhide(struct client *client, union event *event)
 {
 
-    writetext(event->header.destination, 0, &content, textcount, text);
+    writetext(event->header.destination, 0, &client->content, client->textcount, client->text);
+
+}
+
+static void setup(struct client *client)
+{
+
+    element_inittext(&client->content, ELEMENT_TEXTTYPE_NORMAL);
+
+    client->quit = 0;
+    client->keymod = KEYMOD_NONE;
+    client->textcount = 0;
 
 }
 
 void main(void)
 {
 
+    struct client client;
     union event event;
     unsigned int count;
 
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
+    setup(&client);
 
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;
@@ -173,12 +191,12 @@ void main(void)
         if (handlers[event.header.type])
         {
 
-            handlers[event.header.type](&event);
+            handlers[event.header.type](&client, &event);
             flush();
 
         }
 
-        if (quit)
+        if (client.quit)
             break;
 
     }

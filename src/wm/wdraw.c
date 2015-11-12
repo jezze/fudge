@@ -17,13 +17,20 @@
 #define COLOR_TEXTNORMAL                0x09
 #define COLOR_TEXTLIGHT                 0x0A
 
-static struct ctrl_videosettings settings;
+struct context
+{
+
+    struct ctrl_videosettings settings;
+    unsigned char textcolor[2];
+    unsigned char buffer[0x2000];
+
+};
+
 static unsigned int (*tests[EVENTS])(struct element *element, void *data, unsigned int line);
-static void (*renderers[EVENTS])(struct element *element, void *data, unsigned int line);
-static unsigned char fontdata[0x8000];
-static unsigned char drawdata[0x2000];
+static void (*renderers[EVENTS])(struct context *context, struct element *element, void *data, unsigned int line);
 static unsigned char data[0x8000];
 static unsigned int datacount;
+static unsigned char fontdata[0x8000];
 static unsigned char mousedata[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -50,7 +57,6 @@ static unsigned char mousedata[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
-static unsigned char textcolor[2];
 static unsigned char colormap8[] = {
     0x00, 0x00, 0x00,
     0xFF, 0xFF, 0xFF,
@@ -78,10 +84,10 @@ static unsigned int colormap32[] = {
     0xFFFFFFFF
 };
 
-static void paint8(unsigned int color, unsigned int offset, unsigned int count)
+static void paint8(struct context *context, unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned char *buffer = drawdata;
+    unsigned char *buffer = context->buffer;
     unsigned int i;
 
     for (i = offset; i < count + offset; i++)
@@ -89,10 +95,10 @@ static void paint8(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static void paint32(unsigned int color, unsigned int offset, unsigned int count)
+static void paint32(struct context *context, unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned int *buffer = (unsigned int *)drawdata;
+    unsigned int *buffer = (unsigned int *)context->buffer;
     unsigned int i;
 
     for (i = offset; i < count + offset; i++)
@@ -100,19 +106,19 @@ static void paint32(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static void paint(unsigned int color, unsigned int offset, unsigned int count)
+static void paint(struct context *context, unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    switch (settings.bpp)
+    switch (context->settings.bpp)
     {
 
     case 8:
-        paint8(color, offset, count);
+        paint8(context, color, offset, count);
 
         break;
 
     case 32:
-        paint32(colormap32[color], offset, count);
+        paint32(context, colormap32[color], offset, count);
 
         break;
 
@@ -129,12 +135,12 @@ static unsigned int testfill(struct element *element, void *data, unsigned int l
 
 }
 
-static void renderfill(struct element *element, void *data, unsigned int line)
+static void renderfill(struct context *context, struct element *element, void *data, unsigned int line)
 {
 
     struct element_fill *fill = data;
 
-    paint(fill->color, fill->size.x, fill->size.w);
+    paint(context, fill->color, fill->size.x, fill->size.w);
 
 }
 
@@ -147,7 +153,7 @@ static unsigned int testmouse(struct element *element, void *data, unsigned int 
 
 }
 
-static void rendermouse(struct element *element, void *data, unsigned int line)
+static void rendermouse(struct context *context, struct element *element, void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
@@ -159,7 +165,7 @@ static void rendermouse(struct element *element, void *data, unsigned int line)
     {
 
         if (mousedata[line * 24 + i] != 0xFF)
-            paint(mousedata[line * 24 + i], mouse->x + i, 1);
+            paint(context, mousedata[line * 24 + i], mouse->x + i, 1);
 
     }
 
@@ -174,7 +180,7 @@ static unsigned int testpanel(struct element *element, void *data, unsigned int 
 
 }
 
-static void renderpanel(struct element *element, void *data, unsigned int line)
+static void renderpanel(struct context *context, struct element *element, void *data, unsigned int line)
 {
 
     struct element_panel *panel = data;
@@ -190,23 +196,23 @@ static void renderpanel(struct element *element, void *data, unsigned int line)
     {
 
     case 0:
-        paint(COLOR_DARK, panel->size.x, panel->size.w);
+        paint(context, COLOR_DARK, panel->size.x, panel->size.w);
 
         break;
 
     case 1:
-        paint(COLOR_DARK, panel->size.x + 0, 1);
-        paint(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
-        paint(framecolor, panel->size.x + 1, panel->size.w - 2);
+        paint(context, COLOR_DARK, panel->size.x + 0, 1);
+        paint(context, COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
+        paint(context, framecolor, panel->size.x + 1, panel->size.w - 2);
 
         break;
 
     default:
-        paint(COLOR_DARK, panel->size.x + 0, 1);
-        paint(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
-        paint(framecolor, panel->size.x + 1, 1);
-        paint(framecolor, panel->size.x + panel->size.w - 2, 1);
-        paint(backgroundcolor, panel->size.x + 2, panel->size.w - 4);
+        paint(context, COLOR_DARK, panel->size.x + 0, 1);
+        paint(context, COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
+        paint(context, framecolor, panel->size.x + 1, 1);
+        paint(context, framecolor, panel->size.x + panel->size.w - 2, 1);
+        paint(context, backgroundcolor, panel->size.x + 2, panel->size.w - 4);
 
         break;
 
@@ -265,7 +271,7 @@ static unsigned int findrowstart(struct element_text *text, unsigned int row, un
 
 }
 
-static void rendertextglyph(unsigned char *data, unsigned int offset, unsigned int count, unsigned int color)
+static void rendertextglyph(struct context *context, unsigned char *data, unsigned int offset, unsigned int count, unsigned int color)
 {
 
     unsigned int i;
@@ -281,7 +287,7 @@ static void rendertextglyph(unsigned char *data, unsigned int offset, unsigned i
         {
 
             if (c & b)
-                paint(color, offset + i * 8 + k, 1);
+                paint(context, color, offset + i * 8 + k, 1);
 
             k++;
                 
@@ -291,7 +297,7 @@ static void rendertextglyph(unsigned char *data, unsigned int offset, unsigned i
 
 }
 
-static void rendertext(struct element *element, void *data, unsigned int line)
+static void rendertext(struct context *context, struct element *element, void *data, unsigned int line)
 {
 
     struct element_text *text = data;
@@ -344,7 +350,7 @@ static void rendertext(struct element *element, void *data, unsigned int line)
             return;
 
         if (rowline < size.h)
-            rendertextglyph(data + rowline * fontpadding, size.x, fontpadding, textcolor[text->type]);
+            rendertextglyph(context, data + rowline * fontpadding, size.x, fontpadding, context->textcolor[text->type]);
 
         size.x += size.w;
 
@@ -361,7 +367,7 @@ static unsigned int testwindow(struct element *element, void *data, unsigned int
 
 }
 
-static void renderwindow(struct element *element, void *data, unsigned int line)
+static void renderwindow(struct context *context, struct element *element, void *data, unsigned int line)
 {
 
     struct element_window *window = data;
@@ -376,33 +382,33 @@ static void renderwindow(struct element *element, void *data, unsigned int line)
     {
 
     case 0:
-        paint(COLOR_DARK, window->size.x, window->size.w);
+        paint(context, COLOR_DARK, window->size.x, window->size.w);
 
         break;
 
     case 1:
-        paint(COLOR_DARK, window->size.x + 0, 1);
-        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        paint(framecolor, window->size.x + 1, window->size.w - 2);
+        paint(context, COLOR_DARK, window->size.x + 0, 1);
+        paint(context, COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        paint(context, framecolor, window->size.x + 1, window->size.w - 2);
 
         break;
 
     case 2:
-        paint(COLOR_DARK, window->size.x + 0, 1);
-        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        paint(framecolor, window->size.x + 1, 1);
-        paint(framecolor, window->size.x + window->size.w - 2, 1);
-        paint(COLOR_DARK, window->size.x + 2, window->size.w - 4);
+        paint(context, COLOR_DARK, window->size.x + 0, 1);
+        paint(context, COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        paint(context, framecolor, window->size.x + 1, 1);
+        paint(context, framecolor, window->size.x + window->size.w - 2, 1);
+        paint(context, COLOR_DARK, window->size.x + 2, window->size.w - 4);
 
         break;
 
     default:
-        paint(COLOR_DARK, window->size.x + 0, 1);
-        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        paint(framecolor, window->size.x + 1, 1);
-        paint(framecolor, window->size.x + window->size.w - 2, 1);
-        paint(COLOR_DARK, window->size.x + 2, 1);
-        paint(COLOR_DARK, window->size.x + window->size.w - 3, 1);
+        paint(context, COLOR_DARK, window->size.x + 0, 1);
+        paint(context, COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        paint(context, framecolor, window->size.x + 1, 1);
+        paint(context, framecolor, window->size.x + window->size.w - 2, 1);
+        paint(context, COLOR_DARK, window->size.x + 2, 1);
+        paint(context, COLOR_DARK, window->size.x + window->size.w - 3, 1);
 
         break;
 
@@ -489,12 +495,12 @@ static unsigned int testline(unsigned int line)
 
 }
 
-static void render(unsigned int width, unsigned int height)
+static void render(struct context *context)
 {
 
     unsigned int line;
 
-    for (line = 0; line < height; line++)
+    for (line = 0; line < context->settings.h; line++)
     {
 
         unsigned int z;
@@ -514,24 +520,39 @@ static void render(unsigned int width, unsigned int height)
                     continue;
 
                 if (tests[element->type](element, element + 1, line))
-                    renderers[element->type](element, element + 1, line);
+                    renderers[element->type](context, element, element + 1, line);
 
             }
 
         }
 
-        video_draw(CALL_L0, settings.w * line, width, drawdata);
+        video_draw(CALL_L0, context->settings.w * line, context->settings.w, context->buffer);
 
     }
+
+}
+
+static void setup(struct context *context)
+{
+
+    video_getmode(CALL_L0, &context->settings);
+
+    if (context->settings.bpp == 8)
+        video_setcolormap(CALL_L0, 0, 3 * 11, colormap8);
+
+    context->textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
+    context->textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
 
 }
 
 void main(void)
 {
 
+    struct context context;
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
+    setup(&context);
     call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf");
     call_open(CALL_L0);
     call_read(CALL_L0, 0x8000, fontdata);
@@ -547,11 +568,7 @@ void main(void)
     renderers[ELEMENT_TYPE_PANEL] = renderpanel;
     renderers[ELEMENT_TYPE_TEXT] = rendertext;
     renderers[ELEMENT_TYPE_WINDOW] = renderwindow;
-    textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
-    textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
 
-    video_getmode(CALL_L0, &settings);
-    video_setcolormap(CALL_L0, 0, 3 * 11, colormap8);
     video_open(CALL_L0);
     call_open(CALL_PI);
 
@@ -563,7 +580,7 @@ void main(void)
         while ((element = nextelement(count, buffer, element)))
             addelement(element);
 
-        render(settings.w, settings.h);
+        render(&context);
         cleanelements();
 
     }

@@ -6,44 +6,50 @@
 #include "send.h"
 #include "keymap.h"
 
-#define CLIENTS                         64
+#define REMOTES                         64
 #define VIEWS                           8
 
-static struct client
+static struct remote
 {
 
     struct list_item item;
     struct element_window window;
     unsigned int source;
 
-} client[CLIENTS];
+} remote[REMOTES];
 
 static struct view
 {
 
-    struct list clients;
+    struct list remotes;
     unsigned int center;
     struct element_panel panel;
     struct element_text number;
     char *numberstring;
-    struct client *clientfocus;
+    struct remote *remotefocus;
 
 } view[VIEWS];
 
-static struct element_fill background;
-static struct element_mouse mouse;
-static struct list clients;
-static struct ctrl_videosettings oldsettings;
-static struct ctrl_videosettings settings;
+struct client
+{
+
+    struct element_fill background;
+    struct element_mouse mouse;
+    struct ctrl_videosettings oldsettings;
+    struct ctrl_videosettings settings;
+    struct view *viewfocus;
+    unsigned int keymod;
+    unsigned int quit;
+    struct box size;
+    struct box menu;
+    struct box body;
+
+};
+
+static struct list remotes;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
-static struct view *viewfocus;
-static struct box screen;
-static struct box menu;
-static struct box body;
-static unsigned int quit;
-static void (*handlers[EVENTS])(union event *event);
-static unsigned int modifier;
+static void (*handlers[EVENTS])(struct client *client, union event *event);
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
@@ -102,10 +108,10 @@ static void writewindow(unsigned int source, unsigned int z, struct element_wind
 
 }
 
-static void writeclient(unsigned int source, unsigned int z, struct client *client)
+static void writeremote(unsigned int source, unsigned int z, struct remote *remote)
 {
 
-    writewindow(source, z, &client->window);
+    writewindow(source, z, &remote->window);
 
 }
 
@@ -131,91 +137,91 @@ static void flush(void)
 
 }
 
-static void activateclient(struct client *client)
+static void activateremote(struct remote *remote)
 {
 
-    client->window.active = 1;
+    remote->window.active = 1;
 
 }
 
-static void deactivateclient(struct client *client)
+static void deactivateremote(struct remote *remote)
 {
 
-    client->window.active = 0;
+    remote->window.active = 0;
 
 }
 
-static void showclients(unsigned int source, struct list *clients)
+static void showremotes(unsigned int source, struct list *remotes)
 {
 
     struct list_item *current;
 
-    for (current = clients->head; current; current = current->next)
+    for (current = remotes->head; current; current = current->next)
     {
 
-        struct client *client = current->data;
+        struct remote *remote = current->data;
 
-        send_wmshow(CALL_L2, client->source);
-        writeclient(source, 1, client);
+        send_wmshow(CALL_L2, remote->source);
+        writeremote(source, 1, remote);
 
     }
 
 }
 
-static void hideclients(unsigned int source, struct list *clients)
+static void hideremotes(unsigned int source, struct list *remotes)
 {
 
     struct list_item *current;
 
-    for (current = clients->head; current; current = current->next)
+    for (current = remotes->head; current; current = current->next)
     {
 
-        struct client *client = current->data;
+        struct remote *remote = current->data;
 
-        send_wmhide(CALL_L2, client->source);
-        writeclient(source, 0, client);
+        send_wmhide(CALL_L2, remote->source);
+        writeremote(source, 0, remote);
 
     }
 
 }
 
-static void arrangeview(struct view *view)
+static void arrangeview(struct view *view, struct box *body)
 {
 
-    struct list_item *current = view->clients.tail;
-    struct client *client;
+    struct list_item *current = view->remotes.tail;
+    struct remote *remote;
     unsigned int y;
     unsigned int h;
 
-    switch (view->clients.count)
+    switch (view->remotes.count)
     {
 
     case 0:
         break;
 
     case 1:
-        client = current->data;
+        remote = current->data;
 
-        box_setsize(&client->window.size, body.x, body.y, body.w, body.h);
-        send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
+        box_setsize(&remote->window.size, body->x, body->y, body->w, body->h);
+        send_wmresize(CALL_L2, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
         break;
 
     default:
-        y = body.y;
-        h = body.h / (view->clients.count - 1);
-        client = current->data;
+        y = body->y;
+        h = body->h / (view->remotes.count - 1);
+        remote = current->data;
 
-        box_setsize(&client->window.size, body.x, body.y, view->center, body.h);
-        send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
+        box_setsize(&remote->window.size, body->x, body->y, view->center, body->h);
+        send_wmresize(CALL_L2, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
-        for (current = view->clients.tail->prev; current; current = current->prev)
+        for (current = view->remotes.tail->prev; current; current = current->prev)
         {
 
-            client = current->data;
+            remote = current->data;
 
-            box_setsize(&client->window.size, body.x + view->center, y, body.w - view->center, h);
-            send_wmresize(CALL_L2, client->source, client->window.size.x, client->window.size.y, client->window.size.w, client->window.size.h);
+            box_setsize(&remote->window.size, body->x + view->center, y, body->w - view->center, h);
+            send_wmresize(CALL_L2, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
             y += h;
 
@@ -248,7 +254,7 @@ static void showview(unsigned int source, struct view *view)
 
     activateview(view);
     writeview(source, 1, view);
-    showclients(source, &view->clients);
+    showremotes(source, &view->remotes);
 
 }
 
@@ -257,37 +263,37 @@ static void hideview(unsigned int source, struct view *view)
 
     deactivateview(view);
     writeview(source, 1, view);
-    hideclients(source, &view->clients);
+    hideremotes(source, &view->remotes);
 
 }
 
-static void onkeypress(union event *event)
+static void onkeypress(struct client *client, union event *event)
 {
 
     struct view *nextview;
-    struct client *nextclient;
+    struct remote *nextremote;
 
     switch (event->keypress.scancode)
     {
 
     case 0x2A:
     case 0x36:
-        modifier |= KEYMOD_SHIFT;
+        client->keymod |= KEYMOD_SHIFT;
 
         break;
 
     case 0x38:
-        modifier |= KEYMOD_ALT;
+        client->keymod |= KEYMOD_ALT;
 
         break;
 
     }
 
-    if (!(modifier & KEYMOD_ALT))
+    if (!(client->keymod & KEYMOD_ALT))
     {
 
-        if (viewfocus->clientfocus)
-            send_keypress(CALL_L2, viewfocus->clientfocus->source, event->keypress.scancode);
+        if (client->viewfocus->remotefocus)
+            send_keypress(CALL_L2, client->viewfocus->remotefocus->source, event->keypress.scancode);
 
         return;
 
@@ -306,53 +312,53 @@ static void onkeypress(union event *event)
     case 0x09:
         nextview = &view[event->keypress.scancode - 0x02];
 
-        if (nextview == viewfocus)
+        if (nextview == client->viewfocus)
             break;
 
-        hideview(event->header.destination, viewfocus);
+        hideview(event->header.destination, client->viewfocus);
 
-        if (viewfocus->clientfocus && modifier & KEYMOD_SHIFT)
+        if (client->viewfocus->remotefocus && client->keymod & KEYMOD_SHIFT)
         {
 
-            list_move(&nextview->clients, &viewfocus->clients, &viewfocus->clientfocus->item);
+            list_move(&nextview->remotes, &client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
 
-            viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
+            client->viewfocus->remotefocus = (client->viewfocus->remotes.tail) ? client->viewfocus->remotes.tail->data : 0;
 
-            if (viewfocus->clientfocus)
-                activateclient(viewfocus->clientfocus);
+            if (client->viewfocus->remotefocus)
+                activateremote(client->viewfocus->remotefocus);
 
-            arrangeview(viewfocus);
-            arrangeview(nextview);
+            arrangeview(client->viewfocus, &client->body);
+            arrangeview(nextview, &client->body);
 
-            if (nextview->clientfocus)
-                deactivateclient(nextview->clientfocus);
+            if (nextview->remotefocus)
+                deactivateremote(nextview->remotefocus);
 
-            nextview->clientfocus = (nextview->clients.tail) ? nextview->clients.tail->data : 0;
+            nextview->remotefocus = (nextview->remotes.tail) ? nextview->remotes.tail->data : 0;
 
         }
 
-        viewfocus = nextview;
+        client->viewfocus = nextview;
 
-        showview(event->header.destination, viewfocus);
+        showview(event->header.destination, client->viewfocus);
 
         break;
 
     case 0x10:
-        if (!viewfocus->clientfocus)
+        if (!client->viewfocus->remotefocus)
             break;
 
-        send_wmhide(CALL_L2, viewfocus->clientfocus->source);
-        send_wmunmap(CALL_L2, viewfocus->clientfocus->source);
-        writewindow(event->header.destination, 0, &viewfocus->clientfocus->window);
-        list_move(&clients, &viewfocus->clients, &viewfocus->clientfocus->item);
+        send_wmhide(CALL_L2, client->viewfocus->remotefocus->source);
+        send_wmunmap(CALL_L2, client->viewfocus->remotefocus->source);
+        writewindow(event->header.destination, 0, &client->viewfocus->remotefocus->window);
+        list_move(&remotes, &client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
 
-        viewfocus->clientfocus = (viewfocus->clients.tail) ? viewfocus->clients.tail->data : 0;
+        client->viewfocus->remotefocus = (client->viewfocus->remotes.tail) ? client->viewfocus->remotes.tail->data : 0;
 
-        if (viewfocus->clientfocus)
-            activateclient(viewfocus->clientfocus);
+        if (client->viewfocus->remotefocus)
+            activateremote(client->viewfocus->remotefocus);
 
-        arrangeview(viewfocus);
-        showclients(event->header.destination, &viewfocus->clients);
+        arrangeview(client->viewfocus, &client->body);
+        showremotes(event->header.destination, &client->viewfocus->remotes);
 
         break;
 
@@ -360,7 +366,7 @@ static void onkeypress(union event *event)
         break;
 
     case 0x1C:
-        if (modifier & KEYMOD_SHIFT)
+        if (client->keymod & KEYMOD_SHIFT)
         {
 
             call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
@@ -371,68 +377,68 @@ static void onkeypress(union event *event)
         else
         {
 
-            if (!viewfocus->clientfocus)
+            if (!client->viewfocus->remotefocus)
                 break;
 
-            list_move(&viewfocus->clients, &viewfocus->clients, &viewfocus->clientfocus->item);
-            arrangeview(viewfocus);
-            showclients(event->header.destination, &viewfocus->clients);
+            list_move(&client->viewfocus->remotes, &client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
+            arrangeview(client->viewfocus, &client->body);
+            showremotes(event->header.destination, &client->viewfocus->remotes);
 
         }
 
         break;
 
     case 0x23:
-        if (viewfocus->center <= 1 * (screen.w / 8))
+        if (client->viewfocus->center <= 1 * (client->size.w / 8))
             break;
 
-        viewfocus->center -= (body.w / 32);
+        client->viewfocus->center -= (client->body.w / 32);
 
-        arrangeview(viewfocus);
-        showclients(event->header.destination, &viewfocus->clients);
+        arrangeview(client->viewfocus, &client->body);
+        showremotes(event->header.destination, &client->viewfocus->remotes);
 
         break;
 
     case 0x24:
-        nextclient = viewfocus->clientfocus->item.next ? viewfocus->clientfocus->item.next->data : viewfocus->clients.head;
+        nextremote = client->viewfocus->remotefocus->item.next ? client->viewfocus->remotefocus->item.next->data : client->viewfocus->remotes.head;
 
-        if (!viewfocus->clientfocus || !nextclient || nextclient == viewfocus->clientfocus)
+        if (!client->viewfocus->remotefocus || !nextremote || nextremote == client->viewfocus->remotefocus)
             break;
 
-        deactivateclient(viewfocus->clientfocus);
-        writeclient(event->header.destination, 1, viewfocus->clientfocus);
+        deactivateremote(client->viewfocus->remotefocus);
+        writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
 
-        viewfocus->clientfocus = nextclient;
+        client->viewfocus->remotefocus = nextremote;
 
-        activateclient(viewfocus->clientfocus);
-        writeclient(event->header.destination, 1, viewfocus->clientfocus);
+        activateremote(client->viewfocus->remotefocus);
+        writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
 
         break;
 
     case 0x25:
-        nextclient = viewfocus->clientfocus->item.prev ? viewfocus->clientfocus->item.prev->data : viewfocus->clients.tail;
+        nextremote = client->viewfocus->remotefocus->item.prev ? client->viewfocus->remotefocus->item.prev->data : client->viewfocus->remotes.tail;
 
-        if (!viewfocus->clientfocus || !nextclient || nextclient == viewfocus->clientfocus)
+        if (!client->viewfocus->remotefocus || !nextremote || nextremote == client->viewfocus->remotefocus)
             break;
 
-        deactivateclient(viewfocus->clientfocus);
-        writeclient(event->header.destination, 1, viewfocus->clientfocus);
+        deactivateremote(client->viewfocus->remotefocus);
+        writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
 
-        viewfocus->clientfocus = nextclient;
+        client->viewfocus->remotefocus = nextremote;
 
-        activateclient(viewfocus->clientfocus);
-        writeclient(event->header.destination, 1, viewfocus->clientfocus);
+        activateremote(client->viewfocus->remotefocus);
+        writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
 
         break;
 
     case 0x26:
-        if (viewfocus->center >= 7 * (screen.w / 8))
+        if (client->viewfocus->center >= 7 * (client->size.w / 8))
             break;
 
-        viewfocus->center += (body.w / 32);
+        client->viewfocus->center += (client->body.w / 32);
 
-        arrangeview(viewfocus);
-        showclients(event->header.destination, &viewfocus->clients);
+        arrangeview(client->viewfocus, &client->body);
+        showremotes(event->header.destination, &client->viewfocus->remotes);
 
         break;
 
@@ -446,7 +452,7 @@ static void onkeypress(union event *event)
 
 }
 
-static void onkeyrelease(union event *event)
+static void onkeyrelease(struct client *client, union event *event)
 {
 
     switch (event->keyrelease.scancode)
@@ -454,22 +460,22 @@ static void onkeyrelease(union event *event)
 
     case 0x2A:
     case 0x36:
-        modifier &= ~KEYMOD_SHIFT;
+        client->keymod &= ~KEYMOD_SHIFT;
 
         break;
 
     case 0x38:
-        modifier &= ~KEYMOD_ALT;
+        client->keymod &= ~KEYMOD_ALT;
 
         break;
 
     }
 
-    if (!(modifier & KEYMOD_ALT))
+    if (!(client->keymod & KEYMOD_ALT))
     {
 
-        if (viewfocus->clientfocus)
-            send_keyrelease(CALL_L2, viewfocus->clientfocus->source, event->keyrelease.scancode);
+        if (client->viewfocus->remotefocus)
+            send_keyrelease(CALL_L2, client->viewfocus->remotefocus->source, event->keyrelease.scancode);
 
         return;
 
@@ -477,7 +483,7 @@ static void onkeyrelease(union event *event)
 
 }
 
-static void onmousepress(union event *event)
+static void onmousepress(struct client *client, union event *event)
 {
 
     struct list_item *current;
@@ -490,17 +496,17 @@ static void onmousepress(union event *event)
         for (i = 0; i < VIEWS; i++)
         {
 
-            if (!box_isinside(&view[i].panel.size, mouse.x, mouse.y))
+            if (!box_isinside(&view[i].panel.size, client->mouse.x, client->mouse.y))
                 continue;
 
-            if (&view[i] != viewfocus)
+            if (&view[i] != client->viewfocus)
             {
 
-                hideview(event->header.destination, viewfocus);
+                hideview(event->header.destination, client->viewfocus);
 
-                viewfocus = &view[i];
+                client->viewfocus = &view[i];
 
-                showview(event->header.destination, viewfocus);
+                showview(event->header.destination, client->viewfocus);
 
             }
 
@@ -508,29 +514,29 @@ static void onmousepress(union event *event)
 
         }
 
-        for (current = viewfocus->clients.head; current; current = current->next)
+        for (current = client->viewfocus->remotes.head; current; current = current->next)
         {
 
-            struct client *client = current->data;
+            struct remote *remote = current->data;
 
-            if (!box_isinside(&client->window.size, mouse.x, mouse.y))
+            if (!box_isinside(&remote->window.size, client->mouse.x, client->mouse.y))
                 continue;
 
-            if (client != viewfocus->clientfocus)
+            if (remote != client->viewfocus->remotefocus)
             {
 
-                if (viewfocus->clientfocus)
+                if (client->viewfocus->remotefocus)
                 {
 
-                    deactivateclient(viewfocus->clientfocus);
-                    writeclient(event->header.destination, 1, viewfocus->clientfocus);
+                    deactivateremote(client->viewfocus->remotefocus);
+                    writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
 
                 }
 
-                viewfocus->clientfocus = client;
+                client->viewfocus->remotefocus = remote;
 
-                activateclient(viewfocus->clientfocus);
-                writeclient(event->header.destination, 1, viewfocus->clientfocus);
+                activateremote(client->viewfocus->remotefocus);
+                writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
 
             }
 
@@ -544,39 +550,39 @@ static void onmousepress(union event *event)
 
 }
 
-static void onmousemove(union event *event)
+static void onmousemove(struct client *client, union event *event)
 {
 
-    mouse.x += event->mousemove.relx;
-    mouse.y -= event->mousemove.rely;
+    client->mouse.x += event->mousemove.relx;
+    client->mouse.y -= event->mousemove.rely;
 
-    if (event->mousemove.relx > 0 && mouse.x >= screen.w)
-        mouse.x = screen.w - 1;
+    if (event->mousemove.relx > 0 && client->mouse.x >= client->size.w)
+        client->mouse.x = client->size.w - 1;
 
-    if (event->mousemove.relx < 0 && mouse.x >= screen.w)
-        mouse.x = 0;
+    if (event->mousemove.relx < 0 && client->mouse.x >= client->size.w)
+        client->mouse.x = 0;
 
-    if (event->mousemove.rely < 0 && mouse.y >= screen.h)
-        mouse.y = screen.h - 1;
+    if (event->mousemove.rely < 0 && client->mouse.y >= client->size.h)
+        client->mouse.y = client->size.h - 1;
 
-    if (event->mousemove.rely > 0 && mouse.y >= screen.h)
-        mouse.y = 0;
+    if (event->mousemove.rely > 0 && client->mouse.y >= client->size.h)
+        client->mouse.y = 0;
 
-    writemouse(event->header.destination, 3, &mouse);
+    writemouse(event->header.destination, 3, &client->mouse);
 
 }
 
-static void onwmmap(union event *event)
+static void onwmmap(struct client *client, union event *event)
 {
 
     if (event->header.source == event->header.destination)
     {
 
-        ctrl_setvideosettings(&settings, 1920, 1080, 32);
-        video_getmode(CALL_L0, &oldsettings);
-        video_setmode(CALL_L0, &settings);
-        video_getmode(CALL_L0, &settings);
-        send_wmresize(CALL_L2, event->header.destination, 0, 0, settings.w, settings.h);
+        ctrl_setvideosettings(&client->settings, 1920, 1080, 32);
+        video_getmode(CALL_L0, &client->oldsettings);
+        video_setmode(CALL_L0, &client->settings);
+        video_getmode(CALL_L0, &client->settings);
+        send_wmresize(CALL_L2, event->header.destination, 0, 0, client->settings.w, client->settings.h);
         send_wmshow(CALL_L2, event->header.destination);
 
     }
@@ -584,121 +590,121 @@ static void onwmmap(union event *event)
     else
     {
 
-        if (!clients.count)
+        if (!remotes.count)
             return;
 
-        if (viewfocus->clientfocus)
-            deactivateclient(viewfocus->clientfocus);
+        if (client->viewfocus->remotefocus)
+            deactivateremote(client->viewfocus->remotefocus);
 
-        viewfocus->clientfocus = clients.head->data;
-        viewfocus->clientfocus->source = event->header.source;
+        client->viewfocus->remotefocus = remotes.head->data;
+        client->viewfocus->remotefocus->source = event->header.source;
 
-        list_move(&viewfocus->clients, &clients, &viewfocus->clientfocus->item);
-        activateclient(viewfocus->clientfocus);
-        arrangeview(viewfocus);
-        showclients(event->header.destination, &viewfocus->clients);
+        list_move(&client->viewfocus->remotes, &remotes, &client->viewfocus->remotefocus->item);
+        activateremote(client->viewfocus->remotefocus);
+        arrangeview(client->viewfocus, &client->body);
+        showremotes(event->header.destination, &client->viewfocus->remotes);
 
     }
 
 }
 
-static void onwmunmap(union event *event)
+static void onwmunmap(struct client *client, union event *event)
 {
 
     unsigned int i;
 
     if (event->header.source == event->header.destination)
-        video_setmode(CALL_L0, &oldsettings);
+        video_setmode(CALL_L0, &client->oldsettings);
 
     for (i = 0; i < VIEWS; i++)
     {
 
-        while (view[i].clients.count)
+        while (view[i].remotes.count)
         {
 
-            struct client *client = view[i].clients.head->data;
+            struct remote *remote = view[i].remotes.head->data;
 
-            send_wmunmap(CALL_L2, client->source);
-            list_move(&clients, &view[i].clients, &client->item);
+            send_wmunmap(CALL_L2, remote->source);
+            list_move(&remotes, &view[i].remotes, &remote->item);
 
         }
 
     }
 
-    quit = 1;
+    client->quit = 1;
 
 }
 
-static void onwmresize(union event *event)
+static void onwmresize(struct client *client, union event *event)
 {
 
     unsigned int i;
 
-    box_setsize(&screen, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
-    box_setsize(&menu, screen.x, screen.y, screen.w, 32);
-    box_setsize(&body, screen.x, screen.y + menu.h, screen.w, screen.h - menu.h);
-    box_setsize(&background.size, screen.x, screen.y, screen.w, screen.h);
+    box_setsize(&client->size, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
+    box_setsize(&client->menu, client->size.x, client->size.y, client->size.w, 32);
+    box_setsize(&client->body, client->size.x, client->size.y + client->menu.h, client->size.w, client->size.h - client->menu.h);
+    box_setsize(&client->background.size, client->size.x, client->size.y, client->size.w, client->size.h);
 
     for (i = 0; i < VIEWS; i++)
     {
 
-        view[i].center = body.w / 2;
+        view[i].center = client->body.w / 2;
 
-        box_setsize(&view[i].panel.size, menu.x + i * menu.w / VIEWS, menu.y, menu.w / VIEWS, menu.h);
+        box_setsize(&view[i].panel.size, client->menu.x + i * client->menu.w / VIEWS, client->menu.y, client->menu.w / VIEWS, client->menu.h);
         box_setsize(&view[i].number.size, view[i].panel.size.x + 12, view[i].panel.size.y + 6, view[i].panel.size.w - 24, view[i].panel.size.h - 12);
-        arrangeview(&view[i]);
+        arrangeview(&view[i], &client->body);
 
     }
 
-    mouse.x = screen.x + screen.w / 4;
-    mouse.y = screen.y + screen.h / 4;
+    client->mouse.x = client->size.x + client->size.w / 4;
+    client->mouse.y = client->size.y + client->size.h / 4;
 
 }
 
-static void onwmshow(union event *event)
+static void onwmshow(struct client *client, union event *event)
 {
 
     unsigned int i;
 
-    writefill(event->header.destination, 1, &background);
+    writefill(event->header.destination, 1, &client->background);
 
     for (i = 0; i < VIEWS; i++)
         writeview(event->header.destination, 1, &view[i]);
 
-    writemouse(event->header.destination, 3, &mouse);
-    showclients(event->header.destination, &viewfocus->clients);
+    writemouse(event->header.destination, 3, &client->mouse);
+    showremotes(event->header.destination, &client->viewfocus->remotes);
 
 }
 
-static void onwmhide(union event *event)
+static void onwmhide(struct client *client, union event *event)
 {
 
     unsigned int i;
 
-    writefill(event->header.destination, 0, &background);
+    writefill(event->header.destination, 0, &client->background);
 
     for (i = 0; i < VIEWS; i++)
         writeview(event->header.destination, 0, &view[i]);
 
-    writemouse(event->header.destination, 0, &mouse);
-    hideclients(event->header.destination, &viewfocus->clients);
+    writemouse(event->header.destination, 0, &client->mouse);
+    hideremotes(event->header.destination, &client->viewfocus->remotes);
 
 }
 
-static void setup(void)
+static void setup(struct client *client)
 {
 
     unsigned int i;
 
-    element_initfill(&background, 2);
-    element_initmouse(&mouse);
+    element_initfill(&client->background, 2);
+    element_initmouse(&client->mouse);
 
-    for (i = 0; i < CLIENTS; i++)
+    for (i = 0; i < REMOTES; i++)
     {
 
-        list_inititem(&client[i].item, &client[i]);
-        element_initwindow(&client[i].window);
-        list_add(&clients, &client[i].item);
+        list_inititem(&remote[i].item, &remote[i]);
+        element_initwindow(&remote[i].window);
+        list_add(&remotes, &remote[i].item);
 
     }
 
@@ -709,23 +715,26 @@ static void setup(void)
         element_inittext(&view[i].number, ELEMENT_TEXTTYPE_NORMAL);
 
         view[i].numberstring = "12345678" + i;
-        view[i].clientfocus = 0;
+        view[i].remotefocus = 0;
 
     }
 
-    viewfocus = &view[0];
-    viewfocus->panel.active = 1;
-    viewfocus->number.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
+    client->viewfocus = &view[0];
+    client->viewfocus->panel.active = 1;
+    client->viewfocus->number.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
+    client->quit = 0;
+    client->keymod = KEYMOD_NONE;
 
 }
 
 void main(void)
 {
 
+    struct client client;
     union event event;
     unsigned int count;
 
-    setup();
+    setup(&client);
 
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;
@@ -751,12 +760,12 @@ void main(void)
         if (handlers[event.header.type])
         {
 
-            handlers[event.header.type](&event);
+            handlers[event.header.type](&client, &event);
             flush();
 
         }
 
-        if (quit)
+        if (client.quit)
             break;
 
     }
