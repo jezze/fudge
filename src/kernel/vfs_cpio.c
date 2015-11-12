@@ -24,17 +24,14 @@ static unsigned int readheader(struct vfs_backend *backend, struct cpio_header *
 
     unsigned int count = backend->read(address, sizeof (struct cpio_header), header);
 
-    if (count != sizeof (struct cpio_header))
-        return 0;
-
-    return cpio_validate(header);
+    return (count == sizeof (struct cpio_header)) ? cpio_validate(header) : 0;
 
 }
 
 static unsigned int readname(struct vfs_backend *backend, struct cpio_header *header, unsigned int address, unsigned int count, void *buffer)
 {
 
-    return backend->read(address + sizeof (struct cpio_header), header->namesize, buffer);
+    return (header->namesize <= count) ? backend->read(address + sizeof (struct cpio_header), header->namesize, buffer) : 0;
 
 }
 
@@ -124,6 +121,7 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
 {
 
     struct cpio_header header;
+    unsigned char pname[1024];
     unsigned int address = decode(id);
     unsigned int length;
 
@@ -131,6 +129,9 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
         return id;
 
     if (!readheader(backend, &header, address))
+        return 0;
+
+    if (!readname(backend, &header, address, 1024, pname))
         return 0;
 
     length = header.namesize;
@@ -143,6 +144,7 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
     {
 
         unsigned int cid = encode(address);
+        unsigned char cname[1024];
 
         if (cid == id)
             break;
@@ -150,18 +152,17 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
         if (!readheader(backend, &header, address))
             break;
 
-        if (header.namesize - length == count + 1)
-        {
+        if (header.namesize - length != count + 1)
+            continue;
 
-            unsigned char cname[1024];
+        if (!readname(backend, &header, address, 1024, cname))
+            break;
 
-            if (!readname(backend, &header, address, 1024, cname))
-                break;
+        if (!memory_match(cname, pname, length - 1))
+            continue;
 
-            if (memory_match(cname + length, path, count))
-                return cid;
-
-        }
+        if (memory_match(cname + length, path, count))
+            return cid;
 
     } while ((address = cpio_next(&header, address)));
 
