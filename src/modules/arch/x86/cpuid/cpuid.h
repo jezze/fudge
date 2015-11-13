@@ -98,7 +98,7 @@ struct cpuid_data
 
 };
 
-unsigned int cpuid_check(void);
+unsigned int cpuid_exist(void);
 void cpuid_getdata(unsigned int instruction, struct cpuid_data *data);
 void cpuid_getvendor(char *destination);
 void cpuid_getbrand(char *destination);

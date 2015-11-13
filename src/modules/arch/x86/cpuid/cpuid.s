@@ -1,7 +1,7 @@
 .code32
 
-.global cpuid_check
-cpuid_check:
+.global cpuid_exist
+cpuid_exist:
     pushf
     popl %eax
     movl %eax, %ecx

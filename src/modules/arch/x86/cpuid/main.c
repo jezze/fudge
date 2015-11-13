@@ -5,11 +5,5 @@
 void module_init(void)
 {
 
-    if (!(cpu_geteflags() & CPU_FLAGS_ID))
-        return;
-
-    if (!cpuid_check())
-        return;
-
 }
 

@@ -35,6 +35,12 @@ void module_init(void)
     unsigned int count;
     char num[32];
 
+    if (!cpuid_exist())
+        return;
+
+    if (!msr_exist())
+        return;
+
     cpuid_getdata(CPUID_FEATURES0, &data);
 
     if (!(data.edx & CPUID_FEATURES01_APIC))
