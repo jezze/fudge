@@ -31,7 +31,7 @@ MODULES+=\
 OBJ_MODULES+=\
     src/modules/arch/x86/acpi/main.o \
     src/modules/arch/x86/ahci/main.o \
-    src/modules/arch/x86/apic/main.o \
+    src/modules/arch/x86/apic/main.o src/modules/arch/x86/apic/apic.o \
     src/modules/arch/x86/ata/main.o \
     src/modules/arch/x86/atapi/main.o \
     src/modules/arch/x86/bga/main.o \
@@ -60,7 +60,7 @@ OBJ_MODULES+=\
 
 src/modules/arch/x86/acpi/acpi.ko: src/modules/arch/x86/acpi/main.o $(MOD_DEPS)
 src/modules/arch/x86/ahci/ahci.ko: src/modules/arch/x86/ahci/main.o $(MOD_DEPS)
-src/modules/arch/x86/apic/apic.ko: src/modules/arch/x86/apic/main.o $(MOD_DEPS)
+src/modules/arch/x86/apic/apic.ko: src/modules/arch/x86/apic/main.o src/modules/arch/x86/apic/apic.o $(MOD_DEPS)
 src/modules/arch/x86/ata/ata.ko.0: src/modules/arch/x86/ata/main.o $(MOD_DEPS)
 src/modules/arch/x86/atapi/atapi.ko.0: src/modules/arch/x86/atapi/main.o $(MOD_DEPS)
 src/modules/arch/x86/bga/bga.ko.0: src/modules/arch/x86/bga/main.o $(MOD_DEPS)
