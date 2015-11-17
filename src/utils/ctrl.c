@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 union settings
 {
@@ -15,7 +16,7 @@ union settings
 static unsigned int writestring(char *value)
 {
 
-    return call_write(CALL_PO, ascii_length(value), value);
+    return file_writeall(CALL_PO, value, ascii_length(value));
 
 }
 
@@ -31,21 +32,9 @@ static unsigned int writedec(unsigned int value)
 
     char num[32];
 
-    return call_write(CALL_PO, ascii_wvalue(num, 32, value, 10, 0), num);
+    return file_writeall(CALL_PO, num, ascii_wvalue(num, 32, value, 10, 0));
 
 }
-
-/*
-static unsigned int writehex2(unsigned int offset, unsigned char value)
-{
-
-    char num[32];
-    unsigned int count = ascii_wzerovalue(num, 32, value, 16, 2, 0);
-
-    return call_write(CALL_PO, offset, count, 1, num);
-
-}
-*/
 
 static void writeheader(struct ctrl_header *header)
 {
@@ -139,27 +128,26 @@ void main(void)
 
     call_open(CALL_PO);
     call_open(CALL_PI);
-    call_read(CALL_PI, sizeof (struct ctrl_header), &buffer.header);
+    file_readall(CALL_PI, &buffer.header, sizeof (struct ctrl_header));
     writeheader(&buffer.header);
-    call_seek(CALL_PI, 0);
 
     switch (buffer.header.type)
     {
 
     case CTRL_TYPE_CLOCK:
-        call_read(CALL_PI, sizeof (struct ctrl_clocksettings), &buffer.clocksettings);
+        file_seekreadall(CALL_PI, &buffer.clocksettings, sizeof (struct ctrl_clocksettings), 0);
         writeclocksettings(&buffer.clocksettings);
 
         break;
 
     case CTRL_TYPE_CONSOLE:
-        call_read(CALL_PI, sizeof (struct ctrl_consolesettings), &buffer.consolesettings);
+        file_seekreadall(CALL_PI, &buffer.consolesettings, sizeof (struct ctrl_consolesettings), 0);
         writeconsolesettings(&buffer.consolesettings);
 
         break;
 
     case CTRL_TYPE_VIDEO:
-        call_read(CALL_PI, sizeof (struct ctrl_videosettings), &buffer.videosettings);
+        file_seekreadall(CALL_PI, &buffer.videosettings, sizeof (struct ctrl_videosettings), 0);
         writevideosettings(&buffer.videosettings);
 
         break;

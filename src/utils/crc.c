@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 static unsigned int tab[256] = {
     0x00000000, 0x04C11DB7, 0x09823B6E, 0x0D4326D9, 0x130476DC, 0x17C56B6B, 0x1A864DB2, 0x1E475005,
@@ -46,7 +47,7 @@ void main(void)
 
     call_open(CALL_PI);
 
-    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
     {
 
         for (i = 0; i < count; i++)
@@ -62,7 +63,7 @@ void main(void)
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
     call_open(CALL_PO);
-    call_write(CALL_PO, ascii_fromint(buffer, 32, ~crc, 10), buffer);
+    file_writeall(CALL_PO, buffer, ascii_fromint(buffer, 32, ~crc, 10));
     call_close(CALL_PO);
 
 }

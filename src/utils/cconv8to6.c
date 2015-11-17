@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
-/*
 static unsigned int convert(unsigned char *out, unsigned int ocount, unsigned char *in, unsigned int icount)
 {
 
@@ -13,23 +13,22 @@ static unsigned int convert(unsigned char *out, unsigned int ocount, unsigned ch
     return offset;
 
 }
-*/
 
 void main(void)
 {
-/*
+
     unsigned char out[FUDGE_BSIZE];
     unsigned char in[FUDGE_BSIZE];
-    unsigned int count, roff, woff = 0;
+    unsigned int count;
 
     call_open(CALL_PO);
-    call_open(CALL_P0);
+    call_open(CALL_PI);
 
-    for (roff = 0; (count = call_read(CALL_P0, roff, 1, FUDGE_BSIZE, in)); roff += count)
-        woff += call_write(CALL_PO, woff, convert(out, FUDGE_BSIZE, in, count), 1, out);
+    while ((count = file_read(CALL_PI, in, FUDGE_BSIZE)))
+        file_writeall(CALL_PO, out, convert(out, FUDGE_BSIZE, in, count));
 
-    call_close(CALL_P0);
+    call_close(CALL_PI);
     call_close(CALL_PO);
-*/
+
 }
 

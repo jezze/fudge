@@ -21,7 +21,7 @@ static unsigned int interfacectrl_write(struct system_node *self, unsigned int o
 
     interface->setmode(settings);
 
-    return 1;
+    return sizeof (struct ctrl_videosettings);
 
 }
 

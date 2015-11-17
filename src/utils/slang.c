@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 #define TOKENSKIP                       1
 #define TOKENEND                        2
@@ -347,7 +348,7 @@ void main(void)
 
     call_open(CALL_PI);
 
-    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
     call_close(CALL_PI);

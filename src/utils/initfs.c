@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 static struct args
 {
@@ -44,8 +45,10 @@ void main(void)
     unsigned int i;
 
     call_open(CALL_PI);
-    count = call_read(CALL_PI, FUDGE_BSIZE, buffer);
+
+    count = file_read(CALL_PI, buffer, FUDGE_BSIZE);
     nargs = parse(count, buffer);
+
     call_close(CALL_PI);
 
     for (i = 0; i < nargs; i += 4)

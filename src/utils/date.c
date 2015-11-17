@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 void main(void)
 {
@@ -15,12 +16,12 @@ void main(void)
 
     call_open(CALL_PO);
     call_open(CALL_L0);
-    call_write(CALL_PO, call_read(CALL_L0, FUDGE_BSIZE, date), date);
-    call_write(CALL_PO, 1, " ");
+    file_writeall(CALL_PO, date, file_read(CALL_L0, date, FUDGE_BSIZE));
+    file_writeall(CALL_PO, " ", 1);
     call_close(CALL_L0);
     call_open(CALL_L1);
-    call_write(CALL_PO, call_read(CALL_L1, FUDGE_BSIZE, time), time);
-    call_write(CALL_PO, 1, "\n");
+    file_writeall(CALL_PO, time, file_read(CALL_L1, time, FUDGE_BSIZE));
+    file_writeall(CALL_PO, "\n", 1);
     call_close(CALL_L1);
     call_close(CALL_PO);
 

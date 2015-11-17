@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 void main(void)
 {
@@ -8,10 +9,10 @@ void main(void)
         return;
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 23, "System is rebooting...\n");
+    file_writeall(CALL_PO, "System is rebooting...\n", 23);
     call_close(CALL_PO);
     call_open(CALL_L0);
-    call_write(CALL_L0, 1, "1");
+    file_writeall(CALL_L0, "1", 1);
     call_close(CALL_L0);
 
 }

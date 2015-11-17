@@ -38,9 +38,6 @@ static unsigned int p0_read(struct system_node *self, unsigned int offset, unsig
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    if (!count)
-        return 0;
-
     count = task_rmessage(task, count, buffer);
 
     if (pipe->p1.mailboxes.count)
@@ -62,9 +59,6 @@ static unsigned int p0_write(struct system_node *self, unsigned int offset, unsi
 
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
-
-    if (!count)
-        return 0;
 
     if (pipe->p1.mailboxes.count)
     {
@@ -123,9 +117,6 @@ static unsigned int p1_read(struct system_node *self, unsigned int offset, unsig
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    if (!count)
-        return 0;
-
     count = task_rmessage(task, count, buffer);
 
     if (pipe->p0.mailboxes.count)
@@ -147,9 +138,6 @@ static unsigned int p1_write(struct system_node *self, unsigned int offset, unsi
 
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
-
-    if (!count)
-        return 0;
 
     if (pipe->p0.mailboxes.count)
     {

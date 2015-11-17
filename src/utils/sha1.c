@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 #define F0(b, c, d)                     (d ^ (b & (c ^ d)))
 #define F1(b, c, d)                     (b ^ c ^ d)
@@ -226,7 +227,7 @@ void main(void)
     sha1_init(&s);
     call_open(CALL_PI);
 
-    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
         sha1_read(&s, count, buffer);
 
     call_close(CALL_PI);
@@ -234,7 +235,7 @@ void main(void)
     call_open(CALL_PO);
 
     for (i = 0; i < 20; i++)
-        call_write(CALL_PO, ascii_wzerovalue(buffer, 32, digest[i], 16, 2, 0), buffer);
+        file_writeall(CALL_PO, buffer, ascii_wzerovalue(buffer, 32, digest[i], 16, 2, 0));
 
     call_close(CALL_PO);
 

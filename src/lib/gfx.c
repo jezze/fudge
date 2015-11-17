@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 #include "gfx.h"
 
 static void fillrectangle(struct gfx_surface *self)
@@ -86,8 +87,7 @@ void gfx_wsurface(unsigned int id, struct gfx_surface *in)
 
         offset += in->read(in, offset, in->width, buffer);
 
-        call_seek(id, scanline * in->width);
-        call_write(id, in->width, buffer);
+        file_seekwriteall(id, buffer, in->width, scanline * in->width);
 
     }
 

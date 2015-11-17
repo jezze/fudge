@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 void main(void)
 {
@@ -9,11 +10,11 @@ void main(void)
 
     call_open(CALL_PI);
 
-    for (total = 0; (count = call_read(CALL_PI, FUDGE_BSIZE, buffer)); total += count);
+    for (total = 0; (count = file_read(CALL_PI, buffer, FUDGE_BSIZE)); total += count);
 
     call_close(CALL_PI);
     call_open(CALL_PO);
-    call_write(CALL_PO, ascii_fromint(buffer, FUDGE_BSIZE, total + count, 10), buffer);
+    file_writeall(CALL_PO, buffer, ascii_fromint(buffer, FUDGE_BSIZE, total + count, 10));
     call_close(CALL_PO);
 
 }

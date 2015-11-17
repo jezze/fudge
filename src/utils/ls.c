@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 void main(void)
 {
@@ -9,17 +10,15 @@ void main(void)
 
     call_open(CALL_PO);
     call_open(CALL_PW);
-    call_seek(CALL_PW, index);
-    call_read(CALL_PW, sizeof (struct record), &record);
-    call_write(CALL_PO, 4, "../\n");
+    file_seekreadall(CALL_PW, &record, sizeof (struct record), index);
+    file_writeall(CALL_PO, "../\n", 4);
 
     while ((index = call_scan(CALL_PW, index)))
     {
 
-        call_seek(CALL_PW, index);
-        call_read(CALL_PW, sizeof (struct record), &record);
-        call_write(CALL_PO, record.length, record.name);
-        call_write(CALL_PO, 1, "\n");
+        file_seekreadall(CALL_PW, &record, sizeof (struct record), index);
+        file_writeall(CALL_PO, record.name, record.length);
+        file_writeall(CALL_PO, "\n", 1);
 
     }
 

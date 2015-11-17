@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 struct partition
 {
@@ -35,16 +36,16 @@ void main(void)
     unsigned int i;
 
     call_open(CALL_PI);
-    call_read(CALL_PI, 512, &mbr);
+    file_readall(CALL_PI, &mbr, 512);
     call_close(CALL_PI);
 
     if (mbr.signature[0] != 0x55 || mbr.signature[1] != 0xAA)
         return;
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 4, "Id: ");
-    call_write(CALL_PO, 4, &mbr.id);
-    call_write(CALL_PO, 1, "\n");
+    file_writeall(CALL_PO, "Id: ", 4);
+    file_writeall(CALL_PO, &mbr.id, 4);
+    file_writeall(CALL_PO, "\n", 1);
 
     for (i = 0; i < 4; i++)
     {
@@ -52,24 +53,24 @@ void main(void)
         char num[32];
         unsigned int count;
 
-        call_write(CALL_PO, 10, "Partition ");
+        file_writeall(CALL_PO, "Partition ", 10);
 
         count = ascii_wvalue(num, 32, i, 10, 0);
 
-        call_write(CALL_PO, count, num);
-        call_write(CALL_PO, 2, ":\n");
+        file_writeall(CALL_PO, num, count);
+        file_writeall(CALL_PO, ":\n", 2);
 
         if (mbr.partition[i].systemid == 0)
             continue;
 
-        call_write(CALL_PO, 11, "    Boot 0x");
+        file_writeall(CALL_PO, "    Boot 0x", 11);
         count = ascii_wvalue(num, 32, mbr.partition[i].boot, 16, 0);
-        call_write(CALL_PO, count, num);
-        call_write(CALL_PO, 1, "\n");
-        call_write(CALL_PO, 15, "    Systemid 0x");
+        file_writeall(CALL_PO, num, count);
+        file_writeall(CALL_PO, "\n", 1);
+        file_writeall(CALL_PO, "    Systemid 0x", 15);
         count = ascii_wvalue(num, 32, mbr.partition[i].systemid, 16, 0);
-        call_write(CALL_PO, count, num);
-        call_write(CALL_PO, 1, "\n");
+        file_writeall(CALL_PO, num, count);
+        file_writeall(CALL_PO, "\n", 1);
 
     }
 

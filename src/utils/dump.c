@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 void main(void)
 {
@@ -10,7 +11,7 @@ void main(void)
     call_open(CALL_PO);
     call_open(CALL_PI);
 
-    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
     {
 
         unsigned int i;
@@ -20,8 +21,8 @@ void main(void)
 
             unsigned char num[32];
 
-            call_write(CALL_PO, ascii_wzerovalue(num, 32, buffer[i], 16, 2, 0), num);
-            call_write(CALL_PO, 2, "  ");
+            file_writeall(CALL_PO, num, ascii_wzerovalue(num, 32, buffer[i], 16, 2, 0));
+            file_writeall(CALL_PO, "  ", 2);
 
         }
 

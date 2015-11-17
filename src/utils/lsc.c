@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 void main(void)
 {
@@ -11,36 +12,34 @@ void main(void)
 
     call_open(CALL_PO);
     call_open(CALL_PW);
-    call_seek(CALL_PW, index);
-    call_read(CALL_PW, sizeof (struct record), &record);
+    file_seekreadall(CALL_PW, &record, sizeof (struct record), index);
 
     count = ascii_wzerovalue(num, 8, record.id, 16, 8, 0);
 
-    call_write(CALL_PO, count, num);
-    call_write(CALL_PO, 1, " ");
+    file_writeall(CALL_PO, num, count);
+    file_writeall(CALL_PO, " ", 1);
 
     count = ascii_wzerovalue(num, 8, record.size, 16, 8, 0);
 
-    call_write(CALL_PO, count, num);
-    call_write(CALL_PO, 5, " ../\n");
+    file_writeall(CALL_PO, num, count);
+    file_writeall(CALL_PO, " ../\n", 5);
 
     while ((index = call_scan(CALL_PW, index)))
     {
 
-        call_seek(CALL_PW, index);
-        call_read(CALL_PW, sizeof (struct record), &record);
+        file_seekreadall(CALL_PW, &record, sizeof (struct record), index);
 
         count = ascii_wzerovalue(num, 8, record.id, 16, 8, 0);
 
-        call_write(CALL_PO, count, num);
-        call_write(CALL_PO, 1, " ");
+        file_writeall(CALL_PO, num, count);
+        file_writeall(CALL_PO, " ", 1);
 
         count = ascii_wzerovalue(num, 8, record.size, 16, 8, 0);
 
-        call_write(CALL_PO, count, num);
-        call_write(CALL_PO, 1, " ");
-        call_write(CALL_PO, record.length, record.name);
-        call_write(CALL_PO, 1, "\n");
+        file_writeall(CALL_PO, num, count);
+        file_writeall(CALL_PO, " ", 1);
+        file_writeall(CALL_PO, record.name, record.length);
+        file_writeall(CALL_PO, "\n", 1);
 
     }
 

@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 #include "keycode.h"
 
 static struct keyset map[256] = {
@@ -120,7 +121,7 @@ void main(void)
     call_open(CALL_PO);
     call_open(CALL_PI);
 
-    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
     {
 
         unsigned int i;
@@ -134,7 +135,7 @@ void main(void)
                 continue;
 
             if (keycode->length)
-                call_write(CALL_PO, keycode->length, keycode->value);
+                file_writeall(CALL_PO, keycode->value, keycode->length);
 
         }
 

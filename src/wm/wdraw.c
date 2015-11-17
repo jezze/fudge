@@ -1,6 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
-#include <video/video.h>
+#include <lib/file.h>
+#include <lib/video.h>
 #include <format/pcf.h>
 #include "box.h"
 #include "element.h"
@@ -555,7 +556,7 @@ void main(void)
     setup(&context);
     call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf");
     call_open(CALL_L0);
-    call_read(CALL_L0, 0x8000, fontdata);
+    file_read(CALL_L0, fontdata, 0x8000);
     call_close(CALL_L0);
 
     tests[ELEMENT_TYPE_FILL] = testfill;
@@ -572,7 +573,7 @@ void main(void)
     video_open(CALL_L0);
     call_open(CALL_PI);
 
-    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
     {
 
         struct element *element = 0;

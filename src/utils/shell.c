@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 static void interpret(struct buffer *buffer)
 {
@@ -43,7 +44,7 @@ static void interpret(struct buffer *buffer)
     call_walk(CALL_CI, CALL_L0, 1, "1");
     call_open(CALL_L1);
     call_spawn();
-    call_write(CALL_L1, count, command);
+    file_writeall(CALL_L1, command, count);
     call_close(CALL_L1);
 
 }
@@ -72,7 +73,7 @@ static void handle(struct buffer *buffer, unsigned char c)
         if (!buffer_ecfifo(buffer, 1))
             break;
 
-        call_write(CALL_PO, 3, "\b \b");
+        file_writeall(CALL_PO, "\b \b", 3);
 
         break;
 
@@ -80,16 +81,16 @@ static void handle(struct buffer *buffer, unsigned char c)
         c = '\n';
 
     case '\n':
-        call_write(CALL_PO, 1, &c);
+        file_writeall(CALL_PO, &c, 1);
         buffer_wcfifo(buffer, 1, &c);
         interpret(buffer);
-        call_write(CALL_PO, 2, "$ ");
+        file_writeall(CALL_PO, "$ ", 2);
 
         break;
 
     default:
         buffer_wcfifo(buffer, 1, &c);
-        call_write(CALL_PO, 1, &c);
+        file_writeall(CALL_PO, &c, 1);
 
         break;
 
@@ -108,9 +109,9 @@ void main(void)
     buffer_init(&input, FUDGE_BSIZE, inputbuffer);
     call_open(CALL_PI);
     call_open(CALL_PO);
-    call_write(CALL_PO, 2, "$ ");
+    file_writeall(CALL_PO, "$ ", 2);
 
-    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
     {
 
         unsigned int i;

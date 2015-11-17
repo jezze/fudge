@@ -1,11 +1,12 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 void main(void)
 {
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 24, "FUDGE OPERATING SYSTEM\n\n");
+    file_writeall(CALL_PO, "FUDGE OPERATING SYSTEM\n\n", 24);
     call_close(CALL_PO);
 
     if (!call_walk(CALL_CP, CALL_PR, 8, "bin/echo"))

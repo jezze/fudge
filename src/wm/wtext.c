@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 #include "box.h"
 #include "element.h"
 
@@ -8,8 +9,8 @@ static void (*renderers[EVENTS])(struct element *element, void *data);
 static void printname(char *name)
 {
 
-    call_write(CALL_PO, ascii_length(name), name);
-    call_write(CALL_PO, 2, ": ");
+    file_writeall(CALL_PO, name, ascii_length(name));
+    file_writeall(CALL_PO, ": ", 2);
 
 }
 
@@ -19,7 +20,7 @@ static void printvalue(char *name, unsigned int value)
     char num[32];
 
     printname(name);
-    call_write(CALL_PO, ascii_wvalue(num, 32, value, 10, 0), num);
+    file_writeall(CALL_PO, num, ascii_wvalue(num, 32, value, 10, 0));
 
 }
 
@@ -27,9 +28,9 @@ static void printstring(char *name, char *value)
 {
 
     printname(name);
-    call_write(CALL_PO, 1, "'");
-    call_write(CALL_PO, ascii_length(value), value);
-    call_write(CALL_PO, 1, "'");
+    file_writeall(CALL_PO, "'", 1);
+    file_writeall(CALL_PO, value, ascii_length(value));
+    file_writeall(CALL_PO, "'", 1);
 
 }
 
@@ -37,37 +38,37 @@ static void printdata(char *name, unsigned int count, void *data)
 {
 
     printname(name);
-    call_write(CALL_PO, 1, "'");
-    call_write(CALL_PO, count, data);
-    call_write(CALL_PO, 1, "'");
+    file_writeall(CALL_PO, "'", 1);
+    file_writeall(CALL_PO, data, count);
+    file_writeall(CALL_PO, "'", 1);
 
 }
 
 static void printseperator(void)
 {
 
-    call_write(CALL_PO, 2, ", ");
+    file_writeall(CALL_PO, ", ", 2);
 
 }
 
 static void printblockstart(void)
 {
 
-    call_write(CALL_PO, 1, "{");
+    file_writeall(CALL_PO, "{", 1);
 
 }
 
 static void printblockend(void)
 {
 
-    call_write(CALL_PO, 1, "}");
+    file_writeall(CALL_PO, "}", 1);
 
 }
 
 static void printnewline(void)
 {
 
-    call_write(CALL_PO, 1, "\n");
+    file_writeall(CALL_PO, "\n", 1);
 
 }
 
@@ -224,7 +225,7 @@ void main(void)
     call_open(CALL_PI);
     call_open(CALL_PO);
 
-    while ((count = call_read(CALL_PI, FUDGE_BSIZE, buffer)))
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
     {
 
         struct element *element;

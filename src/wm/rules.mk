@@ -6,7 +6,7 @@ OBJ_WM:=\
     $(SRC_PATH)/wm/box.o \
     $(SRC_PATH)/wm/element.o \
     $(SRC_PATH)/wm/send.o \
-    $(SRC_PATH)/video/video.o \
+    $(SRC_PATH)/lib/video.o \
 
 $(BIN_WM): $(OBJ_WM) $(SRC_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
@@ -18,7 +18,7 @@ OBJ_WDRAW:=\
     $(SRC_PATH)/wm/wdraw.o \
     $(SRC_PATH)/wm/box.o \
     $(SRC_PATH)/wm/element.o \
-    $(SRC_PATH)/video/video.o \
+    $(SRC_PATH)/lib/video.o \
     $(SRC_PATH)/format/pcf.o \
 
 $(BIN_WDRAW): $(OBJ_WDRAW) $(SRC_DEPS)

@@ -1,11 +1,12 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 void main(void)
 {
 
     call_open(CALL_PO);
-    call_write(CALL_PO, 13, "Hello world!\n");
+    file_writeall(CALL_PO, "Hello world!\n", 13);
     call_close(CALL_PO);
 
 }

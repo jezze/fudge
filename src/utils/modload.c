@@ -1,22 +1,19 @@
 #include <abi.h>
 #include <fudge.h>
 #include <format/elf.h>
+#include <lib/file.h>
 
 static unsigned int readheader(unsigned int id, struct elf_header *header)
 {
 
-    call_seek(id, 0);
-
-    return call_read(id, ELF_HEADER_SIZE, header);
+    return file_seekreadall(id, header, ELF_HEADER_SIZE, 0);
 
 }
 
 static unsigned int readsectionheader(unsigned int id, struct elf_header *header, unsigned int index, struct elf_sectionheader *sectionheader)
 {
 
-    call_seek(id, header->shoffset + index * header->shsize);
-
-    return call_read(id, header->shsize, sectionheader);
+    return file_seekreadall(id, sectionheader, header->shsize, header->shoffset + index * header->shsize);
 
 }
 
@@ -52,9 +49,7 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
         if (stringheader.size > FUDGE_BSIZE)
             return 0;
 
-        call_seek(id, stringheader.offset);
-
-        if (!call_read(id, stringheader.size, strings))
+        if (!file_seekreadall(id, strings, stringheader.size, stringheader.offset))
             return 0;
 
         for (j = 0; j < symbolheader.size / symbolheader.esize; j++)
@@ -63,9 +58,7 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
             struct elf_symbol symbol;
             char *s;
 
-            call_seek(id, symbolheader.offset + j * symbolheader.esize);
-
-            if (!call_read(id, symbolheader.esize, &symbol))
+            if (!file_seekreadall(id, &symbol, symbolheader.esize, symbolheader.offset + j * symbolheader.esize))
                 return 0;
 
             s = strings + symbol.name;
@@ -157,16 +150,12 @@ static unsigned int resolvesymbols(unsigned int id, struct elf_sectionheader *re
         struct elf_relocation relocation;
         struct elf_symbol symbol;
 
-        call_seek(id, relocationheader->offset + i * relocationheader->esize);
-
-        if (!call_read(id, relocationheader->esize, &relocation))
+        if (!file_seekreadall(id, &relocation, relocationheader->esize, relocationheader->offset + i * relocationheader->esize))
             return 0;
 
         index = relocation.info >> 8;
 
-        call_seek(id, symbolheader->offset + index * symbolheader->esize);
-
-        if (!call_read(id, symbolheader->esize, &symbol))
+        if (!file_seekreadall(id, &symbol, symbolheader->esize, symbolheader->offset + index * symbolheader->esize))
             return 0;
 
         if (symbol.shindex)
@@ -182,16 +171,12 @@ static unsigned int resolvesymbols(unsigned int id, struct elf_sectionheader *re
         if (!address)
             return 0;
 
-        call_seek(id, offset + relocation.offset);
-
-        if (!call_read(id, 4, &value))
+        if (!file_seekreadall(id, &value, 4, offset + relocation.offset))
             return 0;
 
         value += address;
 
-        call_seek(id, offset + relocation.offset);
-
-        if (!call_write(id, 4, &value))
+        if (!file_seekwriteall(id, &value, 4, offset + relocation.offset))
             return 0;
 
     }
@@ -239,9 +224,7 @@ static unsigned int resolve(unsigned int id)
         if (stringheader.size > FUDGE_BSIZE)
             return 0;
 
-        call_seek(id, stringheader.offset);
-
-        if (!call_read(id, stringheader.size, strings))
+        if (!file_seekreadall(id, strings, stringheader.size, stringheader.offset))
             return 0;
 
         if (!resolvesymbols(id, &relocationheader, &symbolheader, strings, dataheader.offset))

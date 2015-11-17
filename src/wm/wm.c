@@ -1,6 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
-#include <video/video.h>
+#include <lib/file.h>
+#include <lib/video.h>
 #include "box.h"
 #include "element.h"
 #include "send.h"
@@ -129,7 +130,7 @@ static void flush(void)
     if (datacount)
     {
 
-        call_write(CALL_PO, datacount, databuffer);
+        file_writeall(CALL_PO, databuffer, datacount);
 
         datacount = 0;
 
@@ -751,11 +752,11 @@ void main(void)
     call_open(CALL_L1);
     send_wmmap(CALL_L2, 0);
 
-    while ((count = call_read(CALL_L1, sizeof (struct event_header), &event.header)))
+    while ((count = file_readall(CALL_L1, &event.header, sizeof (struct event_header))))
     {
 
         if (event.header.count)
-            call_read(CALL_L1, event.header.count, event.data + sizeof (struct event_header));
+            file_readall(CALL_L1, event.data + sizeof (struct event_header), event.header.count);
 
         if (handlers[event.header.type])
         {

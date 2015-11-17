@@ -3,7 +3,7 @@ BIN_MANDELBROT:=\
 
 OBJ_MANDELBROT:=\
     $(SRC_PATH)/mandelbrot/mandelbrot.o \
-    $(SRC_PATH)/video/video.o \
+    $(SRC_PATH)/lib/video.o \
 
 $(BIN_MANDELBROT): $(OBJ_MANDELBROT) $(SRC_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^

@@ -1,11 +1,12 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 void main(void)
 {
 
     unsigned char buffer[32];
-    unsigned int count = call_read(CALL_PI, 32, buffer);
+    unsigned int count = file_read(CALL_PI, buffer, 32);
 
     if (!count)
         return;
@@ -17,8 +18,8 @@ void main(void)
     {
 
         call_open(CALL_L1);
-        call_write(CALL_L1, count, buffer);
-        call_read(CALL_L1, 32, buffer);
+        file_writeall(CALL_L1, buffer, count);
+        file_read(CALL_L1, buffer, 32);
         call_close(CALL_L1);
 
     }

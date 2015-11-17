@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 void main(void)
 {
@@ -10,7 +11,7 @@ void main(void)
 
     call_open(CALL_PI);
 
-    count = call_read(CALL_PI, FUDGE_BSIZE, buffer);
+    count = file_read(CALL_PI, buffer, FUDGE_BSIZE);
 
     call_close(CALL_PI);
 
@@ -19,7 +20,7 @@ void main(void)
     while (--offset && buffer[offset - 1] != '/');
 
     call_open(CALL_PO);
-    call_write(CALL_PO, count - offset, buffer + offset);
+    file_writeall(CALL_PO, buffer + offset, count - offset);
     call_close(CALL_PO);
 
 }

@@ -1,12 +1,13 @@
 #include <abi.h>
 #include <fudge.h>
+#include <lib/file.h>
 
 static void send(unsigned int descriptor, unsigned int count, void *buffer)
 {
 
     call_walk(descriptor, CALL_PR, 17, "system/event/send");
     call_open(descriptor);
-    call_write(descriptor, count, buffer);
+    file_writeall(descriptor, buffer, count);
     call_close(descriptor);
 
 }
