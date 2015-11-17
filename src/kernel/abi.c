@@ -190,7 +190,7 @@ static unsigned int close(struct container *container, struct task *task, void *
 static unsigned int read(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int count; void *buffer;} *args = stack;
+    struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
     unsigned int count;
 
@@ -210,7 +210,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
 static unsigned int write(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int count; void *buffer;} *args = stack;
+    struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
     unsigned int count;
 

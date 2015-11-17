@@ -47,7 +47,7 @@ unsigned int call_open(unsigned int index)
 
 }
 
-unsigned int call_read(unsigned int index, unsigned int offset, unsigned int count, void *buffer)
+unsigned int call_read(unsigned int index, void *buffer, unsigned int count)
 {
 
     return 0;
@@ -75,7 +75,7 @@ unsigned int call_walk(unsigned int index, unsigned int pindex, unsigned int cou
 
 }
 
-unsigned int call_write(unsigned int index, unsigned int offset, unsigned int count, void *buffer)
+unsigned int call_write(unsigned int index, void *buffer, unsigned int count)
 {
 
     return 0;

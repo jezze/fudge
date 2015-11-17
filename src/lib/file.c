@@ -5,7 +5,7 @@
 unsigned int file_read(unsigned int id, void *buffer, unsigned int count)
 {
 
-    return call_read(id, count, buffer);
+    return call_read(id, buffer, count);
 
 }
 
@@ -15,7 +15,7 @@ unsigned int file_readall(unsigned int id, void *buffer, unsigned int count)
     unsigned char *b = buffer;
     unsigned int n;
 
-    while ((n = call_read(id, count, b)))
+    while ((n = call_read(id, b, count)))
     {
 
         count -= n;
@@ -30,7 +30,7 @@ unsigned int file_readall(unsigned int id, void *buffer, unsigned int count)
 unsigned int file_write(unsigned int id, void *buffer, unsigned int count)
 {
 
-    return call_write(id, count, buffer);
+    return call_write(id, buffer, count);
 
 }
 
@@ -40,7 +40,7 @@ unsigned int file_writeall(unsigned int id, void *buffer, unsigned int count)
     unsigned char *b = buffer;
     unsigned int n;
 
-    while ((n = call_write(id, count, b)))
+    while ((n = call_write(id, b, count)))
     {
 
         count -= n;
