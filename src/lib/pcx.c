@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 #include <format/pcx.h>
-#include <lib/file.h>
+#include "file.h"
 #include "gfx.h"
 #include "pcx.h"
 

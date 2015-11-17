@@ -1,6 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/file.h>
+#include "file.h"
 #include "video.h"
 
 void video_getmode(unsigned int descriptor, struct ctrl_videosettings *settings)
