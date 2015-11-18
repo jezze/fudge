@@ -27,7 +27,6 @@ MODULES:=\
     $(SRC_PATH)/modules/timer/timer.ko \
     $(SRC_PATH)/modules/udp/udp.ko \
     $(SRC_PATH)/modules/video/video.ko \
-    $(SRC_PATH)/modules/window/window.ko.0 \
 
 OBJ_MODULES:=\
     $(SRC_PATH)/modules/arp/main.o \
@@ -58,7 +57,6 @@ OBJ_MODULES:=\
     $(SRC_PATH)/modules/timer/main.o \
     $(SRC_PATH)/modules/udp/main.o \
     $(SRC_PATH)/modules/video/main.o \
-    $(SRC_PATH)/modules/window/main.o \
 
 $(SRC_PATH)/modules/arp/arp.ko: $(SRC_PATH)/modules/arp/main.o $(MOD_DEPS)
 $(SRC_PATH)/modules/audio/audio.ko: $(SRC_PATH)/modules/audio/main.o $(MOD_DEPS)
@@ -88,7 +86,6 @@ $(SRC_PATH)/modules/system/system.ko: $(SRC_PATH)/modules/system/main.o $(SRC_PA
 $(SRC_PATH)/modules/timer/timer.ko: $(SRC_PATH)/modules/timer/main.o $(MOD_DEPS)
 $(SRC_PATH)/modules/udp/udp.ko: $(SRC_PATH)/modules/udp/main.o $(MOD_DEPS)
 $(SRC_PATH)/modules/video/video.ko: $(SRC_PATH)/modules/video/main.o $(MOD_DEPS)
-$(SRC_PATH)/modules/window/window.ko.0: $(SRC_PATH)/modules/window/main.o $(MOD_DEPS)
 
 include $(SRC_PATH)/modules/arch/$(ARCH)/rules.mk
 
