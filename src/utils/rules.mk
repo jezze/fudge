@@ -34,10 +34,6 @@ BIN_UTILS:=\
     $(SRC_PATH)/utils/slang \
     $(SRC_PATH)/utils/sleep \
 
-BIN_ELFUTILS:=\
-    $(SRC_PATH)/utils/modload \
-    $(SRC_PATH)/utils/modunload \
-
 OBJ_UTILS:=\
     $(SRC_PATH)/utils/cat.o \
     $(SRC_PATH)/utils/cconv8to6.o \
@@ -74,16 +70,8 @@ OBJ_UTILS:=\
     $(SRC_PATH)/utils/slang.o \
     $(SRC_PATH)/utils/sleep.o \
 
-OBJ_ELFUTILS:=\
-    $(SRC_PATH)/utils/modload.o \
-    $(SRC_PATH)/utils/modunload.o \
-    $(SRC_PATH)/format/elf.o \
-
-$(BIN_UTILS): % : %.o $(BIN_DEPS)
+$(BIN_UTILS): % : %.o $(BIN_DEPS) $(SRC_PATH)/lib/file.o
 	$(LD) -o $@ $(LDFLAGS) $^
 
-$(BIN_ELFUTILS): % : %.o $(SRC_PATH)/format/elf.o $(BIN_DEPS)
-	$(LD) -o $@ $(LDFLAGS) $^
-
-BIN:=$(BIN) $(BIN_UTILS) $(BIN_ELFUTILS)
-CLEAN:=$(CLEAN) $(BIN_UTILS) $(OBJ_UTILS) $(BIN_ELFUTILS) $(OBJ_ELFUTILS)
+BIN:=$(BIN) $(BIN_UTILS)
+CLEAN:=$(CLEAN) $(BIN_UTILS) $(OBJ_UTILS)

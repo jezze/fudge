@@ -3,6 +3,7 @@ BIN_PCXCMAP:=\
 
 OBJ_PCXCMAP:=\
     $(SRC_PATH)/pcx/pcxcmap.o \
+    $(SRC_PATH)/lib/file.o \
     $(SRC_PATH)/lib/gfx.o \
     $(SRC_PATH)/lib/pcx.o \
 
@@ -14,6 +15,7 @@ BIN_PCXDATA:=\
 
 OBJ_PCXDATA:=\
     $(SRC_PATH)/pcx/pcxdata.o \
+    $(SRC_PATH)/lib/file.o \
     $(SRC_PATH)/lib/gfx.o \
     $(SRC_PATH)/lib/pcx.o \
 
