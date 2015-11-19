@@ -38,18 +38,14 @@ IMAGE_NAME:=$(KERNEL)
 IMAGE_TYPE:=img
 IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
-ALL:=$(KERNEL) $(RAMDISK)
-INSTALL:=$(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
-CLEAN:=$(KERNEL) $(RAMDISK) $(DIR_BUILD) $(IMAGE) $(OBJ_ABI) $(OBJ_STD)
-
 .PHONY: all clean install
 
-all: $(ALL)
+all: $(KERNEL) $(RAMDISK)
 
-install: $(INSTALL)
+install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
 clean:
-	rm -rf $(CLEAN)
+	rm -rf $(DIR_BUILD) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ_ABI) $(OBJ_STD) $(OBJ) $(BIN) $(MOD)
 
 .s.o:
 	$(AS) -o $@ $(ASFLAGS) $<
@@ -58,8 +54,6 @@ clean:
 	$(CC) -o $@ $(CFLAGS) $<
 
 include $(DIR_SRC)/rules.mk
-
-CLEAN+=$(OBJ) $(BIN) $(MOD)
 
 $(DIR_BUILD): $(BIN) $(MOD)
 	mkdir -p $@
