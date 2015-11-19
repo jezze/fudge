@@ -157,6 +157,13 @@ unsigned char ps2_getdata(void)
 
 }
 
+unsigned char ps2_getcontrol(void)
+{
+
+    return io_inb(REGISTERCONTROL);
+
+}
+
 unsigned short ps2_getirq(unsigned int id)
 {
 

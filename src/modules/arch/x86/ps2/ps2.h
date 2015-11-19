@@ -3,6 +3,7 @@
 #define PS2_MOUSE                       0x0002
 
 unsigned char ps2_getdata(void);
+unsigned char ps2_getcontrol(void);
 unsigned short ps2_getirq(unsigned int id);
 void ps2_enable(unsigned int id);
 void ps2_disable(unsigned int id);
