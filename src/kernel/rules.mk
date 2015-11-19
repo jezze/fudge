@@ -21,7 +21,7 @@ OBJ_KERNEL:=\
 
 include $(SRC_PATH)/kernel/$(ARCH)/rules.mk
 
-$(BIN_KERNEL): $(OBJ_KERNEL)
+$(BIN_KERNEL): $(OBJ_KERNEL) $(OBJ_STD)
 	$(LD) -o $@ $(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld $^
 
 BIN:=$(BIN) $(BIN_KERNEL)

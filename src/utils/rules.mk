@@ -78,7 +78,7 @@ OBJ_EXTRA:=\
     $(SRC_PATH)/fudge/memory.o \
     $(SRC_PATH)/lib/file.o \
 
-$(BIN_UTILS): % : %.o $(OBJ_EXTRA) $(BIN_DEPS)
+$(BIN_UTILS): % : %.o $(OBJ_EXTRA) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN:=$(BIN) $(BIN_UTILS)

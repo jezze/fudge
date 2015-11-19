@@ -8,7 +8,7 @@ OBJ_PCXCMAP:=\
     $(SRC_PATH)/lib/file.o \
     $(SRC_PATH)/lib/gfx.o \
 
-$(BIN_PCXCMAP): $(OBJ_PCXCMAP) $(BIN_DEPS)
+$(BIN_PCXCMAP): $(OBJ_PCXCMAP) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_PCXDATA:=\
@@ -21,7 +21,7 @@ OBJ_PCXDATA:=\
     $(SRC_PATH)/lib/file.o \
     $(SRC_PATH)/lib/gfx.o \
 
-$(BIN_PCXDATA): $(OBJ_PCXDATA) $(BIN_DEPS)
+$(BIN_PCXDATA): $(OBJ_PCXDATA) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN:=$(BIN) $(BIN_PCXCMAP) $(BIN_PCXDATA)

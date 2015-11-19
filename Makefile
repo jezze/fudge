@@ -24,8 +24,10 @@ LDFLAGS:=
 
 OBJ_ABI_x86:=$(SRC_PATH)/abi/x86/call.o $(SRC_PATH)/abi/x86/crt0.o
 OBJ_ABI_arm:=$(SRC_PATH)/abi/arm/call.o $(SRC_PATH)/abi/arm/crt0.o
+OBJ_ABI:=$(OBJ_ABI_$(ARCH))
+OBJ_STD_x86:=
 OBJ_STD_arm:=$(SRC_PATH)/std/arm/memcmp.o $(SRC_PATH)/std/arm/memcpy.o $(SRC_PATH)/std/arm/memmove.o $(SRC_PATH)/std/arm/memset.o $(SRC_PATH)/std/arm/setjmp.o $(SRC_PATH)/std/arm/strcmp.o $(SRC_PATH)/std/arm/strncmp.o $(SRC_PATH)/std/arm/gcc/__aeabi_idiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_idivmod.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidivmod.o $(SRC_PATH)/std/arm/gcc/__clzsi2.o $(SRC_PATH)/std/arm/gcc/__divsi3.o $(SRC_PATH)/std/arm/gcc/__modsi3.o $(SRC_PATH)/std/arm/gcc/__udivmodsi4.o $(SRC_PATH)/std/arm/gcc/__udivsi3.o $(SRC_PATH)/std/arm/gcc/__umodsi3.o
-BIN_DEPS:=$(OBJ_ABI_$(ARCH)) $(OBJ_STD_$(ARCH))
+OBJ_STD:=$(OBJ_STD_$(ARCH))
 
 RAMDISK_NAME:=$(KERNEL)
 RAMDISK_TYPE:=cpio
@@ -37,7 +39,7 @@ IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
 ALL:=$(KERNEL) $(RAMDISK)
 INSTALL:=$(INSTALL_PATH)/$(KERNEL) $(INSTALL_PATH)/$(RAMDISK)
-CLEAN:=$(BIN) $(BIN_DEPS) $(KERNEL) $(KERNEL_DEPS) $(RAMDISK) $(BUILD_PATH) $(IMAGE)
+CLEAN:=$(OBJ_ABI) $(OBJ_STD) $(KERNEL) $(KERNEL_DEPS) $(RAMDISK) $(BUILD_PATH) $(IMAGE)
 
 .PHONY: all clean install
 

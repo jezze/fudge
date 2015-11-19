@@ -7,7 +7,7 @@ OBJ_MANDELBROT:=\
     $(SRC_PATH)/lib/file.o \
     $(SRC_PATH)/lib/video.o \
 
-$(BIN_MANDELBROT): $(OBJ_MANDELBROT) $(BIN_DEPS)
+$(BIN_MANDELBROT): $(OBJ_MANDELBROT) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN:=$(BIN) $(BIN_MANDELBROT)
