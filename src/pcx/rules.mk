@@ -1,25 +1,25 @@
 BIN_PCXCMAP:=\
-    $(SRC_PATH)/pcx/pcxcmap \
+    $(DIR_SRC)/pcx/pcxcmap \
 
 OBJ_PCXCMAP:=\
-    $(SRC_PATH)/pcx/pcx.o \
-    $(SRC_PATH)/pcx/pcxcmap.o \
-    $(SRC_PATH)/fudge/memory.o \
-    $(SRC_PATH)/lib/file.o \
-    $(SRC_PATH)/lib/gfx.o \
+    $(DIR_SRC)/pcx/pcx.o \
+    $(DIR_SRC)/pcx/pcxcmap.o \
+    $(DIR_SRC)/fudge/memory.o \
+    $(DIR_SRC)/lib/file.o \
+    $(DIR_SRC)/lib/gfx.o \
 
 $(BIN_PCXCMAP): $(OBJ_PCXCMAP) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_PCXDATA:=\
-    $(SRC_PATH)/pcx/pcxdata \
+    $(DIR_SRC)/pcx/pcxdata \
 
 OBJ_PCXDATA:=\
-    $(SRC_PATH)/pcx/pcx.o \
-    $(SRC_PATH)/pcx/pcxdata.o \
-    $(SRC_PATH)/fudge/memory.o \
-    $(SRC_PATH)/lib/file.o \
-    $(SRC_PATH)/lib/gfx.o \
+    $(DIR_SRC)/pcx/pcx.o \
+    $(DIR_SRC)/pcx/pcxdata.o \
+    $(DIR_SRC)/fudge/memory.o \
+    $(DIR_SRC)/lib/file.o \
+    $(DIR_SRC)/lib/gfx.o \
 
 $(BIN_PCXDATA): $(OBJ_PCXDATA) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^

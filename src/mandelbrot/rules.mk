@@ -1,11 +1,11 @@
 BIN_MANDELBROT:=\
-    $(SRC_PATH)/mandelbrot/mandelbrot \
+    $(DIR_SRC)/mandelbrot/mandelbrot \
 
 OBJ_MANDELBROT:=\
-    $(SRC_PATH)/mandelbrot/mandelbrot.o \
-    $(SRC_PATH)/fudge/ctrl.o \
-    $(SRC_PATH)/lib/file.o \
-    $(SRC_PATH)/lib/video.o \
+    $(DIR_SRC)/mandelbrot/mandelbrot.o \
+    $(DIR_SRC)/fudge/ctrl.o \
+    $(DIR_SRC)/lib/file.o \
+    $(DIR_SRC)/lib/video.o \
 
 $(BIN_MANDELBROT): $(OBJ_MANDELBROT) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^

@@ -1,129 +1,129 @@
 MOD:=\
-    $(SRC_PATH)/modules/arp/arp.ko \
-    $(SRC_PATH)/modules/audio/audio.ko \
-    $(SRC_PATH)/modules/base/base.ko \
-    $(SRC_PATH)/modules/block/block.ko \
-    $(SRC_PATH)/modules/clock/clock.ko \
-    $(SRC_PATH)/modules/console/console.ko \
-    $(SRC_PATH)/modules/ethernet/ethernet.ko \
-    $(SRC_PATH)/modules/event/event.ko \
-    $(SRC_PATH)/modules/ipv4/ipv4.ko \
-    $(SRC_PATH)/modules/ipv6/ipv6.ko \
-    $(SRC_PATH)/modules/keyboard/keyboard.ko \
-    $(SRC_PATH)/modules/log/log.ko \
-    $(SRC_PATH)/modules/mouse/mouse.ko \
-    $(SRC_PATH)/modules/mtwist/mtwist.ko \
-    $(SRC_PATH)/modules/null/null.ko.0 \
-    $(SRC_PATH)/modules/pipe/pipe.ko \
-    $(SRC_PATH)/modules/pipe/pipe.ko.0 \
-    $(SRC_PATH)/modules/pipe/pipe.ko.1 \
-    $(SRC_PATH)/modules/pipe/pipe.ko.2 \
-    $(SRC_PATH)/modules/pipe/pipe.ko.3 \
-    $(SRC_PATH)/modules/pipe/pipe.ko.4 \
-    $(SRC_PATH)/modules/pipe/pipe.ko.5 \
-    $(SRC_PATH)/modules/pipe/pipe.ko.6 \
-    $(SRC_PATH)/modules/pipe/pipe.ko.7 \
-    $(SRC_PATH)/modules/system/system.ko \
-    $(SRC_PATH)/modules/timer/timer.ko \
-    $(SRC_PATH)/modules/udp/udp.ko \
-    $(SRC_PATH)/modules/video/video.ko \
+    $(DIR_SRC)/modules/arp/arp.ko \
+    $(DIR_SRC)/modules/audio/audio.ko \
+    $(DIR_SRC)/modules/base/base.ko \
+    $(DIR_SRC)/modules/block/block.ko \
+    $(DIR_SRC)/modules/clock/clock.ko \
+    $(DIR_SRC)/modules/console/console.ko \
+    $(DIR_SRC)/modules/ethernet/ethernet.ko \
+    $(DIR_SRC)/modules/event/event.ko \
+    $(DIR_SRC)/modules/ipv4/ipv4.ko \
+    $(DIR_SRC)/modules/ipv6/ipv6.ko \
+    $(DIR_SRC)/modules/keyboard/keyboard.ko \
+    $(DIR_SRC)/modules/log/log.ko \
+    $(DIR_SRC)/modules/mouse/mouse.ko \
+    $(DIR_SRC)/modules/mtwist/mtwist.ko \
+    $(DIR_SRC)/modules/null/null.ko.0 \
+    $(DIR_SRC)/modules/pipe/pipe.ko \
+    $(DIR_SRC)/modules/pipe/pipe.ko.0 \
+    $(DIR_SRC)/modules/pipe/pipe.ko.1 \
+    $(DIR_SRC)/modules/pipe/pipe.ko.2 \
+    $(DIR_SRC)/modules/pipe/pipe.ko.3 \
+    $(DIR_SRC)/modules/pipe/pipe.ko.4 \
+    $(DIR_SRC)/modules/pipe/pipe.ko.5 \
+    $(DIR_SRC)/modules/pipe/pipe.ko.6 \
+    $(DIR_SRC)/modules/pipe/pipe.ko.7 \
+    $(DIR_SRC)/modules/system/system.ko \
+    $(DIR_SRC)/modules/timer/timer.ko \
+    $(DIR_SRC)/modules/udp/udp.ko \
+    $(DIR_SRC)/modules/video/video.ko \
 
 OBJ_MOD:=\
-    $(SRC_PATH)/modules/arp/main.o \
-    $(SRC_PATH)/modules/audio/main.o \
-    $(SRC_PATH)/modules/base/main.o \
-    $(SRC_PATH)/modules/block/main.o \
-    $(SRC_PATH)/modules/clock/main.o \
-    $(SRC_PATH)/modules/console/main.o \
-    $(SRC_PATH)/modules/ethernet/main.o \
-    $(SRC_PATH)/modules/event/main.o \
-    $(SRC_PATH)/modules/ipv4/main.o \
-    $(SRC_PATH)/modules/ipv6/main.o \
-    $(SRC_PATH)/modules/keyboard/main.o \
-    $(SRC_PATH)/modules/log/main.o \
-    $(SRC_PATH)/modules/mouse/main.o \
-    $(SRC_PATH)/modules/mtwist/main.o \
-    $(SRC_PATH)/modules/null/main.o \
-    $(SRC_PATH)/modules/pipe/main.o \
-    $(SRC_PATH)/modules/pipe/node.o \
-    $(SRC_PATH)/modules/pipe/node.o \
-    $(SRC_PATH)/modules/pipe/node.o \
-    $(SRC_PATH)/modules/pipe/node.o \
-    $(SRC_PATH)/modules/pipe/node.o \
-    $(SRC_PATH)/modules/pipe/node.o \
-    $(SRC_PATH)/modules/pipe/node.o \
-    $(SRC_PATH)/modules/pipe/node.o \
-    $(SRC_PATH)/modules/system/main.o $(SRC_PATH)/modules/system/backend.o $(SRC_PATH)/modules/system/protocol.o \
-    $(SRC_PATH)/modules/timer/main.o \
-    $(SRC_PATH)/modules/udp/main.o \
-    $(SRC_PATH)/modules/video/main.o \
+    $(DIR_SRC)/modules/arp/main.o \
+    $(DIR_SRC)/modules/audio/main.o \
+    $(DIR_SRC)/modules/base/main.o \
+    $(DIR_SRC)/modules/block/main.o \
+    $(DIR_SRC)/modules/clock/main.o \
+    $(DIR_SRC)/modules/console/main.o \
+    $(DIR_SRC)/modules/ethernet/main.o \
+    $(DIR_SRC)/modules/event/main.o \
+    $(DIR_SRC)/modules/ipv4/main.o \
+    $(DIR_SRC)/modules/ipv6/main.o \
+    $(DIR_SRC)/modules/keyboard/main.o \
+    $(DIR_SRC)/modules/log/main.o \
+    $(DIR_SRC)/modules/mouse/main.o \
+    $(DIR_SRC)/modules/mtwist/main.o \
+    $(DIR_SRC)/modules/null/main.o \
+    $(DIR_SRC)/modules/pipe/main.o \
+    $(DIR_SRC)/modules/pipe/node.o \
+    $(DIR_SRC)/modules/pipe/node.o \
+    $(DIR_SRC)/modules/pipe/node.o \
+    $(DIR_SRC)/modules/pipe/node.o \
+    $(DIR_SRC)/modules/pipe/node.o \
+    $(DIR_SRC)/modules/pipe/node.o \
+    $(DIR_SRC)/modules/pipe/node.o \
+    $(DIR_SRC)/modules/pipe/node.o \
+    $(DIR_SRC)/modules/system/main.o $(DIR_SRC)/modules/system/backend.o $(DIR_SRC)/modules/system/protocol.o \
+    $(DIR_SRC)/modules/timer/main.o \
+    $(DIR_SRC)/modules/udp/main.o \
+    $(DIR_SRC)/modules/video/main.o \
 
-$(SRC_PATH)/modules/arp/arp.ko: $(SRC_PATH)/modules/arp/main.o
-$(SRC_PATH)/modules/audio/audio.ko: $(SRC_PATH)/modules/audio/main.o
-$(SRC_PATH)/modules/base/base.ko: $(SRC_PATH)/modules/base/main.o
-$(SRC_PATH)/modules/block/block.ko: $(SRC_PATH)/modules/block/main.o
-$(SRC_PATH)/modules/clock/clock.ko: $(SRC_PATH)/modules/clock/main.o
-$(SRC_PATH)/modules/console/console.ko: $(SRC_PATH)/modules/console/main.o
-$(SRC_PATH)/modules/ethernet/ethernet.ko: $(SRC_PATH)/modules/ethernet/main.o
-$(SRC_PATH)/modules/event/event.ko: $(SRC_PATH)/modules/event/main.o
-$(SRC_PATH)/modules/ipv4/ipv4.ko: $(SRC_PATH)/modules/ipv4/main.o
-$(SRC_PATH)/modules/ipv6/ipv6.ko: $(SRC_PATH)/modules/ipv6/main.o
-$(SRC_PATH)/modules/keyboard/keyboard.ko: $(SRC_PATH)/modules/keyboard/main.o
-$(SRC_PATH)/modules/log/log.ko: $(SRC_PATH)/modules/log/main.o
-$(SRC_PATH)/modules/mouse/mouse.ko: $(SRC_PATH)/modules/mouse/main.o
-$(SRC_PATH)/modules/mtwist/mtwist.ko: $(SRC_PATH)/modules/mtwist/main.o
-$(SRC_PATH)/modules/null/null.ko.0: $(SRC_PATH)/modules/null/main.o
-$(SRC_PATH)/modules/pipe/pipe.ko: $(SRC_PATH)/modules/pipe/main.o
-$(SRC_PATH)/modules/pipe/pipe.ko.0: $(SRC_PATH)/modules/pipe/node.o
-$(SRC_PATH)/modules/pipe/pipe.ko.1: $(SRC_PATH)/modules/pipe/node.o
-$(SRC_PATH)/modules/pipe/pipe.ko.2: $(SRC_PATH)/modules/pipe/node.o
-$(SRC_PATH)/modules/pipe/pipe.ko.3: $(SRC_PATH)/modules/pipe/node.o
-$(SRC_PATH)/modules/pipe/pipe.ko.4: $(SRC_PATH)/modules/pipe/node.o
-$(SRC_PATH)/modules/pipe/pipe.ko.5: $(SRC_PATH)/modules/pipe/node.o
-$(SRC_PATH)/modules/pipe/pipe.ko.6: $(SRC_PATH)/modules/pipe/node.o
-$(SRC_PATH)/modules/pipe/pipe.ko.7: $(SRC_PATH)/modules/pipe/node.o
-$(SRC_PATH)/modules/system/system.ko: $(SRC_PATH)/modules/system/main.o $(SRC_PATH)/modules/system/backend.o $(SRC_PATH)/modules/system/protocol.o
-$(SRC_PATH)/modules/timer/timer.ko: $(SRC_PATH)/modules/timer/main.o
-$(SRC_PATH)/modules/udp/udp.ko: $(SRC_PATH)/modules/udp/main.o
-$(SRC_PATH)/modules/video/video.ko: $(SRC_PATH)/modules/video/main.o
+$(DIR_SRC)/modules/arp/arp.ko: $(DIR_SRC)/modules/arp/main.o
+$(DIR_SRC)/modules/audio/audio.ko: $(DIR_SRC)/modules/audio/main.o
+$(DIR_SRC)/modules/base/base.ko: $(DIR_SRC)/modules/base/main.o
+$(DIR_SRC)/modules/block/block.ko: $(DIR_SRC)/modules/block/main.o
+$(DIR_SRC)/modules/clock/clock.ko: $(DIR_SRC)/modules/clock/main.o
+$(DIR_SRC)/modules/console/console.ko: $(DIR_SRC)/modules/console/main.o
+$(DIR_SRC)/modules/ethernet/ethernet.ko: $(DIR_SRC)/modules/ethernet/main.o
+$(DIR_SRC)/modules/event/event.ko: $(DIR_SRC)/modules/event/main.o
+$(DIR_SRC)/modules/ipv4/ipv4.ko: $(DIR_SRC)/modules/ipv4/main.o
+$(DIR_SRC)/modules/ipv6/ipv6.ko: $(DIR_SRC)/modules/ipv6/main.o
+$(DIR_SRC)/modules/keyboard/keyboard.ko: $(DIR_SRC)/modules/keyboard/main.o
+$(DIR_SRC)/modules/log/log.ko: $(DIR_SRC)/modules/log/main.o
+$(DIR_SRC)/modules/mouse/mouse.ko: $(DIR_SRC)/modules/mouse/main.o
+$(DIR_SRC)/modules/mtwist/mtwist.ko: $(DIR_SRC)/modules/mtwist/main.o
+$(DIR_SRC)/modules/null/null.ko.0: $(DIR_SRC)/modules/null/main.o
+$(DIR_SRC)/modules/pipe/pipe.ko: $(DIR_SRC)/modules/pipe/main.o
+$(DIR_SRC)/modules/pipe/pipe.ko.0: $(DIR_SRC)/modules/pipe/node.o
+$(DIR_SRC)/modules/pipe/pipe.ko.1: $(DIR_SRC)/modules/pipe/node.o
+$(DIR_SRC)/modules/pipe/pipe.ko.2: $(DIR_SRC)/modules/pipe/node.o
+$(DIR_SRC)/modules/pipe/pipe.ko.3: $(DIR_SRC)/modules/pipe/node.o
+$(DIR_SRC)/modules/pipe/pipe.ko.4: $(DIR_SRC)/modules/pipe/node.o
+$(DIR_SRC)/modules/pipe/pipe.ko.5: $(DIR_SRC)/modules/pipe/node.o
+$(DIR_SRC)/modules/pipe/pipe.ko.6: $(DIR_SRC)/modules/pipe/node.o
+$(DIR_SRC)/modules/pipe/pipe.ko.7: $(DIR_SRC)/modules/pipe/node.o
+$(DIR_SRC)/modules/system/system.ko: $(DIR_SRC)/modules/system/main.o $(DIR_SRC)/modules/system/backend.o $(DIR_SRC)/modules/system/protocol.o
+$(DIR_SRC)/modules/timer/timer.ko: $(DIR_SRC)/modules/timer/main.o
+$(DIR_SRC)/modules/udp/udp.ko: $(DIR_SRC)/modules/udp/main.o
+$(DIR_SRC)/modules/video/video.ko: $(DIR_SRC)/modules/video/main.o
 
-include $(SRC_PATH)/modules/arch/$(ARCH)/rules.mk
+include $(DIR_SRC)/modules/arch/$(ARCH)/rules.mk
 
 CLEAN:=$(CLEAN) $(MOD) $(OBJ_MOD)
 
-$(SRC_PATH)/modules/%.ko: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
-$(SRC_PATH)/modules/%.ko:
+$(DIR_SRC)/modules/%.ko: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
+$(DIR_SRC)/modules/%.ko:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-$(SRC_PATH)/modules/%.ko.0: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
-$(SRC_PATH)/modules/%.ko.0:
+$(DIR_SRC)/modules/%.ko.0: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
+$(DIR_SRC)/modules/%.ko.0:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-$(SRC_PATH)/modules/%.ko.1: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
-$(SRC_PATH)/modules/%.ko.1:
+$(DIR_SRC)/modules/%.ko.1: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
+$(DIR_SRC)/modules/%.ko.1:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-$(SRC_PATH)/modules/%.ko.2: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
-$(SRC_PATH)/modules/%.ko.2:
+$(DIR_SRC)/modules/%.ko.2: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
+$(DIR_SRC)/modules/%.ko.2:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-$(SRC_PATH)/modules/%.ko.3: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
-$(SRC_PATH)/modules/%.ko.3:
+$(DIR_SRC)/modules/%.ko.3: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
+$(DIR_SRC)/modules/%.ko.3:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-$(SRC_PATH)/modules/%.ko.4: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
-$(SRC_PATH)/modules/%.ko.4:
+$(DIR_SRC)/modules/%.ko.4: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
+$(DIR_SRC)/modules/%.ko.4:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-$(SRC_PATH)/modules/%.ko.5: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
-$(SRC_PATH)/modules/%.ko.5:
+$(DIR_SRC)/modules/%.ko.5: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
+$(DIR_SRC)/modules/%.ko.5:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-$(SRC_PATH)/modules/%.ko.6: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
-$(SRC_PATH)/modules/%.ko.6:
+$(DIR_SRC)/modules/%.ko.6: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
+$(DIR_SRC)/modules/%.ko.6:
 	$(LD) -o $@ $(LDFLAGS) $^
 
-$(SRC_PATH)/modules/%.ko.7: LDFLAGS+=-T$(SRC_PATH)/modules/linker.ld -r
-$(SRC_PATH)/modules/%.ko.7:
+$(DIR_SRC)/modules/%.ko.7: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
+$(DIR_SRC)/modules/%.ko.7:
 	$(LD) -o $@ $(LDFLAGS) $^
 

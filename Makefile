@@ -9,24 +9,25 @@ PLATFORM_x86:=pc
 PLATFORM_arm:=integratorcp
 PLATFORM:=$(PLATFORM_$(ARCH))
 
-SRC_PATH:=src
-INCLUDE_PATH:=include
-BUILD_PATH:=build
-INSTALL_PATH:=/boot
+DIR_SRC:=src
+DIR_INCLUDE:=include
+DIR_BUILD:=build
+DIR_INSTALL:=/boot
 
 AS:=$(TARGET)-as
 CC:=$(TARGET)-cc
 LD:=$(TARGET)-ld
 
 ASFLAGS:=
-CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(INCLUDE_PATH) -I$(SRC_PATH)
+CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(DIR_INCLUDE) -I$(DIR_SRC)
 LDFLAGS:=
 
-OBJ_ABI_x86:=$(SRC_PATH)/abi/x86/call.o $(SRC_PATH)/abi/x86/crt0.o
-OBJ_ABI_arm:=$(SRC_PATH)/abi/arm/call.o $(SRC_PATH)/abi/arm/crt0.o
+OBJ_ABI_x86:=$(DIR_SRC)/abi/x86/call.o $(DIR_SRC)/abi/x86/crt0.o
+OBJ_ABI_arm:=$(DIR_SRC)/abi/arm/call.o $(DIR_SRC)/abi/arm/crt0.o
 OBJ_ABI:=$(OBJ_ABI_$(ARCH))
+
 OBJ_STD_x86:=
-OBJ_STD_arm:=$(SRC_PATH)/std/arm/memcmp.o $(SRC_PATH)/std/arm/memcpy.o $(SRC_PATH)/std/arm/memmove.o $(SRC_PATH)/std/arm/memset.o $(SRC_PATH)/std/arm/setjmp.o $(SRC_PATH)/std/arm/strcmp.o $(SRC_PATH)/std/arm/strncmp.o $(SRC_PATH)/std/arm/gcc/__aeabi_idiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_idivmod.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidivmod.o $(SRC_PATH)/std/arm/gcc/__clzsi2.o $(SRC_PATH)/std/arm/gcc/__divsi3.o $(SRC_PATH)/std/arm/gcc/__modsi3.o $(SRC_PATH)/std/arm/gcc/__udivmodsi4.o $(SRC_PATH)/std/arm/gcc/__udivsi3.o $(SRC_PATH)/std/arm/gcc/__umodsi3.o
+OBJ_STD_arm:=$(DIR_SRC)/std/arm/memcmp.o $(DIR_SRC)/std/arm/memcpy.o $(DIR_SRC)/std/arm/memmove.o $(DIR_SRC)/std/arm/memset.o $(DIR_SRC)/std/arm/setjmp.o $(DIR_SRC)/std/arm/strcmp.o $(DIR_SRC)/std/arm/strncmp.o $(DIR_SRC)/std/arm/gcc/__aeabi_idiv.o $(DIR_SRC)/std/arm/gcc/__aeabi_idivmod.o $(DIR_SRC)/std/arm/gcc/__aeabi_uidiv.o $(DIR_SRC)/std/arm/gcc/__aeabi_uidivmod.o $(DIR_SRC)/std/arm/gcc/__clzsi2.o $(DIR_SRC)/std/arm/gcc/__divsi3.o $(DIR_SRC)/std/arm/gcc/__modsi3.o $(DIR_SRC)/std/arm/gcc/__udivmodsi4.o $(DIR_SRC)/std/arm/gcc/__udivsi3.o $(DIR_SRC)/std/arm/gcc/__umodsi3.o
 OBJ_STD:=$(OBJ_STD_$(ARCH))
 
 RAMDISK_NAME:=$(KERNEL)
@@ -38,8 +39,8 @@ IMAGE_TYPE:=img
 IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
 ALL:=$(KERNEL) $(RAMDISK)
-INSTALL:=$(INSTALL_PATH)/$(KERNEL) $(INSTALL_PATH)/$(RAMDISK)
-CLEAN:=$(OBJ_ABI) $(OBJ_STD) $(KERNEL) $(RAMDISK) $(BUILD_PATH) $(IMAGE)
+INSTALL:=$(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
+CLEAN:=$(OBJ_ABI) $(OBJ_STD) $(KERNEL) $(RAMDISK) $(DIR_BUILD) $(IMAGE)
 
 .PHONY: all clean install
 
@@ -56,9 +57,9 @@ clean:
 .c.o:
 	$(CC) -o $@ $(CFLAGS) $<
 
-include $(SRC_PATH)/rules.mk
+include $(DIR_SRC)/rules.mk
 
-$(BUILD_PATH): $(BIN) $(MOD)
+$(DIR_BUILD): $(BIN) $(MOD)
 	mkdir -p $@
 	mkdir -p $@/bin
 	cp $(BIN) $@/bin
@@ -80,13 +81,13 @@ $(BUILD_PATH): $(BIN) $(MOD)
 	cp share/* $@/share
 	mkdir -p $@/system
 
-$(KERNEL): $(SRC_PATH)/kernel/$(KERNEL)
+$(KERNEL): $(DIR_SRC)/kernel/$(KERNEL)
 	cp $< $@
 
-$(RAMDISK_NAME).tar: $(BUILD_PATH)
+$(RAMDISK_NAME).tar: $(DIR_BUILD)
 	tar -cf $@ $^
 
-$(RAMDISK_NAME).cpio: $(BUILD_PATH)
+$(RAMDISK_NAME).cpio: $(DIR_BUILD)
 	find $^ -depth | cpio -o > $@
 
 $(IMAGE): $(KERNEL) $(RAMDISK)
@@ -94,9 +95,9 @@ $(IMAGE): $(KERNEL) $(RAMDISK)
 	dd if=$(KERNEL) of=$@ conv=notrunc
 	dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
 
-$(INSTALL_PATH)/$(KERNEL): $(KERNEL)
+$(DIR_INSTALL)/$(KERNEL): $(KERNEL)
 	install -m 644 $^ $@
 
-$(INSTALL_PATH)/$(RAMDISK): $(RAMDISK)
+$(DIR_INSTALL)/$(RAMDISK): $(RAMDISK)
 	install -m 644 $^ $@
 
