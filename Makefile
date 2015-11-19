@@ -23,11 +23,13 @@ CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c8
 LDFLAGS:=
 
 OBJ_FUDGE:=$(SRC_PATH)/fudge/ascii.o $(SRC_PATH)/fudge/buffer.o $(SRC_PATH)/fudge/ctrl.o $(SRC_PATH)/fudge/memory.o $(SRC_PATH)/fudge/list.o
-SRC_DEPS_x86:=$(SRC_PATH)/abi/x86/call.o $(SRC_PATH)/abi/x86/crt0.o
-SRC_DEPS_arm:=$(SRC_PATH)/abi/arm/call.o $(SRC_PATH)/abi/arm/crt0.o
-SRC_DEPS_arm+=$(SRC_PATH)/std/arm/memcmp.o $(SRC_PATH)/std/arm/memcpy.o $(SRC_PATH)/std/arm/memmove.o $(SRC_PATH)/std/arm/memset.o $(SRC_PATH)/std/arm/setjmp.o $(SRC_PATH)/std/arm/strcmp.o $(SRC_PATH)/std/arm/strncmp.o $(SRC_PATH)/std/arm/gcc/__aeabi_idiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_idivmod.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidivmod.o $(SRC_PATH)/std/arm/gcc/__clzsi2.o $(SRC_PATH)/std/arm/gcc/__divsi3.o $(SRC_PATH)/std/arm/gcc/__modsi3.o $(SRC_PATH)/std/arm/gcc/__udivmodsi4.o $(SRC_PATH)/std/arm/gcc/__udivsi3.o $(SRC_PATH)/std/arm/gcc/__umodsi3.o
-SRC_DEPS:=$(OBJ_FUDGE) $(SRC_DEPS_$(ARCH)) $(SRC_PATH)/lib/file.o
-MOD_DEPS:=$(OBJ_FUDGE)
+OBJ_FORMAT:=$(SRC_PATH)/format/elf.o $(SRC_PATH)/format/cpio.o
+OBJ_LIB:=$(SRC_PATH)/lib/file.o
+OBJ_ABI_x86:=$(SRC_PATH)/abi/x86/call.o $(SRC_PATH)/abi/x86/crt0.o
+OBJ_ABI_arm:=$(SRC_PATH)/abi/arm/call.o $(SRC_PATH)/abi/arm/crt0.o
+OBJ_STD_arm:=$(SRC_PATH)/std/arm/memcmp.o $(SRC_PATH)/std/arm/memcpy.o $(SRC_PATH)/std/arm/memmove.o $(SRC_PATH)/std/arm/memset.o $(SRC_PATH)/std/arm/setjmp.o $(SRC_PATH)/std/arm/strcmp.o $(SRC_PATH)/std/arm/strncmp.o $(SRC_PATH)/std/arm/gcc/__aeabi_idiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_idivmod.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidiv.o $(SRC_PATH)/std/arm/gcc/__aeabi_uidivmod.o $(SRC_PATH)/std/arm/gcc/__clzsi2.o $(SRC_PATH)/std/arm/gcc/__divsi3.o $(SRC_PATH)/std/arm/gcc/__modsi3.o $(SRC_PATH)/std/arm/gcc/__udivmodsi4.o $(SRC_PATH)/std/arm/gcc/__udivsi3.o $(SRC_PATH)/std/arm/gcc/__umodsi3.o
+KERNEL_DEPS:=$(OBJ_FUDGE) $(OBJ_FORMAT)
+BIN_DEPS:=$(OBJ_FUDGE) $(OBJ_LIB) $(OBJ_ABI_$(ARCH)) $(OBJ_STD_$(ARCH))
 
 RAMDISK_NAME:=$(KERNEL)
 RAMDISK_TYPE:=cpio
@@ -39,7 +41,7 @@ IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
 ALL:=$(KERNEL) $(RAMDISK)
 INSTALL:=$(INSTALL_PATH)/$(KERNEL) $(INSTALL_PATH)/$(RAMDISK)
-CLEAN:=$(SRC_DEPS) $(KERNEL) $(RAMDISK) $(BUILD_PATH) $(IMAGE)
+CLEAN:=$(BIN) $(BIN_DEPS) $(KERNEL) $(KERNEL_DEPS) $(RAMDISK) $(BUILD_PATH) $(IMAGE)
 
 .PHONY: all clean install
 
@@ -58,12 +60,12 @@ clean:
 
 include $(SRC_PATH)/rules.mk
 
-$(BUILD_PATH): $(BINS) $(MODULES)
+$(BUILD_PATH): $(BIN) $(MOD)
 	mkdir -p $@
 	mkdir -p $@/bin
-	cp $(BINS) $@/bin
+	cp $(BIN) $@/bin
 	mkdir -p $@/mod
-	cp $(MODULES) $@/mod
+	cp $(MOD) $@/mod
 	mkdir -p $@/config
 	cp config/* $@/config
 	mkdir -p $@/home

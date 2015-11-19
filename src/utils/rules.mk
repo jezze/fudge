@@ -79,11 +79,11 @@ OBJ_ELFUTILS:=\
     $(SRC_PATH)/utils/modunload.o \
     $(SRC_PATH)/format/elf.o \
 
-$(BIN_UTILS): % : %.o $(SRC_DEPS)
+$(BIN_UTILS): % : %.o $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
 
-$(BIN_ELFUTILS): % : %.o $(SRC_PATH)/format/elf.o $(SRC_DEPS)
+$(BIN_ELFUTILS): % : %.o $(SRC_PATH)/format/elf.o $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
 
-BINS:=$(BINS) $(BIN_UTILS) $(BIN_ELFUTILS)
+BIN:=$(BIN) $(BIN_UTILS) $(BIN_ELFUTILS)
 CLEAN:=$(CLEAN) $(BIN_UTILS) $(OBJ_UTILS) $(BIN_ELFUTILS) $(OBJ_ELFUTILS)

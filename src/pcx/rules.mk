@@ -6,7 +6,7 @@ OBJ_PCXCMAP:=\
     $(SRC_PATH)/lib/gfx.o \
     $(SRC_PATH)/lib/pcx.o \
 
-$(BIN_PCXCMAP): $(OBJ_PCXCMAP) $(SRC_DEPS)
+$(BIN_PCXCMAP): $(OBJ_PCXCMAP) $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_PCXDATA:=\
@@ -17,8 +17,8 @@ OBJ_PCXDATA:=\
     $(SRC_PATH)/lib/gfx.o \
     $(SRC_PATH)/lib/pcx.o \
 
-$(BIN_PCXDATA): $(OBJ_PCXDATA) $(SRC_DEPS)
+$(BIN_PCXDATA): $(OBJ_PCXDATA) $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
 
-BINS:=$(BINS) $(BIN_PCXCMAP) $(BIN_PCXDATA)
+BIN:=$(BIN) $(BIN_PCXCMAP) $(BIN_PCXDATA)
 CLEAN:=$(CLEAN) $(BIN_PCXCMAP) $(BIN_PCXDATA) $(OBJ_PCXCMAP) $(OBJ_PCXDATA)

@@ -11,18 +11,11 @@ OBJ_KERNEL:=\
     $(SRC_PATH)/kernel/task.o \
     $(SRC_PATH)/kernel/vfs.o \
     $(SRC_PATH)/kernel/vfs_cpio.o \
-    $(SRC_PATH)/format/elf.o \
-    $(SRC_PATH)/format/cpio.o \
-    $(SRC_PATH)/fudge/ascii.o \
-    $(SRC_PATH)/fudge/buffer.o \
-    $(SRC_PATH)/fudge/ctrl.o \
-    $(SRC_PATH)/fudge/memory.o \
-    $(SRC_PATH)/fudge/list.o \
 
 include $(SRC_PATH)/kernel/$(ARCH)/rules.mk
 
-$(BIN_KERNEL): $(OBJ_KERNEL)
+$(BIN_KERNEL): $(OBJ_KERNEL) $(KERNEL_DEPS)
 	$(LD) -o $@ $(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld $^
 
-BINS:=$(BINS) $(BIN_KERNEL)
+BIN:=$(BIN) $(BIN_KERNEL)
 CLEAN:=$(CLEAN) $(BIN_KERNEL) $(OBJ_KERNEL)

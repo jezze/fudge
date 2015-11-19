@@ -8,7 +8,7 @@ OBJ_WM:=\
     $(SRC_PATH)/wm/send.o \
     $(SRC_PATH)/lib/video.o \
 
-$(BIN_WM): $(OBJ_WM) $(SRC_DEPS)
+$(BIN_WM): $(OBJ_WM) $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_WDRAW:=\
@@ -21,7 +21,7 @@ OBJ_WDRAW:=\
     $(SRC_PATH)/lib/video.o \
     $(SRC_PATH)/format/pcf.o \
 
-$(BIN_WDRAW): $(OBJ_WDRAW) $(SRC_DEPS)
+$(BIN_WDRAW): $(OBJ_WDRAW) $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_WTEXT:=\
@@ -32,7 +32,7 @@ OBJ_WTEXT:=\
     $(SRC_PATH)/wm/box.o \
     $(SRC_PATH)/wm/element.o \
 
-$(BIN_WTEXT): $(OBJ_WTEXT) $(SRC_DEPS)
+$(BIN_WTEXT): $(OBJ_WTEXT) $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_WNULL:=\
@@ -45,8 +45,8 @@ OBJ_WNULL:=\
     $(SRC_PATH)/wm/send.o \
     $(SRC_PATH)/wm/keymap.o \
 
-$(BIN_WNULL): $(OBJ_WNULL) $(SRC_DEPS)
+$(BIN_WNULL): $(OBJ_WNULL) $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
 
-BINS:=$(BINS) $(BIN_WM) $(BIN_WDRAW) $(BIN_WTEXT) $(BIN_WNULL)
+BIN:=$(BIN) $(BIN_WM) $(BIN_WDRAW) $(BIN_WTEXT) $(BIN_WNULL)
 CLEAN:=$(CLEAN) $(BIN_WM) $(BIN_WDRAW) $(BIN_WTEXT) $(BIN_WNULL) $(OBJ_WM) $(OBJ_WDRAW) $(OBJ_WTEXT) $(OBJ_WNULL)
