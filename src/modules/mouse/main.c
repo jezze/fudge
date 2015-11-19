@@ -76,8 +76,3 @@ void mouse_initinterface(struct mouse_interface *interface)
 
 }
 
-void module_init(void)
-{
-
-}
-

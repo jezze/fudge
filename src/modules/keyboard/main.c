@@ -64,8 +64,3 @@ void keyboard_initinterface(struct keyboard_interface *interface)
 
 }
 
-void module_init(void)
-{
-
-}
-
