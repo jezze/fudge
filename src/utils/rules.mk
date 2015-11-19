@@ -82,4 +82,4 @@ $(BIN_UTILS): % : %.o $(OBJ_EXTRA) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN:=$(BIN) $(BIN_UTILS)
-CLEAN:=$(CLEAN) $(BIN_UTILS) $(OBJ_UTILS)
+OBJ:=$(OBJ) $(OBJ_UTILS) $(OBJ_EXTRA)

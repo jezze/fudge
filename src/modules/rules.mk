@@ -89,7 +89,7 @@ $(DIR_SRC)/modules/video/video.ko: $(DIR_SRC)/modules/video/main.o
 
 include $(DIR_SRC)/modules/arch/$(ARCH)/rules.mk
 
-CLEAN:=$(CLEAN) $(MOD) $(OBJ_MOD)
+OBJ:=$(OBJ) $(OBJ_MOD)
 
 $(DIR_SRC)/modules/%.ko: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
 $(DIR_SRC)/modules/%.ko:

@@ -40,7 +40,7 @@ IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
 ALL:=$(KERNEL) $(RAMDISK)
 INSTALL:=$(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
-CLEAN:=$(OBJ_ABI) $(OBJ_STD) $(KERNEL) $(RAMDISK) $(DIR_BUILD) $(IMAGE)
+CLEAN:=$(KERNEL) $(RAMDISK) $(DIR_BUILD) $(IMAGE) $(OBJ_ABI) $(OBJ_STD)
 
 .PHONY: all clean install
 
@@ -58,6 +58,8 @@ clean:
 	$(CC) -o $@ $(CFLAGS) $<
 
 include $(DIR_SRC)/rules.mk
+
+CLEAN+=$(OBJ) $(BIN) $(MOD)
 
 $(DIR_BUILD): $(BIN) $(MOD)
 	mkdir -p $@

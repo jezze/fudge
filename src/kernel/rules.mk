@@ -25,4 +25,4 @@ $(BIN_KERNEL): $(OBJ_KERNEL) $(OBJ_STD)
 	$(LD) -o $@ $(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld $^
 
 BIN:=$(BIN) $(BIN_KERNEL)
-CLEAN:=$(CLEAN) $(BIN_KERNEL) $(OBJ_KERNEL)
+OBJ:=$(OBJ) $(OBJ_KERNEL)
