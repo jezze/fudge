@@ -137,7 +137,7 @@ static unsigned int create(struct container *container, struct task *task, void 
     struct {void *caller; unsigned int pdescriptor; unsigned int count; char *name;} *args = stack;
     struct vfs_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
 
-    if (!pdescriptor->id || !pdescriptor->channel)
+    if (!pdescriptor->id || !pdescriptor->channel || !args->count)
         return 0;
 
     return pdescriptor->channel->protocol->create(pdescriptor->channel->backend, pdescriptor->id, args->count, args->name);
@@ -150,7 +150,7 @@ static unsigned int destroy(struct container *container, struct task *task, void
     struct {void *caller; unsigned int pdescriptor; unsigned int count; char *name;} *args = stack;
     struct vfs_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
 
-    if (!pdescriptor->id || !pdescriptor->channel)
+    if (!pdescriptor->id || !pdescriptor->channel || !args->count)
         return 0;
 
     return pdescriptor->channel->protocol->destroy(pdescriptor->channel->backend, pdescriptor->id, args->count, args->name);
@@ -194,10 +194,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
     unsigned int count;
 
-    if (!descriptor->id || !descriptor->channel)
-        return 0;
-
-    if (!args->count)
+    if (!descriptor->id || !descriptor->channel || !args->count)
         return 0;
 
     count = descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, descriptor->offset, args->count, args->buffer);
@@ -214,10 +211,7 @@ static unsigned int write(struct container *container, struct task *task, void *
     struct vfs_descriptor *descriptor = getdescriptor(task, args->descriptor);
     unsigned int count;
 
-    if (!descriptor->id || !descriptor->channel)
-        return 0;
-
-    if (!args->count)
+    if (!descriptor->id || !descriptor->channel || !args->count)
         return 0;
 
     count = descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, descriptor->offset, args->count, args->buffer);
