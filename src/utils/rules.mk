@@ -70,7 +70,15 @@ OBJ_UTILS:=\
     $(SRC_PATH)/utils/slang.o \
     $(SRC_PATH)/utils/sleep.o \
 
-$(BIN_UTILS): % : %.o $(BIN_DEPS) $(SRC_PATH)/lib/file.o
+OBJ_EXTRA:=\
+    $(SRC_PATH)/fudge/ascii.o \
+    $(SRC_PATH)/fudge/buffer.o \
+    $(SRC_PATH)/fudge/ctrl.o \
+    $(SRC_PATH)/fudge/list.o \
+    $(SRC_PATH)/fudge/memory.o \
+    $(SRC_PATH)/lib/file.o \
+
+$(BIN_UTILS): % : %.o $(OBJ_EXTRA) $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN:=$(BIN) $(BIN_UTILS)

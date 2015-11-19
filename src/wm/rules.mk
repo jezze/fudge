@@ -6,6 +6,9 @@ OBJ_WM:=\
     $(SRC_PATH)/wm/box.o \
     $(SRC_PATH)/wm/element.o \
     $(SRC_PATH)/wm/send.o \
+    $(SRC_PATH)/fudge/ctrl.o \
+    $(SRC_PATH)/fudge/list.o \
+    $(SRC_PATH)/fudge/memory.o \
     $(SRC_PATH)/lib/file.o \
     $(SRC_PATH)/lib/video.o \
 
@@ -19,6 +22,8 @@ OBJ_WDRAW:=\
     $(SRC_PATH)/wm/wdraw.o \
     $(SRC_PATH)/wm/box.o \
     $(SRC_PATH)/wm/element.o \
+    $(SRC_PATH)/fudge/ctrl.o \
+    $(SRC_PATH)/fudge/memory.o \
     $(SRC_PATH)/lib/file.o \
     $(SRC_PATH)/lib/video.o \
     $(SRC_PATH)/format/pcf.o \
@@ -33,6 +38,8 @@ OBJ_WTEXT:=\
     $(SRC_PATH)/wm/wtext.o \
     $(SRC_PATH)/wm/box.o \
     $(SRC_PATH)/wm/element.o \
+    $(SRC_PATH)/fudge/ascii.o \
+    $(SRC_PATH)/fudge/memory.o \
     $(SRC_PATH)/lib/file.o \
 
 $(BIN_WTEXT): $(OBJ_WTEXT) $(BIN_DEPS)
@@ -47,6 +54,7 @@ OBJ_WNULL:=\
     $(SRC_PATH)/wm/element.o \
     $(SRC_PATH)/wm/send.o \
     $(SRC_PATH)/wm/keymap.o \
+    $(SRC_PATH)/fudge/memory.o \
     $(SRC_PATH)/lib/file.o \
 
 $(BIN_WNULL): $(OBJ_WNULL) $(BIN_DEPS)

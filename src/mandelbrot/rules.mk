@@ -3,6 +3,7 @@ BIN_MANDELBROT:=\
 
 OBJ_MANDELBROT:=\
     $(SRC_PATH)/mandelbrot/mandelbrot.o \
+    $(SRC_PATH)/fudge/ctrl.o \
     $(SRC_PATH)/lib/file.o \
     $(SRC_PATH)/lib/video.o \
 

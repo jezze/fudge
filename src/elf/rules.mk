@@ -4,6 +4,8 @@ BIN_ELFLOAD:=\
 OBJ_ELFLOAD:=\
     $(SRC_PATH)/elf/elf.o \
     $(SRC_PATH)/elf/elfload.o \
+    $(SRC_PATH)/fudge/ascii.o \
+    $(SRC_PATH)/fudge/memory.o \
     $(SRC_PATH)/lib/file.o \
 
 $(BIN_ELFLOAD): $(OBJ_ELFLOAD) $(BIN_DEPS)
@@ -15,7 +17,7 @@ BIN_ELFUNLOAD:=\
 OBJ_ELFUNLOAD:=\
     $(SRC_PATH)/elf/elf.o \
     $(SRC_PATH)/elf/elfunload.o \
-    $(SRC_PATH)/lib/file.o \
+    $(SRC_PATH)/fudge/memory.o \
 
 $(BIN_ELFUNLOAD): $(OBJ_ELFUNLOAD) $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
