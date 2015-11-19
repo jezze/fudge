@@ -1,5 +1,5 @@
 BIN_KERNEL:=\
-    $(DIR_SRC)/kernel/fudge \
+    $(DIR_SRC)/kernel/$(KERNEL) \
 
 OBJ_KERNEL:=\
     $(DIR_SRC)/kernel/abi.o \

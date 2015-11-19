@@ -1,6 +1,11 @@
 ARCH:=x86
 KERNEL:=fudge
 
+DIR_SRC:=src
+DIR_INCLUDE:=include
+DIR_BUILD:=build
+DIR_INSTALL:=/boot
+
 TARGET_x86:=i386-unknown-elf
 TARGET_arm:=arm-unknown-eabi
 TARGET:=$(TARGET_$(ARCH))
@@ -8,11 +13,6 @@ TARGET:=$(TARGET_$(ARCH))
 PLATFORM_x86:=pc
 PLATFORM_arm:=integratorcp
 PLATFORM:=$(PLATFORM_$(ARCH))
-
-DIR_SRC:=src
-DIR_INCLUDE:=include
-DIR_BUILD:=build
-DIR_INSTALL:=/boot
 
 AS:=$(TARGET)-as
 CC:=$(TARGET)-cc
@@ -42,10 +42,10 @@ IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
 all: $(KERNEL) $(RAMDISK)
 
-install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
-
 clean:
 	rm -rf $(DIR_BUILD) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ_ABI) $(OBJ_STD) $(OBJ) $(BIN) $(MOD)
+
+install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
 .s.o:
 	$(AS) -o $@ $(ASFLAGS) $<
