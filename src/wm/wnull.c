@@ -20,7 +20,7 @@ struct client
 
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
-static void (*handlers[EVENTS])(struct client *client, union event *event);
+static void (*handlers[EVENTS])(struct client *client, struct event_header *header, void *data);
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
@@ -57,12 +57,13 @@ static void flush(void)
 
 }
 
-static void onkeypress(struct client *client, union event *event)
+static void onkeypress(struct client *client, struct event_header *header, void *data)
 {
 
+    struct event_keypress *keypress = data;
     struct keycode *keycode;
 
-    switch (event->keypress.scancode)
+    switch (keypress->scancode)
     {
 
     case 0x2A:
@@ -82,27 +83,29 @@ static void onkeypress(struct client *client, union event *event)
 
             client->textcount -= 1;
 
-            writetext(event->header.destination, 1, &client->content, client->textcount, client->text);
+            writetext(header->destination, 1, &client->content, client->textcount, client->text);
 
         }
 
         break;
 
     default:
-        keycode = getkeycode(KEYMAP_US, event->keypress.scancode, client->keymod);
+        keycode = getkeycode(KEYMAP_US, keypress->scancode, client->keymod);
         client->textcount += memory_write(client->text, FUDGE_BSIZE, keycode->value, keycode->length, client->textcount);
 
-        writetext(event->header.destination, 1, &client->content, client->textcount, client->text);
+        writetext(header->destination, 1, &client->content, client->textcount, client->text);
 
         break;
     }
 
 }
 
-static void onkeyrelease(struct client *client, union event *event)
+static void onkeyrelease(struct client *client, struct event_header *header, void *data)
 {
 
-    switch (event->keypress.scancode)
+    struct event_keyrelease *keyrelease = data;
+
+    switch (keyrelease->scancode)
     {
 
     case 0x2A:
@@ -120,34 +123,36 @@ static void onkeyrelease(struct client *client, union event *event)
 
 }
 
-static void onwmunmap(struct client *client, union event *event)
+static void onwmunmap(struct client *client, struct event_header *header, void *data)
 {
 
-    writetext(event->header.destination, 0, &client->content, client->textcount, client->text);
+    writetext(header->destination, 0, &client->content, client->textcount, client->text);
 
     client->quit = 1;
 
 }
 
-static void onwmresize(struct client *client, union event *event)
+static void onwmresize(struct client *client, struct event_header *header, void *data)
 {
 
-    box_setsize(&client->size, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
+    struct event_wmresize *wmresize = data;
+
+    box_setsize(&client->size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
     box_setsize(&client->content.size, client->size.x + 12, client->size.y + 12, client->size.w - 24, client->size.h - 24);
 
 }
 
-static void onwmshow(struct client *client, union event *event)
+static void onwmshow(struct client *client, struct event_header *header, void *data)
 {
 
-    writetext(event->header.destination, 1, &client->content, client->textcount, client->text);
+    writetext(header->destination, 1, &client->content, client->textcount, client->text);
 
 }
 
-static void onwmhide(struct client *client, union event *event)
+static void onwmhide(struct client *client, struct event_header *header, void *data)
 {
 
-    writetext(event->header.destination, 0, &client->content, client->textcount, client->text);
+    writetext(header->destination, 0, &client->content, client->textcount, client->text);
 
 }
 
@@ -166,7 +171,7 @@ void main(void)
 {
 
     struct client client;
-    union event event;
+    struct event_header header;
     unsigned int count;
 
     setup(&client);
@@ -183,16 +188,18 @@ void main(void)
     call_open(CALL_L1);
     send_wmmap(CALL_L2, 0);
 
-    while ((count = file_readall(CALL_L1, &event.header, sizeof (struct event_header))))
+    while ((count = file_readall(CALL_L1, &header, sizeof (struct event_header))))
     {
 
-        if (event.header.count)
-            file_readall(CALL_L1, event.data + sizeof (struct event_header), event.header.count);
+        unsigned char data[512];
 
-        if (handlers[event.header.type])
+        if (header.count)
+            file_readall(CALL_L1, data, header.count);
+
+        if (handlers[header.type])
         {
 
-            handlers[event.header.type](&client, &event);
+            handlers[header.type](&client, &header, data);
             flush();
 
         }

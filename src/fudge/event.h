@@ -23,7 +23,6 @@ struct event_header
 struct event_keypress
 {
 
-    struct event_header header;
     unsigned char scancode;
 
 };
@@ -31,7 +30,6 @@ struct event_keypress
 struct event_keyrelease
 {
 
-    struct event_header header;
     unsigned char scancode;
 
 };
@@ -39,7 +37,6 @@ struct event_keyrelease
 struct event_mousepress
 {
 
-    struct event_header header;
     unsigned int button;
 
 };
@@ -47,7 +44,6 @@ struct event_mousepress
 struct event_mouserelease
 {
 
-    struct event_header header;
     unsigned int button;
 
 };
@@ -55,65 +51,17 @@ struct event_mouserelease
 struct event_mousemove
 {
 
-    struct event_header header;
     char relx;
     char rely;
-
-};
-
-struct event_wmmap
-{
-
-    struct event_header header;
-
-};
-
-struct event_wmunmap
-{
-
-    struct event_header header;
 
 };
 
 struct event_wmresize
 {
 
-    struct event_header header;
     unsigned int x;
     unsigned int y;
     unsigned int w;
     unsigned int h;
-
-};
-
-struct event_wmshow
-{
-
-    struct event_header header;
-
-};
-
-struct event_wmhide
-{
-
-    struct event_header header;
-
-};
-
-union event
-{
-
-    unsigned char data[512];
-    struct event_header header;
-    struct event_keypress keypress;
-    struct event_keyrelease keyrelease;
-    struct event_mousepress mousepress;
-    struct event_mouserelease mouserelease;
-    struct event_mousemove mousemove;
-    struct event_wmmap wmmap;
-    struct event_wmunmap wmunmap;
-    struct event_wmresize wmresize;
-    struct event_wmshow wmshow;
-    struct event_wmhide wmhide;
 
 };

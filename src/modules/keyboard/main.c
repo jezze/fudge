@@ -4,9 +4,6 @@
 #include <modules/event/event.h>
 #include "keyboard.h"
 
-static struct event_keypress keypress;
-static struct event_keyrelease keyrelease;
-
 void keyboard_notify(struct keyboard_interface *interface, unsigned int count, void *buffer)
 {
 
@@ -17,18 +14,22 @@ void keyboard_notify(struct keyboard_interface *interface, unsigned int count, v
 void keyboard_notifykeypress(struct keyboard_interface *interface, unsigned char scancode)
 {
 
+    struct event_keypress keypress;
+
     keypress.scancode = scancode;
 
-    event_notify(sizeof (struct event_keypress), &keypress);
+    event_notify(EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
 
 }
 
 void keyboard_notifykeyrelease(struct keyboard_interface *interface, unsigned char scancode)
 {
 
+    struct event_keyrelease keyrelease;
+
     keyrelease.scancode = scancode;
 
-    event_notify(sizeof (struct event_keyrelease), &keyrelease);
+    event_notify(EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
 
 }
 
@@ -65,11 +66,6 @@ void keyboard_initinterface(struct keyboard_interface *interface)
 
 void module_init(void)
 {
-
-    keypress.header.type = EVENT_KEYPRESS;
-    keypress.header.count = sizeof (struct event_keypress) - sizeof (struct event_header);
-    keyrelease.header.type = EVENT_KEYRELEASE;
-    keyrelease.header.count = sizeof (struct event_keyrelease) - sizeof (struct event_header);
 
 }
 

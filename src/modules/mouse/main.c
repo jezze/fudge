@@ -4,10 +4,6 @@
 #include <modules/event/event.h>
 #include "mouse.h"
 
-static struct event_mousepress mousepress;
-static struct event_mouserelease mouserelease;
-static struct event_mousemove mousemove;
-
 void mouse_notify(struct mouse_interface *interface, unsigned int count, void *buffer)
 {
 
@@ -18,28 +14,34 @@ void mouse_notify(struct mouse_interface *interface, unsigned int count, void *b
 void mouse_notifymousepress(struct mouse_interface *interface, unsigned int button)
 {
 
+    struct event_mousepress mousepress;
+
     mousepress.button = button;
 
-    event_notify(sizeof (struct event_mousepress), &mousepress);
+    event_notify(EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
 
 }
 
 void mouse_notifymouserelease(struct mouse_interface *interface, unsigned int button)
 {
 
+    struct event_mouserelease mouserelease;
+
     mouserelease.button = button;
 
-    event_notify(sizeof (struct event_mouserelease), &mouserelease);
+    event_notify(EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
 
 }
 
 void mouse_notifymousemove(struct mouse_interface *interface, char relx, char rely)
 {
 
+    struct event_mousemove mousemove;
+
     mousemove.relx = relx;
     mousemove.rely = rely;
 
-    event_notify(sizeof (struct event_mousemove), &mousemove);
+    event_notify(EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
 
 }
 
@@ -76,13 +78,6 @@ void mouse_initinterface(struct mouse_interface *interface)
 
 void module_init(void)
 {
-
-    mousepress.header.type = EVENT_MOUSEPRESS;
-    mousepress.header.count = sizeof (struct event_mousepress) - sizeof (struct event_header);
-    mouserelease.header.type = EVENT_MOUSERELEASE;
-    mouserelease.header.count = sizeof (struct event_mouserelease) - sizeof (struct event_header);
-    mousemove.header.type = EVENT_MOUSEMOVE;
-    mousemove.header.count = sizeof (struct event_mousemove) - sizeof (struct event_header);
 
 }
 

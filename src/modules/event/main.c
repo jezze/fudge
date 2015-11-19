@@ -7,17 +7,20 @@ static struct system_node root;
 static struct system_node poll;
 static struct system_node send;
 
-void event_notify(unsigned int count, void *buffer)
+void event_notify(unsigned int type, unsigned int count, void *buffer)
 {
 
-    struct event_header *header = buffer;
+    struct event_header header;
 
     if (!poll.mailboxes.count)
         return;
 
-    header->destination = (unsigned int)poll.mailboxes.head->data;
-    header->source = 0;
+    header.destination = (unsigned int)poll.mailboxes.head->data;
+    header.source = 0;
+    header.type = type;
+    header.count = count;
 
+    poll.write(&poll, 0, sizeof (struct event_header), &header);
     poll.write(&poll, 0, count, buffer);
 
 }

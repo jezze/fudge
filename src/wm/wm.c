@@ -50,7 +50,7 @@ struct client
 static struct list remotes;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
-static void (*handlers[EVENTS])(struct client *client, union event *event);
+static void (*handlers[EVENTS])(struct client *client, struct event_header *header, void *data);
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
@@ -268,13 +268,14 @@ static void hideview(unsigned int source, struct view *view)
 
 }
 
-static void onkeypress(struct client *client, union event *event)
+static void onkeypress(struct client *client, struct event_header *header, void *data)
 {
 
+    struct event_keypress *keypress = data;
     struct view *nextview;
     struct remote *nextremote;
 
-    switch (event->keypress.scancode)
+    switch (keypress->scancode)
     {
 
     case 0x2A:
@@ -294,13 +295,13 @@ static void onkeypress(struct client *client, union event *event)
     {
 
         if (client->viewfocus->remotefocus)
-            send_keypress(CALL_L2, client->viewfocus->remotefocus->source, event->keypress.scancode);
+            send_keypress(CALL_L2, client->viewfocus->remotefocus->source, keypress->scancode);
 
         return;
 
     }
 
-    switch (event->keypress.scancode)
+    switch (keypress->scancode)
     {
 
     case 0x02:
@@ -311,12 +312,12 @@ static void onkeypress(struct client *client, union event *event)
     case 0x07:
     case 0x08:
     case 0x09:
-        nextview = &view[event->keypress.scancode - 0x02];
+        nextview = &view[keypress->scancode - 0x02];
 
         if (nextview == client->viewfocus)
             break;
 
-        hideview(event->header.destination, client->viewfocus);
+        hideview(header->destination, client->viewfocus);
 
         if (client->viewfocus->remotefocus && client->keymod & KEYMOD_SHIFT)
         {
@@ -340,7 +341,7 @@ static void onkeypress(struct client *client, union event *event)
 
         client->viewfocus = nextview;
 
-        showview(event->header.destination, client->viewfocus);
+        showview(header->destination, client->viewfocus);
 
         break;
 
@@ -350,7 +351,7 @@ static void onkeypress(struct client *client, union event *event)
 
         send_wmhide(CALL_L2, client->viewfocus->remotefocus->source);
         send_wmunmap(CALL_L2, client->viewfocus->remotefocus->source);
-        writewindow(event->header.destination, 0, &client->viewfocus->remotefocus->window);
+        writewindow(header->destination, 0, &client->viewfocus->remotefocus->window);
         list_move(&remotes, &client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
 
         client->viewfocus->remotefocus = (client->viewfocus->remotes.tail) ? client->viewfocus->remotes.tail->data : 0;
@@ -359,7 +360,7 @@ static void onkeypress(struct client *client, union event *event)
             activateremote(client->viewfocus->remotefocus);
 
         arrangeview(client->viewfocus, &client->body);
-        showremotes(event->header.destination, &client->viewfocus->remotes);
+        showremotes(header->destination, &client->viewfocus->remotes);
 
         break;
 
@@ -383,7 +384,7 @@ static void onkeypress(struct client *client, union event *event)
 
             list_move(&client->viewfocus->remotes, &client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
             arrangeview(client->viewfocus, &client->body);
-            showremotes(event->header.destination, &client->viewfocus->remotes);
+            showremotes(header->destination, &client->viewfocus->remotes);
 
         }
 
@@ -396,7 +397,7 @@ static void onkeypress(struct client *client, union event *event)
         client->viewfocus->center -= (client->body.w / 32);
 
         arrangeview(client->viewfocus, &client->body);
-        showremotes(event->header.destination, &client->viewfocus->remotes);
+        showremotes(header->destination, &client->viewfocus->remotes);
 
         break;
 
@@ -407,12 +408,12 @@ static void onkeypress(struct client *client, union event *event)
             break;
 
         deactivateremote(client->viewfocus->remotefocus);
-        writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
+        writeremote(header->destination, 1, client->viewfocus->remotefocus);
 
         client->viewfocus->remotefocus = nextremote;
 
         activateremote(client->viewfocus->remotefocus);
-        writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
+        writeremote(header->destination, 1, client->viewfocus->remotefocus);
 
         break;
 
@@ -423,12 +424,12 @@ static void onkeypress(struct client *client, union event *event)
             break;
 
         deactivateremote(client->viewfocus->remotefocus);
-        writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
+        writeremote(header->destination, 1, client->viewfocus->remotefocus);
 
         client->viewfocus->remotefocus = nextremote;
 
         activateremote(client->viewfocus->remotefocus);
-        writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
+        writeremote(header->destination, 1, client->viewfocus->remotefocus);
 
         break;
 
@@ -439,13 +440,13 @@ static void onkeypress(struct client *client, union event *event)
         client->viewfocus->center += (client->body.w / 32);
 
         arrangeview(client->viewfocus, &client->body);
-        showremotes(event->header.destination, &client->viewfocus->remotes);
+        showremotes(header->destination, &client->viewfocus->remotes);
 
         break;
 
     case 0x2C:
-        send_wmhide(CALL_L2, event->header.destination);
-        send_wmunmap(CALL_L2, event->header.destination);
+        send_wmhide(CALL_L2, header->destination);
+        send_wmunmap(CALL_L2, header->destination);
 
         break;
 
@@ -453,10 +454,12 @@ static void onkeypress(struct client *client, union event *event)
 
 }
 
-static void onkeyrelease(struct client *client, union event *event)
+static void onkeyrelease(struct client *client, struct event_header *header, void *data)
 {
 
-    switch (event->keyrelease.scancode)
+    struct event_keyrelease *keyrelease = data;
+
+    switch (keyrelease->scancode)
     {
 
     case 0x2A:
@@ -476,7 +479,7 @@ static void onkeyrelease(struct client *client, union event *event)
     {
 
         if (client->viewfocus->remotefocus)
-            send_keyrelease(CALL_L2, client->viewfocus->remotefocus->source, event->keyrelease.scancode);
+            send_keyrelease(CALL_L2, client->viewfocus->remotefocus->source, keyrelease->scancode);
 
         return;
 
@@ -484,13 +487,14 @@ static void onkeyrelease(struct client *client, union event *event)
 
 }
 
-static void onmousepress(struct client *client, union event *event)
+static void onmousepress(struct client *client, struct event_header *header, void *data)
 {
 
+    struct event_mousepress *mousepress = data;
     struct list_item *current;
     unsigned int i;
 
-    switch (event->mousepress.button)
+    switch (mousepress->button)
     {
 
     case 0x01:
@@ -503,11 +507,11 @@ static void onmousepress(struct client *client, union event *event)
             if (&view[i] != client->viewfocus)
             {
 
-                hideview(event->header.destination, client->viewfocus);
+                hideview(header->destination, client->viewfocus);
 
                 client->viewfocus = &view[i];
 
-                showview(event->header.destination, client->viewfocus);
+                showview(header->destination, client->viewfocus);
 
             }
 
@@ -530,14 +534,14 @@ static void onmousepress(struct client *client, union event *event)
                 {
 
                     deactivateremote(client->viewfocus->remotefocus);
-                    writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
+                    writeremote(header->destination, 1, client->viewfocus->remotefocus);
 
                 }
 
                 client->viewfocus->remotefocus = remote;
 
                 activateremote(client->viewfocus->remotefocus);
-                writeremote(event->header.destination, 1, client->viewfocus->remotefocus);
+                writeremote(header->destination, 1, client->viewfocus->remotefocus);
 
             }
 
@@ -551,40 +555,42 @@ static void onmousepress(struct client *client, union event *event)
 
 }
 
-static void onmousemove(struct client *client, union event *event)
+static void onmousemove(struct client *client, struct event_header *header, void *data)
 {
 
-    client->mouse.x += event->mousemove.relx;
-    client->mouse.y -= event->mousemove.rely;
+    struct event_mousemove *mousemove = data;
 
-    if (event->mousemove.relx > 0 && client->mouse.x >= client->size.w)
+    client->mouse.x += mousemove->relx;
+    client->mouse.y -= mousemove->rely;
+
+    if (mousemove->relx > 0 && client->mouse.x >= client->size.w)
         client->mouse.x = client->size.w - 1;
 
-    if (event->mousemove.relx < 0 && client->mouse.x >= client->size.w)
+    if (mousemove->relx < 0 && client->mouse.x >= client->size.w)
         client->mouse.x = 0;
 
-    if (event->mousemove.rely < 0 && client->mouse.y >= client->size.h)
+    if (mousemove->rely < 0 && client->mouse.y >= client->size.h)
         client->mouse.y = client->size.h - 1;
 
-    if (event->mousemove.rely > 0 && client->mouse.y >= client->size.h)
+    if (mousemove->rely > 0 && client->mouse.y >= client->size.h)
         client->mouse.y = 0;
 
-    writemouse(event->header.destination, 3, &client->mouse);
+    writemouse(header->destination, 3, &client->mouse);
 
 }
 
-static void onwmmap(struct client *client, union event *event)
+static void onwmmap(struct client *client, struct event_header *header, void *data)
 {
 
-    if (event->header.source == event->header.destination)
+    if (header->source == header->destination)
     {
 
         ctrl_setvideosettings(&client->settings, 1920, 1080, 32);
         video_getmode(CALL_L0, &client->oldsettings);
         video_setmode(CALL_L0, &client->settings);
         video_getmode(CALL_L0, &client->settings);
-        send_wmresize(CALL_L2, event->header.destination, 0, 0, client->settings.w, client->settings.h);
-        send_wmshow(CALL_L2, event->header.destination);
+        send_wmresize(CALL_L2, header->destination, 0, 0, client->settings.w, client->settings.h);
+        send_wmshow(CALL_L2, header->destination);
 
     }
             
@@ -598,23 +604,23 @@ static void onwmmap(struct client *client, union event *event)
             deactivateremote(client->viewfocus->remotefocus);
 
         client->viewfocus->remotefocus = remotes.head->data;
-        client->viewfocus->remotefocus->source = event->header.source;
+        client->viewfocus->remotefocus->source = header->source;
 
         list_move(&client->viewfocus->remotes, &remotes, &client->viewfocus->remotefocus->item);
         activateremote(client->viewfocus->remotefocus);
         arrangeview(client->viewfocus, &client->body);
-        showremotes(event->header.destination, &client->viewfocus->remotes);
+        showremotes(header->destination, &client->viewfocus->remotes);
 
     }
 
 }
 
-static void onwmunmap(struct client *client, union event *event)
+static void onwmunmap(struct client *client, struct event_header *header, void *data)
 {
 
     unsigned int i;
 
-    if (event->header.source == event->header.destination)
+    if (header->source == header->destination)
         video_setmode(CALL_L0, &client->oldsettings);
 
     for (i = 0; i < VIEWS; i++)
@@ -636,12 +642,13 @@ static void onwmunmap(struct client *client, union event *event)
 
 }
 
-static void onwmresize(struct client *client, union event *event)
+static void onwmresize(struct client *client, struct event_header *header, void *data)
 {
 
+    struct event_wmresize *wmresize = data;
     unsigned int i;
 
-    box_setsize(&client->size, event->wmresize.x, event->wmresize.y, event->wmresize.w, event->wmresize.h);
+    box_setsize(&client->size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
     box_setsize(&client->menu, client->size.x, client->size.y, client->size.w, 32);
     box_setsize(&client->body, client->size.x, client->size.y + client->menu.h, client->size.w, client->size.h - client->menu.h);
     box_setsize(&client->background.size, client->size.x, client->size.y, client->size.w, client->size.h);
@@ -662,33 +669,33 @@ static void onwmresize(struct client *client, union event *event)
 
 }
 
-static void onwmshow(struct client *client, union event *event)
+static void onwmshow(struct client *client, struct event_header *header, void *data)
 {
 
     unsigned int i;
 
-    writefill(event->header.destination, 1, &client->background);
+    writefill(header->destination, 1, &client->background);
 
     for (i = 0; i < VIEWS; i++)
-        writeview(event->header.destination, 1, &view[i]);
+        writeview(header->destination, 1, &view[i]);
 
-    writemouse(event->header.destination, 3, &client->mouse);
-    showremotes(event->header.destination, &client->viewfocus->remotes);
+    writemouse(header->destination, 3, &client->mouse);
+    showremotes(header->destination, &client->viewfocus->remotes);
 
 }
 
-static void onwmhide(struct client *client, union event *event)
+static void onwmhide(struct client *client, struct event_header *header, void *data)
 {
 
     unsigned int i;
 
-    writefill(event->header.destination, 0, &client->background);
+    writefill(header->destination, 0, &client->background);
 
     for (i = 0; i < VIEWS; i++)
-        writeview(event->header.destination, 0, &view[i]);
+        writeview(header->destination, 0, &view[i]);
 
-    writemouse(event->header.destination, 0, &client->mouse);
-    hideremotes(event->header.destination, &client->viewfocus->remotes);
+    writemouse(header->destination, 0, &client->mouse);
+    hideremotes(header->destination, &client->viewfocus->remotes);
 
 }
 
@@ -732,7 +739,7 @@ void main(void)
 {
 
     struct client client;
-    union event event;
+    struct event_header header;
     unsigned int count;
 
     setup(&client);
@@ -752,16 +759,18 @@ void main(void)
     call_open(CALL_L1);
     send_wmmap(CALL_L2, 0);
 
-    while ((count = file_readall(CALL_L1, &event.header, sizeof (struct event_header))))
+    while ((count = file_readall(CALL_L1, &header, sizeof (struct event_header))))
     {
 
-        if (event.header.count)
-            file_readall(CALL_L1, event.data + sizeof (struct event_header), event.header.count);
+        unsigned char data[512];
 
-        if (handlers[event.header.type])
+        if (header.count)
+            file_readall(CALL_L1, data, header.count);
+
+        if (handlers[header.type])
         {
 
-            handlers[event.header.type](&client, &event);
+            handlers[header.type](&client, &header, data);
             flush();
 
         }
