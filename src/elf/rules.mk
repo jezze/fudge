@@ -2,8 +2,8 @@ BIN_ELFLOAD:=\
     $(SRC_PATH)/elf/elfload \
 
 OBJ_ELFLOAD:=\
+    $(SRC_PATH)/elf/elf.o \
     $(SRC_PATH)/elf/elfload.o \
-    $(SRC_PATH)/format/elf.o \
     $(SRC_PATH)/lib/file.o \
 
 $(BIN_ELFLOAD): $(OBJ_ELFLOAD) $(BIN_DEPS)
@@ -13,8 +13,8 @@ BIN_ELFUNLOAD:=\
     $(SRC_PATH)/elf/elfunload \
 
 OBJ_ELFUNLOAD:=\
+    $(SRC_PATH)/elf/elf.o \
     $(SRC_PATH)/elf/elfunload.o \
-    $(SRC_PATH)/format/elf.o \
     $(SRC_PATH)/lib/file.o \
 
 $(BIN_ELFUNLOAD): $(OBJ_ELFUNLOAD) $(BIN_DEPS)

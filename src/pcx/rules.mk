@@ -2,10 +2,10 @@ BIN_PCXCMAP:=\
     $(SRC_PATH)/pcx/pcxcmap \
 
 OBJ_PCXCMAP:=\
+    $(SRC_PATH)/pcx/pcx.o \
     $(SRC_PATH)/pcx/pcxcmap.o \
     $(SRC_PATH)/lib/file.o \
     $(SRC_PATH)/lib/gfx.o \
-    $(SRC_PATH)/lib/pcx.o \
 
 $(BIN_PCXCMAP): $(OBJ_PCXCMAP) $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^
@@ -14,10 +14,10 @@ BIN_PCXDATA:=\
     $(SRC_PATH)/pcx/pcxdata \
 
 OBJ_PCXDATA:=\
+    $(SRC_PATH)/pcx/pcx.o \
     $(SRC_PATH)/pcx/pcxdata.o \
     $(SRC_PATH)/lib/file.o \
     $(SRC_PATH)/lib/gfx.o \
-    $(SRC_PATH)/lib/pcx.o \
 
 $(BIN_PCXDATA): $(OBJ_PCXDATA) $(BIN_DEPS)
 	$(LD) -o $@ $(LDFLAGS) $^

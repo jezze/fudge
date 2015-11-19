@@ -17,7 +17,7 @@ OBJ_KERNEL:=\
     $(SRC_PATH)/fudge/list.o \
     $(SRC_PATH)/fudge/memory.o \
     $(SRC_PATH)/format/cpio.o \
-    $(SRC_PATH)/format/elf.o \
+    $(SRC_PATH)/elf/elf.o \
 
 include $(SRC_PATH)/kernel/$(ARCH)/rules.mk
 
