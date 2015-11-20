@@ -17,18 +17,12 @@ static char rely;
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char control = ps2_getcontrol();
     unsigned char data;
 
-    if (!(control & 0x01))
-        return;
-
-    if (!(control & 0x20))
+    if (!ps2_checkdata(PS2_MOUSE))
         return;
 
     data = ps2_getdata();
-
-    mouse_notify(&mouseinterface, 1, &data);
 
     switch (sequence)
     {
@@ -52,6 +46,8 @@ static void handleirq(unsigned int irq)
         break;
 
     }
+
+    mouse_notify(&mouseinterface, 1, &data);
 
     if (sequence)
         return;

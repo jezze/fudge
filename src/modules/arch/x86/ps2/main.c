@@ -150,17 +150,33 @@ static unsigned int testdevice(unsigned int id)
 
 }
 
+unsigned int ps2_checkdata(unsigned int id)
+{
+
+    unsigned char control = io_inb(REGISTERCONTROL);
+
+    if (!(control & 0x01))
+        return 0;
+
+    switch (id)
+    {
+
+        case PS2_KEYBOARD:
+            return !(control & 0x20);
+
+        case PS2_MOUSE:
+            return (control & 0x20);
+
+    }
+
+    return 0;
+
+}
+
 unsigned char ps2_getdata(void)
 {
 
     return io_inb(REGISTERDATA);
-
-}
-
-unsigned char ps2_getcontrol(void)
-{
-
-    return io_inb(REGISTERCONTROL);
 
 }
 

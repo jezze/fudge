@@ -12,13 +12,9 @@ static struct keyboard_interface keyboardinterface;
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char control = ps2_getcontrol();
     unsigned char data;
 
-    if (!(control & 0x01))
-        return;
-
-    if (control & 0x20)
+    if (!ps2_checkdata(PS2_KEYBOARD))
         return;
 
     data = ps2_getdata();
