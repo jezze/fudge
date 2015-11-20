@@ -1,14 +1,14 @@
 MANUAL: WINDOW MANAGER
 
-Keyboard bindings:
+Keyboard bindings
 
-Alt+[1-8]:              Change workspace
-Alt+Shift+[1-8]:        Change workspace and bring focused window
-Alt+h:                  Decrease main area
-Alt+j:                  Move focus to previous window
-Alt+k:                  Move focus to next window
-Alt+l:                  Increase main area
-Alt+Enter:              Move focused window to main area
-Alt+Shift+p:            Open a new shell
-Alt+Shift+q:            Close active window
-Alt+Shift+z:            Exit window manager
+    Alt+[1-8]:          Change workspace
+    Alt+Shift+[1-8]:    Change workspace and bring focused window
+    Alt+h:              Decrease main area
+    Alt+j:              Move focus to previous window
+    Alt+k:              Move focus to next window
+    Alt+l:              Increase main area
+    Alt+Enter:          Move focused window to main area
+    Alt+Shift+p:        Open a new shell
+    Alt+Shift+q:        Close active window
+    Alt+Shift+z:        Exit window manager
