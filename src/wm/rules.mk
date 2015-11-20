@@ -1,3 +1,34 @@
+BIN_WDRAW:=\
+    $(DIR_SRC)/wm/wdraw \
+
+OBJ_WDRAW:=\
+    $(DIR_SRC)/wm/wdraw.o \
+    $(DIR_SRC)/wm/box.o \
+    $(DIR_SRC)/wm/element.o \
+    $(DIR_SRC)/fudge/ctrl.o \
+    $(DIR_SRC)/fudge/memory.o \
+    $(DIR_SRC)/lib/file.o \
+    $(DIR_SRC)/lib/video.o \
+    $(DIR_SRC)/format/pcf.o \
+
+$(BIN_WDRAW): $(OBJ_WDRAW) $(OBJ_STD) $(OBJ_ABI)
+	$(LD) -o $@ $(LDFLAGS) $^
+
+BIN_WHELP:=\
+    $(DIR_SRC)/wm/whelp \
+
+OBJ_WHELP:=\
+    $(DIR_SRC)/wm/whelp.o \
+    $(DIR_SRC)/wm/box.o \
+    $(DIR_SRC)/wm/element.o \
+    $(DIR_SRC)/wm/send.o \
+    $(DIR_SRC)/fudge/ascii.o \
+    $(DIR_SRC)/fudge/memory.o \
+    $(DIR_SRC)/lib/file.o \
+
+$(BIN_WHELP): $(OBJ_WHELP) $(OBJ_STD) $(OBJ_ABI)
+	$(LD) -o $@ $(LDFLAGS) $^
+
 BIN_WM:=\
     $(DIR_SRC)/wm/wm \
 
@@ -15,20 +46,19 @@ OBJ_WM:=\
 $(BIN_WM): $(OBJ_WM) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
-BIN_WDRAW:=\
-    $(DIR_SRC)/wm/wdraw \
+BIN_WNULL:=\
+    $(DIR_SRC)/wm/wnull \
 
-OBJ_WDRAW:=\
-    $(DIR_SRC)/wm/wdraw.o \
+OBJ_WNULL:=\
+    $(DIR_SRC)/wm/wnull.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
-    $(DIR_SRC)/fudge/ctrl.o \
+    $(DIR_SRC)/wm/send.o \
+    $(DIR_SRC)/wm/keymap.o \
     $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
-    $(DIR_SRC)/lib/video.o \
-    $(DIR_SRC)/format/pcf.o \
 
-$(BIN_WDRAW): $(OBJ_WDRAW) $(OBJ_STD) $(OBJ_ABI)
+$(BIN_WNULL): $(OBJ_WNULL) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_WTEXT:=\
@@ -45,20 +75,5 @@ OBJ_WTEXT:=\
 $(BIN_WTEXT): $(OBJ_WTEXT) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
-BIN_WNULL:=\
-    $(DIR_SRC)/wm/wnull \
-
-OBJ_WNULL:=\
-    $(DIR_SRC)/wm/wnull.o \
-    $(DIR_SRC)/wm/box.o \
-    $(DIR_SRC)/wm/element.o \
-    $(DIR_SRC)/wm/send.o \
-    $(DIR_SRC)/wm/keymap.o \
-    $(DIR_SRC)/fudge/memory.o \
-    $(DIR_SRC)/lib/file.o \
-
-$(BIN_WNULL): $(OBJ_WNULL) $(OBJ_STD) $(OBJ_ABI)
-	$(LD) -o $@ $(LDFLAGS) $^
-
-BIN:=$(BIN) $(BIN_WM) $(BIN_WDRAW) $(BIN_WTEXT) $(BIN_WNULL)
-OBJ:=$(OBJ) $(OBJ_WM) $(OBJ_WDRAW) $(OBJ_WTEXT) $(OBJ_WNULL)
+BIN:=$(BIN) $(BIN_WDRAW) $(BIN_WHELP) $(BIN_WM) $(BIN_WNULL) $(BIN_WTEXT)
+OBJ:=$(OBJ) $(OBJ_WDRAW) $(OBJ_WHELP) $(OBJ_WM) $(OBJ_WNULL) $(OBJ_WTEXT)
