@@ -346,6 +346,9 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         break;
 
     case 0x10:
+        if (!(client->keymod & KEYMOD_SHIFT))
+            break;
+
         if (!client->viewfocus->remotefocus)
             break;
 
@@ -365,28 +368,21 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         break;
 
     case 0x19:
+        if (!(client->keymod & KEYMOD_SHIFT))
+            break;
+
+        call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
+        call_spawn();
+
         break;
 
     case 0x1C:
-        if (client->keymod & KEYMOD_SHIFT)
-        {
+        if (!client->viewfocus->remotefocus)
+            break;
 
-            call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
-            call_spawn();
-
-        }
-
-        else
-        {
-
-            if (!client->viewfocus->remotefocus)
-                break;
-
-            list_move(&client->viewfocus->remotes, &client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
-            arrangeview(client->viewfocus, &client->body);
-            showremotes(header->destination, &client->viewfocus->remotes);
-
-        }
+        list_move(&client->viewfocus->remotes, &client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
+        arrangeview(client->viewfocus, &client->body);
+        showremotes(header->destination, &client->viewfocus->remotes);
 
         break;
 
@@ -445,6 +441,9 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         break;
 
     case 0x2C:
+        if (!(client->keymod & KEYMOD_SHIFT))
+            break;
+
         send_wmhide(CALL_L2, header->destination);
         send_wmunmap(CALL_L2, header->destination);
 
