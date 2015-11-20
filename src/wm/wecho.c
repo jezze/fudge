@@ -10,7 +10,7 @@ struct client
 
     struct element_text content;
     unsigned int quit;
-    char *text;
+    unsigned char text[FUDGE_BSIZE];
     unsigned int textcount;
     struct box size;
 
@@ -19,22 +19,6 @@ struct client
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
 static void (*handlers[EVENTS])(struct client *client, struct event_header *header, void *data);
-static char *instructions = ""
-"MANUAL: WINDOW MANAGER\n"
-"\n"
-"Keyboard bindings:\n"
-"\n"
-"Alt+[1-8]:         Change workspace\n"
-"Alt+Shift+[1-8]:   Change workspace and bring focused window\n"
-"Alt+h:             Decrease main area\n"
-"Alt+j:             Move focus to previous window\n"
-"Alt+k:             Move focus to next window\n"
-"Alt+l:             Increase main area\n"
-"Alt+Enter:         Move focused window to main area\n"
-"Alt+Shift+p:       Open a new shell\n"
-"Alt+Shift+q:       Close active window\n"
-"Alt+Shift+z:       Exit window manager\n"
-"";
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
@@ -110,8 +94,7 @@ static void setup(struct client *client)
     element_inittext(&client->content, ELEMENT_TEXTTYPE_NORMAL);
 
     client->quit = 0;
-    client->text = instructions;
-    client->textcount = ascii_length(client->text);
+    client->textcount = file_read(CALL_PI, client->text, FUDGE_BSIZE);
 
 }
 

@@ -1,4 +1,4 @@
 /bin/wm
 /bin/wnull
 /bin/wnull
-/bin/whelp
+/bin/wecho < /share/wm-man.txt
