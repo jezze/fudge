@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include "system.h"
-#include "protocol.h"
 
 static unsigned int protocol_match(struct vfs_backend *backend)
 {

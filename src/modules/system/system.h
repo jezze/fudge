@@ -36,4 +36,6 @@ void system_addchild(struct system_node *group, struct system_node *node);
 void system_removechild(struct system_node *group, struct system_node *node);
 void system_registernode(struct system_node *node);
 void system_unregisternode(struct system_node *node);
+void system_initbackend(struct vfs_backend *backend);
+void system_initprotocol(struct vfs_protocol *protocol);
 void system_initnode(struct system_node *node, unsigned int type, char *name);

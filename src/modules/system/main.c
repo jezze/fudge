@@ -1,8 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include "system.h"
-#include "backend.h"
-#include "protocol.h"
 
 static struct vfs_backend backend;
 static struct vfs_protocol protocol;

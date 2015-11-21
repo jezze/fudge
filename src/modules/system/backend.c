@@ -1,24 +1,9 @@
 #include <fudge.h>
 #include <kernel.h>
 #include "system.h"
-#include "backend.h"
 
 static struct system_node root;
 static struct system_header header;
-
-void system_registernode(struct system_node *node)
-{
-
-    system_addchild(&root, node);
-
-}
-
-void system_unregisternode(struct system_node *node)
-{
-
-    system_removechild(&root, node);
-
-}
 
 static unsigned int backend_read(unsigned int offset, unsigned int count, void *buffer)
 {
@@ -31,6 +16,20 @@ static unsigned int backend_write(unsigned int offset, unsigned int count, void 
 {
 
     return 0;
+
+}
+
+void system_registernode(struct system_node *node)
+{
+
+    system_addchild(&root, node);
+
+}
+
+void system_unregisternode(struct system_node *node)
+{
+
+    system_removechild(&root, node);
 
 }
 
