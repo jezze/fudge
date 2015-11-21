@@ -60,7 +60,7 @@ static unsigned int node_readmailboxes(struct system_node *self, unsigned int of
 
     struct task *task = task_findactive();
 
-    count = task_rmessage(task, count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
     if (!count)
         task_setstatus(task, TASK_STATUS_BLOCKED);
@@ -81,7 +81,7 @@ static unsigned int node_writemailboxes(struct system_node *self, unsigned int o
 
         task_setstatus(task, TASK_STATUS_ACTIVE);
 
-        return task_wmessage(task, count, buffer);
+        return buffer_wcfifo(&task->mailbox.buffer, count, buffer);
 
     }
 

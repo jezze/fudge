@@ -38,12 +38,14 @@ static unsigned int p0_read(struct system_node *self, unsigned int offset, unsig
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    count = task_rmessage(task, count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
     if (pipe->p1.mailboxes.count)
     {
 
-        task_setstatus(pipe->p1.mailboxes.head->data, TASK_STATUS_ACTIVE);
+        struct task *target = pipe->p1.mailboxes.head->data;
+
+        task_setstatus(target, TASK_STATUS_ACTIVE);
 
         if (!count)
             task_setstatus(task, TASK_STATUS_BLOCKED);
@@ -63,9 +65,11 @@ static unsigned int p0_write(struct system_node *self, unsigned int offset, unsi
     if (pipe->p1.mailboxes.count)
     {
 
-        task_setstatus(pipe->p1.mailboxes.head->data, TASK_STATUS_ACTIVE);
+        struct task *target = pipe->p1.mailboxes.head->data;
 
-        count = task_wmessage(pipe->p1.mailboxes.head->data, count, buffer);
+        task_setstatus(target, TASK_STATUS_ACTIVE);
+
+        count = buffer_wcfifo(&target->mailbox.buffer, count, buffer);
 
         if (!count)
             task_setstatus(task, TASK_STATUS_BLOCKED);
@@ -117,12 +121,14 @@ static unsigned int p1_read(struct system_node *self, unsigned int offset, unsig
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    count = task_rmessage(task, count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
     if (pipe->p0.mailboxes.count)
     {
 
-        task_setstatus(pipe->p0.mailboxes.head->data, TASK_STATUS_ACTIVE);
+        struct task *target = pipe->p0.mailboxes.head->data;
+
+        task_setstatus(target, TASK_STATUS_ACTIVE);
 
         if (!count)
             task_setstatus(task, TASK_STATUS_BLOCKED);
@@ -142,9 +148,11 @@ static unsigned int p1_write(struct system_node *self, unsigned int offset, unsi
     if (pipe->p0.mailboxes.count)
     {
 
-        task_setstatus(pipe->p0.mailboxes.head->data, TASK_STATUS_ACTIVE);
+        struct task *target = pipe->p0.mailboxes.head->data;
 
-        count = task_wmessage(pipe->p0.mailboxes.head->data, count, buffer);
+        task_setstatus(target, TASK_STATUS_ACTIVE);
+
+        count = buffer_wcfifo(&target->mailbox.buffer, count, buffer);
 
         if (!count)
             task_setstatus(task, TASK_STATUS_BLOCKED);

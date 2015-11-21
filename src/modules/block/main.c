@@ -31,7 +31,7 @@ static unsigned int interfacedata_read(struct system_node *self, unsigned int of
 
     }
 
-    count = task_rmessage(task, count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
     if (!count)
         task_setstatus(task, TASK_STATUS_BLOCKED);

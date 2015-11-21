@@ -40,7 +40,7 @@ static unsigned int send_write(struct system_node *self, unsigned int offset, un
 
     task_setstatus(destination, TASK_STATUS_ACTIVE);
 
-    return task_wmessage(destination, count, buffer);
+    return buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
 
 }
 

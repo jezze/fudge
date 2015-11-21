@@ -135,20 +135,6 @@ void task_initbinary(struct task *task, unsigned int sp)
 
 }
 
-unsigned int task_rmessage(struct task *task, unsigned int count, void *buffer)
-{
-
-    return buffer_rcfifo(&task->mailbox.buffer, count, buffer);
-
-}
-
-unsigned int task_wmessage(struct task *task, unsigned int count, void *buffer)
-{
-
-    return buffer_wcfifo(&task->mailbox.buffer, count, buffer);
-
-}
-
 void task_register(struct task *task)
 {
 
