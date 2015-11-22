@@ -6,12 +6,66 @@
 static struct system_node root;
 static struct system_node clone;
 
-static unsigned int p0_open(struct system_node *self)
+static void wakeup(struct list *list)
+{
+
+    struct list_item *current;
+
+    for (current = list->head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+
+        task_setstatus(task, TASK_STATUS_ACTIVE);
+
+    }
+
+}
+
+static unsigned int read(struct buffer *b, struct list *mailboxes, unsigned int ref, unsigned int count, void *buffer)
 {
 
     struct task *task = task_findactive();
 
-    list_add(&self->mailboxes, &task->blockitem);
+    count = buffer_rcfifo(b, count, buffer);
+
+    if (!count && ref)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    wakeup(mailboxes);
+
+    return count;
+
+}
+
+static unsigned int write(struct buffer *b, struct list *mailboxes, unsigned int ref, unsigned int count, void *buffer)
+{
+
+    struct task *task = task_findactive();
+
+    count = buffer_wcfifo(b, count, buffer);
+
+    if (!count)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    wakeup(mailboxes);
+
+    return count;
+
+}
+
+static unsigned int p0_open(struct system_node *self)
+{
+
+    struct pipe *pipe = (struct pipe *)self->parent;
+    struct task *task = task_findactive();
+
+    pipe->ref0++;
+
+    if (!list_find(&self->mailboxes, &task->blockitem))
+        list_add(&self->mailboxes, &task->blockitem);
+
+    wakeup(&pipe->p1.mailboxes);
 
     return (unsigned int)self;
 
@@ -23,10 +77,12 @@ static unsigned int p0_close(struct system_node *self)
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    list_remove(&self->mailboxes, &task->blockitem);
+    pipe->ref0--;
 
-    if (pipe->p1.mailboxes.count)
-        task_setstatus(pipe->p1.mailboxes.head->data, TASK_STATUS_ACTIVE);
+    if (list_find(&self->mailboxes, &task->blockitem))
+        list_remove(&self->mailboxes, &task->blockitem);
+
+    wakeup(&pipe->p1.mailboxes);
 
     return (unsigned int)self;
 
@@ -36,23 +92,8 @@ static unsigned int p0_read(struct system_node *self, unsigned int offset, unsig
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
-    struct task *task = task_findactive();
 
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
-
-    if (pipe->p1.mailboxes.count)
-    {
-
-        struct task *target = pipe->p1.mailboxes.head->data;
-
-        task_setstatus(target, TASK_STATUS_ACTIVE);
-
-        if (!count)
-            task_setstatus(task, TASK_STATUS_BLOCKED);
-
-    }
-
-    return count;
+    return read(&pipe->buffer0, &pipe->p1.mailboxes, pipe->ref1, count, buffer);
 
 }
 
@@ -60,41 +101,23 @@ static unsigned int p0_write(struct system_node *self, unsigned int offset, unsi
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
-    struct task *task = task_findactive();
 
-    if (pipe->p1.mailboxes.count)
-    {
-
-        struct task *target = pipe->p1.mailboxes.head->data;
-
-        task_setstatus(target, TASK_STATUS_ACTIVE);
-
-        count = buffer_wcfifo(&target->mailbox.buffer, count, buffer);
-
-        if (!count)
-            task_setstatus(task, TASK_STATUS_BLOCKED);
-
-        return count;
-
-    }
-
-    else
-    {
-
-        task_setstatus(task, TASK_STATUS_BLOCKED);
-
-        return 0;
-
-    }
+    return write(&pipe->buffer1, &pipe->p1.mailboxes, pipe->ref1, count, buffer);
 
 }
 
 static unsigned int p1_open(struct system_node *self)
 {
 
+    struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    list_add(&self->mailboxes, &task->blockitem);
+    pipe->ref1++;
+
+    if (!list_find(&self->mailboxes, &task->blockitem))
+        list_add(&self->mailboxes, &task->blockitem);
+
+    wakeup(&pipe->p0.mailboxes);
 
     return (unsigned int)self;
 
@@ -106,10 +129,12 @@ static unsigned int p1_close(struct system_node *self)
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    list_remove(&self->mailboxes, &task->blockitem);
+    pipe->ref1--;
 
-    if (pipe->p0.mailboxes.count)
-        task_setstatus(pipe->p0.mailboxes.head->data, TASK_STATUS_ACTIVE);
+    if (list_find(&self->mailboxes, &task->blockitem))
+        list_remove(&self->mailboxes, &task->blockitem);
+
+    wakeup(&pipe->p0.mailboxes);
 
     return (unsigned int)self;
 
@@ -119,23 +144,8 @@ static unsigned int p1_read(struct system_node *self, unsigned int offset, unsig
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
-    struct task *task = task_findactive();
 
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
-
-    if (pipe->p0.mailboxes.count)
-    {
-
-        struct task *target = pipe->p0.mailboxes.head->data;
-
-        task_setstatus(target, TASK_STATUS_ACTIVE);
-
-        if (!count)
-            task_setstatus(task, TASK_STATUS_BLOCKED);
-
-    }
-
-    return count;
+    return read(&pipe->buffer1, &pipe->p0.mailboxes, pipe->ref0, count, buffer);
 
 }
 
@@ -143,32 +153,8 @@ static unsigned int p1_write(struct system_node *self, unsigned int offset, unsi
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
-    struct task *task = task_findactive();
 
-    if (pipe->p0.mailboxes.count)
-    {
-
-        struct task *target = pipe->p0.mailboxes.head->data;
-
-        task_setstatus(target, TASK_STATUS_ACTIVE);
-
-        count = buffer_wcfifo(&target->mailbox.buffer, count, buffer);
-
-        if (!count)
-            task_setstatus(task, TASK_STATUS_BLOCKED);
-
-        return count;
-
-    }
-
-    else
-    {
-
-        task_setstatus(task, TASK_STATUS_BLOCKED);
-
-        return 0;
-
-    }
+    return write(&pipe->buffer0, &pipe->p0.mailboxes, pipe->ref0, count, buffer);
 
 }
 
@@ -200,6 +186,8 @@ static unsigned int clone_child(struct system_node *self, unsigned int count, ch
 void pipe_init(struct pipe *pipe)
 {
 
+    buffer_init(&pipe->buffer0, 4096, pipe->data0);
+    buffer_init(&pipe->buffer1, 4096, pipe->data1);
     system_initnode(&pipe->p0, SYSTEM_NODETYPE_NORMAL, "0");
     system_initnode(&pipe->p1, SYSTEM_NODETYPE_NORMAL, "1");
 
@@ -215,6 +203,9 @@ void pipe_init(struct pipe *pipe)
     system_initnode(&pipe->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "pipe");
     system_addchild(&pipe->root, &pipe->p0);
     system_addchild(&pipe->root, &pipe->p1);
+
+    pipe->ref0 = 0;
+    pipe->ref1 = 0;
 
 }
 

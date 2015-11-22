@@ -43,9 +43,25 @@ static void interpret(struct buffer *buffer)
     call_walk(CALL_L1, CALL_L0, 1, "0");
     call_walk(CALL_CI, CALL_L0, 1, "1");
     call_open(CALL_L1);
-    call_spawn();
     file_writeall(CALL_L1, command, count);
+    call_spawn();
     call_close(CALL_L1);
+
+/*
+    call_walk(CALL_L1, CALL_L0, 1, "0");
+    call_walk(CALL_CI, CALL_L0, 1, "1");
+    call_walk(CALL_CO, CALL_L0, 1, "1");
+    call_open(CALL_L1);
+    file_writeall(CALL_L1, command, count);
+    call_spawn();
+    call_close(CALL_L1);
+    call_open(CALL_L1);
+
+    while ((count = file_read(CALL_L1, command, FUDGE_BSIZE)))
+        file_writeall(CALL_PO, command, count);
+
+    call_close(CALL_L1);
+*/
 
 }
 

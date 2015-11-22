@@ -61,6 +61,23 @@ void list_move(struct list *out, struct list *in, struct list_item *item)
 
 }
 
+unsigned int list_find(struct list *list, struct list_item *item)
+{
+
+    struct list_item *current;
+
+    for (current = list->head; current; current = current->next)
+    {
+
+        if (current == item)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
 void list_inititem(struct list_item *item, void *data)
 {
 
