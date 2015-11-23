@@ -1,15 +1,19 @@
+struct pipe_end
+{
+
+    struct system_node node;
+    unsigned char data[4096];
+    struct buffer buffer;
+    unsigned int ref;
+
+};
+
 struct pipe
 {
 
     struct system_node root;
-    struct system_node p0;
-    struct system_node p1;
-    unsigned char data0[4096];
-    struct buffer buffer0;
-    unsigned char data1[4096];
-    struct buffer buffer1;
-    unsigned int ref0;
-    unsigned int ref1;
+    struct pipe_end end0;
+    struct pipe_end end1;
 
 };
 

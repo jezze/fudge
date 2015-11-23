@@ -38,7 +38,7 @@ static unsigned int read(struct buffer *b, struct list *mailboxes, unsigned int 
 
 }
 
-static unsigned int write(struct buffer *b, struct list *mailboxes, unsigned int ref, unsigned int count, void *buffer)
+static unsigned int write(struct buffer *b, struct list *mailboxes, unsigned int count, void *buffer)
 {
 
     struct task *task = task_findactive();
@@ -54,107 +54,107 @@ static unsigned int write(struct buffer *b, struct list *mailboxes, unsigned int
 
 }
 
-static unsigned int p0_open(struct system_node *self)
+static unsigned int end0_open(struct system_node *self)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    pipe->ref0++;
+    pipe->end0.ref++;
 
     if (!list_find(&self->mailboxes, &task->blockitem))
         list_add(&self->mailboxes, &task->blockitem);
 
-    wakeup(&pipe->p1.mailboxes);
+    wakeup(&pipe->end1.node.mailboxes);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int p0_close(struct system_node *self)
+static unsigned int end0_close(struct system_node *self)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    pipe->ref0--;
+    pipe->end0.ref--;
 
     if (list_find(&self->mailboxes, &task->blockitem))
         list_remove(&self->mailboxes, &task->blockitem);
 
-    wakeup(&pipe->p1.mailboxes);
+    wakeup(&pipe->end1.node.mailboxes);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int p0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return read(&pipe->buffer0, &pipe->p1.mailboxes, pipe->ref1, count, buffer);
+    return read(&pipe->end0.buffer, &pipe->end1.node.mailboxes, pipe->end1.ref, count, buffer);
 
 }
 
-static unsigned int p0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return write(&pipe->buffer1, &pipe->p1.mailboxes, pipe->ref1, count, buffer);
+    return write(&pipe->end1.buffer, &pipe->end1.node.mailboxes, count, buffer);
 
 }
 
-static unsigned int p1_open(struct system_node *self)
+static unsigned int end1_open(struct system_node *self)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    pipe->ref1++;
+    pipe->end1.ref++;
 
     if (!list_find(&self->mailboxes, &task->blockitem))
         list_add(&self->mailboxes, &task->blockitem);
 
-    wakeup(&pipe->p0.mailboxes);
+    wakeup(&pipe->end0.node.mailboxes);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int p1_close(struct system_node *self)
+static unsigned int end1_close(struct system_node *self)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
     struct task *task = task_findactive();
 
-    pipe->ref1--;
+    pipe->end1.ref--;
 
     if (list_find(&self->mailboxes, &task->blockitem))
         list_remove(&self->mailboxes, &task->blockitem);
 
-    wakeup(&pipe->p0.mailboxes);
+    wakeup(&pipe->end0.node.mailboxes);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int p1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return read(&pipe->buffer1, &pipe->p0.mailboxes, pipe->ref0, count, buffer);
+    return read(&pipe->end1.buffer, &pipe->end0.node.mailboxes, pipe->end0.ref, count, buffer);
 
 }
 
-static unsigned int p1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return write(&pipe->buffer0, &pipe->p0.mailboxes, pipe->ref0, count, buffer);
+    return write(&pipe->end0.buffer, &pipe->end0.node.mailboxes, count, buffer);
 
 }
 
@@ -172,7 +172,7 @@ static unsigned int clone_child(struct system_node *self, unsigned int count, ch
         if (node == self)
             continue;
 
-        if (pipe->p0.mailboxes.count || pipe->p1.mailboxes.count)
+        if (pipe->end0.node.mailboxes.count || pipe->end1.node.mailboxes.count)
             continue;
 
         return node->child(node, count, path);
@@ -186,26 +186,26 @@ static unsigned int clone_child(struct system_node *self, unsigned int count, ch
 void pipe_init(struct pipe *pipe)
 {
 
-    buffer_init(&pipe->buffer0, 4096, pipe->data0);
-    buffer_init(&pipe->buffer1, 4096, pipe->data1);
-    system_initnode(&pipe->p0, SYSTEM_NODETYPE_NORMAL, "0");
-    system_initnode(&pipe->p1, SYSTEM_NODETYPE_NORMAL, "1");
+    buffer_init(&pipe->end0.buffer, 4096, pipe->end0.data);
+    buffer_init(&pipe->end1.buffer, 4096, pipe->end1.data);
+    system_initnode(&pipe->end0.node, SYSTEM_NODETYPE_NORMAL, "0");
+    system_initnode(&pipe->end1.node, SYSTEM_NODETYPE_NORMAL, "1");
 
-    pipe->p0.open = p0_open;
-    pipe->p0.close = p0_close;
-    pipe->p0.read = p0_read;
-    pipe->p0.write = p0_write;
-    pipe->p1.open = p1_open;
-    pipe->p1.close = p1_close;
-    pipe->p1.read = p1_read;
-    pipe->p1.write = p1_write;
+    pipe->end0.node.open = end0_open;
+    pipe->end0.node.close = end0_close;
+    pipe->end0.node.read = end0_read;
+    pipe->end0.node.write = end0_write;
+    pipe->end1.node.open = end1_open;
+    pipe->end1.node.close = end1_close;
+    pipe->end1.node.read = end1_read;
+    pipe->end1.node.write = end1_write;
 
     system_initnode(&pipe->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "pipe");
-    system_addchild(&pipe->root, &pipe->p0);
-    system_addchild(&pipe->root, &pipe->p1);
+    system_addchild(&pipe->root, &pipe->end0.node);
+    system_addchild(&pipe->root, &pipe->end1.node);
 
-    pipe->ref0 = 0;
-    pipe->ref1 = 0;
+    pipe->end0.ref = 0;
+    pipe->end1.ref = 0;
 
 }
 
