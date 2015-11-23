@@ -72,20 +72,13 @@ static void onkeypress(struct client *client, struct event_header *header, void 
 
         break;
 
-    case 0x38:
-        client->keymod |= KEYMOD_ALT;
-
-        break;
-
     case 0x0E:
-        if (client->textcount)
-        {
+        if (!client->textcount)
+            break;
 
-            client->textcount -= 1;
+        client->textcount -= 1;
 
-            writetext(header->destination, 1, &client->content, client->textcount, client->text);
-
-        }
+        writetext(header->destination, 1, &client->content, client->textcount, client->text);
 
         break;
 
@@ -111,11 +104,6 @@ static void onkeyrelease(struct client *client, struct event_header *header, voi
     case 0x2A:
     case 0x36:
         client->keymod &= ~KEYMOD_SHIFT;
-
-        break;
-
-    case 0x38:
-        client->keymod &= ~KEYMOD_ALT;
 
         break;
 
