@@ -114,9 +114,8 @@ unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memo
 void buffer_init(struct buffer *buffer, unsigned int capacity, void *memory)
 {
 
-    memory_clear(buffer, sizeof (struct buffer));
-
     buffer->capacity = capacity;
+    buffer->count = 0;
     buffer->memory = memory;
     buffer->head = memory;
     buffer->tail = memory;
