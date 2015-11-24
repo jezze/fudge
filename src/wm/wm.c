@@ -398,9 +398,12 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         break;
 
     case 0x24:
+        if (!client->viewfocus->remotefocus)
+            break;
+
         nextremote = client->viewfocus->remotefocus->item.next ? client->viewfocus->remotefocus->item.next->data : client->viewfocus->remotes.head;
 
-        if (!client->viewfocus->remotefocus || !nextremote || nextremote == client->viewfocus->remotefocus)
+        if (!nextremote || nextremote == client->viewfocus->remotefocus)
             break;
 
         deactivateremote(client->viewfocus->remotefocus);
@@ -414,9 +417,12 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         break;
 
     case 0x25:
+        if (!client->viewfocus->remotefocus)
+            break;
+
         nextremote = client->viewfocus->remotefocus->item.prev ? client->viewfocus->remotefocus->item.prev->data : client->viewfocus->remotes.tail;
 
-        if (!client->viewfocus->remotefocus || !nextremote || nextremote == client->viewfocus->remotefocus)
+        if (!nextremote || nextremote == client->viewfocus->remotefocus)
             break;
 
         deactivateremote(client->viewfocus->remotefocus);
