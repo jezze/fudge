@@ -13,7 +13,7 @@ static struct video_interface videointerface;
 static unsigned int read(unsigned int reg)
 {
 
-    volatile unsigned int *value = (volatile unsigned int *)(unsigned long)reg;
+    unsigned int *value = (unsigned int *)(unsigned long)reg;
 
     return *value;
 
@@ -22,7 +22,7 @@ static unsigned int read(unsigned int reg)
 static void write(unsigned int reg, unsigned int val)
 {
 
-    volatile unsigned int *value = (volatile unsigned int *)(unsigned long)reg;
+    unsigned int *value = (unsigned int *)(unsigned long)reg;
 
     *value = val;
 

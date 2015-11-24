@@ -32,8 +32,8 @@ void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, u
     char buffer[4096];
     int xs = (x2 - x1) / settings->w;
     int ys = (y2 - y1) / settings->h;
-    int x;
-    int y;
+    unsigned int x;
+    unsigned int y;
 
     for (y = 0; y < settings->h; y++)
     {

@@ -3,7 +3,7 @@
 unsigned int reg_read8(unsigned int address)
 {
 
-    volatile unsigned char *mem = (volatile unsigned char *)address;
+    unsigned char *mem = (unsigned char *)address;
 
     return *mem;
 
@@ -12,7 +12,7 @@ unsigned int reg_read8(unsigned int address)
 unsigned int reg_read32(unsigned int address)
 {
 
-    volatile unsigned int *mem = (volatile unsigned int *)address;
+    unsigned int *mem = (unsigned int *)address;
 
     return *mem;
 
@@ -21,7 +21,7 @@ unsigned int reg_read32(unsigned int address)
 void reg_write8(unsigned int address, unsigned char value)
 {
 
-    volatile unsigned char *mem = (volatile unsigned char *)address;
+    unsigned char *mem = (unsigned char *)address;
 
     *mem = value;
 
@@ -30,7 +30,7 @@ void reg_write8(unsigned int address, unsigned char value)
 void reg_write32(unsigned int address, unsigned int value)
 {
 
-    volatile unsigned int *mem = (volatile unsigned int *)address;
+    unsigned int *mem = (unsigned int *)address;
 
     *mem = value;
 
