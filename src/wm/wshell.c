@@ -57,6 +57,34 @@ static void flush(void)
 
 }
 
+static void interpret(struct client *client)
+{
+
+    char command[FUDGE_BSIZE];
+    unsigned int count = memory_write(command, FUDGE_BSIZE, "hello\n", 6, 0);
+
+    if (!call_walk(CALL_CP, CALL_PR, 9, "bin/slang"))
+        return;
+
+    if (!call_walk(CALL_L0, CALL_PR, 18, "system/pipe/clone/"))
+        return;
+
+    call_walk(CALL_L3, CALL_L0, 1, "0");
+    call_walk(CALL_CI, CALL_L0, 1, "1");
+    call_walk(CALL_CO, CALL_L0, 1, "1");
+    call_open(CALL_L3);
+    file_writeall(CALL_L3, command, count);
+    call_spawn();
+    call_close(CALL_L3);
+    call_open(CALL_L3);
+
+    while ((count = file_read(CALL_L3, command, FUDGE_BSIZE)))
+        client->textcount += memory_write(client->text, FUDGE_BSIZE, command, count, client->textcount);
+
+    call_close(CALL_L3);
+
+}
+
 static void onkeypress(struct client *client, struct event_header *header, void *data)
 {
 
@@ -78,6 +106,16 @@ static void onkeypress(struct client *client, struct event_header *header, void 
 
         client->textcount -= 1;
 
+        writetext(header->destination, 1, &client->content, client->textcount, client->text);
+
+        break;
+
+    case 0x1C:
+        client->textcount += memory_write(client->text, FUDGE_BSIZE, "\n", 1, client->textcount);
+
+        interpret(client);
+
+        client->textcount += memory_write(client->text, FUDGE_BSIZE, "$ ", 2, client->textcount);
         writetext(header->destination, 1, &client->content, client->textcount, client->text);
 
         break;
@@ -151,7 +189,7 @@ static void setup(struct client *client)
 
     client->quit = 0;
     client->keymod = KEYMOD_NONE;
-    client->textcount = 0;
+    client->textcount = memory_write(client->text, FUDGE_BSIZE, "$ ", 2, 0);
 
 }
 

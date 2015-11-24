@@ -46,11 +46,11 @@ OBJ_WM:=\
 $(BIN_WM): $(OBJ_WM) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
-BIN_WNULL:=\
-    $(DIR_SRC)/wm/wnull \
+BIN_WSHELL:=\
+    $(DIR_SRC)/wm/wshell \
 
-OBJ_WNULL:=\
-    $(DIR_SRC)/wm/wnull.o \
+OBJ_WSHELL:=\
+    $(DIR_SRC)/wm/wshell.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/send.o \
@@ -58,7 +58,7 @@ OBJ_WNULL:=\
     $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
 
-$(BIN_WNULL): $(OBJ_WNULL) $(OBJ_STD) $(OBJ_ABI)
+$(BIN_WSHELL): $(OBJ_WSHELL) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_WTEXT:=\
@@ -75,5 +75,5 @@ OBJ_WTEXT:=\
 $(BIN_WTEXT): $(OBJ_WTEXT) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
 
-BIN:=$(BIN) $(BIN_WDRAW) $(BIN_WECHO) $(BIN_WM) $(BIN_WNULL) $(BIN_WTEXT)
-OBJ:=$(OBJ) $(OBJ_WDRAW) $(OBJ_WECHO) $(OBJ_WM) $(OBJ_WNULL) $(OBJ_WTEXT)
+BIN:=$(BIN) $(BIN_WDRAW) $(BIN_WECHO) $(BIN_WM) $(BIN_WSHELL) $(BIN_WTEXT)
+OBJ:=$(OBJ) $(OBJ_WDRAW) $(OBJ_WECHO) $(OBJ_WM) $(OBJ_WSHELL) $(OBJ_WTEXT)

@@ -371,7 +371,7 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         if (!(client->keymod & KEYMOD_SHIFT))
             break;
 
-        call_walk(CALL_CP, CALL_PR, 9, "bin/wnull");
+        call_walk(CALL_CP, CALL_PR, 10, "bin/wshell");
         call_spawn();
 
         break;
