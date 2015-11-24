@@ -82,6 +82,8 @@ void list_inititem(struct list_item *item, void *data)
 {
 
     item->data = data;
+    item->next = 0;
+    item->prev = 0;
 
 }
 
