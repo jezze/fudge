@@ -8,7 +8,6 @@ OBJ_WDRAW:=\
     $(DIR_SRC)/fudge/ctrl.o \
     $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
-    $(DIR_SRC)/lib/video.o \
     $(DIR_SRC)/format/pcf.o \
 
 $(BIN_WDRAW): $(OBJ_WDRAW) $(OBJ_STD) $(OBJ_ABI)
@@ -41,7 +40,6 @@ OBJ_WM:=\
     $(DIR_SRC)/fudge/list.o \
     $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
-    $(DIR_SRC)/lib/video.o \
 
 $(BIN_WM): $(OBJ_WM) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^

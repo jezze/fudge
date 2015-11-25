@@ -1,6 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/video.h>
+#include <lib/file.h>
 
 #define fpshift                         10
 #define tofp(_a)                        ((_a) << fpshift)
@@ -22,7 +22,10 @@ void setup(struct ctrl_videosettings *settings)
 
     }
 
-    video_setcolormap(CALL_L0, 0, 768, colormap);
+    call_walk(CALL_L1, CALL_L0, 8, "colormap");
+    call_open(CALL_L1);
+    file_writeall(CALL_L1, colormap, 768);
+    call_close(CALL_L1);
 
 }
 
@@ -34,6 +37,9 @@ void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, u
     int ys = (y2 - y1) / settings->h;
     unsigned int x;
     unsigned int y;
+
+    call_walk(CALL_L1, CALL_L0, 4, "data");
+    call_open(CALL_L1);
 
     for (y = 0; y < settings->h; y++)
     {
@@ -62,9 +68,11 @@ void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, u
 
         }
 
-        video_draw(CALL_L0, y * settings->w, settings->w, buffer);
+        file_seekwriteall(CALL_L1, buffer, settings->w, settings->w * y);
 
     }
+
+    call_close(CALL_L1);
 
 }
 
@@ -74,12 +82,16 @@ void main(void)
     struct ctrl_videosettings settings;
 
     ctrl_setvideosettings(&settings, 320, 200, 8);
-    video_setmode(CALL_L0, &settings);
-    video_getmode(CALL_L0, &settings);
+    call_walk(CALL_L0, CALL_PR, 15, "system/video:0/");
+    call_walk(CALL_L1, CALL_L0, 4, "ctrl");
+    call_open(CALL_L1);
+    file_writeall(CALL_L1, &settings, sizeof (struct ctrl_videosettings));
+    call_close(CALL_L1);
+    call_open(CALL_L1);
+    file_readall(CALL_L1, &settings, sizeof (struct ctrl_videosettings));
+    call_close(CALL_L1);
     setup(&settings);
-    video_open(CALL_L0);
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    video_close(CALL_L0);
 
 }
 

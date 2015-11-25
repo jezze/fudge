@@ -1,7 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
 #include <lib/file.h>
-#include <lib/video.h>
 #include <format/pcf.h>
 #include "box.h"
 #include "element.h"
@@ -501,7 +500,7 @@ static void render(struct context *context)
 
     unsigned int line;
 
-    video_open(CALL_L0);
+    call_open(CALL_L1);
 
     for (line = 0; line < context->settings.h; line++)
     {
@@ -529,24 +528,36 @@ static void render(struct context *context)
 
         }
 
-        video_draw(CALL_L0, context->settings.w * line, context->settings.w, context->buffer);
+        file_seekwriteall(CALL_L1, context->buffer, context->settings.w, context->settings.w * line);
 
     }
 
-    video_close(CALL_L0);
+    call_close(CALL_L1);
 
 }
 
 static void setup(struct context *context)
 {
 
-    video_getmode(CALL_L0, &context->settings);
+    call_walk(CALL_L1, CALL_L0, 4, "ctrl");
+    call_open(CALL_L1);
+    file_seekreadall(CALL_L1, &context->settings, sizeof (struct ctrl_videosettings), 0);
+    call_close(CALL_L1);
 
     if (context->settings.bpp == 8)
-        video_setcolormap(CALL_L0, 0, 3 * 11, colormap8);
+    {
+
+        call_walk(CALL_L1, CALL_L0, 8, "colormap");
+        call_open(CALL_L1);
+        file_writeall(CALL_L1, colormap8, 3 * 11);
+        call_close(CALL_L1);
+
+    }
 
     context->textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
     context->textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
+
+    call_walk(CALL_L1, CALL_L0, 4, "data");
 
 }
 
@@ -557,11 +568,12 @@ void main(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    setup(&context);
     call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf");
     call_open(CALL_L0);
     file_read(CALL_L0, fontdata, 0x8000);
     call_close(CALL_L0);
+    call_walk(CALL_L0, CALL_PR, 15, "system/video:0/");
+    setup(&context);
 
     tests[ELEMENT_TYPE_FILL] = testfill;
     tests[ELEMENT_TYPE_MOUSE] = testmouse;
