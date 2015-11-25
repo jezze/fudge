@@ -44,10 +44,10 @@ void send_keyrelease(unsigned int descriptor, unsigned int destination, unsigned
 
 }
 
-void send_wmmap(unsigned int descriptor, unsigned int destination)
+void send_wmmap(unsigned int descriptor)
 {
 
-    send(descriptor, destination, EVENT_WMMAP, 0, 0);
+    send(descriptor, 0, EVENT_WMMAP, 0, 0);
 
 }
 

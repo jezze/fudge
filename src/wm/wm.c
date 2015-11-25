@@ -771,7 +771,7 @@ void main(void)
     call_open(CALL_PO);
     call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
     call_open(CALL_L1);
-    send_wmmap(CALL_L2, 0);
+    send_wmmap(CALL_L2);
 
     while ((count = file_readall(CALL_L1, &header, sizeof (struct event_header))))
     {
