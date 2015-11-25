@@ -81,11 +81,11 @@ static unsigned int node_writemailboxes(struct system_node *self, unsigned int o
 
         task_setstatus(task, TASK_STATUS_ACTIVE);
 
-        return buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
 
     }
 
-    return 0;
+    return count;
 
 }
 

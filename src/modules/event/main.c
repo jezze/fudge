@@ -11,6 +11,7 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
 {
 
     struct event_header header;
+    struct task *destination;
 
     if (!poll.mailboxes.count)
         return;
@@ -20,8 +21,12 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
     header.type = type;
     header.count = count;
 
-    poll.write(&poll, 0, sizeof (struct event_header), &header);
-    poll.write(&poll, 0, count, buffer);
+    destination = (struct task *)header.destination;
+
+    task_setstatus(destination, TASK_STATUS_ACTIVE);
+
+    buffer_wcfifo(&destination->mailbox.buffer, sizeof (struct event_header), &header);
+    buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
 
 }
 
