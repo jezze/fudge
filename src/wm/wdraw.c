@@ -544,11 +544,16 @@ void main(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf");
+    if (!call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf"))
+        return;
+
     call_open(CALL_L0);
     file_seekread(CALL_L0, fontdata, 0x8000, 0);
     call_close(CALL_L0);
-    call_walk(CALL_L0, CALL_PO, 4, "ctrl");
+
+    if (!call_walk(CALL_L0, CALL_PO, 4, "ctrl"))
+        return;
+
     call_open(CALL_L0);
     file_seekreadall(CALL_L0, &context.settings, sizeof (struct ctrl_videosettings), 0);
     call_close(CALL_L0);
@@ -556,7 +561,9 @@ void main(void)
     if (context.settings.bpp == 8)
     {
 
-        call_walk(CALL_L0, CALL_PO, 8, "colormap");
+        if (!call_walk(CALL_L0, CALL_PO, 8, "colormap"))
+            return;
+
         call_open(CALL_L0);
         file_seekwriteall(CALL_L0, colormap8, 3 * 11, 0);
         call_close(CALL_L0);

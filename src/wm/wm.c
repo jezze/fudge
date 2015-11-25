@@ -370,7 +370,9 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         if (!(client->keymod & KEYMOD_SHIFT))
             break;
 
-        call_walk(CALL_CP, CALL_PR, 10, "bin/wshell");
+        if (!call_walk(CALL_CP, CALL_PR, 10, "bin/wshell"))
+            break;
+
         call_spawn();
 
         break;
@@ -768,8 +770,12 @@ void main(void)
     handlers[EVENT_WMSHOW] = onwmshow;
     handlers[EVENT_WMHIDE] = onwmhide;
 
-    call_walk(CALL_L1, CALL_PR, 17, "system/event/poll");
-    call_walk(CALL_L2, CALL_PR, 17, "system/event/send");
+    if (!call_walk(CALL_L1, CALL_PR, 17, "system/event/poll"))
+        return;
+
+    if (!call_walk(CALL_L2, CALL_PR, 17, "system/event/send"))
+        return;
+
     call_open(CALL_PO);
     call_open(CALL_L1);
     call_open(CALL_L2);
