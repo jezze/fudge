@@ -161,7 +161,7 @@ static void showremotes(unsigned int source, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        send_wmshow(CALL_L2, remote->source);
+        send_wmshow(CALL_L1, remote->source);
         writeremote(source, 1, remote);
 
     }
@@ -178,7 +178,7 @@ static void hideremotes(unsigned int source, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        send_wmhide(CALL_L2, remote->source);
+        send_wmhide(CALL_L1, remote->source);
         writeremote(source, 0, remote);
 
     }
@@ -203,7 +203,7 @@ static void arrangeview(struct view *view, struct box *body)
         remote = current->data;
 
         box_setsize(&remote->window.size, body->x, body->y, body->w, body->h);
-        send_wmresize(CALL_L2, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+        send_wmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
         break;
 
@@ -213,7 +213,7 @@ static void arrangeview(struct view *view, struct box *body)
         remote = current->data;
 
         box_setsize(&remote->window.size, body->x, body->y, view->center, body->h);
-        send_wmresize(CALL_L2, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+        send_wmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
         for (current = view->remotes.tail->prev; current; current = current->prev)
         {
@@ -221,7 +221,7 @@ static void arrangeview(struct view *view, struct box *body)
             remote = current->data;
 
             box_setsize(&remote->window.size, body->x + view->center, y, body->w - view->center, h);
-            send_wmresize(CALL_L2, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+            send_wmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
             y += h;
 
@@ -294,7 +294,7 @@ static void onkeypress(struct client *client, struct event_header *header, void 
     {
 
         if (client->viewfocus->remotefocus)
-            send_keypress(CALL_L2, client->viewfocus->remotefocus->source, keypress->scancode);
+            send_keypress(CALL_L1, client->viewfocus->remotefocus->source, keypress->scancode);
 
         return;
 
@@ -351,8 +351,8 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         if (!client->viewfocus->remotefocus)
             break;
 
-        send_wmhide(CALL_L2, client->viewfocus->remotefocus->source);
-        send_wmunmap(CALL_L2, client->viewfocus->remotefocus->source);
+        send_wmhide(CALL_L1, client->viewfocus->remotefocus->source);
+        send_wmunmap(CALL_L1, client->viewfocus->remotefocus->source);
         writewindow(header->destination, 0, &client->viewfocus->remotefocus->window);
         list_move(&remotes, &client->viewfocus->remotefocus->item);
 
@@ -451,8 +451,8 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         if (!(client->keymod & KEYMOD_SHIFT))
             break;
 
-        send_wmhide(CALL_L2, header->destination);
-        send_wmunmap(CALL_L2, header->destination);
+        send_wmhide(CALL_L1, header->destination);
+        send_wmunmap(CALL_L1, header->destination);
 
         break;
 
@@ -485,7 +485,7 @@ static void onkeyrelease(struct client *client, struct event_header *header, voi
     {
 
         if (client->viewfocus->remotefocus)
-            send_keyrelease(CALL_L2, client->viewfocus->remotefocus->source, keyrelease->scancode);
+            send_keyrelease(CALL_L1, client->viewfocus->remotefocus->source, keyrelease->scancode);
 
         return;
 
@@ -598,8 +598,8 @@ static void onwmmap(struct client *client, struct event_header *header, void *da
         file_seekwriteall(CALL_L0, &client->settings, sizeof (struct ctrl_videosettings), 0);
         file_seekreadall(CALL_L0, &client->settings, sizeof (struct ctrl_videosettings), 0);
         call_close(CALL_L0);
-        send_wmresize(CALL_L2, header->destination, 0, 0, client->settings.w, client->settings.h);
-        send_wmshow(CALL_L2, header->destination);
+        send_wmresize(CALL_L1, header->destination, 0, 0, client->settings.w, client->settings.h);
+        send_wmshow(CALL_L1, header->destination);
 
     }
             
@@ -647,7 +647,7 @@ static void onwmunmap(struct client *client, struct event_header *header, void *
 
             struct remote *remote = view[i].remotes.head->data;
 
-            send_wmunmap(CALL_L2, remote->source);
+            send_wmunmap(CALL_L1, remote->source);
             list_move(&remotes, &remote->item);
 
         }
@@ -773,13 +773,9 @@ void main(void)
     if (!call_walk(CALL_L1, CALL_PR, 17, "system/event/poll"))
         return;
 
-    if (!call_walk(CALL_L2, CALL_PR, 17, "system/event/send"))
-        return;
-
     call_open(CALL_PO);
     call_open(CALL_L1);
-    call_open(CALL_L2);
-    send_wmmap(CALL_L2);
+    send_wmmap(CALL_L1);
 
     while ((count = file_readall(CALL_L1, &header, sizeof (struct event_header))))
     {
@@ -802,7 +798,6 @@ void main(void)
 
     }
 
-    call_close(CALL_L2);
     call_close(CALL_L1);
     call_close(CALL_PO);
 

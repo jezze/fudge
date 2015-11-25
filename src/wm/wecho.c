@@ -115,13 +115,9 @@ void main(void)
     if (!call_walk(CALL_L1, CALL_PR, 17, "system/event/poll"))
         return;
 
-    if (!call_walk(CALL_L2, CALL_PR, 17, "system/event/send"))
-        return;
-
     call_open(CALL_PO);
     call_open(CALL_L1);
-    call_open(CALL_L2);
-    send_wmmap(CALL_L2);
+    send_wmmap(CALL_L1);
 
     while ((count = file_readall(CALL_L1, &header, sizeof (struct event_header))))
     {
@@ -144,7 +140,6 @@ void main(void)
 
     }
 
-    call_close(CALL_L2);
     call_close(CALL_L1);
     call_close(CALL_PO);
 

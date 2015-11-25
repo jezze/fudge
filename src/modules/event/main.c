@@ -5,7 +5,6 @@
 
 static struct system_node root;
 static struct system_node poll;
-static struct system_node send;
 
 void event_notify(unsigned int type, unsigned int count, void *buffer)
 {
@@ -30,7 +29,7 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
 
 }
 
-static unsigned int send_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int poll_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct event_header *header = buffer;
@@ -53,13 +52,11 @@ void module_init(void)
 {
 
     system_initnode(&poll, SYSTEM_NODETYPE_MAILBOX, "poll");
-    system_initnode(&send, SYSTEM_NODETYPE_NORMAL, "send");
 
-    send.write = send_write;
+    poll.write = poll_write;
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
     system_addchild(&root, &poll);
-    system_addchild(&root, &send);
 
 }
 
