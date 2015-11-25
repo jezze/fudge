@@ -66,22 +66,22 @@ static void interpret(struct client *client)
     if (!call_walk(CALL_CP, CALL_PR, 9, "bin/slang"))
         return;
 
-    if (!call_walk(CALL_L0, CALL_PR, 18, "system/pipe/clone/"))
+    if (!call_walk(CALL_L1, CALL_PR, 18, "system/pipe/clone/"))
         return;
 
-    call_walk(CALL_L3, CALL_L0, 1, "0");
-    call_walk(CALL_CI, CALL_L0, 1, "1");
-    call_walk(CALL_CO, CALL_L0, 1, "1");
-    call_open(CALL_L3);
-    file_writeall(CALL_L3, command, count);
-    call_close(CALL_L3);
+    call_walk(CALL_L2, CALL_L1, 1, "0");
+    call_walk(CALL_CI, CALL_L1, 1, "1");
+    call_walk(CALL_CO, CALL_L1, 1, "1");
+    call_open(CALL_L2);
+    file_writeall(CALL_L2, command, count);
+    call_close(CALL_L2);
     call_spawn();
-    call_open(CALL_L3);
+    call_open(CALL_L2);
 
-    while ((count = file_read(CALL_L3, command, FUDGE_BSIZE)))
+    while ((count = file_read(CALL_L2, command, FUDGE_BSIZE)))
         client->textcount += memory_write(client->text, FUDGE_BSIZE, command, count, client->textcount);
 
-    call_close(CALL_L3);
+    call_close(CALL_L2);
 
 }
 
@@ -209,20 +209,20 @@ void main(void)
     handlers[EVENT_WMSHOW] = onwmshow;
     handlers[EVENT_WMHIDE] = onwmhide;
 
-    if (!call_walk(CALL_L1, CALL_PR, 17, "system/event/poll"))
+    if (!call_walk(CALL_L0, CALL_PR, 17, "system/event/poll"))
         return;
 
     call_open(CALL_PO);
-    call_open(CALL_L1);
-    send_wmmap(CALL_L1);
+    call_open(CALL_L0);
+    send_wmmap(CALL_L0);
 
-    while ((count = file_readall(CALL_L1, &header, sizeof (struct event_header))))
+    while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
     {
 
         unsigned char data[512];
 
         if (header.count)
-            file_readall(CALL_L1, data, header.count);
+            file_readall(CALL_L0, data, header.count);
 
         if (handlers[header.type])
         {
@@ -237,7 +237,7 @@ void main(void)
 
     }
 
-    call_close(CALL_L1);
+    call_close(CALL_L0);
     call_close(CALL_PO);
 
 }

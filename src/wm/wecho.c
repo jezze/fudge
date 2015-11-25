@@ -112,20 +112,20 @@ void main(void)
     handlers[EVENT_WMSHOW] = onwmshow;
     handlers[EVENT_WMHIDE] = onwmhide;
 
-    if (!call_walk(CALL_L1, CALL_PR, 17, "system/event/poll"))
+    if (!call_walk(CALL_L0, CALL_PR, 17, "system/event/poll"))
         return;
 
     call_open(CALL_PO);
-    call_open(CALL_L1);
-    send_wmmap(CALL_L1);
+    call_open(CALL_L0);
+    send_wmmap(CALL_L0);
 
-    while ((count = file_readall(CALL_L1, &header, sizeof (struct event_header))))
+    while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
     {
 
         unsigned char data[512];
 
         if (header.count)
-            file_readall(CALL_L1, data, header.count);
+            file_readall(CALL_L0, data, header.count);
 
         if (handlers[header.type])
         {
@@ -140,7 +140,7 @@ void main(void)
 
     }
 
-    call_close(CALL_L1);
+    call_close(CALL_L0);
     call_close(CALL_PO);
 
 }
