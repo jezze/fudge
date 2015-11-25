@@ -65,8 +65,6 @@ static unsigned int end0_open(struct system_node *self)
     if (!list_find(&self->mailboxes, &task->blockitem))
         list_add(&self->mailboxes, &task->blockitem);
 
-    wakeup(&pipe->end1.node.mailboxes);
-
     return (unsigned int)self;
 
 }
@@ -81,8 +79,6 @@ static unsigned int end0_close(struct system_node *self)
 
     if (list_find(&self->mailboxes, &task->blockitem))
         list_remove(&self->mailboxes, &task->blockitem);
-
-    wakeup(&pipe->end1.node.mailboxes);
 
     return (unsigned int)self;
 
@@ -117,8 +113,6 @@ static unsigned int end1_open(struct system_node *self)
     if (!list_find(&self->mailboxes, &task->blockitem))
         list_add(&self->mailboxes, &task->blockitem);
 
-    wakeup(&pipe->end0.node.mailboxes);
-
     return (unsigned int)self;
 
 }
@@ -133,8 +127,6 @@ static unsigned int end1_close(struct system_node *self)
 
     if (list_find(&self->mailboxes, &task->blockitem))
         list_remove(&self->mailboxes, &task->blockitem);
-
-    wakeup(&pipe->end0.node.mailboxes);
 
     return (unsigned int)self;
 
@@ -172,7 +164,7 @@ static unsigned int clone_child(struct system_node *self, unsigned int count, ch
         if (node == self)
             continue;
 
-        if (pipe->end0.node.mailboxes.count || pipe->end1.node.mailboxes.count)
+        if (pipe->end0.ref || pipe->end1.ref)
             continue;
 
         return node->child(node, count, path);

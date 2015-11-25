@@ -321,7 +321,7 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         if (client->viewfocus->remotefocus && client->keymod & KEYMOD_SHIFT)
         {
 
-            list_move(&nextview->remotes, &client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
+            list_move(&nextview->remotes, &client->viewfocus->remotefocus->item);
 
             client->viewfocus->remotefocus = (client->viewfocus->remotes.tail) ? client->viewfocus->remotes.tail->data : 0;
 
@@ -354,7 +354,7 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         send_wmhide(CALL_L2, client->viewfocus->remotefocus->source);
         send_wmunmap(CALL_L2, client->viewfocus->remotefocus->source);
         writewindow(header->destination, 0, &client->viewfocus->remotefocus->window);
-        list_move(&remotes, &client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
+        list_move(&remotes, &client->viewfocus->remotefocus->item);
 
         client->viewfocus->remotefocus = (client->viewfocus->remotes.tail) ? client->viewfocus->remotes.tail->data : 0;
 
@@ -381,7 +381,7 @@ static void onkeypress(struct client *client, struct event_header *header, void 
         if (!client->viewfocus->remotefocus)
             break;
 
-        list_move(&client->viewfocus->remotes, &client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
+        list_move(&client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
         arrangeview(client->viewfocus, &client->body);
         showremotes(header->destination, &client->viewfocus->remotes);
 
@@ -615,7 +615,7 @@ static void onwmmap(struct client *client, struct event_header *header, void *da
         client->viewfocus->remotefocus = remotes.head->data;
         client->viewfocus->remotefocus->source = header->source;
 
-        list_move(&client->viewfocus->remotes, &remotes, &client->viewfocus->remotefocus->item);
+        list_move(&client->viewfocus->remotes, &client->viewfocus->remotefocus->item);
         activateremote(client->viewfocus->remotefocus);
         arrangeview(client->viewfocus, &client->body);
         showremotes(header->destination, &client->viewfocus->remotes);
@@ -648,7 +648,7 @@ static void onwmunmap(struct client *client, struct event_header *header, void *
             struct remote *remote = view[i].remotes.head->data;
 
             send_wmunmap(CALL_L2, remote->source);
-            list_move(&remotes, &view[i].remotes, &remote->item);
+            list_move(&remotes, &remote->item);
 
         }
 

@@ -34,7 +34,7 @@ void task_setstatus(struct task *task, unsigned int status)
 
         case TASK_STATUS_ACTIVE:
         case TASK_STATUS_UNBLOCKED:
-            list_move(&inactive, &active, &task->state.item);
+            list_move(&inactive, &task->state.item);
 
             task->state.status = TASK_STATUS_INACTIVE;
 
@@ -49,7 +49,7 @@ void task_setstatus(struct task *task, unsigned int status)
         {
 
         case TASK_STATUS_INACTIVE:
-            list_move(&active, &inactive, &task->state.item);
+            list_move(&active, &task->state.item);
 
             task->state.status = TASK_STATUS_ACTIVE;
 
@@ -57,12 +57,12 @@ void task_setstatus(struct task *task, unsigned int status)
 
         case TASK_STATUS_ACTIVE:
         case TASK_STATUS_UNBLOCKED:
-            list_move(&active, &active, &task->state.item);
+            list_move(&active, &task->state.item);
 
             break;
 
         case TASK_STATUS_BLOCKED:
-            list_move(&active, &blocked, &task->state.item);
+            list_move(&active, &task->state.item);
 
             task->state.status = TASK_STATUS_UNBLOCKED;
 
@@ -78,7 +78,7 @@ void task_setstatus(struct task *task, unsigned int status)
 
         case TASK_STATUS_ACTIVE:
         case TASK_STATUS_UNBLOCKED:
-            list_move(&blocked, &active, &task->state.item);
+            list_move(&blocked, &task->state.item);
 
             task->state.status = TASK_STATUS_BLOCKED;
 

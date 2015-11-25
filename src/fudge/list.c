@@ -7,6 +7,9 @@ void list_add(struct list *list, struct list_item *item)
     if (!list->head)
     {
 
+        item->list = list;
+        item->prev = 0;
+        item->next = 0;
         list->head = item;
         list->tail = item;
         list->count++;
@@ -15,6 +18,7 @@ void list_add(struct list *list, struct list_item *item)
 
     }
 
+    item->list = list;
     item->prev = list->tail;
     item->next = 0;
     list->tail->next = item;
@@ -47,43 +51,37 @@ void list_remove(struct list *list, struct list_item *item)
     if (item->prev)
         item->prev->next = item->next;
 
+    item->list = 0;
     item->next = 0;
     item->prev = 0;
     list->count--;
 
 }
 
-void list_move(struct list *out, struct list *in, struct list_item *item)
+void list_move(struct list *list, struct list_item *item)
 {
 
-    list_remove(in, item);
-    list_add(out, item);
+    if (item->list)
+        list_remove(item->list, item);
+
+    list_add(list, item);
 
 }
 
 unsigned int list_find(struct list *list, struct list_item *item)
 {
 
-    struct list_item *current;
-
-    for (current = list->head; current; current = current->next)
-    {
-
-        if (current == item)
-            return 1;
-
-    }
-
-    return 0;
+    return item->list == list;
 
 }
 
 void list_inititem(struct list_item *item, void *data)
 {
 
-    item->data = data;
+    item->list = 0;
     item->next = 0;
     item->prev = 0;
+    item->data = data;
 
 }
 

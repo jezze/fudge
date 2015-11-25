@@ -74,8 +74,8 @@ static void interpret(struct client *client)
     call_walk(CALL_CO, CALL_L0, 1, "1");
     call_open(CALL_L3);
     file_writeall(CALL_L3, command, count);
-    call_spawn();
     call_close(CALL_L3);
+    call_spawn();
     call_open(CALL_L3);
 
     while ((count = file_read(CALL_L3, command, FUDGE_BSIZE)))
