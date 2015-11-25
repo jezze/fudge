@@ -501,6 +501,8 @@ static void render(struct context *context)
 
     unsigned int line;
 
+    video_open(CALL_L0);
+
     for (line = 0; line < context->settings.h; line++)
     {
 
@@ -530,6 +532,8 @@ static void render(struct context *context)
         video_draw(CALL_L0, context->settings.w * line, context->settings.w, context->buffer);
 
     }
+
+    video_close(CALL_L0);
 
 }
 
@@ -570,7 +574,6 @@ void main(void)
     renderers[ELEMENT_TYPE_TEXT] = rendertext;
     renderers[ELEMENT_TYPE_WINDOW] = renderwindow;
 
-    video_open(CALL_L0);
     call_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
@@ -587,7 +590,6 @@ void main(void)
     }
 
     call_close(CALL_PI);
-    video_close(CALL_L0);
 
 }
 
