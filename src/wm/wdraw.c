@@ -500,7 +500,8 @@ static void render(struct context *context)
 
     unsigned int line;
 
-    call_open(CALL_L1);
+    call_walk(CALL_L0, CALL_PO, 4, "data");
+    call_open(CALL_L0);
 
     for (line = 0; line < context->settings.h; line++)
     {
@@ -528,36 +529,11 @@ static void render(struct context *context)
 
         }
 
-        file_seekwriteall(CALL_L1, context->buffer, context->settings.w, context->settings.w * line);
+        file_seekwriteall(CALL_L0, context->buffer, context->settings.w, context->settings.w * line);
 
     }
 
-    call_close(CALL_L1);
-
-}
-
-static void setup(struct context *context)
-{
-
-    call_walk(CALL_L1, CALL_PO, 4, "ctrl");
-    call_open(CALL_L1);
-    file_seekreadall(CALL_L1, &context->settings, sizeof (struct ctrl_videosettings), 0);
-    call_close(CALL_L1);
-
-    if (context->settings.bpp == 8)
-    {
-
-        call_walk(CALL_L1, CALL_PO, 8, "colormap");
-        call_open(CALL_L1);
-        file_seekwriteall(CALL_L1, colormap8, 3 * 11, 0);
-        call_close(CALL_L1);
-
-    }
-
-    context->textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
-    context->textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
-
-    call_walk(CALL_L1, CALL_PO, 4, "data");
+    call_close(CALL_L0);
 
 }
 
@@ -570,10 +546,25 @@ void main(void)
 
     call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf");
     call_open(CALL_L0);
-    file_read(CALL_L0, fontdata, 0x8000);
+    file_seekread(CALL_L0, fontdata, 0x8000, 0);
     call_close(CALL_L0);
-    setup(&context);
+    call_walk(CALL_L0, CALL_PO, 4, "ctrl");
+    call_open(CALL_L0);
+    file_seekreadall(CALL_L0, &context.settings, sizeof (struct ctrl_videosettings), 0);
+    call_close(CALL_L0);
 
+    if (context.settings.bpp == 8)
+    {
+
+        call_walk(CALL_L0, CALL_PO, 8, "colormap");
+        call_open(CALL_L0);
+        file_seekwriteall(CALL_L0, colormap8, 3 * 11, 0);
+        call_close(CALL_L0);
+
+    }
+
+    context.textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
+    context.textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
     tests[ELEMENT_TYPE_FILL] = testfill;
     tests[ELEMENT_TYPE_MOUSE] = testmouse;
     tests[ELEMENT_TYPE_PANEL] = testpanel;

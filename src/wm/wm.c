@@ -590,12 +590,12 @@ static void onwmmap(struct client *client, struct event_header *header, void *da
     {
 
         ctrl_setvideosettings(&client->settings, 1920, 1080, 32);
-        call_walk(CALL_L3, CALL_L0, 4, "ctrl");
-        call_open(CALL_L3);
-        file_seekreadall(CALL_L3, &client->oldsettings, sizeof (struct ctrl_videosettings), 0);
-        file_seekwriteall(CALL_L3, &client->settings, sizeof (struct ctrl_videosettings), 0);
-        file_seekreadall(CALL_L3, &client->settings, sizeof (struct ctrl_videosettings), 0);
-        call_close(CALL_L3);
+        call_walk(CALL_L0, CALL_PR, 19, "system/video:0/ctrl");
+        call_open(CALL_L0);
+        file_seekreadall(CALL_L0, &client->oldsettings, sizeof (struct ctrl_videosettings), 0);
+        file_seekwriteall(CALL_L0, &client->settings, sizeof (struct ctrl_videosettings), 0);
+        file_seekreadall(CALL_L0, &client->settings, sizeof (struct ctrl_videosettings), 0);
+        call_close(CALL_L0);
         send_wmresize(CALL_L2, header->destination, 0, 0, client->settings.w, client->settings.h);
         send_wmshow(CALL_L2, header->destination);
 
@@ -630,10 +630,10 @@ static void onwmunmap(struct client *client, struct event_header *header, void *
     if (header->source == header->destination)
     {
 
-        call_walk(CALL_L3, CALL_L0, 4, "ctrl");
-        call_open(CALL_L3);
-        file_seekwriteall(CALL_L3, &client->oldsettings, sizeof (struct ctrl_videosettings), 0);
-        call_close(CALL_L3);
+        call_walk(CALL_L0, CALL_PR, 19, "system/video:0/ctrl");
+        call_open(CALL_L0);
+        file_seekwriteall(CALL_L0, &client->oldsettings, sizeof (struct ctrl_videosettings), 0);
+        call_close(CALL_L0);
 
     }
 
@@ -756,7 +756,6 @@ void main(void)
     struct event_header header;
     unsigned int count;
 
-    call_walk(CALL_L0, CALL_PR, 15, "system/video:0/");
     setup(&client);
 
     handlers[EVENT_KEYPRESS] = onkeypress;
