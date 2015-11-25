@@ -15,10 +15,7 @@ static void send(unsigned int descriptor, unsigned int destination, unsigned int
     memory_write(buffer, 512, &header, sizeof (struct event_header), 0);
     memory_write(buffer, 512, databuffer, datacount, sizeof (struct event_header));
 
-    call_walk(descriptor, CALL_PR, 17, "system/event/send");
-    call_open(descriptor);
     file_writeall(descriptor, buffer, sizeof (struct event_header) + datacount);
-    call_close(descriptor);
 
 }
 
