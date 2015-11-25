@@ -37,13 +37,6 @@ static unsigned int interfacectrl_read(struct system_node *self, unsigned int of
 
 }
 
-static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 static unsigned int interfacetimestamp_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -136,7 +129,6 @@ void clock_initinterface(struct clock_interface *interface, unsigned char (*gets
     interface->getyear = getyear;
     interface->ctrl.resource = &interface->resource;
     interface->ctrl.read = interfacectrl_read;
-    interface->ctrl.write = interfacectrl_write;
     interface->timestamp.resource = &interface->resource;
     interface->timestamp.read = interfacetimestamp_read;
     interface->date.resource = &interface->resource;

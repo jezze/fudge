@@ -4,8 +4,7 @@ struct console_interface
     struct resource resource;
     struct system_node root;
     struct system_node ctrl;
-    struct system_node in;
-    struct system_node out;
+    struct system_node data;
     unsigned int id;
     struct ctrl_consolesettings settings;
     unsigned int (*send)(unsigned int count, void *buffer);

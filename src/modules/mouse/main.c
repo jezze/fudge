@@ -7,7 +7,7 @@
 void mouse_notify(struct mouse_interface *interface, unsigned int count, void *buffer)
 {
 
-    interface->data.write(&interface->data, 0, count, buffer);
+    system_multicast(&interface->data, count, buffer);
 
 }
 

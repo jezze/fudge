@@ -60,20 +60,6 @@ static void notifyremoveinterface(struct ethernet_interface *interface)
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
-static unsigned int interfacectrl_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id)
 {
 
@@ -127,8 +113,6 @@ void ethernet_initinterface(struct ethernet_interface *interface, char *name, un
 
     interface->send = send;
     interface->ctrl.resource = &interface->resource;
-    interface->ctrl.read = interfacectrl_read;
-    interface->ctrl.write = interfacectrl_write;
     interface->data.resource = &interface->resource;
 
 }

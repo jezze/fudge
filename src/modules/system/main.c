@@ -71,26 +71,6 @@ static unsigned int node_readmailboxes(struct system_node *self, unsigned int of
 
 }
 
-static unsigned int node_writemailboxes(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct list_item *current;
-
-    for (current = self->mailboxes.head; current; current = current->next)
-    {
-
-        struct task *task = current->data;
-
-        task_setstatus(task, TASK_STATUS_ACTIVE);
-
-        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
-
-    }
-
-    return count;
-
-}
-
 static unsigned int node_childgroup(struct system_node *self, unsigned int count, char *path)
 {
 
@@ -164,6 +144,24 @@ static unsigned int node_scangroup(struct system_node *self, unsigned int index)
 
 }
 
+void system_multicast(struct system_node *node, unsigned int count, void *buffer)
+{
+
+    struct list_item *current;
+
+    for (current = node->mailboxes.head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+
+        task_setstatus(task, TASK_STATUS_ACTIVE);
+
+        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+
+    }
+
+}
+
 void system_addchild(struct system_node *group, struct system_node *node)
 {
 
@@ -218,7 +216,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
         node->open = node_openmailboxes;
         node->close = node_closemailboxes;
         node->read = node_readmailboxes;
-        node->write = node_writemailboxes;
 
     }
 
