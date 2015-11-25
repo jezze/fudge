@@ -24,7 +24,7 @@ void setup(struct ctrl_videosettings *settings)
 
     call_walk(CALL_L1, CALL_L0, 8, "colormap");
     call_open(CALL_L1);
-    file_writeall(CALL_L1, colormap, 768);
+    file_seekwriteall(CALL_L1, colormap, 768, 0);
     call_close(CALL_L1);
 
 }

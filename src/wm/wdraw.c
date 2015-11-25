@@ -539,7 +539,7 @@ static void render(struct context *context)
 static void setup(struct context *context)
 {
 
-    call_walk(CALL_L1, CALL_L0, 4, "ctrl");
+    call_walk(CALL_L1, CALL_PO, 4, "ctrl");
     call_open(CALL_L1);
     file_seekreadall(CALL_L1, &context->settings, sizeof (struct ctrl_videosettings), 0);
     call_close(CALL_L1);
@@ -547,9 +547,9 @@ static void setup(struct context *context)
     if (context->settings.bpp == 8)
     {
 
-        call_walk(CALL_L1, CALL_L0, 8, "colormap");
+        call_walk(CALL_L1, CALL_PO, 8, "colormap");
         call_open(CALL_L1);
-        file_writeall(CALL_L1, colormap8, 3 * 11);
+        file_seekwriteall(CALL_L1, colormap8, 3 * 11, 0);
         call_close(CALL_L1);
 
     }
@@ -557,7 +557,7 @@ static void setup(struct context *context)
     context->textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
     context->textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
 
-    call_walk(CALL_L1, CALL_L0, 4, "data");
+    call_walk(CALL_L1, CALL_PO, 4, "data");
 
 }
 
@@ -572,7 +572,6 @@ void main(void)
     call_open(CALL_L0);
     file_read(CALL_L0, fontdata, 0x8000);
     call_close(CALL_L0);
-    call_walk(CALL_L0, CALL_PR, 15, "system/video:0/");
     setup(&context);
 
     tests[ELEMENT_TYPE_FILL] = testfill;
