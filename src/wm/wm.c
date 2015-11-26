@@ -35,8 +35,6 @@ struct client
 
     struct element_fill background;
     struct element_mouse mouse;
-    struct ctrl_videosettings oldsettings;
-    struct ctrl_videosettings settings;
     struct view *viewfocus;
     unsigned int keymod;
     unsigned int quit;
@@ -591,14 +589,8 @@ static void onwmmap(struct client *client, struct event_header *header, void *da
     if (header->source == header->destination)
     {
 
-        ctrl_setvideosettings(&client->settings, 1920, 1080, 32);
-        call_walk(CALL_L1, CALL_PR, 19, "system/video:0/ctrl");
-        call_open(CALL_L1);
-        file_seekreadall(CALL_L1, &client->oldsettings, sizeof (struct ctrl_videosettings), 0);
-        file_seekwriteall(CALL_L1, &client->settings, sizeof (struct ctrl_videosettings), 0);
-        file_seekreadall(CALL_L1, &client->settings, sizeof (struct ctrl_videosettings), 0);
-        call_close(CALL_L1);
-        send_wmresize(CALL_L0, header->destination, 0, 0, client->settings.w, client->settings.h);
+        /* Need to figure out how to get these values properly */
+        send_wmresize(CALL_L0, header->destination, 0, 0, 1920, 1080);
         send_wmshow(CALL_L0, header->destination);
 
     }
@@ -628,16 +620,6 @@ static void onwmunmap(struct client *client, struct event_header *header, void *
 {
 
     unsigned int i;
-
-    if (header->source == header->destination)
-    {
-
-        call_walk(CALL_L1, CALL_PR, 19, "system/video:0/ctrl");
-        call_open(CALL_L1);
-        file_seekwriteall(CALL_L1, &client->oldsettings, sizeof (struct ctrl_videosettings), 0);
-        call_close(CALL_L1);
-
-    }
 
     for (i = 0; i < VIEWS; i++)
     {

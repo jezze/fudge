@@ -20,6 +20,7 @@
 struct context
 {
 
+    struct ctrl_videosettings oldsettings;
     struct ctrl_videosettings settings;
     unsigned char textcolor[2];
     unsigned char buffer[0x2000];
@@ -544,6 +545,8 @@ void main(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
+    ctrl_setvideosettings(&context.settings, 1920, 1080, 32);
+
     if (!call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf"))
         return;
 
@@ -555,6 +558,8 @@ void main(void)
         return;
 
     call_open(CALL_L0);
+    file_seekreadall(CALL_L0, &context.oldsettings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(CALL_L0, &context.settings, sizeof (struct ctrl_videosettings), 0);
     file_seekreadall(CALL_L0, &context.settings, sizeof (struct ctrl_videosettings), 0);
     call_close(CALL_L0);
 
@@ -599,6 +604,13 @@ void main(void)
     }
 
     call_close(CALL_PI);
+
+    if (!call_walk(CALL_L0, CALL_PO, 4, "ctrl"))
+        return;
+
+    call_open(CALL_L0);
+    file_seekwriteall(CALL_L0, &context.oldsettings, sizeof (struct ctrl_videosettings), 0);
+    call_close(CALL_L0);
 
 }
 
