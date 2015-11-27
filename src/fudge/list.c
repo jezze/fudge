@@ -7,24 +7,15 @@ void list_add(struct list *list, struct list_item *item)
     if (item->list)
         return;
 
-    if (!list->head)
-    {
-
-        item->list = list;
-        item->prev = 0;
-        item->next = 0;
-        list->head = item;
-        list->tail = item;
-        list->count++;
-
-        return;
-
-    }
-
     item->list = list;
     item->prev = list->tail;
     item->next = 0;
-    list->tail->next = item;
+
+    if (list->head)
+        list->tail->next = item;
+    else
+        list->head = item;
+
     list->tail = item;
     list->count++;
 
