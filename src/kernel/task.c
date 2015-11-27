@@ -56,6 +56,18 @@ void task_setstatus(struct task *task, unsigned int status)
 
 }
 
+void task_resume(struct task *task, unsigned int ip, unsigned int sp)
+{
+
+    if (task->state.status != TASK_STATUS_UNBLOCKED)
+        return;
+
+    task->state.status = TASK_STATUS_ACTIVE;
+    task->state.registers.ip = ip;
+    task->state.registers.sp = sp;
+
+}
+
 void task_copydescriptors(struct task *source, struct task *target)
 {
 

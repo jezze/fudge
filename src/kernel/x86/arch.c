@@ -211,13 +211,7 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     if (current.task)
     {
 
-        if (current.task->state.status == TASK_STATUS_UNBLOCKED)
-        {
-
-            current.task->state.status = TASK_STATUS_ACTIVE;
-            current.task->state.registers.ip -= 7;
-
-        }
+        task_resume(current.task, current.task->state.registers.ip - 7, current.task->state.registers.sp);
 
         interrupt->cs = selector.ucode;
         interrupt->ss = selector.ustack;
