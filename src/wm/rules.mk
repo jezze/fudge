@@ -36,7 +36,6 @@ OBJ_WM:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/send.o \
-    $(DIR_SRC)/fudge/ctrl.o \
     $(DIR_SRC)/fudge/list.o \
     $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
