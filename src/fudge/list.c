@@ -4,6 +4,9 @@
 void list_add(struct list *list, struct list_item *item)
 {
 
+    if (item->list)
+        return;
+
     if (!list->head)
     {
 
@@ -29,6 +32,9 @@ void list_add(struct list *list, struct list_item *item)
 
 void list_remove(struct list *list, struct list_item *item)
 {
+
+    if (item->list != list)
+        return;
 
     if (!list->head)
         return;
@@ -65,13 +71,6 @@ void list_move(struct list *list, struct list_item *item)
         list_remove(item->list, item);
 
     list_add(list, item);
-
-}
-
-unsigned int list_find(struct list *list, struct list_item *item)
-{
-
-    return item->list == list;
 
 }
 

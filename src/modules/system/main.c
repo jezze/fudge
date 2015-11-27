@@ -10,8 +10,7 @@ static unsigned int node_openmailboxes(struct system_node *self)
 
     struct task *task = task_findactive();
 
-    if (!list_find(&self->mailboxes, &task->blockitem))
-        list_add(&self->mailboxes, &task->blockitem);
+    list_add(&self->mailboxes, &task->blockitem);
 
     return (unsigned int)self;
 
@@ -22,8 +21,7 @@ static unsigned int node_closemailboxes(struct system_node *self)
 
     struct task *task = task_findactive();
 
-    if (list_find(&self->mailboxes, &task->blockitem))
-        list_remove(&self->mailboxes, &task->blockitem);
+    list_remove(&self->mailboxes, &task->blockitem);
 
     return (unsigned int)self;
 
