@@ -22,6 +22,7 @@ struct system_node
     unsigned int type;
     char *name;
     struct resource *resource;
+    unsigned int refcount;
     unsigned int index;
     unsigned int (*open)(struct system_node *self);
     unsigned int (*close)(struct system_node *self);

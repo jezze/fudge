@@ -65,34 +65,12 @@ static unsigned int write(struct buffer *b, struct list *selfwrite, struct list 
 
 }
 
-static unsigned int end0_open(struct system_node *self)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    pipe->end0.ref++;
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int end0_close(struct system_node *self)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    pipe->end0.ref--;
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int end0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return read(&pipe->end0.buffer, &pipe->end0.readlist, &pipe->end1.writelist, pipe->end1.ref, count, buffer);
+    return read(&pipe->end0.buffer, &pipe->end0.readlist, &pipe->end1.writelist, pipe->end1.node.refcount, count, buffer);
 
 }
 
@@ -105,34 +83,12 @@ static unsigned int end0_write(struct system_node *self, unsigned int offset, un
 
 }
 
-static unsigned int end1_open(struct system_node *self)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    pipe->end1.ref++;
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int end1_close(struct system_node *self)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    pipe->end1.ref--;
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int end1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return read(&pipe->end1.buffer, &pipe->end1.readlist, &pipe->end0.writelist, pipe->end0.ref, count, buffer);
+    return read(&pipe->end1.buffer, &pipe->end1.readlist, &pipe->end0.writelist, pipe->end0.node.refcount, count, buffer);
 
 }
 
@@ -159,7 +115,7 @@ static unsigned int clone_child(struct system_node *self, unsigned int count, ch
         if (node == self)
             continue;
 
-        if (pipe->end0.ref || pipe->end1.ref)
+        if (pipe->end0.node.refcount || pipe->end1.node.refcount)
             continue;
 
         return node->child(node, count, path);
@@ -178,21 +134,14 @@ void pipe_init(struct pipe *pipe)
     system_initnode(&pipe->end0.node, SYSTEM_NODETYPE_NORMAL, "0");
     system_initnode(&pipe->end1.node, SYSTEM_NODETYPE_NORMAL, "1");
 
-    pipe->end0.node.open = end0_open;
-    pipe->end0.node.close = end0_close;
     pipe->end0.node.read = end0_read;
     pipe->end0.node.write = end0_write;
-    pipe->end1.node.open = end1_open;
-    pipe->end1.node.close = end1_close;
     pipe->end1.node.read = end1_read;
     pipe->end1.node.write = end1_write;
 
     system_initnode(&pipe->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "pipe");
     system_addchild(&pipe->root, &pipe->end0.node);
     system_addchild(&pipe->root, &pipe->end1.node);
-
-    pipe->end0.ref = 0;
-    pipe->end1.ref = 0;
 
 }
 

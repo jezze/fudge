@@ -4,7 +4,6 @@ struct pipe_end
     struct system_node node;
     unsigned char data[4096];
     struct buffer buffer;
-    unsigned int ref;
     struct list readlist;
     struct list writelist;
 

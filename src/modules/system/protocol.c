@@ -62,6 +62,8 @@ static unsigned int protocol_open(struct vfs_backend *backend, unsigned int id)
 
     struct system_node *node = (struct system_node *)id;
 
+    node->refcount++;
+
     return (node->open) ? node->open(node) : id;
 
 }
@@ -70,6 +72,8 @@ static unsigned int protocol_close(struct vfs_backend *backend, unsigned int id)
 {
 
     struct system_node *node = (struct system_node *)id;
+
+    node->refcount--;
 
     return (node->close) ? node->close(node) : id;
 
