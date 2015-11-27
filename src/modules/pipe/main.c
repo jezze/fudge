@@ -17,12 +17,13 @@ static void wakeup(struct list *list)
         struct task *task = current->data;
 
         task_setstatus(task, TASK_STATUS_ACTIVE);
+        list_remove(list, &task->blockitem);
 
     }
 
 }
 
-static unsigned int read(struct buffer *b, struct list *mailboxes, unsigned int ref, unsigned int count, void *buffer)
+static unsigned int read(struct buffer *b, struct list *selfread, struct list *targetwrite, unsigned int ref, unsigned int count, void *buffer)
 {
 
     struct task *task = task_findactive();
@@ -30,15 +31,20 @@ static unsigned int read(struct buffer *b, struct list *mailboxes, unsigned int 
     count = buffer_rcfifo(b, count, buffer);
 
     if (!count && ref)
+    {
+
+        list_add(selfread, &task->blockitem);
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
-    wakeup(mailboxes);
+    }
+
+    wakeup(targetwrite);
 
     return count;
 
 }
 
-static unsigned int write(struct buffer *b, struct list *mailboxes, unsigned int count, void *buffer)
+static unsigned int write(struct buffer *b, struct list *selfwrite, struct list *targetread, unsigned int count, void *buffer)
 {
 
     struct task *task = task_findactive();
@@ -46,9 +52,14 @@ static unsigned int write(struct buffer *b, struct list *mailboxes, unsigned int
     count = buffer_wcfifo(b, count, buffer);
 
     if (!count)
+    {
+
+        list_add(selfwrite, &task->blockitem);
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
-    wakeup(mailboxes);
+    }
+
+    wakeup(targetread);
 
     return count;
 
@@ -58,12 +69,8 @@ static unsigned int end0_open(struct system_node *self)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
-    struct task *task = task_findactive();
 
     pipe->end0.ref++;
-
-    if (!list_find(&self->mailboxes, &task->blockitem))
-        list_add(&self->mailboxes, &task->blockitem);
 
     return (unsigned int)self;
 
@@ -73,12 +80,8 @@ static unsigned int end0_close(struct system_node *self)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
-    struct task *task = task_findactive();
 
     pipe->end0.ref--;
-
-    if (list_find(&self->mailboxes, &task->blockitem))
-        list_remove(&self->mailboxes, &task->blockitem);
 
     return (unsigned int)self;
 
@@ -89,7 +92,7 @@ static unsigned int end0_read(struct system_node *self, unsigned int offset, uns
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return read(&pipe->end0.buffer, &pipe->end1.node.mailboxes, pipe->end1.ref, count, buffer);
+    return read(&pipe->end0.buffer, &pipe->end0.readlist, &pipe->end1.writelist, pipe->end1.ref, count, buffer);
 
 }
 
@@ -98,7 +101,7 @@ static unsigned int end0_write(struct system_node *self, unsigned int offset, un
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return write(&pipe->end1.buffer, &pipe->end1.node.mailboxes, count, buffer);
+    return write(&pipe->end1.buffer, &pipe->end0.writelist, &pipe->end1.readlist, count, buffer);
 
 }
 
@@ -106,12 +109,8 @@ static unsigned int end1_open(struct system_node *self)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
-    struct task *task = task_findactive();
 
     pipe->end1.ref++;
-
-    if (!list_find(&self->mailboxes, &task->blockitem))
-        list_add(&self->mailboxes, &task->blockitem);
 
     return (unsigned int)self;
 
@@ -121,12 +120,8 @@ static unsigned int end1_close(struct system_node *self)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
-    struct task *task = task_findactive();
 
     pipe->end1.ref--;
-
-    if (list_find(&self->mailboxes, &task->blockitem))
-        list_remove(&self->mailboxes, &task->blockitem);
 
     return (unsigned int)self;
 
@@ -137,7 +132,7 @@ static unsigned int end1_read(struct system_node *self, unsigned int offset, uns
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return read(&pipe->end1.buffer, &pipe->end0.node.mailboxes, pipe->end0.ref, count, buffer);
+    return read(&pipe->end1.buffer, &pipe->end1.readlist, &pipe->end0.writelist, pipe->end0.ref, count, buffer);
 
 }
 
@@ -146,7 +141,7 @@ static unsigned int end1_write(struct system_node *self, unsigned int offset, un
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return write(&pipe->end0.buffer, &pipe->end0.node.mailboxes, count, buffer);
+    return write(&pipe->end0.buffer, &pipe->end1.writelist, &pipe->end0.readlist, count, buffer);
 
 }
 

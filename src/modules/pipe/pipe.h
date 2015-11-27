@@ -5,6 +5,8 @@ struct pipe_end
     unsigned char data[4096];
     struct buffer buffer;
     unsigned int ref;
+    struct list readlist;
+    struct list writelist;
 
 };
 
