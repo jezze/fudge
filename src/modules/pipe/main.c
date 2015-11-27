@@ -16,8 +16,8 @@ static void wakeup(struct list *list)
 
         struct task *task = current->data;
 
-        task_setstatus(task, TASK_STATUS_ACTIVE);
         list_remove(list, &task->blockitem);
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
 
     }
 

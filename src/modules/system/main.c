@@ -152,8 +152,7 @@ void system_multicast(struct system_node *node, unsigned int count, void *buffer
 
         struct task *task = current->data;
 
-        task_setstatus(task, TASK_STATUS_ACTIVE);
-
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
         buffer_wcfifo(&task->mailbox.buffer, count, buffer);
 
     }

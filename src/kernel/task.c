@@ -36,19 +36,32 @@ void task_setstatus(struct task *task, unsigned int status)
         break;
 
     case TASK_STATUS_ACTIVE:
+        if (task->state.status != TASK_STATUS_INACTIVE)
+            break;
+
         list_move(&active, &task->state.item);
 
-        if (task->state.status == TASK_STATUS_BLOCKED || task->state.status == TASK_STATUS_UNBLOCKED)
-            task->state.status = TASK_STATUS_UNBLOCKED;
-        else
-            task->state.status = TASK_STATUS_ACTIVE;
+        task->state.status = TASK_STATUS_ACTIVE;
 
         break;
 
     case TASK_STATUS_BLOCKED:
+        if (task->state.status != TASK_STATUS_ACTIVE)
+            break;
+
         list_move(&blocked, &task->state.item);
 
         task->state.status = TASK_STATUS_BLOCKED;
+
+        break;
+
+    case TASK_STATUS_UNBLOCKED:
+        if (task->state.status != TASK_STATUS_BLOCKED)
+            break;
+
+        list_move(&active, &task->state.item);
+
+        task->state.status = TASK_STATUS_UNBLOCKED;
 
         break;
 

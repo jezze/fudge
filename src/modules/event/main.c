@@ -22,7 +22,7 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
 
     destination = (struct task *)header.destination;
 
-    task_setstatus(destination, TASK_STATUS_ACTIVE);
+    task_setstatus(destination, TASK_STATUS_UNBLOCKED);
 
     buffer_wcfifo(&destination->mailbox.buffer, sizeof (struct event_header), &header);
     buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
@@ -42,7 +42,7 @@ static unsigned int poll_write(struct system_node *self, unsigned int offset, un
 
     destination = (struct task *)header->destination;
 
-    task_setstatus(destination, TASK_STATUS_ACTIVE);
+    task_setstatus(destination, TASK_STATUS_UNBLOCKED);
 
     return buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
 
