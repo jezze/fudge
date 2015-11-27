@@ -36,9 +36,6 @@ void task_setstatus(struct task *task, unsigned int status)
         break;
 
     case TASK_STATUS_ACTIVE:
-        if (task->state.status != TASK_STATUS_INACTIVE)
-            break;
-
         list_move(&active, &task->state.item);
 
         task->state.status = TASK_STATUS_ACTIVE;
