@@ -51,6 +51,7 @@ OBJ_WSHELL:=\
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/send.o \
     $(DIR_SRC)/wm/keymap.o \
+    $(DIR_SRC)/fudge/buffer.o \
     $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
 

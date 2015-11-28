@@ -12,6 +12,8 @@ static unsigned int quit;
 static unsigned int keymod;
 static unsigned char text[FUDGE_BSIZE];
 static unsigned int textcount;
+static unsigned char inputbuffer[FUDGE_BSIZE];
+static struct buffer input;
 static struct box size;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
@@ -84,6 +86,9 @@ static void removetext(unsigned int count)
 
         textcount -= 1;
 
+        if (text[textcount] == '\n')
+            contentrows--;
+
     }
 
 }
@@ -92,7 +97,33 @@ static void interpret(void)
 {
 
     char command[FUDGE_BSIZE];
-    unsigned int count = memory_write(command, FUDGE_BSIZE, "hello\n", 6, 0);
+    unsigned int count = buffer_rcfifo(&input, FUDGE_BSIZE, command);
+
+    /* This is a temporary fix */
+    if (memory_match(command, "cd ", 3))
+    {
+
+        unsigned int ok;
+
+        if (count < 4)
+            return;
+
+        if (command[3] == '/')
+            ok = call_walk(CALL_L1, CALL_PR, count - 5, command + 4);
+        else
+            ok = call_walk(CALL_L1, CALL_PW, count - 4, command + 3);
+
+        if (ok)
+        {
+
+            call_walk(CALL_PW, CALL_L1, 0, 0);
+            call_walk(CALL_CW, CALL_L1, 0, 0);
+
+        }
+
+        return;
+
+    }
 
     if (!call_walk(CALL_CP, CALL_PR, 9, "bin/slang"))
         return;
@@ -132,12 +163,16 @@ static void onkeypress(struct event_header *header, void *data)
         break;
 
     case 0x0E:
+        if (!buffer_ecfifo(&input, 1))
+            break;
+
         removetext(1);
         writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
     case 0x1C:
+        buffer_wcfifo(&input, 1, "\n");
         inserttext(1, "\n");
         interpret();
         inserttext(2, "$ ");
@@ -148,6 +183,7 @@ static void onkeypress(struct event_header *header, void *data)
     default:
         keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
 
+        buffer_wcfifo(&input, keycode->length, &keycode->value);
         inserttext(keycode->length, &keycode->value);
         writetext(header->destination, 1, &content, textcount, text);
 
@@ -210,6 +246,7 @@ static void onwmhide(struct event_header *header, void *data)
 static void setup(void)
 {
 
+    buffer_init(&input, FUDGE_BSIZE, inputbuffer);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
 
     quit = 0;
