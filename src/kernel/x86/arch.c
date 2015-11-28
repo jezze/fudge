@@ -159,7 +159,10 @@ static unsigned int spawn(struct container *container, struct task *task, void *
         return 0;
 
     task_copydescriptors(task, next);
-    task_initbinary(next, TASKSTACK);
+
+    if (!task_initbinary(next, TASKSTACK))
+        return 1;
+
     task_setstatus(next, TASK_STATUS_ACTIVE);
     maptaskcontainer(next, container);
 

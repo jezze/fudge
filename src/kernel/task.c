@@ -103,21 +103,23 @@ void task_copydescriptors(struct task *source, struct task *target)
 
 }
 
-void task_initbinary(struct task *task, unsigned int sp)
+unsigned int task_initbinary(struct task *task, unsigned int sp)
 {
 
     struct vfs_descriptor *descriptor = &task->descriptors[0];
 
     if (!descriptor->id || !descriptor->channel)
-        return;
+        return 0;
 
     task->format = binary_findformat(descriptor->channel, descriptor->id);
 
     if (!task->format)
-        return;
+        return 0;
 
     task->state.registers.ip = task->format->findentry(descriptor->channel, descriptor->id);
     task->state.registers.sp = sp;
+
+    return task->state.registers.ip;
 
 }
 
