@@ -5,20 +5,28 @@
 #include "element.h"
 #include "send.h"
 
-struct client
-{
-
-    struct element_text content;
-    unsigned int quit;
-    unsigned char text[FUDGE_BSIZE];
-    unsigned int textcount;
-    struct box size;
-
-};
-
+static struct element_text content;
+static unsigned int quit;
+static unsigned char text[FUDGE_BSIZE];
+static unsigned int textcount;
+static struct box size;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
-static void (*handlers[EVENTS])(struct client *client, struct event_header *header, void *data);
+static void (*handlers[EVENTS])(struct event_header *header, void *data);
+
+static void flush(void)
+{
+
+    if (datacount)
+    {
+
+        file_writeall(CALL_PO, databuffer, datacount);
+
+        datacount = 0;
+
+    }
+
+}
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
@@ -41,71 +49,56 @@ static void writetext(unsigned int source, unsigned int z, struct element_text *
 
 }
 
-static void flush(void)
+static void onwmunmap(struct event_header *header, void *data)
 {
 
-    if (datacount)
-    {
+    writetext(header->destination, 0, &content, textcount, text);
 
-        file_writeall(CALL_PO, databuffer, datacount);
-
-        datacount = 0;
-
-    }
+    quit = 1;
 
 }
 
-static void onwmunmap(struct client *client, struct event_header *header, void *data)
-{
-
-    writetext(header->destination, 0, &client->content, client->textcount, client->text);
-
-    client->quit = 1;
-
-}
-
-static void onwmresize(struct client *client, struct event_header *header, void *data)
+static void onwmresize(struct event_header *header, void *data)
 {
 
     struct event_wmresize *wmresize = data;
 
-    box_setsize(&client->size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_setsize(&client->content.size, client->size.x + 12, client->size.y + 12, client->size.w - 24, client->size.h - 24);
+    box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
+    box_setsize(&content.size, size.x + 12, size.y + 12, size.w - 24, size.h - 24);
 
 }
 
-static void onwmshow(struct client *client, struct event_header *header, void *data)
+static void onwmshow(struct event_header *header, void *data)
 {
 
-    writetext(header->destination, 1, &client->content, client->textcount, client->text);
+    writetext(header->destination, 1, &content, textcount, text);
 
 }
 
-static void onwmhide(struct client *client, struct event_header *header, void *data)
+static void onwmhide(struct event_header *header, void *data)
 {
 
-    writetext(header->destination, 0, &client->content, client->textcount, client->text);
+    writetext(header->destination, 0, &content, textcount, text);
 
 }
 
-static void setup(struct client *client)
+static void setup(void)
 {
 
-    element_inittext(&client->content, ELEMENT_TEXTTYPE_NORMAL);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
 
-    client->quit = 0;
-    client->textcount = file_read(CALL_PI, client->text, FUDGE_BSIZE);
+    quit = 0;
+    textcount = file_read(CALL_PI, text, FUDGE_BSIZE);
 
 }
 
 void main(void)
 {
 
-    struct client client;
     struct event_header header;
     unsigned int count;
 
-    setup(&client);
+    setup();
 
     handlers[EVENT_WMUNMAP] = onwmunmap;
     handlers[EVENT_WMRESIZE] = onwmresize;
@@ -130,12 +123,12 @@ void main(void)
         if (handlers[header.type])
         {
 
-            handlers[header.type](&client, &header, data);
+            handlers[header.type](&header, data);
             flush();
 
         }
 
-        if (client.quit)
+        if (quit)
             break;
 
     }

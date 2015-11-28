@@ -17,20 +17,14 @@
 #define COLOR_TEXTNORMAL                0x09
 #define COLOR_TEXTLIGHT                 0x0A
 
-struct context
-{
-
-    struct ctrl_videosettings oldsettings;
-    struct ctrl_videosettings settings;
-    unsigned char textcolor[2];
-    unsigned char buffer[0x2000];
-
-};
-
+static struct ctrl_videosettings oldsettings;
+static struct ctrl_videosettings settings;
+static unsigned char textcolor[2];
+static unsigned char drawdata[0x2000];
 static unsigned int (*tests[EVENTS])(struct element *element, void *data, unsigned int line);
-static void (*renderers[EVENTS])(struct context *context, struct element *element, void *data, unsigned int line);
-static unsigned char data[0x8000];
-static unsigned int datacount;
+static void (*renderers[EVENTS])(struct element *element, void *data, unsigned int line);
+static unsigned char elementdata[0x8000];
+static unsigned int elementcount;
 static unsigned char fontdata[0x8000];
 static unsigned char mousedata[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -85,10 +79,10 @@ static unsigned int colormap32[] = {
     0xFFFFFFFF
 };
 
-static void paint8(struct context *context, unsigned int color, unsigned int offset, unsigned int count)
+static void paint8(unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned char *buffer = context->buffer;
+    unsigned char *buffer = drawdata;
     unsigned int i;
 
     for (i = offset; i < count + offset; i++)
@@ -96,10 +90,10 @@ static void paint8(struct context *context, unsigned int color, unsigned int off
 
 }
 
-static void paint32(struct context *context, unsigned int color, unsigned int offset, unsigned int count)
+static void paint32(unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned int *buffer = (unsigned int *)context->buffer;
+    unsigned int *buffer = (unsigned int *)drawdata;
     unsigned int i;
 
     for (i = offset; i < count + offset; i++)
@@ -107,19 +101,19 @@ static void paint32(struct context *context, unsigned int color, unsigned int of
 
 }
 
-static void paint(struct context *context, unsigned int color, unsigned int offset, unsigned int count)
+static void paint(unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    switch (context->settings.bpp)
+    switch (settings.bpp)
     {
 
     case 8:
-        paint8(context, color, offset, count);
+        paint8(color, offset, count);
 
         break;
 
     case 32:
-        paint32(context, colormap32[color], offset, count);
+        paint32(colormap32[color], offset, count);
 
         break;
 
@@ -136,12 +130,12 @@ static unsigned int testfill(struct element *element, void *data, unsigned int l
 
 }
 
-static void renderfill(struct context *context, struct element *element, void *data, unsigned int line)
+static void renderfill(struct element *element, void *data, unsigned int line)
 {
 
     struct element_fill *fill = data;
 
-    paint(context, fill->color, fill->size.x, fill->size.w);
+    paint(fill->color, fill->size.x, fill->size.w);
 
 }
 
@@ -154,7 +148,7 @@ static unsigned int testmouse(struct element *element, void *data, unsigned int 
 
 }
 
-static void rendermouse(struct context *context, struct element *element, void *data, unsigned int line)
+static void rendermouse(struct element *element, void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
@@ -166,7 +160,7 @@ static void rendermouse(struct context *context, struct element *element, void *
     {
 
         if (mousedata[line * 24 + i] != 0xFF)
-            paint(context, mousedata[line * 24 + i], mouse->x + i, 1);
+            paint(mousedata[line * 24 + i], mouse->x + i, 1);
 
     }
 
@@ -181,7 +175,7 @@ static unsigned int testpanel(struct element *element, void *data, unsigned int 
 
 }
 
-static void renderpanel(struct context *context, struct element *element, void *data, unsigned int line)
+static void renderpanel(struct element *element, void *data, unsigned int line)
 {
 
     struct element_panel *panel = data;
@@ -197,23 +191,23 @@ static void renderpanel(struct context *context, struct element *element, void *
     {
 
     case 0:
-        paint(context, COLOR_DARK, panel->size.x, panel->size.w);
+        paint(COLOR_DARK, panel->size.x, panel->size.w);
 
         break;
 
     case 1:
-        paint(context, COLOR_DARK, panel->size.x + 0, 1);
-        paint(context, COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
-        paint(context, framecolor, panel->size.x + 1, panel->size.w - 2);
+        paint(COLOR_DARK, panel->size.x + 0, 1);
+        paint(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
+        paint(framecolor, panel->size.x + 1, panel->size.w - 2);
 
         break;
 
     default:
-        paint(context, COLOR_DARK, panel->size.x + 0, 1);
-        paint(context, COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
-        paint(context, framecolor, panel->size.x + 1, 1);
-        paint(context, framecolor, panel->size.x + panel->size.w - 2, 1);
-        paint(context, backgroundcolor, panel->size.x + 2, panel->size.w - 4);
+        paint(COLOR_DARK, panel->size.x + 0, 1);
+        paint(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
+        paint(framecolor, panel->size.x + 1, 1);
+        paint(framecolor, panel->size.x + panel->size.w - 2, 1);
+        paint(backgroundcolor, panel->size.x + 2, panel->size.w - 4);
 
         break;
 
@@ -272,7 +266,7 @@ static unsigned int findrowstart(struct element_text *text, unsigned int row, un
 
 }
 
-static void rendertextglyph(struct context *context, unsigned char *data, unsigned int offset, unsigned int count, unsigned int color)
+static void rendertextglyph(unsigned char *data, unsigned int offset, unsigned int count, unsigned int color)
 {
 
     unsigned int i;
@@ -288,7 +282,7 @@ static void rendertextglyph(struct context *context, unsigned char *data, unsign
         {
 
             if (c & b)
-                paint(context, color, offset + i * 8 + k, 1);
+                paint(color, offset + i * 8 + k, 1);
 
             k++;
                 
@@ -298,7 +292,7 @@ static void rendertextglyph(struct context *context, unsigned char *data, unsign
 
 }
 
-static void rendertext(struct context *context, struct element *element, void *data, unsigned int line)
+static void rendertext(struct element *element, void *data, unsigned int line)
 {
 
     struct element_text *text = data;
@@ -351,7 +345,7 @@ static void rendertext(struct context *context, struct element *element, void *d
             return;
 
         if (rowline < size.h)
-            rendertextglyph(context, data + rowline * fontpadding, size.x, fontpadding, context->textcolor[text->type]);
+            rendertextglyph(data + rowline * fontpadding, size.x, fontpadding, textcolor[text->type]);
 
         size.x += size.w;
 
@@ -368,7 +362,7 @@ static unsigned int testwindow(struct element *element, void *data, unsigned int
 
 }
 
-static void renderwindow(struct context *context, struct element *element, void *data, unsigned int line)
+static void renderwindow(struct element *element, void *data, unsigned int line)
 {
 
     struct element_window *window = data;
@@ -383,33 +377,33 @@ static void renderwindow(struct context *context, struct element *element, void 
     {
 
     case 0:
-        paint(context, COLOR_DARK, window->size.x, window->size.w);
+        paint(COLOR_DARK, window->size.x, window->size.w);
 
         break;
 
     case 1:
-        paint(context, COLOR_DARK, window->size.x + 0, 1);
-        paint(context, COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        paint(context, framecolor, window->size.x + 1, window->size.w - 2);
+        paint(COLOR_DARK, window->size.x + 0, 1);
+        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        paint(framecolor, window->size.x + 1, window->size.w - 2);
 
         break;
 
     case 2:
-        paint(context, COLOR_DARK, window->size.x + 0, 1);
-        paint(context, COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        paint(context, framecolor, window->size.x + 1, 1);
-        paint(context, framecolor, window->size.x + window->size.w - 2, 1);
-        paint(context, COLOR_DARK, window->size.x + 2, window->size.w - 4);
+        paint(COLOR_DARK, window->size.x + 0, 1);
+        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        paint(framecolor, window->size.x + 1, 1);
+        paint(framecolor, window->size.x + window->size.w - 2, 1);
+        paint(COLOR_DARK, window->size.x + 2, window->size.w - 4);
 
         break;
 
     default:
-        paint(context, COLOR_DARK, window->size.x + 0, 1);
-        paint(context, COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        paint(context, framecolor, window->size.x + 1, 1);
-        paint(context, framecolor, window->size.x + window->size.w - 2, 1);
-        paint(context, COLOR_DARK, window->size.x + 2, 1);
-        paint(context, COLOR_DARK, window->size.x + window->size.w - 3, 1);
+        paint(COLOR_DARK, window->size.x + 0, 1);
+        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
+        paint(framecolor, window->size.x + 1, 1);
+        paint(framecolor, window->size.x + window->size.w - 2, 1);
+        paint(COLOR_DARK, window->size.x + 2, 1);
+        paint(COLOR_DARK, window->size.x + window->size.w - 3, 1);
 
         break;
 
@@ -434,9 +428,9 @@ static void removeelement(struct element *element)
 
     unsigned int length = sizeof (struct element) + element->count;
 
-    memory_copy(element, (unsigned char *)element + length, datacount - ((unsigned char *)element - data) - length);
+    memory_copy(element, (unsigned char *)element + length, elementcount - ((unsigned char *)element - elementdata) - length);
 
-    datacount -= length;
+    elementcount -= length;
 
 }
 
@@ -445,7 +439,7 @@ static void cleanelements(void)
 
     struct element *current = 0;
 
-    while ((current = nextelement(datacount, data, current)))
+    while ((current = nextelement(elementcount, elementdata, current)))
     {
 
         current->damaged = 0;
@@ -464,7 +458,7 @@ static void addelement(struct element *element)
 
     element->damaged = 1;
 
-    while ((current = nextelement(datacount, data, current)))
+    while ((current = nextelement(elementcount, elementdata, current)))
     {
 
         if (current->source != element->source || current->id != element->id)
@@ -475,7 +469,7 @@ static void addelement(struct element *element)
 
     }
 
-    datacount += memory_write(data, 0x8000, element, sizeof (struct element) + element->count, datacount);
+    elementcount += memory_write(elementdata, 0x8000, element, sizeof (struct element) + element->count, elementcount);
 
 }
 
@@ -484,7 +478,7 @@ static unsigned int testline(unsigned int line)
 
     struct element *element = 0;
 
-    while ((element = nextelement(datacount, data, element)))
+    while ((element = nextelement(elementcount, elementdata, element)))
     {
 
         if (element->damaged && tests[element->type](element, element + 1, line))
@@ -496,7 +490,7 @@ static unsigned int testline(unsigned int line)
 
 }
 
-static void render(struct context *context)
+static void render(void)
 {
 
     unsigned int line;
@@ -504,7 +498,7 @@ static void render(struct context *context)
     call_walk(CALL_L0, CALL_PO, 4, "data");
     call_open(CALL_L0);
 
-    for (line = 0; line < context->settings.h; line++)
+    for (line = 0; line < settings.h; line++)
     {
 
         unsigned int z;
@@ -517,20 +511,20 @@ static void render(struct context *context)
 
             struct element *element = 0;
 
-            while ((element = nextelement(datacount, data, element)))
+            while ((element = nextelement(elementcount, elementdata, element)))
             {
 
                 if (element->z != z)
                     continue;
 
                 if (tests[element->type](element, element + 1, line))
-                    renderers[element->type](context, element, element + 1, line);
+                    renderers[element->type](element, element + 1, line);
 
             }
 
         }
 
-        file_seekwriteall(CALL_L0, context->buffer, context->settings.w, context->settings.w * line);
+        file_seekwriteall(CALL_L0, drawdata, settings.w, settings.w * line);
 
     }
 
@@ -541,11 +535,10 @@ static void render(struct context *context)
 void main(void)
 {
 
-    struct context context;
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    ctrl_setvideosettings(&context.settings, 1920, 1080, 32);
+    ctrl_setvideosettings(&settings, 1920, 1080, 32);
 
     if (!call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf"))
         return;
@@ -558,12 +551,12 @@ void main(void)
         return;
 
     call_open(CALL_L0);
-    file_seekreadall(CALL_L0, &context.oldsettings, sizeof (struct ctrl_videosettings), 0);
-    file_seekwriteall(CALL_L0, &context.settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekreadall(CALL_L0, &context.settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekreadall(CALL_L0, &oldsettings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(CALL_L0, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekreadall(CALL_L0, &settings, sizeof (struct ctrl_videosettings), 0);
     call_close(CALL_L0);
 
-    if (context.settings.bpp == 8)
+    if (settings.bpp == 8)
     {
 
         if (!call_walk(CALL_L0, CALL_PO, 8, "colormap"))
@@ -575,8 +568,8 @@ void main(void)
 
     }
 
-    context.textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
-    context.textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
+    textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
+    textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
     tests[ELEMENT_TYPE_FILL] = testfill;
     tests[ELEMENT_TYPE_MOUSE] = testmouse;
     tests[ELEMENT_TYPE_PANEL] = testpanel;
@@ -598,7 +591,7 @@ void main(void)
         while ((element = nextelement(count, buffer, element)))
             addelement(element);
 
-        render(&context);
+        render();
         cleanelements();
 
     }
@@ -609,7 +602,7 @@ void main(void)
         return;
 
     call_open(CALL_L0);
-    file_seekwriteall(CALL_L0, &context.oldsettings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(CALL_L0, &oldsettings, sizeof (struct ctrl_videosettings), 0);
     call_close(CALL_L0);
 
 }

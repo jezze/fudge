@@ -6,21 +6,29 @@
 #include "send.h"
 #include "keymap.h"
 
-struct client
-{
-
-    struct element_text content;
-    unsigned int quit;
-    unsigned int keymod;
-    unsigned char text[FUDGE_BSIZE];
-    unsigned int textcount;
-    struct box size;
-
-};
-
+static struct element_text content;
+static unsigned int quit;
+static unsigned int keymod;
+static unsigned char text[FUDGE_BSIZE];
+static unsigned int textcount;
+static struct box size;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
-static void (*handlers[EVENTS])(struct client *client, struct event_header *header, void *data);
+static void (*handlers[EVENTS])(struct event_header *header, void *data);
+
+static void flush(void)
+{
+
+    if (datacount)
+    {
+
+        file_writeall(CALL_PO, databuffer, datacount);
+
+        datacount = 0;
+
+    }
+
+}
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
@@ -43,21 +51,7 @@ static void writetext(unsigned int source, unsigned int z, struct element_text *
 
 }
 
-static void flush(void)
-{
-
-    if (datacount)
-    {
-
-        file_writeall(CALL_PO, databuffer, datacount);
-
-        datacount = 0;
-
-    }
-
-}
-
-static void interpret(struct client *client)
+static void interpret(void)
 {
 
     char command[FUDGE_BSIZE];
@@ -79,13 +73,13 @@ static void interpret(struct client *client)
     call_open(CALL_L2);
 
     while ((count = file_read(CALL_L2, command, FUDGE_BSIZE)))
-        client->textcount += memory_write(client->text, FUDGE_BSIZE, command, count, client->textcount);
+        textcount += memory_write(text, FUDGE_BSIZE, command, count, textcount);
 
     call_close(CALL_L2);
 
 }
 
-static void onkeypress(struct client *client, struct event_header *header, void *data)
+static void onkeypress(struct event_header *header, void *data)
 {
 
     struct event_keypress *keypress = data;
@@ -96,42 +90,42 @@ static void onkeypress(struct client *client, struct event_header *header, void 
 
     case 0x2A:
     case 0x36:
-        client->keymod |= KEYMOD_SHIFT;
+        keymod |= KEYMOD_SHIFT;
 
         break;
 
     case 0x0E:
-        if (!client->textcount)
+        if (!textcount)
             break;
 
-        client->textcount -= 1;
+        textcount -= 1;
 
-        writetext(header->destination, 1, &client->content, client->textcount, client->text);
+        writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
     case 0x1C:
-        client->textcount += memory_write(client->text, FUDGE_BSIZE, "\n", 1, client->textcount);
+        textcount += memory_write(text, FUDGE_BSIZE, "\n", 1, textcount);
 
-        interpret(client);
+        interpret();
 
-        client->textcount += memory_write(client->text, FUDGE_BSIZE, "$ ", 2, client->textcount);
-        writetext(header->destination, 1, &client->content, client->textcount, client->text);
+        textcount += memory_write(text, FUDGE_BSIZE, "$ ", 2, textcount);
+        writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
     default:
-        keycode = getkeycode(KEYMAP_US, keypress->scancode, client->keymod);
-        client->textcount += memory_write(client->text, FUDGE_BSIZE, keycode->value, keycode->length, client->textcount);
+        keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
+        textcount += memory_write(text, FUDGE_BSIZE, keycode->value, keycode->length, textcount);
 
-        writetext(header->destination, 1, &client->content, client->textcount, client->text);
+        writetext(header->destination, 1, &content, textcount, text);
 
         break;
     }
 
 }
 
-static void onkeyrelease(struct client *client, struct event_header *header, void *data)
+static void onkeyrelease(struct event_header *header, void *data)
 {
 
     struct event_keyrelease *keyrelease = data;
@@ -141,7 +135,7 @@ static void onkeyrelease(struct client *client, struct event_header *header, voi
 
     case 0x2A:
     case 0x36:
-        client->keymod &= ~KEYMOD_SHIFT;
+        keymod &= ~KEYMOD_SHIFT;
 
         break;
 
@@ -149,58 +143,57 @@ static void onkeyrelease(struct client *client, struct event_header *header, voi
 
 }
 
-static void onwmunmap(struct client *client, struct event_header *header, void *data)
+static void onwmunmap(struct event_header *header, void *data)
 {
 
-    writetext(header->destination, 0, &client->content, client->textcount, client->text);
+    writetext(header->destination, 0, &content, textcount, text);
 
-    client->quit = 1;
+    quit = 1;
 
 }
 
-static void onwmresize(struct client *client, struct event_header *header, void *data)
+static void onwmresize(struct event_header *header, void *data)
 {
 
     struct event_wmresize *wmresize = data;
 
-    box_setsize(&client->size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_setsize(&client->content.size, client->size.x + 12, client->size.y + 12, client->size.w - 24, client->size.h - 24);
+    box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
+    box_setsize(&content.size, size.x + 12, size.y + 12, size.w - 24, size.h - 24);
 
 }
 
-static void onwmshow(struct client *client, struct event_header *header, void *data)
+static void onwmshow(struct event_header *header, void *data)
 {
 
-    writetext(header->destination, 1, &client->content, client->textcount, client->text);
+    writetext(header->destination, 1, &content, textcount, text);
 
 }
 
-static void onwmhide(struct client *client, struct event_header *header, void *data)
+static void onwmhide(struct event_header *header, void *data)
 {
 
-    writetext(header->destination, 0, &client->content, client->textcount, client->text);
+    writetext(header->destination, 0, &content, textcount, text);
 
 }
 
-static void setup(struct client *client)
+static void setup(void)
 {
 
-    element_inittext(&client->content, ELEMENT_TEXTTYPE_NORMAL);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
 
-    client->quit = 0;
-    client->keymod = KEYMOD_NONE;
-    client->textcount = memory_write(client->text, FUDGE_BSIZE, "$ ", 2, 0);
+    quit = 0;
+    keymod = KEYMOD_NONE;
+    textcount = memory_write(text, FUDGE_BSIZE, "$ ", 2, 0);
 
 }
 
 void main(void)
 {
 
-    struct client client;
     struct event_header header;
     unsigned int count;
 
-    setup(&client);
+    setup();
 
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;
@@ -227,12 +220,12 @@ void main(void)
         if (handlers[header.type])
         {
 
-            handlers[header.type](&client, &header, data);
+            handlers[header.type](&header, data);
             flush();
 
         }
 
-        if (client.quit)
+        if (quit)
             break;
 
     }
