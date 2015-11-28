@@ -488,18 +488,14 @@ static void onmousepress(struct event_header *header, void *data)
             if (!box_isinside(&views[i].panel.size, mouse.x, mouse.y))
                 continue;
 
-            if (&views[i] != viewfocus)
-            {
+            if (&views[i] == viewfocus)
+                return;
 
-                hideview(header->destination, viewfocus);
+            hideview(header->destination, viewfocus);
 
-                viewfocus = &views[i];
+            viewfocus = &views[i];
 
-                showview(header->destination, viewfocus);
-
-            }
-
-            return;
+            showview(header->destination, viewfocus);
 
         }
 
@@ -511,25 +507,16 @@ static void onmousepress(struct event_header *header, void *data)
             if (!box_isinside(&remote->window.size, mouse.x, mouse.y))
                 continue;
 
-            if (remote != viewfocus->remotefocus)
-            {
+            if (remote == viewfocus->remotefocus)
+                return;
 
-                if (viewfocus->remotefocus)
-                {
+            deactivateremote(viewfocus->remotefocus);
+            writeremote(header->destination, 1, viewfocus->remotefocus);
 
-                    deactivateremote(viewfocus->remotefocus);
-                    writeremote(header->destination, 1, viewfocus->remotefocus);
+            viewfocus->remotefocus = remote;
 
-                }
-
-                viewfocus->remotefocus = remote;
-
-                activateremote(viewfocus->remotefocus);
-                writeremote(header->destination, 1, viewfocus->remotefocus);
-
-            }
-
-            return;
+            activateremote(viewfocus->remotefocus);
+            writeremote(header->destination, 1, viewfocus->remotefocus);
 
         }
 
