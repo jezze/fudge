@@ -154,20 +154,20 @@ static void tokenizebuffer(struct tokenlist *infix, struct buffer *stringtable, 
 {
 
     unsigned int i;
+    unsigned int c;
 
     for (i = 0; i < count; i++)
     {
 
         unsigned int token = tokenize(buffer[i]);
 
-        if (token == TOKENSKIP)
-            continue;
-
-        if (token == TOKENIDENT)
+        switch (token)
         {
 
-            unsigned int c;
+        case TOKENSKIP:
+            continue;
 
+        case TOKENIDENT:
             tokenlist_add(infix, token, (char *)stringtable->head);
 
             c = getidentlength(count - i, buffer + i);
@@ -177,12 +177,12 @@ static void tokenizebuffer(struct tokenlist *infix, struct buffer *stringtable, 
 
             i += c - 1;
 
-        }
+            break;
 
-        else
-        {
-
+        default:
             tokenlist_add(infix, token, 0);
+
+            break;
 
         }
 
