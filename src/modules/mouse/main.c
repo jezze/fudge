@@ -1,47 +1,12 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include "mouse.h"
 
 void mouse_notify(struct mouse_interface *interface, unsigned int count, void *buffer)
 {
 
     system_multicast(&interface->data, count, buffer);
-
-}
-
-void mouse_notifymousepress(struct mouse_interface *interface, unsigned int button)
-{
-
-    struct event_mousepress mousepress;
-
-    mousepress.button = button;
-
-    event_notify(EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
-
-}
-
-void mouse_notifymouserelease(struct mouse_interface *interface, unsigned int button)
-{
-
-    struct event_mouserelease mouserelease;
-
-    mouserelease.button = button;
-
-    event_notify(EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
-
-}
-
-void mouse_notifymousemove(struct mouse_interface *interface, char relx, char rely)
-{
-
-    struct event_mousemove mousemove;
-
-    mousemove.relx = relx;
-    mousemove.rely = rely;
-
-    event_notify(EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
 
 }
 

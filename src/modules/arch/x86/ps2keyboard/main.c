@@ -2,6 +2,7 @@
 #include <kernel.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
+#include <modules/event/event.h>
 #include <modules/keyboard/keyboard.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/ps2/ps2.h>
@@ -22,9 +23,9 @@ static void handleirq(unsigned int irq)
     keyboard_notify(&keyboardinterface, 1, &data);
 
     if (data & 0x80)
-        keyboard_notifykeyrelease(&keyboardinterface, data & ~0x80);
+        event_notifykeyrelease(data & ~0x80);
     else
-        keyboard_notifykeypress(&keyboardinterface, data);
+        event_notifykeypress(data);
 
 }
 

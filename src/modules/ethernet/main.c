@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include <net/ethernet.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include "ethernet.h"
 
 static struct system_node root;

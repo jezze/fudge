@@ -1,24 +1,12 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include "timer.h"
 
 void timer_notify(struct timer_interface *interface, unsigned int count, void *buffer)
 {
 
     system_multicast(&interface->sleep, count, buffer);
-
-}
-
-void timer_notifytick(struct timer_interface *interface, unsigned int counter)
-{
-
-    struct event_tick tick;
-
-    tick.counter = counter;
-
-    event_notify(EVENT_TICK, sizeof (struct event_tick), &tick);
 
 }
 

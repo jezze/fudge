@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include "console.h"
 
 void console_notify(struct console_interface *interface, unsigned int count, void *buffer)

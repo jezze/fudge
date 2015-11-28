@@ -6,7 +6,7 @@
 static struct system_node root;
 static struct system_node poll;
 
-void event_notify(unsigned int type, unsigned int count, void *buffer)
+static void event_notify(unsigned int type, unsigned int count, void *buffer)
 {
 
     struct event_header header;
@@ -26,6 +26,73 @@ void event_notify(unsigned int type, unsigned int count, void *buffer)
 
     buffer_wcfifo(&destination->mailbox.buffer, sizeof (struct event_header), &header);
     buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
+
+}
+
+void event_notifykeypress(unsigned char scancode)
+{
+
+    struct event_keypress keypress;
+
+    keypress.scancode = scancode;
+
+    event_notify(EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
+
+}
+
+void event_notifykeyrelease(unsigned char scancode)
+{
+
+    struct event_keyrelease keyrelease;
+
+    keyrelease.scancode = scancode;
+
+    event_notify(EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
+
+}
+
+void event_notifymousepress(unsigned int button)
+{
+
+    struct event_mousepress mousepress;
+
+    mousepress.button = button;
+
+    event_notify(EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
+
+}
+
+void event_notifymouserelease(unsigned int button)
+{
+
+    struct event_mouserelease mouserelease;
+
+    mouserelease.button = button;
+
+    event_notify(EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
+
+}
+
+void event_notifymousemove(char relx, char rely)
+{
+
+    struct event_mousemove mousemove;
+
+    mousemove.relx = relx;
+    mousemove.rely = rely;
+
+    event_notify(EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
+
+}
+
+void event_notifytick(unsigned int counter)
+{
+
+    struct event_tick tick;
+
+    tick.counter = counter;
+
+    event_notify(EVENT_TICK, sizeof (struct event_tick), &tick);
 
 }
 

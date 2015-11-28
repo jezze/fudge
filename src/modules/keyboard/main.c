@@ -1,35 +1,12 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include "keyboard.h"
 
 void keyboard_notify(struct keyboard_interface *interface, unsigned int count, void *buffer)
 {
 
     system_multicast(&interface->data, count, buffer);
-
-}
-
-void keyboard_notifykeypress(struct keyboard_interface *interface, unsigned char scancode)
-{
-
-    struct event_keypress keypress;
-
-    keypress.scancode = scancode;
-
-    event_notify(EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
-
-}
-
-void keyboard_notifykeyrelease(struct keyboard_interface *interface, unsigned char scancode)
-{
-
-    struct event_keyrelease keyrelease;
-
-    keyrelease.scancode = scancode;
-
-    event_notify(EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
 
 }
 

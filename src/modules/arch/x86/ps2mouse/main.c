@@ -2,6 +2,7 @@
 #include <kernel.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
+#include <modules/event/event.h>
 #include <modules/mouse/mouse.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/ps2/ps2.h>
@@ -53,25 +54,25 @@ static void handleirq(unsigned int irq)
         return;
 
     if (!(oldstate & 1) && (state & 1))
-       mouse_notifymousepress(&mouseinterface, 1);
+       event_notifymousepress(1);
 
     if (!(oldstate & 2) && (state & 2))
-       mouse_notifymousepress(&mouseinterface, 2);
+       event_notifymousepress(2);
 
     if (!(oldstate & 4) && (state & 4))
-       mouse_notifymousepress(&mouseinterface, 3);
+       event_notifymousepress(3);
 
     if ((oldstate & 1) && !(state & 1))
-       mouse_notifymouserelease(&mouseinterface, 1);
+       event_notifymouserelease(1);
 
     if ((oldstate & 2) && !(state & 2))
-       mouse_notifymouserelease(&mouseinterface, 2);
+       event_notifymouserelease(2);
 
     if ((oldstate & 4) && !(state & 4))
-       mouse_notifymouserelease(&mouseinterface, 3);
+       event_notifymouserelease(3);
 
     if (relx || rely)
-       mouse_notifymousemove(&mouseinterface, relx, rely);
+       event_notifymousemove(relx, rely);
 
     oldstate = state;
 
