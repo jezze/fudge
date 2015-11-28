@@ -230,7 +230,7 @@ static unsigned int readdirectory(struct vfs_backend *backend, unsigned int addr
 
     record->id = encode(address);
     record->size = cpio_filesize(header);
-    record->length = memory_read(record->name, RECORD_NAMESIZE, name, header->namesize, length);
+    record->length = memory_read(record->name, RECORD_NAMESIZE, name, header->namesize - 1, length);
 
     switch (header->mode & 0xF000)
     {
