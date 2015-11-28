@@ -25,7 +25,7 @@ static struct view
     unsigned int center;
     struct element_panel panel;
     struct element_text number;
-    char *numberstring;
+    char numberstring;
     struct remote *remotefocus;
 
 } views[VIEWS];
@@ -111,7 +111,7 @@ static void writeview(unsigned int source, unsigned int z, struct view *view)
 {
 
     writepanel(source, z, &view->panel);
-    writetext(source, z, &view->number, 1, view->numberstring);
+    writetext(source, z, &view->number, 1, &view->numberstring);
 
 }
 
@@ -700,7 +700,7 @@ static void setup(void)
         element_initpanel(&views[i].panel, 0);
         element_inittext(&views[i].number, ELEMENT_TEXTTYPE_NORMAL);
 
-        views[i].numberstring = "12345678" + i;
+        views[i].numberstring = '1' + i;
         views[i].remotefocus = 0;
 
     }
