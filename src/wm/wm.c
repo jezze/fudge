@@ -697,13 +697,13 @@ static void setup(void)
     unsigned int i;
 
     element_initfill(&background, 2);
-    element_initmouse(&mouse);
+    element_initmouse(&mouse, 0, 0);
 
     for (i = 0; i < REMOTES; i++)
     {
 
         list_inititem(&remotes[i].item, &remotes[i]);
-        element_initwindow(&remotes[i].window);
+        element_initwindow(&remotes[i].window, 0);
         list_add(&remotelist, &remotes[i].item);
 
     }
@@ -711,7 +711,7 @@ static void setup(void)
     for (i = 0; i < VIEWS; i++)
     {
 
-        element_initpanel(&views[i].panel);
+        element_initpanel(&views[i].panel, 0);
         element_inittext(&views[i].number, ELEMENT_TEXTTYPE_NORMAL);
 
         views[i].numberstring = "12345678" + i;

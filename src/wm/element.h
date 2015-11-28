@@ -60,7 +60,7 @@ struct element_window
 
 void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count);
 void element_initfill(struct element_fill *fill, unsigned int color);
-void element_initmouse(struct element_mouse *mouse);
-void element_initpanel(struct element_panel *panel);
+void element_initmouse(struct element_mouse *mouse, unsigned int x, unsigned int y);
+void element_initpanel(struct element_panel *panel, unsigned int active);
 void element_inittext(struct element_text *text, unsigned int type);
-void element_initwindow(struct element_window *window);
+void element_initwindow(struct element_window *window, unsigned int active);
