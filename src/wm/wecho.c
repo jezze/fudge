@@ -14,20 +14,6 @@ static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
 static void (*handlers[EVENTS])(struct event_header *header, void *data);
 
-static void flush(void)
-{
-
-    if (datacount)
-    {
-
-        file_writeall(CALL_PO, databuffer, datacount);
-
-        datacount = 0;
-
-    }
-
-}
-
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
 
@@ -121,10 +107,14 @@ void main(void)
             file_readall(CALL_L0, data, header.count);
 
         if (handlers[header.type])
+            handlers[header.type](&header, data);
+
+        if (datacount)
         {
 
-            handlers[header.type](&header, data);
-            flush();
+            file_writeall(CALL_PO, databuffer, datacount);
+
+            datacount = 0;
 
         }
 
