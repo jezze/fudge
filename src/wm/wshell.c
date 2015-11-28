@@ -7,6 +7,7 @@
 #include "keymap.h"
 
 static struct element_text content;
+static unsigned int contentrows;
 static unsigned int quit;
 static unsigned int keymod;
 static unsigned char text[FUDGE_BSIZE];
@@ -37,6 +38,56 @@ static void writetext(unsigned int source, unsigned int z, struct element_text *
 
 }
 
+static void inserttext(unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+    unsigned char *b = buffer;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (b[i] == '\n')
+        {
+
+            contentrows++;
+
+            if (contentrows > 20)
+            {
+
+                unsigned int offset = memory_findbyte(text, textcount, '\n');
+
+                memory_copy(text, text + offset, textcount - offset);
+
+                textcount -= offset;
+
+            }
+
+        }
+
+        textcount += memory_write(text, FUDGE_BSIZE, b + i, 1, textcount);
+
+    }
+
+}
+
+static void removetext(unsigned int count)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (!textcount)
+            break;
+
+        textcount -= 1;
+
+    }
+
+}
+
 static void interpret(void)
 {
 
@@ -59,7 +110,7 @@ static void interpret(void)
     call_open(CALL_L2);
 
     while ((count = file_read(CALL_L2, command, FUDGE_BSIZE)))
-        textcount += memory_write(text, FUDGE_BSIZE, command, count, textcount);
+        inserttext(count, command);
 
     call_close(CALL_L2);
 
@@ -81,29 +132,23 @@ static void onkeypress(struct event_header *header, void *data)
         break;
 
     case 0x0E:
-        if (!textcount)
-            break;
-
-        textcount -= 1;
-
+        removetext(1);
         writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
     case 0x1C:
-        textcount += memory_write(text, FUDGE_BSIZE, "\n", 1, textcount);
-
+        inserttext(1, "\n");
         interpret();
-
-        textcount += memory_write(text, FUDGE_BSIZE, "$ ", 2, textcount);
+        inserttext(2, "$ ");
         writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
     default:
         keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
-        textcount += memory_write(text, FUDGE_BSIZE, keycode->value, keycode->length, textcount);
 
+        inserttext(keycode->length, &keycode->value);
         writetext(header->destination, 1, &content, textcount, text);
 
         break;
@@ -169,7 +214,8 @@ static void setup(void)
 
     quit = 0;
     keymod = KEYMOD_NONE;
-    textcount = memory_write(text, FUDGE_BSIZE, "$ ", 2, 0);
+
+    inserttext(2, "$ ");
 
 }
 

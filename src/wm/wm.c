@@ -561,7 +561,7 @@ static void onwmmap(struct event_header *header, void *data)
         send_wmshow(CALL_L0, header->destination);
 
     }
-            
+
     else
     {
 

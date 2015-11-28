@@ -285,7 +285,7 @@ static void rendertextglyph(unsigned char *data, unsigned int offset, unsigned i
                 paint(color, offset + i * 8 + k, 1);
 
             k++;
-                
+
         }
 
     }
