@@ -9,23 +9,26 @@ static struct system_node poll;
 static void event_notify(unsigned int type, unsigned int count, void *buffer)
 {
 
-    struct event_header header;
-    struct task *destination;
+    struct list_item *current;
 
-    if (!poll.mailboxes.count)
-        return;
+    for (current = poll.mailboxes.head; current; current = current->next)
+    {
 
-    header.destination = (unsigned int)poll.mailboxes.head->data;
-    header.source = 0;
-    header.type = type;
-    header.count = count;
+        struct event_header header;
+        struct task *destination = current->data;
 
-    destination = (struct task *)header.destination;
+        header.destination = (unsigned int)destination;
+        header.source = 0;
+        header.type = type;
+        header.count = count;
 
-    task_setstatus(destination, TASK_STATUS_UNBLOCKED);
+        task_setstatus(destination, TASK_STATUS_UNBLOCKED);
+        buffer_wcfifo(&destination->mailbox.buffer, sizeof (struct event_header), &header);
+        buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
 
-    buffer_wcfifo(&destination->mailbox.buffer, sizeof (struct event_header), &header);
-    buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
+        break;
+
+    }
 
 }
 
@@ -51,6 +54,18 @@ void event_notifykeyrelease(unsigned char scancode)
 
 }
 
+void event_notifymousemove(char relx, char rely)
+{
+
+    struct event_mousemove mousemove;
+
+    mousemove.relx = relx;
+    mousemove.rely = rely;
+
+    event_notify(EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
+
+}
+
 void event_notifymousepress(unsigned int button)
 {
 
@@ -70,18 +85,6 @@ void event_notifymouserelease(unsigned int button)
     mouserelease.button = button;
 
     event_notify(EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
-
-}
-
-void event_notifymousemove(char relx, char rely)
-{
-
-    struct event_mousemove mousemove;
-
-    mousemove.relx = relx;
-    mousemove.rely = rely;
-
-    event_notify(EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
 
 }
 
