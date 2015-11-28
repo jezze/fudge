@@ -38,14 +38,10 @@ static unsigned int jiffies;
 static void handleirq(unsigned int irq)
 {
 
-    jiffies += 1;
-
-    if (jiffies < 1000)
-        return;
+    jiffies++;
 
     timer_notify(&timerinterface, 4, &jiffies);
-
-    jiffies = 0;
+    timer_notifytick(&timerinterface, jiffies);
 
 }
 
@@ -53,7 +49,7 @@ static void driver_init(void)
 {
 
     jiffies = 0;
-    divisor = 1000;
+    divisor = FREQUENCY / 60;
 
     timer_initinterface(&timerinterface);
 

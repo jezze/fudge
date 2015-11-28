@@ -1,4 +1,4 @@
-#define EVENTS                          16
+#define EVENTS                          17
 #define EVENT_KEYPRESS                  0x01
 #define EVENT_KEYRELEASE                0x02
 #define EVENT_MOUSEPRESS                0x03
@@ -9,6 +9,7 @@
 #define EVENT_WMRESIZE                  0x08
 #define EVENT_WMSHOW                    0x09
 #define EVENT_WMHIDE                    0x0A
+#define EVENT_TICK                      0x10
 
 struct event_header
 {
@@ -63,5 +64,12 @@ struct event_wmresize
     unsigned int y;
     unsigned int w;
     unsigned int h;
+
+};
+
+struct event_tick
+{
+
+    unsigned int counter;
 
 };
