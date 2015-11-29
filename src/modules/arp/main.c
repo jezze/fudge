@@ -71,7 +71,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 
     }
 
-    ethernetprotocol.data.write(&ethernetprotocol.data, 0, count, buffer);
+    system_multicast(&ethernetprotocol.data, count, buffer);
 
 }
 
