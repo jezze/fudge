@@ -99,6 +99,28 @@ void event_notifytick(unsigned int counter)
 
 }
 
+static unsigned int poll_open(struct system_node *self)
+{
+
+    struct task *task = task_findactive();
+
+    list_add(&self->mailboxes, &task->blockitem);
+
+    return (unsigned int)self;
+
+}
+
+static unsigned int poll_close(struct system_node *self)
+{
+
+    struct task *task = task_findactive();
+
+    list_remove(&self->mailboxes, &task->blockitem);
+
+    return (unsigned int)self;
+
+}
+
 static unsigned int poll_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -123,6 +145,8 @@ void module_init(void)
 
     system_initnode(&poll, SYSTEM_NODETYPE_MAILBOX, "poll");
 
+    poll.open = poll_open;
+    poll.close = poll_close;
     poll.write = poll_write;
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");

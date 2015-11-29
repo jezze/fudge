@@ -5,28 +5,6 @@
 static struct vfs_backend backend;
 static struct vfs_protocol protocol;
 
-static unsigned int node_openmailboxes(struct system_node *self)
-{
-
-    struct task *task = task_findactive();
-
-    list_add(&self->mailboxes, &task->blockitem);
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int node_closemailboxes(struct system_node *self)
-{
-
-    struct task *task = task_findactive();
-
-    list_remove(&self->mailboxes, &task->blockitem);
-
-    return (unsigned int)self;
-
-}
-
 static unsigned int node_readgroup(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -63,7 +41,12 @@ static unsigned int node_readmailboxes(struct system_node *self, unsigned int of
     count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
     if (!count)
+    {
+
+        list_add(&self->mailboxes, &task->blockitem);
         task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    }
 
     return count;
 
@@ -152,6 +135,7 @@ void system_multicast(struct system_node *node, unsigned int count, void *buffer
 
         struct task *task = current->data;
 
+        list_remove(&node->mailboxes, &task->blockitem);
         task_setstatus(task, TASK_STATUS_UNBLOCKED);
         buffer_wcfifo(&task->mailbox.buffer, count, buffer);
 
@@ -210,8 +194,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type & SYSTEM_NODETYPE_MAILBOX)
     {
 
-        node->open = node_openmailboxes;
-        node->close = node_closemailboxes;
         node->read = node_readmailboxes;
 
     }
