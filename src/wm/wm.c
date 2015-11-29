@@ -36,7 +36,6 @@ static struct view *viewfocus;
 static unsigned int keymod;
 static unsigned int quit;
 static struct box size;
-static struct box menu;
 static struct box body;
 static struct list remotelist;
 static unsigned char databuffer[FUDGE_BSIZE];
@@ -163,7 +162,7 @@ static void hideremotes(unsigned int source, struct list *remotes)
 
 }
 
-static void arrangeview(struct view *view, struct box *body)
+static void arrangeview(struct view *view)
 {
 
     struct list_item *current = view->remotes.tail;
@@ -180,17 +179,17 @@ static void arrangeview(struct view *view, struct box *body)
     case 1:
         remote = current->data;
 
-        box_setsize(&remote->window.size, body->x, body->y, body->w, body->h);
+        box_setsize(&remote->window.size, body.x, body.y, body.w, body.h);
         send_wmresize(CALL_L0, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
         break;
 
     default:
-        y = body->y;
-        h = body->h / (view->remotes.count - 1);
+        y = body.y;
+        h = body.h / (view->remotes.count - 1);
         remote = current->data;
 
-        box_setsize(&remote->window.size, body->x, body->y, view->center, body->h);
+        box_setsize(&remote->window.size, body.x, body.y, view->center, body.h);
         send_wmresize(CALL_L0, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
         for (current = view->remotes.tail->prev; current; current = current->prev)
@@ -198,7 +197,7 @@ static void arrangeview(struct view *view, struct box *body)
 
             remote = current->data;
 
-            box_setsize(&remote->window.size, body->x + view->center, y, body->w - view->center, h);
+            box_setsize(&remote->window.size, body.x + view->center, y, body.w - view->center, h);
             send_wmresize(CALL_L0, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
             y += h;
@@ -306,8 +305,8 @@ static void onkeypress(struct event_header *header, void *data)
             if (viewfocus->remotefocus)
                 activateremote(viewfocus->remotefocus);
 
-            arrangeview(viewfocus, &body);
-            arrangeview(nextview, &body);
+            arrangeview(viewfocus);
+            arrangeview(nextview);
 
             if (nextview->remotefocus)
                 deactivateremote(nextview->remotefocus);
@@ -339,7 +338,7 @@ static void onkeypress(struct event_header *header, void *data)
         if (viewfocus->remotefocus)
             activateremote(viewfocus->remotefocus);
 
-        arrangeview(viewfocus, &body);
+        arrangeview(viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
 
         break;
@@ -360,18 +359,18 @@ static void onkeypress(struct event_header *header, void *data)
             break;
 
         list_move(&viewfocus->remotes, &viewfocus->remotefocus->item);
-        arrangeview(viewfocus, &body);
+        arrangeview(viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
 
         break;
 
     case 0x23:
-        if (viewfocus->center <= 1 * (size.w / 8))
+        if (viewfocus->center <= 1 * (body.w / 8))
             break;
 
         viewfocus->center -= (body.w / 32);
 
-        arrangeview(viewfocus, &body);
+        arrangeview(viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
 
         break;
@@ -415,12 +414,12 @@ static void onkeypress(struct event_header *header, void *data)
         break;
 
     case 0x26:
-        if (viewfocus->center >= 7 * (size.w / 8))
+        if (viewfocus->center >= 7 * (body.w / 8))
             break;
 
         viewfocus->center += (body.w / 32);
 
-        arrangeview(viewfocus, &body);
+        arrangeview(viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
 
         break;
@@ -576,7 +575,7 @@ static void onwmmap(struct event_header *header, void *data)
 
         list_move(&viewfocus->remotes, &viewfocus->remotefocus->item);
         activateremote(viewfocus->remotefocus);
-        arrangeview(viewfocus, &body);
+        arrangeview(viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
 
     }
@@ -614,8 +613,7 @@ static void onwmresize(struct event_header *header, void *data)
     unsigned int i;
 
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_setsize(&menu, size.x, size.y, size.w, 32);
-    box_setsize(&body, size.x, size.y + menu.h, size.w, size.h - menu.h);
+    box_setsize(&body, size.x, size.y + 32, size.w, size.h - 32);
     box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
     for (i = 0; i < VIEWS; i++)
@@ -623,9 +621,9 @@ static void onwmresize(struct event_header *header, void *data)
 
         views[i].center = body.w / 2;
 
-        box_setsize(&views[i].panel.size, menu.x + i * menu.w / VIEWS, menu.y, menu.w / VIEWS, menu.h);
+        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, 32);
         box_setsize(&views[i].number.size, views[i].panel.size.x + 12, views[i].panel.size.y + 6, views[i].panel.size.w - 24, views[i].panel.size.h - 12);
-        arrangeview(&views[i], &body);
+        arrangeview(&views[i]);
 
     }
 
