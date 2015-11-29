@@ -121,6 +121,20 @@ static unsigned int poll_close(struct system_node *self)
 
 }
 
+static unsigned int poll_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct task *task = task_findactive();
+
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+
+    if (!count)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    return count;
+
+}
+
 static unsigned int poll_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
@@ -143,10 +157,11 @@ static unsigned int poll_write(struct system_node *self, unsigned int offset, un
 void module_init(void)
 {
 
-    system_initnode(&poll, SYSTEM_NODETYPE_MAILBOX, "poll");
+    system_initnode(&poll, SYSTEM_NODETYPE_NORMAL, "poll");
 
     poll.open = poll_open;
     poll.close = poll_close;
+    poll.read = poll_read;
     poll.write = poll_write;
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
