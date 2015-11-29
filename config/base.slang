@@ -26,4 +26,3 @@
 /bin/elfload < /mod/pipe.ko.6
 /bin/elfload < /mod/pipe.ko.7
 /bin/elfload < /mod/mtwist.ko
-/bin/elfload < /mod/window.ko.0
