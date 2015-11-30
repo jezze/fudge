@@ -1,5 +1,5 @@
 #define TASK_DESCRIPTORS                32
-#define TASK_MAILBOXSIZE                4096
+#define TASK_MAILBOXSIZE                256
 #define TASK_STATUS_INACTIVE            0
 #define TASK_STATUS_ACTIVE              1
 #define TASK_STATUS_UNBLOCKED           2
