@@ -15,16 +15,16 @@ static void event_notify(unsigned int type, unsigned int count, void *buffer)
     {
 
         struct event_header header;
-        struct task *destination = current->data;
+        struct task_mailbox *mailbox = current->data;
 
-        header.destination = (unsigned int)destination;
+        header.destination = (unsigned int)mailbox->task;
         header.source = 0;
         header.type = type;
         header.count = count;
 
-        task_setstatus(destination, TASK_STATUS_UNBLOCKED);
-        buffer_wcfifo(&destination->mailbox.buffer, sizeof (struct event_header), &header);
-        buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
+        task_setstatus(mailbox->task, TASK_STATUS_UNBLOCKED);
+        buffer_wcfifo(&mailbox->buffer, sizeof (struct event_header), &header);
+        buffer_wcfifo(&mailbox->buffer, count, buffer);
 
         break;
 
@@ -104,7 +104,7 @@ static unsigned int poll_open(struct system_node *self)
 
     struct task *task = task_findactive();
 
-    list_add(&self->mailboxes, &task->blockitem);
+    list_add(&self->mailboxes, &task->mailbox.item);
 
     return (unsigned int)self;
 
@@ -115,7 +115,7 @@ static unsigned int poll_close(struct system_node *self)
 
     struct task *task = task_findactive();
 
-    list_remove(&self->mailboxes, &task->blockitem);
+    list_remove(&self->mailboxes, &task->mailbox.item);
 
     return (unsigned int)self;
 
@@ -144,7 +144,13 @@ static unsigned int poll_write(struct system_node *self, unsigned int offset, un
     header->source = (unsigned int)task_findactive();
 
     if (!header->destination)
-        header->destination = (unsigned int)poll.mailboxes.head->data;
+    {
+
+        struct task_mailbox *mailbox = poll.mailboxes.head->data;
+
+        header->destination = (unsigned int)mailbox->task;
+
+    }
 
     destination = (struct task *)header->destination;
 

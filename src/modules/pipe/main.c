@@ -14,10 +14,10 @@ static void wakeup(struct list *list)
     for (current = list->head; current; current = current->next)
     {
 
-        struct task *task = current->data;
+        struct task_mailbox *mailbox = current->data;
 
-        list_remove(list, &task->blockitem);
-        task_setstatus(task, TASK_STATUS_UNBLOCKED);
+        list_remove(list, current);
+        task_setstatus(mailbox->task, TASK_STATUS_UNBLOCKED);
 
     }
 
@@ -33,7 +33,7 @@ static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, u
     if (!count && endtarget->node.refcount)
     {
 
-        list_add(&endself->readlist, &task->blockitem);
+        list_add(&endself->readlist, &task->mailbox.item);
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
     }
@@ -54,7 +54,7 @@ static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, 
     if (!count)
     {
 
-        list_add(&endself->writelist, &task->blockitem);
+        list_add(&endself->writelist, &task->mailbox.item);
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
     }

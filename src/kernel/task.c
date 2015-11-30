@@ -137,6 +137,16 @@ void task_unregister(struct task *task)
 
 }
 
+void task_initmailbox(struct task_mailbox *mailbox, struct task *task)
+{
+
+    list_inititem(&mailbox->item, mailbox);
+    buffer_init(&mailbox->buffer, TASK_MAILBOXSIZE, mailbox->data);
+
+    mailbox->task = task;
+
+}
+
 void task_init(struct task *task)
 {
 
@@ -144,8 +154,7 @@ void task_init(struct task *task)
 
     resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
-    list_inititem(&task->blockitem, task);
-    buffer_init(&task->mailbox.buffer, TASK_MAILBOXSIZE, task->mailbox.data);
+    task_initmailbox(&task->mailbox, task);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
         vfs_initdescriptor(&task->descriptors[i]);

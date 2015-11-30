@@ -43,7 +43,7 @@ static unsigned int node_readmailboxes(struct system_node *self, unsigned int of
     if (!count)
     {
 
-        list_add(&self->mailboxes, &task->blockitem);
+        list_add(&self->mailboxes, &task->mailbox.item);
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
     }
@@ -133,11 +133,11 @@ void system_multicast(struct system_node *node, unsigned int count, void *buffer
     for (current = node->mailboxes.head; current; current = current->next)
     {
 
-        struct task *task = current->data;
+        struct task_mailbox *mailbox = current->data;
 
-        list_remove(&node->mailboxes, &task->blockitem);
-        task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+        list_remove(&node->mailboxes, current);
+        task_setstatus(mailbox->task, TASK_STATUS_UNBLOCKED);
+        buffer_wcfifo(&mailbox->buffer, count, buffer);
 
     }
 

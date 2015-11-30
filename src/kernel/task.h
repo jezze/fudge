@@ -17,6 +17,8 @@ struct task_state
 struct task_mailbox
 {
 
+    struct task *task;
+    struct list_item item;
     struct buffer buffer;
     unsigned char data[TASK_MAILBOXSIZE];
 
@@ -27,7 +29,6 @@ struct task
 
     struct resource resource;
     struct task_state state;
-    struct list_item blockitem;
     struct task_mailbox mailbox;
     struct binary_format *format;
     struct vfs_descriptor descriptors[TASK_DESCRIPTORS];
@@ -42,4 +43,5 @@ void task_copydescriptors(struct task *source, struct task *target);
 unsigned int task_initbinary(struct task *task, unsigned int sp);
 void task_register(struct task *task);
 void task_unregister(struct task *task);
+void task_initmailbox(struct task_mailbox *mailbox, struct task *task);
 void task_init(struct task *task);
