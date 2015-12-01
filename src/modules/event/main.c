@@ -22,6 +22,9 @@ static void event_notify(unsigned int type, unsigned int count, void *buffer)
         header.type = type;
         header.count = count;
 
+        if (mailbox->buffer.capacity - mailbox->buffer.count < count)
+            break;
+
         task_setstatus(mailbox->task, TASK_STATUS_UNBLOCKED);
         buffer_wcfifo(&mailbox->buffer, sizeof (struct event_header), &header);
         buffer_wcfifo(&mailbox->buffer, count, buffer);
