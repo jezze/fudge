@@ -86,10 +86,3 @@ void vfs_initmount(struct vfs_mount *mount)
 
 }
 
-void vfs_initdescriptor(struct vfs_descriptor *descriptor)
-{
-
-    resource_init(&descriptor->resource, RESOURCE_VFSDESCRIPTOR, descriptor);
-
-}
-

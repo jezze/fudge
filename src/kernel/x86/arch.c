@@ -262,7 +262,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (current.task)
     {
 
-        struct vfs_descriptor *descriptor = &current.task->descriptors[0];
+        struct task_descriptor *descriptor = &current.task->descriptors[0];
 
         address = current.task->format->findbase(descriptor->channel, descriptor->id, address);
 

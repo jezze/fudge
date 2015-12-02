@@ -11,8 +11,8 @@ unsigned int kernel_setupramdisk(struct container *container, struct task *task,
 
     struct vfs_channel *channel = &container->channels[0x00];
     struct vfs_mount *mount = &container->mounts[0x00];
-    struct vfs_descriptor *init = &task->descriptors[0x08];
-    struct vfs_descriptor *root = &task->descriptors[0x09];
+    struct task_descriptor *init = &task->descriptors[0x08];
+    struct task_descriptor *root = &task->descriptors[0x09];
 
     channel->backend = backend;
     channel->protocol = vfs_findprotocol(channel->backend);

@@ -5,12 +5,13 @@
 #define TASK_STATUS_UNBLOCKED           2
 #define TASK_STATUS_BLOCKED             3
 
-struct task_state
+struct task_descriptor
 {
 
-    struct list_item item;
-    struct {unsigned long ip; unsigned long sp;} registers;
-    unsigned int status;
+    struct resource resource;
+    struct vfs_channel *channel;
+    unsigned int id;
+    unsigned int offset;
 
 };
 
@@ -24,14 +25,23 @@ struct task_mailbox
 
 };
 
+struct task_state
+{
+
+    struct list_item item;
+    struct {unsigned long ip; unsigned long sp;} registers;
+    unsigned int status;
+
+};
+
 struct task
 {
 
     struct resource resource;
     struct task_state state;
     struct task_mailbox mailbox;
+    struct task_descriptor descriptors[TASK_DESCRIPTORS];
     struct binary_format *format;
-    struct vfs_descriptor descriptors[TASK_DESCRIPTORS];
 
 };
 
@@ -43,5 +53,6 @@ void task_copydescriptors(struct task *source, struct task *target);
 unsigned int task_initbinary(struct task *task, unsigned int sp);
 void task_register(struct task *task);
 void task_unregister(struct task *task);
+void task_initdescriptor(struct task_descriptor *descriptor);
 void task_initmailbox(struct task_mailbox *mailbox, struct task *task);
 void task_init(struct task *task);

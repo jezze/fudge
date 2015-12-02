@@ -106,7 +106,7 @@ void task_copydescriptors(struct task *source, struct task *target)
 unsigned int task_initbinary(struct task *task, unsigned int sp)
 {
 
-    struct vfs_descriptor *descriptor = &task->descriptors[0];
+    struct task_descriptor *descriptor = &task->descriptors[0];
 
     if (!descriptor->id || !descriptor->channel)
         return 0;
@@ -137,6 +137,13 @@ void task_unregister(struct task *task)
 
 }
 
+void task_initdescriptor(struct task_descriptor *descriptor)
+{
+
+    resource_init(&descriptor->resource, RESOURCE_TASKDESCRIPTOR, descriptor);
+
+}
+
 void task_initmailbox(struct task_mailbox *mailbox, struct task *task)
 {
 
@@ -157,7 +164,7 @@ void task_init(struct task *task)
     task_initmailbox(&task->mailbox, task);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
-        vfs_initdescriptor(&task->descriptors[i]);
+        task_initdescriptor(&task->descriptors[i]);
 
 }
 
