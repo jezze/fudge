@@ -17,7 +17,7 @@ static void event_notify(unsigned int type, unsigned int count, void *buffer)
         struct event_header header;
         struct task_mailbox *mailbox = current->data;
 
-        header.destination = (unsigned int)mailbox->task;
+        header.destination = (unsigned int)mailbox;
         header.source = 0;
         header.type = type;
         header.count = count;
@@ -105,9 +105,9 @@ void event_notifytick(unsigned int counter)
 static unsigned int poll_open(struct system_node *self)
 {
 
-    struct task *task = task_findactive();
+    struct task_mailbox *mailbox = task_findactivemailbox();
 
-    list_add(&self->mailboxes, &task->mailbox.item);
+    list_add(&self->mailboxes, &mailbox->item);
 
     return (unsigned int)self;
 
@@ -116,9 +116,9 @@ static unsigned int poll_open(struct system_node *self)
 static unsigned int poll_close(struct system_node *self)
 {
 
-    struct task *task = task_findactive();
+    struct task_mailbox *mailbox = task_findactivemailbox();
 
-    list_remove(&self->mailboxes, &task->mailbox.item);
+    list_remove(&self->mailboxes, &mailbox->item);
 
     return (unsigned int)self;
 
@@ -127,12 +127,12 @@ static unsigned int poll_close(struct system_node *self)
 static unsigned int poll_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct task *task = task_findactive();
+    struct task_mailbox *mailbox = task_findactivemailbox();
 
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+    count = buffer_rcfifo(&mailbox->buffer, count, buffer);
 
     if (!count)
-        task_setstatus(task, TASK_STATUS_BLOCKED);
+        task_setstatus(mailbox->task, TASK_STATUS_BLOCKED);
 
     return count;
 
@@ -142,24 +142,25 @@ static unsigned int poll_write(struct system_node *self, unsigned int offset, un
 {
 
     struct event_header *header = buffer;
-    struct task *destination;
+    struct task_mailbox *source = task_findactivemailbox();
+    struct task_mailbox *destination;
 
-    header->source = (unsigned int)task_findactive();
+    header->source = (unsigned int)source;
 
     if (!header->destination)
     {
 
         struct task_mailbox *mailbox = poll.mailboxes.head->data;
 
-        header->destination = (unsigned int)mailbox->task;
+        header->destination = (unsigned int)mailbox;
 
     }
 
-    destination = (struct task *)header->destination;
+    destination = (struct task_mailbox *)header->destination;
 
-    task_setstatus(destination, TASK_STATUS_UNBLOCKED);
+    task_setstatus(destination->task, TASK_STATUS_UNBLOCKED);
 
-    return buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
+    return buffer_wcfifo(&destination->buffer, count, buffer);
 
 }
 

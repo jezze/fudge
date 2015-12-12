@@ -36,15 +36,15 @@ static unsigned int node_readgroup(struct system_node *self, unsigned int offset
 static unsigned int node_readmailboxes(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct task *task = task_findactive();
+    struct task_mailbox *mailbox = task_findactivemailbox();
 
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+    count = buffer_rcfifo(&mailbox->buffer, count, buffer);
 
     if (!count)
     {
 
-        list_add(&self->mailboxes, &task->mailbox.item);
-        task_setstatus(task, TASK_STATUS_BLOCKED);
+        list_add(&self->mailboxes, &mailbox->item);
+        task_setstatus(mailbox->task, TASK_STATUS_BLOCKED);
 
     }
 

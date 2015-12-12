@@ -18,7 +18,7 @@ static unsigned int interfacedata_read(struct system_node *self, unsigned int of
 {
 
     struct block_interface *interface = self->resource->data;
-    struct task *task = task_findactive();
+    struct task_mailbox *mailbox = task_findactivemailbox();
 
     if (offset > 512)
         return 0;
@@ -31,10 +31,10 @@ static unsigned int interfacedata_read(struct system_node *self, unsigned int of
 
     }
 
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+    count = buffer_rcfifo(&mailbox->buffer, count, buffer);
 
     if (!count)
-        task_setstatus(task, TASK_STATUS_BLOCKED);
+        task_setstatus(mailbox->task, TASK_STATUS_BLOCKED);
 
     return count;
 

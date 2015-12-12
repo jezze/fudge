@@ -26,15 +26,15 @@ static void wakeup(struct list *list)
 static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, unsigned int count, void *buffer)
 {
 
-    struct task *task = task_findactive();
+    struct task_mailbox *mailbox = task_findactivemailbox();
 
     count = buffer_rcfifo(&endself->buffer, count, buffer);
 
     if (!count && endtarget->node.refcount)
     {
 
-        list_add(&endself->readlist, &task->mailbox.item);
-        task_setstatus(task, TASK_STATUS_BLOCKED);
+        list_add(&endself->readlist, &mailbox->item);
+        task_setstatus(mailbox->task, TASK_STATUS_BLOCKED);
 
     }
 
@@ -47,15 +47,15 @@ static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, u
 static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, unsigned int count, void *buffer)
 {
 
-    struct task *task = task_findactive();
+    struct task_mailbox *mailbox = task_findactivemailbox();
 
     count = buffer_wcfifo(&endtarget->buffer, count, buffer);
 
     if (!count)
     {
 
-        list_add(&endself->writelist, &task->mailbox.item);
-        task_setstatus(task, TASK_STATUS_BLOCKED);
+        list_add(&endself->writelist, &mailbox->item);
+        task_setstatus(mailbox->task, TASK_STATUS_BLOCKED);
 
     }
 

@@ -15,6 +15,18 @@ struct task *task_findactive(void)
 
 }
 
+struct task_mailbox *task_findactivemailbox(void)
+{
+
+    struct task *task = task_findactive();
+
+    if (task)
+        return &task->mailbox;
+
+    return 0;
+
+}
+
 struct task *task_findinactive(void)
 {
 

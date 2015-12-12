@@ -46,6 +46,7 @@ struct task
 };
 
 struct task *task_findactive(void);
+struct task_mailbox *task_findactivemailbox(void);
 struct task *task_findinactive(void);
 void task_setstatus(struct task *task, unsigned int state);
 void task_resume(struct task *task, unsigned int ip, unsigned int sp);
