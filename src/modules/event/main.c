@@ -148,13 +148,7 @@ static unsigned int poll_write(struct system_node *self, unsigned int offset, un
     header->source = (unsigned int)source;
 
     if (!header->destination)
-    {
-
-        struct task_mailbox *mailbox = poll.mailboxes.head->data;
-
-        header->destination = (unsigned int)mailbox;
-
-    }
+        header->destination = (unsigned int)poll.mailboxes.head->data;
 
     destination = (struct task_mailbox *)header->destination;
 
