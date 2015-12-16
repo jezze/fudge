@@ -5,13 +5,6 @@ unsigned int call_auth(unsigned int channel, unsigned int backend)
 
 }
 
-unsigned int call_bind(unsigned int mount, unsigned int pindex, unsigned int cindex)
-{
-
-    return 0;
-
-}
-
 unsigned int call_close(unsigned int index)
 {
 

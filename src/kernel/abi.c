@@ -9,13 +9,6 @@
 
 static unsigned int (*calls[CALLS])(struct container *container, struct task *task, void *stack);
 
-static struct vfs_channel *getchannel(struct container *container, unsigned int channel)
-{
-
-    return &container->channels[channel & (CONTAINER_CHANNELS - 1)];
-
-}
-
 static struct vfs_mount *getmount(struct container *container, unsigned int mount)
 {
 
@@ -27,26 +20,6 @@ static struct task_descriptor *getdescriptor(struct task *task, unsigned int des
 {
 
     return &task->descriptors[descriptor & (TASK_DESCRIPTORS - 1)];
-
-}
-
-static unsigned int auth(struct container *container, struct task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int channel; unsigned int backend;} *args = stack;
-    struct vfs_channel *channel = getchannel(container, args->channel);
-
-    channel->backend = vfs_findbackend(args->backend);
-
-    if (!channel->backend)
-        return 0;
-
-    channel->protocol = vfs_findprotocol(channel->backend);
-
-    if (!channel->protocol)
-        return 0;
-
-    return 1;
 
 }
 
@@ -243,27 +216,36 @@ static unsigned int seekwrite(struct container *container, struct task *task, vo
 
 }
 
-static unsigned int mount(struct container *container, struct task *task, void *stack)
+static unsigned int auth(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int channel; unsigned int mount; unsigned int descriptor;} *args = stack;
-    struct vfs_channel *channel = getchannel(container, args->channel);
-    struct vfs_mount *mount = getmount(container, args->mount);
-    struct task_descriptor *pdescriptor = getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int descriptor; unsigned int channel; unsigned int backend;} *args = stack;
+    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!channel->backend || !channel->protocol || !pdescriptor->id || !pdescriptor->channel)
+    if (!descriptor)
         return 0;
 
-    mount->parent.channel = pdescriptor->channel;
-    mount->parent.id = pdescriptor->id;
-    mount->child.channel = channel;
-    mount->child.id = channel->protocol->root(channel->backend);
+    descriptor->channel = &container->channels[args->channel];
+    descriptor->channel->backend = vfs_findbackend(args->backend);
 
-    return 1;
+    if (!descriptor->channel->backend)
+        return 0;
+
+    descriptor->channel->protocol = vfs_findprotocol(descriptor->channel->backend);
+
+    if (!descriptor->channel->protocol)
+        return 0;
+
+    descriptor->id = descriptor->channel->protocol->root(descriptor->channel->backend);
+
+    if (!descriptor->id)
+        return 0;
+
+    return args->channel;
 
 }
 
-static unsigned int bind(struct container *container, struct task *task, void *stack)
+static unsigned int mount(struct container *container, struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int mount; unsigned int pdescriptor; unsigned int cdescriptor;} *args = stack;
@@ -271,7 +253,7 @@ static unsigned int bind(struct container *container, struct task *task, void *s
     struct task_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
     struct task_descriptor *cdescriptor = getdescriptor(task, args->cdescriptor);
 
-    if (!pdescriptor->id || !pdescriptor->channel || !cdescriptor->id || !cdescriptor->channel)
+    if (!cdescriptor->id || !cdescriptor->channel || !pdescriptor->id || !pdescriptor->channel)
         return 0;
 
     mount->parent.channel = pdescriptor->channel;
@@ -382,7 +364,6 @@ unsigned int abi_call(unsigned int index, struct container *container, struct ta
 void abi_setup(unsigned int (*spawn)(struct container *container, struct task *task, void *stack), unsigned int (*despawn)(struct container *container, struct task *task, void *stack))
 {
 
-    calls[0x00] = auth;
     calls[0x01] = walk;
     calls[0x02] = create;
     calls[0x03] = destroy;
@@ -390,8 +371,8 @@ void abi_setup(unsigned int (*spawn)(struct container *container, struct task *t
     calls[0x05] = close;
     calls[0x06] = read;
     calls[0x07] = write;
-    calls[0x08] = mount;
-    calls[0x09] = bind;
+    calls[0x08] = auth;
+    calls[0x09] = mount;
     calls[0x0A] = load;
     calls[0x0B] = unload;
     calls[0x0C] = spawn;

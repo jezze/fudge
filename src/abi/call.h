@@ -25,14 +25,13 @@
 #define CALL_LE                         0x1E
 #define CALL_LF                         0x1F
 
-unsigned int call_auth(unsigned int channel, unsigned int backend);
-unsigned int call_bind(unsigned int mount, unsigned int pdescriptor, unsigned int cdescriptor);
+unsigned int call_auth(unsigned int descriptor, unsigned int channel, unsigned int backend);
 unsigned int call_close(unsigned int descriptor);
 unsigned int call_create(unsigned int pdescriptor, unsigned int count, char *name);
 unsigned int call_destroy(unsigned int pdescriptor, unsigned int count, char *name);
 unsigned int call_despawn(void);
 unsigned int call_load(unsigned int descriptor);
-unsigned int call_mount(unsigned int channel, unsigned int mount, unsigned int descriptor);
+unsigned int call_mount(unsigned int mount, unsigned int pdescriptor, unsigned int cdescriptor);
 unsigned int call_open(unsigned int descriptor);
 unsigned int call_read(unsigned int descriptor, void *buffer, unsigned int count);
 unsigned int call_scan(unsigned int descriptor, unsigned int index);

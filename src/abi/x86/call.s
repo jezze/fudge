@@ -1,7 +1,6 @@
 .code32
 
 .set CALL_INTERRUPT,                    0x80
-.set CALL_INDEX_AUTH,                   0x00
 .set CALL_INDEX_WALK,                   0x01
 .set CALL_INDEX_CREATE,                 0x02
 .set CALL_INDEX_DESTROY,                0x03
@@ -9,8 +8,8 @@
 .set CALL_INDEX_CLOSE,                  0x05
 .set CALL_INDEX_READ,                   0x06
 .set CALL_INDEX_WRITE,                  0x07
-.set CALL_INDEX_MOUNT,                  0x08
-.set CALL_INDEX_BIND,                   0x09
+.set CALL_INDEX_AUTH,                   0x08
+.set CALL_INDEX_MOUNT,                  0x09
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
 .set CALL_INDEX_SPAWN,                  0x0C
@@ -23,12 +22,6 @@
 .global call_auth
 call_auth:
     movl $CALL_INDEX_AUTH, %eax
-    int $CALL_INTERRUPT
-    ret
-
-.global call_bind
-call_bind:
-    movl $CALL_INDEX_BIND, %eax
     int $CALL_INTERRUPT
     ret
 

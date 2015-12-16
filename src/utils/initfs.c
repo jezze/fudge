@@ -62,8 +62,8 @@ void main(void)
             continue;
 
         call_open(CALL_L0);
-        call_auth(channel, backend);
-        call_mount(channel, mount, CALL_L0);
+        call_auth(CALL_L1, channel, backend);
+        call_mount(mount, CALL_L0, CALL_L1);
         call_close(CALL_L0);
 
     }
