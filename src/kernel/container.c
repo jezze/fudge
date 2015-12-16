@@ -14,7 +14,10 @@ void container_init(struct container *container)
         vfs_initchannel(&container->channels[i]);
 
     for (i = 0; i < CONTAINER_MOUNTS; i++)
-        vfs_initmount(&container->mounts[i]);
+        resource_init(&container->mounts[i].resource, RESOURCE_CONTAINERMOUNT, &container->mounts[i]);
+
+    for (i = 0; i < CONTAINER_DESCRIPTORS; i++)
+        resource_init(&container->descriptors[i].resource, RESOURCE_CONTAINERDESCRIPTOR, &container->descriptors[i]);
 
 }
 

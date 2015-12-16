@@ -6,13 +6,60 @@
 #include "container.h"
 #include "kernel.h"
 
+void kernel_copydescriptors(struct container *container, struct task *source, struct task *target)
+{
+
+    unsigned int sid = source->id * TASK_DESCRIPTORS;
+    unsigned int tid = target->id * TASK_DESCRIPTORS;
+    unsigned int i;
+
+    for (i = 0x00; i < 0x08; i++)
+    {
+
+        container->descriptors[tid + i + 0x00].channel = container->descriptors[sid + i + 0x08].channel;
+        container->descriptors[tid + i + 0x00].id = container->descriptors[sid + i + 0x08].id;
+        container->descriptors[tid + i + 0x00].offset = 0;
+        container->descriptors[tid + i + 0x08].channel = container->descriptors[sid + i + 0x08].channel;
+        container->descriptors[tid + i + 0x08].id = container->descriptors[sid + i + 0x08].id;
+        container->descriptors[tid + i + 0x08].offset = 0;
+        container->descriptors[tid + i + 0x10].channel = 0;
+        container->descriptors[tid + i + 0x10].id = 0;
+        container->descriptors[tid + i + 0x10].offset = 0;
+        container->descriptors[tid + i + 0x18].channel = 0;
+        container->descriptors[tid + i + 0x18].id = 0;
+        container->descriptors[tid + i + 0x18].offset = 0;
+
+    }
+
+}
+
+unsigned int kernel_setupbinary(struct container *container, struct task *task, unsigned int sp)
+{
+
+    struct container_descriptor *descriptor = &container->descriptors[task->id * TASK_DESCRIPTORS];
+
+    if (!descriptor->id || !descriptor->channel)
+        return 0;
+
+    task->format = binary_findformat(descriptor->channel, descriptor->id);
+
+    if (!task->format)
+        return 0;
+
+    task->state.registers.ip = task->format->findentry(descriptor->channel, descriptor->id);
+    task->state.registers.sp = sp;
+
+    return task->state.registers.ip;
+
+}
+
 unsigned int kernel_setupramdisk(struct container *container, struct task *task, struct vfs_backend *backend)
 {
 
     struct vfs_channel *channel = &container->channels[0x00];
-    struct vfs_mount *mount = &container->mounts[0x00];
-    struct task_descriptor *init = &task->descriptors[0x08];
-    struct task_descriptor *root = &task->descriptors[0x09];
+    struct container_mount *mount = &container->mounts[0x00];
+    struct container_descriptor *init = &container->descriptors[0x08];
+    struct container_descriptor *root = &container->descriptors[0x09];
 
     channel->backend = backend;
     channel->protocol = vfs_findprotocol(channel->backend);

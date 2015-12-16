@@ -8,7 +8,7 @@
 #include "isr.h"
 #include "mmu.h"
 
-#define CONTAINERS                      8
+#define CONTAINERS                      2
 #define TASKS                           64
 #define GDTDESCRIPTORS                  6
 #define IDTDESCRIPTORS                  256
@@ -158,9 +158,9 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!next)
         return 0;
 
-    task_copydescriptors(task, next);
+    kernel_copydescriptors(container, task, next);
 
-    if (!task_initbinary(next, TASKSTACK))
+    if (!kernel_setupbinary(container, next, TASKSTACK))
         return 1;
 
     task_setstatus(next, TASK_STATUS_ACTIVE);
@@ -262,7 +262,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (current.task)
     {
 
-        struct task_descriptor *descriptor = &current.task->descriptors[0];
+        struct container_descriptor *descriptor = &current.container->descriptors[current.task->id * 32];
 
         address = current.task->format->findbase(descriptor->channel, descriptor->id, address);
 
@@ -327,7 +327,7 @@ static struct task *setuptasks(void)
 
         struct arch_task *task = &tasks[index];
 
-        task_init(&task->base);
+        task_init(&task->base, index);
 
         task->code = PHYSBASE + index * (CODESIZE + STACKSIZE);
         task->stack = task->code + CODESIZE;
@@ -372,8 +372,8 @@ void arch_setup(struct vfs_backend *backend)
 
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainercode(current.container);
-    task_copydescriptors(current.task, current.task);
-    task_initbinary(current.task, TASKSTACK);
+    kernel_copydescriptors(current.container, current.task, current.task);
+    kernel_setupbinary(current.container, current.task, TASKSTACK);
     task_setstatus(current.task, TASK_STATUS_ACTIVE);
     maptaskcontainer(current.task, current.container);
     activate(current.task);

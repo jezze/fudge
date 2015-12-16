@@ -79,10 +79,3 @@ void vfs_initchannel(struct vfs_channel *channel)
 
 }
 
-void vfs_initmount(struct vfs_mount *mount)
-{
-
-    resource_init(&mount->resource, RESOURCE_VFSMOUNT, mount);
-
-}
-

@@ -9,17 +9,17 @@
 
 static unsigned int (*calls[CALLS])(struct container *container, struct task *task, void *stack);
 
-static struct vfs_mount *getmount(struct container *container, unsigned int mount)
+static struct container_mount *getmount(struct container *container, unsigned int mount)
 {
 
-    return &container->mounts[mount & (CONTAINER_MOUNTS - 1)];
+    return &container->mounts[mount];
 
 }
 
-static struct task_descriptor *getdescriptor(struct task *task, unsigned int descriptor)
+static struct container_descriptor *getdescriptor(struct container *container, struct task *task, unsigned int descriptor)
 {
 
-    return &task->descriptors[descriptor & (TASK_DESCRIPTORS - 1)];
+    return &container->descriptors[task->id * TASK_DESCRIPTORS + descriptor];
 
 }
 
@@ -27,8 +27,8 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; unsigned int count; char *path;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
-    struct task_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
+    struct container_descriptor *pdescriptor = getdescriptor(container, task, args->pdescriptor);
     unsigned int offset;
     unsigned int count;
 
@@ -50,7 +50,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
             for (i = 0; i < CONTAINER_MOUNTS; i++)
             {
 
-                struct vfs_mount *mount = &container->mounts[i];
+                struct container_mount *mount = &container->mounts[i];
 
                 if (descriptor->channel == mount->child.channel && descriptor->id == mount->child.id)
                 {
@@ -82,7 +82,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
             for (i = 0; i < CONTAINER_MOUNTS; i++)
             {
 
-                struct vfs_mount *mount = &container->mounts[i];
+                struct container_mount *mount = &container->mounts[i];
 
                 if (descriptor->channel == mount->parent.channel && descriptor->id == mount->parent.id)
                 {
@@ -108,7 +108,7 @@ static unsigned int create(struct container *container, struct task *task, void 
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int count; char *name;} *args = stack;
-    struct task_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
+    struct container_descriptor *pdescriptor = getdescriptor(container, task, args->pdescriptor);
 
     if (!pdescriptor->id || !pdescriptor->channel || !args->count)
         return 0;
@@ -121,7 +121,7 @@ static unsigned int destroy(struct container *container, struct task *task, void
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int count; char *name;} *args = stack;
-    struct task_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
+    struct container_descriptor *pdescriptor = getdescriptor(container, task, args->pdescriptor);
 
     if (!pdescriptor->id || !pdescriptor->channel || !args->count)
         return 0;
@@ -134,7 +134,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
 
     if (!descriptor->id || !descriptor->channel)
         return 0;
@@ -147,7 +147,7 @@ static unsigned int close(struct container *container, struct task *task, void *
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
 
     if (!descriptor->id || !descriptor->channel)
         return 0;
@@ -160,7 +160,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
     unsigned int count;
 
     if (!descriptor->id || !descriptor->channel || !args->count)
@@ -177,7 +177,7 @@ static unsigned int seekread(struct container *container, struct task *task, voi
 {
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
 
     if (!descriptor->id || !descriptor->channel || !args->count)
         return 0;
@@ -190,7 +190,7 @@ static unsigned int write(struct container *container, struct task *task, void *
 {
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
     unsigned int count;
 
     if (!descriptor->id || !descriptor->channel || !args->count)
@@ -207,7 +207,7 @@ static unsigned int seekwrite(struct container *container, struct task *task, vo
 {
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
 
     if (!descriptor->id || !descriptor->channel || !args->count)
         return 0;
@@ -220,7 +220,7 @@ static unsigned int auth(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int channel; unsigned int backend;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
 
     if (!descriptor)
         return 0;
@@ -249,9 +249,9 @@ static unsigned int mount(struct container *container, struct task *task, void *
 {
 
     struct {void *caller; unsigned int mount; unsigned int pdescriptor; unsigned int cdescriptor;} *args = stack;
-    struct vfs_mount *mount = getmount(container, args->mount);
-    struct task_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
-    struct task_descriptor *cdescriptor = getdescriptor(task, args->cdescriptor);
+    struct container_mount *mount = getmount(container, args->mount);
+    struct container_descriptor *pdescriptor = getdescriptor(container, task, args->pdescriptor);
+    struct container_descriptor *cdescriptor = getdescriptor(container, task, args->cdescriptor);
 
     if (!cdescriptor->id || !cdescriptor->channel || !pdescriptor->id || !pdescriptor->channel)
         return 0;
@@ -269,7 +269,7 @@ static unsigned int load(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
     struct binary_format *format;
     unsigned long physical;
     void (*module_init)(void);
@@ -307,7 +307,7 @@ static unsigned int unload(struct container *container, struct task *task, void 
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
     struct binary_format *format;
     void (*module_unregister)(void);
 
@@ -332,7 +332,7 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int offset;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
 
     if (!descriptor->id || !descriptor->channel)
         return 0;
@@ -345,7 +345,7 @@ static unsigned int scan(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int index;} *args = stack;
-    struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
 
     if (!descriptor->id || !descriptor->channel)
         return 0;
