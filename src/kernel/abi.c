@@ -9,13 +9,6 @@
 
 static unsigned int (*calls[CALLS])(struct container *container, struct task *task, void *stack);
 
-static struct task_descriptor *getdescriptor(struct task *task, unsigned int descriptor)
-{
-
-    return &task->descriptors[descriptor & (TASK_DESCRIPTORS - 1)];
-
-}
-
 static struct vfs_channel *getchannel(struct container *container, unsigned int channel)
 {
 
@@ -27,6 +20,13 @@ static struct vfs_mount *getmount(struct container *container, unsigned int moun
 {
 
     return &container->mounts[mount & (CONTAINER_MOUNTS - 1)];
+
+}
+
+static struct task_descriptor *getdescriptor(struct task *task, unsigned int descriptor)
+{
+
+    return &task->descriptors[descriptor & (TASK_DESCRIPTORS - 1)];
 
 }
 
@@ -246,9 +246,9 @@ static unsigned int seekwrite(struct container *container, struct task *task, vo
 static unsigned int mount(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int mount; unsigned int channel; unsigned int descriptor;} *args = stack;
-    struct vfs_mount *mount = getmount(container, args->mount);
+    struct {void *caller; unsigned int channel; unsigned int mount; unsigned int descriptor;} *args = stack;
     struct vfs_channel *channel = getchannel(container, args->channel);
+    struct vfs_mount *mount = getmount(container, args->mount);
     struct task_descriptor *pdescriptor = getdescriptor(task, args->descriptor);
 
     if (!channel->backend || !channel->protocol || !pdescriptor->id || !pdescriptor->channel)
