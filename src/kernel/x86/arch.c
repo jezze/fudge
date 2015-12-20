@@ -91,6 +91,16 @@ static struct
 
 } current;
 
+static void copymap(struct container *container, struct task *task)
+{
+
+    struct arch_task *atask = (struct arch_task *)task;
+    struct arch_container *acontainer = (struct arch_container *)container;
+
+    memory_copy(atask->directory, acontainer->directory, sizeof (struct mmu_directory));
+
+}
+
 static void mapcontainercode(struct container *container)
 {
 
@@ -100,16 +110,6 @@ static void mapcontainercode(struct container *container)
     mmu_map(acontainer->directory, &acontainer->table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(acontainer->directory, &acontainer->table[2], 0x00800000, 0x00800000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(acontainer->directory, &acontainer->table[3], 0x00C00000, 0x00C00000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-
-}
-
-static void maptaskcontainer(struct task *task, struct container *container)
-{
-
-    struct arch_task *atask = (struct arch_task *)task;
-    struct arch_container *acontainer = (struct arch_container *)container;
-
-    memory_copy(atask->directory, acontainer->directory, sizeof (struct mmu_directory));
 
 }
 
@@ -158,12 +158,11 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!next)
         return 0;
 
+    copymap(container, next);
     kernel_copydescriptors(container, task, next);
 
     if (!kernel_setupbinary(container, next, TASKSTACK))
         return 0;
-
-    maptaskcontainer(next, container);
 
     return 1;
 
@@ -373,9 +372,9 @@ void arch_setup(struct vfs_backend *backend)
 
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainercode(current.container);
+    copymap(current.container, current.task);
     kernel_copydescriptors(current.container, current.task, current.task);
     kernel_setupbinary(current.container, current.task, TASKSTACK);
-    maptaskcontainer(current.task, current.container);
     activate(current.task);
     mmu_setup();
     abi_setup(spawn, despawn);
