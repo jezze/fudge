@@ -163,7 +163,6 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!kernel_setupbinary(container, next, TASKSTACK))
         return 1;
 
-    task_setstatus(next, TASK_STATUS_ACTIVE);
     maptaskcontainer(next, container);
 
     return 1;
@@ -214,7 +213,8 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     if (current.task)
     {
 
-        task_resume(current.task, current.task->state.registers.ip - 7, current.task->state.registers.sp);
+        if (current.task->state.status == TASK_STATUS_UNBLOCKED)
+            task_resume(current.task, current.task->state.registers.ip - 7, current.task->state.registers.sp);
 
         interrupt->cs = selector.ucode;
         interrupt->ss = selector.ustack;
@@ -262,15 +262,16 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (current.task)
     {
 
-        struct container_descriptor *descriptor = &current.container->descriptors[current.task->id * 32];
+        struct container_descriptor *descriptor = &current.container->descriptors[current.task->id * TASK_DESCRIPTORS];
+        struct binary_format *format = binary_findformat(descriptor->channel, descriptor->id);
 
-        address = current.task->format->findbase(descriptor->channel, descriptor->id, address);
+        address = format->findbase(descriptor->channel, descriptor->id, address);
 
         if (address)
         {
 
             maptaskcode(current.task, address);
-            current.task->format->copyprogram(descriptor->channel, descriptor->id);
+            format->copyprogram(descriptor->channel, descriptor->id);
 
         }
 
@@ -374,7 +375,6 @@ void arch_setup(struct vfs_backend *backend)
     mapcontainercode(current.container);
     kernel_copydescriptors(current.container, current.task, current.task);
     kernel_setupbinary(current.container, current.task, TASKSTACK);
-    task_setstatus(current.task, TASK_STATUS_ACTIVE);
     maptaskcontainer(current.task, current.container);
     activate(current.task);
     mmu_setup();

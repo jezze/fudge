@@ -37,17 +37,17 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
 {
 
     struct container_descriptor *descriptor = &container->descriptors[task->id * TASK_DESCRIPTORS];
+    struct binary_format *format;
 
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    task->format = binary_findformat(descriptor->channel, descriptor->id);
+    format = binary_findformat(descriptor->channel, descriptor->id);
 
-    if (!task->format)
+    if (!format)
         return 0;
 
-    task->state.registers.ip = task->format->findentry(descriptor->channel, descriptor->id);
-    task->state.registers.sp = sp;
+    task_resume(task, format->findentry(descriptor->channel, descriptor->id), sp);
 
     return task->state.registers.ip;
 

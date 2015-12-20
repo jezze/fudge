@@ -31,7 +31,6 @@ struct task
     struct task_state state;
     struct task_mailbox mailbox;
     unsigned int id;
-    struct binary_format *format;
 
 };
 

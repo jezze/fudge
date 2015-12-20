@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include "resource.h"
 #include "vfs.h"
-#include "binary.h"
 #include "task.h"
 
 static struct list active;
@@ -81,10 +80,8 @@ void task_setstatus(struct task *task, unsigned int status)
 void task_resume(struct task *task, unsigned int ip, unsigned int sp)
 {
 
-    if (task->state.status != TASK_STATUS_UNBLOCKED)
-        return;
+    task_setstatus(task, TASK_STATUS_ACTIVE);
 
-    task->state.status = TASK_STATUS_ACTIVE;
     task->state.registers.ip = ip;
     task->state.registers.sp = sp;
 
