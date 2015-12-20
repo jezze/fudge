@@ -161,7 +161,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     kernel_copydescriptors(container, task, next);
 
     if (!kernel_setupbinary(container, next, TASKSTACK))
-        return 1;
+        return 0;
 
     maptaskcontainer(next, container);
 
