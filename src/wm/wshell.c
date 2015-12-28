@@ -54,7 +54,7 @@ static void inserttext(unsigned int count, void *buffer)
 
             contentrows++;
 
-            if (contentrows > 20)
+            if (contentrows > 64)
             {
 
                 unsigned int offset = memory_findbyte(text, textcount, '\n');
@@ -247,7 +247,7 @@ static void setup(void)
 {
 
     buffer_init(&input, FUDGE_BSIZE, inputbuffer);
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
     quit = 0;
     keymod = KEYMOD_NONE;

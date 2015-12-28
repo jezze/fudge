@@ -224,6 +224,24 @@ static unsigned int testtext(struct element *element, void *data, unsigned int l
 
 }
 
+static unsigned int findrowtotal(struct element_text *text, unsigned int count, unsigned char *string)
+{
+
+    unsigned int i;
+    unsigned int c = 0;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (string[i] == '\n')
+            c++;
+
+    }
+
+    return c;
+
+}
+
 static unsigned int findrowcount(struct element_text *text, unsigned int count, unsigned char *string)
 {
 
@@ -305,15 +323,23 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     unsigned int rowline;
     unsigned int rowstart;
     unsigned int rowcount;
+    unsigned int rowtotal;
     unsigned int i;
 
     if (!count)
         return;
 
+    rowtotal = text->size.h / 24;
+    rowcount = findrowtotal(text, count, string);
+
     line = (line - text->size.y);
     row = line / 24;
     rowline = line % 24;
-    rowstart = findrowstart(text, row, count, string);
+
+    if (text->flow == ELEMENT_TEXTFLOW_INPUT && rowcount >= rowtotal)
+        rowstart = findrowstart(text, row + rowcount - rowtotal + 1, count, string);
+    else
+        rowstart = findrowstart(text, row, count, string);
 
     if (row && !rowstart)
         return;

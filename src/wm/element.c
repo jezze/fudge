@@ -41,12 +41,13 @@ void element_initpanel(struct element_panel *panel, unsigned int active)
 
 }
 
-void element_inittext(struct element_text *text, unsigned int type)
+void element_inittext(struct element_text *text, unsigned int type, unsigned int flow)
 {
 
     box_setsize(&text->size, 0, 0, 0, 0);
 
     text->type = type;
+    text->flow = flow;
 
 }
 

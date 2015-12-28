@@ -71,7 +71,7 @@ static void onwmhide(struct event_header *header, void *data)
 static void setup(void)
 {
 
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_NORMAL);
 
     quit = 0;
     textcount = file_read(CALL_PI, text, FUDGE_BSIZE);

@@ -613,7 +613,7 @@ static void onwmresize(struct event_header *header, void *data)
     unsigned int i;
 
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_setsize(&body, size.x, size.y + 32, size.w, size.h - 32);
+    box_setsize(&body, size.x, size.y + 36, size.w, size.h - 36);
     box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
     for (i = 0; i < VIEWS; i++)
@@ -621,7 +621,7 @@ static void onwmresize(struct event_header *header, void *data)
 
         views[i].center = body.w / 2;
 
-        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, 32);
+        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, 36);
         box_setsize(&views[i].number.size, views[i].panel.size.x + 12, views[i].panel.size.y + 6, views[i].panel.size.w - 24, views[i].panel.size.h - 12);
         arrangeview(&views[i]);
 
@@ -683,7 +683,7 @@ static void setup(void)
     {
 
         element_initpanel(&views[i].panel, 0);
-        element_inittext(&views[i].number, ELEMENT_TEXTTYPE_NORMAL);
+        element_inittext(&views[i].number, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_NORMAL);
 
         views[i].numberstring = '1' + i;
         views[i].remotefocus = 0;

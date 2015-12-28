@@ -5,6 +5,8 @@
 #define ELEMENT_TYPE_MOUSE              5
 #define ELEMENT_TEXTTYPE_NORMAL         0x00
 #define ELEMENT_TEXTTYPE_HIGHLIGHT      0x01
+#define ELEMENT_TEXTFLOW_NORMAL         0x00
+#define ELEMENT_TEXTFLOW_INPUT          0x01
 
 struct element
 {
@@ -47,6 +49,7 @@ struct element_text
 
     struct box size;
     unsigned int type;
+    unsigned int flow;
 
 };
 
@@ -62,5 +65,5 @@ void element_init(struct element *element, unsigned int id, unsigned int type, u
 void element_initfill(struct element_fill *fill, unsigned int color);
 void element_initmouse(struct element_mouse *mouse, unsigned int x, unsigned int y);
 void element_initpanel(struct element_panel *panel, unsigned int active);
-void element_inittext(struct element_text *text, unsigned int type);
+void element_inittext(struct element_text *text, unsigned int type, unsigned int flow);
 void element_initwindow(struct element_window *window, unsigned int active);
