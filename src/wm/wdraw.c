@@ -323,21 +323,25 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     unsigned int rowline;
     unsigned int rowstart;
     unsigned int rowcount;
+    unsigned int rowmax;
     unsigned int rowtotal;
     unsigned int i;
 
     if (!count)
         return;
 
-    rowtotal = text->size.h / 24;
-    rowcount = findrowtotal(text, count, string);
+    rowmax = text->size.h / 24;
 
+    if (!rowmax)
+        return;
+
+    rowtotal = findrowtotal(text, count, string);
     line = (line - text->size.y);
     row = line / 24;
     rowline = line % 24;
 
-    if (text->flow == ELEMENT_TEXTFLOW_INPUT && rowcount >= rowtotal)
-        rowstart = findrowstart(text, row + rowcount - rowtotal + 1, count, string);
+    if (text->flow == ELEMENT_TEXTFLOW_INPUT && rowtotal >= rowmax)
+        rowstart = findrowstart(text, row + rowtotal - rowmax + 1, count, string);
     else
         rowstart = findrowstart(text, row, count, string);
 
