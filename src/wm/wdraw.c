@@ -238,7 +238,7 @@ static unsigned int findrowtotal(struct element_text *text, unsigned int count, 
 
     }
 
-    return c;
+    return c + 1;
 
 }
 
@@ -310,56 +310,20 @@ static void rendertextglyph(unsigned char *data, unsigned int offset, unsigned i
 
 }
 
-static void rendertext(struct element *element, void *data, unsigned int line)
+static void rendertextline(struct element_text *text, unsigned int row, unsigned int line, unsigned int rowcount, unsigned char *rowtext, unsigned char *bitmapdata, unsigned int fontpadding)
 {
 
-    struct element_text *text = data;
-    unsigned int count = element->count - sizeof (struct element_text);
-    unsigned char *string = (unsigned char *)(text + 1);
-    unsigned char *bitmapdata = pcf_getbitmapdata(fontdata);
-    unsigned int fontpadding = pcf_getpadding(fontdata);
     struct box size;
-    unsigned int row;
-    unsigned int rowline;
-    unsigned int rowstart;
-    unsigned int rowcount;
-    unsigned int rowmax;
-    unsigned int rowtotal;
+    unsigned int rowline = line % 24;
     unsigned int i;
-
-    if (!count)
-        return;
-
-    rowmax = text->size.h / 24;
-
-    if (!rowmax)
-        return;
-
-    rowtotal = findrowtotal(text, count, string);
-    line = (line - text->size.y);
-    row = line / 24;
-    rowline = line % 24;
-
-    if (text->flow == ELEMENT_TEXTFLOW_INPUT && rowtotal >= rowmax)
-        rowstart = findrowstart(text, row + rowtotal - rowmax + 1, count, string);
-    else
-        rowstart = findrowstart(text, row, count, string);
-
-    if (row && !rowstart)
-        return;
-
-    rowcount = findrowcount(text, count - rowstart, string + rowstart);
-
-    if (!rowcount)
-        return;
 
     size.x = text->size.x;
     size.y = text->size.y + row * 24;
 
-    for (i = rowstart; i < rowstart + rowcount; i++)
+    for (i = 0; i < rowcount; i++)
     {
 
-        unsigned short index = pcf_getindex(fontdata, string[i]);
+        unsigned short index = pcf_getindex(fontdata, rowtext[i]);
         unsigned char *data = bitmapdata + pcf_getbitmapoffset(fontdata, index);
         struct pcf_metricsdata metricsdata;
 
@@ -380,6 +344,50 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         size.x += size.w;
 
     }
+
+
+}
+
+static void rendertext(struct element *element, void *data, unsigned int line)
+{
+
+    struct element_text *text = data;
+    unsigned int count = element->count - sizeof (struct element_text);
+    unsigned char *string = (unsigned char *)(text + 1);
+    unsigned char *bitmapdata = pcf_getbitmapdata(fontdata);
+    unsigned int fontpadding = pcf_getpadding(fontdata);
+    unsigned int row;
+    unsigned int rowstart;
+    unsigned int rowcount;
+    unsigned int rowmax;
+    unsigned int rowtotal;
+
+    if (!count)
+        return;
+
+    rowmax = text->size.h / 24;
+
+    if (!rowmax)
+        return;
+
+    rowtotal = findrowtotal(text, count, string);
+    line = (line - text->size.y);
+    row = line / 24;
+
+    if (text->flow == ELEMENT_TEXTFLOW_INPUT && rowtotal >= rowmax)
+        rowstart = findrowstart(text, row + rowtotal - rowmax, count, string);
+    else
+        rowstart = findrowstart(text, row, count, string);
+
+    if (row && !rowstart)
+        return;
+
+    rowcount = findrowcount(text, count - rowstart, string + rowstart);
+
+    if (!rowcount)
+        return;
+
+    rendertextline(text, row, line, rowcount, string + rowstart, bitmapdata, fontpadding);
 
 }
 
