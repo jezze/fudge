@@ -330,7 +330,7 @@ static void onkeypress(struct event_header *header, void *data)
 
         send_wmhide(CALL_L0, viewfocus->remotefocus->source);
         send_wmunmap(CALL_L0, viewfocus->remotefocus->source);
-        writewindow(header->destination, 0, &viewfocus->remotefocus->window);
+        writeremote(header->destination, 0, viewfocus->remotefocus);
         list_move(&remotelist, &viewfocus->remotefocus->item);
 
         viewfocus->remotefocus = (viewfocus->remotes.tail) ? viewfocus->remotes.tail->data : 0;
