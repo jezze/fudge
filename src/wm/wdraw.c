@@ -348,7 +348,6 @@ static void rendertextline(struct element_text *text, unsigned int row, unsigned
 
     }
 
-
 }
 
 static void rendertext(struct element *element, void *data, unsigned int line)
