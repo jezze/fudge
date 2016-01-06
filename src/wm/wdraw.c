@@ -320,9 +320,7 @@ static void rendertextline(struct element_text *text, unsigned int row, unsigned
             for (p = 0; p < size.w; p++)
             {
 
-                unsigned char pixel = data[rowline * fontpadding + p / 8] & (0x80 >> (p % 8));
-
-                if (pixel)
+                if (data[rowline * fontpadding + p / 8] & (0x80 >> (p % 8)))
                     paint(textcolor[text->type], size.x + p, 1);
 
             }
