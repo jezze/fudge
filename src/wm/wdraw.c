@@ -284,35 +284,6 @@ static unsigned int findrowstart(struct element_text *text, unsigned int row, un
 
 }
 
-static void rendertextglyph(unsigned char *data, struct box *size, unsigned int count, unsigned int color)
-{
-
-    unsigned int i;
-    unsigned int k = 0;
-
-    for (i = 0; i < count; i++)
-    {
-
-        unsigned char c = data[i];
-        unsigned char b;
-
-        for (b = 0x80; b; b >>= 1)
-        {
-
-            if (c & b)
-                paint(color, size->x + k, 1);
-
-            k++;
-
-            if (k > size->w)
-                return;
-
-        }
-
-    }
-
-}
-
 static void rendertextline(struct element_text *text, unsigned int row, unsigned int line, unsigned int rowcount, unsigned char *rowtext, unsigned char *bitmapdata, unsigned int fontpadding)
 {
 
@@ -342,7 +313,21 @@ static void rendertextline(struct element_text *text, unsigned int row, unsigned
             return;
 
         if (rowline < size.h)
-            rendertextglyph(data + rowline * fontpadding, &size, fontpadding, textcolor[text->type]);
+        {
+
+            unsigned int p;
+
+            for (p = 0; p < size.w; p++)
+            {
+
+                unsigned char pixel = data[rowline * fontpadding + p / 8] & (0x80 >> (p % 8));
+
+                if (pixel)
+                    paint(textcolor[text->type], size.x + p, 1);
+
+            }
+
+        }
 
         size.x += size.w;
 
