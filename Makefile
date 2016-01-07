@@ -95,10 +95,10 @@ $(IMAGE): $(KERNEL) $(RAMDISK)
 	dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
 
 $(DIR_SNAPSHOT): $(KERNEL) $(RAMDISK)
-	mkdir -p $(DIR_SNAPSHOT)
-	cp $^ $(DIR_SNAPSHOT)
-	echo `git describe --always` > $(DIR_SNAPSHOT)/commit
-	mv $(DIR_SNAPSHOT) `date --iso-8601=seconds`
+	mkdir -p $@
+	cp $^ $@
+	echo `git describe --always` > $@/commit
+	mv $@ `date --iso-8601=seconds`
 
 $(DIR_INSTALL)/$(KERNEL): $(KERNEL)
 	install -m 644 $^ $@
