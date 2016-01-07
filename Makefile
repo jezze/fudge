@@ -4,6 +4,7 @@ KERNEL:=fudge
 DIR_SRC:=src
 DIR_INCLUDE:=include
 DIR_BUILD:=build
+DIR_SNAPSHOT:=snapbuild
 DIR_INSTALL:=/boot
 
 TARGET_x86:=i386-unknown-elf
@@ -38,12 +39,14 @@ IMAGE_NAME:=$(KERNEL)
 IMAGE_TYPE:=img
 IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
-.PHONY: all clean install
+.PHONY: all clean snapshot install
 
 all: $(KERNEL) $(RAMDISK)
 
 clean:
 	rm -rf $(DIR_BUILD) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ_ABI) $(OBJ_STD) $(OBJ) $(BIN) $(MOD)
+
+snapshot: $(DIR_SNAPSHOT)
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
@@ -78,7 +81,7 @@ $(DIR_BUILD): $(BIN) $(MOD)
 	mkdir -p $@/system
 
 $(KERNEL): $(DIR_SRC)/kernel/$(KERNEL)
-	cp $< $@
+	cp $^ $@
 
 $(RAMDISK_NAME).tar: $(DIR_BUILD)
 	tar -cf $@ $^
@@ -90,6 +93,12 @@ $(IMAGE): $(KERNEL) $(RAMDISK)
 	dd if=/dev/zero of=$@ count=65536
 	dd if=$(KERNEL) of=$@ conv=notrunc
 	dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
+
+$(DIR_SNAPSHOT): $(KERNEL) $(RAMDISK)
+	mkdir -p $(DIR_SNAPSHOT)
+	cp $^ $(DIR_SNAPSHOT)
+	echo `git describe --always` > $(DIR_SNAPSHOT)/commit
+	mv $(DIR_SNAPSHOT) `date --iso-8601=seconds`
 
 $(DIR_INSTALL)/$(KERNEL): $(KERNEL)
 	install -m 644 $^ $@
