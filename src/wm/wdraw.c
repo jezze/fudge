@@ -298,7 +298,7 @@ static void rendertextline(struct element_text *text, unsigned int row, unsigned
     {
 
         unsigned short index = pcf_getindex(fontdata, rowtext[i]);
-        unsigned char *data = bitmapdata + pcf_getbitmapoffset(fontdata, index);
+        unsigned int offset = pcf_getbitmapoffset(fontdata, index) + rowline * fontpadding;
         struct pcf_metricsdata metricsdata;
 
         pcf_readmetricsdata(fontdata, index, &metricsdata);
@@ -320,7 +320,7 @@ static void rendertextline(struct element_text *text, unsigned int row, unsigned
             for (p = 0; p < size.w; p++)
             {
 
-                if (data[rowline * fontpadding + p / 8] & (0x80 >> (p % 8)))
+                if (bitmapdata[offset + p / 8] & (0x80 >> (p % 8)))
                     paint(textcolor[text->type], size.x + p, 1);
 
             }

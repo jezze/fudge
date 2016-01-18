@@ -169,6 +169,8 @@ static void onkeypress(struct event_header *header, void *data)
         removetext(1);
         writetext(header->destination, 1, &content, textcount, text);
 
+        content.cursor = textcount - 1;
+
         break;
 
     case 0x1C:
@@ -178,6 +180,8 @@ static void onkeypress(struct event_header *header, void *data)
         inserttext(2, "$ ");
         writetext(header->destination, 1, &content, textcount, text);
 
+        content.cursor = textcount - 1;
+
         break;
 
     default:
@@ -186,6 +190,8 @@ static void onkeypress(struct event_header *header, void *data)
         buffer_wcfifo(&input, keycode->length, &keycode->value);
         inserttext(keycode->length, &keycode->value);
         writetext(header->destination, 1, &content, textcount, text);
+
+        content.cursor = textcount - 1;
 
         break;
     }
