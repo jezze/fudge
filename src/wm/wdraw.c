@@ -284,11 +284,13 @@ static unsigned int findrowstart(struct element_text *text, unsigned int row, un
 
 }
 
-static void rendertextline(struct element_text *text, unsigned int row, unsigned int line, unsigned int rowcount, unsigned char *rowtext, unsigned char *bitmapdata, unsigned int fontpadding)
+static void rendertextline(struct element_text *text, unsigned int row, unsigned int line, unsigned int rowcount, unsigned char *rowtext)
 {
 
-    struct box size;
+    unsigned char *bitmapdata = pcf_getbitmapdata(fontdata);
+    unsigned int fontpadding = pcf_getpadding(fontdata);
     unsigned int rowline = line % 24;
+    struct box size;
     unsigned int i;
 
     size.x = text->size.x;
@@ -339,8 +341,6 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     struct element_text *text = data;
     unsigned int count = element->count - sizeof (struct element_text);
     unsigned char *string = (unsigned char *)(text + 1);
-    unsigned char *bitmapdata = pcf_getbitmapdata(fontdata);
-    unsigned int fontpadding = pcf_getpadding(fontdata);
     unsigned int row;
     unsigned int rowstart;
     unsigned int rowcount;
@@ -372,7 +372,7 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     if (!rowcount)
         return;
 
-    rendertextline(text, row, line, rowcount, string + rowstart, bitmapdata, fontpadding);
+    rendertextline(text, row, line, rowcount, string + rowstart);
 
 }
 
