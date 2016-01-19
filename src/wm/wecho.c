@@ -4,9 +4,11 @@
 #include "box.h"
 #include "element.h"
 #include "send.h"
+#include "keymap.h"
 
 static struct element_text content;
 static unsigned int quit;
+static unsigned int keymod;
 static unsigned char text[FUDGE_BSIZE];
 static unsigned int textcount;
 static struct box size;
@@ -32,6 +34,62 @@ static void writetext(unsigned int source, unsigned int z, struct element_text *
 
     datacount += memory_write(databuffer, FUDGE_BSIZE, text, sizeof (struct element_text), datacount);
     datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
+
+}
+
+static void onkeypress(struct event_header *header, void *data)
+{
+
+    struct event_keypress *keypress = data;
+
+    switch (keypress->scancode)
+    {
+
+    case 0x2A:
+    case 0x36:
+        keymod |= KEYMOD_SHIFT;
+
+        break;
+
+    case 0x11:
+        content.cursor -= 10;
+
+        break;
+
+    case 0x1E:
+        content.cursor -= 1;
+
+        break;
+
+    case 0x1F:
+        content.cursor += 10;
+
+        break;
+
+    case 0x20:
+        content.cursor += 1;
+
+        break;
+
+    }
+
+}
+
+static void onkeyrelease(struct event_header *header, void *data)
+{
+
+    struct event_keyrelease *keyrelease = data;
+
+    switch (keyrelease->scancode)
+    {
+
+    case 0x2A:
+    case 0x36:
+        keymod &= ~KEYMOD_SHIFT;
+
+        break;
+
+    }
 
 }
 
@@ -86,6 +144,8 @@ void main(void)
 
     setup();
 
+    handlers[EVENT_KEYPRESS] = onkeypress;
+    handlers[EVENT_KEYRELEASE] = onkeyrelease;
     handlers[EVENT_WMUNMAP] = onwmunmap;
     handlers[EVENT_WMRESIZE] = onwmresize;
     handlers[EVENT_WMSHOW] = onwmshow;

@@ -194,6 +194,7 @@ static void onkeypress(struct event_header *header, void *data)
         content.cursor = textcount - 1;
 
         break;
+
     }
 
 }
