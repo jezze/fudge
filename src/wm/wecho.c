@@ -9,7 +9,7 @@
 static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod;
-static unsigned char text[FUDGE_BSIZE];
+static char text[FUDGE_BSIZE];
 static unsigned int textcount;
 static struct box size;
 static unsigned char databuffer[FUDGE_BSIZE];
@@ -37,6 +37,47 @@ static void writetext(unsigned int source, unsigned int z, struct element_text *
 
 }
 
+static unsigned int rowup()
+{
+
+    unsigned int start;
+    unsigned int startp;
+    unsigned int count;
+    unsigned int countp;
+
+    start = ascii_searchreverse(text, content.cursor, '\n');
+
+    if (!start)
+        return 0;
+
+    count = content.cursor - start;
+    startp = ascii_searchreverse(text, start, '\n');
+    countp = start - startp;
+
+    if (!startp)
+        count--;
+
+    return startp + (countp < count ? countp : count);
+
+}
+
+static unsigned int rowdown()
+{
+
+    unsigned int start;
+    unsigned int startn;
+    unsigned int count;
+    unsigned int countn;
+
+    start = ascii_searchreverse(text, content.cursor, '\n');
+    count = content.cursor - start;
+    startn = ascii_search(text + content.cursor, textcount - content.cursor, '\n') + content.cursor + 1;
+    countn = ascii_search(text + startn, textcount - startn, '\n');
+
+    return startn + (countn < count ? countn : count - 1);
+
+}
+
 static void onkeypress(struct event_header *header, void *data)
 {
 
@@ -52,22 +93,32 @@ static void onkeypress(struct event_header *header, void *data)
         break;
 
     case 0x11:
-        content.cursor -= 10;
+        content.cursor = rowup();
+
+        writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
     case 0x1E:
-        content.cursor -= 1;
+        if (content.cursor > 0)
+            content.cursor -= 1;
+
+        writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
     case 0x1F:
-        content.cursor += 10;
+        content.cursor = rowdown();
+
+        writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
     case 0x20:
-        content.cursor += 1;
+        if (content.cursor < textcount - 1)
+            content.cursor += 1;
+
+        writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
@@ -129,7 +180,7 @@ static void onwmhide(struct event_header *header, void *data)
 static void setup(void)
 {
 
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_NORMAL);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
     quit = 0;
     textcount = file_read(CALL_PI, text, FUDGE_BSIZE);

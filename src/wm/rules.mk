@@ -5,6 +5,7 @@ OBJ_WDRAW:=\
     $(DIR_SRC)/wm/wdraw.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
+    $(DIR_SRC)/fudge/ascii.o \
     $(DIR_SRC)/fudge/ctrl.o \
     $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
@@ -21,6 +22,7 @@ OBJ_WECHO:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/send.o \
+    $(DIR_SRC)/fudge/ascii.o \
     $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
 

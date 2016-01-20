@@ -254,7 +254,7 @@ static void setup(void)
 {
 
     buffer_init(&input, FUDGE_BSIZE, inputbuffer);
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_BOTTOM);
 
     quit = 0;
     keymod = KEYMOD_NONE;

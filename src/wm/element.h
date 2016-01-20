@@ -6,7 +6,8 @@
 #define ELEMENT_TEXTTYPE_NORMAL         0x00
 #define ELEMENT_TEXTTYPE_HIGHLIGHT      0x01
 #define ELEMENT_TEXTFLOW_NORMAL         0x00
-#define ELEMENT_TEXTFLOW_INPUT          0x01
+#define ELEMENT_TEXTFLOW_BOTTOM         0x01
+#define ELEMENT_TEXTFLOW_INPUT          0x02
 
 struct element
 {

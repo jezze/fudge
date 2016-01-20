@@ -224,25 +224,7 @@ static unsigned int testtext(struct element *element, void *data, unsigned int l
 
 }
 
-static unsigned int findrowtotal(struct element_text *text, unsigned int count, unsigned char *string)
-{
-
-    unsigned int i;
-    unsigned int c = 0;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (string[i] == '\n')
-            c++;
-
-    }
-
-    return c + 1;
-
-}
-
-static unsigned int findrowcount(struct element_text *text, unsigned int count, unsigned char *string)
+static unsigned int findrowcount(struct element_text *text, unsigned int count, char *string)
 {
 
     unsigned int i;
@@ -251,7 +233,7 @@ static unsigned int findrowcount(struct element_text *text, unsigned int count, 
     {
 
         if (string[i] == '\n')
-            return i;
+            return i + 1;
 
     }
 
@@ -259,7 +241,7 @@ static unsigned int findrowcount(struct element_text *text, unsigned int count, 
 
 }
 
-static unsigned int findrowstart(struct element_text *text, unsigned int row, unsigned int count, unsigned char *string)
+static unsigned int findrowstart(struct element_text *text, unsigned int row, unsigned int count, char *string)
 {
 
     unsigned int i;
@@ -284,9 +266,40 @@ static unsigned int findrowstart(struct element_text *text, unsigned int row, un
 
 }
 
-static void rendertextline(struct element_text *text, unsigned int rowtop, unsigned int rowline, unsigned int rowcount, unsigned char *rowtext)
+static void rendercharline(struct element_text *text, struct box *size, unsigned char *bitmapdata)
 {
 
+    unsigned int p;
+
+    for (p = 0; p < size->w; p++)
+    {
+
+        if (bitmapdata[(p >> 3)] & (0x80 >> (p % 8)))
+            paint(textcolor[text->type], size->x + p, 1);
+
+    }
+
+}
+
+static void rendercharlineinverted(struct element_text *text, struct box *size, unsigned char *bitmapdata)
+{
+
+    unsigned int p;
+
+    for (p = 0; p < size->w; p++)
+    {
+
+        if (!(bitmapdata[(p >> 3)] & (0x80 >> (p % 8))))
+            paint(textcolor[text->type], size->x + p, 1);
+
+    }
+
+}
+
+static void rendertextline(struct element_text *text, unsigned int rowtop, unsigned int rowline, unsigned int rowcount, unsigned int rowstart, unsigned int hascursor, unsigned int offsetcursor)
+{
+
+    char *string = (char *)(text + 1);
     unsigned char *bitmapdata = pcf_getbitmapdata(fontdata);
     unsigned int fontpadding = pcf_getpadding(fontdata);
     struct box size;
@@ -298,7 +311,7 @@ static void rendertextline(struct element_text *text, unsigned int rowtop, unsig
     for (i = 0; i < rowcount; i++)
     {
 
-        unsigned short index = pcf_getindex(fontdata, rowtext[i]);
+        unsigned short index = pcf_getindex(fontdata, string[rowstart + i]);
         unsigned int offset = pcf_getbitmapoffset(fontdata, index) + rowline * fontpadding;
         struct pcf_metricsdata metricsdata;
 
@@ -316,15 +329,10 @@ static void rendertextline(struct element_text *text, unsigned int rowtop, unsig
         if (rowline < size.h)
         {
 
-            unsigned int p;
-
-            for (p = 0; p < size.w; p++)
-            {
-
-                if (bitmapdata[offset + p / 8] & (0x80 >> (p % 8)))
-                    paint(textcolor[text->type], size.x + p, 1);
-
-            }
+            if (hascursor && offsetcursor == i)
+                rendercharlineinverted(text, &size, bitmapdata + offset);
+            else
+                rendercharline(text, &size, bitmapdata + offset);
 
         }
 
@@ -339,12 +347,13 @@ static void rendertext(struct element *element, void *data, unsigned int line)
 
     struct element_text *text = data;
     unsigned int count = element->count - sizeof (struct element_text);
-    unsigned char *string = (unsigned char *)(text + 1);
+    char *string = (char *)(text + 1);
     unsigned int row;
     unsigned int rowstart;
     unsigned int rowcount;
     unsigned int rowmax;
     unsigned int rowtotal;
+    unsigned int rowcursor = 0;
 
     if (!count)
         return;
@@ -354,14 +363,33 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     if (!rowmax)
         return;
 
-    rowtotal = findrowtotal(text, count, string);
+    rowtotal = ascii_count(string, count, '\n') + 1;
     line = (line - text->size.y);
     row = line / 24;
 
-    if (text->flow == ELEMENT_TEXTFLOW_INPUT && rowtotal >= rowmax)
-        rowstart = findrowstart(text, row + rowtotal - rowmax, count, string);
-    else
+    switch (text->flow)
+    {
+
+    case ELEMENT_TEXTFLOW_BOTTOM:
+        if (rowtotal >= rowmax)
+            rowstart = findrowstart(text, row + rowtotal - rowmax, count, string);
+        else
+            rowstart = findrowstart(text, row, count, string);
+
+        break;
+
+    case ELEMENT_TEXTFLOW_INPUT:
         rowstart = findrowstart(text, row, count, string);
+        rowcursor = ascii_count(string, text->cursor, '\n');
+
+        break;
+
+    default:
+        rowstart = findrowstart(text, row, count, string);
+
+        break;
+
+    }
 
     if (row && !rowstart)
         return;
@@ -371,7 +399,7 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     if (!rowcount)
         return;
 
-    rendertextline(text, row * 24, line % 24, rowcount, string + rowstart);
+    rendertextline(text, row * 24, line % 24, rowcount, rowstart, text->flow == ELEMENT_TEXTFLOW_INPUT && row == rowcursor, text->cursor - rowstart);
 
 }
 
