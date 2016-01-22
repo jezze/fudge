@@ -358,9 +358,6 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     if (!stringcount)
         return;
 
-    if (text->size.h < 24)
-        return;
-
     line = (line - text->size.y);
     row = line / 24;
     rowline = line % 24;
