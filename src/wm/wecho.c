@@ -45,17 +45,14 @@ static unsigned int rowup()
     unsigned int count;
     unsigned int countp;
 
-    start = ascii_searchreverse(text, content.cursor, '\n');
+    start = ascii_searchreverse(text, 0, content.cursor, '\n');
 
     if (!start)
         return 0;
 
+    startp = ascii_searchreverse(text, 0, start - 1, '\n');
     count = content.cursor - start;
-    startp = ascii_searchreverse(text, start, '\n');
-    countp = start - startp;
-
-    if (!startp)
-        count--;
+    countp = start - startp - 1;
 
     return startp + (countp < count ? countp : count);
 
@@ -69,12 +66,16 @@ static unsigned int rowdown()
     unsigned int count;
     unsigned int countn;
 
-    start = ascii_searchreverse(text, content.cursor, '\n');
-    count = content.cursor - start;
-    startn = ascii_search(text + content.cursor, textcount - content.cursor, '\n') + content.cursor + 1;
-    countn = ascii_search(text + startn, textcount - startn, '\n');
+    start = ascii_searchreverse(text, 0, content.cursor, '\n');
+    startn = ascii_search(text, content.cursor, textcount, '\n') + 1;
 
-    return startn + (countn < count ? countn : count - 1);
+    if (startn == textcount)
+        return startn - 1;
+
+    count = content.cursor - start;
+    countn = ascii_search(text, startn, textcount, '\n') - startn;
+
+    return startn + (countn < count ? countn : count);
 
 }
 

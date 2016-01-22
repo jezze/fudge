@@ -83,33 +83,33 @@ unsigned int ascii_wzerovalue(void *out, unsigned int count, unsigned int value,
 
 }
 
-unsigned int ascii_search(char *in, unsigned int count, char c)
+unsigned int ascii_search(char *in, unsigned int offset, unsigned int count, char c)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
+    while (offset < count)
     {
 
-        if (in[i] == c)
-            return i;
+        if (in[offset] == c)
+            return offset;
+
+        offset++;
 
     }
 
-    return count;
+    return offset;
 
 }
 
-unsigned int ascii_searchreverse(char *in, unsigned int count, char c)
+unsigned int ascii_searchreverse(char *in, unsigned int offset, unsigned int count, char c)
 {
 
-    unsigned int i;
-
-    for (i = count; i > 0; i--)
+    while (count > offset)
     {
 
-        if (in[i - 1] == c)
-            return i - 1;
+        if (in[count - 1] == c)
+            return count;
+
+        count--;
 
     }
 
