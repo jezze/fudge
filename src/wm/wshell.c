@@ -9,7 +9,7 @@
 static struct element_text content;
 static unsigned int contentrows;
 static unsigned int quit;
-static unsigned int keymod;
+static unsigned int keymod = KEYMOD_NONE;
 static unsigned char text[FUDGE_BSIZE];
 static unsigned int textcount;
 static unsigned char inputbuffer[FUDGE_BSIZE];
@@ -68,6 +68,7 @@ static void inserttext(unsigned int count, void *buffer)
         }
 
         textcount += memory_write(text, FUDGE_BSIZE, b + i, 1, textcount);
+        content.cursor = textcount - 1;
 
     }
 
@@ -90,6 +91,8 @@ static void removetext(unsigned int count)
             contentrows--;
 
     }
+
+    content.cursor = textcount - 1;
 
 }
 
@@ -166,32 +169,34 @@ static void onkeypress(struct event_header *header, void *data)
         if (!buffer_ecfifo(&input, 1))
             break;
 
-        removetext(1);
+        removetext(2);
+        inserttext(1, "\n");
         writetext(header->destination, 1, &content, textcount, text);
-
-        content.cursor = textcount - 1;
 
         break;
 
     case 0x1C:
-        buffer_wcfifo(&input, 1, "\n");
-        inserttext(1, "\n");
-        interpret();
-        inserttext(2, "$ ");
-        writetext(header->destination, 1, &content, textcount, text);
+        keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
 
-        content.cursor = textcount - 1;
+        if (!buffer_wcfifo(&input, keycode->length, &keycode->value))
+            break;
+
+        interpret();
+        inserttext(3, "$ \n");
+        writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
     default:
         keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
 
-        buffer_wcfifo(&input, keycode->length, &keycode->value);
-        inserttext(keycode->length, &keycode->value);
-        writetext(header->destination, 1, &content, textcount, text);
+        if (!buffer_wcfifo(&input, keycode->length, &keycode->value))
+            break;
 
-        content.cursor = textcount - 1;
+        removetext(1);
+        inserttext(keycode->length, &keycode->value);
+        inserttext(1, "\n");
+        writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
@@ -254,12 +259,9 @@ static void setup(void)
 {
 
     buffer_init(&input, FUDGE_BSIZE, inputbuffer);
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_BOTTOM);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
-    quit = 0;
-    keymod = KEYMOD_NONE;
-
-    inserttext(2, "$ ");
+    inserttext(3, "$ \n");
 
 }
 

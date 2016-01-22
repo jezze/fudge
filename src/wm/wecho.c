@@ -8,7 +8,7 @@
 
 static struct element_text content;
 static unsigned int quit;
-static unsigned int keymod;
+static unsigned int keymod = KEYMOD_NONE;
 static char text[FUDGE_BSIZE];
 static unsigned int textcount;
 static struct box size;
@@ -183,7 +183,6 @@ static void setup(void)
 
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
-    quit = 0;
     textcount = file_read(CALL_PI, text, FUDGE_BSIZE);
 
 }

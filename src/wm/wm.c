@@ -33,7 +33,7 @@ static struct view
 static struct element_fill background;
 static struct element_mouse mouse;
 static struct view *viewfocus;
-static unsigned int keymod;
+static unsigned int keymod = KEYMOD_NONE;
 static unsigned int quit;
 static struct box size;
 static struct box body;
@@ -693,8 +693,6 @@ static void setup(void)
     viewfocus = &views[0];
     viewfocus->panel.active = 1;
     viewfocus->number.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
-    quit = 0;
-    keymod = KEYMOD_NONE;
 
 }
 
