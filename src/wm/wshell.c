@@ -68,9 +68,10 @@ static void inserttext(unsigned int count, void *buffer)
         }
 
         textcount += memory_write(text, FUDGE_BSIZE, b + i, 1, textcount);
-        content.cursor = textcount - 1;
 
     }
+
+    content.cursor = textcount - 1;
 
 }
 

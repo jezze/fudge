@@ -224,12 +224,12 @@ static unsigned int testtext(struct element *element, void *data, unsigned int l
 
 }
 
-static unsigned int findrowcount(struct element_text *text, unsigned int count, char *string)
+static unsigned int findrowcount(struct element_text *text, unsigned int offset, unsigned int count, char *string)
 {
 
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = offset; i < count; i++)
     {
 
         if (string[i] == '\n')
@@ -296,7 +296,7 @@ static void rendercharlineinverted(struct element_text *text, struct box *size, 
 
 }
 
-static void rendertextline(struct element_text *text, unsigned int rowtop, unsigned int rowline, unsigned int rowcount, unsigned int rowstart, unsigned int hascursor, unsigned int offsetcursor)
+static void rendertextline(struct element_text *text, unsigned int rowtop, unsigned int rowline, unsigned int rowstart, unsigned int rowcount)
 {
 
     char *string = (char *)(text + 1);
@@ -308,10 +308,10 @@ static void rendertextline(struct element_text *text, unsigned int rowtop, unsig
     size.x = text->size.x;
     size.y = text->size.y + rowtop;
 
-    for (i = 0; i < rowcount; i++)
+    for (i = rowstart; i < rowcount; i++)
     {
 
-        unsigned short index = pcf_getindex(fontdata, string[rowstart + i]);
+        unsigned short index = pcf_getindex(fontdata, string[i]);
         unsigned int offset = pcf_getbitmapoffset(fontdata, index) + rowline * fontpadding;
         struct pcf_metricsdata metricsdata;
 
@@ -329,7 +329,7 @@ static void rendertextline(struct element_text *text, unsigned int rowtop, unsig
         if (rowline < size.h)
         {
 
-            if (hascursor && offsetcursor == i)
+            if (text->flow == ELEMENT_TEXTFLOW_INPUT && i == text->cursor)
                 rendercharlineinverted(text, &size, bitmapdata + offset);
             else
                 rendercharline(text, &size, bitmapdata + offset);
@@ -346,60 +346,37 @@ static void rendertext(struct element *element, void *data, unsigned int line)
 {
 
     struct element_text *text = data;
-    unsigned int count = element->count - sizeof (struct element_text);
+    unsigned int stringcount = element->count - sizeof (struct element_text);
     char *string = (char *)(text + 1);
     unsigned int row;
+    unsigned int rowline;
+    unsigned int rowtop;
+    unsigned int rowtotal;
     unsigned int rowstart;
     unsigned int rowcount;
-    unsigned int rowmax;
-    unsigned int rowtotal;
-    unsigned int rowcursor = 0;
 
-    if (!count)
+    if (!stringcount)
         return;
 
-    rowmax = text->size.h / 24;
-
-    if (!rowmax)
+    if (text->size.h < 24)
         return;
 
-    rowtotal = ascii_count(string, count, '\n') + 1;
     line = (line - text->size.y);
     row = line / 24;
+    rowline = line % 24;
+    rowtop = row * 24;
+    rowtotal = ascii_count(string, stringcount, '\n') + 1;
 
-    switch (text->flow)
-    {
-
-    case ELEMENT_TEXTFLOW_BOTTOM:
-        if (rowtotal >= rowmax)
-            rowstart = findrowstart(text, row + rowtotal - rowmax, count, string);
-        else
-            rowstart = findrowstart(text, row, count, string);
-
-        break;
-
-    case ELEMENT_TEXTFLOW_INPUT:
-        rowstart = findrowstart(text, row, count, string);
-        rowcursor = ascii_count(string, text->cursor, '\n');
-
-        break;
-
-    default:
-        rowstart = findrowstart(text, row, count, string);
-
-        break;
-
-    }
-
-    if (row && !rowstart)
+    if (row >= rowtotal)
         return;
 
-    rowcount = findrowcount(text, count - rowstart, string + rowstart);
+    rowstart = findrowstart(text, row, stringcount, string);
+    rowcount = findrowcount(text, rowstart, stringcount, string);
 
     if (!rowcount)
         return;
 
-    rendertextline(text, row * 24, line % 24, rowcount, rowstart, text->flow == ELEMENT_TEXTFLOW_INPUT && row == rowcursor, text->cursor - rowstart);
+    rendertextline(text, rowtop, rowline, rowstart, rowcount);
 
 }
 
