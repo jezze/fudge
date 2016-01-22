@@ -26,6 +26,8 @@ static void (*renderers[EVENTS])(struct element *element, void *data, unsigned i
 static unsigned char elementdata[0x8000];
 static unsigned int elementcount;
 static unsigned char fontdata[0x8000];
+static unsigned char *fontbitmapdata;
+static unsigned int fontpadding;
 static unsigned char mousedata[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -300,8 +302,6 @@ static void rendertextline(struct element_text *text, unsigned int rowtop, unsig
 {
 
     char *string = (char *)(text + 1);
-    unsigned char *bitmapdata = pcf_getbitmapdata(fontdata);
-    unsigned int fontpadding = pcf_getpadding(fontdata);
     struct box size;
     unsigned int i;
 
@@ -330,9 +330,9 @@ static void rendertextline(struct element_text *text, unsigned int rowtop, unsig
         {
 
             if (text->flow == ELEMENT_TEXTFLOW_INPUT && i == text->cursor)
-                rendercharlineinverted(text, &size, bitmapdata + offset);
+                rendercharlineinverted(text, &size, fontbitmapdata + offset);
             else
-                rendercharline(text, &size, bitmapdata + offset);
+                rendercharline(text, &size, fontbitmapdata + offset);
 
         }
 
@@ -570,6 +570,9 @@ void main(void)
     call_open(CALL_L0);
     file_seekread(CALL_L0, fontdata, 0x8000, 0);
     call_close(CALL_L0);
+
+    fontbitmapdata = pcf_getbitmapdata(fontdata);
+    fontpadding = pcf_getpadding(fontdata);
 
     if (!call_walk(CALL_L0, CALL_PO, 4, "ctrl"))
         return;
