@@ -37,6 +37,20 @@ static void writetext(unsigned int source, unsigned int z, struct element_text *
 
 }
 
+static unsigned int rowstart()
+{
+
+    return ascii_searchreverse(text, 0, content.cursor, '\n');
+
+}
+
+static unsigned int rowstop()
+{
+
+    return ascii_search(text, content.cursor, textcount, '\n');
+
+}
+
 static unsigned int rowup()
 {
 
@@ -93,6 +107,13 @@ static void onkeypress(struct event_header *header, void *data)
 
         break;
 
+    case 0x47:
+        content.cursor = rowstart();
+
+        writetext(header->destination, 1, &content, textcount, text);
+
+        break;
+
     case 0x48:
         content.cursor = rowup();
 
@@ -108,16 +129,23 @@ static void onkeypress(struct event_header *header, void *data)
 
         break;
 
-    case 0x50:
-        content.cursor = rowdown();
+    case 0x4D:
+        if (content.cursor < textcount - 1)
+            content.cursor += 1;
 
         writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
-    case 0x4D:
-        if (content.cursor < textcount - 1)
-            content.cursor += 1;
+    case 0x4F:
+        content.cursor = rowstop();
+
+        writetext(header->destination, 1, &content, textcount, text);
+
+        break;
+
+    case 0x50:
+        content.cursor = rowdown();
 
         writetext(header->destination, 1, &content, textcount, text);
 
