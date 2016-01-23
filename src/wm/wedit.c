@@ -93,14 +93,14 @@ static void onkeypress(struct event_header *header, void *data)
 
         break;
 
-    case 0x11:
+    case 0x48:
         content.cursor = rowup();
 
         writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
-    case 0x1E:
+    case 0x4B:
         if (content.cursor > 0)
             content.cursor -= 1;
 
@@ -108,14 +108,14 @@ static void onkeypress(struct event_header *header, void *data)
 
         break;
 
-    case 0x1F:
+    case 0x50:
         content.cursor = rowdown();
 
         writetext(header->destination, 1, &content, textcount, text);
 
         break;
 
-    case 0x20:
+    case 0x4D:
         if (content.cursor < textcount - 1)
             content.cursor += 1;
 
