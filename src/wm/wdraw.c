@@ -311,7 +311,7 @@ static void rendertextline(struct element_text *text, unsigned int rowtop, unsig
     for (i = rowstart; i < rowcount; i++)
     {
 
-        unsigned short index = pcf_getindex(fontdata, string[i]);
+        unsigned short index = (string[i] == '\n') ? pcf_getindex(fontdata, ' ') : pcf_getindex(fontdata, string[i]);
         unsigned int offset = pcf_getbitmapoffset(fontdata, index) + rowline * fontpadding;
         struct pcf_metricsdata metricsdata;
 
