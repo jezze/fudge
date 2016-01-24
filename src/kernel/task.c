@@ -88,13 +88,6 @@ void task_unregister(struct task *task)
 
 }
 
-void task_initmailbox(struct task_mailbox *mailbox, struct task *task)
-{
-
-    buffer_init(&mailbox->buffer, TASK_MAILBOXSIZE, mailbox->data);
-
-}
-
 void task_init(struct task *task, unsigned int id)
 {
 
@@ -102,7 +95,7 @@ void task_init(struct task *task, unsigned int id)
 
     resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
-    task_initmailbox(&task->mailbox, task);
+    buffer_init(&task->mailbox.buffer, TASK_MAILBOXSIZE, task->mailbox.data);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
         list_inititem(&task->descriptors[i], task);
