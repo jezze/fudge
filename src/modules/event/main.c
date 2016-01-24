@@ -105,9 +105,7 @@ void event_notifytick(unsigned int counter)
 static unsigned int poll_open(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    struct list_item *item = task_getmailbox(task, descriptor);
-
-    list_add(&self->mailboxes, item);
+    list_add(&self->mailboxes, &task->mailboxitem[descriptor]);
 
     return (unsigned int)self;
 
@@ -116,9 +114,7 @@ static unsigned int poll_open(struct system_node *self, struct task *task, unsig
 static unsigned int poll_close(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    struct list_item *item = task_getmailbox(task, descriptor);
-
-    list_remove(&self->mailboxes, item);
+    list_remove(&self->mailboxes, &task->mailboxitem[descriptor]);
 
     return (unsigned int)self;
 
@@ -127,13 +123,10 @@ static unsigned int poll_close(struct system_node *self, struct task *task, unsi
 static unsigned int poll_read(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct list_item *item = task_getmailbox(task, descriptor);
-    struct task_mailbox *mailbox = item->data;
-
-    count = buffer_rcfifo(&mailbox->buffer, count, buffer);
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
     if (!count)
-        task_setstatus(mailbox->task, TASK_STATUS_BLOCKED);
+        task_setstatus(task, TASK_STATUS_BLOCKED);
 
     return count;
 
@@ -143,8 +136,7 @@ static unsigned int poll_write(struct system_node *self, struct task *task, unsi
 {
 
     struct event_header *header = buffer;
-    struct list_item *item = task_getmailbox(task, descriptor);
-    struct task_mailbox *source = item->data;
+    struct task_mailbox *source = &task->mailbox;
     struct task_mailbox *destination;
 
     header->source = (unsigned int)source;

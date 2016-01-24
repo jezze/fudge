@@ -9,7 +9,6 @@ struct task_mailbox
 {
 
     struct task *task;
-    struct list_item item[TASK_DESCRIPTORS];
     struct buffer buffer;
     unsigned char data[TASK_MAILBOXSIZE];
 
@@ -30,13 +29,13 @@ struct task
     struct resource resource;
     struct task_state state;
     struct task_mailbox mailbox;
+    struct list_item mailboxitem[TASK_DESCRIPTORS];
     unsigned int id;
 
 };
 
 struct task *task_findactive(void);
 struct task *task_findinactive(void);
-struct list_item *task_getmailbox(struct task *task, unsigned int descriptor);
 void task_setstatus(struct task *task, unsigned int state);
 void task_resume(struct task *task, unsigned int ip, unsigned int sp);
 void task_register(struct task *task);

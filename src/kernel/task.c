@@ -20,13 +20,6 @@ struct task *task_findinactive(void)
 
 }
 
-struct list_item *task_getmailbox(struct task *task, unsigned int descriptor)
-{
-
-    return (task) ? &task->mailbox.item[descriptor] : 0;
-
-}
-
 void task_setstatus(struct task *task, unsigned int status)
 {
 
@@ -98,11 +91,6 @@ void task_unregister(struct task *task)
 void task_initmailbox(struct task_mailbox *mailbox, struct task *task)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < TASK_DESCRIPTORS; i++)
-        list_inititem(&mailbox->item[i], mailbox);
-
     buffer_init(&mailbox->buffer, TASK_MAILBOXSIZE, mailbox->data);
 
     mailbox->task = task;
@@ -112,9 +100,14 @@ void task_initmailbox(struct task_mailbox *mailbox, struct task *task)
 void task_init(struct task *task, unsigned int id)
 {
 
+    unsigned int i;
+
     resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
     task_initmailbox(&task->mailbox, task);
+
+    for (i = 0; i < TASK_DESCRIPTORS; i++)
+        list_inititem(&task->mailboxitem[i], &task->mailbox);
 
     task->id = id;
 
