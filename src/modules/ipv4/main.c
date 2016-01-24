@@ -47,7 +47,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 
 }
 
-static unsigned int localnode_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int localnode_read(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return memory_read(buffer, count, localbuffer, sizeof (struct ipv4_ethernetentry) * LOCALS, offset);

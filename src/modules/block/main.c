@@ -3,40 +3,15 @@
 #include <modules/system/system.h>
 #include "block.h"
 
-static unsigned int wait;
-
 void block_notify(struct block_interface *interface, unsigned int count, void *buffer)
 {
 
-    interface->data.write(&interface->data, 0, count, buffer);
-
-    wait = 0;
-
 }
 
-static unsigned int interfacedata_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacedata_read(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct block_interface *interface = self->resource->data;
-    struct task_mailbox *mailbox = task_findactivemailbox();
-
-    if (offset > 512)
-        return 0;
-
-    if (wait == 0)
-    {
-
-        interface->rdata(offset, count, buffer);
-        wait = 1;
-
-    }
-
-    count = buffer_rcfifo(&mailbox->buffer, count, buffer);
-
-    if (!count)
-        task_setstatus(mailbox->task, TASK_STATUS_BLOCKED);
-
-    return count;
+    return 0;
 
 }
 

@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include "resource.h"
+#include "task.h"
 #include "vfs.h"
 #include "container.h"
 

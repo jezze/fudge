@@ -5,7 +5,7 @@
 static struct vfs_backend backend;
 static struct vfs_protocol protocol;
 
-static unsigned int node_readgroup(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int node_readgroup(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct record *record = buffer;
@@ -33,20 +33,38 @@ static unsigned int node_readgroup(struct system_node *self, unsigned int offset
 
 }
 
-static unsigned int node_readmailboxes(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int node_openmailboxes(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    struct task_mailbox *mailbox = task_findactivemailbox();
+    struct list_item *item = task_findactivemailbox(task, descriptor);
+
+    list_add(&self->mailboxes, item);
+
+    return (unsigned int)self;
+
+}
+
+static unsigned int node_closemailboxes(struct system_node *self, struct task *task, unsigned int descriptor)
+{
+
+    struct list_item *item = task_findactivemailbox(task, descriptor);
+
+    list_remove(&self->mailboxes, item);
+
+    return (unsigned int)self;
+
+}
+
+static unsigned int node_readmailboxes(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct list_item *item = task_findactivemailbox(task, descriptor);
+    struct task_mailbox *mailbox = item->data;
 
     count = buffer_rcfifo(&mailbox->buffer, count, buffer);
 
     if (!count)
-    {
-
-        list_add(&self->mailboxes, &mailbox->item);
         task_setstatus(mailbox->task, TASK_STATUS_BLOCKED);
-
-    }
 
     return count;
 
@@ -135,7 +153,6 @@ void system_multicast(struct system_node *node, unsigned int count, void *buffer
 
         struct task_mailbox *mailbox = current->data;
 
-        list_remove(&node->mailboxes, current);
         task_setstatus(mailbox->task, TASK_STATUS_UNBLOCKED);
         buffer_wcfifo(&mailbox->buffer, count, buffer);
 
@@ -194,6 +211,8 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type & SYSTEM_NODETYPE_MAILBOX)
     {
 
+        node->open = node_openmailboxes;
+        node->close = node_closemailboxes;
         node->read = node_readmailboxes;
 
     }

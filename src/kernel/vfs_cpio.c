@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <format/cpio.h>
 #include "resource.h"
+#include "task.h"
 #include "vfs.h"
 
 static struct vfs_protocol protocol;
@@ -184,14 +185,14 @@ static unsigned int protocol_destroy(struct vfs_backend *backend, unsigned int i
 
 }
 
-static unsigned int protocol_open(struct vfs_backend *backend, unsigned int id)
+static unsigned int protocol_open(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int protocol_close(struct vfs_backend *backend, unsigned int id)
+static unsigned int protocol_close(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     return id;
@@ -246,7 +247,7 @@ static unsigned int readdirectory(struct vfs_backend *backend, unsigned int addr
 
 }
 
-static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -285,7 +286,7 @@ static unsigned int writenormal(struct vfs_backend *backend, unsigned int addres
 
 }
 
-static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;

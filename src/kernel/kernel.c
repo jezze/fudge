@@ -1,8 +1,8 @@
 #include <fudge.h>
 #include "resource.h"
+#include "task.h"
 #include "vfs.h"
 #include "binary.h"
-#include "task.h"
 #include "container.h"
 #include "kernel.h"
 
@@ -42,12 +42,12 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    format = binary_findformat(descriptor->channel, descriptor->id);
+    format = binary_findformat(descriptor->channel, task, 0, descriptor->id);
 
     if (!format)
         return 0;
 
-    task_resume(task, format->findentry(descriptor->channel, descriptor->id), sp);
+    task_resume(task, format->findentry(descriptor->channel, task, 0, descriptor->id), sp);
 
     return task->state.registers.ip;
 

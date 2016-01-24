@@ -57,43 +57,43 @@ static unsigned int protocol_destroy(struct vfs_backend *backend, unsigned int i
 
 }
 
-static unsigned int protocol_open(struct vfs_backend *backend, unsigned int id)
+static unsigned int protocol_open(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     struct system_node *node = (struct system_node *)id;
 
     node->refcount++;
 
-    return (node->open) ? node->open(node) : id;
+    return (node->open) ? node->open(node, task, descriptor) : id;
 
 }
 
-static unsigned int protocol_close(struct vfs_backend *backend, unsigned int id)
+static unsigned int protocol_close(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     struct system_node *node = (struct system_node *)id;
 
     node->refcount--;
 
-    return (node->close) ? node->close(node) : id;
+    return (node->close) ? node->close(node, task, descriptor) : id;
 
 }
 
-static unsigned int protocol_read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct system_node *node = (struct system_node *)id;
 
-    return (node->read) ? node->read(node, offset, count, buffer) : 0;
+    return (node->read) ? node->read(node, task, descriptor, offset, count, buffer) : 0;
 
 }
 
-static unsigned int protocol_write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct system_node *node = (struct system_node *)id;
 
-    return (node->write) ? node->write(node, offset, count, buffer) : 0;
+    return (node->write) ? node->write(node, task, descriptor, offset, count, buffer) : 0;
 
 }
 

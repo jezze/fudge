@@ -13,16 +13,16 @@ void log_notify(unsigned int level, unsigned int count, void *buffer)
 {
 
     if (level <= LOG_CRITICAL)
-        critical.write(&critical, 0, count, buffer);
+        system_multicast(&critical, count, buffer);
 
     if (level <= LOG_ERROR)
-        error.write(&error, 0, count, buffer);
+        system_multicast(&error, count, buffer);
 
     if (level <= LOG_WARNING)
-        warning.write(&warning, 0, count, buffer);
+        system_multicast(&warning, count, buffer);
 
     if (level <= LOG_INFO)
-        info.write(&info, 0, count, buffer);
+        system_multicast(&info, count, buffer);
 
 }
 

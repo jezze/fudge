@@ -1,8 +1,8 @@
 #include <fudge.h>
 #include "resource.h"
+#include "task.h"
 #include "vfs.h"
 #include "binary.h"
-#include "task.h"
 #include "container.h"
 
 #define CALLS                           18
@@ -139,7 +139,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, descriptor->id);
+    return descriptor->id = descriptor->channel->protocol->open(descriptor->channel->backend, task, args->descriptor, descriptor->id);
 
 }
 
@@ -152,7 +152,7 @@ static unsigned int close(struct container *container, struct task *task, void *
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    return descriptor->id = descriptor->channel->protocol->close(descriptor->channel->backend, descriptor->id);
+    return descriptor->id = descriptor->channel->protocol->close(descriptor->channel->backend, task, args->descriptor, descriptor->id);
 
 }
 
@@ -166,7 +166,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
     if (!descriptor->id || !descriptor->channel || !args->count)
         return 0;
 
-    count = descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, descriptor->offset, args->count, args->buffer);
+    count = descriptor->channel->protocol->read(descriptor->channel->backend, task, args->descriptor, descriptor->id, descriptor->offset, args->count, args->buffer);
     descriptor->offset += count;
 
     return count;
@@ -182,7 +182,7 @@ static unsigned int seekread(struct container *container, struct task *task, voi
     if (!descriptor->id || !descriptor->channel || !args->count)
         return 0;
 
-    return descriptor->channel->protocol->read(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->channel->protocol->read(descriptor->channel->backend, task, args->descriptor, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -196,7 +196,7 @@ static unsigned int write(struct container *container, struct task *task, void *
     if (!descriptor->id || !descriptor->channel || !args->count)
         return 0;
 
-    count = descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, descriptor->offset, args->count, args->buffer);
+    count = descriptor->channel->protocol->write(descriptor->channel->backend, task, args->descriptor, descriptor->id, descriptor->offset, args->count, args->buffer);
     descriptor->offset += count;
 
     return count;
@@ -212,7 +212,7 @@ static unsigned int seekwrite(struct container *container, struct task *task, vo
     if (!descriptor->id || !descriptor->channel || !args->count)
         return 0;
 
-    return descriptor->channel->protocol->write(descriptor->channel->backend, descriptor->id, args->offset, args->count, args->buffer);
+    return descriptor->channel->protocol->write(descriptor->channel->backend, task, args->descriptor, descriptor->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -284,17 +284,17 @@ static unsigned int load(struct container *container, struct task *task, void *s
     if (!physical)
         return 0;
 
-    format = binary_findformat(descriptor->channel, descriptor->id);
+    format = binary_findformat(descriptor->channel, task, args->descriptor, descriptor->id);
 
-    if (!format || !format->relocate(descriptor->channel, descriptor->id, physical))
+    if (!format || !format->relocate(descriptor->channel, task, args->descriptor, descriptor->id, physical))
         return 0;
 
-    module_init = (void (*)(void))(format->findsymbol(descriptor->channel, descriptor->id, 11, "module_init"));
+    module_init = (void (*)(void))(format->findsymbol(descriptor->channel, task, args->descriptor, descriptor->id, 11, "module_init"));
 
     if (module_init)
         module_init();
 
-    module_register = (void (*)(void))(format->findsymbol(descriptor->channel, descriptor->id, 15, "module_register"));
+    module_register = (void (*)(void))(format->findsymbol(descriptor->channel, task, args->descriptor, descriptor->id, 15, "module_register"));
 
     if (module_register)
         module_register();
@@ -314,12 +314,12 @@ static unsigned int unload(struct container *container, struct task *task, void 
     if (!descriptor->id || !descriptor->channel)
         return 0;
 
-    format = binary_findformat(descriptor->channel, descriptor->id);
+    format = binary_findformat(descriptor->channel, task, args->descriptor, descriptor->id);
 
     if (!format)
         return 0;
 
-    module_unregister = (void (*)(void))(format->findsymbol(descriptor->channel, descriptor->id, 17, "module_unregister"));
+    module_unregister = (void (*)(void))(format->findsymbol(descriptor->channel, task, args->descriptor, descriptor->id, 17, "module_unregister"));
 
     if (module_unregister)
         module_unregister();

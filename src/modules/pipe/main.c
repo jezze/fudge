@@ -23,7 +23,7 @@ static void wakeup(struct list *list)
 
 }
 
-static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, unsigned int count, void *buffer)
+static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, struct task *task, unsigned int descriptor, unsigned int count, void *buffer)
 {
 
     count = buffer_rcfifo(&endself->buffer, count, buffer);
@@ -31,9 +31,10 @@ static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, u
     if (!count && endtarget->node.refcount)
     {
 
-        struct task_mailbox *mailbox = task_findactivemailbox();
+        struct list_item *item = task_findactivemailbox(task, descriptor);
+        struct task_mailbox *mailbox = item->data;
 
-        list_add(&endself->readlist, &mailbox->item);
+        list_add(&endself->readlist, item);
         task_setstatus(mailbox->task, TASK_STATUS_BLOCKED);
 
     }
@@ -44,7 +45,7 @@ static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, u
 
 }
 
-static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, unsigned int count, void *buffer)
+static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, struct task *task, unsigned int descriptor, unsigned int count, void *buffer)
 {
 
     count = buffer_wcfifo(&endtarget->buffer, count, buffer);
@@ -52,9 +53,10 @@ static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, 
     if (!count)
     {
 
-        struct task_mailbox *mailbox = task_findactivemailbox();
+        struct list_item *item = task_findactivemailbox(task, descriptor);
+        struct task_mailbox *mailbox = item->data;
 
-        list_add(&endself->writelist, &mailbox->item);
+        list_add(&endself->writelist, item);
         task_setstatus(mailbox->task, TASK_STATUS_BLOCKED);
 
     }
@@ -65,39 +67,39 @@ static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, 
 
 }
 
-static unsigned int end0_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end0_read(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return read(&pipe->end0, &pipe->end1, count, buffer);
+    return read(&pipe->end0, &pipe->end1, task, descriptor, count, buffer);
 
 }
 
-static unsigned int end0_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end0_write(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return write(&pipe->end0, &pipe->end1, count, buffer);
+    return write(&pipe->end0, &pipe->end1, task, descriptor, count, buffer);
 
 }
 
-static unsigned int end1_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end1_read(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return read(&pipe->end1, &pipe->end0, count, buffer);
+    return read(&pipe->end1, &pipe->end0, task, descriptor, count, buffer);
 
 }
 
-static unsigned int end1_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end1_write(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return write(&pipe->end1, &pipe->end0, count, buffer);
+    return write(&pipe->end1, &pipe->end0, task, descriptor, count, buffer);
 
 }
 

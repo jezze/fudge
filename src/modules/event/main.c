@@ -102,32 +102,33 @@ void event_notifytick(unsigned int counter)
 
 }
 
-static unsigned int poll_open(struct system_node *self)
+static unsigned int poll_open(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    struct task_mailbox *mailbox = task_findactivemailbox();
+    struct list_item *item = task_findactivemailbox(task, descriptor);
 
-    list_add(&self->mailboxes, &mailbox->item);
+    list_add(&self->mailboxes, item);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int poll_close(struct system_node *self)
+static unsigned int poll_close(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    struct task_mailbox *mailbox = task_findactivemailbox();
+    struct list_item *item = task_findactivemailbox(task, descriptor);
 
-    list_remove(&self->mailboxes, &mailbox->item);
+    list_remove(&self->mailboxes, item);
 
     return (unsigned int)self;
 
 }
 
-static unsigned int poll_read(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int poll_read(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct task_mailbox *mailbox = task_findactivemailbox();
+    struct list_item *item = task_findactivemailbox(task, descriptor);
+    struct task_mailbox *mailbox = item->data;
 
     count = buffer_rcfifo(&mailbox->buffer, count, buffer);
 
@@ -138,11 +139,12 @@ static unsigned int poll_read(struct system_node *self, unsigned int offset, uns
 
 }
 
-static unsigned int poll_write(struct system_node *self, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int poll_write(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct event_header *header = buffer;
-    struct task_mailbox *source = task_findactivemailbox();
+    struct list_item *item = task_findactivemailbox(task, descriptor);
+    struct task_mailbox *source = item->data;
     struct task_mailbox *destination;
 
     header->source = (unsigned int)source;

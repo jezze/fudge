@@ -262,15 +262,15 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     {
 
         struct container_descriptor *descriptor = &current.container->descriptors[current.task->id * TASK_DESCRIPTORS];
-        struct binary_format *format = binary_findformat(descriptor->channel, descriptor->id);
+        struct binary_format *format = binary_findformat(descriptor->channel, current.task, 0, descriptor->id);
 
-        address = format->findbase(descriptor->channel, descriptor->id, address);
+        address = format->findbase(descriptor->channel, current.task, 0, descriptor->id, address);
 
         if (address)
         {
 
             maptaskcode(current.task, address);
-            format->copyprogram(descriptor->channel, descriptor->id);
+            format->copyprogram(descriptor->channel, current.task, 0, descriptor->id);
 
         }
 

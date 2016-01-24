@@ -24,10 +24,10 @@ struct system_node
     struct resource *resource;
     unsigned int refcount;
     unsigned int index;
-    unsigned int (*open)(struct system_node *self);
-    unsigned int (*close)(struct system_node *self);
-    unsigned int (*read)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*write)(struct system_node *self, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*open)(struct system_node *self, struct task *task, unsigned int descriptor);
+    unsigned int (*close)(struct system_node *self, struct task *task, unsigned int descriptor);
+    unsigned int (*read)(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*write)(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*child)(struct system_node *self, unsigned int count, char *path);
     unsigned int (*scan)(struct system_node *self, unsigned int index);
 

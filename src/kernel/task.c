@@ -13,12 +13,10 @@ struct task *task_findactive(void)
 
 }
 
-struct task_mailbox *task_findactivemailbox(void)
+struct list_item *task_findactivemailbox(struct task *task, unsigned int descriptor)
 {
 
-    struct task *task = task_findactive();
-
-    return (task) ? &task->mailbox : 0;
+    return (task) ? &task->mailbox.item[descriptor] : 0;
 
 }
 
@@ -100,7 +98,11 @@ void task_unregister(struct task *task)
 void task_initmailbox(struct task_mailbox *mailbox, struct task *task)
 {
 
-    list_inititem(&mailbox->item, mailbox);
+    unsigned int i;
+
+    for (i = 0; i < TASK_DESCRIPTORS; i++)
+        list_inititem(&mailbox->item[i], mailbox);
+
     buffer_init(&mailbox->buffer, TASK_MAILBOXSIZE, mailbox->data);
 
     mailbox->task = task;
