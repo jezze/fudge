@@ -9,8 +9,8 @@ OBJ_KERNEL:=\
     $(DIR_SRC)/kernel/kernel.o \
     $(DIR_SRC)/kernel/resource.o \
     $(DIR_SRC)/kernel/task.o \
-    $(DIR_SRC)/kernel/vfs.o \
-    $(DIR_SRC)/kernel/vfs_cpio.o \
+    $(DIR_SRC)/kernel/service.o \
+    $(DIR_SRC)/kernel/service_cpio.o \
     $(DIR_SRC)/fudge/ascii.o \
     $(DIR_SRC)/fudge/buffer.o \
     $(DIR_SRC)/fudge/ctrl.o \

@@ -2,8 +2,8 @@
 #include <kernel.h>
 #include "system.h"
 
-static struct vfs_backend backend;
-static struct vfs_protocol protocol;
+static struct service_backend backend;
+static struct service_protocol protocol;
 
 static unsigned int node_readgroup(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {

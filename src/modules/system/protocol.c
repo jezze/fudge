@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include "system.h"
 
-static unsigned int protocol_match(struct vfs_backend *backend)
+static unsigned int protocol_match(struct service_backend *backend)
 {
 
     struct system_header header;
@@ -14,7 +14,7 @@ static unsigned int protocol_match(struct vfs_backend *backend)
 
 }
 
-static unsigned int protocol_root(struct vfs_backend *backend)
+static unsigned int protocol_root(struct service_backend *backend)
 {
 
     struct system_header header;
@@ -25,7 +25,7 @@ static unsigned int protocol_root(struct vfs_backend *backend)
 
 }
 
-static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id)
+static unsigned int protocol_parent(struct service_backend *backend, unsigned int id)
 {
 
     struct system_node *node = (struct system_node *)id;
@@ -34,7 +34,7 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
 
 }
 
-static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id, unsigned int count, char *path)
+static unsigned int protocol_child(struct service_backend *backend, unsigned int id, unsigned int count, char *path)
 {
 
     struct system_node *node = (struct system_node *)id;
@@ -43,21 +43,21 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
 
 }
 
-static unsigned int protocol_create(struct vfs_backend *backend, unsigned int id, unsigned int count, char *name)
+static unsigned int protocol_create(struct service_backend *backend, unsigned int id, unsigned int count, char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_destroy(struct vfs_backend *backend, unsigned int id, unsigned int count, char *name)
+static unsigned int protocol_destroy(struct service_backend *backend, unsigned int id, unsigned int count, char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_open(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_open(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     struct system_node *node = (struct system_node *)id;
@@ -68,7 +68,7 @@ static unsigned int protocol_open(struct vfs_backend *backend, struct task *task
 
 }
 
-static unsigned int protocol_close(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_close(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     struct system_node *node = (struct system_node *)id;
@@ -79,7 +79,7 @@ static unsigned int protocol_close(struct vfs_backend *backend, struct task *tas
 
 }
 
-static unsigned int protocol_read(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct system_node *node = (struct system_node *)id;
@@ -88,7 +88,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, struct task *task
 
 }
 
-static unsigned int protocol_write(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct system_node *node = (struct system_node *)id;
@@ -97,7 +97,7 @@ static unsigned int protocol_write(struct vfs_backend *backend, struct task *tas
 
 }
 
-static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, unsigned int index)
+static unsigned int protocol_scan(struct service_backend *backend, unsigned int id, unsigned int index)
 {
 
     struct system_node *node = (struct system_node *)id;
@@ -106,10 +106,10 @@ static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, 
 
 }
 
-void system_initprotocol(struct vfs_protocol *protocol)
+void system_initprotocol(struct service_protocol *protocol)
 {
 
-    vfs_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_scan, 0);
+    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_scan, 0);
 
 }
 

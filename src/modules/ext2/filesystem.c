@@ -22,21 +22,21 @@
 #define NODETYPESYM                     0xA000
 #define NODETYPESOCKET                  0xC000
 
-static unsigned int open(struct vfs_backend *backend, unsigned int id)
+static unsigned int open(struct service_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int close(struct vfs_backend *backend, unsigned int id)
+static unsigned int close(struct service_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
@@ -81,14 +81,14 @@ static unsigned int read(struct vfs_backend *backend, unsigned int id, unsigned 
 
 }
 
-static unsigned int write(struct vfs_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;
 
 }
 
-static struct ext2_entry *finddir(struct vfs_backend *backend, unsigned int id, char *name)
+static struct ext2_entry *finddir(struct service_backend *backend, unsigned int id, char *name)
 {
 
 /*
@@ -127,7 +127,7 @@ static struct ext2_entry *finddir(struct vfs_backend *backend, unsigned int id, 
 
 }
 
-static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned int count, char *path)
+static unsigned int walk(struct service_backend *backend, unsigned int id, unsigned int count, char *path)
 {
 
     struct ext2_entry *entry;
@@ -150,7 +150,7 @@ static unsigned int walk(struct vfs_backend *backend, unsigned int id, unsigned 
 void ext2_init_filesystem(struct ext2_filesystem *filesystem, struct ext2_protocol *protocol, struct base_block *interface)
 {
 
-    vfs_init_protocol(&filesystem->base, 2, 0, open, close, read, write, 0, walk, 0);
+    service_init_protocol(&filesystem->base, 2, 0, open, close, read, write, 0, walk, 0);
 
     filesystem->protocol = protocol;
     filesystem->interface = interface;

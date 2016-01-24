@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "resource.h"
 #include "task.h"
-#include "vfs.h"
+#include "service.h"
 #include "binary.h"
 #include "container.h"
 
@@ -9,7 +9,7 @@
 
 static unsigned int (*calls[CALLS])(struct container *container, struct task *task, void *stack);
 
-static struct vfs_channel *getchannel(struct container *container, unsigned int channel)
+static struct service_channel *getchannel(struct container *container, unsigned int channel)
 {
 
     return &container->channels[channel];
@@ -51,7 +51,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
         if (count == 3 && memory_match(args->path + offset, "../", 3))
         {
 
-            struct vfs_channel *channel;
+            struct service_channel *channel;
             unsigned int i;
 
             for (i = 0; i < CONTAINER_MOUNTS; i++)
@@ -82,7 +82,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
         else
         {
 
-            struct vfs_channel *channel;
+            struct service_channel *channel;
             unsigned int i;
 
             channel = getchannel(container, descriptor->channel);
@@ -121,7 +121,7 @@ static unsigned int create(struct container *container, struct task *task, void 
 
     struct {void *caller; unsigned int descriptor; unsigned int count; char *name;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
 
     if (!descriptor->id || !args->count)
         return 0;
@@ -135,7 +135,7 @@ static unsigned int destroy(struct container *container, struct task *task, void
 
     struct {void *caller; unsigned int descriptor; unsigned int count; char *name;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
 
     if (!descriptor->id || !args->count)
         return 0;
@@ -149,7 +149,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
 
     if (!descriptor->id)
         return 0;
@@ -163,7 +163,7 @@ static unsigned int close(struct container *container, struct task *task, void *
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
 
     if (!descriptor->id)
         return 0;
@@ -177,7 +177,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
     unsigned int count;
 
     if (!descriptor->id || !args->count)
@@ -195,7 +195,7 @@ static unsigned int seekread(struct container *container, struct task *task, voi
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
 
     if (!descriptor->id || !args->count)
         return 0;
@@ -209,7 +209,7 @@ static unsigned int write(struct container *container, struct task *task, void *
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
     unsigned int count;
 
     if (!descriptor->id || !args->count)
@@ -227,7 +227,7 @@ static unsigned int seekwrite(struct container *container, struct task *task, vo
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
 
     if (!descriptor->id || !args->count)
         return 0;
@@ -241,17 +241,17 @@ static unsigned int auth(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor; unsigned int channel; unsigned int backend;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, args->channel);
+    struct service_channel *channel = getchannel(container, args->channel);
 
     if (!descriptor)
         return 0;
 
-    channel->backend = vfs_findbackend(args->backend);
+    channel->backend = service_findbackend(args->backend);
 
     if (!channel->backend)
         return 0;
 
-    channel->protocol = vfs_findprotocol(channel->backend);
+    channel->protocol = service_findprotocol(channel->backend);
 
     if (!channel->protocol)
         return 0;
@@ -291,7 +291,7 @@ static unsigned int load(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
     struct binary_format *format;
     unsigned long physical;
     void (*module_init)(void);
@@ -330,7 +330,7 @@ static unsigned int unload(struct container *container, struct task *task, void 
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
     struct binary_format *format;
     void (*module_unregister)(void);
 
@@ -369,7 +369,7 @@ static unsigned int scan(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor; unsigned int index;} *args = stack;
     struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
-    struct vfs_channel *channel = getchannel(container, descriptor->channel);
+    struct service_channel *channel = getchannel(container, descriptor->channel);
 
     if (!descriptor->id)
         return 0;

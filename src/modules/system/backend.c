@@ -33,10 +33,10 @@ void system_unregisternode(struct system_node *node)
 
 }
 
-void system_initbackend(struct vfs_backend *backend)
+void system_initbackend(struct service_backend *backend)
 {
 
-    vfs_initbackend(backend, 2000, backend_read, backend_write, 0);
+    service_initbackend(backend, 2000, backend_read, backend_write, 0);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
     memory_write(header.id, 12, "FUDGE_SYSTEM", 12, 0);
 

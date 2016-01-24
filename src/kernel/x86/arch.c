@@ -262,7 +262,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     {
 
         struct container_descriptor *descriptor = &current.container->descriptors[current.task->id * TASK_DESCRIPTORS];
-        struct vfs_channel *channel = &current.container->channels[descriptor->channel];
+        struct service_channel *channel = &current.container->channels[descriptor->channel];
         struct binary_format *format = binary_findformat(channel, current.task, 0, descriptor->id);
 
         address = format->findbase(channel, current.task, 0, descriptor->id, address);
@@ -343,7 +343,7 @@ static struct task *setuptasks(void)
 
 }
 
-void arch_setup(struct vfs_backend *backend)
+void arch_setup(struct service_backend *backend)
 {
 
     struct cpu_interrupt interrupt;

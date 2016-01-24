@@ -119,7 +119,7 @@ struct ext2_protocol
 struct ext2_filesystem
 {
 
-    struct vfs_protocol base;
+    struct service_protocol base;
     struct ext2_protocol *protocol;
     struct base_block *interface;
 

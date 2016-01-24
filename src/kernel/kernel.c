@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "resource.h"
 #include "task.h"
-#include "vfs.h"
+#include "service.h"
 #include "binary.h"
 #include "container.h"
 #include "kernel.h"
@@ -37,7 +37,7 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
 {
 
     struct container_descriptor *descriptor = &container->descriptors[task->id * TASK_DESCRIPTORS];
-    struct vfs_channel *channel = &container->channels[descriptor->channel];
+    struct service_channel *channel = &container->channels[descriptor->channel];
     struct binary_format *format;
 
     if (!descriptor->id)
@@ -54,16 +54,16 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
 
 }
 
-unsigned int kernel_setupramdisk(struct container *container, struct task *task, struct vfs_backend *backend)
+unsigned int kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
 {
 
-    struct vfs_channel *channel = &container->channels[0x00];
+    struct service_channel *channel = &container->channels[0x00];
     struct container_mount *mount = &container->mounts[0x00];
     struct container_descriptor *init = &container->descriptors[0x08];
     struct container_descriptor *root = &container->descriptors[0x09];
 
     channel->backend = backend;
-    channel->protocol = vfs_findprotocol(channel->backend);
+    channel->protocol = service_findprotocol(channel->backend);
 
     if (!channel->protocol)
         return 0;
@@ -92,7 +92,7 @@ void kernel_setup(void)
 {
 
     binary_setupelf();
-    vfs_setupcpio();
+    service_setupcpio();
 
 }
 

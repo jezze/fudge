@@ -2,33 +2,33 @@
 #include <elf/elf.h>
 #include "resource.h"
 #include "task.h"
-#include "vfs.h"
+#include "service.h"
 #include "binary.h"
 
 static struct binary_format format;
 
-static unsigned int readheader(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, struct elf_header *header)
+static unsigned int readheader(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, struct elf_header *header)
 {
 
     return channel->protocol->read(channel->backend, task, descriptor, id, 0, ELF_HEADER_SIZE, header);
 
 }
 
-static unsigned int readprogramheader(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, struct elf_header *header, unsigned int index, struct elf_programheader *programheader)
+static unsigned int readprogramheader(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, struct elf_header *header, unsigned int index, struct elf_programheader *programheader)
 {
 
     return channel->protocol->read(channel->backend, task, descriptor, id, header->phoffset + index * header->phsize, header->phsize, programheader);
 
 }
 
-static unsigned int readsectionheader(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, struct elf_header *header, unsigned int index, struct elf_sectionheader *sectionheader)
+static unsigned int readsectionheader(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, struct elf_header *header, unsigned int index, struct elf_sectionheader *sectionheader)
 {
 
     return channel->protocol->read(channel->backend, task, descriptor, id, header->shoffset + index * header->shsize, header->shsize, sectionheader);
 
 }
 
-static unsigned int relocate(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, struct elf_header *header, struct elf_sectionheader *relocationheader, unsigned int address)
+static unsigned int relocate(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, struct elf_header *header, struct elf_sectionheader *relocationheader, unsigned int address)
 {
 
     struct elf_sectionheader dataheader;
@@ -96,7 +96,7 @@ static unsigned int relocate(struct vfs_channel *channel, struct task *task, uns
 
 }
 
-static unsigned long findsymbol(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, struct elf_header *header, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
+static unsigned long findsymbol(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, struct elf_header *header, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
 {
 
     struct elf_sectionheader stringheader;
@@ -144,7 +144,7 @@ static unsigned long findsymbol(struct vfs_channel *channel, struct task *task, 
 
 }
 
-static unsigned int format_match(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int format_match(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     struct elf_header header;
@@ -156,7 +156,7 @@ static unsigned int format_match(struct vfs_channel *channel, struct task *task,
 
 }
 
-static unsigned long format_findsymbol(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, unsigned int count, char *symbolname)
+static unsigned long format_findsymbol(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, unsigned int count, char *symbolname)
 {
 
     struct elf_header header;
@@ -188,7 +188,7 @@ static unsigned long format_findsymbol(struct vfs_channel *channel, struct task 
 
 }
 
-static unsigned long format_findentry(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned long format_findentry(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     struct elf_header header;
@@ -200,7 +200,7 @@ static unsigned long format_findentry(struct vfs_channel *channel, struct task *
 
 }
 
-static unsigned long format_findbase(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, unsigned long address)
+static unsigned long format_findbase(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, unsigned long address)
 {
 
     struct elf_header header;
@@ -226,7 +226,7 @@ static unsigned long format_findbase(struct vfs_channel *channel, struct task *t
 
 }
 
-static unsigned int format_copyprogram(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int format_copyprogram(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     struct elf_header header;
@@ -259,7 +259,7 @@ static unsigned int format_copyprogram(struct vfs_channel *channel, struct task 
 
 }
 
-static unsigned int format_relocate(struct vfs_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, unsigned int address)
+static unsigned int format_relocate(struct service_channel *channel, struct task *task, unsigned int descriptor, unsigned int id, unsigned int address)
 {
 
     struct elf_header header;

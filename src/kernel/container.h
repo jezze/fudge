@@ -25,7 +25,7 @@ struct container
 {
 
     struct resource resource;
-    struct vfs_channel channels[CONTAINER_CHANNELS];
+    struct service_channel channels[CONTAINER_CHANNELS];
     struct container_mount mounts[CONTAINER_MOUNTS];
     struct container_descriptor descriptors[CONTAINER_DESCRIPTORS];
 

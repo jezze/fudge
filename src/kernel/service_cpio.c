@@ -2,9 +2,9 @@
 #include <format/cpio.h>
 #include "resource.h"
 #include "task.h"
-#include "vfs.h"
+#include "service.h"
 
-static struct vfs_protocol protocol;
+static struct service_protocol protocol;
 
 static unsigned int decode(unsigned int id)
 {
@@ -20,7 +20,7 @@ static unsigned int encode(unsigned int address)
 
 }
 
-static unsigned int readheader(struct vfs_backend *backend, struct cpio_header *header, unsigned int address)
+static unsigned int readheader(struct service_backend *backend, struct cpio_header *header, unsigned int address)
 {
 
     unsigned int count = backend->read(address, sizeof (struct cpio_header), header);
@@ -29,14 +29,14 @@ static unsigned int readheader(struct vfs_backend *backend, struct cpio_header *
 
 }
 
-static unsigned int readname(struct vfs_backend *backend, struct cpio_header *header, unsigned int address, unsigned int count, void *buffer)
+static unsigned int readname(struct service_backend *backend, struct cpio_header *header, unsigned int address, unsigned int count, void *buffer)
 {
 
     return (header->namesize <= count) ? backend->read(address + sizeof (struct cpio_header), header->namesize, buffer) : 0;
 
 }
 
-static unsigned int protocol_match(struct vfs_backend *backend)
+static unsigned int protocol_match(struct service_backend *backend)
 {
 
     struct cpio_header header;
@@ -45,7 +45,7 @@ static unsigned int protocol_match(struct vfs_backend *backend)
 
 }
 
-static unsigned int protocol_root(struct vfs_backend *backend)
+static unsigned int protocol_root(struct service_backend *backend)
 {
 
     struct cpio_header header;
@@ -69,7 +69,7 @@ static unsigned int protocol_root(struct vfs_backend *backend)
 
 }
 
-static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id)
+static unsigned int protocol_parent(struct service_backend *backend, unsigned int id)
 {
 
     struct cpio_header header;
@@ -118,7 +118,7 @@ static unsigned int protocol_parent(struct vfs_backend *backend, unsigned int id
 
 }
 
-static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id, unsigned int count, char *path)
+static unsigned int protocol_child(struct service_backend *backend, unsigned int id, unsigned int count, char *path)
 {
 
     struct cpio_header header;
@@ -171,35 +171,35 @@ static unsigned int protocol_child(struct vfs_backend *backend, unsigned int id,
 
 }
 
-static unsigned int protocol_create(struct vfs_backend *backend, unsigned int id, unsigned int count, char *name)
+static unsigned int protocol_create(struct service_backend *backend, unsigned int id, unsigned int count, char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_destroy(struct vfs_backend *backend, unsigned int id, unsigned int count, char *name)
+static unsigned int protocol_destroy(struct service_backend *backend, unsigned int id, unsigned int count, char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_open(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_open(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int protocol_close(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_close(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int readnormal(struct vfs_backend *backend, unsigned int address, unsigned int offset, unsigned int count, void *buffer, struct cpio_header *header)
+static unsigned int readnormal(struct service_backend *backend, unsigned int address, unsigned int offset, unsigned int count, void *buffer, struct cpio_header *header)
 {
 
     unsigned int s = cpio_filesize(header);
@@ -214,7 +214,7 @@ static unsigned int readnormal(struct vfs_backend *backend, unsigned int address
 
 }
 
-static unsigned int readdirectory(struct vfs_backend *backend, unsigned int address, unsigned int offset, unsigned int count, void *buffer, struct cpio_header *header)
+static unsigned int readdirectory(struct service_backend *backend, unsigned int address, unsigned int offset, unsigned int count, void *buffer, struct cpio_header *header)
 {
 
     struct record *record = buffer;
@@ -247,7 +247,7 @@ static unsigned int readdirectory(struct vfs_backend *backend, unsigned int addr
 
 }
 
-static unsigned int protocol_read(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -271,7 +271,7 @@ static unsigned int protocol_read(struct vfs_backend *backend, struct task *task
 
 }
 
-static unsigned int writenormal(struct vfs_backend *backend, unsigned int address, unsigned int offset, unsigned int count, void *buffer, struct cpio_header *header)
+static unsigned int writenormal(struct service_backend *backend, unsigned int address, unsigned int offset, unsigned int count, void *buffer, struct cpio_header *header)
 {
 
     unsigned int s = cpio_filesize(header);
@@ -286,7 +286,7 @@ static unsigned int writenormal(struct vfs_backend *backend, unsigned int addres
 
 }
 
-static unsigned int protocol_write(struct vfs_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -307,7 +307,7 @@ static unsigned int protocol_write(struct vfs_backend *backend, struct task *tas
 
 }
 
-static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, unsigned int index)
+static unsigned int protocol_scan(struct service_backend *backend, unsigned int id, unsigned int index)
 {
 
     struct cpio_header header;
@@ -340,7 +340,7 @@ static unsigned int protocol_scan(struct vfs_backend *backend, unsigned int id, 
 
 }
 
-static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned int id)
+static unsigned long protocol_getphysical(struct service_backend *backend, unsigned int id)
 {
 
     /* TEMPORARY FIX */
@@ -354,10 +354,10 @@ static unsigned long protocol_getphysical(struct vfs_backend *backend, unsigned 
 
 }
 
-void vfs_setupcpio(void)
+void service_setupcpio(void)
 {
 
-    vfs_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_scan, protocol_getphysical);
+    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_scan, protocol_getphysical);
     resource_register(&protocol.resource);
 
 }

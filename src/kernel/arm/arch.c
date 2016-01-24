@@ -43,7 +43,7 @@ static struct
 
 } current;
 
-static struct vfs_backend backend;
+static struct service_backend backend;
 
 static unsigned int backend_read(unsigned int offset, unsigned int count, void *buffer)
 {
@@ -210,7 +210,7 @@ void arch_setup(void)
     uart_puts("Fudge Console\n");
     swi_test();
 
-    vfs_initbackend(&backend, 1000, backend_read, backend_write, backend_getphysical);
+    service_initbackend(&backend, 1000, backend_read, backend_write, backend_getphysical);
     kernel_setup();
 
     current.container = setupcontainers();

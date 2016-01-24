@@ -6,7 +6,7 @@
 
 #define MBOOT_MAGIC                     0x2BADB002
 
-static struct vfs_backend backend;
+static struct service_backend backend;
 static unsigned long address;
 static unsigned int limit;
 
@@ -83,7 +83,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
         struct mboot_module *modules = (struct mboot_module *)header->modules.address;
 
-        vfs_initbackend(&backend, 1000, read, write, getphysical);
+        service_initbackend(&backend, 1000, read, write, getphysical);
 
         address = modules[0].address;
         limit = modules[0].limit;
