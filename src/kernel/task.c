@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include "resource.h"
-#include "vfs.h"
 #include "task.h"
 
 static struct list active;
