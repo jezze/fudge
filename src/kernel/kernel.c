@@ -37,17 +37,18 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
 {
 
     struct container_descriptor *descriptor = &container->descriptors[task->id * TASK_DESCRIPTORS];
+    struct vfs_channel *channel = &container->channels[descriptor->channel];
     struct binary_format *format;
 
-    if (!descriptor->id || !descriptor->channel)
+    if (!descriptor->id)
         return 0;
 
-    format = binary_findformat(descriptor->channel, task, 0, descriptor->id);
+    format = binary_findformat(channel, task, 0, descriptor->id);
 
     if (!format)
         return 0;
 
-    task_resume(task, format->findentry(descriptor->channel, task, 0, descriptor->id), sp);
+    task_resume(task, format->findentry(channel, task, 0, descriptor->id), sp);
 
     return task->state.registers.ip;
 
@@ -67,7 +68,7 @@ unsigned int kernel_setupramdisk(struct container *container, struct task *task,
     if (!channel->protocol)
         return 0;
 
-    mount->parent.channel = channel;
+    mount->parent.channel = 0x00;
     mount->parent.id = channel->protocol->root(channel->backend);
     mount->child.channel = mount->parent.channel;
     mount->child.id = mount->parent.id;
@@ -77,13 +78,13 @@ unsigned int kernel_setupramdisk(struct container *container, struct task *task,
 
     root->channel = mount->parent.channel;
     root->id = mount->parent.id;
-    init->channel = root->channel;
-    init->id = root->channel->protocol->child(root->channel->backend, root->id, 4, "bin/");
+    init->channel = 0x00;
+    init->id = channel->protocol->child(channel->backend, root->id, 4, "bin/");
 
     if (!init->id)
         return 0;
 
-    return init->id = init->channel->protocol->child(init->channel->backend, init->id, 4, "init");
+    return init->id = channel->protocol->child(channel->backend, init->id, 4, "init");
 
 }
 

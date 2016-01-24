@@ -6,8 +6,8 @@ struct container_mount
 {
 
     struct resource resource;
-    struct {struct vfs_channel *channel; unsigned int id;} parent;
-    struct {struct vfs_channel *channel; unsigned int id;} child;
+    struct {unsigned int channel; unsigned int id;} parent;
+    struct {unsigned int channel; unsigned int id;} child;
 
 };
 
@@ -15,7 +15,7 @@ struct container_descriptor
 {
 
     struct resource resource;
-    struct vfs_channel *channel;
+    unsigned int channel;
     unsigned int id;
     unsigned int offset;
 
