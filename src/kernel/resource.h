@@ -4,7 +4,7 @@
 #define RESOURCE_SERVICEPROTOCOL        4
 #define RESOURCE_SERVICECHANNEL         5
 #define RESOURCE_CONTAINERMOUNT         6
-#define RESOURCE_CONTAINERDESCRIPTOR    7
+#define RESOURCE_CONTAINERSESSION       7
 #define RESOURCE_BINARYFORMAT           8
 #define RESOURCE_BUS                    9
 #define RESOURCE_DRIVER                 10

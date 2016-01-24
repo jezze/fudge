@@ -17,8 +17,8 @@ void container_init(struct container *container)
     for (i = 0; i < CONTAINER_MOUNTS; i++)
         resource_init(&container->mounts[i].resource, RESOURCE_CONTAINERMOUNT, &container->mounts[i]);
 
-    for (i = 0; i < CONTAINER_DESCRIPTORS; i++)
-        resource_init(&container->descriptors[i].resource, RESOURCE_CONTAINERDESCRIPTOR, &container->descriptors[i]);
+    for (i = 0; i < CONTAINER_SESSIONS; i++)
+        resource_init(&container->sessions[i].resource, RESOURCE_CONTAINERSESSION, &container->sessions[i]);
 
 }
 

@@ -1,6 +1,6 @@
 #define CONTAINER_CHANNELS              16
 #define CONTAINER_MOUNTS                32
-#define CONTAINER_DESCRIPTORS           32 * 64
+#define CONTAINER_SESSIONS              32 * 64
 
 struct container_mount
 {
@@ -11,7 +11,7 @@ struct container_mount
 
 };
 
-struct container_descriptor
+struct container_session
 {
 
     struct resource resource;
@@ -27,7 +27,7 @@ struct container
     struct resource resource;
     struct service_channel channels[CONTAINER_CHANNELS];
     struct container_mount mounts[CONTAINER_MOUNTS];
-    struct container_descriptor descriptors[CONTAINER_DESCRIPTORS];
+    struct container_session sessions[CONTAINER_SESSIONS];
 
 };
 

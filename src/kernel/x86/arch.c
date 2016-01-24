@@ -31,7 +31,7 @@ static struct
 {
 
     struct gdt_pointer pointer;
-    struct gdt_descriptor descriptors[GDTDESCRIPTORS];
+    struct gdt_descriptor sessions[GDTDESCRIPTORS];
 
 } gdt;
 
@@ -39,7 +39,7 @@ static struct
 {
 
     struct idt_pointer pointer;
-    struct idt_descriptor descriptors[IDTDESCRIPTORS];
+    struct idt_descriptor sessions[IDTDESCRIPTORS];
 
 } idt;
 
@@ -47,7 +47,7 @@ static struct
 {
 
     struct tss_pointer pointer;
-    struct tss_descriptor descriptors[TSSDESCRIPTORS];
+    struct tss_descriptor sessions[TSSDESCRIPTORS];
 
 } tss;
 
@@ -159,7 +159,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
         return 0;
 
     copymap(container, next);
-    kernel_copydescriptors(container, task, next);
+    kernel_copysessions(container, task, next);
 
     if (!kernel_setupbinary(container, next, TASKSTACK))
         return 0;
@@ -261,17 +261,17 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (current.task)
     {
 
-        struct container_descriptor *descriptor = &current.container->descriptors[current.task->id * TASK_DESCRIPTORS];
-        struct service_channel *channel = &current.container->channels[descriptor->channel];
-        struct binary_format *format = binary_findformat(channel, current.task, 0, descriptor->id);
+        struct container_session *session = &current.container->sessions[current.task->id * TASK_DESCRIPTORS];
+        struct service_channel *channel = &current.container->channels[session->channel];
+        struct binary_format *format = binary_findformat(channel, current.task, 0, session->id);
 
-        address = format->findbase(channel, current.task, 0, descriptor->id, address);
+        address = format->findbase(channel, current.task, 0, session->id, address);
 
         if (address)
         {
 
             maptaskcode(current.task, address);
-            format->copyprogram(channel, current.task, 0, descriptor->id);
+            format->copyprogram(channel, current.task, 0, session->id);
 
         }
 
@@ -348,9 +348,9 @@ void arch_setup(struct service_backend *backend)
 
     struct cpu_interrupt interrupt;
 
-    gdt_initpointer(&gdt.pointer, GDTDESCRIPTORS, gdt.descriptors);
-    idt_initpointer(&idt.pointer, IDTDESCRIPTORS, idt.descriptors);
-    tss_initpointer(&tss.pointer, TSSDESCRIPTORS, tss.descriptors);
+    gdt_initpointer(&gdt.pointer, GDTDESCRIPTORS, gdt.sessions);
+    idt_initpointer(&idt.pointer, IDTDESCRIPTORS, idt.sessions);
+    tss_initpointer(&tss.pointer, TSSDESCRIPTORS, tss.sessions);
 
     selector.kcode = gdt_setdescriptor(&gdt.pointer, 0x01, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.kstack = gdt_setdescriptor(&gdt.pointer, 0x02, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
@@ -374,7 +374,7 @@ void arch_setup(struct service_backend *backend)
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainercode(current.container);
     copymap(current.container, current.task);
-    kernel_copydescriptors(current.container, current.task, current.task);
+    kernel_copysessions(current.container, current.task, current.task);
     kernel_setupbinary(current.container, current.task, TASKSTACK);
     activate(current.task);
     mmu_setup();

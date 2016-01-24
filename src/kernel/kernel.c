@@ -6,7 +6,7 @@
 #include "container.h"
 #include "kernel.h"
 
-void kernel_copydescriptors(struct container *container, struct task *source, struct task *target)
+void kernel_copysessions(struct container *container, struct task *source, struct task *target)
 {
 
     unsigned int sid = source->id * TASK_DESCRIPTORS;
@@ -16,18 +16,18 @@ void kernel_copydescriptors(struct container *container, struct task *source, st
     for (i = 0x00; i < 0x08; i++)
     {
 
-        container->descriptors[tid + i + 0x00].channel = container->descriptors[sid + i + 0x08].channel;
-        container->descriptors[tid + i + 0x00].id = container->descriptors[sid + i + 0x08].id;
-        container->descriptors[tid + i + 0x00].offset = 0;
-        container->descriptors[tid + i + 0x08].channel = container->descriptors[sid + i + 0x08].channel;
-        container->descriptors[tid + i + 0x08].id = container->descriptors[sid + i + 0x08].id;
-        container->descriptors[tid + i + 0x08].offset = 0;
-        container->descriptors[tid + i + 0x10].channel = 0;
-        container->descriptors[tid + i + 0x10].id = 0;
-        container->descriptors[tid + i + 0x10].offset = 0;
-        container->descriptors[tid + i + 0x18].channel = 0;
-        container->descriptors[tid + i + 0x18].id = 0;
-        container->descriptors[tid + i + 0x18].offset = 0;
+        container->sessions[tid + i + 0x00].channel = container->sessions[sid + i + 0x08].channel;
+        container->sessions[tid + i + 0x00].id = container->sessions[sid + i + 0x08].id;
+        container->sessions[tid + i + 0x00].offset = 0;
+        container->sessions[tid + i + 0x08].channel = container->sessions[sid + i + 0x08].channel;
+        container->sessions[tid + i + 0x08].id = container->sessions[sid + i + 0x08].id;
+        container->sessions[tid + i + 0x08].offset = 0;
+        container->sessions[tid + i + 0x10].channel = 0;
+        container->sessions[tid + i + 0x10].id = 0;
+        container->sessions[tid + i + 0x10].offset = 0;
+        container->sessions[tid + i + 0x18].channel = 0;
+        container->sessions[tid + i + 0x18].id = 0;
+        container->sessions[tid + i + 0x18].offset = 0;
 
     }
 
@@ -36,19 +36,19 @@ void kernel_copydescriptors(struct container *container, struct task *source, st
 unsigned int kernel_setupbinary(struct container *container, struct task *task, unsigned int sp)
 {
 
-    struct container_descriptor *descriptor = &container->descriptors[task->id * TASK_DESCRIPTORS];
-    struct service_channel *channel = &container->channels[descriptor->channel];
+    struct container_session *session = &container->sessions[task->id * TASK_DESCRIPTORS];
+    struct service_channel *channel = &container->channels[session->channel];
     struct binary_format *format;
 
-    if (!descriptor->id)
+    if (!session->id)
         return 0;
 
-    format = binary_findformat(channel, task, 0, descriptor->id);
+    format = binary_findformat(channel, task, 0, session->id);
 
     if (!format)
         return 0;
 
-    task_resume(task, format->findentry(channel, task, 0, descriptor->id), sp);
+    task_resume(task, format->findentry(channel, task, 0, session->id), sp);
 
     return task->state.registers.ip;
 
@@ -59,8 +59,8 @@ unsigned int kernel_setupramdisk(struct container *container, struct task *task,
 
     struct service_channel *channel = &container->channels[0x00];
     struct container_mount *mount = &container->mounts[0x00];
-    struct container_descriptor *init = &container->descriptors[0x08];
-    struct container_descriptor *root = &container->descriptors[0x09];
+    struct container_session *init = &container->sessions[0x08];
+    struct container_session *root = &container->sessions[0x09];
 
     channel->backend = backend;
     channel->protocol = service_findprotocol(channel->backend);
