@@ -48,12 +48,11 @@ static unsigned int walk(struct container *container, struct task *task, void *s
     for (offset = 0; (count = memory_findbyte(args->path + offset, args->count - offset, '/')); offset += count)
     {
 
-        char *path = args->path + offset;
-        unsigned int i;
-        struct vfs_channel *channel;
-
-        if (count == 3 && memory_match(path, "../", 3))
+        if (count == 3 && memory_match(args->path + offset, "../", 3))
         {
+
+            struct vfs_channel *channel;
+            unsigned int i;
 
             for (i = 0; i < CONTAINER_MOUNTS; i++)
             {
@@ -82,6 +81,9 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
         else
         {
+
+            struct vfs_channel *channel;
+            unsigned int i;
 
             channel = getchannel(container, descriptor->channel);
             descriptor->id = channel->protocol->child(channel->backend, descriptor->id, count, args->path + offset);
