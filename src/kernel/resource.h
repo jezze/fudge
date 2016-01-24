@@ -1,8 +1,8 @@
 #define RESOURCE_CONTAINER              1
 #define RESOURCE_TASK                   2
-#define RESOURCE_VFSBACKEND             3
-#define RESOURCE_VFSPROTOCOL            4
-#define RESOURCE_VFSCHANNEL             5
+#define RESOURCE_SERVICEBACKEND         3
+#define RESOURCE_SERVICEPROTOCOL        4
+#define RESOURCE_SERVICECHANNEL         5
 #define RESOURCE_CONTAINERMOUNT         6
 #define RESOURCE_CONTAINERDESCRIPTOR    7
 #define RESOURCE_BINARYFORMAT           8
