@@ -144,10 +144,10 @@ void system_multicast(struct system_node *node, unsigned int count, void *buffer
     for (current = node->mailboxes.head; current; current = current->next)
     {
 
-        struct task_mailbox *mailbox = current->data;
+        struct task *task = current->data;
 
-        task_setstatus(mailbox->task, TASK_STATUS_UNBLOCKED);
-        buffer_wcfifo(&mailbox->buffer, count, buffer);
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
+        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
 
     }
 

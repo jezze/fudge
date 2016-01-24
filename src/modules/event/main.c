@@ -15,19 +15,19 @@ static void event_notify(unsigned int type, unsigned int count, void *buffer)
     {
 
         struct event_header header;
-        struct task_mailbox *mailbox = current->data;
+        struct task *task = current->data;
 
-        header.destination = (unsigned int)mailbox;
+        header.destination = (unsigned int)task;
         header.source = 0;
         header.type = type;
         header.count = count;
 
-        if (mailbox->buffer.capacity - mailbox->buffer.count < count)
+        if (task->mailbox.buffer.capacity - task->mailbox.buffer.count < count)
             break;
 
-        task_setstatus(mailbox->task, TASK_STATUS_UNBLOCKED);
-        buffer_wcfifo(&mailbox->buffer, sizeof (struct event_header), &header);
-        buffer_wcfifo(&mailbox->buffer, count, buffer);
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
+        buffer_wcfifo(&task->mailbox.buffer, sizeof (struct event_header), &header);
+        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
 
         break;
 
@@ -136,19 +136,18 @@ static unsigned int poll_write(struct system_node *self, struct task *task, unsi
 {
 
     struct event_header *header = buffer;
-    struct task_mailbox *source = &task->mailbox;
-    struct task_mailbox *destination;
+    struct task *destination;
 
-    header->source = (unsigned int)source;
+    header->source = (unsigned int)task;
 
     if (!header->destination)
         header->destination = (unsigned int)poll.mailboxes.head->data;
 
-    destination = (struct task_mailbox *)header->destination;
+    destination = (struct task *)header->destination;
 
-    task_setstatus(destination->task, TASK_STATUS_UNBLOCKED);
+    task_setstatus(destination, TASK_STATUS_UNBLOCKED);
 
-    return buffer_wcfifo(&destination->buffer, count, buffer);
+    return buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
 
 }
 

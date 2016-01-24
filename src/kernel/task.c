@@ -93,8 +93,6 @@ void task_initmailbox(struct task_mailbox *mailbox, struct task *task)
 
     buffer_init(&mailbox->buffer, TASK_MAILBOXSIZE, mailbox->data);
 
-    mailbox->task = task;
-
 }
 
 void task_init(struct task *task, unsigned int id)
@@ -107,7 +105,7 @@ void task_init(struct task *task, unsigned int id)
     task_initmailbox(&task->mailbox, task);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
-        list_inititem(&task->mailboxitem[i], &task->mailbox);
+        list_inititem(&task->mailboxitem[i], task);
 
     task->id = id;
 

@@ -14,10 +14,10 @@ static void wakeup(struct list *list)
     for (current = list->head; current; current = current->next)
     {
 
-        struct task_mailbox *mailbox = current->data;
+        struct task *task = current->data;
 
         list_remove(list, current);
-        task_setstatus(mailbox->task, TASK_STATUS_UNBLOCKED);
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
 
     }
 

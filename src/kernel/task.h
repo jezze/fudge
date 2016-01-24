@@ -8,7 +8,6 @@
 struct task_mailbox
 {
 
-    struct task *task;
     struct buffer buffer;
     unsigned char data[TASK_MAILBOXSIZE];
 
