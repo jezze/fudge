@@ -105,7 +105,7 @@ void task_init(struct task *task, unsigned int id)
     task_initmailbox(&task->mailbox, task);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
-        list_inititem(&task->mailboxitem[i], task);
+        list_inititem(&task->descriptors[i], task);
 
     task->id = id;
 

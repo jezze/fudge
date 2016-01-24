@@ -31,7 +31,7 @@ static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, s
     if (!count && endtarget->node.refcount)
     {
 
-        list_add(&endself->readlist, &task->mailboxitem[descriptor]);
+        list_add(&endself->readlist, &task->descriptors[descriptor]);
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
     }
@@ -50,7 +50,7 @@ static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, 
     if (!count)
     {
 
-        list_add(&endself->writelist, &task->mailboxitem[descriptor]);
+        list_add(&endself->writelist, &task->descriptors[descriptor]);
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
     }

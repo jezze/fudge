@@ -28,7 +28,7 @@ struct task
     struct resource resource;
     struct task_state state;
     struct task_mailbox mailbox;
-    struct list_item mailboxitem[TASK_DESCRIPTORS];
+    struct list_item descriptors[TASK_DESCRIPTORS];
     unsigned int id;
 
 };

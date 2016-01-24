@@ -105,7 +105,7 @@ void event_notifytick(unsigned int counter)
 static unsigned int poll_open(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    list_add(&self->mailboxes, &task->mailboxitem[descriptor]);
+    list_add(&self->mailboxes, &task->descriptors[descriptor]);
 
     return (unsigned int)self;
 
@@ -114,7 +114,7 @@ static unsigned int poll_open(struct system_node *self, struct task *task, unsig
 static unsigned int poll_close(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    list_remove(&self->mailboxes, &task->mailboxitem[descriptor]);
+    list_remove(&self->mailboxes, &task->descriptors[descriptor]);
 
     return (unsigned int)self;
 
