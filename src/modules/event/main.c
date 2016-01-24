@@ -11,7 +11,7 @@ static void event_notify(unsigned int type, unsigned int count, void *buffer)
 
     struct list_item *current;
 
-    for (current = poll.mailboxes.head; current; current = current->next)
+    for (current = poll.links.head; current; current = current->next)
     {
 
         struct event_header header;
@@ -105,7 +105,7 @@ void event_notifytick(unsigned int counter)
 static unsigned int poll_open(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    list_add(&self->mailboxes, &task->descriptors[descriptor]);
+    list_add(&self->links, &task->links[descriptor]);
 
     return (unsigned int)self;
 
@@ -114,7 +114,7 @@ static unsigned int poll_open(struct system_node *self, struct task *task, unsig
 static unsigned int poll_close(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    list_remove(&self->mailboxes, &task->descriptors[descriptor]);
+    list_remove(&self->links, &task->links[descriptor]);
 
     return (unsigned int)self;
 
@@ -141,7 +141,7 @@ static unsigned int poll_write(struct system_node *self, struct task *task, unsi
     header->source = (unsigned int)task;
 
     if (!header->destination)
-        header->destination = (unsigned int)poll.mailboxes.head->data;
+        header->destination = (unsigned int)poll.links.head->data;
 
     destination = (struct task *)header->destination;
 

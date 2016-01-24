@@ -36,7 +36,7 @@ static unsigned int node_readgroup(struct system_node *self, struct task *task, 
 static unsigned int node_openmailboxes(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    list_add(&self->mailboxes, &task->descriptors[descriptor]);
+    list_add(&self->links, &task->links[descriptor]);
 
     return (unsigned int)self;
 
@@ -45,7 +45,7 @@ static unsigned int node_openmailboxes(struct system_node *self, struct task *ta
 static unsigned int node_closemailboxes(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    list_remove(&self->mailboxes, &task->descriptors[descriptor]);
+    list_remove(&self->links, &task->links[descriptor]);
 
     return (unsigned int)self;
 
@@ -141,7 +141,7 @@ void system_multicast(struct system_node *node, unsigned int count, void *buffer
 
     struct list_item *current;
 
-    for (current = node->mailboxes.head; current; current = current->next)
+    for (current = node->links.head; current; current = current->next)
     {
 
         struct task *task = current->data;

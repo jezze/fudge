@@ -98,7 +98,7 @@ void task_init(struct task *task, unsigned int id)
     buffer_init(&task->mailbox.buffer, TASK_MAILBOXSIZE, task->mailbox.data);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
-        list_inititem(&task->descriptors[i], task);
+        list_inititem(&task->links[i], task);
 
     task->id = id;
 

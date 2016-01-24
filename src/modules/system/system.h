@@ -18,7 +18,7 @@ struct system_node
     struct list_item item;
     struct system_node *parent;
     struct list children;
-    struct list mailboxes;
+    struct list links;
     unsigned int type;
     char *name;
     struct resource *resource;
