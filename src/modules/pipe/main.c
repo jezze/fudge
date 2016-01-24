@@ -31,12 +31,12 @@ static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, s
     if (!count && endtarget->node.refcount)
     {
 
-        list_add(&endself->readlist, &task->links[descriptor]);
+        list_add(&endself->readlinks, &task->links[descriptor]);
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
     }
 
-    wakeup(&endtarget->writelist);
+    wakeup(&endtarget->writelinks);
 
     return count;
 
@@ -50,12 +50,12 @@ static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, 
     if (!count)
     {
 
-        list_add(&endself->writelist, &task->links[descriptor]);
+        list_add(&endself->writelinks, &task->links[descriptor]);
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
     }
 
-    wakeup(&endtarget->readlist);
+    wakeup(&endtarget->readlinks);
 
     return count;
 
