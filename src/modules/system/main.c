@@ -36,7 +36,7 @@ static unsigned int node_readgroup(struct system_node *self, struct task *task, 
 static unsigned int node_openmailboxes(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    struct list_item *item = task_findactivemailbox(task, descriptor);
+    struct list_item *item = task_getmailbox(task, descriptor);
 
     list_add(&self->mailboxes, item);
 
@@ -47,7 +47,7 @@ static unsigned int node_openmailboxes(struct system_node *self, struct task *ta
 static unsigned int node_closemailboxes(struct system_node *self, struct task *task, unsigned int descriptor)
 {
 
-    struct list_item *item = task_findactivemailbox(task, descriptor);
+    struct list_item *item = task_getmailbox(task, descriptor);
 
     list_remove(&self->mailboxes, item);
 
@@ -58,7 +58,7 @@ static unsigned int node_closemailboxes(struct system_node *self, struct task *t
 static unsigned int node_readmailboxes(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct list_item *item = task_findactivemailbox(task, descriptor);
+    struct list_item *item = task_getmailbox(task, descriptor);
     struct task_mailbox *mailbox = item->data;
 
     count = buffer_rcfifo(&mailbox->buffer, count, buffer);

@@ -13,17 +13,17 @@ struct task *task_findactive(void)
 
 }
 
-struct list_item *task_findactivemailbox(struct task *task, unsigned int descriptor)
-{
-
-    return (task) ? &task->mailbox.item[descriptor] : 0;
-
-}
-
 struct task *task_findinactive(void)
 {
 
     return (inactive.tail) ? inactive.tail->data : 0;
+
+}
+
+struct list_item *task_getmailbox(struct task *task, unsigned int descriptor)
+{
+
+    return (task) ? &task->mailbox.item[descriptor] : 0;
 
 }
 

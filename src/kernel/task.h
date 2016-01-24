@@ -35,8 +35,8 @@ struct task
 };
 
 struct task *task_findactive(void);
-struct list_item *task_findactivemailbox(struct task *task, unsigned int descriptor);
 struct task *task_findinactive(void);
+struct list_item *task_getmailbox(struct task *task, unsigned int descriptor);
 void task_setstatus(struct task *task, unsigned int state);
 void task_resume(struct task *task, unsigned int ip, unsigned int sp);
 void task_register(struct task *task);

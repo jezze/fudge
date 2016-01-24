@@ -31,7 +31,7 @@ static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, s
     if (!count && endtarget->node.refcount)
     {
 
-        struct list_item *item = task_findactivemailbox(task, descriptor);
+        struct list_item *item = task_getmailbox(task, descriptor);
         struct task_mailbox *mailbox = item->data;
 
         list_add(&endself->readlist, item);
@@ -53,7 +53,7 @@ static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, 
     if (!count)
     {
 
-        struct list_item *item = task_findactivemailbox(task, descriptor);
+        struct list_item *item = task_getmailbox(task, descriptor);
         struct task_mailbox *mailbox = item->data;
 
         list_add(&endself->writelist, item);
