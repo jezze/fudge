@@ -243,9 +243,6 @@ static unsigned int auth(struct container *container, struct task *task, void *s
     struct container_session *session = getsession(container, task, args->descriptor);
     struct service_channel *channel = getchannel(container, args->channel);
 
-    if (!session)
-        return 0;
-
     channel->backend = service_findbackend(args->backend);
 
     if (!channel->backend)
