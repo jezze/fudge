@@ -117,28 +117,28 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 static unsigned int create(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int pdescriptor; unsigned int count; char *name;} *args = stack;
-    struct container_descriptor *pdescriptor = getdescriptor(container, task, args->pdescriptor);
-    struct vfs_channel *pchannel = getchannel(container, pdescriptor->channel);
+    struct {void *caller; unsigned int descriptor; unsigned int count; char *name;} *args = stack;
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
+    struct vfs_channel *channel = getchannel(container, descriptor->channel);
 
-    if (!pdescriptor->id || !args->count)
+    if (!descriptor->id || !args->count)
         return 0;
 
-    return pchannel->protocol->create(pchannel->backend, pdescriptor->id, args->count, args->name);
+    return channel->protocol->create(channel->backend, descriptor->id, args->count, args->name);
 
 }
 
 static unsigned int destroy(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int pdescriptor; unsigned int count; char *name;} *args = stack;
-    struct container_descriptor *pdescriptor = getdescriptor(container, task, args->pdescriptor);
-    struct vfs_channel *pchannel = getchannel(container, pdescriptor->channel);
+    struct {void *caller; unsigned int descriptor; unsigned int count; char *name;} *args = stack;
+    struct container_descriptor *descriptor = getdescriptor(container, task, args->descriptor);
+    struct vfs_channel *channel = getchannel(container, descriptor->channel);
 
-    if (!pdescriptor->id || !args->count)
+    if (!descriptor->id || !args->count)
         return 0;
 
-    return pchannel->protocol->destroy(pchannel->backend, pdescriptor->id, args->count, args->name);
+    return channel->protocol->destroy(channel->backend, descriptor->id, args->count, args->name);
 
 }
 

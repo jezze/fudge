@@ -27,8 +27,8 @@
 
 unsigned int call_auth(unsigned int descriptor, unsigned int channel, unsigned int backend);
 unsigned int call_close(unsigned int descriptor);
-unsigned int call_create(unsigned int pdescriptor, unsigned int count, char *name);
-unsigned int call_destroy(unsigned int pdescriptor, unsigned int count, char *name);
+unsigned int call_create(unsigned int descriptor, unsigned int count, char *name);
+unsigned int call_destroy(unsigned int descriptor, unsigned int count, char *name);
 unsigned int call_despawn(void);
 unsigned int call_load(unsigned int descriptor);
 unsigned int call_mount(unsigned int mount, unsigned int pdescriptor, unsigned int cdescriptor);
