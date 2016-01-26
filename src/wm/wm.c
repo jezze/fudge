@@ -613,7 +613,7 @@ static void onwmresize(struct event_header *header, void *data)
     unsigned int i;
 
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_setsize(&body, size.x, size.y + 36, size.w, size.h - 36);
+    box_setsize(&body, size.x, size.y + 48, size.w, size.h - 48);
     box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
     for (i = 0; i < VIEWS; i++)
@@ -621,8 +621,8 @@ static void onwmresize(struct event_header *header, void *data)
 
         views[i].center = body.w / 2;
 
-        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, 36);
-        box_setsize(&views[i].number.size, views[i].panel.size.x + 12, views[i].panel.size.y + 6, views[i].panel.size.w - 24, views[i].panel.size.h - 12);
+        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, 48);
+        box_setsize(&views[i].number.size, views[i].panel.size.x + 12, views[i].panel.size.y + 12, views[i].panel.size.w - 24, views[i].panel.size.h - 24);
         arrangeview(&views[i]);
 
     }
