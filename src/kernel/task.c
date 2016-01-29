@@ -27,36 +27,50 @@ void task_setstatus(struct task *task, unsigned int status)
     {
 
     case TASK_STATUS_INACTIVE:
-        list_move(&inactive, &task->state.item);
+        if (task->state.status == TASK_STATUS_ACTIVE)
+        {
 
-        task->state.status = TASK_STATUS_INACTIVE;
+            list_move(&inactive, &task->state.item);
+
+            task->state.status = TASK_STATUS_INACTIVE;
+
+        }
 
         break;
 
     case TASK_STATUS_ACTIVE:
-        list_move(&active, &task->state.item);
+        if (task->state.status == TASK_STATUS_ACTIVE || task->state.status == TASK_STATUS_INACTIVE || task->state.status == TASK_STATUS_UNBLOCKED)
+        {
 
-        task->state.status = TASK_STATUS_ACTIVE;
+            list_move(&active, &task->state.item);
+
+            task->state.status = TASK_STATUS_ACTIVE;
+
+        }
 
         break;
 
     case TASK_STATUS_BLOCKED:
-        if (task->state.status != TASK_STATUS_ACTIVE)
-            break;
+        if (task->state.status == TASK_STATUS_ACTIVE)
+        {
 
-        list_move(&blocked, &task->state.item);
+            list_move(&blocked, &task->state.item);
 
-        task->state.status = TASK_STATUS_BLOCKED;
+            task->state.status = TASK_STATUS_BLOCKED;
+
+        }
 
         break;
 
     case TASK_STATUS_UNBLOCKED:
-        if (task->state.status != TASK_STATUS_BLOCKED)
-            break;
+        if (task->state.status == TASK_STATUS_BLOCKED)
+        {
 
-        list_move(&active, &task->state.item);
+            list_move(&active, &task->state.item);
 
-        task->state.status = TASK_STATUS_UNBLOCKED;
+            task->state.status = TASK_STATUS_UNBLOCKED;
+
+        }
 
         break;
 
