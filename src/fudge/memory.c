@@ -67,8 +67,9 @@ unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int 
         ocount = icount - offset;
 
     ip += offset;
+    offset = ocount;
 
-    for (offset = ocount; offset; offset--)
+    while (offset--)
         *op++ = *ip++;
 
     return ocount;
@@ -88,8 +89,9 @@ unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int
         icount = ocount - offset;
 
     op += offset;
+    offset = icount;
 
-    for (offset = icount; offset; offset--)
+    while (offset--)
         *op++ = *ip++;
 
     return icount;
