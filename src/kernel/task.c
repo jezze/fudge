@@ -63,7 +63,7 @@ void task_setstatus(struct task *task, unsigned int status)
         break;
 
     case TASK_STATUS_UNBLOCKED:
-        if (task->state.status == TASK_STATUS_BLOCKED)
+        if (task->state.status == TASK_STATUS_UNBLOCKED || task->state.status == TASK_STATUS_BLOCKED)
         {
 
             list_move(&active, &task->state.item);
