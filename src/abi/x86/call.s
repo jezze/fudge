@@ -16,8 +16,6 @@
 .set CALL_INDEX_DESPAWN,                0x0D
 .set CALL_INDEX_SEEK,                   0x0E
 .set CALL_INDEX_SCAN,                   0x0F
-.set CALL_INDEX_SEEKREAD,               0x10
-.set CALL_INDEX_SEEKWRITE,              0x11
 
 .global call_auth
 call_auth:
@@ -82,18 +80,6 @@ call_scan:
 .global call_seek
 call_seek:
     movl $CALL_INDEX_SEEK, %eax
-    int $CALL_INTERRUPT
-    ret
-
-.global call_seekread
-call_seekread:
-    movl $CALL_INDEX_SEEKREAD, %eax
-    int $CALL_INTERRUPT
-    ret
-
-.global call_seekwrite
-call_seekwrite:
-    movl $CALL_INDEX_SEEKWRITE, %eax
     int $CALL_INTERRUPT
     ret
 

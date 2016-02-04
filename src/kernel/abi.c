@@ -5,7 +5,7 @@
 #include "binary.h"
 #include "container.h"
 
-#define CALLS                           18
+#define CALLS                           16
 
 static unsigned int (*calls[CALLS])(struct container *container, struct task *task, void *stack);
 
@@ -190,20 +190,6 @@ static unsigned int read(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int seekread(struct container *container, struct task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
-    struct container_session *session = getsession(container, task, args->descriptor);
-    struct service_channel *channel = getchannel(container, session->channel);
-
-    if (!session->id || !args->count)
-        return 0;
-
-    return channel->protocol->read(channel->backend, task, args->descriptor, session->id, args->offset, args->count, args->buffer);
-
-}
-
 static unsigned int write(struct container *container, struct task *task, void *stack)
 {
 
@@ -219,20 +205,6 @@ static unsigned int write(struct container *container, struct task *task, void *
     session->offset += count;
 
     return count;
-
-}
-
-static unsigned int seekwrite(struct container *container, struct task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
-    struct container_session *session = getsession(container, task, args->descriptor);
-    struct service_channel *channel = getchannel(container, session->channel);
-
-    if (!session->id || !args->count)
-        return 0;
-
-    return channel->protocol->write(channel->backend, task, args->descriptor, session->id, args->offset, args->count, args->buffer);
 
 }
 
@@ -378,7 +350,7 @@ static unsigned int scan(struct container *container, struct task *task, void *s
 unsigned int abi_call(unsigned int index, struct container *container, struct task *task, void *stack)
 {
 
-    return calls[index](container, task, stack);
+    return calls[index & 0x0F](container, task, stack);
 
 }
 
@@ -400,8 +372,6 @@ void abi_setup(unsigned int (*spawn)(struct container *container, struct task *t
     calls[0x0D] = despawn;
     calls[0x0E] = seek;
     calls[0x0F] = scan;
-    calls[0x10] = seekread;
-    calls[0x11] = seekwrite;
 
 }
 
