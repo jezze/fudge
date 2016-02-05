@@ -307,6 +307,13 @@ static unsigned int protocol_write(struct service_backend *backend, struct task 
 
 }
 
+static unsigned int protocol_seek(struct service_backend *backend, unsigned int id, unsigned int offset)
+{
+
+    return offset;
+
+}
+
 static unsigned int protocol_scan(struct service_backend *backend, unsigned int id, unsigned int index)
 {
 
@@ -357,7 +364,7 @@ static unsigned long protocol_getphysical(struct service_backend *backend, unsig
 void service_setupcpio(void)
 {
 
-    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_scan, protocol_getphysical);
+    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, protocol_getphysical);
     resource_register(&protocol.resource);
 
 }

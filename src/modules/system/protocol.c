@@ -97,6 +97,13 @@ static unsigned int protocol_write(struct service_backend *backend, struct task 
 
 }
 
+static unsigned int protocol_seek(struct service_backend *backend, unsigned int id, unsigned int offset)
+{
+
+    return offset;
+
+}
+
 static unsigned int protocol_scan(struct service_backend *backend, unsigned int id, unsigned int index)
 {
 
@@ -109,7 +116,7 @@ static unsigned int protocol_scan(struct service_backend *backend, unsigned int 
 void system_initprotocol(struct service_protocol *protocol)
 {
 
-    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_scan, 0);
+    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, 0);
 
 }
 

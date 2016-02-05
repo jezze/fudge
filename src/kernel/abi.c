@@ -325,11 +325,12 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor; unsigned int offset;} *args = stack;
     struct container_session *session = getsession(container, task, args->descriptor);
+    struct service_channel *channel = getchannel(container, session->channel);
 
     if (!session->id)
         return 0;
 
-    return session->offset = args->offset;
+    return session->offset = channel->protocol->seek(channel->backend, session->id, args->offset);
 
 }
 
