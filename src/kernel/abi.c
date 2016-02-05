@@ -275,17 +275,17 @@ static unsigned int load(struct container *container, struct task *task, void *s
     if (!physical)
         return 0;
 
-    format = binary_findformat(channel, task, args->descriptor, session->id);
+    format = binary_findformat(channel->protocol, channel->backend, task, args->descriptor, session->id);
 
-    if (!format || !format->relocate(channel, task, args->descriptor, session->id, physical))
+    if (!format || !format->relocate(channel->protocol, channel->backend, task, args->descriptor, session->id, physical))
         return 0;
 
-    module_init = (void (*)(void))(format->findsymbol(channel, task, args->descriptor, session->id, 11, "module_init"));
+    module_init = (void (*)(void))(format->findsymbol(channel->protocol, channel->backend, task, args->descriptor, session->id, 11, "module_init"));
 
     if (module_init)
         module_init();
 
-    module_register = (void (*)(void))(format->findsymbol(channel, task, args->descriptor, session->id, 15, "module_register"));
+    module_register = (void (*)(void))(format->findsymbol(channel->protocol, channel->backend, task, args->descriptor, session->id, 15, "module_register"));
 
     if (module_register)
         module_register();
@@ -306,12 +306,12 @@ static unsigned int unload(struct container *container, struct task *task, void 
     if (!session->id)
         return 0;
 
-    format = binary_findformat(channel, task, args->descriptor, session->id);
+    format = binary_findformat(channel->protocol, channel->backend, task, args->descriptor, session->id);
 
     if (!format)
         return 0;
 
-    module_unregister = (void (*)(void))(format->findsymbol(channel, task, args->descriptor, session->id, 17, "module_unregister"));
+    module_unregister = (void (*)(void))(format->findsymbol(channel->protocol, channel->backend, task, args->descriptor, session->id, 17, "module_unregister"));
 
     if (module_unregister)
         module_unregister();

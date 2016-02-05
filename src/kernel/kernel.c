@@ -43,12 +43,12 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
     if (!session->id)
         return 0;
 
-    format = binary_findformat(channel, task, 0, session->id);
+    format = binary_findformat(channel->protocol, channel->backend, task, 0, session->id);
 
     if (!format)
         return 0;
 
-    task_resume(task, format->findentry(channel, task, 0, session->id), sp);
+    task_resume(task, format->findentry(channel->protocol, channel->backend, task, 0, session->id), sp);
 
     return task->state.registers.ip;
 
