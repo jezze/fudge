@@ -1,4 +1,3 @@
-#define CONTAINER_CHANNELS              16
 #define CONTAINER_MOUNTS                32
 #define CONTAINER_SESSIONS              32 * 64
 
