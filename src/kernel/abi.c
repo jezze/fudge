@@ -197,7 +197,7 @@ static unsigned int write(struct container *container, struct task *task, void *
 static unsigned int auth(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int channel; unsigned int backend;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int backend;} *args = stack;
     struct container_session *session = getsession(container, task, args->descriptor);
 
     session->backend = service_findbackend(args->backend);
@@ -215,7 +215,7 @@ static unsigned int auth(struct container *container, struct task *task, void *s
     if (!session->id)
         return 0;
 
-    return args->channel;
+    return 1;
 
 }
 

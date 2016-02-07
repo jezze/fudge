@@ -25,7 +25,7 @@
 #define CALL_LE                         0x1E
 #define CALL_LF                         0x1F
 
-unsigned int call_auth(unsigned int descriptor, unsigned int channel, unsigned int backend);
+unsigned int call_auth(unsigned int descriptor, unsigned int backend);
 unsigned int call_close(unsigned int descriptor);
 unsigned int call_create(unsigned int descriptor, unsigned int count, char *name);
 unsigned int call_destroy(unsigned int descriptor, unsigned int count, char *name);
