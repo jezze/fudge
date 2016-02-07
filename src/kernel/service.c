@@ -74,10 +74,3 @@ void service_initprotocol(struct service_protocol *protocol, unsigned int (*matc
 
 }
 
-void service_initchannel(struct service_channel *channel)
-{
-
-    resource_init(&channel->resource, RESOURCE_SERVICECHANNEL, channel);
-
-}
-

@@ -6,8 +6,8 @@ struct container_mount
 {
 
     struct resource resource;
-    struct {unsigned int channel; unsigned int id;} parent;
-    struct {unsigned int channel; unsigned int id;} child;
+    struct {struct service_backend *backend; struct service_protocol *protocol; unsigned int id;} parent;
+    struct {struct service_backend *backend; struct service_protocol *protocol; unsigned int id;} child;
 
 };
 
@@ -15,7 +15,8 @@ struct container_session
 {
 
     struct resource resource;
-    unsigned int channel;
+    struct service_backend *backend;
+    struct service_protocol *protocol;
     unsigned int id;
     unsigned int offset;
 
@@ -25,7 +26,6 @@ struct container
 {
 
     struct resource resource;
-    struct service_channel channels[CONTAINER_CHANNELS];
     struct container_mount mounts[CONTAINER_MOUNTS];
     struct container_session sessions[CONTAINER_SESSIONS];
 

@@ -16,16 +16,20 @@ void kernel_copysessions(struct container *container, struct task *source, struc
     for (i = 0x00; i < 0x08; i++)
     {
 
-        container->sessions[tid + i + 0x00].channel = container->sessions[sid + i + 0x08].channel;
+        container->sessions[tid + i + 0x00].backend = container->sessions[sid + i + 0x08].backend;
+        container->sessions[tid + i + 0x00].protocol = container->sessions[sid + i + 0x08].protocol;
         container->sessions[tid + i + 0x00].id = container->sessions[sid + i + 0x08].id;
         container->sessions[tid + i + 0x00].offset = 0;
-        container->sessions[tid + i + 0x08].channel = container->sessions[sid + i + 0x08].channel;
+        container->sessions[tid + i + 0x08].backend = container->sessions[sid + i + 0x08].backend;
+        container->sessions[tid + i + 0x08].protocol = container->sessions[sid + i + 0x08].protocol;
         container->sessions[tid + i + 0x08].id = container->sessions[sid + i + 0x08].id;
         container->sessions[tid + i + 0x08].offset = 0;
-        container->sessions[tid + i + 0x10].channel = 0;
+        container->sessions[tid + i + 0x10].backend = 0;
+        container->sessions[tid + i + 0x10].protocol = 0;
         container->sessions[tid + i + 0x10].id = 0;
         container->sessions[tid + i + 0x10].offset = 0;
-        container->sessions[tid + i + 0x18].channel = 0;
+        container->sessions[tid + i + 0x18].backend = 0;
+        container->sessions[tid + i + 0x18].protocol = 0;
         container->sessions[tid + i + 0x18].id = 0;
         container->sessions[tid + i + 0x18].offset = 0;
 
@@ -37,18 +41,17 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
 {
 
     struct container_session *session = &container->sessions[task->id * TASK_DESCRIPTORS];
-    struct service_channel *channel = &container->channels[session->channel];
     struct binary_format *format;
 
     if (!session->id)
         return 0;
 
-    format = binary_findformat(channel->protocol, channel->backend, task, 0, session->id);
+    format = binary_findformat(session->protocol, session->backend, task, 0, session->id);
 
     if (!format)
         return 0;
 
-    task_resume(task, format->findentry(channel->protocol, channel->backend, task, 0, session->id), sp);
+    task_resume(task, format->findentry(session->protocol, session->backend, task, 0, session->id), sp);
 
     return task->state.registers.ip;
 
@@ -57,34 +60,31 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
 unsigned int kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
 {
 
-    struct service_channel *channel = &container->channels[0x00];
     struct container_mount *mount = &container->mounts[0x00];
     struct container_session *init = &container->sessions[0x08];
     struct container_session *root = &container->sessions[0x09];
 
-    channel->backend = backend;
-    channel->protocol = service_findprotocol(channel->backend);
-
-    if (!channel->protocol)
-        return 0;
-
-    mount->parent.channel = 0x00;
-    mount->parent.id = channel->protocol->root(channel->backend);
-    mount->child.channel = mount->parent.channel;
+    mount->parent.backend = backend;
+    mount->parent.protocol = service_findprotocol(backend);
+    mount->parent.id = mount->parent.protocol->root(backend);
+    mount->child.backend = mount->parent.backend;
+    mount->child.protocol = mount->parent.protocol;
     mount->child.id = mount->parent.id;
 
     if (!mount->parent.id)
         return 0;
 
-    root->channel = mount->parent.channel;
+    root->backend = mount->parent.backend;
+    root->protocol = mount->parent.protocol;
     root->id = mount->parent.id;
-    init->channel = 0x00;
-    init->id = channel->protocol->child(channel->backend, root->id, 4, "bin/");
+    init->backend = mount->parent.backend;
+    init->protocol = mount->parent.protocol;
+    init->id = init->protocol->child(init->backend, root->id, 4, "bin/");
 
     if (!init->id)
         return 0;
 
-    return init->id = channel->protocol->child(channel->backend, init->id, 4, "init");
+    return init->id = init->protocol->child(init->backend, init->id, 4, "init");
 
 }
 
