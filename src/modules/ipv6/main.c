@@ -19,7 +19,7 @@ static void ethernetprotocol_removeinterface(struct ethernet_interface *interfac
 static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_multicast(&ethernetprotocol.data, count, buffer);
+    system_multicast(&ethernetprotocol.data.links, count, buffer);
 
 }
 

@@ -6,7 +6,7 @@
 void mouse_notify(struct mouse_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_multicast(&interface->data, count, buffer);
+    system_multicast(&interface->data.links, count, buffer);
 
 }
 

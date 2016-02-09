@@ -24,8 +24,6 @@ struct system_node
     struct resource *resource;
     unsigned int refcount;
     unsigned int index;
-    unsigned int (*open)(struct system_node *self, struct task *task, unsigned int descriptor);
-    unsigned int (*close)(struct system_node *self, struct task *task, unsigned int descriptor);
     unsigned int (*read)(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*write)(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer);
     unsigned int (*child)(struct system_node *self, unsigned int count, char *path);
@@ -33,7 +31,8 @@ struct system_node
 
 };
 
-void system_multicast(struct system_node *node, unsigned int count, void *buffer);
+void system_multicast(struct list *list, unsigned int count, void *buffer);
+void system_wakeup(struct list *list);
 void system_addchild(struct system_node *group, struct system_node *node);
 void system_removechild(struct system_node *group, struct system_node *node);
 void system_registernode(struct system_node *node);

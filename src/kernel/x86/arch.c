@@ -262,15 +262,15 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     {
 
         struct container_session *session = &current.container->sessions[current.task->id * TASK_DESCRIPTORS];
-        struct binary_format *format = binary_findformat(session->protocol, session->backend, current.task, 0, session->id);
+        struct binary_format *format = binary_findformat(session->protocol, session->backend, session->id);
 
-        address = format->findbase(session->protocol, session->backend, current.task, 0, session->id, address);
+        address = format->findbase(session->protocol, session->backend, session->id, address);
 
         if (address)
         {
 
             maptaskcode(current.task, address);
-            format->copyprogram(session->protocol, session->backend, current.task, 0, session->id);
+            format->copyprogram(session->protocol, session->backend, session->id);
 
         }
 

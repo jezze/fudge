@@ -57,43 +57,31 @@ static unsigned int protocol_destroy(struct service_backend *backend, unsigned i
 
 }
 
-static unsigned int protocol_open(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_open(struct service_backend *backend, unsigned int id)
 {
 
-    struct system_node *node = (struct system_node *)id;
-
-    node->refcount++;
-
-    return (node->open) ? node->open(node, task, descriptor) : id;
+    return 0;
 
 }
 
-static unsigned int protocol_close(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_close(struct service_backend *backend, unsigned int id)
 {
 
-    struct system_node *node = (struct system_node *)id;
-
-    node->refcount--;
-
-    return (node->close) ? node->close(node, task, descriptor) : id;
+    return 0;
 
 }
 
-static unsigned int protocol_read(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct system_node *node = (struct system_node *)id;
-
-    return (node->read) ? node->read(node, task, descriptor, offset, count, buffer) : 0;
+    return 0;
 
 }
 
-static unsigned int protocol_write(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct system_node *node = (struct system_node *)id;
-
-    return (node->write) ? node->write(node, task, descriptor, offset, count, buffer) : 0;
+    return 0;
 
 }
 
@@ -113,10 +101,90 @@ static unsigned int protocol_scan(struct service_backend *backend, unsigned int 
 
 }
 
+static unsigned int protocol_open2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+{
+
+    struct system_node *node = (struct system_node *)id;
+
+    node->refcount++;
+
+    switch (node->type)
+    {
+
+    case SYSTEM_NODETYPE_MAILBOX:
+        list_add(&node->links, &task->links[descriptor]);
+
+        break;
+
+    }
+
+    return id;
+
+}
+
+static unsigned int protocol_close2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+{
+
+    struct system_node *node = (struct system_node *)id;
+
+    node->refcount--;
+
+    switch (node->type)
+    {
+
+    case SYSTEM_NODETYPE_MAILBOX:
+        list_remove(&node->links, &task->links[descriptor]);
+
+        break;
+
+    }
+
+    return id;
+
+}
+
+static unsigned int readmailbox(struct task *task, unsigned int count, void *buffer)
+{
+
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+
+    if (!count)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    return count;
+
+}
+
+static unsigned int protocol_read2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct system_node *node = (struct system_node *)id;
+
+    switch (node->type)
+    {
+
+    case SYSTEM_NODETYPE_MAILBOX:
+        return readmailbox(task, count, buffer);
+
+    }
+
+    return (node->read) ? node->read(node, task, descriptor, offset, count, buffer) : 0;
+
+}
+
+static unsigned int protocol_write2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct system_node *node = (struct system_node *)id;
+
+    return (node->write) ? node->write(node, task, descriptor, offset, count, buffer) : 0;
+
+}
+
 void system_initprotocol(struct service_protocol *protocol)
 {
 
-    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, 0);
+    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, 0, protocol_open2, protocol_close2, protocol_read2, protocol_write2);
 
 }
 

@@ -143,7 +143,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
     if (!session->id)
         return 0;
 
-    return session->id = session->protocol->open(session->backend, task, args->descriptor, session->id);
+    return session->id = session->protocol->open2(session->backend, task, args->descriptor, session->id);
 
 }
 
@@ -156,7 +156,7 @@ static unsigned int close(struct container *container, struct task *task, void *
     if (!session->id)
         return 0;
 
-    return session->id = session->protocol->close(session->backend, task, args->descriptor, session->id);
+    return session->id = session->protocol->close2(session->backend, task, args->descriptor, session->id);
 
 }
 
@@ -170,7 +170,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
     if (!session->id || !args->count)
         return 0;
 
-    count = session->protocol->read(session->backend, task, args->descriptor, session->id, session->offset, args->count, args->buffer);
+    count = session->protocol->read2(session->backend, task, args->descriptor, session->id, session->offset, args->count, args->buffer);
     session->offset += count;
 
     return count;
@@ -187,7 +187,7 @@ static unsigned int write(struct container *container, struct task *task, void *
     if (!session->id || !args->count)
         return 0;
 
-    count = session->protocol->write(session->backend, task, args->descriptor, session->id, session->offset, args->count, args->buffer);
+    count = session->protocol->write2(session->backend, task, args->descriptor, session->id, session->offset, args->count, args->buffer);
     session->offset += count;
 
     return count;
@@ -260,17 +260,17 @@ static unsigned int load(struct container *container, struct task *task, void *s
     if (!physical)
         return 0;
 
-    format = binary_findformat(session->protocol, session->backend, task, args->descriptor, session->id);
+    format = binary_findformat(session->protocol, session->backend, session->id);
 
-    if (!format || !format->relocate(session->protocol, session->backend, task, args->descriptor, session->id, physical))
+    if (!format || !format->relocate(session->protocol, session->backend, session->id, physical))
         return 0;
 
-    module_init = (void (*)(void))(format->findsymbol(session->protocol, session->backend, task, args->descriptor, session->id, 11, "module_init"));
+    module_init = (void (*)(void))(format->findsymbol(session->protocol, session->backend, session->id, 11, "module_init"));
 
     if (module_init)
         module_init();
 
-    module_register = (void (*)(void))(format->findsymbol(session->protocol, session->backend, task, args->descriptor, session->id, 15, "module_register"));
+    module_register = (void (*)(void))(format->findsymbol(session->protocol, session->backend, session->id, 15, "module_register"));
 
     if (module_register)
         module_register();
@@ -290,12 +290,12 @@ static unsigned int unload(struct container *container, struct task *task, void 
     if (!session->id)
         return 0;
 
-    format = binary_findformat(session->protocol, session->backend, task, args->descriptor, session->id);
+    format = binary_findformat(session->protocol, session->backend, session->id);
 
     if (!format)
         return 0;
 
-    module_unregister = (void (*)(void))(format->findsymbol(session->protocol, session->backend, task, args->descriptor, session->id, 17, "module_unregister"));
+    module_unregister = (void (*)(void))(format->findsymbol(session->protocol, session->backend, session->id, 17, "module_unregister"));
 
     if (module_unregister)
         module_unregister();

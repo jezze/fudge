@@ -33,36 +33,6 @@ static unsigned int node_readgroup(struct system_node *self, struct task *task, 
 
 }
 
-static unsigned int node_openmailbox(struct system_node *self, struct task *task, unsigned int descriptor)
-{
-
-    list_add(&self->links, &task->links[descriptor]);
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int node_closemailbox(struct system_node *self, struct task *task, unsigned int descriptor)
-{
-
-    list_remove(&self->links, &task->links[descriptor]);
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int node_readmailbox(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
-
-    if (!count)
-        task_setstatus(task, TASK_STATUS_BLOCKED);
-
-    return count;
-
-}
-
 static unsigned int node_childgroup(struct system_node *self, unsigned int count, char *path)
 {
 
@@ -136,18 +106,35 @@ static unsigned int node_scangroup(struct system_node *self, unsigned int index)
 
 }
 
-void system_multicast(struct system_node *node, unsigned int count, void *buffer)
+void system_multicast(struct list *list, unsigned int count, void *buffer)
 {
 
     struct list_item *current;
 
-    for (current = node->links.head; current; current = current->next)
+    for (current = list->head; current; current = current->next)
     {
 
         struct task *task = current->data;
 
         task_setstatus(task, TASK_STATUS_UNBLOCKED);
         buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+
+    }
+
+}
+
+void system_wakeup(struct list *list)
+{
+
+    struct list_item *current;
+
+    for (current = list->head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+
+        list_remove(list, current);
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
 
     }
 
@@ -200,15 +187,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
     node->type = type;
     node->name = name;
-
-    if (type & SYSTEM_NODETYPE_MAILBOX)
-    {
-
-        node->open = node_openmailbox;
-        node->close = node_closemailbox;
-        node->read = node_readmailbox;
-
-    }
 
     if (type & SYSTEM_NODETYPE_GROUP)
     {

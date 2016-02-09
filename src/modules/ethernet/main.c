@@ -23,7 +23,7 @@ void ethernet_notify(struct ethernet_interface *interface, unsigned int count, v
 
     }
 
-    system_multicast(&interface->data, count, buffer);
+    system_multicast(&interface->data.links, count, buffer);
 
 }
 

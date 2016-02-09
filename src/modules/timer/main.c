@@ -6,7 +6,7 @@
 void timer_notify(struct timer_interface *interface, unsigned int count, void *buffer)
 {
 
-    system_multicast(&interface->sleep, count, buffer);
+    system_multicast(&interface->sleep.links, count, buffer);
 
 }
 

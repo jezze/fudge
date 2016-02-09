@@ -13,16 +13,16 @@ void log_notify(unsigned int level, unsigned int count, void *buffer)
 {
 
     if (level <= LOG_CRITICAL)
-        system_multicast(&critical, count, buffer);
+        system_multicast(&critical.links, count, buffer);
 
     if (level <= LOG_ERROR)
-        system_multicast(&error, count, buffer);
+        system_multicast(&error.links, count, buffer);
 
     if (level <= LOG_WARNING)
-        system_multicast(&warning, count, buffer);
+        system_multicast(&warning.links, count, buffer);
 
     if (level <= LOG_INFO)
-        system_multicast(&info, count, buffer);
+        system_multicast(&info.links, count, buffer);
 
 }
 

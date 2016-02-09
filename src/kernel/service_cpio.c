@@ -185,14 +185,14 @@ static unsigned int protocol_destroy(struct service_backend *backend, unsigned i
 
 }
 
-static unsigned int protocol_open(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_open(struct service_backend *backend, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int protocol_close(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_close(struct service_backend *backend, unsigned int id)
 {
 
     return id;
@@ -247,7 +247,7 @@ static unsigned int readdirectory(struct service_backend *backend, unsigned int 
 
 }
 
-static unsigned int protocol_read(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -286,7 +286,7 @@ static unsigned int writenormal(struct service_backend *backend, unsigned int ad
 
 }
 
-static unsigned int protocol_write(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -361,10 +361,38 @@ static unsigned long protocol_getphysical(struct service_backend *backend, unsig
 
 }
 
+static unsigned int protocol_open2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+{
+
+    return protocol_open(backend, id);
+
+}
+
+static unsigned int protocol_close2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+{
+
+    return protocol_close(backend, id);
+
+}
+
+static unsigned int protocol_read2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return protocol_read(backend, id, offset, count, buffer);
+
+}
+
+static unsigned int protocol_write2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    return protocol_write(backend, id, offset, count, buffer);
+
+}
+
 void service_setupcpio(void)
 {
 
-    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, protocol_getphysical);
+    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, protocol_getphysical, protocol_open2, protocol_close2, protocol_read2, protocol_write2);
     resource_register(&protocol.resource);
 
 }
