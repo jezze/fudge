@@ -6,29 +6,27 @@
 static struct system_node root;
 static struct system_node poll;
 
-static void event_notify(void *buffer)
+static unsigned int notify(void *buffer)
 {
 
-    struct list_item *current;
     struct event_header *header = buffer;
     unsigned int count = sizeof (struct event_header) + header->count;
+    struct task *destination;
 
-    for (current = poll.links.head; current; current = current->next)
-    {
+    if (!poll.links.count)
+        return 0;
 
-        struct task *task = current->data;
+    if (!header->destination)
+        header->destination = (unsigned int)poll.links.head->data;
 
-        header->destination = (unsigned int)task;
+    destination = (struct task *)header->destination;
 
-        if (task->mailbox.buffer.capacity - task->mailbox.buffer.count < count)
-            break;
+    if (destination->mailbox.buffer.capacity - destination->mailbox.buffer.count < count)
+        return 0;
 
-        task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+    task_setstatus(destination, TASK_STATUS_UNBLOCKED);
 
-        break;
-
-    }
+    return buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
 
 }
 
@@ -39,10 +37,11 @@ void event_notifykeypress(unsigned char scancode)
 
     message.header.type = EVENT_KEYPRESS;
     message.header.source = 0;
+    message.header.destination = 0;
     message.header.count = sizeof (struct event_keypress);
     message.keypress.scancode = scancode;
 
-    event_notify(&message);
+    notify(&message);
 
 }
 
@@ -53,10 +52,11 @@ void event_notifykeyrelease(unsigned char scancode)
 
     message.header.type = EVENT_KEYRELEASE;
     message.header.source = 0;
+    message.header.destination = 0;
     message.header.count = sizeof (struct event_keyrelease);
     message.keyrelease.scancode = scancode;
 
-    event_notify(&message);
+    notify(&message);
 
 }
 
@@ -67,11 +67,12 @@ void event_notifymousemove(char relx, char rely)
 
     message.header.type = EVENT_MOUSEMOVE;
     message.header.source = 0;
+    message.header.destination = 0;
     message.header.count = sizeof (struct event_mousemove);
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
-    event_notify(&message);
+    notify(&message);
 
 }
 
@@ -82,10 +83,11 @@ void event_notifymousepress(unsigned int button)
 
     message.header.type = EVENT_MOUSEPRESS;
     message.header.source = 0;
+    message.header.destination = 0;
     message.header.count = sizeof (struct event_mousepress);
     message.mousepress.button = button;
 
-    event_notify(&message);
+    notify(&message);
 
 }
 
@@ -96,10 +98,11 @@ void event_notifymouserelease(unsigned int button)
 
     message.header.type = EVENT_MOUSERELEASE;
     message.header.source = 0;
+    message.header.destination = 0;
     message.header.count = sizeof (struct event_mouserelease);
     message.mouserelease.button = button;
 
-    event_notify(&message);
+    notify(&message);
 
 }
 
@@ -110,10 +113,11 @@ void event_notifytick(unsigned int counter)
 
     message.header.type = EVENT_TICK;
     message.header.source = 0;
+    message.header.destination = 0;
     message.header.count = sizeof (struct event_tick);
     message.tick.counter = counter;
 
-    event_notify(&message);
+    notify(&message);
 
 }
 
@@ -121,18 +125,10 @@ static unsigned int poll_write(struct system_node *self, struct task *task, unsi
 {
 
     struct event_header *header = buffer;
-    struct task *destination;
 
     header->source = (unsigned int)task;
 
-    if (!header->destination)
-        header->destination = (unsigned int)poll.links.head->data;
-
-    destination = (struct task *)header->destination;
-
-    task_setstatus(destination, TASK_STATUS_UNBLOCKED);
-
-    return buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
+    return notify(buffer);
 
 }
 
