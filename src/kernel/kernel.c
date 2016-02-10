@@ -41,9 +41,7 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
     if (!session->state.id)
         return 0;
 
-    session->protocol->map(session->backend, session->state.id, &session->node);
-
-    if (!session->node.physical)
+    if (!session->protocol->map(session->backend, session->state.id, &session->node))
         return 0;
 
     task->format = binary_findformat(&session->node);

@@ -245,14 +245,15 @@ static unsigned int load(struct container *container, struct task *task, void *s
     if (!session->state.id)
         return 0;
 
-    session->protocol->map(session->backend, session->state.id, &session->node);
-
-    if (!session->node.physical)
+    if (!session->protocol->map(session->backend, session->state.id, &session->node))
         return 0;
 
     format = binary_findformat(&session->node);
 
-    if (!format || !format->relocate(&session->node))
+    if (!format)
+        return 0;
+
+    if (!format->relocate(&session->node))
         return 0;
 
     module_init = (void (*)(void))(format->findsymbol(&session->node, 11, "module_init"));
@@ -280,9 +281,7 @@ static unsigned int unload(struct container *container, struct task *task, void 
     if (!session->state.id)
         return 0;
 
-    session->protocol->map(session->backend, session->state.id, &session->node);
-
-    if (!session->node.physical)
+    if (!session->protocol->map(session->backend, session->state.id, &session->node))
         return 0;
 
     format = binary_findformat(&session->node);
