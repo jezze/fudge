@@ -143,7 +143,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
     if (!session->state.id)
         return 0;
 
-    return session->state.id = session->protocol->open2(session->backend, &task->links[args->descriptor], &session->state);
+    return session->protocol->open2(session->backend, &task->links[args->descriptor], &session->state);
 
 }
 
@@ -156,7 +156,7 @@ static unsigned int close(struct container *container, struct task *task, void *
     if (!session->state.id)
         return 0;
 
-    return session->state.id = session->protocol->close2(session->backend, &task->links[args->descriptor], &session->state);
+    return session->protocol->close2(session->backend, &task->links[args->descriptor], &session->state);
 
 }
 
