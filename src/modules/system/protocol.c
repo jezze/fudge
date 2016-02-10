@@ -57,51 +57,7 @@ static unsigned int protocol_destroy(struct service_backend *backend, unsigned i
 
 }
 
-static unsigned int protocol_open(struct service_backend *backend, unsigned int id)
-{
-
-    return 0;
-
-}
-
-static unsigned int protocol_close(struct service_backend *backend, unsigned int id)
-{
-
-    return 0;
-
-}
-
-static unsigned int protocol_read(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
-static unsigned int protocol_write(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    return 0;
-
-}
-
-static unsigned int protocol_seek(struct service_backend *backend, unsigned int id, unsigned int offset)
-{
-
-    return offset;
-
-}
-
-static unsigned int protocol_scan(struct service_backend *backend, unsigned int id, unsigned int index)
-{
-
-    struct system_node *node = (struct system_node *)id;
-
-    return (node->scan) ? node->scan(node, index) : 0;
-
-}
-
-static unsigned int protocol_open2(struct service_backend *backend, struct list_item *link, struct service_state *state)
+static unsigned int protocol_open(struct service_backend *backend, struct list_item *link, struct service_state *state)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -123,7 +79,7 @@ static unsigned int protocol_open2(struct service_backend *backend, struct list_
 
 }
 
-static unsigned int protocol_close2(struct service_backend *backend, struct list_item *link, struct service_state *state)
+static unsigned int protocol_close(struct service_backend *backend, struct list_item *link, struct service_state *state)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -157,7 +113,7 @@ static unsigned int readmailbox(struct task *task, unsigned int count, void *buf
 
 }
 
-static unsigned int protocol_read2(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -177,7 +133,7 @@ static unsigned int protocol_read2(struct service_backend *backend, struct list_
 
 }
 
-static unsigned int protocol_write2(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -189,10 +145,26 @@ static unsigned int protocol_write2(struct service_backend *backend, struct list
 
 }
 
+static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
+{
+
+    return state->offset = offset;
+
+}
+
+static unsigned int protocol_scan(struct service_backend *backend, struct service_state *state, unsigned int index)
+{
+
+    struct system_node *node = (struct system_node *)state->id;
+
+    return (node->scan) ? node->scan(node, index) : 0;
+
+}
+
 void system_initprotocol(struct service_protocol *protocol)
 {
 
-    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, 0, protocol_open2, protocol_close2, protocol_read2, protocol_write2);
+    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, 0);
 
 }
 

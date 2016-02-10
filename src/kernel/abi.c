@@ -143,7 +143,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
     if (!session->state.id)
         return 0;
 
-    return session->protocol->open2(session->backend, &task->links[args->descriptor], &session->state);
+    return session->protocol->open(session->backend, &task->links[args->descriptor], &session->state);
 
 }
 
@@ -156,7 +156,7 @@ static unsigned int close(struct container *container, struct task *task, void *
     if (!session->state.id)
         return 0;
 
-    return session->protocol->close2(session->backend, &task->links[args->descriptor], &session->state);
+    return session->protocol->close(session->backend, &task->links[args->descriptor], &session->state);
 
 }
 
@@ -169,7 +169,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
     if (!session->state.id || !args->count)
         return 0;
 
-    return session->protocol->read2(session->backend, &task->links[args->descriptor], &session->state, args->count, args->buffer);
+    return session->protocol->read(session->backend, &task->links[args->descriptor], &session->state, args->count, args->buffer);
 
 }
 
@@ -182,7 +182,7 @@ static unsigned int write(struct container *container, struct task *task, void *
     if (!session->state.id || !args->count)
         return 0;
 
-    return session->protocol->write2(session->backend, &task->links[args->descriptor], &session->state, args->count, args->buffer);
+    return session->protocol->write(session->backend, &task->links[args->descriptor], &session->state, args->count, args->buffer);
 
 }
 
@@ -308,7 +308,7 @@ static unsigned int seek(struct container *container, struct task *task, void *s
     if (!session->state.id)
         return 0;
 
-    return session->state.offset = session->protocol->seek(session->backend, session->state.id, args->offset);
+    return session->protocol->seek(session->backend, &session->state, args->offset);
 
 }
 
@@ -321,7 +321,7 @@ static unsigned int scan(struct container *container, struct task *task, void *s
     if (!session->state.id)
         return 0;
 
-    return session->protocol->scan(session->backend, session->state.id, args->index);
+    return session->protocol->scan(session->backend, &session->state, args->index);
 
 }
 

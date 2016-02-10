@@ -185,17 +185,21 @@ static unsigned int protocol_destroy(struct service_backend *backend, unsigned i
 
 }
 
-static unsigned int protocol_open(struct service_backend *backend, unsigned int id)
+static unsigned int protocol_open(struct service_backend *backend, struct list_item *link, struct service_state *state)
 {
 
-    return id;
+    state->offset = 0;
+
+    return state->id;
 
 }
 
-static unsigned int protocol_close(struct service_backend *backend, unsigned int id)
+static unsigned int protocol_close(struct service_backend *backend, struct list_item *link, struct service_state *state)
 {
 
-    return id;
+    state->offset = 0;
+
+    return state->id;
 
 }
 
@@ -247,7 +251,7 @@ static unsigned int readdirectory(struct service_backend *backend, unsigned int 
 
 }
 
-static unsigned int protocol_read(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -271,6 +275,16 @@ static unsigned int protocol_read(struct service_backend *backend, unsigned int 
 
 }
 
+static unsigned int protocol_read(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+{
+
+    count = read(backend, state->id, state->offset, count, buffer);
+    state->offset += count;
+
+    return count;
+
+}
+
 static unsigned int writenormal(struct service_backend *backend, unsigned int address, unsigned int offset, unsigned int count, void *buffer, struct cpio_header *header)
 {
 
@@ -286,7 +300,7 @@ static unsigned int writenormal(struct service_backend *backend, unsigned int ad
 
 }
 
-static unsigned int protocol_write(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
@@ -307,20 +321,30 @@ static unsigned int protocol_write(struct service_backend *backend, unsigned int
 
 }
 
-static unsigned int protocol_seek(struct service_backend *backend, unsigned int id, unsigned int offset)
+static unsigned int protocol_write(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
-    return offset;
+    count = write(backend, state->id, state->offset, count, buffer);
+    state->offset += count;
+
+    return count;
 
 }
 
-static unsigned int protocol_scan(struct service_backend *backend, unsigned int id, unsigned int index)
+static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
+{
+
+    return state->offset = offset;
+
+}
+
+static unsigned int protocol_scan(struct service_backend *backend, struct service_state *state, unsigned int index)
 {
 
     struct cpio_header header;
     unsigned int address = (index) ? decode(index) : 0;
 
-    if (!readheader(backend, &header, decode(id)))
+    if (!readheader(backend, &header, decode(state->id)))
         return 0;
 
     if ((header.mode & 0xF000) != 0x4000)
@@ -332,13 +356,13 @@ static unsigned int protocol_scan(struct service_backend *backend, unsigned int 
     while ((address = cpio_next(&header, address)))
     {
 
-        if (encode(address) == id)
+        if (encode(address) == state->id)
             break;
 
         if (!readheader(backend, &header, address))
             break;
 
-        if (protocol_parent(backend, encode(address)) == id)
+        if (protocol_parent(backend, encode(address)) == state->id)
             return encode(address);
 
     }
@@ -361,48 +385,10 @@ static unsigned long protocol_getphysical(struct service_backend *backend, unsig
 
 }
 
-static unsigned int protocol_open2(struct service_backend *backend, struct list_item *link, struct service_state *state)
-{
-
-    state->offset = 0;
-
-    return protocol_open(backend, state->id);
-
-}
-
-static unsigned int protocol_close2(struct service_backend *backend, struct list_item *link, struct service_state *state)
-{
-
-    state->offset = 0;
-
-    return protocol_close(backend, state->id);
-
-}
-
-static unsigned int protocol_read2(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
-{
-
-    count = protocol_read(backend, state->id, state->offset, count, buffer);
-    state->offset += count;
-
-    return count;
-
-}
-
-static unsigned int protocol_write2(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
-{
-
-    count = protocol_write(backend, state->id, state->offset, count, buffer);
-    state->offset += count;
-
-    return count;
-
-}
-
 void service_setupcpio(void)
 {
 
-    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, protocol_getphysical, protocol_open2, protocol_close2, protocol_read2, protocol_write2);
+    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, protocol_getphysical);
     resource_register(&protocol.resource);
 
 }
