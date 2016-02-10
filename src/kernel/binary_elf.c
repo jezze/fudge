@@ -11,10 +11,9 @@ static unsigned int relocate(struct binary_node *node, struct elf_sectionheader 
     struct elf_header *header = (struct elf_header *)node->physical;
     struct elf_sectionheader *dataheader = (struct elf_sectionheader *)(node->physical + header->shoffset + relocationheader->info * header->shsize);
     struct elf_sectionheader *symbolheader = (struct elf_sectionheader *)(node->physical + header->shoffset + relocationheader->link * header->shsize);
-    unsigned int count = relocationheader->size / relocationheader->esize;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < relocationheader->size / relocationheader->esize; i++)
     {
 
         struct elf_relocation *relocation = (struct elf_relocation *)(node->physical + relocationheader->offset + i * relocationheader->esize);
