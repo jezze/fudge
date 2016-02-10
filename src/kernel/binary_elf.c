@@ -7,75 +7,33 @@
 
 static struct binary_format format;
 
-static unsigned int readheader(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, struct elf_header *header)
+static unsigned int relocate(struct binary_node *node, struct elf_sectionheader *relocationheader, unsigned int address)
 {
 
-    return protocol->read(backend, id, 0, ELF_HEADER_SIZE, header);
-
-}
-
-static unsigned int readprogramheader(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, struct elf_header *header, unsigned int index, struct elf_programheader *programheader)
-{
-
-    return protocol->read(backend, id, header->phoffset + index * header->phsize, header->phsize, programheader);
-
-}
-
-static unsigned int readsectionheader(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, struct elf_header *header, unsigned int index, struct elf_sectionheader *sectionheader)
-{
-
-    return protocol->read(backend, id, header->shoffset + index * header->shsize, header->shsize, sectionheader);
-
-}
-
-static unsigned int relocate(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, struct elf_header *header, struct elf_sectionheader *relocationheader, unsigned int address)
-{
-
-    struct elf_sectionheader dataheader;
-    struct elf_sectionheader symbolheader;
+    struct elf_header *header = (struct elf_header *)node->physical;
+    struct elf_sectionheader *dataheader = (struct elf_sectionheader *)(node->physical + header->shoffset + relocationheader->info * header->shsize);
+    struct elf_sectionheader *symbolheader = (struct elf_sectionheader *)(node->physical + header->shoffset + relocationheader->link * header->shsize);
+    unsigned int count = relocationheader->size / relocationheader->esize;
     unsigned int i;
 
-    if (!readsectionheader(protocol, backend, id, header, relocationheader->link, &symbolheader))
-        return 0;
-
-    if (!readsectionheader(protocol, backend, id, header, relocationheader->info, &dataheader))
-        return 0;
-
-    for (i = 0; i < relocationheader->size / relocationheader->esize; i++)
+    for (i = 0; i < count; i++)
     {
 
-        struct elf_relocation relocation;
-        struct elf_symbol symbol;
-        unsigned char type;
-        unsigned char index;
-        unsigned long *entry;
-        unsigned int addend;
+        struct elf_relocation *relocation = (struct elf_relocation *)(node->physical + relocationheader->offset + i * relocationheader->esize);
+        struct elf_symbol *symbol = (struct elf_symbol *)(node->physical + symbolheader->offset + (relocation->info >> 8) * symbolheader->esize);
+        unsigned long *entry = (unsigned long *)(address + dataheader->offset + relocation->offset);
+        unsigned int addend = 0;
 
-        if (!protocol->read(backend, id, relocationheader->offset + i * relocationheader->esize, relocationheader->esize, &relocation))
-            return 0;
-
-        type = relocation.info & 0x0F;
-        index = relocation.info >> 8;
-
-        if (!protocol->read(backend, id, symbolheader.offset + index * symbolheader.esize, symbolheader.esize, &symbol))
-            return 0;
-
-        entry = (unsigned long *)(address + dataheader.offset + relocation.offset);
-        addend = 0;
-
-        if (symbol.shindex)
+        if (symbol->shindex)
         {
 
-            struct elf_sectionheader referenceheader;
+            struct elf_sectionheader *referenceheader = (struct elf_sectionheader *)(node->physical + header->shoffset + symbol->shindex * header->shsize);
 
-            if (!readsectionheader(protocol, backend, id, header, symbol.shindex, &referenceheader))
-                return 0;
-
-            addend = address + referenceheader.offset + symbol.value;
+            addend = address + referenceheader->offset + symbol->value;
 
         }
 
-        switch (type)
+        switch (relocation->info & 0x0F)
         {
 
         case ELF_RELOC_TYPE_32:
@@ -96,45 +54,28 @@ static unsigned int relocate(struct service_protocol *protocol, struct service_b
 
 }
 
-static unsigned long findsymbol(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, struct elf_header *header, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
+static unsigned long findsymbol(struct binary_node *node, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
 {
 
-    struct elf_sectionheader stringheader;
-    char strings[4096];
+    struct elf_header *header = (struct elf_header *)node->physical;
+    struct elf_sectionheader *stringheader = (struct elf_sectionheader *)(node->physical + header->shoffset + symbolheader->link * header->shsize);
+    char *strings = (char *)(node->physical + stringheader->offset);
     unsigned int i;
-
-    if (!readsectionheader(protocol, backend, id, header, symbolheader->link, &stringheader))
-        return 0;
-
-    if (stringheader.size > 4096)
-        return 0;
-
-    if (!protocol->read(backend, id, stringheader.offset, stringheader.size, strings))
-        return 0;
 
     for (i = 0; i < symbolheader->size / symbolheader->esize; i++)
     {
 
-        struct elf_symbol symbol;
-        char *s;
+        struct elf_symbol *symbol = (struct elf_symbol *)(node->physical + symbolheader->offset + i * symbolheader->esize);
 
-        if (!protocol->read(backend, id, symbolheader->offset + i * symbolheader->esize, symbolheader->esize, &symbol))
-            return 0;
-
-        if (!symbol.shindex)
+        if (!symbol->shindex)
             continue;
 
-        s = strings + symbol.name;
-
-        if (s[count] == '\0' && memory_match(symbolname, s, count))
+        if (strings[symbol->name + count] == '\0' && memory_match(symbolname, strings + symbol->name, count))
         {
 
-            struct elf_sectionheader referenceheader;
+            struct elf_sectionheader *referenceheader = (struct elf_sectionheader *)(node->physical + header->shoffset + symbol->shindex * header->shsize);
 
-            if (!readsectionheader(protocol, backend, id, header, symbol.shindex, &referenceheader))
-                return 0;
-
-            return symbol.value + referenceheader.address + referenceheader.offset;
+            return symbol->value + referenceheader->address + referenceheader->offset;
 
         }
 
@@ -144,40 +85,31 @@ static unsigned long findsymbol(struct service_protocol *protocol, struct servic
 
 }
 
-static unsigned int format_match(struct service_protocol *protocol, struct service_backend *backend, unsigned int id)
+static unsigned int format_match(struct binary_node *node)
 {
 
-    struct elf_header header;
+    struct elf_header *header = (struct elf_header *)node->physical;
 
-    if (!readheader(protocol, backend, id, &header))
-        return 0;
-
-    return elf_validate(&header);
+    return elf_validate(header);
 
 }
 
-static unsigned long format_findsymbol(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, unsigned int count, char *symbolname)
+static unsigned long format_findsymbol(struct binary_node *node, unsigned int count, char *symbolname)
 {
 
-    struct elf_header header;
-    unsigned int address;
+    struct elf_header *header = (struct elf_header *)node->physical;
     unsigned int i;
 
-    if (!readheader(protocol, backend, id, &header))
-        return 0;
-
-    for (i = 0; i < header.shcount; i++)
+    for (i = 0; i < header->shcount; i++)
     {
 
-        struct elf_sectionheader referenceheader;
+        struct elf_sectionheader *referenceheader = (struct elf_sectionheader *)(node->physical + header->shoffset + i * header->shsize);
+        unsigned int address;
 
-        if (!readsectionheader(protocol, backend, id, &header, i, &referenceheader))
-            return 0;
-
-        if (referenceheader.type != ELF_SECTION_TYPE_SYMTAB)
+        if (referenceheader->type != ELF_SECTION_TYPE_SYMTAB)
             continue;
 
-        address = findsymbol(protocol, backend, id, &header, &referenceheader, count, symbolname);
+        address = findsymbol(node, referenceheader, count, symbolname);
 
         if (address)
             return address;
@@ -188,37 +120,28 @@ static unsigned long format_findsymbol(struct service_protocol *protocol, struct
 
 }
 
-static unsigned long format_findentry(struct service_protocol *protocol, struct service_backend *backend, unsigned int id)
+static unsigned long format_findentry(struct binary_node *node)
 {
 
-    struct elf_header header;
+    struct elf_header *header = (struct elf_header *)node->physical;
 
-    if (!readheader(protocol, backend, id, &header))
-        return 0;
-
-    return header.entry;
+    return header->entry;
 
 }
 
-static unsigned long format_findbase(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, unsigned long address)
+static unsigned long format_findbase(struct binary_node *node, unsigned long address)
 {
 
-    struct elf_header header;
+    struct elf_header *header = (struct elf_header *)node->physical;
     unsigned int i;
 
-    if (!readheader(protocol, backend, id, &header))
-        return 0;
-
-    for (i = 0; i < header.phcount; i++)
+    for (i = 0; i < header->phcount; i++)
     {
 
-        struct elf_programheader programheader;
+        struct elf_programheader *programheader = (struct elf_programheader *)(node->physical + header->phoffset + i * header->phsize);
 
-        if (!readprogramheader(protocol, backend, id, &header, i, &programheader))
-            return 0;
-
-        if (programheader.vaddress <= address && programheader.vaddress + programheader.msize > address)
-            return programheader.vaddress;
+        if (programheader->vaddress <= address && programheader->vaddress + programheader->msize > address)
+            return programheader->vaddress;
 
     }
 
@@ -226,32 +149,21 @@ static unsigned long format_findbase(struct service_protocol *protocol, struct s
 
 }
 
-static unsigned int format_copyprogram(struct service_protocol *protocol, struct service_backend *backend, unsigned int id)
+static unsigned int format_copyprogram(struct binary_node *node)
 {
 
-    struct elf_header header;
+    struct elf_header *header = (struct elf_header *)node->physical;
     unsigned int i;
 
-    if (!readheader(protocol, backend, id, &header))
-        return 0;
-
-    for (i = 0; i < header.phcount; i++)
+    for (i = 0; i < header->phcount; i++)
     {
 
-        struct elf_programheader programheader;
+        struct elf_programheader *programheader = (struct elf_programheader *)(node->physical + header->phoffset + i * header->phsize);
 
-        if (!readprogramheader(protocol, backend, id, &header, i, &programheader))
-            return 0;
+        if (programheader->fsize)
+            memory_copy((void *)programheader->vaddress, (void *)(node->physical + programheader->offset), programheader->fsize);
 
-        if (programheader.fsize)
-        {
-
-            if (!protocol->read(backend, id, programheader.offset, programheader.fsize, (void *)programheader.vaddress))
-                return 0;
-
-        }
-
-        memory_clear((void *)(programheader.vaddress + programheader.fsize), programheader.msize - programheader.fsize);
+        memory_clear((void *)(programheader->vaddress + programheader->fsize), programheader->msize - programheader->fsize);
 
     }
 
@@ -259,32 +171,23 @@ static unsigned int format_copyprogram(struct service_protocol *protocol, struct
 
 }
 
-static unsigned int format_relocate(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, unsigned int address)
+static unsigned int format_relocate(struct binary_node *node, unsigned int address)
 {
 
-    struct elf_header header;
+    struct elf_header *header = (struct elf_header *)node->physical;
     unsigned int i;
 
-    if (!readheader(protocol, backend, id, &header))
-        return 0;
-
-    for (i = 0; i < header.shcount; i++)
+    for (i = 0; i < header->shcount; i++)
     {
 
-        struct elf_sectionheader referenceheader;
+        struct elf_sectionheader *referenceheader = (struct elf_sectionheader *)(node->physical + header->shoffset + i * header->shsize);
 
-        if (!readsectionheader(protocol, backend, id, &header, i, &referenceheader))
-            return 0;
+        referenceheader->address += address;
 
-        referenceheader.address += address;
-
-        if (!protocol->write(backend, id, header.shoffset + i * header.shsize, header.shsize, &referenceheader))
-            return 0;
-
-        if (referenceheader.type != ELF_SECTION_TYPE_REL)
+        if (referenceheader->type != ELF_SECTION_TYPE_REL)
             continue;
 
-        if (!relocate(protocol, backend, id, &header, &referenceheader, address))
+        if (!relocate(node, referenceheader, address))
             return 0;
 
     }

@@ -4,7 +4,7 @@
 #include "service.h"
 #include "binary.h"
 
-struct binary_format *binary_findformat(struct service_protocol *protocol, struct service_backend *backend, unsigned int id)
+struct binary_format *binary_findformat(struct binary_node *node)
 {
 
     struct resource *current = 0;
@@ -14,7 +14,7 @@ struct binary_format *binary_findformat(struct service_protocol *protocol, struc
 
         struct binary_format *format = current->data;
 
-        if (format->match(protocol, backend, id))
+        if (format->match(node))
             return format;
 
     }
@@ -23,7 +23,7 @@ struct binary_format *binary_findformat(struct service_protocol *protocol, struc
 
 }
 
-void binary_initformat(struct binary_format *format, unsigned int (*match)(struct service_protocol *protocol, struct service_backend *backend, unsigned int id), unsigned long (*findsymbol)(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, unsigned int count, char *symbol), unsigned long (*findentry)(struct service_protocol *protocol, struct service_backend *backend, unsigned int id), unsigned long (*findbase)(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, unsigned long address), unsigned int (*copyprogram)(struct service_protocol *protocol, struct service_backend *backend, unsigned int id), unsigned int (*relocate)(struct service_protocol *protocol, struct service_backend *backend, unsigned int id, unsigned int address))
+void binary_initformat(struct binary_format *format, unsigned int (*match)(struct binary_node *node), unsigned long (*findsymbol)(struct binary_node *node, unsigned int count, char *symbol), unsigned long (*findentry)(struct binary_node *node), unsigned long (*findbase)(struct binary_node *node, unsigned long address), unsigned int (*copyprogram)(struct binary_node *node), unsigned int (*relocate)(struct binary_node *node, unsigned int address))
 {
 
     resource_init(&format->resource, RESOURCE_BINARYFORMAT, format);

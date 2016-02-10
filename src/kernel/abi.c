@@ -238,31 +238,30 @@ static unsigned int load(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct container_session *session = getsession(container, task, args->descriptor);
+    struct binary_node node;
     struct binary_format *format;
-    unsigned long physical;
     void (*module_init)(void);
     void (*module_register)(void);
 
     if (!session->state.id || !session->protocol->getphysical)
         return 0;
 
-    /* Physical should be replaced with known address later on */
-    physical = session->protocol->getphysical(session->backend, session->state.id);
+    node.physical = session->protocol->getphysical(session->backend, session->state.id);
 
-    if (!physical)
+    if (!node.physical)
         return 0;
 
-    format = binary_findformat(session->protocol, session->backend, session->state.id);
+    format = binary_findformat(&node);
 
-    if (!format || !format->relocate(session->protocol, session->backend, session->state.id, physical))
+    if (!format || !format->relocate(&node, node.physical))
         return 0;
 
-    module_init = (void (*)(void))(format->findsymbol(session->protocol, session->backend, session->state.id, 11, "module_init"));
+    module_init = (void (*)(void))(format->findsymbol(&node, 11, "module_init"));
 
     if (module_init)
         module_init();
 
-    module_register = (void (*)(void))(format->findsymbol(session->protocol, session->backend, session->state.id, 15, "module_register"));
+    module_register = (void (*)(void))(format->findsymbol(&node, 15, "module_register"));
 
     if (module_register)
         module_register();
@@ -276,18 +275,24 @@ static unsigned int unload(struct container *container, struct task *task, void 
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct container_session *session = getsession(container, task, args->descriptor);
+    struct binary_node node;
     struct binary_format *format;
     void (*module_unregister)(void);
 
-    if (!session->state.id)
+    if (!session->state.id || !session->protocol->getphysical)
         return 0;
 
-    format = binary_findformat(session->protocol, session->backend, session->state.id);
+    node.physical = session->protocol->getphysical(session->backend, session->state.id);
+
+    if (!node.physical)
+        return 0;
+
+    format = binary_findformat(&node);
 
     if (!format)
         return 0;
 
-    module_unregister = (void (*)(void))(format->findsymbol(session->protocol, session->backend, session->state.id, 17, "module_unregister"));
+    module_unregister = (void (*)(void))(format->findsymbol(&node, 17, "module_unregister"));
 
     if (module_unregister)
         module_unregister();

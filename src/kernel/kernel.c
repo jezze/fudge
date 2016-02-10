@@ -37,17 +37,23 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
 {
 
     struct container_session *session = &container->sessions[task->id * TASK_DESCRIPTORS];
+    struct binary_node node;
     struct binary_format *format;
 
-    if (!session->state.id)
+    if (!session->state.id || !session->protocol->getphysical)
         return 0;
 
-    format = binary_findformat(session->protocol, session->backend, session->state.id);
+    node.physical = session->protocol->getphysical(session->backend, session->state.id);
+
+    if (!node.physical)
+        return 0;
+
+    format = binary_findformat(&node);
 
     if (!format)
         return 0;
 
-    task_resume(task, format->findentry(session->protocol, session->backend, session->state.id), sp);
+    task_resume(task, format->findentry(&node), sp);
 
     return task->state.registers.ip;
 
