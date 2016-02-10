@@ -242,10 +242,10 @@ static unsigned int load(struct container *container, struct task *task, void *s
     void (*module_init)(void);
     void (*module_register)(void);
 
-    if (!session->state.id || !session->protocol->getphysical)
+    if (!session->state.id)
         return 0;
 
-    session->node.physical = session->protocol->getphysical(session->backend, session->state.id);
+    session->node.physical = session->protocol->map(session->backend, session->state.id);
 
     if (!session->node.physical)
         return 0;
@@ -277,10 +277,10 @@ static unsigned int unload(struct container *container, struct task *task, void 
     struct binary_format *format;
     void (*module_unregister)(void);
 
-    if (!session->state.id || !session->protocol->getphysical)
+    if (!session->state.id)
         return 0;
 
-    session->node.physical = session->protocol->getphysical(session->backend, session->state.id);
+    session->node.physical = session->protocol->map(session->backend, session->state.id);
 
     if (!session->node.physical)
         return 0;

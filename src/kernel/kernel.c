@@ -38,10 +38,10 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
 
     struct container_session *session = &container->sessions[task->id * TASK_DESCRIPTORS];
 
-    if (!session->state.id || !session->protocol->getphysical)
+    if (!session->state.id)
         return 0;
 
-    session->node.physical = session->protocol->getphysical(session->backend, session->state.id);
+    session->node.physical = session->protocol->map(session->backend, session->state.id);
 
     if (!session->node.physical)
         return 0;

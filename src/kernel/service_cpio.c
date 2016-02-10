@@ -371,7 +371,7 @@ static unsigned int protocol_scan(struct service_backend *backend, struct servic
 
 }
 
-static unsigned long protocol_getphysical(struct service_backend *backend, unsigned int id)
+static unsigned long protocol_map(struct service_backend *backend, unsigned int id)
 {
 
     /* TEMPORARY FIX */
@@ -388,7 +388,7 @@ static unsigned long protocol_getphysical(struct service_backend *backend, unsig
 void service_setupcpio(void)
 {
 
-    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, protocol_getphysical);
+    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, protocol_map);
     resource_register(&protocol.resource);
 
 }
