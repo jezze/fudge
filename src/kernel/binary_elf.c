@@ -5,7 +5,7 @@
 
 static struct binary_format format;
 
-static unsigned int relocate(struct binary_node *node, struct elf_sectionheader *relocationheader, unsigned int address)
+static unsigned int relocate(struct binary_node *node, struct elf_sectionheader *relocationheader)
 {
 
     struct elf_header *header = (struct elf_header *)node->physical;
@@ -19,7 +19,7 @@ static unsigned int relocate(struct binary_node *node, struct elf_sectionheader 
 
         struct elf_relocation *relocation = (struct elf_relocation *)(node->physical + relocationheader->offset + i * relocationheader->esize);
         struct elf_symbol *symbol = (struct elf_symbol *)(node->physical + symbolheader->offset + (relocation->info >> 8) * symbolheader->esize);
-        unsigned long *entry = (unsigned long *)(address + dataheader->offset + relocation->offset);
+        unsigned long *entry = (unsigned long *)(node->physical + dataheader->offset + relocation->offset);
         unsigned int addend = 0;
 
         if (symbol->shindex)
@@ -27,7 +27,7 @@ static unsigned int relocate(struct binary_node *node, struct elf_sectionheader 
 
             struct elf_sectionheader *referenceheader = (struct elf_sectionheader *)(node->physical + header->shoffset + symbol->shindex * header->shsize);
 
-            addend = address + referenceheader->offset + symbol->value;
+            addend = node->physical + referenceheader->offset + symbol->value;
 
         }
 
@@ -169,7 +169,7 @@ static unsigned int format_copyprogram(struct binary_node *node)
 
 }
 
-static unsigned int format_relocate(struct binary_node *node, unsigned int address)
+static unsigned int format_relocate(struct binary_node *node)
 {
 
     struct elf_header *header = (struct elf_header *)node->physical;
@@ -180,12 +180,12 @@ static unsigned int format_relocate(struct binary_node *node, unsigned int addre
 
         struct elf_sectionheader *referenceheader = (struct elf_sectionheader *)(node->physical + header->shoffset + i * header->shsize);
 
-        referenceheader->address += address;
+        referenceheader->address += node->physical;
 
         if (referenceheader->type != ELF_SECTION_TYPE_REL)
             continue;
 
-        if (!relocate(node, referenceheader, address))
+        if (!relocate(node, referenceheader))
             return 0;
 
     }
