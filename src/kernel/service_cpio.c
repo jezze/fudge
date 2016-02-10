@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <format/cpio.h>
 #include "resource.h"
-#include "task.h"
+#include "binary.h"
 #include "service.h"
 
 static struct service_protocol protocol;
@@ -371,7 +371,7 @@ static unsigned int protocol_scan(struct service_backend *backend, struct servic
 
 }
 
-static unsigned long protocol_map(struct service_backend *backend, unsigned int id)
+static unsigned long protocol_map(struct service_backend *backend, unsigned int id, struct binary_node *node)
 {
 
     /* TEMPORARY FIX */
@@ -381,7 +381,7 @@ static unsigned long protocol_map(struct service_backend *backend, unsigned int 
     if (!readheader(backend, &header, address))
         return 0;
 
-    return backend->getphysical() + cpio_filedata(&header, address);
+    return node->physical = backend->getphysical() + cpio_filedata(&header, address);
 
 }
 

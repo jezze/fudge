@@ -161,7 +161,7 @@ static unsigned int protocol_scan(struct service_backend *backend, struct servic
 
 }
 
-static unsigned long protocol_map(struct service_backend *backend, unsigned int id)
+static unsigned long protocol_map(struct service_backend *backend, unsigned int id, struct binary_node *node)
 {
 
     return 0;

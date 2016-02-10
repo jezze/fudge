@@ -245,7 +245,7 @@ static unsigned int load(struct container *container, struct task *task, void *s
     if (!session->state.id)
         return 0;
 
-    session->node.physical = session->protocol->map(session->backend, session->state.id);
+    session->protocol->map(session->backend, session->state.id, &session->node);
 
     if (!session->node.physical)
         return 0;
@@ -280,7 +280,7 @@ static unsigned int unload(struct container *container, struct task *task, void 
     if (!session->state.id)
         return 0;
 
-    session->node.physical = session->protocol->map(session->backend, session->state.id);
+    session->protocol->map(session->backend, session->state.id, &session->node);
 
     if (!session->node.physical)
         return 0;
