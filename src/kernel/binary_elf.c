@@ -46,9 +46,9 @@ static unsigned long findsymbol(struct binary_node *node, struct elf_sectionhead
 {
 
     struct elf_header *header = (struct elf_header *)node->physical;
-    struct elf_sectionheader *stringheader = (struct elf_sectionheader *)(node->physical + header->shoffset + symbolheader->link * header->shsize);
+    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(node->physical + header->shoffset);
     struct elf_symbol *symbols = (struct elf_symbol *)(node->physical + symbolheader->offset);
-    char *strings = (char *)(node->physical + stringheader->offset);
+    char *strings = (char *)(node->physical + sectionheaders[symbolheader->link].offset);
     unsigned int i;
 
     for (i = 0; i < symbolheader->size / symbolheader->esize; i++)
@@ -58,13 +58,7 @@ static unsigned long findsymbol(struct binary_node *node, struct elf_sectionhead
             continue;
 
         if (strings[symbols[i].name + count] == '\0' && memory_match(symbolname, strings + symbols[i].name, count))
-        {
-
-            struct elf_sectionheader *referenceheader = (struct elf_sectionheader *)(node->physical + header->shoffset + symbols[i].shindex * header->shsize);
-
-            return symbols[i].value + referenceheader->address + referenceheader->offset;
-
-        }
+            return symbols[i].value + sectionheaders[symbols[i].shindex].address + sectionheaders[symbols[i].shindex].offset;
 
     }
 
