@@ -263,17 +263,15 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
         struct container_session *session = &current.container->sessions[current.task->id * TASK_DESCRIPTORS];
         struct binary_node node;
-        struct binary_format *format;
 
         node.physical = session->protocol->getphysical(session->backend, session->state.id);
-        format = binary_findformat(&node);
-        address = format->findbase(&node, address);
+        address = current.task->format->findbase(&node, address);
 
         if (address)
         {
 
             maptaskcode(current.task, address);
-            format->copyprogram(&node);
+            current.task->format->copyprogram(&node);
 
         }
 

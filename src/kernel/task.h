@@ -29,6 +29,7 @@ struct task
     struct task_state state;
     struct task_mailbox mailbox;
     struct list_item links[TASK_DESCRIPTORS];
+    struct binary_format *format;
     unsigned int id;
 
 };

@@ -1,8 +1,8 @@
 #include <fudge.h>
 #include "resource.h"
+#include "binary.h"
 #include "task.h"
 #include "service.h"
-#include "binary.h"
 #include "container.h"
 #include "kernel.h"
 
@@ -38,7 +38,6 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
 
     struct container_session *session = &container->sessions[task->id * TASK_DESCRIPTORS];
     struct binary_node node;
-    struct binary_format *format;
 
     if (!session->state.id || !session->protocol->getphysical)
         return 0;
@@ -48,12 +47,12 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
     if (!node.physical)
         return 0;
 
-    format = binary_findformat(&node);
+    task->format = binary_findformat(&node);
 
-    if (!format)
+    if (!task->format)
         return 0;
 
-    task_resume(task, format->findentry(&node), sp);
+    task_resume(task, task->format->findentry(&node), sp);
 
     return task->state.registers.ip;
 

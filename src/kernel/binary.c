@@ -1,7 +1,5 @@
 #include <fudge.h>
 #include "resource.h"
-#include "task.h"
-#include "service.h"
 #include "binary.h"
 
 struct binary_format *binary_findformat(struct binary_node *node)

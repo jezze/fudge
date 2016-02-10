@@ -1,8 +1,6 @@
 #include <fudge.h>
 #include <elf/elf.h>
 #include "resource.h"
-#include "task.h"
-#include "service.h"
 #include "binary.h"
 
 static struct binary_format format;
