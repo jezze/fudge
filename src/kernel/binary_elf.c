@@ -57,7 +57,7 @@ static unsigned long findsymbol(struct binary_node *node, struct elf_sectionhead
         if (!symbols[i].shindex)
             continue;
 
-        if (strings[symbols[i].name + count] == '\0' && memory_match(symbolname, strings + symbols[i].name, count))
+        if (strings[symbols[i].name + count] == '\0' && memory_match(symbolname, &strings[symbols[i].name], count))
             return symbols[i].value + sectionheaders[symbols[i].shindex].address + sectionheaders[symbols[i].shindex].offset;
 
     }

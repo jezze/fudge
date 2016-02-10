@@ -56,14 +56,11 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
         {
 
             struct elf_symbol symbol;
-            char *s;
 
             if (!file_seekreadall(id, &symbol, symbolheader.esize, symbolheader.offset + j * symbolheader.esize))
                 return 0;
 
-            s = strings + symbol.name;
-
-            if (s[count] == '\0' && memory_match(symbolname, s, count))
+            if (strings[symbol.name + count] == '\0' && memory_match(symbolname, &strings[symbol.name], count))
             {
 
                 if (header.type == ELF_TYPE_RELOCATABLE)
