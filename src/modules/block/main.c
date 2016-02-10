@@ -8,7 +8,7 @@ void block_notify(struct block_interface *interface, unsigned int count, void *b
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacedata_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return 0;

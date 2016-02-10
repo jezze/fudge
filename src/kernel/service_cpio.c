@@ -361,31 +361,41 @@ static unsigned long protocol_getphysical(struct service_backend *backend, unsig
 
 }
 
-static unsigned int protocol_open2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_open2(struct service_backend *backend, struct list_item *link, struct service_state *state)
 {
 
-    return protocol_open(backend, id);
+    state->offset = 0;
+
+    return protocol_open(backend, state->id);
 
 }
 
-static unsigned int protocol_close2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_close2(struct service_backend *backend, struct list_item *link, struct service_state *state)
 {
 
-    return protocol_close(backend, id);
+    state->offset = 0;
+
+    return protocol_close(backend, state->id);
 
 }
 
-static unsigned int protocol_read2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read2(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
-    return protocol_read(backend, id, offset, count, buffer);
+    count = protocol_read(backend, state->id, state->offset, count, buffer);
+    state->offset += count;
+
+    return count;
 
 }
 
-static unsigned int protocol_write2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write2(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
-    return protocol_write(backend, id, offset, count, buffer);
+    count = protocol_write(backend, state->id, state->offset, count, buffer);
+    state->offset += count;
+
+    return count;
 
 }
 

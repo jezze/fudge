@@ -16,8 +16,7 @@ struct container_session
     struct resource resource;
     struct service_backend *backend;
     struct service_protocol *protocol;
-    unsigned int id;
-    unsigned int offset;
+    struct service_state state;
 
 };
 

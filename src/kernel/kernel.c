@@ -18,20 +18,16 @@ void kernel_copysessions(struct container *container, struct task *source, struc
 
         container->sessions[tid + i + 0x00].backend = container->sessions[sid + i + 0x08].backend;
         container->sessions[tid + i + 0x00].protocol = container->sessions[sid + i + 0x08].protocol;
-        container->sessions[tid + i + 0x00].id = container->sessions[sid + i + 0x08].id;
-        container->sessions[tid + i + 0x00].offset = 0;
+        container->sessions[tid + i + 0x00].state.id = container->sessions[sid + i + 0x08].state.id;
         container->sessions[tid + i + 0x08].backend = container->sessions[sid + i + 0x08].backend;
         container->sessions[tid + i + 0x08].protocol = container->sessions[sid + i + 0x08].protocol;
-        container->sessions[tid + i + 0x08].id = container->sessions[sid + i + 0x08].id;
-        container->sessions[tid + i + 0x08].offset = 0;
+        container->sessions[tid + i + 0x08].state.id = container->sessions[sid + i + 0x08].state.id;
         container->sessions[tid + i + 0x10].backend = 0;
         container->sessions[tid + i + 0x10].protocol = 0;
-        container->sessions[tid + i + 0x10].id = 0;
-        container->sessions[tid + i + 0x10].offset = 0;
+        container->sessions[tid + i + 0x10].state.id = 0;
         container->sessions[tid + i + 0x18].backend = 0;
         container->sessions[tid + i + 0x18].protocol = 0;
-        container->sessions[tid + i + 0x18].id = 0;
-        container->sessions[tid + i + 0x18].offset = 0;
+        container->sessions[tid + i + 0x18].state.id = 0;
 
     }
 
@@ -43,15 +39,15 @@ unsigned int kernel_setupbinary(struct container *container, struct task *task, 
     struct container_session *session = &container->sessions[task->id * TASK_DESCRIPTORS];
     struct binary_format *format;
 
-    if (!session->id)
+    if (!session->state.id)
         return 0;
 
-    format = binary_findformat(session->protocol, session->backend, session->id);
+    format = binary_findformat(session->protocol, session->backend, session->state.id);
 
     if (!format)
         return 0;
 
-    task_resume(task, format->findentry(session->protocol, session->backend, session->id), sp);
+    task_resume(task, format->findentry(session->protocol, session->backend, session->state.id), sp);
 
     return task->state.registers.ip;
 
@@ -76,15 +72,15 @@ unsigned int kernel_setupramdisk(struct container *container, struct task *task,
 
     root->backend = mount->parent.backend;
     root->protocol = mount->parent.protocol;
-    root->id = mount->parent.id;
+    root->state.id = mount->parent.id;
     init->backend = mount->parent.backend;
     init->protocol = mount->parent.protocol;
-    init->id = init->protocol->child(init->backend, root->id, 4, "bin/");
+    init->state.id = init->protocol->child(init->backend, root->state.id, 4, "bin/");
 
-    if (!init->id)
+    if (!init->state.id)
         return 0;
 
-    return init->id = init->protocol->child(init->backend, init->id, 4, "init");
+    return init->state.id = init->protocol->child(init->backend, init->state.id, 4, "init");
 
 }
 

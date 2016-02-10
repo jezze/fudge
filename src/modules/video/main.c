@@ -3,7 +3,7 @@
 #include <modules/system/system.h>
 #include "video.h"
 
-static unsigned int interfacectrl_read(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacectrl_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -13,7 +13,7 @@ static unsigned int interfacectrl_read(struct system_node *self, struct task *ta
 
 }
 
-static unsigned int interfacectrl_write(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacectrl_write(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -25,7 +25,7 @@ static unsigned int interfacectrl_write(struct system_node *self, struct task *t
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacedata_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -34,7 +34,7 @@ static unsigned int interfacedata_read(struct system_node *self, struct task *ta
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacedata_write(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -43,7 +43,7 @@ static unsigned int interfacedata_write(struct system_node *self, struct task *t
 
 }
 
-static unsigned int interfacecolormap_read(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacecolormap_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -52,7 +52,7 @@ static unsigned int interfacecolormap_read(struct system_node *self, struct task
 
 }
 
-static unsigned int interfacecolormap_write(struct system_node *self, struct task *task, unsigned int descriptor, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacecolormap_write(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;

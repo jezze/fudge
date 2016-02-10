@@ -101,45 +101,47 @@ static unsigned int protocol_scan(struct service_backend *backend, unsigned int 
 
 }
 
-static unsigned int protocol_open2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_open2(struct service_backend *backend, struct list_item *link, struct service_state *state)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)state->id;
 
+    state->offset = 0;
     node->refcount++;
 
     switch (node->type)
     {
 
     case SYSTEM_NODETYPE_MAILBOX:
-        list_add(&node->links, &task->links[descriptor]);
+        list_add(&node->links, link);
 
         break;
 
     }
 
-    return id;
+    return state->id;
 
 }
 
-static unsigned int protocol_close2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id)
+static unsigned int protocol_close2(struct service_backend *backend, struct list_item *link, struct service_state *state)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)state->id;
 
+    state->offset = 0;
     node->refcount--;
 
     switch (node->type)
     {
 
     case SYSTEM_NODETYPE_MAILBOX:
-        list_remove(&node->links, &task->links[descriptor]);
+        list_remove(&node->links, link);
 
         break;
 
     }
 
-    return id;
+    return state->id;
 
 }
 
@@ -155,29 +157,35 @@ static unsigned int readmailbox(struct task *task, unsigned int count, void *buf
 
 }
 
-static unsigned int protocol_read2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read2(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)state->id;
 
     switch (node->type)
     {
 
     case SYSTEM_NODETYPE_MAILBOX:
-        return readmailbox(task, count, buffer);
+        return readmailbox(link->data, count, buffer);
 
     }
 
-    return (node->read) ? node->read(node, task, descriptor, offset, count, buffer) : 0;
+    count = (node->read) ? node->read(node, link, state->offset, count, buffer) : 0;
+    state->offset += count;
+
+    return count;
 
 }
 
-static unsigned int protocol_write2(struct service_backend *backend, struct task *task, unsigned int descriptor, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write2(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)state->id;
 
-    return (node->write) ? node->write(node, task, descriptor, offset, count, buffer) : 0;
+    count = (node->write) ? node->write(node, link, state->offset, count, buffer) : 0;
+    state->offset += count;
+
+    return count;
 
 }
 
