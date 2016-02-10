@@ -11,7 +11,6 @@ static unsigned int notify(void *buffer)
 
     struct event_header *header = buffer;
     unsigned int count = sizeof (struct event_header) + header->count;
-    struct task *destination;
 
     if (!poll.links.count)
         return 0;
@@ -19,14 +18,7 @@ static unsigned int notify(void *buffer)
     if (!header->destination)
         header->destination = (unsigned int)poll.links.head->data;
 
-    destination = (struct task *)header->destination;
-
-    if (destination->mailbox.buffer.capacity - destination->mailbox.buffer.count < count)
-        return 0;
-
-    task_setstatus(destination, TASK_STATUS_UNBLOCKED);
-
-    return buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
+    return system_send(header->destination, count, buffer);
 
 }
 

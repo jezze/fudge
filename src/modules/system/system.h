@@ -31,6 +31,7 @@ struct system_node
 
 };
 
+unsigned int system_send(unsigned int id, unsigned int count, void *buffer);
 void system_multicast(struct list *list, unsigned int count, void *buffer);
 void system_wakeup(struct list *list);
 void system_addchild(struct system_node *group, struct system_node *node);

@@ -106,6 +106,20 @@ static unsigned int node_scangroup(struct system_node *self, unsigned int index)
 
 }
 
+unsigned int system_send(unsigned int id, unsigned int count, void *buffer)
+{
+
+    struct task *destination = (struct task *)id;
+
+    if (destination->mailbox.buffer.capacity - destination->mailbox.buffer.count < count)
+        return 0;
+
+    task_setstatus(destination, TASK_STATUS_UNBLOCKED);
+
+    return buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
+
+}
+
 void system_multicast(struct list *list, unsigned int count, void *buffer)
 {
 
