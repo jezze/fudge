@@ -64,20 +64,9 @@ unsigned int file_seekread(unsigned int id, void *buffer, unsigned int count, un
 unsigned int file_seekreadall(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned char *b = buffer;
-    unsigned int n, o;
-
     call_seek(id, offset);
 
-    for (o = offset; (n = call_read(id, b, count)); o += n)
-    {
-
-        count -= n;
-        b += n;
-
-    }
-
-    return !count;
+    return file_readall(id, buffer, count);
 
 }
 
@@ -93,20 +82,9 @@ unsigned int file_seekwrite(unsigned int id, void *buffer, unsigned int count, u
 unsigned int file_seekwriteall(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned char *b = buffer;
-    unsigned int n, o;
-
     call_seek(id, offset);
 
-    for (o = offset; (n = call_write(id, b, count)); o += n)
-    {
-
-        count -= n;
-        b += n;
-
-    }
-
-    return !count;
+    return file_writeall(id, buffer, count);
 
 }
 
