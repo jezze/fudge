@@ -203,29 +203,24 @@ static unsigned int protocol_close(struct service_backend *backend, struct list_
 
 }
 
-static unsigned int readnormal(struct service_backend *backend, unsigned int address, unsigned int offset, unsigned int count, void *buffer, struct cpio_header *header)
+static unsigned int readnormal(struct service_backend *backend, unsigned int address, struct service_state *state, unsigned int count, void *buffer, struct cpio_header *header)
 {
 
-    unsigned int s = cpio_filesize(header);
-    unsigned int d = cpio_filedata(header, address);
+    unsigned int s = cpio_filesize(header) - state->offset;
+    unsigned int o = cpio_filedata(header, address) + state->offset;
 
-    if (offset >= s)
-        return 0;
-
-    s -= offset;
-
-    return backend->read(d + offset, (count > s) ? s : count, buffer);
+    return backend->read(o, (count > s) ? s : count, buffer);
 
 }
 
-static unsigned int readdirectory(struct service_backend *backend, unsigned int address, unsigned int offset, unsigned int count, void *buffer, struct cpio_header *header)
+static unsigned int readdirectory(struct service_backend *backend, unsigned int address, struct service_state *state, unsigned int count, void *buffer, struct cpio_header *header)
 {
 
     struct record *record = buffer;
     unsigned int length = header->namesize;
     unsigned char name[1024];
 
-    address = (offset) ? decode(offset) : decode(protocol_parent(backend, encode(address)));
+    address = (state->offset) ? decode(state->offset) : decode(protocol_parent(backend, encode(address)));
 
     if (!readheader(backend, header, address))
         return 0;
@@ -251,11 +246,11 @@ static unsigned int readdirectory(struct service_backend *backend, unsigned int 
 
 }
 
-static unsigned int read(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
-    unsigned int address = decode(id);
+    unsigned int address = decode(state->id);
 
     if (!readheader(backend, &header, address))
         return 0;
@@ -264,47 +259,43 @@ static unsigned int read(struct service_backend *backend, unsigned int id, unsig
     {
 
     case 0x8000:
-        return readnormal(backend, address, offset, count, buffer, &header);
+        count = readnormal(backend, address, state, count, buffer, &header);
+
+        break;
 
     case 0x4000:
-        return readdirectory(backend, address, offset, count, buffer, &header);
+        count = readdirectory(backend, address, state, count, buffer, &header);
+
+        break;
+
+    default:
+        count = 0;
+
+        break;
 
     }
 
-    return 0;
-
-}
-
-static unsigned int protocol_read(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
-{
-
-    count = read(backend, state->id, state->offset, count, buffer);
     state->offset += count;
 
     return count;
 
 }
 
-static unsigned int writenormal(struct service_backend *backend, unsigned int address, unsigned int offset, unsigned int count, void *buffer, struct cpio_header *header)
+static unsigned int writenormal(struct service_backend *backend, unsigned int address, struct service_state *state, unsigned int count, void *buffer, struct cpio_header *header)
 {
 
-    unsigned int s = cpio_filesize(header);
-    unsigned int d = cpio_filedata(header, address);
+    unsigned int s = cpio_filesize(header) - state->offset;
+    unsigned int o = cpio_filedata(header, address) + state->offset;
 
-    if (offset >= s)
-        return 0;
-
-    s -= offset;
-
-    return backend->write(d + offset, (count > s) ? s : count, buffer);
+    return backend->write(o, (count > s) ? s : count, buffer);
 
 }
 
-static unsigned int write(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct cpio_header header;
-    unsigned int address = decode(id);
+    unsigned int address = decode(state->id);
 
     if (!readheader(backend, &header, address))
         return 0;
@@ -313,18 +304,17 @@ static unsigned int write(struct service_backend *backend, unsigned int id, unsi
     {
 
     case 0x8000:
-        return writenormal(backend, address, offset, count, buffer, &header);
+        count = writenormal(backend, address, state, count, buffer, &header);
+
+        break;
+
+    default:
+        count = 0;
+
+        break;
 
     }
 
-    return 0;
-
-}
-
-static unsigned int protocol_write(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
-{
-
-    count = write(backend, state->id, state->offset, count, buffer);
     state->offset += count;
 
     return count;
