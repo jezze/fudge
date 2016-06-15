@@ -22,38 +22,33 @@ static unsigned int readname(struct service_backend *backend, struct cpio_header
 
 }
 
-static unsigned int parent(struct service_backend *backend, unsigned int id)
+static unsigned int parent(struct service_backend *backend, struct cpio_header *header, unsigned int id)
 {
 
-    struct cpio_header header;
+    struct cpio_header eheader;
     unsigned char name[1024];
     unsigned int length;
 
-    if (!readheader(backend, &header, id))
+    if (!readname(backend, header, id, 1024, name))
         return 0;
 
-    if (!readname(backend, &header, id, 1024, name))
-        return 0;
-
-    length = header.namesize - 1;
-
-    while (--length && name[length] != '/');
+    for (length = header->namesize - 1; length && name[length] != '/'; length--);
 
     do
     {
 
-        if (!readheader(backend, &header, id))
+        if (!readheader(backend, &eheader, id))
             break;
 
-        if ((header.mode & 0xF000) != 0x4000)
+        if ((eheader.mode & 0xF000) != 0x4000)
             continue;
 
-        if (header.namesize == length + 1)
+        if (eheader.namesize == length + 1)
         {
 
             unsigned char pname[1024];
 
-            if (!readname(backend, &header, id, 1024, pname))
+            if (!readname(backend, &eheader, id, 1024, pname))
                 break;
 
             if (memory_match(name, pname, length))
@@ -61,7 +56,7 @@ static unsigned int parent(struct service_backend *backend, unsigned int id)
 
         }
 
-    } while ((id = cpio_next(&header, id)));
+    } while ((id = cpio_next(&eheader, id)));
 
     return 0;
 
@@ -103,7 +98,12 @@ static unsigned int protocol_root(struct service_backend *backend)
 static unsigned int protocol_parent(struct service_state *state)
 {
 
-    return parent(state->backend, state->id);
+    struct cpio_header header;
+
+    if (!readheader(state->backend, &header, state->id))
+        return 0;
+
+    return parent(state->backend, &header, state->id);
 
 }
 
@@ -161,28 +161,40 @@ static unsigned int protocol_child(struct service_state *state, unsigned int cou
 static unsigned int scan(struct service_state *state, unsigned int index)
 {
 
-    struct cpio_header header;
+    struct cpio_header eheader;
 
-    if (!readheader(state->backend, &header, state->id))
+    if (!readheader(state->backend, &eheader, index))
         return 0;
 
-    if ((header.mode & 0xF000) != 0x4000)
-        return 0;
-
-    if (!readheader(state->backend, &header, index))
-        return 0;
-
-    while ((index = cpio_next(&header, index)))
+    while ((index = cpio_next(&eheader, index)))
     {
 
         if (index == state->id)
             break;
 
-        if (!readheader(state->backend, &header, index))
+        if (!readheader(state->backend, &eheader, index))
             break;
 
-        if (parent(state->backend, index) == state->id)
+        if (parent(state->backend, &eheader, index) == state->id)
             return index;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int seek(struct service_state *state, struct cpio_header *header, unsigned int offset)
+{
+
+    switch (header->mode & 0xF000)
+    {
+
+    case 0x4000:
+        return scan(state, state->offset);
+
+    case 0x8000:
+        return offset;
 
     }
 
@@ -212,20 +224,7 @@ static unsigned int protocol_open(struct service_state *state)
     if (!readheader(state->backend, &header, state->id))
         return 0;
 
-    switch (header.mode & 0xF000)
-    {
-
-    case 0x4000:
-        state->offset = scan(state, 0);
-
-        break;
-
-    default:
-        state->offset = 0;
-
-        break;
-
-    }
+    state->offset = seek(state, &header, 0);
 
     return state->id;
 
@@ -233,8 +232,6 @@ static unsigned int protocol_open(struct service_state *state)
 
 static unsigned int protocol_close(struct service_state *state)
 {
-
-    state->offset = 0;
 
     return state->id;
 
@@ -246,10 +243,7 @@ static unsigned int readnormal(struct service_state *state, unsigned int count, 
     unsigned int s = cpio_filesize(header) - state->offset;
     unsigned int o = cpio_filedata(header, state->id) + state->offset;
 
-    count = state->backend->read(o, (count > s) ? s : count, buffer);
-    state->offset += count;
-
-    return count;
+    return state->backend->read(o, (count > s) ? s : count, buffer);
 
 }
 
@@ -283,8 +277,6 @@ static unsigned int readdirectory(struct service_state *state, unsigned int coun
 
     }
 
-    state->offset = scan(state, state->offset);
-
     return sizeof (struct record);
 
 }
@@ -301,14 +293,25 @@ static unsigned int protocol_read(struct service_state *state, unsigned int coun
     {
 
     case 0x8000:
-        return readnormal(state, count, buffer, &header);
+        count = readnormal(state, count, buffer, &header);
+
+        break;
 
     case 0x4000:
-        return readdirectory(state, count, buffer, &header);
+        count = readdirectory(state, count, buffer, &header);
+
+        break;
+
+    default:
+        count = 0;
+
+        break;
 
     }
 
-    return 0;
+    state->offset = seek(state, &header, state->offset + count);
+
+    return count;
 
 }
 
@@ -318,10 +321,7 @@ static unsigned int writenormal(struct service_state *state, unsigned int count,
     unsigned int s = cpio_filesize(header) - state->offset;
     unsigned int o = cpio_filedata(header, state->id) + state->offset;
 
-    count = state->backend->write(o, (count > s) ? s : count, buffer);
-    state->offset += count;
-
-    return count;
+    return state->backend->write(o, (count > s) ? s : count, buffer);
 
 }
 
@@ -337,11 +337,20 @@ static unsigned int protocol_write(struct service_state *state, unsigned int cou
     {
 
     case 0x8000:
-        return writenormal(state, count, buffer, &header);
+        count = writenormal(state, count, buffer, &header);
+
+        break;
+
+    default:
+        count = 0;
+
+        break;
 
     }
 
-    return 0;
+    state->offset = seek(state, &header, state->offset + count);
+
+    return count;
 
 }
 
@@ -353,15 +362,7 @@ static unsigned int protocol_seek(struct service_state *state, unsigned int offs
     if (!readheader(state->backend, &header, state->id))
         return 0;
 
-    switch (header.mode & 0xF000)
-    {
-
-    case 0x8000:
-        return state->offset = offset;
-
-    }
-
-    return 0;
+    return state->offset = seek(state, &header, offset);
 
 }
 
