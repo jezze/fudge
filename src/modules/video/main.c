@@ -3,17 +3,17 @@
 #include <modules/system/system.h>
 #include "video.h"
 
-static unsigned int interfacectrl_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacectrl_read(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
     struct ctrl_videosettings *settings = buffer;
 
-    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_videosettings), offset);
+    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_videosettings), state->offset);
 
 }
 
-static unsigned int interfacectrl_write(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacectrl_write(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -25,39 +25,39 @@ static unsigned int interfacectrl_write(struct system_node *self, struct list_it
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacedata_read(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->rdata(offset, count, buffer);
+    return interface->rdata(state->offset, count, buffer);
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacedata_write(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->wdata(offset, count, buffer);
+    return interface->wdata(state->offset, count, buffer);
 
 }
 
-static unsigned int interfacecolormap_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacecolormap_read(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->rcolormap(offset, count, buffer);
+    return interface->rcolormap(state->offset, count, buffer);
 
 }
 
-static unsigned int interfacecolormap_write(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacecolormap_write(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->wcolormap(offset, count, buffer);
+    return interface->wcolormap(state->offset, count, buffer);
 
 }
 

@@ -5,29 +5,27 @@
 void main(void)
 {
 
-    unsigned int index = 0;
     unsigned int count;
     struct record record;
     char num[8];
 
     call_open(CALL_PO);
     call_open(CALL_PW);
-    file_seekreadall(CALL_PW, &record, sizeof (struct record), index);
 
-    count = ascii_wzerovalue(num, 8, record.id, 16, 8, 0);
+    count = ascii_wzerovalue(num, 8, 0, 16, 8, 0);
 
     file_writeall(CALL_PO, num, count);
     file_writeall(CALL_PO, " ", 1);
 
-    count = ascii_wzerovalue(num, 8, record.size, 16, 8, 0);
+    count = ascii_wzerovalue(num, 8, 0, 16, 8, 0);
 
     file_writeall(CALL_PO, num, count);
-    file_writeall(CALL_PO, " ../\n", 5);
+    file_writeall(CALL_PO, " ", 1);
+    file_writeall(CALL_PO, "../", 3);
+    file_writeall(CALL_PO, "\n", 1);
 
-    while ((index = call_scan(CALL_PW, index)))
+    while (file_readall(CALL_PW, &record, sizeof (struct record)))
     {
-
-        file_seekreadall(CALL_PW, &record, sizeof (struct record), index);
 
         count = ascii_wzerovalue(num, 8, record.id, 16, 8, 0);
 

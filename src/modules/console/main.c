@@ -10,17 +10,17 @@ void console_notify(struct console_interface *interface, unsigned int count, voi
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacectrl_read(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct console_interface *interface = self->resource->data;
     struct ctrl_consolesettings *settings = buffer;
 
-    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_consolesettings), offset);
+    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_consolesettings), state->offset);
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int interfacedata_write(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct console_interface *interface = self->resource->data;

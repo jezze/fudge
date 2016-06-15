@@ -139,12 +139,12 @@ static double mtwist_drand(struct mtwist_state *state)
 }
 */
 
-static unsigned int root_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int root_read(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     unsigned int x = rand(&normal);
 
-    return memory_read(buffer, count, &x, 4, offset);
+    return memory_read(buffer, count, &x, 4, state->offset);
 
 }
 

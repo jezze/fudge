@@ -5,34 +5,6 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-static unsigned int node_readgroup(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
-{
-
-    struct record *record = buffer;
-    struct system_node *node = (offset) ? (struct system_node *)offset : self->parent;
-
-    record->id = (unsigned int)node;
-    record->size = 0;
-    record->length = memory_read(record->name, RECORD_NAMESIZE, node->name, ascii_length(node->name), 0);
-
-    if (node->type & SYSTEM_NODETYPE_MULTI)
-    {
-
-        char *index = ":0";
-
-        index[1] = '0' + node->index;
-
-        record->length += memory_write(record->name, RECORD_NAMESIZE, index, 2, record->length);
-
-    }
-
-    if (node->type & SYSTEM_NODETYPE_GROUP)
-        record->length += memory_write(record->name, RECORD_NAMESIZE, "/", 1, record->length);
-
-    return sizeof (struct record);
-
-}
-
 static unsigned int node_childgroup(struct system_node *self, unsigned int count, char *path)
 {
 
@@ -74,31 +46,6 @@ static unsigned int node_childgroup(struct system_node *self, unsigned int count
         path += length;
 
         return (node->child) ? node->child(node, count, path) : (count ? 0 : (unsigned int)node);
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int node_scangroup(struct system_node *self, unsigned int index)
-{
-
-    if (index)
-    {
-
-        struct system_node *n = (struct system_node *)index;
-
-        if (n->item.next)
-            return (unsigned int)n->item.next->data;
-
-    }
-
-    else
-    {
-
-        if (self->children.head)
-            return (unsigned int)self->children.head->data;
 
     }
 
@@ -205,9 +152,7 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type & SYSTEM_NODETYPE_GROUP)
     {
 
-        node->read = node_readgroup;
         node->child = node_childgroup;
-        node->scan = node_scangroup;
 
     }
 

@@ -311,19 +311,6 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int scan(struct container *container, struct task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int descriptor; unsigned int index;} *args = stack;
-    struct container_session *session = getsession(container, task, args->descriptor);
-
-    if (!session->state.id)
-        return 0;
-
-    return session->protocol->scan(session->backend, &session->state, args->index);
-
-}
-
 unsigned int abi_call(unsigned int index, struct container *container, struct task *task, void *stack)
 {
 
@@ -348,7 +335,6 @@ void abi_setup(unsigned int (*spawn)(struct container *container, struct task *t
     calls[0x0C] = spawn;
     calls[0x0D] = despawn;
     calls[0x0E] = seek;
-    calls[0x0F] = scan;
 
 }
 

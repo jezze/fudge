@@ -68,6 +68,12 @@ static unsigned int protocol_open(struct service_backend *backend, struct list_i
     switch (node->type)
     {
 
+    case SYSTEM_NODETYPE_GROUP:
+    case SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI:
+        state->offset = (node->children.head) ? (unsigned int)node->children.head->data : 0;
+
+        break;
+
     case SYSTEM_NODETYPE_MAILBOX:
         list_add(&node->links, link);
 
@@ -101,13 +107,50 @@ static unsigned int protocol_close(struct service_backend *backend, struct list_
 
 }
 
-static unsigned int readmailbox(struct task *task, unsigned int count, void *buffer)
+static unsigned int readgroup(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
+
+    struct record *record = buffer;
+    struct system_node *node = (struct system_node *)state->offset;
+
+    if (!state->offset)
+        return 0;
+
+    record->id = state->offset;
+    record->size = 0;
+    record->length = memory_read(record->name, RECORD_NAMESIZE, node->name, ascii_length(node->name), 0);
+
+    if (node->type & SYSTEM_NODETYPE_MULTI)
+    {
+
+        char *index = ":0";
+
+        index[1] = '0' + node->index;
+
+        record->length += memory_write(record->name, RECORD_NAMESIZE, index, 2, record->length);
+
+    }
+
+    if (node->type & SYSTEM_NODETYPE_GROUP)
+        record->length += memory_write(record->name, RECORD_NAMESIZE, "/", 1, record->length);
+
+    state->offset = (node->item.next) ? (unsigned int)node->item.next->data : 0;
+
+    return sizeof (struct record);
+
+}
+
+static unsigned int readmailbox(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+{
+
+    struct task *task = link->data;
 
     count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
     if (!count)
         task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    state->offset += count;
 
     return count;
 
@@ -121,12 +164,16 @@ static unsigned int protocol_read(struct service_backend *backend, struct list_i
     switch (node->type)
     {
 
+    case SYSTEM_NODETYPE_GROUP:
+    case SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI:
+        return readgroup(node, link, state, count, buffer);
+
     case SYSTEM_NODETYPE_MAILBOX:
-        return readmailbox(link->data, count, buffer);
+        return readmailbox(node, link, state, count, buffer);
 
     }
 
-    count = (node->read) ? node->read(node, link, state->offset, count, buffer) : 0;
+    count = (node->read) ? node->read(node, link, state, count, buffer) : 0;
     state->offset += count;
 
     return count;
@@ -138,7 +185,7 @@ static unsigned int protocol_write(struct service_backend *backend, struct list_
 
     struct system_node *node = (struct system_node *)state->id;
 
-    count = (node->write) ? node->write(node, link, state->offset, count, buffer) : 0;
+    count = (node->write) ? node->write(node, link, state, count, buffer) : 0;
     state->offset += count;
 
     return count;
@@ -152,15 +199,6 @@ static unsigned int protocol_seek(struct service_backend *backend, struct servic
 
 }
 
-static unsigned int protocol_scan(struct service_backend *backend, struct service_state *state, unsigned int index)
-{
-
-    struct system_node *node = (struct system_node *)state->id;
-
-    return (node->scan) ? node->scan(node, index) : 0;
-
-}
-
 static unsigned long protocol_map(struct service_backend *backend, unsigned int id, struct binary_node *node)
 {
 
@@ -171,7 +209,7 @@ static unsigned long protocol_map(struct service_backend *backend, unsigned int 
 void system_initprotocol(struct service_protocol *protocol)
 {
 
-    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_scan, protocol_map);
+    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
 
 }
 

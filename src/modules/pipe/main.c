@@ -44,7 +44,7 @@ static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, 
 
 }
 
-static unsigned int end0_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end0_read(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
@@ -53,7 +53,7 @@ static unsigned int end0_read(struct system_node *self, struct list_item *link, 
 
 }
 
-static unsigned int end0_write(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end0_write(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
@@ -62,7 +62,7 @@ static unsigned int end0_write(struct system_node *self, struct list_item *link,
 
 }
 
-static unsigned int end1_read(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end1_read(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
@@ -71,7 +71,7 @@ static unsigned int end1_read(struct system_node *self, struct list_item *link, 
 
 }
 
-static unsigned int end1_write(struct system_node *self, struct list_item *link, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int end1_write(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct pipe *pipe = (struct pipe *)self->parent;
