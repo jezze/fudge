@@ -65,7 +65,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
             }
 
-            session->state.id = session->protocol->parent(session->state.backend, session->state.id);
+            session->state.id = session->protocol->parent(&session->state);
 
             if (!session->state.id)
                 return 0;
@@ -77,7 +77,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
             unsigned int i;
 
-            session->state.id = session->protocol->child(session->state.backend, session->state.id, count, args->path + offset);
+            session->state.id = session->protocol->child(&session->state, count, args->path + offset);
 
             if (!session->state.id)
                 return 0;

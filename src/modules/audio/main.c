@@ -3,7 +3,7 @@
 #include <modules/system/system.h>
 #include "audio.h"
 
-static unsigned int interfacedata_read(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct audio_interface *interface = self->resource->data;
@@ -12,7 +12,7 @@ static unsigned int interfacedata_read(struct system_node *self, struct list_ite
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct audio_interface *interface = self->resource->data;

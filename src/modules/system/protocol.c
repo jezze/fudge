@@ -25,21 +25,21 @@ static unsigned int protocol_root(struct service_backend *backend)
 
 }
 
-static unsigned int protocol_parent(struct service_backend *backend, unsigned int id)
+static unsigned int protocol_parent(struct service_state *state)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)state->id;
 
     return (unsigned int)node->parent;
 
 }
 
-static unsigned int protocol_child(struct service_backend *backend, unsigned int id, unsigned int count, char *path)
+static unsigned int protocol_child(struct service_state *state, unsigned int count, char *path)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)state->id;
 
-    return (node->child) ? node->child(node, count, path) : (count ? 0 : id);
+    return (node->child) ? node->child(node, count, path) : (count ? 0 : state->id);
 
 }
 
@@ -173,7 +173,7 @@ static unsigned int protocol_read(struct service_state *state, unsigned int coun
 
     }
 
-    count = (node->read) ? node->read(node, state->link, state, count, buffer) : 0;
+    count = (node->read) ? node->read(node, state, count, buffer) : 0;
     state->offset += count;
 
     return count;
@@ -185,7 +185,7 @@ static unsigned int protocol_write(struct service_state *state, unsigned int cou
 
     struct system_node *node = (struct system_node *)state->id;
 
-    count = (node->write) ? node->write(node, state->link, state, count, buffer) : 0;
+    count = (node->write) ? node->write(node, state, count, buffer) : 0;
     state->offset += count;
 
     return count;

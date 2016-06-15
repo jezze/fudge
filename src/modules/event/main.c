@@ -113,12 +113,12 @@ void event_notifytick(unsigned int counter)
 
 }
 
-static unsigned int poll_write(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int poll_write(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct event_header *header = buffer;
 
-    header->source = (unsigned int)link->data;
+    header->source = (unsigned int)state->link->data;
 
     return notify(buffer);
 

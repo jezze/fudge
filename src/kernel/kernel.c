@@ -78,8 +78,8 @@ unsigned int kernel_setupramdisk(struct container *container, struct task *task,
     init->state.backend = mount->parent.backend;
     init->protocol = mount->parent.protocol;
     init->state.id = mount->parent.id;
-    init->state.id = init->protocol->child(init->state.backend, init->state.id, 4, "bin/");
-    init->state.id = init->protocol->child(init->state.backend, init->state.id, 4, "init");
+    init->state.id = init->protocol->child(&init->state, 4, "bin/");
+    init->state.id = init->protocol->child(&init->state, 4, "init");
 
     return init->state.id;
 

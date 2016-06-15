@@ -24,8 +24,8 @@ struct system_node
     struct resource *resource;
     unsigned int refcount;
     unsigned int index;
-    unsigned int (*read)(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer);
-    unsigned int (*write)(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer);
+    unsigned int (*read)(struct system_node *self, struct service_state *state, unsigned int count, void *buffer);
+    unsigned int (*write)(struct system_node *self, struct service_state *state, unsigned int count, void *buffer);
     unsigned int (*child)(struct system_node *self, unsigned int count, char *path);
 
 };
