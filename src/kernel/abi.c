@@ -35,7 +35,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
     if (!psession->state.id)
         return 0;
 
-    session->backend = psession->backend;
+    session->state.backend = psession->state.backend;
     session->protocol = psession->protocol;
     session->state.id = psession->state.id;
 
@@ -52,10 +52,10 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
                 struct container_mount *mount = &container->mounts[i];
 
-                if (session->backend == mount->child.backend && session->state.id == mount->child.id)
+                if (session->state.backend == mount->child.backend && session->state.id == mount->child.id)
                 {
 
-                    session->backend = mount->parent.backend;
+                    session->state.backend = mount->parent.backend;
                     session->protocol = mount->parent.protocol;
                     session->state.id = mount->parent.id;
 
@@ -65,7 +65,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
             }
 
-            session->state.id = session->protocol->parent(session->backend, session->state.id);
+            session->state.id = session->protocol->parent(session->state.backend, session->state.id);
 
             if (!session->state.id)
                 return 0;
@@ -77,7 +77,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
             unsigned int i;
 
-            session->state.id = session->protocol->child(session->backend, session->state.id, count, args->path + offset);
+            session->state.id = session->protocol->child(session->state.backend, session->state.id, count, args->path + offset);
 
             if (!session->state.id)
                 return 0;
@@ -87,10 +87,10 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
                 struct container_mount *mount = &container->mounts[i];
 
-                if (session->backend == mount->parent.backend && session->state.id == mount->parent.id)
+                if (session->state.backend == mount->parent.backend && session->state.id == mount->parent.id)
                 {
 
-                    session->backend = mount->child.backend;
+                    session->state.backend = mount->child.backend;
                     session->protocol = mount->child.protocol;
                     session->state.id = mount->child.id;
 
@@ -117,7 +117,7 @@ static unsigned int create(struct container *container, struct task *task, void 
     if (!session->state.id || !args->count)
         return 0;
 
-    return session->protocol->create(session->backend, session->state.id, args->count, args->name);
+    return session->protocol->create(&session->state, args->count, args->name);
 
 }
 
@@ -130,7 +130,7 @@ static unsigned int destroy(struct container *container, struct task *task, void
     if (!session->state.id || !args->count)
         return 0;
 
-    return session->protocol->destroy(session->backend, session->state.id, args->count, args->name);
+    return session->protocol->destroy(&session->state, args->count, args->name);
 
 }
 
@@ -143,7 +143,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
     if (!session->state.id)
         return 0;
 
-    return session->protocol->open(session->backend, &task->links[args->descriptor], &session->state);
+    return session->protocol->open(&session->state);
 
 }
 
@@ -156,7 +156,7 @@ static unsigned int close(struct container *container, struct task *task, void *
     if (!session->state.id)
         return 0;
 
-    return session->protocol->close(session->backend, &task->links[args->descriptor], &session->state);
+    return session->protocol->close(&session->state);
 
 }
 
@@ -169,7 +169,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
     if (!session->state.id || !args->count)
         return 0;
 
-    return session->protocol->read(session->backend, &task->links[args->descriptor], &session->state, args->count, args->buffer);
+    return session->protocol->read(&session->state, args->count, args->buffer);
 
 }
 
@@ -182,7 +182,7 @@ static unsigned int write(struct container *container, struct task *task, void *
     if (!session->state.id || !args->count)
         return 0;
 
-    return session->protocol->write(session->backend, &task->links[args->descriptor], &session->state, args->count, args->buffer);
+    return session->protocol->write(&session->state, args->count, args->buffer);
 
 }
 
@@ -192,17 +192,17 @@ static unsigned int auth(struct container *container, struct task *task, void *s
     struct {void *caller; unsigned int descriptor; unsigned int backend;} *args = stack;
     struct container_session *session = getsession(container, task, args->descriptor);
 
-    session->backend = service_findbackend(args->backend);
+    session->state.backend = service_findbackend(args->backend);
 
-    if (!session->backend)
+    if (!session->state.backend)
         return 0;
 
-    session->protocol = service_findprotocol(session->backend);
+    session->protocol = service_findprotocol(session->state.backend);
 
     if (!session->protocol)
         return 0;
 
-    session->state.id = session->protocol->root(session->backend);
+    session->state.id = session->protocol->root(session->state.backend);
 
     if (!session->state.id)
         return 0;
@@ -222,10 +222,10 @@ static unsigned int mount(struct container *container, struct task *task, void *
     if (!csession->state.id || !psession->state.id)
         return 0;
 
-    mount->parent.backend = psession->backend;
+    mount->parent.backend = psession->state.backend;
     mount->parent.protocol = psession->protocol;
     mount->parent.id = psession->state.id;
-    mount->child.backend = csession->backend;
+    mount->child.backend = csession->state.backend;
     mount->child.protocol = csession->protocol;
     mount->child.id = csession->state.id;
 
@@ -245,7 +245,7 @@ static unsigned int load(struct container *container, struct task *task, void *s
     if (!session->state.id)
         return 0;
 
-    if (!session->protocol->map(session->backend, session->state.id, &session->node))
+    if (!session->protocol->map(&session->state, &session->node))
         return 0;
 
     format = binary_findformat(&session->node);
@@ -281,7 +281,7 @@ static unsigned int unload(struct container *container, struct task *task, void 
     if (!session->state.id)
         return 0;
 
-    if (!session->protocol->map(session->backend, session->state.id, &session->node))
+    if (!session->protocol->map(&session->state, &session->node))
         return 0;
 
     format = binary_findformat(&session->node);
@@ -307,7 +307,7 @@ static unsigned int seek(struct container *container, struct task *task, void *s
     if (!session->state.id)
         return 0;
 
-    return session->protocol->seek(session->backend, &session->state, args->offset);
+    return session->protocol->seek(&session->state, args->offset);
 
 }
 

@@ -43,21 +43,21 @@ static unsigned int protocol_child(struct service_backend *backend, unsigned int
 
 }
 
-static unsigned int protocol_create(struct service_backend *backend, unsigned int id, unsigned int count, char *name)
+static unsigned int protocol_create(struct service_state *state, unsigned int count, char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_destroy(struct service_backend *backend, unsigned int id, unsigned int count, char *name)
+static unsigned int protocol_destroy(struct service_state *state, unsigned int count, char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_open(struct service_backend *backend, struct list_item *link, struct service_state *state)
+static unsigned int protocol_open(struct service_state *state)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -75,7 +75,7 @@ static unsigned int protocol_open(struct service_backend *backend, struct list_i
         break;
 
     case SYSTEM_NODETYPE_MAILBOX:
-        list_add(&node->links, link);
+        list_add(&node->links, state->link);
 
         break;
 
@@ -85,7 +85,7 @@ static unsigned int protocol_open(struct service_backend *backend, struct list_i
 
 }
 
-static unsigned int protocol_close(struct service_backend *backend, struct list_item *link, struct service_state *state)
+static unsigned int protocol_close(struct service_state *state)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -97,7 +97,7 @@ static unsigned int protocol_close(struct service_backend *backend, struct list_
     {
 
     case SYSTEM_NODETYPE_MAILBOX:
-        list_remove(&node->links, link);
+        list_remove(&node->links, state->link);
 
         break;
 
@@ -107,7 +107,7 @@ static unsigned int protocol_close(struct service_backend *backend, struct list_
 
 }
 
-static unsigned int readgroup(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int readgroup(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct record *record = buffer;
@@ -140,10 +140,10 @@ static unsigned int readgroup(struct system_node *self, struct list_item *link, 
 
 }
 
-static unsigned int readmailbox(struct system_node *self, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int readmailbox(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
 {
 
-    struct task *task = link->data;
+    struct task *task = state->link->data;
 
     count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
@@ -156,7 +156,7 @@ static unsigned int readmailbox(struct system_node *self, struct list_item *link
 
 }
 
-static unsigned int protocol_read(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -166,40 +166,40 @@ static unsigned int protocol_read(struct service_backend *backend, struct list_i
 
     case SYSTEM_NODETYPE_GROUP:
     case SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI:
-        return readgroup(node, link, state, count, buffer);
+        return readgroup(node, state, count, buffer);
 
     case SYSTEM_NODETYPE_MAILBOX:
-        return readmailbox(node, link, state, count, buffer);
+        return readmailbox(node, state, count, buffer);
 
     }
 
-    count = (node->read) ? node->read(node, link, state, count, buffer) : 0;
+    count = (node->read) ? node->read(node, state->link, state, count, buffer) : 0;
     state->offset += count;
 
     return count;
 
 }
 
-static unsigned int protocol_write(struct service_backend *backend, struct list_item *link, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct system_node *node = (struct system_node *)state->id;
 
-    count = (node->write) ? node->write(node, link, state, count, buffer) : 0;
+    count = (node->write) ? node->write(node, state->link, state, count, buffer) : 0;
     state->offset += count;
 
     return count;
 
 }
 
-static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
+static unsigned int protocol_seek(struct service_state *state, unsigned int offset)
 {
 
     return state->offset = offset;
 
 }
 
-static unsigned long protocol_map(struct service_backend *backend, unsigned int id, struct binary_node *node)
+static unsigned long protocol_map(struct service_state *state, struct binary_node *node)
 {
 
     return 0;
