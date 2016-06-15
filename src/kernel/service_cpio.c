@@ -62,9 +62,6 @@ static unsigned int protocol_parent(struct service_backend *backend, unsigned in
     unsigned char name[1024];
     unsigned int length;
 
-    if (id == protocol_root(backend))
-        return id;
-
     if (!readheader(backend, &header, id))
         return 0;
 
