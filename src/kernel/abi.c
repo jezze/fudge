@@ -114,7 +114,7 @@ static unsigned int create(struct container *container, struct task *task, void 
     struct {void *caller; unsigned int descriptor; unsigned int count; char *name;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!descriptor->state.id || !args->count)
+    if (!args->count || !args->name)
         return 0;
 
     return descriptor->protocol->create(descriptor->backend, &descriptor->state, args->count, args->name);
@@ -127,7 +127,7 @@ static unsigned int destroy(struct container *container, struct task *task, void
     struct {void *caller; unsigned int descriptor; unsigned int count; char *name;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!descriptor->state.id || !args->count)
+    if (!args->count || !args->name)
         return 0;
 
     return descriptor->protocol->destroy(descriptor->backend, &descriptor->state, args->count, args->name);
@@ -140,9 +140,6 @@ static unsigned int open(struct container *container, struct task *task, void *s
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!descriptor->state.id)
-        return 0;
-
     return descriptor->protocol->open(descriptor->backend, &descriptor->state);
 
 }
@@ -152,9 +149,6 @@ static unsigned int close(struct container *container, struct task *task, void *
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
-
-    if (!descriptor->state.id)
-        return 0;
 
     return descriptor->protocol->close(descriptor->backend, &descriptor->state);
 
@@ -166,7 +160,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!descriptor->state.id || !args->count)
+    if (!args->count)
         return 0;
 
     return descriptor->protocol->read(descriptor->backend, &descriptor->state, args->count, args->buffer);
@@ -179,7 +173,7 @@ static unsigned int write(struct container *container, struct task *task, void *
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!descriptor->state.id || !args->count)
+    if (!args->count)
         return 0;
 
     return descriptor->protocol->write(descriptor->backend, &descriptor->state, args->count, args->buffer);
@@ -204,9 +198,6 @@ static unsigned int auth(struct container *container, struct task *task, void *s
 
     descriptor->state.id = descriptor->protocol->root(descriptor->backend);
 
-    if (!descriptor->state.id)
-        return 0;
-
     return 1;
 
 }
@@ -218,9 +209,6 @@ static unsigned int mount(struct container *container, struct task *task, void *
     struct container_mount *mount = getmount(container, args->mount);
     struct task_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
     struct task_descriptor *cdescriptor = getdescriptor(task, args->cdescriptor);
-
-    if (!cdescriptor->state.id || !pdescriptor->state.id)
-        return 0;
 
     mount->parent.backend = pdescriptor->backend;
     mount->parent.protocol = pdescriptor->protocol;
@@ -241,9 +229,6 @@ static unsigned int load(struct container *container, struct task *task, void *s
     struct binary_format *format;
     void (*module_init)(void);
     void (*module_register)(void);
-
-    if (!descriptor->state.id)
-        return 0;
 
     if (!descriptor->protocol->map(descriptor->backend, &descriptor->state, &descriptor->node))
         return 0;
@@ -278,9 +263,6 @@ static unsigned int unload(struct container *container, struct task *task, void 
     struct binary_format *format;
     void (*module_unregister)(void);
 
-    if (!descriptor->state.id)
-        return 0;
-
     if (!descriptor->protocol->map(descriptor->backend, &descriptor->state, &descriptor->node))
         return 0;
 
@@ -303,9 +285,6 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor; unsigned int offset;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
-
-    if (!descriptor->state.id)
-        return 0;
 
     return descriptor->protocol->seek(descriptor->backend, &descriptor->state, args->offset);
 

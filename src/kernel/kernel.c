@@ -37,9 +37,6 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     struct task_descriptor *descriptor = &task->descriptors[0x00];
 
-    if (!descriptor->state.id)
-        return 0;
-
     if (!descriptor->protocol->map(descriptor->backend, &descriptor->state, &descriptor->node))
         return 0;
 
@@ -54,7 +51,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
 }
 
-unsigned int kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
+void kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
 {
 
     struct container_mount *mount = &container->mounts[0x00];
@@ -75,8 +72,6 @@ unsigned int kernel_setupramdisk(struct container *container, struct task *task,
     init->state.id = mount->parent.id;
     init->state.id = init->protocol->child(init->backend, &init->state, 4, "bin/");
     init->state.id = init->protocol->child(init->backend, &init->state, 4, "init");
-
-    return init->state.id;
 
 }
 
