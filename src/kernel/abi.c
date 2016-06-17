@@ -160,7 +160,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!args->count)
+    if (!args->buffer || !args->count)
         return 0;
 
     return descriptor->protocol->read(descriptor->backend, &descriptor->state, args->count, args->buffer);
@@ -173,7 +173,7 @@ static unsigned int write(struct container *container, struct task *task, void *
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!args->count)
+    if (!args->buffer || !args->count)
         return 0;
 
     return descriptor->protocol->write(descriptor->backend, &descriptor->state, args->count, args->buffer);
