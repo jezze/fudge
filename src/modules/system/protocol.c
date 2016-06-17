@@ -25,7 +25,7 @@ static unsigned int protocol_root(struct service_backend *backend)
 
 }
 
-static unsigned int protocol_parent(struct service_state *state)
+static unsigned int protocol_parent(struct service_backend *backend, struct service_state *state)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -34,7 +34,7 @@ static unsigned int protocol_parent(struct service_state *state)
 
 }
 
-static unsigned int protocol_child(struct service_state *state, unsigned int count, char *path)
+static unsigned int protocol_child(struct service_backend *backend, struct service_state *state, unsigned int count, char *path)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -43,21 +43,21 @@ static unsigned int protocol_child(struct service_state *state, unsigned int cou
 
 }
 
-static unsigned int protocol_create(struct service_state *state, unsigned int count, char *name)
+static unsigned int protocol_create(struct service_backend *backend, struct service_state *state, unsigned int count, char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_destroy(struct service_state *state, unsigned int count, char *name)
+static unsigned int protocol_destroy(struct service_backend *backend, struct service_state *state, unsigned int count, char *name)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_open(struct service_state *state)
+static unsigned int protocol_open(struct service_backend *backend, struct service_state *state)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -85,7 +85,7 @@ static unsigned int protocol_open(struct service_state *state)
 
 }
 
-static unsigned int protocol_close(struct service_state *state)
+static unsigned int protocol_close(struct service_backend *backend, struct service_state *state)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -156,7 +156,7 @@ static unsigned int readmailbox(struct system_node *self, struct service_state *
 
 }
 
-static unsigned int protocol_read(struct service_state *state, unsigned int count, void *buffer)
+static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -180,7 +180,7 @@ static unsigned int protocol_read(struct service_state *state, unsigned int coun
 
 }
 
-static unsigned int protocol_write(struct service_state *state, unsigned int count, void *buffer)
+static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, unsigned int count, void *buffer)
 {
 
     struct system_node *node = (struct system_node *)state->id;
@@ -192,14 +192,14 @@ static unsigned int protocol_write(struct service_state *state, unsigned int cou
 
 }
 
-static unsigned int protocol_seek(struct service_state *state, unsigned int offset)
+static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
 {
 
     return state->offset = offset;
 
 }
 
-static unsigned long protocol_map(struct service_state *state, struct binary_node *node)
+static unsigned long protocol_map(struct service_backend *backend, struct service_state *state, struct binary_node *node)
 {
 
     return 0;

@@ -15,6 +15,7 @@ struct container_session
 
     struct resource resource;
     struct binary_node node;
+    struct service_backend *backend;
     struct service_protocol *protocol;
     struct service_state state;
 
