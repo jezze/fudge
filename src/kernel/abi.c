@@ -104,7 +104,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
     }
 
-    return descriptor->state.id;
+    return 1;
 
 }
 
