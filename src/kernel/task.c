@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include "resource.h"
 #include "binary.h"
+#include "service.h"
 #include "task.h"
 
 static struct list active;
@@ -106,11 +107,14 @@ void task_unregister(struct task *task)
 void task_init(struct task *task, unsigned int id)
 {
 
+    unsigned int i;
+
     resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
     buffer_init(&task->mailbox.buffer, TASK_MAILBOXSIZE, task->mailbox.data);
 
-    task->id = id;
+    for (i = 0; i < TASK_DESCRIPTORS; i++)
+        resource_init(&task->descriptors[i].resource, RESOURCE_TASKDESCRIPTOR, &task->descriptors[i]);
 
 }
 

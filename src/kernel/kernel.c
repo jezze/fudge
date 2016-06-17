@@ -1,58 +1,56 @@
 #include <fudge.h>
 #include "resource.h"
 #include "binary.h"
-#include "task.h"
 #include "service.h"
+#include "task.h"
 #include "container.h"
 #include "kernel.h"
 
-static void copysession(struct task *target, struct container_session *tsession, struct container_session *ssession)
+static void copydescriptor(struct task *target, struct task_descriptor *tdescriptor, struct task_descriptor *sdescriptor)
 {
 
-    list_inititem(&tsession->state.link, target);
+    list_inititem(&tdescriptor->state.link, target);
 
-    tsession->backend = (ssession) ? ssession->backend : 0;
-    tsession->protocol = (ssession) ? ssession->protocol : 0;
-    tsession->state.id = (ssession) ? ssession->state.id : 0;
+    tdescriptor->backend = (sdescriptor) ? sdescriptor->backend : 0;
+    tdescriptor->protocol = (sdescriptor) ? sdescriptor->protocol : 0;
+    tdescriptor->state.id = (sdescriptor) ? sdescriptor->state.id : 0;
 
 }
 
-void kernel_copysessions(struct container *container, struct task *source, struct task *target)
+void kernel_copydescriptors(struct task *source, struct task *target)
 {
 
-    unsigned int sid = source->id * TASK_DESCRIPTORS;
-    unsigned int tid = target->id * TASK_DESCRIPTORS;
     unsigned int i;
 
     for (i = 0x00; i < 0x08; i++)
     {
 
-        copysession(target, &container->sessions[tid + i + 0x00], &container->sessions[sid + i + 0x08]);
-        copysession(target, &container->sessions[tid + i + 0x08], &container->sessions[sid + i + 0x08]);
-        copysession(target, &container->sessions[tid + i + 0x10], 0);
-        copysession(target, &container->sessions[tid + i + 0x18], 0);
+        copydescriptor(target, &target->descriptors[i + 0x00], &source->descriptors[i + 0x08]);
+        copydescriptor(target, &target->descriptors[i + 0x08], &source->descriptors[i + 0x08]);
+        copydescriptor(target, &target->descriptors[i + 0x10], 0);
+        copydescriptor(target, &target->descriptors[i + 0x18], 0);
 
     }
 
 }
 
-unsigned int kernel_setupbinary(struct container *container, struct task *task, unsigned int sp)
+unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
-    struct container_session *session = &container->sessions[task->id * TASK_DESCRIPTORS];
+    struct task_descriptor *descriptor = &task->descriptors[0x00];
 
-    if (!session->state.id)
+    if (!descriptor->state.id)
         return 0;
 
-    if (!session->protocol->map(session->backend, &session->state, &session->node))
+    if (!descriptor->protocol->map(descriptor->backend, &descriptor->state, &descriptor->node))
         return 0;
 
-    task->format = binary_findformat(&session->node);
+    task->format = binary_findformat(&descriptor->node);
 
     if (!task->format)
         return 0;
 
-    task_resume(task, task->format->findentry(&session->node), sp);
+    task_resume(task, task->format->findentry(&descriptor->node), sp);
 
     return task->state.registers.ip;
 
@@ -62,8 +60,8 @@ unsigned int kernel_setupramdisk(struct container *container, struct task *task,
 {
 
     struct container_mount *mount = &container->mounts[0x00];
-    struct container_session *init = &container->sessions[0x08];
-    struct container_session *root = &container->sessions[0x09];
+    struct task_descriptor *init = &task->descriptors[0x08];
+    struct task_descriptor *root = &task->descriptors[0x09];
 
     mount->parent.backend = backend;
     mount->parent.protocol = service_findprotocol(backend);

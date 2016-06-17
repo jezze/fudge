@@ -1,8 +1,8 @@
 #include <fudge.h>
 #include "resource.h"
 #include "binary.h"
-#include "task.h"
 #include "service.h"
+#include "task.h"
 #include "container.h"
 
 void container_init(struct container *container)
@@ -14,9 +14,6 @@ void container_init(struct container *container)
 
     for (i = 0; i < CONTAINER_MOUNTS; i++)
         resource_init(&container->mounts[i].resource, RESOURCE_CONTAINERMOUNT, &container->mounts[i]);
-
-    for (i = 0; i < CONTAINER_SESSIONS; i++)
-        resource_init(&container->sessions[i].resource, RESOURCE_CONTAINERSESSION, &container->sessions[i]);
 
 }
 

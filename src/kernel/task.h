@@ -22,6 +22,17 @@ struct task_state
 
 };
 
+struct task_descriptor
+{
+
+    struct resource resource;
+    struct binary_node node;
+    struct service_backend *backend;
+    struct service_protocol *protocol;
+    struct service_state state;
+
+};
+
 struct task
 {
 
@@ -29,7 +40,7 @@ struct task
     struct task_state state;
     struct task_mailbox mailbox;
     struct binary_format *format;
-    unsigned int id;
+    struct task_descriptor descriptors[TASK_DESCRIPTORS];
 
 };
 

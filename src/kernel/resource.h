@@ -1,10 +1,10 @@
 #define RESOURCE_CONTAINER              1
-#define RESOURCE_TASK                   2
-#define RESOURCE_SERVICEBACKEND         3
-#define RESOURCE_SERVICEPROTOCOL        4
-#define RESOURCE_SERVICECHANNEL         5
-#define RESOURCE_CONTAINERMOUNT         6
-#define RESOURCE_CONTAINERSESSION       7
+#define RESOURCE_CONTAINERMOUNT         2
+#define RESOURCE_TASK                   3
+#define RESOURCE_TASKDESCRIPTOR         4
+#define RESOURCE_SERVICEBACKEND         5
+#define RESOURCE_SERVICEPROTOCOL        6
+#define RESOURCE_SERVICECHANNEL         7
 #define RESOURCE_BINARYFORMAT           8
 #define RESOURCE_BUS                    9
 #define RESOURCE_DRIVER                 10

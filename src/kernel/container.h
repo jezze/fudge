@@ -1,5 +1,4 @@
 #define CONTAINER_MOUNTS                32
-#define CONTAINER_SESSIONS              32 * 64
 
 struct container_mount
 {
@@ -10,23 +9,11 @@ struct container_mount
 
 };
 
-struct container_session
-{
-
-    struct resource resource;
-    struct binary_node node;
-    struct service_backend *backend;
-    struct service_protocol *protocol;
-    struct service_state state;
-
-};
-
 struct container
 {
 
     struct resource resource;
     struct container_mount mounts[CONTAINER_MOUNTS];
-    struct container_session sessions[CONTAINER_SESSIONS];
 
 };
 

@@ -31,7 +31,7 @@ static struct
 {
 
     struct gdt_pointer pointer;
-    struct gdt_descriptor sessions[GDTDESCRIPTORS];
+    struct gdt_descriptor descriptors[GDTDESCRIPTORS];
 
 } gdt;
 
@@ -39,7 +39,7 @@ static struct
 {
 
     struct idt_pointer pointer;
-    struct idt_descriptor sessions[IDTDESCRIPTORS];
+    struct idt_descriptor descriptors[IDTDESCRIPTORS];
 
 } idt;
 
@@ -47,7 +47,7 @@ static struct
 {
 
     struct tss_pointer pointer;
-    struct tss_descriptor sessions[TSSDESCRIPTORS];
+    struct tss_descriptor descriptors[TSSDESCRIPTORS];
 
 } tss;
 
@@ -159,9 +159,9 @@ static unsigned int spawn(struct container *container, struct task *task, void *
         return 0;
 
     copymap(container, next);
-    kernel_copysessions(container, task, next);
+    kernel_copydescriptors(task, next);
 
-    if (!kernel_setupbinary(container, next, TASKSTACK))
+    if (!kernel_setupbinary(next, TASKSTACK))
         return 0;
 
     return 1;
@@ -261,15 +261,15 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (current.task)
     {
 
-        struct container_session *session = &current.container->sessions[current.task->id * TASK_DESCRIPTORS];
+        struct task_descriptor *descriptor = &current.task->descriptors[0x00];
 
-        address = current.task->format->findbase(&session->node, address);
+        address = current.task->format->findbase(&descriptor->node, address);
 
         if (address)
         {
 
             maptaskcode(current.task, address);
-            current.task->format->copyprogram(&session->node);
+            current.task->format->copyprogram(&descriptor->node);
 
         }
 
@@ -346,9 +346,9 @@ void arch_setup(struct service_backend *backend)
 
     struct cpu_interrupt interrupt;
 
-    gdt_initpointer(&gdt.pointer, GDTDESCRIPTORS, gdt.sessions);
-    idt_initpointer(&idt.pointer, IDTDESCRIPTORS, idt.sessions);
-    tss_initpointer(&tss.pointer, TSSDESCRIPTORS, tss.sessions);
+    gdt_initpointer(&gdt.pointer, GDTDESCRIPTORS, gdt.descriptors);
+    idt_initpointer(&idt.pointer, IDTDESCRIPTORS, idt.descriptors);
+    tss_initpointer(&tss.pointer, TSSDESCRIPTORS, tss.descriptors);
 
     selector.kcode = gdt_setdescriptor(&gdt.pointer, 0x01, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.kstack = gdt_setdescriptor(&gdt.pointer, 0x02, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
@@ -372,8 +372,8 @@ void arch_setup(struct service_backend *backend)
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainercode(current.container);
     copymap(current.container, current.task);
-    kernel_copysessions(current.container, current.task, current.task);
-    kernel_setupbinary(current.container, current.task, TASKSTACK);
+    kernel_copydescriptors(current.task, current.task);
+    kernel_setupbinary(current.task, TASKSTACK);
     activate(current.task);
     mmu_setup();
     abi_setup(spawn, despawn);
