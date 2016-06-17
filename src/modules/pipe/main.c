@@ -14,8 +14,8 @@ static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, s
     if (!count && endtarget->node.refcount)
     {
 
-        list_add(&endself->readlinks, state->link);
-        task_setstatus(state->link->data, TASK_STATUS_BLOCKED);
+        list_add(&endself->readlinks, &state->link);
+        task_setstatus(state->link.data, TASK_STATUS_BLOCKED);
 
     }
 
@@ -33,8 +33,8 @@ static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, 
     if (!count)
     {
 
-        list_add(&endself->writelinks, state->link);
-        task_setstatus(state->link->data, TASK_STATUS_BLOCKED);
+        list_add(&endself->writelinks, &state->link);
+        task_setstatus(state->link.data, TASK_STATUS_BLOCKED);
 
     }
 

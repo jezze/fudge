@@ -118,7 +118,7 @@ static unsigned int poll_write(struct system_node *self, struct service_state *s
 
     struct event_header *header = buffer;
 
-    header->source = (unsigned int)state->link->data;
+    header->source = (unsigned int)state->link.data;
 
     return notify(buffer);
 

@@ -16,21 +16,28 @@ void kernel_copysessions(struct container *container, struct task *source, struc
     for (i = 0x00; i < 0x08; i++)
     {
 
+        list_inititem(&container->sessions[tid + i + 0x00].state.link, target);
+
         container->sessions[tid + i + 0x00].backend = container->sessions[sid + i + 0x08].backend;
         container->sessions[tid + i + 0x00].state.id = container->sessions[sid + i + 0x08].state.id;
-        container->sessions[tid + i + 0x00].state.link = &target->links[i + 0x00];
         container->sessions[tid + i + 0x00].protocol = container->sessions[sid + i + 0x08].protocol;
+
+        list_inititem(&container->sessions[tid + i + 0x08].state.link, target);
+
         container->sessions[tid + i + 0x08].backend = container->sessions[sid + i + 0x08].backend;
         container->sessions[tid + i + 0x08].state.id = container->sessions[sid + i + 0x08].state.id;
-        container->sessions[tid + i + 0x08].state.link = &target->links[i + 0x08];
         container->sessions[tid + i + 0x08].protocol = container->sessions[sid + i + 0x08].protocol;
+
+        list_inititem(&container->sessions[tid + i + 0x10].state.link, target);
+
         container->sessions[tid + i + 0x10].backend = 0;
         container->sessions[tid + i + 0x10].state.id = 0;
-        container->sessions[tid + i + 0x10].state.link = &target->links[i + 0x10];
         container->sessions[tid + i + 0x10].protocol = 0;
+
+        list_inititem(&container->sessions[tid + i + 0x18].state.link, target);
+
         container->sessions[tid + i + 0x18].backend = 0;
         container->sessions[tid + i + 0x18].state.id = 0;
-        container->sessions[tid + i + 0x18].state.link = &target->links[i + 0x18];
         container->sessions[tid + i + 0x18].protocol = 0;
 
     }

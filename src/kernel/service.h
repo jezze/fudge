@@ -14,7 +14,7 @@ struct service_state
 
     unsigned int id;
     unsigned int offset;
-    struct list_item *link;
+    struct list_item link;
 
 };
 

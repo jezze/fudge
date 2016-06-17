@@ -75,7 +75,7 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
         break;
 
     case SYSTEM_NODETYPE_MAILBOX:
-        list_add(&node->links, state->link);
+        list_add(&node->links, &state->link);
 
         break;
 
@@ -97,7 +97,7 @@ static unsigned int protocol_close(struct service_backend *backend, struct servi
     {
 
     case SYSTEM_NODETYPE_MAILBOX:
-        list_remove(&node->links, state->link);
+        list_remove(&node->links, &state->link);
 
         break;
 
@@ -143,7 +143,7 @@ static unsigned int readgroup(struct system_node *self, struct service_state *st
 static unsigned int readmailbox(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
 {
 
-    struct task *task = state->link->data;
+    struct task *task = state->link.data;
 
     count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
 
