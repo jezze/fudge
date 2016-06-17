@@ -6,6 +6,17 @@
 #include "container.h"
 #include "kernel.h"
 
+static void copysession(struct task *target, struct container_session *tsession, struct container_session *ssession)
+{
+
+    list_inititem(&tsession->state.link, target);
+
+    tsession->backend = (ssession) ? ssession->backend : 0;
+    tsession->protocol = (ssession) ? ssession->protocol : 0;
+    tsession->state.id = (ssession) ? ssession->state.id : 0;
+
+}
+
 void kernel_copysessions(struct container *container, struct task *source, struct task *target)
 {
 
@@ -16,29 +27,10 @@ void kernel_copysessions(struct container *container, struct task *source, struc
     for (i = 0x00; i < 0x08; i++)
     {
 
-        list_inititem(&container->sessions[tid + i + 0x00].state.link, target);
-
-        container->sessions[tid + i + 0x00].backend = container->sessions[sid + i + 0x08].backend;
-        container->sessions[tid + i + 0x00].state.id = container->sessions[sid + i + 0x08].state.id;
-        container->sessions[tid + i + 0x00].protocol = container->sessions[sid + i + 0x08].protocol;
-
-        list_inititem(&container->sessions[tid + i + 0x08].state.link, target);
-
-        container->sessions[tid + i + 0x08].backend = container->sessions[sid + i + 0x08].backend;
-        container->sessions[tid + i + 0x08].state.id = container->sessions[sid + i + 0x08].state.id;
-        container->sessions[tid + i + 0x08].protocol = container->sessions[sid + i + 0x08].protocol;
-
-        list_inititem(&container->sessions[tid + i + 0x10].state.link, target);
-
-        container->sessions[tid + i + 0x10].backend = 0;
-        container->sessions[tid + i + 0x10].state.id = 0;
-        container->sessions[tid + i + 0x10].protocol = 0;
-
-        list_inititem(&container->sessions[tid + i + 0x18].state.link, target);
-
-        container->sessions[tid + i + 0x18].backend = 0;
-        container->sessions[tid + i + 0x18].state.id = 0;
-        container->sessions[tid + i + 0x18].protocol = 0;
+        copysession(target, &container->sessions[tid + i + 0x00], &container->sessions[sid + i + 0x08]);
+        copysession(target, &container->sessions[tid + i + 0x08], &container->sessions[sid + i + 0x08]);
+        copysession(target, &container->sessions[tid + i + 0x10], 0);
+        copysession(target, &container->sessions[tid + i + 0x18], 0);
 
     }
 
