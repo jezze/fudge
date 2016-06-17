@@ -12,14 +12,14 @@ static unsigned int (*calls[CALLS])(struct container *container, struct task *ta
 static struct container_mount *getmount(struct container *container, unsigned int mount)
 {
 
-    return &container->mounts[mount];
+    return &container->mounts[mount & (CONTAINER_MOUNTS - 1)];
 
 }
 
 static struct task_descriptor *getdescriptor(struct task *task, unsigned int descriptor)
 {
 
-    return &task->descriptors[descriptor];
+    return &task->descriptors[descriptor & (TASK_DESCRIPTORS - 1)];
 
 }
 
@@ -314,7 +314,7 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 unsigned int abi_call(unsigned int index, struct container *container, struct task *task, void *stack)
 {
 
-    return calls[index & 0x0F](container, task, stack);
+    return calls[index & (CALLS - 1)](container, task, stack);
 
 }
 
