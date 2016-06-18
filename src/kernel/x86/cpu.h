@@ -15,28 +15,36 @@
 #define CPU_FLAGS_VIP                   (1 << 20)
 #define CPU_FLAGS_ID                    (1 << 21)
 
+union cpu_register
+{
+
+    unsigned int value;
+    void *pointer;
+
+};
+
 struct cpu_general
 {
 
-    unsigned int edi;
-    unsigned int esi;
-    unsigned int ebp;
-    unsigned int esp;
-    unsigned int ebx;
-    unsigned int edx;
-    unsigned int ecx;
-    unsigned int eax;
+    union cpu_register edi;
+    union cpu_register esi;
+    union cpu_register ebp;
+    union cpu_register esp;
+    union cpu_register ebx;
+    union cpu_register edx;
+    union cpu_register ecx;
+    union cpu_register eax;
 
 };
 
 struct cpu_interrupt
 {
 
-    unsigned int eip;
-    unsigned int cs;
-    unsigned int eflags;
-    unsigned int esp;
-    unsigned int ss;
+    union cpu_register eip;
+    union cpu_register cs;
+    union cpu_register eflags;
+    union cpu_register esp;
+    union cpu_register ss;
 
 };
 

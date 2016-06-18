@@ -200,8 +200,8 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     if (current.task)
     {
 
-        current.task->state.registers.ip = interrupt->eip;
-        current.task->state.registers.sp = interrupt->esp;
+        current.task->state.registers.ip = interrupt->eip.value;
+        current.task->state.registers.sp = interrupt->esp.value;
 
         saveregisters(current.task, general);
 
@@ -215,10 +215,10 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
         if (current.task->state.status == TASK_STATUS_UNBLOCKED)
             task_resume(current.task, current.task->state.registers.ip - 7, current.task->state.registers.sp);
 
-        interrupt->cs = selector.ucode;
-        interrupt->ss = selector.ustack;
-        interrupt->eip = current.task->state.registers.ip;
-        interrupt->esp = current.task->state.registers.sp;
+        interrupt->cs.value = selector.ucode;
+        interrupt->ss.value = selector.ustack;
+        interrupt->eip.value = current.task->state.registers.ip;
+        interrupt->esp.value = current.task->state.registers.sp;
 
         loadregisters(current.task, general);
         activate(current.task);
@@ -228,14 +228,14 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
     else
     {
 
-        interrupt->cs = selector.kcode;
-        interrupt->ss = selector.kstack;
-        interrupt->eip = (unsigned int)cpu_halt;
-        interrupt->esp = KERNELSTACK;
+        interrupt->cs.value = selector.kcode;
+        interrupt->ss.value = selector.kstack;
+        interrupt->eip.value = (unsigned int)cpu_halt;
+        interrupt->esp.value = KERNELSTACK;
 
     }
 
-    return interrupt->ss;
+    return interrupt->ss.value;
 
 }
 
@@ -289,7 +289,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    general.eax = abi_call(general.eax, current.container, current.task, (void *)interrupt.esp);
+    general.eax.value = abi_call(general.eax.value, current.container, current.task, interrupt.esp.pointer);
 
     return arch_schedule(&general, &interrupt);
 
@@ -378,11 +378,11 @@ void arch_setup(struct service_backend *backend)
     mmu_setup();
     abi_setup(spawn, despawn);
 
-    interrupt.cs = selector.ucode;
-    interrupt.ss = selector.ustack;
-    interrupt.eip = current.task->state.registers.ip;
-    interrupt.esp = current.task->state.registers.sp;
-    interrupt.eflags = cpu_geteflags() | CPU_FLAGS_IF;
+    interrupt.cs.value = selector.ucode;
+    interrupt.ss.value = selector.ustack;
+    interrupt.eip.value = current.task->state.registers.ip;
+    interrupt.esp.value = current.task->state.registers.sp;
+    interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
     cpu_leave(interrupt);
 
