@@ -293,7 +293,9 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 unsigned int abi_call(unsigned int index, struct container *container, struct task *task, void *stack)
 {
 
-    return calls[index & (CALLS - 1)](container, task, stack);
+    unsigned int (*call)(struct container *container, struct task *task, void *stack) = calls[index & (CALLS - 1)];
+
+    return call ? call(container, task, stack) : 0;
 
 }
 
