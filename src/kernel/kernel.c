@@ -47,7 +47,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     task_resume(task, task->format->findentry(&descriptor->node), sp);
 
-    return task->state.registers.ip;
+    return 1;
 
 }
 

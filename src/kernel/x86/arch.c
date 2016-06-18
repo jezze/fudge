@@ -161,10 +161,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     copymap(container, next);
     kernel_copydescriptors(task, next);
 
-    if (!kernel_setupbinary(next, TASKSTACK))
-        return 0;
-
-    return 1;
+    return kernel_setupbinary(next, TASKSTACK);
 
 }
 
