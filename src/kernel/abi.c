@@ -32,12 +32,15 @@ static unsigned int walk(struct container *container, struct task *task, void *s
     unsigned int offset;
     unsigned int count;
 
-    if (!pdescriptor->state.id)
+    if (!pdescriptor->backend || !pdescriptor->protocol)
         return 0;
 
     descriptor->backend = pdescriptor->backend;
     descriptor->protocol = pdescriptor->protocol;
     descriptor->state.id = pdescriptor->state.id;
+
+    if (!args->count)
+        return 1;
 
     for (offset = 0; (count = memory_findbyte(args->path + offset, args->count - offset, '/')); offset += count)
     {
