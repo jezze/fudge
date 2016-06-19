@@ -30,7 +30,9 @@ static unsigned int protocol_parent(struct service_backend *backend, struct serv
 
     struct system_node *node = (struct system_node *)state->id;
 
-    return (unsigned int)node->parent;
+    state->id = (unsigned int)node->parent;
+
+    return state->id != 0;
 
 }
 
@@ -39,7 +41,9 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 
     struct system_node *node = (struct system_node *)state->id;
 
-    return (node->child) ? node->child(node, count, path) : (count ? 0 : state->id);
+    state->id = (node->child) ? node->child(node, count, path) : (count ? 0 : state->id);
+
+    return state->id != 0;
 
 }
 

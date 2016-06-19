@@ -62,6 +62,51 @@ static unsigned int parent(struct service_backend *backend, struct cpio_header *
 
 }
 
+static unsigned int child(struct service_backend *backend, struct cpio_header *header, unsigned int id, unsigned int count, char *path)
+{
+
+    struct cpio_header eheader;
+    unsigned char pname[1024];
+    unsigned int cid = 0;
+
+    if (!count)
+        return id;
+
+    if (!readname(backend, header, id, 1024, pname))
+        return 0;
+
+    if (path[count - 1] == '/')
+        count--;
+
+    do
+    {
+
+        unsigned char cname[1024];
+
+        if (cid == id)
+            break;
+
+        if (!readheader(backend, &eheader, cid))
+            break;
+
+        if (eheader.namesize - header->namesize != count + 1)
+            continue;
+
+        if (!readname(backend, &eheader, cid, 1024, cname))
+            break;
+
+        if (!memory_match(cname, pname, header->namesize - 1))
+            continue;
+
+        if (memory_match(cname + header->namesize, path, count))
+            return cid;
+
+    } while ((cid = cpio_next(&eheader, cid)));
+
+    return 0;
+
+}
+
 static unsigned int protocol_match(struct service_backend *backend)
 {
 
@@ -103,7 +148,9 @@ static unsigned int protocol_parent(struct service_backend *backend, struct serv
     if (!readheader(backend, &header, state->id))
         return 0;
 
-    return parent(backend, &header, state->id);
+    state->id = parent(backend, &header, state->id);
+
+    return state->id != 0;
 
 }
 
@@ -111,50 +158,13 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 {
 
     struct cpio_header header;
-    unsigned char pname[1024];
-    unsigned int cid = 0;
-    unsigned int length;
-
-    if (!count)
-        return state->id;
 
     if (!readheader(backend, &header, state->id))
         return 0;
 
-    if (!readname(backend, &header, state->id, 1024, pname))
-        return 0;
+    state->id = child(backend, &header, state->id, count, path);
 
-    length = header.namesize;
-
-    if (path[count - 1] == '/')
-        count--;
-
-    do
-    {
-
-        unsigned char cname[1024];
-
-        if (cid == state->id)
-            break;
-
-        if (!readheader(backend, &header, cid))
-            break;
-
-        if (header.namesize - length != count + 1)
-            continue;
-
-        if (!readname(backend, &header, cid, 1024, cname))
-            break;
-
-        if (!memory_match(cname, pname, length - 1))
-            continue;
-
-        if (memory_match(cname + length, path, count))
-            return cid;
-
-    } while ((cid = cpio_next(&header, cid)));
-
-    return 0;
+    return state->id != 0;
 
 }
 

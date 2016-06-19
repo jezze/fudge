@@ -68,9 +68,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
             }
 
-            descriptor->state.id = descriptor->protocol->parent(descriptor->backend, &descriptor->state);
-
-            if (!descriptor->state.id)
+            if (!descriptor->protocol->parent(descriptor->backend, &descriptor->state))
                 return 0;
 
         }
@@ -80,9 +78,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
             unsigned int i;
 
-            descriptor->state.id = descriptor->protocol->child(descriptor->backend, &descriptor->state, count, args->path + offset);
-
-            if (!descriptor->state.id)
+            if (!descriptor->protocol->child(descriptor->backend, &descriptor->state, count, args->path + offset))
                 return 0;
 
             for (i = 0; i < CONTAINER_MOUNTS; i++)
