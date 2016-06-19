@@ -55,7 +55,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
                 struct container_mount *mount = &container->mounts[i];
 
-                if (descriptor->backend == mount->child.backend && descriptor->state.id == mount->child.id)
+                if (descriptor->backend == mount->child.backend && descriptor->protocol == mount->child.protocol && descriptor->state.id == mount->child.id)
                 {
 
                     descriptor->backend = mount->parent.backend;
@@ -86,7 +86,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
                 struct container_mount *mount = &container->mounts[i];
 
-                if (descriptor->backend == mount->parent.backend && descriptor->state.id == mount->parent.id)
+                if (descriptor->backend == mount->parent.backend && descriptor->protocol == mount->parent.protocol && descriptor->state.id == mount->parent.id)
                 {
 
                     descriptor->backend = mount->child.backend;
