@@ -27,8 +27,7 @@ struct task_descriptor
 
     struct resource resource;
     struct binary_node node;
-    struct service_backend *backend;
-    struct service_protocol *protocol;
+    struct container_server *server;
     struct service_state state;
 
 };

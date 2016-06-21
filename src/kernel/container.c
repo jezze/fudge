@@ -2,7 +2,6 @@
 #include "resource.h"
 #include "binary.h"
 #include "service.h"
-#include "task.h"
 #include "container.h"
 
 void container_init(struct container *container)

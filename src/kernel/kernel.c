@@ -2,15 +2,14 @@
 #include "resource.h"
 #include "binary.h"
 #include "service.h"
-#include "task.h"
 #include "container.h"
+#include "task.h"
 #include "kernel.h"
 
 static void copydescriptor(struct task_descriptor *tdescriptor, struct task_descriptor *sdescriptor)
 {
 
-    tdescriptor->backend = (sdescriptor) ? sdescriptor->backend : 0;
-    tdescriptor->protocol = (sdescriptor) ? sdescriptor->protocol : 0;
+    tdescriptor->server = (sdescriptor) ? sdescriptor->server : 0;
     tdescriptor->state.id = (sdescriptor) ? sdescriptor->state.id : 0;
 
 }
@@ -37,7 +36,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     struct task_descriptor *descriptor = &task->descriptors[0x00];
 
-    if (!descriptor->protocol->map(descriptor->backend, &descriptor->state, &descriptor->node))
+    if (!descriptor->server->protocol->map(descriptor->server->backend, &descriptor->state, &descriptor->node))
         return 0;
 
     task->format = binary_findformat(&descriptor->node);
@@ -54,25 +53,27 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 void kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
 {
 
+    struct container_server *server = &container->servers[0x00];
     struct container_mount *mount = &container->mounts[0x00];
     struct task_descriptor *init = &task->descriptors[0x08];
     struct task_descriptor *root = &task->descriptors[0x09];
 
-    mount->parent.backend = backend;
-    mount->parent.protocol = service_findprotocol(backend);
-    mount->parent.id = mount->parent.protocol->root(backend);
-    mount->child.backend = mount->parent.backend;
-    mount->child.protocol = mount->parent.protocol;
-    mount->child.id = mount->parent.id;
-    root->backend = mount->parent.backend;
-    root->protocol = mount->parent.protocol;
+    server->backend = backend;
+    server->protocol = service_findprotocol(backend);
+    mount->parent.server = server;
+    mount->parent.id = server->protocol->root(backend);
+    mount->child.server = server;
+    mount->child.id = server->protocol->root(backend);
+    root->server = mount->parent.server;
     root->state.id = mount->parent.id;
-    init->backend = mount->parent.backend;
-    init->protocol = mount->parent.protocol;
+    init->server = mount->parent.server;
     init->state.id = mount->parent.id;
 
-    init->protocol->child(init->backend, &init->state, 4, "bin/");
-    init->protocol->child(init->backend, &init->state, 4, "init");
+    init->server->protocol->child(init->server->backend, &init->state, 4, "bin/");
+    init->server->protocol->child(init->server->backend, &init->state, 4, "init");
+
+    container->nservers++;
+    container->nmounts++;
 
 }
 

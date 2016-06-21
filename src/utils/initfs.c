@@ -9,7 +9,7 @@ void main(void)
         return;
 
     call_auth(CALL_L1, 2000);
-    call_mount(4, CALL_L0, CALL_L1);
+    call_mount(CALL_L0, CALL_L1);
 
 }
 

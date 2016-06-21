@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "binary.h"
 #include "service.h"
+#include "container.h"
 #include "task.h"
 
 static struct list active;
