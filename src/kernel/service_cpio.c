@@ -163,9 +163,6 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
         if (!readname(backend, &eheader, id, 1024, cname))
             break;
 
-        if (!memory_match(cname, name, header.namesize - 1))
-            continue;
-
         if (memory_match(cname + header.namesize, path, count))
         {
 
