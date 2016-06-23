@@ -44,64 +44,9 @@ static unsigned int parent(struct service_backend *backend, struct cpio_header *
             continue;
 
         if (eheader.namesize == length + 1)
-        {
-
-            unsigned char pname[1024];
-
-            if (!readname(backend, &eheader, id, 1024, pname))
-                break;
-
-            if (memory_match(name, pname, length))
-                return id;
-
-        }
+            return id;
 
     } while ((id = cpio_next(&eheader, id)));
-
-    return 0;
-
-}
-
-static unsigned int child(struct service_backend *backend, struct cpio_header *header, unsigned int id, unsigned int count, char *path)
-{
-
-    struct cpio_header eheader;
-    unsigned char pname[1024];
-    unsigned int cid = 0;
-
-    if (!count)
-        return id;
-
-    if (!readname(backend, header, id, 1024, pname))
-        return 0;
-
-    if (path[count - 1] == '/')
-        count--;
-
-    do
-    {
-
-        unsigned char cname[1024];
-
-        if (cid == id)
-            break;
-
-        if (!readheader(backend, &eheader, cid))
-            break;
-
-        if (eheader.namesize - header->namesize != count + 1)
-            continue;
-
-        if (!readname(backend, &eheader, cid, 1024, cname))
-            break;
-
-        if (!memory_match(cname, pname, header->namesize - 1))
-            continue;
-
-        if (memory_match(cname + header->namesize, path, count))
-            return cid;
-
-    } while ((cid = cpio_next(&eheader, cid)));
 
     return 0;
 
@@ -144,13 +89,40 @@ static unsigned int protocol_parent(struct service_backend *backend, struct serv
 {
 
     struct cpio_header header;
+    struct cpio_header eheader;
+    unsigned char name[1024];
+    unsigned int id = state->id;
 
     if (!readheader(backend, &header, state->id))
         return 0;
 
-    state->id = parent(backend, &header, state->id);
+    if (!readname(backend, &header, state->id, 1024, name))
+        return 0;
 
-    return state->id != 0;
+    while (name[header.namesize] != '/')
+        header.namesize--;
+
+    do
+    {
+
+        if (!readheader(backend, &eheader, id))
+            break;
+
+        if ((eheader.mode & 0xF000) != 0x4000)
+            continue;
+
+        if (eheader.namesize == header.namesize + 1)
+        {
+
+            state->id = id;
+
+            return 1;
+
+        }
+
+    } while ((id = cpio_next(&eheader, id)));
+
+    return 0;
 
 }
 
@@ -158,13 +130,54 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 {
 
     struct cpio_header header;
+    struct cpio_header eheader;
+    unsigned char name[1024];
+    unsigned int id = 0;
+
+    if (!count)
+        return 1;
 
     if (!readheader(backend, &header, state->id))
         return 0;
 
-    state->id = child(backend, &header, state->id, count, path);
+    if (!readname(backend, &header, state->id, 1024, name))
+        return 0;
 
-    return state->id != 0;
+    if (path[count - 1] == '/')
+        count--;
+
+    do
+    {
+
+        unsigned char cname[1024];
+
+        if (id == state->id)
+            break;
+
+        if (!readheader(backend, &eheader, id))
+            break;
+
+        if (eheader.namesize - header.namesize != count + 1)
+            continue;
+
+        if (!readname(backend, &eheader, id, 1024, cname))
+            break;
+
+        if (!memory_match(cname, name, header.namesize - 1))
+            continue;
+
+        if (memory_match(cname + header.namesize, path, count))
+        {
+
+            state->id = id;
+
+            return 1;
+
+        }
+
+    } while ((id = cpio_next(&eheader, id)));
+
+    return 0;
 
 }
 
@@ -234,6 +247,7 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
     if (!readheader(backend, &header, state->id))
         return 0;
 
+    state->offset = 0;
     state->offset = seek(backend, state, &header, 0);
 
     return state->id;
@@ -242,6 +256,8 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
 
 static unsigned int protocol_close(struct service_backend *backend, struct service_state *state)
 {
+
+    state->offset = 0;
 
     return state->id;
 
