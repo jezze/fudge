@@ -4,9 +4,9 @@ BIN_PCXCMAP:=\
 OBJ_PCXCMAP:=\
     $(DIR_SRC)/pcx/pcx.o \
     $(DIR_SRC)/pcx/pcxcmap.o \
-    $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/lib/gfx.o \
+    $(DIR_SRC)/fudge/fudge.a \
 
 $(BIN_PCXCMAP): $(OBJ_PCXCMAP) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^
@@ -17,9 +17,9 @@ BIN_PCXDATA:=\
 OBJ_PCXDATA:=\
     $(DIR_SRC)/pcx/pcx.o \
     $(DIR_SRC)/pcx/pcxdata.o \
-    $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/lib/gfx.o \
+    $(DIR_SRC)/fudge/fudge.a \
 
 $(BIN_PCXDATA): $(OBJ_PCXDATA) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^

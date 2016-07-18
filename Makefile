@@ -15,13 +15,15 @@ PLATFORM_x86:=pc
 PLATFORM_arm:=integratorcp
 PLATFORM:=$(PLATFORM_$(ARCH))
 
+AR:=$(TARGET)-ar
 AS:=$(TARGET)-as
 CC:=$(TARGET)-cc
 LD:=$(TARGET)-ld
 
+ARFLAGS:=rv
 ASFLAGS:=
 CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(DIR_INCLUDE) -I$(DIR_SRC)
-LDFLAGS:=
+LDFLAGS:=-static
 
 OBJ_ABI_x86:=$(DIR_SRC)/abi/x86/call.o $(DIR_SRC)/abi/x86/crt0.o
 OBJ_ABI_arm:=$(DIR_SRC)/abi/arm/call.o $(DIR_SRC)/abi/arm/crt0.o

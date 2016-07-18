@@ -1,4 +1,5 @@
 include $(DIR_SRC)/elf/rules.mk
+include $(DIR_SRC)/fudge/rules.mk
 include $(DIR_SRC)/kernel/rules.mk
 include $(DIR_SRC)/mandelbrot/rules.mk
 include $(DIR_SRC)/modules/rules.mk

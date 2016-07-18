@@ -71,12 +71,8 @@ OBJ_UTILS:=\
     $(DIR_SRC)/utils/sleep.o \
 
 OBJ_EXTRA:=\
-    $(DIR_SRC)/fudge/ascii.o \
-    $(DIR_SRC)/fudge/buffer.o \
-    $(DIR_SRC)/fudge/ctrl.o \
-    $(DIR_SRC)/fudge/list.o \
-    $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/lib/file.o \
+    $(DIR_SRC)/fudge/fudge.a \
 
 $(BIN_UTILS): % : %.o $(OBJ_EXTRA) $(OBJ_STD) $(OBJ_ABI)
 	$(LD) -o $@ $(LDFLAGS) $^

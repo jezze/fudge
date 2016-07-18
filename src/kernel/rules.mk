@@ -11,13 +11,9 @@ OBJ_KERNEL:=\
     $(DIR_SRC)/kernel/task.o \
     $(DIR_SRC)/kernel/service.o \
     $(DIR_SRC)/kernel/service_cpio.o \
-    $(DIR_SRC)/fudge/ascii.o \
-    $(DIR_SRC)/fudge/buffer.o \
-    $(DIR_SRC)/fudge/ctrl.o \
-    $(DIR_SRC)/fudge/list.o \
-    $(DIR_SRC)/fudge/memory.o \
     $(DIR_SRC)/format/cpio.o \
     $(DIR_SRC)/elf/elf.o \
+    $(DIR_SRC)/fudge/fudge.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
 
