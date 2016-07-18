@@ -8,8 +8,9 @@ OBJ_WDRAW:=\
     $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/format/pcf.o \
     $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_SRC)/abi/abi.a \
 
-$(BIN_WDRAW): $(OBJ_WDRAW) $(OBJ_STD) $(OBJ_ABI)
+$(BIN_WDRAW): $(OBJ_WDRAW)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_WEDIT:=\
@@ -22,8 +23,9 @@ OBJ_WEDIT:=\
     $(DIR_SRC)/wm/send.o \
     $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_SRC)/abi/abi.a \
 
-$(BIN_WEDIT): $(OBJ_WEDIT) $(OBJ_STD) $(OBJ_ABI)
+$(BIN_WEDIT): $(OBJ_WEDIT)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_WM:=\
@@ -36,8 +38,9 @@ OBJ_WM:=\
     $(DIR_SRC)/wm/send.o \
     $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_SRC)/abi/abi.a \
 
-$(BIN_WM): $(OBJ_WM) $(OBJ_STD) $(OBJ_ABI)
+$(BIN_WM): $(OBJ_WM)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_WSHELL:=\
@@ -51,8 +54,9 @@ OBJ_WSHELL:=\
     $(DIR_SRC)/wm/keymap.o \
     $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_SRC)/abi/abi.a \
 
-$(BIN_WSHELL): $(OBJ_WSHELL) $(OBJ_STD) $(OBJ_ABI)
+$(BIN_WSHELL): $(OBJ_WSHELL)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN_WTEXT:=\
@@ -64,8 +68,9 @@ OBJ_WTEXT:=\
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_SRC)/abi/abi.a \
 
-$(BIN_WTEXT): $(OBJ_WTEXT) $(OBJ_STD) $(OBJ_ABI)
+$(BIN_WTEXT): $(OBJ_WTEXT)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN:=$(BIN) $(BIN_WDRAW) $(BIN_WEDIT) $(BIN_WM) $(BIN_WSHELL) $(BIN_WTEXT)

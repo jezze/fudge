@@ -71,10 +71,11 @@ OBJ_UTILS:=\
     $(DIR_SRC)/utils/sleep.o \
 
 OBJ_EXTRA:=\
+    $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_UTILS): % : %.o $(OBJ_EXTRA) $(OBJ_STD) $(OBJ_ABI)
+$(BIN_UTILS): % : %.o $(OBJ_EXTRA)
 	$(LD) -o $@ $(LDFLAGS) $^
 
 BIN:=$(BIN) $(BIN_UTILS)
