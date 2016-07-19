@@ -29,7 +29,7 @@ static void addlocalentry(unsigned char *hardwareaddress, unsigned char *protoco
 static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
 {
 
-    unsigned char protocoladdress[4] = {192, 168, 0, 100};
+    unsigned char protocoladdress[4] = {10, 0, 5, 5};
 
     addlocalentry(interface->hardwareaddress, protocoladdress);
 

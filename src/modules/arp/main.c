@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <net/arp.h>
+#include <net/ethernet.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
@@ -28,7 +29,8 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
     unsigned int length;
     struct list_item *current;
     unsigned char response[512];
-    struct arp_header *responseheader = (struct arp_header *)response;
+    struct ethernet_header *responseethernet = (struct ethernet_header *)response;
+    struct arp_header *responsearp = (struct arp_header *)(responseethernet + 1);
 
     if (count < sizeof (struct arp_header))
         return;
@@ -56,14 +58,20 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
             if (!hardwareaddress)
                 continue;
 
-            memory_write(response, 512, header, sizeof (struct arp_header), 0);
-            memory_write(response, 512, (unsigned char *)buffer + sizeof (struct arp_header), length, sizeof (struct arp_header) + length);
-            memory_write(response, 512, (unsigned char *)buffer + sizeof (struct arp_header) + length, length, sizeof (struct arp_header));
-            memory_write(response, 512, hardwareaddress, header->hlength, sizeof (struct arp_header));
+            memory_write(responsearp, 512, header, sizeof (struct arp_header), 0);
+            memory_write(responsearp, 512, (unsigned char *)buffer + sizeof (struct arp_header), length, sizeof (struct arp_header) + length);
+            memory_write(responsearp, 512, (unsigned char *)buffer + sizeof (struct arp_header) + length, length, sizeof (struct arp_header));
+            memory_write(responsearp, 512, hardwareaddress, header->hlength, sizeof (struct arp_header));
 
-            responseheader->operation[1] = 2;
+            responsearp->operation[1] = 2;
 
-            interface->send(count, response);
+            memory_copy(responseethernet->sha, response + sizeof (struct ethernet_header) + sizeof (struct arp_header), 6);
+            memory_copy(responseethernet->tha, response + sizeof (struct ethernet_header) + sizeof (struct arp_header) + length, 6);
+
+            responseethernet->type[0] = 0x08;
+            responseethernet->type[1] = 0x06;
+
+            interface->send(sizeof (struct ethernet_header) + sizeof (struct arp_header) + length + length, response);
 
             break;
 
