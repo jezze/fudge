@@ -6,6 +6,21 @@
 
 static struct system_node root;
 
+unsigned int ethernet_writeheader(unsigned short type, unsigned char *sha, unsigned char *tha, void *buffer)
+{
+
+    struct ethernet_header *header = buffer;
+
+    header->type[0] = type >> 8;
+    header->type[1] = type;
+
+    memory_copy(header->sha, sha, 6);
+    memory_copy(header->tha, tha, 6);
+
+    return sizeof (struct ethernet_header);
+
+}
+
 void ethernet_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 

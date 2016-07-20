@@ -1,3 +1,5 @@
+#define ETHERNET_MTU                    1500
+
 struct ethernet_interface
 {
 
@@ -17,13 +19,14 @@ struct ethernet_protocol
     struct resource resource;
     struct system_node root;
     struct system_node data;
-    unsigned int type;
+    unsigned short type;
     void (*addinterface)(struct ethernet_interface *interface);
     void (*removeinterface)(struct ethernet_interface *interface);
     void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer);
 
 };
 
+unsigned int ethernet_writeheader(unsigned short type, unsigned char *sha, unsigned char *tha, void *buffer);
 void ethernet_notify(struct ethernet_interface *interface, unsigned int count, void *buffer);
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id);
 void ethernet_registerprotocol(struct ethernet_protocol *protocol);

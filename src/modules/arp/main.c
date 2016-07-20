@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <net/arp.h>
-#include <net/ethernet.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
@@ -8,6 +7,30 @@
 
 static struct ethernet_protocol ethernetprotocol;
 static struct list hooks;
+
+unsigned int arp_writeheader(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength, unsigned short operation, unsigned char *sha, unsigned char *shp, unsigned char *tha, unsigned char *thp, void *buffer)
+{
+
+    struct arp_header *header = buffer;
+    unsigned char *data = (unsigned char *)(header + 1);
+
+    header->htype[0] = htype >> 8;
+    header->htype[1] = htype;
+    header->ptype[0] = ptype >> 8;
+    header->ptype[1] = ptype;
+    header->hlength = hlength;
+    header->plength = plength;
+    header->operation[0] = operation >> 8;
+    header->operation[1] = operation;
+
+    memory_copy(data, sha, hlength);
+    memory_copy(data + hlength, shp, plength);
+    memory_copy(data + hlength + plength, tha, hlength);
+    memory_copy(data + hlength + plength + hlength, thp, plength);
+
+    return sizeof (struct arp_header) + hlength + plength + hlength + plength;
+
+}
 
 static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
 {
@@ -23,14 +46,11 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 {
 
     struct arp_header *header = buffer;
+    unsigned char *data = (unsigned char *)(header + 1);
     unsigned short htype;
     unsigned short ptype;
     unsigned short operation;
-    unsigned int length;
     struct list_item *current;
-    unsigned char response[512];
-    struct ethernet_header *responseethernet = (struct ethernet_header *)response;
-    struct arp_header *responsearp = (struct arp_header *)(responseethernet + 1);
 
     if (count < sizeof (struct arp_header))
         return;
@@ -38,13 +58,14 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
     htype = (header->htype[0] << 8) | header->htype[1];
     ptype = (header->ptype[0] << 8) | header->ptype[1];
     operation = (header->operation[0] << 8) | header->operation[1];
-    length = header->hlength + header->plength;
 
     for (current = hooks.head; current; current = current->next)
     {
 
         struct arp_hook *hook = current->data;
+        unsigned char response[ETHERNET_MTU];
         unsigned char *hardwareaddress;
+        unsigned int c = 0;
 
         if (hook->htype != htype || hook->ptype != ptype)
             continue;
@@ -53,25 +74,15 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
         {
 
         case 1:
-            hardwareaddress = hook->gethardwareaddress(header->plength, (unsigned char *)buffer + sizeof (struct arp_header) + length + header->hlength);
+            hardwareaddress = hook->gethardwareaddress(header->plength, data + header->hlength + header->plength + header->hlength);
 
             if (!hardwareaddress)
                 continue;
 
-            memory_write(responsearp, 512, header, sizeof (struct arp_header), 0);
-            memory_write(responsearp, 512, (unsigned char *)buffer + sizeof (struct arp_header), length, sizeof (struct arp_header) + length);
-            memory_write(responsearp, 512, (unsigned char *)buffer + sizeof (struct arp_header) + length, length, sizeof (struct arp_header));
-            memory_write(responsearp, 512, hardwareaddress, header->hlength, sizeof (struct arp_header));
+            c += ethernet_writeheader(ethernetprotocol.type, interface->hardwareaddress, data, response);
+            c += arp_writeheader(htype, header->hlength, ptype, header->plength, 2, hardwareaddress, data + header->hlength + header->plength + header->hlength, data, data + header->hlength, response + c);
 
-            responsearp->operation[1] = 2;
-
-            memory_copy(responseethernet->sha, response + sizeof (struct ethernet_header) + sizeof (struct arp_header), 6);
-            memory_copy(responseethernet->tha, response + sizeof (struct ethernet_header) + sizeof (struct arp_header) + length, 6);
-
-            responseethernet->type[0] = 0x08;
-            responseethernet->type[1] = 0x06;
-
-            interface->send(sizeof (struct ethernet_header) + sizeof (struct arp_header) + length + length, response);
+            interface->send(c, response);
 
             break;
 

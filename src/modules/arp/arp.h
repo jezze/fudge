@@ -8,6 +8,7 @@ struct arp_hook
 
 };
 
+unsigned int arp_writeheader(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength, unsigned short operation, unsigned char *sha, unsigned char *shp, unsigned char *tha, unsigned char *thp, void *buffer);
 void arp_registerhook(struct arp_hook *hook);
 void arp_unregisterhook(struct arp_hook *hook);
 void arp_inithook(struct arp_hook *hook, unsigned short htype, unsigned short ptype, unsigned char *(*gethardwareaddress)(unsigned int count, void *protocoladdress));

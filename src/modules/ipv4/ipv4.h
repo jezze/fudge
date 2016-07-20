@@ -1,4 +1,4 @@
-struct ipv4_ethernetentry
+struct ipv4_arpentry
 {
 
     unsigned char hardwareaddress[6];

@@ -7,22 +7,21 @@
 #include <modules/arp/arp.h>
 #include "ipv4.h"
 
-#define LOCALS                          8
+#define ARPTABLESIZE                    8
 
 static struct ethernet_protocol ethernetprotocol;
 static struct arp_hook arphook;
-static struct ipv4_ethernetentry localbuffer[LOCALS];
-static unsigned int localbuffercount;
-static struct buffer local;
-static struct system_node localnode;
+static struct ipv4_arpentry arptable[ARPTABLESIZE];
+static unsigned int arptablecount;
+static struct system_node arptablenode;
 
-static void addlocalentry(unsigned char *hardwareaddress, unsigned char *protocoladdress)
+static void addarpentry(unsigned char *hardwareaddress, unsigned char *protocoladdress)
 {
 
-    memory_copy(localbuffer[localbuffercount].hardwareaddress, hardwareaddress, 6);
-    memory_copy(localbuffer[localbuffercount].protocoladdress, protocoladdress, 4);
+    memory_copy(arptable[arptablecount].hardwareaddress, hardwareaddress, 6);
+    memory_copy(arptable[arptablecount].protocoladdress, protocoladdress, 4);
 
-    localbuffercount++;
+    arptablecount++;
 
 }
 
@@ -31,7 +30,7 @@ static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
 
     unsigned char protocoladdress[4] = {10, 0, 5, 5};
 
-    addlocalentry(interface->hardwareaddress, protocoladdress);
+    addarpentry(interface->hardwareaddress, protocoladdress);
 
 }
 
@@ -47,10 +46,10 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 
 }
 
-static unsigned int localnode_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int arptablenode_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
 {
 
-    return memory_read(buffer, count, localbuffer, sizeof (struct ipv4_ethernetentry) * LOCALS, state->offset);
+    return memory_read(buffer, count, arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, state->offset);
 
 }
 
@@ -59,11 +58,11 @@ static unsigned char *arphook_gethardwareaddress(unsigned int count, void *proto
 
     unsigned int i;
 
-    for (i = 0; i < LOCALS; i++)
+    for (i = 0; i < ARPTABLESIZE; i++)
     {
 
-        if (memory_match(localbuffer[i].protocoladdress, protocoladdress, count))
-            return localbuffer[i].hardwareaddress;
+        if (memory_match(arptable[i].protocoladdress, protocoladdress, count))
+            return arptable[i].hardwareaddress;
 
     }
 
@@ -105,12 +104,11 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 void module_init(void)
 {
 
-    buffer_init(&local, sizeof (struct ipv4_ethernetentry) * LOCALS, &localbuffer);
     ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
     arp_inithook(&arphook, 0x0001, ethernetprotocol.type, arphook_gethardwareaddress);
-    system_initnode(&localnode, SYSTEM_NODETYPE_NORMAL, "local");
+    system_initnode(&arptablenode, SYSTEM_NODETYPE_NORMAL, "arptable");
 
-    localnode.read = localnode_read;
+    arptablenode.read = arptablenode_read;
 
 }
 
@@ -119,7 +117,7 @@ void module_register(void)
 
     ethernet_registerprotocol(&ethernetprotocol);
     arp_registerhook(&arphook);
-    system_addchild(&ethernetprotocol.root, &localnode);
+    system_addchild(&ethernetprotocol.root, &arptablenode);
 
 }
 
@@ -128,7 +126,7 @@ void module_unregister(void)
 
     ethernet_unregisterprotocol(&ethernetprotocol);
     arp_unregisterhook(&arphook);
-    system_removechild(&ethernetprotocol.root, &localnode);
+    system_removechild(&ethernetprotocol.root, &arptablenode);
 
 }
 
