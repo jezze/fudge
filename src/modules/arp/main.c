@@ -67,7 +67,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
         unsigned char *hardwareaddress;
         unsigned int c = 0;
 
-        if (hook->htype != htype || hook->ptype != ptype)
+        if (!hook->match(htype, header->hlength, ptype, header->plength))
             continue;
 
         switch (operation)
@@ -108,13 +108,12 @@ void arp_unregisterhook(struct arp_hook *hook)
 
 }
 
-void arp_inithook(struct arp_hook *hook, unsigned short htype, unsigned short ptype, unsigned char *(*gethardwareaddress)(unsigned int count, void *protocoladdress))
+void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength), unsigned char *(*gethardwareaddress)(unsigned int count, void *protocoladdress))
 {
 
     list_inititem(&hook->item, hook);
 
-    hook->htype = htype;
-    hook->ptype = ptype;
+    hook->match = match;
     hook->gethardwareaddress = gethardwareaddress;
 
 }

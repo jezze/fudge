@@ -65,6 +65,13 @@ static unsigned int arptablenode_read(struct system_node *self, struct service_s
 
 }
 
+static unsigned int arphook_match(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength)
+{
+
+    return htype == 1 && hlength == 6 && ptype == ethernetprotocol.type && plength == 4;
+
+}
+
 static unsigned char *arphook_gethardwareaddress(unsigned int count, void *protocoladdress)
 {
 
@@ -117,7 +124,7 @@ void module_init(void)
 {
 
     ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
-    arp_inithook(&arphook, 0x0001, ethernetprotocol.type, arphook_gethardwareaddress);
+    arp_inithook(&arphook, arphook_match, arphook_gethardwareaddress);
     system_initnode(&arptablenode, SYSTEM_NODETYPE_NORMAL, "arptable");
 
     arptablenode.read = arptablenode_read;
