@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <net/arp.h>
 #include <net/ipv4.h>
 #include <kernel.h>
 #include <modules/system/system.h>
@@ -41,6 +40,19 @@ static void ethernetprotocol_removeinterface(struct ethernet_interface *interfac
 
 static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
+
+    struct ipv4_header *header = buffer;
+    struct resource *current = 0;
+
+    while ((current = resource_findtype(current, RESOURCE_IPV4PROTOCOL)))
+    {
+
+        struct ipv4_protocol *protocol = current->data;
+
+        if (protocol->id == header->protocol)
+            protocol->notify(interface, count, header);
+
+    }
 
     system_multicast(&ethernetprotocol.data.links, count, buffer);
 

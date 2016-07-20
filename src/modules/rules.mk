@@ -7,6 +7,7 @@ MOD:=\
     $(DIR_SRC)/modules/console/console.ko \
     $(DIR_SRC)/modules/ethernet/ethernet.ko \
     $(DIR_SRC)/modules/event/event.ko \
+    $(DIR_SRC)/modules/icmp/icmp.ko \
     $(DIR_SRC)/modules/ipv4/ipv4.ko \
     $(DIR_SRC)/modules/ipv6/ipv6.ko \
     $(DIR_SRC)/modules/keyboard/keyboard.ko \
@@ -37,6 +38,7 @@ OBJ_MOD:=\
     $(DIR_SRC)/modules/console/main.o \
     $(DIR_SRC)/modules/ethernet/main.o \
     $(DIR_SRC)/modules/event/main.o \
+    $(DIR_SRC)/modules/icmp/main.o \
     $(DIR_SRC)/modules/ipv4/main.o \
     $(DIR_SRC)/modules/ipv6/main.o \
     $(DIR_SRC)/modules/keyboard/main.o \
@@ -66,6 +68,7 @@ $(DIR_SRC)/modules/clock/clock.ko: $(DIR_SRC)/modules/clock/main.o $(DIR_SRC)/fu
 $(DIR_SRC)/modules/console/console.ko: $(DIR_SRC)/modules/console/main.o $(DIR_SRC)/fudge/fudge.a
 $(DIR_SRC)/modules/ethernet/ethernet.ko: $(DIR_SRC)/modules/ethernet/main.o $(DIR_SRC)/fudge/fudge.a
 $(DIR_SRC)/modules/event/event.ko: $(DIR_SRC)/modules/event/main.o $(DIR_SRC)/fudge/fudge.a
+$(DIR_SRC)/modules/icmp/icmp.ko: $(DIR_SRC)/modules/icmp/main.o $(DIR_SRC)/fudge/fudge.a
 $(DIR_SRC)/modules/ipv4/ipv4.ko: $(DIR_SRC)/modules/ipv4/main.o $(DIR_SRC)/fudge/fudge.a
 $(DIR_SRC)/modules/ipv6/ipv6.ko: $(DIR_SRC)/modules/ipv6/main.o $(DIR_SRC)/fudge/fudge.a
 $(DIR_SRC)/modules/keyboard/keyboard.ko: $(DIR_SRC)/modules/keyboard/main.o $(DIR_SRC)/fudge/fudge.a

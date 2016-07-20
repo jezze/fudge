@@ -14,6 +14,7 @@
 /bin/elfload < /mod/arp.ko
 /bin/elfload < /mod/ipv4.ko
 /bin/elfload < /mod/ipv6.ko
+/bin/elfload < /mod/icmp.ko
 /bin/elfload < /mod/udp.ko
 /bin/elfload < /mod/null.ko.0
 /bin/elfload < /mod/pipe.ko
