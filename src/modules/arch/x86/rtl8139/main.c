@@ -249,12 +249,12 @@ static void driver_attach(unsigned int id)
     enable();
     pci_setmaster(id);
 
-    ethernetinterface.hardwareaddress[0] = io_inb(io + REGISTERIDR0);
-    ethernetinterface.hardwareaddress[1] = io_inb(io + REGISTERIDR1);
-    ethernetinterface.hardwareaddress[2] = io_inb(io + REGISTERIDR2);
-    ethernetinterface.hardwareaddress[3] = io_inb(io + REGISTERIDR3);
-    ethernetinterface.hardwareaddress[4] = io_inb(io + REGISTERIDR4);
-    ethernetinterface.hardwareaddress[5] = io_inb(io + REGISTERIDR5);
+    ethernetinterface.haddress[0] = io_inb(io + REGISTERIDR0);
+    ethernetinterface.haddress[1] = io_inb(io + REGISTERIDR1);
+    ethernetinterface.haddress[2] = io_inb(io + REGISTERIDR2);
+    ethernetinterface.haddress[3] = io_inb(io + REGISTERIDR3);
+    ethernetinterface.haddress[4] = io_inb(io + REGISTERIDR4);
+    ethernetinterface.haddress[5] = io_inb(io + REGISTERIDR5);
 
     ethernet_registerinterface(&ethernetinterface, id);
     pic_setroutine(pci_getirq(id), handleirq);

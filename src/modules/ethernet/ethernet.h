@@ -1,4 +1,5 @@
 #define ETHERNET_MTU                    1500
+#define ETHERNET_ADDRSIZE               6
 
 struct ethernet_interface
 {
@@ -8,7 +9,7 @@ struct ethernet_interface
     struct system_node ctrl;
     struct system_node data;
     unsigned int id;
-    unsigned char hardwareaddress[6];
+    unsigned char haddress[ETHERNET_ADDRSIZE];
     unsigned int (*send)(unsigned int count, void *buffer);
 
 };
@@ -26,7 +27,7 @@ struct ethernet_protocol
 
 };
 
-unsigned int ethernet_writeheader(unsigned short type, unsigned char *sha, unsigned char *tha, void *buffer);
+unsigned int ethernet_writeheader(struct ethernet_protocol *protocol, unsigned char *sha, unsigned char *tha, void *buffer);
 void ethernet_notify(struct ethernet_interface *interface, unsigned int count, void *buffer);
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id);
 void ethernet_registerprotocol(struct ethernet_protocol *protocol);

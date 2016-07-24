@@ -64,7 +64,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 
         struct arp_hook *hook = current->data;
         unsigned char response[ETHERNET_MTU];
-        unsigned char *hardwareaddress;
+        unsigned char *haddress;
         unsigned int c = 0;
 
         if (!hook->match(htype, header->hlength, ptype, header->plength))
@@ -73,14 +73,14 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
         switch (operation)
         {
 
-        case 1:
-            hardwareaddress = hook->gethardwareaddress(header->plength, data + header->hlength + header->plength + header->hlength);
+        case ARP_REQUEST:
+            haddress = hook->lookup(header->plength, data + header->hlength + header->plength + header->hlength);
 
-            if (!hardwareaddress)
+            if (!haddress)
                 continue;
 
-            c += ethernet_writeheader(ethernetprotocol.type, interface->hardwareaddress, data, response);
-            c += arp_writeheader(htype, header->hlength, ptype, header->plength, 2, hardwareaddress, data + header->hlength + header->plength + header->hlength, data, data + header->hlength, response + c);
+            c += ethernet_writeheader(&ethernetprotocol, interface->haddress, data, response);
+            c += arp_writeheader(htype, header->hlength, ptype, header->plength, ARP_REPLY, haddress, data + header->hlength + header->plength + header->hlength, data, data + header->hlength, response + c);
 
             interface->send(c, response);
 
@@ -108,20 +108,20 @@ void arp_unregisterhook(struct arp_hook *hook)
 
 }
 
-void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength), unsigned char *(*gethardwareaddress)(unsigned int count, void *protocoladdress))
+void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength), unsigned char *(*lookup)(unsigned int count, void *paddress))
 {
 
     list_inititem(&hook->item, hook);
 
     hook->match = match;
-    hook->gethardwareaddress = gethardwareaddress;
+    hook->lookup = lookup;
 
 }
 
 void module_init(void)
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "arp", 0x0806, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "arp", ARP_PROTOCOL, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
 
 }
 

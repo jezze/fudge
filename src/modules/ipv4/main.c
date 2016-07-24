@@ -14,11 +14,40 @@ static struct ipv4_arpentry arptable[ARPTABLESIZE];
 static unsigned int arptablecount;
 static struct system_node arptablenode;
 
-static void addarpentry(unsigned char *hardwareaddress, unsigned char *protocoladdress)
+unsigned int ipv4_writeheader(unsigned char *sip, unsigned char *tip, void *buffer)
 {
 
-    memory_copy(arptable[arptablecount].hardwareaddress, hardwareaddress, 6);
-    memory_copy(arptable[arptablecount].protocoladdress, protocoladdress, 4);
+    struct ipv4_header *header = buffer;
+
+    memory_copy(header->sip, sip, IPV4_ADDRSIZE);
+    memory_copy(header->tip, tip, IPV4_ADDRSIZE);
+
+    return sizeof (struct ipv4_header);
+
+}
+
+static unsigned char *lookupentry(void *paddress)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < arptablecount; i++)
+    {
+
+        if (memory_match(arptable[i].paddress, paddress, IPV4_ADDRSIZE))
+            return arptable[i].haddress;
+
+    }
+
+    return 0;
+
+}
+
+static void addarpentry(unsigned char *haddress, unsigned char *paddress)
+{
+
+    memory_copy(arptable[arptablecount].haddress, haddress, ETHERNET_ADDRSIZE);
+    memory_copy(arptable[arptablecount].paddress, paddress, IPV4_ADDRSIZE);
 
     arptablecount++;
 
@@ -27,9 +56,9 @@ static void addarpentry(unsigned char *hardwareaddress, unsigned char *protocola
 static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
 {
 
-    unsigned char protocoladdress[4] = {10, 0, 5, 5};
+    unsigned char paddress[IPV4_ADDRSIZE] = {10, 0, 5, 5};
 
-    addarpentry(interface->hardwareaddress, protocoladdress);
+    addarpentry(interface->haddress, paddress);
 
 }
 
@@ -68,24 +97,14 @@ static unsigned int arptablenode_read(struct system_node *self, struct service_s
 static unsigned int arphook_match(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength)
 {
 
-    return htype == 1 && hlength == 6 && ptype == ethernetprotocol.type && plength == 4;
+    return htype == 1 && hlength == ETHERNET_ADDRSIZE && ptype == ethernetprotocol.type && plength == IPV4_ADDRSIZE;
 
 }
 
-static unsigned char *arphook_gethardwareaddress(unsigned int count, void *protocoladdress)
+static unsigned char *arphook_lookup(unsigned int count, void *paddress)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < ARPTABLESIZE; i++)
-    {
-
-        if (memory_match(arptable[i].protocoladdress, protocoladdress, count))
-            return arptable[i].hardwareaddress;
-
-    }
-
-    return 0;
+    return (count == IPV4_ADDRSIZE) ? lookupentry(paddress) : 0;
 
 }
 
@@ -123,8 +142,8 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 void module_init(void)
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
-    arp_inithook(&arphook, arphook_match, arphook_gethardwareaddress);
+    ethernet_initprotocol(&ethernetprotocol, "ipv4", IPV4_PROTOCOL, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
+    arp_inithook(&arphook, arphook_match, arphook_lookup);
     system_initnode(&arptablenode, SYSTEM_NODETYPE_NORMAL, "arptable");
 
     arptablenode.read = arptablenode_read;
