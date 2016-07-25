@@ -80,6 +80,7 @@ void ethernet_registerinterface(struct ethernet_interface *interface, unsigned i
     resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&interface->root, &interface->data);
+    system_addchild(&interface->root, &interface->info);
     system_addchild(&root, &interface->root);
 
     interface->id = id;
@@ -103,6 +104,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
     resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->data);
+    system_removechild(&interface->root, &interface->info);
     system_removechild(&root, &interface->root);
     notifyremoveinterface(interface);
 
@@ -124,10 +126,12 @@ void ethernet_initinterface(struct ethernet_interface *interface, char *name, un
     system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    system_initnode(&interface->info, SYSTEM_NODETYPE_MAILBOX, "info");
 
     interface->send = send;
     interface->ctrl.resource = &interface->resource;
     interface->data.resource = &interface->resource;
+    interface->info.resource = &interface->resource;
 
 }
 

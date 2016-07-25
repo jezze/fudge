@@ -8,6 +8,7 @@ struct ethernet_interface
     struct system_node root;
     struct system_node ctrl;
     struct system_node data;
+    struct system_node info;
     unsigned int id;
     unsigned char haddress[ETHERNET_ADDRSIZE];
     unsigned int (*send)(unsigned int count, void *buffer);
