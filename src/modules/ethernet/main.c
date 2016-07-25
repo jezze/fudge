@@ -42,6 +42,15 @@ void ethernet_notify(struct ethernet_interface *interface, unsigned int count, v
 
 }
 
+static unsigned int interfaceaddr_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+{
+
+    struct ethernet_interface *interface = self->resource->data;
+
+    return memory_read(buffer, count, interface->haddress, ETHERNET_ADDRSIZE, state->offset);
+
+}
+
 static void notifyaddinterface(struct ethernet_interface *interface)
 {
 
@@ -80,7 +89,7 @@ void ethernet_registerinterface(struct ethernet_interface *interface, unsigned i
     resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&interface->root, &interface->data);
-    system_addchild(&interface->root, &interface->info);
+    system_addchild(&interface->root, &interface->addr);
     system_addchild(&root, &interface->root);
 
     interface->id = id;
@@ -104,7 +113,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
     resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->data);
-    system_removechild(&interface->root, &interface->info);
+    system_removechild(&interface->root, &interface->addr);
     system_removechild(&root, &interface->root);
     notifyremoveinterface(interface);
 
@@ -126,9 +135,10 @@ void ethernet_initinterface(struct ethernet_interface *interface, char *name, un
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name, &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
-    system_initresourcenode(&interface->info, SYSTEM_NODETYPE_MAILBOX, "info", &interface->resource);
+    system_initresourcenode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr", &interface->resource);
 
     interface->send = send;
+    interface->addr.read = interfaceaddr_read;
 
 }
 

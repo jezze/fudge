@@ -94,6 +94,13 @@ static unsigned int arptablenode_read(struct system_node *self, struct service_s
 
 }
 
+static unsigned int arptablenode_write(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+{
+
+    return memory_write(arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, buffer, count, state->offset);
+
+}
+
 static unsigned int arphook_match(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength)
 {
 
@@ -146,6 +153,7 @@ void module_init(void)
     system_initnode(&arptablenode, SYSTEM_NODETYPE_NORMAL, "arptable");
 
     arptablenode.read = arptablenode_read;
+    arptablenode.write = arptablenode_write;
 
 }
 
