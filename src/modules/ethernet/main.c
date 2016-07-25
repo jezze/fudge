@@ -123,15 +123,12 @@ void ethernet_initinterface(struct ethernet_interface *interface, char *name, un
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name);
-    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
-    system_initnode(&interface->info, SYSTEM_NODETYPE_MAILBOX, "info");
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name, &interface->resource);
+    system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
+    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
+    system_initresourcenode(&interface->info, SYSTEM_NODETYPE_MAILBOX, "info", &interface->resource);
 
     interface->send = send;
-    interface->ctrl.resource = &interface->resource;
-    interface->data.resource = &interface->resource;
-    interface->info.resource = &interface->resource;
 
 }
 
@@ -139,14 +136,13 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);
-    system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    system_initresourcenode(&protocol->root, SYSTEM_NODETYPE_GROUP, name, &protocol->resource);
+    system_initresourcenode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data", &protocol->resource);
 
     protocol->type = type;
     protocol->addinterface = addinterface;
     protocol->removeinterface = removeinterface;
     protocol->notify = notify;
-    protocol->data.resource = &protocol->resource;
 
 }
 

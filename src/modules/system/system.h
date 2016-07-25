@@ -40,3 +40,4 @@ void system_unregisternode(struct system_node *node);
 void system_initbackend(struct service_backend *backend);
 void system_initprotocol(struct service_protocol *protocol);
 void system_initnode(struct system_node *node, unsigned int type, char *name);
+void system_initresourcenode(struct system_node *node, unsigned int type, char *name, struct resource *resource);

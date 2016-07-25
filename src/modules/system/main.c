@@ -158,6 +158,15 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
 }
 
+void system_initresourcenode(struct system_node *node, unsigned int type, char *name, struct resource *resource)
+{
+
+    system_initnode(node, type, name);
+
+    node->resource = resource;
+
+}
+
 void module_init(void)
 {
 

@@ -45,12 +45,11 @@ void audio_initinterface(struct audio_interface *interface, unsigned int (*rdata
 {
 
     resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "audio");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "audio", &interface->resource);
+    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
 
     interface->rdata = rdata;
     interface->wdata = wdata;
-    interface->data.resource = &interface->resource;
     interface->data.read = interfacedata_read;
     interface->data.write = interfacedata_write;
 

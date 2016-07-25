@@ -34,10 +34,8 @@ void mouse_initinterface(struct mouse_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "mouse");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
-
-    interface->data.resource = &interface->resource;
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "mouse", &interface->resource);
+    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
 
 }
 

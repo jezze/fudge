@@ -39,12 +39,11 @@ void block_initinterface(struct block_interface *interface, unsigned int (*rdata
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "block");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "block", &interface->resource);
+    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
 
     interface->rdata = rdata;
     interface->wdata = wdata;
-    interface->data.resource = &interface->resource;
     interface->data.read = interfacedata_read;
 
 }

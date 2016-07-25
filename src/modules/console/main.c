@@ -55,14 +55,12 @@ void console_initinterface(struct console_interface *interface, unsigned int (*s
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "console");
-    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "console", &interface->resource);
+    system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
+    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
 
     interface->send = send;
-    interface->ctrl.resource = &interface->resource;
     interface->ctrl.read = interfacectrl_read;
-    interface->data.resource = &interface->resource;
     interface->data.write = interfacedata_write;
 
 }

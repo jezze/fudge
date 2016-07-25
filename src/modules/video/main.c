@@ -89,23 +89,20 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "video");
-    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
-    system_initnode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "video", &interface->resource);
+    system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
+    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
+    system_initresourcenode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap", &interface->resource);
 
     interface->setmode = setmode;
     interface->rdata = rdata;
     interface->wdata = wdata;
     interface->rcolormap = rcolormap;
     interface->wcolormap = wcolormap;
-    interface->ctrl.resource = &interface->resource;
     interface->ctrl.read = interfacectrl_read;
     interface->ctrl.write = interfacectrl_write;
-    interface->data.resource = &interface->resource;
     interface->data.read = interfacedata_read;
     interface->data.write = interfacedata_write;
-    interface->colormap.resource = &interface->resource;
     interface->colormap.read = interfacecolormap_read;
     interface->colormap.write = interfacecolormap_write;
 

@@ -114,11 +114,11 @@ void clock_initinterface(struct clock_interface *interface, unsigned char (*gets
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "clock");
-    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp");
-    system_initnode(&interface->date, SYSTEM_NODETYPE_NORMAL, "date");
-    system_initnode(&interface->time, SYSTEM_NODETYPE_NORMAL, "time");
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "clock", &interface->resource);
+    system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
+    system_initresourcenode(&interface->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp", &interface->resource);
+    system_initresourcenode(&interface->date, SYSTEM_NODETYPE_NORMAL, "date", &interface->resource);
+    system_initresourcenode(&interface->time, SYSTEM_NODETYPE_NORMAL, "time", &interface->resource);
 
     interface->getseconds = getseconds;
     interface->getminutes = getminutes;
@@ -127,13 +127,9 @@ void clock_initinterface(struct clock_interface *interface, unsigned char (*gets
     interface->getday = getday;
     interface->getmonth = getmonth;
     interface->getyear = getyear;
-    interface->ctrl.resource = &interface->resource;
     interface->ctrl.read = interfacectrl_read;
-    interface->timestamp.resource = &interface->resource;
     interface->timestamp.read = interfacetimestamp_read;
-    interface->date.resource = &interface->resource;
     interface->date.read = interfacedate_read;
-    interface->time.resource = &interface->resource;
     interface->time.read = interfacetime_read;
 
 }

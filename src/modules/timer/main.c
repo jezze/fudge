@@ -34,10 +34,8 @@ void timer_initinterface(struct timer_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "timer");
-    system_initnode(&interface->sleep, SYSTEM_NODETYPE_MAILBOX, "sleep");
-
-    interface->sleep.resource = &interface->resource;
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "timer", &interface->resource);
+    system_initresourcenode(&interface->sleep, SYSTEM_NODETYPE_MAILBOX, "sleep", &interface->resource);
 
 }
 
