@@ -51,38 +51,6 @@ static unsigned int interfaceaddr_read(struct system_node *self, struct service_
 
 }
 
-static void notifyaddinterface(struct ethernet_interface *interface)
-{
-
-    struct resource *current = 0;
-
-    while ((current = resource_findtype(current, RESOURCE_ETHERNETPROTOCOL)))
-    {
-
-        struct ethernet_protocol *protocol = current->data;
-
-        protocol->addinterface(interface);
-
-    }
-
-}
-
-static void notifyremoveinterface(struct ethernet_interface *interface)
-{
-
-    struct resource *current = 0;
-
-    while ((current = resource_findtype(current, RESOURCE_ETHERNETPROTOCOL)))
-    {
-
-        struct ethernet_protocol *protocol = current->data;
-
-        protocol->removeinterface(interface);
-
-    }
-
-}
-
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id)
 {
 
@@ -93,8 +61,6 @@ void ethernet_registerinterface(struct ethernet_interface *interface, unsigned i
     system_addchild(&root, &interface->root);
 
     interface->id = id;
-
-    notifyaddinterface(interface);
 
 }
 
@@ -115,7 +81,6 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
     system_removechild(&interface->root, &interface->data);
     system_removechild(&interface->root, &interface->addr);
     system_removechild(&root, &interface->root);
-    notifyremoveinterface(interface);
 
 }
 
@@ -128,11 +93,11 @@ void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, char *name, unsigned int (*send)(unsigned int count, void *buffer))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (*send)(unsigned int count, void *buffer))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
-    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, name, &interface->resource);
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
     system_initresourcenode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr", &interface->resource);
@@ -142,7 +107,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, char *name, un
 
 }
 
-void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*addinterface)(struct ethernet_interface *interface), void (*removeinterface)(struct ethernet_interface *interface), void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);
@@ -150,8 +115,6 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
     system_initresourcenode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data", &protocol->resource);
 
     protocol->type = type;
-    protocol->addinterface = addinterface;
-    protocol->removeinterface = removeinterface;
     protocol->notify = notify;
 
 }

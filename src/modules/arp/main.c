@@ -32,16 +32,6 @@ unsigned int arp_writeheader(unsigned short htype, unsigned char hlength, unsign
 
 }
 
-static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
-{
-
-}
-
-static void ethernetprotocol_removeinterface(struct ethernet_interface *interface)
-{
-
-}
-
 static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
 {
 
@@ -74,7 +64,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
         {
 
         case ARP_REQUEST:
-            haddress = hook->lookup(header->plength, data + header->hlength + header->plength + header->hlength);
+            haddress = hook->lookup(data + header->hlength + header->plength + header->hlength);
 
             if (!haddress)
                 continue;
@@ -108,7 +98,7 @@ void arp_unregisterhook(struct arp_hook *hook)
 
 }
 
-void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength), unsigned char *(*lookup)(unsigned int count, void *paddress))
+void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength), unsigned char *(*lookup)(void *paddress))
 {
 
     list_inititem(&hook->item, hook);
@@ -121,7 +111,7 @@ void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned short ht
 void module_init(void)
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "arp", ARP_PROTOCOL, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "arp", ARP_PROTOCOL, ethernetprotocol_notify);
 
 }
 

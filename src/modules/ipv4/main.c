@@ -11,7 +11,6 @@
 static struct ethernet_protocol ethernetprotocol;
 static struct arp_hook arphook;
 static struct ipv4_arpentry arptable[ARPTABLESIZE];
-static unsigned int arptablecount;
 static struct system_node arptablenode;
 
 unsigned int ipv4_writeheader(unsigned char *sip, unsigned char *tip, void *buffer)
@@ -23,47 +22,6 @@ unsigned int ipv4_writeheader(unsigned char *sip, unsigned char *tip, void *buff
     memory_copy(header->tip, tip, IPV4_ADDRSIZE);
 
     return sizeof (struct ipv4_header);
-
-}
-
-static unsigned char *lookupentry(void *paddress)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < arptablecount; i++)
-    {
-
-        if (memory_match(arptable[i].paddress, paddress, IPV4_ADDRSIZE))
-            return arptable[i].haddress;
-
-    }
-
-    return 0;
-
-}
-
-static void addarpentry(unsigned char *haddress, unsigned char *paddress)
-{
-
-    memory_copy(arptable[arptablecount].haddress, haddress, ETHERNET_ADDRSIZE);
-    memory_copy(arptable[arptablecount].paddress, paddress, IPV4_ADDRSIZE);
-
-    arptablecount++;
-
-}
-
-static void ethernetprotocol_addinterface(struct ethernet_interface *interface)
-{
-
-    unsigned char paddress[IPV4_ADDRSIZE] = {10, 0, 5, 5};
-
-    addarpentry(interface->haddress, paddress);
-
-}
-
-static void ethernetprotocol_removeinterface(struct ethernet_interface *interface)
-{
 
 }
 
@@ -108,10 +66,20 @@ static unsigned int arphook_match(unsigned short htype, unsigned char hlength, u
 
 }
 
-static unsigned char *arphook_lookup(unsigned int count, void *paddress)
+static unsigned char *arphook_lookup(void *paddress)
 {
 
-    return (count == IPV4_ADDRSIZE) ? lookupentry(paddress) : 0;
+    unsigned int i;
+
+    for (i = 0; i < ARPTABLESIZE; i++)
+    {
+
+        if (memory_match(arptable[i].paddress, paddress, IPV4_ADDRSIZE))
+            return arptable[i].haddress;
+
+    }
+
+    return 0;
 
 }
 
@@ -148,7 +116,7 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 void module_init(void)
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "ipv4", IPV4_PROTOCOL, ethernetprotocol_addinterface, ethernetprotocol_removeinterface, ethernetprotocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "ipv4", IPV4_PROTOCOL, ethernetprotocol_notify);
     arp_inithook(&arphook, arphook_match, arphook_lookup);
     system_initnode(&arptablenode, SYSTEM_NODETYPE_NORMAL, "arptable");
 

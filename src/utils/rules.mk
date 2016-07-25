@@ -17,6 +17,7 @@ BIN_UTILS:=\
     $(DIR_SRC)/utils/initfs \
     $(DIR_SRC)/utils/init \
     $(DIR_SRC)/utils/initmod \
+    $(DIR_SRC)/utils/ipsetup \
     $(DIR_SRC)/utils/keymapse \
     $(DIR_SRC)/utils/keymapus \
     $(DIR_SRC)/utils/lsc \
@@ -53,6 +54,7 @@ OBJ_UTILS:=\
     $(DIR_SRC)/utils/initfs.o \
     $(DIR_SRC)/utils/init.o \
     $(DIR_SRC)/utils/initmod.o \
+    $(DIR_SRC)/utils/ipsetup.o \
     $(DIR_SRC)/utils/keymapse.o \
     $(DIR_SRC)/utils/keymapus.o \
     $(DIR_SRC)/utils/lsc.o \
