@@ -27,3 +27,12 @@
 /bin/elfload < /mod/pipe.ko.6
 /bin/elfload < /mod/pipe.ko.7
 /bin/elfload < /mod/mtwist.ko
+/bin/elfload < /mod/con.ko
+/bin/elfload < /mod/con.ko.0
+/bin/elfload < /mod/con.ko.1
+/bin/elfload < /mod/con.ko.2
+/bin/elfload < /mod/con.ko.3
+/bin/elfload < /mod/con.ko.4
+/bin/elfload < /mod/con.ko.5
+/bin/elfload < /mod/con.ko.6
+/bin/elfload < /mod/con.ko.7

@@ -4,6 +4,15 @@ MOD:=\
     $(DIR_SRC)/modules/base/base.ko \
     $(DIR_SRC)/modules/block/block.ko \
     $(DIR_SRC)/modules/clock/clock.ko \
+    $(DIR_SRC)/modules/con/con.ko \
+    $(DIR_SRC)/modules/con/con.ko.0 \
+    $(DIR_SRC)/modules/con/con.ko.1 \
+    $(DIR_SRC)/modules/con/con.ko.2 \
+    $(DIR_SRC)/modules/con/con.ko.3 \
+    $(DIR_SRC)/modules/con/con.ko.4 \
+    $(DIR_SRC)/modules/con/con.ko.5 \
+    $(DIR_SRC)/modules/con/con.ko.6 \
+    $(DIR_SRC)/modules/con/con.ko.7 \
     $(DIR_SRC)/modules/console/console.ko \
     $(DIR_SRC)/modules/ethernet/ethernet.ko \
     $(DIR_SRC)/modules/event/event.ko \
@@ -35,6 +44,8 @@ OBJ_MOD:=\
     $(DIR_SRC)/modules/base/main.o \
     $(DIR_SRC)/modules/block/main.o \
     $(DIR_SRC)/modules/clock/main.o \
+    $(DIR_SRC)/modules/con/main.o \
+    $(DIR_SRC)/modules/con/node.o \
     $(DIR_SRC)/modules/console/main.o \
     $(DIR_SRC)/modules/ethernet/main.o \
     $(DIR_SRC)/modules/event/main.o \
@@ -48,13 +59,6 @@ OBJ_MOD:=\
     $(DIR_SRC)/modules/null/main.o \
     $(DIR_SRC)/modules/pipe/main.o \
     $(DIR_SRC)/modules/pipe/node.o \
-    $(DIR_SRC)/modules/pipe/node.o \
-    $(DIR_SRC)/modules/pipe/node.o \
-    $(DIR_SRC)/modules/pipe/node.o \
-    $(DIR_SRC)/modules/pipe/node.o \
-    $(DIR_SRC)/modules/pipe/node.o \
-    $(DIR_SRC)/modules/pipe/node.o \
-    $(DIR_SRC)/modules/pipe/node.o \
     $(DIR_SRC)/modules/system/main.o $(DIR_SRC)/modules/system/backend.o $(DIR_SRC)/modules/system/protocol.o \
     $(DIR_SRC)/modules/timer/main.o \
     $(DIR_SRC)/modules/udp/main.o \
@@ -65,6 +69,15 @@ $(DIR_SRC)/modules/audio/audio.ko: $(DIR_SRC)/modules/audio/main.o $(DIR_SRC)/fu
 $(DIR_SRC)/modules/base/base.ko: $(DIR_SRC)/modules/base/main.o $(DIR_SRC)/fudge/fudge.a
 $(DIR_SRC)/modules/block/block.ko: $(DIR_SRC)/modules/block/main.o $(DIR_SRC)/fudge/fudge.a
 $(DIR_SRC)/modules/clock/clock.ko: $(DIR_SRC)/modules/clock/main.o $(DIR_SRC)/fudge/fudge.a
+$(DIR_SRC)/modules/con/con.ko: $(DIR_SRC)/modules/con/main.o $(DIR_SRC)/fudge/fudge.a
+$(DIR_SRC)/modules/con/con.ko.0: $(DIR_SRC)/modules/con/node.o $(DIR_SRC)/fudge/fudge.a
+$(DIR_SRC)/modules/con/con.ko.1: $(DIR_SRC)/modules/con/node.o $(DIR_SRC)/fudge/fudge.a
+$(DIR_SRC)/modules/con/con.ko.2: $(DIR_SRC)/modules/con/node.o $(DIR_SRC)/fudge/fudge.a
+$(DIR_SRC)/modules/con/con.ko.3: $(DIR_SRC)/modules/con/node.o $(DIR_SRC)/fudge/fudge.a
+$(DIR_SRC)/modules/con/con.ko.4: $(DIR_SRC)/modules/con/node.o $(DIR_SRC)/fudge/fudge.a
+$(DIR_SRC)/modules/con/con.ko.5: $(DIR_SRC)/modules/con/node.o $(DIR_SRC)/fudge/fudge.a
+$(DIR_SRC)/modules/con/con.ko.6: $(DIR_SRC)/modules/con/node.o $(DIR_SRC)/fudge/fudge.a
+$(DIR_SRC)/modules/con/con.ko.7: $(DIR_SRC)/modules/con/node.o $(DIR_SRC)/fudge/fudge.a
 $(DIR_SRC)/modules/console/console.ko: $(DIR_SRC)/modules/console/main.o $(DIR_SRC)/fudge/fudge.a
 $(DIR_SRC)/modules/ethernet/ethernet.ko: $(DIR_SRC)/modules/ethernet/main.o $(DIR_SRC)/fudge/fudge.a
 $(DIR_SRC)/modules/event/event.ko: $(DIR_SRC)/modules/event/main.o $(DIR_SRC)/fudge/fudge.a
