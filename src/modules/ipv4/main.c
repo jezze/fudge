@@ -29,6 +29,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 {
 
     struct ipv4_header *header = buffer;
+    unsigned short length = (header->length[0] << 8) | header->length[1];
     struct resource *current = 0;
 
     while ((current = resource_findtype(current, RESOURCE_IPV4PROTOCOL)))
@@ -37,7 +38,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
         struct ipv4_protocol *protocol = current->data;
 
         if (protocol->id == header->protocol)
-            protocol->notify(interface, count, header);
+            protocol->notify(interface, length - sizeof (struct ipv4_header), header + 1);
 
     }
 
