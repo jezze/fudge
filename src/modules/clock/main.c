@@ -3,6 +3,7 @@
 #include <modules/system/system.h>
 #include "clock.h"
 
+static struct system_node root;
 static unsigned int dotm365[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 static unsigned int dotm366[13] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365};
 
@@ -92,7 +93,7 @@ void clock_registerinterface(struct clock_interface *interface, unsigned int id)
     system_addchild(&interface->root, &interface->timestamp);
     system_addchild(&interface->root, &interface->date);
     system_addchild(&interface->root, &interface->time);
-    system_registernode(&interface->root);
+    system_addchild(&root, &interface->root);
 
     interface->id = id;
 
@@ -106,7 +107,7 @@ void clock_unregisterinterface(struct clock_interface *interface)
     system_removechild(&interface->root, &interface->timestamp);
     system_removechild(&interface->root, &interface->date);
     system_removechild(&interface->root, &interface->time);
-    system_unregisternode(&interface->root);
+    system_removechild(&root, &interface->root);
 
 }
 
@@ -114,7 +115,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned char (*gets
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
-    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "clock", &interface->resource);
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
     system_initresourcenode(&interface->timestamp, SYSTEM_NODETYPE_NORMAL, "timestamp", &interface->resource);
     system_initresourcenode(&interface->date, SYSTEM_NODETYPE_NORMAL, "date", &interface->resource);
@@ -131,6 +132,27 @@ void clock_initinterface(struct clock_interface *interface, unsigned char (*gets
     interface->timestamp.read = interfacetimestamp_read;
     interface->date.read = interfacedate_read;
     interface->time.read = interfacetime_read;
+
+}
+
+void module_init(void)
+{
+
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "clock");
+
+}
+
+void module_register(void)
+{
+
+    system_registernode(&root);
+
+}
+
+void module_unregister(void)
+{
+
+    system_unregisternode(&root);
 
 }
 

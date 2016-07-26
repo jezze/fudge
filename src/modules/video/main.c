@@ -3,6 +3,8 @@
 #include <modules/system/system.h>
 #include "video.h"
 
+static struct system_node root;
+
 static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
 {
 
@@ -68,7 +70,7 @@ void video_registerinterface(struct video_interface *interface, unsigned int id)
     system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&interface->root, &interface->data);
     system_addchild(&interface->root, &interface->colormap);
-    system_registernode(&interface->root);
+    system_addchild(&root, &interface->root);
 
     interface->id = id;
 
@@ -81,7 +83,7 @@ void video_unregisterinterface(struct video_interface *interface)
     system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->data);
     system_removechild(&interface->root, &interface->colormap);
-    system_unregisternode(&interface->root);
+    system_removechild(&root, &interface->root);
 
 }
 
@@ -89,7 +91,7 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "video", &interface->resource);
+    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
     system_initresourcenode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap", &interface->resource);
@@ -105,6 +107,27 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
     interface->data.write = interfacedata_write;
     interface->colormap.read = interfacecolormap_read;
     interface->colormap.write = interfacecolormap_write;
+
+}
+
+void module_init(void)
+{
+
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "video");
+
+}
+
+void module_register(void)
+{
+
+    system_registernode(&root);
+
+}
+
+void module_unregister(void)
+{
+
+    system_unregisternode(&root);
 
 }
 

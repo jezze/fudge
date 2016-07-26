@@ -82,7 +82,7 @@ void main(void)
     struct ctrl_videosettings settings;
 
     ctrl_setvideosettings(&settings, 320, 200, 8);
-    call_walk(CALL_L0, CALL_PR, 15, "system/video:0/");
+    call_walk(CALL_L0, CALL_PR, 18, "system/video/if:0/");
     call_walk(CALL_L1, CALL_L0, 4, "ctrl");
     call_open(CALL_L1);
     file_writeall(CALL_L1, &settings, sizeof (struct ctrl_videosettings));
