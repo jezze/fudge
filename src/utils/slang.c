@@ -8,16 +8,6 @@
 #define TOKENOUT                        5
 #define TOKENPIPE                       6
 
-static unsigned int walk_path(unsigned int index, unsigned int indexw, unsigned int count, char *buffer)
-{
-
-    if (memory_match(buffer, "/", 1))
-        return call_walk(index, CALL_PR, count - 1, buffer + 1);
-
-    return call_walk(index, indexw, count, buffer);
-
-}
-
 struct token
 {
 
@@ -268,7 +258,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_CI, CALL_PW, ascii_length(t->str), t->str))
+            if (!file_walk(CALL_CI, t->str))
                 return;
 
             break;
@@ -279,7 +269,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_CO, CALL_PW, ascii_length(t->str), t->str))
+            if (!file_walk(CALL_CO, t->str))
                 return;
 
             break;
@@ -290,15 +280,15 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_CP, CALL_L0, ascii_length(t->str), t->str))
+            if (!(file_walk(CALL_CP, t->str) || file_walkfrom(CALL_CP, CALL_L0, t->str)))
                 return;
 
-            if (!call_walk(CALL_L1, CALL_PR, 18, "system/pipe/clone/"))
+            if (!file_walk(CALL_L1, "/system/pipe/clone/"))
                 return;
 
-            call_walk(CALL_CO, CALL_L1, 1, "0");
+            file_walkfrom(CALL_CO, CALL_L1, "0");
             call_spawn();
-            call_walk(CALL_CI, CALL_L1, 1, "1");
+            file_walkfrom(CALL_CI, CALL_L1, "1");
 
             break;
 
@@ -308,12 +298,12 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!walk_path(CALL_CP, CALL_L0, ascii_length(t->str), t->str))
+            if (!(file_walk(CALL_CP, t->str) || file_walkfrom(CALL_CP, CALL_L0, t->str)))
                 return;
 
-            call_walk(CALL_CO, CALL_PO, 0, 0);
+            file_duplicate(CALL_CO, CALL_PO);
             call_spawn();
-            call_walk(CALL_CI, CALL_PI, 0, 0);
+            file_duplicate(CALL_CI, CALL_PI);
 
             break;
 
@@ -342,7 +332,7 @@ void main(void)
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
 
-    if (!call_walk(CALL_L0, CALL_PR, 4, "bin/"))
+    if (!file_walk(CALL_L0, "/bin/"))
         return;
 
     file_open(CALL_PI);

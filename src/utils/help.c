@@ -4,10 +4,10 @@
 void main(void)
 {
 
-    if (!call_walk(CALL_CP, CALL_PR, 8, "bin/echo"))
+    if (!file_walk(CALL_CP, "/bin/echo"))
         return;
 
-    if (!call_walk(CALL_CI, CALL_PR, 14, "share/help.txt"))
+    if (!file_walk(CALL_CI, "/share/help.txt"))
         return;
 
     call_spawn();

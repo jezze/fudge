@@ -7,10 +7,10 @@ void main(void)
     unsigned char date[FUDGE_BSIZE];
     unsigned char time[FUDGE_BSIZE];
 
-    if (!call_walk(CALL_L0, CALL_PR, 21, "system/clock/rtc/date"))
+    if (!file_walk(CALL_L0, "/system/clock/rtc/date"))
         return;
 
-    if (!call_walk(CALL_L1, CALL_PR, 21, "system/clock/rtc/time"))
+    if (!file_walk(CALL_L1, "/system/clock/rtc/time"))
         return;
 
     file_open(CALL_PO);

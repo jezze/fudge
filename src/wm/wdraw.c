@@ -518,7 +518,7 @@ static void render(void)
 
     unsigned int line;
 
-    call_walk(CALL_L0, CALL_PO, 4, "data");
+    file_walkfrom(CALL_L0, CALL_PO, "data");
     file_open(CALL_L0);
 
     for (line = 0; line < settings.h; line++)
@@ -563,7 +563,7 @@ void main(void)
 
     ctrl_setvideosettings(&settings, 1920, 1080, 32);
 
-    if (!call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf"))
+    if (!file_walk(CALL_L0, "/share/ter-118n.pcf"))
         return;
 
     file_open(CALL_L0);
@@ -573,7 +573,7 @@ void main(void)
     fontbitmapdata = pcf_getbitmapdata(fontdata);
     fontpadding = pcf_getpadding(fontdata);
 
-    if (!call_walk(CALL_L0, CALL_PO, 4, "ctrl"))
+    if (!file_walkfrom(CALL_L0, CALL_PO, "ctrl"))
         return;
 
     file_open(CALL_L0);
@@ -585,7 +585,7 @@ void main(void)
     if (settings.bpp == 8)
     {
 
-        if (!call_walk(CALL_L0, CALL_PO, 8, "colormap"))
+        if (!file_walkfrom(CALL_L0, CALL_PO, "colormap"))
             return;
 
         file_open(CALL_L0);
@@ -624,7 +624,7 @@ void main(void)
 
     file_close(CALL_PI);
 
-    if (!call_walk(CALL_L0, CALL_PO, 4, "ctrl"))
+    if (!file_walkfrom(CALL_L0, CALL_PO, "ctrl"))
         return;
 
     file_open(CALL_L0);

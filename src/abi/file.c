@@ -2,6 +2,32 @@
 #include <fudge.h>
 #include "file.h"
 
+unsigned int file_walk(unsigned int id, char *path)
+{
+
+    return (path[0] == '/') ? file_walkfrom(id, CALL_PR, path + 1) : file_walkfrom(id, CALL_PW, path);
+
+}
+
+unsigned int file_walkfrom(unsigned int id, unsigned int root, char *path)
+{
+
+    unsigned int count = 0;
+
+    while (path[count] != '\0')
+        count++;
+
+    return call_walk(id, root, count, path);
+
+}
+
+unsigned int file_duplicate(unsigned int id, unsigned int root)
+{
+
+    return call_walk(id, root, 0, 0);
+
+}
+
 unsigned int file_open(unsigned int id)
 {
 

@@ -4,7 +4,7 @@
 void main(void)
 {
 
-    if (!call_walk(CALL_L0, CALL_PR, 12, "system/reset"))
+    if (!file_walk(CALL_L0, "/system/reset"))
         return;
 
     file_open(CALL_PO);

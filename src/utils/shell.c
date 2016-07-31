@@ -11,21 +11,16 @@ static void interpret(struct buffer *buffer)
     if (memory_match(command, "cd ", 3))
     {
 
-        unsigned int ok;
-
         if (count < 4)
             return;
 
-        if (command[3] == '/')
-            ok = call_walk(CALL_L1, CALL_PR, count - 5, command + 4);
-        else
-            ok = call_walk(CALL_L1, CALL_PW, count - 4, command + 3);
+        command[count - 1] = '\0';
 
-        if (ok)
+        if (file_walk(CALL_L1, command + 3))
         {
 
-            call_walk(CALL_PW, CALL_L1, 0, 0);
-            call_walk(CALL_CW, CALL_L1, 0, 0);
+            file_duplicate(CALL_PW, CALL_L1);
+            file_duplicate(CALL_CW, CALL_L1);
 
         }
 
@@ -33,14 +28,14 @@ static void interpret(struct buffer *buffer)
 
     }
 
-    if (!call_walk(CALL_CP, CALL_PR, 9, "bin/slang"))
+    if (!file_walk(CALL_CP, "/bin/slang"))
         return;
 
-    if (!call_walk(CALL_L0, CALL_PR, 18, "system/pipe/clone/"))
+    if (!file_walk(CALL_L0, "/system/pipe/clone/"))
         return;
 
-    call_walk(CALL_L1, CALL_L0, 1, "0");
-    call_walk(CALL_CI, CALL_L0, 1, "1");
+    file_walkfrom(CALL_L1, CALL_L0, "0");
+    file_walkfrom(CALL_CI, CALL_L0, "1");
     file_open(CALL_L1);
     file_writeall(CALL_L1, command, count);
     file_close(CALL_L1);

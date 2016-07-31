@@ -4,15 +4,15 @@
 void main(void)
 {
 
-    if (!call_walk(CALL_CP, CALL_PR, 8, "bin/echo"))
+    if (!file_walk(CALL_CP, "/bin/echo"))
         return;
 
-    if (!call_walk(CALL_CI, CALL_PI + 0, 0, 0))
+    if (!file_duplicate(CALL_CI, CALL_PI + 0))
         return;
 
     call_spawn();
 
-    if (!call_walk(CALL_CI, CALL_PI + 1, 0, 0))
+    if (!file_duplicate(CALL_CI, CALL_PI + 1))
         return;
 
     call_spawn();

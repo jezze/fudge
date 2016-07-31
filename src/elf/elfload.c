@@ -115,9 +115,9 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
     char module[32];
 
     offset += memory_write(module, 32, symbolname, length, offset);
-    offset += memory_write(module, 32, ".ko", 3, offset);
+    offset += memory_write(module, 32, ".ko", 4, offset);
 
-    if (!call_walk(CALL_L2, CALL_L1, offset, module))
+    if (!file_walkfrom(CALL_L2, CALL_L1, module))
         return 0;
 
     file_open(CALL_L2);
@@ -235,10 +235,10 @@ static unsigned int resolve(unsigned int id)
 void main(void)
 {
 
-    if (!call_walk(CALL_L0, CALL_PR, 9, "bin/fudge"))
+    if (!file_walk(CALL_L0, "/bin/fudge"))
         return;
 
-    if (!call_walk(CALL_L1, CALL_PR, 4, "mod/"))
+    if (!file_walk(CALL_L1, "/mod/"))
         return;
 
     file_open(CALL_PI);

@@ -4,7 +4,7 @@
 void main(void)
 {
 
-    if (!call_walk(CALL_L0, CALL_PR, 7, "system/"))
+    if (!file_walk(CALL_L0, "/system/"))
         return;
 
     call_auth(CALL_L1, 2000);

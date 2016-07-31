@@ -7,10 +7,10 @@ void main(void)
     unsigned char mac[6];
     unsigned char ip[4] = {10, 0, 5, 5};
 
-    if (!call_walk(CALL_L0, CALL_PR, 25, "system/ethernet/if:0/addr"))
+    if (!file_walk(CALL_L0, "/system/ethernet/if:0/addr"))
         return;
 
-    if (!call_walk(CALL_L1, CALL_PR, 29, "system/ethernet/ipv4/arptable"))
+    if (!file_walk(CALL_L1, "/system/ethernet/ipv4/arptable"))
         return;
 
     file_open(CALL_L0);

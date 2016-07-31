@@ -1,3 +1,6 @@
+unsigned int file_walk(unsigned int id, char *path);
+unsigned int file_walkfrom(unsigned int id, unsigned int root, char *path);
+unsigned int file_duplicate(unsigned int id, unsigned int root);
 unsigned int file_open(unsigned int id);
 unsigned int file_close(unsigned int id);
 unsigned int file_read(unsigned int id, void *buffer, unsigned int count);

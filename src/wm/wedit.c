@@ -229,7 +229,7 @@ void main(void)
     handlers[EVENT_WMSHOW] = onwmshow;
     handlers[EVENT_WMHIDE] = onwmhide;
 
-    if (!call_walk(CALL_L0, CALL_PR, 17, "system/event/poll"))
+    if (!file_walk(CALL_L0, "/system/event/poll"))
         return;
 
     file_open(CALL_PO);

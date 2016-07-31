@@ -106,21 +106,16 @@ static void interpret(void)
     if (memory_match(command, "cd ", 3))
     {
 
-        unsigned int ok;
-
         if (count < 4)
             return;
 
-        if (command[3] == '/')
-            ok = call_walk(CALL_L1, CALL_PR, count - 5, command + 4);
-        else
-            ok = call_walk(CALL_L1, CALL_PW, count - 4, command + 3);
+        command[count - 1] = '\0';
 
-        if (ok)
+        if (file_walk(CALL_L1, command + 3))
         {
 
-            call_walk(CALL_PW, CALL_L1, 0, 0);
-            call_walk(CALL_CW, CALL_L1, 0, 0);
+            file_duplicate(CALL_PW, CALL_L1);
+            file_duplicate(CALL_CW, CALL_L1);
 
         }
 
@@ -128,15 +123,15 @@ static void interpret(void)
 
     }
 
-    if (!call_walk(CALL_CP, CALL_PR, 9, "bin/slang"))
+    if (!file_walk(CALL_CP, "/bin/slang"))
         return;
 
-    if (!call_walk(CALL_L1, CALL_PR, 18, "system/pipe/clone/"))
+    if (!file_walk(CALL_L1, "/system/pipe/clone/"))
         return;
 
-    call_walk(CALL_L2, CALL_L1, 1, "0");
-    call_walk(CALL_CI, CALL_L1, 1, "1");
-    call_walk(CALL_CO, CALL_L1, 1, "1");
+    file_walkfrom(CALL_L2, CALL_L1, "0");
+    file_walkfrom(CALL_CI, CALL_L1, "1");
+    file_walkfrom(CALL_CO, CALL_L1, "1");
     file_open(CALL_L2);
     file_writeall(CALL_L2, command, count);
     file_close(CALL_L2);
@@ -280,7 +275,7 @@ void main(void)
     handlers[EVENT_WMSHOW] = onwmshow;
     handlers[EVENT_WMHIDE] = onwmhide;
 
-    if (!call_walk(CALL_L0, CALL_PR, 17, "system/event/poll"))
+    if (!file_walk(CALL_L0, "/system/event/poll"))
         return;
 
     file_open(CALL_PO);

@@ -10,10 +10,10 @@ void main(void)
     if (!count)
         return;
 
-    if (!call_walk(CALL_L0, CALL_PR, 18, "system/timer/clone"))
+    if (!file_walk(CALL_L0, "/system/timer/clone"))
         return;
 
-    if (call_walk(CALL_L1, CALL_L0, 8, "../sleep"))
+    if (file_walkfrom(CALL_L1, CALL_L0, "../sleep"))
     {
 
         file_open(CALL_L1);
