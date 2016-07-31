@@ -1,4 +1,4 @@
-/bin/wm
-/bin/wshell
-/bin/wshell
-/bin/wedit < /share/wm-man.txt
+wm
+wshell
+wshell
+wedit < /share/wm-man.txt
