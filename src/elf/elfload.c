@@ -91,21 +91,6 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
 
 }
 
-static unsigned int findkernelsymbol(unsigned int count, char *symbolname)
-{
-
-    unsigned int address;
-
-    file_open(CALL_L0);
-
-    address = findsymbol(CALL_L0, count, symbolname);
-
-    file_close(CALL_L0);
-
-    return address;
-
-}
-
 static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 {
 
@@ -162,7 +147,7 @@ static unsigned int resolvesymbols(unsigned int id, struct elf_sectionheader *re
         address = findmodulesymbol(count, symbolname);
 
         if (!address)
-            address = findkernelsymbol(count, symbolname);
+            address = findsymbol(CALL_L0, count, symbolname);
 
         if (!address)
             return 0;
@@ -242,10 +227,12 @@ void main(void)
         return;
 
     file_open(CALL_PI);
+    file_open(CALL_L0);
 
     if (resolve(CALL_PI))
         call_load(CALL_PI);
 
+    file_close(CALL_L0);
     file_close(CALL_PI);
 
 }
