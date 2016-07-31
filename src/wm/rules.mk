@@ -11,7 +11,8 @@ OBJ_WDRAW:=\
     $(DIR_SRC)/abi/abi.a \
 
 $(BIN_WDRAW): $(OBJ_WDRAW)
-	$(LD) -o $@ $(LDFLAGS) $^
+	@echo LD $@ 
+	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN_WEDIT:=\
     $(DIR_SRC)/wm/wedit \
@@ -26,7 +27,8 @@ OBJ_WEDIT:=\
     $(DIR_SRC)/abi/abi.a \
 
 $(BIN_WEDIT): $(OBJ_WEDIT)
-	$(LD) -o $@ $(LDFLAGS) $^
+	@echo LD $@ 
+	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN_WM:=\
     $(DIR_SRC)/wm/wm \
@@ -41,7 +43,8 @@ OBJ_WM:=\
     $(DIR_SRC)/abi/abi.a \
 
 $(BIN_WM): $(OBJ_WM)
-	$(LD) -o $@ $(LDFLAGS) $^
+	@echo LD $@ 
+	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN_WSHELL:=\
     $(DIR_SRC)/wm/wshell \
@@ -57,7 +60,8 @@ OBJ_WSHELL:=\
     $(DIR_SRC)/abi/abi.a \
 
 $(BIN_WSHELL): $(OBJ_WSHELL)
-	$(LD) -o $@ $(LDFLAGS) $^
+	@echo LD $@ 
+	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN_WTEXT:=\
     $(DIR_SRC)/wm/wtext \
@@ -71,7 +75,8 @@ OBJ_WTEXT:=\
     $(DIR_SRC)/abi/abi.a \
 
 $(BIN_WTEXT): $(OBJ_WTEXT)
-	$(LD) -o $@ $(LDFLAGS) $^
+	@echo LD $@ 
+	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN:=$(BIN) $(BIN_WDRAW) $(BIN_WEDIT) $(BIN_WM) $(BIN_WSHELL) $(BIN_WTEXT)
 OBJ:=$(OBJ) $(OBJ_WDRAW) $(OBJ_WEDIT) $(OBJ_WM) $(OBJ_WSHELL) $(OBJ_WTEXT)

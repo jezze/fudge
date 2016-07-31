@@ -78,7 +78,8 @@ OBJ_EXTRA:=\
     $(DIR_SRC)/fudge/fudge.a \
 
 $(BIN_UTILS): % : %.o $(OBJ_EXTRA)
-	$(LD) -o $@ $(LDFLAGS) $^
+	@echo LD $@ 
+	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN:=$(BIN) $(BIN_UTILS)
 OBJ:=$(OBJ) $(OBJ_UTILS) $(OBJ_EXTRA)

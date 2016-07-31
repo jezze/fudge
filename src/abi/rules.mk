@@ -6,7 +6,8 @@ OBJ_ABI:=\
 include $(DIR_SRC)/abi/$(ARCH)/rules.mk
 
 $(LIB_ABI): $(OBJ_ABI)
-	$(AR) $(ARFLAGS) $@ $^
+	@echo AR $@ 
+	@$(AR) $(ARFLAGS) $@ $^
 
 LIB:=$(LIB) $(LIB_ABI)
 OBJ:=$(OBJ) $(OBJ_ABI)

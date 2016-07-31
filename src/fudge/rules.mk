@@ -9,7 +9,8 @@ OBJ_FUDGE:=\
     $(DIR_SRC)/fudge/memory.o \
 
 $(LIB_FUDGE): $(OBJ_FUDGE)
-	$(AR) $(ARFLAGS) $@ $^
+	@echo AR $@ 
+	@$(AR) $(ARFLAGS) $@ $^
 
 LIB:=$(LIB) $(LIB_FUDGE)
 OBJ:=$(OBJ) $(OBJ_FUDGE)

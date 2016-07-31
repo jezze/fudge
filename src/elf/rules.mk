@@ -9,7 +9,8 @@ OBJ_ELFLOAD:=\
     $(DIR_SRC)/fudge/fudge.a \
 
 $(BIN_ELFLOAD): $(OBJ_ELFLOAD)
-	$(LD) -o $@ $(LDFLAGS) $^
+	@echo LD $@ 
+	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN_ELFUNLOAD:=\
     $(DIR_SRC)/elf/elfunload \
@@ -21,7 +22,8 @@ OBJ_ELFUNLOAD:=\
     $(DIR_SRC)/fudge/fudge.a \
 
 $(BIN_ELFUNLOAD): $(OBJ_ELFUNLOAD)
-	$(LD) -o $@ $(LDFLAGS) $^
+	@echo LD $@ 
+	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN:=$(BIN) $(BIN_ELFLOAD) $(BIN_ELFUNLOAD)
 OBJ:=$(OBJ) $(OBJ_ELFLOAD) $(OBJ_ELFUNLOAD)
