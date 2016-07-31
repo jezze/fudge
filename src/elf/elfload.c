@@ -16,6 +16,47 @@ static unsigned int readsectionheader(unsigned int id, struct elf_header *header
 
 }
 
+static unsigned int findvalue(unsigned int id, struct elf_header *header, struct elf_sectionheader *symbolheader, char *strings, unsigned int count, char *symbolname)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < symbolheader->size / symbolheader->esize; i++)
+    {
+
+        struct elf_symbol symbol;
+
+        if (!file_seekreadall(id, &symbol, symbolheader->esize, symbolheader->offset + i * symbolheader->esize))
+            return 0;
+
+        if (strings[symbol.name + count] != '\0' || !memory_match(symbolname, &strings[symbol.name], count))
+            continue;
+
+        if (header->type == ELF_TYPE_RELOCATABLE)
+        {
+
+            struct elf_sectionheader referenceheader;
+
+            if (!readsectionheader(id, header, symbol.shindex, &referenceheader))
+                return 0;
+
+            return referenceheader.address + referenceheader.offset + symbol.value;
+
+        }
+
+        else
+        {
+
+            return symbol.value;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbolname)
 {
 
@@ -34,7 +75,7 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
         struct elf_sectionheader symbolheader;
         struct elf_sectionheader stringheader;
         char strings[FUDGE_BSIZE];
-        unsigned int j;
+        unsigned int value;
 
         if (!readsectionheader(id, &header, i, &symbolheader))
             return 0;
@@ -51,39 +92,10 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
         if (!file_seekreadall(id, strings, stringheader.size, stringheader.offset))
             return 0;
 
-        for (j = 0; j < symbolheader.size / symbolheader.esize; j++)
-        {
+        value = findvalue(id, &header, &symbolheader, strings, count, symbolname);
 
-            struct elf_symbol symbol;
-
-            if (!file_seekreadall(id, &symbol, symbolheader.esize, symbolheader.offset + j * symbolheader.esize))
-                return 0;
-
-            if (strings[symbol.name + count] == '\0' && memory_match(symbolname, &strings[symbol.name], count))
-            {
-
-                if (header.type == ELF_TYPE_RELOCATABLE)
-                {
-
-                    struct elf_sectionheader referenceheader;
-
-                    if (!readsectionheader(id, &header, symbol.shindex, &referenceheader))
-                        return 0;
-
-                    return referenceheader.address + referenceheader.offset + symbol.value;
-
-                }
-
-                else
-                {
-
-                    return symbol.value;
-
-                }
-
-            }
-
-        }
+        if (value)
+            return value;
 
     }
 
