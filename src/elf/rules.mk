@@ -4,7 +4,6 @@ BIN_ELFLOAD:=\
 OBJ_ELFLOAD:=\
     $(DIR_SRC)/elf/elf.o \
     $(DIR_SRC)/elf/elfload.o \
-    $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 

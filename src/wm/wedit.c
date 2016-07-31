@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/file.h>
 #include "box.h"
 #include "element.h"
 #include "send.h"

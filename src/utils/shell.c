@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/file.h>
 
 static void interpret(struct buffer *buffer)
 {

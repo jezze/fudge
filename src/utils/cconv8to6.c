@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/file.h>
 
 static unsigned int convert(unsigned char *out, unsigned int ocount, unsigned char *in, unsigned int icount)
 {

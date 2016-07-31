@@ -2,6 +2,7 @@ LIB_ABI:=\
     $(DIR_SRC)/abi/abi.a \
 
 OBJ_ABI:=\
+    $(DIR_SRC)/abi/file.o \
 
 include $(DIR_SRC)/abi/$(ARCH)/rules.mk
 

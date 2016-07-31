@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/file.h>
 
 static unsigned int tab[256] = {
     0x00000000, 0x04C11DB7, 0x09823B6E, 0x0D4326D9, 0x130476DC, 0x17C56B6B, 0x1A864DB2, 0x1E475005,

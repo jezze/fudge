@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/file.h>
 
 #define F(x, y, z)                      (z ^ (x & (y ^ z)))
 #define G(x, y, z)                      (y ^ (z & (y ^ x)))

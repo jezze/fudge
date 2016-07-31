@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/file.h>
 
 #define fpshift                         10
 #define tofp(_a)                        ((_a) << fpshift)

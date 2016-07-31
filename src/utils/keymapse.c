@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/file.h>
 #include "keycode.h"
 
 static struct keyset map[256] = {

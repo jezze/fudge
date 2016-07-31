@@ -5,7 +5,6 @@ OBJ_WDRAW:=\
     $(DIR_SRC)/wm/wdraw.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
-    $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/format/pcf.o \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/abi/abi.a \
@@ -22,7 +21,6 @@ OBJ_WEDIT:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/send.o \
-    $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/abi/abi.a \
 
@@ -38,7 +36,6 @@ OBJ_WM:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/send.o \
-    $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/abi/abi.a \
 
@@ -55,7 +52,6 @@ OBJ_WSHELL:=\
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/send.o \
     $(DIR_SRC)/wm/keymap.o \
-    $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/abi/abi.a \
 
@@ -70,7 +66,6 @@ OBJ_WTEXT:=\
     $(DIR_SRC)/wm/wtext.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
-    $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/abi/abi.a \
 

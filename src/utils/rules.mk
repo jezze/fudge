@@ -74,7 +74,6 @@ OBJ_UTILS:=\
 
 OBJ_EXTRA:=\
     $(DIR_SRC)/abi/abi.a \
-    $(DIR_SRC)/lib/file.o \
     $(DIR_SRC)/fudge/fudge.a \
 
 $(BIN_UTILS): % : %.o $(OBJ_EXTRA)

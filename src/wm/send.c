@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/file.h>
 
 static void send(unsigned int descriptor, unsigned int destination, unsigned int type, unsigned int datacount, void *databuffer)
 {

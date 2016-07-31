@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <lib/file.h>
 #include "elf.h"
 
 static unsigned int readheader(unsigned int id, struct elf_header *header)
