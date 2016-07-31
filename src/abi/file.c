@@ -2,14 +2,14 @@
 #include <fudge.h>
 #include "file.h"
 
-unsigned int file_walk(unsigned int id, char *path)
+unsigned int file_walk(unsigned int descriptor, char *path)
 {
 
-    return (path[0] == '/') ? file_walkfrom(id, CALL_PR, path + 1) : file_walkfrom(id, CALL_PW, path);
+    return (path[0] == '/') ? file_walkfrom(descriptor, CALL_PR, path + 1) : file_walkfrom(descriptor, CALL_PW, path);
 
 }
 
-unsigned int file_walkfrom(unsigned int id, unsigned int root, char *path)
+unsigned int file_walkfrom(unsigned int descriptor, unsigned int pdescriptor, char *path)
 {
 
     unsigned int count = 0;
@@ -17,45 +17,45 @@ unsigned int file_walkfrom(unsigned int id, unsigned int root, char *path)
     while (path[count] != '\0')
         count++;
 
-    return call_walk(id, root, count, path);
+    return call_walk(descriptor, pdescriptor, path, count);
 
 }
 
-unsigned int file_duplicate(unsigned int id, unsigned int root)
+unsigned int file_duplicate(unsigned int descriptor, unsigned int pdescriptor)
 {
 
-    return call_walk(id, root, 0, 0);
+    return call_walk(descriptor, pdescriptor, 0, 0);
 
 }
 
-unsigned int file_open(unsigned int id)
+unsigned int file_open(unsigned int descriptor)
 {
 
-    return call_open(id);
+    return call_open(descriptor);
 
 }
 
-unsigned int file_close(unsigned int id)
+unsigned int file_close(unsigned int descriptor)
 {
 
-    return call_close(id);
+    return call_close(descriptor);
 
 }
 
-unsigned int file_read(unsigned int id, void *buffer, unsigned int count)
+unsigned int file_read(unsigned int descriptor, void *buffer, unsigned int count)
 {
 
-    return call_read(id, buffer, count);
+    return call_read(descriptor, buffer, count);
 
 }
 
-unsigned int file_readall(unsigned int id, void *buffer, unsigned int count)
+unsigned int file_readall(unsigned int descriptor, void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;
     unsigned int n;
 
-    while ((n = call_read(id, b, count)))
+    while ((n = call_read(descriptor, b, count)))
     {
 
         count -= n;
@@ -67,20 +67,20 @@ unsigned int file_readall(unsigned int id, void *buffer, unsigned int count)
 
 }
 
-unsigned int file_write(unsigned int id, void *buffer, unsigned int count)
+unsigned int file_write(unsigned int descriptor, void *buffer, unsigned int count)
 {
 
-    return call_write(id, buffer, count);
+    return call_write(descriptor, buffer, count);
 
 }
 
-unsigned int file_writeall(unsigned int id, void *buffer, unsigned int count)
+unsigned int file_writeall(unsigned int descriptor, void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;
     unsigned int n;
 
-    while ((n = call_write(id, b, count)))
+    while ((n = call_write(descriptor, b, count)))
     {
 
         count -= n;
@@ -92,39 +92,39 @@ unsigned int file_writeall(unsigned int id, void *buffer, unsigned int count)
 
 }
 
-unsigned int file_seekread(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int file_seekread(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    call_seek(id, offset);
+    call_seek(descriptor, offset);
 
-    return call_read(id, buffer, count);
+    return call_read(descriptor, buffer, count);
 
 }
 
-unsigned int file_seekreadall(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int file_seekreadall(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    call_seek(id, offset);
+    call_seek(descriptor, offset);
 
-    return file_readall(id, buffer, count);
+    return file_readall(descriptor, buffer, count);
 
 }
 
-unsigned int file_seekwrite(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int file_seekwrite(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    call_seek(id, offset);
+    call_seek(descriptor, offset);
 
-    return call_write(id, buffer, count);
+    return call_write(descriptor, buffer, count);
 
 }
 
-unsigned int file_seekwriteall(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int file_seekwriteall(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    call_seek(id, offset);
+    call_seek(descriptor, offset);
 
-    return file_writeall(id, buffer, count);
+    return file_writeall(descriptor, buffer, count);
 
 }
 
