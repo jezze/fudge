@@ -4,12 +4,12 @@
 unsigned int ascii_length(char *in)
 {
 
-    unsigned int count = 0;
+    unsigned int length = 0;
 
-    while (in[count] != '\0')
-        count++;
+    while (in[length] != '\0')
+        length++;
 
-    return count;
+    return length;
 
 }
 

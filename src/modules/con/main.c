@@ -6,7 +6,7 @@
 static struct system_node root;
 static struct system_node clone;
 
-static unsigned int clone_child(struct system_node *self, unsigned int count, char *path)
+static unsigned int clone_child(struct system_node *self, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -23,7 +23,7 @@ static unsigned int clone_child(struct system_node *self, unsigned int count, ch
         if (con->root.refcount)
             continue;
 
-        return node->child(node, count, path);
+        return node->child(node, path, length);
 
     }
 

@@ -7,11 +7,11 @@ struct console_interface
     struct system_node data;
     unsigned int id;
     struct ctrl_consolesettings settings;
-    unsigned int (*send)(unsigned int count, void *buffer);
+    unsigned int (*send)(void *buffer, unsigned int count);
 
 };
 
-void console_notify(struct console_interface *interface, unsigned int count, void *buffer);
+void console_notify(struct console_interface *interface, void *buffer, unsigned int count);
 void console_registerinterface(struct console_interface *interface, unsigned int id);
 void console_unregisterinterface(struct console_interface *interface);
-void console_initinterface(struct console_interface *interface, unsigned int (*send)(unsigned int count, void *buffer));
+void console_initinterface(struct console_interface *interface, unsigned int (*send)(void *buffer, unsigned int count));

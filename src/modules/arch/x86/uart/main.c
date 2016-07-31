@@ -121,11 +121,11 @@ static void handleirq(unsigned int irq)
 
     unsigned char data = read();
 
-    console_notify(&consoleinterface, 1, &data);
+    console_notify(&consoleinterface, &data, 1);
 
 }
 
-static unsigned int consoleinterface_send(unsigned int count, void *buffer)
+static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;

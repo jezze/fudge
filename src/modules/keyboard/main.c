@@ -5,10 +5,10 @@
 
 static struct system_node root;
 
-void keyboard_notify(struct keyboard_interface *interface, unsigned int count, void *buffer)
+void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->data.links, count, buffer);
+    system_multicast(&interface->data.links, buffer, count);
 
 }
 

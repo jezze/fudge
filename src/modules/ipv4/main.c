@@ -25,7 +25,7 @@ unsigned int ipv4_writeheader(unsigned char *sip, unsigned char *tip, void *buff
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
+static void ethernetprotocol_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
     struct ipv4_header *header = buffer;
@@ -38,22 +38,22 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
         struct ipv4_protocol *protocol = current->data;
 
         if (protocol->id == header->protocol)
-            protocol->notify(interface, length - sizeof (struct ipv4_header), header + 1);
+            protocol->notify(interface, header + 1, length - sizeof (struct ipv4_header));
 
     }
 
-    system_multicast(&ethernetprotocol.data.links, count, buffer);
+    system_multicast(&ethernetprotocol.data.links, buffer, count);
 
 }
 
-static unsigned int arptablenode_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int arptablenode_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     return memory_read(buffer, count, arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, state->offset);
 
 }
 
-static unsigned int arptablenode_write(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int arptablenode_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     return memory_write(arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, buffer, count, state->offset);
@@ -102,7 +102,7 @@ void ipv4_unregisterprotocol(struct ipv4_protocol *protocol)
 
 }
 
-void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
+void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count))
 {
 
     resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);

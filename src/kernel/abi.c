@@ -33,11 +33,11 @@ static struct task_descriptor *getdescriptor(struct task *task, unsigned int des
 static unsigned int walk(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *path; unsigned int count;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *path; unsigned int length;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
     struct task_descriptor *pdescriptor = getdescriptor(task, args->pdescriptor);
     unsigned int offset;
-    unsigned int count;
+    unsigned int length;
 
     if (!pdescriptor->server)
         return 0;
@@ -45,13 +45,13 @@ static unsigned int walk(struct container *container, struct task *task, void *s
     descriptor->server = pdescriptor->server;
     descriptor->state.id = pdescriptor->state.id;
 
-    if (!args->count)
+    if (!args->length)
         return 1;
 
-    for (offset = 0; (count = memory_findbyte(args->path + offset, args->count - offset, '/')); offset += count)
+    for (offset = 0; (length = memory_findbyte(args->path + offset, args->length - offset, '/')); offset += length)
     {
 
-        if (count == 3 && memory_match(args->path + offset, "../", 3))
+        if (length == 3 && memory_match(args->path + offset, "../", 3))
         {
 
             unsigned int i;
@@ -83,7 +83,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
             unsigned int i;
 
-            if (!descriptor->server->protocol->child(descriptor->server->backend, &descriptor->state, count, args->path + offset))
+            if (!descriptor->server->protocol->child(descriptor->server->backend, &descriptor->state, args->path + offset, length))
                 return 0;
 
             for (i = 0; i < CONTAINER_MOUNTS; i++)
@@ -114,26 +114,26 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 static unsigned int create(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; char *name; unsigned int count;} *args = stack;
+    struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!args->count || !args->name)
+    if (!args->length || !args->name)
         return 0;
 
-    return descriptor->server->protocol->create(descriptor->server->backend, &descriptor->state, args->count, args->name);
+    return descriptor->server->protocol->create(descriptor->server->backend, &descriptor->state, args->name, args->length);
 
 }
 
 static unsigned int destroy(struct container *container, struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; char *name; unsigned int count;} *args = stack;
+    struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    if (!args->count || !args->name)
+    if (!args->length || !args->name)
         return 0;
 
-    return descriptor->server->protocol->destroy(descriptor->server->backend, &descriptor->state, args->count, args->name);
+    return descriptor->server->protocol->destroy(descriptor->server->backend, &descriptor->state, args->name, args->length);
 
 }
 
@@ -166,7 +166,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
     if (!args->buffer || !args->count)
         return 0;
 
-    return descriptor->server->protocol->read(descriptor->server->backend, &descriptor->state, args->count, args->buffer);
+    return descriptor->server->protocol->read(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
 
 }
 
@@ -179,7 +179,7 @@ static unsigned int write(struct container *container, struct task *task, void *
     if (!args->buffer || !args->count)
         return 0;
 
-    return descriptor->server->protocol->write(descriptor->server->backend, &descriptor->state, args->count, args->buffer);
+    return descriptor->server->protocol->write(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
 
 }
 

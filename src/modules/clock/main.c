@@ -20,7 +20,7 @@ static unsigned int isleapyear(unsigned short year)
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct clock_interface *interface = self->resource->data;
@@ -38,7 +38,7 @@ static unsigned int interfacectrl_read(struct system_node *self, struct service_
 
 }
 
-static unsigned int interfacetimestamp_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int interfacetimestamp_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct clock_interface *interface = self->resource->data;
@@ -57,7 +57,7 @@ static unsigned int interfacetimestamp_read(struct system_node *self, struct ser
 
 }
 
-static unsigned int interfacedate_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int interfacedate_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct clock_interface *interface = self->resource->data;
@@ -71,7 +71,7 @@ static unsigned int interfacedate_read(struct system_node *self, struct service_
 
 }
 
-static unsigned int interfacetime_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int interfacetime_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct clock_interface *interface = self->resource->data;

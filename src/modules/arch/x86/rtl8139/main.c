@@ -162,7 +162,7 @@ static void handleirq(unsigned int irq)
 
         struct rtl8139_header *header = (struct rtl8139_header *)(rx + rxp);
 
-        ethernet_notify(&ethernetinterface, header->length, header + 1);
+        ethernet_notify(&ethernetinterface, header + 1, header->length);
 
         rxp += (header->length + 4 + 3) & ~3;
 
@@ -180,7 +180,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int ethernetinterface_send(unsigned int count, void *buffer)
+static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);

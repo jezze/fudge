@@ -12,12 +12,12 @@ unsigned int file_walk(unsigned int descriptor, char *path)
 unsigned int file_walkfrom(unsigned int descriptor, unsigned int pdescriptor, char *path)
 {
 
-    unsigned int count = 0;
+    unsigned int length = 0;
 
-    while (path[count] != '\0')
-        count++;
+    while (path[length] != '\0')
+        length++;
 
-    return call_walk(descriptor, pdescriptor, path, count);
+    return call_walk(descriptor, pdescriptor, path, length);
 
 }
 

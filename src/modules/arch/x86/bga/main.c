@@ -54,7 +54,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 
 }
 
-static unsigned int videointerface_rdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rdata(unsigned int offset, void *buffer, unsigned int count)
 {
 
     unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
@@ -63,7 +63,7 @@ static unsigned int videointerface_rdata(unsigned int offset, unsigned int count
 
 }
 
-static unsigned int videointerface_wdata(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wdata(unsigned int offset, void *buffer, unsigned int count)
 {
 
     unsigned int *g = lfb;
@@ -77,14 +77,14 @@ static unsigned int videointerface_wdata(unsigned int offset, unsigned int count
 
 }
 
-static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_rcolormap(unsigned int offset, void *buffer, unsigned int count)
 {
 
     return 0;
 
 }
 
-static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int videointerface_wcolormap(unsigned int offset, void *buffer, unsigned int count)
 {
 
     return 0;

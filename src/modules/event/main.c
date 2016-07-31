@@ -18,7 +18,7 @@ static unsigned int notify(void *buffer)
     if (!header->destination)
         header->destination = (unsigned int)poll.links.head->data;
 
-    return system_send(header->destination, count, buffer);
+    return system_send(header->destination, buffer, count);
 
 }
 
@@ -113,7 +113,7 @@ void event_notifytick(unsigned int counter)
 
 }
 
-static unsigned int poll_write(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int poll_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct event_header *header = buffer;

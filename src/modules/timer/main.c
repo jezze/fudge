@@ -5,10 +5,10 @@
 
 static struct system_node root;
 
-void timer_notify(struct timer_interface *interface, unsigned int count, void *buffer)
+void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->sleep.links, count, buffer);
+    system_multicast(&interface->sleep.links, buffer, count);
 
 }
 

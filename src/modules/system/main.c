@@ -5,21 +5,21 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-static unsigned int node_childgroup(struct system_node *self, unsigned int count, char *path)
+static unsigned int node_childgroup(struct system_node *self, char *path, unsigned int length)
 {
 
     struct list_item *current;
 
-    if (!count)
+    if (!length)
         return (unsigned int)self;
 
     for (current = self->children.head; current; current = current->next)
     {
 
         struct system_node *node = current->data;
-        unsigned int length = ascii_length(node->name);
+        unsigned int length0 = ascii_length(node->name);
 
-        if (!memory_match(node->name, path, length))
+        if (!memory_match(node->name, path, length0))
             continue;
 
         if (node->type & SYSTEM_NODETYPE_MULTI)
@@ -27,25 +27,25 @@ static unsigned int node_childgroup(struct system_node *self, unsigned int count
 
             unsigned int val;
 
-            if (path[length] != ':')
+            if (path[length0] != ':')
                 continue;
 
-            val = path[length + 1] - '0';
+            val = path[length0 + 1] - '0';
 
             if (val != node->index)
                 continue;
 
-            length += 2;
+            length0 += 2;
 
         }
 
         if (node->type & SYSTEM_NODETYPE_GROUP)
-            length += 1;
+            length0 += 1;
 
-        count -= length;
-        path += length;
+        length -= length0;
+        path += length0;
 
-        return (node->child) ? node->child(node, count, path) : (count ? 0 : (unsigned int)node);
+        return (node->child) ? node->child(node, path, length) : (length ? 0 : (unsigned int)node);
 
     }
 
@@ -53,7 +53,7 @@ static unsigned int node_childgroup(struct system_node *self, unsigned int count
 
 }
 
-unsigned int system_send(unsigned int id, unsigned int count, void *buffer)
+unsigned int system_send(unsigned int id, void *buffer, unsigned int count)
 {
 
     struct task *destination = (struct task *)id;
@@ -67,7 +67,7 @@ unsigned int system_send(unsigned int id, unsigned int count, void *buffer)
 
 }
 
-void system_multicast(struct list *list, unsigned int count, void *buffer)
+void system_multicast(struct list *list, void *buffer, unsigned int count)
 {
 
     struct list_item *current;

@@ -69,8 +69,8 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
     init->server = mount->parent.server;
     init->state.id = mount->parent.id;
 
-    init->server->protocol->child(init->server->backend, &init->state, 4, "bin/");
-    init->server->protocol->child(init->server->backend, &init->state, 4, "init");
+    init->server->protocol->child(init->server->backend, &init->state, "bin/", 4);
+    init->server->protocol->child(init->server->backend, &init->state, "init", 4);
 
     container->nservers++;
     container->nmounts++;

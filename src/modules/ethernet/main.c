@@ -21,7 +21,7 @@ unsigned int ethernet_writeheader(struct ethernet_protocol *protocol, unsigned c
 
 }
 
-void ethernet_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
+void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
     struct ethernet_header *header = buffer;
@@ -34,15 +34,15 @@ void ethernet_notify(struct ethernet_interface *interface, unsigned int count, v
         struct ethernet_protocol *protocol = current->data;
 
         if (protocol->type == type)
-            protocol->notify(interface, count - 18, header + 1);
+            protocol->notify(interface, header + 1, count - 18);
 
     }
 
-    system_multicast(&interface->data.links, count, buffer);
+    system_multicast(&interface->data.links, buffer, count);
 
 }
 
-static unsigned int interfaceaddr_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int interfaceaddr_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct ethernet_interface *interface = self->resource->data;
@@ -93,7 +93,7 @@ void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (*send)(unsigned int count, void *buffer))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (*send)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
@@ -107,7 +107,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
 
 }
 
-void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, unsigned int count, void *buffer))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count))
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);

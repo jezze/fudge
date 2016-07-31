@@ -13,7 +13,7 @@ static unsigned int mmio;
 static void bus_setup(void)
 {
 
-    log_notify(LOG_INFO, 10, "AHCI INIT\n");
+    log_notify(LOG_INFO, "AHCI INIT\n", 10);
 
 }
 

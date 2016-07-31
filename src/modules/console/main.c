@@ -5,14 +5,14 @@
 
 static struct system_node root;
 
-void console_notify(struct console_interface *interface, unsigned int count, void *buffer)
+void console_notify(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->data.links, count, buffer);
+    system_multicast(&interface->data.links, buffer, count);
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct console_interface *interface = self->resource->data;
@@ -22,12 +22,12 @@ static unsigned int interfacectrl_read(struct system_node *self, struct service_
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, unsigned int count, void *buffer)
+static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct console_interface *interface = self->resource->data;
 
-    return interface->send(count, buffer);
+    return interface->send(buffer, count);
 
 }
 
@@ -53,7 +53,7 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface, unsigned int (*send)(unsigned int count, void *buffer))
+void console_initinterface(struct console_interface *interface, unsigned int (*send)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);

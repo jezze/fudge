@@ -5,14 +5,14 @@
 static struct system_node root;
 static struct system_header header;
 
-static unsigned int backend_read(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int backend_read(void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, &header, sizeof (struct system_header), offset);
 
 }
 
-static unsigned int backend_write(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int backend_write(void *buffer, unsigned int count, unsigned int offset)
 {
 
     return 0;

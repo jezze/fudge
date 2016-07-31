@@ -24,14 +24,14 @@ struct system_node
     struct resource *resource;
     unsigned int refcount;
     unsigned int index;
-    unsigned int (*read)(struct system_node *self, struct service_state *state, unsigned int count, void *buffer);
-    unsigned int (*write)(struct system_node *self, struct service_state *state, unsigned int count, void *buffer);
-    unsigned int (*child)(struct system_node *self, unsigned int count, char *path);
+    unsigned int (*read)(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
+    unsigned int (*write)(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
+    unsigned int (*child)(struct system_node *self, char *path, unsigned int length);
 
 };
 
-unsigned int system_send(unsigned int id, unsigned int count, void *buffer);
-void system_multicast(struct list *list, unsigned int count, void *buffer);
+unsigned int system_send(unsigned int id, void *buffer, unsigned int count);
+void system_multicast(struct list *list, void *buffer, unsigned int count);
 void system_wakeup(struct list *list);
 void system_addchild(struct system_node *group, struct system_node *node);
 void system_removechild(struct system_node *group, struct system_node *node);

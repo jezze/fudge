@@ -32,7 +32,7 @@ unsigned int arp_writeheader(unsigned short htype, unsigned char hlength, unsign
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_interface *interface, unsigned int count, void *buffer)
+static void ethernetprotocol_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
     struct arp_header *header = buffer;
@@ -72,7 +72,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
             c += ethernet_writeheader(&ethernetprotocol, interface->haddress, data, response);
             c += arp_writeheader(htype, header->hlength, ptype, header->plength, ARP_REPLY, haddress, data + header->hlength + header->plength + header->hlength, data, data + header->hlength, response + c);
 
-            interface->send(c, response);
+            interface->send(response, c);
 
             break;
 
@@ -80,7 +80,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, unsign
 
     }
 
-    system_multicast(&ethernetprotocol.data.links, count, buffer);
+    system_multicast(&ethernetprotocol.data.links, buffer, count);
 
 }
 

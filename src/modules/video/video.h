@@ -9,13 +9,13 @@ struct video_interface
     unsigned int id;
     struct ctrl_videosettings settings;
     void (*setmode)(struct ctrl_videosettings *settings);
-    unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer);
-    unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer);
+    unsigned int (*rdata)(unsigned int offset, void *buffer, unsigned int count);
+    unsigned int (*wdata)(unsigned int offset, void *buffer, unsigned int count);
+    unsigned int (*rcolormap)(unsigned int offset, void *buffer, unsigned int count);
+    unsigned int (*wcolormap)(unsigned int offset, void *buffer, unsigned int count);
 
 };
 
 void video_registerinterface(struct video_interface *interface, unsigned int id);
 void video_unregisterinterface(struct video_interface *interface);
-void video_initinterface(struct video_interface *interface, void (*setmode)(struct ctrl_videosettings *settings), unsigned int (*rdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wdata)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*rcolormap)(unsigned int offset, unsigned int count, void *buffer), unsigned int (*wcolormap)(unsigned int offset, unsigned int count, void *buffer));
+void video_initinterface(struct video_interface *interface, void (*setmode)(struct ctrl_videosettings *settings), unsigned int (*rdata)(unsigned int offset, void *buffer, unsigned int count), unsigned int (*wdata)(unsigned int offset, void *buffer, unsigned int count), unsigned int (*rcolormap)(unsigned int offset, void *buffer, unsigned int count), unsigned int (*wcolormap)(unsigned int offset, void *buffer, unsigned int count));
