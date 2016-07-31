@@ -2,7 +2,6 @@ struct pipe_end
 {
 
     struct system_node node;
-    unsigned char data[4096];
     struct buffer buffer;
     struct list readlinks;
     struct list writelinks;
@@ -18,6 +17,6 @@ struct pipe
 
 };
 
-void pipe_init(struct pipe *pipe);
+void pipe_init(struct pipe *pipe, unsigned int count0, void *data0, unsigned int count1, void *data1);
 void pipe_register(struct pipe *pipe);
 void pipe_unregister(struct pipe *pipe);

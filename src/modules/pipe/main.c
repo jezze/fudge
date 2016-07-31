@@ -105,11 +105,11 @@ static unsigned int clone_child(struct system_node *self, unsigned int count, ch
 
 }
 
-void pipe_init(struct pipe *pipe)
+void pipe_init(struct pipe *pipe, unsigned int count0, void *data0, unsigned int count1, void *data1)
 {
 
-    buffer_init(&pipe->end0.buffer, 4096, pipe->end0.data);
-    buffer_init(&pipe->end1.buffer, 4096, pipe->end1.data);
+    buffer_init(&pipe->end0.buffer, count0, data0);
+    buffer_init(&pipe->end1.buffer, count1, data1);
     system_initnode(&pipe->end0.node, SYSTEM_NODETYPE_NORMAL, "0");
     system_initnode(&pipe->end1.node, SYSTEM_NODETYPE_NORMAL, "1");
 
