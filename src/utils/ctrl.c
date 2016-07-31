@@ -125,8 +125,8 @@ void main(void)
 
     union settings buffer;
 
-    call_open(CALL_PO);
-    call_open(CALL_PI);
+    file_open(CALL_PO);
+    file_open(CALL_PI);
     file_readall(CALL_PI, &buffer.header, sizeof (struct ctrl_header));
     writeheader(&buffer.header);
 
@@ -153,8 +153,8 @@ void main(void)
 
     }
 
-    call_close(CALL_PI);
-    call_close(CALL_PO);
+    file_close(CALL_PI);
+    file_close(CALL_PO);
 
 }
 

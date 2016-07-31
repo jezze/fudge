@@ -34,14 +34,14 @@ void main(void)
     struct mbr mbr;
     unsigned int i;
 
-    call_open(CALL_PI);
+    file_open(CALL_PI);
     file_readall(CALL_PI, &mbr, 512);
-    call_close(CALL_PI);
+    file_close(CALL_PI);
 
     if (mbr.signature[0] != 0x55 || mbr.signature[1] != 0xAA)
         return;
 
-    call_open(CALL_PO);
+    file_open(CALL_PO);
     file_writeall(CALL_PO, "Id: ", 4);
     file_writeall(CALL_PO, &mbr.id, 4);
     file_writeall(CALL_PO, "\n", 1);
@@ -73,7 +73,7 @@ void main(void)
 
     }
 
-    call_close(CALL_PO);
+    file_close(CALL_PO);
 
 }
 

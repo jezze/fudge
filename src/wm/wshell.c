@@ -137,16 +137,16 @@ static void interpret(void)
     call_walk(CALL_L2, CALL_L1, 1, "0");
     call_walk(CALL_CI, CALL_L1, 1, "1");
     call_walk(CALL_CO, CALL_L1, 1, "1");
-    call_open(CALL_L2);
+    file_open(CALL_L2);
     file_writeall(CALL_L2, command, count);
-    call_close(CALL_L2);
+    file_close(CALL_L2);
     call_spawn();
-    call_open(CALL_L2);
+    file_open(CALL_L2);
 
     while ((count = file_read(CALL_L2, command, FUDGE_BSIZE)))
         inserttext(count, command);
 
-    call_close(CALL_L2);
+    file_close(CALL_L2);
 
 }
 
@@ -283,8 +283,8 @@ void main(void)
     if (!call_walk(CALL_L0, CALL_PR, 17, "system/event/poll"))
         return;
 
-    call_open(CALL_PO);
-    call_open(CALL_L0);
+    file_open(CALL_PO);
+    file_open(CALL_L0);
     send_wmmap(CALL_L0);
 
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
@@ -312,8 +312,8 @@ void main(void)
 
     }
 
-    call_close(CALL_L0);
-    call_close(CALL_PO);
+    file_close(CALL_L0);
+    file_close(CALL_PO);
 
 }
 

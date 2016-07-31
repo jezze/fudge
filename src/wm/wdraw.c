@@ -519,7 +519,7 @@ static void render(void)
     unsigned int line;
 
     call_walk(CALL_L0, CALL_PO, 4, "data");
-    call_open(CALL_L0);
+    file_open(CALL_L0);
 
     for (line = 0; line < settings.h; line++)
     {
@@ -551,7 +551,7 @@ static void render(void)
 
     }
 
-    call_close(CALL_L0);
+    file_close(CALL_L0);
 
 }
 
@@ -566,9 +566,9 @@ void main(void)
     if (!call_walk(CALL_L0, CALL_PR, 18, "share/ter-118n.pcf"))
         return;
 
-    call_open(CALL_L0);
+    file_open(CALL_L0);
     file_seekread(CALL_L0, fontdata, 0x8000, 0);
-    call_close(CALL_L0);
+    file_close(CALL_L0);
 
     fontbitmapdata = pcf_getbitmapdata(fontdata);
     fontpadding = pcf_getpadding(fontdata);
@@ -576,11 +576,11 @@ void main(void)
     if (!call_walk(CALL_L0, CALL_PO, 4, "ctrl"))
         return;
 
-    call_open(CALL_L0);
+    file_open(CALL_L0);
     file_seekreadall(CALL_L0, &oldsettings, sizeof (struct ctrl_videosettings), 0);
     file_seekwriteall(CALL_L0, &settings, sizeof (struct ctrl_videosettings), 0);
     file_seekreadall(CALL_L0, &settings, sizeof (struct ctrl_videosettings), 0);
-    call_close(CALL_L0);
+    file_close(CALL_L0);
 
     if (settings.bpp == 8)
     {
@@ -588,9 +588,9 @@ void main(void)
         if (!call_walk(CALL_L0, CALL_PO, 8, "colormap"))
             return;
 
-        call_open(CALL_L0);
+        file_open(CALL_L0);
         file_seekwriteall(CALL_L0, colormap8, 3 * 11, 0);
-        call_close(CALL_L0);
+        file_close(CALL_L0);
 
     }
 
@@ -607,7 +607,7 @@ void main(void)
     renderers[ELEMENT_TYPE_TEXT] = rendertext;
     renderers[ELEMENT_TYPE_WINDOW] = renderwindow;
 
-    call_open(CALL_PI);
+    file_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
     {
@@ -622,14 +622,14 @@ void main(void)
 
     }
 
-    call_close(CALL_PI);
+    file_close(CALL_PI);
 
     if (!call_walk(CALL_L0, CALL_PO, 4, "ctrl"))
         return;
 
-    call_open(CALL_L0);
+    file_open(CALL_L0);
     file_seekwriteall(CALL_L0, &oldsettings, sizeof (struct ctrl_videosettings), 0);
-    call_close(CALL_L0);
+    file_close(CALL_L0);
 
 }
 

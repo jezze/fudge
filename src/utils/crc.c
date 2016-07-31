@@ -44,7 +44,7 @@ void main(void)
     unsigned int i;
     unsigned int crc = 0;
 
-    call_open(CALL_PI);
+    file_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
     {
@@ -56,14 +56,14 @@ void main(void)
 
     }
 
-    call_close(CALL_PI);
+    file_close(CALL_PI);
 
     for (i = total; i > 0; i >>= 8)
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
-    call_open(CALL_PO);
+    file_open(CALL_PO);
     file_writeall(CALL_PO, buffer, ascii_fromint(buffer, 32, ~crc, 10));
-    call_close(CALL_PO);
+    file_close(CALL_PO);
 
 }
 

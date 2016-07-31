@@ -716,8 +716,8 @@ void main(void)
     if (!call_walk(CALL_L0, CALL_PR, 17, "system/event/poll"))
         return;
 
-    call_open(CALL_PO);
-    call_open(CALL_L0);
+    file_open(CALL_PO);
+    file_open(CALL_L0);
     send_wmmap(CALL_L0);
 
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
@@ -745,8 +745,8 @@ void main(void)
 
     }
 
-    call_close(CALL_L0);
-    call_close(CALL_PO);
+    file_close(CALL_L0);
+    file_close(CALL_PO);
 
 }
 

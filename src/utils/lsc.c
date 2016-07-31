@@ -8,8 +8,8 @@ void main(void)
     struct record record;
     char num[8];
 
-    call_open(CALL_PO);
-    call_open(CALL_PW);
+    file_open(CALL_PO);
+    file_open(CALL_PW);
 
     count = ascii_wzerovalue(num, 8, 0, 16, 8, 0);
 
@@ -40,8 +40,8 @@ void main(void)
 
     }
 
-    call_close(CALL_PW);
-    call_close(CALL_PO);
+    file_close(CALL_PW);
+    file_close(CALL_PO);
 
 }
 

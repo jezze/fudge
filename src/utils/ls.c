@@ -6,8 +6,8 @@ void main(void)
 
     struct record record;
 
-    call_open(CALL_PO);
-    call_open(CALL_PW);
+    file_open(CALL_PO);
+    file_open(CALL_PW);
     file_writeall(CALL_PO, "../\n", 4);
 
     while (file_readall(CALL_PW, &record, sizeof (struct record)))
@@ -18,8 +18,8 @@ void main(void)
 
     }
 
-    call_close(CALL_PW);
-    call_close(CALL_PO);
+    file_close(CALL_PW);
+    file_close(CALL_PO);
 
 }
 

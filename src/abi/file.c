@@ -2,6 +2,20 @@
 #include <fudge.h>
 #include "file.h"
 
+unsigned int file_open(unsigned int id)
+{
+
+    return call_open(id);
+
+}
+
+unsigned int file_close(unsigned int id)
+{
+
+    return call_close(id);
+
+}
+
 unsigned int file_read(unsigned int id, void *buffer, unsigned int count)
 {
 

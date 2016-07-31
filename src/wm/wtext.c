@@ -221,8 +221,8 @@ void main(void)
     renderers[ELEMENT_TYPE_TEXT] = printtext;
     renderers[ELEMENT_TYPE_WINDOW] = printwindow;
 
-    call_open(CALL_PI);
-    call_open(CALL_PO);
+    file_open(CALL_PI);
+    file_open(CALL_PO);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
     {
@@ -239,8 +239,8 @@ void main(void)
 
     }
 
-    call_close(CALL_PO);
-    call_close(CALL_PI);
+    file_close(CALL_PO);
+    file_close(CALL_PI);
 
 }
 

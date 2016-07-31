@@ -345,12 +345,12 @@ void main(void)
     if (!call_walk(CALL_L0, CALL_PR, 4, "bin/"))
         return;
 
-    call_open(CALL_PI);
+    file_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    call_close(CALL_PI);
+    file_close(CALL_PI);
 
     if (stack.head)
         return;

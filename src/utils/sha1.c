@@ -224,19 +224,19 @@ void main(void)
     struct sha1 s;
 
     sha1_init(&s);
-    call_open(CALL_PI);
+    file_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
         sha1_read(&s, count, buffer);
 
-    call_close(CALL_PI);
+    file_close(CALL_PI);
     sha1_write(&s, digest);
-    call_open(CALL_PO);
+    file_open(CALL_PO);
 
     for (i = 0; i < 20; i++)
         file_writeall(CALL_PO, buffer, ascii_wzerovalue(buffer, 32, digest[i], 16, 2, 0));
 
-    call_close(CALL_PO);
+    file_close(CALL_PO);
 
 }
 

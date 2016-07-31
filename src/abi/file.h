@@ -1,3 +1,5 @@
+unsigned int file_open(unsigned int id);
+unsigned int file_close(unsigned int id);
 unsigned int file_read(unsigned int id, void *buffer, unsigned int count);
 unsigned int file_readall(unsigned int id, void *buffer, unsigned int count);
 unsigned int file_write(unsigned int id, void *buffer, unsigned int count);

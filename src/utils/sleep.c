@@ -16,10 +16,10 @@ void main(void)
     if (call_walk(CALL_L1, CALL_L0, 8, "../sleep"))
     {
 
-        call_open(CALL_L1);
+        file_open(CALL_L1);
         file_writeall(CALL_L1, buffer, count);
         file_read(CALL_L1, buffer, 32);
-        call_close(CALL_L1);
+        file_close(CALL_L1);
 
     }
 

@@ -96,11 +96,11 @@ static unsigned int findkernelsymbol(unsigned int count, char *symbolname)
 
     unsigned int address;
 
-    call_open(CALL_L0);
+    file_open(CALL_L0);
 
     address = findsymbol(CALL_L0, count, symbolname);
 
-    call_close(CALL_L0);
+    file_close(CALL_L0);
 
     return address;
 
@@ -120,11 +120,11 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
     if (!call_walk(CALL_L2, CALL_L1, offset, module))
         return 0;
 
-    call_open(CALL_L2);
+    file_open(CALL_L2);
 
     address = findsymbol(CALL_L2, count, symbolname);
 
-    call_close(CALL_L2);
+    file_close(CALL_L2);
 
     return address;
 
@@ -241,12 +241,12 @@ void main(void)
     if (!call_walk(CALL_L1, CALL_PR, 4, "mod/"))
         return;
 
-    call_open(CALL_PI);
+    file_open(CALL_PI);
 
     if (resolve(CALL_PI))
         call_load(CALL_PI);
 
-    call_close(CALL_PI);
+    file_close(CALL_PI);
 
 }
 
