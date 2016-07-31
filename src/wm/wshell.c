@@ -29,7 +29,7 @@ static void writeelement(unsigned int id, unsigned int type, unsigned int source
 
 }
 
-static void writetext(unsigned int source, unsigned int z, struct element_text *text, unsigned int count, void *buffer)
+static void writetext(unsigned int source, unsigned int z, struct element_text *text, void *buffer, unsigned int count)
 {
 
     writeelement((unsigned int)text, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + count);
@@ -39,7 +39,7 @@ static void writetext(unsigned int source, unsigned int z, struct element_text *
 
 }
 
-static void inserttext(unsigned int count, void *buffer)
+static void inserttext(void *buffer, unsigned int count)
 {
 
     unsigned int i;
@@ -139,7 +139,7 @@ static void interpret(void)
     file_open(CALL_L2);
 
     while ((count = file_read(CALL_L2, command, FUDGE_BSIZE)))
-        inserttext(count, command);
+        inserttext(command, count);
 
     file_close(CALL_L2);
 
@@ -165,8 +165,8 @@ static void onkeypress(struct event_header *header, void *data)
             break;
 
         removetext(2);
-        inserttext(1, "\n");
-        writetext(header->destination, 1, &content, textcount, text);
+        inserttext("\n", 1);
+        writetext(header->destination, 1, &content, text, textcount);
 
         break;
 
@@ -177,8 +177,8 @@ static void onkeypress(struct event_header *header, void *data)
             break;
 
         interpret();
-        inserttext(3, "$ \n");
-        writetext(header->destination, 1, &content, textcount, text);
+        inserttext("$ \n", 3);
+        writetext(header->destination, 1, &content, text, textcount);
 
         break;
 
@@ -189,9 +189,9 @@ static void onkeypress(struct event_header *header, void *data)
             break;
 
         removetext(1);
-        inserttext(keycode->length, &keycode->value);
-        inserttext(1, "\n");
-        writetext(header->destination, 1, &content, textcount, text);
+        inserttext(&keycode->value, keycode->length);
+        inserttext("\n", 1);
+        writetext(header->destination, 1, &content, text, textcount);
 
         break;
 
@@ -220,7 +220,7 @@ static void onkeyrelease(struct event_header *header, void *data)
 static void onwmunmap(struct event_header *header, void *data)
 {
 
-    writetext(header->destination, 0, &content, textcount, text);
+    writetext(header->destination, 0, &content, text, textcount);
 
     quit = 1;
 
@@ -239,14 +239,14 @@ static void onwmresize(struct event_header *header, void *data)
 static void onwmshow(struct event_header *header, void *data)
 {
 
-    writetext(header->destination, 1, &content, textcount, text);
+    writetext(header->destination, 1, &content, text, textcount);
 
 }
 
 static void onwmhide(struct event_header *header, void *data)
 {
 
-    writetext(header->destination, 0, &content, textcount, text);
+    writetext(header->destination, 0, &content, text, textcount);
 
 }
 
@@ -256,7 +256,7 @@ static void setup(void)
     buffer_init(&input, FUDGE_BSIZE, inputbuffer);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
-    inserttext(3, "$ \n");
+    inserttext("$ \n", 3);
 
 }
 

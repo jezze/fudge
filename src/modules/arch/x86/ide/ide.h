@@ -7,8 +7,8 @@
 
 unsigned char ide_getstatus(unsigned int id);
 unsigned short ide_getirq(unsigned int id);
-unsigned int ide_rblock(unsigned int id, unsigned int count, void *buffer);
-unsigned int ide_wblock(unsigned int id, unsigned int count, void *buffer);
+unsigned int ide_rblock(unsigned int id, void *buffer, unsigned int count);
+unsigned int ide_wblock(unsigned int id, void *buffer, unsigned int count);
 void ide_rpio28(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count);
 void ide_wpio28(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count);
 void ide_rpio48(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count);

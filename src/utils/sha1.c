@@ -105,7 +105,7 @@ static void processblock(struct sha1 *s, unsigned char *buffer)
 
 }
 
-static void sha1_read(struct sha1 *s, unsigned int count, void *buffer)
+static void sha1_read(struct sha1 *s, void *buffer, unsigned int count)
 {
 
     unsigned int r = s->lo & 0x3F;
@@ -227,7 +227,7 @@ void main(void)
     file_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
-        sha1_read(&s, count, buffer);
+        sha1_read(&s, buffer, count);
 
     file_close(CALL_PI);
     sha1_write(&s, digest);

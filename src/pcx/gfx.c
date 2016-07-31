@@ -16,7 +16,7 @@ static void fillrectangle(struct gfx_surface *self)
         memory_copy(buffer + i, &self->context.color, self->bpp);
 
     for (i = offset; i < size; i += line)
-        self->write(self, i, recline, buffer);
+        self->write(self, buffer, recline, i);
 
 }
 
@@ -84,7 +84,7 @@ void gfx_wsurface(unsigned int id, struct gfx_surface *in)
 
         char buffer[FUDGE_BSIZE];
 
-        offset += in->read(in, offset, in->width, buffer);
+        offset += in->read(in, buffer, in->width, offset);
 
         file_seekwriteall(id, buffer, in->width, scanline * in->width);
 
@@ -102,7 +102,7 @@ void gfx_initcontext(struct gfx_context *context)
 
 }
 
-void gfx_initsurface(struct gfx_surface *surface, unsigned int (*read)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer), unsigned int (*write)(struct gfx_surface *self, unsigned int offset, unsigned int count, void *buffer))
+void gfx_initsurface(struct gfx_surface *surface, unsigned int (*read)(struct gfx_surface *self, void *buffer, unsigned int count, unsigned int offset), unsigned int (*write)(struct gfx_surface *self, void *buffer, unsigned int count, unsigned int offset))
 {
 
     memory_clear(surface, sizeof (struct gfx_surface));

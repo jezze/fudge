@@ -79,7 +79,7 @@ static void writepanel(unsigned int source, unsigned int z, struct element_panel
 
 }
 
-static void writetext(unsigned int source, unsigned int z, struct element_text *text, unsigned int count, void *buffer)
+static void writetext(unsigned int source, unsigned int z, struct element_text *text, void *buffer, unsigned int count)
 {
 
     writeelement((unsigned int)text, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + count);
@@ -109,7 +109,7 @@ static void writeview(unsigned int source, unsigned int z, struct view *view)
 {
 
     writepanel(source, z, &view->panel);
-    writetext(source, z, &view->number, 1, &view->numberstring);
+    writetext(source, z, &view->number, &view->numberstring, 1);
 
 }
 

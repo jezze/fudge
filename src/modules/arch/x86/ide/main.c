@@ -149,7 +149,7 @@ unsigned short ide_getirq(unsigned int id)
 
 }
 
-unsigned int ide_rblock(unsigned int id, unsigned int count, void *buffer)
+unsigned int ide_rblock(unsigned int id, void *buffer, unsigned int count)
 {
 
     unsigned short data = getdata(id);
@@ -163,7 +163,7 @@ unsigned int ide_rblock(unsigned int id, unsigned int count, void *buffer)
 
 }
 
-unsigned int ide_wblock(unsigned int id, unsigned int count, void *buffer)
+unsigned int ide_wblock(unsigned int id, void *buffer, unsigned int count)
 {
 
     unsigned short data = getdata(id);

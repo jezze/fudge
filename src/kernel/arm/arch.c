@@ -45,14 +45,14 @@ static struct
 
 static struct service_backend backend;
 
-static unsigned int backend_read(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int backend_read(unsigned int offset, void *buffer, unsigned int count)
 {
 
     return 0;
 
 }
 
-static unsigned int backend_write(unsigned int offset, unsigned int count, void *buffer)
+static unsigned int backend_write(unsigned int offset, void *buffer, unsigned int count)
 {
 
     return 0;

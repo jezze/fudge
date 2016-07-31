@@ -107,7 +107,7 @@ static void processblock(struct md5 *s, unsigned char *buffer)
 
 }
 
-static void md5_read(struct md5 *s, unsigned int count, void *buffer)
+static void md5_read(struct md5 *s, void *buffer, unsigned int count)
 {
 
     unsigned int r = s->lo & 0x3F;
@@ -224,7 +224,7 @@ void main(void)
     file_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
-        md5_read(&s, count, buffer);
+        md5_read(&s, buffer, count);
 
     file_close(CALL_PI);
     md5_write(&s, digest);

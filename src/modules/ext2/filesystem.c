@@ -36,7 +36,7 @@ static unsigned int close(struct service_backend *backend, unsigned int id)
 
 }
 
-static unsigned int read(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int read(struct service_backend *backend, unsigned int id, unsigned int offset, void *buffer, unsigned int count)
 {
 
     struct ext2_filesystem *filesystem = (struct ext2_filesystem *)self;
@@ -81,7 +81,7 @@ static unsigned int read(struct service_backend *backend, unsigned int id, unsig
 
 }
 
-static unsigned int write(struct service_backend *backend, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int write(struct service_backend *backend, unsigned int id, unsigned int offset, void *buffer, unsigned int count)
 {
 
     return 0;

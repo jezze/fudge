@@ -18,7 +18,7 @@ static void handleirq(unsigned int irq)
     if (status & 1)
         return;
 
-    ide_rblock(blockinterface.id, 1, data);
+    ide_rblock(blockinterface.id, data, 1);
     block_notify(&blockinterface, data, 512);
 
 }
