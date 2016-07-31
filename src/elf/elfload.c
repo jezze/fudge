@@ -44,12 +44,7 @@ static unsigned int findvalue(unsigned int id, struct elf_header *header, struct
 
         }
 
-        else
-        {
-
-            return symbol.value;
-
-        }
+        return symbol.value;
 
     }
 
