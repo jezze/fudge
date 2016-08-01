@@ -75,6 +75,7 @@ OBJ_UTILS:=\
 OBJ_EXTRA:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_SRC)/format/format.a \
 
 $(BIN_UTILS): % : %.o $(OBJ_EXTRA)
 	@echo LD $@ 

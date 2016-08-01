@@ -1,5 +1,6 @@
 include $(DIR_SRC)/abi/rules.mk
 include $(DIR_SRC)/elf/rules.mk
+include $(DIR_SRC)/format/rules.mk
 include $(DIR_SRC)/fudge/rules.mk
 include $(DIR_SRC)/kernel/rules.mk
 include $(DIR_SRC)/mandelbrot/rules.mk
