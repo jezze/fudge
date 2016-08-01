@@ -1,7 +1,6 @@
 BIN_UTILS:=\
     $(DIR_SRC)/utils/cat \
     $(DIR_SRC)/utils/cconv8to6 \
-    $(DIR_SRC)/utils/col \
     $(DIR_SRC)/utils/complete \
     $(DIR_SRC)/utils/countb \
     $(DIR_SRC)/utils/countl \
@@ -10,8 +9,6 @@ BIN_UTILS:=\
     $(DIR_SRC)/utils/date \
     $(DIR_SRC)/utils/dump \
     $(DIR_SRC)/utils/echo \
-    $(DIR_SRC)/utils/headb \
-    $(DIR_SRC)/utils/headl \
     $(DIR_SRC)/utils/hello \
     $(DIR_SRC)/utils/help \
     $(DIR_SRC)/utils/initfs \
@@ -25,20 +22,16 @@ BIN_UTILS:=\
     $(DIR_SRC)/utils/mbr \
     $(DIR_SRC)/utils/md5 \
     $(DIR_SRC)/utils/motd \
-    $(DIR_SRC)/utils/mount \
     $(DIR_SRC)/utils/named \
     $(DIR_SRC)/utils/namef \
-    $(DIR_SRC)/utils/nl \
     $(DIR_SRC)/utils/reboot \
     $(DIR_SRC)/utils/sha1 \
     $(DIR_SRC)/utils/shell \
     $(DIR_SRC)/utils/slang \
-    $(DIR_SRC)/utils/sleep \
 
 OBJ_UTILS:=\
     $(DIR_SRC)/utils/cat.o \
     $(DIR_SRC)/utils/cconv8to6.o \
-    $(DIR_SRC)/utils/col.o \
     $(DIR_SRC)/utils/complete.o \
     $(DIR_SRC)/utils/countb.o \
     $(DIR_SRC)/utils/countl.o \
@@ -47,8 +40,6 @@ OBJ_UTILS:=\
     $(DIR_SRC)/utils/date.o \
     $(DIR_SRC)/utils/dump.o \
     $(DIR_SRC)/utils/echo.o \
-    $(DIR_SRC)/utils/headb.o \
-    $(DIR_SRC)/utils/headl.o \
     $(DIR_SRC)/utils/hello.o \
     $(DIR_SRC)/utils/help.o \
     $(DIR_SRC)/utils/initfs.o \
@@ -62,15 +53,12 @@ OBJ_UTILS:=\
     $(DIR_SRC)/utils/mbr.o \
     $(DIR_SRC)/utils/md5.o \
     $(DIR_SRC)/utils/motd.o \
-    $(DIR_SRC)/utils/mount.o \
     $(DIR_SRC)/utils/named.o \
     $(DIR_SRC)/utils/namef.o \
-    $(DIR_SRC)/utils/nl.o \
     $(DIR_SRC)/utils/reboot.o \
     $(DIR_SRC)/utils/sha1.o \
     $(DIR_SRC)/utils/shell.o \
     $(DIR_SRC)/utils/slang.o \
-    $(DIR_SRC)/utils/sleep.o \
 
 OBJ_EXTRA:=\
     $(DIR_SRC)/abi/abi.a \
