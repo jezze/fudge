@@ -1,4 +1,3 @@
-#include <abi.h>
 #include <fudge.h>
 #include "sha1.h"
 

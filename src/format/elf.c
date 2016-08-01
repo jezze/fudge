@@ -1,4 +1,4 @@
-#include <fudge/memory.h>
+#include <fudge.h>
 #include "elf.h"
 
 unsigned int elf_validate(struct elf_header *header)

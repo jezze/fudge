@@ -11,9 +11,8 @@ OBJ_KERNEL:=\
     $(DIR_SRC)/kernel/task.o \
     $(DIR_SRC)/kernel/service.o \
     $(DIR_SRC)/kernel/service_cpio.o \
-    $(DIR_SRC)/format/cpio.o \
-    $(DIR_SRC)/elf/elf.o \
     $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_SRC)/format/format.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
 

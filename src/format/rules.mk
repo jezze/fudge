@@ -3,6 +3,7 @@ LIB_FORMAT:=\
 
 OBJ_FORMAT:=\
     $(DIR_SRC)/format/cpio.o \
+    $(DIR_SRC)/format/elf.o \
     $(DIR_SRC)/format/md5.o \
     $(DIR_SRC)/format/pcf.o \
     $(DIR_SRC)/format/sha1.o \
