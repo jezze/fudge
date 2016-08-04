@@ -36,10 +36,17 @@ static void interpret(struct buffer *buffer)
 
     file_walkfrom(CALL_L1, CALL_L0, "0");
     file_walkfrom(CALL_CI, CALL_L0, "1");
+    file_walkfrom(CALL_CO, CALL_L0, "1");
     file_open(CALL_L1);
     file_writeall(CALL_L1, command, count);
     file_close(CALL_L1);
     call_spawn();
+    file_open(CALL_L1);
+
+    while ((count = file_read(CALL_L1, command, FUDGE_BSIZE)))
+        file_writeall(CALL_PO, command, count);
+
+    file_close(CALL_L1);
 
 }
 
