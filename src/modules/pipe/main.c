@@ -97,6 +97,12 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
         if (pipe->end0.node.refcount || pipe->end1.node.refcount)
             continue;
 
+        if (pipe->end0.readlinks.count || pipe->end1.readlinks.count)
+            continue;
+
+        if (pipe->end0.writelinks.count || pipe->end1.writelinks.count)
+            continue;
+
         return node->child(node, path, length);
 
     }
