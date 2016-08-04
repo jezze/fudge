@@ -20,12 +20,10 @@ BIN_UTILS:=\
     $(DIR_SRC)/utils/lsc \
     $(DIR_SRC)/utils/ls \
     $(DIR_SRC)/utils/mbr \
-    $(DIR_SRC)/utils/md5 \
     $(DIR_SRC)/utils/motd \
     $(DIR_SRC)/utils/named \
     $(DIR_SRC)/utils/namef \
     $(DIR_SRC)/utils/reboot \
-    $(DIR_SRC)/utils/sha1 \
     $(DIR_SRC)/utils/shell \
     $(DIR_SRC)/utils/slang \
 
@@ -51,19 +49,16 @@ OBJ_UTILS:=\
     $(DIR_SRC)/utils/lsc.o \
     $(DIR_SRC)/utils/ls.o \
     $(DIR_SRC)/utils/mbr.o \
-    $(DIR_SRC)/utils/md5.o \
     $(DIR_SRC)/utils/motd.o \
     $(DIR_SRC)/utils/named.o \
     $(DIR_SRC)/utils/namef.o \
     $(DIR_SRC)/utils/reboot.o \
-    $(DIR_SRC)/utils/sha1.o \
     $(DIR_SRC)/utils/shell.o \
     $(DIR_SRC)/utils/slang.o \
 
 DEP_UTILS:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
-    $(DIR_SRC)/format/format.a \
 
 $(BIN_UTILS): % : %.o $(DEP_UTILS)
 	@echo LD $@: $^
