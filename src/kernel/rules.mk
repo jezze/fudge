@@ -19,7 +19,7 @@ include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
 $(BIN_KERNEL): LDFLAGS+=-Tplatform/$(PLATFORM)/linker.ld
 $(BIN_KERNEL): $(OBJ_KERNEL)
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 BIN:=$(BIN) $(BIN_KERNEL)
 OBJ:=$(OBJ) $(OBJ_KERNEL)

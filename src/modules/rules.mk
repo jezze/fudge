@@ -110,45 +110,45 @@ OBJ:=$(OBJ) $(OBJ_MOD)
 $(DIR_SRC)/modules/%.ko: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
 $(DIR_SRC)/modules/%.ko:
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 $(DIR_SRC)/modules/%.ko.0: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
 $(DIR_SRC)/modules/%.ko.0:
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 $(DIR_SRC)/modules/%.ko.1: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
 $(DIR_SRC)/modules/%.ko.1:
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 $(DIR_SRC)/modules/%.ko.2: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
 $(DIR_SRC)/modules/%.ko.2:
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 $(DIR_SRC)/modules/%.ko.3: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
 $(DIR_SRC)/modules/%.ko.3:
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 $(DIR_SRC)/modules/%.ko.4: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
 $(DIR_SRC)/modules/%.ko.4:
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 $(DIR_SRC)/modules/%.ko.5: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
 $(DIR_SRC)/modules/%.ko.5:
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 $(DIR_SRC)/modules/%.ko.6: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
 $(DIR_SRC)/modules/%.ko.6:
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 $(DIR_SRC)/modules/%.ko.7: LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
 $(DIR_SRC)/modules/%.ko.7:
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 

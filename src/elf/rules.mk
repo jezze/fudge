@@ -9,7 +9,7 @@ OBJ_ELFLOAD:=\
 
 $(BIN_ELFLOAD): $(OBJ_ELFLOAD)
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 BIN_ELFUNLOAD:=\
     $(DIR_SRC)/elf/elfunload \
@@ -22,7 +22,7 @@ OBJ_ELFUNLOAD:=\
 
 $(BIN_ELFUNLOAD): $(OBJ_ELFUNLOAD)
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 BIN:=$(BIN) $(BIN_ELFLOAD) $(BIN_ELFUNLOAD)
 OBJ:=$(OBJ) $(OBJ_ELFLOAD) $(OBJ_ELFUNLOAD)

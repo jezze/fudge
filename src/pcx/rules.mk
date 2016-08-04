@@ -10,7 +10,7 @@ OBJ_PCXCMAP:=\
 
 $(BIN_PCXCMAP): $(OBJ_PCXCMAP)
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 BIN_PCXDATA:=\
     $(DIR_SRC)/pcx/pcxdata \
@@ -24,7 +24,7 @@ OBJ_PCXDATA:=\
 
 $(BIN_PCXDATA): $(OBJ_PCXDATA)
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 BIN:=$(BIN) $(BIN_PCXCMAP) $(BIN_PCXDATA)
 OBJ:=$(OBJ) $(OBJ_PCXCMAP) $(OBJ_PCXDATA)

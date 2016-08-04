@@ -8,7 +8,7 @@ OBJ_MANDELBROT:=\
 
 $(BIN_MANDELBROT): $(OBJ_MANDELBROT)
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 BIN:=$(BIN) $(BIN_MANDELBROT)
 OBJ:=$(OBJ) $(OBJ_MANDELBROT)

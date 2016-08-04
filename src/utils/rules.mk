@@ -67,7 +67,7 @@ OBJ_EXTRA:=\
 
 $(BIN_UTILS): % : %.o $(OBJ_EXTRA)
 	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 BIN:=$(BIN) $(BIN_UTILS)
 OBJ:=$(OBJ) $(OBJ_UTILS) $(OBJ_EXTRA)
