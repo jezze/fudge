@@ -4,12 +4,12 @@ BIN_ELFLOAD:=\
 OBJ_ELFLOAD:=\
     $(DIR_SRC)/elf/elfload.o \
 
-LDLIBS_ELFLOAD:=\
+DEP_ELFLOAD:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/format/format.a \
 
-$(BIN_ELFLOAD): $(OBJ_ELFLOAD) $(LDLIBS_ELFLOAD)
+$(BIN_ELFLOAD): $(OBJ_ELFLOAD) $(DEP_ELFLOAD)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 
@@ -19,12 +19,12 @@ BIN_ELFUNLOAD:=\
 OBJ_ELFUNLOAD:=\
     $(DIR_SRC)/elf/elfunload.o \
 
-LDLIBS_ELFUNLOAD:=\
+DEP_ELFUNLOAD:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/format/format.a \
 
-$(BIN_ELFUNLOAD): $(OBJ_ELFUNLOAD) $(LDLIBS_ELFUNLOAD)
+$(BIN_ELFUNLOAD): $(OBJ_ELFUNLOAD) $(DEP_ELFUNLOAD)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 

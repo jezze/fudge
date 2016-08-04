@@ -6,12 +6,12 @@ OBJ_WDRAW:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
 
-LDLIBS_WMDRAW:=\
+DEP_WMDRAW:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/format/format.a \
 
-$(BIN_WDRAW): $(OBJ_WDRAW) $(LDLIBS_WMDRAW)
+$(BIN_WDRAW): $(OBJ_WDRAW) $(DEP_WMDRAW)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 
@@ -24,11 +24,11 @@ OBJ_WEDIT:=\
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/send.o \
 
-LDLIBS_WMEDIT:=\
+DEP_WMEDIT:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_WEDIT): $(OBJ_WEDIT) $(LDLIBS_WMEDIT)
+$(BIN_WEDIT): $(OBJ_WEDIT) $(DEP_WMEDIT)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 
@@ -41,11 +41,11 @@ OBJ_WM:=\
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/send.o \
 
-LDLIBS_WM:=\
+DEP_WM:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_WM): $(OBJ_WM) $(LDLIBS_WM)
+$(BIN_WM): $(OBJ_WM) $(DEP_WM)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 
@@ -59,11 +59,11 @@ OBJ_WSHELL:=\
     $(DIR_SRC)/wm/send.o \
     $(DIR_SRC)/wm/keymap.o \
 
-LDLIBS_WSHELL:=\
+DEP_WSHELL:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_WSHELL): $(OBJ_WSHELL) $(LDLIBS_WSHELL)
+$(BIN_WSHELL): $(OBJ_WSHELL) $(DEP_WSHELL)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 
@@ -75,11 +75,11 @@ OBJ_WTEXT:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
 
-LDLIBS_WTEXT:=\
+DEP_WTEXT:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_WTEXT): $(OBJ_WTEXT) $(LDLIBS_WTEXT)
+$(BIN_WTEXT): $(OBJ_WTEXT) $(DEP_WTEXT)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 

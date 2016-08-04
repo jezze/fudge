@@ -4,11 +4,11 @@ BIN_MANDELBROT:=\
 OBJ_MANDELBROT:=\
     $(DIR_SRC)/mandelbrot/mandelbrot.o \
 
-LDLIBS_MANDELBROT:=\
+DEP_MANDELBROT:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_MANDELBROT): $(OBJ_MANDELBROT) $(LDLIBS_MANDELBROT)
+$(BIN_MANDELBROT): $(OBJ_MANDELBROT) $(DEP_MANDELBROT)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 
