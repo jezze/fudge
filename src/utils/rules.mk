@@ -60,14 +60,14 @@ OBJ_UTILS:=\
     $(DIR_SRC)/utils/shell.o \
     $(DIR_SRC)/utils/slang.o \
 
-OBJ_EXTRA:=\
+LDLIBS_UTILS:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/format/format.a \
 
-$(BIN_UTILS): % : %.o $(OBJ_EXTRA)
+$(BIN_UTILS): % : %.o $(LDLIBS_UTILS)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 
 BIN:=$(BIN) $(BIN_UTILS)
-OBJ:=$(OBJ) $(OBJ_UTILS) $(OBJ_EXTRA)
+OBJ:=$(OBJ) $(OBJ_UTILS)

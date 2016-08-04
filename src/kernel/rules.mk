@@ -11,13 +11,15 @@ OBJ_KERNEL:=\
     $(DIR_SRC)/kernel/task.o \
     $(DIR_SRC)/kernel/service.o \
     $(DIR_SRC)/kernel/service_cpio.o \
+
+LDLIBS_KERNEL:=\
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/format/format.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
 
 $(BIN_KERNEL): LDFLAGS+=-Tplatform/$(PLATFORM)/linker.ld
-$(BIN_KERNEL): $(OBJ_KERNEL)
+$(BIN_KERNEL): $(OBJ_KERNEL) $(LDLIBS_KERNEL)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 
