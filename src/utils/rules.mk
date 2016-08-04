@@ -66,7 +66,7 @@ OBJ_EXTRA:=\
     $(DIR_SRC)/format/format.a \
 
 $(BIN_UTILS): % : %.o $(OBJ_EXTRA)
-	@echo LD $@ 
+	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN:=$(BIN) $(BIN_UTILS)

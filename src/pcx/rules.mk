@@ -9,7 +9,7 @@ OBJ_PCXCMAP:=\
     $(DIR_SRC)/fudge/fudge.a \
 
 $(BIN_PCXCMAP): $(OBJ_PCXCMAP)
-	@echo LD $@ 
+	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN_PCXDATA:=\
@@ -23,7 +23,7 @@ OBJ_PCXDATA:=\
     $(DIR_SRC)/fudge/fudge.a \
 
 $(BIN_PCXDATA): $(OBJ_PCXDATA)
-	@echo LD $@ 
+	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN:=$(BIN) $(BIN_PCXCMAP) $(BIN_PCXDATA)

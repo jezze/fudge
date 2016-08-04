@@ -8,7 +8,7 @@ OBJ_ELFLOAD:=\
     $(DIR_SRC)/format/format.a \
 
 $(BIN_ELFLOAD): $(OBJ_ELFLOAD)
-	@echo LD $@ 
+	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN_ELFUNLOAD:=\
@@ -21,7 +21,7 @@ OBJ_ELFUNLOAD:=\
     $(DIR_SRC)/format/format.a \
 
 $(BIN_ELFUNLOAD): $(OBJ_ELFUNLOAD)
-	@echo LD $@ 
+	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN:=$(BIN) $(BIN_ELFLOAD) $(BIN_ELFUNLOAD)

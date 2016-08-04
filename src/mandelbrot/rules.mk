@@ -7,7 +7,7 @@ OBJ_MANDELBROT:=\
     $(DIR_SRC)/fudge/fudge.a \
 
 $(BIN_MANDELBROT): $(OBJ_MANDELBROT)
-	@echo LD $@ 
+	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 BIN:=$(BIN) $(BIN_MANDELBROT)

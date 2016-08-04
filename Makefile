@@ -21,7 +21,7 @@ CC:=$(TARGET)-cc
 LD:=$(TARGET)-ld
 ARFLAGS:=rcs
 ASFLAGS:=
-CFLAGS:=-c -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -I$(DIR_INCLUDE) -I$(DIR_SRC)
+CFLAGS:=-msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
 LDFLAGS:=-static
 
 RAMDISK_NAME:=$(KERNEL)
@@ -33,7 +33,7 @@ IMAGE_TYPE:=img
 IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 
 .PHONY: all clean snapshot install
-.SUFFIXES: .s .c .o
+.SUFFIXES:
 
 all: $(KERNEL) $(RAMDISK)
 
@@ -44,13 +44,17 @@ snapshot: $(DIR_SNAPSHOT)
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
-.s.o:
-	@echo AS $<
-	@$(AS) $(ASFLAGS) -c -o $@ $<
+$(DIR_SRC)/%.i: $(DIR_SRC)/%.c
+	@echo PP $@: $^
+	@$(CC) $(CFLAGS) -E -o $@ -I$(DIR_INCLUDE) -I$(DIR_SRC) $^
 
-.c.o:
-	@echo CC $<
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+$(DIR_SRC)/%.s: $(DIR_SRC)/%.i
+	@echo CC $@: $^
+	@$(CC) $(CFLAGS) -c -S -o $@ $^
+
+$(DIR_SRC)/%.o: $(DIR_SRC)/%.s
+	@echo AS $@: $^
+	@$(AS) $(ASFLAGS) -c -o $@ $^
 
 include $(DIR_SRC)/rules.mk
 
