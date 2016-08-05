@@ -9,7 +9,6 @@ static void send(unsigned int descriptor, unsigned int destination, unsigned int
 
     header.destination = destination;
     header.type = type;
-    header.count = datacount;
 
     memory_write(buffer, 512, &header, sizeof (struct event_header), 0);
     memory_write(buffer, 512, databuffer, datacount, sizeof (struct event_header));

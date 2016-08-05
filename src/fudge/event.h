@@ -17,7 +17,6 @@ struct event_header
     unsigned int destination;
     unsigned int source;
     unsigned int type;
-    unsigned int count;
 
 };
 

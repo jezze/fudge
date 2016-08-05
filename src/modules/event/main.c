@@ -10,14 +10,10 @@ static struct system_node keyrelease;
 static struct system_node mousepress;
 static struct system_node mouserelease;
 static struct system_node mousemove;
-static struct system_node wmmap;
-static struct system_node wmunmap;
-static struct system_node wmresize;
-static struct system_node wmshow;
-static struct system_node wmhide;
+static struct system_node wm;
 static struct system_node tick;
 
-static void unicast(struct list *list, struct event_header *header)
+static void unicast(struct list *list, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
@@ -31,13 +27,13 @@ static void unicast(struct list *list, struct event_header *header)
             continue;
 
         task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_wcfifo(&task->mailbox.buffer, sizeof (struct event_header) + header->count, header);
+        buffer_wcfifo(&task->mailbox.buffer, count, header);
 
     }
 
 }
 
-static void multicast(struct list *list, struct event_header *header)
+static void multicast(struct list *list, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
@@ -50,7 +46,7 @@ static void multicast(struct list *list, struct event_header *header)
         header->destination = (unsigned int)task;
 
         task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_wcfifo(&task->mailbox.buffer, sizeof (struct event_header) + header->count, header);
+        buffer_wcfifo(&task->mailbox.buffer, count, header);
 
     }
 
@@ -64,10 +60,9 @@ void event_notifykeypress(unsigned char scancode)
     message.header.type = EVENT_KEYPRESS;
     message.header.source = 0;
     message.header.destination = 0;
-    message.header.count = sizeof (struct event_keypress);
     message.keypress.scancode = scancode;
 
-    multicast(&keypress.links, &message.header);
+    multicast(&keypress.links, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
 
 }
 
@@ -79,10 +74,9 @@ void event_notifykeyrelease(unsigned char scancode)
     message.header.type = EVENT_KEYRELEASE;
     message.header.source = 0;
     message.header.destination = 0;
-    message.header.count = sizeof (struct event_keyrelease);
     message.keyrelease.scancode = scancode;
 
-    multicast(&keyrelease.links, &message.header);
+    multicast(&keyrelease.links, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
 
 }
 
@@ -94,11 +88,10 @@ void event_notifymousemove(char relx, char rely)
     message.header.type = EVENT_MOUSEMOVE;
     message.header.source = 0;
     message.header.destination = 0;
-    message.header.count = sizeof (struct event_mousemove);
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
-    multicast(&mousemove.links, &message.header);
+    multicast(&mousemove.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
 
 }
 
@@ -110,10 +103,9 @@ void event_notifymousepress(unsigned int button)
     message.header.type = EVENT_MOUSEPRESS;
     message.header.source = 0;
     message.header.destination = 0;
-    message.header.count = sizeof (struct event_mousepress);
     message.mousepress.button = button;
 
-    multicast(&mousepress.links, &message.header);
+    multicast(&mousepress.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
 
 }
 
@@ -125,10 +117,9 @@ void event_notifymouserelease(unsigned int button)
     message.header.type = EVENT_MOUSERELEASE;
     message.header.source = 0;
     message.header.destination = 0;
-    message.header.count = sizeof (struct event_mouserelease);
     message.mouserelease.button = button;
 
-    multicast(&mouserelease.links, &message.header);
+    multicast(&mouserelease.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
 
 }
 
@@ -140,10 +131,9 @@ void event_notifytick(unsigned int counter)
     message.header.type = EVENT_TICK;
     message.header.source = 0;
     message.header.destination = 0;
-    message.header.count = sizeof (struct event_tick);
     message.tick.counter = counter;
 
-    multicast(&tick.links, &message.header);
+    multicast(&tick.links, &message.header, sizeof (struct event_header) + sizeof (struct event_tick));
 
 }
 
@@ -155,9 +145,9 @@ static unsigned int write(struct system_node *self, struct service_state *state,
     header->source = (unsigned int)state->link.data;
 
     if (header->destination)
-        unicast(&self->links, header);
+        unicast(&self->links, header, count);
     else
-        multicast(&self->links, header);
+        multicast(&self->links, header, count);
 
     return count;
 
@@ -173,11 +163,7 @@ void module_init(void)
     system_initnode(&mousepress, SYSTEM_NODETYPE_MAILBOX, "mousepress");
     system_initnode(&mouserelease, SYSTEM_NODETYPE_MAILBOX, "mouserelease");
     system_initnode(&mousemove, SYSTEM_NODETYPE_MAILBOX, "mousemove");
-    system_initnode(&wmmap, SYSTEM_NODETYPE_MAILBOX, "wmmap");
-    system_initnode(&wmunmap, SYSTEM_NODETYPE_MAILBOX, "wmunmap");
-    system_initnode(&wmresize, SYSTEM_NODETYPE_MAILBOX, "wmresize");
-    system_initnode(&wmshow, SYSTEM_NODETYPE_MAILBOX, "wmshow");
-    system_initnode(&wmhide, SYSTEM_NODETYPE_MAILBOX, "wmhide");
+    system_initnode(&wm, SYSTEM_NODETYPE_MAILBOX, "wm");
     system_initnode(&tick, SYSTEM_NODETYPE_MAILBOX, "tick");
 
     poll.write = write;
@@ -186,11 +172,7 @@ void module_init(void)
     mousepress.write = write;
     mouserelease.write = write;
     mousemove.write = write;
-    wmmap.write = write;
-    wmunmap.write = write;
-    wmresize.write = write;
-    wmshow.write = write;
-    wmhide.write = write;
+    wm.write = write;
     tick.write = write;
 
     system_addchild(&root, &poll);
@@ -199,11 +181,7 @@ void module_init(void)
     system_addchild(&root, &mousepress);
     system_addchild(&root, &mouserelease);
     system_addchild(&root, &mousemove);
-    system_addchild(&root, &wmmap);
-    system_addchild(&root, &wmunmap);
-    system_addchild(&root, &wmresize);
-    system_addchild(&root, &wmshow);
-    system_addchild(&root, &wmhide);
+    system_addchild(&root, &wm);
     system_addchild(&root, &tick);
 
 }

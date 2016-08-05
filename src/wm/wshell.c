@@ -151,7 +151,7 @@ static void onkeypress(struct event_header *header)
     struct event_keypress keypress;
     struct keycode *keycode;
 
-    file_readall(CALL_L0, &keypress, header->count);
+    file_readall(CALL_L0, &keypress, sizeof (struct event_keypress));
 
     switch (keypress.scancode)
     {
@@ -206,7 +206,7 @@ static void onkeyrelease(struct event_header *header)
 
     struct event_keyrelease keyrelease;
 
-    file_readall(CALL_L0, &keyrelease, header->count);
+    file_readall(CALL_L0, &keyrelease, sizeof (struct event_keyrelease));
 
     switch (keyrelease.scancode)
     {
@@ -235,7 +235,7 @@ static void onwmresize(struct event_header *header)
 
     struct event_wmresize wmresize;
 
-    file_readall(CALL_L0, &wmresize, header->count);
+    file_readall(CALL_L0, &wmresize, sizeof (struct event_wmresize));
     box_setsize(&size, wmresize.x, wmresize.y, wmresize.w, wmresize.h);
     box_setsize(&content.size, size.x + 12, size.y + 12, size.w - 24, size.h - 24);
 
@@ -283,9 +283,13 @@ void main(void)
     if (!file_walk(CALL_L0, "/system/event/poll"))
         return;
 
+    if (!file_walk(CALL_L1, "/system/event/wm"))
+        return;
+
     file_open(CALL_PO);
     file_open(CALL_L0);
-    send_wmmap(CALL_L0);
+    file_open(CALL_L1);
+    send_wmmap(CALL_L1);
 
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
     {
@@ -309,6 +313,7 @@ void main(void)
 
     }
 
+    file_close(CALL_L1);
     file_close(CALL_L0);
     file_close(CALL_PO);
 
