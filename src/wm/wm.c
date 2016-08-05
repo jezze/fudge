@@ -716,8 +716,24 @@ void main(void)
     if (!file_walk(CALL_L0, "/system/event/poll"))
         return;
 
+    if (!file_walk(CALL_L1, "/system/event/keypress"))
+        return;
+
+    if (!file_walk(CALL_L2, "/system/event/keyrelease"))
+        return;
+
+    if (!file_walk(CALL_L3, "/system/event/mousepress"))
+        return;
+
+    if (!file_walk(CALL_L4, "/system/event/mousemove"))
+        return;
+
     file_open(CALL_PO);
     file_open(CALL_L0);
+    file_open(CALL_L1);
+    file_open(CALL_L2);
+    file_open(CALL_L3);
+    file_open(CALL_L4);
     send_wmmap(CALL_L0);
 
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
@@ -745,6 +761,10 @@ void main(void)
 
     }
 
+    file_close(CALL_L4);
+    file_close(CALL_L3);
+    file_close(CALL_L2);
+    file_close(CALL_L1);
     file_close(CALL_L0);
     file_close(CALL_PO);
 

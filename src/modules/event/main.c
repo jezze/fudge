@@ -17,19 +17,42 @@ static struct system_node wmshow;
 static struct system_node wmhide;
 static struct system_node tick;
 
-static unsigned int notify(void *buffer)
+static void unicast(struct list *list, struct event_header *header)
 {
 
-    struct event_header *header = buffer;
-    unsigned int count = sizeof (struct event_header) + header->count;
+    struct list_item *current;
 
-    if (!poll.links.count)
-        return 0;
+    for (current = list->head; current; current = current->next)
+    {
 
-    if (!header->destination)
-        header->destination = (unsigned int)poll.links.head->data;
+        struct task *task = current->data;
 
-    return system_send(header->destination, buffer, count);
+        if (header->destination != (unsigned int)task)
+            continue;
+
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
+        buffer_wcfifo(&task->mailbox.buffer, sizeof (struct event_header) + header->count, header);
+
+    }
+
+}
+
+static void multicast(struct list *list, struct event_header *header)
+{
+
+    struct list_item *current;
+
+    for (current = list->head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+
+        header->destination = (unsigned int)task;
+
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
+        buffer_wcfifo(&task->mailbox.buffer, sizeof (struct event_header) + header->count, header);
+
+    }
 
 }
 
@@ -44,7 +67,7 @@ void event_notifykeypress(unsigned char scancode)
     message.header.count = sizeof (struct event_keypress);
     message.keypress.scancode = scancode;
 
-    notify(&message);
+    multicast(&keypress.links, &message.header);
 
 }
 
@@ -59,7 +82,7 @@ void event_notifykeyrelease(unsigned char scancode)
     message.header.count = sizeof (struct event_keyrelease);
     message.keyrelease.scancode = scancode;
 
-    notify(&message);
+    multicast(&keyrelease.links, &message.header);
 
 }
 
@@ -75,7 +98,7 @@ void event_notifymousemove(char relx, char rely)
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
-    notify(&message);
+    multicast(&mousemove.links, &message.header);
 
 }
 
@@ -90,7 +113,7 @@ void event_notifymousepress(unsigned int button)
     message.header.count = sizeof (struct event_mousepress);
     message.mousepress.button = button;
 
-    notify(&message);
+    multicast(&mousepress.links, &message.header);
 
 }
 
@@ -105,7 +128,7 @@ void event_notifymouserelease(unsigned int button)
     message.header.count = sizeof (struct event_mouserelease);
     message.mouserelease.button = button;
 
-    notify(&message);
+    multicast(&mouserelease.links, &message.header);
 
 }
 
@@ -120,24 +143,30 @@ void event_notifytick(unsigned int counter)
     message.header.count = sizeof (struct event_tick);
     message.tick.counter = counter;
 
-    notify(&message);
+    multicast(&tick.links, &message.header);
 
 }
 
-static unsigned int poll_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct event_header *header = buffer;
 
     header->source = (unsigned int)state->link.data;
 
-    return notify(buffer);
+    if (header->destination)
+        unicast(&self->links, header);
+    else
+        multicast(&self->links, header);
+
+    return count;
 
 }
 
 void module_init(void)
 {
 
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
     system_initnode(&poll, SYSTEM_NODETYPE_MAILBOX, "poll");
     system_initnode(&keypress, SYSTEM_NODETYPE_MAILBOX, "keypress");
     system_initnode(&keyrelease, SYSTEM_NODETYPE_MAILBOX, "keyrelease");
@@ -151,9 +180,19 @@ void module_init(void)
     system_initnode(&wmhide, SYSTEM_NODETYPE_MAILBOX, "wmhide");
     system_initnode(&tick, SYSTEM_NODETYPE_MAILBOX, "tick");
 
-    poll.write = poll_write;
+    poll.write = write;
+    keypress.write = write;
+    keyrelease.write = write;
+    mousepress.write = write;
+    mouserelease.write = write;
+    mousemove.write = write;
+    wmmap.write = write;
+    wmunmap.write = write;
+    wmresize.write = write;
+    wmshow.write = write;
+    wmhide.write = write;
+    tick.write = write;
 
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
     system_addchild(&root, &poll);
     system_addchild(&root, &keypress);
     system_addchild(&root, &keyrelease);
