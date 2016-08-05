@@ -6,6 +6,23 @@
 static struct system_node root;
 static struct system_node clone;
 
+static void wakeup(struct list *list)
+{
+
+    struct list_item *current;
+
+    for (current = list->head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+
+        list_remove(list, current);
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
+
+    }
+
+}
+
 static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -19,7 +36,7 @@ static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, s
 
     }
 
-    system_wakeup(&endtarget->writelinks);
+    wakeup(&endtarget->writelinks);
 
     return count;
 
@@ -38,7 +55,7 @@ static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, 
 
     }
 
-    system_wakeup(&endtarget->readlinks);
+    wakeup(&endtarget->readlinks);
 
     return count;
 

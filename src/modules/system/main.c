@@ -70,23 +70,6 @@ void system_multicast(struct list *list, void *buffer, unsigned int count)
 
 }
 
-void system_wakeup(struct list *list)
-{
-
-    struct list_item *current;
-
-    for (current = list->head; current; current = current->next)
-    {
-
-        struct task *task = current->data;
-
-        list_remove(list, current);
-        task_setstatus(task, TASK_STATUS_UNBLOCKED);
-
-    }
-
-}
-
 void system_addchild(struct system_node *group, struct system_node *node)
 {
 
