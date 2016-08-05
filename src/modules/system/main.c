@@ -53,20 +53,6 @@ static unsigned int node_childgroup(struct system_node *self, char *path, unsign
 
 }
 
-unsigned int system_send(unsigned int id, void *buffer, unsigned int count)
-{
-
-    struct task *destination = (struct task *)id;
-
-    if (destination->mailbox.buffer.capacity - destination->mailbox.buffer.count < count)
-        return 0;
-
-    task_setstatus(destination, TASK_STATUS_UNBLOCKED);
-
-    return buffer_wcfifo(&destination->mailbox.buffer, count, buffer);
-
-}
-
 void system_multicast(struct list *list, void *buffer, unsigned int count)
 {
 
