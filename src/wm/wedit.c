@@ -243,7 +243,7 @@ void main(void)
     file_open(CALL_PO);
     file_open(CALL_L0);
     file_open(CALL_L1);
-    send_wmmap(CALL_L1);
+    send_wmmap(CALL_L1, 0, 0);
 
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
     {

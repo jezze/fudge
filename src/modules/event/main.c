@@ -142,7 +142,8 @@ static unsigned int write(struct system_node *self, struct service_state *state,
 
     struct event_header *header = buffer;
 
-    header->source = (unsigned int)state->link.data;
+    if (!header->source)
+        header->source = (unsigned int)state->link.data;
 
     if (header->destination)
         unicast(&self->links, header, count);
