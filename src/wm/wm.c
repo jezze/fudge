@@ -39,7 +39,7 @@ static struct box body;
 static struct list remotelist;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
-static void (*handlers[EVENTS])(struct event_header *header, void *data);
+static void (*handlers[EVENTS])(struct event_header *header);
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
@@ -243,14 +243,16 @@ static void hideview(unsigned int source, struct view *view)
 
 }
 
-static void onkeypress(struct event_header *header, void *data)
+static void onkeypress(struct event_header *header)
 {
 
-    struct event_keypress *keypress = data;
+    struct event_keypress keypress;
     struct view *nextview;
     struct remote *nextremote;
 
-    switch (keypress->scancode)
+    file_readall(CALL_L0, &keypress, header->count);
+
+    switch (keypress.scancode)
     {
 
     case 0x2A:
@@ -270,13 +272,13 @@ static void onkeypress(struct event_header *header, void *data)
     {
 
         if (viewfocus->remotefocus)
-            send_keypress(CALL_L0, viewfocus->remotefocus->source, keypress->scancode);
+            send_keypress(CALL_L0, viewfocus->remotefocus->source, keypress.scancode);
 
         return;
 
     }
 
-    switch (keypress->scancode)
+    switch (keypress.scancode)
     {
 
     case 0x02:
@@ -287,7 +289,7 @@ static void onkeypress(struct event_header *header, void *data)
     case 0x07:
     case 0x08:
     case 0x09:
-        nextview = &views[keypress->scancode - 0x02];
+        nextview = &views[keypress.scancode - 0x02];
 
         if (nextview == viewfocus)
             break;
@@ -436,12 +438,14 @@ static void onkeypress(struct event_header *header, void *data)
 
 }
 
-static void onkeyrelease(struct event_header *header, void *data)
+static void onkeyrelease(struct event_header *header)
 {
 
-    struct event_keyrelease *keyrelease = data;
+    struct event_keyrelease keyrelease;
 
-    switch (keyrelease->scancode)
+    file_readall(CALL_L0, &keyrelease, header->count);
+
+    switch (keyrelease.scancode)
     {
 
     case 0x2A:
@@ -461,7 +465,7 @@ static void onkeyrelease(struct event_header *header, void *data)
     {
 
         if (viewfocus->remotefocus)
-            send_keyrelease(CALL_L0, viewfocus->remotefocus->source, keyrelease->scancode);
+            send_keyrelease(CALL_L0, viewfocus->remotefocus->source, keyrelease.scancode);
 
         return;
 
@@ -469,14 +473,16 @@ static void onkeyrelease(struct event_header *header, void *data)
 
 }
 
-static void onmousepress(struct event_header *header, void *data)
+static void onmousepress(struct event_header *header)
 {
 
-    struct event_mousepress *mousepress = data;
+    struct event_mousepress mousepress;
     struct list_item *current;
     unsigned int i;
 
-    switch (mousepress->button)
+    file_readall(CALL_L0, &mousepress, header->count);
+
+    switch (mousepress.button)
     {
 
     case 0x01:
@@ -524,31 +530,33 @@ static void onmousepress(struct event_header *header, void *data)
 
 }
 
-static void onmousemove(struct event_header *header, void *data)
+static void onmousemove(struct event_header *header)
 {
 
-    struct event_mousemove *mousemove = data;
+    struct event_mousemove mousemove;
 
-    mouse.x += mousemove->relx;
-    mouse.y -= mousemove->rely;
+    file_readall(CALL_L0, &mousemove, header->count);
 
-    if (mousemove->relx > 0 && mouse.x >= size.w)
+    mouse.x += mousemove.relx;
+    mouse.y -= mousemove.rely;
+
+    if (mousemove.relx > 0 && mouse.x >= size.w)
         mouse.x = size.w - 1;
 
-    if (mousemove->relx < 0 && mouse.x >= size.w)
+    if (mousemove.relx < 0 && mouse.x >= size.w)
         mouse.x = 0;
 
-    if (mousemove->rely < 0 && mouse.y >= size.h)
+    if (mousemove.rely < 0 && mouse.y >= size.h)
         mouse.y = size.h - 1;
 
-    if (mousemove->rely > 0 && mouse.y >= size.h)
+    if (mousemove.rely > 0 && mouse.y >= size.h)
         mouse.y = 0;
 
     writemouse(header->destination, 3, &mouse);
 
 }
 
-static void onwmmap(struct event_header *header, void *data)
+static void onwmmap(struct event_header *header)
 {
 
     if (header->source == header->destination)
@@ -581,7 +589,7 @@ static void onwmmap(struct event_header *header, void *data)
 
 }
 
-static void onwmunmap(struct event_header *header, void *data)
+static void onwmunmap(struct event_header *header)
 {
 
     unsigned int i;
@@ -605,13 +613,14 @@ static void onwmunmap(struct event_header *header, void *data)
 
 }
 
-static void onwmresize(struct event_header *header, void *data)
+static void onwmresize(struct event_header *header)
 {
 
-    struct event_wmresize *wmresize = data;
+    struct event_wmresize wmresize;
     unsigned int i;
 
-    box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
+    file_readall(CALL_L0, &wmresize, header->count);
+    box_setsize(&size, wmresize.x, wmresize.y, wmresize.w, wmresize.h);
     box_setsize(&body, size.x, size.y + 48, size.w, size.h - 48);
     box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
@@ -631,7 +640,7 @@ static void onwmresize(struct event_header *header, void *data)
 
 }
 
-static void onwmshow(struct event_header *header, void *data)
+static void onwmshow(struct event_header *header)
 {
 
     unsigned int i;
@@ -646,7 +655,7 @@ static void onwmshow(struct event_header *header, void *data)
 
 }
 
-static void onwmhide(struct event_header *header, void *data)
+static void onwmhide(struct event_header *header)
 {
 
     unsigned int i;
@@ -739,13 +748,10 @@ void main(void)
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
     {
 
-        unsigned char data[512];
+        if (!handlers[header.type])
+            continue;
 
-        if (header.count)
-            file_readall(CALL_L0, data, header.count);
-
-        if (handlers[header.type])
-            handlers[header.type](&header, data);
+        handlers[header.type](&header);
 
         if (datacount)
         {

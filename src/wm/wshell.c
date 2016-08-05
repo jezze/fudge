@@ -16,7 +16,7 @@ static struct buffer input;
 static struct box size;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
-static void (*handlers[EVENTS])(struct event_header *header, void *data);
+static void (*handlers[EVENTS])(struct event_header *header);
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
@@ -145,13 +145,15 @@ static void interpret(void)
 
 }
 
-static void onkeypress(struct event_header *header, void *data)
+static void onkeypress(struct event_header *header)
 {
 
-    struct event_keypress *keypress = data;
+    struct event_keypress keypress;
     struct keycode *keycode;
 
-    switch (keypress->scancode)
+    file_readall(CALL_L0, &keypress, header->count);
+
+    switch (keypress.scancode)
     {
 
     case 0x2A:
@@ -171,7 +173,7 @@ static void onkeypress(struct event_header *header, void *data)
         break;
 
     case 0x1C:
-        keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
+        keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
         if (!buffer_wcfifo(&input, keycode->length, &keycode->value))
             break;
@@ -183,7 +185,7 @@ static void onkeypress(struct event_header *header, void *data)
         break;
 
     default:
-        keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
+        keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
         if (!buffer_wcfifo(&input, keycode->length, &keycode->value))
             break;
@@ -199,12 +201,14 @@ static void onkeypress(struct event_header *header, void *data)
 
 }
 
-static void onkeyrelease(struct event_header *header, void *data)
+static void onkeyrelease(struct event_header *header)
 {
 
-    struct event_keyrelease *keyrelease = data;
+    struct event_keyrelease keyrelease;
 
-    switch (keyrelease->scancode)
+    file_readall(CALL_L0, &keyrelease, header->count);
+
+    switch (keyrelease.scancode)
     {
 
     case 0x2A:
@@ -217,7 +221,7 @@ static void onkeyrelease(struct event_header *header, void *data)
 
 }
 
-static void onwmunmap(struct event_header *header, void *data)
+static void onwmunmap(struct event_header *header)
 {
 
     writetext(header->destination, 0, &content, text, textcount);
@@ -226,24 +230,25 @@ static void onwmunmap(struct event_header *header, void *data)
 
 }
 
-static void onwmresize(struct event_header *header, void *data)
+static void onwmresize(struct event_header *header)
 {
 
-    struct event_wmresize *wmresize = data;
+    struct event_wmresize wmresize;
 
-    box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
+    file_readall(CALL_L0, &wmresize, header->count);
+    box_setsize(&size, wmresize.x, wmresize.y, wmresize.w, wmresize.h);
     box_setsize(&content.size, size.x + 12, size.y + 12, size.w - 24, size.h - 24);
 
 }
 
-static void onwmshow(struct event_header *header, void *data)
+static void onwmshow(struct event_header *header)
 {
 
     writetext(header->destination, 1, &content, text, textcount);
 
 }
 
-static void onwmhide(struct event_header *header, void *data)
+static void onwmhide(struct event_header *header)
 {
 
     writetext(header->destination, 0, &content, text, textcount);
@@ -285,13 +290,10 @@ void main(void)
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
     {
 
-        unsigned char data[512];
+        if (!handlers[header.type])
+            continue;
 
-        if (header.count)
-            file_readall(CALL_L0, data, header.count);
-
-        if (handlers[header.type])
-            handlers[header.type](&header, data);
+        handlers[header.type](&header);
 
         if (datacount)
         {
