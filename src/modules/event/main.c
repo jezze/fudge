@@ -7,11 +7,11 @@ static struct system_node root;
 static struct system_node poll;
 static struct system_node keypress;
 static struct system_node keyrelease;
+static struct system_node mousemove;
 static struct system_node mousepress;
 static struct system_node mouserelease;
-static struct system_node mousemove;
-static struct system_node wm;
 static struct system_node tick;
+static struct system_node wm;
 
 static void unicast(struct list *list, struct event_header *header, unsigned int count)
 {
@@ -161,29 +161,29 @@ void module_init(void)
     system_initnode(&poll, SYSTEM_NODETYPE_MAILBOX, "poll");
     system_initnode(&keypress, SYSTEM_NODETYPE_MAILBOX, "keypress");
     system_initnode(&keyrelease, SYSTEM_NODETYPE_MAILBOX, "keyrelease");
+    system_initnode(&mousemove, SYSTEM_NODETYPE_MAILBOX, "mousemove");
     system_initnode(&mousepress, SYSTEM_NODETYPE_MAILBOX, "mousepress");
     system_initnode(&mouserelease, SYSTEM_NODETYPE_MAILBOX, "mouserelease");
-    system_initnode(&mousemove, SYSTEM_NODETYPE_MAILBOX, "mousemove");
-    system_initnode(&wm, SYSTEM_NODETYPE_MAILBOX, "wm");
     system_initnode(&tick, SYSTEM_NODETYPE_MAILBOX, "tick");
+    system_initnode(&wm, SYSTEM_NODETYPE_MAILBOX, "wm");
 
     poll.write = write;
     keypress.write = write;
     keyrelease.write = write;
+    mousemove.write = write;
     mousepress.write = write;
     mouserelease.write = write;
-    mousemove.write = write;
-    wm.write = write;
     tick.write = write;
+    wm.write = write;
 
     system_addchild(&root, &poll);
     system_addchild(&root, &keypress);
     system_addchild(&root, &keyrelease);
+    system_addchild(&root, &mousemove);
     system_addchild(&root, &mousepress);
     system_addchild(&root, &mouserelease);
-    system_addchild(&root, &mousemove);
-    system_addchild(&root, &wm);
     system_addchild(&root, &tick);
+    system_addchild(&root, &wm);
 
 }
 
