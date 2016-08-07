@@ -8,12 +8,7 @@ static struct system_node root;
 void block_notify(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-}
-
-static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return 0;
+    system_multicast(&interface->data.links, buffer, count);
 
 }
 
@@ -46,7 +41,6 @@ void block_initinterface(struct block_interface *interface, unsigned int (*rdata
 
     interface->rdata = rdata;
     interface->wdata = wdata;
-    interface->data.read = interfacedata_read;
 
 }
 
