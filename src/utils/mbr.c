@@ -20,9 +20,7 @@ struct partition
 struct mbr
 {
 
-    unsigned char boot[440];
-    unsigned char id[4];
-    unsigned char protected[2];
+    unsigned char boot[446];
     struct partition partition[4];
     unsigned char signature[2];
 
@@ -42,33 +40,57 @@ void main(void)
         return;
 
     file_open(CALL_PO);
-    file_writeall(CALL_PO, "Id: ", 4);
-    file_writeall(CALL_PO, &mbr.id, 4);
-    file_writeall(CALL_PO, "\n", 1);
 
     for (i = 0; i < 4; i++)
     {
 
         char num[32];
-        unsigned int count;
+        unsigned int start = (mbr.partition[i].sectorlba[3] << 24) | (mbr.partition[i].sectorlba[2] << 16) | (mbr.partition[i].sectorlba[1] << 8) | (mbr.partition[i].sectorlba[0]);
+        unsigned int sectors = (mbr.partition[i].sectortotal[3] << 24) | (mbr.partition[i].sectortotal[2] << 16) | (mbr.partition[i].sectortotal[1] << 8) | (mbr.partition[i].sectortotal[0]);
 
         file_writeall(CALL_PO, "Partition ", 10);
-
-        count = ascii_wvalue(num, 32, i, 10, 0);
-
-        file_writeall(CALL_PO, num, count);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, i, 10, 0));
         file_writeall(CALL_PO, ":\n", 2);
 
         if (mbr.partition[i].systemid == 0)
+        {
+
+            file_writeall(CALL_PO, "    (none)", 10);
+            file_writeall(CALL_PO, "\n", 1);
+
             continue;
 
-        file_writeall(CALL_PO, "    Boot 0x", 11);
-        count = ascii_wvalue(num, 32, mbr.partition[i].boot, 16, 0);
-        file_writeall(CALL_PO, num, count);
+        }
+
+        file_writeall(CALL_PO, "    Boot: 0x", 12);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, mbr.partition[i].boot, 16, 0));
         file_writeall(CALL_PO, "\n", 1);
-        file_writeall(CALL_PO, "    Systemid 0x", 15);
-        count = ascii_wvalue(num, 32, mbr.partition[i].systemid, 16, 0);
-        file_writeall(CALL_PO, num, count);
+        file_writeall(CALL_PO, "    Id: 0x", 10);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, mbr.partition[i].systemid, 16, 0));
+        file_writeall(CALL_PO, "\n", 1);
+        file_writeall(CALL_PO, "    Start: ", 11);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, start, 10, 0));
+        file_writeall(CALL_PO, "\n", 1);
+        file_writeall(CALL_PO, "    End: ", 9);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, start + sectors - 1, 10, 0));
+        file_writeall(CALL_PO, "\n", 1);
+        file_writeall(CALL_PO, "    Sectors: ", 13);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, sectors, 10, 0));
+        file_writeall(CALL_PO, "\n", 1);
+        file_writeall(CALL_PO, "    Cylinder: ", 14);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, mbr.partition[i].cylinderbase | ((mbr.partition[i].sectorbase & 0xC0) << 8), 10, 0));
+        file_writeall(CALL_PO, "/", 1);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, mbr.partition[i].cylinderlimit | ((mbr.partition[i].sectorlimit & 0xC0) << 8), 10, 0));
+        file_writeall(CALL_PO, "\n", 1);
+        file_writeall(CALL_PO, "    Head: ", 10);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, mbr.partition[i].headbase, 10, 0));
+        file_writeall(CALL_PO, "/", 1);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, mbr.partition[i].headlimit, 10, 0));
+        file_writeall(CALL_PO, "\n", 1);
+        file_writeall(CALL_PO, "    Sector: ", 12);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, mbr.partition[i].sectorbase & 0x2F, 10, 0));
+        file_writeall(CALL_PO, "/", 1);
+        file_writeall(CALL_PO, num, ascii_wvalue(num, 32, mbr.partition[i].sectorlimit & 0x2F, 10, 0));
         file_writeall(CALL_PO, "\n", 1);
 
     }
