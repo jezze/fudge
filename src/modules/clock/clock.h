@@ -4,9 +4,6 @@ struct clock_interface
     struct resource resource;
     struct system_node root;
     struct system_node ctrl;
-    struct system_node timestamp;
-    struct system_node date;
-    struct system_node time;
     unsigned int id;
     struct ctrl_clocksettings settings;
     unsigned char (*getseconds)(void);

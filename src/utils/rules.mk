@@ -26,6 +26,7 @@ BIN_UTILS:=\
     $(DIR_SRC)/utils/reboot \
     $(DIR_SRC)/utils/shell \
     $(DIR_SRC)/utils/slang \
+    $(DIR_SRC)/utils/timestamp \
 
 OBJ_UTILS:=\
     $(DIR_SRC)/utils/cat.o \
@@ -55,6 +56,7 @@ OBJ_UTILS:=\
     $(DIR_SRC)/utils/reboot.o \
     $(DIR_SRC)/utils/shell.o \
     $(DIR_SRC)/utils/slang.o \
+    $(DIR_SRC)/utils/timestamp.o \
 
 DEP_UTILS:=\
     $(DIR_SRC)/abi/abi.a \
