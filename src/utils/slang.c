@@ -280,7 +280,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!(file_walk(CALL_CP, t->str) || file_walkfrom(CALL_CP, CALL_L0, t->str)))
+            if (!(file_walkfrom(CALL_CP, CALL_L0, t->str) || file_walk(CALL_CP, t->str)))
                 return;
 
             if (!file_walk(CALL_L1, "/system/pipe/clone/"))
@@ -298,7 +298,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!(file_walk(CALL_CP, t->str) || file_walkfrom(CALL_CP, CALL_L0, t->str)))
+            if (!(file_walkfrom(CALL_CP, CALL_L0, t->str) || file_walk(CALL_CP, t->str)))
                 return;
 
             file_duplicate(CALL_CO, CALL_PO);
