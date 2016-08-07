@@ -13,3 +13,5 @@ elfload < /mod/bga.ko.0
 elfload < /mod/vga.ko.0
 elfload < /mod/uart.ko.0
 elfload < /mod/rtl8139.ko.0
+elfload < /mod/ide.ko
+elfload < /mod/ata.ko.0

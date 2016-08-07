@@ -23,19 +23,16 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int blockinterface_rdata(unsigned int offset, void *buffer, unsigned int count)
+static unsigned int blockinterface_rdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    offset = offset / 512;
-    count = count / 512;
-
-    ide_rpio28(blockinterface.id, 0, offset, count);
+    ide_rpio28(blockinterface.id, 0, count, offset);
 
     return 0;
 
 }
 
-static unsigned int blockinterface_wdata(unsigned int offset, void *buffer, unsigned int count)
+static unsigned int blockinterface_wdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
     return 0;

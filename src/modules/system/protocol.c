@@ -144,22 +144,6 @@ static unsigned int readgroup(struct system_node *self, struct service_state *st
 
 }
 
-static unsigned int readmailbox(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    struct task *task = state->link.data;
-
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
-
-    if (!count)
-        task_setstatus(task, TASK_STATUS_BLOCKED);
-
-    state->offset += count;
-
-    return count;
-
-}
-
 static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -171,9 +155,6 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
     case SYSTEM_NODETYPE_GROUP:
     case SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI:
         return readgroup(node, state, buffer, count);
-
-    case SYSTEM_NODETYPE_MAILBOX:
-        return readmailbox(node, state, buffer, count);
 
     }
 

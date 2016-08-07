@@ -177,43 +177,47 @@ unsigned int ide_wblock(unsigned int id, void *buffer, unsigned int count)
 
 }
 
-void ide_rpio28(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count)
+void ide_rpio28(unsigned int id, unsigned int slave, unsigned int count, unsigned int offset)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
+    unsigned int sector = offset / 512;
 
-    setpio28(data, control, slave, sector, count, CONTROLPIO28READ);
+    setpio28(data, control, slave, sector, count / 512, CONTROLPIO28READ);
 
 }
 
-void ide_wpio28(unsigned int id, unsigned int slave, unsigned int sector, unsigned int count)
+void ide_wpio28(unsigned int id, unsigned int slave, unsigned int count, unsigned int offset)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
+    unsigned int sector = offset / 512;
 
-    setpio28(data, control, slave, sector, count, CONTROLPIO28WRITE);
+    setpio28(data, control, slave, sector, count / 512, CONTROLPIO28WRITE);
 
 }
 
-void ide_rpio48(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count)
+void ide_rpio48(unsigned int id, unsigned int slave, unsigned int count, unsigned int offset)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
+    unsigned int sector = offset / 512;
 
-    setpio48(data, control, slave, sectorlow, sectorhigh, count, CONTROLPIO48READ);
+    setpio48(data, control, slave, sector, 0, count / 512, CONTROLPIO48READ);
 
 }
 
-void ide_wpio48(unsigned int id, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count)
+void ide_wpio48(unsigned int id, unsigned int slave, unsigned int count, unsigned int offset)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
+    unsigned int sector = offset / 512;
 
-    setpio48(data, control, slave, sectorlow, sectorhigh, count, CONTROLPIO48WRITE);
+    setpio48(data, control, slave, sector, 0, count / 512, CONTROLPIO48WRITE);
 
 }
 

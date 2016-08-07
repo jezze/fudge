@@ -5,7 +5,7 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-static unsigned int node_childgroup(struct system_node *self, char *path, unsigned int length)
+unsigned int system_childgroup(struct system_node *self, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -50,6 +50,22 @@ static unsigned int node_childgroup(struct system_node *self, char *path, unsign
     }
 
     return 0;
+
+}
+
+unsigned int system_readmailbox(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    struct task *task = state->link.data;
+
+    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+
+    if (!count)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    state->offset += count;
+
+    return count;
 
 }
 
@@ -121,7 +137,14 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type & SYSTEM_NODETYPE_GROUP)
     {
 
-        node->child = node_childgroup;
+        node->child = system_childgroup;
+
+    }
+
+    if (type & SYSTEM_NODETYPE_MAILBOX)
+    {
+
+        node->read = system_readmailbox;
 
     }
 
