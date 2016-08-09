@@ -8,7 +8,7 @@
 static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static char text[FUDGE_BSIZE];
+static char textbuffer[FUDGE_BSIZE];
 static unsigned int textcount;
 static struct box size;
 static unsigned char databuffer[FUDGE_BSIZE];
@@ -39,14 +39,14 @@ static void writetext(unsigned int source, unsigned int z, struct element_text *
 static unsigned int rowstart()
 {
 
-    return ascii_searchreverse(text, 0, content.cursor, '\n');
+    return ascii_searchreverse(textbuffer, 0, content.cursor, '\n');
 
 }
 
 static unsigned int rowstop()
 {
 
-    return ascii_search(text, content.cursor, textcount, '\n');
+    return ascii_search(textbuffer, content.cursor, textcount, '\n');
 
 }
 
@@ -58,12 +58,12 @@ static unsigned int rowup()
     unsigned int count;
     unsigned int countp;
 
-    start = ascii_searchreverse(text, 0, content.cursor, '\n');
+    start = ascii_searchreverse(textbuffer, 0, content.cursor, '\n');
 
     if (!start)
         return 0;
 
-    startp = ascii_searchreverse(text, 0, start - 1, '\n');
+    startp = ascii_searchreverse(textbuffer, 0, start - 1, '\n');
     count = content.cursor - start;
     countp = start - startp - 1;
 
@@ -79,14 +79,14 @@ static unsigned int rowdown()
     unsigned int count;
     unsigned int countn;
 
-    start = ascii_searchreverse(text, 0, content.cursor, '\n');
-    startn = ascii_search(text, content.cursor, textcount, '\n') + 1;
+    start = ascii_searchreverse(textbuffer, 0, content.cursor, '\n');
+    startn = ascii_search(textbuffer, content.cursor, textcount, '\n') + 1;
 
     if (startn == textcount)
         return startn - 1;
 
     count = content.cursor - start;
-    countn = ascii_search(text, startn, textcount, '\n') - startn;
+    countn = ascii_search(textbuffer, startn, textcount, '\n') - startn;
 
     return startn + (countn < count ? countn : count);
 
@@ -111,14 +111,14 @@ static void onkeypress(struct event_header *header)
     case 0x47:
         content.cursor = rowstart();
 
-        writetext(header->destination, 1, &content, text, textcount);
+        writetext(header->destination, 1, &content, textbuffer, textcount);
 
         break;
 
     case 0x48:
         content.cursor = rowup();
 
-        writetext(header->destination, 1, &content, text, textcount);
+        writetext(header->destination, 1, &content, textbuffer, textcount);
 
         break;
 
@@ -126,7 +126,7 @@ static void onkeypress(struct event_header *header)
         if (content.cursor > 0)
             content.cursor -= 1;
 
-        writetext(header->destination, 1, &content, text, textcount);
+        writetext(header->destination, 1, &content, textbuffer, textcount);
 
         break;
 
@@ -134,21 +134,21 @@ static void onkeypress(struct event_header *header)
         if (content.cursor < textcount - 1)
             content.cursor += 1;
 
-        writetext(header->destination, 1, &content, text, textcount);
+        writetext(header->destination, 1, &content, textbuffer, textcount);
 
         break;
 
     case 0x4F:
         content.cursor = rowstop();
 
-        writetext(header->destination, 1, &content, text, textcount);
+        writetext(header->destination, 1, &content, textbuffer, textcount);
 
         break;
 
     case 0x50:
         content.cursor = rowdown();
 
-        writetext(header->destination, 1, &content, text, textcount);
+        writetext(header->destination, 1, &content, textbuffer, textcount);
 
         break;
 
@@ -179,7 +179,7 @@ static void onkeyrelease(struct event_header *header)
 static void onwmunmap(struct event_header *header)
 {
 
-    writetext(header->destination, 0, &content, text, textcount);
+    writetext(header->destination, 0, &content, textbuffer, textcount);
 
     quit = 1;
 
@@ -199,14 +199,14 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    writetext(header->destination, 1, &content, text, textcount);
+    writetext(header->destination, 1, &content, textbuffer, textcount);
 
 }
 
 static void onwmhide(struct event_header *header)
 {
 
-    writetext(header->destination, 0, &content, text, textcount);
+    writetext(header->destination, 0, &content, textbuffer, textcount);
 
 }
 
@@ -215,7 +215,7 @@ static void setup(void)
 
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
-    textcount = file_read(CALL_PI, text, FUDGE_BSIZE);
+    textcount = file_read(CALL_PI, textbuffer, FUDGE_BSIZE);
 
 }
 
