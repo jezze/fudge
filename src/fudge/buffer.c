@@ -29,7 +29,7 @@ static void dechead(struct buffer *buffer)
 {
 
     if (buffer->head == buffer->memory)
-        buffer->head = buffer->memory + buffer->capacity;
+        buffer->head = buffer->memory + buffer->capacity - 1;
     else
         buffer->head--;
 
