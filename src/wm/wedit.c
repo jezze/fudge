@@ -9,7 +9,7 @@ static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char textbuffer[FUDGE_BSIZE];
-static unsigned int textcount;
+static struct buffer text;
 static struct box size;
 static unsigned char databuffer[FUDGE_BSIZE];
 static unsigned int datacount;
@@ -29,10 +29,10 @@ static void writeelement(unsigned int id, unsigned int type, unsigned int source
 static void writetext(unsigned int source, unsigned int z)
 {
 
-    writeelement((unsigned int)&content, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + textcount);
+    writeelement((unsigned int)&content, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + text.count);
 
     datacount += memory_write(databuffer, FUDGE_BSIZE, &content, sizeof (struct element_text), datacount);
-    datacount += memory_write(databuffer, FUDGE_BSIZE, textbuffer, textcount, datacount);
+    datacount += buffer_copy(&text, databuffer + datacount, FUDGE_BSIZE - datacount);
 
 }
 
@@ -46,7 +46,7 @@ static unsigned int rowstart()
 static unsigned int rowstop()
 {
 
-    return ascii_search(textbuffer, content.cursor, textcount, '\n');
+    return ascii_search(textbuffer, content.cursor, text.count, '\n');
 
 }
 
@@ -80,13 +80,13 @@ static unsigned int rowdown()
     unsigned int countn;
 
     start = ascii_searchreverse(textbuffer, 0, content.cursor, '\n');
-    startn = ascii_search(textbuffer, content.cursor, textcount, '\n') + 1;
+    startn = ascii_search(textbuffer, content.cursor, text.count, '\n') + 1;
 
-    if (startn == textcount)
+    if (startn == text.count)
         return startn - 1;
 
     count = content.cursor - start;
-    countn = ascii_search(textbuffer, startn, textcount, '\n') - startn;
+    countn = ascii_search(textbuffer, startn, text.count, '\n') - startn;
 
     return startn + (countn < count ? countn : count);
 
@@ -131,7 +131,7 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x4D:
-        if (content.cursor < textcount - 1)
+        if (content.cursor < text.count - 1)
             content.cursor += 1;
 
         writetext(header->destination, 1);
@@ -213,9 +213,14 @@ static void onwmhide(struct event_header *header)
 static void setup(void)
 {
 
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
+
+    buffer_init(&text, FUDGE_BSIZE, textbuffer);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
-    textcount = file_read(CALL_PI, textbuffer, FUDGE_BSIZE);
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
+        buffer_write(&text, buffer, count);
 
 }
 
