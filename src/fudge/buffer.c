@@ -5,11 +5,10 @@ static void inchead(struct buffer *buffer)
 {
 
     buffer->head++;
+    buffer->count++;
 
     if (buffer->head == buffer->memory + buffer->capacity)
         buffer->head = buffer->memory;
-
-    buffer->count++;
 
 }
 
@@ -17,11 +16,10 @@ static void inctail(struct buffer *buffer)
 {
 
     buffer->tail++;
+    buffer->count--;
 
     if (buffer->tail == buffer->memory + buffer->capacity)
         buffer->tail = buffer->memory;
-
-    buffer->count--;
 
 }
 
@@ -29,10 +27,9 @@ static void dechead(struct buffer *buffer)
 {
 
     if (buffer->head == buffer->memory)
-        buffer->head = buffer->memory + buffer->capacity - 1;
-    else
-        buffer->head--;
+        buffer->head = buffer->memory + buffer->capacity;
 
+    buffer->head--;
     buffer->count--;
 
 }
