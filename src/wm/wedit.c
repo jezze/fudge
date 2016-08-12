@@ -26,13 +26,13 @@ static void writeelement(unsigned int id, unsigned int type, unsigned int source
 
 }
 
-static void writetext(unsigned int source, unsigned int z, struct element_text *text, void *buffer, unsigned int count)
+static void writetext(unsigned int source, unsigned int z)
 {
 
-    writeelement((unsigned int)text, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + count);
+    writeelement((unsigned int)&content, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + textcount);
 
-    datacount += memory_write(databuffer, FUDGE_BSIZE, text, sizeof (struct element_text), datacount);
-    datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &content, sizeof (struct element_text), datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, textbuffer, textcount, datacount);
 
 }
 
@@ -111,14 +111,14 @@ static void onkeypress(struct event_header *header)
     case 0x47:
         content.cursor = rowstart();
 
-        writetext(header->destination, 1, &content, textbuffer, textcount);
+        writetext(header->destination, 1);
 
         break;
 
     case 0x48:
         content.cursor = rowup();
 
-        writetext(header->destination, 1, &content, textbuffer, textcount);
+        writetext(header->destination, 1);
 
         break;
 
@@ -126,7 +126,7 @@ static void onkeypress(struct event_header *header)
         if (content.cursor > 0)
             content.cursor -= 1;
 
-        writetext(header->destination, 1, &content, textbuffer, textcount);
+        writetext(header->destination, 1);
 
         break;
 
@@ -134,21 +134,21 @@ static void onkeypress(struct event_header *header)
         if (content.cursor < textcount - 1)
             content.cursor += 1;
 
-        writetext(header->destination, 1, &content, textbuffer, textcount);
+        writetext(header->destination, 1);
 
         break;
 
     case 0x4F:
         content.cursor = rowstop();
 
-        writetext(header->destination, 1, &content, textbuffer, textcount);
+        writetext(header->destination, 1);
 
         break;
 
     case 0x50:
         content.cursor = rowdown();
 
-        writetext(header->destination, 1, &content, textbuffer, textcount);
+        writetext(header->destination, 1);
 
         break;
 
@@ -179,7 +179,7 @@ static void onkeyrelease(struct event_header *header)
 static void onwmunmap(struct event_header *header)
 {
 
-    writetext(header->destination, 0, &content, textbuffer, textcount);
+    writetext(header->destination, 0);
 
     quit = 1;
 
@@ -199,14 +199,14 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    writetext(header->destination, 1, &content, textbuffer, textcount);
+    writetext(header->destination, 1);
 
 }
 
 static void onwmhide(struct event_header *header)
 {
 
-    writetext(header->destination, 0, &content, textbuffer, textcount);
+    writetext(header->destination, 0);
 
 }
 

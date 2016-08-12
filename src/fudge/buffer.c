@@ -1,49 +1,8 @@
 #include "memory.h"
 #include "buffer.h"
 
-static unsigned int e(struct buffer *buffer)
+static void inchead(struct buffer *buffer)
 {
-
-    if (buffer->count == 0)
-        return 0;
-
-    if (buffer->head == buffer->memory)
-        buffer->head = buffer->memory + buffer->capacity;
-    else
-        buffer->head -= 1;
-
-    buffer->count--;
-
-    return 1;
-
-}
-
-static unsigned int r(struct buffer *buffer, void *item)
-{
-
-    if (buffer->count == 0)
-        return 0;
-
-    memory_copy(item, buffer->tail, 1);
-
-    buffer->tail++;
-
-    if (buffer->tail == buffer->memory + buffer->capacity)
-        buffer->tail = buffer->memory;
-
-    buffer->count--;
-
-    return 1;
-
-}
-
-static unsigned int w(struct buffer *buffer, void *item)
-{
-
-    if (buffer->count == buffer->capacity)
-        return 0;
-
-    memory_copy(buffer->head, item, 1);
 
     buffer->head++;
 
@@ -52,20 +11,44 @@ static unsigned int w(struct buffer *buffer, void *item)
 
     buffer->count++;
 
-    return 1;
+}
+
+static void inctail(struct buffer *buffer)
+{
+
+    buffer->tail++;
+
+    if (buffer->tail == buffer->memory + buffer->capacity)
+        buffer->tail = buffer->memory;
+
+    buffer->count--;
 
 }
 
-unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int count)
+static void dechead(struct buffer *buffer)
 {
 
-    unsigned int i;
-    unsigned int c = 0;
+    if (buffer->head == buffer->memory)
+        buffer->head = buffer->memory + buffer->capacity;
+    else
+        buffer->head--;
 
-    for (i = 0; i < count; i++)
+    buffer->count--;
+
+}
+
+unsigned int buffer_skip(struct buffer *buffer, unsigned int count)
+{
+
+    unsigned int c;
+
+    for (c = 0; count--; c++)
     {
 
-        c += e(buffer);
+        if (buffer->count == 0)
+            break;
+
+        inctail(buffer);
 
     }
 
@@ -73,18 +56,18 @@ unsigned int buffer_ecfifo(struct buffer *buffer, unsigned int count)
 
 }
 
-unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int count, void *memory)
+unsigned int buffer_erase(struct buffer *buffer, unsigned int count)
 {
 
-    unsigned int i;
-    unsigned int c = 0;
-    unsigned char *m = memory;
+    unsigned int c;
 
-    for (i = 0; i < count; i++)
+    for (c = 0; count--; c++)
     {
 
-        c += r(buffer, m);
-        m++;
+        if (buffer->count == 0)
+            break;
+
+        dechead(buffer);
 
     }
 
@@ -92,22 +75,61 @@ unsigned int buffer_rcfifo(struct buffer *buffer, unsigned int count, void *memo
 
 }
 
-unsigned int buffer_wcfifo(struct buffer *buffer, unsigned int count, void *memory)
+unsigned int buffer_read(struct buffer *buffer, void *memory, unsigned int count)
 {
 
-    unsigned int i;
-    unsigned int c = 0;
-    unsigned char *m = memory;
+    char *m = memory;
+    unsigned int c;
 
-    for (i = 0; i < count; i++)
+    for (c = 0; count--; c++)
     {
 
-        c += w(buffer, m);
-        m++;
+        if (buffer->count == 0)
+            break;
+
+        m[c] = *buffer->tail;
+
+        inctail(buffer);
 
     }
 
     return c;
+
+}
+
+unsigned int buffer_write(struct buffer *buffer, void *memory, unsigned int count)
+{
+
+    char *m = memory;
+    unsigned int c;
+
+    for (c = 0; count--; c++)
+    {
+
+        if (buffer->count == buffer->capacity)
+            break;
+
+        *buffer->head = m[c];
+
+        inchead(buffer);
+
+    }
+
+    return c;
+
+}
+
+unsigned int buffer_copy(struct buffer *buffer, void *memory, unsigned int count)
+{
+
+    char *tail = buffer->tail;
+    unsigned int c = buffer->count;
+
+    count = buffer_read(buffer, memory, count);
+    buffer->tail = tail;
+    buffer->count = c;
+
+    return count;
 
 }
 

@@ -58,7 +58,7 @@ unsigned int system_readmailbox(struct system_node *self, struct service_state *
 
     struct task *task = state->link.data;
 
-    count = buffer_rcfifo(&task->mailbox.buffer, count, buffer);
+    count = buffer_read(&task->mailbox.buffer, buffer, count);
 
     if (!count)
         task_setstatus(task, TASK_STATUS_BLOCKED);
@@ -80,7 +80,7 @@ void system_multicast(struct list *list, void *buffer, unsigned int count)
         struct task *task = current->data;
 
         task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_wcfifo(&task->mailbox.buffer, count, buffer);
+        buffer_write(&task->mailbox.buffer, buffer, count);
 
     }
 

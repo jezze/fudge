@@ -26,7 +26,7 @@ static void wakeup(struct list *list)
 static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    count = buffer_rcfifo(&endself->buffer, count, buffer);
+    count = buffer_read(&endself->buffer, buffer, count);
 
     if (!count && endtarget->node.refcount)
     {
@@ -45,7 +45,7 @@ static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, s
 static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    count = buffer_wcfifo(&endtarget->buffer, count, buffer);
+    count = buffer_write(&endtarget->buffer, buffer, count);
 
     if (!count)
     {

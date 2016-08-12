@@ -27,7 +27,7 @@ static void unicast(struct list *list, struct event_header *header, unsigned int
             continue;
 
         task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_wcfifo(&task->mailbox.buffer, count, header);
+        buffer_write(&task->mailbox.buffer, header, count);
 
     }
 
@@ -46,7 +46,7 @@ static void multicast(struct list *list, struct event_header *header, unsigned i
         header->destination = (unsigned int)task;
 
         task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_wcfifo(&task->mailbox.buffer, count, header);
+        buffer_write(&task->mailbox.buffer, header, count);
 
     }
 

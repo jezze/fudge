@@ -6,11 +6,10 @@
 #include "keymap.h"
 
 static struct element_text content;
-static unsigned int contentrows;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static unsigned char textbuffer[FUDGE_BSIZE];
-static unsigned int textcount;
+static struct buffer text;
 static unsigned char inputbuffer[FUDGE_BSIZE];
 static struct buffer input;
 static struct box size;
@@ -29,70 +28,31 @@ static void writeelement(unsigned int id, unsigned int type, unsigned int source
 
 }
 
-static void writetext(unsigned int source, unsigned int z, struct element_text *text, void *buffer, unsigned int count)
+static void writetext(unsigned int source, unsigned int z)
 {
 
-    writeelement((unsigned int)text, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + count);
+    writeelement((unsigned int)&content, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + text.count);
 
-    datacount += memory_write(databuffer, FUDGE_BSIZE, text, sizeof (struct element_text), datacount);
-    datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
+    datacount += memory_write(databuffer, FUDGE_BSIZE, &content, sizeof (struct element_text), datacount);
+    datacount += buffer_copy(&text, databuffer + datacount, FUDGE_BSIZE - datacount);
 
 }
 
 static void inserttext(void *buffer, unsigned int count)
 {
 
-    unsigned int i;
-    unsigned char *b = buffer;
+    buffer_write(&text, buffer, count);
 
-    for (i = 0; i < count; i++)
-    {
-
-        if (b[i] == '\n')
-        {
-
-            contentrows++;
-
-            if (contentrows > 64)
-            {
-
-                unsigned int offset = memory_findbyte(textbuffer, textcount, '\n');
-
-                memory_copy(textbuffer, textbuffer + offset, textcount - offset);
-
-                textcount -= offset;
-
-            }
-
-        }
-
-        textcount += memory_write(textbuffer, FUDGE_BSIZE, b + i, 1, textcount);
-
-    }
-
-    content.cursor = textcount - 1;
+    content.cursor = text.count - 1;
 
 }
 
 static void removetext(unsigned int count)
 {
 
-    unsigned int i;
+    buffer_erase(&text, count);
 
-    for (i = 0; i < count; i++)
-    {
-
-        if (!textcount)
-            break;
-
-        textcount -= 1;
-
-        if (textbuffer[textcount] == '\n')
-            contentrows--;
-
-    }
-
-    content.cursor = textcount - 1;
+    content.cursor = text.count - 1;
 
 }
 
@@ -100,7 +60,7 @@ static void interpret(void)
 {
 
     char command[FUDGE_BSIZE];
-    unsigned int count = buffer_rcfifo(&input, FUDGE_BSIZE, command);
+    unsigned int count = buffer_read(&input, command, FUDGE_BSIZE);
 
     /* This is a temporary fix */
     if (memory_match(command, "cd ", 3))
@@ -163,37 +123,37 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x0E:
-        if (!buffer_ecfifo(&input, 1))
+        if (!buffer_erase(&input, 1))
             break;
 
         removetext(2);
         inserttext("\n", 1);
-        writetext(header->destination, 1, &content, textbuffer, textcount);
+        writetext(header->destination, 1);
 
         break;
 
     case 0x1C:
         keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
-        if (!buffer_wcfifo(&input, keycode->length, &keycode->value))
+        if (!buffer_write(&input, &keycode->value, keycode->length))
             break;
 
         interpret();
         inserttext("$ \n", 3);
-        writetext(header->destination, 1, &content, textbuffer, textcount);
+        writetext(header->destination, 1);
 
         break;
 
     default:
         keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
-        if (!buffer_wcfifo(&input, keycode->length, &keycode->value))
+        if (!buffer_write(&input, &keycode->value, keycode->length))
             break;
 
         removetext(1);
         inserttext(&keycode->value, keycode->length);
         inserttext("\n", 1);
-        writetext(header->destination, 1, &content, textbuffer, textcount);
+        writetext(header->destination, 1);
 
         break;
 
@@ -224,7 +184,7 @@ static void onkeyrelease(struct event_header *header)
 static void onwmunmap(struct event_header *header)
 {
 
-    writetext(header->destination, 0, &content, textbuffer, textcount);
+    writetext(header->destination, 0);
 
     quit = 1;
 
@@ -244,14 +204,14 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    writetext(header->destination, 1, &content, textbuffer, textcount);
+    writetext(header->destination, 1);
 
 }
 
 static void onwmhide(struct event_header *header)
 {
 
-    writetext(header->destination, 0, &content, textbuffer, textcount);
+    writetext(header->destination, 0);
 
 }
 
@@ -259,8 +219,8 @@ static void setup(void)
 {
 
     buffer_init(&input, FUDGE_BSIZE, inputbuffer);
+    buffer_init(&text, FUDGE_BSIZE, textbuffer);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
-
     inserttext("$ \n", 3);
 
 }

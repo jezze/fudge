@@ -5,7 +5,7 @@ static void interpret(struct buffer *buffer)
 {
 
     char command[FUDGE_BSIZE];
-    unsigned int count = buffer_rcfifo(buffer, FUDGE_BSIZE, command);
+    unsigned int count = buffer_read(buffer, command, FUDGE_BSIZE);
 
     /* This is a temporary fix */
     if (memory_match(command, "cd ", 3))
@@ -71,7 +71,7 @@ static void handle(struct buffer *buffer, unsigned char c)
 
     case '\b':
     case 0x7F:
-        if (!buffer_ecfifo(buffer, 1))
+        if (!buffer_erase(buffer, 1))
             break;
 
         file_writeall(CALL_PO, "\b \b", 3);
@@ -83,14 +83,14 @@ static void handle(struct buffer *buffer, unsigned char c)
 
     case '\n':
         file_writeall(CALL_PO, &c, 1);
-        buffer_wcfifo(buffer, 1, &c);
+        buffer_write(buffer, &c, 1);
         interpret(buffer);
         file_writeall(CALL_PO, "$ ", 2);
 
         break;
 
     default:
-        buffer_wcfifo(buffer, 1, &c);
+        buffer_write(buffer, &c, 1);
         file_writeall(CALL_PO, &c, 1);
 
         break;
