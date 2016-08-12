@@ -41,7 +41,7 @@ static void writetext(unsigned int source, unsigned int z)
 static void inserttext(void *buffer, unsigned int count)
 {
 
-    buffer_write(&text, buffer, count);
+    buffer_overwrite(&text, buffer, count);
 
     content.cursor = text.count - 1;
 

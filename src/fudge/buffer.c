@@ -116,6 +116,28 @@ unsigned int buffer_write(struct buffer *buffer, void *memory, unsigned int coun
 
 }
 
+unsigned int buffer_overwrite(struct buffer *buffer, void *memory, unsigned int count)
+{
+
+    char *m = memory;
+    unsigned int c;
+
+    for (c = 0; count--; c++)
+    {
+
+        if (buffer->count == buffer->capacity)
+            inctail(buffer);
+
+        *buffer->head = m[c];
+
+        inchead(buffer);
+
+    }
+
+    return c;
+
+}
+
 unsigned int buffer_copy(struct buffer *buffer, void *memory, unsigned int count)
 {
 
