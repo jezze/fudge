@@ -323,7 +323,7 @@ static struct task *setuptasks(void)
 
         struct arch_task *task = &tasks[index];
 
-        task_init(&task->base, index);
+        task_init(&task->base);
 
         task->code = PHYSBASE + index * (CODESIZE + STACKSIZE);
         task->stack = task->code + CODESIZE;

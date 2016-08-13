@@ -105,7 +105,7 @@ void task_unregister(struct task *task)
 
 }
 
-void task_init(struct task *task, unsigned int id)
+void task_init(struct task *task)
 {
 
     unsigned int i;

@@ -49,4 +49,4 @@ void task_setstatus(struct task *task, unsigned int state);
 void task_resume(struct task *task, unsigned int ip, unsigned int sp);
 void task_register(struct task *task);
 void task_unregister(struct task *task);
-void task_init(struct task *task, unsigned int id);
+void task_init(struct task *task);
