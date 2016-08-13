@@ -11,6 +11,7 @@ static struct system_node mousemove;
 static struct system_node mousepress;
 static struct system_node mouserelease;
 static struct system_node tick;
+static struct system_node video;
 static struct system_node wm;
 
 static void unicast(struct list *list, struct event_header *header, unsigned int count)
@@ -137,6 +138,22 @@ void event_notifytick(unsigned int counter)
 
 }
 
+void event_notifyvideomode(unsigned int w, unsigned int h, unsigned int bpp)
+{
+
+    struct {struct event_header header; struct event_videomode videomode;} message;
+
+    message.header.type = EVENT_VIDEOMODE;
+    message.header.source = 0;
+    message.header.destination = 0;
+    message.videomode.w = w;
+    message.videomode.h = h;
+    message.videomode.bpp = bpp;
+
+    multicast(&video.links, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
+
+}
+
 static unsigned int write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -165,6 +182,7 @@ void module_init(void)
     system_initnode(&mousepress, SYSTEM_NODETYPE_MAILBOX, "mousepress");
     system_initnode(&mouserelease, SYSTEM_NODETYPE_MAILBOX, "mouserelease");
     system_initnode(&tick, SYSTEM_NODETYPE_MAILBOX, "tick");
+    system_initnode(&video, SYSTEM_NODETYPE_MAILBOX, "video");
     system_initnode(&wm, SYSTEM_NODETYPE_MAILBOX, "wm");
 
     poll.write = write;
@@ -174,6 +192,7 @@ void module_init(void)
     mousepress.write = write;
     mouserelease.write = write;
     tick.write = write;
+    video.write = write;
     wm.write = write;
 
     system_addchild(&root, &poll);
@@ -183,6 +202,7 @@ void module_init(void)
     system_addchild(&root, &mousepress);
     system_addchild(&root, &mouserelease);
     system_addchild(&root, &tick);
+    system_addchild(&root, &video);
     system_addchild(&root, &wm);
 
 }

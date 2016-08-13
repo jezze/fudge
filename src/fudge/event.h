@@ -5,11 +5,12 @@
 #define EVENT_MOUSEPRESS                0x04
 #define EVENT_MOUSERELEASE              0x05
 #define EVENT_TICK                      0x06
-#define EVENT_WMMAP                     0x07
-#define EVENT_WMUNMAP                   0x08
-#define EVENT_WMRESIZE                  0x09
-#define EVENT_WMSHOW                    0x0A
-#define EVENT_WMHIDE                    0x0B
+#define EVENT_VIDEOMODE                 0x07
+#define EVENT_WMMAP                     0x08
+#define EVENT_WMUNMAP                   0x09
+#define EVENT_WMRESIZE                  0x0A
+#define EVENT_WMSHOW                    0x0B
+#define EVENT_WMHIDE                    0x0C
 
 struct event_header
 {
@@ -70,5 +71,14 @@ struct event_tick
 {
 
     unsigned int counter;
+
+};
+
+struct event_videomode
+{
+
+    unsigned int w;
+    unsigned int h;
+    unsigned int bpp;
 
 };
