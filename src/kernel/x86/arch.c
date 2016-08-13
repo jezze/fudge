@@ -113,13 +113,13 @@ static void mapcontainercode(struct container *container)
 
 }
 
-static void maptaskcode(struct task *task, unsigned int address)
+static void maptaskcode(struct task *task, unsigned int code, unsigned int stack)
 {
 
     struct arch_task *atask = (struct arch_task *)task;
 
-    mmu_map(atask->directory, &atask->table[0], atask->code, address, CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(atask->directory, &atask->table[1], atask->stack, TASKSTACK - STACKSIZE, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[0], atask->code, code, CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(atask->directory, &atask->table[1], atask->stack, stack - STACKSIZE, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -265,7 +265,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (address)
         {
 
-            maptaskcode(current.task, address);
+            maptaskcode(current.task, address, TASKSTACK);
             current.task->format->copyprogram(&descriptor->node);
 
         }
