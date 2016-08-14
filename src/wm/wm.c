@@ -465,11 +465,37 @@ static void onkeyrelease(struct event_header *header)
     {
 
         if (viewfocus->remotefocus)
-            send_keyrelease(CALL_L3, header->destination, viewfocus->remotefocus->source, keyrelease.scancode);
+            send_keyrelease(CALL_L2, header->destination, viewfocus->remotefocus->source, keyrelease.scancode);
 
         return;
 
     }
+
+}
+
+static void onmousemove(struct event_header *header)
+{
+
+    struct event_mousemove mousemove;
+
+    file_readall(CALL_L0, &mousemove, sizeof (struct event_mousemove));
+
+    mouse.x += mousemove.relx;
+    mouse.y -= mousemove.rely;
+
+    if (mousemove.relx > 0 && mouse.x >= size.w)
+        mouse.x = size.w - 1;
+
+    if (mousemove.relx < 0 && mouse.x >= size.w)
+        mouse.x = 0;
+
+    if (mousemove.rely < 0 && mouse.y >= size.h)
+        mouse.y = size.h - 1;
+
+    if (mousemove.rely > 0 && mouse.y >= size.h)
+        mouse.y = 0;
+
+    writemouse(header->destination, 3, &mouse);
 
 }
 
@@ -530,29 +556,12 @@ static void onmousepress(struct event_header *header)
 
 }
 
-static void onmousemove(struct event_header *header)
+static void onmouserelease(struct event_header *header)
 {
 
-    struct event_mousemove mousemove;
+    struct event_mouserelease mouserelease;
 
-    file_readall(CALL_L0, &mousemove, sizeof (struct event_mousemove));
-
-    mouse.x += mousemove.relx;
-    mouse.y -= mousemove.rely;
-
-    if (mousemove.relx > 0 && mouse.x >= size.w)
-        mouse.x = size.w - 1;
-
-    if (mousemove.relx < 0 && mouse.x >= size.w)
-        mouse.x = 0;
-
-    if (mousemove.rely < 0 && mouse.y >= size.h)
-        mouse.y = size.h - 1;
-
-    if (mousemove.rely > 0 && mouse.y >= size.h)
-        mouse.y = 0;
-
-    writemouse(header->destination, 3, &mouse);
+    file_readall(CALL_L0, &mouserelease, sizeof (struct event_mouserelease));
 
 }
 
@@ -714,8 +723,9 @@ void main(void)
 
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;
-    handlers[EVENT_MOUSEPRESS] = onmousepress;
     handlers[EVENT_MOUSEMOVE] = onmousemove;
+    handlers[EVENT_MOUSEPRESS] = onmousepress;
+    handlers[EVENT_MOUSERELEASE] = onmouserelease;
     handlers[EVENT_WMMAP] = onwmmap;
     handlers[EVENT_WMUNMAP] = onwmunmap;
     handlers[EVENT_WMRESIZE] = onwmresize;
@@ -728,16 +738,10 @@ void main(void)
     if (!file_walk(CALL_L1, "/system/event/wm"))
         return;
 
-    if (!file_walk(CALL_L2, "/system/event/keypress"))
+    if (!file_walk(CALL_L2, "/system/event/key"))
         return;
 
-    if (!file_walk(CALL_L3, "/system/event/keyrelease"))
-        return;
-
-    if (!file_walk(CALL_L4, "/system/event/mousepress"))
-        return;
-
-    if (!file_walk(CALL_L5, "/system/event/mousemove"))
+    if (!file_walk(CALL_L3, "/system/event/mouse"))
         return;
 
     file_open(CALL_PO);
@@ -745,8 +749,6 @@ void main(void)
     file_open(CALL_L1);
     file_open(CALL_L2);
     file_open(CALL_L3);
-    file_open(CALL_L4);
-    file_open(CALL_L5);
     send_wmmap(CALL_L1, 0, 0);
 
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
@@ -771,8 +773,6 @@ void main(void)
 
     }
 
-    file_close(CALL_L5);
-    file_close(CALL_L4);
     file_close(CALL_L3);
     file_close(CALL_L2);
     file_close(CALL_L1);

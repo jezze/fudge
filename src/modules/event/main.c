@@ -5,11 +5,8 @@
 
 static struct system_node root;
 static struct system_node poll;
-static struct system_node keypress;
-static struct system_node keyrelease;
-static struct system_node mousemove;
-static struct system_node mousepress;
-static struct system_node mouserelease;
+static struct system_node key;
+static struct system_node mouse;
 static struct system_node tick;
 static struct system_node video;
 static struct system_node wm;
@@ -63,7 +60,7 @@ void event_notifykeypress(unsigned char scancode)
     message.header.destination = 0;
     message.keypress.scancode = scancode;
 
-    multicast(&keypress.links, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
+    multicast(&key.links, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
 
 }
 
@@ -77,7 +74,7 @@ void event_notifykeyrelease(unsigned char scancode)
     message.header.destination = 0;
     message.keyrelease.scancode = scancode;
 
-    multicast(&keyrelease.links, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
+    multicast(&key.links, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
 
 }
 
@@ -92,7 +89,7 @@ void event_notifymousemove(char relx, char rely)
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
-    multicast(&mousemove.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
+    multicast(&mouse.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
 
 }
 
@@ -106,7 +103,7 @@ void event_notifymousepress(unsigned int button)
     message.header.destination = 0;
     message.mousepress.button = button;
 
-    multicast(&mousepress.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
+    multicast(&mouse.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
 
 }
 
@@ -120,7 +117,7 @@ void event_notifymouserelease(unsigned int button)
     message.header.destination = 0;
     message.mouserelease.button = button;
 
-    multicast(&mouserelease.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
+    multicast(&mouse.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
 
 }
 
@@ -176,31 +173,22 @@ void module_init(void)
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
     system_initnode(&poll, SYSTEM_NODETYPE_MAILBOX, "poll");
-    system_initnode(&keypress, SYSTEM_NODETYPE_MAILBOX, "keypress");
-    system_initnode(&keyrelease, SYSTEM_NODETYPE_MAILBOX, "keyrelease");
-    system_initnode(&mousemove, SYSTEM_NODETYPE_MAILBOX, "mousemove");
-    system_initnode(&mousepress, SYSTEM_NODETYPE_MAILBOX, "mousepress");
-    system_initnode(&mouserelease, SYSTEM_NODETYPE_MAILBOX, "mouserelease");
+    system_initnode(&key, SYSTEM_NODETYPE_MAILBOX, "key");
+    system_initnode(&mouse, SYSTEM_NODETYPE_MAILBOX, "mouse");
     system_initnode(&tick, SYSTEM_NODETYPE_MAILBOX, "tick");
     system_initnode(&video, SYSTEM_NODETYPE_MAILBOX, "video");
     system_initnode(&wm, SYSTEM_NODETYPE_MAILBOX, "wm");
 
     poll.write = write;
-    keypress.write = write;
-    keyrelease.write = write;
-    mousemove.write = write;
-    mousepress.write = write;
-    mouserelease.write = write;
+    key.write = write;
+    mouse.write = write;
     tick.write = write;
     video.write = write;
     wm.write = write;
 
     system_addchild(&root, &poll);
-    system_addchild(&root, &keypress);
-    system_addchild(&root, &keyrelease);
-    system_addchild(&root, &mousemove);
-    system_addchild(&root, &mousepress);
-    system_addchild(&root, &mouserelease);
+    system_addchild(&root, &key);
+    system_addchild(&root, &mouse);
     system_addchild(&root, &tick);
     system_addchild(&root, &video);
     system_addchild(&root, &wm);
