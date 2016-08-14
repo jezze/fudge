@@ -99,6 +99,9 @@ static void onkeypress(struct event_header *header)
 
     file_readall(CALL_L0, &keypress, sizeof (struct event_keypress));
 
+    if (header->source == 0)
+        return;
+
     switch (keypress.scancode)
     {
 
@@ -162,6 +165,9 @@ static void onkeyrelease(struct event_header *header)
     struct event_keyrelease keyrelease;
 
     file_readall(CALL_L0, &keyrelease, sizeof (struct event_keyrelease));
+
+    if (header->source == 0)
+        return;
 
     switch (keyrelease.scancode)
     {
@@ -251,9 +257,17 @@ void main(void)
     if (!file_walk(CALL_L1, "/system/event/wm"))
         return;
 
+    if (!file_walk(CALL_L2, "/system/event/keypress"))
+        return;
+
+    if (!file_walk(CALL_L3, "/system/event/keyrelease"))
+        return;
+
     file_open(CALL_PO);
     file_open(CALL_L0);
     file_open(CALL_L1);
+    file_open(CALL_L2);
+    file_open(CALL_L3);
     send_wmmap(CALL_L1, 0, 0);
 
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
@@ -278,6 +292,8 @@ void main(void)
 
     }
 
+    file_close(CALL_L3);
+    file_close(CALL_L2);
     file_close(CALL_L1);
     file_close(CALL_L0);
     file_close(CALL_PO);
