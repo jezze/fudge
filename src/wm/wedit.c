@@ -176,6 +176,11 @@ static void onkeyrelease(struct event_header *header)
 
 }
 
+static void onwmmap(struct event_header *header)
+{
+
+}
+
 static void onwmunmap(struct event_header *header)
 {
 
@@ -234,6 +239,7 @@ void main(void)
 
     handlers[EVENT_KEYPRESS] = onkeypress;
     handlers[EVENT_KEYRELEASE] = onkeyrelease;
+    handlers[EVENT_WMMAP] = onwmmap;
     handlers[EVENT_WMUNMAP] = onwmunmap;
     handlers[EVENT_WMRESIZE] = onwmresize;
     handlers[EVENT_WMSHOW] = onwmshow;
