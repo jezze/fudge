@@ -628,7 +628,8 @@ void main(void)
 
             destroyelements(elementdata, elementcount, element->source, element->id);
 
-            elementcount = addelement(elementdata, elementcount, element);
+            if (element->z)
+                elementcount = addelement(elementdata, elementcount, element);
 
         }
 
