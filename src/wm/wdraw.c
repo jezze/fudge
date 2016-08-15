@@ -434,10 +434,10 @@ static void renderwindow(struct element *element, void *data, unsigned int line)
 
 }
 
-static struct element *nextelement(unsigned int count, void *data, struct element *element)
+static struct element *nextelement(unsigned char *data, unsigned int count, struct element *element)
 {
 
-    element = (element) ? (struct element *)((unsigned char *)(element + 1) + element->count) : data;
+    element = (element) ? (struct element *)((unsigned char *)(element + 1) + element->count) : (struct element *)data;
 
     if ((unsigned int)element >= (unsigned int)data + count)
         return 0;
@@ -446,62 +446,71 @@ static struct element *nextelement(unsigned int count, void *data, struct elemen
 
 }
 
-static void removeelement(struct element *element)
+static unsigned int addelement(unsigned char *data, unsigned int count, struct element *element)
+{
+
+    element->damaged = 1;
+
+    return count + memory_write(data, 0x8000, element, sizeof (struct element) + element->count, count);
+
+}
+
+static unsigned int removeelement(unsigned char *data, unsigned int count, struct element *element)
 {
 
     unsigned int length = sizeof (struct element) + element->count;
 
-    memory_copy(element, (unsigned char *)element + length, elementcount - ((unsigned char *)element - elementdata) - length);
+    memory_copy(element, (unsigned char *)element + length, count - ((unsigned char *)element - data) - length);
 
-    elementcount -= length;
+    return length;
 
 }
 
-static void cleanelements(void)
+static unsigned int cleanelements(unsigned char *data, unsigned int count)
 {
 
     struct element *current = 0;
 
-    while ((current = nextelement(elementcount, elementdata, current)))
+    while ((current = nextelement(data, count, current)))
     {
 
         current->damaged = 0;
 
         if (!current->z)
-            removeelement(current);
+            count -= removeelement(data, count, current);
 
     }
 
+    return count;
+
 }
 
-static void addelement(struct element *element)
+static void destroyelements(unsigned char *data, unsigned int count, unsigned int source, unsigned int id)
 {
 
     struct element *current = 0;
 
-    element->damaged = 1;
-
-    while ((current = nextelement(elementcount, elementdata, current)))
+    while ((current = nextelement(data, count, current)))
     {
 
-        if (current->source != element->source || current->id != element->id)
-            continue;
+        if (current->source == source && current->id == id)
+        {
 
-        current->z = 0;
-        current->damaged = 1;
+            current->z = 0;
+            current->damaged = 1;
+
+        }
 
     }
 
-    elementcount += memory_write(elementdata, 0x8000, element, sizeof (struct element) + element->count, elementcount);
-
 }
 
-static unsigned int testline(unsigned int line)
+static unsigned int testline(unsigned char *data, unsigned int count, unsigned int line)
 {
 
     struct element *element = 0;
 
-    while ((element = nextelement(elementcount, elementdata, element)))
+    while ((element = nextelement(data, count, element)))
     {
 
         if (element->damaged && tests[element->type](element, element + 1, line))
@@ -513,7 +522,7 @@ static unsigned int testline(unsigned int line)
 
 }
 
-static void render(void)
+static void render(unsigned char *data, unsigned int count)
 {
 
     unsigned int line;
@@ -526,7 +535,7 @@ static void render(void)
 
         unsigned int z;
 
-        if (!testline(line))
+        if (!testline(data, count, line))
             continue;
 
         for (z = 1; z < 4; z++)
@@ -534,7 +543,7 @@ static void render(void)
 
             struct element *element = 0;
 
-            while ((element = nextelement(elementcount, elementdata, element)))
+            while ((element = nextelement(data, count, element)))
             {
 
                 if (element->z != z)
@@ -614,11 +623,18 @@ void main(void)
 
         struct element *element = 0;
 
-        while ((element = nextelement(count, buffer, element)))
-            addelement(element);
+        while ((element = nextelement(buffer, count, element)))
+        {
 
-        render();
-        cleanelements();
+            destroyelements(elementdata, elementcount, element->source, element->id);
+
+            elementcount = addelement(elementdata, elementcount, element);
+
+        }
+
+        render(elementdata, elementcount);
+
+        elementcount = cleanelements(elementdata, elementcount);
 
     }
 
