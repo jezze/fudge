@@ -1,60 +1,58 @@
 #include <abi.h>
 #include <fudge.h>
 
-static void send(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int type, unsigned int datacount, void *databuffer)
+static void send(unsigned int descriptor, unsigned int destination, unsigned int type, unsigned int datacount, void *databuffer)
 {
 
     unsigned char buffer[512];
     struct event_header header;
 
-    header.source = source;
     header.destination = destination;
     header.type = type;
 
     memory_write(buffer, 512, &header, sizeof (struct event_header), 0);
     memory_write(buffer, 512, databuffer, datacount, sizeof (struct event_header));
-
     file_writeall(descriptor, buffer, sizeof (struct event_header) + datacount);
 
 }
 
-void send_keypress(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char scancode)
+void send_keypress(unsigned int descriptor, unsigned int destination, unsigned char scancode)
 {
 
     struct event_keypress keypress;
 
     keypress.scancode = scancode;
 
-    send(descriptor, source, destination, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
+    send(descriptor, destination, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
 
 }
 
-void send_keyrelease(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char scancode)
+void send_keyrelease(unsigned int descriptor, unsigned int destination, unsigned char scancode)
 {
 
     struct event_keyrelease keyrelease;
 
     keyrelease.scancode = scancode;
 
-    send(descriptor, source, destination, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
+    send(descriptor, destination, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
 
 }
 
-void send_wmmap(unsigned int descriptor, unsigned int source, unsigned int destination)
+void send_wmmap(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, source, destination, EVENT_WMMAP, 0, 0);
+    send(descriptor, destination, EVENT_WMMAP, 0, 0);
 
 }
 
-void send_wmunmap(unsigned int descriptor, unsigned int source, unsigned int destination)
+void send_wmunmap(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, source, destination, EVENT_WMUNMAP, 0, 0);
+    send(descriptor, destination, EVENT_WMUNMAP, 0, 0);
 
 }
 
-void send_wmresize(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void send_wmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
     struct event_wmresize wmresize;
@@ -64,21 +62,21 @@ void send_wmresize(unsigned int descriptor, unsigned int source, unsigned int de
     wmresize.w = w;
     wmresize.h = h;
 
-    send(descriptor, source, destination, EVENT_WMRESIZE, sizeof (struct event_wmresize), &wmresize);
+    send(descriptor, destination, EVENT_WMRESIZE, sizeof (struct event_wmresize), &wmresize);
 
 }
 
-void send_wmshow(unsigned int descriptor, unsigned int source, unsigned int destination)
+void send_wmshow(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, source, destination, EVENT_WMSHOW, 0, 0);
+    send(descriptor, destination, EVENT_WMSHOW, 0, 0);
 
 }
 
-void send_wmhide(unsigned int descriptor, unsigned int source, unsigned int destination)
+void send_wmhide(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, source, destination, EVENT_WMHIDE, 0, 0);
+    send(descriptor, destination, EVENT_WMHIDE, 0, 0);
 
 }
 

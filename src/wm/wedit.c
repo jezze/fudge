@@ -264,7 +264,7 @@ void main(void)
     file_open(CALL_L0);
     file_open(CALL_L1);
     file_open(CALL_L2);
-    send_wmmap(CALL_L1, 0, 0);
+    send_wmmap(CALL_L1, 0);
 
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
     {
