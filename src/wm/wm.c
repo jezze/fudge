@@ -580,9 +580,6 @@ static void onwmmap(struct event_header *header)
     else
     {
 
-        if (!remotelist.count)
-            return;
-
         if (viewfocus->remotefocus)
             deactivateremote(viewfocus->remotefocus);
 
