@@ -576,7 +576,7 @@ void main(void)
         return;
 
     file_open(CALL_L0);
-    file_seekread(CALL_L0, fontdata, 0x8000, 0);
+    file_read(CALL_L0, fontdata, 0x8000);
     file_close(CALL_L0);
 
     fontbitmapdata = pcf_getbitmapdata(fontdata);
