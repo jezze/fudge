@@ -29,9 +29,9 @@ static unsigned int writeboolean(unsigned int value)
 static unsigned int writedec(unsigned int value)
 {
 
-    char num[32];
+    char num[FUDGE_NSIZE];
 
-    return file_writeall(CALL_PO, num, ascii_wvalue(num, 32, value, 10, 0));
+    return file_writeall(CALL_PO, num, ascii_wvalue(num, FUDGE_NSIZE, value, 10, 0));
 
 }
 

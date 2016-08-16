@@ -16,10 +16,10 @@ static void printname(char *name)
 static void printvalue(char *name, unsigned int value)
 {
 
-    char num[32];
+    char num[FUDGE_NSIZE];
 
     printname(name);
-    file_writeall(CALL_PO, num, ascii_wvalue(num, 32, value, 10, 0));
+    file_writeall(CALL_PO, num, ascii_wvalue(num, FUDGE_NSIZE, value, 10, 0));
 
 }
 

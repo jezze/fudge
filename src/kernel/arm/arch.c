@@ -83,10 +83,10 @@ static unsigned int despawn(struct container *container, struct task *task, void
 static void debugnum(unsigned int value, unsigned int base)
 {
 
-    char num[32];
+    char num[FUDGE_NSIZE];
 
-    memory_clear(num, 32);
-    ascii_wvalue(num, 32, value, base, 0);
+    memory_clear(num, FUDGE_NSIZE);
+    ascii_wvalue(num, FUDGE_NSIZE, value, base, 0);
     uart_puts(num);
     uart_puts("\n");
 

@@ -1,1 +1,2 @@
-#define FUDGE_BSIZE                     0x1000
+#define FUDGE_BSIZE                     4096
+#define FUDGE_NSIZE                     32

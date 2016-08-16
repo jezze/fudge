@@ -22,7 +22,13 @@ void main(void)
     file_open(CALL_PO);
 
     for (i = 0; i < 16; i++)
-        file_writeall(CALL_PO, buffer, ascii_wzerovalue(buffer, 32, digest[i], 16, 2, 0));
+    {
+
+        char num[FUDGE_NSIZE];
+
+        file_writeall(CALL_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0));
+
+    }
 
     file_close(CALL_PO);
 

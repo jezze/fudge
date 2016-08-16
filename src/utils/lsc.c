@@ -4,21 +4,14 @@
 void main(void)
 {
 
-    unsigned int count;
     struct record record;
-    char num[8];
+    char num[FUDGE_NSIZE];
 
     file_open(CALL_PO);
     file_open(CALL_PW);
-
-    count = ascii_wzerovalue(num, 8, 0, 16, 8, 0);
-
-    file_writeall(CALL_PO, num, count);
+    file_writeall(CALL_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0));
     file_writeall(CALL_PO, " ", 1);
-
-    count = ascii_wzerovalue(num, 8, 0, 16, 8, 0);
-
-    file_writeall(CALL_PO, num, count);
+    file_writeall(CALL_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0));
     file_writeall(CALL_PO, " ", 1);
     file_writeall(CALL_PO, "../", 3);
     file_writeall(CALL_PO, "\n", 1);
@@ -26,14 +19,9 @@ void main(void)
     while (file_readall(CALL_PW, &record, sizeof (struct record)))
     {
 
-        count = ascii_wzerovalue(num, 8, record.id, 16, 8, 0);
-
-        file_writeall(CALL_PO, num, count);
+        file_writeall(CALL_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0));
         file_writeall(CALL_PO, " ", 1);
-
-        count = ascii_wzerovalue(num, 8, record.size, 16, 8, 0);
-
-        file_writeall(CALL_PO, num, count);
+        file_writeall(CALL_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0));
         file_writeall(CALL_PO, " ", 1);
         file_writeall(CALL_PO, record.name, record.length);
         file_writeall(CALL_PO, "\n", 1);

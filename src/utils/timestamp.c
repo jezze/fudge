@@ -21,7 +21,7 @@ void main(void)
 {
 
     struct ctrl_clocksettings settings;
-    char num[32];
+    char num[FUDGE_NSIZE];
     unsigned int year;
     unsigned int dyear;
     unsigned int dmonth;
@@ -40,7 +40,7 @@ void main(void)
     timestamp = ((dyear + dmonth + settings.day) * 86400) + ((settings.hours * 3600) + (settings.minutes * 60) + settings.seconds);
 
     file_open(CALL_PO);
-    file_writeall(CALL_PO, num, ascii_wvalue(num, 32, timestamp, 10, 0));
+    file_writeall(CALL_PO, num, ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10, 0));
     file_writeall(CALL_PO, "\n", 1);
     file_close(CALL_PO);
 

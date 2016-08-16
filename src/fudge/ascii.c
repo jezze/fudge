@@ -1,3 +1,4 @@
+#include "define.h"
 #include "memory.h"
 #include "ascii.h"
 
@@ -64,21 +65,20 @@ unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base)
 unsigned int ascii_wvalue(void *out, unsigned int count, unsigned int value, unsigned int base, unsigned int offset)
 {
 
-    unsigned char buffer[32];
-    unsigned int bcount = ascii_fromint(buffer, 32, value, base);
+    char num[FUDGE_NSIZE];
 
-    return memory_write(out, count, buffer, bcount, offset);
+    return memory_write(out, count, num, ascii_fromint(num, FUDGE_NSIZE, value, base), offset);
 
 }
 
 unsigned int ascii_wzerovalue(void *out, unsigned int count, unsigned int value, unsigned int base, unsigned int padding, unsigned int offset)
 {
 
-    unsigned char buffer[32];
-    unsigned int bcount = ascii_fromint(buffer, 32, value, base);
+    char num[FUDGE_NSIZE];
+    unsigned int bcount = ascii_fromint(num, FUDGE_NSIZE, value, base);
 
     memory_write(out, count, "00000000000000000000000000000000", padding, offset);
-    memory_write(out, count, buffer, bcount, offset + padding - bcount);
+    memory_write(out, count, num, bcount, offset + padding - bcount);
 
     return padding;
 

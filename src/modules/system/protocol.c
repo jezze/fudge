@@ -127,10 +127,10 @@ static unsigned int readgroup(struct system_node *self, struct service_state *st
     if (node->type & SYSTEM_NODETYPE_MULTI)
     {
 
-        char num[32];
+        char num[FUDGE_NSIZE];
 
         record->length += memory_write(record->name, RECORD_NAMESIZE, ":", 1, record->length);
-        record->length += memory_write(record->name, RECORD_NAMESIZE, num, ascii_wvalue(num, 32, node->index, 10, 0), record->length);
+        record->length += memory_write(record->name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, node->index, 10, 0), record->length);
 
     }
 

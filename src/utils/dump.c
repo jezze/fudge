@@ -18,9 +18,9 @@ void main(void)
         for (i = 0; i < count; i++)
         {
 
-            unsigned char num[32];
+            unsigned char num[FUDGE_NSIZE];
 
-            file_writeall(CALL_PO, num, ascii_wzerovalue(num, 32, buffer[i], 16, 2, 0));
+            file_writeall(CALL_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, buffer[i], 16, 2, 0));
             file_writeall(CALL_PO, "  ", 2);
 
         }
