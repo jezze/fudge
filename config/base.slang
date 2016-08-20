@@ -1,5 +1,7 @@
 elfload < /mod/base.ko
 elfload < /mod/system.ko
+elfload < /mod/null.ko
+elfload < /mod/mtwist.ko
 elfload < /mod/event.ko
 elfload < /mod/log.ko
 elfload < /mod/block.ko
@@ -16,7 +18,6 @@ elfload < /mod/ipv4.ko
 elfload < /mod/ipv6.ko
 elfload < /mod/icmp.ko
 elfload < /mod/udp.ko
-elfload < /mod/null.ko.0
 elfload < /mod/pipe.ko
 elfload < /mod/pipe.ko.0
 elfload < /mod/pipe.ko.1
@@ -26,7 +27,6 @@ elfload < /mod/pipe.ko.4
 elfload < /mod/pipe.ko.5
 elfload < /mod/pipe.ko.6
 elfload < /mod/pipe.ko.7
-elfload < /mod/mtwist.ko
 elfload < /mod/con.ko
 elfload < /mod/con.ko.0
 elfload < /mod/con.ko.1

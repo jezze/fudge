@@ -23,7 +23,7 @@ MOD:=\
     $(DIR_SRC)/modules/log/log.ko \
     $(DIR_SRC)/modules/mouse/mouse.ko \
     $(DIR_SRC)/modules/mtwist/mtwist.ko \
-    $(DIR_SRC)/modules/null/null.ko.0 \
+    $(DIR_SRC)/modules/null/null.ko \
     $(DIR_SRC)/modules/part/part.ko \
     $(DIR_SRC)/modules/part/part.ko.0 \
     $(DIR_SRC)/modules/part/part.ko.1 \
@@ -100,7 +100,7 @@ $(DIR_SRC)/modules/keyboard/keyboard.ko: $(DIR_SRC)/modules/keyboard/main.o $(DE
 $(DIR_SRC)/modules/log/log.ko: $(DIR_SRC)/modules/log/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/mouse/mouse.ko: $(DIR_SRC)/modules/mouse/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/mtwist/mtwist.ko: $(DIR_SRC)/modules/mtwist/main.o $(DEP_MOD)
-$(DIR_SRC)/modules/null/null.ko.0: $(DIR_SRC)/modules/null/main.o $(DEP_MOD)
+$(DIR_SRC)/modules/null/null.ko: $(DIR_SRC)/modules/null/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/part/part.ko: $(DIR_SRC)/modules/part/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/part/part.ko.0: $(DIR_SRC)/modules/part/node.o $(DEP_MOD)
 $(DIR_SRC)/modules/part/part.ko.1: $(DIR_SRC)/modules/part/node.o $(DEP_MOD)
