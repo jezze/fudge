@@ -24,6 +24,11 @@ MOD:=\
     $(DIR_SRC)/modules/mouse/mouse.ko \
     $(DIR_SRC)/modules/mtwist/mtwist.ko \
     $(DIR_SRC)/modules/null/null.ko.0 \
+    $(DIR_SRC)/modules/part/part.ko \
+    $(DIR_SRC)/modules/part/part.ko.0 \
+    $(DIR_SRC)/modules/part/part.ko.1 \
+    $(DIR_SRC)/modules/part/part.ko.2 \
+    $(DIR_SRC)/modules/part/part.ko.3 \
     $(DIR_SRC)/modules/pipe/pipe.ko \
     $(DIR_SRC)/modules/pipe/pipe.ko.0 \
     $(DIR_SRC)/modules/pipe/pipe.ko.1 \
@@ -57,9 +62,13 @@ OBJ_MOD:=\
     $(DIR_SRC)/modules/mouse/main.o \
     $(DIR_SRC)/modules/mtwist/main.o \
     $(DIR_SRC)/modules/null/main.o \
+    $(DIR_SRC)/modules/part/main.o \
+    $(DIR_SRC)/modules/part/node.o \
     $(DIR_SRC)/modules/pipe/main.o \
     $(DIR_SRC)/modules/pipe/node.o \
-    $(DIR_SRC)/modules/system/main.o $(DIR_SRC)/modules/system/backend.o $(DIR_SRC)/modules/system/protocol.o \
+    $(DIR_SRC)/modules/system/main.o \
+    $(DIR_SRC)/modules/system/backend.o \
+    $(DIR_SRC)/modules/system/protocol.o \
     $(DIR_SRC)/modules/timer/main.o \
     $(DIR_SRC)/modules/udp/main.o \
     $(DIR_SRC)/modules/video/main.o \
@@ -92,6 +101,11 @@ $(DIR_SRC)/modules/log/log.ko: $(DIR_SRC)/modules/log/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/mouse/mouse.ko: $(DIR_SRC)/modules/mouse/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/mtwist/mtwist.ko: $(DIR_SRC)/modules/mtwist/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/null/null.ko.0: $(DIR_SRC)/modules/null/main.o $(DEP_MOD)
+$(DIR_SRC)/modules/part/part.ko: $(DIR_SRC)/modules/part/main.o $(DEP_MOD)
+$(DIR_SRC)/modules/part/part.ko.0: $(DIR_SRC)/modules/part/node.o $(DEP_MOD)
+$(DIR_SRC)/modules/part/part.ko.1: $(DIR_SRC)/modules/part/node.o $(DEP_MOD)
+$(DIR_SRC)/modules/part/part.ko.2: $(DIR_SRC)/modules/part/node.o $(DEP_MOD)
+$(DIR_SRC)/modules/part/part.ko.3: $(DIR_SRC)/modules/part/node.o $(DEP_MOD)
 $(DIR_SRC)/modules/pipe/pipe.ko: $(DIR_SRC)/modules/pipe/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/pipe/pipe.ko.0: $(DIR_SRC)/modules/pipe/node.o $(DEP_MOD)
 $(DIR_SRC)/modules/pipe/pipe.ko.1: $(DIR_SRC)/modules/pipe/node.o $(DEP_MOD)

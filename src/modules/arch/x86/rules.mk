@@ -31,20 +31,25 @@ MOD+=\
 OBJ_MOD+=\
     $(DIR_SRC)/modules/arch/x86/acpi/main.o \
     $(DIR_SRC)/modules/arch/x86/ahci/main.o \
-    $(DIR_SRC)/modules/arch/x86/apic/main.o $(DIR_SRC)/modules/arch/x86/apic/apic.o \
+    $(DIR_SRC)/modules/arch/x86/apic/main.o \
+    $(DIR_SRC)/modules/arch/x86/apic/apic.o \
     $(DIR_SRC)/modules/arch/x86/ata/main.o \
     $(DIR_SRC)/modules/arch/x86/atapi/main.o \
     $(DIR_SRC)/modules/arch/x86/bga/main.o \
-    $(DIR_SRC)/modules/arch/x86/cpuid/main.o $(DIR_SRC)/modules/arch/x86/cpuid/cpuid.o \
+    $(DIR_SRC)/modules/arch/x86/cpuid/main.o \
+    $(DIR_SRC)/modules/arch/x86/cpuid/cpuid.o \
     $(DIR_SRC)/modules/arch/x86/ehci/main.o \
-    $(DIR_SRC)/modules/arch/x86/fpu/main.o $(DIR_SRC)/modules/arch/x86/fpu/fpu.o \
+    $(DIR_SRC)/modules/arch/x86/fpu/main.o \
+    $(DIR_SRC)/modules/arch/x86/fpu/fpu.o \
     $(DIR_SRC)/modules/arch/x86/i915/main.o \
     $(DIR_SRC)/modules/arch/x86/ide/main.o \
     $(DIR_SRC)/modules/arch/x86/io/io.o \
-    $(DIR_SRC)/modules/arch/x86/msr/main.o $(DIR_SRC)/modules/arch/x86/msr/msr.o \
+    $(DIR_SRC)/modules/arch/x86/msr/main.o \
+    $(DIR_SRC)/modules/arch/x86/msr/msr.o \
     $(DIR_SRC)/modules/arch/x86/ohci/main.o \
     $(DIR_SRC)/modules/arch/x86/pci/main.o \
-    $(DIR_SRC)/modules/arch/x86/pic/main.o $(DIR_SRC)/modules/arch/x86/pic/pic.o \
+    $(DIR_SRC)/modules/arch/x86/pic/main.o \
+    $(DIR_SRC)/modules/arch/x86/pic/pic.o \
     $(DIR_SRC)/modules/arch/x86/pit/main.o \
     $(DIR_SRC)/modules/arch/x86/platform/main.o \
     $(DIR_SRC)/modules/arch/x86/ps2/main.o \
@@ -55,7 +60,8 @@ OBJ_MOD+=\
     $(DIR_SRC)/modules/arch/x86/smp/main.o \
     $(DIR_SRC)/modules/arch/x86/uart/main.o \
     $(DIR_SRC)/modules/arch/x86/uhci/main.o \
-    $(DIR_SRC)/modules/arch/x86/vga/main.o $(DIR_SRC)/modules/arch/x86/vga/registers.o \
+    $(DIR_SRC)/modules/arch/x86/vga/main.o \
+    $(DIR_SRC)/modules/arch/x86/vga/registers.o \
     $(DIR_SRC)/modules/arch/x86/virtio/main.o \
 
 $(DIR_SRC)/modules/arch/x86/acpi/acpi.ko: $(DIR_SRC)/modules/arch/x86/acpi/main.o $(DEP_MOD)

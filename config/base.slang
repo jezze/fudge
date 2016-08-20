@@ -36,3 +36,8 @@ elfload < /mod/con.ko.4
 elfload < /mod/con.ko.5
 elfload < /mod/con.ko.6
 elfload < /mod/con.ko.7
+elfload < /mod/part.ko
+elfload < /mod/part.ko.0
+elfload < /mod/part.ko.1
+elfload < /mod/part.ko.2
+elfload < /mod/part.ko.3
