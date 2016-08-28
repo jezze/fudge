@@ -5,15 +5,15 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-unsigned int system_childgroup(struct system_node *self, char *path, unsigned int length)
+unsigned int system_childgroup(struct system_node *node, char *path, unsigned int length)
 {
 
     struct list_item *current;
 
     if (!length)
-        return (unsigned int)self;
+        return (unsigned int)node;
 
-    for (current = self->children.head; current; current = current->next)
+    for (current = node->children.head; current; current = current->next)
     {
 
         struct system_node *node = current->data;
@@ -53,7 +53,7 @@ unsigned int system_childgroup(struct system_node *self, char *path, unsigned in
 
 }
 
-unsigned int system_readmailbox(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+unsigned int system_readmailbox(struct system_node *node, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct task *task = state->link.data;
@@ -69,12 +69,12 @@ unsigned int system_readmailbox(struct system_node *self, struct service_state *
 
 }
 
-void system_multicast(struct list *list, void *buffer, unsigned int count)
+void system_multicast(struct system_node *node, void *buffer, unsigned int count)
 {
 
     struct list_item *current;
 
-    for (current = list->head; current; current = current->next)
+    for (current = node->links.head; current; current = current->next)
     {
 
         struct task *task = current->data;

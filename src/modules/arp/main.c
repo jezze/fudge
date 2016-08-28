@@ -80,7 +80,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, void *
 
     }
 
-    system_multicast(&ethernetprotocol.data.links, buffer, count);
+    system_multicast(&ethernetprotocol.data, buffer, count);
 
 }
 

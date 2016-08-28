@@ -38,7 +38,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
     }
 
-    system_multicast(&interface->data.links, buffer, count);
+    system_multicast(&interface->data, buffer, count);
 
 }
 

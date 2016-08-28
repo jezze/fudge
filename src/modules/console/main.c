@@ -8,7 +8,7 @@ static struct system_node root;
 void console_notify(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->data.links, buffer, count);
+    system_multicast(&interface->data, buffer, count);
 
 }
 
