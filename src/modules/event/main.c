@@ -11,12 +11,12 @@ static struct system_node tick;
 static struct system_node video;
 static struct system_node wm;
 
-static void unicast(struct list *list, struct event_header *header, unsigned int count)
+static void unicast(struct system_node *node, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
 
-    for (current = list->head; current; current = current->next)
+    for (current = node->links.head; current; current = current->next)
     {
 
         struct task *task = current->data;
@@ -31,12 +31,12 @@ static void unicast(struct list *list, struct event_header *header, unsigned int
 
 }
 
-static void multicast(struct list *list, struct event_header *header, unsigned int count)
+static void multicast(struct system_node *node, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
 
-    for (current = list->head; current; current = current->next)
+    for (current = node->links.head; current; current = current->next)
     {
 
         struct task *task = current->data;
@@ -60,7 +60,7 @@ void event_notifykeypress(unsigned char scancode)
     message.header.destination = 0;
     message.keypress.scancode = scancode;
 
-    multicast(&key.links, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
+    multicast(&key, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
 
 }
 
@@ -74,7 +74,7 @@ void event_notifykeyrelease(unsigned char scancode)
     message.header.destination = 0;
     message.keyrelease.scancode = scancode;
 
-    multicast(&key.links, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
+    multicast(&key, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
 
 }
 
@@ -89,7 +89,7 @@ void event_notifymousemove(char relx, char rely)
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
-    multicast(&mouse.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
+    multicast(&mouse, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
 
 }
 
@@ -103,7 +103,7 @@ void event_notifymousepress(unsigned int button)
     message.header.destination = 0;
     message.mousepress.button = button;
 
-    multicast(&mouse.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
+    multicast(&mouse, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
 
 }
 
@@ -117,7 +117,7 @@ void event_notifymouserelease(unsigned int button)
     message.header.destination = 0;
     message.mouserelease.button = button;
 
-    multicast(&mouse.links, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
+    multicast(&mouse, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
 
 }
 
@@ -131,7 +131,7 @@ void event_notifytick(unsigned int counter)
     message.header.destination = 0;
     message.tick.counter = counter;
 
-    multicast(&tick.links, &message.header, sizeof (struct event_header) + sizeof (struct event_tick));
+    multicast(&tick, &message.header, sizeof (struct event_header) + sizeof (struct event_tick));
 
 }
 
@@ -147,7 +147,7 @@ void event_notifyvideomode(unsigned int w, unsigned int h, unsigned int bpp)
     message.videomode.h = h;
     message.videomode.bpp = bpp;
 
-    multicast(&video.links, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
+    multicast(&video, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
 
 }
 
@@ -159,9 +159,9 @@ static unsigned int write(struct system_node *self, struct service_state *state,
     header->source = (unsigned int)state->link.data;
 
     if (header->destination)
-        unicast(&self->links, header, count);
+        unicast(self, header, count);
     else
-        multicast(&self->links, header, count);
+        multicast(self, header, count);
 
     return count;
 
