@@ -23,12 +23,30 @@ static void wakeup(struct list *list)
 
 }
 
+static unsigned int open(struct pipe_end *endself, struct service_state *state)
+{
+
+    endself->refcount++;
+
+    return state->id;
+
+}
+
+static unsigned int close(struct pipe_end *endself, struct service_state *state)
+{
+
+    endself->refcount--;
+
+    return state->id;
+
+}
+
 static unsigned int read(struct pipe_end *endself, struct pipe_end *endtarget, struct service_state *state, void *buffer, unsigned int count)
 {
 
     count = buffer_read(&endself->buffer, buffer, count);
 
-    if (!count && endtarget->node.refcount)
+    if (!count && endtarget->refcount)
     {
 
         list_add(&endself->readlinks, &state->link);
@@ -61,6 +79,24 @@ static unsigned int write(struct pipe_end *endself, struct pipe_end *endtarget, 
 
 }
 
+static unsigned int end0_open(struct system_node *self, struct service_state *state)
+{
+
+    struct pipe *pipe = (struct pipe *)self->parent;
+
+    return open(&pipe->end0, state);
+
+}
+
+static unsigned int end0_close(struct system_node *self, struct service_state *state)
+{
+
+    struct pipe *pipe = (struct pipe *)self->parent;
+
+    return close(&pipe->end0, state);
+
+}
+
 static unsigned int end0_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -76,6 +112,24 @@ static unsigned int end0_write(struct system_node *self, struct service_state *s
     struct pipe *pipe = (struct pipe *)self->parent;
 
     return write(&pipe->end0, &pipe->end1, state, buffer, count);
+
+}
+
+static unsigned int end1_open(struct system_node *self, struct service_state *state)
+{
+
+    struct pipe *pipe = (struct pipe *)self->parent;
+
+    return open(&pipe->end1, state);
+
+}
+
+static unsigned int end1_close(struct system_node *self, struct service_state *state)
+{
+
+    struct pipe *pipe = (struct pipe *)self->parent;
+
+    return close(&pipe->end1, state);
 
 }
 
@@ -111,7 +165,7 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
         if (node == self)
             continue;
 
-        if (pipe->end0.node.refcount || pipe->end1.node.refcount)
+        if (pipe->end0.refcount || pipe->end1.refcount)
             continue;
 
         if (pipe->end0.readlinks.count || pipe->end1.readlinks.count)
@@ -136,8 +190,12 @@ void pipe_init(struct pipe *pipe, unsigned int count0, void *data0, unsigned int
     system_initnode(&pipe->end0.node, SYSTEM_NODETYPE_NORMAL, "0");
     system_initnode(&pipe->end1.node, SYSTEM_NODETYPE_NORMAL, "1");
 
+    pipe->end0.node.open = end0_open;
+    pipe->end0.node.close = end0_close;
     pipe->end0.node.read = end0_read;
     pipe->end0.node.write = end0_write;
+    pipe->end1.node.open = end1_open;
+    pipe->end1.node.close = end1_close;
     pipe->end1.node.read = end1_read;
     pipe->end1.node.write = end1_write;
 

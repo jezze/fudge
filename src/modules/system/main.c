@@ -5,6 +5,40 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
+unsigned int system_opengroup(struct system_node *self, struct service_state *state)
+{
+
+    state->offset = (self->children.head) ? (unsigned int)self->children.head->data : 0;
+
+    return state->id;
+
+}
+
+unsigned int system_openmailbox(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&self->links, &state->link);
+
+    return state->id;
+
+}
+
+unsigned int system_closegroup(struct system_node *self, struct service_state *state)
+{
+
+    return state->id;
+
+}
+
+unsigned int system_closemailbox(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&self->links, &state->link);
+
+    return state->id;
+
+}
+
 unsigned int system_childgroup(struct system_node *node, char *path, unsigned int length)
 {
 
@@ -137,6 +171,8 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type & SYSTEM_NODETYPE_GROUP)
     {
 
+        node->open = system_opengroup;
+        node->close = system_closegroup;
         node->child = system_childgroup;
 
     }
@@ -144,6 +180,8 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type & SYSTEM_NODETYPE_MAILBOX)
     {
 
+        node->open = system_openmailbox;
+        node->close = system_closemailbox;
         node->read = system_readmailbox;
 
     }

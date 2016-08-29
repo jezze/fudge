@@ -5,6 +5,7 @@ struct pipe_end
     struct buffer buffer;
     struct list readlinks;
     struct list writelinks;
+    unsigned int refcount;
 
 };
 

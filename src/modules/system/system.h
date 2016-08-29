@@ -22,14 +22,19 @@ struct system_node
     unsigned int type;
     char *name;
     struct resource *resource;
-    unsigned int refcount;
     unsigned int index;
+    unsigned int (*open)(struct system_node *self, struct service_state *state);
+    unsigned int (*close)(struct system_node *self, struct service_state *state);
     unsigned int (*read)(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
     unsigned int (*write)(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
     unsigned int (*child)(struct system_node *self, char *path, unsigned int length);
 
 };
 
+unsigned int system_opengroup(struct system_node *self, struct service_state *state);
+unsigned int system_openmailbox(struct system_node *self, struct service_state *state);
+unsigned int system_closegroup(struct system_node *self, struct service_state *state);
+unsigned int system_closemailbox(struct system_node *self, struct service_state *state);
 unsigned int system_childgroup(struct system_node *node, char *path, unsigned int length);
 unsigned int system_readmailbox(struct system_node *node, struct service_state *state, void *buffer, unsigned int count);
 void system_multicast(struct system_node *node, void *buffer, unsigned int count);

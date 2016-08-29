@@ -15,12 +15,8 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
     {
 
         struct system_node *node = current->data;
-        struct part *part = current->data;
 
         if (node == self)
-            continue;
-
-        if (part->root.refcount)
             continue;
 
         return node->child(node, path, length);

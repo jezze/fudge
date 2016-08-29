@@ -67,25 +67,8 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
     struct system_node *node = (struct system_node *)state->id;
 
     state->offset = 0;
-    node->refcount++;
 
-    switch (node->type)
-    {
-
-    case SYSTEM_NODETYPE_GROUP:
-    case SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI:
-        state->offset = (node->children.head) ? (unsigned int)node->children.head->data : 0;
-
-        break;
-
-    case SYSTEM_NODETYPE_MAILBOX:
-        list_add(&node->links, &state->link);
-
-        break;
-
-    }
-
-    return state->id;
+    return (node->open) ? node->open(node, state) : state->id;
 
 }
 
@@ -95,19 +78,8 @@ static unsigned int protocol_close(struct service_backend *backend, struct servi
     struct system_node *node = (struct system_node *)state->id;
 
     state->offset = 0;
-    node->refcount--;
 
-    switch (node->type)
-    {
-
-    case SYSTEM_NODETYPE_MAILBOX:
-        list_remove(&node->links, &state->link);
-
-        break;
-
-    }
-
-    return state->id;
+    return (node->close) ? node->close(node, state) : state->id;
 
 }
 
