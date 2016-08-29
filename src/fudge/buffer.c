@@ -1,4 +1,3 @@
-#include "memory.h"
 #include "buffer.h"
 
 static void inchead(struct buffer *buffer)
