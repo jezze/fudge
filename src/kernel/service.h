@@ -14,6 +14,7 @@ struct service_state
 
     struct list_item link;
     unsigned int id;
+    unsigned int count;
     unsigned int offset;
     unsigned int current;
 
