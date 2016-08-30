@@ -8,7 +8,7 @@ static struct service_protocol protocol;
 unsigned int system_opengroup(struct system_node *self, struct service_state *state)
 {
 
-    self->current = (self->children.head) ? self->children.head->data : 0;
+    state->current = (self->children.head) ? (unsigned int)self->children.head->data : 0;
 
     return state->id;
 
@@ -91,28 +91,29 @@ unsigned int system_readgroup(struct system_node *self, struct service_state *st
 {
 
     struct record *record = buffer;
+    struct system_node *current = (struct system_node *)state->current;
 
-    if (!self->current)
+    if (!state->current)
         return 0;
 
-    record->id = (unsigned int)self->current;
+    record->id = state->current;
     record->size = 0;
-    record->length = memory_read(record->name, RECORD_NAMESIZE, self->current->name, ascii_length(self->current->name), 0);
+    record->length = memory_read(record->name, RECORD_NAMESIZE, current->name, ascii_length(current->name), 0);
 
-    if (self->current->type & SYSTEM_NODETYPE_MULTI)
+    if (current->type & SYSTEM_NODETYPE_MULTI)
     {
 
         char num[FUDGE_NSIZE];
 
         record->length += memory_write(record->name, RECORD_NAMESIZE, ":", 1, record->length);
-        record->length += memory_write(record->name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, self->current->index, 10, 0), record->length);
+        record->length += memory_write(record->name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, current->index, 10, 0), record->length);
 
     }
 
-    if (self->current->type & SYSTEM_NODETYPE_GROUP)
+    if (current->type & SYSTEM_NODETYPE_GROUP)
         record->length += memory_write(record->name, RECORD_NAMESIZE, "/", 1, record->length);
 
-    self->current = (self->current->item.next) ? self->current->item.next->data : 0;
+    state->current = (current->item.next) ? (unsigned int)current->item.next->data : 0;
 
     return sizeof (struct record);
 
