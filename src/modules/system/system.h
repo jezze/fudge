@@ -37,6 +37,7 @@ unsigned int system_openmailbox(struct system_node *self, struct service_state *
 unsigned int system_closegroup(struct system_node *self, struct service_state *state);
 unsigned int system_closemailbox(struct system_node *self, struct service_state *state);
 unsigned int system_childgroup(struct system_node *node, char *path, unsigned int length);
+unsigned int system_readgroup(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
 unsigned int system_readmailbox(struct system_node *node, struct service_state *state, void *buffer, unsigned int count);
 void system_multicast(struct system_node *node, void *buffer, unsigned int count);
 void system_addchild(struct system_node *group, struct system_node *node);
