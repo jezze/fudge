@@ -192,7 +192,7 @@ static unsigned int protocol_destroy(struct service_backend *backend, struct ser
 
 }
 
-static unsigned int stepgroup(struct service_backend *backend, unsigned int id, unsigned int current)
+static unsigned int stepdirectory(struct service_backend *backend, unsigned int id, unsigned int current)
 {
 
     struct cpio_header eheader;
@@ -230,7 +230,7 @@ static unsigned int protocol_step(struct service_backend *backend, unsigned int 
     {
 
     case 0x4000:
-        return stepgroup(backend, id, current);
+        return stepdirectory(backend, id, current);
 
     }
 
