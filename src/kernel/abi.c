@@ -149,7 +149,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
     struct container_server *server = descriptor->server;
     struct service_state *state = &descriptor->state;
 
-    state->offset = 0;
+    state->offset = server->protocol->seek(server->backend, 0);
     state->current = server->protocol->step(server->backend, state->id, 0);
 
     return server->protocol->open(server->backend, state);
