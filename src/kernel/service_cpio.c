@@ -52,7 +52,7 @@ static unsigned int parent(struct service_backend *backend, struct cpio_header *
 
 }
 
-static unsigned int next(struct service_backend *backend, struct service_state *state, unsigned int index)
+static unsigned int next(struct service_backend *backend, unsigned int id, unsigned int index)
 {
 
     struct cpio_header eheader;
@@ -63,13 +63,13 @@ static unsigned int next(struct service_backend *backend, struct service_state *
     while ((index = cpio_next(&eheader, index)))
     {
 
-        if (index == state->id)
+        if (index == id)
             break;
 
         if (!readheader(backend, &eheader, index))
             break;
 
-        if (parent(backend, &eheader, index) == state->id)
+        if (parent(backend, &eheader, index) == id)
             return index;
 
     }
@@ -218,10 +218,28 @@ static unsigned int protocol_destroy(struct service_backend *backend, struct ser
 
 }
 
-static unsigned int protocol_open(struct service_backend *backend, struct service_state *state)
+static unsigned int protocol_step(struct service_backend *backend, unsigned int id, unsigned int current)
 {
 
-    state->current = next(backend, state, 0);
+    struct cpio_header header;
+
+    if (!readheader(backend, &header, id))
+        return 0;
+
+    switch (header.mode & 0xF000)
+    {
+
+    case 0x4000:
+        return next(backend, id, current);
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int protocol_open(struct service_backend *backend, struct service_state *state)
+{
 
     return state->id;
 
@@ -273,8 +291,6 @@ static unsigned int readdirectory(struct service_backend *backend, struct servic
         break;
 
     }
-
-    state->current = next(backend, state, state->current);
 
     return sizeof (struct record);
 
@@ -333,30 +349,30 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
+static unsigned int protocol_seek(struct service_backend *backend, unsigned int offset)
 {
 
-    return state->offset = offset;
+    return offset;
 
 }
 
-static unsigned long protocol_map(struct service_backend *backend, struct service_state *state, struct binary_node *node)
+static unsigned long protocol_map(struct service_backend *backend, unsigned int id, struct binary_node *node)
 {
 
     /* TEMPORARY FIX */
     struct cpio_header header;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(backend, &header, id))
         return 0;
 
-    return node->physical = backend->getphysical() + cpio_filedata(&header, state->id);
+    return node->physical = backend->getphysical() + cpio_filedata(&header, id);
 
 }
 
 void service_setupcpio(void)
 {
 
-    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
+    service_initprotocol(&protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
     resource_register(&protocol.resource);
 
 }

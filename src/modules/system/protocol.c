@@ -61,6 +61,29 @@ static unsigned int protocol_destroy(struct service_backend *backend, struct ser
 
 }
 
+static unsigned int protocol_step(struct service_backend *backend, unsigned int id, unsigned int current)
+{
+
+    if (!current)
+    {
+
+        struct system_node *node = (struct system_node *)id;
+
+        return (node->children.head) ? (unsigned int)node->children.head->data : 0;
+
+    }
+
+    else
+    {
+
+        struct system_node *node = (struct system_node *)current;
+
+        return (node->item.next) ? (unsigned int)node->item.next->data : 0;
+
+    }
+
+}
+
 static unsigned int protocol_open(struct service_backend *backend, struct service_state *state)
 {
 
@@ -97,14 +120,14 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
+static unsigned int protocol_seek(struct service_backend *backend, unsigned int offset)
 {
 
-    return state->offset = offset;
+    return offset;
 
 }
 
-static unsigned long protocol_map(struct service_backend *backend, struct service_state *state, struct binary_node *node)
+static unsigned long protocol_map(struct service_backend *backend, unsigned int id, struct binary_node *node)
 {
 
     return 0;
@@ -114,7 +137,7 @@ static unsigned long protocol_map(struct service_backend *backend, struct servic
 void system_initprotocol(struct service_protocol *protocol)
 {
 
-    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
+    service_initprotocol(protocol, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
 
 }
 

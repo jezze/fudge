@@ -144,6 +144,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
     descriptor->state.offset = 0;
+    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, descriptor->state.id, 0);
 
     return descriptor->server->protocol->open(descriptor->server->backend, &descriptor->state);
 
@@ -154,8 +155,6 @@ static unsigned int close(struct container *container, struct task *task, void *
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
-
-    descriptor->state.offset = 0;
 
     return descriptor->server->protocol->close(descriptor->server->backend, &descriptor->state);
 
@@ -173,6 +172,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
 
     count = descriptor->server->protocol->read(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
     descriptor->state.offset += count;
+    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, descriptor->state.id, descriptor->state.current);
 
     return count;
 
@@ -190,6 +190,7 @@ static unsigned int write(struct container *container, struct task *task, void *
 
     count = descriptor->server->protocol->write(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
     descriptor->state.offset += count;
+    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, descriptor->state.id, descriptor->state.current);
 
     return count;
 
@@ -245,7 +246,7 @@ static unsigned int load(struct container *container, struct task *task, void *s
     void (*module_init)(void);
     void (*module_register)(void);
 
-    if (!descriptor->server->protocol->map(descriptor->server->backend, &descriptor->state, &descriptor->node))
+    if (!descriptor->server->protocol->map(descriptor->server->backend, descriptor->state.id, &descriptor->node))
         return 0;
 
     format = binary_findformat(&descriptor->node);
@@ -278,7 +279,7 @@ static unsigned int unload(struct container *container, struct task *task, void 
     struct binary_format *format;
     void (*module_unregister)(void);
 
-    if (!descriptor->server->protocol->map(descriptor->server->backend, &descriptor->state, &descriptor->node))
+    if (!descriptor->server->protocol->map(descriptor->server->backend, descriptor->state.id, &descriptor->node))
         return 0;
 
     format = binary_findformat(&descriptor->node);
@@ -301,7 +302,7 @@ static unsigned int seek(struct container *container, struct task *task, void *s
     struct {void *caller; unsigned int descriptor; unsigned int offset;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
-    return descriptor->server->protocol->seek(descriptor->server->backend, &descriptor->state, args->offset);
+    return descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, args->offset);
 
 }
 

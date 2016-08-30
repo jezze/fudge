@@ -36,7 +36,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     struct task_descriptor *descriptor = &task->descriptors[0x00];
 
-    if (!descriptor->server->protocol->map(descriptor->server->backend, &descriptor->state, &descriptor->node))
+    if (!descriptor->server->protocol->map(descriptor->server->backend, descriptor->state.id, &descriptor->node))
         return 0;
 
     task->format = binary_findformat(&descriptor->node);

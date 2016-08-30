@@ -8,8 +8,6 @@ static struct service_protocol protocol;
 unsigned int system_opengroup(struct system_node *self, struct service_state *state)
 {
 
-    state->current = (self->children.head) ? (unsigned int)self->children.head->data : 0;
-
     return state->id;
 
 }
@@ -112,8 +110,6 @@ unsigned int system_readgroup(struct system_node *self, struct service_state *st
 
     if (current->type & SYSTEM_NODETYPE_GROUP)
         record->length += memory_write(record->name, RECORD_NAMESIZE, "/", 1, record->length);
-
-    state->current = (current->item.next) ? (unsigned int)current->item.next->data : 0;
 
     return sizeof (struct record);
 
