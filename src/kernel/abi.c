@@ -116,11 +116,13 @@ static unsigned int create(struct container *container, struct task *task, void 
 
     struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_server *server = descriptor->server;
+    struct service_state *state = &descriptor->state;
 
     if (!args->length || !args->name)
         return 0;
 
-    return descriptor->server->protocol->create(descriptor->server->backend, &descriptor->state, args->name, args->length);
+    return server->protocol->create(server->backend, state, args->name, args->length);
 
 }
 
@@ -129,11 +131,13 @@ static unsigned int destroy(struct container *container, struct task *task, void
 
     struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_server *server = descriptor->server;
+    struct service_state *state = &descriptor->state;
 
     if (!args->length || !args->name)
         return 0;
 
-    return descriptor->server->protocol->destroy(descriptor->server->backend, &descriptor->state, args->name, args->length);
+    return server->protocol->destroy(server->backend, state, args->name, args->length);
 
 }
 
@@ -142,11 +146,13 @@ static unsigned int open(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_server *server = descriptor->server;
+    struct service_state *state = &descriptor->state;
 
-    descriptor->state.offset = 0;
-    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, descriptor->state.id, 0);
+    state->offset = 0;
+    state->current = server->protocol->step(server->backend, state->id, 0);
 
-    return descriptor->server->protocol->open(descriptor->server->backend, &descriptor->state);
+    return server->protocol->open(server->backend, state);
 
 }
 
@@ -155,8 +161,10 @@ static unsigned int close(struct container *container, struct task *task, void *
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_server *server = descriptor->server;
+    struct service_state *state = &descriptor->state;
 
-    return descriptor->server->protocol->close(descriptor->server->backend, &descriptor->state);
+    return server->protocol->close(server->backend, state);
 
 }
 
@@ -165,15 +173,17 @@ static unsigned int read(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_server *server = descriptor->server;
+    struct service_state *state = &descriptor->state;
 
     if (!args->buffer || !args->count)
         return 0;
 
-    descriptor->state.count = descriptor->server->protocol->read(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
-    descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, descriptor->state.offset + descriptor->state.count);
-    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, descriptor->state.id, descriptor->state.current);
+    state->count = server->protocol->read(server->backend, state, args->buffer, args->count);
+    state->offset = server->protocol->seek(server->backend, state->offset + state->count);
+    state->current = server->protocol->step(server->backend, state->id, state->current);
 
-    return descriptor->state.count;
+    return state->count;
 
 }
 
@@ -182,15 +192,17 @@ static unsigned int write(struct container *container, struct task *task, void *
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_server *server = descriptor->server;
+    struct service_state *state = &descriptor->state;
 
     if (!args->buffer || !args->count)
         return 0;
 
-    descriptor->state.count = descriptor->server->protocol->write(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
-    descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, descriptor->state.offset + descriptor->state.count);
-    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, descriptor->state.id, descriptor->state.current);
+    state->count = server->protocol->write(server->backend, state, args->buffer, args->count);
+    state->offset = server->protocol->seek(server->backend, state->offset + state->count);
+    state->current = server->protocol->step(server->backend, state->id, state->current);
 
-    return descriptor->state.count;
+    return state->count;
 
 }
 
@@ -212,7 +224,7 @@ static unsigned int auth(struct container *container, struct task *task, void *s
         return 0;
 
     descriptor->server = server;
-    descriptor->state.id = descriptor->server->protocol->root(descriptor->server->backend);
+    descriptor->state.id = server->protocol->root(server->backend);
 
     return ++container->nservers;
 
@@ -240,27 +252,30 @@ static unsigned int load(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_server *server = descriptor->server;
+    struct service_state *state = &descriptor->state;
+    struct binary_node *node = &descriptor->node;
     struct binary_format *format;
     void (*module_init)(void);
     void (*module_register)(void);
 
-    if (!descriptor->server->protocol->map(descriptor->server->backend, descriptor->state.id, &descriptor->node))
+    if (!server->protocol->map(server->backend, state->id, node))
         return 0;
 
-    format = binary_findformat(&descriptor->node);
+    format = binary_findformat(node);
 
     if (!format)
         return 0;
 
-    if (!format->relocate(&descriptor->node))
+    if (!format->relocate(node))
         return 0;
 
-    module_init = (void (*)(void))(format->findsymbol(&descriptor->node, 11, "module_init"));
+    module_init = (void (*)(void))(format->findsymbol(node, 11, "module_init"));
 
     if (module_init)
         module_init();
 
-    module_register = (void (*)(void))(format->findsymbol(&descriptor->node, 15, "module_register"));
+    module_register = (void (*)(void))(format->findsymbol(node, 15, "module_register"));
 
     if (module_register)
         module_register();
@@ -274,18 +289,21 @@ static unsigned int unload(struct container *container, struct task *task, void 
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_server *server = descriptor->server;
+    struct service_state *state = &descriptor->state;
+    struct binary_node *node = &descriptor->node;
     struct binary_format *format;
     void (*module_unregister)(void);
 
-    if (!descriptor->server->protocol->map(descriptor->server->backend, descriptor->state.id, &descriptor->node))
+    if (!server->protocol->map(server->backend, state->id, node))
         return 0;
 
-    format = binary_findformat(&descriptor->node);
+    format = binary_findformat(node);
 
     if (!format)
         return 0;
 
-    module_unregister = (void (*)(void))(format->findsymbol(&descriptor->node, 17, "module_unregister"));
+    module_unregister = (void (*)(void))(format->findsymbol(node, 17, "module_unregister"));
 
     if (module_unregister)
         module_unregister();
@@ -299,8 +317,10 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor; unsigned int offset;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    struct container_server *server = descriptor->server;
+    struct service_state *state = &descriptor->state;
 
-    return descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, args->offset);
+    return state->offset = server->protocol->seek(server->backend, args->offset);
 
 }
 
