@@ -252,7 +252,7 @@ static unsigned int protocol_close(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int readnormal(struct service_backend *backend, void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
+static unsigned int readfile(struct service_backend *backend, void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
     unsigned int s = cpio_filesize(header) - offset;
@@ -308,7 +308,7 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
     {
 
     case 0x8000:
-        return readnormal(backend, buffer, count, state->offset, state->id, &header);
+        return readfile(backend, buffer, count, state->offset, state->id, &header);
 
     case 0x4000:
         return readdirectory(backend, buffer, count, state->current, &header);
@@ -319,11 +319,11 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
 
 }
 
-static unsigned int writenormal(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count, struct cpio_header *header)
+static unsigned int writefile(struct service_backend *backend, void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
-    unsigned int s = cpio_filesize(header) - state->offset;
-    unsigned int o = cpio_filedata(header, state->id) + state->offset;
+    unsigned int s = cpio_filesize(header) - offset;
+    unsigned int o = cpio_filedata(header, id) + offset;
 
     return backend->write(buffer, (count > s) ? s : count, o);
 
@@ -341,7 +341,7 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
     {
 
     case 0x8000:
-        return writenormal(backend, state, buffer, count, &header);
+        return writefile(backend, buffer, count, state->offset, state->id, &header);
 
     }
 
