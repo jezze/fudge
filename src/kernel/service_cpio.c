@@ -222,7 +222,6 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
 {
 
     state->current = next(backend, state, 0);
-    state->offset = 0;
 
     return state->id;
 
@@ -230,8 +229,6 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
 
 static unsigned int protocol_close(struct service_backend *backend, struct service_state *state)
 {
-
-    state->offset = 0;
 
     return state->id;
 
@@ -295,25 +292,14 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
     {
 
     case 0x8000:
-        count = readnormal(backend, state, buffer, count, &header);
-
-        break;
+        return readnormal(backend, state, buffer, count, &header);
 
     case 0x4000:
-        count = readdirectory(backend, state, buffer, count, &header);
-
-        break;
-
-    default:
-        count = 0;
-
-        break;
+        return readdirectory(backend, state, buffer, count, &header);
 
     }
 
-    state->offset += count;
-
-    return count;
+    return 0;
 
 }
 
@@ -339,20 +325,11 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
     {
 
     case 0x8000:
-        count = writenormal(backend, state, buffer, count, &header);
-
-        break;
-
-    default:
-        count = 0;
-
-        break;
+        return writenormal(backend, state, buffer, count, &header);
 
     }
 
-    state->offset += count;
-
-    return count;
+    return 0;
 
 }
 

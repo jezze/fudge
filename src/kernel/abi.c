@@ -143,6 +143,8 @@ static unsigned int open(struct container *container, struct task *task, void *s
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
+    descriptor->state.offset = 0;
+
     return descriptor->server->protocol->open(descriptor->server->backend, &descriptor->state);
 
 }
@@ -153,6 +155,8 @@ static unsigned int close(struct container *container, struct task *task, void *
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
+    descriptor->state.offset = 0;
+
     return descriptor->server->protocol->close(descriptor->server->backend, &descriptor->state);
 
 }
@@ -162,11 +166,15 @@ static unsigned int read(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    unsigned int count;
 
     if (!args->buffer || !args->count)
         return 0;
 
-    return descriptor->server->protocol->read(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
+    count = descriptor->server->protocol->read(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
+    descriptor->state.offset += count;
+
+    return count;
 
 }
 
@@ -175,11 +183,15 @@ static unsigned int write(struct container *container, struct task *task, void *
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    unsigned int count;
 
     if (!args->buffer || !args->count)
         return 0;
 
-    return descriptor->server->protocol->write(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
+    count = descriptor->server->protocol->write(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
+    descriptor->state.offset += count;
+
+    return count;
 
 }
 

@@ -66,8 +66,6 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
 
     struct system_node *node = (struct system_node *)state->id;
 
-    state->offset = 0;
-
     return (node->open) ? node->open(node, state) : state->id;
 
 }
@@ -76,8 +74,6 @@ static unsigned int protocol_close(struct service_backend *backend, struct servi
 {
 
     struct system_node *node = (struct system_node *)state->id;
-
-    state->offset = 0;
 
     return (node->close) ? node->close(node, state) : state->id;
 
@@ -88,15 +84,8 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
 
     struct system_node *node = (struct system_node *)state->id;
 
-    if (!node->read)
-        return 0;
-
-    count = node->read(node, state, buffer, count);
+    return (node->read) ? node->read(node, state, buffer, count) : 0;
         
-    state->offset += count;
-
-    return count;
-
 }
 
 static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count)
@@ -104,14 +93,7 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 
     struct system_node *node = (struct system_node *)state->id;
 
-    if (!node->write)
-        return 0;
-
-    count = node->write(node, state, buffer, count);
-
-    state->offset += count;
-
-    return count;
+    return (node->write) ? node->write(node, state, buffer, count) : 0;
 
 }
 
