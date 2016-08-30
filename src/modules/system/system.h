@@ -17,6 +17,7 @@ struct system_node
 
     struct list_item item;
     struct system_node *parent;
+    struct system_node *current;
     struct list children;
     struct list links;
     unsigned int type;

@@ -83,53 +83,16 @@ static unsigned int protocol_close(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int readgroup(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    struct record *record = buffer;
-    struct system_node *node = (struct system_node *)state->offset;
-
-    if (!state->offset)
-        return 0;
-
-    record->id = state->offset;
-    record->size = 0;
-    record->length = memory_read(record->name, RECORD_NAMESIZE, node->name, ascii_length(node->name), 0);
-
-    if (node->type & SYSTEM_NODETYPE_MULTI)
-    {
-
-        char num[FUDGE_NSIZE];
-
-        record->length += memory_write(record->name, RECORD_NAMESIZE, ":", 1, record->length);
-        record->length += memory_write(record->name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, node->index, 10, 0), record->length);
-
-    }
-
-    if (node->type & SYSTEM_NODETYPE_GROUP)
-        record->length += memory_write(record->name, RECORD_NAMESIZE, "/", 1, record->length);
-
-    state->offset = (node->item.next) ? (unsigned int)node->item.next->data : 0;
-
-    return sizeof (struct record);
-
-}
-
 static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct system_node *node = (struct system_node *)state->id;
 
-    switch (node->type)
-    {
+    if (!node->read)
+        return 0;
 
-    case SYSTEM_NODETYPE_GROUP:
-    case SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI:
-        return readgroup(node, state, buffer, count);
-
-    }
-
-    count = (node->read) ? node->read(node, state, buffer, count) : 0;
+    count = node->read(node, state, buffer, count);
+        
     state->offset += count;
 
     return count;
@@ -141,7 +104,11 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 
     struct system_node *node = (struct system_node *)state->id;
 
-    count = (node->write) ? node->write(node, state, buffer, count) : 0;
+    if (!node->write)
+        return 0;
+
+    count = node->write(node, state, buffer, count);
+
     state->offset += count;
 
     return count;

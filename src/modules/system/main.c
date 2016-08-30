@@ -8,7 +8,7 @@ static struct service_protocol protocol;
 unsigned int system_opengroup(struct system_node *self, struct service_state *state)
 {
 
-    state->offset = (self->children.head) ? (unsigned int)self->children.head->data : 0;
+    self->current = (self->children.head) ? self->children.head->data : 0;
 
     return state->id;
 
@@ -87,6 +87,37 @@ unsigned int system_childgroup(struct system_node *node, char *path, unsigned in
 
 }
 
+unsigned int system_readgroup(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    struct record *record = buffer;
+
+    if (!self->current)
+        return 0;
+
+    record->id = (unsigned int)self->current;
+    record->size = 0;
+    record->length = memory_read(record->name, RECORD_NAMESIZE, self->current->name, ascii_length(self->current->name), 0);
+
+    if (self->current->type & SYSTEM_NODETYPE_MULTI)
+    {
+
+        char num[FUDGE_NSIZE];
+
+        record->length += memory_write(record->name, RECORD_NAMESIZE, ":", 1, record->length);
+        record->length += memory_write(record->name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, self->current->index, 10, 0), record->length);
+
+    }
+
+    if (self->current->type & SYSTEM_NODETYPE_GROUP)
+        record->length += memory_write(record->name, RECORD_NAMESIZE, "/", 1, record->length);
+
+    self->current = (self->current->item.next) ? self->current->item.next->data : 0;
+
+    return sizeof (struct record);
+
+}
+
 unsigned int system_readmailbox(struct system_node *node, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -96,8 +127,6 @@ unsigned int system_readmailbox(struct system_node *node, struct service_state *
 
     if (!count)
         task_setstatus(task, TASK_STATUS_BLOCKED);
-
-    state->offset += count;
 
     return count;
 
@@ -173,6 +202,7 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
         node->open = system_opengroup;
         node->close = system_closegroup;
+        node->read = system_readgroup;
         node->child = system_childgroup;
 
     }
