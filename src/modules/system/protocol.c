@@ -64,21 +64,21 @@ static unsigned int protocol_destroy(struct service_backend *backend, struct ser
 static unsigned int protocol_step(struct service_backend *backend, unsigned int id, unsigned int current)
 {
 
-    if (!current)
+    if (current)
     {
 
-        struct system_node *node = (struct system_node *)id;
+        struct system_node *node = (struct system_node *)current;
 
-        return (node->children.head) ? (unsigned int)node->children.head->data : 0;
+        return (node->item.next) ? (unsigned int)node->item.next->data : 0;
 
     }
 
     else
     {
 
-        struct system_node *node = (struct system_node *)current;
+        struct system_node *node = (struct system_node *)id;
 
-        return (node->item.next) ? (unsigned int)node->item.next->data : 0;
+        return (node->children.head) ? (unsigned int)node->children.head->data : 0;
 
     }
 

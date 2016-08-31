@@ -31,9 +31,7 @@ struct system_node
 
 };
 
-unsigned int system_opengroup(struct system_node *self, struct service_state *state);
 unsigned int system_openmailbox(struct system_node *self, struct service_state *state);
-unsigned int system_closegroup(struct system_node *self, struct service_state *state);
 unsigned int system_closemailbox(struct system_node *self, struct service_state *state);
 unsigned int system_childgroup(struct system_node *node, char *path, unsigned int length);
 unsigned int system_readgroup(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);

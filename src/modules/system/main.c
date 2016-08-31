@@ -5,24 +5,10 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-unsigned int system_opengroup(struct system_node *self, struct service_state *state)
-{
-
-    return state->id;
-
-}
-
 unsigned int system_openmailbox(struct system_node *self, struct service_state *state)
 {
 
     list_add(&self->links, &state->link);
-
-    return state->id;
-
-}
-
-unsigned int system_closegroup(struct system_node *self, struct service_state *state)
-{
 
     return state->id;
 
@@ -197,8 +183,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type & SYSTEM_NODETYPE_GROUP)
     {
 
-        node->open = system_opengroup;
-        node->close = system_closegroup;
         node->read = system_readgroup;
         node->child = system_childgroup;
 
