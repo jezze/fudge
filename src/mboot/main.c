@@ -24,10 +24,10 @@ static unsigned int write(void *buffer, unsigned int count, unsigned int offset)
 
 }
 
-static unsigned long getphysical(void)
+static unsigned long map(unsigned long offset, unsigned int count)
 {
 
-    return address;
+    return address + offset;
 
 }
 
@@ -83,8 +83,6 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
         struct mboot_module *modules = (struct mboot_module *)header->modules.address;
 
-        service_initbackend(&backend, 1000, read, write, getphysical);
-
         address = modules[0].address;
         limit = modules[0].limit;
 
@@ -110,6 +108,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
+    service_initbackend(&backend, 1000, read, write, map);
     arch_setup(&backend);
 
 }

@@ -40,7 +40,7 @@ struct service_protocol *service_findprotocol(struct service_backend *backend)
 
 }
 
-void service_initbackend(struct service_backend *backend, unsigned int id, unsigned int (*read)(void *buffer, unsigned int count, unsigned int offset), unsigned int (*write)(void *buffer, unsigned int count, unsigned int offset), unsigned long (*getphysical)(void))
+void service_initbackend(struct service_backend *backend, unsigned int id, unsigned int (*read)(void *buffer, unsigned int count, unsigned int offset), unsigned int (*write)(void *buffer, unsigned int count, unsigned int offset), unsigned long (*map)(unsigned long offset, unsigned int count))
 {
 
     resource_init(&backend->resource, RESOURCE_SERVICEBACKEND, backend);
@@ -48,7 +48,7 @@ void service_initbackend(struct service_backend *backend, unsigned int id, unsig
     backend->id = id;
     backend->read = read;
     backend->write = write;
-    backend->getphysical = getphysical;
+    backend->map = map;
 
 }
 

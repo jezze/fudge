@@ -358,13 +358,12 @@ static unsigned int protocol_seek(struct service_backend *backend, unsigned int 
 static unsigned long protocol_map(struct service_backend *backend, unsigned int id)
 {
 
-    /* TEMPORARY FIX */
     struct cpio_header header;
 
     if (!readheader(backend, &header, id))
         return 0;
 
-    return backend->getphysical() + cpio_filedata(&header, id);
+    return backend->map(cpio_filedata(&header, id), cpio_filesize(&header));
 
 }
 

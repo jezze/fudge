@@ -19,6 +19,13 @@ static unsigned int backend_write(void *buffer, unsigned int count, unsigned int
 
 }
 
+static unsigned long backend_map(unsigned long offset, unsigned int count)
+{
+
+    return 0;
+
+}
+
 void system_registernode(struct system_node *node)
 {
 
@@ -36,7 +43,7 @@ void system_unregisternode(struct system_node *node)
 void system_initbackend(struct service_backend *backend)
 {
 
-    service_initbackend(backend, 2000, backend_read, backend_write, 0);
+    service_initbackend(backend, 2000, backend_read, backend_write, backend_map);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
     memory_write(header.id, 12, "FUDGE_SYSTEM", 12, 0);
 
