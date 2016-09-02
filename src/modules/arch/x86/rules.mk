@@ -23,6 +23,7 @@ MOD+=\
     $(DIR_SRC)/modules/arch/x86/rtc/rtc.ko.0 \
     $(DIR_SRC)/modules/arch/x86/rtl8139/rtl8139.ko.0 \
     $(DIR_SRC)/modules/arch/x86/smp/smp.ko \
+    $(DIR_SRC)/modules/arch/x86/syse/syse.ko \
     $(DIR_SRC)/modules/arch/x86/uart/uart.ko.0 \
     $(DIR_SRC)/modules/arch/x86/uhci/uhci.ko.0 \
     $(DIR_SRC)/modules/arch/x86/vga/vga.ko.0 \
@@ -58,6 +59,8 @@ OBJ_MOD+=\
     $(DIR_SRC)/modules/arch/x86/rtc/main.o \
     $(DIR_SRC)/modules/arch/x86/rtl8139/main.o \
     $(DIR_SRC)/modules/arch/x86/smp/main.o \
+    $(DIR_SRC)/modules/arch/x86/syse/main.o \
+    $(DIR_SRC)/modules/arch/x86/syse/syse.o \
     $(DIR_SRC)/modules/arch/x86/uart/main.o \
     $(DIR_SRC)/modules/arch/x86/uhci/main.o \
     $(DIR_SRC)/modules/arch/x86/vga/main.o \
@@ -88,6 +91,7 @@ $(DIR_SRC)/modules/arch/x86/ps2mouse/ps2mouse.ko.0: $(DIR_SRC)/modules/arch/x86/
 $(DIR_SRC)/modules/arch/x86/rtc/rtc.ko.0: $(DIR_SRC)/modules/arch/x86/rtc/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/arch/x86/rtl8139/rtl8139.ko.0: $(DIR_SRC)/modules/arch/x86/rtl8139/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/arch/x86/smp/smp.ko: $(DIR_SRC)/modules/arch/x86/smp/main.o $(DEP_MOD)
+$(DIR_SRC)/modules/arch/x86/syse/syse.ko: $(DIR_SRC)/modules/arch/x86/syse/main.o $(DIR_SRC)/modules/arch/x86/syse/syse.o $(DEP_MOD)
 $(DIR_SRC)/modules/arch/x86/uart/uart.ko.0: $(DIR_SRC)/modules/arch/x86/uart/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/arch/x86/uhci/uhci.ko.0: $(DIR_SRC)/modules/arch/x86/uhci/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/arch/x86/vga/vga.ko.0: $(DIR_SRC)/modules/arch/x86/vga/main.o $(DIR_SRC)/modules/arch/x86/vga/registers.o $(DEP_MOD)

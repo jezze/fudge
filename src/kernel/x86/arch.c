@@ -236,6 +236,47 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
 }
 
+void arch_syscall2(struct cpu_general general)
+{
+
+    general.eax.value = abi_call(general.eax.value, current.container, current.task, general.ecx.pointer);
+
+    if (current.task)
+    {
+
+        current.task->state.registers.ip = general.edx.value;
+        current.task->state.registers.sp = general.ecx.value;
+
+        saveregisters(current.task, &general);
+
+    }
+
+    current.task = task_findactive();
+
+    if (current.task)
+    {
+
+        if (current.task->state.status == TASK_STATUS_UNBLOCKED)
+            task_resume(current.task, current.task->state.registers.ip - 7, current.task->state.registers.sp);
+
+        general.edx.value = current.task->state.registers.ip;
+        general.ecx.value = current.task->state.registers.sp;
+
+        loadregisters(current.task, &general);
+        activate(current.task);
+
+    }
+
+    else
+    {
+
+        general.edx.value = (unsigned int)cpu_halt;
+        general.ecx.value = KERNELSTACK;
+
+    }
+
+}
+
 unsigned short arch_breakpoint(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
