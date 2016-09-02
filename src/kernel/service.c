@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include "resource.h"
-#include "binary.h"
 #include "service.h"
 
 struct service_backend *service_findbackend(unsigned int id)

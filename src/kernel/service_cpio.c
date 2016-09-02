@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <format/cpio.h>
 #include "resource.h"
-#include "binary.h"
 #include "service.h"
 
 static struct service_protocol protocol;
