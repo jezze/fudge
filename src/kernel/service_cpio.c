@@ -356,7 +356,7 @@ static unsigned int protocol_seek(struct service_backend *backend, unsigned int 
 
 }
 
-static unsigned long protocol_map(struct service_backend *backend, unsigned int id, struct binary_node *node)
+static unsigned long protocol_map(struct service_backend *backend, unsigned int id)
 {
 
     /* TEMPORARY FIX */
@@ -365,7 +365,7 @@ static unsigned long protocol_map(struct service_backend *backend, unsigned int 
     if (!readheader(backend, &header, id))
         return 0;
 
-    return node->physical = backend->getphysical() + cpio_filedata(&header, id);
+    return backend->getphysical() + cpio_filedata(&header, id);
 
 }
 

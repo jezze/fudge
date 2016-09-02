@@ -35,16 +35,21 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
     struct task_descriptor *descriptor = &task->descriptors[0x00];
+    struct container_server *server = descriptor->server;
+    struct service_state *state = &descriptor->state;
+    struct binary_node *node = &descriptor->node;
 
-    if (!descriptor->server->protocol->map(descriptor->server->backend, descriptor->state.id, &descriptor->node))
+    node->physical = server->protocol->map(server->backend, state->id);
+
+    if (!node->physical)
         return 0;
 
-    task->format = binary_findformat(&descriptor->node);
+    task->format = binary_findformat(node);
 
     if (!task->format)
         return 0;
 
-    task_resume(task, task->format->findentry(&descriptor->node), sp);
+    task_resume(task, task->format->findentry(node), sp);
 
     return 1;
 

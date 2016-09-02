@@ -259,7 +259,9 @@ static unsigned int load(struct container *container, struct task *task, void *s
     void (*module_init)(void);
     void (*module_register)(void);
 
-    if (!server->protocol->map(server->backend, state->id, node))
+    node->physical = server->protocol->map(server->backend, state->id);
+
+    if (!node->physical)
         return 0;
 
     format = binary_findformat(node);
@@ -295,7 +297,9 @@ static unsigned int unload(struct container *container, struct task *task, void 
     struct binary_format *format;
     void (*module_unregister)(void);
 
-    if (!server->protocol->map(server->backend, state->id, node))
+    node->physical = server->protocol->map(server->backend, state->id);
+
+    if (!node->physical)
         return 0;
 
     format = binary_findformat(node);

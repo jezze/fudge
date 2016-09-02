@@ -127,7 +127,7 @@ static unsigned int protocol_seek(struct service_backend *backend, unsigned int 
 
 }
 
-static unsigned long protocol_map(struct service_backend *backend, unsigned int id, struct binary_node *node)
+static unsigned long protocol_map(struct service_backend *backend, unsigned int id)
 {
 
     return 0;
