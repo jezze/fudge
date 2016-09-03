@@ -68,7 +68,7 @@ static void apic_outd(unsigned int reg, unsigned int value)
 unsigned short apic_interrupt(struct cpu_general general, unsigned int index, unsigned int slave, struct cpu_interrupt interrupt)
 {
 
-    return arch_schedule(&general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 

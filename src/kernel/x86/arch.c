@@ -83,13 +83,7 @@ static struct arch_task
 
 } tasks[TASKS];
 
-static struct
-{
-
-    struct container *container;
-    struct task *task;
-
-} current;
+static struct arch_context current;
 
 static void copymap(struct container *container, struct task *task)
 {
@@ -191,14 +185,21 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
-unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
+unsigned int arch_call(unsigned int index, void *stack)
+{
+
+    return abi_call(index, current.container, current.task, stack);
+
+}
+
+struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip, unsigned int sp)
 {
 
     if (current.task)
     {
 
-        current.task->state.registers.ip = interrupt->eip.value;
-        current.task->state.registers.sp = interrupt->esp.value;
+        current.task->state.registers.ip = ip;
+        current.task->state.registers.sp = sp;
 
         saveregisters(current.task, general);
 
@@ -212,13 +213,27 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
         if (current.task->state.status == TASK_STATUS_UNBLOCKED)
             task_resume(current.task, current.task->state.registers.ip - 7, current.task->state.registers.sp);
 
-        interrupt->cs.value = selector.ucode;
-        interrupt->ss.value = selector.ustack;
-        interrupt->eip.value = current.task->state.registers.ip;
-        interrupt->esp.value = current.task->state.registers.sp;
-
         loadregisters(current.task, general);
         activate(current.task);
+
+    }
+
+    return &current;
+
+}
+
+unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
+{
+
+    struct arch_context *context = arch_schedule(general, interrupt->eip.value, interrupt->esp.value);
+
+    if (context->task)
+    {
+
+        interrupt->cs.value = selector.ucode;
+        interrupt->ss.value = selector.ustack;
+        interrupt->eip.value = context->task->state.registers.ip;
+        interrupt->esp.value = context->task->state.registers.sp;
 
     }
 
@@ -227,8 +242,8 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 
         interrupt->cs.value = selector.kcode;
         interrupt->ss.value = selector.kstack;
-        interrupt->eip.value = (unsigned int)cpu_halt;
-        interrupt->esp.value = KERNELSTACK;
+        interrupt->eip.value = context->ip;
+        interrupt->esp.value = context->sp;
 
     }
 
@@ -239,14 +254,14 @@ unsigned short arch_schedule(struct cpu_general *general, struct cpu_interrupt *
 unsigned short arch_breakpoint(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    return arch_schedule(&general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_generalfault(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    return arch_schedule(&general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
@@ -279,7 +294,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
     }
 
-    return arch_schedule(&general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
@@ -288,50 +303,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
     general.eax.value = abi_call(general.eax.value, current.container, current.task, interrupt.esp.pointer);
 
-    return arch_schedule(&general, &interrupt);
-
-}
-
-void arch_quicksyscall(struct cpu_general general)
-{
-
-    general.eax.value = abi_call(general.eax.value, current.container, current.task, general.ecx.pointer);
-
-/*
-    if (current.task)
-    {
-
-        current.task->state.registers.ip = general.edx.value;
-        current.task->state.registers.sp = general.ecx.value;
-
-        saveregisters(current.task, &general);
-
-    }
-
-    current.task = task_findactive();
-
-    if (current.task)
-    {
-
-        if (current.task->state.status == TASK_STATUS_UNBLOCKED)
-            task_resume(current.task, current.task->state.registers.ip - 7, current.task->state.registers.sp);
-
-        general.edx.value = current.task->state.registers.ip;
-        general.ecx.value = current.task->state.registers.sp;
-
-        loadregisters(current.task, &general);
-        activate(current.task);
-
-    }
-
-    else
-    {
-
-        general.edx.value = (unsigned int)cpu_halt;
-        general.ecx.value = KERNELSTACK;
-
-    }
-*/
+    return arch_resume(&general, &interrupt);
 
 }
 
@@ -408,6 +380,8 @@ void arch_setup(struct service_backend *backend)
 
     current.container = setupcontainers();
     current.task = setuptasks();
+    current.ip = (unsigned int)cpu_halt;
+    current.sp = KERNELSTACK;
 
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainercode(current.container);

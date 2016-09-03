@@ -70,7 +70,7 @@ unsigned short pic_interrupt(struct cpu_general general, unsigned int index, uns
 
     io_outb(REGISTERCOMMAND0, COMMANDEOI);
 
-    return arch_schedule(&general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 

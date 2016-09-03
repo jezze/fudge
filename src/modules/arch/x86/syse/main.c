@@ -5,6 +5,32 @@
 #include <modules/arch/x86/msr/msr.h>
 #include "syse.h"
 
+void syse_syscall(struct cpu_general general)
+{
+
+    struct arch_context *context;
+
+    general.eax.value = arch_call(general.eax.value, general.ecx.pointer);
+    context = arch_schedule(&general, general.edx.value, general.ecx.value);
+
+    if (context->task)
+    {
+
+        general.edx.value = context->task->state.registers.ip;
+        general.ecx.value = context->task->state.registers.sp;
+
+    }
+
+    else
+    {
+
+        general.edx.value = context->ip;
+        general.ecx.value = context->sp;
+
+    }
+
+}
+
 void module_init(void)
 {
 

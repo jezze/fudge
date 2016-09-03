@@ -1,11 +1,11 @@
 .code32
 
-.extern arch_quicksyscall
+.extern syse_syscall
 
 .global syse_interrupt
 syse_interrupt:
     pusha
-    call arch_quicksyscall
+    call syse_syscall
     popa
     sysexit
 
