@@ -100,3 +100,104 @@ call_write:
     int $CALL_INTERRUPT
     ret
 
+.global call_quickauth
+call_quickauth:
+    movl $CALL_INDEX_AUTH, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickclose
+call_quickclose:
+    movl $CALL_INDEX_CLOSE, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickcreate
+call_quickcreate:
+    movl $CALL_INDEX_CREATE, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickdestroy
+call_quickdestroy:
+    movl $CALL_INDEX_DESTROY, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickdespawn
+call_quickdespawn:
+    movl $CALL_INDEX_DESPAWN, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickload
+call_quickload:
+    movl $CALL_INDEX_LOAD, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickmount
+call_quickmount:
+    movl $CALL_INDEX_MOUNT, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickopen
+call_quickopen:
+    movl $CALL_INDEX_OPEN, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickread
+call_quickread:
+    movl $CALL_INDEX_READ, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickseek
+call_quickseek:
+    movl $CALL_INDEX_SEEK, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickspawn
+call_quickspawn:
+    movl $CALL_INDEX_SPAWN, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickunload
+call_quickunload:
+    movl $CALL_INDEX_UNLOAD, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickwalk
+call_quickwalk:
+    movl $CALL_INDEX_WALK, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+.global call_quickwrite
+call_quickwrite:
+    movl $CALL_INDEX_WRITE, %eax
+    movl %esp, %ecx
+    movl $call_quickreturn, %edx
+    sysenter
+
+call_quickreturn:
+    ret
+
