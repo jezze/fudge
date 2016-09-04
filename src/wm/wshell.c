@@ -62,6 +62,9 @@ static void interpret(void)
     char command[FUDGE_BSIZE];
     unsigned int count = buffer_read(&input, command, FUDGE_BSIZE);
 
+    if (count < 2)
+        return;
+
     /* This is a temporary fix */
     if (memory_match(command, "cd ", 3))
     {
