@@ -251,7 +251,87 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 
 }
 
+unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    if (interrupt.cs.value == selector.ucode)
+        task_setstatus(current.task, TASK_STATUS_INACTIVE);
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short arch_debug(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short arch_nmi(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    return arch_resume(&general, &interrupt);
+
+}
+
 unsigned short arch_breakpoint(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short arch_overflow(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short arch_bound(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short arch_opcode(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short arch_device(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short arch_doublefault(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short arch_tss(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
+{
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short arch_segment(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
+{
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short arch_stack(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
     return arch_resume(&general, &interrupt);
@@ -307,7 +387,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-static struct container *setupcontainers(void)
+static struct  container *setupcontainers(void)
 {
 
     unsigned int index;
@@ -368,7 +448,20 @@ void arch_setup(struct service_backend *backend)
     selector.ustack = gdt_setdescriptor(&gdt.pointer, 0x04, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.tlink = gdt_setdescriptor(&gdt.pointer, 0x05, (unsigned long)tss.pointer.descriptors, (unsigned long)tss.pointer.descriptors + tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
 
+    idt_setdescriptor(&idt.pointer, 0x00, isr_zero, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt.pointer, 0x01, isr_debug, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt.pointer, 0x02, isr_nmi, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x03, isr_breakpoint, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
+    idt_setdescriptor(&idt.pointer, 0x04, isr_overflow, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt.pointer, 0x05, isr_bound, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt.pointer, 0x06, isr_opcode, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt.pointer, 0x07, isr_device, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+
+    idt_setdescriptor(&idt.pointer, 0x08, isr_doublefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+
+    idt_setdescriptor(&idt.pointer, 0x0A, isr_tss, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt.pointer, 0x0B, isr_segment, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt.pointer, 0x0C, isr_stack, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x0D, isr_generalfault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x0E, isr_pagefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x80, isr_syscall, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
