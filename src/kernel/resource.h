@@ -19,6 +19,7 @@
 #define RESOURCE_MOUSEINTERFACE         19
 #define RESOURCE_BLOCKINTERFACE         20
 #define RESOURCE_CONSOLEINTERFACE       21
+#define RESOURCE_DEBUGLOG               22
 
 struct resource
 {

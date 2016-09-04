@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
-#include <modules/log/log.h>
 #include <modules/arch/x86/pci/pci.h>
 #include "ahci.h"
 
@@ -13,7 +12,7 @@ static unsigned int mmio;
 static void bus_setup(void)
 {
 
-    log_notify(LOG_INFO, "AHCI INIT\n", 10);
+    DEBUG(DEBUG_INFO, "AHCI INIT\n");
 
 }
 
