@@ -1,4 +1,5 @@
 MOD+=\
+    $(DIR_SRC)/modules/arch/x86/64bit/64bit.ko \
     $(DIR_SRC)/modules/arch/x86/acpi/acpi.ko \
     $(DIR_SRC)/modules/arch/x86/ahci/ahci.ko \
     $(DIR_SRC)/modules/arch/x86/apic/apic.ko \
@@ -30,6 +31,7 @@ MOD+=\
     $(DIR_SRC)/modules/arch/x86/virtio/virtio.ko.0 \
 
 OBJ_MOD+=\
+    $(DIR_SRC)/modules/arch/x86/64bit/main.o \
     $(DIR_SRC)/modules/arch/x86/acpi/main.o \
     $(DIR_SRC)/modules/arch/x86/ahci/main.o \
     $(DIR_SRC)/modules/arch/x86/apic/main.o \
@@ -67,6 +69,7 @@ OBJ_MOD+=\
     $(DIR_SRC)/modules/arch/x86/vga/registers.o \
     $(DIR_SRC)/modules/arch/x86/virtio/main.o \
 
+$(DIR_SRC)/modules/arch/x86/64bit/64bit.ko: $(DIR_SRC)/modules/arch/x86/64bit/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/arch/x86/acpi/acpi.ko: $(DIR_SRC)/modules/arch/x86/acpi/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/arch/x86/ahci/ahci.ko: $(DIR_SRC)/modules/arch/x86/ahci/main.o $(DEP_MOD)
 $(DIR_SRC)/modules/arch/x86/apic/apic.ko: $(DIR_SRC)/modules/arch/x86/apic/main.o $(DIR_SRC)/modules/arch/x86/apic/apic.o $(DEP_MOD)
