@@ -14,18 +14,26 @@ static void setuptables()
 {
 
     unsigned int i;
+    int *c = pt;
 
     memory_clear(pml4t, 0x1000);
     memory_clear(pml4t, 0x1000);
     memory_clear(pdt, 0x1000);
     memory_clear(pt, 0x200000);
 
-    pml4t[0] = 0x2003;
-    pdpt[0] = 0x3003;
-    pdt[0] = 0x4003;
+    pml4t[0] = (unsigned int)pdpt | 3;
+    pdpt[0] = (unsigned int)pdt | 3;
+    pdt[0] = (unsigned int)pt | 3;
 
     for (i = 0; i < 512; i++)
-        pt[i * 2] = (i * 0x1000) | 3;
+    {
+
+        *c = (i * 0x1000) | 3;
+        c++;
+        *c = 0;
+        c++;
+
+    }
 
 }
 
