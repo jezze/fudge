@@ -13,128 +13,113 @@ union settings
 
 };
 
-static unsigned int writestring(char *value)
+static void writebuffer(char *key, char *value, unsigned int count)
 {
 
-    return file_writeall(CALL_PO, value, ascii_length(value));
+    file_writeall(CALL_PO, key, ascii_length(key));
+    file_writeall(CALL_PO, ": ", 2);
+    file_writeall(CALL_PO, value, count);
+    file_writeall(CALL_PO, "\n", 1);
 
 }
 
-static unsigned int writeboolean(unsigned int value)
+static void writestring(char *key, char *value)
 {
 
-    return (value) ? writestring("yes") : writestring("no");
+    writebuffer(key, value, ascii_length(value));
 
 }
 
-static unsigned int writedec(unsigned int value)
+static void writeboolean(char *key, unsigned int value)
+{
+
+    if (value)
+        writebuffer(key, "true", 4);
+    else
+        writebuffer(key, "false", 5);
+
+}
+
+static void writedec(char *key, unsigned int value)
 {
 
     char num[FUDGE_NSIZE];
 
-    return file_writeall(CALL_PO, num, ascii_wvalue(num, FUDGE_NSIZE, value, 10, 0));
+    writebuffer(key, num, ascii_wvalue(num, FUDGE_NSIZE, value, 10, 0));
 
 }
 
 static void writeheader(struct ctrl_header *header)
 {
 
-    writestring("type: ");
+    char *key = "type";
 
     switch (header->type)
     {
 
     case CTRL_TYPE_CLOCK:
-        writestring("clocksettings");
+        writestring(key, "clocksettings");
 
         break;
 
     case CTRL_TYPE_CON:
-        writestring("consettings");
+        writestring(key, "consettings");
 
         break;
 
     case CTRL_TYPE_CONSOLE:
-        writestring("consolesettings");
+        writestring(key, "consolesettings");
 
         break;
 
     case CTRL_TYPE_VIDEO:
-        writestring("videosettings");
+        writestring(key, "videosettings");
 
         break;
 
     default:
-        writestring("<null>");
+        writestring(key, "<null>");
 
         break;
 
     }
-
-    writestring("\n");
 
 }
 
 static void writeclocksettings(struct ctrl_clocksettings *settings)
 {
 
-    writestring("seconds: ");
-    writedec(settings->seconds);
-    writestring("\n");
-    writestring("minutes: ");
-    writedec(settings->minutes);
-    writestring("\n");
-    writestring("hours: ");
-    writedec(settings->hours);
-    writestring("\n");
-    writestring("weekday: ");
-    writedec(settings->weekday);
-    writestring("\n");
-    writestring("day: ");
-    writedec(settings->day);
-    writestring("\n");
-    writestring("month: ");
-    writedec(settings->month);
-    writestring("\n");
-    writestring("year: ");
-    writedec(settings->year);
-    writestring("\n");
+    writedec("seconds", settings->seconds);
+    writedec("minutes", settings->minutes);
+    writedec("hours", settings->hours);
+    writedec("weekday", settings->weekday);
+    writedec("day", settings->day);
+    writedec("month", settings->month);
+    writedec("year", settings->year);
 
 }
 
 static void writeconsettings(struct ctrl_consettings *settings)
 {
 
-    writestring("linkprotocol: ");
-    writedec(settings->linkprotocol);
-    writestring("\n");
-    writestring("networkprotocol: ");
-    writedec(settings->networkprotocol);
-    writestring("\n");
+    writedec("linkprotocol", settings->linkprotocol);
+    writedec("networkprotocol", settings->networkprotocol);
 
 }
 
 static void writeconsolesettings(struct ctrl_consolesettings *settings)
 {
 
-    writestring("scroll: ");
-    writeboolean(settings->scroll);
-    writestring("\n");
+    writeboolean("scroll", settings->scroll);
 
 }
 
 static void writevideosettings(struct ctrl_videosettings *settings)
 {
 
-    writestring("width: ");
-    writedec(settings->w);
-    writestring("\n");
-    writestring("height: ");
-    writedec(settings->h);
-    writestring("\n");
-    writestring("bpp: ");
-    writedec(settings->bpp);
-    writestring("\n");
+    writedec("width", settings->w);
+    writedec("height", settings->h);
+    writedec("bpp", settings->bpp);
 
 }
 
