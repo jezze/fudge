@@ -7,6 +7,7 @@ union settings
     unsigned char raw[FUDGE_BSIZE];
     struct ctrl_header header;
     struct ctrl_clocksettings clocksettings;
+    struct ctrl_consettings consettings;
     struct ctrl_consolesettings consolesettings;
     struct ctrl_videosettings videosettings;
 
@@ -45,6 +46,11 @@ static void writeheader(struct ctrl_header *header)
 
     case CTRL_TYPE_CLOCK:
         writestring("clocksettings");
+
+        break;
+
+    case CTRL_TYPE_CON:
+        writestring("consettings");
 
         break;
 
@@ -96,6 +102,18 @@ static void writeclocksettings(struct ctrl_clocksettings *settings)
 
 }
 
+static void writeconsettings(struct ctrl_consettings *settings)
+{
+
+    writestring("linkprotocol: ");
+    writedec(settings->linkprotocol);
+    writestring("\n");
+    writestring("networkprotocol: ");
+    writedec(settings->networkprotocol);
+    writestring("\n");
+
+}
+
 static void writeconsolesettings(struct ctrl_consolesettings *settings)
 {
 
@@ -136,6 +154,12 @@ void main(void)
     case CTRL_TYPE_CLOCK:
         file_seekreadall(CALL_PI, &buffer.clocksettings, sizeof (struct ctrl_clocksettings), 0);
         writeclocksettings(&buffer.clocksettings);
+
+        break;
+
+    case CTRL_TYPE_CON:
+        file_seekreadall(CALL_PI, &buffer.consettings, sizeof (struct ctrl_consettings), 0);
+        writeconsettings(&buffer.consettings);
 
         break;
 

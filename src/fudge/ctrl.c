@@ -22,6 +22,16 @@ void ctrl_setclocksettings(struct ctrl_clocksettings *settings, unsigned char se
 
 }
 
+void ctrl_setconsettings(struct ctrl_consettings *settings, unsigned int linkprotocol, unsigned int networkprotocol)
+{
+
+    ctrl_setheader(&settings->header, CTRL_TYPE_CON);
+
+    settings->linkprotocol = linkprotocol;
+    settings->networkprotocol = networkprotocol;
+
+}
+
 void ctrl_setconsolesettings(struct ctrl_consolesettings *settings, unsigned char scroll)
 {
 

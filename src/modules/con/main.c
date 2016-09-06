@@ -27,17 +27,31 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
 
 }
 
+static unsigned int ctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    struct con *con = (struct con *)self->parent;
+
+    return memory_read(buffer, count, &con->settings, sizeof (struct ctrl_consolesettings), state->offset);
+
+}
+
 void con_init(struct con *con)
 {
 
+    ctrl_setconsettings(&con->settings, 0, 0);
     system_initnode(&con->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "con");
+    system_initnode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&con->data, SYSTEM_NODETYPE_NORMAL, "data");
+
+    con->ctrl.read = ctrl_read;
 
 }
 
 void con_register(struct con *con)
 {
 
+    system_addchild(&con->root, &con->ctrl);
     system_addchild(&con->root, &con->data);
     system_addchild(&root, &con->root);
 

@@ -2,7 +2,9 @@ struct con
 {
 
     struct system_node root;
+    struct system_node ctrl;
     struct system_node data;
+    struct ctrl_consettings settings;
 
 };
 
