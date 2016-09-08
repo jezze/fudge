@@ -1,13 +1,13 @@
 struct tcp_header
 {
 
-    unsigned short sp;
-    unsigned short tp;
-    unsigned short seq[2];
-    unsigned short ack[2];
-    unsigned short flags;
-    unsigned short window;
-    unsigned short checksum;
-    unsigned short urgent;
+    unsigned char sp[2];
+    unsigned char tp[2];
+    unsigned char seq[4];
+    unsigned char ack[4];
+    unsigned char flags[2];
+    unsigned char window[2];
+    unsigned char checksum[2];
+    unsigned char urgent[2];
 
 };

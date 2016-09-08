@@ -13,6 +13,7 @@ void ipv4protocol_notify(struct ethernet_interface *interface, void *buffer, uns
 {
 
     struct udp_header *header = buffer;
+    unsigned int port = (header->sp[0] << 8) | header->sp[1];
     struct list_item *current;
 
     for (current = hooks.head; current; current = current->next)
@@ -20,7 +21,7 @@ void ipv4protocol_notify(struct ethernet_interface *interface, void *buffer, uns
 
         struct udp_hook *hook = current->data;
 
-        if (hook->port == header->sp)
+        if (hook->port == port)
             hook->notify(interface, buffer, count);
 
     }

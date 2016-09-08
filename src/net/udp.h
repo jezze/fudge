@@ -1,9 +1,9 @@
 struct udp_header
 {
 
-    unsigned short sp;
-    unsigned short tp;
-    unsigned short length;
-    unsigned short checksum;
+    unsigned char sp[2];
+    unsigned char tp[2];
+    unsigned char length[2];
+    unsigned char checksum[2];
 
 };
