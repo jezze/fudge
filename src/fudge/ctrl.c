@@ -22,13 +22,14 @@ void ctrl_setclocksettings(struct ctrl_clocksettings *settings, unsigned char se
 
 }
 
-void ctrl_setconsettings(struct ctrl_consettings *settings, unsigned int interface, unsigned int protocol)
+void ctrl_setconsettings(struct ctrl_consettings *settings, unsigned int interface, unsigned int protocol, unsigned int port)
 {
 
     ctrl_setheader(&settings->header, CTRL_TYPE_CON);
 
     settings->interface = interface;
     settings->protocol = protocol;
+    settings->port = port;
 
 }
 

@@ -104,6 +104,7 @@ static void writeconsettings(struct ctrl_consettings *settings)
 
     writedec("interface", settings->interface);
     writedec("protocol", settings->protocol);
+    writedec("port", settings->port);
 
 }
 

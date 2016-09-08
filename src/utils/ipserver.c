@@ -6,7 +6,7 @@ void main(void)
 
     struct ctrl_consettings settings;
 
-    ctrl_setconsettings(&settings, 0, 0x11);
+    ctrl_setconsettings(&settings, 0, 0x11, 8080);
 
     if (!file_walk(CALL_L1, "ctrl"))
         return;

@@ -3,6 +3,7 @@
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
 #include <modules/ipv4/ipv4.h>
+#include <modules/udp/udp.h>
 #include "con.h"
 
 static struct system_node root;
@@ -92,10 +93,10 @@ static unsigned int ctrl_write(struct system_node *self, struct service_state *s
 void con_init(struct con *con)
 {
 
-    ctrl_setconsettings(&con->settings, 0, 0);
+    ctrl_setconsettings(&con->settings, 0, 0, 0);
     system_initnode(&con->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "con");
     system_initnode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&con->data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&con->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     con->ctrl.read = ctrl_read;
     con->ctrl.write = ctrl_write;
