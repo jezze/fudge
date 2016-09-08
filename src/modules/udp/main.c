@@ -1,15 +1,55 @@
 #include <fudge.h>
+#include <net/udp.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
 #include <modules/ipv4/ipv4.h>
+#include "udp.h"
 
 static struct ipv4_protocol ipv4protocol;
+static struct list hooks;
 
 void ipv4protocol_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
+    struct udp_header *header = buffer;
+    struct list_item *current;
+
+    for (current = hooks.head; current; current = current->next)
+    {
+
+        struct udp_hook *hook = current->data;
+
+        if (hook->port == header->sp)
+            hook->notify(interface, buffer, count);
+
+    }
+
     system_multicast(&ipv4protocol.data, buffer, count);
+
+}
+
+void udp_registerhook(struct udp_hook *hook)
+{
+
+    list_add(&hooks, &hook->item);
+
+}
+
+void udp_unregisterhook(struct udp_hook *hook)
+{
+
+    list_remove(&hooks, &hook->item);
+
+}
+
+void udp_inithook(struct udp_hook *hook, unsigned int port, void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count))
+{
+
+    list_inititem(&hook->item, hook);
+
+    hook->port = port;
+    hook->notify = notify;
 
 }
 
