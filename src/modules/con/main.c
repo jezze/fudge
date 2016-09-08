@@ -1,10 +1,50 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
+#include <modules/ethernet/ethernet.h>
+#include <modules/ipv4/ipv4.h>
 #include "con.h"
 
 static struct system_node root;
 static struct system_node clone;
+
+static struct ethernet_interface *findinterface(unsigned int index)
+{
+
+    struct resource *resource = 0;
+
+    while ((resource = resource_findtype(resource, RESOURCE_ETHERNETINTERFACE)))
+    {
+
+        if (!index)
+            return resource->data;
+
+        index--;
+
+    }
+
+    return 0;
+
+}
+
+static struct ipv4_protocol *findprotocol(unsigned int id)
+{
+
+    struct resource *resource = 0;
+
+    while ((resource = resource_findtype(resource, RESOURCE_IPV4PROTOCOL)))
+    {
+
+        struct ipv4_protocol *protocol = resource->data;
+
+        if (protocol->id == id)
+            return protocol;
+
+    }
+
+    return 0;
+
+}
 
 static unsigned int clone_child(struct system_node *self, char *path, unsigned int length)
 {
@@ -32,7 +72,20 @@ static unsigned int ctrl_read(struct system_node *self, struct service_state *st
 
     struct con *con = (struct con *)self->parent;
 
-    return memory_read(buffer, count, &con->settings, sizeof (struct ctrl_consolesettings), state->offset);
+    return memory_read(buffer, count, &con->settings, sizeof (struct ctrl_consettings), state->offset);
+
+}
+
+static unsigned int ctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    struct con *con = (struct con *)self->parent;
+
+    count = memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, state->offset);
+    con->interface = findinterface(con->settings.interface);
+    con->protocol = findprotocol(con->settings.protocol);
+
+    return count;
 
 }
 
@@ -45,6 +98,7 @@ void con_init(struct con *con)
     system_initnode(&con->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     con->ctrl.read = ctrl_read;
+    con->ctrl.write = ctrl_write;
 
 }
 

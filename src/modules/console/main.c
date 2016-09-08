@@ -16,9 +16,8 @@ static unsigned int interfacectrl_read(struct system_node *self, struct service_
 {
 
     struct console_interface *interface = self->resource->data;
-    struct ctrl_consolesettings *settings = buffer;
 
-    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_consolesettings), state->offset);
+    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_consolesettings), state->offset);
 
 }
 

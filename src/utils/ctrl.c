@@ -102,8 +102,8 @@ static void writeclocksettings(struct ctrl_clocksettings *settings)
 static void writeconsettings(struct ctrl_consettings *settings)
 {
 
-    writedec("linkprotocol", settings->linkprotocol);
-    writedec("networkprotocol", settings->networkprotocol);
+    writedec("interface", settings->interface);
+    writedec("protocol", settings->protocol);
 
 }
 

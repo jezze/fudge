@@ -9,9 +9,8 @@ static unsigned int interfacectrl_read(struct system_node *self, struct service_
 {
 
     struct video_interface *interface = self->resource->data;
-    struct ctrl_videosettings *settings = buffer;
 
-    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_videosettings), state->offset);
+    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_videosettings), state->offset);
 
 }
 
@@ -19,11 +18,12 @@ static unsigned int interfacectrl_write(struct system_node *self, struct service
 {
 
     struct video_interface *interface = self->resource->data;
-    struct ctrl_videosettings *settings = buffer;
 
-    interface->setmode(settings);
+    count = memory_write(&interface->settings, sizeof (struct ctrl_videosettings), buffer, count, state->offset);
 
-    return sizeof (struct ctrl_videosettings);
+    interface->setmode(&interface->settings);
+
+    return count;
 
 }
 

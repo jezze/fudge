@@ -9,7 +9,6 @@ static unsigned int interfacectrl_read(struct system_node *self, struct service_
 {
 
     struct clock_interface *interface = self->resource->data;
-    struct ctrl_clocksettings *settings = buffer;
 
     interface->settings.seconds = interface->getseconds();
     interface->settings.minutes = interface->getminutes();
@@ -19,7 +18,7 @@ static unsigned int interfacectrl_read(struct system_node *self, struct service_
     interface->settings.month = interface->getmonth();
     interface->settings.year = interface->getyear();
 
-    return memory_read(settings, count, &interface->settings, sizeof (struct ctrl_clocksettings), state->offset);
+    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_clocksettings), state->offset);
 
 }
 

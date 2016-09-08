@@ -29,8 +29,8 @@ struct ctrl_consettings
 {
 
     struct ctrl_header header;
-    unsigned int linkprotocol;
-    unsigned int networkprotocol;
+    unsigned int interface;
+    unsigned int protocol;
 
 };
 
@@ -54,6 +54,6 @@ struct ctrl_videosettings
 
 void ctrl_setheader(struct ctrl_header *header, unsigned int type);
 void ctrl_setclocksettings(struct ctrl_clocksettings *settings, unsigned char seconds, unsigned char minutes, unsigned char hours, unsigned char weekday, unsigned char day, unsigned char month, unsigned short year);
-void ctrl_setconsettings(struct ctrl_consettings *settings, unsigned int linkprotocol, unsigned int networkprotocol);
+void ctrl_setconsettings(struct ctrl_consettings *settings, unsigned int interface, unsigned int protocol);
 void ctrl_setconsolesettings(struct ctrl_consolesettings *settings, unsigned char scroll);
 void ctrl_setvideosettings(struct ctrl_videosettings *settings, unsigned int w, unsigned int h, unsigned int bpp);
