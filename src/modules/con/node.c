@@ -1,6 +1,9 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
+#include <modules/ethernet/ethernet.h>
+#include <modules/ipv4/ipv4.h>
+#include <modules/udp/udp.h>
 #include "con.h"
 
 static struct con con;

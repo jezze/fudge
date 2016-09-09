@@ -28,7 +28,6 @@ void ctrl_setconsettings(struct ctrl_consettings *settings, unsigned int interfa
     ctrl_setheader(&settings->header, CTRL_TYPE_CON);
 
     settings->interface = interface;
-    settings->protocol = protocol;
     settings->port = port;
 
 }

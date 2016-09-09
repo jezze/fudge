@@ -28,25 +28,6 @@ static struct ethernet_interface *findinterface(unsigned int index)
 
 }
 
-static struct ipv4_protocol *findprotocol(unsigned int id)
-{
-
-    struct resource *resource = 0;
-
-    while ((resource = resource_findtype(resource, RESOURCE_IPV4PROTOCOL)))
-    {
-
-        struct ipv4_protocol *protocol = resource->data;
-
-        if (protocol->id == id)
-            return protocol;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int clone_child(struct system_node *self, char *path, unsigned int length)
 {
 
@@ -68,6 +49,11 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
 
 }
 
+void udphook_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
+{
+
+}
+
 static unsigned int ctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -83,10 +69,34 @@ static unsigned int ctrl_write(struct system_node *self, struct service_state *s
     struct con *con = (struct con *)self->parent;
 
     count = memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, state->offset);
+
+    udp_inithook(&con->hook, con->settings.port, udphook_notify);
+
     con->interface = findinterface(con->settings.interface);
-    con->protocol = findprotocol(con->settings.protocol);
 
     return count;
+
+}
+
+static unsigned int data_open(struct system_node *self, struct service_state *state)
+{
+
+    struct con *con = (struct con *)self->parent;
+
+    udp_registerhook(&con->hook);
+
+    return system_openmailbox(self, state);
+
+}
+
+static unsigned int data_close(struct system_node *self, struct service_state *state)
+{
+
+    struct con *con = (struct con *)self->parent;
+
+    udp_unregisterhook(&con->hook);
+
+    return system_closemailbox(self, state);
 
 }
 
@@ -100,6 +110,8 @@ void con_init(struct con *con)
 
     con->ctrl.read = ctrl_read;
     con->ctrl.write = ctrl_write;
+    con->data.open = data_open;
+    con->data.close = data_close;
 
 }
 

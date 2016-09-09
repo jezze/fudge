@@ -30,7 +30,6 @@ struct ctrl_consettings
 
     struct ctrl_header header;
     unsigned int interface;
-    unsigned int protocol;
     unsigned int port;
 
 };
