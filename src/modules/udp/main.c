@@ -13,7 +13,8 @@ void ipv4protocol_notify(struct ethernet_interface *interface, void *buffer, uns
 {
 
     struct udp_header *header = buffer;
-    unsigned int port = (header->sp[0] << 8) | header->sp[1];
+    unsigned int port = (header->tp[0] << 8) | header->tp[1];
+    unsigned int length = (header->length[0] << 8) | header->length[1];
     struct list_item *current;
 
     for (current = hooks.head; current; current = current->next)
@@ -22,7 +23,7 @@ void ipv4protocol_notify(struct ethernet_interface *interface, void *buffer, uns
         struct udp_hook *hook = current->data;
 
         if (hook->port == port)
-            hook->notify(interface, buffer, count);
+            hook->notify(hook->self, interface, header + 1, length - sizeof (struct udp_header));
 
     }
 
@@ -44,11 +45,12 @@ void udp_unregisterhook(struct udp_hook *hook)
 
 }
 
-void udp_inithook(struct udp_hook *hook, unsigned int port, void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count))
+void udp_inithook(struct udp_hook *hook, void *self, unsigned int port, void (*notify)(void *self, struct ethernet_interface *interface, void *buffer, unsigned int count))
 {
 
     list_inititem(&hook->item, hook);
 
+    hook->self = self;
     hook->port = port;
     hook->notify = notify;
 
