@@ -74,6 +74,9 @@
 #define ISRRER                          (1 << 1)
 #define ISRTOK                          (1 << 2)
 #define ISRTER                          (1 << 3)
+#define ISRRXO                          (1 << 4)
+#define ISRPUN                          (1 << 5)
+#define ISRRXU                          (1 << 6)
 #define HEADERFLAGROK                   (1 << 0)
 #define HEADERFLAGFAE                   (1 << 1)
 #define HEADERFLAGCRC                   (1 << 2)
@@ -172,7 +175,7 @@ static void handleirq(unsigned int irq)
 
             rxp += (header->length + 4 + 3) & ~3;
 
-            if (rxp > 8192)
+            if (rxp >= 8192)
             {
 
                 rxp -= 8192;
@@ -188,10 +191,45 @@ static void handleirq(unsigned int irq)
 
     }
 
+    if (status & ISRRER)
+    {
+
+        io_outw(io + REGISTERISR, ISRRER);
+
+    }
+
     if (status & ISRTOK)
     {
 
         io_outw(io + REGISTERISR, ISRTOK);
+
+    }
+
+    if (status & ISRTER)
+    {
+
+        io_outw(io + REGISTERISR, ISRTER);
+
+    }
+
+    if (status & ISRRXO)
+    {
+
+        io_outw(io + REGISTERISR, ISRRXO);
+
+    }
+
+    if (status & ISRPUN)
+    {
+
+        io_outw(io + REGISTERISR, ISRPUN);
+
+    }
+
+    if (status & ISRRXU)
+    {
+
+        io_outw(io + REGISTERISR, ISRRXU);
 
     }
 
@@ -260,7 +298,7 @@ static void driver_attach(unsigned int id)
 
     poweron();
     reset();
-    setintflags(ISRROK | ISRTOK);
+    setintflags(ISRROK | ISRRER | ISRTOK | ISRTER | ISRRXO | ISRPUN | ISRRXU);
     setrx();
     settx();
     enable();
