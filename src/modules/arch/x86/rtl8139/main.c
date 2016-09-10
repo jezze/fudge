@@ -166,6 +166,9 @@ static void handleirq(unsigned int irq)
 
         rxp += (header->length + 4 + 3) & ~3;
 
+        if (rxp > 8192)
+            rxp -= 8192;
+
         io_outw(io + REGISTERCAPR, rxp - 16);
         io_outw(io + REGISTERISR, ISRROK);
 
