@@ -160,16 +160,24 @@ static void handleirq(unsigned int irq)
     if (status & ISRROK)
     {
 
-        struct rtl8139_header *header = (struct rtl8139_header *)(rx + rxp);
+        struct rtl8139_header *header;
+        short end = io_inw(io + REGISTERCBR);
 
-        ethernet_notify(&ethernetinterface, header + 1, header->length);
+        while (rxp < end)
+        {
 
-        rxp += (header->length + 4 + 3) & ~3;
+            header = (struct rtl8139_header *)(rx + rxp);
+            ethernet_notify(&ethernetinterface, header + 1, header->length);
 
-        if (rxp > 8192)
-            rxp -= 8192;
+            rxp += (header->length + 4 + 3) & ~3;
 
-        io_outw(io + REGISTERCAPR, rxp - 16);
+            if (rxp > 8192)
+                rxp -= 8192;
+
+            io_outw(io + REGISTERCAPR, rxp - 16);
+
+        }
+
         io_outw(io + REGISTERISR, ISRROK);
 
     }
