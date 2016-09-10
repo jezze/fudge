@@ -162,27 +162,24 @@ static void handleirq(unsigned int irq)
 
         struct rtl8139_header *header;
         short end = io_inw(io + REGISTERCBR);
-        short step;
+        short limit = (end < rxp) ? 8192 : end;
 
-        step = (end < rxp) ? 8192 : end;
-
-        while (rxp < step)
+        while (rxp < limit)
         {
 
             header = (struct rtl8139_header *)(rx + rxp);
-            ethernet_notify(&ethernetinterface, header + 1, header->length);
-
             rxp += (header->length + 4 + 3) & ~3;
 
             if (rxp > 8192)
             {
 
                 rxp -= 8192;
-                step = end;
+                limit = end;
 
             }
 
             io_outw(io + REGISTERCAPR, rxp - 16);
+            ethernet_notify(&ethernetinterface, header + 1, header->length);
 
         }
 
