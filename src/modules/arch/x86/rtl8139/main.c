@@ -162,8 +162,11 @@ static void handleirq(unsigned int irq)
 
         struct rtl8139_header *header;
         short end = io_inw(io + REGISTERCBR);
+        short step;
 
-        while (rxp < end)
+        step = (end < rxp) ? 8192 : end;
+
+        while (rxp < step)
         {
 
             header = (struct rtl8139_header *)(rx + rxp);
@@ -172,7 +175,12 @@ static void handleirq(unsigned int irq)
             rxp += (header->length + 4 + 3) & ~3;
 
             if (rxp > 8192)
+            {
+
                 rxp -= 8192;
+                step = end;
+
+            }
 
             io_outw(io + REGISTERCAPR, rxp - 16);
 
