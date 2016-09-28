@@ -27,6 +27,7 @@ static unsigned int elementcount;
 static unsigned char fontdata[0x8000];
 static unsigned char *fontbitmapdata;
 static unsigned int fontpadding;
+static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char mousedata[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -98,27 +99,7 @@ static void paint32(unsigned int color, unsigned int offset, unsigned int count)
     unsigned int i;
 
     for (i = offset; i < count + offset; i++)
-        buffer[i] = color;
-
-}
-
-static void paint(unsigned int color, unsigned int offset, unsigned int count)
-{
-
-    switch (settings.bpp)
-    {
-
-    case 8:
-        paint8(color, offset, count);
-
-        break;
-
-    case 32:
-        paint32(colormap32[color], offset, count);
-
-        break;
-
-    }
+        buffer[i] = colormap32[color];
 
 }
 
@@ -591,8 +572,11 @@ void main(void)
     file_seekreadall(CALL_L0, &settings, sizeof (struct ctrl_videosettings), 0);
     file_close(CALL_L0);
 
-    if (settings.bpp == 8)
+    switch (settings.bpp)
     {
+
+    case 8:
+        paint = paint8;
 
         if (!file_walkfrom(CALL_L0, CALL_PO, "colormap"))
             return;
@@ -600,6 +584,13 @@ void main(void)
         file_open(CALL_L0);
         file_seekwriteall(CALL_L0, colormap8, 3 * 11, 0);
         file_close(CALL_L0);
+
+        break;
+
+    case 32:
+        paint = paint32;
+
+        break;
 
     }
 
