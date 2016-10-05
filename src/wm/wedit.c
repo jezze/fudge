@@ -16,21 +16,21 @@ static struct buffer output;
 static struct box size;
 static void (*handlers[EVENTS])(struct event_header *header);
 
-static unsigned int rowstart()
+static unsigned int rowstart(unsigned int position)
 {
 
-    return ascii_searchreverse(textdata, 0, content.cursor, '\n');
+    return ascii_searchreverse(textdata, 0, position, '\n');
 
 }
 
-static unsigned int rowstop()
+static unsigned int rowstop(unsigned int position)
 {
 
-    return ascii_search(textdata, content.cursor, text.count, '\n');
+    return ascii_search(textdata, position, text.count, '\n');
 
 }
 
-static unsigned int rowup()
+static unsigned int rowup(unsigned int position)
 {
 
     unsigned int start;
@@ -38,12 +38,12 @@ static unsigned int rowup()
     unsigned int count;
     unsigned int countp;
 
-    start = ascii_searchreverse(textdata, 0, content.cursor, '\n');
+    start = rowstart(position);
 
     if (!start)
         return 0;
 
-    startp = ascii_searchreverse(textdata, 0, start - 1, '\n');
+    startp = rowstart(start - 1);
     count = content.cursor - start;
     countp = start - startp - 1;
 
@@ -51,7 +51,7 @@ static unsigned int rowup()
 
 }
 
-static unsigned int rowdown()
+static unsigned int rowdown(unsigned int position)
 {
 
     unsigned int start;
@@ -59,14 +59,14 @@ static unsigned int rowdown()
     unsigned int count;
     unsigned int countn;
 
-    start = ascii_searchreverse(textdata, 0, content.cursor, '\n');
-    startn = ascii_search(textdata, content.cursor, text.count, '\n') + 1;
+    start = rowstart(position);
+    startn = rowstop(position) + 1;
 
     if (startn == text.count)
         return startn - 1;
 
     count = content.cursor - start;
-    countn = ascii_search(textdata, startn, text.count, '\n') - startn;
+    countn = rowstop(startn) - startn;
 
     return startn + (countn < count ? countn : count);
 
@@ -92,14 +92,14 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x47:
-        content.cursor = rowstart();
+        content.cursor = rowstart(content.cursor);
 
         print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
     case 0x48:
-        content.cursor = rowup();
+        content.cursor = rowup(content.cursor);
 
         print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
@@ -122,14 +122,14 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x4F:
-        content.cursor = rowstop();
+        content.cursor = rowstop(content.cursor);
 
         print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
     case 0x50:
-        content.cursor = rowdown();
+        content.cursor = rowdown(content.cursor);
 
         print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
