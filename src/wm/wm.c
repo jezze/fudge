@@ -566,7 +566,6 @@ static void onwmunmap(struct event_header *header)
 
             struct remote *remote = views[i].remotes.head->data;
 
-            send_wmhide(CALL_L1, remote->source);
             send_wmunmap(CALL_L1, remote->source);
             list_move(&remotelist, &remote->item);
 
