@@ -20,6 +20,7 @@ static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
+static unsigned int (*funcs[3])(unsigned char *data, unsigned int count, struct element *element);
 static unsigned int (*tests[EVENTS])(struct element *element, void *data, unsigned int line);
 static void (*renderers[EVENTS])(struct element *element, void *data, unsigned int line);
 static unsigned char elementdata[0x8000];
@@ -609,6 +610,9 @@ void main(void)
 
     }
 
+    funcs[ELEMENT_FUNC_INSERT] = insertelement;
+    funcs[ELEMENT_FUNC_UPDATE] = updateelement;
+    funcs[ELEMENT_FUNC_REMOVE] = removeelement;
     textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
     textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
     tests[ELEMENT_TYPE_FILL] = testfill;
@@ -630,29 +634,7 @@ void main(void)
         struct element *element = 0;
 
         while ((element = nextelement(buffer, count, element)))
-        {
-
-            switch (element->func)
-            {
-
-            case ELEMENT_FUNC_INSERT:
-                elementcount = insertelement(elementdata, elementcount, element);
-
-                break;
-
-            case ELEMENT_FUNC_UPDATE:
-                elementcount = updateelement(elementdata, elementcount, element);
-
-                break;
-
-            case ELEMENT_FUNC_REMOVE:
-                elementcount = removeelement(elementdata, elementcount, element);
-
-                break;
-
-            }
-
-        }
+            elementcount = funcs[element->func](elementdata, elementcount, element);
 
         render(elementdata, elementcount);
 
