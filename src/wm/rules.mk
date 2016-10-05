@@ -22,6 +22,7 @@ OBJ_WEDIT:=\
     $(DIR_SRC)/wm/wedit.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
+    $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/send.o \
 
 DEP_WMEDIT:=\
@@ -39,6 +40,7 @@ OBJ_WM:=\
     $(DIR_SRC)/wm/wm.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
+    $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/send.o \
 
 DEP_WM:=\
@@ -57,6 +59,7 @@ OBJ_WSHELL:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/send.o \
+    $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/keymap.o \
 
 DEP_WSHELL:=\

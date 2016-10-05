@@ -2,6 +2,7 @@
 #include <fudge.h>
 #include "box.h"
 #include "element.h"
+#include "print.h"
 #include "send.h"
 #include "keymap.h"
 
@@ -41,69 +42,18 @@ static struct element_mouse mouse;
 static struct view *viewfocus;
 static void (*handlers[EVENTS])(struct event_header *header);
 
-static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
+static void printremote(struct buffer *buffer, unsigned int source, unsigned int z, struct remote *remote)
 {
 
-    struct element element;
-
-    element_init(&element, id, type, source, z, count);
-    buffer_write(&output, &element, sizeof (struct element));
+    print_window(buffer, source, z, &remote->window);
 
 }
 
-static void writefill(unsigned int source, unsigned int z, struct element_fill *fill)
+static void printview(struct buffer *buffer, unsigned int source, unsigned int z, struct view *view)
 {
 
-    writeelement((unsigned int)fill, ELEMENT_TYPE_FILL, source, z, sizeof (struct element_fill));
-    buffer_write(&output, fill, sizeof (struct element_fill));
-
-}
-
-static void writemouse(unsigned int source, unsigned int z, struct element_mouse *mouse)
-{
-
-    writeelement((unsigned int)mouse, ELEMENT_TYPE_MOUSE, source, z, sizeof (struct element_mouse));
-    buffer_write(&output, mouse, sizeof (struct element_mouse));
-
-}
-
-static void writepanel(unsigned int source, unsigned int z, struct element_panel *panel)
-{
-
-    writeelement((unsigned int)panel, ELEMENT_TYPE_PANEL, source, z, sizeof (struct element_panel));
-    buffer_write(&output, panel, sizeof (struct element_panel));
-
-}
-
-static void writetext(unsigned int source, unsigned int z, struct element_text *text, void *buffer, unsigned int count)
-{
-
-    writeelement((unsigned int)text, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + count);
-    buffer_write(&output, text, sizeof (struct element_text));
-    buffer_write(&output, buffer, count);
-
-}
-
-static void writewindow(unsigned int source, unsigned int z, struct element_window *window)
-{
-
-    writeelement((unsigned int)window, ELEMENT_TYPE_WINDOW, source, z, sizeof (struct element_window));
-    buffer_write(&output, window, sizeof (struct element_window));
-
-}
-
-static void writeremote(unsigned int source, unsigned int z, struct remote *remote)
-{
-
-    writewindow(source, z, &remote->window);
-
-}
-
-static void writeview(unsigned int source, unsigned int z, struct view *view)
-{
-
-    writepanel(source, z, &view->panel);
-    writetext(source, z, &view->number, &view->numberstring, 1);
+    print_panel(buffer, source, z, &view->panel);
+    print_text(buffer, source, z, &view->number, &view->numberstring, 1);
 
 }
 
@@ -132,7 +82,7 @@ static void showremotes(unsigned int source, struct list *remotes)
         struct remote *remote = current->data;
 
         send_wmshow(CALL_L1, remote->source);
-        writeremote(source, 1, remote);
+        printremote(&output, source, 1, remote);
 
     }
 
@@ -149,7 +99,7 @@ static void hideremotes(unsigned int source, struct list *remotes)
         struct remote *remote = current->data;
 
         send_wmhide(CALL_L1, remote->source);
-        writeremote(source, 0, remote);
+        printremote(&output, source, 0, remote);
 
     }
 
@@ -223,7 +173,7 @@ static void showview(unsigned int source, struct view *view)
 {
 
     activateview(view);
-    writeview(source, 1, view);
+    printview(&output, source, 1, view);
     showremotes(source, &view->remotes);
 
 }
@@ -232,7 +182,7 @@ static void hideview(unsigned int source, struct view *view)
 {
 
     deactivateview(view);
-    writeview(source, 1, view);
+    printview(&output, source, 1, view);
     hideremotes(source, &view->remotes);
 
 }
@@ -325,7 +275,7 @@ static void onkeypress(struct event_header *header)
 
         send_wmhide(CALL_L1, viewfocus->remotefocus->source);
         send_wmunmap(CALL_L1, viewfocus->remotefocus->source);
-        writeremote(header->destination, 0, viewfocus->remotefocus);
+        printremote(&output, header->destination, 0, viewfocus->remotefocus);
         list_move(&remotelist, &viewfocus->remotefocus->item);
 
         viewfocus->remotefocus = (viewfocus->remotes.tail) ? viewfocus->remotes.tail->data : 0;
@@ -380,12 +330,12 @@ static void onkeypress(struct event_header *header)
             break;
 
         deactivateremote(viewfocus->remotefocus);
-        writeremote(header->destination, 1, viewfocus->remotefocus);
+        printremote(&output, header->destination, 1, viewfocus->remotefocus);
 
         viewfocus->remotefocus = nextremote;
 
         activateremote(viewfocus->remotefocus);
-        writeremote(header->destination, 1, viewfocus->remotefocus);
+        printremote(&output, header->destination, 1, viewfocus->remotefocus);
 
         break;
 
@@ -399,12 +349,12 @@ static void onkeypress(struct event_header *header)
             break;
 
         deactivateremote(viewfocus->remotefocus);
-        writeremote(header->destination, 1, viewfocus->remotefocus);
+        printremote(&output, header->destination, 1, viewfocus->remotefocus);
 
         viewfocus->remotefocus = nextremote;
 
         activateremote(viewfocus->remotefocus);
-        writeremote(header->destination, 1, viewfocus->remotefocus);
+        printremote(&output, header->destination, 1, viewfocus->remotefocus);
 
         break;
 
@@ -489,7 +439,7 @@ static void onmousemove(struct event_header *header)
     if (mousemove.rely > 0 && mouse.y >= size.h)
         mouse.y = 0;
 
-    writemouse(header->destination, 3, &mouse);
+    print_mouse(&output, header->destination, 3, &mouse);
 
 }
 
@@ -535,12 +485,12 @@ static void onmousepress(struct event_header *header)
                 return;
 
             deactivateremote(viewfocus->remotefocus);
-            writeremote(header->destination, 1, viewfocus->remotefocus);
+            printremote(&output, header->destination, 1, viewfocus->remotefocus);
 
             viewfocus->remotefocus = remote;
 
             activateremote(viewfocus->remotefocus);
-            writeremote(header->destination, 1, viewfocus->remotefocus);
+            printremote(&output, header->destination, 1, viewfocus->remotefocus);
 
         }
 
@@ -645,12 +595,12 @@ static void onwmshow(struct event_header *header)
 
     unsigned int i;
 
-    writefill(header->destination, 1, &background);
+    print_fill(&output, header->destination, 1, &background);
 
     for (i = 0; i < VIEWS; i++)
-        writeview(header->destination, 1, &views[i]);
+        printview(&output, header->destination, 1, &views[i]);
 
-    writemouse(header->destination, 3, &mouse);
+    print_mouse(&output, header->destination, 3, &mouse);
     showremotes(header->destination, &viewfocus->remotes);
 
 }
@@ -660,12 +610,12 @@ static void onwmhide(struct event_header *header)
 
     unsigned int i;
 
-    writefill(header->destination, 0, &background);
+    print_fill(&output, header->destination, 0, &background);
 
     for (i = 0; i < VIEWS; i++)
-        writeview(header->destination, 0, &views[i]);
+        printview(&output, header->destination, 0, &views[i]);
 
-    writemouse(header->destination, 0, &mouse);
+    print_mouse(&output, header->destination, 0, &mouse);
     hideremotes(header->destination, &viewfocus->remotes);
 
 }

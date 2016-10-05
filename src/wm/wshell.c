@@ -2,6 +2,7 @@
 #include <fudge.h>
 #include "box.h"
 #include "element.h"
+#include "print.h"
 #include "send.h"
 #include "keymap.h"
 
@@ -16,25 +17,6 @@ static char outputdata[FUDGE_BSIZE];
 static struct buffer output;
 static struct box size;
 static void (*handlers[EVENTS])(struct event_header *header);
-
-static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
-{
-
-    struct element element;
-
-    element_init(&element, id, type, source, z, count);
-    buffer_write(&output, &element, sizeof (struct element));
-
-}
-
-static void writetext(unsigned int source, unsigned int z)
-{
-
-    writeelement((unsigned int)&content, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + text.count);
-    buffer_write(&output, &content, sizeof (struct element_text));
-    buffer_write(&output, text.memory, text.count);
-
-}
 
 static void inserttext(void *buffer, unsigned int count)
 {
@@ -132,7 +114,7 @@ static void onkeypress(struct event_header *header)
 
         removetext(2);
         inserttext("\n", 1);
-        writetext(header->destination, 1);
+        print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
@@ -144,7 +126,7 @@ static void onkeypress(struct event_header *header)
 
         interpret();
         inserttext("$ \n", 3);
-        writetext(header->destination, 1);
+        print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
@@ -157,7 +139,7 @@ static void onkeypress(struct event_header *header)
         removetext(1);
         inserttext(&keycode->value, keycode->length);
         inserttext("\n", 1);
-        writetext(header->destination, 1);
+        print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
@@ -196,7 +178,7 @@ static void onwmmap(struct event_header *header)
 static void onwmunmap(struct event_header *header)
 {
 
-    writetext(header->destination, 0);
+    print_text(&output, header->destination, 0, &content, text.memory, text.count);
 
     quit = 1;
 
@@ -216,14 +198,14 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    writetext(header->destination, 1);
+    print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
 }
 
 static void onwmhide(struct event_header *header)
 {
 
-    writetext(header->destination, 0);
+    print_text(&output, header->destination, 0, &content, text.memory, text.count);
 
 }
 
