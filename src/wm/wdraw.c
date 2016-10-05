@@ -427,8 +427,30 @@ static struct element *nextelement(unsigned char *data, unsigned int count, stru
 
 }
 
-static unsigned int addelement(unsigned char *data, unsigned int count, struct element *element)
+static void destroyelements(unsigned char *data, unsigned int count, struct element *element)
 {
+
+    struct element *current = 0;
+
+    while ((current = nextelement(data, count, current)))
+    {
+
+        if (current->source == element->source && current->id == element->id)
+        {
+
+            current->z = 0;
+            current->damaged = 1;
+
+        }
+
+    }
+
+}
+
+static unsigned int insertelement(unsigned char *data, unsigned int count, struct element *element)
+{
+
+    destroyelements(elementdata, elementcount, element);
 
     element->damaged = 1;
 
@@ -436,14 +458,19 @@ static unsigned int addelement(unsigned char *data, unsigned int count, struct e
 
 }
 
+static unsigned int updateelement(unsigned char *data, unsigned int count, struct element *element)
+{
+
+    return count;
+
+}
+
 static unsigned int removeelement(unsigned char *data, unsigned int count, struct element *element)
 {
 
-    unsigned int length = sizeof (struct element) + element->count;
+    destroyelements(elementdata, elementcount, element);
 
-    memory_copy(element, (unsigned char *)element + length, count - ((unsigned char *)element - data) - length);
-
-    return length;
+    return count;
 
 }
 
@@ -458,31 +485,19 @@ static unsigned int cleanelements(unsigned char *data, unsigned int count)
         current->damaged = 0;
 
         if (!current->z)
-            count -= removeelement(data, count, current);
-
-    }
-
-    return count;
-
-}
-
-static void destroyelements(unsigned char *data, unsigned int count, unsigned int source, unsigned int id)
-{
-
-    struct element *current = 0;
-
-    while ((current = nextelement(data, count, current)))
-    {
-
-        if (current->source == source && current->id == id)
         {
 
-            current->z = 0;
-            current->damaged = 1;
+            unsigned int length = sizeof (struct element) + current->count;
+
+            memory_copy(current, (unsigned char *)current + length, count - ((unsigned char *)current - data) - length);
+
+            count -= length;
 
         }
 
     }
+
+    return count;
 
 }
 
@@ -617,10 +632,25 @@ void main(void)
         while ((element = nextelement(buffer, count, element)))
         {
 
-            destroyelements(elementdata, elementcount, element->source, element->id);
+            switch (element->func)
+            {
 
-            if (element->z)
-                elementcount = addelement(elementdata, elementcount, element);
+            case ELEMENT_FUNC_INSERT:
+                elementcount = insertelement(elementdata, elementcount, element);
+
+                break;
+
+            case ELEMENT_FUNC_UPDATE:
+                elementcount = updateelement(elementdata, elementcount, element);
+
+                break;
+
+            case ELEMENT_FUNC_REMOVE:
+                elementcount = removeelement(elementdata, elementcount, element);
+
+                break;
+
+            }
 
         }
 

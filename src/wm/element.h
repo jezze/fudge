@@ -1,5 +1,6 @@
 #define ELEMENT_FUNC_INSERT             1
 #define ELEMENT_FUNC_UPDATE             2
+#define ELEMENT_FUNC_REMOVE             3
 #define ELEMENT_TYPE_FILL               1
 #define ELEMENT_TYPE_WINDOW             2
 #define ELEMENT_TYPE_TEXT               3

@@ -108,42 +108,42 @@ static void onkeypress(struct event_header *header)
     case 0x47:
         content.cursor = rowhome(content.cursor);
 
-        print_text(&output, header->destination, 1, &content, text.memory, text.count);
+        print_inserttext(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
     case 0x48:
         content.cursor = rowup(content.cursor);
 
-        print_text(&output, header->destination, 1, &content, text.memory, text.count);
+        print_inserttext(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
     case 0x4B:
         content.cursor = rowleft(content.cursor);
 
-        print_text(&output, header->destination, 1, &content, text.memory, text.count);
+        print_inserttext(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
     case 0x4D:
         content.cursor = rowright(content.cursor);
 
-        print_text(&output, header->destination, 1, &content, text.memory, text.count);
+        print_inserttext(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
     case 0x4F:
         content.cursor = rowend(content.cursor);
 
-        print_text(&output, header->destination, 1, &content, text.memory, text.count);
+        print_inserttext(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
     case 0x50:
         content.cursor = rowdown(content.cursor);
 
-        print_text(&output, header->destination, 1, &content, text.memory, text.count);
+        print_inserttext(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
@@ -182,7 +182,7 @@ static void onwmmap(struct event_header *header)
 static void onwmunmap(struct event_header *header)
 {
 
-    print_text(&output, header->destination, 0, &content, text.memory, text.count);
+    print_removetext(&output, header->destination, &content);
 
     quit = 1;
 
@@ -202,14 +202,14 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    print_text(&output, header->destination, 1, &content, text.memory, text.count);
+    print_inserttext(&output, header->destination, 1, &content, text.memory, text.count);
 
 }
 
 static void onwmhide(struct event_header *header)
 {
 
-    print_text(&output, header->destination, 0, &content, text.memory, text.count);
+    print_removetext(&output, header->destination, &content);
 
 }
 
