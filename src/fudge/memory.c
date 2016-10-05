@@ -66,11 +66,7 @@ unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int 
     if (ocount > icount - offset)
         ocount = icount - offset;
 
-    ip += offset;
-    offset = ocount;
-
-    while (offset--)
-        *op++ = *ip++;
+    memory_copy(op, ip + offset, ocount);
 
     return ocount;
 
@@ -88,11 +84,7 @@ unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int
     if (icount > ocount - offset)
         icount = ocount - offset;
 
-    op += offset;
-    offset = icount;
-
-    while (offset--)
-        *op++ = *ip++;
+    memory_copy(op + offset, ip, icount);
 
     return icount;
 
