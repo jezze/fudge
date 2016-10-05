@@ -3,10 +3,11 @@
 #include "box.h"
 #include "element.h"
 
-void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
+void element_init(struct element *element, unsigned int id, unsigned int func, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
 {
 
     element->id = id;
+    element->func = func;
     element->type = type;
     element->source = source;
     element->z = z;

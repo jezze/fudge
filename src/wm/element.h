@@ -1,3 +1,5 @@
+#define ELEMENT_FUNC_INSERT             1
+#define ELEMENT_FUNC_UPDATE             2
 #define ELEMENT_TYPE_FILL               1
 #define ELEMENT_TYPE_WINDOW             2
 #define ELEMENT_TYPE_TEXT               3
@@ -13,6 +15,7 @@ struct element
 {
 
     unsigned int id;
+    unsigned int func;
     unsigned int type;
     unsigned int source;
     unsigned int z;
@@ -63,7 +66,7 @@ struct element_window
 
 };
 
-void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count);
+void element_init(struct element *element, unsigned int id, unsigned int func, unsigned int type, unsigned int source, unsigned int z, unsigned int count);
 void element_initfill(struct element_fill *fill, unsigned int color);
 void element_initmouse(struct element_mouse *mouse, unsigned int x, unsigned int y);
 void element_initpanel(struct element_panel *panel, unsigned int active);
