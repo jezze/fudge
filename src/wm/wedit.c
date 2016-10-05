@@ -19,14 +19,14 @@ static void (*handlers[EVENTS])(struct event_header *header);
 static unsigned int rowleft(unsigned int position)
 {
 
-    return (content.cursor > 0) ? content.cursor - 1 : content.cursor;
+    return (position > 0) ? position - 1 : position;
 
 }
 
 static unsigned int rowright(unsigned int position)
 {
 
-    return (content.cursor < text.count - 1) ? content.cursor + 1 : content.cursor;
+    return (position < text.count - 1) ? position + 1 : position;
 
 }
 
@@ -58,7 +58,7 @@ static unsigned int rowup(unsigned int position)
         return 0;
 
     startp = rowhome(start - 1);
-    count = content.cursor - start;
+    count = position - start;
     countp = start - startp - 1;
 
     return startp + (countp < count ? countp : count);
@@ -79,7 +79,7 @@ static unsigned int rowdown(unsigned int position)
     if (startn == text.count)
         return startn - 1;
 
-    count = content.cursor - start;
+    count = position - start;
     countn = rowend(startn) - startn;
 
     return startn + (countn < count ? countn : count);
