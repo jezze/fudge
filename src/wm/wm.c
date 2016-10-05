@@ -86,6 +86,14 @@ static void deactivateremote(struct remote *remote)
 
 }
 
+static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+{
+
+    box_setsize(&remote->window.size, x, y, w, h);
+    send_wmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+
+}
+
 static void showremotes(unsigned int source, struct list *remotes)
 {
 
@@ -124,7 +132,6 @@ static void arrangeview(unsigned int source, struct view *view)
 {
 
     struct list_item *current = view->remotes.tail;
-    struct remote *remote;
     unsigned int y;
     unsigned int h;
 
@@ -135,28 +142,20 @@ static void arrangeview(unsigned int source, struct view *view)
         break;
 
     case 1:
-        remote = current->data;
-
-        box_setsize(&remote->window.size, body.x, body.y, body.w, body.h);
-        send_wmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+        resizeremote(current->data, body.x, body.y, body.w, body.h);
 
         break;
 
     default:
         y = body.y;
         h = body.h / (view->remotes.count - 1);
-        remote = current->data;
 
-        box_setsize(&remote->window.size, body.x, body.y, view->center, body.h);
-        send_wmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+        resizeremote(current->data, body.x, body.y, view->center, body.h);
 
         for (current = view->remotes.tail->prev; current; current = current->prev)
         {
 
-            remote = current->data;
-
-            box_setsize(&remote->window.size, body.x + view->center, y, body.w - view->center, h);
-            send_wmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+            resizeremote(current->data, body.x + view->center, y, body.w - view->center, h);
 
             y += h;
 
