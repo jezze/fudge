@@ -229,31 +229,16 @@ static void onwmhide(struct event_header *header)
 
 }
 
-static void setup(void)
-{
-
-    buffer_init(&input, FUDGE_BSIZE, inputbuffer);
-    buffer_init(&text, FUDGE_BSIZE, textbuffer);
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
-    inserttext("$ \n", 3);
-
-}
-
 void main(void)
 {
 
     struct event_header header;
     unsigned int count;
 
-    setup();
-
-    handlers[EVENT_KEYPRESS] = onkeypress;
-    handlers[EVENT_KEYRELEASE] = onkeyrelease;
-    handlers[EVENT_WMMAP] = onwmmap;
-    handlers[EVENT_WMUNMAP] = onwmunmap;
-    handlers[EVENT_WMRESIZE] = onwmresize;
-    handlers[EVENT_WMSHOW] = onwmshow;
-    handlers[EVENT_WMHIDE] = onwmhide;
+    buffer_init(&input, FUDGE_BSIZE, inputbuffer);
+    buffer_init(&text, FUDGE_BSIZE, textbuffer);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
+    inserttext("$ \n", 3);
 
     if (!file_walk(CALL_L0, "/system/event/poll"))
         return;
@@ -268,6 +253,15 @@ void main(void)
     file_open(CALL_L0);
     file_open(CALL_L1);
     file_open(CALL_L2);
+
+    handlers[EVENT_KEYPRESS] = onkeypress;
+    handlers[EVENT_KEYRELEASE] = onkeyrelease;
+    handlers[EVENT_WMMAP] = onwmmap;
+    handlers[EVENT_WMUNMAP] = onwmunmap;
+    handlers[EVENT_WMRESIZE] = onwmresize;
+    handlers[EVENT_WMSHOW] = onwmshow;
+    handlers[EVENT_WMHIDE] = onwmhide;
+
     send_wmmap(CALL_L1, 0);
 
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
