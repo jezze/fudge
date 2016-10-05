@@ -13,7 +13,7 @@ static void printelement(struct buffer *buffer, unsigned int id, unsigned int fu
 
 }
 
-void print_insertfill(struct buffer *buffer, unsigned int source, unsigned int z, struct element_fill *fill)
+void print_insertfill(struct buffer *buffer, unsigned int source, struct element_fill *fill, unsigned int z)
 {
 
     printelement(buffer, (unsigned int)fill, ELEMENT_FUNC_INSERT, ELEMENT_TYPE_FILL, source, z, sizeof (struct element_fill));
@@ -21,7 +21,7 @@ void print_insertfill(struct buffer *buffer, unsigned int source, unsigned int z
 
 }
 
-void print_insertmouse(struct buffer *buffer, unsigned int source, unsigned int z, struct element_mouse *mouse)
+void print_insertmouse(struct buffer *buffer, unsigned int source, struct element_mouse *mouse, unsigned int z)
 {
 
     printelement(buffer, (unsigned int)mouse, ELEMENT_FUNC_INSERT, ELEMENT_TYPE_MOUSE, source, z, sizeof (struct element_mouse));
@@ -29,7 +29,7 @@ void print_insertmouse(struct buffer *buffer, unsigned int source, unsigned int 
 
 }
 
-void print_insertpanel(struct buffer *buffer, unsigned int source, unsigned int z, struct element_panel *panel)
+void print_insertpanel(struct buffer *buffer, unsigned int source, struct element_panel *panel, unsigned int z)
 {
 
     printelement(buffer, (unsigned int)panel, ELEMENT_FUNC_INSERT, ELEMENT_TYPE_PANEL, source, z, sizeof (struct element_panel));
@@ -37,7 +37,7 @@ void print_insertpanel(struct buffer *buffer, unsigned int source, unsigned int 
 
 }
 
-void print_inserttext(struct buffer *buffer, unsigned int source, unsigned int z, struct element_text *text, void *textbuffer, unsigned int count)
+void print_inserttext(struct buffer *buffer, unsigned int source, struct element_text *text, unsigned int z, void *textbuffer, unsigned int count)
 {
 
     printelement(buffer, (unsigned int)text, ELEMENT_FUNC_INSERT, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + count);
@@ -46,7 +46,7 @@ void print_inserttext(struct buffer *buffer, unsigned int source, unsigned int z
 
 }
 
-void print_insertwindow(struct buffer *buffer, unsigned int source, unsigned int z, struct element_window *window)
+void print_insertwindow(struct buffer *buffer, unsigned int source, struct element_window *window, unsigned int z)
 {
 
     printelement(buffer, (unsigned int)window, ELEMENT_FUNC_INSERT, ELEMENT_TYPE_WINDOW, source, z, sizeof (struct element_window));
