@@ -39,7 +39,7 @@ static struct box body;
 static struct list remotelist;
 static struct element_fill background;
 static struct element_mouse mouse;
-static struct view *viewfocus;
+static struct view *viewfocus = &views[0];
 static void (*handlers[EVENTS])(struct event_header *header);
 
 static void printremote(struct buffer *buffer, unsigned int source, unsigned int z, struct remote *remote)
@@ -631,15 +631,6 @@ void main(void)
     element_initfill(&background, 2);
     element_initmouse(&mouse, 0, 0);
 
-    for (i = 0; i < REMOTES; i++)
-    {
-
-        list_inititem(&remotes[i].item, &remotes[i]);
-        element_initwindow(&remotes[i].window, 0);
-        list_add(&remotelist, &remotes[i].item);
-
-    }
-
     for (i = 0; i < VIEWS; i++)
     {
 
@@ -651,9 +642,16 @@ void main(void)
 
     }
 
-    viewfocus = &views[0];
-    viewfocus->panel.active = 1;
-    viewfocus->number.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
+    for (i = 0; i < REMOTES; i++)
+    {
+
+        list_inititem(&remotes[i].item, &remotes[i]);
+        element_initwindow(&remotes[i].window, 0);
+        list_add(&remotelist, &remotes[i].item);
+
+    }
+
+    activateview(viewfocus);
 
     if (!file_walk(CALL_L0, "/system/event/poll"))
         return;
