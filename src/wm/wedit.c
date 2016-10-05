@@ -16,14 +16,28 @@ static struct buffer output;
 static struct box size;
 static void (*handlers[EVENTS])(struct event_header *header);
 
-static unsigned int rowstart(unsigned int position)
+static unsigned int rowleft(unsigned int position)
+{
+
+    return (content.cursor > 0) ? content.cursor - 1 : content.cursor;
+
+}
+
+static unsigned int rowright(unsigned int position)
+{
+
+    return (content.cursor < text.count - 1) ? content.cursor + 1 : content.cursor;
+
+}
+
+static unsigned int rowhome(unsigned int position)
 {
 
     return ascii_searchreverse(textdata, 0, position, '\n');
 
 }
 
-static unsigned int rowstop(unsigned int position)
+static unsigned int rowend(unsigned int position)
 {
 
     return ascii_search(textdata, position, text.count, '\n');
@@ -38,12 +52,12 @@ static unsigned int rowup(unsigned int position)
     unsigned int count;
     unsigned int countp;
 
-    start = rowstart(position);
+    start = rowhome(position);
 
     if (!start)
         return 0;
 
-    startp = rowstart(start - 1);
+    startp = rowhome(start - 1);
     count = content.cursor - start;
     countp = start - startp - 1;
 
@@ -59,14 +73,14 @@ static unsigned int rowdown(unsigned int position)
     unsigned int count;
     unsigned int countn;
 
-    start = rowstart(position);
-    startn = rowstop(position) + 1;
+    start = rowhome(position);
+    startn = rowend(position) + 1;
 
     if (startn == text.count)
         return startn - 1;
 
     count = content.cursor - start;
-    countn = rowstop(startn) - startn;
+    countn = rowend(startn) - startn;
 
     return startn + (countn < count ? countn : count);
 
@@ -92,7 +106,7 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x47:
-        content.cursor = rowstart(content.cursor);
+        content.cursor = rowhome(content.cursor);
 
         print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
@@ -106,23 +120,21 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x4B:
-        if (content.cursor > 0)
-            content.cursor -= 1;
+        content.cursor = rowleft(content.cursor);
 
         print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
     case 0x4D:
-        if (content.cursor < text.count - 1)
-            content.cursor += 1;
+        content.cursor = rowright(content.cursor);
 
         print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
         break;
 
     case 0x4F:
-        content.cursor = rowstop(content.cursor);
+        content.cursor = rowend(content.cursor);
 
         print_text(&output, header->destination, 1, &content, text.memory, text.count);
 
