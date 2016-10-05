@@ -8,11 +8,11 @@
 static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static char textbuffer[FUDGE_BSIZE];
+static char textdata[FUDGE_BSIZE];
 static struct buffer text;
+static char outputdata[FUDGE_BSIZE];
+static struct buffer output;
 static struct box size;
-static unsigned char databuffer[FUDGE_BSIZE];
-static unsigned int datacount;
 static void (*handlers[EVENTS])(struct event_header *header);
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
@@ -21,8 +21,7 @@ static void writeelement(unsigned int id, unsigned int type, unsigned int source
     struct element element;
 
     element_init(&element, id, type, source, z, count);
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &element, sizeof (struct element), datacount);
+    buffer_write(&output, &element, sizeof (struct element));
 
 }
 
@@ -30,23 +29,22 @@ static void writetext(unsigned int source, unsigned int z)
 {
 
     writeelement((unsigned int)&content, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + text.count);
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &content, sizeof (struct element_text), datacount);
-    datacount += buffer_copy(&text, databuffer + datacount, FUDGE_BSIZE - datacount);
+    buffer_write(&output, &content, sizeof (struct element_text));
+    buffer_write(&output, text.memory, text.count);
 
 }
 
 static unsigned int rowstart()
 {
 
-    return ascii_searchreverse(textbuffer, 0, content.cursor, '\n');
+    return ascii_searchreverse(textdata, 0, content.cursor, '\n');
 
 }
 
 static unsigned int rowstop()
 {
 
-    return ascii_search(textbuffer, content.cursor, text.count, '\n');
+    return ascii_search(textdata, content.cursor, text.count, '\n');
 
 }
 
@@ -58,12 +56,12 @@ static unsigned int rowup()
     unsigned int count;
     unsigned int countp;
 
-    start = ascii_searchreverse(textbuffer, 0, content.cursor, '\n');
+    start = ascii_searchreverse(textdata, 0, content.cursor, '\n');
 
     if (!start)
         return 0;
 
-    startp = ascii_searchreverse(textbuffer, 0, start - 1, '\n');
+    startp = ascii_searchreverse(textdata, 0, start - 1, '\n');
     count = content.cursor - start;
     countp = start - startp - 1;
 
@@ -79,14 +77,14 @@ static unsigned int rowdown()
     unsigned int count;
     unsigned int countn;
 
-    start = ascii_searchreverse(textbuffer, 0, content.cursor, '\n');
-    startn = ascii_search(textbuffer, content.cursor, text.count, '\n') + 1;
+    start = ascii_searchreverse(textdata, 0, content.cursor, '\n');
+    startn = ascii_search(textdata, content.cursor, text.count, '\n') + 1;
 
     if (startn == text.count)
         return startn - 1;
 
     count = content.cursor - start;
-    countn = ascii_search(textbuffer, startn, text.count, '\n') - startn;
+    countn = ascii_search(textdata, startn, text.count, '\n') - startn;
 
     return startn + (countn < count ? countn : count);
 
@@ -228,7 +226,8 @@ void main(void)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    buffer_init(&text, FUDGE_BSIZE, textbuffer);
+    buffer_init(&output, FUDGE_BSIZE, outputdata);
+    buffer_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
     if (!file_walk(CALL_L0, "/system/event/poll"))
@@ -269,12 +268,11 @@ void main(void)
 
         handlers[header.type](&header);
 
-        if (datacount)
+        if (output.count)
         {
 
-            file_writeall(CALL_PO, databuffer, datacount);
-
-            datacount = 0;
+            file_writeall(CALL_PO, output.memory, output.count);
+            buffer_init(&output, FUDGE_BSIZE, outputdata);
 
         }
 

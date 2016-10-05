@@ -29,16 +29,16 @@ static struct view
 
 } views[VIEWS];
 
-static struct element_fill background;
-static struct element_mouse mouse;
-static struct view *viewfocus;
-static unsigned int keymod = KEYMOD_NONE;
 static unsigned int quit;
+static unsigned int keymod = KEYMOD_NONE;
+static char outputdata[FUDGE_BSIZE];
+static struct buffer output;
 static struct box size;
 static struct box body;
 static struct list remotelist;
-static unsigned char databuffer[FUDGE_BSIZE];
-static unsigned int datacount;
+static struct element_fill background;
+static struct element_mouse mouse;
+static struct view *viewfocus;
 static void (*handlers[EVENTS])(struct event_header *header);
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
@@ -47,8 +47,7 @@ static void writeelement(unsigned int id, unsigned int type, unsigned int source
     struct element element;
 
     element_init(&element, id, type, source, z, count);
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &element, sizeof (struct element), datacount);
+    buffer_write(&output, &element, sizeof (struct element));
 
 }
 
@@ -56,8 +55,7 @@ static void writefill(unsigned int source, unsigned int z, struct element_fill *
 {
 
     writeelement((unsigned int)fill, ELEMENT_TYPE_FILL, source, z, sizeof (struct element_fill));
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, fill, sizeof (struct element_fill), datacount);
+    buffer_write(&output, fill, sizeof (struct element_fill));
 
 }
 
@@ -65,8 +63,7 @@ static void writemouse(unsigned int source, unsigned int z, struct element_mouse
 {
 
     writeelement((unsigned int)mouse, ELEMENT_TYPE_MOUSE, source, z, sizeof (struct element_mouse));
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, mouse, sizeof (struct element_mouse), datacount);
+    buffer_write(&output, mouse, sizeof (struct element_mouse));
 
 }
 
@@ -74,8 +71,7 @@ static void writepanel(unsigned int source, unsigned int z, struct element_panel
 {
 
     writeelement((unsigned int)panel, ELEMENT_TYPE_PANEL, source, z, sizeof (struct element_panel));
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, panel, sizeof (struct element_panel), datacount);
+    buffer_write(&output, panel, sizeof (struct element_panel));
 
 }
 
@@ -83,9 +79,8 @@ static void writetext(unsigned int source, unsigned int z, struct element_text *
 {
 
     writeelement((unsigned int)text, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + count);
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, text, sizeof (struct element_text), datacount);
-    datacount += memory_write(databuffer, FUDGE_BSIZE, buffer, count, datacount);
+    buffer_write(&output, text, sizeof (struct element_text));
+    buffer_write(&output, buffer, count);
 
 }
 
@@ -93,8 +88,7 @@ static void writewindow(unsigned int source, unsigned int z, struct element_wind
 {
 
     writeelement((unsigned int)window, ELEMENT_TYPE_WINDOW, source, z, sizeof (struct element_window));
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, window, sizeof (struct element_window), datacount);
+    buffer_write(&output, window, sizeof (struct element_window));
 
 }
 
@@ -676,11 +670,14 @@ static void onwmhide(struct event_header *header)
 
 }
 
-static void setup(void)
+void main(void)
 {
 
+    struct event_header header;
+    unsigned int count;
     unsigned int i;
 
+    buffer_init(&output, FUDGE_BSIZE, outputdata);
     element_initfill(&background, 2);
     element_initmouse(&mouse, 0, 0);
 
@@ -708,27 +705,6 @@ static void setup(void)
     viewfocus->panel.active = 1;
     viewfocus->number.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
 
-}
-
-void main(void)
-{
-
-    struct event_header header;
-    unsigned int count;
-
-    setup();
-
-    handlers[EVENT_KEYPRESS] = onkeypress;
-    handlers[EVENT_KEYRELEASE] = onkeyrelease;
-    handlers[EVENT_MOUSEMOVE] = onmousemove;
-    handlers[EVENT_MOUSEPRESS] = onmousepress;
-    handlers[EVENT_MOUSERELEASE] = onmouserelease;
-    handlers[EVENT_WMMAP] = onwmmap;
-    handlers[EVENT_WMUNMAP] = onwmunmap;
-    handlers[EVENT_WMRESIZE] = onwmresize;
-    handlers[EVENT_WMSHOW] = onwmshow;
-    handlers[EVENT_WMHIDE] = onwmhide;
-
     if (!file_walk(CALL_L0, "/system/event/poll"))
         return;
 
@@ -746,6 +722,18 @@ void main(void)
     file_open(CALL_L1);
     file_open(CALL_L2);
     file_open(CALL_L3);
+
+    handlers[EVENT_KEYPRESS] = onkeypress;
+    handlers[EVENT_KEYRELEASE] = onkeyrelease;
+    handlers[EVENT_MOUSEMOVE] = onmousemove;
+    handlers[EVENT_MOUSEPRESS] = onmousepress;
+    handlers[EVENT_MOUSERELEASE] = onmouserelease;
+    handlers[EVENT_WMMAP] = onwmmap;
+    handlers[EVENT_WMUNMAP] = onwmunmap;
+    handlers[EVENT_WMRESIZE] = onwmresize;
+    handlers[EVENT_WMSHOW] = onwmshow;
+    handlers[EVENT_WMHIDE] = onwmhide;
+
     send_wmmap(CALL_L1, 0);
 
     while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
@@ -756,12 +744,11 @@ void main(void)
 
         handlers[header.type](&header);
 
-        if (datacount)
+        if (output.count)
         {
 
-            file_writeall(CALL_PO, databuffer, datacount);
-
-            datacount = 0;
+            file_writeall(CALL_PO, output.memory, output.count);
+            buffer_init(&output, FUDGE_BSIZE, outputdata);
 
         }
 

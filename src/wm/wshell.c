@@ -8,13 +8,13 @@
 static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static unsigned char textbuffer[FUDGE_BSIZE];
+static char textdata[FUDGE_BSIZE];
 static struct buffer text;
-static unsigned char inputbuffer[FUDGE_BSIZE];
+static char inputdata[FUDGE_BSIZE];
 static struct buffer input;
+static char outputdata[FUDGE_BSIZE];
+static struct buffer output;
 static struct box size;
-static unsigned char databuffer[FUDGE_BSIZE];
-static unsigned int datacount;
 static void (*handlers[EVENTS])(struct event_header *header);
 
 static void writeelement(unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
@@ -23,8 +23,7 @@ static void writeelement(unsigned int id, unsigned int type, unsigned int source
     struct element element;
 
     element_init(&element, id, type, source, z, count);
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &element, sizeof (struct element), datacount);
+    buffer_write(&output, &element, sizeof (struct element));
 
 }
 
@@ -32,9 +31,8 @@ static void writetext(unsigned int source, unsigned int z)
 {
 
     writeelement((unsigned int)&content, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + text.count);
-
-    datacount += memory_write(databuffer, FUDGE_BSIZE, &content, sizeof (struct element_text), datacount);
-    datacount += buffer_copy(&text, databuffer + datacount, FUDGE_BSIZE - datacount);
+    buffer_write(&output, &content, sizeof (struct element_text));
+    buffer_write(&output, text.memory, text.count);
 
 }
 
@@ -235,8 +233,9 @@ void main(void)
     struct event_header header;
     unsigned int count;
 
-    buffer_init(&input, FUDGE_BSIZE, inputbuffer);
-    buffer_init(&text, FUDGE_BSIZE, textbuffer);
+    buffer_init(&input, FUDGE_BSIZE, inputdata);
+    buffer_init(&output, FUDGE_BSIZE, outputdata);
+    buffer_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     inserttext("$ \n", 3);
 
@@ -272,12 +271,11 @@ void main(void)
 
         handlers[header.type](&header);
 
-        if (datacount)
+        if (output.count)
         {
 
-            file_writeall(CALL_PO, databuffer, datacount);
-
-            datacount = 0;
+            file_writeall(CALL_PO, output.memory, output.count);
+            buffer_init(&output, FUDGE_BSIZE, outputdata);
 
         }
 
