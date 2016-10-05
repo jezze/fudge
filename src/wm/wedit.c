@@ -182,8 +182,6 @@ static void onwmmap(struct event_header *header)
 static void onwmunmap(struct event_header *header)
 {
 
-    print_removetext(&output, header->destination, &content);
-
     quit = 1;
 
 }
