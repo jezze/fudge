@@ -97,10 +97,8 @@ static void paint32(unsigned int color, unsigned int offset, unsigned int count)
 
     unsigned int *buffer = (unsigned int *)drawdata + offset;
 
-    color = colormap32[color];
-
     while (count--)
-        *buffer++ = color;
+        *buffer++ = colormap32[color];
 
 }
 
