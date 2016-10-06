@@ -85,22 +85,22 @@ static unsigned int colormap32[] = {
 static void paint8(unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned char *buffer = drawdata;
-    unsigned int i;
+    unsigned char *buffer = drawdata + offset;
 
-    for (i = offset; i < count + offset; i++)
-        buffer[i] = color;
+    while (count--)
+        *buffer++ = color;
 
 }
 
 static void paint32(unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned int *buffer = (unsigned int *)drawdata;
-    unsigned int i;
+    unsigned int *buffer = (unsigned int *)drawdata + offset;
 
-    for (i = offset; i < count + offset; i++)
-        buffer[i] = colormap32[color];
+    color = colormap32[color];
+
+    while (count--)
+        *buffer++ = color;
 
 }
 
