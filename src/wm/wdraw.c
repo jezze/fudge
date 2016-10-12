@@ -15,6 +15,9 @@
 #define COLOR_POINTERFRAME              0x08
 #define COLOR_TEXTNORMAL                0x09
 #define COLOR_TEXTLIGHT                 0x0A
+#define MOUSE_WIDTH                     24
+#define MOUSE_HEIGHT                    24
+#define TEXT_LINEHEIGHT                 24
 
 static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
@@ -102,12 +105,19 @@ static void paint32(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
+static unsigned int isoverlap(unsigned int line, unsigned int y, unsigned int h)
+{
+
+    return line >= y && line < y + h;
+
+}
+
 static unsigned int testfill(struct element *element, void *data, unsigned int line)
 {
 
     struct element_fill *fill = data;
 
-    return line >= fill->size.y && line < fill->size.y + fill->size.h;
+    return isoverlap(line, fill->size.y, fill->size.h);
 
 }
 
@@ -125,7 +135,7 @@ static unsigned int testmouse(struct element *element, void *data, unsigned int 
 
     struct element_mouse *mouse = data;
 
-    return line >= mouse->y && line < mouse->y + 24;
+    return isoverlap(line, mouse->y, MOUSE_HEIGHT);
 
 }
 
@@ -133,15 +143,14 @@ static void rendermouse(struct element *element, void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
+    unsigned char *md = mousedata + (line - mouse->y) * MOUSE_WIDTH;
     unsigned int i;
 
-    line = (line - mouse->y);
-
-    for (i = 0; i < 24; i++)
+    for (i = 0; i < MOUSE_WIDTH; i++)
     {
 
-        if (mousedata[line * 24 + i] != 0xFF)
-            paint(mousedata[line * 24 + i], mouse->x + i, 1);
+        if (md[i] != 0xFF)
+            paint(md[i], mouse->x + i, 1);
 
     }
 
@@ -152,7 +161,7 @@ static unsigned int testpanel(struct element *element, void *data, unsigned int 
 
     struct element_panel *panel = data;
 
-    return line >= panel->size.y && line < panel->size.y + panel->size.h;
+    return isoverlap(line, panel->size.y, panel->size.h);
 
 }
 
@@ -201,7 +210,7 @@ static unsigned int testtext(struct element *element, void *data, unsigned int l
 
     struct element_text *text = data;
 
-    return line >= text->size.y && line < text->size.y + text->size.h;
+    return isoverlap(line, text->size.y, text->size.h);
 
 }
 
@@ -338,9 +347,9 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         return;
 
     line = (line - text->size.y);
-    row = line / 24;
-    rowline = line % 24;
-    rowtop = row * 24;
+    row = line / TEXT_LINEHEIGHT;
+    rowline = line % TEXT_LINEHEIGHT;
+    rowtop = row * TEXT_LINEHEIGHT;
     rowtotal = ascii_count(string, stringcount, '\n') + 1;
 
     if (row >= rowtotal)
@@ -361,7 +370,7 @@ static unsigned int testwindow(struct element *element, void *data, unsigned int
 
     struct element_window *window = data;
 
-    return line >= window->size.y && line < window->size.y + window->size.h;
+    return isoverlap(line, window->size.y, window->size.h);
 
 }
 
