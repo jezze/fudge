@@ -50,7 +50,9 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
 static unsigned int ctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return 0;
+    struct part *part = (struct part *)self->parent;
+
+    return memory_read(buffer, count, &part->settings, sizeof (struct ctrl_partsettings), state->offset);
 
 }
 
@@ -59,9 +61,8 @@ static unsigned int ctrl_write(struct system_node *self, struct service_state *s
 
     struct part *part = (struct part *)self->parent;
 
-    part->parent = findinterface(0);
-    part->start = 2048;
-    part->end = 40000;
+    count = memory_write(&part->settings, sizeof (struct ctrl_partsettings), buffer, count, state->offset);
+    part->parent = findinterface(part->settings.interface);
 
     return count;
 
@@ -70,6 +71,7 @@ static unsigned int ctrl_write(struct system_node *self, struct service_state *s
 void part_init(struct part *part)
 {
 
+    ctrl_setpartsettings(&part->settings, 0, 0, 0);
     system_initnode(&part->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "part");
     system_initnode(&part->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
 

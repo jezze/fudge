@@ -41,6 +41,17 @@ void ctrl_setconsolesettings(struct ctrl_consolesettings *settings, unsigned cha
 
 }
 
+void ctrl_setpartsettings(struct ctrl_partsettings *settings, unsigned int interface, unsigned int start, unsigned int end)
+{
+
+    ctrl_setheader(&settings->header, CTRL_TYPE_PART);
+
+    settings->interface = interface;
+    settings->start = start;
+    settings->end = end;
+
+}
+
 void ctrl_setvideosettings(struct ctrl_videosettings *settings, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
