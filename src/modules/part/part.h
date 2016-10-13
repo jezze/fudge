@@ -3,6 +3,7 @@ struct part
 
     struct system_node root;
     struct system_node ctrl;
+    struct system_node data;
     struct ctrl_partsettings settings;
     struct block_interface *parent;
     unsigned int start;

@@ -68,15 +68,36 @@ static unsigned int ctrl_write(struct system_node *self, struct service_state *s
 
 }
 
+static unsigned int data_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    struct part *part = (struct part *)self->parent;
+
+    return part->parent->rdata(buffer, count, part->start + state->offset);
+
+}
+
+static unsigned int data_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    struct part *part = (struct part *)self->parent;
+
+    return part->parent->wdata(buffer, count, part->start + state->offset);
+
+}
+
 void part_init(struct part *part)
 {
 
     ctrl_setpartsettings(&part->settings, 0, 0, 0);
     system_initnode(&part->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "part");
     system_initnode(&part->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&part->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     part->ctrl.read = ctrl_read;
     part->ctrl.write = ctrl_write;
+    part->data.read = data_read;
+    part->data.write = data_write;
 
 }
 
@@ -84,6 +105,7 @@ void part_register(struct part *part)
 {
 
     system_addchild(&part->root, &part->ctrl);
+    system_addchild(&part->root, &part->data);
     system_addchild(&root, &part->root);
 
 }
@@ -92,6 +114,7 @@ void part_unregister(struct part *part)
 {
 
     system_removechild(&part->root, &part->ctrl);
+    system_removechild(&part->root, &part->data);
     system_removechild(&root, &part->root);
 
 }
