@@ -7,6 +7,7 @@ BIN_UTILS:=\
     $(DIR_SRC)/utils/crc \
     $(DIR_SRC)/utils/ctrl \
     $(DIR_SRC)/utils/date \
+    $(DIR_SRC)/utils/disksetup \
     $(DIR_SRC)/utils/dump \
     $(DIR_SRC)/utils/echo \
     $(DIR_SRC)/utils/hello \
@@ -38,6 +39,7 @@ OBJ_UTILS:=\
     $(DIR_SRC)/utils/crc.o \
     $(DIR_SRC)/utils/ctrl.o \
     $(DIR_SRC)/utils/date.o \
+    $(DIR_SRC)/utils/disksetup.o \
     $(DIR_SRC)/utils/dump.o \
     $(DIR_SRC)/utils/echo.o \
     $(DIR_SRC)/utils/hello.o \
