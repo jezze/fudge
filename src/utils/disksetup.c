@@ -6,7 +6,7 @@ void main(void)
 
     struct ctrl_partsettings settings;
 
-    ctrl_setpartsettings(&settings, 0, 2048, 40000);
+    ctrl_setpartsettings(&settings, 0, 2048 * 512, 40000 * 512);
 
     if (!file_walk(CALL_L0, "/system/part/clone/ctrl"))
         return;
