@@ -1,10 +1,30 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
+#include <modules/block/block.h>
 #include "part.h"
 
 static struct system_node root;
 static struct system_node clone;
+
+static struct block_interface *findinterface(unsigned int index)
+{
+
+    struct resource *resource = 0;
+
+    while ((resource = resource_findtype(resource, RESOURCE_BLOCKINTERFACE)))
+    {
+
+        if (!index)
+            return resource->data;
+
+        index--;
+
+    }
+
+    return 0;
+
+}
 
 static unsigned int clone_child(struct system_node *self, char *path, unsigned int length)
 {
@@ -27,18 +47,41 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
 
 }
 
+static unsigned int ctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return 0;
+
+}
+
+static unsigned int ctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    struct part *part = (struct part *)self->parent;
+
+    part->parent = findinterface(0);
+    part->start = 2048;
+    part->end = 40000;
+
+    return count;
+
+}
+
 void part_init(struct part *part)
 {
 
     system_initnode(&part->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "part");
-    system_initnode(&part->data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&part->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+
+    part->ctrl.read = ctrl_read;
+    part->ctrl.write = ctrl_write;
 
 }
 
 void part_register(struct part *part)
 {
 
-    system_addchild(&part->root, &part->data);
+    system_addchild(&part->root, &part->ctrl);
     system_addchild(&root, &part->root);
 
 }
@@ -46,7 +89,7 @@ void part_register(struct part *part)
 void part_unregister(struct part *part)
 {
 
-    system_removechild(&part->root, &part->data);
+    system_removechild(&part->root, &part->ctrl);
     system_removechild(&root, &part->root);
 
 }

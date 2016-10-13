@@ -2,9 +2,10 @@ struct part
 {
 
     struct system_node root;
-    struct system_node data;
-    struct block_interface *interface;
-    unsigned int offset;
+    struct system_node ctrl;
+    struct block_interface *parent;
+    unsigned int start;
+    unsigned int end;
 
 };
 
