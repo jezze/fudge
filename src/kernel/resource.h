@@ -20,6 +20,8 @@
 #define RESOURCE_BLOCKINTERFACE         20
 #define RESOURCE_CONSOLEINTERFACE       21
 #define RESOURCE_DEBUGLOG               22
+#define RESOURCE_CON                    23
+#define RESOURCE_PART                   24
 
 struct resource
 {

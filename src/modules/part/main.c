@@ -50,7 +50,7 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
 static unsigned int ctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    struct part *part = (struct part *)self->parent;
+    struct part *part = self->resource->data;
 
     return memory_read(buffer, count, &part->settings, sizeof (struct ctrl_partsettings), state->offset);
 
@@ -59,7 +59,7 @@ static unsigned int ctrl_read(struct system_node *self, struct service_state *st
 static unsigned int ctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    struct part *part = (struct part *)self->parent;
+    struct part *part = self->resource->data;
 
     count = memory_write(&part->settings, sizeof (struct ctrl_partsettings), buffer, count, state->offset);
     part->parent = findinterface(part->settings.interface);
@@ -71,7 +71,7 @@ static unsigned int ctrl_write(struct system_node *self, struct service_state *s
 static unsigned int data_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    struct part *part = (struct part *)self->parent;
+    struct part *part = self->resource->data;
 
     return part->parent->rdata(buffer, count, part->start + state->offset);
 
@@ -80,7 +80,7 @@ static unsigned int data_read(struct system_node *self, struct service_state *st
 static unsigned int data_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    struct part *part = (struct part *)self->parent;
+    struct part *part = self->resource->data;
 
     return part->parent->wdata(buffer, count, part->start + state->offset);
 
@@ -90,9 +90,10 @@ void part_init(struct part *part)
 {
 
     ctrl_setpartsettings(&part->settings, 0, 0, 0);
-    system_initnode(&part->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "part");
-    system_initnode(&part->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&part->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    resource_init(&part->resource, RESOURCE_PART, part);
+    system_initresourcenode(&part->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "part", &part->resource);
+    system_initresourcenode(&part->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &part->resource);
+    system_initresourcenode(&part->data, SYSTEM_NODETYPE_MAILBOX, "data", &part->resource);
 
     part->ctrl.read = ctrl_read;
     part->ctrl.write = ctrl_write;

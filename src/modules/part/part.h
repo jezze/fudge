@@ -1,6 +1,7 @@
 struct part
 {
 
+    struct resource resource;
     struct system_node root;
     struct system_node ctrl;
     struct system_node data;

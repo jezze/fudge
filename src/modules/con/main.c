@@ -61,7 +61,7 @@ void udphook_notify(void *self, struct ethernet_interface *interface, void *buff
 static unsigned int ctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    struct con *con = (struct con *)self->parent;
+    struct con *con = self->resource->data;
 
     return memory_read(buffer, count, &con->settings, sizeof (struct ctrl_consettings), state->offset);
 
@@ -70,7 +70,7 @@ static unsigned int ctrl_read(struct system_node *self, struct service_state *st
 static unsigned int ctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    struct con *con = (struct con *)self->parent;
+    struct con *con = self->resource->data;
 
     count = memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, state->offset);
 
@@ -85,7 +85,7 @@ static unsigned int ctrl_write(struct system_node *self, struct service_state *s
 static unsigned int data_open(struct system_node *self, struct service_state *state)
 {
 
-    struct con *con = (struct con *)self->parent;
+    struct con *con = self->resource->data;
 
     udp_registerhook(&con->hook);
 
@@ -96,7 +96,7 @@ static unsigned int data_open(struct system_node *self, struct service_state *st
 static unsigned int data_close(struct system_node *self, struct service_state *state)
 {
 
-    struct con *con = (struct con *)self->parent;
+    struct con *con = self->resource->data;
 
     udp_unregisterhook(&con->hook);
 
@@ -108,9 +108,10 @@ void con_init(struct con *con)
 {
 
     ctrl_setconsettings(&con->settings, 0, 0, 0);
-    system_initnode(&con->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "con");
-    system_initnode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&con->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    resource_init(&con->resource, RESOURCE_CON, con);
+    system_initresourcenode(&con->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "con", &con->resource);
+    system_initresourcenode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &con->resource);
+    system_initresourcenode(&con->data, SYSTEM_NODETYPE_MAILBOX, "data", &con->resource);
 
     con->ctrl.read = ctrl_read;
     con->ctrl.write = ctrl_write;
