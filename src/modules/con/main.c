@@ -49,7 +49,7 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
 
 }
 
-void udphook_notify(void *self, struct ethernet_interface *interface, void *buffer, unsigned int count)
+static void conhook_notify(void *self, struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
     struct con *con = self;
@@ -58,7 +58,7 @@ void udphook_notify(void *self, struct ethernet_interface *interface, void *buff
 
 }
 
-static unsigned int ctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int conctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct con *con = self->resource->data;
@@ -67,14 +67,14 @@ static unsigned int ctrl_read(struct system_node *self, struct service_state *st
 
 }
 
-static unsigned int ctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int conctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct con *con = self->resource->data;
 
     count = memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, state->offset);
 
-    udp_inithook(&con->hook, con, con->settings.port, udphook_notify);
+    udp_inithook(&con->hook, con, con->settings.port, conhook_notify);
 
     con->interface = findinterface(con->settings.interface);
 
@@ -82,7 +82,7 @@ static unsigned int ctrl_write(struct system_node *self, struct service_state *s
 
 }
 
-static unsigned int data_open(struct system_node *self, struct service_state *state)
+static unsigned int condata_open(struct system_node *self, struct service_state *state)
 {
 
     struct con *con = self->resource->data;
@@ -93,7 +93,7 @@ static unsigned int data_open(struct system_node *self, struct service_state *st
 
 }
 
-static unsigned int data_close(struct system_node *self, struct service_state *state)
+static unsigned int condata_close(struct system_node *self, struct service_state *state)
 {
 
     struct con *con = self->resource->data;
@@ -113,10 +113,10 @@ void con_init(struct con *con)
     system_initresourcenode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &con->resource);
     system_initresourcenode(&con->data, SYSTEM_NODETYPE_MAILBOX, "data", &con->resource);
 
-    con->ctrl.read = ctrl_read;
-    con->ctrl.write = ctrl_write;
-    con->data.open = data_open;
-    con->data.close = data_close;
+    con->ctrl.read = conctrl_read;
+    con->ctrl.write = conctrl_write;
+    con->data.open = condata_open;
+    con->data.close = condata_close;
 
 }
 

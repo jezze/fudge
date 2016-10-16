@@ -47,7 +47,7 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
 
 }
 
-static unsigned int ctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int partctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
@@ -56,7 +56,7 @@ static unsigned int ctrl_read(struct system_node *self, struct service_state *st
 
 }
 
-static unsigned int ctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int partctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
@@ -68,7 +68,7 @@ static unsigned int ctrl_write(struct system_node *self, struct service_state *s
 
 }
 
-static unsigned int data_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int partdata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
@@ -77,7 +77,7 @@ static unsigned int data_read(struct system_node *self, struct service_state *st
 
 }
 
-static unsigned int data_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int partdata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
@@ -95,10 +95,10 @@ void part_init(struct part *part)
     system_initresourcenode(&part->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &part->resource);
     system_initresourcenode(&part->data, SYSTEM_NODETYPE_MAILBOX, "data", &part->resource);
 
-    part->ctrl.read = ctrl_read;
-    part->ctrl.write = ctrl_write;
-    part->data.read = data_read;
-    part->data.write = data_write;
+    part->ctrl.read = partctrl_read;
+    part->ctrl.write = partctrl_write;
+    part->data.read = partdata_read;
+    part->data.write = partdata_write;
 
 }
 
