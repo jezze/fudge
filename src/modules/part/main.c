@@ -62,7 +62,7 @@ static unsigned int ctrl_write(struct system_node *self, struct service_state *s
     struct part *part = self->resource->data;
 
     count = memory_write(&part->settings, sizeof (struct ctrl_partsettings), buffer, count, state->offset);
-    part->parent = findinterface(part->settings.interface);
+    part->interface = findinterface(part->settings.interface);
 
     return count;
 
@@ -73,7 +73,7 @@ static unsigned int data_read(struct system_node *self, struct service_state *st
 
     struct part *part = self->resource->data;
 
-    return part->parent->rdata(buffer, count, part->start + state->offset);
+    return part->interface->rdata(buffer, count, part->start + state->offset);
 
 }
 
@@ -82,7 +82,7 @@ static unsigned int data_write(struct system_node *self, struct service_state *s
 
     struct part *part = self->resource->data;
 
-    return part->parent->wdata(buffer, count, part->start + state->offset);
+    return part->interface->wdata(buffer, count, part->start + state->offset);
 
 }
 

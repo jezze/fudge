@@ -6,7 +6,7 @@ struct part
     struct system_node ctrl;
     struct system_node data;
     struct ctrl_partsettings settings;
-    struct block_interface *parent;
+    struct block_interface *interface;
     unsigned int start;
     unsigned int end;
 
