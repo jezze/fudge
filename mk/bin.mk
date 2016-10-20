@@ -1,5 +1,5 @@
 $(B): $(O) $(L)
-	@echo LD $@: $^
+	@echo LD $@
 	@$(LD) $(LDFLAGS) -o $@ $^
 
 BIN:=$(BIN) $(B)
