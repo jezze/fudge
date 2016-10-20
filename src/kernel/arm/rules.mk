@@ -1,4 +1,5 @@
-O+=\
+O:=\
+    $(O) \
     $(DIR_SRC)/kernel/arm/arch.o \
     $(DIR_SRC)/kernel/arm/cpu.o \
     $(DIR_SRC)/kernel/arm/init.o \
@@ -7,5 +8,6 @@ O+=\
     $(DIR_SRC)/kernel/arm/reg.o \
     $(DIR_SRC)/kernel/arm/uart.o
 
-L+=\
+L:=\
+    $(L) \
     $(DIR_SRC)/std/std.a \

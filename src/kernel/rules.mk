@@ -19,6 +19,6 @@ L:=\
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
 
-$(B): LDFLAGS+=-Tplatform/$(PLATFORM)/linker.ld
+$(B): LDFLAGS:=$(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld
 
 include $(DIR_MK)/bin.mk

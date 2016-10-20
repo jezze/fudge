@@ -1,4 +1,5 @@
-O+=\
+O:=\
+    $(O) \
     $(DIR_SRC)/std/arm/memcmp.o \
     $(DIR_SRC)/std/arm/memcpy.o \
     $(DIR_SRC)/std/arm/memmove.o \

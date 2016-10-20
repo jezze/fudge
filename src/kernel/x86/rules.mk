@@ -1,4 +1,5 @@
-O+=\
+O:=\
+    $(O) \
     $(DIR_SRC)/kernel/x86/arch.o \
     $(DIR_SRC)/kernel/x86/cpu.o \
     $(DIR_SRC)/kernel/x86/gdt.o \
@@ -7,5 +8,6 @@ O+=\
     $(DIR_SRC)/kernel/x86/mmu.o \
     $(DIR_SRC)/kernel/x86/tss.o \
 
-L+=\
+L:=\
+    $(L) \
     $(DIR_SRC)/mboot/mboot.a \
