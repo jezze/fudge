@@ -2,8 +2,6 @@
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
-#include <modules/ipv4/ipv4.h>
-#include <modules/udp/udp.h>
 #include "con.h"
 
 static struct system_node root;
@@ -65,7 +63,8 @@ static unsigned int conctrl_write(struct system_node *self, struct service_state
 
     count = memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, state->offset);
     con->interface = findinterface(con->settings.interface);
-    con->hook.port = con->settings.port;
+
+    con->configure(con->settings.port);
 
     return count;
 
@@ -76,7 +75,7 @@ static unsigned int condata_open(struct system_node *self, struct service_state 
 
     struct con *con = self->resource->data;
 
-    udp_registerhook(&con->hook);
+    con->open();
 
     return system_openmailbox(self, state);
 
@@ -87,13 +86,13 @@ static unsigned int condata_close(struct system_node *self, struct service_state
 
     struct con *con = self->resource->data;
 
-    udp_unregisterhook(&con->hook);
+    con->close();
 
     return system_closemailbox(self, state);
 
 }
 
-void con_init(struct con *con)
+void con_init(struct con *con, void (*configure)(unsigned int port), void (*open)(), void (*close)())
 {
 
     ctrl_setconsettings(&con->settings, 0, 0, 0);
@@ -102,6 +101,9 @@ void con_init(struct con *con)
     system_initresourcenode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &con->resource);
     system_initresourcenode(&con->data, SYSTEM_NODETYPE_MAILBOX, "data", &con->resource);
 
+    con->configure = configure;
+    con->open = open;
+    con->close = close;
     con->ctrl.read = conctrl_read;
     con->ctrl.write = conctrl_write;
     con->data.open = condata_open;
