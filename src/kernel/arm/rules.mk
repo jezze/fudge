@@ -1,4 +1,4 @@
-OBJ_KERNEL+=\
+O+=\
     $(DIR_SRC)/kernel/arm/arch.o \
     $(DIR_SRC)/kernel/arm/cpu.o \
     $(DIR_SRC)/kernel/arm/init.o \

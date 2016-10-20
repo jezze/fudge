@@ -1,60 +1,54 @@
-BIN_WDRAW:=\
+B:=\
     $(DIR_SRC)/wm/wdraw \
 
-OBJ_WDRAW:=\
+O:=\
     $(DIR_SRC)/wm/wdraw.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
 
-DEP_WMDRAW:=\
+D:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/format/format.a \
 
-$(BIN_WDRAW): $(OBJ_WDRAW) $(DEP_WMDRAW)
-	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^
+include $(DIR_MK)/bin.mk
 
-BIN_WEDIT:=\
+B:=\
     $(DIR_SRC)/wm/wedit \
 
-OBJ_WEDIT:=\
+O:=\
     $(DIR_SRC)/wm/wedit.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/send.o \
 
-DEP_WMEDIT:=\
+D:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_WEDIT): $(OBJ_WEDIT) $(DEP_WMEDIT)
-	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^
+include $(DIR_MK)/bin.mk
 
-BIN_WM:=\
+B:=\
     $(DIR_SRC)/wm/wm \
 
-OBJ_WM:=\
+O:=\
     $(DIR_SRC)/wm/wm.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/send.o \
 
-DEP_WM:=\
+D:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_WM): $(OBJ_WM) $(DEP_WM)
-	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^
+include $(DIR_MK)/bin.mk
 
-BIN_WSHELL:=\
+B:=\
     $(DIR_SRC)/wm/wshell \
 
-OBJ_WSHELL:=\
+O:=\
     $(DIR_SRC)/wm/wshell.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
@@ -62,29 +56,22 @@ OBJ_WSHELL:=\
     $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/keymap.o \
 
-DEP_WSHELL:=\
+D:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_WSHELL): $(OBJ_WSHELL) $(DEP_WSHELL)
-	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^
+include $(DIR_MK)/bin.mk
 
-BIN_WTEXT:=\
+B:=\
     $(DIR_SRC)/wm/wtext \
 
-OBJ_WTEXT:=\
+O:=\
     $(DIR_SRC)/wm/wtext.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
 
-DEP_WTEXT:=\
+D:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_WTEXT): $(OBJ_WTEXT) $(DEP_WTEXT)
-	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^
-
-BIN:=$(BIN) $(BIN_WDRAW) $(BIN_WEDIT) $(BIN_WM) $(BIN_WSHELL) $(BIN_WTEXT)
-OBJ:=$(OBJ) $(OBJ_WDRAW) $(OBJ_WEDIT) $(OBJ_WM) $(OBJ_WSHELL) $(OBJ_WTEXT)
+include $(DIR_MK)/bin.mk

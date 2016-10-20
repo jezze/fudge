@@ -1,4 +1,4 @@
-OBJ_KERNEL+=\
+O+=\
     $(DIR_SRC)/kernel/x86/arch.o \
     $(DIR_SRC)/kernel/x86/cpu.o \
     $(DIR_SRC)/kernel/x86/gdt.o \

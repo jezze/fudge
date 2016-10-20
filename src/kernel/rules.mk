@@ -1,7 +1,7 @@
-BIN_KERNEL:=\
+B:=\
     $(DIR_SRC)/kernel/$(KERNEL) \
 
-OBJ_KERNEL:=\
+O:=\
     $(DIR_SRC)/kernel/abi.o \
     $(DIR_SRC)/kernel/binary.o \
     $(DIR_SRC)/kernel/binary_elf.o \
@@ -13,16 +13,12 @@ OBJ_KERNEL:=\
     $(DIR_SRC)/kernel/service.o \
     $(DIR_SRC)/kernel/service_cpio.o \
 
-DEP_KERNEL:=\
+D:=\
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/format/format.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
 
-$(BIN_KERNEL): LDFLAGS+=-Tplatform/$(PLATFORM)/linker.ld
-$(BIN_KERNEL): $(OBJ_KERNEL) $(DEP_KERNEL)
-	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^
+$(B): LDFLAGS+=-Tplatform/$(PLATFORM)/linker.ld
 
-BIN:=$(BIN) $(BIN_KERNEL)
-OBJ:=$(OBJ) $(OBJ_KERNEL)
+include $(DIR_MK)/bin.mk

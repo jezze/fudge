@@ -1,7 +1,7 @@
-LIB_FORMAT:=\
+L:=\
     $(DIR_SRC)/format/format.a \
 
-OBJ_FORMAT:=\
+O:=\
     $(DIR_SRC)/format/cpio.o \
     $(DIR_SRC)/format/elf.o \
     $(DIR_SRC)/format/md5.o \
@@ -10,9 +10,4 @@ OBJ_FORMAT:=\
     $(DIR_SRC)/format/tar.o \
     $(DIR_SRC)/format/utf8.o \
 
-$(LIB_FORMAT): $(OBJ_FORMAT)
-	@echo AR $@ 
-	@$(AR) $(ARFLAGS) $@ $^
-
-LIB:=$(LIB) $(LIB_FORMAT)
-OBJ:=$(OBJ) $(OBJ_FORMAT)
+include $(DIR_MK)/lib.mk

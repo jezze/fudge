@@ -1,74 +1,243 @@
-BIN_UTILS:=\
+B:=\
     $(DIR_SRC)/utils/cat \
-    $(DIR_SRC)/utils/cconv8to6 \
-    $(DIR_SRC)/utils/complete \
-    $(DIR_SRC)/utils/countb \
-    $(DIR_SRC)/utils/countl \
-    $(DIR_SRC)/utils/crc \
-    $(DIR_SRC)/utils/ctrl \
-    $(DIR_SRC)/utils/date \
-    $(DIR_SRC)/utils/disksetup \
-    $(DIR_SRC)/utils/dump \
-    $(DIR_SRC)/utils/echo \
-    $(DIR_SRC)/utils/hello \
-    $(DIR_SRC)/utils/help \
-    $(DIR_SRC)/utils/initfs \
-    $(DIR_SRC)/utils/init \
-    $(DIR_SRC)/utils/initmod \
-    $(DIR_SRC)/utils/ipsetup \
-    $(DIR_SRC)/utils/ipserver \
-    $(DIR_SRC)/utils/keymapse \
-    $(DIR_SRC)/utils/keymapus \
-    $(DIR_SRC)/utils/lsc \
-    $(DIR_SRC)/utils/ls \
-    $(DIR_SRC)/utils/mbr \
-    $(DIR_SRC)/utils/motd \
-    $(DIR_SRC)/utils/named \
-    $(DIR_SRC)/utils/namef \
-    $(DIR_SRC)/utils/reboot \
-    $(DIR_SRC)/utils/shell \
-    $(DIR_SRC)/utils/slang \
-    $(DIR_SRC)/utils/timestamp \
 
-OBJ_UTILS:=\
+O:=\
     $(DIR_SRC)/utils/cat.o \
-    $(DIR_SRC)/utils/cconv8to6.o \
-    $(DIR_SRC)/utils/complete.o \
-    $(DIR_SRC)/utils/countb.o \
-    $(DIR_SRC)/utils/countl.o \
-    $(DIR_SRC)/utils/crc.o \
-    $(DIR_SRC)/utils/ctrl.o \
-    $(DIR_SRC)/utils/date.o \
-    $(DIR_SRC)/utils/disksetup.o \
-    $(DIR_SRC)/utils/dump.o \
-    $(DIR_SRC)/utils/echo.o \
-    $(DIR_SRC)/utils/hello.o \
-    $(DIR_SRC)/utils/help.o \
-    $(DIR_SRC)/utils/initfs.o \
-    $(DIR_SRC)/utils/init.o \
-    $(DIR_SRC)/utils/initmod.o \
-    $(DIR_SRC)/utils/ipsetup.o \
-    $(DIR_SRC)/utils/ipserver.o \
-    $(DIR_SRC)/utils/keymapse.o \
-    $(DIR_SRC)/utils/keymapus.o \
-    $(DIR_SRC)/utils/lsc.o \
-    $(DIR_SRC)/utils/ls.o \
-    $(DIR_SRC)/utils/mbr.o \
-    $(DIR_SRC)/utils/motd.o \
-    $(DIR_SRC)/utils/named.o \
-    $(DIR_SRC)/utils/namef.o \
-    $(DIR_SRC)/utils/reboot.o \
-    $(DIR_SRC)/utils/shell.o \
-    $(DIR_SRC)/utils/slang.o \
-    $(DIR_SRC)/utils/timestamp.o \
 
-DEP_UTILS:=\
+D:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
-$(BIN_UTILS): % : %.o $(DEP_UTILS)
-	@echo LD $@: $^
-	@$(LD) $(LDFLAGS) -o $@ $^
+include $(DIR_MK)/bin.mk
 
-BIN:=$(BIN) $(BIN_UTILS)
-OBJ:=$(OBJ) $(OBJ_UTILS)
+B:=\
+    $(DIR_SRC)/utils/cconv8to6 \
+
+O:=\
+    $(DIR_SRC)/utils/cconv8to6.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/complete \
+
+O:=\
+    $(DIR_SRC)/utils/complete.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/countb \
+
+O:=\
+    $(DIR_SRC)/utils/countb.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/countl \
+
+O:=\
+    $(DIR_SRC)/utils/countl.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/crc \
+
+O:=\
+    $(DIR_SRC)/utils/crc.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/ctrl \
+
+O:=\
+    $(DIR_SRC)/utils/ctrl.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/date \
+
+O:=\
+    $(DIR_SRC)/utils/date.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/disksetup \
+
+O:=\
+    $(DIR_SRC)/utils/disksetup.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/dump \
+
+O:=\
+    $(DIR_SRC)/utils/dump.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/echo \
+
+O:=\
+    $(DIR_SRC)/utils/echo.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/hello \
+
+O:=\
+    $(DIR_SRC)/utils/hello.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/help \
+
+O:=\
+    $(DIR_SRC)/utils/help.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/initfs \
+
+O:=\
+    $(DIR_SRC)/utils/initfs.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/init \
+
+O:=\
+    $(DIR_SRC)/utils/init.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/initmod \
+
+O:=\
+    $(DIR_SRC)/utils/initmod.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/ipsetup \
+
+O:=\
+    $(DIR_SRC)/utils/ipsetup.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/ipserver \
+
+O:=\
+    $(DIR_SRC)/utils/ipserver.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/keymapse \
+
+O:=\
+    $(DIR_SRC)/utils/keymapse.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/keymapus \
+
+O:=\
+    $(DIR_SRC)/utils/keymapus.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/lsc \
+
+O:=\
+    $(DIR_SRC)/utils/lsc.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/ls \
+
+O:=\
+    $(DIR_SRC)/utils/ls.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/mbr \
+
+O:=\
+    $(DIR_SRC)/utils/mbr.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/motd \
+
+O:=\
+    $(DIR_SRC)/utils/motd.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/named \
+
+O:=\
+    $(DIR_SRC)/utils/named.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/namef \
+
+O:=\
+    $(DIR_SRC)/utils/namef.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/reboot \
+
+O:=\
+    $(DIR_SRC)/utils/reboot.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/shell \
+
+O:=\
+    $(DIR_SRC)/utils/shell.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/slang \
+
+O:=\
+    $(DIR_SRC)/utils/slang.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/timestamp \
+
+O:=\
+    $(DIR_SRC)/utils/timestamp.o \
+
+include $(DIR_MK)/bin.mk

@@ -1,9 +1,10 @@
 ARCH:=x86
 KERNEL:=fudge
 
-DIR_SRC:=src
-DIR_INCLUDE:=include
 DIR_BUILD:=build
+DIR_INCLUDE:=include
+DIR_MK:=mk
+DIR_SRC:=src
 DIR_SNAPSHOT:=snapbuild
 DIR_INSTALL:=/boot
 
@@ -44,18 +45,7 @@ snapshot: $(DIR_SNAPSHOT)
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
-$(DIR_SRC)/%.i: $(DIR_SRC)/%.c
-	@echo PP $@: $^
-	@$(CC) $(CFLAGS) -E -o $@ -I$(DIR_INCLUDE) -I$(DIR_SRC) $^
-
-$(DIR_SRC)/%.s: $(DIR_SRC)/%.i
-	@echo CC $@: $^
-	@$(CC) $(CFLAGS) -c -S -o $@ $^
-
-$(DIR_SRC)/%.o: $(DIR_SRC)/%.s
-	@echo AS $@: $^
-	@$(AS) $(ASFLAGS) -c -o $@ $^
-
+include $(DIR_MK)/all.mk
 include $(DIR_SRC)/rules.mk
 
 $(DIR_BUILD): $(BIN) $(MOD)
@@ -113,4 +103,3 @@ $(DIR_INSTALL)/$(KERNEL): $(KERNEL)
 $(DIR_INSTALL)/$(RAMDISK): $(RAMDISK)
 	@echo INSTALL $@
 	@install -m 644 $^ $@
-
