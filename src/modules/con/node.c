@@ -8,10 +8,18 @@
 
 static struct con con;
 
+static void conhook_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
+{
+
+    system_multicast(&con.data, buffer, count);
+
+}
+
 void module_init(void)
 {
 
     con_init(&con);
+    udp_inithook(&con.hook, 0, conhook_notify);
 
 }
 

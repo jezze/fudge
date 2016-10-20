@@ -49,15 +49,6 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
 
 }
 
-static void conhook_notify(void *self, struct ethernet_interface *interface, void *buffer, unsigned int count)
-{
-
-    struct con *con = self;
-
-    system_multicast(&con->data, buffer, count);
-
-}
-
 static unsigned int conctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -73,10 +64,8 @@ static unsigned int conctrl_write(struct system_node *self, struct service_state
     struct con *con = self->resource->data;
 
     count = memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, state->offset);
-
-    udp_inithook(&con->hook, con, con->settings.port, conhook_notify);
-
     con->interface = findinterface(con->settings.interface);
+    con->hook.port = con->settings.port;
 
     return count;
 
