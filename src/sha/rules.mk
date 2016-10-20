@@ -4,7 +4,7 @@ B:=\
 O:=\
     $(DIR_SRC)/sha/sha1.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/format/format.a \

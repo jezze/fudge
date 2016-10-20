@@ -6,7 +6,7 @@ O:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/format/format.a \
@@ -23,7 +23,7 @@ O:=\
     $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/send.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
@@ -39,7 +39,7 @@ O:=\
     $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/send.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
@@ -56,7 +56,7 @@ O:=\
     $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/keymap.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
@@ -70,7 +70,7 @@ O:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 

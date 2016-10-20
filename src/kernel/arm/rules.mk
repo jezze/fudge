@@ -7,5 +7,5 @@ O+=\
     $(DIR_SRC)/kernel/arm/reg.o \
     $(DIR_SRC)/kernel/arm/uart.o
 
-D+=\
+L+=\
     $(DIR_SRC)/std/std.a \

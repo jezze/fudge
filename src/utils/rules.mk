@@ -4,7 +4,7 @@ B:=\
 O:=\
     $(DIR_SRC)/utils/cat.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 

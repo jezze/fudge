@@ -1,5 +1,5 @@
 $(M): LDFLAGS+=-T$(DIR_SRC)/modules/linker.ld -r
-$(M): $(O) $(D)
+$(M): $(O) $(L)
 	@echo LD $@: $^
 	@$(LD) $(LDFLAGS) -o $@ $^
 

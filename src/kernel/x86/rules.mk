@@ -7,5 +7,5 @@ O+=\
     $(DIR_SRC)/kernel/x86/mmu.o \
     $(DIR_SRC)/kernel/x86/tss.o \
 
-D+=\
+L+=\
     $(DIR_SRC)/mboot/mboot.a \

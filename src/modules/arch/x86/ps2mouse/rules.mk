@@ -4,7 +4,7 @@ M:=\
 O:=\
     $(DIR_SRC)/modules/arch/x86/ps2mouse/main.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/fudge/fudge.a \
 
 include $(DIR_MK)/mod.mk

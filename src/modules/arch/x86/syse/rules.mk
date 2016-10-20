@@ -5,7 +5,7 @@ O:=\
     $(DIR_SRC)/modules/arch/x86/syse/main.o \
     $(DIR_SRC)/modules/arch/x86/syse/syse.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/fudge/fudge.a \
 
 include $(DIR_MK)/mod.mk

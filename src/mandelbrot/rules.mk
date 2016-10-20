@@ -4,7 +4,7 @@ B:=\
 O:=\
     $(DIR_SRC)/mandelbrot/mandelbrot.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 

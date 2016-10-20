@@ -13,7 +13,7 @@ O:=\
     $(DIR_SRC)/kernel/service.o \
     $(DIR_SRC)/kernel/service_cpio.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/fudge/fudge.a \
     $(DIR_SRC)/format/format.a \
 

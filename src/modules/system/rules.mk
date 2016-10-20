@@ -6,7 +6,7 @@ O:=\
     $(DIR_SRC)/modules/system/backend.o \
     $(DIR_SRC)/modules/system/protocol.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/fudge/fudge.a \
 
 include $(DIR_MK)/mod.mk

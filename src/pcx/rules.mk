@@ -6,7 +6,7 @@ O:=\
     $(DIR_SRC)/pcx/pcx.o \
     $(DIR_SRC)/pcx/pcxcmap.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
@@ -20,7 +20,7 @@ O:=\
     $(DIR_SRC)/pcx/pcx.o \
     $(DIR_SRC)/pcx/pcxdata.o \
 
-D:=\
+L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
 
