@@ -6,6 +6,6 @@ O+=\
     $(DIR_SRC)/kernel/x86/isr.o \
     $(DIR_SRC)/kernel/x86/mmu.o \
     $(DIR_SRC)/kernel/x86/tss.o \
-    $(DIR_SRC)/mboot/main.o \
-    $(DIR_SRC)/mboot/mboot.o \
 
+D+=\
+    $(DIR_SRC)/mboot/mboot.a \

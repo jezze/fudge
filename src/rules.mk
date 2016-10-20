@@ -4,6 +4,7 @@ include $(DIR_SRC)/format/rules.mk
 include $(DIR_SRC)/fudge/rules.mk
 include $(DIR_SRC)/kernel/rules.mk
 include $(DIR_SRC)/mandelbrot/rules.mk
+include $(DIR_SRC)/mboot/rules.mk
 include $(DIR_SRC)/md5/rules.mk
 include $(DIR_SRC)/modules/rules.mk
 include $(DIR_SRC)/sha/rules.mk
