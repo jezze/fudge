@@ -1,7 +1,6 @@
 #define SYSTEM_NODETYPE_NORMAL          0
 #define SYSTEM_NODETYPE_GROUP           1
 #define SYSTEM_NODETYPE_MULTI           2
-#define SYSTEM_NODETYPE_MERGE           4
 
 struct system_header
 {
