@@ -2,7 +2,6 @@
 #define SYSTEM_NODETYPE_GROUP           1
 #define SYSTEM_NODETYPE_MULTI           2
 #define SYSTEM_NODETYPE_MERGE           4
-#define SYSTEM_NODETYPE_MAILBOX         8
 
 struct system_header
 {

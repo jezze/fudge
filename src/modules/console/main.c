@@ -87,7 +87,7 @@ void console_initinterface(struct console_interface *interface, unsigned int (*s
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
-    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
+    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
 
     interface->send = send;
     interface->ctrl.read = interfacectrl_read;

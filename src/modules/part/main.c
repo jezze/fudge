@@ -93,7 +93,7 @@ void part_init(struct part *part)
     resource_init(&part->resource, RESOURCE_PART, part);
     system_initresourcenode(&part->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "part", &part->resource);
     system_initresourcenode(&part->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &part->resource);
-    system_initresourcenode(&part->data, SYSTEM_NODETYPE_MAILBOX, "data", &part->resource);
+    system_initresourcenode(&part->data, SYSTEM_NODETYPE_NORMAL, "data", &part->resource);
 
     part->ctrl.read = partctrl_read;
     part->ctrl.write = partctrl_write;

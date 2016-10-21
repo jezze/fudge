@@ -99,7 +99,7 @@ void con_init(struct con *con, void (*configure)(unsigned int port), void (*open
     resource_init(&con->resource, RESOURCE_CON, con);
     system_initresourcenode(&con->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "con", &con->resource);
     system_initresourcenode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &con->resource);
-    system_initresourcenode(&con->data, SYSTEM_NODETYPE_MAILBOX, "data", &con->resource);
+    system_initresourcenode(&con->data, SYSTEM_NODETYPE_NORMAL, "data", &con->resource);
 
     con->configure = configure;
     con->open = open;

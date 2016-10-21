@@ -369,12 +369,12 @@ void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
-    system_initnode(&poll, SYSTEM_NODETYPE_MAILBOX, "poll");
-    system_initnode(&key, SYSTEM_NODETYPE_MAILBOX, "key");
-    system_initnode(&mouse, SYSTEM_NODETYPE_MAILBOX, "mouse");
-    system_initnode(&tick, SYSTEM_NODETYPE_MAILBOX, "tick");
-    system_initnode(&video, SYSTEM_NODETYPE_MAILBOX, "video");
-    system_initnode(&wm, SYSTEM_NODETYPE_MAILBOX, "wm");
+    system_initnode(&poll, SYSTEM_NODETYPE_NORMAL, "poll");
+    system_initnode(&key, SYSTEM_NODETYPE_NORMAL, "key");
+    system_initnode(&mouse, SYSTEM_NODETYPE_NORMAL, "mouse");
+    system_initnode(&tick, SYSTEM_NODETYPE_NORMAL, "tick");
+    system_initnode(&video, SYSTEM_NODETYPE_NORMAL, "video");
+    system_initnode(&wm, SYSTEM_NODETYPE_NORMAL, "wm");
 
     poll.open = poll_open;
     poll.close = poll_close;
