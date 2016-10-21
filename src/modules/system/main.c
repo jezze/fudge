@@ -5,6 +5,39 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
+/* TODO: Move */
+unsigned int system_readlink(struct list_item *link, void *buffer, unsigned int count)
+{
+
+    struct task *task = link->data;
+
+    count = buffer_read(&task->mailbox.buffer, buffer, count);
+
+    if (!count)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    return count;
+
+}
+
+/* TODO: Move */
+void system_multicast(struct list *links, void *buffer, unsigned int count)
+{
+
+    struct list_item *current;
+
+    for (current = links->head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
+        buffer_write(&task->mailbox.buffer, buffer, count);
+
+    }
+
+}
+
 unsigned int system_childgroup(struct system_node *node, char *path, unsigned int length)
 {
 
@@ -83,37 +116,6 @@ unsigned int system_readgroup(struct system_node *self, struct service_state *st
 
 }
 
-unsigned int system_readmailbox(struct system_node *node, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    struct task *task = state->link.data;
-
-    count = buffer_read(&task->mailbox.buffer, buffer, count);
-
-    if (!count)
-        task_setstatus(task, TASK_STATUS_BLOCKED);
-
-    return count;
-
-}
-
-void system_multicast(struct list *links, void *buffer, unsigned int count)
-{
-
-    struct list_item *current;
-
-    for (current = links->head; current; current = current->next)
-    {
-
-        struct task *task = current->data;
-
-        task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_write(&task->mailbox.buffer, buffer, count);
-
-    }
-
-}
-
 void system_addchild(struct system_node *group, struct system_node *node)
 {
 
@@ -167,13 +169,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
         node->read = system_readgroup;
         node->child = system_childgroup;
-
-    }
-
-    if (type & SYSTEM_NODETYPE_MAILBOX)
-    {
-
-        node->read = system_readmailbox;
 
     }
 

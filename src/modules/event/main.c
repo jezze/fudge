@@ -191,6 +191,13 @@ static unsigned int poll_close(struct system_node *self, struct service_state *s
 
 }
 
+static unsigned int poll_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return system_readlink(&state->link, buffer, count);
+
+}
+
 static unsigned int poll_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -213,6 +220,13 @@ static unsigned int key_close(struct system_node *self, struct service_state *st
     list_remove(&keylinks, &state->link);
 
     return state->id;
+
+}
+
+static unsigned int key_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return system_readlink(&state->link, buffer, count);
 
 }
 
@@ -241,6 +255,13 @@ static unsigned int mouse_close(struct system_node *self, struct service_state *
 
 }
 
+static unsigned int mouse_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return system_readlink(&state->link, buffer, count);
+
+}
+
 static unsigned int mouse_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -263,6 +284,13 @@ static unsigned int tick_close(struct system_node *self, struct service_state *s
     list_remove(&ticklinks, &state->link);
 
     return state->id;
+
+}
+
+static unsigned int tick_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return system_readlink(&state->link, buffer, count);
 
 }
 
@@ -291,6 +319,13 @@ static unsigned int video_close(struct system_node *self, struct service_state *
 
 }
 
+static unsigned int video_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return system_readlink(&state->link, buffer, count);
+
+}
+
 static unsigned int video_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -316,6 +351,13 @@ static unsigned int wm_close(struct system_node *self, struct service_state *sta
 
 }
 
+static unsigned int wm_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return system_readlink(&state->link, buffer, count);
+
+}
+
 static unsigned int wm_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -336,21 +378,27 @@ void module_init(void)
 
     poll.open = poll_open;
     poll.close = poll_close;
+    poll.read = poll_read;
     poll.write = poll_write;
     key.open = key_open;
     key.close = key_close;
+    key.read = key_read;
     key.write = key_write;
     mouse.open = mouse_open;
     mouse.close = mouse_close;
+    mouse.read = mouse_read;
     mouse.write = mouse_write;
     tick.open = tick_open;
     tick.close = tick_close;
+    tick.read = tick_read;
     tick.write = tick_write;
     video.open = video_open;
     video.close = video_close;
+    video.read = video_read;
     video.write = video_write;
     wm.open = wm_open;
     wm.close = wm_close;
+    wm.read = wm_read;
     wm.write = wm_write;
 
     system_addchild(&root, &poll);

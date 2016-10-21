@@ -73,6 +73,13 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
 }
 
+static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return system_readlink(&state->link, buffer, count);
+
+}
+
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id)
 {
 
@@ -128,6 +135,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
     interface->addr.read = interfaceaddr_read;
     interface->data.open = interfacedata_open;
     interface->data.close = interfacedata_close;
+    interface->data.read = interfacedata_read;
 
 }
 

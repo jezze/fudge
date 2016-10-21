@@ -34,6 +34,13 @@ static unsigned int interfacesleep_close(struct system_node *self, struct servic
 
 }
 
+static unsigned int interfacesleep_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return system_readlink(&state->link, buffer, count);
+
+}
+
 void timer_registerinterface(struct timer_interface *interface, unsigned int id)
 {
 
@@ -63,6 +70,7 @@ void timer_initinterface(struct timer_interface *interface)
 
     interface->sleep.open = interfacesleep_open;
     interface->sleep.close = interfacesleep_close;
+    interface->sleep.read = interfacesleep_read;
 
 }
 

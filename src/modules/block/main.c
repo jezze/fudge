@@ -34,15 +34,15 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
 }
 
-/* TODO: This is weird */
 static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct block_interface *interface = self->resource->data;
 
+    /* TODO: This is weird */
     interface->rdata(buffer, count, state->offset);
 
-    return system_readmailbox(self, state, buffer, count);
+    return system_readlink(&state->link, buffer, count);
 
 }
 

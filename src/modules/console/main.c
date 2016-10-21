@@ -43,6 +43,13 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
 }
 
+static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return system_readlink(&state->link, buffer, count);
+
+}
+
 static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -86,6 +93,7 @@ void console_initinterface(struct console_interface *interface, unsigned int (*s
     interface->ctrl.read = interfacectrl_read;
     interface->data.open = interfacedata_open;
     interface->data.close = interfacedata_close;
+    interface->data.read = interfacedata_read;
     interface->data.write = interfacedata_write;
 
 }
