@@ -6,20 +6,17 @@
 static struct system_node root;
 static struct system_node clone;
 
-static void wakeup(struct list *list)
+static void wakeup(struct list_item *link)
 {
 
-    struct list_item *current;
+    struct task *task;
 
-    for (current = list->head; current; current = current->next)
-    {
+    if (!link)
+        return;
 
-        struct task *task = current->data;
+    task = link->data;
 
-        list_remove(list, current);
-        task_setstatus(task, TASK_STATUS_UNBLOCKED);
-
-    }
+    task_setstatus(task, TASK_STATUS_UNBLOCKED);
 
 }
 
@@ -49,12 +46,15 @@ static unsigned int read(struct pipe_end *end, unsigned int refcount, struct ser
     if (!count && refcount)
     {
 
-        list_add(&end->readlinks, &state->link);
+        end->read = &state->link;
+
         task_setstatus(state->link.data, TASK_STATUS_BLOCKED);
 
     }
 
-    wakeup(&end->writelinks);
+    wakeup(end->write);
+
+    end->write = 0;
 
     return count;
 
@@ -68,12 +68,15 @@ static unsigned int write(struct pipe_end *end, struct service_state *state, voi
     if (!count)
     {
 
-        list_add(&end->writelinks, &state->link);
+        end->write = &state->link;
+
         task_setstatus(state->link.data, TASK_STATUS_BLOCKED);
 
     }
 
-    wakeup(&end->readlinks);
+    wakeup(end->read);
+
+    end->read = 0;
 
     return count;
 
@@ -168,10 +171,10 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
         if (pipe->end0.refcount || pipe->end1.refcount)
             continue;
 
-        if (pipe->end0.readlinks.count || pipe->end1.readlinks.count)
+        if (pipe->end0.read || pipe->end1.read)
             continue;
 
-        if (pipe->end0.writelinks.count || pipe->end1.writelinks.count)
+        if (pipe->end0.write || pipe->end1.write)
             continue;
 
         return node->child(node, path, length);
