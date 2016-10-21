@@ -34,6 +34,7 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
 }
 
+/* TODO: This is weird */
 static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 

@@ -12,6 +12,28 @@ void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigne
 
 }
 
+static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
+{
+
+    struct keyboard_interface *interface = self->resource->data;
+
+    list_add(&interface->datalinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
+{
+
+    struct keyboard_interface *interface = self->resource->data;
+
+    list_remove(&interface->datalinks, &state->link);
+
+    return state->id;
+
+}
+
 void keyboard_registerinterface(struct keyboard_interface *interface, unsigned int id)
 {
 
@@ -38,6 +60,9 @@ void keyboard_initinterface(struct keyboard_interface *interface)
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
+
+    interface->data.open = interfacedata_open;
+    interface->data.close = interfacedata_close;
 
 }
 

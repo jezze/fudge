@@ -12,6 +12,28 @@ void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int 
 
 }
 
+static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
+{
+
+    struct mouse_interface *interface = self->resource->data;
+
+    list_add(&interface->datalinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
+{
+
+    struct mouse_interface *interface = self->resource->data;
+
+    list_remove(&interface->datalinks, &state->link);
+
+    return state->id;
+
+}
+
 void mouse_registerinterface(struct mouse_interface *interface, unsigned int id)
 {
 
@@ -38,6 +60,9 @@ void mouse_initinterface(struct mouse_interface *interface)
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
+
+    interface->data.open = interfacedata_open;
+    interface->data.close = interfacedata_close;
 
 }
 
