@@ -6,20 +6,6 @@
 static struct system_node root;
 static struct system_node clone;
 
-static void wakeup(struct list_item *link)
-{
-
-    struct task *task;
-
-    if (!link)
-        return;
-
-    task = link->data;
-
-    task_setstatus(task, TASK_STATUS_UNBLOCKED);
-
-}
-
 static unsigned int open(struct pipe_end *end, struct service_state *state)
 {
 
@@ -48,13 +34,18 @@ static unsigned int read(struct pipe_end *end, unsigned int refcount, struct ser
 
         end->read = &state->link;
 
-        task_setstatus(state->link.data, TASK_STATUS_BLOCKED);
+        task_setstatus(end->read->data, TASK_STATUS_BLOCKED);
 
     }
 
-    wakeup(end->write);
+    if (end->write)
+    {
 
-    end->write = 0;
+        task_setstatus(end->write->data, TASK_STATUS_UNBLOCKED);
+
+        end->write = 0;
+
+    }
 
     return count;
 
@@ -70,13 +61,18 @@ static unsigned int write(struct pipe_end *end, struct service_state *state, voi
 
         end->write = &state->link;
 
-        task_setstatus(state->link.data, TASK_STATUS_BLOCKED);
+        task_setstatus(end->write->data, TASK_STATUS_BLOCKED);
 
     }
 
-    wakeup(end->read);
+    if (end->read)
+    {
 
-    end->read = 0;
+        task_setstatus(end->read->data, TASK_STATUS_UNBLOCKED);
+
+        end->read = 0;
+
+    }
 
     return count;
 
