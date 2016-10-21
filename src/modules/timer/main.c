@@ -8,7 +8,7 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->sleep, buffer, count);
+    system_multicast(&interface->sleeplinks, buffer, count);
 
 }
 

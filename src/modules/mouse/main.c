@@ -8,7 +8,7 @@ static struct system_node root;
 void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->data, buffer, count);
+    system_multicast(&interface->datalinks, buffer, count);
 
 }
 

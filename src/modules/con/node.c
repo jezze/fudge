@@ -15,16 +15,18 @@ static void con_configure(unsigned int port)
 
 }
 
-static void con_open()
+static void con_open(struct list_item *link)
 {
 
+    list_add(&con.links, link);
     udp_registerhook(&hook);
 
 }
 
-static void con_close()
+static void con_close(struct list_item *link)
 {
 
+    list_remove(&con.links, link);
     udp_unregisterhook(&hook);
 
 }
@@ -32,7 +34,7 @@ static void con_close()
 static void hook_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&con.data, buffer, count);
+    system_multicast(&con.links, buffer, count);
 
 }
 

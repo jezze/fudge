@@ -27,7 +27,7 @@ void ipv4protocol_notify(struct ethernet_interface *interface, void *buffer, uns
 
     }
 
-    system_multicast(&ipv4protocol.data, buffer, count);
+    system_multicast(&ipv4protocol.datalinks, buffer, count);
 
 }
 

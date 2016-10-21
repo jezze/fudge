@@ -5,6 +5,7 @@ struct console_interface
     struct system_node root;
     struct system_node ctrl;
     struct system_node data;
+    struct list datalinks;
     unsigned int id;
     struct ctrl_consolesettings settings;
     unsigned int (*send)(void *buffer, unsigned int count);

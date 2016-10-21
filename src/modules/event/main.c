@@ -10,13 +10,19 @@ static struct system_node mouse;
 static struct system_node tick;
 static struct system_node video;
 static struct system_node wm;
+static struct list polllinks;
+static struct list keylinks;
+static struct list mouselinks;
+static struct list ticklinks;
+static struct list videolinks;
+static struct list wmlinks;
 
-static void unicast(struct system_node *node, struct event_header *header, unsigned int count)
+static void unicast(struct list *links, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
 
-    for (current = node->links.head; current; current = current->next)
+    for (current = links->head; current; current = current->next)
     {
 
         struct task *task = current->data;
@@ -31,12 +37,12 @@ static void unicast(struct system_node *node, struct event_header *header, unsig
 
 }
 
-static void multicast(struct system_node *node, struct event_header *header, unsigned int count)
+static void multicast(struct list *links, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
 
-    for (current = node->links.head; current; current = current->next)
+    for (current = links->head; current; current = current->next)
     {
 
         struct task *task = current->data;
@@ -60,7 +66,7 @@ void event_notifykeypress(unsigned char scancode)
     message.header.destination = 0;
     message.keypress.scancode = scancode;
 
-    multicast(&key, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
+    multicast(&keylinks, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
 
 }
 
@@ -74,7 +80,7 @@ void event_notifykeyrelease(unsigned char scancode)
     message.header.destination = 0;
     message.keyrelease.scancode = scancode;
 
-    multicast(&key, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
+    multicast(&keylinks, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
 
 }
 
@@ -89,7 +95,7 @@ void event_notifymousemove(char relx, char rely)
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
-    multicast(&mouse, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
+    multicast(&mouselinks, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
 
 }
 
@@ -103,7 +109,7 @@ void event_notifymousepress(unsigned int button)
     message.header.destination = 0;
     message.mousepress.button = button;
 
-    multicast(&mouse, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
+    multicast(&mouselinks, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
 
 }
 
@@ -117,7 +123,7 @@ void event_notifymouserelease(unsigned int button)
     message.header.destination = 0;
     message.mouserelease.button = button;
 
-    multicast(&mouse, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
+    multicast(&mouselinks, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
 
 }
 
@@ -131,7 +137,7 @@ void event_notifytick(unsigned int counter)
     message.header.destination = 0;
     message.tick.counter = counter;
 
-    multicast(&tick, &message.header, sizeof (struct event_header) + sizeof (struct event_tick));
+    multicast(&ticklinks, &message.header, sizeof (struct event_header) + sizeof (struct event_tick));
 
 }
 
@@ -147,11 +153,11 @@ void event_notifyvideomode(unsigned int w, unsigned int h, unsigned int bpp)
     message.videomode.h = h;
     message.videomode.bpp = bpp;
 
-    multicast(&video, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
+    multicast(&videolinks, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
 
 }
 
-static unsigned int write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int write(struct list *links, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct event_header *header = buffer;
@@ -159,11 +165,161 @@ static unsigned int write(struct system_node *self, struct service_state *state,
     header->source = (unsigned int)state->link.data;
 
     if (header->destination)
-        unicast(self, header, count);
+        unicast(links, header, count);
     else
-        multicast(self, header, count);
+        multicast(links, header, count);
 
     return count;
+
+}
+
+static unsigned int poll_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&polllinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int poll_close(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&polllinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int poll_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return write(&polllinks, state, buffer, count);
+
+}
+
+static unsigned int key_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&keylinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int key_close(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&keylinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int key_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return write(&keylinks, state, buffer, count);
+
+}
+
+static unsigned int mouse_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&mouselinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int mouse_close(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&mouselinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int mouse_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return write(&mouselinks, state, buffer, count);
+
+}
+
+static unsigned int tick_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&ticklinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int tick_close(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&ticklinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int tick_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return write(&ticklinks, state, buffer, count);
+
+}
+
+static unsigned int video_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&videolinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int video_close(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&videolinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int video_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return write(&videolinks, state, buffer, count);
+
+}
+
+static unsigned int wm_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&wmlinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int wm_close(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&wmlinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int wm_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return write(&wmlinks, state, buffer, count);
 
 }
 
@@ -178,12 +334,24 @@ void module_init(void)
     system_initnode(&video, SYSTEM_NODETYPE_MAILBOX, "video");
     system_initnode(&wm, SYSTEM_NODETYPE_MAILBOX, "wm");
 
-    poll.write = write;
-    key.write = write;
-    mouse.write = write;
-    tick.write = write;
-    video.write = write;
-    wm.write = write;
+    poll.open = poll_open;
+    poll.close = poll_close;
+    poll.write = poll_write;
+    key.open = key_open;
+    key.close = key_close;
+    key.write = key_write;
+    mouse.open = mouse_open;
+    mouse.close = mouse_close;
+    mouse.write = mouse_write;
+    tick.open = tick_open;
+    tick.close = tick_close;
+    tick.write = tick_write;
+    video.open = video_open;
+    video.close = video_close;
+    video.write = video_write;
+    wm.open = wm_open;
+    wm.close = wm_close;
+    wm.write = wm_write;
 
     system_addchild(&root, &poll);
     system_addchild(&root, &key);

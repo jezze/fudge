@@ -5,24 +5,6 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-unsigned int system_openmailbox(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&self->links, &state->link);
-
-    return state->id;
-
-}
-
-unsigned int system_closemailbox(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&self->links, &state->link);
-
-    return state->id;
-
-}
-
 unsigned int system_childgroup(struct system_node *node, char *path, unsigned int length)
 {
 
@@ -115,12 +97,12 @@ unsigned int system_readmailbox(struct system_node *node, struct service_state *
 
 }
 
-void system_multicast(struct system_node *node, void *buffer, unsigned int count)
+void system_multicast(struct list *links, void *buffer, unsigned int count)
 {
 
     struct list_item *current;
 
-    for (current = node->links.head; current; current = current->next)
+    for (current = links->head; current; current = current->next)
     {
 
         struct task *task = current->data;
@@ -191,8 +173,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type & SYSTEM_NODETYPE_MAILBOX)
     {
 
-        node->open = system_openmailbox;
-        node->close = system_closemailbox;
         node->read = system_readmailbox;
 
     }

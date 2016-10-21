@@ -15,6 +15,7 @@ struct ipv4_protocol
     struct resource resource;
     struct system_node root;
     struct system_node data;
+    struct list datalinks;
     unsigned char id;
     void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count);
 

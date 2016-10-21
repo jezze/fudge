@@ -4,6 +4,7 @@ struct keyboard_interface
     struct resource resource;
     struct system_node root;
     struct system_node data;
+    struct list datalinks;
     unsigned int id;
 
 };

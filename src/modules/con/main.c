@@ -75,9 +75,9 @@ static unsigned int condata_open(struct system_node *self, struct service_state 
 
     struct con *con = self->resource->data;
 
-    con->open();
+    con->open(&state->link);
 
-    return system_openmailbox(self, state);
+    return state->id;
 
 }
 
@@ -86,13 +86,13 @@ static unsigned int condata_close(struct system_node *self, struct service_state
 
     struct con *con = self->resource->data;
 
-    con->close();
+    con->close(&state->link);
 
-    return system_closemailbox(self, state);
+    return state->id;
 
 }
 
-void con_init(struct con *con, void (*configure)(unsigned int port), void (*open)(), void (*close)())
+void con_init(struct con *con, void (*configure)(unsigned int port), void (*open)(struct list_item *link), void (*close)(struct list_item *link))
 {
 
     ctrl_setconsettings(&con->settings, 0, 0, 0);

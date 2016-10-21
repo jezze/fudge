@@ -8,7 +8,29 @@ static struct system_node root;
 void block_notify(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->data, buffer, count);
+    system_multicast(&interface->datalinks, buffer, count);
+
+}
+
+static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
+{
+
+    struct block_interface *interface = self->resource->data;
+
+    list_add(&interface->datalinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
+{
+
+    struct block_interface *interface = self->resource->data;
+
+    list_remove(&interface->datalinks, &state->link);
+
+    return state->id;
 
 }
 
@@ -52,6 +74,8 @@ void block_initinterface(struct block_interface *interface, unsigned int (*rdata
 
     interface->rdata = rdata;
     interface->wdata = wdata;
+    interface->data.open = interfacedata_open;
+    interface->data.close = interfacedata_close;
     interface->data.read = interfacedata_read;
 
 }

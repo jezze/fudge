@@ -8,7 +8,7 @@ static struct system_node root;
 void console_notify(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->data, buffer, count);
+    system_multicast(&interface->datalinks, buffer, count);
 
 }
 
@@ -18,6 +18,28 @@ static unsigned int interfacectrl_read(struct system_node *self, struct service_
     struct console_interface *interface = self->resource->data;
 
     return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_consolesettings), state->offset);
+
+}
+
+static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
+{
+
+    struct console_interface *interface = self->resource->data;
+
+    list_add(&interface->datalinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
+{
+
+    struct console_interface *interface = self->resource->data;
+
+    list_remove(&interface->datalinks, &state->link);
+
+    return state->id;
 
 }
 
@@ -62,6 +84,8 @@ void console_initinterface(struct console_interface *interface, unsigned int (*s
 
     interface->send = send;
     interface->ctrl.read = interfacectrl_read;
+    interface->data.open = interfacedata_open;
+    interface->data.close = interfacedata_close;
     interface->data.write = interfacedata_write;
 
 }
