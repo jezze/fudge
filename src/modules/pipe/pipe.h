@@ -6,6 +6,7 @@ struct pipe_end
     struct list_item *read;
     struct list_item *write;
     unsigned int refcount;
+    unsigned int closed;
 
 };
 

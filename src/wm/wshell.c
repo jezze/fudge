@@ -54,11 +54,11 @@ static void interpret(void)
 
         command[count - 1] = '\0';
 
-        if (file_walk(CALL_L1, command + 3))
+        if (file_walk(CALL_L8, command + 3))
         {
 
-            file_duplicate(CALL_PW, CALL_L1);
-            file_duplicate(CALL_CW, CALL_L1);
+            file_duplicate(CALL_PW, CALL_L8);
+            file_duplicate(CALL_CW, CALL_L8);
 
         }
 
@@ -69,22 +69,21 @@ static void interpret(void)
     if (!file_walk(CALL_CP, "/bin/slang"))
         return;
 
-    if (!file_walk(CALL_L1, "/system/pipe/clone/"))
+    if (!file_walk(CALL_L8, "/system/pipe/clone/"))
         return;
 
-    file_walkfrom(CALL_L2, CALL_L1, "0");
-    file_walkfrom(CALL_CI, CALL_L1, "1");
-    file_walkfrom(CALL_CO, CALL_L1, "1");
-    file_open(CALL_L2);
-    file_writeall(CALL_L2, command, count);
-    file_close(CALL_L2);
+    file_walkfrom(CALL_CI, CALL_L8, "0");
+    file_walkfrom(CALL_CO, CALL_L8, "1");
+    file_open(CALL_CO);
+    file_open(CALL_CI);
+    file_writeall(CALL_CI, command, count);
     call_spawn();
-    file_open(CALL_L2);
+    file_close(CALL_CI);
 
-    while ((count = file_read(CALL_L2, command, FUDGE_BSIZE)))
+    while ((count = file_read(CALL_CO, command, FUDGE_BSIZE)))
         inserttext(command, count);
 
-    file_close(CALL_L2);
+    file_close(CALL_CO);
 
 }
 

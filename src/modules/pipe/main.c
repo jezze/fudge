@@ -10,6 +10,7 @@ static unsigned int open(struct pipe_end *end, struct service_state *state)
 {
 
     end->refcount++;
+    end->closed = 0;
 
     return state->id;
 
@@ -19,22 +20,14 @@ static unsigned int close(struct pipe_end *end, struct service_state *state)
 {
 
     end->refcount--;
+    end->closed = 1;
 
-    return state->id;
-
-}
-
-static unsigned int read(struct pipe_end *end, unsigned int refcount, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    count = buffer_read(&end->buffer, buffer, count);
-
-    if (!count && refcount)
+    if (end->read)
     {
 
-        end->read = &state->link;
+        task_setstatus(end->read->data, TASK_STATUS_UNBLOCKED);
 
-        task_setstatus(end->read->data, TASK_STATUS_BLOCKED);
+        end->read = 0;
 
     }
 
@@ -47,6 +40,43 @@ static unsigned int read(struct pipe_end *end, unsigned int refcount, struct ser
 
     }
 
+    return state->id;
+
+}
+
+static unsigned int read(struct pipe_end *end, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    count = buffer_read(&end->buffer, buffer, count);
+
+    if (count)
+    {
+
+        if (end->write)
+        {
+
+            task_setstatus(end->write->data, TASK_STATUS_UNBLOCKED);
+
+            end->write = 0;
+
+        }
+
+    }
+
+    if (!count)
+    {
+
+        if (!end->closed)
+        {
+
+            end->read = &state->link;
+
+            task_setstatus(end->read->data, TASK_STATUS_BLOCKED);
+
+        }
+
+    }
+
     return count;
 
 }
@@ -56,21 +86,31 @@ static unsigned int write(struct pipe_end *end, struct service_state *state, voi
 
     count = buffer_write(&end->buffer, buffer, count);
 
-    if (!count)
+    if (count)
     {
 
-        end->write = &state->link;
+        if (end->read)
+        {
 
-        task_setstatus(end->write->data, TASK_STATUS_BLOCKED);
+            task_setstatus(end->read->data, TASK_STATUS_UNBLOCKED);
+
+            end->read = 0;
+
+        }
 
     }
 
-    if (end->read)
+    if (!count)
     {
 
-        task_setstatus(end->read->data, TASK_STATUS_UNBLOCKED);
+        if (!end->closed)
+        {
 
-        end->read = 0;
+            end->write = &state->link;
+
+            task_setstatus(end->write->data, TASK_STATUS_BLOCKED);
+
+        }
 
     }
 
@@ -101,7 +141,7 @@ static unsigned int end0_read(struct system_node *self, struct service_state *st
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return read(&pipe->end0, pipe->end1.refcount, state, buffer, count);
+    return read(&pipe->end0, state, buffer, count);
 
 }
 
@@ -110,7 +150,7 @@ static unsigned int end0_write(struct system_node *self, struct service_state *s
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return write(&pipe->end1, state, buffer, count);
+    return write(&pipe->end0, state, buffer, count);
 
 }
 
@@ -137,7 +177,7 @@ static unsigned int end1_read(struct system_node *self, struct service_state *st
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return read(&pipe->end1, pipe->end0.refcount, state, buffer, count);
+    return read(&pipe->end1, state, buffer, count);
 
 }
 
@@ -146,7 +186,7 @@ static unsigned int end1_write(struct system_node *self, struct service_state *s
 
     struct pipe *pipe = (struct pipe *)self->parent;
 
-    return write(&pipe->end0, state, buffer, count);
+    return write(&pipe->end1, state, buffer, count);
 
 }
 
@@ -165,12 +205,6 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
             continue;
 
         if (pipe->end0.refcount || pipe->end1.refcount)
-            continue;
-
-        if (pipe->end0.read || pipe->end1.read)
-            continue;
-
-        if (pipe->end0.write || pipe->end1.write)
             continue;
 
         return node->child(node, path, length);

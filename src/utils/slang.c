@@ -283,12 +283,12 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!(file_walkfrom(CALL_CP, CALL_L0, t->str) || file_walk(CALL_CP, t->str)))
                 return;
 
-            if (!file_walk(CALL_L1, "/system/pipe/clone/"))
+            if (!file_walk(CALL_L8, "/system/pipe/clone/"))
                 return;
 
-            file_walkfrom(CALL_CO, CALL_L1, "0");
+            file_walkfrom(CALL_CO, CALL_L8, "0");
             call_spawn();
-            file_walkfrom(CALL_CI, CALL_L1, "1");
+            file_walkfrom(CALL_CI, CALL_L8, "0");
 
             break;
 
