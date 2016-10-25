@@ -3,8 +3,7 @@ struct pipe_end
 
     struct system_node node;
     struct buffer buffer;
-    struct list_item *read;
-    struct list_item *write;
+    struct list_item *link;
     unsigned int refcount;
 
 };
