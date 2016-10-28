@@ -10,7 +10,6 @@ static unsigned int open(struct pipe_end *end, struct service_state *state)
 {
 
     end->refcount++;
-    end->closed = 0;
 
     return state->id;
 
@@ -20,7 +19,6 @@ static unsigned int close(struct pipe_end *end, struct service_state *state)
 {
 
     end->refcount--;
-    end->closed = 1;
 
     if (end->read)
     {
@@ -66,7 +64,7 @@ static unsigned int read(struct pipe_end *end, struct service_state *state, void
     if (!count)
     {
 
-        if (!end->closed)
+        if (end->refcount > 1)
         {
 
             end->read = &state->link;
@@ -103,7 +101,7 @@ static unsigned int write(struct pipe_end *end, struct service_state *state, voi
     if (!count)
     {
 
-        if (!end->closed)
+        if (end->refcount > 1)
         {
 
             end->write = &state->link;
