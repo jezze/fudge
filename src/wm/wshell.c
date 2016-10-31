@@ -9,7 +9,7 @@
 static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static char textdata[FUDGE_BSIZE];
+static char textdata[512];
 static struct buffer text;
 static char inputdata[FUDGE_BSIZE];
 static struct buffer input;
@@ -113,7 +113,7 @@ static void onkeypress(struct event_header *header)
 
         removetext(2);
         inserttext("\n", 1);
-        print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+        print_inserttextbuffer(&output, header->destination, &content, 1, &text);
 
         break;
 
@@ -125,7 +125,7 @@ static void onkeypress(struct event_header *header)
 
         interpret();
         inserttext("$ \n", 3);
-        print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+        print_inserttextbuffer(&output, header->destination, &content, 1, &text);
 
         break;
 
@@ -138,7 +138,7 @@ static void onkeypress(struct event_header *header)
         removetext(1);
         inserttext(&keycode->value, keycode->length);
         inserttext("\n", 1);
-        print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+        print_inserttextbuffer(&output, header->destination, &content, 1, &text);
 
         break;
 
@@ -195,7 +195,7 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+    print_inserttextbuffer(&output, header->destination, &content, 1, &text);
 
 }
 
@@ -214,7 +214,7 @@ void main(void)
 
     buffer_init(&input, FUDGE_BSIZE, inputdata);
     buffer_init(&output, FUDGE_BSIZE, outputdata);
-    buffer_init(&text, FUDGE_BSIZE, textdata);
+    buffer_init(&text, 512, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     inserttext("$ \n", 3);
 

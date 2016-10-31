@@ -46,6 +46,21 @@ void print_inserttext(struct buffer *buffer, unsigned int source, struct element
 
 }
 
+void print_inserttextbuffer(struct buffer *buffer, unsigned int source, struct element_text *text, unsigned int z, struct buffer *output)
+{
+
+    char data[FUDGE_BSIZE];
+    unsigned int count;
+
+    printelement(buffer, (unsigned int)text, ELEMENT_FUNC_INSERT, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + output->count);
+    buffer_write(buffer, text, sizeof (struct element_text));
+
+    count = buffer_copy(output, data, FUDGE_BSIZE);
+
+    buffer_write(buffer, data, count);
+
+}
+
 void print_insertwindow(struct buffer *buffer, unsigned int source, struct element_window *window, unsigned int z)
 {
 
