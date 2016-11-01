@@ -254,30 +254,30 @@ static unsigned int load(struct container *container, struct task *task, void *s
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
     struct container_server *server = descriptor->server;
     struct service_state *state = &descriptor->state;
-    struct binary_node *node = &descriptor->node;
     struct binary_format *format;
+    struct binary_node node;
     void (*module_init)(void);
     void (*module_register)(void);
 
-    node->physical = server->protocol->map(server->backend, state->id);
+    node.physical = server->protocol->map(server->backend, state->id);
 
-    if (!node->physical)
+    if (!node.physical)
         return 0;
 
-    format = binary_findformat(node);
+    format = binary_findformat(&node);
 
     if (!format)
         return 0;
 
-    if (!format->relocate(node))
+    if (!format->relocate(&node))
         return 0;
 
-    module_init = (void (*)(void))(format->findsymbol(node, 11, "module_init"));
+    module_init = (void (*)(void))(format->findsymbol(&node, 11, "module_init"));
 
     if (module_init)
         module_init();
 
-    module_register = (void (*)(void))(format->findsymbol(node, 15, "module_register"));
+    module_register = (void (*)(void))(format->findsymbol(&node, 15, "module_register"));
 
     if (module_register)
         module_register();
@@ -293,21 +293,21 @@ static unsigned int unload(struct container *container, struct task *task, void 
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
     struct container_server *server = descriptor->server;
     struct service_state *state = &descriptor->state;
-    struct binary_node *node = &descriptor->node;
     struct binary_format *format;
+    struct binary_node node;
     void (*module_unregister)(void);
 
-    node->physical = server->protocol->map(server->backend, state->id);
+    node.physical = server->protocol->map(server->backend, state->id);
 
-    if (!node->physical)
+    if (!node.physical)
         return 0;
 
-    format = binary_findformat(node);
+    format = binary_findformat(&node);
 
     if (!format)
         return 0;
 
-    module_unregister = (void (*)(void))(format->findsymbol(node, 17, "module_unregister"));
+    module_unregister = (void (*)(void))(format->findsymbol(&node, 17, "module_unregister"));
 
     if (module_unregister)
         module_unregister();

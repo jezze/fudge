@@ -26,7 +26,6 @@ struct task_descriptor
 {
 
     struct resource resource;
-    struct binary_node node;
     struct container_server *server;
     struct service_state state;
 
@@ -39,6 +38,7 @@ struct task
     struct task_state state;
     struct task_mailbox mailbox;
     struct binary_format *format;
+    struct binary_node node;
     struct task_descriptor descriptors[TASK_DESCRIPTORS];
 
 };

@@ -381,15 +381,13 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (current.task)
     {
 
-        struct task_descriptor *descriptor = &current.task->descriptors[0x00];
-
-        address = current.task->format->findbase(&descriptor->node, address);
+        address = current.task->format->findbase(&current.task->node, address);
 
         if (address)
         {
 
             maptaskcode(current.task, address, TASKSTACK);
-            current.task->format->copyprogram(&descriptor->node);
+            current.task->format->copyprogram(&current.task->node);
 
         }
 
