@@ -91,6 +91,14 @@ O:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/utils/fat \
+
+O:=\
+    $(DIR_SRC)/utils/fat.o \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/hello \
 
 O:=\

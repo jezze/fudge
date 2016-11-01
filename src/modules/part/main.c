@@ -68,12 +68,32 @@ static unsigned int partctrl_write(struct system_node *self, struct service_stat
 
 }
 
+static unsigned int partdata_open(struct system_node *self, struct service_state *state)
+{
+
+    struct part *part = self->resource->data;
+
+    state->offset = part->settings.start;
+
+    return part->interface->data.open(&part->interface->data, state);
+
+}
+
+static unsigned int partdata_close(struct system_node *self, struct service_state *state)
+{
+
+    struct part *part = self->resource->data;
+
+    return part->interface->data.open(&part->interface->data, state);
+
+}
+
 static unsigned int partdata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
 
-    return part->interface->rdata(buffer, count, part->start + state->offset);
+    return part->interface->data.read(&part->interface->data, state, buffer, count);
 
 }
 
@@ -82,7 +102,7 @@ static unsigned int partdata_write(struct system_node *self, struct service_stat
 
     struct part *part = self->resource->data;
 
-    return part->interface->wdata(buffer, count, part->start + state->offset);
+    return part->interface->data.write(&part->interface->data, state, buffer, count);
 
 }
 
@@ -97,6 +117,8 @@ void part_init(struct part *part)
 
     part->ctrl.read = partctrl_read;
     part->ctrl.write = partctrl_write;
+    part->data.open = partdata_open;
+    part->data.close = partdata_close;
     part->data.read = partdata_read;
     part->data.write = partdata_write;
 
