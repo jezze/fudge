@@ -9,12 +9,20 @@ struct container_server
 
 };
 
+struct container_node
+{
+
+    struct container_server *server;
+    unsigned int id;
+
+};
+
 struct container_mount
 {
 
     struct resource resource;
-    struct {struct container_server *server; unsigned int id;} parent;
-    struct {struct container_server *server; unsigned int id;} child;
+    struct container_node parent;
+    struct container_node child;
 
 };
 

@@ -30,6 +30,32 @@ static struct task_descriptor *getdescriptor(struct task *task, unsigned int des
 
 }
 
+static void walkmount(struct container *container, struct task_descriptor *descriptor, unsigned int parent)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < CONTAINER_MOUNTS; i++)
+    {
+
+        struct container_mount *mount = &container->mounts[i];
+        struct container_node *from = (parent) ? &mount->child : &mount->parent;
+        struct container_node *to = (parent) ? &mount->parent : &mount->child;
+
+        if (descriptor->server == from->server && descriptor->state.id == from->id)
+        {
+
+            descriptor->server = to->server;
+            descriptor->state.id = to->id;
+
+            break;
+
+        }
+
+    }
+
+}
+
 static unsigned int walk(struct container *container, struct task *task, void *stack)
 {
 
@@ -54,24 +80,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
         if (length == 3 && memory_match(args->path + offset, "../", 3))
         {
 
-            unsigned int i;
-
-            for (i = 0; i < CONTAINER_MOUNTS; i++)
-            {
-
-                struct container_mount *mount = &container->mounts[i];
-
-                if (descriptor->server == mount->child.server && descriptor->state.id == mount->child.id)
-                {
-
-                    descriptor->server = mount->parent.server;
-                    descriptor->state.id = mount->parent.id;
-
-                    break;
-
-                }
-
-            }
+            walkmount(container, descriptor, 1);
 
             if (!descriptor->server->protocol->parent(descriptor->server->backend, &descriptor->state))
                 return 0;
@@ -81,27 +90,10 @@ static unsigned int walk(struct container *container, struct task *task, void *s
         else
         {
 
-            unsigned int i;
-
             if (!descriptor->server->protocol->child(descriptor->server->backend, &descriptor->state, args->path + offset, length))
                 return 0;
 
-            for (i = 0; i < CONTAINER_MOUNTS; i++)
-            {
-
-                struct container_mount *mount = &container->mounts[i];
-
-                if (descriptor->server == mount->parent.server && descriptor->state.id == mount->parent.id)
-                {
-
-                    descriptor->server = mount->child.server;
-                    descriptor->state.id = mount->child.id;
-
-                    break;
-
-                }
-
-            }
+            walkmount(container, descriptor, 0);
 
         }
 
