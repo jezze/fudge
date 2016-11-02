@@ -217,19 +217,19 @@ static unsigned int stepdirectory(struct service_backend *backend, unsigned int 
 
 }
 
-static unsigned int protocol_step(struct service_backend *backend, unsigned int id, unsigned int current)
+static unsigned int protocol_step(struct service_backend *backend, struct service_state *state)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, id))
+    if (!readheader(backend, &header, state->id))
         return 0;
 
     switch (header.mode & 0xF000)
     {
 
     case 0x4000:
-        return stepdirectory(backend, id, current);
+        return stepdirectory(backend, state->id, state->current);
 
     }
 

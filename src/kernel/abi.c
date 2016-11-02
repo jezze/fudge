@@ -136,7 +136,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
 
     descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, 0);
-    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, descriptor->state.id, 0);
+    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, &descriptor->state);
 
     return descriptor->server->protocol->open(descriptor->server->backend, &descriptor->state);
 
@@ -163,7 +163,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
 
     descriptor->state.count = descriptor->server->protocol->read(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
     descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, descriptor->state.offset + descriptor->state.count);
-    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, descriptor->state.id, descriptor->state.current);
+    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, &descriptor->state);
 
     return descriptor->state.count;
 
@@ -180,7 +180,7 @@ static unsigned int write(struct container *container, struct task *task, void *
 
     descriptor->state.count = descriptor->server->protocol->write(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
     descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, descriptor->state.offset + descriptor->state.count);
-    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, descriptor->state.id, descriptor->state.current);
+    descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, &descriptor->state);
 
     return descriptor->state.count;
 

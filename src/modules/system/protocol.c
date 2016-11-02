@@ -61,13 +61,13 @@ static unsigned int protocol_destroy(struct service_backend *backend, struct ser
 
 }
 
-static unsigned int protocol_step(struct service_backend *backend, unsigned int id, unsigned int current)
+static unsigned int protocol_step(struct service_backend *backend, struct service_state *state)
 {
 
-    if (current)
+    if (state->current)
     {
 
-        struct system_node *node = (struct system_node *)current;
+        struct system_node *node = (struct system_node *)state->current;
 
         return (node->item.next) ? (unsigned int)node->item.next->data : 0;
 
@@ -76,7 +76,7 @@ static unsigned int protocol_step(struct service_backend *backend, unsigned int 
     else
     {
 
-        struct system_node *node = (struct system_node *)id;
+        struct system_node *node = (struct system_node *)state->id;
 
         return (node->children.head) ? (unsigned int)node->children.head->data : 0;
 
