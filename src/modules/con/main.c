@@ -51,7 +51,8 @@ static unsigned int condata_open(struct system_node *self, struct service_state 
 
     struct con *con = self->resource->data;
 
-    con->open(&state->link);
+    list_add(&con->links, &state->link);
+    con->open();
 
     return state->id;
 
@@ -62,13 +63,14 @@ static unsigned int condata_close(struct system_node *self, struct service_state
 
     struct con *con = self->resource->data;
 
-    con->close(&state->link);
+    list_remove(&con->links, &state->link);
+    con->close();
 
     return state->id;
 
 }
 
-void con_init(struct con *con, void (*open)(struct list_item *link), void (*close)(struct list_item *link))
+void con_init(struct con *con, void (*open)(), void (*close)())
 {
 
     ctrl_setconsettings(&con->settings, 0, 0, 0);

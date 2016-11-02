@@ -7,11 +7,11 @@ struct con
     struct system_node data;
     struct ctrl_consettings settings;
     struct list links;
-    void (*open)(struct list_item *link);
-    void (*close)(struct list_item *link);
+    void (*open)();
+    void (*close)();
 
 };
 
-void con_init(struct con *con, void (*open)(struct list_item *link), void (*close)(struct list_item *link));
+void con_init(struct con *con, void (*open)(), void (*close)());
 void con_register(struct con *con);
 void con_unregister(struct con *con);

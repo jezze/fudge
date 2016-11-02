@@ -8,18 +8,16 @@
 static struct con con;
 static struct udp_hook hook;
 
-static void con_open(struct list_item *link)
+static void con_open()
 {
 
-    list_add(&con.links, link);
     udp_registerhook(&hook);
 
 }
 
-static void con_close(struct list_item *link)
+static void con_close()
 {
 
-    list_remove(&con.links, link);
     udp_unregisterhook(&hook);
 
 }
