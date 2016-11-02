@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/ethernet/ethernet.h>
 #include "con.h"
 
 static struct system_node root;
