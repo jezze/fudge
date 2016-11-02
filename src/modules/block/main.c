@@ -38,11 +38,12 @@ static unsigned int interfacedata_read(struct system_node *self, struct service_
 {
 
     struct block_interface *interface = self->resource->data;
+    unsigned int c = system_readlink(&state->link, buffer, count);
 
-    /* TODO: This is weird */
-    interface->rdata(buffer, count, state->offset);
+    if (!c)
+        interface->rdata(buffer, count, state->offset);
 
-    return system_readlink(&state->link, buffer, count);
+    return c;
 
 }
 
