@@ -55,6 +55,7 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/ctrl.o \
+    $(DIR_SRC)/utils/write.o \
 
 include $(DIR_MK)/bin.mk
 
@@ -95,6 +96,7 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/fat.o \
+    $(DIR_SRC)/utils/write.o \
 
 include $(DIR_MK)/bin.mk
 
@@ -191,6 +193,7 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/mbr.o \
+    $(DIR_SRC)/utils/write.o \
 
 include $(DIR_MK)/bin.mk
 

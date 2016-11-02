@@ -1,49 +1,14 @@
 #include <abi.h>
 #include <fudge.h>
+#include "write.h"
 
 static char *names[32];
 static void (*writers[32])(struct ctrl_header *header);
 
-static void writebuffer(char *key, char *value, unsigned int count)
-{
-
-    file_writeall(CALL_PO, key, ascii_length(key));
-    file_writeall(CALL_PO, ": ", 2);
-    file_writeall(CALL_PO, value, count);
-    file_writeall(CALL_PO, "\n", 1);
-
-}
-
-static void writestring(char *key, char *value)
-{
-
-    writebuffer(key, value, ascii_length(value));
-
-}
-
-static void writeboolean(char *key, unsigned int value)
-{
-
-    if (value)
-        writebuffer(key, "true", 4);
-    else
-        writebuffer(key, "false", 5);
-
-}
-
-static void writedec(char *key, unsigned int value)
-{
-
-    char num[FUDGE_NSIZE];
-
-    writebuffer(key, num, ascii_wvalue(num, FUDGE_NSIZE, value, 10, 0));
-
-}
-
 static void writeheader(struct ctrl_header *header)
 {
 
-    writestring("type", names[header->type]);
+    write_string("type", names[header->type]);
 
 }
 
@@ -53,13 +18,13 @@ static void writeclocksettings(struct ctrl_header *header)
     struct ctrl_clocksettings settings;
 
     file_seekreadall(CALL_PI, &settings, sizeof (struct ctrl_clocksettings), 0);
-    writedec("seconds", settings.seconds);
-    writedec("minutes", settings.minutes);
-    writedec("hours", settings.hours);
-    writedec("weekday", settings.weekday);
-    writedec("day", settings.day);
-    writedec("month", settings.month);
-    writedec("year", settings.year);
+    write_dec("seconds", settings.seconds);
+    write_dec("minutes", settings.minutes);
+    write_dec("hours", settings.hours);
+    write_dec("weekday", settings.weekday);
+    write_dec("day", settings.day);
+    write_dec("month", settings.month);
+    write_dec("year", settings.year);
 
 }
 
@@ -69,8 +34,8 @@ static void writeconsettings(struct ctrl_header *header)
     struct ctrl_consettings settings;
 
     file_seekreadall(CALL_PI, &settings, sizeof (struct ctrl_consettings), 0);
-    writedec("interface", settings.interface);
-    writedec("port", settings.port);
+    write_dec("interface", settings.interface);
+    write_dec("port", settings.port);
 
 }
 
@@ -80,7 +45,7 @@ static void writeconsolesettings(struct ctrl_header *header)
     struct ctrl_consolesettings settings;
 
     file_seekreadall(CALL_PI, &settings, sizeof (struct ctrl_consolesettings), 0);
-    writeboolean("scroll", settings.scroll);
+    write_boolean("scroll", settings.scroll);
 
 }
 
@@ -90,9 +55,9 @@ static void writepartsettings(struct ctrl_header *header)
     struct ctrl_partsettings settings;
 
     file_seekreadall(CALL_PI, &settings, sizeof (struct ctrl_partsettings), 0);
-    writedec("interface", settings.interface);
-    writedec("start", settings.start);
-    writedec("end", settings.end);
+    write_dec("interface", settings.interface);
+    write_dec("start", settings.start);
+    write_dec("end", settings.end);
 
 }
 
@@ -102,9 +67,9 @@ static void writevideosettings(struct ctrl_header *header)
     struct ctrl_videosettings settings;
 
     file_seekreadall(CALL_PI, &settings, sizeof (struct ctrl_videosettings), 0);
-    writedec("width", settings.w);
-    writedec("height", settings.h);
-    writedec("bpp", settings.bpp);
+    write_dec("width", settings.w);
+    write_dec("height", settings.h);
+    write_dec("bpp", settings.bpp);
 
 }
 

@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include "write.h"
 
 struct bpb
 {
@@ -58,16 +59,13 @@ void main(void)
 {
 
 	char data[512];
-    char num[FUDGE_NSIZE];
     struct bpb *bpb = (struct bpb *)data;
 
     file_open(CALL_PI);
     file_readall(CALL_PI, data, 512);
     file_close(CALL_PI);
     file_open(CALL_PO);
-    file_writeall(CALL_PO, "Table count: ", 13);
-    file_writeall(CALL_PO, num, ascii_wvalue(num, FUDGE_NSIZE, bpb->table_count, 10, 0));
-    file_writeall(CALL_PO, "\n", 1);
+    write_dec("Table count", bpb->table_count);
     file_close(CALL_PO);
 
 }
