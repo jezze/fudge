@@ -84,7 +84,7 @@ static unsigned int partdata_close(struct system_node *self, struct service_stat
 
     struct part *part = self->resource->data;
 
-    return part->interface->data.open(&part->interface->data, state);
+    return part->interface->data.close(&part->interface->data, state);
 
 }
 
