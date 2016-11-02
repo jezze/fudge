@@ -47,6 +47,14 @@ void main(void)
 
         unsigned int start = (mbr.partition[i].sectorlba[3] << 24) | (mbr.partition[i].sectorlba[2] << 16) | (mbr.partition[i].sectorlba[1] << 8) | (mbr.partition[i].sectorlba[0]);
         unsigned int sectors = (mbr.partition[i].sectortotal[3] << 24) | (mbr.partition[i].sectortotal[2] << 16) | (mbr.partition[i].sectortotal[1] << 8) | (mbr.partition[i].sectortotal[0]);
+        unsigned int cstart = mbr.partition[i].cylinderbase | ((mbr.partition[i].sectorbase & 0xC0) << 8);
+        unsigned int cend = mbr.partition[i].cylinderlimit | ((mbr.partition[i].sectorlimit & 0xC0) << 8);
+        unsigned int hstart = mbr.partition[i].headbase;
+        unsigned int hend = mbr.partition[i].headlimit;
+        unsigned int sstart = mbr.partition[i].sectorbase & 0x2F;
+        unsigned int send = mbr.partition[i].sectorlimit & 0x2F;
+        char data[64];
+        unsigned int count;
 
         write_dec("Partition", i);
 
@@ -58,9 +66,24 @@ void main(void)
         write_dec("    Start", start);
         write_dec("    End", start + sectors - 1);
         write_dec("    Sectors", sectors);
-        write_ratio("    Cylinder", mbr.partition[i].cylinderbase | ((mbr.partition[i].sectorbase & 0xC0) << 8), mbr.partition[i].cylinderlimit | ((mbr.partition[i].sectorlimit & 0xC0) << 8));
-        write_ratio("    Head", mbr.partition[i].headbase, mbr.partition[i].headlimit);
-        write_ratio("    Sector", mbr.partition[i].sectorbase & 0x2F, mbr.partition[i].sectorlimit & 0x2F);
+
+        count = 0;
+        count += ascii_wvalue(data, 64, cstart, 10, count);
+        count += memory_write(data, 64, "/", 1, count);
+        count += ascii_wvalue(data, 64, hstart, 10, count);
+        count += memory_write(data, 64, "/", 1, count);
+        count += ascii_wvalue(data, 64, sstart, 10, count);
+
+        write_keyvalue("    Start-C/H/S", data, count);
+
+        count = 0;
+        count += ascii_wvalue(data, 64, cend, 10, count);
+        count += memory_write(data, 64, "/", 1, count);
+        count += ascii_wvalue(data, 64, hend, 10, count);
+        count += memory_write(data, 64, "/", 1, count);
+        count += ascii_wvalue(data, 64, send, 10, count);
+
+        write_keyvalue("    End-C/H/S", data, count);
 
     }
 
