@@ -35,11 +35,11 @@ void write_dec(char *key, unsigned int value)
 
 }
 
-void write_hex(char *key, unsigned int value)
+void write_hex(char *key, unsigned int value, unsigned int padding)
 {
 
     char num[FUDGE_NSIZE];
-    unsigned int count = memory_write(num, FUDGE_NSIZE, "0x", 2, 0) + ascii_wvalue(num, FUDGE_NSIZE, value, 16, 2);
+    unsigned int count = memory_write(num, FUDGE_NSIZE, "0x", 2, 0) + ascii_wzerovalue(num, FUDGE_NSIZE, value, 16, 2, padding);
 
     write_keyvalue(key, num, count);
 

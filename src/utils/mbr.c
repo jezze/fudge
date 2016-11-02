@@ -61,8 +61,8 @@ void main(void)
         if (mbr.partition[i].systemid == 0)
             continue;
 
-        write_hex("    Boot", mbr.partition[i].boot);
-        write_hex("    Id", mbr.partition[i].systemid);
+        write_hex("    Boot", mbr.partition[i].boot, 2);
+        write_hex("    Id", mbr.partition[i].systemid, 2);
         write_dec("    Start", start);
         write_dec("    End", start + sectors - 1);
         write_dec("    Sectors", sectors);
