@@ -120,14 +120,14 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int protocol_seek(struct service_backend *backend, unsigned int offset)
+static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
 {
 
     return offset;
 
 }
 
-static unsigned long protocol_map(struct service_backend *backend, unsigned int id)
+static unsigned long protocol_map(struct service_backend *backend, struct service_state *state)
 {
 
     return 0;

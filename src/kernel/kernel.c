@@ -39,7 +39,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     struct task_descriptor *descriptor = &task->descriptors[0x00];
 
-    task->node.physical = descriptor->server->protocol->map(descriptor->server->backend, descriptor->state.id);
+    task->node.physical = descriptor->server->protocol->map(descriptor->server->backend, &descriptor->state);
 
     if (!task->node.physical)
         return 0;

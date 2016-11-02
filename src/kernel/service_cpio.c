@@ -348,22 +348,22 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int protocol_seek(struct service_backend *backend, unsigned int offset)
+static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
 {
 
     return offset;
 
 }
 
-static unsigned long protocol_map(struct service_backend *backend, unsigned int id)
+static unsigned long protocol_map(struct service_backend *backend, struct service_state *state)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, id))
+    if (!readheader(backend, &header, state->id))
         return 0;
 
-    return backend->map(cpio_filedata(&header, id), cpio_filesize(&header));
+    return backend->map(cpio_filedata(&header, state->id), cpio_filesize(&header));
 
 }
 
