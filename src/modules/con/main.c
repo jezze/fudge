@@ -7,25 +7,6 @@
 static struct system_node root;
 static struct system_node clone;
 
-static struct ethernet_interface *findinterface(unsigned int index)
-{
-
-    struct resource *resource = 0;
-
-    while ((resource = resource_findtype(resource, RESOURCE_ETHERNETINTERFACE)))
-    {
-
-        if (!index)
-            return resource->data;
-
-        index--;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int clone_child(struct system_node *self, char *path, unsigned int length)
 {
 
@@ -61,12 +42,7 @@ static unsigned int conctrl_write(struct system_node *self, struct service_state
 
     struct con *con = self->resource->data;
 
-    count = memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, state->offset);
-    con->interface = findinterface(con->settings.interface);
-
-    con->configure(con->settings.port);
-
-    return count;
+    return memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, state->offset);
 
 }
 
@@ -92,7 +68,7 @@ static unsigned int condata_close(struct system_node *self, struct service_state
 
 }
 
-void con_init(struct con *con, void (*configure)(unsigned int port), void (*open)(struct list_item *link), void (*close)(struct list_item *link))
+void con_init(struct con *con, void (*open)(struct list_item *link), void (*close)(struct list_item *link))
 {
 
     ctrl_setconsettings(&con->settings, 0, 0, 0);
@@ -101,7 +77,6 @@ void con_init(struct con *con, void (*configure)(unsigned int port), void (*open
     system_initresourcenode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &con->resource);
     system_initresourcenode(&con->data, SYSTEM_NODETYPE_NORMAL, "data", &con->resource);
 
-    con->configure = configure;
     con->open = open;
     con->close = close;
     con->ctrl.read = conctrl_read;

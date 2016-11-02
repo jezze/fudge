@@ -8,13 +8,6 @@
 static struct con con;
 static struct udp_hook hook;
 
-static void con_configure(unsigned int port)
-{
-
-    hook.port = port;
-
-}
-
 static void con_open(struct list_item *link)
 {
 
@@ -31,6 +24,13 @@ static void con_close(struct list_item *link)
 
 }
 
+static unsigned int hook_match(unsigned int port)
+{
+
+    return port == con.settings.port;
+
+}
+
 static void hook_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
@@ -41,8 +41,8 @@ static void hook_notify(struct ethernet_interface *interface, void *buffer, unsi
 void module_init(void)
 {
 
-    con_init(&con, con_configure, con_open, con_close);
-    udp_inithook(&hook, 0, hook_notify);
+    con_init(&con, con_open, con_close);
+    udp_inithook(&hook, hook_match, hook_notify);
 
 }
 
