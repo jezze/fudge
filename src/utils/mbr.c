@@ -58,7 +58,7 @@ void main(void)
 
         write_dec("Partition", i);
 
-        if (mbr.partition[i].systemid == 0)
+        if (!mbr.partition[i].systemid)
             continue;
 
         write_hex("    Boot", mbr.partition[i].boot, 2);
