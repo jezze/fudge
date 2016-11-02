@@ -6,8 +6,10 @@
 static struct system_node root;
 static struct system_node clone;
 
-static unsigned int open(struct pipe_end *end, struct service_state *state)
+static unsigned int end_open(struct system_node *self, struct service_state *state)
 {
+
+    struct pipe_end *end = (struct pipe_end *)self;
 
     end->refcount++;
 
@@ -15,8 +17,10 @@ static unsigned int open(struct pipe_end *end, struct service_state *state)
 
 }
 
-static unsigned int close(struct pipe_end *end, struct service_state *state)
+static unsigned int end_close(struct system_node *self, struct service_state *state)
 {
+
+    struct pipe_end *end = (struct pipe_end *)self;
 
     end->refcount--;
 
@@ -42,8 +46,10 @@ static unsigned int close(struct pipe_end *end, struct service_state *state)
 
 }
 
-static unsigned int read(struct pipe_end *end, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int end_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
+
+    struct pipe_end *end = (struct pipe_end *)self;
 
     count = buffer_read(&end->buffer, buffer, count);
 
@@ -79,8 +85,10 @@ static unsigned int read(struct pipe_end *end, struct service_state *state, void
 
 }
 
-static unsigned int write(struct pipe_end *end, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int end_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
+
+    struct pipe_end *end = (struct pipe_end *)self;
 
     count = buffer_write(&end->buffer, buffer, count);
 
@@ -113,78 +121,6 @@ static unsigned int write(struct pipe_end *end, struct service_state *state, voi
     }
 
     return count;
-
-}
-
-static unsigned int end0_open(struct system_node *self, struct service_state *state)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    return open(&pipe->end0, state);
-
-}
-
-static unsigned int end0_close(struct system_node *self, struct service_state *state)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    return close(&pipe->end0, state);
-
-}
-
-static unsigned int end0_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    return read(&pipe->end0, state, buffer, count);
-
-}
-
-static unsigned int end0_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    return write(&pipe->end0, state, buffer, count);
-
-}
-
-static unsigned int end1_open(struct system_node *self, struct service_state *state)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    return open(&pipe->end1, state);
-
-}
-
-static unsigned int end1_close(struct system_node *self, struct service_state *state)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    return close(&pipe->end1, state);
-
-}
-
-static unsigned int end1_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    return read(&pipe->end1, state, buffer, count);
-
-}
-
-static unsigned int end1_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    struct pipe *pipe = (struct pipe *)self->parent;
-
-    return write(&pipe->end1, state, buffer, count);
 
 }
 
@@ -221,14 +157,14 @@ void pipe_init(struct pipe *pipe, unsigned int count0, void *data0, unsigned int
     system_initnode(&pipe->end0.node, SYSTEM_NODETYPE_NORMAL, "0");
     system_initnode(&pipe->end1.node, SYSTEM_NODETYPE_NORMAL, "1");
 
-    pipe->end0.node.open = end0_open;
-    pipe->end0.node.close = end0_close;
-    pipe->end0.node.read = end0_read;
-    pipe->end0.node.write = end0_write;
-    pipe->end1.node.open = end1_open;
-    pipe->end1.node.close = end1_close;
-    pipe->end1.node.read = end1_read;
-    pipe->end1.node.write = end1_write;
+    pipe->end0.node.open = end_open;
+    pipe->end0.node.close = end_close;
+    pipe->end0.node.read = end_read;
+    pipe->end0.node.write = end_write;
+    pipe->end1.node.open = end_open;
+    pipe->end1.node.close = end_close;
+    pipe->end1.node.read = end_read;
+    pipe->end1.node.write = end_write;
 
     system_initnode(&pipe->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "pipe");
     system_addchild(&pipe->root, &pipe->end0.node);
