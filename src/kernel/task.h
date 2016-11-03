@@ -47,6 +47,7 @@ struct task *task_findactive(void);
 struct task *task_findinactive(void);
 void task_setstatus(struct task *task, unsigned int state);
 void task_resume(struct task *task, unsigned int ip, unsigned int sp);
+unsigned int task_read(struct task *task, void *buffer, unsigned int count);
 void task_register(struct task *task);
 void task_unregister(struct task *task);
 void task_init(struct task *task);

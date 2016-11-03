@@ -194,7 +194,7 @@ static unsigned int poll_close(struct system_node *self, struct service_state *s
 static unsigned int poll_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return system_readlink(&state->link, buffer, count);
+    return task_read(state->link.data, buffer, count);
 
 }
 
@@ -226,7 +226,7 @@ static unsigned int key_close(struct system_node *self, struct service_state *st
 static unsigned int key_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return system_readlink(&state->link, buffer, count);
+    return task_read(state->link.data, buffer, count);
 
 }
 
@@ -258,7 +258,7 @@ static unsigned int mouse_close(struct system_node *self, struct service_state *
 static unsigned int mouse_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return system_readlink(&state->link, buffer, count);
+    return task_read(state->link.data, buffer, count);
 
 }
 
@@ -290,7 +290,7 @@ static unsigned int tick_close(struct system_node *self, struct service_state *s
 static unsigned int tick_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return system_readlink(&state->link, buffer, count);
+    return task_read(state->link.data, buffer, count);
 
 }
 
@@ -322,7 +322,7 @@ static unsigned int video_close(struct system_node *self, struct service_state *
 static unsigned int video_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return system_readlink(&state->link, buffer, count);
+    return task_read(state->link.data, buffer, count);
 
 }
 
@@ -354,7 +354,7 @@ static unsigned int wm_close(struct system_node *self, struct service_state *sta
 static unsigned int wm_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return system_readlink(&state->link, buffer, count);
+    return task_read(state->link.data, buffer, count);
 
 }
 

@@ -10,7 +10,7 @@ static struct ethernet_protocol ethernetprotocol;
 static void ethernetprotocol_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&ethernetprotocol.datalinks, buffer, count);
+    kernel_multicast(&ethernetprotocol.datalinks, buffer, count);
 
 }
 

@@ -8,7 +8,7 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->sleeplinks, buffer, count);
+    kernel_multicast(&interface->sleeplinks, buffer, count);
 
 }
 
@@ -37,7 +37,7 @@ static unsigned int interfacesleep_close(struct system_node *self, struct servic
 static unsigned int interfacesleep_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return system_readlink(&state->link, buffer, count);
+    return task_read(state->link.data, buffer, count);
 
 }
 

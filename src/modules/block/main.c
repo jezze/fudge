@@ -8,7 +8,7 @@ static struct system_node root;
 void block_notify(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->datalinks, buffer, count);
+    kernel_multicast(&interface->datalinks, buffer, count);
 
 }
 
@@ -38,7 +38,7 @@ static unsigned int interfacedata_read(struct system_node *self, struct service_
 {
 
     struct block_interface *interface = self->resource->data;
-    unsigned int c = system_readlink(&state->link, buffer, count);
+    unsigned int c = task_read(state->link.data, buffer, count);
 
     if (!c)
         interface->rdata(buffer, count, state->offset);

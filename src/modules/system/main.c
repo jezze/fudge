@@ -5,39 +5,6 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-/* TODO: Move */
-unsigned int system_readlink(struct list_item *link, void *buffer, unsigned int count)
-{
-
-    struct task *task = link->data;
-
-    count = buffer_read(&task->mailbox.buffer, buffer, count);
-
-    if (!count)
-        task_setstatus(task, TASK_STATUS_BLOCKED);
-
-    return count;
-
-}
-
-/* TODO: Move */
-void system_multicast(struct list *links, void *buffer, unsigned int count)
-{
-
-    struct list_item *current;
-
-    for (current = links->head; current; current = current->next)
-    {
-
-        struct task *task = current->data;
-
-        task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_write(&task->mailbox.buffer, buffer, count);
-
-    }
-
-}
-
 unsigned int system_childgroup(struct system_node *node, char *path, unsigned int length)
 {
 

@@ -22,33 +22,33 @@ static void write(struct list *links, unsigned int level, char *string, char *fi
     {
 
     case DEBUG_CRITICAL:
-        system_multicast(links, "[CRIT] ", 7);
+        kernel_multicast(links, "[CRIT] ", 7);
 
         break;
 
     case DEBUG_ERROR:
-        system_multicast(links, "[ERRO] ", 7);
+        kernel_multicast(links, "[ERRO] ", 7);
 
         break;
 
     case DEBUG_WARNING:
-        system_multicast(links, "[WARN] ", 7);
+        kernel_multicast(links, "[WARN] ", 7);
 
         break;
 
     case DEBUG_INFO:
-        system_multicast(links, "[INFO] ", 7);
+        kernel_multicast(links, "[INFO] ", 7);
 
         break;
 
     }
 
-    system_multicast(links, string, ascii_length(string));
-    system_multicast(links, " (", 2);
-    system_multicast(links, file, ascii_length(file));
-    system_multicast(links, ":", 1);
-    system_multicast(links, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
-    system_multicast(links, ")\n", 2);
+    kernel_multicast(links, string, ascii_length(string));
+    kernel_multicast(links, " (", 2);
+    kernel_multicast(links, file, ascii_length(file));
+    kernel_multicast(links, ":", 1);
+    kernel_multicast(links, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
+    kernel_multicast(links, ")\n", 2);
 
 }
 

@@ -32,7 +32,7 @@ static unsigned int hook_match(unsigned int port)
 static void hook_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&con.links, buffer, count);
+    kernel_multicast(&con.links, buffer, count);
 
 }
 

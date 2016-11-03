@@ -8,7 +8,7 @@ static struct system_node root;
 void console_notify(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
-    system_multicast(&interface->datalinks, buffer, count);
+    kernel_multicast(&interface->datalinks, buffer, count);
 
 }
 
@@ -46,7 +46,7 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return system_readlink(&state->link, buffer, count);
+    return task_read(state->link.data, buffer, count);
 
 }
 

@@ -91,6 +91,18 @@ void task_resume(struct task *task, unsigned int ip, unsigned int sp)
 
 }
 
+unsigned int task_read(struct task *task, void *buffer, unsigned int count)
+{
+
+    count = buffer_read(&task->mailbox.buffer, buffer, count);
+
+    if (!count)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    return count;
+
+}
+
 void task_register(struct task *task)
 {
 

@@ -34,6 +34,23 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
+void kernel_multicast(struct list *links, void *buffer, unsigned int count)
+{
+
+    struct list_item *current;
+
+    for (current = links->head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+
+        task_setstatus(task, TASK_STATUS_UNBLOCKED);
+        buffer_write(&task->mailbox.buffer, buffer, count);
+
+    }
+
+}
+
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
