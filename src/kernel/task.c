@@ -103,6 +103,17 @@ unsigned int task_read(struct task *task, void *buffer, unsigned int count)
 
 }
 
+unsigned int task_write(struct task *task, void *buffer, unsigned int count)
+{
+
+    count = buffer_write(&task->mailbox.buffer, buffer, count);
+
+    task_setstatus(task, TASK_STATUS_UNBLOCKED);
+
+    return count;
+
+}
+
 void task_register(struct task *task)
 {
 

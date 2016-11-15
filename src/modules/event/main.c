@@ -30,8 +30,7 @@ static void unicast(struct list *links, struct event_header *header, unsigned in
         if (header->destination != (unsigned int)task)
             continue;
 
-        task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_write(&task->mailbox.buffer, header, count);
+        task_write(task, header, count);
 
     }
 
@@ -49,8 +48,7 @@ static void multicast(struct list *links, struct event_header *header, unsigned 
 
         header->destination = (unsigned int)task;
 
-        task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_write(&task->mailbox.buffer, header, count);
+        task_write(task, header, count);
 
     }
 

@@ -44,8 +44,7 @@ void kernel_multicast(struct list *links, void *buffer, unsigned int count)
 
         struct task *task = current->data;
 
-        task_setstatus(task, TASK_STATUS_UNBLOCKED);
-        buffer_write(&task->mailbox.buffer, buffer, count);
+        task_write(task, buffer, count);
 
     }
 
