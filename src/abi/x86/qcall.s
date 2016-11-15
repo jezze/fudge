@@ -1,6 +1,5 @@
 .code32
 
-.set CALL_INTERRUPT,                    0x80
 .set CALL_INDEX_WALK,                   0x01
 .set CALL_INDEX_CREATE,                 0x02
 .set CALL_INDEX_DESTROY,                0x03
@@ -18,85 +17,132 @@
 
 .global call_auth
 call_auth:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_AUTH, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_close
 call_close:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_CLOSE, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_create
 call_create:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_CREATE, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_destroy
 call_destroy:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_DESTROY, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_despawn
 call_despawn:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_DESPAWN, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_load
 call_load:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_LOAD, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_mount
 call_mount:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_MOUNT, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_open
 call_open:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_OPEN, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_read
 call_read:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_READ, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_seek
 call_seek:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_SEEK, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_spawn
 call_spawn:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_SPAWN, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_unload
 call_unload:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_UNLOAD, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_walk
 call_walk:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_WALK, %eax
-    int $CALL_INTERRUPT
-    ret
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
 
 .global call_write
 call_write:
+    pushl %ecx
+    pushl %edx
     movl $CALL_INDEX_WRITE, %eax
-    int $CALL_INTERRUPT
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
+
+callreturn:
+    popl %edx
+    popl %ecx
     ret
 

@@ -192,7 +192,7 @@ unsigned int arch_call(unsigned int index, void *stack)
 
 }
 
-struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip, unsigned int sp)
+struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip, unsigned int sp, unsigned int rewind)
 {
 
     if (current.task)
@@ -211,7 +211,7 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
     {
 
         if (current.task->state.status == TASK_STATUS_UNBLOCKED)
-            task_resume(current.task, current.task->state.registers.ip - 7, current.task->state.registers.sp);
+            task_resume(current.task, current.task->state.registers.ip - rewind, current.task->state.registers.sp);
 
         loadregisters(current.task, general);
         activate(current.task);
@@ -225,7 +225,7 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct arch_context *context = arch_schedule(general, interrupt->eip.value, interrupt->esp.value);
+    struct arch_context *context = arch_schedule(general, interrupt->eip.value, interrupt->esp.value, 7);
 
     if (context->task)
     {

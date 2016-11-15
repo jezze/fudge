@@ -10,8 +10,8 @@ void syse_syscall(struct cpu_general general)
 
     struct arch_context *context;
 
-    general.eax.value = arch_call(general.eax.value, general.ecx.pointer);
-    context = arch_schedule(&general, general.edx.value, general.ecx.value);
+    general.eax.value = arch_call(general.eax.value, (void *)(general.ecx.value + 8));
+    context = arch_schedule(&general, general.edx.value, general.ecx.value, 0);
 
     if (context->task)
     {
