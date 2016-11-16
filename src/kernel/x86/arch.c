@@ -415,7 +415,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-static struct  container *setupcontainers(void)
+static struct container *setupcontainers(void)
 {
 
     unsigned int index;
