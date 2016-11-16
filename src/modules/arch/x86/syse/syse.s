@@ -4,7 +4,6 @@
 
 .global syse_interrupt
 syse_interrupt:
-    cli
     pusha
     call syse_syscall
     popa
