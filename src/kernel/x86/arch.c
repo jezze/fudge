@@ -200,6 +200,7 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
 
         current.task->state.registers.ip = ip;
         current.task->state.registers.sp = sp;
+        current.task->state.rewind = rewind;
 
         saveregisters(current.task, general);
 
@@ -211,7 +212,7 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
     {
 
         if (current.task->state.status == TASK_STATUS_UNBLOCKED)
-            task_resume(current.task, current.task->state.registers.ip - rewind, current.task->state.registers.sp);
+            task_resume(current.task, current.task->state.registers.ip - current.task->state.rewind, current.task->state.registers.sp);
 
         loadregisters(current.task, general);
         activate(current.task);

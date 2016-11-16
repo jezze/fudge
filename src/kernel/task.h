@@ -19,6 +19,7 @@ struct task_state
     struct list_item item;
     struct {unsigned long ip; unsigned long sp;} registers;
     unsigned int status;
+    unsigned int rewind;
 
 };
 
