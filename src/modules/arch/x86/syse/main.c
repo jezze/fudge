@@ -8,7 +8,7 @@
 void syse_resume(struct cpu_general *general)
 {
 
-    struct arch_context *context = arch_schedule(general, general->edx.value, general->ecx.value, 0);
+    struct arch_context *context = arch_schedule(general, general->edx.value, general->ecx.value);
 
     if (context->task)
     {
@@ -31,7 +31,7 @@ void syse_resume(struct cpu_general *general)
 void syse_syscall(struct cpu_general general)
 {
 
-    general.eax.value = arch_call(general.eax.value, (void *)(general.ecx.value + 8));
+    general.eax.value = arch_call(general.eax.value, (void *)(general.ecx.value + 8), 0);
 
     syse_resume(&general);
 

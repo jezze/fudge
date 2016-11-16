@@ -185,14 +185,16 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
-unsigned int arch_call(unsigned int index, void *stack)
+unsigned int arch_call(unsigned int index, void *stack, unsigned int rewind)
 {
+
+    current.task->state.rewind = rewind;
 
     return abi_call(index, current.container, current.task, stack);
 
 }
 
-struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip, unsigned int sp, unsigned int rewind)
+struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip, unsigned int sp)
 {
 
     if (current.task)
@@ -200,7 +202,6 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
 
         current.task->state.registers.ip = ip;
         current.task->state.registers.sp = sp;
-        current.task->state.rewind = rewind;
 
         saveregisters(current.task, general);
 
@@ -226,7 +227,7 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct arch_context *context = arch_schedule(general, interrupt->eip.value, interrupt->esp.value, 7);
+    struct arch_context *context = arch_schedule(general, interrupt->eip.value, interrupt->esp.value);
 
     if (context->task)
     {
@@ -408,7 +409,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    general.eax.value = abi_call(general.eax.value, current.container, current.task, interrupt.esp.reference);
+    general.eax.value = arch_call(general.eax.value, interrupt.esp.reference, 7);
 
     return arch_resume(&general, &interrupt);
 
