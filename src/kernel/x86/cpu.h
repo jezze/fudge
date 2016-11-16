@@ -19,7 +19,7 @@ union cpu_register
 {
 
     unsigned int value;
-    void *pointer;
+    void *reference;
 
 };
 

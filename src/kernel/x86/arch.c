@@ -408,7 +408,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    general.eax.value = abi_call(general.eax.value, current.container, current.task, interrupt.esp.pointer);
+    general.eax.value = abi_call(general.eax.value, current.container, current.task, interrupt.esp.reference);
 
     return arch_resume(&general, &interrupt);
 
