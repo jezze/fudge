@@ -8,21 +8,17 @@
 #include "isr.h"
 #include "mmu.h"
 
-#define CONTAINERS                      2
+#define CONTAINERS                      16
 #define TASKS                           64
 #define GDTDESCRIPTORS                  6
 #define IDTDESCRIPTORS                  256
 #define TSSDESCRIPTORS                  1
 #define KERNELSTACK                     0x00400000
 #define TASKSTACK                       0x80000000
-#define CONTAINERDIRECTORYCOUNT         1
-#define CONTAINERDIRECTORYBASE          0x00400000
-#define CONTAINERTABLECOUNT             7
-#define CONTAINERTABLEBASE              (CONTAINERDIRECTORYBASE + CONTAINERS * (MMU_PAGESIZE * CONTAINERDIRECTORYCOUNT))
-#define TASKDIRECTORYCOUNT              1
-#define TASKDIRECTORYBASE               (CONTAINERTABLEBASE + CONTAINERS * (MMU_PAGESIZE * CONTAINERTABLECOUNT))
-#define TASKTABLECOUNT                  3
-#define TASKTABLEBASE                   (TASKDIRECTORYBASE + TASKS * (MMU_PAGESIZE * TASKDIRECTORYCOUNT))
+#define CONTAINERMMUBASE                0x00400000
+#define CONTAINERMMUCOUNT               8
+#define TASKMMUBASE                     0x00480000
+#define TASKMMUCOUNT                    4
 #define PHYSBASE                        0x01000000
 #define CODESIZE                        0x00080000
 #define STACKSIZE                       0x00008000
@@ -427,8 +423,8 @@ static struct container *setupcontainers(void)
 
         container_init(&container->base);
 
-        container->directory = (struct mmu_directory *)CONTAINERDIRECTORYBASE + index * CONTAINERDIRECTORYCOUNT;
-        container->table = (struct mmu_table *)CONTAINERTABLEBASE + index * CONTAINERTABLECOUNT;
+        container->directory = (struct mmu_directory *)CONTAINERMMUBASE + index * CONTAINERMMUCOUNT;
+        container->table = (struct mmu_table *)CONTAINERMMUBASE + index * CONTAINERMMUCOUNT + 1;
 
     }
 
@@ -450,8 +446,8 @@ static struct task *setuptasks(void)
 
         task->code = PHYSBASE + index * (CODESIZE + STACKSIZE);
         task->stack = task->code + CODESIZE;
-        task->directory = (struct mmu_directory *)TASKDIRECTORYBASE + index * TASKDIRECTORYCOUNT;
-        task->table = (struct mmu_table *)TASKTABLEBASE + index * TASKTABLECOUNT;
+        task->directory = (struct mmu_directory *)TASKMMUBASE + index * TASKMMUCOUNT;
+        task->table = (struct mmu_table *)TASKMMUBASE + index * TASKMMUCOUNT + 1;
 
         task_register(&task->base);
 
