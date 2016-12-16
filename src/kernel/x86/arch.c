@@ -411,12 +411,12 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-static struct container *setupcontainers(void)
+static struct container *setupcontainers(unsigned int count)
 {
 
     unsigned int index;
 
-    for (index = 0; index < CONTAINERS; index++)
+    for (index = 0; index < count; index++)
     {
 
         struct arch_container *container = &containers[index];
@@ -432,12 +432,12 @@ static struct container *setupcontainers(void)
 
 }
 
-static struct task *setuptasks(void)
+static struct task *setuptasks(unsigned int count)
 {
 
     unsigned int index;
 
-    for (index = 0; index < TASKS; index++)
+    for (index = 0; index < count; index++)
     {
 
         struct arch_task *task = &tasks[index];
@@ -495,8 +495,8 @@ void arch_setup(struct service_backend *backend)
     cpu_settss(selector.tlink);
     kernel_setup();
 
-    current.container = setupcontainers();
-    current.task = setuptasks();
+    current.container = setupcontainers(CONTAINERS);
+    current.task = setuptasks(TASKS);
     current.ip = (unsigned int)cpu_halt;
     current.sp = KERNELSTACK;
 
