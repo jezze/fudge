@@ -91,7 +91,7 @@ static void copymap(struct container *container, struct task *task)
 
 }
 
-static void mapcontainercode(struct container *container)
+static void mapcontainer(struct container *container)
 {
 
     struct arch_container *acontainer = (struct arch_container *)container;
@@ -103,7 +103,7 @@ static void mapcontainercode(struct container *container)
 
 }
 
-static void maptaskcode(struct task *task, unsigned int code, unsigned int stack)
+static void maptask(struct task *task, unsigned int code, unsigned int stack)
 {
 
     struct arch_task *atask = (struct arch_task *)task;
@@ -384,7 +384,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (address)
         {
 
-            maptaskcode(current.task, address, TASKSTACK - STACKSIZE);
+            maptask(current.task, address, TASKSTACK - STACKSIZE);
             current.task->format->copyprogram(&current.task->node);
 
         }
@@ -501,7 +501,7 @@ void arch_setup(struct service_backend *backend)
     current.sp = KERNELSTACK;
 
     kernel_setupramdisk(current.container, current.task, backend);
-    mapcontainercode(current.container);
+    mapcontainer(current.container);
     copymap(current.container, current.task);
     kernel_copydescriptors(current.task, current.task);
     kernel_setupbinary(current.task, TASKSTACK);
