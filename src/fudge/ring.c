@@ -126,6 +126,14 @@ unsigned int ring_overwrite(struct ring *ring, void *buffer, unsigned int count)
 
 }
 
+void ring_reset(struct ring *ring)
+{
+
+    ring->head = 0;
+    ring->tail = 0;
+
+}
+
 void ring_init(struct ring *ring, unsigned int capacity, void *buffer)
 {
 
