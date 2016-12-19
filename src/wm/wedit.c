@@ -17,7 +17,6 @@ static char insertdata[64];
 static struct ring insert;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
-static struct box size;
 static void (*handlers[EVENTS])(struct event_header *header);
 
 static unsigned int rowleft(unsigned int position)
@@ -226,8 +225,7 @@ static void onwmresize(struct event_header *header)
     struct event_wmresize wmresize;
 
     file_readall(CALL_L0, &wmresize, sizeof (struct event_wmresize));
-    box_setsize(&size, wmresize.x, wmresize.y, wmresize.w, wmresize.h);
-    box_setsize(&content.size, size.x + 12, size.y + 12, size.w - 24, size.h - 24);
+    box_setsize(&content.size, wmresize.x + 12, wmresize.y + 12, wmresize.w - 24, wmresize.h - 24);
 
 }
 
