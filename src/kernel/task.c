@@ -95,7 +95,7 @@ void task_resume(struct task *task, unsigned int ip, unsigned int sp)
 unsigned int task_read(struct task *task, void *buffer, unsigned int count)
 {
 
-    count = buffer_read(&task->mailbox.buffer, buffer, count);
+    count = ring_read(&task->mailbox.ring, buffer, count);
 
     if (!count)
         task_setstatus(task, TASK_STATUS_BLOCKED);
@@ -107,7 +107,7 @@ unsigned int task_read(struct task *task, void *buffer, unsigned int count)
 unsigned int task_write(struct task *task, void *buffer, unsigned int count)
 {
 
-    count = buffer_write(&task->mailbox.buffer, buffer, count);
+    count = ring_write(&task->mailbox.ring, buffer, count);
 
     task_setstatus(task, TASK_STATUS_UNBLOCKED);
 
@@ -136,7 +136,7 @@ void task_init(struct task *task)
 
     resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
-    buffer_init(&task->mailbox.buffer, TASK_MAILBOXSIZE, task->mailbox.data);
+    ring_init(&task->mailbox.ring, TASK_MAILBOXSIZE, task->mailbox.data);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
     {

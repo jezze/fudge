@@ -10,29 +10,29 @@ static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char textdata[512];
-static struct buffer text;
+static struct ring text;
 static char inputdata[FUDGE_BSIZE];
-static struct buffer input;
+static struct ring input;
 static char outputdata[FUDGE_BSIZE];
-static struct buffer output;
+static struct ring output;
 static struct box size;
 static void (*handlers[EVENTS])(struct event_header *header);
 
 static void inserttext(void *buffer, unsigned int count)
 {
 
-    buffer_overwrite(&text, buffer, count);
+    ring_overwrite(&text, buffer, count);
 
-    content.cursor = text.count - 1;
+    content.cursor = ring_count(&text) - 1;
 
 }
 
 static void removetext(unsigned int count)
 {
 
-    buffer_erase(&text, count);
+    ring_erase(&text, count);
 
-    content.cursor = text.count - 1;
+    content.cursor = ring_count(&text) - 1;
 
 }
 
@@ -40,7 +40,7 @@ static void interpret(void)
 {
 
     char command[FUDGE_BSIZE];
-    unsigned int count = buffer_read(&input, command, FUDGE_BSIZE);
+    unsigned int count = ring_read(&input, command, FUDGE_BSIZE);
 
     if (count < 2)
         return;
@@ -108,7 +108,7 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x0E:
-        if (!buffer_erase(&input, 1))
+        if (!ring_erase(&input, 1))
             break;
 
         removetext(2);
@@ -120,7 +120,7 @@ static void onkeypress(struct event_header *header)
     case 0x1C:
         keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
-        if (!buffer_write(&input, &keycode->value, keycode->length))
+        if (!ring_write(&input, &keycode->value, keycode->length))
             break;
 
         interpret();
@@ -132,7 +132,7 @@ static void onkeypress(struct event_header *header)
     default:
         keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
-        if (!buffer_write(&input, &keycode->value, keycode->length))
+        if (!ring_write(&input, &keycode->value, keycode->length))
             break;
 
         removetext(1);
@@ -212,9 +212,9 @@ void main(void)
     struct event_header header;
     unsigned int count;
 
-    buffer_init(&input, FUDGE_BSIZE, inputdata);
-    buffer_init(&output, FUDGE_BSIZE, outputdata);
-    buffer_init(&text, 512, textdata);
+    ring_init(&input, FUDGE_BSIZE, inputdata);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&text, 512, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     inserttext("$ \n", 3);
 
@@ -250,11 +250,11 @@ void main(void)
 
         handlers[header.type](&header);
 
-        if (output.count)
+        if (ring_count(&output))
         {
 
-            file_writeall(CALL_PO, output.memory, output.count);
-            buffer_init(&output, FUDGE_BSIZE, outputdata);
+            file_writeall(CALL_PO, output.memory, ring_count(&output));
+            ring_init(&output, FUDGE_BSIZE, outputdata);
 
         }
 

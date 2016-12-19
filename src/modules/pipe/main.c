@@ -51,7 +51,7 @@ static unsigned int end_read(struct system_node *self, struct service_state *sta
 
     struct pipe_end *end = (struct pipe_end *)self;
 
-    count = buffer_read(&end->buffer, buffer, count);
+    count = ring_read(&end->ring, buffer, count);
 
     if (count)
     {
@@ -90,7 +90,7 @@ static unsigned int end_write(struct system_node *self, struct service_state *st
 
     struct pipe_end *end = (struct pipe_end *)self;
 
-    count = buffer_write(&end->buffer, buffer, count);
+    count = ring_write(&end->ring, buffer, count);
 
     if (count)
     {
@@ -152,8 +152,8 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
 void pipe_init(struct pipe *pipe, unsigned int count0, void *data0, unsigned int count1, void *data1)
 {
 
-    buffer_init(&pipe->end0.buffer, count0, data0);
-    buffer_init(&pipe->end1.buffer, count1, data1);
+    ring_init(&pipe->end0.ring, count0, data0);
+    ring_init(&pipe->end1.ring, count1, data1);
     system_initnode(&pipe->end0.node, SYSTEM_NODETYPE_NORMAL, "0");
     system_initnode(&pipe->end1.node, SYSTEM_NODETYPE_NORMAL, "1");
 

@@ -139,7 +139,7 @@ static unsigned int getidentlength(unsigned int count, char *buffer)
 
 }
 
-static void tokenizebuffer(struct tokenlist *infix, struct buffer *stringtable, unsigned int count, char *buffer)
+static void tokenizebuffer(struct tokenlist *infix, struct ring *stringtable, unsigned int count, char *buffer)
 {
 
     unsigned int i;
@@ -157,12 +157,12 @@ static void tokenizebuffer(struct tokenlist *infix, struct buffer *stringtable, 
             continue;
 
         case TOKENIDENT:
-            tokenlist_add(infix, token, (char *)stringtable->head);
+            tokenlist_add(infix, token, stringtable->memory + ring_count(stringtable));
 
             c = getidentlength(count - i, buffer + i);
 
-            buffer_write(stringtable, &buffer[i], c);
-            buffer_write(stringtable, "\0", 1);
+            ring_write(stringtable, &buffer[i], c);
+            ring_write(stringtable, "\0", 1);
 
             i += c - 1;
 
@@ -319,7 +319,7 @@ void main(void)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
     char stringdata[FUDGE_BSIZE];
-    struct buffer stringtable;
+    struct ring stringtable;
     struct token infixdata[1024];
     struct token postfixdata[1024];
     struct token stackdata[8];
@@ -327,7 +327,7 @@ void main(void)
     struct tokenlist postfix;
     struct tokenlist stack;
 
-    buffer_init(&stringtable, FUDGE_BSIZE, stringdata);
+    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);

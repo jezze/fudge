@@ -10,9 +10,9 @@ static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char textdata[FUDGE_BSIZE];
-static struct buffer text;
+static struct ring text;
 static char outputdata[FUDGE_BSIZE];
-static struct buffer output;
+static struct ring output;
 static struct box size;
 static void (*handlers[EVENTS])(struct event_header *header);
 
@@ -26,7 +26,7 @@ static unsigned int rowleft(unsigned int position)
 static unsigned int rowright(unsigned int position)
 {
 
-    return (position < text.count - 1) ? position + 1 : position;
+    return (position < ring_count(&text) - 1) ? position + 1 : position;
 
 }
 
@@ -40,7 +40,7 @@ static unsigned int rowhome(unsigned int position)
 static unsigned int rowend(unsigned int position)
 {
 
-    return ascii_search(textdata, position, text.count, '\n');
+    return ascii_search(textdata, position, ring_count(&text), '\n');
 
 }
 
@@ -76,7 +76,7 @@ static unsigned int rowdown(unsigned int position)
     start = rowhome(position);
     startn = rowend(position) + 1;
 
-    if (startn == text.count)
+    if (startn == ring_count(&text))
         return startn - 1;
 
     count = position - start;
@@ -108,42 +108,42 @@ static void onkeypress(struct event_header *header)
     case 0x47:
         content.cursor = rowhome(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+        print_inserttext(&output, header->destination, &content, 1, text.memory, ring_count(&text));
 
         break;
 
     case 0x48:
         content.cursor = rowup(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+        print_inserttext(&output, header->destination, &content, 1, text.memory, ring_count(&text));
 
         break;
 
     case 0x4B:
         content.cursor = rowleft(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+        print_inserttext(&output, header->destination, &content, 1, text.memory, ring_count(&text));
 
         break;
 
     case 0x4D:
         content.cursor = rowright(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+        print_inserttext(&output, header->destination, &content, 1, text.memory, ring_count(&text));
 
         break;
 
     case 0x4F:
         content.cursor = rowend(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+        print_inserttext(&output, header->destination, &content, 1, text.memory, ring_count(&text));
 
         break;
 
     case 0x50:
         content.cursor = rowdown(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+        print_inserttext(&output, header->destination, &content, 1, text.memory, ring_count(&text));
 
         break;
 
@@ -200,7 +200,7 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    print_inserttext(&output, header->destination, &content, 1, text.memory, text.count);
+    print_inserttext(&output, header->destination, &content, 1, text.memory, ring_count(&text));
 
 }
 
@@ -218,8 +218,8 @@ void main(void)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    buffer_init(&output, FUDGE_BSIZE, outputdata);
-    buffer_init(&text, FUDGE_BSIZE, textdata);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
     if (!file_walk(CALL_L0, "/system/event/poll"))
@@ -234,7 +234,7 @@ void main(void)
     file_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
-        buffer_write(&text, buffer, count);
+        ring_write(&text, buffer, count);
 
     file_close(CALL_PI);
     file_open(CALL_PO);
@@ -260,11 +260,11 @@ void main(void)
 
         handlers[header.type](&header);
 
-        if (output.count)
+        if (ring_count(&output))
         {
 
-            file_writeall(CALL_PO, output.memory, output.count);
-            buffer_init(&output, FUDGE_BSIZE, outputdata);
+            file_writeall(CALL_PO, output.memory, ring_count(&output));
+            ring_init(&output, FUDGE_BSIZE, outputdata);
 
         }
 

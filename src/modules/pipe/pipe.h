@@ -2,7 +2,7 @@ struct pipe_end
 {
 
     struct system_node node;
-    struct buffer buffer;
+    struct ring ring;
     struct list_item *read;
     struct list_item *write;
     unsigned int refcount;

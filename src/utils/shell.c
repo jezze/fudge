@@ -1,11 +1,11 @@
 #include <abi.h>
 #include <fudge.h>
 
-static void interpret(struct buffer *buffer)
+static void interpret(struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
-    unsigned int count = buffer_read(buffer, command, FUDGE_BSIZE);
+    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
 
     if (count < 2)
         return;
@@ -52,12 +52,12 @@ static void interpret(struct buffer *buffer)
 
 }
 
-static void complete(struct buffer *buffer)
+static void complete(struct ring *ring)
 {
 
 }
 
-static void handle(struct buffer *buffer, unsigned char c)
+static void handle(struct ring *ring, unsigned char c)
 {
 
     switch (c)
@@ -67,13 +67,13 @@ static void handle(struct buffer *buffer, unsigned char c)
         break;
 
     case '\t':
-        complete(buffer);
+        complete(ring);
 
         break;
 
     case '\b':
     case 0x7F:
-        if (!buffer_erase(buffer, 1))
+        if (!ring_erase(ring, 1))
             break;
 
         file_writeall(CALL_PO, "\b \b", 3);
@@ -85,14 +85,14 @@ static void handle(struct buffer *buffer, unsigned char c)
 
     case '\n':
         file_writeall(CALL_PO, &c, 1);
-        buffer_write(buffer, &c, 1);
-        interpret(buffer);
+        ring_write(ring, &c, 1);
+        interpret(ring);
         file_writeall(CALL_PO, "$ ", 2);
 
         break;
 
     default:
-        buffer_write(buffer, &c, 1);
+        ring_write(ring, &c, 1);
         file_writeall(CALL_PO, &c, 1);
 
         break;
@@ -107,9 +107,9 @@ void main(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
     unsigned char inputbuffer[FUDGE_BSIZE];
-    struct buffer input;
+    struct ring input;
 
-    buffer_init(&input, FUDGE_BSIZE, inputbuffer);
+    ring_init(&input, FUDGE_BSIZE, inputbuffer);
     file_open(CALL_PI);
     file_open(CALL_PO);
     file_writeall(CALL_PO, "$ ", 2);

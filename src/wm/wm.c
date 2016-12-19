@@ -33,7 +33,7 @@ static struct view
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
-static struct buffer output;
+static struct ring output;
 static struct box size;
 static struct box body;
 static struct list remotelist;
@@ -42,33 +42,33 @@ static struct element_mouse mouse;
 static struct view *viewfocus = &views[0];
 static void (*handlers[EVENTS])(struct event_header *header);
 
-static void printinsertremote(struct buffer *buffer, unsigned int source, struct remote *remote)
+static void printinsertremote(struct ring *ring, unsigned int source, struct remote *remote)
 {
 
-    print_insertwindow(buffer, source, &remote->window, 1);
+    print_insertwindow(ring, source, &remote->window, 1);
 
 }
 
-static void printremoveremote(struct buffer *buffer, unsigned int source, struct remote *remote)
+static void printremoveremote(struct ring *ring, unsigned int source, struct remote *remote)
 {
 
-    print_removewindow(buffer, source, &remote->window);
+    print_removewindow(ring, source, &remote->window);
 
 }
 
-static void printinsertview(struct buffer *buffer, unsigned int source, struct view *view)
+static void printinsertview(struct ring *ring, unsigned int source, struct view *view)
 {
 
-    print_insertpanel(buffer, source, &view->panel, 1);
-    print_inserttext(buffer, source, &view->number, 1, &view->numberstring, 1);
+    print_insertpanel(ring, source, &view->panel, 1);
+    print_inserttext(ring, source, &view->number, 1, &view->numberstring, 1);
 
 }
 
-static void printremoveview(struct buffer *buffer, unsigned int source, struct view *view)
+static void printremoveview(struct ring *ring, unsigned int source, struct view *view)
 {
 
-    print_removepanel(buffer, source, &view->panel);
-    print_removetext(buffer, source, &view->number);
+    print_removepanel(ring, source, &view->panel);
+    print_removetext(ring, source, &view->number);
 
 }
 
@@ -641,7 +641,7 @@ void main(void)
     unsigned int count;
     unsigned int i;
 
-    buffer_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
     element_initfill(&background, 2);
     element_initmouse(&mouse, 0, 0);
 
@@ -706,11 +706,11 @@ void main(void)
 
         handlers[header.type](&header);
 
-        if (output.count)
+        if (ring_count(&output))
         {
 
-            file_writeall(CALL_PO, output.memory, output.count);
-            buffer_init(&output, FUDGE_BSIZE, outputdata);
+            file_writeall(CALL_PO, output.memory, ring_count(&output));
+            ring_init(&output, FUDGE_BSIZE, outputdata);
 
         }
 
