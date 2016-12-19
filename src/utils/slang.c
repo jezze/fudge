@@ -157,7 +157,7 @@ static void tokenizebuffer(struct tokenlist *infix, struct ring *stringtable, un
             continue;
 
         case TOKENIDENT:
-            tokenlist_add(infix, token, stringtable->memory + ring_count(stringtable));
+            tokenlist_add(infix, token, stringtable->buffer + ring_count(stringtable));
 
             c = getidentlength(count - i, buffer + i);
 

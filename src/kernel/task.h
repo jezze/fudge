@@ -9,7 +9,7 @@ struct task_mailbox
 {
 
     struct ring ring;
-    unsigned char data[TASK_MAILBOXSIZE];
+    unsigned char buffer[TASK_MAILBOXSIZE];
 
 };
 

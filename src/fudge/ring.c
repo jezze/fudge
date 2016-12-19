@@ -66,10 +66,10 @@ unsigned int ring_erase(struct ring *ring, unsigned int count)
 
 }
 
-unsigned int ring_read(struct ring *ring, void *memory, unsigned int count)
+unsigned int ring_read(struct ring *ring, void *buffer, unsigned int count)
 {
 
-    char *m = memory;
+    char *b = buffer;
     unsigned int c;
 
     for (c = 0; count--; c++)
@@ -78,7 +78,7 @@ unsigned int ring_read(struct ring *ring, void *memory, unsigned int count)
         if (ring_isempty(ring))
             break;
 
-        m[c] = ring->memory[mask(ring, ring->tail++)];
+        b[c] = ring->buffer[mask(ring, ring->tail++)];
 
     }
 
@@ -86,10 +86,10 @@ unsigned int ring_read(struct ring *ring, void *memory, unsigned int count)
 
 }
 
-unsigned int ring_write(struct ring *ring, void *memory, unsigned int count)
+unsigned int ring_write(struct ring *ring, void *buffer, unsigned int count)
 {
 
-    char *m = memory;
+    char *b = buffer;
     unsigned int c;
 
     for (c = 0; count--; c++)
@@ -98,7 +98,7 @@ unsigned int ring_write(struct ring *ring, void *memory, unsigned int count)
         if (ring_isfull(ring))
             break;
 
-        ring->memory[mask(ring, ring->head++)] = m[c];
+        ring->buffer[mask(ring, ring->head++)] = b[c];
 
     }
 
@@ -106,16 +106,16 @@ unsigned int ring_write(struct ring *ring, void *memory, unsigned int count)
 
 }
 
-unsigned int ring_overwrite(struct ring *ring, void *memory, unsigned int count)
+unsigned int ring_overwrite(struct ring *ring, void *buffer, unsigned int count)
 {
 
-    char *m = memory;
+    char *b = buffer;
     unsigned int c;
 
     for (c = 0; count--; c++)
     {
 
-        ring->memory[mask(ring, ring->head++)] = m[c];
+        ring->buffer[mask(ring, ring->head++)] = b[c];
 
         if (ring_isfull(ring))
             ring->tail++;
@@ -126,10 +126,10 @@ unsigned int ring_overwrite(struct ring *ring, void *memory, unsigned int count)
 
 }
 
-void ring_init(struct ring *ring, unsigned int capacity, void *memory)
+void ring_init(struct ring *ring, unsigned int capacity, void *buffer)
 {
 
-    ring->memory = memory;
+    ring->buffer = buffer;
     ring->capacity = capacity;
     ring->head = 0;
     ring->tail = 0;

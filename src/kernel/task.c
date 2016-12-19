@@ -136,7 +136,7 @@ void task_init(struct task *task)
 
     resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
-    ring_init(&task->mailbox.ring, TASK_MAILBOXSIZE, task->mailbox.data);
+    ring_init(&task->mailbox.ring, TASK_MAILBOXSIZE, task->mailbox.buffer);
 
     for (i = 0; i < TASK_DESCRIPTORS; i++)
     {
