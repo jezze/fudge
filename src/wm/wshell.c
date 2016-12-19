@@ -113,7 +113,8 @@ static void onkeypress(struct event_header *header)
 
         removetext(2);
         inserttext("\n", 1);
-        print_inserttextbuffer(&output, header->destination, &content, 1, &text);
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextbuffer(&output, &text);
 
         break;
 
@@ -125,7 +126,8 @@ static void onkeypress(struct event_header *header)
 
         interpret();
         inserttext("$ \n", 3);
-        print_inserttextbuffer(&output, header->destination, &content, 1, &text);
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextbuffer(&output, &text);
 
         break;
 
@@ -138,7 +140,8 @@ static void onkeypress(struct event_header *header)
         removetext(1);
         inserttext(&keycode->value, keycode->length);
         inserttext("\n", 1);
-        print_inserttextbuffer(&output, header->destination, &content, 1, &text);
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextbuffer(&output, &text);
 
         break;
 
@@ -195,7 +198,8 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    print_inserttextbuffer(&output, header->destination, &content, 1, &text);
+    print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+    print_appendtextbuffer(&output, &text);
 
 }
 

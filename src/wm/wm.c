@@ -60,7 +60,8 @@ static void printinsertview(struct ring *ring, unsigned int source, struct view 
 {
 
     print_insertpanel(ring, source, &view->panel, 1);
-    print_inserttext(ring, source, &view->number, 1, &view->numberstring, 1);
+    print_inserttext(ring, source, &view->number, 1, 1);
+    print_appendtextdata(ring, &view->numberstring, 1);
 
 }
 

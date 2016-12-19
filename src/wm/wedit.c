@@ -103,7 +103,8 @@ static void onkeypress(struct event_header *header)
     case 0x0E:
         content.cursor = rowleft(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextdata(&output, textdata, ring_count(&text));
 
         break;
 
@@ -116,42 +117,48 @@ static void onkeypress(struct event_header *header)
     case 0x47:
         content.cursor = rowhome(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextdata(&output, textdata, ring_count(&text));
 
         break;
 
     case 0x48:
         content.cursor = rowup(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextdata(&output, textdata, ring_count(&text));
 
         break;
 
     case 0x4B:
         content.cursor = rowleft(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextdata(&output, textdata, ring_count(&text));
 
         break;
 
     case 0x4D:
         content.cursor = rowright(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextdata(&output, textdata, ring_count(&text));
 
         break;
 
     case 0x4F:
         content.cursor = rowend(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextdata(&output, textdata, ring_count(&text));
 
         break;
 
     case 0x50:
         content.cursor = rowdown(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextdata(&output, textdata, ring_count(&text));
 
         break;
 
@@ -167,7 +174,8 @@ static void onkeypress(struct event_header *header)
 
         content.cursor = rowright(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+        print_appendtextdata(&output, textdata, ring_count(&text));
 
         break;
 
@@ -224,7 +232,8 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+    print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+    print_appendtextdata(&output, textdata, ring_count(&text));
 
 }
 

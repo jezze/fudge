@@ -37,28 +37,29 @@ void print_insertpanel(struct ring *ring, unsigned int source, struct element_pa
 
 }
 
-void print_inserttext(struct ring *ring, unsigned int source, struct element_text *text, unsigned int z, void *textbuffer, unsigned int count)
+void print_inserttext(struct ring *ring, unsigned int source, struct element_text *text, unsigned int z, unsigned int count)
 {
 
     printelement(ring, (unsigned int)text, ELEMENT_FUNC_INSERT, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + count);
     ring_write(ring, text, sizeof (struct element_text));
+
+}
+
+void print_appendtextdata(struct ring *ring, void *textbuffer, unsigned int count)
+{
+
     ring_write(ring, textbuffer, count);
 
 }
 
-void print_inserttextbuffer(struct ring *ring, unsigned int source, struct element_text *text, unsigned int z, struct ring *output)
+void print_appendtextbuffer(struct ring *ring, struct ring *input)
 {
 
     char data[FUDGE_BSIZE];
-    unsigned int count;
-
-    printelement(ring, (unsigned int)text, ELEMENT_FUNC_INSERT, ELEMENT_TYPE_TEXT, source, z, sizeof (struct element_text) + ring_count(output));
-    ring_write(ring, text, sizeof (struct element_text));
-
-    count = ring_read(output, data, FUDGE_BSIZE);
+    unsigned int count = ring_read(input, data, FUDGE_BSIZE);
 
     ring_write(ring, data, count);
-    ring_write(output, data, count);
+    ring_write(input, data, count);
 
 }
 
