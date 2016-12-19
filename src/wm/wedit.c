@@ -9,8 +9,12 @@
 static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static char textdata[FUDGE_BSIZE];
-static struct ring text;
+static char beforedata[FUDGE_BSIZE];
+static struct ring before;
+static char afterdata[FUDGE_BSIZE];
+static struct ring after;
+static char insertdata[64];
+static struct ring insert;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static struct box size;
@@ -26,21 +30,21 @@ static unsigned int rowleft(unsigned int position)
 static unsigned int rowright(unsigned int position)
 {
 
-    return (position < ring_count(&text) - 1) ? position + 1 : position;
+    return (position < ring_count(&after) - 1) ? position + 1 : position;
 
 }
 
 static unsigned int rowhome(unsigned int position)
 {
 
-    return ascii_searchreverse(textdata, 0, position, '\n');
+    return ascii_searchreverse(afterdata, 0, position, '\n');
 
 }
 
 static unsigned int rowend(unsigned int position)
 {
 
-    return ascii_search(textdata, position, ring_count(&text), '\n');
+    return ascii_search(afterdata, position, ring_count(&after), '\n');
 
 }
 
@@ -76,13 +80,23 @@ static unsigned int rowdown(unsigned int position)
     start = rowhome(position);
     startn = rowend(position) + 1;
 
-    if (startn == ring_count(&text))
+    if (startn == ring_count(&after))
         return startn - 1;
 
     count = position - start;
     countn = rowend(startn) - startn;
 
     return startn + (countn < count ? countn : count);
+
+}
+
+static void print(struct event_header *header)
+{
+
+    print_inserttext(&output, header->destination, &content, 1, ring_count(&before) + ring_count(&insert) + ring_count(&after));
+    print_appendtextdata(&output, beforedata, ring_count(&before));
+    print_appendtextdata(&output, insertdata, ring_count(&insert));
+    print_appendtextdata(&output, afterdata, ring_count(&after));
 
 }
 
@@ -103,8 +117,7 @@ static void onkeypress(struct event_header *header)
     case 0x0E:
         content.cursor = rowleft(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
-        print_appendtextdata(&output, textdata, ring_count(&text));
+        print(header);
 
         break;
 
@@ -117,65 +130,54 @@ static void onkeypress(struct event_header *header)
     case 0x47:
         content.cursor = rowhome(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
-        print_appendtextdata(&output, textdata, ring_count(&text));
+        print(header);
 
         break;
 
     case 0x48:
         content.cursor = rowup(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
-        print_appendtextdata(&output, textdata, ring_count(&text));
+        print(header);
 
         break;
 
     case 0x4B:
         content.cursor = rowleft(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
-        print_appendtextdata(&output, textdata, ring_count(&text));
+        print(header);
 
         break;
 
     case 0x4D:
         content.cursor = rowright(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
-        print_appendtextdata(&output, textdata, ring_count(&text));
+        print(header);
 
         break;
 
     case 0x4F:
         content.cursor = rowend(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
-        print_appendtextdata(&output, textdata, ring_count(&text));
+        print(header);
 
         break;
 
     case 0x50:
         content.cursor = rowdown(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
-        print_appendtextdata(&output, textdata, ring_count(&text));
+        print(header);
 
         break;
 
     default:
         keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
-/*
-        if (!ring_write(&input, &keycode->value, keycode->length))
+        if (!ring_write(&insert, &keycode->value, keycode->length))
             break;
-*/
-
-        memory_copy(textdata + content.cursor, &keycode->value, keycode->length);
 
         content.cursor = rowright(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
-        print_appendtextdata(&output, textdata, ring_count(&text));
+        print(header);
 
         break;
 
@@ -232,8 +234,7 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
-    print_appendtextdata(&output, textdata, ring_count(&text));
+    print(header);
 
 }
 
@@ -251,8 +252,10 @@ void main(void)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
+    ring_init(&before, FUDGE_BSIZE, beforedata);
+    ring_init(&after, FUDGE_BSIZE, afterdata);
+    ring_init(&insert, 64, insertdata);
     ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
     if (!file_walk(CALL_L0, "/system/event/poll"))
@@ -267,7 +270,7 @@ void main(void)
     file_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
-        ring_write(&text, buffer, count);
+        ring_write(&after, buffer, count);
 
     file_close(CALL_PI);
     file_open(CALL_PO);
