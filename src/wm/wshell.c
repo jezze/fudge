@@ -253,7 +253,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            file_writeall(CALL_PO, output.buffer, ring_count(&output));
+            file_writeall(CALL_PO, outputdata, ring_count(&output));
             ring_init(&output, FUDGE_BSIZE, outputdata);
 
         }

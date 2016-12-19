@@ -108,42 +108,42 @@ static void onkeypress(struct event_header *header)
     case 0x47:
         content.cursor = rowhome(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.buffer, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
 
         break;
 
     case 0x48:
         content.cursor = rowup(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.buffer, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
 
         break;
 
     case 0x4B:
         content.cursor = rowleft(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.buffer, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
 
         break;
 
     case 0x4D:
         content.cursor = rowright(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.buffer, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
 
         break;
 
     case 0x4F:
         content.cursor = rowend(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.buffer, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
 
         break;
 
     case 0x50:
         content.cursor = rowdown(content.cursor);
 
-        print_inserttext(&output, header->destination, &content, 1, text.buffer, ring_count(&text));
+        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
 
         break;
 
@@ -200,7 +200,7 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    print_inserttext(&output, header->destination, &content, 1, text.buffer, ring_count(&text));
+    print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
 
 }
 
@@ -263,7 +263,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            file_writeall(CALL_PO, output.buffer, ring_count(&output));
+            file_writeall(CALL_PO, outputdata, ring_count(&output));
             ring_init(&output, FUDGE_BSIZE, outputdata);
 
         }
