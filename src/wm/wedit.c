@@ -90,6 +90,7 @@ static void onkeypress(struct event_header *header)
 {
 
     struct event_keypress keypress;
+    struct keycode *keycode;
 
     file_readall(CALL_L0, &keypress, sizeof (struct event_keypress));
 
@@ -98,6 +99,13 @@ static void onkeypress(struct event_header *header)
 
     switch (keypress.scancode)
     {
+
+    case 0x0E:
+        content.cursor = rowleft(content.cursor);
+
+        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+
+        break;
 
     case 0x2A:
     case 0x36:
@@ -142,6 +150,22 @@ static void onkeypress(struct event_header *header)
 
     case 0x50:
         content.cursor = rowdown(content.cursor);
+
+        print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
+
+        break;
+
+    default:
+        keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
+
+/*
+        if (!ring_write(&input, &keycode->value, keycode->length))
+            break;
+*/
+
+        memory_copy(textdata + content.cursor, &keycode->value, keycode->length);
+
+        content.cursor = rowright(content.cursor);
 
         print_inserttext(&output, header->destination, &content, 1, textdata, ring_count(&text));
 
