@@ -93,9 +93,9 @@ static void print(struct event_header *header)
 {
 
     print_inserttext(&output, header->destination, &content, 1, ring_count(&before) + ring_count(&insert) + ring_count(&after));
-    print_appendtextdata(&output, beforedata, ring_count(&before));
-    print_appendtextdata(&output, insertdata, ring_count(&insert));
-    print_appendtextdata(&output, afterdata, ring_count(&after));
+    ring_write(&output, beforedata, ring_count(&before));
+    ring_write(&output, insertdata, ring_count(&insert));
+    ring_write(&output, afterdata, ring_count(&after));
 
 }
 

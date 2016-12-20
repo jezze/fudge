@@ -45,13 +45,6 @@ void print_inserttext(struct ring *ring, unsigned int source, struct element_tex
 
 }
 
-void print_appendtextdata(struct ring *ring, void *buffer, unsigned int count)
-{
-
-    ring_write(ring, buffer, count);
-
-}
-
 void print_insertwindow(struct ring *ring, unsigned int source, struct element_window *window, unsigned int z)
 {
 
