@@ -39,7 +39,7 @@ unsigned int ring_backskip(struct ring *ring, unsigned int count)
         if (ring_isempty(ring))
             break;
 
-        ring->head--;
+        --ring->head;
 
     }
 
@@ -59,7 +59,7 @@ unsigned int ring_backread(struct ring *ring, void *buffer, unsigned int count)
         if (ring_isempty(ring))
             break;
 
-        b[c] = ring->buffer[mask(ring, ring->head--)];
+        b[c] = ring->buffer[mask(ring, --ring->head)];
 
     }
 
@@ -79,7 +79,7 @@ unsigned int ring_backwrite(struct ring *ring, void *buffer, unsigned int count)
         if (ring_isfull(ring))
             break;
 
-        ring->buffer[mask(ring, ring->tail--)] = b[c];
+        ring->buffer[mask(ring, --ring->tail)] = b[c];
 
     }
 
