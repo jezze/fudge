@@ -45,21 +45,10 @@ void print_inserttext(struct ring *ring, unsigned int source, struct element_tex
 
 }
 
-void print_appendtextdata(struct ring *ring, void *textbuffer, unsigned int count)
+void print_appendtextdata(struct ring *ring, void *buffer, unsigned int count)
 {
 
-    ring_write(ring, textbuffer, count);
-
-}
-
-void print_appendtextbuffer(struct ring *ring, struct ring *input)
-{
-
-    char data[FUDGE_BSIZE];
-    unsigned int count = ring_read(input, data, FUDGE_BSIZE);
-
-    ring_write(ring, data, count);
-    ring_write(input, data, count);
+    ring_write(ring, buffer, count);
 
 }
 
