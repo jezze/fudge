@@ -17,24 +17,6 @@ static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static void (*handlers[EVENTS])(struct event_header *header);
 
-static void inserttext(void *buffer, unsigned int count)
-{
-
-    ring_overwrite(&text, buffer, count);
-
-    content.cursor = ring_count(&text) - 1;
-
-}
-
-static void removetext(unsigned int count)
-{
-
-    ring_erase(&text, count);
-
-    content.cursor = ring_count(&text) - 1;
-
-}
-
 static void interpret(void)
 {
 
@@ -80,7 +62,7 @@ static void interpret(void)
     file_close(CALL_CI);
 
     while ((count = file_read(CALL_CO, command, FUDGE_BSIZE)))
-        inserttext(command, count);
+        ring_overwrite(&text, command, count);
 
     file_close(CALL_CO);
 
@@ -92,12 +74,15 @@ static void print(struct event_header *header)
     char data[FUDGE_BSIZE];
     unsigned int count;
 
-    print_inserttext(&output, header->destination, &content, 1, ring_count(&text));
+    content.cursor = ring_count(&text);
+
+    print_inserttext(&output, header->destination, &content, 1, ring_count(&text) + 1);
 
     count = ring_read(&text, data, FUDGE_BSIZE);
 
     ring_write(&text, data, count);
     ring_write(&output, data, count);
+    ring_write(&output, "\n", 1);
 
 }
 
@@ -125,8 +110,7 @@ static void onkeypress(struct event_header *header)
         if (!ring_erase(&input, 1))
             break;
 
-        removetext(2);
-        inserttext("\n", 1);
+        ring_erase(&text, 1);
         print(header);
 
         break;
@@ -137,8 +121,9 @@ static void onkeypress(struct event_header *header)
         if (!ring_write(&input, &keycode->value, keycode->length))
             break;
 
+        ring_overwrite(&text, "\n", 1);
         interpret();
-        inserttext("$ \n", 3);
+        ring_overwrite(&text, "$ ", 2);
         print(header);
 
         break;
@@ -149,9 +134,7 @@ static void onkeypress(struct event_header *header)
         if (!ring_write(&input, &keycode->value, keycode->length))
             break;
 
-        removetext(1);
-        inserttext(&keycode->value, keycode->length);
-        inserttext("\n", 1);
+        ring_overwrite(&text, &keycode->value, keycode->length);
         print(header);
 
         break;
@@ -229,7 +212,7 @@ void main(void)
     ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&text, 512, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
-    inserttext("$ \n", 3);
+    ring_overwrite(&text, "$ ", 2);
 
     if (!file_walk(CALL_L0, "/system/event/poll"))
         return;
