@@ -9,7 +9,7 @@
 static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static char textdata[512];
+static char textdata[FUDGE_BSIZE];
 static struct ring text;
 static char inputdata[FUDGE_BSIZE];
 static struct ring input;
@@ -17,11 +17,23 @@ static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static void (*handlers[EVENTS])(struct event_header *header);
 
-static void interpret(void)
+static void readback()
 {
 
-    char command[FUDGE_BSIZE];
-    unsigned int count = ring_read(&input, command, FUDGE_BSIZE);
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
+
+    file_open(CALL_CO);
+
+    while ((count = file_read(CALL_CO, buffer, FUDGE_BSIZE)))
+        ring_overwrite(&text, buffer, count);
+
+    file_close(CALL_CO);
+
+}
+
+static void interpret(char *command, unsigned int count)
+{
 
     if (count < 2)
         return;
@@ -55,16 +67,11 @@ static void interpret(void)
 
     file_walkfrom(CALL_CI, CALL_L8, "0");
     file_walkfrom(CALL_CO, CALL_L8, "1");
-    file_open(CALL_CO);
     file_open(CALL_CI);
     file_writeall(CALL_CI, command, count);
     call_spawn();
     file_close(CALL_CI);
-
-    while ((count = file_read(CALL_CO, command, FUDGE_BSIZE)))
-        ring_overwrite(&text, command, count);
-
-    file_close(CALL_CO);
+    readback();
 
 }
 
@@ -74,14 +81,15 @@ static void print(struct event_header *header)
     char data[FUDGE_BSIZE];
     unsigned int count;
 
-    content.cursor = ring_count(&text);
+    content.cursor = ring_count(&text) + ring_count(&input);
 
-    print_inserttext(&output, header->destination, &content, 1, ring_count(&text) + 1);
+    print_inserttext(&output, header->destination, &content, 1, ring_count(&text) + ring_count(&input) + 1);
 
     count = ring_read(&text, data, FUDGE_BSIZE);
 
     ring_write(&text, data, count);
     ring_write(&output, data, count);
+    ring_write(&output, input.buffer, ring_count(&input));
     ring_write(&output, "\n", 1);
 
 }
@@ -110,7 +118,6 @@ static void onkeypress(struct event_header *header)
         if (!ring_erase(&input, 1))
             break;
 
-        ring_erase(&text, 1);
         print(header);
 
         break;
@@ -121,8 +128,9 @@ static void onkeypress(struct event_header *header)
         if (!ring_write(&input, &keycode->value, keycode->length))
             break;
 
-        ring_overwrite(&text, "\n", 1);
-        interpret();
+        ring_overwrite(&text, input.buffer, ring_count(&input));
+        interpret(input.buffer, ring_count(&input));
+        ring_reset(&input);
         ring_overwrite(&text, "$ ", 2);
         print(header);
 
@@ -134,7 +142,6 @@ static void onkeypress(struct event_header *header)
         if (!ring_write(&input, &keycode->value, keycode->length))
             break;
 
-        ring_overwrite(&text, &keycode->value, keycode->length);
         print(header);
 
         break;
@@ -210,7 +217,7 @@ void main(void)
 
     ring_init(&input, FUDGE_BSIZE, inputdata);
     ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&text, 512, textdata);
+    ring_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     ring_overwrite(&text, "$ ", 2);
 

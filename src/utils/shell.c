@@ -1,11 +1,23 @@
 #include <abi.h>
 #include <fudge.h>
 
-static void interpret(struct ring *ring)
+static void readback()
 {
 
-    char command[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
+
+    file_open(CALL_CO);
+
+    while ((count = file_read(CALL_CO, buffer, FUDGE_BSIZE)))
+        file_writeall(CALL_PO, buffer, count);
+
+    file_close(CALL_CO);
+
+}
+
+static void interpret(char *command, unsigned int count)
+{
 
     if (count < 2)
         return;
@@ -39,16 +51,11 @@ static void interpret(struct ring *ring)
 
     file_walkfrom(CALL_CI, CALL_L8, "0");
     file_walkfrom(CALL_CO, CALL_L8, "1");
-    file_open(CALL_CO);
     file_open(CALL_CI);
     file_writeall(CALL_CI, command, count);
     call_spawn();
     file_close(CALL_CI);
-
-    while ((count = file_read(CALL_CO, command, FUDGE_BSIZE)))
-        file_writeall(CALL_PO, command, count);
-
-    file_close(CALL_CO);
+    readback();
 
 }
 
@@ -86,7 +93,8 @@ static void handle(struct ring *ring, unsigned char c)
     case '\n':
         file_writeall(CALL_PO, &c, 1);
         ring_write(ring, &c, 1);
-        interpret(ring);
+        interpret(ring->buffer, ring_count(ring));
+        ring_reset(ring);
         file_writeall(CALL_PO, "$ ", 2);
 
         break;
