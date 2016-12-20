@@ -144,7 +144,7 @@ static void onkeypress(struct event_header *header)
         if (!ring_erase(&input, 1))
             break;
 
-        content.cursor--;
+        content.cursor = rowleft(content.cursor);
 
         print(header);
 
@@ -201,7 +201,7 @@ static void onkeypress(struct event_header *header)
         if (!ring_write(&input, &keycode->value, keycode->length))
             break;
 
-        content.cursor++;
+        content.cursor = rowright(content.cursor);
 
         print(header);
 
