@@ -141,7 +141,7 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x0E:
-        if (!ring_erase(&input, 1))
+        if (!ring_backskip(&input, 1))
             break;
 
         content.cursor = rowleft(content.cursor);

@@ -28,6 +28,65 @@ unsigned int ring_isfull(struct ring *ring)
 
 }
 
+unsigned int ring_backskip(struct ring *ring, unsigned int count)
+{
+
+    unsigned int c;
+
+    for (c = 0; count--; c++)
+    {
+
+        if (ring_isempty(ring))
+            break;
+
+        ring->head--;
+
+    }
+
+    return c;
+
+}
+
+unsigned int ring_backread(struct ring *ring, void *buffer, unsigned int count)
+{
+
+    char *b = buffer;
+    unsigned int c;
+
+    for (c = 0; count--; c++)
+    {
+
+        if (ring_isempty(ring))
+            break;
+
+        b[c] = ring->buffer[mask(ring, ring->head--)];
+
+    }
+
+    return c;
+
+}
+
+unsigned int ring_backwrite(struct ring *ring, void *buffer, unsigned int count)
+{
+
+    char *b = buffer;
+    unsigned int c;
+
+    for (c = 0; count--; c++)
+    {
+
+        if (ring_isfull(ring))
+            break;
+
+        ring->buffer[mask(ring, ring->tail--)] = b[c];
+
+    }
+
+    return c;
+
+}
+
 unsigned int ring_skip(struct ring *ring, unsigned int count)
 {
 
@@ -40,25 +99,6 @@ unsigned int ring_skip(struct ring *ring, unsigned int count)
             break;
 
         ring->tail++;
-
-    }
-
-    return c;
-
-}
-
-unsigned int ring_erase(struct ring *ring, unsigned int count)
-{
-
-    unsigned int c;
-
-    for (c = 0; count--; c++)
-    {
-
-        if (ring_isempty(ring))
-            break;
-
-        ring->head--;
 
     }
 

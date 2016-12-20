@@ -11,8 +11,10 @@ struct ring
 unsigned int ring_count(struct ring *ring);
 unsigned int ring_isempty(struct ring *ring);
 unsigned int ring_isfull(struct ring *ring);
+unsigned int ring_backskip(struct ring *ring, unsigned int count);
+unsigned int ring_backread(struct ring *ring, void *buffer, unsigned int count);
+unsigned int ring_backwrite(struct ring *ring, void *buffer, unsigned int count);
 unsigned int ring_skip(struct ring *ring, unsigned int count);
-unsigned int ring_erase(struct ring *ring, unsigned int count);
 unsigned int ring_read(struct ring *ring, void *buffer, unsigned int count);
 unsigned int ring_write(struct ring *ring, void *buffer, unsigned int count);
 unsigned int ring_overwrite(struct ring *ring, void *buffer, unsigned int count);
