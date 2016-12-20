@@ -75,13 +75,39 @@ static void interpret(char *command, unsigned int count)
 
 }
 
+static unsigned int rowleft(unsigned int position)
+{
+
+    return (position > ring_count(&text)) ? position - 1 : position;
+
+}
+
+static unsigned int rowright(unsigned int position)
+{
+
+    return (position < ring_count(&text) + ring_count(&input)) ? position + 1 : position;
+
+}
+
+static unsigned int rowhome(unsigned int position)
+{
+
+    return ring_count(&text);
+
+}
+
+static unsigned int rowend(unsigned int position)
+{
+
+    return ring_count(&text) + ring_count(&input);
+
+}
+
 static void print(struct event_header *header)
 {
 
     char data[FUDGE_BSIZE];
     unsigned int count;
-
-    content.cursor = ring_count(&text) + ring_count(&input);
 
     print_inserttext(&output, header->destination, &content, 1, ring_count(&text) + ring_count(&input) + 1);
 
@@ -118,6 +144,8 @@ static void onkeypress(struct event_header *header)
         if (!ring_erase(&input, 1))
             break;
 
+        content.cursor--;
+
         print(header);
 
         break;
@@ -132,6 +160,37 @@ static void onkeypress(struct event_header *header)
         interpret(input.buffer, ring_count(&input));
         ring_reset(&input);
         ring_overwrite(&text, "$ ", 2);
+
+        content.cursor = rowend(content.cursor);
+
+        print(header);
+
+        break;
+
+    case 0x47:
+        content.cursor = rowhome(content.cursor);
+
+        print(header);
+
+        break;
+
+    case 0x4B:
+        content.cursor = rowleft(content.cursor);
+
+        print(header);
+
+        break;
+
+    case 0x4D:
+        content.cursor = rowright(content.cursor);
+
+        print(header);
+
+        break;
+
+    case 0x4F:
+        content.cursor = rowend(content.cursor);
+
         print(header);
 
         break;
@@ -141,6 +200,8 @@ static void onkeypress(struct event_header *header)
 
         if (!ring_write(&input, &keycode->value, keycode->length))
             break;
+
+        content.cursor++;
 
         print(header);
 
@@ -220,6 +281,8 @@ void main(void)
     ring_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     ring_overwrite(&text, "$ ", 2);
+
+    content.cursor = rowend(content.cursor);
 
     if (!file_walk(CALL_L0, "/system/event/poll"))
         return;
