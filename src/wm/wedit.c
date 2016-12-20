@@ -9,93 +9,176 @@
 static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static char beforedata[FUDGE_BSIZE];
-static struct ring before;
-static char afterdata[FUDGE_BSIZE];
-static struct ring after;
-static char insertdata[64];
-static struct ring insert;
+static char inputdata1[FUDGE_BSIZE];
+static struct ring input1;
+static char inputdata2[FUDGE_BSIZE];
+static struct ring input2;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static void (*handlers[EVENTS])(struct event_header *header);
 
-static unsigned int rowleft(unsigned int position)
+static unsigned int inputend()
 {
 
-    return (position > 0) ? position - 1 : position;
+    return ring_count(&input1);
 
 }
 
-static unsigned int rowright(unsigned int position)
+static unsigned int rowleft(unsigned int steps)
 {
 
-    return (position < ring_count(&after) - 1) ? position + 1 : position;
+    char buffer[FUDGE_BSIZE];
+    unsigned int count = ring_backread(&input1, buffer, steps);
+
+    if (count)
+        ring_backwrite(&input2, buffer, count);
+
+    return inputend();
 
 }
 
-static unsigned int rowhome(unsigned int position)
+static unsigned int rowright(unsigned int steps)
 {
 
-    return ascii_searchreverse(afterdata, 0, position, '\n');
+    char buffer[FUDGE_BSIZE];
+    unsigned int count = ring_read(&input2, buffer, steps);
+
+    if (count)
+        ring_write(&input1, buffer, count);
+
+    return inputend();
 
 }
 
-static unsigned int rowend(unsigned int position)
+static unsigned int rowhome()
 {
 
-    return ascii_search(afterdata, position, ring_count(&after), '\n');
-
-}
-
-static unsigned int rowup(unsigned int position)
-{
-
-    unsigned int start;
-    unsigned int startp;
+    char buffer[FUDGE_BSIZE];
     unsigned int count;
-    unsigned int countp;
 
-    start = rowhome(position);
+    while ((count = ring_backread(&input1, buffer, 1)))
+    {
 
-    if (!start)
-        return 0;
+        if (buffer[0] == '\n')
+        {
 
-    startp = rowhome(start - 1);
-    count = position - start;
-    countp = start - startp - 1;
+            ring_write(&input1, buffer, count);
 
-    return startp + (countp < count ? countp : count);
+            break;
+
+        }
+
+        ring_backwrite(&input2, buffer, count);
+
+    }
+
+    return inputend();
 
 }
 
-static unsigned int rowdown(unsigned int position)
+static unsigned int rowend()
 {
 
-    unsigned int start;
-    unsigned int startn;
+    char buffer[FUDGE_BSIZE];
     unsigned int count;
-    unsigned int countn;
 
-    start = rowhome(position);
-    startn = rowend(position) + 1;
+    while ((count = ring_read(&input2, buffer, 1)))
+    {
 
-    if (startn == ring_count(&after))
-        return startn - 1;
+        if (buffer[0] == '\n')
+        {
 
-    count = position - start;
-    countn = rowend(startn) - startn;
+            ring_backwrite(&input2, buffer, count);
 
-    return startn + (countn < count ? countn : count);
+            break;
+
+        }
+
+        ring_write(&input1, buffer, count);
+
+    }
+
+    return inputend();
+
+}
+
+static unsigned int rowoffset(position)
+{
+
+    unsigned int home = rowhome();
+    unsigned int offset = position - home;
+
+    rowright(offset);
+
+    return offset;
+
+}
+
+static unsigned int rowup()
+{
+
+    unsigned int position = content.cursor;
+    unsigned int offset1;
+    unsigned int offset2;
+
+    offset1 = rowoffset(position);
+    position = rowhome();
+
+    if (!ring_count(&input1))
+        return position;
+
+    position = rowleft(1);
+    offset2 = rowoffset(position);
+    position = rowhome();
+
+    if (!ring_count(&input1))
+        return position;
+
+    return rowright(offset1 < offset2 ? offset1 : offset2);
+
+}
+
+static unsigned int rowdown()
+{
+
+    unsigned int position = content.cursor;
+    unsigned int start;
+    unsigned int offset1;
+    unsigned int offset2;
+
+    offset1 = rowoffset(position);
+    position = rowend();
+
+    if (!ring_count(&input2))
+        return position;
+
+    position = rowright(1);
+    start = position;
+    position = rowend();
+    offset2 = position - start;
+    position = rowleft(offset2);
+
+    return rowright(offset1 < offset2 ? offset1 : offset2);
 
 }
 
 static void print(struct event_header *header)
 {
 
-    print_inserttext(&output, header->destination, &content, 1, ring_count(&before) + ring_count(&insert) + ring_count(&after));
-    ring_write(&output, beforedata, ring_count(&before));
-    ring_write(&output, insertdata, ring_count(&insert));
-    ring_write(&output, afterdata, ring_count(&after));
+    char data[FUDGE_BSIZE];
+    unsigned int count;
+
+    print_inserttext(&output, header->destination, &content, 1, ring_count(&input1) + ring_count(&input2));
+
+    count = ring_read(&input1, data, FUDGE_BSIZE);
+
+    ring_write(&input1, data, count);
+    ring_write(&output, data, count);
+
+    count = ring_read(&input2, data, FUDGE_BSIZE);
+
+    ring_write(&input2, data, count);
+    ring_write(&output, data, count);
 
 }
 
@@ -114,7 +197,10 @@ static void onkeypress(struct event_header *header)
     {
 
     case 0x0E:
-        content.cursor = rowleft(content.cursor);
+        if (!ring_backskip(&input1, 1))
+            break;
+
+        content.cursor = inputend();
 
         print(header);
 
@@ -127,42 +213,42 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x47:
-        content.cursor = rowhome(content.cursor);
+        content.cursor = rowhome();
 
         print(header);
 
         break;
 
     case 0x48:
-        content.cursor = rowup(content.cursor);
+        content.cursor = rowup();
 
         print(header);
 
         break;
 
     case 0x4B:
-        content.cursor = rowleft(content.cursor);
+        content.cursor = rowleft(1);
 
         print(header);
 
         break;
 
     case 0x4D:
-        content.cursor = rowright(content.cursor);
+        content.cursor = rowright(1);
 
         print(header);
 
         break;
 
     case 0x4F:
-        content.cursor = rowend(content.cursor);
+        content.cursor = rowend();
 
         print(header);
 
         break;
 
     case 0x50:
-        content.cursor = rowdown(content.cursor);
+        content.cursor = rowdown();
 
         print(header);
 
@@ -171,10 +257,10 @@ static void onkeypress(struct event_header *header)
     default:
         keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
-        if (!ring_write(&insert, &keycode->value, keycode->length))
+        if (!ring_write(&input1, &keycode->value, keycode->length))
             break;
 
-        content.cursor = rowright(content.cursor);
+        content.cursor = inputend();
 
         print(header);
 
@@ -250,9 +336,8 @@ void main(void)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    ring_init(&before, FUDGE_BSIZE, beforedata);
-    ring_init(&after, FUDGE_BSIZE, afterdata);
-    ring_init(&insert, 64, insertdata);
+    ring_init(&input1, FUDGE_BSIZE, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE, inputdata2);
     ring_init(&output, FUDGE_BSIZE, outputdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
 
@@ -268,7 +353,7 @@ void main(void)
     file_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
-        ring_write(&after, buffer, count);
+        ring_write(&input2, buffer, count);
 
     file_close(CALL_PI);
     file_open(CALL_PO);
