@@ -127,25 +127,10 @@ static unsigned int rowend()
 static void print(struct event_header *header)
 {
 
-    char data[FUDGE_BSIZE];
-    unsigned int count;
-
     print_inserttext(&output, header->destination, &content, 1, ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1);
-
-    count = ring_read(&text, data, FUDGE_BSIZE);
-
-    ring_write(&text, data, count);
-    ring_write(&output, data, count);
-
-    count = ring_read(&input1, data, FUDGE_BSIZE);
-
-    ring_write(&input1, data, count);
-    ring_write(&output, data, count);
-
-    count = ring_read(&input2, data, FUDGE_BSIZE);
-
-    ring_write(&input2, data, count);
-    ring_write(&output, data, count);
+    ring_copy(&output, &text);
+    ring_copy(&output, &input1);
+    ring_copy(&output, &input2);
     ring_write(&output, "\n", 1);
 
 }
@@ -181,29 +166,30 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x1C:
-    {
-        char data[FUDGE_BSIZE];
-        unsigned int count;
-
-        count = ring_read(&input2, data, FUDGE_BSIZE);
-
-        ring_write(&input1, data, count);
+        ring_move(&input1, &input2);
 
         keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
         if (!ring_write(&input1, &keycode->value, keycode->length))
             break;
 
-        count = ring_read(&input1, data, FUDGE_BSIZE);
+        ring_overcopy(&text, &input1);
 
-        ring_overwrite(&text, data, count);
+        {
+
+        char data[FUDGE_BSIZE];
+        unsigned int count = ring_read(&input1, data, FUDGE_BSIZE);
+
         interpret(data, count);
+
+        }
+
         ring_overwrite(&text, "$ ", 2);
 
         content.cursor = inputend();
 
         print(header);
-    }
+
         break;
 
     case 0x47:

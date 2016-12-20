@@ -1,3 +1,4 @@
+#include "define.h"
 #include "ring.h"
 
 static unsigned int mask(struct ring *ring, unsigned int value)
@@ -163,6 +164,62 @@ unsigned int ring_overwrite(struct ring *ring, void *buffer, unsigned int count)
     }
 
     return c;
+
+}
+
+unsigned int ring_move(struct ring *to, struct ring *from)
+{
+
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
+    unsigned int total = 0;
+
+    while ((count = ring_read(from, buffer, FUDGE_BSIZE)))
+        total += ring_write(to, buffer, count);
+
+    return total;
+
+}
+
+unsigned int ring_overmove(struct ring *to, struct ring *from)
+{
+
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
+    unsigned int total = 0;
+
+    while ((count = ring_read(from, buffer, FUDGE_BSIZE)))
+        total += ring_overwrite(to, buffer, count);
+
+    return total;
+
+}
+
+unsigned int ring_copy(struct ring *to, struct ring *from)
+{
+
+    unsigned int head = from->head;
+    unsigned int tail = from->tail;
+    unsigned int total = ring_move(to, from);
+
+    from->head = head;
+    from->tail = tail;
+
+    return total;
+
+}
+
+unsigned int ring_overcopy(struct ring *to, struct ring *from)
+{
+
+    unsigned int head = from->head;
+    unsigned int tail = from->tail;
+    unsigned int total = ring_overmove(to, from);
+
+    from->head = head;
+    from->tail = tail;
+
+    return total;
 
 }
 

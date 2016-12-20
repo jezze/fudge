@@ -165,20 +165,9 @@ static unsigned int rowdown()
 static void print(struct event_header *header)
 {
 
-    char data[FUDGE_BSIZE];
-    unsigned int count;
-
     print_inserttext(&output, header->destination, &content, 1, ring_count(&input1) + ring_count(&input2));
-
-    count = ring_read(&input1, data, FUDGE_BSIZE);
-
-    ring_write(&input1, data, count);
-    ring_write(&output, data, count);
-
-    count = ring_read(&input2, data, FUDGE_BSIZE);
-
-    ring_write(&input2, data, count);
-    ring_write(&output, data, count);
+    ring_copy(&output, &input1);
+    ring_copy(&output, &input2);
 
 }
 
