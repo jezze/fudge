@@ -54,20 +54,6 @@ static void moveright(unsigned int steps)
 
 }
 
-static void movehome(void)
-{
-
-    moveleft(ring_findreverse(&input1, '\n'));
-
-}
-
-static void moveend(void)
-{
-
-    moveright(ring_find(&input2, '\n'));
-
-}
-
 static void moveup(void)
 {
 
@@ -76,7 +62,7 @@ static void moveup(void)
 
     offset1 = ring_findreverse(&input1, '\n');
 
-    movehome();
+    moveleft(ring_findreverse(&input1, '\n'));
 
     if (!ring_count(&input1))
         return;
@@ -100,7 +86,7 @@ static void movedown(void)
 
     offset1 = ring_findreverse(&input1, '\n');
 
-    moveend();
+    moveright(ring_find(&input2, '\n'));
 
     if (!ring_count(&input2))
         return;
@@ -143,7 +129,7 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x47:
-        movehome();
+        moveleft(ring_findreverse(&input1, '\n'));
         printinsert(header->destination);
 
         break;
@@ -167,7 +153,7 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x4F:
-        moveend();
+        moveright(ring_find(&input2, '\n'));
         printinsert(header->destination);
 
         break;
