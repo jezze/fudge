@@ -132,9 +132,7 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x0E:
-        if (!ring_skipreverse(&input1, 1))
-            break;
-
+        ring_skipreverse(&input1, 1);
         print(header);
 
         break;
@@ -144,9 +142,7 @@ static void onkeypress(struct event_header *header)
 
         keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
-        if (!ring_write(&input1, &keycode->value, keycode->length))
-            break;
-
+        ring_write(&input1, &keycode->value, keycode->length);
         ring_overcopy(&text, &input1);
         interpret(&input1);
         ring_overwrite(&text, "$ ", 2);
@@ -181,9 +177,7 @@ static void onkeypress(struct event_header *header)
     default:
         keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
-        if (!ring_write(&input1, &keycode->value, keycode->length))
-            break;
-
+        ring_write(&input1, &keycode->value, keycode->length);
         print(header);
 
         break;
