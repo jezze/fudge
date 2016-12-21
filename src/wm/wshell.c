@@ -34,8 +34,11 @@ static void readback()
 
 }
 
-static void interpret(char *command, unsigned int count)
+static void interpret(struct ring *ring)
 {
+
+    char command[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
 
     if (count < 2)
         return;
@@ -174,16 +177,7 @@ static void onkeypress(struct event_header *header)
             break;
 
         ring_overcopy(&text, &input1);
-
-        {
-
-        char data[FUDGE_BSIZE];
-        unsigned int count = ring_read(&input1, data, FUDGE_BSIZE);
-
-        interpret(data, count);
-
-        }
-
+        interpret(&input1);
         ring_overwrite(&text, "$ ", 2);
 
         content.cursor = inputend();

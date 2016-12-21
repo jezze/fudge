@@ -16,8 +16,11 @@ static void readback()
 
 }
 
-static void interpret(char *command, unsigned int count)
+static void interpret(struct ring *ring)
 {
+
+    char command[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
 
     if (count < 2)
         return;
@@ -93,8 +96,7 @@ static void handle(struct ring *ring, unsigned char c)
     case '\n':
         file_writeall(CALL_PO, &c, 1);
         ring_write(ring, &c, 1);
-        interpret(ring->buffer, ring_count(ring));
-        ring_reset(ring);
+        interpret(ring);
         file_writeall(CALL_PO, "$ ", 2);
 
         break;
