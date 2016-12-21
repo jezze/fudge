@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 
-static void setpart0()
+static void setpart0(void)
 {
 
     struct ctrl_partsettings settings;
@@ -18,7 +18,7 @@ static void setpart0()
 
 }
 
-static void setpart1()
+static void setpart1(void)
 {
 
     struct ctrl_partsettings settings;

@@ -69,7 +69,7 @@ static unsigned int condata_close(struct system_node *self, struct service_state
 
 }
 
-void con_init(struct con *con, void (*open)(), void (*close)())
+void con_init(struct con *con, void (*open)(void), void (*close)(void))
 {
 
     ctrl_setconsettings(&con->settings, 0, 0, 0);

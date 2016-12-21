@@ -39,7 +39,7 @@ static void printremove(unsigned int source)
 
 }
 
-static void readback()
+static void readback(void)
 {
 
     char buffer[FUDGE_BSIZE];

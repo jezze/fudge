@@ -54,21 +54,21 @@ static void moveright(unsigned int steps)
 
 }
 
-static void movehome()
+static void movehome(void)
 {
 
     moveleft(ring_findreverse(&input1, '\n'));
 
 }
 
-static void moveend()
+static void moveend(void)
 {
 
     moveright(ring_find(&input2, '\n'));
 
 }
 
-static void moveup()
+static void moveup(void)
 {
 
     unsigned int offset1;
@@ -92,7 +92,7 @@ static void moveup()
 
 }
 
-static void movedown()
+static void movedown(void)
 {
 
     unsigned int offset1;
@@ -167,7 +167,7 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x4F:
-        moveend(1);
+        moveend();
         printinsert(header->destination);
 
         break;

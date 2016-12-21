@@ -8,14 +8,14 @@
 static struct con con;
 static struct udp_hook hook;
 
-static void con_open()
+static void con_open(void)
 {
 
     udp_registerhook(&hook);
 
 }
 
-static void con_close()
+static void con_close(void)
 {
 
     udp_unregisterhook(&hook);

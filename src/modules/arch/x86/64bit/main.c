@@ -10,7 +10,7 @@ int *pdpt = (void *)0x2000;
 int *pdt = (void *)0x3000;
 int *pt = (void *)0x4000;
 
-static void setuptables()
+static void setuptables(void)
 {
 
     unsigned int i;
@@ -37,7 +37,7 @@ static void setuptables()
 
 }
 
-static void setlongmode()
+static void setlongmode(void)
 {
 
     struct msr_data msrdata;
@@ -50,7 +50,7 @@ static void setlongmode()
 
 }
 
-static unsigned int check()
+static unsigned int check(void)
 {
 
     struct cpuid_data data;

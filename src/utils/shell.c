@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 
-static void readback()
+static void readback(void)
 {
 
     char buffer[FUDGE_BSIZE];
