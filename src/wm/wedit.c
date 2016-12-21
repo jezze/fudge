@@ -7,6 +7,7 @@
 #include "keymap.h"
 
 static struct element_text content;
+static struct element_text status;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
@@ -26,6 +27,8 @@ static void printinsert(unsigned int source)
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
     ring_write(&output, "\n", 1);
+    print_inserttext(&output, source, &status, 1, 18);
+    ring_write(&output, "^S: Save, ^Q: Quit", 18);
 
 }
 
@@ -33,6 +36,7 @@ static void printremove(unsigned int source)
 {
 
     print_removetext(&output, source, &content);
+    print_removetext(&output, source, &status);
 
 }
 
@@ -217,7 +221,8 @@ static void onwmresize(struct event_header *header)
     struct event_wmresize wmresize;
 
     file_readall(CALL_L0, &wmresize, sizeof (struct event_wmresize));
-    box_setsize(&content.size, wmresize.x + 12, wmresize.y + 12, wmresize.w - 24, wmresize.h - 24);
+    box_setsize(&content.size, wmresize.x + 12, wmresize.y + 12, wmresize.w - 24, wmresize.h - 24 - 24);
+    box_setsize(&status.size, content.size.x, content.size.y + content.size.h, content.size.w, 24);
 
 }
 
@@ -255,6 +260,7 @@ void main(void)
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
+    element_inittext(&status, ELEMENT_TEXTTYPE_HIGHLIGHT, ELEMENT_TEXTFLOW_NORMAL);
 
     if (!file_walk(CALL_L0, "/system/event/poll"))
         return;
