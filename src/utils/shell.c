@@ -83,7 +83,7 @@ static void handle(struct ring *ring, unsigned char c)
 
     case '\b':
     case 0x7F:
-        if (!ring_backskip(ring, 1))
+        if (!ring_skipreverse(ring, 1))
             break;
 
         file_writeall(CALL_PO, "\b \b", 3);

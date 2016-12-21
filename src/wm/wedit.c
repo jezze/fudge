@@ -22,7 +22,7 @@ static void moveleft(unsigned int steps)
 
     char buffer[FUDGE_BSIZE];
 
-    ring_backwrite(&input2, buffer, ring_backread(&input1, buffer, steps));
+    ring_writereverse(&input2, buffer, ring_readreverse(&input1, buffer, steps));
 
 }
 
@@ -38,7 +38,7 @@ static void moveright(unsigned int steps)
 static void movehome()
 {
 
-    moveleft(ring_backfind(&input1, '\n'));
+    moveleft(ring_findreverse(&input1, '\n'));
 
 }
 
@@ -150,7 +150,7 @@ static void onkeypress(struct event_header *header)
     {
 
     case 0x0E:
-        if (!ring_backskip(&input1, 1))
+        if (!ring_skipreverse(&input1, 1))
             break;
 
         print(header);
