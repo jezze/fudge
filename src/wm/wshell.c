@@ -252,6 +252,15 @@ static void onwmhide(struct event_header *header)
 
 }
 
+void refresh(void)
+{
+
+    char buffer[FUDGE_BSIZE];
+
+    file_writeall(CALL_PO, buffer, ring_read(&output, buffer, FUDGE_BSIZE));
+
+}
+
 void main(void)
 {
 
@@ -296,15 +305,7 @@ void main(void)
             continue;
 
         handlers[header.type](&header);
-
-        if (ring_count(&output))
-        {
-
-            char buffer[FUDGE_BSIZE];
-
-            file_writeall(CALL_PO, buffer, ring_read(&output, buffer, FUDGE_BSIZE));
-
-        }
+        refresh();
 
         if (quit)
             break;
