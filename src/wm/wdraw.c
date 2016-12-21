@@ -23,11 +23,11 @@ static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
-static unsigned int (*funcs[3])(unsigned char *data, unsigned int count, struct element *element);
+static void (*handlers[3])(struct element *element);
 static unsigned int (*tests[5])(struct element *element, void *data, unsigned int line);
 static void (*renderers[5])(struct element *element, void *data, unsigned int line);
-static unsigned char elementdata[0x8000];
-static unsigned int elementcount;
+static unsigned char layerdata1[0x8000];
+static unsigned int layercount1;
 static unsigned char fontdata[0x8000];
 static unsigned char *fontbitmapdata;
 static unsigned int fontpadding;
@@ -455,39 +455,35 @@ static void destroyelements(unsigned char *data, unsigned int count, struct elem
 
 }
 
-static unsigned int insertelement(unsigned char *data, unsigned int count, struct element *element)
+static void insertelement(struct element *element)
 {
 
-    destroyelements(elementdata, elementcount, element);
+    destroyelements(layerdata1, layercount1, element);
 
     element->damaged = 1;
 
-    return count + memory_write(data, 0x8000, element, sizeof (struct element) + element->count, count);
+    layercount1 += memory_write(layerdata1, 0x8000, element, sizeof (struct element) + element->count, layercount1);
 
 }
 
-static unsigned int updateelement(unsigned char *data, unsigned int count, struct element *element)
+static void updateelement(struct element *element)
 {
 
-    return count;
-
 }
 
-static unsigned int removeelement(unsigned char *data, unsigned int count, struct element *element)
+static void removeelement(struct element *element)
 {
 
-    destroyelements(elementdata, elementcount, element);
-
-    return count;
+    destroyelements(layerdata1, layercount1, element);
 
 }
 
-static unsigned int cleanelements(unsigned char *data, unsigned int count)
+static void cleanelements(void)
 {
 
     struct element *current = 0;
 
-    while ((current = nextelement(data, count, current)))
+    while ((current = nextelement(layerdata1, layercount1, current)))
     {
 
         current->damaged = 0;
@@ -497,24 +493,22 @@ static unsigned int cleanelements(unsigned char *data, unsigned int count)
 
             unsigned int length = sizeof (struct element) + current->count;
 
-            memory_copy(current, (unsigned char *)current + length, count - ((unsigned char *)current - data) - length);
+            memory_copy(current, (unsigned char *)current + length, layercount1 - ((unsigned char *)current - layerdata1) - length);
 
-            count -= length;
+            layercount1 -= length;
 
         }
 
     }
 
-    return count;
-
 }
 
-static unsigned int testline(unsigned char *data, unsigned int count, unsigned int line)
+static unsigned int testline(unsigned int line)
 {
 
     struct element *element = 0;
 
-    while ((element = nextelement(data, count, element)))
+    while ((element = nextelement(layerdata1, layercount1, element)))
     {
 
         if (element->damaged && tests[element->type](element, element + 1, line))
@@ -526,7 +520,7 @@ static unsigned int testline(unsigned char *data, unsigned int count, unsigned i
 
 }
 
-static void render(unsigned char *data, unsigned int count)
+static void render(void)
 {
 
     unsigned int line;
@@ -539,7 +533,7 @@ static void render(unsigned char *data, unsigned int count)
 
         unsigned int z;
 
-        if (!testline(data, count, line))
+        if (!testline(line))
             continue;
 
         for (z = 1; z < 4; z++)
@@ -547,7 +541,7 @@ static void render(unsigned char *data, unsigned int count)
 
             struct element *element = 0;
 
-            while ((element = nextelement(data, count, element)))
+            while ((element = nextelement(layerdata1, layercount1, element)))
             {
 
                 if (element->z != z)
@@ -617,9 +611,9 @@ void main(void)
 
     }
 
-    funcs[ELEMENT_FUNC_INSERT] = insertelement;
-    funcs[ELEMENT_FUNC_UPDATE] = updateelement;
-    funcs[ELEMENT_FUNC_REMOVE] = removeelement;
+    handlers[ELEMENT_FUNC_INSERT] = insertelement;
+    handlers[ELEMENT_FUNC_UPDATE] = updateelement;
+    handlers[ELEMENT_FUNC_REMOVE] = removeelement;
     textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
     textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
     tests[ELEMENT_TYPE_FILL] = testfill;
@@ -641,11 +635,10 @@ void main(void)
         struct element *element = 0;
 
         while ((element = nextelement(buffer, count, element)))
-            elementcount = funcs[element->func](elementdata, elementcount, element);
+            handlers[element->func](element);
 
-        render(elementdata, elementcount);
-
-        elementcount = cleanelements(elementdata, elementcount);
+        render();
+        cleanelements();
 
     }
 
