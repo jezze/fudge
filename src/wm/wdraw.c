@@ -256,7 +256,7 @@ static unsigned int findrowstart(struct element_text *text, unsigned int row, un
 
 }
 
-static void rendercharline(struct element_text *text, struct box *size, unsigned char *bitmapdata)
+static void rendercharline(unsigned char color, struct box *size, unsigned char *bitmapdata)
 {
 
     unsigned int p;
@@ -265,13 +265,13 @@ static void rendercharline(struct element_text *text, struct box *size, unsigned
     {
 
         if (bitmapdata[(p >> 3)] & (0x80 >> (p % 8)))
-            paint(textcolor[text->type], size->x + p, 1);
+            paint(color, size->x + p, 1);
 
     }
 
 }
 
-static void rendercharlineinverted(struct element_text *text, struct box *size, unsigned char *bitmapdata)
+static void rendercharlineinverted(unsigned char color, struct box *size, unsigned char *bitmapdata)
 {
 
     unsigned int p;
@@ -280,16 +280,15 @@ static void rendercharlineinverted(struct element_text *text, struct box *size, 
     {
 
         if (!(bitmapdata[(p >> 3)] & (0x80 >> (p % 8))))
-            paint(textcolor[text->type], size->x + p, 1);
+            paint(color, size->x + p, 1);
 
     }
 
 }
 
-static void rendertextline(struct element_text *text, unsigned int rowtop, unsigned int rowline, unsigned int rowstart, unsigned int rowcount)
+static void rendertextline(struct element_text *text, char *string, unsigned char color, unsigned int rowtop, unsigned int rowline, unsigned int rowstart, unsigned int rowcount)
 {
 
-    char *string = (char *)(text + 1);
     struct box size;
     unsigned int i;
 
@@ -318,9 +317,9 @@ static void rendertextline(struct element_text *text, unsigned int rowtop, unsig
         {
 
             if (text->flow == ELEMENT_TEXTFLOW_INPUT && i == text->cursor)
-                rendercharlineinverted(text, &size, fontbitmapdata + offset);
+                rendercharlineinverted(color, &size, fontbitmapdata + offset);
             else
-                rendercharline(text, &size, fontbitmapdata + offset);
+                rendercharline(color, &size, fontbitmapdata + offset);
 
         }
 
@@ -336,6 +335,7 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     struct element_text *text = data;
     unsigned int stringcount = element->count - sizeof (struct element_text);
     char *string = (char *)(text + 1);
+    unsigned char color = textcolor[text->type];
     unsigned int row;
     unsigned int rowline;
     unsigned int rowtop;
@@ -361,7 +361,7 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     if (!rowcount)
         return;
 
-    rendertextline(text, rowtop, rowline, rowstart, rowcount);
+    rendertextline(text, string, color, rowtop, rowline, rowstart, rowcount);
 
 }
 
