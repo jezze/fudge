@@ -120,6 +120,9 @@ static void moveup()
 
     moveleft(1);
 
+    if (!ring_count(&input1))
+        return;
+
     offset2 = getoffset();
 
     movehome();
@@ -145,6 +148,10 @@ static void movedown()
         return;
 
     moveright(1);
+
+    if (!ring_count(&input2))
+        return;
+
     moveend();
 
     offset2 = getoffset();
