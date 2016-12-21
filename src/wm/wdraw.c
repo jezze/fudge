@@ -256,31 +256,31 @@ static unsigned int findrowstart(struct element_text *text, unsigned int row, un
 
 }
 
-static void rendercharline(unsigned char color, struct box *size, unsigned char *bitmapdata)
+static void rendercharline(unsigned int x, unsigned int w, unsigned char color, unsigned char *bitmapdata)
 {
 
     unsigned int p;
 
-    for (p = 0; p < size->w; p++)
+    for (p = 0; p < w; p++)
     {
 
         if (bitmapdata[(p >> 3)] & (0x80 >> (p % 8)))
-            paint(color, size->x + p, 1);
+            paint(color, x + p, 1);
 
     }
 
 }
 
-static void rendercharlineinverted(unsigned char color, struct box *size, unsigned char *bitmapdata)
+static void rendercharlineinverted(unsigned int x, unsigned int w, unsigned char color, unsigned char *bitmapdata)
 {
 
     unsigned int p;
 
-    for (p = 0; p < size->w; p++)
+    for (p = 0; p < w; p++)
     {
 
         if (!(bitmapdata[(p >> 3)] & (0x80 >> (p % 8))))
-            paint(color, size->x + p, 1);
+            paint(color, x + p, 1);
 
     }
 
@@ -317,9 +317,9 @@ static void rendertextline(struct element_text *text, char *string, unsigned cha
         {
 
             if (text->flow == ELEMENT_TEXTFLOW_INPUT && i == text->cursor)
-                rendercharlineinverted(color, &size, fontbitmapdata + offset);
+                rendercharlineinverted(size.x, size.w, color, fontbitmapdata + offset);
             else
-                rendercharline(color, &size, fontbitmapdata + offset);
+                rendercharline(size.x, size.w, color, fontbitmapdata + offset);
 
         }
 
