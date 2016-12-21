@@ -84,10 +84,8 @@ static void moveleft(unsigned int steps)
 {
 
     char buffer[FUDGE_BSIZE];
-    unsigned int count = ring_backread(&input1, buffer, steps);
 
-    if (count)
-        ring_backwrite(&input2, buffer, count);
+    ring_backwrite(&input2, buffer, ring_backread(&input1, buffer, steps));
 
 }
 
@@ -95,10 +93,8 @@ static void moveright(unsigned int steps)
 {
 
     char buffer[FUDGE_BSIZE];
-    unsigned int count = ring_read(&input2, buffer, steps);
 
-    if (count)
-        ring_write(&input1, buffer, count);
+    ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
 
 }
 
