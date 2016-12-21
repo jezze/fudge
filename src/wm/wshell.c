@@ -80,14 +80,7 @@ static void interpret(struct ring *ring)
 
 }
 
-static unsigned int inputend()
-{
-
-    return ring_count(&text) + ring_count(&input1);
-
-}
-
-static unsigned int rowleft(unsigned int steps)
+static void moveleft(unsigned int steps)
 {
 
     char buffer[FUDGE_BSIZE];
@@ -96,11 +89,9 @@ static unsigned int rowleft(unsigned int steps)
     if (count)
         ring_backwrite(&input2, buffer, count);
 
-    return inputend();
-
 }
 
-static unsigned int rowright(unsigned int steps)
+static void moveright(unsigned int steps)
 {
 
     char buffer[FUDGE_BSIZE];
@@ -109,26 +100,12 @@ static unsigned int rowright(unsigned int steps)
     if (count)
         ring_write(&input1, buffer, count);
 
-    return inputend();
-
-}
-
-static unsigned int rowhome()
-{
-
-    return rowleft(ring_count(&input1));
-
-}
-
-static unsigned int rowend()
-{
-
-    return rowright(ring_count(&input2));
-
 }
 
 static void print(struct event_header *header)
 {
+
+    content.cursor = ring_count(&text) + ring_count(&input1);
 
     print_inserttext(&output, header->destination, &content, 1, ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1);
     ring_copy(&output, &text);
@@ -162,8 +139,6 @@ static void onkeypress(struct event_header *header)
         if (!ring_backskip(&input1, 1))
             break;
 
-        content.cursor = inputend();
-
         print(header);
 
         break;
@@ -179,36 +154,33 @@ static void onkeypress(struct event_header *header)
         ring_overcopy(&text, &input1);
         interpret(&input1);
         ring_overwrite(&text, "$ ", 2);
-
-        content.cursor = inputend();
-
         print(header);
 
         break;
 
     case 0x47:
-        content.cursor = rowhome();
+        moveleft(ring_count(&input1));
 
         print(header);
 
         break;
 
     case 0x4B:
-        content.cursor = rowleft(1);
+        moveleft(1);
 
         print(header);
 
         break;
 
     case 0x4D:
-        content.cursor = rowright(1);
+        moveright(1);
 
         print(header);
 
         break;
 
     case 0x4F:
-        content.cursor = rowend();
+        moveright(ring_count(&input2));
 
         print(header);
 
@@ -219,8 +191,6 @@ static void onkeypress(struct event_header *header)
 
         if (!ring_write(&input1, &keycode->value, keycode->length))
             break;
-
-        content.cursor = inputend();
 
         print(header);
 
@@ -301,8 +271,6 @@ void main(void)
     ring_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     ring_overwrite(&text, "$ ", 2);
-
-    content.cursor = inputend();
 
     if (!file_walk(CALL_L0, "/system/event/poll"))
         return;

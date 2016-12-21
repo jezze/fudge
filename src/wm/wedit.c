@@ -17,14 +17,7 @@ static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static void (*handlers[EVENTS])(struct event_header *header);
 
-static unsigned int inputend()
-{
-
-    return ring_count(&input1);
-
-}
-
-static unsigned int rowleft(unsigned int steps)
+static void moveleft(unsigned int steps)
 {
 
     char buffer[FUDGE_BSIZE];
@@ -33,11 +26,9 @@ static unsigned int rowleft(unsigned int steps)
     if (count)
         ring_backwrite(&input2, buffer, count);
 
-    return inputend();
-
 }
 
-static unsigned int rowright(unsigned int steps)
+static void moveright(unsigned int steps)
 {
 
     char buffer[FUDGE_BSIZE];
@@ -46,11 +37,9 @@ static unsigned int rowright(unsigned int steps)
     if (count)
         ring_write(&input1, buffer, count);
 
-    return inputend();
-
 }
 
-static unsigned int rowhome()
+static void movehome()
 {
 
     char buffer[FUDGE_BSIZE];
@@ -72,11 +61,9 @@ static unsigned int rowhome()
 
     }
 
-    return inputend();
-
 }
 
-static unsigned int rowend()
+static void moveend()
 {
 
     char buffer[FUDGE_BSIZE];
@@ -98,76 +85,84 @@ static unsigned int rowend()
 
     }
 
-    return inputend();
-
 }
 
-static unsigned int rowoffset(position)
+static unsigned int getoffset()
 {
 
-    unsigned int home = rowhome();
-    unsigned int offset = position - home;
+    unsigned int start;
+    unsigned int offset;
 
-    rowright(offset);
+    start = ring_count(&input1);
+
+    movehome();
+
+    offset = start - ring_count(&input1);
+
+    moveright(offset);
 
     return offset;
 
 }
 
-static unsigned int rowup()
+static void moveup()
 {
 
-    unsigned int position = content.cursor;
     unsigned int offset1;
     unsigned int offset2;
 
-    offset1 = rowoffset(position);
-    position = rowhome();
+    offset1 = getoffset();
+
+    movehome();
 
     if (!ring_count(&input1))
-        return position;
+        return;
 
-    position = rowleft(1);
-    offset2 = rowoffset(position);
-    position = rowhome();
+    moveleft(1);
+
+    offset2 = getoffset();
+
+    movehome();
 
     if (!ring_count(&input1))
-        return position;
+        return;
 
-    return rowright(offset1 < offset2 ? offset1 : offset2);
+    moveright(offset1 < offset2 ? offset1 : offset2);
 
 }
 
-static unsigned int rowdown()
+static void movedown()
 {
 
-    unsigned int position = content.cursor;
-    unsigned int start;
     unsigned int offset1;
     unsigned int offset2;
 
-    offset1 = rowoffset(position);
-    position = rowend();
+    offset1 = getoffset();
+
+    moveend();
 
     if (!ring_count(&input2))
-        return position;
+        return;
 
-    position = rowright(1);
-    start = position;
-    position = rowend();
-    offset2 = position - start;
-    position = rowleft(offset2);
+    moveright(1);
+    moveend();
 
-    return rowright(offset1 < offset2 ? offset1 : offset2);
+    offset2 = getoffset();
+
+    movehome();
+    moveright(offset1 < offset2 ? offset1 : offset2);
 
 }
 
 static void print(struct event_header *header)
 {
 
-    print_inserttext(&output, header->destination, &content, 1, ring_count(&input1) + ring_count(&input2));
+    content.cursor = ring_count(&input1);
+
+    print_inserttext(&output, header->destination, &content, 1, ring_count(&input1) + ring_count(&input2) + 1);
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
+    ring_write(&output, "\n", 1);
 
 }
 
@@ -189,8 +184,6 @@ static void onkeypress(struct event_header *header)
         if (!ring_backskip(&input1, 1))
             break;
 
-        content.cursor = inputend();
-
         print(header);
 
         break;
@@ -202,42 +195,42 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x47:
-        content.cursor = rowhome();
+        movehome();
 
         print(header);
 
         break;
 
     case 0x48:
-        content.cursor = rowup();
+        moveup();
 
         print(header);
 
         break;
 
     case 0x4B:
-        content.cursor = rowleft(1);
+        moveleft(1);
 
         print(header);
 
         break;
 
     case 0x4D:
-        content.cursor = rowright(1);
+        moveright(1);
 
         print(header);
 
         break;
 
     case 0x4F:
-        content.cursor = rowend();
+        moveend(1);
 
         print(header);
 
         break;
 
     case 0x50:
-        content.cursor = rowdown();
+        movedown();
 
         print(header);
 
@@ -248,8 +241,6 @@ static void onkeypress(struct event_header *header)
 
         if (!ring_write(&input1, &keycode->value, keycode->length))
             break;
-
-        content.cursor = inputend();
 
         print(header);
 
