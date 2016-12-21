@@ -49,31 +49,13 @@ static void moveend()
 
 }
 
-static unsigned int getoffset()
-{
-
-    unsigned int start;
-    unsigned int offset;
-
-    start = ring_count(&input1);
-
-    movehome();
-
-    offset = start - ring_count(&input1);
-
-    moveright(offset);
-
-    return offset;
-
-}
-
 static void moveup()
 {
 
     unsigned int offset1;
     unsigned int offset2;
 
-    offset1 = getoffset();
+    offset1 = ring_findreverse(&input1, '\n');
 
     movehome();
 
@@ -85,14 +67,9 @@ static void moveup()
     if (!ring_count(&input1))
         return;
 
-    offset2 = getoffset();
+    offset2 = ring_findreverse(&input1, '\n');
 
-    movehome();
-
-    if (!ring_count(&input1))
-        return;
-
-    moveright(offset1 < offset2 ? offset1 : offset2);
+    moveleft(offset2 - (offset1 < offset2 ? offset1 : offset2));
 
 }
 
@@ -102,7 +79,7 @@ static void movedown()
     unsigned int offset1;
     unsigned int offset2;
 
-    offset1 = getoffset();
+    offset1 = ring_findreverse(&input1, '\n');
 
     moveend();
 
@@ -114,11 +91,8 @@ static void movedown()
     if (!ring_count(&input2))
         return;
 
-    moveend();
+    offset2 = ring_find(&input2, '\n');
 
-    offset2 = getoffset();
-
-    movehome();
     moveright(offset1 < offset2 ? offset1 : offset2);
 
 }
