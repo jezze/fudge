@@ -223,6 +223,42 @@ unsigned int ring_overcopy(struct ring *to, struct ring *from)
 
 }
 
+unsigned int ring_find(struct ring *ring, char value)
+{
+
+    unsigned int s = ring->tail;
+    unsigned int c;
+
+    for (c = 0; s != ring->head; c++)
+    {
+
+        if (ring->buffer[mask(ring, s++)] == value)
+            return c;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int ring_backfind(struct ring *ring, char value)
+{
+
+    unsigned int s = ring->head;
+    unsigned int c;
+
+    for (c = 0; s != ring->tail; c++)
+    {
+
+        if (ring->buffer[mask(ring, --s)] == value)
+            return c;
+
+    }
+
+    return 0;
+
+}
+
 void ring_reset(struct ring *ring)
 {
 

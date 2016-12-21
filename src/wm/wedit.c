@@ -38,48 +38,14 @@ static void moveright(unsigned int steps)
 static void movehome()
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int count;
-
-    while ((count = ring_backread(&input1, buffer, 1)))
-    {
-
-        if (buffer[0] == '\n')
-        {
-
-            ring_write(&input1, buffer, count);
-
-            break;
-
-        }
-
-        ring_backwrite(&input2, buffer, count);
-
-    }
+    moveleft(ring_backfind(&input1, '\n'));
 
 }
 
 static void moveend()
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int count;
-
-    while ((count = ring_read(&input2, buffer, 1)))
-    {
-
-        if (buffer[0] == '\n')
-        {
-
-            ring_backwrite(&input2, buffer, count);
-
-            break;
-
-        }
-
-        ring_write(&input1, buffer, count);
-
-    }
+    moveright(ring_find(&input2, '\n'));
 
 }
 
