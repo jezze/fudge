@@ -710,8 +710,9 @@ void main(void)
         if (ring_count(&output))
         {
 
-            file_writeall(CALL_PO, outputdata, ring_count(&output));
-            ring_reset(&output);
+            char buffer[FUDGE_BSIZE];
+
+            file_writeall(CALL_PO, buffer, ring_read(&output, buffer, FUDGE_BSIZE));
 
         }
 

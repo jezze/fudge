@@ -24,5 +24,4 @@ unsigned int ring_copy(struct ring *to, struct ring *from);
 unsigned int ring_overcopy(struct ring *to, struct ring *from);
 unsigned int ring_find(struct ring *ring, char value);
 unsigned int ring_findreverse(struct ring *ring, char value);
-void ring_reset(struct ring *ring);
 void ring_init(struct ring *ring, unsigned int capacity, void *buffer);
