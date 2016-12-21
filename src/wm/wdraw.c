@@ -256,7 +256,7 @@ static unsigned int findrowstart(struct element_text *text, unsigned int row, un
 
 }
 
-static void rendercharline(unsigned int x, unsigned int w, unsigned char color, unsigned char *bitmapdata)
+static void rendercharline(unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
 {
 
     unsigned int p;
@@ -264,14 +264,14 @@ static void rendercharline(unsigned int x, unsigned int w, unsigned char color, 
     for (p = 0; p < w; p++)
     {
 
-        if (bitmapdata[(p >> 3)] & (0x80 >> (p % 8)))
+        if (data[(p >> 3)] & (0x80 >> (p % 8)))
             paint(color, x + p, 1);
 
     }
 
 }
 
-static void rendercharlineinverted(unsigned int x, unsigned int w, unsigned char color, unsigned char *bitmapdata)
+static void rendercharlineinverted(unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
 {
 
     unsigned int p;
@@ -279,7 +279,7 @@ static void rendercharlineinverted(unsigned int x, unsigned int w, unsigned char
     for (p = 0; p < w; p++)
     {
 
-        if (!(bitmapdata[(p >> 3)] & (0x80 >> (p % 8))))
+        if (!(data[(p >> 3)] & (0x80 >> (p % 8))))
             paint(color, x + p, 1);
 
     }
@@ -299,7 +299,7 @@ static void rendertextline(struct element_text *text, char *string, unsigned cha
     {
 
         unsigned short index = (string[i] == '\n') ? pcf_getindex(fontdata, ' ') : pcf_getindex(fontdata, string[i]);
-        unsigned int offset = pcf_getbitmapoffset(fontdata, index) + rowline * fontpadding;
+        unsigned char *data = fontbitmapdata + pcf_getbitmapoffset(fontdata, index) + rowline * fontpadding;
         struct pcf_metricsdata metricsdata;
 
         pcf_readmetricsdata(fontdata, index, &metricsdata);
@@ -317,9 +317,9 @@ static void rendertextline(struct element_text *text, char *string, unsigned cha
         {
 
             if (text->flow == ELEMENT_TEXTFLOW_INPUT && i == text->cursor)
-                rendercharlineinverted(size.x, size.w, color, fontbitmapdata + offset);
+                rendercharlineinverted(size.x, size.w, color, data);
             else
-                rendercharline(size.x, size.w, color, fontbitmapdata + offset);
+                rendercharline(size.x, size.w, color, data);
 
         }
 
