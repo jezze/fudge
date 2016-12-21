@@ -237,7 +237,7 @@ unsigned int ring_find(struct ring *ring, char value)
 
     }
 
-    return 0;
+    return s == ring->head ? c : 0;
 
 }
 
@@ -255,7 +255,7 @@ unsigned int ring_backfind(struct ring *ring, char value)
 
     }
 
-    return 0;
+    return s == ring->tail ? c : 0;
 
 }
 
