@@ -139,42 +139,36 @@ static void onkeypress(struct event_header *header)
 
     case 0x47:
         movehome();
-
         print(header);
 
         break;
 
     case 0x48:
         moveup();
-
         print(header);
 
         break;
 
     case 0x4B:
         moveleft(1);
-
         print(header);
 
         break;
 
     case 0x4D:
         moveright(1);
-
         print(header);
 
         break;
 
     case 0x4F:
         moveend(1);
-
         print(header);
 
         break;
 
     case 0x50:
         movedown();
-
         print(header);
 
         break;

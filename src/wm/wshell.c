@@ -156,28 +156,24 @@ static void onkeypress(struct event_header *header)
 
     case 0x47:
         moveleft(ring_count(&input1));
-
         print(header);
 
         break;
 
     case 0x4B:
         moveleft(1);
-
         print(header);
 
         break;
 
     case 0x4D:
         moveright(1);
-
         print(header);
 
         break;
 
     case 0x4F:
         moveright(ring_count(&input2));
-
         print(header);
 
         break;
