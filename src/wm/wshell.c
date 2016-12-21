@@ -9,15 +9,35 @@
 static struct element_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
+static char outputdata[FUDGE_BSIZE];
+static struct ring output;
 static char inputdata1[FUDGE_BSIZE];
 static struct ring input1;
 static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
-static char outputdata[FUDGE_BSIZE];
-static struct ring output;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
 static void (*handlers[EVENTS])(struct event_header *header);
+
+static void printinsert(unsigned int source)
+{
+
+    content.cursor = ring_count(&text) + ring_count(&input1);
+
+    print_inserttext(&output, source, &content, 1, ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1);
+    ring_copy(&output, &text);
+    ring_copy(&output, &input1);
+    ring_copy(&output, &input2);
+    ring_write(&output, "\n", 1);
+
+}
+
+static void printremove(unsigned int source)
+{
+
+    print_removetext(&output, source, &content);
+
+}
 
 static void readback()
 {
@@ -98,19 +118,6 @@ static void moveright(unsigned int steps)
 
 }
 
-static void print(struct event_header *header)
-{
-
-    content.cursor = ring_count(&text) + ring_count(&input1);
-
-    print_inserttext(&output, header->destination, &content, 1, ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1);
-    ring_copy(&output, &text);
-    ring_copy(&output, &input1);
-    ring_copy(&output, &input2);
-    ring_write(&output, "\n", 1);
-
-}
-
 static void onkeypress(struct event_header *header)
 {
 
@@ -133,7 +140,7 @@ static void onkeypress(struct event_header *header)
 
     case 0x0E:
         ring_skipreverse(&input1, 1);
-        print(header);
+        printinsert(header->destination);
 
         break;
 
@@ -146,31 +153,31 @@ static void onkeypress(struct event_header *header)
         ring_overcopy(&text, &input1);
         interpret(&input1);
         ring_overwrite(&text, "$ ", 2);
-        print(header);
+        printinsert(header->destination);
 
         break;
 
     case 0x47:
         moveleft(ring_count(&input1));
-        print(header);
+        printinsert(header->destination);
 
         break;
 
     case 0x4B:
         moveleft(1);
-        print(header);
+        printinsert(header->destination);
 
         break;
 
     case 0x4D:
         moveright(1);
-        print(header);
+        printinsert(header->destination);
 
         break;
 
     case 0x4F:
         moveright(ring_count(&input2));
-        print(header);
+        printinsert(header->destination);
 
         break;
 
@@ -178,7 +185,7 @@ static void onkeypress(struct event_header *header)
         keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
 
         ring_write(&input1, &keycode->value, keycode->length);
-        print(header);
+        printinsert(header->destination);
 
         break;
 
@@ -234,14 +241,14 @@ static void onwmresize(struct event_header *header)
 static void onwmshow(struct event_header *header)
 {
 
-    print(header);
+    printinsert(header->destination);
 
 }
 
 static void onwmhide(struct event_header *header)
 {
 
-    print_removetext(&output, header->destination, &content);
+    printremove(header->destination);
 
 }
 
@@ -251,9 +258,9 @@ void main(void)
     struct event_header header;
     unsigned int count;
 
+    ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     ring_overwrite(&text, "$ ", 2);

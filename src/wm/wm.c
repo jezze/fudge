@@ -42,34 +42,34 @@ static struct element_mouse mouse;
 static struct view *viewfocus = &views[0];
 static void (*handlers[EVENTS])(struct event_header *header);
 
-static void printinsertremote(struct ring *ring, unsigned int source, struct remote *remote)
+static void printinsertremote(unsigned int source, struct remote *remote)
 {
 
-    print_insertwindow(ring, source, &remote->window, 1);
+    print_insertwindow(&output, source, &remote->window, 1);
 
 }
 
-static void printremoveremote(struct ring *ring, unsigned int source, struct remote *remote)
+static void printremoveremote(unsigned int source, struct remote *remote)
 {
 
-    print_removewindow(ring, source, &remote->window);
+    print_removewindow(&output, source, &remote->window);
 
 }
 
-static void printinsertview(struct ring *ring, unsigned int source, struct view *view)
+static void printinsertview(unsigned int source, struct view *view)
 {
 
-    print_insertpanel(ring, source, &view->panel, 1);
-    print_inserttext(ring, source, &view->number, 1, 1);
-    ring_write(ring, &view->numberstring, 1);
+    print_insertpanel(&output, source, &view->panel, 1);
+    print_inserttext(&output, source, &view->number, 1, 1);
+    ring_write(&output, &view->numberstring, 1);
 
 }
 
-static void printremoveview(struct ring *ring, unsigned int source, struct view *view)
+static void printremoveview(unsigned int source, struct view *view)
 {
 
-    print_removepanel(ring, source, &view->panel);
-    print_removetext(ring, source, &view->number);
+    print_removepanel(&output, source, &view->panel);
+    print_removetext(&output, source, &view->number);
 
 }
 
@@ -106,7 +106,7 @@ static void showremotes(unsigned int source, struct list *remotes)
         struct remote *remote = current->data;
 
         send_wmshow(CALL_L1, remote->source);
-        printinsertremote(&output, source, remote);
+        printinsertremote(source, remote);
 
     }
 
@@ -123,7 +123,7 @@ static void hideremotes(unsigned int source, struct list *remotes)
         struct remote *remote = current->data;
 
         send_wmhide(CALL_L1, remote->source);
-        printremoveremote(&output, source, remote);
+        printremoveremote(source, remote);
 
     }
 
@@ -188,7 +188,7 @@ static void showview(unsigned int source, struct view *view)
 {
 
     activateview(view);
-    printinsertview(&output, source, view);
+    printinsertview(source, view);
     showremotes(source, &view->remotes);
 
 }
@@ -197,7 +197,7 @@ static void hideview(unsigned int source, struct view *view)
 {
 
     deactivateview(view);
-    printinsertview(&output, source, view);
+    printinsertview(source, view);
     hideremotes(source, &view->remotes);
 
 }
@@ -290,7 +290,7 @@ static void onkeypress(struct event_header *header)
 
         send_wmhide(CALL_L1, viewfocus->remotefocus->source);
         send_wmunmap(CALL_L1, viewfocus->remotefocus->source);
-        printremoveremote(&output, header->destination, viewfocus->remotefocus);
+        printremoveremote(header->destination, viewfocus->remotefocus);
         list_move(&remotelist, &viewfocus->remotefocus->item);
 
         viewfocus->remotefocus = (viewfocus->remotes.tail) ? viewfocus->remotes.tail->data : 0;
@@ -345,12 +345,12 @@ static void onkeypress(struct event_header *header)
             break;
 
         deactivateremote(viewfocus->remotefocus);
-        printinsertremote(&output, header->destination, viewfocus->remotefocus);
+        printinsertremote(header->destination, viewfocus->remotefocus);
 
         viewfocus->remotefocus = nextremote;
 
         activateremote(viewfocus->remotefocus);
-        printinsertremote(&output, header->destination, viewfocus->remotefocus);
+        printinsertremote(header->destination, viewfocus->remotefocus);
 
         break;
 
@@ -364,12 +364,12 @@ static void onkeypress(struct event_header *header)
             break;
 
         deactivateremote(viewfocus->remotefocus);
-        printinsertremote(&output, header->destination, viewfocus->remotefocus);
+        printinsertremote(header->destination, viewfocus->remotefocus);
 
         viewfocus->remotefocus = nextremote;
 
         activateremote(viewfocus->remotefocus);
-        printinsertremote(&output, header->destination, viewfocus->remotefocus);
+        printinsertremote(header->destination, viewfocus->remotefocus);
 
         break;
 
@@ -500,12 +500,12 @@ static void onmousepress(struct event_header *header)
                 return;
 
             deactivateremote(viewfocus->remotefocus);
-            printinsertremote(&output, header->destination, viewfocus->remotefocus);
+            printinsertremote(header->destination, viewfocus->remotefocus);
 
             viewfocus->remotefocus = remote;
 
             activateremote(viewfocus->remotefocus);
-            printinsertremote(&output, header->destination, viewfocus->remotefocus);
+            printinsertremote(header->destination, viewfocus->remotefocus);
 
         }
 
@@ -613,7 +613,7 @@ static void onwmshow(struct event_header *header)
     print_insertfill(&output, header->destination, &background, 1);
 
     for (i = 0; i < VIEWS; i++)
-        printinsertview(&output, header->destination, &views[i]);
+        printinsertview(header->destination, &views[i]);
 
     print_insertmouse(&output, header->destination, &mouse, 3);
     showremotes(header->destination, &viewfocus->remotes);
@@ -628,7 +628,7 @@ static void onwmhide(struct event_header *header)
     print_removefill(&output, header->destination, &background);
 
     for (i = 0; i < VIEWS; i++)
-        printremoveview(&output, header->destination, &views[i]);
+        printremoveview(header->destination, &views[i]);
 
     print_removemouse(&output, header->destination, &mouse);
     hideremotes(header->destination, &viewfocus->remotes);
