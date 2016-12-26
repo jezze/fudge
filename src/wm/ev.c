@@ -130,28 +130,30 @@ static void onwmhide(struct ev_handlers *handlers, unsigned int descriptor, stru
 
 }
 
+static void (*funcs[EVENTS])(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header) = {
+    0,
+    onkeypress,
+    onkeyrelease,
+    onmousemove,
+    onmousepress,
+    onmouserelease,
+    ontick,
+    onvideomode,
+    onwmmap,
+    onwmunmap,
+    onwmresize,
+    onwmshow,
+    onwmhide
+};
+
 unsigned int ev_read(struct ev_handlers *handlers, unsigned int descriptor)
 {
 
     struct event_header header;
-    void (*funcs[EVENTS])(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header);
     unsigned int count = file_readall(descriptor, &header, sizeof (struct event_header));
 
     if (!count)
         return 0;
-
-    funcs[EVENT_KEYPRESS] = onkeypress;
-    funcs[EVENT_KEYRELEASE] = onkeyrelease;
-    funcs[EVENT_MOUSEMOVE] = onmousemove;
-    funcs[EVENT_MOUSEPRESS] = onmousepress;
-    funcs[EVENT_MOUSERELEASE] = onmouserelease;
-    funcs[EVENT_TICK] = ontick;
-    funcs[EVENT_VIDEOMODE] = onvideomode;
-    funcs[EVENT_WMMAP] = onwmmap;
-    funcs[EVENT_WMUNMAP] = onwmunmap;
-    funcs[EVENT_WMRESIZE] = onwmresize;
-    funcs[EVENT_WMSHOW] = onwmshow;
-    funcs[EVENT_WMHIDE] = onwmhide;
 
     if (funcs[header.type])
         funcs[header.type](handlers, descriptor, &header);
