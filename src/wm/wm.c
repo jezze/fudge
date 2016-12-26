@@ -5,6 +5,7 @@
 #include "print.h"
 #include "send.h"
 #include "keymap.h"
+#include "ev.h"
 
 #define REMOTES                         64
 #define VIEWS                           8
@@ -40,7 +41,7 @@ static struct list remotelist;
 static struct element_fill background;
 static struct element_mouse mouse;
 static struct view *viewfocus = &views[0];
-static void (*handlers[EVENTS])(struct event_header *header);
+static struct ev_handlers handlers;
 
 static void printinsertremote(unsigned int source, struct remote *remote)
 {
@@ -202,16 +203,13 @@ static void hideview(unsigned int source, struct view *view)
 
 }
 
-static void onkeypress(struct event_header *header)
+static void onkeypress(struct event_header *header, struct event_keypress *keypress)
 {
 
-    struct event_keypress keypress;
     struct view *nextview;
     struct remote *nextremote;
 
-    file_readall(CALL_L0, &keypress, sizeof (struct event_keypress));
-
-    switch (keypress.scancode)
+    switch (keypress->scancode)
     {
 
     case 0x2A:
@@ -231,13 +229,13 @@ static void onkeypress(struct event_header *header)
     {
 
         if (viewfocus->remotefocus)
-            send_keypress(CALL_L2, viewfocus->remotefocus->source, keypress.scancode);
+            send_keypress(CALL_L2, viewfocus->remotefocus->source, keypress->scancode);
 
         return;
 
     }
 
-    switch (keypress.scancode)
+    switch (keypress->scancode)
     {
 
     case 0x02:
@@ -248,7 +246,7 @@ static void onkeypress(struct event_header *header)
     case 0x07:
     case 0x08:
     case 0x09:
-        nextview = &views[keypress.scancode - 0x02];
+        nextview = &views[keypress->scancode - 0x02];
 
         if (nextview == viewfocus)
             break;
@@ -397,14 +395,10 @@ static void onkeypress(struct event_header *header)
 
 }
 
-static void onkeyrelease(struct event_header *header)
+static void onkeyrelease(struct event_header *header, struct event_keyrelease *keyrelease)
 {
 
-    struct event_keyrelease keyrelease;
-
-    file_readall(CALL_L0, &keyrelease, sizeof (struct event_keyrelease));
-
-    switch (keyrelease.scancode)
+    switch (keyrelease->scancode)
     {
 
     case 0x2A:
@@ -424,7 +418,7 @@ static void onkeyrelease(struct event_header *header)
     {
 
         if (viewfocus->remotefocus)
-            send_keyrelease(CALL_L2, viewfocus->remotefocus->source, keyrelease.scancode);
+            send_keyrelease(CALL_L2, viewfocus->remotefocus->source, keyrelease->scancode);
 
         return;
 
@@ -432,42 +426,35 @@ static void onkeyrelease(struct event_header *header)
 
 }
 
-static void onmousemove(struct event_header *header)
+static void onmousemove(struct event_header *header, struct event_mousemove *mousemove)
 {
 
-    struct event_mousemove mousemove;
+    mouse.x += mousemove->relx;
+    mouse.y -= mousemove->rely;
 
-    file_readall(CALL_L0, &mousemove, sizeof (struct event_mousemove));
-
-    mouse.x += mousemove.relx;
-    mouse.y -= mousemove.rely;
-
-    if (mousemove.relx > 0 && mouse.x >= size.w)
+    if (mousemove->relx > 0 && mouse.x >= size.w)
         mouse.x = size.w - 1;
 
-    if (mousemove.relx < 0 && mouse.x >= size.w)
+    if (mousemove->relx < 0 && mouse.x >= size.w)
         mouse.x = 0;
 
-    if (mousemove.rely < 0 && mouse.y >= size.h)
+    if (mousemove->rely < 0 && mouse.y >= size.h)
         mouse.y = size.h - 1;
 
-    if (mousemove.rely > 0 && mouse.y >= size.h)
+    if (mousemove->rely > 0 && mouse.y >= size.h)
         mouse.y = 0;
 
     print_insertmouse(&output, header->destination, &mouse, 3);
 
 }
 
-static void onmousepress(struct event_header *header)
+static void onmousepress(struct event_header *header, struct event_mousepress *mousepress)
 {
 
-    struct event_mousepress mousepress;
     struct list_item *current;
     unsigned int i;
 
-    file_readall(CALL_L0, &mousepress, sizeof (struct event_mousepress));
-
-    switch (mousepress.button)
+    switch (mousepress->button)
     {
 
     case 0x01:
@@ -512,15 +499,6 @@ static void onmousepress(struct event_header *header)
         break;
 
     }
-
-}
-
-static void onmouserelease(struct event_header *header)
-{
-
-    struct event_mouserelease mouserelease;
-
-    file_readall(CALL_L0, &mouserelease, sizeof (struct event_mouserelease));
 
 }
 
@@ -578,14 +556,12 @@ static void onwmunmap(struct event_header *header)
 
 }
 
-static void onwmresize(struct event_header *header)
+static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    struct event_wmresize wmresize;
     unsigned int i;
 
-    file_readall(CALL_L0, &wmresize, sizeof (struct event_wmresize));
-    box_setsize(&size, wmresize.x, wmresize.y, wmresize.w, wmresize.h);
+    box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
     box_setsize(&body, size.x, size.y + 48, size.w, size.h - 48);
     box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
@@ -647,8 +623,6 @@ void refresh(void)
 void main(void)
 {
 
-    struct event_header header;
-    unsigned int count;
     unsigned int i;
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -695,32 +669,20 @@ void main(void)
     file_open(CALL_L2);
     file_open(CALL_L3);
 
-    handlers[EVENT_KEYPRESS] = onkeypress;
-    handlers[EVENT_KEYRELEASE] = onkeyrelease;
-    handlers[EVENT_MOUSEMOVE] = onmousemove;
-    handlers[EVENT_MOUSEPRESS] = onmousepress;
-    handlers[EVENT_MOUSERELEASE] = onmouserelease;
-    handlers[EVENT_WMMAP] = onwmmap;
-    handlers[EVENT_WMUNMAP] = onwmunmap;
-    handlers[EVENT_WMRESIZE] = onwmresize;
-    handlers[EVENT_WMSHOW] = onwmshow;
-    handlers[EVENT_WMHIDE] = onwmhide;
+    handlers.keypress = onkeypress;
+    handlers.keyrelease = onkeyrelease;
+    handlers.mousemove = onmousemove;
+    handlers.mousepress = onmousepress;
+    handlers.wmmap = onwmmap;
+    handlers.wmunmap = onwmunmap;
+    handlers.wmresize = onwmresize;
+    handlers.wmshow = onwmshow;
+    handlers.wmhide = onwmhide;
 
     send_wmmap(CALL_L1, 0);
 
-    while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
-    {
-
-        if (!handlers[header.type])
-            continue;
-
-        handlers[header.type](&header);
+    while (!quit && ev_read(&handlers, CALL_L0))
         refresh();
-
-        if (quit)
-            break;
-
-    }
 
     file_close(CALL_L3);
     file_close(CALL_L2);

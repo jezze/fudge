@@ -5,6 +5,7 @@
 #include "print.h"
 #include "send.h"
 #include "keymap.h"
+#include "ev.h"
 
 static struct element_text content;
 static struct element_text status;
@@ -16,7 +17,7 @@ static char inputdata1[FUDGE_BSIZE];
 static struct ring input1;
 static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
-static void (*handlers[EVENTS])(struct event_header *header);
+static struct ev_handlers handlers;
 
 static void printinsert(unsigned int source)
 {
@@ -106,18 +107,15 @@ static void movedown(void)
 
 }
 
-static void onkeypress(struct event_header *header)
+static void onkeypress(struct event_header *header, struct event_keypress *keypress)
 {
 
-    struct event_keypress keypress;
     struct keycode *keycode;
-
-    file_readall(CALL_L0, &keypress, sizeof (struct event_keypress));
 
     if (header->source == 0)
         return;
 
-    switch (keypress.scancode)
+    switch (keypress->scancode)
     {
 
     case 0x0E:
@@ -169,7 +167,7 @@ static void onkeypress(struct event_header *header)
         break;
 
     default:
-        keycode = getkeycode(KEYMAP_US, keypress.scancode, keymod);
+        keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
 
         ring_write(&input1, &keycode->value, keycode->length);
         printinsert(header->destination);
@@ -180,17 +178,13 @@ static void onkeypress(struct event_header *header)
 
 }
 
-static void onkeyrelease(struct event_header *header)
+static void onkeyrelease(struct event_header *header, struct event_keyrelease *keyrelease)
 {
-
-    struct event_keyrelease keyrelease;
-
-    file_readall(CALL_L0, &keyrelease, sizeof (struct event_keyrelease));
 
     if (header->source == 0)
         return;
 
-    switch (keyrelease.scancode)
+    switch (keyrelease->scancode)
     {
 
     case 0x2A:
@@ -203,11 +197,6 @@ static void onkeyrelease(struct event_header *header)
 
 }
 
-static void onwmmap(struct event_header *header)
-{
-
-}
-
 static void onwmunmap(struct event_header *header)
 {
 
@@ -215,13 +204,10 @@ static void onwmunmap(struct event_header *header)
 
 }
 
-static void onwmresize(struct event_header *header)
+static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    struct event_wmresize wmresize;
-
-    file_readall(CALL_L0, &wmresize, sizeof (struct event_wmresize));
-    box_setsize(&content.size, wmresize.x + 12, wmresize.y + 12, wmresize.w - 24, wmresize.h - 24 - 24);
+    box_setsize(&content.size, wmresize->x + 12, wmresize->y + 12, wmresize->w - 24, wmresize->h - 24 - 24);
     box_setsize(&status.size, content.size.x, content.size.y + content.size.h, content.size.w, 24);
 
 }
@@ -252,7 +238,6 @@ void refresh(void)
 void main(void)
 {
 
-    struct event_header header;
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -282,29 +267,17 @@ void main(void)
     file_open(CALL_L1);
     file_open(CALL_L2);
 
-    handlers[EVENT_KEYPRESS] = onkeypress;
-    handlers[EVENT_KEYRELEASE] = onkeyrelease;
-    handlers[EVENT_WMMAP] = onwmmap;
-    handlers[EVENT_WMUNMAP] = onwmunmap;
-    handlers[EVENT_WMRESIZE] = onwmresize;
-    handlers[EVENT_WMSHOW] = onwmshow;
-    handlers[EVENT_WMHIDE] = onwmhide;
+    handlers.keypress = onkeypress;
+    handlers.keyrelease = onkeyrelease;
+    handlers.wmunmap = onwmunmap;
+    handlers.wmresize = onwmresize;
+    handlers.wmshow = onwmshow;
+    handlers.wmhide = onwmhide;
 
     send_wmmap(CALL_L1, 0);
 
-    while ((count = file_readall(CALL_L0, &header, sizeof (struct event_header))))
-    {
-
-        if (!handlers[header.type])
-            continue;
-
-        handlers[header.type](&header);
+    while (!quit && ev_read(&handlers, CALL_L0))
         refresh();
-
-        if (quit)
-            break;
-
-    }
 
     file_close(CALL_L2);
     file_close(CALL_L1);

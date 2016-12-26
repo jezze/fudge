@@ -20,6 +20,7 @@ O:=\
     $(DIR_SRC)/wm/wedit.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
+    $(DIR_SRC)/wm/ev.o \
     $(DIR_SRC)/wm/keymap.o \
     $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/send.o \
@@ -37,6 +38,7 @@ O:=\
     $(DIR_SRC)/wm/wm.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
+    $(DIR_SRC)/wm/ev.o \
     $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/send.o \
 
@@ -53,6 +55,7 @@ O:=\
     $(DIR_SRC)/wm/wshell.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
+    $(DIR_SRC)/wm/ev.o \
     $(DIR_SRC)/wm/keymap.o \
     $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/send.o \
