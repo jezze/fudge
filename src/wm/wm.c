@@ -229,7 +229,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     {
 
         if (viewfocus->remotefocus)
-            send_keypress(CALL_L2, viewfocus->remotefocus->source, keypress->scancode);
+            send_keypress(CALL_L1, viewfocus->remotefocus->source, keypress->scancode);
 
         return;
 
@@ -418,7 +418,7 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
     {
 
         if (viewfocus->remotefocus)
-            send_keyrelease(CALL_L2, viewfocus->remotefocus->source, keyrelease->scancode);
+            send_keyrelease(CALL_L1, viewfocus->remotefocus->source, keyrelease->scancode);
 
         return;
 

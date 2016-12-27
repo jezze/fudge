@@ -112,9 +112,6 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
     struct keycode *keycode;
 
-    if (header->source == 0)
-        return;
-
     switch (keypress->scancode)
     {
 
@@ -180,9 +177,6 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
 static void onkeyrelease(struct event_header *header, struct event_keyrelease *keyrelease)
 {
-
-    if (header->source == 0)
-        return;
 
     switch (keyrelease->scancode)
     {
@@ -253,9 +247,6 @@ void main(void)
     if (!file_walk(CALL_L1, "/system/event/wm"))
         return;
 
-    if (!file_walk(CALL_L2, "/system/event/key"))
-        return;
-
     file_open(CALL_PI);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
@@ -265,7 +256,6 @@ void main(void)
     file_open(CALL_PO);
     file_open(CALL_L0);
     file_open(CALL_L1);
-    file_open(CALL_L2);
 
     handlers.keypress = onkeypress;
     handlers.keyrelease = onkeyrelease;
@@ -279,7 +269,6 @@ void main(void)
     while (!quit && ev_read(&handlers, CALL_L0))
         refresh();
 
-    file_close(CALL_L2);
     file_close(CALL_L1);
     file_close(CALL_L0);
     file_close(CALL_PO);
