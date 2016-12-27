@@ -625,6 +625,28 @@ void main(void)
 
     unsigned int i;
 
+    if (!file_walk(CALL_L0, "/system/event/poll"))
+        return;
+
+    if (!file_walk(CALL_L1, "/system/event/wm"))
+        return;
+
+    if (!file_walk(CALL_L2, "/system/event/key"))
+        return;
+
+    if (!file_walk(CALL_L3, "/system/event/mouse"))
+        return;
+
+    handlers.keypress = onkeypress;
+    handlers.keyrelease = onkeyrelease;
+    handlers.mousemove = onmousemove;
+    handlers.mousepress = onmousepress;
+    handlers.wmmap = onwmmap;
+    handlers.wmunmap = onwmunmap;
+    handlers.wmresize = onwmresize;
+    handlers.wmshow = onwmshow;
+    handlers.wmhide = onwmhide;
+
     ring_init(&output, FUDGE_BSIZE, outputdata);
     element_initfill(&background, 2);
     element_initmouse(&mouse, 0, 0);
@@ -650,35 +672,11 @@ void main(void)
     }
 
     activateview(viewfocus);
-
-    if (!file_walk(CALL_L0, "/system/event/poll"))
-        return;
-
-    if (!file_walk(CALL_L1, "/system/event/wm"))
-        return;
-
-    if (!file_walk(CALL_L2, "/system/event/key"))
-        return;
-
-    if (!file_walk(CALL_L3, "/system/event/mouse"))
-        return;
-
     file_open(CALL_PO);
     file_open(CALL_L0);
     file_open(CALL_L1);
     file_open(CALL_L2);
     file_open(CALL_L3);
-
-    handlers.keypress = onkeypress;
-    handlers.keyrelease = onkeyrelease;
-    handlers.mousemove = onmousemove;
-    handlers.mousepress = onmousepress;
-    handlers.wmmap = onwmmap;
-    handlers.wmunmap = onwmunmap;
-    handlers.wmresize = onwmresize;
-    handlers.wmshow = onwmshow;
-    handlers.wmhide = onwmhide;
-
     send_wmmap(CALL_L1, 0);
 
     while (!quit && ev_read(&handlers, CALL_L0))

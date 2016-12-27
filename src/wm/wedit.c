@@ -220,7 +220,7 @@ static void onwmhide(struct event_header *header)
 
 }
 
-void refresh(void)
+static void refresh(void)
 {
 
     char buffer[FUDGE_BSIZE];
@@ -235,27 +235,8 @@ void main(void)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
-    element_inittext(&status, ELEMENT_TEXTTYPE_HIGHLIGHT, ELEMENT_TEXTFLOW_NORMAL);
-
-    if (!file_walk(CALL_L0, "/system/event/poll"))
+    if (!file_walk(CALL_L0, "/system/event/wm"))
         return;
-
-    if (!file_walk(CALL_L1, "/system/event/wm"))
-        return;
-
-    file_open(CALL_PI);
-
-    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
-        ring_write(&input2, buffer, count);
-
-    file_close(CALL_PI);
-    file_open(CALL_PO);
-    file_open(CALL_L0);
-    file_open(CALL_L1);
 
     handlers.keypress = onkeypress;
     handlers.keyrelease = onkeyrelease;
@@ -264,12 +245,24 @@ void main(void)
     handlers.wmshow = onwmshow;
     handlers.wmhide = onwmhide;
 
-    send_wmmap(CALL_L1, 0);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&input1, FUDGE_BSIZE, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE, inputdata2);
+    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
+    element_inittext(&status, ELEMENT_TEXTTYPE_HIGHLIGHT, ELEMENT_TEXTFLOW_NORMAL);
+    file_open(CALL_PI);
+
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
+        ring_write(&input2, buffer, count);
+
+    file_close(CALL_PI);
+    file_open(CALL_PO);
+    file_open(CALL_L0);
+    send_wmmap(CALL_L0, 0);
 
     while (!quit && ev_read(&handlers, CALL_L0))
         refresh();
 
-    file_close(CALL_L1);
     file_close(CALL_L0);
     file_close(CALL_PO);
 
