@@ -1,4 +1,5 @@
 #define EVENTS                          16
+#define EVENT_ADDR_BROADCAST            0
 #define EVENT_KEYPRESS                  0x01
 #define EVENT_KEYRELEASE                0x02
 #define EVENT_MOUSEMOVE                 0x03

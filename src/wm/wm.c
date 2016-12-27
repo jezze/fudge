@@ -3,7 +3,6 @@
 #include "box.h"
 #include "element.h"
 #include "print.h"
-#include "send.h"
 #include "keymap.h"
 #include "ev.h"
 
@@ -92,7 +91,7 @@ static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, 
 {
 
     box_setsize(&remote->window.size, x, y, w, h);
-    send_wmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+    ev_sendwmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
 }
 
@@ -106,7 +105,7 @@ static void showremotes(unsigned int source, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        send_wmshow(CALL_L1, remote->source);
+        ev_sendwmshow(CALL_L1, remote->source);
         printinsertremote(source, remote);
 
     }
@@ -123,7 +122,7 @@ static void hideremotes(unsigned int source, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        send_wmhide(CALL_L1, remote->source);
+        ev_sendwmhide(CALL_L1, remote->source);
         printremoveremote(source, remote);
 
     }
@@ -229,7 +228,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     {
 
         if (viewfocus->remotefocus)
-            send_keypress(CALL_L1, viewfocus->remotefocus->source, keypress->scancode);
+            ev_sendkeypress(CALL_L1, viewfocus->remotefocus->source, keypress->scancode);
 
         return;
 
@@ -286,8 +285,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (!viewfocus->remotefocus)
             break;
 
-        send_wmhide(CALL_L1, viewfocus->remotefocus->source);
-        send_wmunmap(CALL_L1, viewfocus->remotefocus->source);
+        ev_sendwmhide(CALL_L1, viewfocus->remotefocus->source);
+        ev_sendwmunmap(CALL_L1, viewfocus->remotefocus->source);
         printremoveremote(header->destination, viewfocus->remotefocus);
         list_move(&remotelist, &viewfocus->remotefocus->item);
 
@@ -386,8 +385,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (!(keymod & KEYMOD_SHIFT))
             break;
 
-        send_wmhide(CALL_L1, header->destination);
-        send_wmunmap(CALL_L1, header->destination);
+        ev_sendwmhide(CALL_L1, header->destination);
+        ev_sendwmunmap(CALL_L1, header->destination);
 
         break;
 
@@ -418,7 +417,7 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
     {
 
         if (viewfocus->remotefocus)
-            send_keyrelease(CALL_L1, viewfocus->remotefocus->source, keyrelease->scancode);
+            ev_sendkeyrelease(CALL_L1, viewfocus->remotefocus->source, keyrelease->scancode);
 
         return;
 
@@ -509,8 +508,8 @@ static void onwmmap(struct event_header *header)
     {
 
         /* Need to figure out how to get these values properly */
-        send_wmresize(CALL_L1, header->destination, 0, 0, 1920, 1080);
-        send_wmshow(CALL_L1, header->destination);
+        ev_sendwmresize(CALL_L1, header->destination, 0, 0, 1920, 1080);
+        ev_sendwmshow(CALL_L1, header->destination);
 
     }
 
@@ -545,7 +544,7 @@ static void onwmunmap(struct event_header *header)
 
             struct remote *remote = views[i].remotes.head->data;
 
-            send_wmunmap(CALL_L1, remote->source);
+            ev_sendwmunmap(CALL_L1, remote->source);
             list_move(&remotelist, &remote->item);
 
         }
@@ -677,7 +676,7 @@ void main(void)
     file_open(CALL_L1);
     file_open(CALL_L2);
     file_open(CALL_L3);
-    send_wmmap(CALL_L1, 0);
+    ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit && ev_read(&handlers, CALL_L0))
         refresh();

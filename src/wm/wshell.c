@@ -3,7 +3,6 @@
 #include "box.h"
 #include "element.h"
 #include "print.h"
-#include "send.h"
 #include "keymap.h"
 #include "ev.h"
 
@@ -262,7 +261,7 @@ void main(void)
     ring_overwrite(&text, "$ ", 2);
     file_open(CALL_PO);
     file_open(CALL_L0);
-    send_wmmap(CALL_L0, 0);
+    ev_sendwmmap(CALL_L0, EVENT_ADDR_BROADCAST);
 
     while (!quit && ev_read(&handlers, CALL_L0))
         refresh();

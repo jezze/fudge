@@ -23,7 +23,6 @@ O:=\
     $(DIR_SRC)/wm/ev.o \
     $(DIR_SRC)/wm/keymap.o \
     $(DIR_SRC)/wm/print.o \
-    $(DIR_SRC)/wm/send.o \
 
 L:=\
     $(DIR_SRC)/abi/abi.a \
@@ -40,7 +39,6 @@ O:=\
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/ev.o \
     $(DIR_SRC)/wm/print.o \
-    $(DIR_SRC)/wm/send.o \
 
 L:=\
     $(DIR_SRC)/abi/abi.a \
@@ -58,7 +56,6 @@ O:=\
     $(DIR_SRC)/wm/ev.o \
     $(DIR_SRC)/wm/keymap.o \
     $(DIR_SRC)/wm/print.o \
-    $(DIR_SRC)/wm/send.o \
 
 L:=\
     $(DIR_SRC)/abi/abi.a \
