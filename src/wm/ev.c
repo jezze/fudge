@@ -199,6 +199,40 @@ void ev_sendkeyrelease(unsigned int descriptor, unsigned int destination, unsign
 
 }
 
+void ev_sendmousemove(unsigned int descriptor, unsigned int destination, char relx, char rely)
+{
+
+    struct event_mousemove mousemove;
+
+    mousemove.relx = relx;
+    mousemove.rely = rely;
+
+    send(descriptor, destination, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
+
+}
+
+void ev_sendmousepress(unsigned int descriptor, unsigned int destination, unsigned int button)
+{
+
+    struct event_mousepress mousepress;
+
+    mousepress.button = button;
+
+    send(descriptor, destination, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
+
+}
+
+void ev_sendmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button)
+{
+
+    struct event_mouserelease mouserelease;
+
+    mouserelease.button = button;
+
+    send(descriptor, destination, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
+
+}
+
 void ev_sendwmmap(unsigned int descriptor, unsigned int destination)
 {
 
