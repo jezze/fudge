@@ -88,3 +88,12 @@ void print_removewindow(struct ring *ring, unsigned int source, struct element_w
 
 }
 
+void print_flush(struct ring *ring, unsigned int descriptor)
+{
+
+    char buffer[FUDGE_BSIZE];
+
+    file_writeall(descriptor, buffer, ring_read(ring, buffer, FUDGE_BSIZE));
+
+}
+

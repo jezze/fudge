@@ -610,15 +610,6 @@ static void onwmhide(struct event_header *header)
 
 }
 
-void refresh(void)
-{
-
-    char buffer[FUDGE_BSIZE];
-
-    file_writeall(CALL_PO, buffer, ring_read(&output, buffer, FUDGE_BSIZE));
-
-}
-
 void main(void)
 {
 
@@ -679,7 +670,7 @@ void main(void)
     ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit && ev_read(&handlers, CALL_L0))
-        refresh();
+        print_flush(&output, CALL_PO);
 
     file_close(CALL_L3);
     file_close(CALL_L2);
