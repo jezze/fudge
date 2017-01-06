@@ -17,7 +17,6 @@
 #define COLOR_TEXTLIGHT                 0x0A
 #define MOUSE_WIDTH                     24
 #define MOUSE_HEIGHT                    24
-#define TEXT_LINEHEIGHT                 24
 
 static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
@@ -347,9 +346,9 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         return;
 
     line = (line - text->size.y);
-    row = line / TEXT_LINEHEIGHT;
-    rowline = line % TEXT_LINEHEIGHT;
-    rowtop = row * TEXT_LINEHEIGHT;
+    row = line / text->lineheight;
+    rowline = line % text->lineheight;
+    rowtop = row * text->lineheight;
     rowtotal = ascii_count(string, stringcount, '\n') + 1;
 
     if (row >= rowtotal)
