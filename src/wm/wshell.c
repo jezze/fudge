@@ -126,12 +126,6 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     switch (keypress->scancode)
     {
 
-    case 0x2A:
-    case 0x36:
-        keymod |= KEYMOD_SHIFT;
-
-        break;
-
     case 0x0E:
         ring_skipreverse(&input1, 1);
         printinsert(header->destination);
@@ -148,6 +142,12 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         interpret(&input1);
         ring_overwrite(&text, "$ ", 2);
         printinsert(header->destination);
+
+        break;
+
+    case 0x2A:
+    case 0x36:
+        keymod |= KEYMOD_SHIFT;
 
         break;
 
