@@ -445,6 +445,9 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
 
     print_insertmouse(&output, header->destination, &mouse, 3);
 
+    if (viewfocus->remotefocus)
+        ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.x, mouse.y);
+
 }
 
 static void onmousepress(struct event_header *header, struct event_mousepress *mousepress)
@@ -464,7 +467,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
                 continue;
 
             if (&views[i] == viewfocus)
-                return;
+                break;
 
             hideview(header->destination, viewfocus);
 
@@ -483,7 +486,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
                 continue;
 
             if (remote == viewfocus->remotefocus)
-                return;
+                break;
 
             deactivateremote(viewfocus->remotefocus);
             printinsertremote(header->destination, viewfocus->remotefocus);
@@ -498,6 +501,17 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
         break;
 
     }
+
+    if (viewfocus->remotefocus)
+        ev_sendmousepress(CALL_L1, viewfocus->remotefocus->source, mousepress->button);
+
+}
+
+static void onmouserelease(struct event_header *header, struct event_mouserelease *mouserelease)
+{
+
+    if (viewfocus->remotefocus)
+        ev_sendmouserelease(CALL_L1, viewfocus->remotefocus->source, mouserelease->button);
 
 }
 
@@ -631,6 +645,7 @@ void main(void)
     handlers.keyrelease = onkeyrelease;
     handlers.mousemove = onmousemove;
     handlers.mousepress = onmousepress;
+    handlers.mouserelease = onmouserelease;
     handlers.wmmap = onwmmap;
     handlers.wmunmap = onwmunmap;
     handlers.wmresize = onwmresize;
