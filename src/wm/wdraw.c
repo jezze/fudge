@@ -563,7 +563,7 @@ static void getvideomode(unsigned int descriptor, struct ctrl_videosettings *set
         return;
 
     file_open(descriptor);
-    file_seekreadall(descriptor, settings, sizeof (struct ctrl_videosettings), 0);
+    file_readall(descriptor, settings, sizeof (struct ctrl_videosettings));
     file_close(descriptor);
 
 }
@@ -575,7 +575,7 @@ static void setvideomode(unsigned int descriptor, struct ctrl_videosettings *set
         return;
 
     file_open(descriptor);
-    file_seekwriteall(descriptor, settings, sizeof (struct ctrl_videosettings), 0);
+    file_writeall(descriptor, settings, sizeof (struct ctrl_videosettings));
     file_close(descriptor);
 
 }
@@ -587,7 +587,7 @@ static void setcolormap(unsigned int descriptor, void *buffer, unsigned int coun
         return;
 
     file_open(descriptor);
-    file_seekwriteall(descriptor, buffer, count, 0);
+    file_writeall(descriptor, buffer, count);
     file_close(descriptor);
 
 }
