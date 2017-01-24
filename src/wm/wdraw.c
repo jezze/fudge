@@ -519,13 +519,10 @@ static unsigned int testline(unsigned int line)
 
 }
 
-static void render(void)
+static void render(unsigned int descriptor)
 {
 
     unsigned int line;
-
-    file_walkfrom(CALL_L0, CALL_PO, "data");
-    file_open(CALL_L0);
 
     for (line = 0; line < settings.h; line++)
     {
@@ -553,53 +550,77 @@ static void render(void)
 
         }
 
-        file_seekwriteall(CALL_L0, drawdata, settings.w, settings.w * line);
+        file_seekwriteall(descriptor, drawdata, settings.w, settings.w * line);
 
     }
 
-    file_close(CALL_L0);
+}
+
+static void getvideomode(unsigned int descriptor, struct ctrl_videosettings *settings)
+{
+
+    if (!file_walkfrom(descriptor, CALL_PO, "ctrl"))
+        return;
+
+    file_open(descriptor);
+    file_seekreadall(descriptor, settings, sizeof (struct ctrl_videosettings), 0);
+    file_close(descriptor);
 
 }
 
-void main(void)
+static void setvideomode(unsigned int descriptor, struct ctrl_videosettings *settings)
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count;
-
-    ctrl_setvideosettings(&settings, 1920, 1080, 32);
-
-    if (!file_walk(CALL_L0, "/share/ter-118n.pcf"))
+    if (!file_walkfrom(descriptor, CALL_PO, "ctrl"))
         return;
 
-    file_open(CALL_L0);
-    file_read(CALL_L0, fontdata, 0x8000);
-    file_close(CALL_L0);
+    file_open(descriptor);
+    file_seekwriteall(descriptor, settings, sizeof (struct ctrl_videosettings), 0);
+    file_close(descriptor);
+
+}
+
+static void setcolormap(unsigned int descriptor, void *buffer, unsigned int count)
+{
+
+    if (!file_walkfrom(descriptor, CALL_PO, "colormap"))
+        return;
+
+    file_open(descriptor);
+    file_seekwriteall(descriptor, buffer, count, 0);
+    file_close(descriptor);
+
+}
+
+static void initfont(unsigned int descriptor)
+{
+
+    if (!file_walk(descriptor, "/share/ter-118n.pcf"))
+        return;
+
+    file_open(descriptor);
+    file_read(descriptor, fontdata, 0x8000);
+    file_close(descriptor);
 
     fontbitmapdata = pcf_getbitmapdata(fontdata);
     fontpadding = pcf_getpadding(fontdata);
 
-    if (!file_walkfrom(CALL_L0, CALL_PO, "ctrl"))
-        return;
+}
 
-    file_open(CALL_L0);
-    file_seekreadall(CALL_L0, &oldsettings, sizeof (struct ctrl_videosettings), 0);
-    file_seekwriteall(CALL_L0, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekreadall(CALL_L0, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_close(CALL_L0);
+static void initvideo(unsigned int descriptor)
+{
+
+    ctrl_setvideosettings(&settings, 1920, 1080, 32);
+    getvideomode(CALL_L0, &oldsettings);
+    setvideomode(CALL_L0, &settings);
+    getvideomode(CALL_L0, &settings);
+    setcolormap(CALL_L0, colormap8, 3 * 11);
 
     switch (settings.bpp)
     {
 
     case 8:
         paint = paint8;
-
-        if (!file_walkfrom(CALL_L0, CALL_PO, "colormap"))
-            return;
-
-        file_open(CALL_L0);
-        file_seekwriteall(CALL_L0, colormap8, 3 * 11, 0);
-        file_close(CALL_L0);
 
         break;
 
@@ -609,6 +630,53 @@ void main(void)
         break;
 
     }
+
+}
+
+static void destroyvideo(unsigned int descriptor)
+{
+
+    if (!file_walkfrom(descriptor, CALL_PO, "ctrl"))
+        return;
+
+    file_open(descriptor);
+    file_seekwriteall(descriptor, &oldsettings, sizeof (struct ctrl_videosettings), 0);
+    file_close(descriptor);
+
+}
+
+static void poll(unsigned int descriptor)
+{
+
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int count;
+
+    if (!file_walkfrom(descriptor, CALL_PO, "data"))
+        return;
+
+    file_open(CALL_PI);
+    file_open(descriptor);
+
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
+    {
+
+        struct element *element = 0;
+
+        while ((element = nextelement(buffer, count, element)))
+            handlers[element->func](element);
+
+        render(descriptor);
+        cleanelements();
+
+    }
+
+    file_close(descriptor);
+    file_close(CALL_PI);
+
+}
+
+void main(void)
+{
 
     handlers[ELEMENT_FUNC_INSERT] = insertelement;
     handlers[ELEMENT_FUNC_UPDATE] = updateelement;
@@ -626,29 +694,10 @@ void main(void)
     renderers[ELEMENT_TYPE_TEXT] = rendertext;
     renderers[ELEMENT_TYPE_WINDOW] = renderwindow;
 
-    file_open(CALL_PI);
-
-    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
-    {
-
-        struct element *element = 0;
-
-        while ((element = nextelement(buffer, count, element)))
-            handlers[element->func](element);
-
-        render();
-        cleanelements();
-
-    }
-
-    file_close(CALL_PI);
-
-    if (!file_walkfrom(CALL_L0, CALL_PO, "ctrl"))
-        return;
-
-    file_open(CALL_L0);
-    file_seekwriteall(CALL_L0, &oldsettings, sizeof (struct ctrl_videosettings), 0);
-    file_close(CALL_L0);
+    initfont(CALL_L0);
+    initvideo(CALL_L0);
+    poll(CALL_L0);
+    destroyvideo(CALL_L0);
 
 }
 
