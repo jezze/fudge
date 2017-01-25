@@ -515,6 +515,14 @@ static void onmouserelease(struct event_header *header, struct event_mousereleas
 
 }
 
+static void onvideomode(struct event_header *header, struct event_videomode *videomode)
+{
+
+    ev_sendwmresize(CALL_L1, header->destination, 0, 0, videomode->w, videomode->h);
+    ev_sendwmshow(CALL_L1, header->destination);
+
+}
+
 static void onwmmap(struct event_header *header)
 {
 
@@ -624,37 +632,10 @@ static void onwmhide(struct event_header *header)
 
 }
 
-void main(void)
+static void setup(void)
 {
 
     unsigned int i;
-
-    if (!file_walk(CALL_L0, "/system/event/poll"))
-        return;
-
-    if (!file_walk(CALL_L1, "/system/event/wm"))
-        return;
-
-    if (!file_walk(CALL_L2, "/system/event/key"))
-        return;
-
-    if (!file_walk(CALL_L3, "/system/event/mouse"))
-        return;
-
-    handlers.keypress = onkeypress;
-    handlers.keyrelease = onkeyrelease;
-    handlers.mousemove = onmousemove;
-    handlers.mousepress = onmousepress;
-    handlers.mouserelease = onmouserelease;
-    handlers.wmmap = onwmmap;
-    handlers.wmunmap = onwmunmap;
-    handlers.wmresize = onwmresize;
-    handlers.wmshow = onwmshow;
-    handlers.wmhide = onwmhide;
-
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    element_initfill(&background, 2);
-    element_initmouse(&mouse, 0, 0);
 
     for (i = 0; i < VIEWS; i++)
     {
@@ -677,16 +658,56 @@ void main(void)
     }
 
     activateview(viewfocus);
+
+}
+
+void main(void)
+{
+
+    handlers.keypress = onkeypress;
+    handlers.keyrelease = onkeyrelease;
+    handlers.mousemove = onmousemove;
+    handlers.mousepress = onmousepress;
+    handlers.mouserelease = onmouserelease;
+    handlers.videomode = onvideomode;
+    handlers.wmmap = onwmmap;
+    handlers.wmunmap = onwmunmap;
+    handlers.wmresize = onwmresize;
+    handlers.wmshow = onwmshow;
+    handlers.wmhide = onwmhide;
+
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    element_initfill(&background, 2);
+    element_initmouse(&mouse, 0, 0);
+    setup();
+
+    if (!file_walk(CALL_L0, "/system/event/poll"))
+        return;
+
+    if (!file_walk(CALL_L1, "/system/event/wm"))
+        return;
+
+    if (!file_walk(CALL_L2, "/system/event/key"))
+        return;
+
+    if (!file_walk(CALL_L3, "/system/event/mouse"))
+        return;
+
+    if (!file_walk(CALL_L4, "/system/event/video"))
+        return;
+
     file_open(CALL_PO);
     file_open(CALL_L0);
     file_open(CALL_L1);
     file_open(CALL_L2);
     file_open(CALL_L3);
+    file_open(CALL_L4);
     ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit && ev_read(&handlers, CALL_L0))
         print_flush(&output, CALL_PO);
 
+    file_close(CALL_L4);
     file_close(CALL_L3);
     file_close(CALL_L2);
     file_close(CALL_L1);

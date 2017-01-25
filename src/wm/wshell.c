@@ -234,9 +234,6 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    if (!file_walk(CALL_L0, "/system/event/wm"))
-        return;
-
     handlers.keypress = onkeypress;
     handlers.keyrelease = onkeyrelease;
     handlers.wmunmap = onwmunmap;
@@ -250,6 +247,10 @@ void main(void)
     ring_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     ring_overwrite(&text, "$ ", 2);
+
+    if (!file_walk(CALL_L0, "/system/event/wm"))
+        return;
+
     file_open(CALL_PO);
     file_open(CALL_L0);
     ev_sendwmmap(CALL_L0, EVENT_ADDR_BROADCAST);

@@ -18,7 +18,6 @@
 #define MOUSE_WIDTH                     24
 #define MOUSE_HEIGHT                    24
 
-static struct ctrl_videosettings oldsettings;
 static struct ctrl_videosettings settings;
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
@@ -556,98 +555,11 @@ static void render(unsigned int descriptor)
 
 }
 
-static void getvideomode(unsigned int descriptor, struct ctrl_videosettings *settings)
-{
-
-    file_open(descriptor);
-    file_readall(descriptor, settings, sizeof (struct ctrl_videosettings));
-    file_close(descriptor);
-
-}
-
-static void setvideomode(unsigned int descriptor, struct ctrl_videosettings *settings)
-{
-
-    file_open(descriptor);
-    file_writeall(descriptor, settings, sizeof (struct ctrl_videosettings));
-    file_close(descriptor);
-
-}
-
-static void setcolormap(unsigned int descriptor, void *buffer, unsigned int count)
-{
-
-    file_open(descriptor);
-    file_writeall(descriptor, buffer, count);
-    file_close(descriptor);
-
-}
-
-static void initfont(void)
-{
-
-    if (!file_walk(CALL_L0, "/share/ter-118n.pcf"))
-        return;
-
-    file_open(CALL_L0);
-    file_read(CALL_L0, fontdata, 0x8000);
-    file_close(CALL_L0);
-
-    fontbitmapdata = pcf_getbitmapdata(fontdata);
-    fontpadding = pcf_getpadding(fontdata);
-
-}
-
-static void initvideo(void)
-{
-
-    if (!file_walkfrom(CALL_L0, CALL_PO, "ctrl"))
-        return;
-
-    if (!file_walkfrom(CALL_L1, CALL_PO, "data"))
-        return;
-
-    if (!file_walkfrom(CALL_L2, CALL_PO, "colormap"))
-        return;
-
-    ctrl_setvideosettings(&settings, 1920, 1080, 32);
-    getvideomode(CALL_L0, &oldsettings);
-    setvideomode(CALL_L0, &settings);
-    getvideomode(CALL_L0, &settings);
-    setcolormap(CALL_L2, colormap8, 3 * 11);
-
-    switch (settings.bpp)
-    {
-
-    case 8:
-        paint = paint8;
-
-        break;
-
-    case 32:
-        paint = paint32;
-
-        break;
-
-    }
-
-}
-
-static void destroyvideo(void)
-{
-
-    setvideomode(CALL_L0, &oldsettings);
-
-}
-
 static void poll(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
-
-    file_open(CALL_PI);
-    file_open(CALL_L1);
 
     while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
     {
@@ -657,13 +569,10 @@ static void poll(void)
         while ((element = nextelement(buffer, count, element)))
             handlers[element->func](element);
 
-        render(CALL_L1);
+        render(CALL_L0);
         cleanelements();
 
     }
-
-    file_close(CALL_L1);
-    file_close(CALL_PI);
 
 }
 
@@ -686,10 +595,53 @@ void main(void)
     renderers[ELEMENT_TYPE_TEXT] = rendertext;
     renderers[ELEMENT_TYPE_WINDOW] = renderwindow;
 
-    initfont();
-    initvideo();
+    if (!file_walk(CALL_L0, "/share/ter-118n.pcf"))
+        return;
+
+    file_open(CALL_L0);
+    file_read(CALL_L0, fontdata, 0x8000);
+    file_close(CALL_L0);
+
+    fontbitmapdata = pcf_getbitmapdata(fontdata);
+    fontpadding = pcf_getpadding(fontdata);
+
+    if (!file_walkfrom(CALL_L0, CALL_PO, "ctrl"))
+        return;
+
+    file_open(CALL_L0);
+    file_readall(CALL_L0, &settings, sizeof (struct ctrl_videosettings));
+    file_close(CALL_L0);
+
+    switch (settings.bpp)
+    {
+
+    case 8:
+        paint = paint8;
+
+        break;
+
+    case 32:
+        paint = paint32;
+
+        break;
+
+    }
+
+    if (!file_walkfrom(CALL_L0, CALL_PO, "colormap"))
+        return;
+
+    file_open(CALL_L0);
+    file_writeall(CALL_L0, colormap8, 3 * 11);
+    file_close(CALL_L0);
+
+    if (!file_walkfrom(CALL_L0, CALL_PO, "data"))
+        return;
+
+    file_open(CALL_PI);
+    file_open(CALL_L0);
     poll();
-    destroyvideo();
+    file_close(CALL_L0);
+    file_close(CALL_PI);
 
 }
 

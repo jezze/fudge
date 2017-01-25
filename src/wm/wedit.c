@@ -227,14 +227,19 @@ static void onwmhide(struct event_header *header)
 
 }
 
-void main(void)
+static void readfile(void)
 {
 
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    if (!file_walk(CALL_L0, "/system/event/wm"))
-        return;
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
+        ring_write(&input2, buffer, count);
+
+}
+
+void main(void)
+{
 
     handlers.keypress = onkeypress;
     handlers.keyrelease = onkeyrelease;
@@ -250,11 +255,12 @@ void main(void)
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     element_inittext(&status, ELEMENT_TEXTTYPE_HIGHLIGHT, ELEMENT_TEXTFLOW_NORMAL);
     file_open(CALL_PI);
-
-    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
-        ring_write(&input2, buffer, count);
-
+    readfile();
     file_close(CALL_PI);
+
+    if (!file_walk(CALL_L0, "/system/event/wm"))
+        return;
+
     file_open(CALL_PO);
     file_open(CALL_L0);
     ev_sendwmmap(CALL_L0, EVENT_ADDR_BROADCAST);
