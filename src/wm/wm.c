@@ -526,30 +526,16 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
 static void onwmmap(struct event_header *header)
 {
 
-    if (header->source == header->destination)
-    {
+    if (viewfocus->remotefocus)
+        deactivateremote(viewfocus->remotefocus);
 
-        /* Need to figure out how to get these values properly */
-        ev_sendwmresize(CALL_L1, header->destination, 0, 0, 1920, 1080);
-        ev_sendwmshow(CALL_L1, header->destination);
+    viewfocus->remotefocus = remotelist.head->data;
+    viewfocus->remotefocus->source = header->source;
 
-    }
-
-    else
-    {
-
-        if (viewfocus->remotefocus)
-            deactivateremote(viewfocus->remotefocus);
-
-        viewfocus->remotefocus = remotelist.head->data;
-        viewfocus->remotefocus->source = header->source;
-
-        list_move(&viewfocus->remotes, &viewfocus->remotefocus->item);
-        activateremote(viewfocus->remotefocus);
-        arrangeview(header->destination, viewfocus);
-        showremotes(header->destination, &viewfocus->remotes);
-
-    }
+    list_move(&viewfocus->remotes, &viewfocus->remotefocus->item);
+    activateremote(viewfocus->remotefocus);
+    arrangeview(header->destination, viewfocus);
+    showremotes(header->destination, &viewfocus->remotes);
 
 }
 
@@ -705,7 +691,6 @@ void main(void)
     file_open(CALL_L3);
     file_open(CALL_L4);
     file_open(CALL_L5);
-    ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit && ev_read(&handlers, CALL_L0))
         print_flush(&output, CALL_L5);
