@@ -696,23 +696,26 @@ void main(void)
     if (!file_walk(CALL_L4, "/system/event/video"))
         return;
 
-    file_open(CALL_PO);
+    if (!file_walk(CALL_L5, "/system/wm/send"))
+        return;
+
     file_open(CALL_L0);
     file_open(CALL_L1);
     file_open(CALL_L2);
     file_open(CALL_L3);
     file_open(CALL_L4);
+    file_open(CALL_L5);
     ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit && ev_read(&handlers, CALL_L0))
-        print_flush(&output, CALL_PO);
+        print_flush(&output, CALL_L5);
 
+    file_close(CALL_L5);
     file_close(CALL_L4);
     file_close(CALL_L3);
     file_close(CALL_L2);
     file_close(CALL_L1);
     file_close(CALL_L0);
-    file_close(CALL_PO);
 
 }
 

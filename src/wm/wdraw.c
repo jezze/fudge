@@ -561,7 +561,7 @@ static void poll(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(CALL_L1, buffer, FUDGE_BSIZE)))
     {
 
         struct element *element = 0;
@@ -637,11 +637,14 @@ void main(void)
     if (!file_walkfrom(CALL_L0, CALL_PO, "data"))
         return;
 
-    file_open(CALL_PI);
+    if (!file_walk(CALL_L1, "/system/wm/poll"))
+        return;
+
+    file_open(CALL_L1);
     file_open(CALL_L0);
     poll();
     file_close(CALL_L0);
-    file_close(CALL_PI);
+    file_close(CALL_L1);
 
 }
 

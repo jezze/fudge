@@ -5,8 +5,8 @@ ipsetup
 motd > /system/console/if:1/data
 shell < /system/console/if:0/data > /system/console/if:1/data
 winit > /system/video/if:0/
-wdraw < /system/wm/poll > /system/video/if:0/
-wm > /system/wm/send
-wshell > /system/wm/send
-wshell > /system/wm/send
-wedit < /share/wm-man.txt > /system/wm/send
+wdraw > /system/video/if:0/
+wm
+wshell
+wshell
+wedit < /share/wm-man.txt
