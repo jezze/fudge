@@ -609,7 +609,9 @@ void main(void)
         return;
 
     file_open(CALL_L0);
-    file_readall(CALL_L0, &settings, sizeof (struct ctrl_videosettings));
+    ctrl_setvideosettings(&settings, 1920, 1080, 32);
+    file_seekwriteall(CALL_L0, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekreadall(CALL_L0, &settings, sizeof (struct ctrl_videosettings), 0);
     file_close(CALL_L0);
 
     switch (settings.bpp)

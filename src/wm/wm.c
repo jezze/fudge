@@ -647,6 +647,18 @@ static void setup(void)
 
 }
 
+void initvideo()
+{
+
+    struct ctrl_videosettings settings;
+
+    file_open(CALL_L6);
+    file_seekreadall(CALL_L6, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(CALL_L6, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_close(CALL_L6);
+
+}
+
 void main(void)
 {
 
@@ -685,12 +697,16 @@ void main(void)
     if (!file_walk(CALL_L5, "/system/wm/send"))
         return;
 
+    if (!file_walkfrom(CALL_L6, CALL_PO, "ctrl"))
+        return;
+
     file_open(CALL_L0);
     file_open(CALL_L1);
     file_open(CALL_L2);
     file_open(CALL_L3);
     file_open(CALL_L4);
     file_open(CALL_L5);
+    initvideo();
 
     while (!quit && ev_read(&handlers, CALL_L0))
         print_flush(&output, CALL_L5);
