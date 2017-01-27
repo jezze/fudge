@@ -13,6 +13,14 @@ static void printelement(struct ring *ring, unsigned int id, unsigned int func, 
 
 }
 
+void print_insertconfig(struct ring *ring, unsigned int source, struct element_config *config, unsigned int z)
+{
+
+    printelement(ring, (unsigned int)config, ELEMENT_FUNC_INSERT, ELEMENT_TYPE_CONFIG, source, z, sizeof (struct element_config));
+    ring_write(ring, config, sizeof (struct element_config));
+
+}
+
 void print_insertfill(struct ring *ring, unsigned int source, struct element_fill *fill, unsigned int z)
 {
 
@@ -50,6 +58,13 @@ void print_insertwindow(struct ring *ring, unsigned int source, struct element_w
 
     printelement(ring, (unsigned int)window, ELEMENT_FUNC_INSERT, ELEMENT_TYPE_WINDOW, source, z, sizeof (struct element_window));
     ring_write(ring, window, sizeof (struct element_window));
+
+}
+
+void print_removeconfig(struct ring *ring, unsigned int source, struct element_config *config)
+{
+
+    printelement(ring, (unsigned int)config, ELEMENT_FUNC_REMOVE, ELEMENT_TYPE_CONFIG, source, 0, 0);
 
 }
 

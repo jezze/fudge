@@ -22,8 +22,8 @@ static struct ctrl_videosettings settings;
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
 static void (*handlers[3])(struct element *element);
-static unsigned int (*tests[5])(struct element *element, void *data, unsigned int line);
-static void (*renderers[5])(struct element *element, void *data, unsigned int line);
+static unsigned int (*tests[6])(struct element *element, void *data, unsigned int line);
+static void (*renderers[6])(struct element *element, void *data, unsigned int line);
 static unsigned char layerdata1[0x8000];
 static unsigned int layercount1;
 static unsigned char fontdata[0x8000];
@@ -421,6 +421,36 @@ static void renderwindow(struct element *element, void *data, unsigned int line)
 
 }
 
+static unsigned int testconfig(struct element *element, void *data, unsigned int line)
+{
+
+    if (element->z)
+    {
+
+        struct element_config *config = data;
+
+        if (!file_walkfrom(CALL_L2, CALL_PO, "ctrl"))
+            return 0;
+
+        file_open(CALL_L2);
+        ctrl_setvideosettings(&settings, config->w, config->h, config->bpp);
+        file_seekwriteall(CALL_L2, &settings, sizeof (struct ctrl_videosettings), 0);
+        file_seekreadall(CALL_L2, &settings, sizeof (struct ctrl_videosettings), 0);
+        file_close(CALL_L2);
+
+    }
+
+    element->z = 0;
+
+    return 0;
+
+}
+
+static void renderconfig(struct element *element, void *data, unsigned int line)
+{
+
+}
+
 static struct element *nextelement(unsigned char *data, unsigned int count, struct element *element)
 {
 
@@ -584,11 +614,13 @@ void main(void)
     handlers[ELEMENT_FUNC_REMOVE] = removeelement;
     textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
     textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
+    tests[ELEMENT_TYPE_CONFIG] = testconfig;
     tests[ELEMENT_TYPE_FILL] = testfill;
     tests[ELEMENT_TYPE_MOUSE] = testmouse;
     tests[ELEMENT_TYPE_PANEL] = testpanel;
     tests[ELEMENT_TYPE_TEXT] = testtext;
     tests[ELEMENT_TYPE_WINDOW] = testwindow;
+    renderers[ELEMENT_TYPE_CONFIG] = renderconfig;
     renderers[ELEMENT_TYPE_FILL] = renderfill;
     renderers[ELEMENT_TYPE_MOUSE] = rendermouse;
     renderers[ELEMENT_TYPE_PANEL] = renderpanel;

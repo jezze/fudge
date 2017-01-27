@@ -37,6 +37,7 @@ static struct ring output;
 static struct box size;
 static struct box body;
 static struct list remotelist;
+static struct element_config config;
 static struct element_fill background;
 static struct element_mouse mouse;
 static struct view *viewfocus = &views[0];
@@ -647,18 +648,6 @@ static void setup(void)
 
 }
 
-void initvideo()
-{
-
-    struct ctrl_videosettings settings;
-
-    file_open(CALL_L6);
-    file_seekreadall(CALL_L6, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekwriteall(CALL_L6, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_close(CALL_L6);
-
-}
-
 void main(void)
 {
 
@@ -675,6 +664,7 @@ void main(void)
     handlers.wmhide = onwmhide;
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
+    element_initconfig(&config, 1920, 1080, 32);
     element_initfill(&background, 2);
     element_initmouse(&mouse, 0, 0);
     setup();
@@ -694,15 +684,13 @@ void main(void)
     if (!file_walk(CALL_L4, "/system/event/video"))
         return;
 
-    if (!file_walkfrom(CALL_L6, CALL_PO, "ctrl"))
-        return;
-
     file_open(CALL_L0);
     file_open(CALL_L1);
     file_open(CALL_L2);
     file_open(CALL_L3);
     file_open(CALL_L4);
-    initvideo();
+    print_insertconfig(&output, 0, &config, 1);
+    print_flush(&output, CALL_L1);
 
     while (!quit && ev_read(&handlers, CALL_L0))
         print_flush(&output, CALL_L1);
