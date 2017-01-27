@@ -4,13 +4,11 @@
 #include "event.h"
 
 static struct system_node root;
-static struct system_node poll;
 static struct system_node key;
 static struct system_node mouse;
 static struct system_node tick;
 static struct system_node video;
 static struct system_node wm;
-static struct list polllinks;
 static struct list keylinks;
 static struct list mouselinks;
 static struct list ticklinks;
@@ -168,38 +166,6 @@ static unsigned int write(struct list *links, struct service_state *state, void 
         multicast(links, header, count);
 
     return count;
-
-}
-
-static unsigned int poll_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&polllinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int poll_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&polllinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int poll_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
-
-}
-
-static unsigned int poll_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return write(&polllinks, state, buffer, count);
 
 }
 
@@ -367,17 +333,12 @@ void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
-    system_initnode(&poll, SYSTEM_NODETYPE_NORMAL, "poll");
     system_initnode(&key, SYSTEM_NODETYPE_NORMAL, "key");
     system_initnode(&mouse, SYSTEM_NODETYPE_NORMAL, "mouse");
     system_initnode(&tick, SYSTEM_NODETYPE_NORMAL, "tick");
     system_initnode(&video, SYSTEM_NODETYPE_NORMAL, "video");
     system_initnode(&wm, SYSTEM_NODETYPE_NORMAL, "wm");
 
-    poll.open = poll_open;
-    poll.close = poll_close;
-    poll.read = poll_read;
-    poll.write = poll_write;
     key.open = key_open;
     key.close = key_close;
     key.read = key_read;
@@ -399,7 +360,6 @@ void module_init(void)
     wm.read = wm_read;
     wm.write = wm_write;
 
-    system_addchild(&root, &poll);
     system_addchild(&root, &key);
     system_addchild(&root, &mouse);
     system_addchild(&root, &tick);
