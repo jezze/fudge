@@ -258,21 +258,21 @@ void main(void)
     readfile();
     file_close(CALL_PI);
 
-    if (!file_walk(CALL_L0, "/system/event/wm"))
+    if (!file_walk(CALL_L0, "/system/wm/send"))
         return;
 
-    if (!file_walk(CALL_L1, "/system/wm/send"))
+    if (!file_walk(CALL_L1, "/system/event/wm"))
         return;
 
-    file_open(CALL_L1);
     file_open(CALL_L0);
-    ev_sendwmmap(CALL_L0, EVENT_ADDR_BROADCAST);
+    file_open(CALL_L1);
+    ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
 
-    while (!quit && ev_read(&handlers, CALL_L0))
-        print_flush(&output, CALL_L1);
+    while (!quit && ev_read(&handlers, CALL_L1))
+        print_flush(&output, CALL_L0);
 
-    file_close(CALL_L0);
     file_close(CALL_L1);
+    file_close(CALL_L0);
 
 }
 

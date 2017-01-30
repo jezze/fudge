@@ -92,7 +92,7 @@ static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, 
 {
 
     box_setsize(&remote->window.size, x, y, w, h);
-    ev_sendwmresize(CALL_L0, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+    ev_sendwmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
 
 }
 
@@ -106,7 +106,7 @@ static void showremotes(unsigned int source, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        ev_sendwmshow(CALL_L0, remote->source);
+        ev_sendwmshow(CALL_L1, remote->source);
         printinsertremote(source, remote);
 
     }
@@ -123,7 +123,7 @@ static void hideremotes(unsigned int source, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        ev_sendwmhide(CALL_L0, remote->source);
+        ev_sendwmhide(CALL_L1, remote->source);
         printremoveremote(source, remote);
 
     }
@@ -229,7 +229,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     {
 
         if (viewfocus->remotefocus)
-            ev_sendkeypress(CALL_L0, viewfocus->remotefocus->source, keypress->scancode);
+            ev_sendkeypress(CALL_L1, viewfocus->remotefocus->source, keypress->scancode);
 
         return;
 
@@ -286,8 +286,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (!viewfocus->remotefocus)
             break;
 
-        ev_sendwmhide(CALL_L0, viewfocus->remotefocus->source);
-        ev_sendwmunmap(CALL_L0, viewfocus->remotefocus->source);
+        ev_sendwmhide(CALL_L1, viewfocus->remotefocus->source);
+        ev_sendwmunmap(CALL_L1, viewfocus->remotefocus->source);
         printremoveremote(header->destination, viewfocus->remotefocus);
         list_move(&remotelist, &viewfocus->remotefocus->item);
 
@@ -386,8 +386,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (!(keymod & KEYMOD_SHIFT))
             break;
 
-        ev_sendwmhide(CALL_L0, header->destination);
-        ev_sendwmunmap(CALL_L0, header->destination);
+        ev_sendwmhide(CALL_L1, header->destination);
+        ev_sendwmunmap(CALL_L1, header->destination);
 
         break;
 
@@ -418,7 +418,7 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
     {
 
         if (viewfocus->remotefocus)
-            ev_sendkeyrelease(CALL_L0, viewfocus->remotefocus->source, keyrelease->scancode);
+            ev_sendkeyrelease(CALL_L1, viewfocus->remotefocus->source, keyrelease->scancode);
 
         return;
 
@@ -447,7 +447,7 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
     print_insertmouse(&output, header->destination, &mouse, 3);
 
     if (viewfocus->remotefocus)
-        ev_sendmousemove(CALL_L0, viewfocus->remotefocus->source, mouse.x, mouse.y);
+        ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.x, mouse.y);
 
 }
 
@@ -504,7 +504,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
     }
 
     if (viewfocus->remotefocus)
-        ev_sendmousepress(CALL_L0, viewfocus->remotefocus->source, mousepress->button);
+        ev_sendmousepress(CALL_L1, viewfocus->remotefocus->source, mousepress->button);
 
 }
 
@@ -512,15 +512,15 @@ static void onmouserelease(struct event_header *header, struct event_mousereleas
 {
 
     if (viewfocus->remotefocus)
-        ev_sendmouserelease(CALL_L0, viewfocus->remotefocus->source, mouserelease->button);
+        ev_sendmouserelease(CALL_L1, viewfocus->remotefocus->source, mouserelease->button);
 
 }
 
 static void onvideomode(struct event_header *header, struct event_videomode *videomode)
 {
 
-    ev_sendwmresize(CALL_L0, header->destination, 0, 0, videomode->w, videomode->h);
-    ev_sendwmshow(CALL_L0, header->destination);
+    ev_sendwmresize(CALL_L1, header->destination, 0, 0, videomode->w, videomode->h);
+    ev_sendwmshow(CALL_L1, header->destination);
 
 }
 
@@ -553,7 +553,7 @@ static void onwmunmap(struct event_header *header)
 
             struct remote *remote = views[i].remotes.head->data;
 
-            ev_sendwmunmap(CALL_L0, remote->source);
+            ev_sendwmunmap(CALL_L1, remote->source);
             list_move(&remotelist, &remote->item);
 
         }
@@ -669,10 +669,10 @@ void main(void)
     element_initmouse(&mouse, 0, 0);
     setup();
 
-    if (!file_walk(CALL_L0, "/system/event/wm"))
+    if (!file_walk(CALL_L0, "/system/wm/send"))
         return;
 
-    if (!file_walk(CALL_L1, "/system/wm/send"))
+    if (!file_walk(CALL_L1, "/system/event/wm"))
         return;
 
     if (!file_walk(CALL_L2, "/system/event/key"))
@@ -690,10 +690,10 @@ void main(void)
     file_open(CALL_L3);
     file_open(CALL_L4);
     print_insertconfig(&output, 0, &config, 1);
-    print_flush(&output, CALL_L1);
+    print_flush(&output, CALL_L0);
 
-    while (!quit && ev_read(&handlers, CALL_L0))
-        print_flush(&output, CALL_L1);
+    while (!quit && ev_read(&handlers, CALL_L1))
+        print_flush(&output, CALL_L0);
 
     file_close(CALL_L4);
     file_close(CALL_L3);
