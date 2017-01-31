@@ -130,6 +130,18 @@ static void onwmhide(struct ev_handlers *handlers, unsigned int descriptor, stru
 
 }
 
+static void onwmflush(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+{
+
+    struct event_wmflush wmflush;
+
+    file_readall(descriptor, &wmflush, sizeof (struct event_wmflush));
+
+    if (handlers->wmflush)
+        handlers->wmflush(header, &wmflush);
+
+}
+
 static void (*funcs[EVENTS])(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header) = {
     0,
     onkeypress,
@@ -143,7 +155,8 @@ static void (*funcs[EVENTS])(struct ev_handlers *handlers, unsigned int descript
     onwmunmap,
     onwmresize,
     onwmshow,
-    onwmhide
+    onwmhide,
+    onwmflush
 };
 
 unsigned int ev_read(struct ev_handlers *handlers, unsigned int descriptor)

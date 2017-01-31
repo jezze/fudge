@@ -259,7 +259,19 @@ void main(void)
     ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit && ev_read(&handlers, CALL_L1))
-        print_flush(&output, CALL_L0);
+    {
+
+        unsigned int count = ring_count(&output);
+
+        if (count)
+        {
+
+            print_flush(&output, CALL_L0);
+            ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST, count);
+
+        }
+
+    }
 
     file_close(CALL_L1);
     file_close(CALL_L0);

@@ -619,6 +619,11 @@ static void onwmhide(struct event_header *header)
 
 }
 
+static void onwmflush(struct event_header *header, struct event_wmflush *wmflush)
+{
+
+}
+
 static void setup(void)
 {
 
@@ -662,6 +667,7 @@ void main(void)
     handlers.wmresize = onwmresize;
     handlers.wmshow = onwmshow;
     handlers.wmhide = onwmhide;
+    handlers.wmflush = onwmflush;
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
     element_initconfig(&config, 1920, 1080, 32);
@@ -693,7 +699,19 @@ void main(void)
     print_flush(&output, CALL_L0);
 
     while (!quit && ev_read(&handlers, CALL_L1))
-        print_flush(&output, CALL_L0);
+    {
+
+        unsigned int count = ring_count(&output);
+
+        if (count)
+        {
+
+            print_flush(&output, CALL_L0);
+            ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST, count);
+
+        }
+
+    }
 
     file_close(CALL_L4);
     file_close(CALL_L3);
