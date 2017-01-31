@@ -6,13 +6,14 @@ struct ev_handlers
     void (*mousemove)(struct event_header *header, struct event_mousemove *mousemove);
     void (*mousepress)(struct event_header *header, struct event_mousepress *mousepress);
     void (*mouserelease)(struct event_header *header, struct event_mouserelease *mouserelease);
-    void (*tick)(struct event_header *header, struct event_tick *tick);
+    void (*timertick)(struct event_header *header, struct event_timertick *timertick);
     void (*videomode)(struct event_header *header, struct event_videomode *videomode);
     void (*wmmap)(struct event_header *header);
     void (*wmunmap)(struct event_header *header);
     void (*wmresize)(struct event_header *header, struct event_wmresize *wmresize);
     void (*wmshow)(struct event_header *header);
     void (*wmhide)(struct event_header *header);
+    void (*wmflush)(struct event_header *header, struct event_wmflush *wmflush);
 
 };
 
@@ -27,3 +28,4 @@ void ev_sendwmunmap(unsigned int descriptor, unsigned int destination);
 void ev_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
 void ev_sendwmshow(unsigned int descriptor, unsigned int destination);
 void ev_sendwmhide(unsigned int descriptor, unsigned int destination);
+void ev_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned int count);

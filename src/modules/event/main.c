@@ -6,12 +6,12 @@
 static struct system_node root;
 static struct system_node key;
 static struct system_node mouse;
-static struct system_node tick;
+static struct system_node timer;
 static struct system_node video;
 static struct system_node wm;
 static struct list keylinks;
 static struct list mouselinks;
-static struct list ticklinks;
+static struct list timerlinks;
 static struct list videolinks;
 static struct list wmlinks;
 
@@ -123,17 +123,17 @@ void event_notifymouserelease(unsigned int button)
 
 }
 
-void event_notifytick(unsigned int counter)
+void event_notifytimertick(unsigned int counter)
 {
 
-    struct {struct event_header header; struct event_tick tick;} message;
+    struct {struct event_header header; struct event_timertick timertick;} message;
 
-    message.header.type = EVENT_TICK;
+    message.header.type = EVENT_TIMERTICK;
     message.header.source = 0;
     message.header.destination = 0;
-    message.tick.counter = counter;
+    message.timertick.counter = counter;
 
-    multicast(&ticklinks, &message.header, sizeof (struct event_header) + sizeof (struct event_tick));
+    multicast(&timerlinks, &message.header, sizeof (struct event_header) + sizeof (struct event_timertick));
 
 }
 
@@ -233,35 +233,35 @@ static unsigned int mouse_write(struct system_node *self, struct service_state *
 
 }
 
-static unsigned int tick_open(struct system_node *self, struct service_state *state)
+static unsigned int timer_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&ticklinks, &state->link);
+    list_add(&timerlinks, &state->link);
 
     return state->id;
 
 }
 
-static unsigned int tick_close(struct system_node *self, struct service_state *state)
+static unsigned int timer_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&ticklinks, &state->link);
+    list_remove(&timerlinks, &state->link);
 
     return state->id;
 
 }
 
-static unsigned int tick_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int timer_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     return task_read(state->link.data, buffer, count);
 
 }
 
-static unsigned int tick_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int timer_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return write(&ticklinks, state, buffer, count);
+    return write(&timerlinks, state, buffer, count);
 
 }
 
@@ -335,7 +335,7 @@ void module_init(void)
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
     system_initnode(&key, SYSTEM_NODETYPE_NORMAL, "key");
     system_initnode(&mouse, SYSTEM_NODETYPE_NORMAL, "mouse");
-    system_initnode(&tick, SYSTEM_NODETYPE_NORMAL, "tick");
+    system_initnode(&timer, SYSTEM_NODETYPE_NORMAL, "timer");
     system_initnode(&video, SYSTEM_NODETYPE_NORMAL, "video");
     system_initnode(&wm, SYSTEM_NODETYPE_NORMAL, "wm");
 
@@ -347,10 +347,10 @@ void module_init(void)
     mouse.close = mouse_close;
     mouse.read = mouse_read;
     mouse.write = mouse_write;
-    tick.open = tick_open;
-    tick.close = tick_close;
-    tick.read = tick_read;
-    tick.write = tick_write;
+    timer.open = timer_open;
+    timer.close = timer_close;
+    timer.read = timer_read;
+    timer.write = timer_write;
     video.open = video_open;
     video.close = video_close;
     video.read = video_read;
@@ -362,7 +362,7 @@ void module_init(void)
 
     system_addchild(&root, &key);
     system_addchild(&root, &mouse);
-    system_addchild(&root, &tick);
+    system_addchild(&root, &timer);
     system_addchild(&root, &video);
     system_addchild(&root, &wm);
 

@@ -62,15 +62,15 @@ static void onmouserelease(struct ev_handlers *handlers, unsigned int descriptor
 
 }
 
-static void ontick(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void ontimertick(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
-    struct event_tick tick;
+    struct event_timertick timertick;
 
-    file_readall(descriptor, &tick, sizeof (struct event_tick));
+    file_readall(descriptor, &timertick, sizeof (struct event_timertick));
 
-    if (handlers->tick)
-        handlers->tick(header, &tick);
+    if (handlers->timertick)
+        handlers->timertick(header, &timertick);
 
 }
 
@@ -137,7 +137,7 @@ static void (*funcs[EVENTS])(struct ev_handlers *handlers, unsigned int descript
     onmousemove,
     onmousepress,
     onmouserelease,
-    ontick,
+    ontimertick,
     onvideomode,
     onwmmap,
     onwmunmap,
@@ -272,6 +272,17 @@ void ev_sendwmhide(unsigned int descriptor, unsigned int destination)
 {
 
     send(descriptor, destination, EVENT_WMHIDE, 0, 0);
+
+}
+
+void ev_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned int count)
+{
+
+    struct event_wmflush wmflush;
+
+    wmflush.count = count;
+
+    send(descriptor, destination, EVENT_WMFLUSH, sizeof (struct event_wmflush), &wmflush);
 
 }
 
