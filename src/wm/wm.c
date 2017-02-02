@@ -696,22 +696,10 @@ void main(void)
     file_open(CALL_L3);
     file_open(CALL_L4);
     print_insertconfig(&output, 0, &config, 1);
-    print_flush(&output, CALL_L0);
+    ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST, print_flush(&output, CALL_L0));
 
     while (!quit && ev_read(&handlers, CALL_L1))
-    {
-
-        unsigned int count = ring_count(&output);
-
-        if (count)
-        {
-
-            print_flush(&output, CALL_L0);
-            ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST, count);
-
-        }
-
-    }
+        ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST, print_flush(&output, CALL_L0));
 
     file_close(CALL_L4);
     file_close(CALL_L3);

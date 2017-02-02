@@ -295,7 +295,8 @@ void ev_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned 
 
     wmflush.count = count;
 
-    send(descriptor, destination, EVENT_WMFLUSH, sizeof (struct event_wmflush), &wmflush);
+    if (count)
+        send(descriptor, destination, EVENT_WMFLUSH, sizeof (struct event_wmflush), &wmflush);
 
 }
 
