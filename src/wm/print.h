@@ -10,4 +10,3 @@ void print_removemouse(struct ring *ring, unsigned int source, struct element_mo
 void print_removepanel(struct ring *ring, unsigned int source, struct element_panel *panel);
 void print_removetext(struct ring *ring, unsigned int source, struct element_text *text);
 void print_removewindow(struct ring *ring, unsigned int source, struct element_window *window);
-unsigned int print_flush(struct ring *ring, unsigned int descriptor);

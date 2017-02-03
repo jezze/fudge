@@ -288,15 +288,21 @@ void ev_sendwmhide(unsigned int descriptor, unsigned int destination)
 
 }
 
-void ev_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned int count)
+void ev_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned int desc2, struct ring *ring)
 {
 
     struct event_wmflush wmflush;
+    char buffer[FUDGE_BSIZE];
 
-    wmflush.count = count;
+    wmflush.count = ring_read(ring, buffer, FUDGE_BSIZE);
 
-    if (count)
+    if (wmflush.count)
+    {
+
         send(descriptor, destination, EVENT_WMFLUSH, sizeof (struct event_wmflush), &wmflush);
+        file_writeall(desc2, buffer, wmflush.count);
+
+    }
 
 }
 

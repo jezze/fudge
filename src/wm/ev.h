@@ -28,4 +28,4 @@ void ev_sendwmunmap(unsigned int descriptor, unsigned int destination);
 void ev_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
 void ev_sendwmshow(unsigned int descriptor, unsigned int destination);
 void ev_sendwmhide(unsigned int descriptor, unsigned int destination);
-void ev_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned int count);
+void ev_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned int desc2, struct ring *ring);

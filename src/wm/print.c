@@ -103,15 +103,3 @@ void print_removewindow(struct ring *ring, unsigned int source, struct element_w
 
 }
 
-unsigned int print_flush(struct ring *ring, unsigned int descriptor)
-{
-
-    char buffer[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
-
-    file_writeall(descriptor, buffer, count);
-
-    return count;
-
-}
-
