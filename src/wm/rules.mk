@@ -63,17 +63,3 @@ L:=\
     $(DIR_SRC)/fudge/fudge.a \
 
 include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/wm/wtext \
-
-O:=\
-    $(DIR_SRC)/wm/wtext.o \
-    $(DIR_SRC)/wm/box.o \
-    $(DIR_SRC)/wm/element.o \
-
-L:=\
-    $(DIR_SRC)/abi/abi.a \
-    $(DIR_SRC)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
