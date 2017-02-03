@@ -190,14 +190,6 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
 
 }
 
-static void onmousepress(struct event_header *header, struct event_mousepress *mousepress)
-{
-
-    moveright(1);
-    printinsert(header->destination);
-
-}
-
 static void onwmunmap(struct event_header *header)
 {
 
@@ -243,7 +235,6 @@ void main(void)
 
     handlers.keypress = onkeypress;
     handlers.keyrelease = onkeyrelease;
-    handlers.mousepress = onmousepress;
     handlers.wmunmap = onwmunmap;
     handlers.wmresize = onwmresize;
     handlers.wmshow = onwmshow;
