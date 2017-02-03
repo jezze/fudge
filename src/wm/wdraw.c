@@ -19,13 +19,20 @@
 #define MOUSE_WIDTH                     24
 #define MOUSE_HEIGHT                    24
 
+struct drawable
+{
+
+    unsigned int (*test)(struct element *element, void *data, unsigned int line);
+    void (*render)(struct element *element, void *data, unsigned int line);
+
+};
+
 static struct ev_handlers handlers;
 static struct ctrl_videosettings settings;
+static struct drawable drawables[5];
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
 static void (*functions[3])(struct element *element);
-static unsigned int (*tests[6])(struct element *element, void *data, unsigned int line);
-static void (*renderers[6])(struct element *element, void *data, unsigned int line);
 static unsigned char layerdata1[0x8000];
 static unsigned int layercount1;
 static unsigned char fontdata[0x8000];
@@ -511,7 +518,7 @@ static unsigned int testline(unsigned int line)
     while ((element = nextelement(layerdata1, layercount1, element)))
     {
 
-        if (element->damaged && tests[element->type](element, element + 1, line))
+        if (element->damaged && drawables[element->type].test(element, element + 1, line))
             return 1;
 
     }
@@ -544,8 +551,8 @@ static void render(unsigned int descriptor)
                 if (element->z != z)
                     continue;
 
-                if (tests[element->type](element, element + 1, line))
-                    renderers[element->type](element, element + 1, line);
+                if (drawables[element->type].test(element, element + 1, line))
+                    drawables[element->type].render(element, element + 1, line);
 
             }
 
@@ -559,67 +566,6 @@ static void render(unsigned int descriptor)
 
 static void onwmmap(struct event_header *header)
 {
-
-    ev_sendwmresize(CALL_L1, header->source, 0, 0, settings.w, settings.h);
-    ev_sendwmshow(CALL_L1, header->source);
-
-    handlers.wmmap = 0;
-
-}
-
-static void onwmflush(struct event_header *header, struct event_wmflush *wmflush)
-{
-
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count = file_read(CALL_L0, buffer, wmflush->count);
-    struct element *element = 0;
-
-    while ((element = nextelement(buffer, count, element)))
-        functions[element->func](element);
-
-    render(CALL_L2);
-    cleanelements();
-
-}
-
-void main(void)
-{
-
-    handlers.wmmap = onwmmap;
-    handlers.wmflush = onwmflush;
-    functions[ELEMENT_FUNC_INSERT] = insertelement;
-    functions[ELEMENT_FUNC_UPDATE] = updateelement;
-    functions[ELEMENT_FUNC_REMOVE] = removeelement;
-    textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
-    textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
-    tests[ELEMENT_TYPE_FILL] = testfill;
-    tests[ELEMENT_TYPE_MOUSE] = testmouse;
-    tests[ELEMENT_TYPE_PANEL] = testpanel;
-    tests[ELEMENT_TYPE_TEXT] = testtext;
-    tests[ELEMENT_TYPE_WINDOW] = testwindow;
-    renderers[ELEMENT_TYPE_FILL] = renderfill;
-    renderers[ELEMENT_TYPE_MOUSE] = rendermouse;
-    renderers[ELEMENT_TYPE_PANEL] = renderpanel;
-    renderers[ELEMENT_TYPE_TEXT] = rendertext;
-    renderers[ELEMENT_TYPE_WINDOW] = renderwindow;
-
-    if (!file_walk(CALL_L0, "/system/wm/data"))
-        return;
-
-    if (!file_walk(CALL_L1, "/system/event/wm"))
-        return;
-
-    if (!file_walkfrom(CALL_L2, CALL_PO, "data"))
-        return;
-
-    if (!file_walkfrom(CALL_L3, CALL_PO, "ctrl"))
-        return;
-
-    if (!file_walkfrom(CALL_L4, CALL_PO, "colormap"))
-        return;
-
-    if (!file_walk(CALL_L5, "/share/ter-118n.pcf"))
-        return;
 
     file_open(CALL_L3);
     ctrl_setvideosettings(&settings, 1920, 1080, 32);
@@ -651,6 +597,63 @@ void main(void)
 
     fontbitmapdata = pcf_getbitmapdata(fontdata);
     fontpadding = pcf_getpadding(fontdata);
+    handlers.wmmap = 0;
+
+}
+
+static void onwmflush(struct event_header *header, struct event_wmflush *wmflush)
+{
+
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int count = file_read(CALL_L0, buffer, wmflush->count);
+    struct element *element = 0;
+
+    while ((element = nextelement(buffer, count, element)))
+        functions[element->func](element);
+
+    render(CALL_L2);
+    cleanelements();
+
+}
+
+void main(void)
+{
+
+    handlers.wmmap = onwmmap;
+    handlers.wmflush = onwmflush;
+    functions[ELEMENT_FUNC_INSERT] = insertelement;
+    functions[ELEMENT_FUNC_UPDATE] = updateelement;
+    functions[ELEMENT_FUNC_REMOVE] = removeelement;
+    textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
+    textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
+    drawables[ELEMENT_TYPE_FILL].test = testfill;
+    drawables[ELEMENT_TYPE_FILL].render = renderfill;
+    drawables[ELEMENT_TYPE_MOUSE].test = testmouse;
+    drawables[ELEMENT_TYPE_MOUSE].render = rendermouse;
+    drawables[ELEMENT_TYPE_PANEL].test = testpanel;
+    drawables[ELEMENT_TYPE_PANEL].render = renderpanel;
+    drawables[ELEMENT_TYPE_TEXT].test = testtext;
+    drawables[ELEMENT_TYPE_TEXT].render = rendertext;
+    drawables[ELEMENT_TYPE_WINDOW].test = testwindow;
+    drawables[ELEMENT_TYPE_WINDOW].render = renderwindow;
+
+    if (!file_walk(CALL_L0, "/system/wm/data"))
+        return;
+
+    if (!file_walk(CALL_L1, "/system/event/wm"))
+        return;
+
+    if (!file_walkfrom(CALL_L2, CALL_PO, "data"))
+        return;
+
+    if (!file_walkfrom(CALL_L3, CALL_PO, "ctrl"))
+        return;
+
+    if (!file_walkfrom(CALL_L4, CALL_PO, "colormap"))
+        return;
+
+    if (!file_walk(CALL_L5, "/share/ter-118n.pcf"))
+        return;
 
     file_open(CALL_L0);
     file_open(CALL_L1);
