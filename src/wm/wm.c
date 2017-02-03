@@ -37,7 +37,6 @@ static struct ring output;
 static struct box size;
 static struct box body;
 static struct list remotelist;
-static struct element_config config;
 static struct element_fill background;
 static struct element_mouse mouse;
 static struct view *viewfocus = &views[0];
@@ -527,6 +526,9 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
 static void onwmmap(struct event_header *header)
 {
 
+    if (header->source == header->destination)
+        return;
+
     if (viewfocus->remotefocus)
         deactivateremote(viewfocus->remotefocus);
 
@@ -619,11 +621,6 @@ static void onwmhide(struct event_header *header)
 
 }
 
-static void onwmflush(struct event_header *header, struct event_wmflush *wmflush)
-{
-
-}
-
 static void setup(void)
 {
 
@@ -667,10 +664,8 @@ void main(void)
     handlers.wmresize = onwmresize;
     handlers.wmshow = onwmshow;
     handlers.wmhide = onwmhide;
-    handlers.wmflush = onwmflush;
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
-    element_initconfig(&config, 1920, 1080, 32);
     element_initfill(&background, 2);
     element_initmouse(&mouse, 0, 0);
     setup();
@@ -695,8 +690,7 @@ void main(void)
     file_open(CALL_L2);
     file_open(CALL_L3);
     file_open(CALL_L4);
-    print_insertconfig(&output, 0, &config, 1);
-    ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST, CALL_L0, &output);
+    ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit && ev_read(&handlers, CALL_L1))
         ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST, CALL_L0, &output);

@@ -5,6 +5,7 @@ O:=\
     $(DIR_SRC)/wm/wdraw.o \
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
+    $(DIR_SRC)/wm/ev.o \
 
 L:=\
     $(DIR_SRC)/abi/abi.a \

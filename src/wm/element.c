@@ -16,15 +16,6 @@ void element_init(struct element *element, unsigned int id, unsigned int func, u
 
 }
 
-void element_initconfig(struct element_config *config, unsigned int w, unsigned int h, unsigned int bpp)
-{
-
-    config->w = w;
-    config->h = h;
-    config->bpp = bpp;
-
-}
-
 void element_initfill(struct element_fill *fill, unsigned int color)
 {
 
