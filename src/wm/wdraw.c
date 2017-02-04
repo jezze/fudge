@@ -537,7 +537,7 @@ static void renderline(unsigned int line)
 
 }
 
-static void render(unsigned int descriptor)
+static void render(void)
 {
 
     unsigned int line;
@@ -549,7 +549,7 @@ static void render(unsigned int descriptor)
             continue;
 
         renderline(line);
-        file_seekwriteall(descriptor, drawdata, settings.w, settings.w * line);
+        file_seekwriteall(CALL_L2, drawdata, settings.w, settings.w * line);
 
     }
 
@@ -602,7 +602,7 @@ static void onwmflush(struct event_header *header, struct event_wmflush *wmflush
     while ((element = nextelement(buffer, count, element)))
         insertelement(element);
 
-    render(CALL_L2);
+    render();
     cleanelements();
 
 }
