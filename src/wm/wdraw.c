@@ -512,6 +512,31 @@ static unsigned int testline(unsigned int line)
 
 }
 
+static void renderline(unsigned int line)
+{
+
+    unsigned int z;
+
+    for (z = 1; z < 4; z++)
+    {
+
+        struct element *element = 0;
+
+        while ((element = nextelement(layerdata1, layercount1, element)))
+        {
+
+            if (element->z != z)
+                continue;
+
+            if (drawables[element->type].test(element, element + 1, line))
+                drawables[element->type].render(element, element + 1, line);
+
+        }
+
+    }
+
+}
+
 static void render(unsigned int descriptor)
 {
 
@@ -520,29 +545,10 @@ static void render(unsigned int descriptor)
     for (line = 0; line < settings.h; line++)
     {
 
-        unsigned int z;
-
         if (!testline(line))
             continue;
 
-        for (z = 1; z < 4; z++)
-        {
-
-            struct element *element = 0;
-
-            while ((element = nextelement(layerdata1, layercount1, element)))
-            {
-
-                if (element->z != z)
-                    continue;
-
-                if (drawables[element->type].test(element, element + 1, line))
-                    drawables[element->type].render(element, element + 1, line);
-
-            }
-
-        }
-
+        renderline(line);
         file_seekwriteall(descriptor, drawdata, settings.w, settings.w * line);
 
     }
