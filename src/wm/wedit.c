@@ -6,116 +6,144 @@
 #include "keymap.h"
 #include "ev.h"
 
-static struct element_text content;
-static struct element_text status;
+#define ROWS 32
+#define COLS 128
+
+struct row
+{
+
+    char data[COLS];
+    struct ring input;
+    struct element_text content;
+
+};
+
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
-static char inputdata1[FUDGE_BSIZE];
-static struct ring input1;
-static char inputdata2[FUDGE_BSIZE];
-static struct ring input2;
 static struct ev_handlers handlers;
+static struct row rows[ROWS];
+static unsigned int startposition = 0;
+static unsigned int currentrow = 0;
+static unsigned int visiblerows = ROWS;
 
 static void printinsert(unsigned int source)
 {
 
-    content.cursor = ring_count(&input1);
+    unsigned int i;
 
-    print_inserttext(&output, source, &content, 1, ring_count(&input1) + ring_count(&input2) + 1);
-    ring_copy(&output, &input1);
-    ring_copy(&output, &input2);
-    ring_write(&output, "\n", 1);
-    print_inserttext(&output, source, &status, 1, 18);
-    ring_write(&output, "^S: Save, ^Q: Quit", 18);
+    for (i = 0; i < ROWS; i++)
+    {
+
+        print_inserttext(&output, source, &rows[i].content, 1, ring_count(&rows[i].input));
+        ring_copy(&output, &rows[i].input);
+
+    }
 
 }
 
 static void printremove(unsigned int source)
 {
 
-    print_removetext(&output, source, &content);
-    print_removetext(&output, source, &status);
+    unsigned int i;
+
+    for (i = 0; i < ROWS; i++)
+        print_removetext(&output, source, &rows[i].content);
 
 }
 
-static void moveleft(unsigned int steps)
+static void changerow(unsigned int row)
 {
 
-    char buffer[FUDGE_BSIZE];
-
-    ring_writereverse(&input2, buffer, ring_readreverse(&input1, buffer, steps));
+    rows[currentrow].content.flow = ELEMENT_TEXTFLOW_NORMAL;
+    rows[row].content.cursor = (rows[currentrow].content.cursor < ring_count(&rows[row].input)) ? rows[currentrow].content.cursor : ring_count(&rows[row].input) - 1;
+    rows[row].content.flow = ELEMENT_TEXTFLOW_INPUT;
+    currentrow = row;
 
 }
 
-static void moveright(unsigned int steps)
+static void movehome(void)
 {
 
-    char buffer[FUDGE_BSIZE];
+    rows[currentrow].content.cursor = 0;
 
-    ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
+}
+
+static void moveend(void)
+{
+
+    rows[currentrow].content.cursor = ring_count(&rows[currentrow].input) - 1;
 
 }
 
 static void moveup(void)
 {
 
-    unsigned int offset1;
-    unsigned int offset2;
-
-    offset1 = ring_findreverse(&input1, '\n');
-
-    moveleft(ring_findreverse(&input1, '\n'));
-
-    if (!ring_count(&input1))
-        return;
-
-    moveleft(1);
-
-    if (!ring_count(&input1))
-        return;
-
-    offset2 = ring_findreverse(&input1, '\n');
-
-    moveleft(offset2 - (offset1 < offset2 ? offset1 : offset2));
+    if (currentrow > 0)
+        changerow(currentrow - 1);
+    else
+        movehome();
 
 }
 
 static void movedown(void)
 {
 
-    unsigned int offset1;
-    unsigned int offset2;
+    if (currentrow < visiblerows - 1)
+        changerow(currentrow + 1);
+    else
+        moveend();
 
-    offset1 = ring_findreverse(&input1, '\n');
+}
 
-    moveright(ring_find(&input2, '\n'));
+static void moveleft(void)
+{
 
-    if (!ring_count(&input2))
-        return;
+    if (rows[currentrow].content.cursor > 0)
+    {
 
-    moveright(1);
+        rows[currentrow].content.cursor--;
 
-    if (!ring_count(&input2))
-        return;
+    }
 
-    offset2 = ring_find(&input2, '\n');
+    else
+    {
 
-    moveright(offset1 < offset2 ? offset1 : offset2);
+        moveup();
+        moveend();
+
+    }
+
+}
+
+static void moveright(void)
+{
+
+    if (rows[currentrow].content.cursor < ring_count(&rows[currentrow].input) - 1)
+    {
+
+        rows[currentrow].content.cursor++;
+
+    }
+
+    else
+    {
+
+        movedown();
+        movehome();
+
+    }
 
 }
 
 static void onkeypress(struct event_header *header, struct event_keypress *keypress)
 {
 
-    struct keycode *keycode;
-
     switch (keypress->scancode)
     {
 
     case 0x0E:
-        ring_skipreverse(&input1, 1);
         printinsert(header->destination);
 
         break;
@@ -127,7 +155,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     case 0x47:
-        moveleft(ring_findreverse(&input1, '\n'));
+        movehome();
         printinsert(header->destination);
 
         break;
@@ -139,19 +167,19 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     case 0x4B:
-        moveleft(1);
+        moveleft();
         printinsert(header->destination);
 
         break;
 
     case 0x4D:
-        moveright(1);
+        moveright();
         printinsert(header->destination);
 
         break;
 
     case 0x4F:
-        moveright(ring_find(&input2, '\n'));
+        moveend();
         printinsert(header->destination);
 
         break;
@@ -163,9 +191,6 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     default:
-        keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
-
-        ring_write(&input1, &keycode->value, keycode->length);
         printinsert(header->destination);
 
         break;
@@ -197,11 +222,81 @@ static void onwmunmap(struct event_header *header)
 
 }
 
+static void reset(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ROWS; i++)
+    {
+
+        rows[i].input.head = 0;
+        rows[i].input.tail = 0;
+
+    }
+
+}
+
+static unsigned int readline(struct row *row)
+{
+
+    char c;
+
+    while (file_read(CALL_PI, &c, 1))
+    {
+
+        ring_write(&row->input, &c, 1);
+
+        if (c == '\n')
+            break;
+
+    }
+
+    return ring_count(&row->input);
+
+}
+
+static unsigned int readfile(unsigned int maxrows)
+{
+
+    unsigned int row;
+
+    for (row = 0; row < maxrows; row++)
+    {
+
+        if (!readline(&rows[row]))
+            break;
+
+    }
+
+    return row;
+
+}
+
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    box_setsize(&content.size, wmresize->x + 12, wmresize->y + 12, wmresize->w - 24, wmresize->h - 24 - 24);
-    box_setsize(&status.size, content.size.x, content.size.y + content.size.h, content.size.w, 24);
+    unsigned int i;
+    unsigned int rowcount;
+
+    visiblerows = (wmresize->h - 24) / 24;
+
+    if (visiblerows > ROWS)
+        visiblerows = ROWS;
+
+    for (i = 0; i < ROWS; i++)
+        box_setsize(&rows[i].content.size, wmresize->x + 12, wmresize->y + 12 + i * 24, wmresize->w - 24, 24);
+
+    reset();
+    file_open(CALL_PI);
+    call_seek(CALL_PI, startposition);
+
+    rowcount = readfile(visiblerows);
+
+    if (rowcount < visiblerows)
+        visiblerows = rowcount;
+
+    file_close(CALL_PI);
 
 }
 
@@ -219,19 +314,10 @@ static void onwmhide(struct event_header *header)
 
 }
 
-static void readfile(void)
-{
-
-    char buffer[FUDGE_BSIZE];
-    unsigned int count;
-
-    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
-        ring_write(&input2, buffer, count);
-
-}
-
 void main(void)
 {
+
+    unsigned int i;
 
     handlers.keypress = onkeypress;
     handlers.keyrelease = onkeyrelease;
@@ -241,13 +327,16 @@ void main(void)
     handlers.wmhide = onwmhide;
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
-    element_inittext(&status, ELEMENT_TEXTTYPE_HIGHLIGHT, ELEMENT_TEXTFLOW_NORMAL);
-    file_open(CALL_PI);
-    readfile();
-    file_close(CALL_PI);
+
+    for (i = 0; i < ROWS; i++)
+    {
+
+        ring_init(&rows[i].input, COLS, rows[i].data);
+        element_inittext(&rows[i].content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_NORMAL);
+
+    }
+
+    rows[currentrow].content.flow = ELEMENT_TEXTFLOW_INPUT;
 
     if (!file_walk(CALL_L0, "/system/wm/send"))
         return;
