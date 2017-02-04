@@ -32,7 +32,6 @@ static struct ctrl_videosettings settings;
 static struct drawable drawables[5];
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
-static void (*functions[3])(struct element *element);
 static unsigned char layerdata1[0x8000];
 static unsigned int layercount1;
 static unsigned char fontdata[0x8000];
@@ -442,12 +441,12 @@ static struct element *nextelement(unsigned char *data, unsigned int count, stru
 
 }
 
-static void destroyelements(unsigned char *data, unsigned int count, struct element *element)
+static void insertelement(struct element *element)
 {
 
     struct element *current = 0;
 
-    while ((current = nextelement(data, count, current)))
+    while ((current = nextelement(layerdata1, layercount1, current)))
     {
 
         if (current->source == element->source && current->id == element->id)
@@ -460,28 +459,14 @@ static void destroyelements(unsigned char *data, unsigned int count, struct elem
 
     }
 
-}
+    if (element->z)
+    {
 
-static void insertelement(struct element *element)
-{
+        element->damaged = 1;
 
-    destroyelements(layerdata1, layercount1, element);
+        layercount1 += memory_write(layerdata1, 0x8000, element, sizeof (struct element) + element->count, layercount1);
 
-    element->damaged = 1;
-
-    layercount1 += memory_write(layerdata1, 0x8000, element, sizeof (struct element) + element->count, layercount1);
-
-}
-
-static void updateelement(struct element *element)
-{
-
-}
-
-static void removeelement(struct element *element)
-{
-
-    destroyelements(layerdata1, layercount1, element);
+    }
 
 }
 
@@ -609,7 +594,7 @@ static void onwmflush(struct event_header *header, struct event_wmflush *wmflush
     struct element *element = 0;
 
     while ((element = nextelement(buffer, count, element)))
-        functions[element->func](element);
+        insertelement(element);
 
     render(CALL_L2);
     cleanelements();
@@ -621,9 +606,6 @@ void main(void)
 
     handlers.wmmap = onwmmap;
     handlers.wmflush = onwmflush;
-    functions[ELEMENT_FUNC_INSERT] = insertelement;
-    functions[ELEMENT_FUNC_UPDATE] = updateelement;
-    functions[ELEMENT_FUNC_REMOVE] = removeelement;
     textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
     textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
     drawables[ELEMENT_TYPE_FILL].test = testfill;
