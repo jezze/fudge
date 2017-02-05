@@ -253,7 +253,7 @@ static void skipline(void)
 
 }
 
-static unsigned int readline(struct row *row)
+static void readline(struct ring *ring)
 {
 
     char c;
@@ -261,14 +261,12 @@ static unsigned int readline(struct row *row)
     while (file_read(CALL_PI, &c, 1))
     {
 
-        ring_write(&row->input, &c, 1);
+        ring_write(ring, &c, 1);
 
         if (c == '\n')
             break;
 
     }
-
-    return ring_count(&row->input);
 
 }
 
@@ -283,7 +281,9 @@ static unsigned int readfile(unsigned int maxrows)
     for (row = 0; row < maxrows; row++)
     {
 
-        if (!readline(&rows[row]))
+        readline(&rows[row].input);
+
+        if (!ring_count(&rows[row].input))
             break;
 
     }
