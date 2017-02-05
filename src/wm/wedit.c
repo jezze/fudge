@@ -24,7 +24,8 @@ static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static struct ev_handlers handlers;
 static struct row rows[ROWS];
-static unsigned int startposition = 0;
+static unsigned int startoffset = 0;
+static unsigned int startrow = 0;
 static unsigned int currentrow = 0;
 static unsigned int visiblerows = ROWS;
 
@@ -237,6 +238,21 @@ static void reset(void)
 
 }
 
+static void skipline(void)
+{
+
+    char c;
+
+    while (file_read(CALL_PI, &c, 1))
+    {
+
+        if (c == '\n')
+            break;
+
+    }
+
+}
+
 static unsigned int readline(struct row *row)
 {
 
@@ -260,6 +276,9 @@ static unsigned int readfile(unsigned int maxrows)
 {
 
     unsigned int row;
+
+    for (row = 0; row < startrow; row++)
+        skipline();
 
     for (row = 0; row < maxrows; row++)
     {
@@ -289,7 +308,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
     reset();
     file_open(CALL_PI);
-    call_seek(CALL_PI, startposition);
+    call_seek(CALL_PI, startoffset);
 
     rowcount = readfile(visiblerows);
 
