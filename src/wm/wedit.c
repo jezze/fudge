@@ -285,7 +285,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     case 0x51:
-        if (startrow < lastrow)
+        if (lastrow > 1)
             startrow++;
 
         readall();
