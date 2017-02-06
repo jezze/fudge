@@ -24,10 +24,10 @@ static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static struct ev_handlers handlers;
 static struct row rows[ROWS];
-static unsigned int startoffset = 0;
 static unsigned int startrow = 0;
 static unsigned int currentrow = 0;
 static unsigned int visiblerows = ROWS;
+static unsigned int lastrow = 0;
 
 static void printinsert(unsigned int source)
 {
@@ -91,7 +91,7 @@ static void moveup(void)
 static void movedown(void)
 {
 
-    if (currentrow < visiblerows - 1)
+    if (currentrow < lastrow - 1)
         changerow(currentrow + 1);
     else
         moveend();
@@ -135,91 +135,6 @@ static void moveright(void)
         movehome();
 
     }
-
-}
-
-static void onkeypress(struct event_header *header, struct event_keypress *keypress)
-{
-
-    switch (keypress->scancode)
-    {
-
-    case 0x0E:
-        printinsert(header->destination);
-
-        break;
-
-    case 0x2A:
-    case 0x36:
-        keymod |= KEYMOD_SHIFT;
-
-        break;
-
-    case 0x47:
-        movehome();
-        printinsert(header->destination);
-
-        break;
-
-    case 0x48:
-        moveup();
-        printinsert(header->destination);
-
-        break;
-
-    case 0x4B:
-        moveleft();
-        printinsert(header->destination);
-
-        break;
-
-    case 0x4D:
-        moveright();
-        printinsert(header->destination);
-
-        break;
-
-    case 0x4F:
-        moveend();
-        printinsert(header->destination);
-
-        break;
-
-    case 0x50:
-        movedown();
-        printinsert(header->destination);
-
-        break;
-
-    default:
-        printinsert(header->destination);
-
-        break;
-
-    }
-
-}
-
-static void onkeyrelease(struct event_header *header, struct event_keyrelease *keyrelease)
-{
-
-    switch (keyrelease->scancode)
-    {
-
-    case 0x2A:
-    case 0x36:
-        keymod &= ~KEYMOD_SHIFT;
-
-        break;
-
-    }
-
-}
-
-static void onwmunmap(struct event_header *header)
-{
-
-    quit = 1;
 
 }
 
@@ -292,11 +207,128 @@ static unsigned int readfile(unsigned int maxrows)
 
 }
 
+static void readall(void)
+{
+
+    unsigned int rowcount;
+
+    reset();
+    file_open(CALL_PI);
+
+    rowcount = readfile(visiblerows);
+    lastrow = (rowcount < visiblerows) ? rowcount : visiblerows;
+
+    file_close(CALL_PI);
+
+}
+
+static void onkeypress(struct event_header *header, struct event_keypress *keypress)
+{
+
+    switch (keypress->scancode)
+    {
+
+    case 0x0E:
+        printinsert(header->destination);
+
+        break;
+
+    case 0x2A:
+    case 0x36:
+        keymod |= KEYMOD_SHIFT;
+
+        break;
+
+    case 0x47:
+        movehome();
+        printinsert(header->destination);
+
+        break;
+
+    case 0x48:
+        moveup();
+        printinsert(header->destination);
+
+        break;
+
+    case 0x49:
+        if (startrow > 0)
+            startrow--;
+
+        readall();
+        printinsert(header->destination);
+
+        break;
+
+    case 0x4B:
+        moveleft();
+        printinsert(header->destination);
+
+        break;
+
+    case 0x4D:
+        moveright();
+        printinsert(header->destination);
+
+        break;
+
+    case 0x4F:
+        moveend();
+        printinsert(header->destination);
+
+        break;
+
+    case 0x50:
+        movedown();
+        printinsert(header->destination);
+
+        break;
+
+    case 0x51:
+        if (startrow < lastrow)
+            startrow++;
+
+        readall();
+        printinsert(header->destination);
+
+        break;
+
+    default:
+        printinsert(header->destination);
+
+        break;
+
+    }
+
+}
+
+static void onkeyrelease(struct event_header *header, struct event_keyrelease *keyrelease)
+{
+
+    switch (keyrelease->scancode)
+    {
+
+    case 0x2A:
+    case 0x36:
+        keymod &= ~KEYMOD_SHIFT;
+
+        break;
+
+    }
+
+}
+
+static void onwmunmap(struct event_header *header)
+{
+
+    quit = 1;
+
+}
+
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
     unsigned int i;
-    unsigned int rowcount;
 
     visiblerows = (wmresize->h - 24) / 24;
 
@@ -306,16 +338,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
     for (i = 0; i < ROWS; i++)
         box_setsize(&rows[i].content.size, wmresize->x + 12, wmresize->y + 12 + i * 24, wmresize->w - 24, 24);
 
-    reset();
-    file_open(CALL_PI);
-    call_seek(CALL_PI, startoffset);
-
-    rowcount = readfile(visiblerows);
-
-    if (rowcount < visiblerows)
-        visiblerows = rowcount;
-
-    file_close(CALL_PI);
+    readall();
 
 }
 
