@@ -98,6 +98,22 @@ static void movedown(void)
 
 }
 
+static void movescrollup(void)
+{
+
+    if (startrow > 0)
+        startrow--;
+
+}
+
+static void movescrolldown(void)
+{
+
+    if (lastrow > 1)
+        startrow++;
+
+}
+
 static void moveleft(void)
 {
 
@@ -252,9 +268,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     case 0x49:
-        if (startrow > 0)
-            startrow--;
-
+        movescrollup();
         readall();
         printinsert(header->destination);
 
@@ -285,9 +299,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     case 0x51:
-        if (lastrow > 1)
-            startrow++;
-
+        movescrolldown();
         readall();
         printinsert(header->destination);
 
