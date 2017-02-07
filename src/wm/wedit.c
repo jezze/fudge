@@ -110,7 +110,14 @@ static void movescrolldown(void)
 {
 
     if (lastrow > 1)
+    {
+
         startrow++;
+
+        if (currentrow > lastrow - 2)
+            moveup();
+
+    }
 
 }
 
