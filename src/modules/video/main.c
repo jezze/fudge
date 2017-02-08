@@ -1,9 +1,60 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
+#include <modules/event/event.h>
 #include "video.h"
 
 static struct system_node root;
+static struct system_node event;
+static struct list eventlinks;
+
+void video_notifymode(unsigned int w, unsigned int h, unsigned int bpp)
+{
+
+    struct {struct event_header header; struct event_videomode videomode;} message;
+
+    message.header.type = EVENT_VIDEOMODE;
+    message.header.source = 0;
+    message.header.destination = 0;
+    message.videomode.w = w;
+    message.videomode.h = h;
+    message.videomode.bpp = bpp;
+
+    event_multicast(&eventlinks, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
+
+}
+
+static unsigned int event_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&eventlinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int event_close(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&eventlinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int event_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return task_read(state->link.data, buffer, count);
+
+}
+
+static unsigned int event_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return event_send(&eventlinks, state, buffer, count);
+
+}
 
 static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
@@ -114,6 +165,14 @@ void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "video");
+    system_initnode(&event, SYSTEM_NODETYPE_NORMAL, "event");
+
+    event.open = event_open;
+    event.close = event_close;
+    event.read = event_read;
+    event.write = event_write;
+
+    system_addchild(&root, &event);
 
 }
 

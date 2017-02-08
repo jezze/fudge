@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include <modules/console/console.h>
 #include <modules/video/video.h>
 #include <modules/arch/x86/io/io.h>
@@ -121,7 +120,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 
     }
 
-    event_notifyvideomode(videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
 }
 

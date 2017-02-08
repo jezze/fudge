@@ -4,7 +4,6 @@
 #include <kernel/x86/arch.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include <modules/video/video.h>
 #include <modules/arch/x86/io/io.h>
 #include <modules/arch/x86/pci/pci.h>
@@ -52,7 +51,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
     setreg(COMMANDYRES, videointerface.settings.h);
     setreg(COMMANDBPP, videointerface.settings.bpp);
     setreg(COMMANDENABLE, 0x40 | 0x01);
-    event_notifyvideomode(videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
 }
 

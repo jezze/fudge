@@ -1,7 +1,3 @@
-void event_notifykeypress(unsigned char scancode);
-void event_notifykeyrelease(unsigned char scancode);
-void event_notifymousemove(char relx, char rely);
-void event_notifymousepress(unsigned int button);
-void event_notifymouserelease(unsigned int button);
-void event_notifytimertick(unsigned int counter);
-void event_notifyvideomode(unsigned int w, unsigned int h, unsigned int bpp);
+void event_unicast(struct list *links, struct event_header *header, unsigned int count);
+void event_multicast(struct list *links, struct event_header *header, unsigned int count);
+unsigned int event_send(struct list *links, struct service_state *state, void *buffer, unsigned int count);

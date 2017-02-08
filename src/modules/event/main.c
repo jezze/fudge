@@ -1,21 +1,8 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/system/system.h>
 #include "event.h"
 
-static struct system_node root;
-static struct system_node key;
-static struct system_node mouse;
-static struct system_node timer;
-static struct system_node video;
-static struct system_node wm;
-static struct list keylinks;
-static struct list mouselinks;
-static struct list timerlinks;
-static struct list videolinks;
-static struct list wmlinks;
-
-static void unicast(struct list *links, struct event_header *header, unsigned int count)
+void event_unicast(struct list *links, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
@@ -34,7 +21,7 @@ static void unicast(struct list *links, struct event_header *header, unsigned in
 
 }
 
-static void multicast(struct list *links, struct event_header *header, unsigned int count)
+void event_multicast(struct list *links, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
@@ -52,108 +39,7 @@ static void multicast(struct list *links, struct event_header *header, unsigned 
 
 }
 
-void event_notifykeypress(unsigned char scancode)
-{
-
-    struct {struct event_header header; struct event_keypress keypress;} message;
-
-    message.header.type = EVENT_KEYPRESS;
-    message.header.source = 0;
-    message.header.destination = 0;
-    message.keypress.scancode = scancode;
-
-    multicast(&keylinks, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
-
-}
-
-void event_notifykeyrelease(unsigned char scancode)
-{
-
-    struct {struct event_header header; struct event_keyrelease keyrelease;} message;
-
-    message.header.type = EVENT_KEYRELEASE;
-    message.header.source = 0;
-    message.header.destination = 0;
-    message.keyrelease.scancode = scancode;
-
-    multicast(&keylinks, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
-
-}
-
-void event_notifymousemove(char relx, char rely)
-{
-
-    struct {struct event_header header; struct event_mousemove mousemove;} message;
-
-    message.header.type = EVENT_MOUSEMOVE;
-    message.header.source = 0;
-    message.header.destination = 0;
-    message.mousemove.relx = relx;
-    message.mousemove.rely = rely;
-
-    multicast(&mouselinks, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
-
-}
-
-void event_notifymousepress(unsigned int button)
-{
-
-    struct {struct event_header header; struct event_mousepress mousepress;} message;
-
-    message.header.type = EVENT_MOUSEPRESS;
-    message.header.source = 0;
-    message.header.destination = 0;
-    message.mousepress.button = button;
-
-    multicast(&mouselinks, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
-
-}
-
-void event_notifymouserelease(unsigned int button)
-{
-
-    struct {struct event_header header; struct event_mouserelease mouserelease;} message;
-
-    message.header.type = EVENT_MOUSERELEASE;
-    message.header.source = 0;
-    message.header.destination = 0;
-    message.mouserelease.button = button;
-
-    multicast(&mouselinks, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
-
-}
-
-void event_notifytimertick(unsigned int counter)
-{
-
-    struct {struct event_header header; struct event_timertick timertick;} message;
-
-    message.header.type = EVENT_TIMERTICK;
-    message.header.source = 0;
-    message.header.destination = 0;
-    message.timertick.counter = counter;
-
-    multicast(&timerlinks, &message.header, sizeof (struct event_header) + sizeof (struct event_timertick));
-
-}
-
-void event_notifyvideomode(unsigned int w, unsigned int h, unsigned int bpp)
-{
-
-    struct {struct event_header header; struct event_videomode videomode;} message;
-
-    message.header.type = EVENT_VIDEOMODE;
-    message.header.source = 0;
-    message.header.destination = 0;
-    message.videomode.w = w;
-    message.videomode.h = h;
-    message.videomode.bpp = bpp;
-
-    multicast(&videolinks, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
-
-}
-
-static unsigned int write(struct list *links, struct service_state *state, void *buffer, unsigned int count)
+unsigned int event_send(struct list *links, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct event_header *header = buffer;
@@ -161,224 +47,11 @@ static unsigned int write(struct list *links, struct service_state *state, void 
     header->source = (unsigned int)state->link.data;
 
     if (header->destination)
-        unicast(links, header, count);
+        event_unicast(links, header, count);
     else
-        multicast(links, header, count);
+        event_multicast(links, header, count);
 
     return count;
-
-}
-
-static unsigned int key_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&keylinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int key_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&keylinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int key_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
-
-}
-
-static unsigned int key_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return write(&keylinks, state, buffer, count);
-
-}
-
-static unsigned int mouse_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&mouselinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int mouse_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&mouselinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int mouse_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
-
-}
-
-static unsigned int mouse_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return write(&mouselinks, state, buffer, count);
-
-}
-
-static unsigned int timer_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&timerlinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int timer_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&timerlinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int timer_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
-
-}
-
-static unsigned int timer_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return write(&timerlinks, state, buffer, count);
-
-}
-
-static unsigned int video_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&videolinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int video_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&videolinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int video_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
-
-}
-
-static unsigned int video_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return write(&videolinks, state, buffer, count);
-
-}
-
-static unsigned int wm_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&wmlinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int wm_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&wmlinks, &state->link);
-
-    return state->id;
-
-}
-
-static unsigned int wm_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
-
-}
-
-static unsigned int wm_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return write(&wmlinks, state, buffer, count);
-
-}
-
-void module_init(void)
-{
-
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "event");
-    system_initnode(&key, SYSTEM_NODETYPE_NORMAL, "key");
-    system_initnode(&mouse, SYSTEM_NODETYPE_NORMAL, "mouse");
-    system_initnode(&timer, SYSTEM_NODETYPE_NORMAL, "timer");
-    system_initnode(&video, SYSTEM_NODETYPE_NORMAL, "video");
-    system_initnode(&wm, SYSTEM_NODETYPE_NORMAL, "wm");
-
-    key.open = key_open;
-    key.close = key_close;
-    key.read = key_read;
-    key.write = key_write;
-    mouse.open = mouse_open;
-    mouse.close = mouse_close;
-    mouse.read = mouse_read;
-    mouse.write = mouse_write;
-    timer.open = timer_open;
-    timer.close = timer_close;
-    timer.read = timer_read;
-    timer.write = timer_write;
-    video.open = video_open;
-    video.close = video_close;
-    video.read = video_read;
-    video.write = video_write;
-    wm.open = wm_open;
-    wm.close = wm_close;
-    wm.read = wm_read;
-    wm.write = wm_write;
-
-    system_addchild(&root, &key);
-    system_addchild(&root, &mouse);
-    system_addchild(&root, &timer);
-    system_addchild(&root, &video);
-    system_addchild(&root, &wm);
-
-}
-
-void module_register(void)
-{
-
-    system_registernode(&root);
-
-}
-
-void module_unregister(void)
-{
-
-    system_unregisternode(&root);
 
 }
 

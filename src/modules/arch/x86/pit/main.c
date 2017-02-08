@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include <modules/timer/timer.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/io/io.h>
@@ -42,7 +41,7 @@ static void handleirq(unsigned int irq)
     jiffies++;
 
     timer_notify(&timerinterface, &jiffies, 4);
-    event_notifytimertick(jiffies);
+    timer_notifytick(jiffies);
 
 }
 

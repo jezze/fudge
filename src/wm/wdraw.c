@@ -634,7 +634,7 @@ void main(void)
     if (!file_walk(CALL_L0, "/system/wm/data"))
         return;
 
-    if (!file_walk(CALL_L1, "/system/event/wm"))
+    if (!file_walk(CALL_L1, "/system/wm/event"))
         return;
 
     if (!file_walkfrom(CALL_L2, CALL_PO, "data"))
