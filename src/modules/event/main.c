@@ -28,8 +28,7 @@ static void unicast(struct list *links, struct event_header *header, unsigned in
         if (header->destination != (unsigned int)task)
             continue;
 
-        if (count < ring_avail(&task->mailbox.ring))
-            task_write(task, header, count);
+        task_write(task, header, count);
 
     }
 
@@ -47,8 +46,7 @@ static void multicast(struct list *links, struct event_header *header, unsigned 
 
         header->destination = (unsigned int)task;
 
-        if (count < ring_avail(&task->mailbox.ring))
-            task_write(task, header, count);
+        task_write(task, header, count);
 
     }
 
