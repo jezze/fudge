@@ -107,7 +107,7 @@ unsigned int task_read(struct task *task, void *buffer, unsigned int count)
 unsigned int task_write(struct task *task, void *buffer, unsigned int count)
 {
 
-    count = (count < ring_avail(&task->mailbox.ring)) ? ring_write(&task->mailbox.ring, buffer, count) : 0;
+    count = ring_write(&task->mailbox.ring, buffer, count);
 
     task_setstatus(task, TASK_STATUS_UNBLOCKED);
 
