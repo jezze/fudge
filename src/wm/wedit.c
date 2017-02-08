@@ -410,7 +410,17 @@ void main(void)
     ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit && ev_read(&handlers, CALL_L1))
-        ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST, CALL_L0, &output);
+    {
+
+        char buffer[FUDGE_BSIZE];
+
+        if (!ring_count(&output))
+            continue;
+
+        if (file_writeall(CALL_L0, buffer, ring_read(&output, buffer, FUDGE_BSIZE)))
+            ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST);
+
+    }
 
     file_close(CALL_L1);
     file_close(CALL_L0);
