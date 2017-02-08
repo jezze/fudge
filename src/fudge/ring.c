@@ -15,6 +15,13 @@ unsigned int ring_count(struct ring *ring)
 
 }
 
+unsigned int ring_avail(struct ring *ring)
+{
+
+    return ring->capacity - ring_count(ring);
+
+}
+
 unsigned int ring_isempty(struct ring *ring)
 {
 
