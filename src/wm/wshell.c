@@ -248,7 +248,7 @@ void main(void)
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     ring_overwrite(&text, "$ ", 2);
 
-    if (!file_walk(CALL_L0, "/system/wm/send"))
+    if (!file_walk(CALL_L0, "/system/wm/data"))
         return;
 
     if (!file_walk(CALL_L1, "/system/event/wm"))
