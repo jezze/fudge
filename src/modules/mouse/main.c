@@ -8,13 +8,6 @@ static struct system_node root;
 static struct system_node event;
 static struct list eventlinks;
 
-void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int count)
-{
-
-    kernel_multicast(&interface->datalinks, buffer, count);
-
-}
-
 void mouse_notifymove(char relx, char rely)
 {
 

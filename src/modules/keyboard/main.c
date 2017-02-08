@@ -8,13 +8,6 @@ static struct system_node root;
 static struct system_node event;
 static struct list eventlinks;
 
-void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigned int count)
-{
-
-    kernel_multicast(&interface->datalinks, buffer, count);
-
-}
-
 void keyboard_notifypress(unsigned char scancode)
 {
 

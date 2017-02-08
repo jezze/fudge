@@ -8,13 +8,6 @@ static struct system_node root;
 static struct system_node event;
 static struct list eventlinks;
 
-void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
-{
-
-    kernel_multicast(&interface->sleeplinks, buffer, count);
-
-}
-
 void timer_notifytick(unsigned int counter)
 {
 
