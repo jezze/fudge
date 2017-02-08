@@ -592,11 +592,11 @@ static void onwmmap(struct event_header *header)
 
 }
 
-static void onwmflush(struct event_header *header, struct event_wmflush *wmflush)
+static void onwmflush(struct event_header *header)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count = file_read(CALL_L0, buffer, wmflush->count);
+    unsigned int count = file_read(CALL_L0, buffer, FUDGE_BSIZE);
     struct element *element = 0;
 
     while ((element = nextelement(buffer, count, element)))

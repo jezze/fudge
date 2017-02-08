@@ -133,12 +133,8 @@ static void onwmhide(struct ev_handlers *handlers, unsigned int descriptor, stru
 static void onwmflush(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
-    struct event_wmflush wmflush;
-
-    file_readall(descriptor, &wmflush, sizeof (struct event_wmflush));
-
     if (handlers->wmflush)
-        handlers->wmflush(header, &wmflush);
+        handlers->wmflush(header);
 
 }
 
@@ -291,16 +287,14 @@ void ev_sendwmhide(unsigned int descriptor, unsigned int destination)
 void ev_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned int desc2, struct ring *ring)
 {
 
-    struct event_wmflush wmflush;
     char buffer[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
 
-    wmflush.count = ring_read(ring, buffer, FUDGE_BSIZE);
-
-    if (wmflush.count)
+    if (count)
     {
 
-        send(descriptor, destination, EVENT_WMFLUSH, sizeof (struct event_wmflush), &wmflush);
-        file_writeall(desc2, buffer, wmflush.count);
+        file_writeall(desc2, buffer, count);
+        send(descriptor, destination, EVENT_WMFLUSH, 0, 0);
 
     }
 

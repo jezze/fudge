@@ -13,7 +13,7 @@ struct ev_handlers
     void (*wmresize)(struct event_header *header, struct event_wmresize *wmresize);
     void (*wmshow)(struct event_header *header);
     void (*wmhide)(struct event_header *header);
-    void (*wmflush)(struct event_header *header, struct event_wmflush *wmflush);
+    void (*wmflush)(struct event_header *header);
 
 };
 

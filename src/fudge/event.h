@@ -84,10 +84,3 @@ struct event_wmresize
     unsigned int h;
 
 };
-
-struct event_wmflush
-{
-
-    unsigned int count;
-
-};
