@@ -596,14 +596,20 @@ static void onwmflush(struct event_header *header)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count = file_read(CALL_L0, buffer, FUDGE_BSIZE);
-    struct element *element = 0;
+    unsigned int count;
 
-    while ((element = nextelement(buffer, count, element)))
-        insertelement(element);
+    while ((count = file_read(CALL_L0, buffer, FUDGE_BSIZE)))
+    {
 
-    render();
-    cleanelements();
+        struct element *element = 0;
+
+        while ((element = nextelement(buffer, count, element)))
+            insertelement(element);
+
+        render();
+        cleanelements();
+
+    }
 
 }
 
