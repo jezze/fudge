@@ -576,14 +576,14 @@ static void renderflush(unsigned int datadescriptor, unsigned int renderdescript
 
 }
 
-static void renderinitgraphics(unsigned int ctrldescriptor, unsigned int colormapdescriptor, unsigned int fontdescriptor)
+static void renderinitvideo(unsigned int descriptor)
 {
 
-    file_open(ctrldescriptor);
+    file_open(descriptor);
     ctrl_setvideosettings(&settings, 1920, 1080, 32);
-    file_seekwriteall(ctrldescriptor, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekreadall(ctrldescriptor, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_close(ctrldescriptor);
+    file_seekwriteall(descriptor, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekreadall(descriptor, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_close(descriptor);
 
     switch (settings.bpp)
     {
@@ -600,12 +600,23 @@ static void renderinitgraphics(unsigned int ctrldescriptor, unsigned int colorma
 
     }
 
-    file_open(colormapdescriptor);
-    file_writeall(colormapdescriptor, colormap8, 3 * 11);
-    file_close(colormapdescriptor);
-    file_open(fontdescriptor);
-    file_read(fontdescriptor, fontdata, 0x8000);
-    file_close(fontdescriptor);
+}
+
+static void renderinitcolormap(unsigned int descriptor)
+{
+
+    file_open(descriptor);
+    file_writeall(descriptor, colormap8, 3 * 11);
+    file_close(descriptor);
+
+}
+
+static void renderinitfont(unsigned int descriptor)
+{
+
+    file_open(descriptor);
+    file_read(descriptor, fontdata, 0x8000);
+    file_close(descriptor);
 
     fontbitmapdata = pcf_getbitmapdata(fontdata);
     fontpadding = pcf_getpadding(fontdata);
@@ -633,7 +644,9 @@ static void renderinit()
 static void onwmmap(struct event_header *header)
 {
 
-    renderinitgraphics(CALL_L3, CALL_L4, CALL_L5);
+    renderinitvideo(CALL_L3);
+    renderinitcolormap(CALL_L4);
+    renderinitfont(CALL_L5);
 
     handlers.wmmap = 0;
 
