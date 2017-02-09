@@ -53,25 +53,25 @@ static void handleirq(unsigned int irq)
         return;
 
     if (!(oldstate & 1) && (state & 1))
-       mouse_notifypress(1);
+       mouse_notifypress(&mouseinterface, 1);
 
     if (!(oldstate & 2) && (state & 2))
-       mouse_notifypress(2);
+       mouse_notifypress(&mouseinterface, 2);
 
     if (!(oldstate & 4) && (state & 4))
-       mouse_notifypress(3);
+       mouse_notifypress(&mouseinterface, 3);
 
     if ((oldstate & 1) && !(state & 1))
-       mouse_notifyrelease(1);
+       mouse_notifyrelease(&mouseinterface, 1);
 
     if ((oldstate & 2) && !(state & 2))
-       mouse_notifyrelease(2);
+       mouse_notifyrelease(&mouseinterface, 2);
 
     if ((oldstate & 4) && !(state & 4))
-       mouse_notifyrelease(3);
+       mouse_notifyrelease(&mouseinterface, 3);
 
     if (relx || rely)
-       mouse_notifymove(relx, rely);
+       mouse_notifymove(&mouseinterface, relx, rely);
 
     oldstate = state;
 

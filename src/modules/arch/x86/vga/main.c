@@ -120,7 +120,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 
     }
 
-    video_notifymode(videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
 }
 

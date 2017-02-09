@@ -22,9 +22,9 @@ static void handleirq(unsigned int irq)
     keyboard_notify(&keyboardinterface, &data, 1);
 
     if (data & 0x80)
-        keyboard_notifyrelease(data & ~0x80);
+        keyboard_notifyrelease(&keyboardinterface, data & ~0x80);
     else
-        keyboard_notifypress(data);
+        keyboard_notifypress(&keyboardinterface, data);
 
 }
 

@@ -51,7 +51,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
     setreg(COMMANDYRES, videointerface.settings.h);
     setreg(COMMANDBPP, videointerface.settings.bpp);
     setreg(COMMANDENABLE, 0x40 | 0x01);
-    video_notifymode(videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
 }
 

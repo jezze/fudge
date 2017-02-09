@@ -676,13 +676,13 @@ void main(void)
     if (!file_walk(CALL_L1, "/system/wm/event"))
         return;
 
-    if (!file_walk(CALL_L2, "/system/keyboard/event"))
+    if (!file_walk(CALL_L2, "/system/keyboard/if:0/event"))
         return;
 
-    if (!file_walk(CALL_L3, "/system/mouse/event"))
+    if (!file_walk(CALL_L3, "/system/mouse/if:0/event"))
         return;
 
-    if (!file_walk(CALL_L4, "/system/video/event"))
+    if (!file_walk(CALL_L4, "/system/video/if:0/event"))
         return;
 
     file_open(CALL_L0);
