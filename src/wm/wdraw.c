@@ -537,7 +537,7 @@ static void renderline(unsigned int line)
 
 }
 
-static void render(void)
+static void renderscreen(unsigned int descriptor)
 {
 
     unsigned int line;
@@ -549,20 +549,41 @@ static void render(void)
             continue;
 
         renderline(line);
-        file_seekwriteall(CALL_L2, drawdata, settings.w, settings.w * line);
+        file_seekwriteall(descriptor, drawdata, settings.w, settings.w * line);
 
     }
 
 }
 
-static void onwmmap(struct event_header *header)
+static void renderflush(unsigned int datadescriptor, unsigned int renderdescriptor)
 {
 
-    file_open(CALL_L3);
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int count;
+
+    while ((count = file_read(datadescriptor, buffer, FUDGE_BSIZE)))
+    {
+
+        struct element *element = 0;
+
+        while ((element = nextelement(buffer, count, element)))
+            insertelement(element);
+
+        renderscreen(renderdescriptor);
+        cleanelements();
+
+    }
+
+}
+
+static void renderinitgraphics(unsigned int ctrldescriptor, unsigned int colormapdescriptor, unsigned int fontdescriptor)
+{
+
+    file_open(ctrldescriptor);
     ctrl_setvideosettings(&settings, 1920, 1080, 32);
-    file_seekwriteall(CALL_L3, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekreadall(CALL_L3, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_close(CALL_L3);
+    file_seekwriteall(ctrldescriptor, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekreadall(ctrldescriptor, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_close(ctrldescriptor);
 
     switch (settings.bpp)
     {
@@ -579,45 +600,21 @@ static void onwmmap(struct event_header *header)
 
     }
 
-    file_open(CALL_L4);
-    file_writeall(CALL_L4, colormap8, 3 * 11);
-    file_close(CALL_L4);
-    file_open(CALL_L5);
-    file_read(CALL_L5, fontdata, 0x8000);
-    file_close(CALL_L5);
+    file_open(colormapdescriptor);
+    file_writeall(colormapdescriptor, colormap8, 3 * 11);
+    file_close(colormapdescriptor);
+    file_open(fontdescriptor);
+    file_read(fontdescriptor, fontdata, 0x8000);
+    file_close(fontdescriptor);
 
     fontbitmapdata = pcf_getbitmapdata(fontdata);
     fontpadding = pcf_getpadding(fontdata);
-    handlers.wmmap = 0;
 
 }
 
-static void onwmflush(struct event_header *header)
+static void renderinit()
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count;
-
-    while ((count = file_read(CALL_L0, buffer, FUDGE_BSIZE)))
-    {
-
-        struct element *element = 0;
-
-        while ((element = nextelement(buffer, count, element)))
-            insertelement(element);
-
-        render();
-        cleanelements();
-
-    }
-
-}
-
-void main(void)
-{
-
-    handlers.wmmap = onwmmap;
-    handlers.wmflush = onwmflush;
     textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
     textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
     drawables[ELEMENT_TYPE_FILL].test = testfill;
@@ -630,6 +627,32 @@ void main(void)
     drawables[ELEMENT_TYPE_TEXT].render = rendertext;
     drawables[ELEMENT_TYPE_WINDOW].test = testwindow;
     drawables[ELEMENT_TYPE_WINDOW].render = renderwindow;
+
+}
+
+static void onwmmap(struct event_header *header)
+{
+
+    renderinitgraphics(CALL_L3, CALL_L4, CALL_L5);
+
+    handlers.wmmap = 0;
+
+}
+
+static void onwmflush(struct event_header *header)
+{
+
+    renderflush(CALL_L0, CALL_L2);
+
+}
+
+void main(void)
+{
+
+    handlers.wmmap = onwmmap;
+    handlers.wmflush = onwmflush;
+
+    renderinit();
 
     if (!file_walk(CALL_L0, "/system/wm/data"))
         return;
