@@ -49,13 +49,6 @@ static unsigned int interfacesleep_close(struct system_node *self, struct servic
 
 }
 
-static unsigned int interfacesleep_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
-
-}
-
 static unsigned int interfaceevent_open(struct system_node *self, struct service_state *state)
 {
 
@@ -75,13 +68,6 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
     list_remove(&interface->eventlinks, &state->link);
 
     return state->id;
-
-}
-
-static unsigned int interfaceevent_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
 
 }
 
@@ -117,10 +103,10 @@ void timer_initinterface(struct timer_interface *interface)
 
     interface->sleep.open = interfacesleep_open;
     interface->sleep.close = interfacesleep_close;
-    interface->sleep.read = interfacesleep_read;
+    interface->sleep.read = system_readtask;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
-    interface->event.read = interfaceevent_read;
+    interface->event.read = system_readtask;
 
 }
 

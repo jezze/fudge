@@ -102,13 +102,6 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
 }
 
-static unsigned int interfaceevent_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
-
-}
-
 void video_registerinterface(struct video_interface *interface, unsigned int id)
 {
 
@@ -158,7 +151,7 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
     interface->colormap.write = interfacecolormap_write;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
-    interface->event.read = interfaceevent_read;
+    interface->event.read = system_readtask;
 
 }
 

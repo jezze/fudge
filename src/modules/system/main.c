@@ -5,24 +5,24 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-unsigned int system_childgroup(struct system_node *node, char *path, unsigned int length)
+unsigned int system_childgroup(struct system_node *self, char *path, unsigned int length)
 {
 
     struct list_item *current;
 
     if (!length)
-        return (unsigned int)node;
+        return (unsigned int)self;
 
-    for (current = node->children.head; current; current = current->next)
+    for (current = self->children.head; current; current = current->next)
     {
 
-        struct system_node *node = current->data;
-        unsigned int length0 = ascii_length(node->name);
+        struct system_node *self = current->data;
+        unsigned int length0 = ascii_length(self->name);
 
-        if (!memory_match(node->name, path, length0))
+        if (!memory_match(self->name, path, length0))
             continue;
 
-        if (node->type & SYSTEM_NODETYPE_MULTI)
+        if (self->type & SYSTEM_NODETYPE_MULTI)
         {
 
             unsigned int val;
@@ -32,24 +32,31 @@ unsigned int system_childgroup(struct system_node *node, char *path, unsigned in
 
             val = path[length0 + 1] - '0';
 
-            if (val != node->index)
+            if (val != self->index)
                 continue;
 
             length0 += 2;
 
         }
 
-        if (node->type & SYSTEM_NODETYPE_GROUP)
+        if (self->type & SYSTEM_NODETYPE_GROUP)
             length0 += 1;
 
         length -= length0;
         path += length0;
 
-        return (node->child) ? node->child(node, path, length) : (length ? 0 : (unsigned int)node);
+        return (self->child) ? self->child(self, path, length) : (length ? 0 : (unsigned int)self);
 
     }
 
     return 0;
+
+}
+
+unsigned int system_readtask(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return task_read(state->link.data, buffer, count);
 
 }
 

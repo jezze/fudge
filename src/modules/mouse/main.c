@@ -78,13 +78,6 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
-
-}
-
 static unsigned int interfaceevent_open(struct system_node *self, struct service_state *state)
 {
 
@@ -104,13 +97,6 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
     list_remove(&interface->eventlinks, &state->link);
 
     return state->id;
-
-}
-
-static unsigned int interfaceevent_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    return task_read(state->link.data, buffer, count);
 
 }
 
@@ -146,10 +132,10 @@ void mouse_initinterface(struct mouse_interface *interface)
 
     interface->data.open = interfacedata_open;
     interface->data.close = interfacedata_close;
-    interface->data.read = interfacedata_read;
+    interface->data.read = system_readtask;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
-    interface->event.read = interfaceevent_read;
+    interface->event.read = system_readtask;
 
 }
 
