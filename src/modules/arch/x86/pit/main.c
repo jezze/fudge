@@ -40,6 +40,7 @@ static void handleirq(unsigned int irq)
 
     jiffies++;
 
+    timer_notify(&timerinterface, &jiffies, 4);
     timer_notifytick(jiffies);
 
 }

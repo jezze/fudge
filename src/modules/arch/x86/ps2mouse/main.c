@@ -47,6 +47,8 @@ static void handleirq(unsigned int irq)
 
     }
 
+    mouse_notify(&mouseinterface, &data, 1);
+
     if (sequence)
         return;
 

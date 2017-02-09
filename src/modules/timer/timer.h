@@ -9,6 +9,7 @@ struct timer_interface
 
 };
 
+void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count);
 void timer_notifytick(unsigned int counter);
 void timer_registerinterface(struct timer_interface *interface, unsigned int id);
 void timer_unregisterinterface(struct timer_interface *interface);
