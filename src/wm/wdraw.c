@@ -660,13 +660,13 @@ void main(void)
     if (!file_walk(CALL_L1, "/system/wm/event"))
         return;
 
-    if (!file_walkfrom(CALL_L2, CALL_PO, "data"))
+    if (!file_walk(CALL_L2, "/system/video/if:0/data"))
         return;
 
-    if (!file_walkfrom(CALL_L3, CALL_PO, "ctrl"))
+    if (!file_walk(CALL_L3, "/system/video/if:0/ctrl"))
         return;
 
-    if (!file_walkfrom(CALL_L4, CALL_PO, "colormap"))
+    if (!file_walk(CALL_L4, "/system/video/if:0/colormap"))
         return;
 
     if (!file_walk(CALL_L5, "/share/ter-118n.pcf"))
