@@ -6,6 +6,7 @@ O:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/ev.o \
+    $(DIR_SRC)/wm/render.o \
 
 L:=\
     $(DIR_SRC)/abi/abi.a \
