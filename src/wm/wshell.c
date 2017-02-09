@@ -41,7 +41,23 @@ static void printremove(unsigned int source)
 
 }
 
-static void put(char c)
+static void removerows(unsigned int count)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        ring_skip(&text, ring_find(&text, '\n') + 1);
+
+        totalrows--;
+
+    }
+
+}
+
+static void copychar(char c)
 {
 
     ring_write(&text, &c, 1);
@@ -52,48 +68,51 @@ static void put(char c)
         totalrows++;
 
         if (totalrows > visiblerows)
-        {
-
-            ring_skip(&text, ring_find(&text, '\n') + 1);
-            totalrows = visiblerows;
-
-        }
+            removerows(totalrows - visiblerows);
 
     }
 
 }
 
-static void readback(void)
+static void copybuffer(void *buffer, unsigned int count)
 {
 
-    char c;
+    char *b = buffer;
+    unsigned int i;
 
-    file_open(CALL_CO);
-
-    while (file_read(CALL_CO, &c, 1))
-        put(c);
-
-    file_close(CALL_CO);
+    for (i = 0; i < count; i++)
+        copychar(b[i]);
 
 }
 
 static void copyring(struct ring *ring)
 {
 
-    char c;
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
+    unsigned int head = ring->head;
+    unsigned int tail = ring->tail;
 
-    while (ring_read(ring, &c, 1))
-        put(c);
+    while ((count = ring_read(ring, buffer, FUDGE_BSIZE)))
+        copybuffer(buffer, count);
+
+    ring->head = head;
+    ring->tail = tail;
 
 }
 
-static void copystring(char *buffer)
+static void readback(void)
 {
 
-    unsigned int i;
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
 
-    for (i = 0; buffer[i]; i++)
-        put(buffer[i]);
+    file_open(CALL_CO);
+
+    while ((count = file_read(CALL_CO, buffer, FUDGE_BSIZE)))
+        copybuffer(buffer, count);
+
+    file_close(CALL_CO);
 
 }
 
@@ -183,7 +202,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         ring_write(&input1, &keycode->value, keycode->length);
         copyring(&input1);
         interpret(&input1);
-        copystring("$ ");
+        copybuffer("$ ", 2);
         printinsert(header->destination);
 
         break;
@@ -259,14 +278,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
     visiblerows = ((wmresize->h - 24) / 24) - 1;
 
     if (visiblerows < totalrows)
-    {
-
-        unsigned int i;
-
-        for (i = 0; i < totalrows - visiblerows; i++)
-            ring_skip(&text, ring_find(&text, '\n') + 1);
-
-    }
+        removerows(totalrows - visiblerows);
 
     box_setsize(&content.size, wmresize->x + 12, wmresize->y + 12, wmresize->w - 24, wmresize->h - 24);
 
@@ -301,7 +313,7 @@ void main(void)
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     ring_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
-    ring_write(&text, "$ ", 2);
+    copybuffer("$ ", 2);
 
     if (!file_walk(CALL_L0, "/system/wm/data"))
         return;
