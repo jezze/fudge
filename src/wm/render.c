@@ -541,6 +541,8 @@ static void renderscreen(unsigned int descriptor)
 
     unsigned int line;
 
+    file_open(descriptor);
+
     for (line = 0; line < settings.h; line++)
     {
 
@@ -551,6 +553,8 @@ static void renderscreen(unsigned int descriptor)
         file_seekwriteall(descriptor, drawdata, settings.w, settings.w * line);
 
     }
+
+    file_close(descriptor);
 
 }
 
