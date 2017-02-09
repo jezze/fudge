@@ -18,6 +18,8 @@ static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
 static struct ev_handlers handlers;
+static unsigned int totalrows = 0;
+static unsigned int visiblerows = 0;
 
 static void printinsert(unsigned int source)
 {
@@ -39,18 +41,59 @@ static void printremove(unsigned int source)
 
 }
 
+static void put(char c)
+{
+
+    ring_write(&text, &c, 1);
+
+    if (c == '\n')
+    {
+
+        totalrows++;
+
+        if (totalrows > visiblerows)
+        {
+
+            ring_skip(&text, ring_find(&text, '\n') + 1);
+            totalrows = visiblerows;
+
+        }
+
+    }
+
+}
+
 static void readback(void)
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int count;
+    char c;
 
     file_open(CALL_CO);
 
-    while ((count = file_read(CALL_CO, buffer, FUDGE_BSIZE)))
-        ring_overwrite(&text, buffer, count);
+    while (file_read(CALL_CO, &c, 1))
+        put(c);
 
     file_close(CALL_CO);
+
+}
+
+static void copyring(struct ring *ring)
+{
+
+    char c;
+
+    while (ring_read(ring, &c, 1))
+        put(c);
+
+}
+
+static void copystring(char *buffer)
+{
+
+    unsigned int i;
+
+    for (i = 0; buffer[i]; i++)
+        put(buffer[i]);
 
 }
 
@@ -138,9 +181,9 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
 
         ring_write(&input1, &keycode->value, keycode->length);
-        ring_overcopy(&text, &input1);
+        copyring(&input1);
         interpret(&input1);
-        ring_overwrite(&text, "$ ", 2);
+        copystring("$ ");
         printinsert(header->destination);
 
         break;
@@ -213,6 +256,18 @@ static void onwmunmap(struct event_header *header)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
+    visiblerows = ((wmresize->h - 24) / 24) - 1;
+
+    if (visiblerows < totalrows)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < totalrows - visiblerows; i++)
+            ring_skip(&text, ring_find(&text, '\n') + 1);
+
+    }
+
     box_setsize(&content.size, wmresize->x + 12, wmresize->y + 12, wmresize->w - 24, wmresize->h - 24);
 
 }
@@ -246,7 +301,7 @@ void main(void)
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     ring_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
-    ring_overwrite(&text, "$ ", 2);
+    ring_write(&text, "$ ", 2);
 
     if (!file_walk(CALL_L0, "/system/wm/data"))
         return;
