@@ -11,9 +11,9 @@ static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
-static char inputdata1[FUDGE_BSIZE];
+static char inputdata1[FUDGE_BSIZE >> 5];
 static struct ring input1;
-static char inputdata2[FUDGE_BSIZE];
+static char inputdata2[FUDGE_BSIZE >> 5];
 static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
@@ -119,8 +119,8 @@ static void readback(void)
 static void interpret(struct ring *ring)
 {
 
-    char command[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
+    char command[FUDGE_BSIZE >> 5];
+    unsigned int count = ring_read(ring, command, FUDGE_BSIZE >> 5);
 
     if (count < 2)
         return;
@@ -342,8 +342,8 @@ void main(void)
     handlers.wmhide = onwmhide;
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
+    ring_init(&input1, FUDGE_BSIZE >> 5, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE >> 5, inputdata2);
     ring_init(&text, FUDGE_BSIZE, textdata);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     copybuffer("$ ", 2);
