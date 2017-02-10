@@ -93,8 +93,6 @@ static void movedown(void)
 static void onkeypress(struct event_header *header, struct event_keypress *keypress)
 {
 
-    struct keycode *keycode;
-
     switch (keypress->scancode)
     {
 
@@ -147,9 +145,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     default:
-        keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
-
-        ring_write(&input1, &keycode->value, keycode->length);
+        keymap_write(&input1, keypress->scancode, keymod);
         printinsert(header->destination);
 
         break;

@@ -2,6 +2,21 @@
 #include <fudge.h>
 #include "keymap.h"
 
+struct keycode
+{
+
+    unsigned char length;
+    unsigned char value[4];
+
+};
+
+struct keyset
+{
+
+    struct keycode keycode[4];
+
+};
+
 static struct keyset map_us[256] = {
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
@@ -142,12 +157,13 @@ static struct keyset *getkeymap(unsigned int type)
 
 }
 
-struct keycode *getkeycode(unsigned int type, unsigned int scancode, unsigned int modifier)
+void keymap_write(struct ring *ring, unsigned int scancode, unsigned int modifier)
 {
 
-    struct keyset *map = getkeymap(type);
+    struct keyset *map = getkeymap(KEYMAP_US);
+    struct keycode *keycode = &map[scancode].keycode[modifier];
 
-    return &map[scancode].keycode[modifier];
+    ring_write(ring, &keycode->value, keycode->length);
 
 }
 

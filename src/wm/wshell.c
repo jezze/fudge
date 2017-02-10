@@ -183,8 +183,6 @@ static void moveright(unsigned int steps)
 static void onkeypress(struct event_header *header, struct event_keypress *keypress)
 {
 
-    struct keycode *keycode;
-
     switch (keypress->scancode)
     {
 
@@ -196,10 +194,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
     case 0x1C:
         ring_move(&input1, &input2);
-
-        keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
-
-        ring_write(&input1, &keycode->value, keycode->length);
+        keymap_write(&input1, keypress->scancode, keymod);
         copyring(&input1);
         interpret(&input1);
         copybuffer("$ ", 2);
@@ -207,9 +202,44 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
         break;
 
+    case 0x1D:
+        keymod |= KEYMOD_CTRL;
+
+        break;
+
     case 0x2A:
     case 0x36:
         keymod |= KEYMOD_SHIFT;
+
+        break;
+
+    case 0x16:
+        if (keymod & KEYMOD_CTRL)
+            ring_reset(&input1);
+        else
+            keymap_write(&input1, keypress->scancode, keymod);
+
+        printinsert(header->destination);
+
+        break;
+
+    case 0x25:
+        if (keymod & KEYMOD_CTRL)
+            ring_reset(&input2);
+        else
+            keymap_write(&input1, keypress->scancode, keymod);
+
+        printinsert(header->destination);
+
+        break;
+
+    case 0x26:
+        if (keymod & KEYMOD_CTRL)
+            removerows(totalrows);
+        else
+            keymap_write(&input1, keypress->scancode, keymod);
+
+        printinsert(header->destination);
 
         break;
 
@@ -238,9 +268,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     default:
-        keycode = getkeycode(KEYMAP_US, keypress->scancode, keymod);
-
-        ring_write(&input1, &keycode->value, keycode->length);
+        keymap_write(&input1, keypress->scancode, keymod);
         printinsert(header->destination);
 
         break;
@@ -254,6 +282,11 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
 
     switch (keyrelease->scancode)
     {
+
+    case 0x1D:
+        keymod &= ~KEYMOD_CTRL;
+
+        break;
 
     case 0x2A:
     case 0x36:
