@@ -3,6 +3,9 @@
 #define ELEMENT_TYPE_TEXT               2
 #define ELEMENT_TYPE_PANEL              3
 #define ELEMENT_TYPE_MOUSE              4
+#define ELEMENT_DAMAGE_NONE             0
+#define ELEMENT_DAMAGE_UPDATE           1
+#define ELEMENT_DAMAGE_REMOVE           2
 #define ELEMENT_TEXTTYPE_NORMAL         0
 #define ELEMENT_TEXTTYPE_HIGHLIGHT      1
 #define ELEMENT_TEXTFLOW_NORMAL         0
@@ -16,7 +19,7 @@ struct element
     unsigned int type;
     unsigned int source;
     unsigned int z;
-    unsigned int damaged;
+    unsigned int damage;
     unsigned int count;
 
 };
@@ -64,7 +67,7 @@ struct element_window
 
 };
 
-void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count);
+void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int damage, unsigned int count);
 void element_initfill(struct element_fill *fill, unsigned int color);
 void element_initmouse(struct element_mouse *mouse, unsigned int x, unsigned int y);
 void element_initpanel(struct element_panel *panel, unsigned int active);

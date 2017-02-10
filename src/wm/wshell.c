@@ -37,7 +37,7 @@ static void printinsert(unsigned int source)
 static void printremove(unsigned int source)
 {
 
-    print_removetext(&output, source, &content);
+    print_removetext(&output, source, &content, 1);
 
 }
 

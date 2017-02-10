@@ -3,14 +3,14 @@
 #include "box.h"
 #include "element.h"
 
-void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int count)
+void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int damage, unsigned int count)
 {
 
     element->id = id;
     element->type = type;
     element->source = source;
     element->z = z;
-    element->damaged = 0;
+    element->damage = damage;
     element->count = count;
 
 }

@@ -448,25 +448,11 @@ static unsigned int insertelement(struct element *element, unsigned char *data, 
     {
 
         if (current->source == element->source && current->id == element->id)
-        {
-
-            current->z = 0;
-            current->damaged = 1;
-
-        }
+            current->damage = ELEMENT_DAMAGE_REMOVE;
 
     }
 
-    if (element->z)
-    {
-
-        element->damaged = 1;
-
-        return memory_write(data, 0x8000, element, sizeof (struct element) + element->count, count);
-
-    }
-
-    return 0;
+    return (element->damage == ELEMENT_DAMAGE_UPDATE) ? memory_write(data, 0x8000, element, sizeof (struct element) + element->count, count) : 0;
 
 }
 
@@ -489,7 +475,7 @@ static unsigned int testlayerline(unsigned int line, unsigned char *data, unsign
     while ((current = nextelement(current, data, count)))
     {
 
-        if (current->damaged && drawables[current->type].test(current, current + 1, line))
+        if (current->damage && drawables[current->type].test(current, current + 1, line))
             return 1;
 
     }
@@ -519,7 +505,7 @@ static void renderlayerline(unsigned int line, unsigned char *data, unsigned int
     while ((current = nextelement(current, data, count)))
     {
 
-        if (current->z && drawables[current->type].test(current, current + 1, line))
+        if (current->damage != ELEMENT_DAMAGE_REMOVE && drawables[current->type].test(current, current + 1, line))
             drawables[current->type].render(current, current + 1, line);
 
     }
@@ -565,7 +551,20 @@ void render_parse(unsigned int descriptor)
         while ((element = nextelement(element, buffer, count)))
         {
 
-            layercount1 += insertelement(element, layerdata1, layercount1);
+            switch (element->z)
+            {
+
+            case 1:
+                layercount1 += insertelement(element, layerdata1, layercount1);
+
+                break;
+
+            case 2:
+                layercount2 += insertelement(element, layerdata2, layercount2);
+
+                break;
+
+            }
 
         }
 
@@ -576,15 +575,29 @@ void render_parse(unsigned int descriptor)
 void render_complete(void)
 {
 
-    struct element *current = 0;
+    struct element *current;
+
+    current = 0;
 
     while ((current = nextelement(current, layerdata1, layercount1)))
     {
 
-        current->damaged = 0;
-
-        if (!current->z)
+        if (current->damage == ELEMENT_DAMAGE_REMOVE)
             layercount1 -= removeelement(current, layerdata1, layercount1);
+        else
+            current->damage = ELEMENT_DAMAGE_NONE;
+
+    }
+
+    current = 0;
+
+    while ((current = nextelement(current, layerdata2, layercount2)))
+    {
+
+        if (current->damage == ELEMENT_DAMAGE_REMOVE)
+            layercount2 -= removeelement(current, layerdata2, layercount2);
+        else
+            current->damage = ELEMENT_DAMAGE_NONE;
 
     }
 
