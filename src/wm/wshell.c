@@ -277,7 +277,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
     visiblerows = ((wmresize->h - 24) / 24) - 1;
 
-    if (visiblerows < totalrows)
+    if (totalrows > visiblerows)
         removerows(totalrows - visiblerows);
 
     box_setsize(&content.size, wmresize->x + 12, wmresize->y + 12, wmresize->w - 24, wmresize->h - 24);

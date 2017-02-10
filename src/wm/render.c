@@ -33,6 +33,8 @@ static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
 static unsigned char layerdata1[0x8000];
 static unsigned int layercount1;
+static unsigned char layerdata2[0x1000];
+static unsigned int layercount2;
 static unsigned char fontdata[0x8000];
 static unsigned char *fontbitmapdata;
 static unsigned int fontpadding;
@@ -428,24 +430,21 @@ static void renderwindow(struct element *element, void *data, unsigned int line)
 
 }
 
-static struct element *nextelement(unsigned char *data, unsigned int count, struct element *element)
+static struct element *nextelement(struct element *element, unsigned char *data, unsigned int count)
 {
 
     element = (element) ? (struct element *)((unsigned char *)(element + 1) + element->count) : (struct element *)data;
 
-    if ((unsigned int)element >= (unsigned int)data + count)
-        return 0;
-
-    return element;
+    return ((unsigned int)element < (unsigned int)data + count) ? element : 0;
 
 }
 
-static void insertelement(struct element *element)
+static unsigned int insertelement(struct element *element, unsigned char *data, unsigned int count)
 {
 
     struct element *current = 0;
 
-    while ((current = nextelement(layerdata1, layercount1, current)))
+    while ((current = nextelement(current, data, count)))
     {
 
         if (current->source == element->source && current->id == element->id)
@@ -463,46 +462,34 @@ static void insertelement(struct element *element)
 
         element->damaged = 1;
 
-        layercount1 += memory_write(layerdata1, 0x8000, element, sizeof (struct element) + element->count, layercount1);
+        return memory_write(data, 0x8000, element, sizeof (struct element) + element->count, count);
 
     }
 
+    return 0;
+
 }
 
-static void cleanelements(void)
+static unsigned int removeelement(struct element *element, unsigned char *data, unsigned int count)
+{
+
+    unsigned int length = sizeof (struct element) + element->count;
+
+    memory_copy(element, (unsigned char *)element + length, count - ((unsigned char *)element - data) - length);
+
+    return length;
+
+}
+
+static unsigned int testlayerline(unsigned int line, unsigned char *data, unsigned int count)
 {
 
     struct element *current = 0;
 
-    while ((current = nextelement(layerdata1, layercount1, current)))
+    while ((current = nextelement(current, data, count)))
     {
 
-        current->damaged = 0;
-
-        if (!current->z)
-        {
-
-            unsigned int length = sizeof (struct element) + current->count;
-
-            memory_copy(current, (unsigned char *)current + length, layercount1 - ((unsigned char *)current - layerdata1) - length);
-
-            layercount1 -= length;
-
-        }
-
-    }
-
-}
-
-static unsigned int testline(unsigned int line)
-{
-
-    struct element *element = 0;
-
-    while ((element = nextelement(layerdata1, layercount1, element)))
-    {
-
-        if (element->damaged && drawables[element->type].test(element, element + 1, line))
+        if (current->damaged && drawables[current->type].test(current, current + 1, line))
             return 1;
 
     }
@@ -511,32 +498,35 @@ static unsigned int testline(unsigned int line)
 
 }
 
-static void renderline(unsigned int line)
+static unsigned int testline(unsigned int line)
 {
 
-    unsigned int z;
+    if (testlayerline(line, layerdata1, layercount1))
+        return 1;
 
-    for (z = 1; z < 4; z++)
+    if (testlayerline(line, layerdata2, layercount2))
+        return 1;
+
+    return 0;
+
+}
+
+static void renderlayerline(unsigned int line, unsigned char *data, unsigned int count)
+{
+
+    struct element *current = 0;
+
+    while ((current = nextelement(current, data, count)))
     {
 
-        struct element *element = 0;
-
-        while ((element = nextelement(layerdata1, layercount1, element)))
-        {
-
-            if (element->z != z)
-                continue;
-
-            if (drawables[element->type].test(element, element + 1, line))
-                drawables[element->type].render(element, element + 1, line);
-
-        }
+        if (current->z && drawables[current->type].test(current, current + 1, line))
+            drawables[current->type].render(current, current + 1, line);
 
     }
 
 }
 
-static void renderscreen(unsigned int descriptor)
+void render_update(unsigned int descriptor)
 {
 
     unsigned int line;
@@ -546,11 +536,14 @@ static void renderscreen(unsigned int descriptor)
     for (line = 0; line < settings.h; line++)
     {
 
-        if (!testline(line))
-            continue;
+        if (testline(line))
+        {
 
-        renderline(line);
-        file_seekwriteall(descriptor, drawdata, settings.w, settings.w * line);
+            renderlayerline(line, layerdata1, layercount1);
+            renderlayerline(line, layerdata2, layercount2);
+            file_seekwriteall(descriptor, drawdata, settings.w, settings.w * line);
+
+        }
 
     }
 
@@ -558,22 +551,40 @@ static void renderscreen(unsigned int descriptor)
 
 }
 
-void render_flush(unsigned int datadescriptor, unsigned int renderdescriptor)
+void render_parse(unsigned int descriptor)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    while ((count = file_read(datadescriptor, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(descriptor, buffer, FUDGE_BSIZE)))
     {
 
         struct element *element = 0;
 
-        while ((element = nextelement(buffer, count, element)))
-            insertelement(element);
+        while ((element = nextelement(element, buffer, count)))
+        {
 
-        renderscreen(renderdescriptor);
-        cleanelements();
+            layercount1 += insertelement(element, layerdata1, layercount1);
+
+        }
+
+    }
+
+}
+
+void render_complete(void)
+{
+
+    struct element *current = 0;
+
+    while ((current = nextelement(current, layerdata1, layercount1)))
+    {
+
+        current->damaged = 0;
+
+        if (!current->z)
+            layercount1 -= removeelement(current, layerdata1, layercount1);
 
     }
 

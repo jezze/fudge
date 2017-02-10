@@ -21,7 +21,9 @@ static void onwmmap(struct event_header *header)
 static void onwmflush(struct event_header *header)
 {
 
-    render_flush(CALL_L0, CALL_L5);
+    render_parse(CALL_L0);
+    render_update(CALL_L5);
+    render_complete();
 
 }
 
