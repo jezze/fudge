@@ -571,7 +571,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
     unsigned int i;
 
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_setsize(&body, size.x, size.y + wmresize->padding * 4, size.w, size.h - wmresize->padding * 4);
+    box_setsize(&body, size.x, size.y + (wmresize->lineheight + wmresize->padding * 2), size.w, size.h - (wmresize->lineheight + wmresize->padding * 2));
     box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
     for (i = 0; i < VIEWS; i++)
@@ -579,7 +579,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
         views[i].center = body.w / 2;
 
-        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, wmresize->padding * 4);
+        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
         box_setsize(&views[i].number.size, views[i].panel.size.x, views[i].panel.size.y, views[i].panel.size.w, views[i].panel.size.h);
         box_resize(&views[i].number.size, wmresize->padding);
         arrangeview(header->destination, &views[i]);
