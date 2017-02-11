@@ -314,10 +314,10 @@ static void rendertextline(struct element_text *text, char *string, unsigned cha
         size.w = metricsdata.width;
         size.h = metricsdata.ascent + metricsdata.descent;
 
-        if (size.x + size.w >= text->size.x + text->size.w)
+        if (size.x + size.w > text->size.x + text->size.w)
             return;
 
-        if (size.y + size.h >= text->size.y + text->size.h)
+        if (size.y + size.h > text->size.y + text->size.h)
             return;
 
         if (rowline < size.h)
