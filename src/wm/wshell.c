@@ -308,11 +308,9 @@ static void onwmunmap(struct event_header *header)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    unsigned int factor = 3;
-    unsigned int padding = 4 * factor;
-    unsigned int lineheight = 24;
+    unsigned int padding = wmresize->factor + 2;
 
-    visiblerows = ((wmresize->h - padding * 2) / lineheight) - 1;
+    visiblerows = ((wmresize->h - padding * 2) / wmresize->lineheight) - 1;
 
     if (totalrows > visiblerows)
         removerows(totalrows - visiblerows);

@@ -25,7 +25,7 @@ void ev_sendmousepress(unsigned int descriptor, unsigned int destination, unsign
 void ev_sendmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button);
 void ev_sendwmmap(unsigned int descriptor, unsigned int destination);
 void ev_sendwmunmap(unsigned int descriptor, unsigned int destination);
-void ev_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
+void ev_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int factor, unsigned int lineheight);
 void ev_sendwmshow(unsigned int descriptor, unsigned int destination);
 void ev_sendwmhide(unsigned int descriptor, unsigned int destination);
 void ev_sendwmflush(unsigned int descriptor, unsigned int destination);

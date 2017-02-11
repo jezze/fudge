@@ -256,7 +256,7 @@ void ev_sendwmunmap(unsigned int descriptor, unsigned int destination)
 
 }
 
-void ev_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void ev_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int factor, unsigned int lineheight)
 {
 
     struct event_wmresize wmresize;
@@ -265,6 +265,8 @@ void ev_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned
     wmresize.y = y;
     wmresize.w = w;
     wmresize.h = h;
+    wmresize.factor = factor;
+    wmresize.lineheight = lineheight;
 
     send(descriptor, destination, EVENT_WMRESIZE, sizeof (struct event_wmresize), &wmresize);
 

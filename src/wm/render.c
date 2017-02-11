@@ -27,7 +27,6 @@ struct drawable
 
 };
 
-static struct ctrl_videosettings settings;
 static struct drawable drawables[5];
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
@@ -513,14 +512,14 @@ static void renderlayerline(unsigned int line, unsigned char *data, unsigned int
 
 }
 
-void render_update(unsigned int descriptor)
+void render_update(unsigned int descriptor, struct ctrl_videosettings *settings)
 {
 
     unsigned int line;
 
     file_open(descriptor);
 
-    for (line = 0; line < settings.h; line++)
+    for (line = 0; line < settings->h; line++)
     {
 
         if (testline(line))
@@ -528,7 +527,7 @@ void render_update(unsigned int descriptor)
 
             renderlayerline(line, layerdata1, layercount1);
             renderlayerline(line, layerdata2, layercount2);
-            file_seekwriteall(descriptor, drawdata, settings.w, settings.w * line);
+            file_seekwriteall(descriptor, drawdata, settings->w, settings->w * line);
 
         }
 
@@ -604,16 +603,15 @@ void render_complete(void)
 
 }
 
-void render_initvideo(unsigned int descriptor, unsigned int w, unsigned int h, unsigned int bpp)
+void render_initvideo(unsigned int descriptor, struct ctrl_videosettings *settings)
 {
 
     file_open(descriptor);
-    ctrl_setvideosettings(&settings, w, h, bpp);
-    file_seekwriteall(descriptor, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekreadall(descriptor, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(descriptor, settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekreadall(descriptor, settings, sizeof (struct ctrl_videosettings), 0);
     file_close(descriptor);
 
-    switch (settings.bpp)
+    switch (settings->bpp)
     {
 
     case 8:
@@ -639,7 +637,7 @@ void render_initcolormap(unsigned int descriptor)
 
 }
 
-void render_initfont(unsigned int descriptor)
+void render_initfont(unsigned int descriptor, unsigned int lineheight)
 {
 
     file_open(descriptor);
@@ -648,7 +646,7 @@ void render_initfont(unsigned int descriptor)
 
     fontbitmapdata = pcf_getbitmapdata(fontdata);
     fontpadding = pcf_getpadding(fontdata);
-    fontlineheight = 24;
+    fontlineheight = lineheight;
 
 }
 

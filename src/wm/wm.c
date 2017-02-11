@@ -41,6 +41,8 @@ static struct element_fill background;
 static struct element_mouse mouse;
 static struct view *viewfocus = &views[0];
 static struct ev_handlers handlers;
+static unsigned int factor;
+static unsigned int lineheight;
 
 static void printinsertremote(unsigned int source, struct remote *remote)
 {
@@ -91,7 +93,7 @@ static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, 
 {
 
     box_setsize(&remote->window.size, x, y, w, h);
-    ev_sendwmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+    ev_sendwmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h, factor, lineheight);
 
 }
 
@@ -518,9 +520,6 @@ static void onmouserelease(struct event_header *header, struct event_mousereleas
 static void onvideomode(struct event_header *header, struct event_videomode *videomode)
 {
 
-    ev_sendwmresize(CALL_L1, header->destination, 0, 0, videomode->w, videomode->h);
-    ev_sendwmshow(CALL_L1, header->destination);
-
 }
 
 static void onwmmap(struct event_header *header)
@@ -569,10 +568,12 @@ static void onwmunmap(struct event_header *header)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    unsigned int factor = 3;
-    unsigned int padding = 4 * factor;
+    unsigned int padding = wmresize->factor + 2;
     unsigned int menuheight = 4 * padding;
     unsigned int i;
+
+    factor = wmresize->factor;
+    lineheight = wmresize->lineheight;
 
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
     box_setsize(&body, size.x, size.y + menuheight, size.w, size.h - menuheight);
