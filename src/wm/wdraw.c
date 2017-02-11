@@ -26,27 +26,33 @@ static void onwmmap(struct event_header *header)
     case 12:
     case 11:
     case 10:
-        file_walk(CALL_L8, "/share/ter-118n.pcf");
-
         lineheight = 18 + 6;
+
+        render_initmouse(24);
+        file_walk(CALL_L8, "/share/ter-118n.pcf");
+        render_initfont(CALL_L8, lineheight);
 
         break;
 
     case 9:
     case 8:
     case 7:
-        file_walk(CALL_L8, "/share/ter-116n.pcf");
-
         lineheight = 16 + 4;
+
+        render_initmouse(24);
+        file_walk(CALL_L8, "/share/ter-116n.pcf");
+        render_initfont(CALL_L8, lineheight);
 
         break;
 
     case 6:
     case 5:
     case 4:
-        file_walk(CALL_L8, "/share/ter-114n.pcf");
-        
         lineheight = 14 + 2;
+
+        render_initmouse(16);
+        file_walk(CALL_L8, "/share/ter-114n.pcf");
+        render_initfont(CALL_L8, lineheight);
 
         break;
 
@@ -54,15 +60,16 @@ static void onwmmap(struct event_header *header)
     case 2:
     case 1:
     default:
-        file_walk(CALL_L8, "/share/ter-112n.pcf");
-        
         lineheight = 12 + 0;
+
+        render_initmouse(16);
+        file_walk(CALL_L8, "/share/ter-112n.pcf");
+        render_initfont(CALL_L8, lineheight);
 
         break;
 
     }
 
-    render_initfont(CALL_L8, lineheight);
     ev_sendwmresize(CALL_L1, header->source, 0, 0, settings.w, settings.h, factor + 2, lineheight);
     ev_sendwmshow(CALL_L1, header->source);
 
