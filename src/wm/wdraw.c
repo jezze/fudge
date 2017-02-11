@@ -18,9 +18,7 @@ static void onwmmap(struct event_header *header)
     render_initvideo(CALL_L6, &settings);
     render_initcolormap(CALL_L7);
 
-    factor = ((settings.w + (160 - 1)) / 160) / 4;
-
-    switch (factor)
+    switch (settings.h / 320)
     {
 
     case 3:
@@ -58,10 +56,10 @@ static void onwmmap(struct event_header *header)
 
     }
 
-    factor = factor * 2;
+    factor = (settings.h / 320) * 2;
 
     render_initfont(CALL_L8, lineheight + factor);
-    ev_sendwmresize(CALL_L1, header->source, 0, 0, settings.w, settings.h, factor + 4, lineheight + factor);
+    ev_sendwmresize(CALL_L1, header->source, 0, 0, settings.w, settings.h, 4 + factor, lineheight + factor);
     ev_sendwmshow(CALL_L1, header->source);
 
     handlers.wmmap = 0;
