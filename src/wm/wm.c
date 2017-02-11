@@ -569,10 +569,13 @@ static void onwmunmap(struct event_header *header)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
+    unsigned int factor = 3;
+    unsigned int padding = 4 * factor;
+    unsigned int menuheight = 4 * padding;
     unsigned int i;
 
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_setsize(&body, size.x, size.y + 48, size.w, size.h - 48);
+    box_setsize(&body, size.x, size.y + menuheight, size.w, size.h - menuheight);
     box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
     for (i = 0; i < VIEWS; i++)
@@ -580,8 +583,9 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
         views[i].center = body.w / 2;
 
-        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, 48);
-        box_setsize(&views[i].number.size, views[i].panel.size.x + 12, views[i].panel.size.y + 12, views[i].panel.size.w - 24, views[i].panel.size.h - 24);
+        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, menuheight);
+        box_setsize(&views[i].number.size, views[i].panel.size.x, views[i].panel.size.y, views[i].panel.size.w, views[i].panel.size.h);
+        box_resize(&views[i].number.size, padding);
         arrangeview(header->destination, &views[i]);
 
     }

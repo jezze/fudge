@@ -48,7 +48,6 @@ void element_inittext(struct element_text *text, unsigned int type, unsigned int
 
     text->type = type;
     text->flow = flow;
-    text->lineheight = 24;
     text->cursor = 0;
 
 }

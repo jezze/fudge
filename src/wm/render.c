@@ -38,6 +38,7 @@ static unsigned int layercount2;
 static unsigned char fontdata[0x8000];
 static unsigned char *fontbitmapdata;
 static unsigned int fontpadding;
+static unsigned int fontlineheight;
 static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char mousedata[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -354,9 +355,9 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         return;
 
     line = (line - text->size.y);
-    row = line / text->lineheight;
-    rowline = line % text->lineheight;
-    rowtop = row * text->lineheight;
+    row = line / fontlineheight;
+    rowline = line % fontlineheight;
+    rowtop = row * fontlineheight;
     rowtotal = ascii_count(string, stringcount, '\n') + 1;
 
     if (row >= rowtotal)
@@ -603,11 +604,11 @@ void render_complete(void)
 
 }
 
-void render_initvideo(unsigned int descriptor)
+void render_initvideo(unsigned int descriptor, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
     file_open(descriptor);
-    ctrl_setvideosettings(&settings, 1920, 1080, 32);
+    ctrl_setvideosettings(&settings, w, h, bpp);
     file_seekwriteall(descriptor, &settings, sizeof (struct ctrl_videosettings), 0);
     file_seekreadall(descriptor, &settings, sizeof (struct ctrl_videosettings), 0);
     file_close(descriptor);
@@ -647,6 +648,7 @@ void render_initfont(unsigned int descriptor)
 
     fontbitmapdata = pcf_getbitmapdata(fontdata);
     fontpadding = pcf_getpadding(fontdata);
+    fontlineheight = 24;
 
 }
 

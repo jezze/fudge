@@ -10,7 +10,7 @@ static struct ev_handlers handlers;
 static void onwmmap(struct event_header *header)
 {
 
-    render_initvideo(CALL_L6);
+    render_initvideo(CALL_L6, 1920, 1080, 32);
     render_initcolormap(CALL_L7);
     render_initfont(CALL_L8);
 

@@ -19,3 +19,13 @@ void box_setsize(struct box *box, unsigned int x, unsigned int y, unsigned int w
 
 }
 
+void box_resize(struct box *box, int f)
+{
+
+    box->x += f;
+    box->y += f;
+    box->w -= f * 2;
+    box->h -= f * 2;
+
+}
+

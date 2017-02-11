@@ -54,7 +54,6 @@ struct element_text
     struct box size;
     unsigned int type;
     unsigned int flow;
-    unsigned int lineheight;
     unsigned int cursor;
 
 };
