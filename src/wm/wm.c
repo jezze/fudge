@@ -43,6 +43,7 @@ static struct view *viewfocus = &views[0];
 static struct ev_handlers handlers;
 static unsigned int padding;
 static unsigned int lineheight;
+static unsigned int steplength;
 
 static void printinsertremote(unsigned int source, struct remote *remote)
 {
@@ -324,10 +325,10 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     case 0x23:
-        if (viewfocus->center <= 1 * (body.w / 8))
+        if (viewfocus->center <= 6 * steplength)
             break;
 
-        viewfocus->center -= (body.w / 32);
+        viewfocus->center -= 4 * steplength;
 
         arrangeview(header->destination, viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
@@ -373,10 +374,10 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     case 0x26:
-        if (viewfocus->center >= 7 * (body.w / 8))
+        if (viewfocus->center >= 26 * steplength)
             break;
 
-        viewfocus->center += (body.w / 32);
+        viewfocus->center += 4 * steplength;
 
         arrangeview(header->destination, viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
@@ -568,10 +569,14 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
     box_setsize(&body, size.x, size.y + (wmresize->lineheight + wmresize->padding * 2), size.w, size.h - (wmresize->lineheight + wmresize->padding * 2));
     box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
+    padding = wmresize->padding;
+    lineheight = wmresize->lineheight;
+    steplength = body.w / 32;
+
     for (i = 0; i < VIEWS; i++)
     {
 
-        views[i].center = (body.w / 32) * 18;
+        views[i].center = 18 * steplength;
 
         box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
         box_setsize(&views[i].number.size, views[i].panel.size.x, views[i].panel.size.y, views[i].panel.size.w, views[i].panel.size.h);
@@ -582,8 +587,6 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
     mouse.x = size.x + size.w / 4;
     mouse.y = size.y + size.h / 4;
-    padding = wmresize->padding;
-    lineheight = wmresize->lineheight;
 
 }
 
