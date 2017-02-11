@@ -82,7 +82,7 @@ struct event_wmresize
     unsigned int y;
     unsigned int w;
     unsigned int h;
-    unsigned int factor;
+    unsigned int padding;
     unsigned int lineheight;
 
 };

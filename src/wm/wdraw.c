@@ -63,7 +63,7 @@ static void onwmmap(struct event_header *header)
     }
 
     render_initfont(CALL_L8, lineheight);
-    ev_sendwmresize(CALL_L1, header->source, 0, 0, settings.w, settings.h, factor, lineheight);
+    ev_sendwmresize(CALL_L1, header->source, 0, 0, settings.w, settings.h, factor + 2, lineheight);
     ev_sendwmshow(CALL_L1, header->source);
 
     handlers.wmmap = 0;

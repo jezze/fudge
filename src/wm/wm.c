@@ -41,7 +41,7 @@ static struct element_fill background;
 static struct element_mouse mouse;
 static struct view *viewfocus = &views[0];
 static struct ev_handlers handlers;
-static unsigned int factor;
+static unsigned int padding;
 static unsigned int lineheight;
 
 static void printinsertremote(unsigned int source, struct remote *remote)
@@ -93,7 +93,7 @@ static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, 
 {
 
     box_setsize(&remote->window.size, x, y, w, h);
-    ev_sendwmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h, factor, lineheight);
+    ev_sendwmresize(CALL_L1, remote->source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h, padding, lineheight);
 
 }
 
@@ -568,15 +568,10 @@ static void onwmunmap(struct event_header *header)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    unsigned int padding = wmresize->factor + 2;
-    unsigned int menuheight = 4 * padding;
     unsigned int i;
 
-    factor = wmresize->factor;
-    lineheight = wmresize->lineheight;
-
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_setsize(&body, size.x, size.y + menuheight, size.w, size.h - menuheight);
+    box_setsize(&body, size.x, size.y + wmresize->padding * 4, size.w, size.h - wmresize->padding * 4);
     box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
     for (i = 0; i < VIEWS; i++)
@@ -584,15 +579,17 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
         views[i].center = body.w / 2;
 
-        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, menuheight);
+        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, wmresize->padding * 4);
         box_setsize(&views[i].number.size, views[i].panel.size.x, views[i].panel.size.y, views[i].panel.size.w, views[i].panel.size.h);
-        box_resize(&views[i].number.size, padding);
+        box_resize(&views[i].number.size, wmresize->padding);
         arrangeview(header->destination, &views[i]);
 
     }
 
     mouse.x = size.x + size.w / 4;
     mouse.y = size.y + size.h / 4;
+    padding = wmresize->padding;
+    lineheight = wmresize->lineheight;
 
 }
 
