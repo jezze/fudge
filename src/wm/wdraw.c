@@ -18,59 +18,50 @@ static void onwmmap(struct event_header *header)
     render_initvideo(CALL_L6, &settings);
     render_initcolormap(CALL_L7);
 
-    factor = (settings.w + (160 - 1)) / 160;
+    factor = ((settings.w + (160 - 1)) / 160) / 4;
 
     switch (factor)
     {
 
-    case 12:
-    case 11:
-    case 10:
-        lineheight = 18 + 6;
+    case 3:
+        lineheight = 18;
 
         render_initmouse(24);
         file_walk(CALL_L8, "/share/ter-118n.pcf");
-        render_initfont(CALL_L8, lineheight);
 
         break;
 
-    case 9:
-    case 8:
-    case 7:
-        lineheight = 16 + 4;
+    case 2:
+        lineheight = 16;
 
         render_initmouse(24);
         file_walk(CALL_L8, "/share/ter-116n.pcf");
-        render_initfont(CALL_L8, lineheight);
 
         break;
 
-    case 6:
-    case 5:
-    case 4:
-        lineheight = 14 + 2;
+    case 1:
+        lineheight = 14;
 
         render_initmouse(16);
         file_walk(CALL_L8, "/share/ter-114n.pcf");
-        render_initfont(CALL_L8, lineheight);
 
         break;
 
-    case 3:
-    case 2:
-    case 1:
+    case 0:
     default:
-        lineheight = 12 + 0;
+        lineheight = 12;
 
         render_initmouse(16);
         file_walk(CALL_L8, "/share/ter-112n.pcf");
-        render_initfont(CALL_L8, lineheight);
 
         break;
 
     }
 
-    ev_sendwmresize(CALL_L1, header->source, 0, 0, settings.w, settings.h, factor + 2, lineheight);
+    factor = factor * 2;
+
+    render_initfont(CALL_L8, lineheight + factor);
+    ev_sendwmresize(CALL_L1, header->source, 0, 0, settings.w, settings.h, factor + 4, lineheight + factor);
     ev_sendwmshow(CALL_L1, header->source);
 
     handlers.wmmap = 0;
