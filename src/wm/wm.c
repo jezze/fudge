@@ -431,19 +431,13 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
 {
 
     mouse.x += mousemove->relx;
-    mouse.y -= mousemove->rely;
+    mouse.y += mousemove->rely;
 
-    if (mousemove->relx > 0 && mouse.x >= size.w)
-        mouse.x = size.w - 1;
+    if (mouse.x < size.x || mouse.x >= size.w)
+        mouse.x = (mousemove->relx < 0) ? size.x : size.w - 1;
 
-    if (mousemove->relx < 0 && (mouse.x < size.x || mouse.x >= size.w))
-        mouse.x = size.x;
-
-    if (mousemove->rely < 0 && mouse.y >= size.h)
-        mouse.y = size.h - 1;
-
-    if (mousemove->rely > 0 && (mouse.y < size.y || mouse.y >= size.h))
-        mouse.y = size.y;
+    if (mouse.y < size.y || mouse.y >= size.h)
+        mouse.y = (mousemove->rely < 0) ? size.y : size.h - 1;
 
     print_insertmouse(&output, header->destination, &mouse, 2);
 

@@ -71,7 +71,7 @@ static void handleirq(unsigned int irq)
        mouse_notifyrelease(&mouseinterface, 3);
 
     if (relx || rely)
-       mouse_notifymove(&mouseinterface, relx, rely);
+       mouse_notifymove(&mouseinterface, relx, -rely);
 
     oldstate = state;
 
