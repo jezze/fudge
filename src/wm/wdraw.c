@@ -28,7 +28,7 @@ static void onwmmap(struct event_header *header)
     case 10:
         file_walk(CALL_L8, "/share/ter-118n.pcf");
 
-        lineheight = 24;
+        lineheight = 18 + 6;
 
         break;
 
@@ -37,7 +37,7 @@ static void onwmmap(struct event_header *header)
     case 7:
         file_walk(CALL_L8, "/share/ter-116n.pcf");
 
-        lineheight = 20;
+        lineheight = 16 + 4;
 
         break;
 
@@ -46,7 +46,7 @@ static void onwmmap(struct event_header *header)
     case 4:
         file_walk(CALL_L8, "/share/ter-114n.pcf");
         
-        lineheight = 16;
+        lineheight = 14 + 2;
 
         break;
 
@@ -56,7 +56,7 @@ static void onwmmap(struct event_header *header)
     default:
         file_walk(CALL_L8, "/share/ter-112n.pcf");
         
-        lineheight = 14;
+        lineheight = 12 + 0;
 
         break;
 
