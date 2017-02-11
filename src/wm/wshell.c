@@ -308,13 +308,13 @@ static void onwmunmap(struct event_header *header)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    visiblerows = ((wmresize->h - wmresize->padding * 2) / wmresize->lineheight) - 1;
+    box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
+    box_resize(&content.size, wmresize->padding);
+
+    visiblerows = (content.size.h / wmresize->lineheight) - 1;
 
     if (totalrows > visiblerows)
         removerows(totalrows - visiblerows);
-
-    box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_resize(&content.size, wmresize->padding);
 
 }
 
