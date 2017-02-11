@@ -571,7 +571,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
     for (i = 0; i < VIEWS; i++)
     {
 
-        views[i].center = body.w / 2;
+        views[i].center = (body.w / 32) * 18;
 
         box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
         box_setsize(&views[i].number.size, views[i].panel.size.x, views[i].panel.size.y, views[i].panel.size.w, views[i].panel.size.h);
