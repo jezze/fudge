@@ -180,9 +180,10 @@ static void onwmunmap(struct event_header *header)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h - wmresize->lineheight);
+    box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h - (wmresize->lineheight + 2 * wmresize->padding));
     box_resize(&content.size, wmresize->padding);
-    box_setsize(&status.size, content.size.x, content.size.y + content.size.h, content.size.w, wmresize->lineheight + wmresize->padding);
+    box_setsize(&status.size, wmresize->x, wmresize->y + wmresize->h - (wmresize->lineheight + 2 * wmresize->padding), wmresize->w, (wmresize->lineheight + 2 * wmresize->padding));
+    box_resize(&status.size, wmresize->padding);
 
 }
 
