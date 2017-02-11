@@ -132,12 +132,35 @@ static void hideremotes(unsigned int source, struct list *remotes)
 
 }
 
-static void arrangeview(unsigned int source, struct view *view)
+static void arrangesingle(struct view *view)
 {
 
-    struct list_item *current = view->remotes.tail;
-    unsigned int y;
-    unsigned int h;
+    resizeremote(view->remotes.tail->data, body.x, body.y, body.w, body.h);
+
+}
+
+static void arrangetiled(struct view *view)
+{
+
+    unsigned int y = body.y;
+    unsigned int h = body.h / (view->remotes.count - 1);
+    struct list_item *current;
+
+    resizeremote(view->remotes.tail->data, body.x, body.y, view->center, body.h);
+
+    for (current = view->remotes.tail->prev; current; current = current->prev)
+    {
+
+        resizeremote(current->data, body.x + view->center, y, body.w - view->center, h);
+
+        y += h;
+
+    }
+
+}
+
+static void arrangeview(struct view *view)
+{
 
     switch (view->remotes.count)
     {
@@ -146,24 +169,12 @@ static void arrangeview(unsigned int source, struct view *view)
         break;
 
     case 1:
-        resizeremote(current->data, body.x, body.y, body.w, body.h);
+        arrangesingle(view);
 
         break;
 
     default:
-        y = body.y;
-        h = body.h / (view->remotes.count - 1);
-
-        resizeremote(current->data, body.x, body.y, view->center, body.h);
-
-        for (current = view->remotes.tail->prev; current; current = current->prev)
-        {
-
-            resizeremote(current->data, body.x + view->center, y, body.w - view->center, h);
-
-            y += h;
-
-        }
+        arrangetiled(view);
 
         break;
 
@@ -265,8 +276,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
             if (viewfocus->remotefocus)
                 activateremote(viewfocus->remotefocus);
 
-            arrangeview(header->destination, viewfocus);
-            arrangeview(header->destination, nextview);
+            arrangeview(viewfocus);
+            arrangeview(nextview);
 
             if (nextview->remotefocus)
                 deactivateremote(nextview->remotefocus);
@@ -298,7 +309,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (viewfocus->remotefocus)
             activateremote(viewfocus->remotefocus);
 
-        arrangeview(header->destination, viewfocus);
+        arrangeview(viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
 
         break;
@@ -319,7 +330,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
             break;
 
         list_move(&viewfocus->remotes, &viewfocus->remotefocus->item);
-        arrangeview(header->destination, viewfocus);
+        arrangeview(viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
 
         break;
@@ -330,7 +341,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
         viewfocus->center -= 4 * steplength;
 
-        arrangeview(header->destination, viewfocus);
+        arrangeview(viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
 
         break;
@@ -379,7 +390,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
         viewfocus->center += 4 * steplength;
 
-        arrangeview(header->destination, viewfocus);
+        arrangeview(viewfocus);
         showremotes(header->destination, &viewfocus->remotes);
 
         break;
@@ -531,7 +542,7 @@ static void onwmmap(struct event_header *header)
 
     list_move(&viewfocus->remotes, &viewfocus->remotefocus->item);
     activateremote(viewfocus->remotefocus);
-    arrangeview(header->destination, viewfocus);
+    arrangeview(viewfocus);
     showremotes(header->destination, &viewfocus->remotes);
 
 }
@@ -581,7 +592,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
         box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
         box_setsize(&views[i].number.size, views[i].panel.size.x, views[i].panel.size.y, views[i].panel.size.w, views[i].panel.size.h);
         box_resize(&views[i].number.size, wmresize->padding);
-        arrangeview(header->destination, &views[i]);
+        arrangeview(&views[i]);
 
     }
 
