@@ -431,7 +431,6 @@ static void renderwindow(struct element *element, void *data, unsigned int line)
         paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
         paint(framecolor, window->size.x + 1, 1);
         paint(framecolor, window->size.x + window->size.w - 2, 1);
-        paint(COLOR_DARK, window->size.x + 2, window->size.w - 4);
 
         break;
 
@@ -440,8 +439,6 @@ static void renderwindow(struct element *element, void *data, unsigned int line)
         paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
         paint(framecolor, window->size.x + 1, 1);
         paint(framecolor, window->size.x + window->size.w - 2, 1);
-        paint(COLOR_DARK, window->size.x + 2, 1);
-        paint(COLOR_DARK, window->size.x + window->size.w - 3, 1);
 
         break;
 

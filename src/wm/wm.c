@@ -93,7 +93,7 @@ static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, 
 {
 
     box_setsize(&remote->window.size, x, y, w, h);
-    ev_sendwmresize(CALL_L1, remote->source, remote->window.size.x + 3, remote->window.size.y + 3, remote->window.size.w - 6, remote->window.size.h - 6, padding, lineheight);
+    ev_sendwmresize(CALL_L1, remote->source, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
 
 }
 
