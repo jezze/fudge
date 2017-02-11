@@ -37,10 +37,6 @@ static unsigned char *fontbitmapdata;
 static unsigned int fontpadding;
 static unsigned int fontlineheight;
 static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
-static unsigned int mousewidth24 = 24;
-static unsigned int mouseheight24 = 24;
-static unsigned int mousewidth16 = 16;
-static unsigned int mouseheight16 = 16;
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -667,15 +663,15 @@ void render_initmouse(unsigned int size)
     {
 
     case 16:
-        mousewidth = mousewidth16;
-        mouseheight = mouseheight16;
+        mousewidth = 16;
+        mouseheight = 16;
         mousedata = mousedata16;
 
         break;
 
     case 24:
-        mousewidth = mousewidth24;
-        mouseheight = mouseheight24;
+        mousewidth = 24;
+        mouseheight = 24;
         mousedata = mousedata24;
 
         break;
