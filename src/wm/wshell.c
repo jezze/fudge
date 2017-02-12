@@ -18,8 +18,8 @@ static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
 static struct ev_handlers handlers;
-static unsigned int totalrows = 0;
-static unsigned int visiblerows = 0;
+static unsigned int totalrows;
+static unsigned int visiblerows;
 
 static void printinsert(unsigned int source)
 {
