@@ -426,14 +426,6 @@ static void renderwindow(struct element *element, void *data, unsigned int line)
 
         break;
 
-    case 2:
-        paint(COLOR_DARK, window->size.x + 0, 1);
-        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        paint(framecolor, window->size.x + 1, 1);
-        paint(framecolor, window->size.x + window->size.w - 2, 1);
-
-        break;
-
     default:
         paint(COLOR_DARK, window->size.x + 0, 1);
         paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
