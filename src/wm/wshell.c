@@ -57,23 +57,6 @@ static void removerows(unsigned int count)
 
 }
 
-static void copychar(char c)
-{
-
-    ring_write(&text, &c, 1);
-
-    if (c == '\n')
-    {
-
-        totalrows++;
-
-        if (totalrows > visiblerows)
-            removerows(totalrows - visiblerows);
-
-    }
-
-}
-
 static void copybuffer(void *buffer, unsigned int count)
 {
 
@@ -81,7 +64,21 @@ static void copybuffer(void *buffer, unsigned int count)
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        copychar(b[i]);
+    {
+
+        ring_write(&text, &b[i], 1);
+
+        if (b[i] == '\n')
+        {
+
+            totalrows++;
+
+            if (totalrows > visiblerows)
+                removerows(totalrows - visiblerows);
+
+        }
+
+    }
 
 }
 

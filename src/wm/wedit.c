@@ -17,6 +17,8 @@ static struct ring input1;
 static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
 static struct ev_handlers handlers;
+static unsigned int totalrows;
+static unsigned int visiblerows;
 
 static void printinsert(unsigned int source)
 {
@@ -177,6 +179,42 @@ static void onwmunmap(struct event_header *header)
 
 }
 
+static void readfile(void)
+{
+
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
+
+    file_open(CALL_PI);
+
+    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < count; i++)
+        {
+
+            ring_write(&input2, &buffer[i], 1);
+
+            if (buffer[i] == '\n')
+            {
+
+                totalrows++;
+
+                if (totalrows > visiblerows)
+                    return;
+
+            }
+
+        }
+
+    }
+
+    file_close(CALL_PI);
+
+}
+
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
@@ -184,6 +222,13 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
     box_resize(&content.size, wmresize->padding);
     box_setsize(&status.size, wmresize->x, wmresize->y + wmresize->h - (wmresize->lineheight + 2 * wmresize->padding), wmresize->w, (wmresize->lineheight + 2 * wmresize->padding));
     box_resize(&status.size, wmresize->padding);
+
+    visiblerows = (content.size.h / wmresize->lineheight) - 1;
+    totalrows = 0;
+
+    ring_reset(&input1);
+    ring_reset(&input2);
+    readfile();
 
 }
 
@@ -198,17 +243,6 @@ static void onwmhide(struct event_header *header)
 {
 
     printremove(header->destination);
-
-}
-
-static void readfile(void)
-{
-
-    char buffer[FUDGE_BSIZE];
-    unsigned int count;
-
-    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
-        ring_write(&input2, buffer, count);
 
 }
 
@@ -227,9 +261,6 @@ void main(void)
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
     element_inittext(&status, ELEMENT_TEXTTYPE_HIGHLIGHT, ELEMENT_TEXTFLOW_NORMAL);
-    file_open(CALL_PI);
-    readfile();
-    file_close(CALL_PI);
 
     if (!file_walk(CALL_L0, "/system/wm/data"))
         return;
