@@ -619,11 +619,14 @@ void render_complete(void)
 
 }
 
-void render_initvideo(unsigned int descriptor, struct ctrl_videosettings *settings)
+void render_initvideo(unsigned int descriptor, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
+    struct ctrl_videosettings settings;
+
+    ctrl_setvideosettings(&settings, w, h, bpp);
     file_open(descriptor);
-    file_seekwriteall(descriptor, settings, sizeof (struct ctrl_videosettings), 0);
+    file_writeall(descriptor, &settings, sizeof (struct ctrl_videosettings));
     file_close(descriptor);
 
 }

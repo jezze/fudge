@@ -714,18 +714,6 @@ static void setup(void)
 
 }
 
-static void initgraphics()
-{
-
-    struct ctrl_videosettings settings;
-
-    ctrl_setvideosettings(&settings, 1920, 1080, 32);
-    render_init();
-    render_initvideo(CALL_L6, &settings);
-    render_initcolormap(CALL_L7);
-
-}
-
 void main(void)
 {
 
@@ -776,7 +764,9 @@ void main(void)
     file_open(CALL_L2);
     file_open(CALL_L3);
     file_open(CALL_L4);
-    initgraphics();
+    render_init();
+    render_initvideo(CALL_L6, 1920, 1080, 32);
+    render_initcolormap(CALL_L7);
 
     while (!quit && ev_read(&handlers, CALL_L1))
     {
