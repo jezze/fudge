@@ -87,36 +87,6 @@ unsigned char *pcf_getbitmapdata(void *base)
 
 }
 
-void pcf_readmetricsdatacompressed(void *base, unsigned int index, struct pcf_metricsdata_compressed *data)
-{
-
-    struct pcf_entry *entry = getentry(base, PCF_TYPE_METRICS);
-    struct pcf_metricsdata_compressed *metrics = (struct pcf_metricsdata_compressed *)((unsigned char *)base + entry->offset + sizeof (unsigned int) + sizeof (struct pcf_metrics_compressed)) + index;
-
-    data->lbearing = metrics->lbearing - 0x80;
-    data->rbearing = metrics->rbearing - 0x80;
-    data->width = metrics->width - 0x80;
-    data->ascent = metrics->ascent - 0x80;
-    data->descent = metrics->descent - 0x80;
-
-}
-
-void pcf_readmetricsdatanormal(void *base, unsigned int index, struct pcf_metricsdata *data)
-{
-
-    struct pcf_entry *entry = getentry(base, PCF_TYPE_METRICS);
-    unsigned int format = getformat(base, entry);
-    struct pcf_metricsdata *metrics = (struct pcf_metricsdata *)((unsigned char *)base + entry->offset + sizeof (unsigned int) + sizeof (struct pcf_metrics)) + index;
-
-    data->lbearing = convert16(metrics->lbearing, format);
-    data->rbearing = convert16(metrics->rbearing, format);
-    data->width = convert16(metrics->width, format);
-    data->ascent = convert16(metrics->ascent, format);
-    data->descent = convert16(metrics->descent, format);
-    data->attributes = convert16(metrics->attributes, format);
-
-}
-
 void pcf_readmetricsdata(void *base, unsigned int index, struct pcf_metricsdata *data)
 {
 
@@ -126,15 +96,13 @@ void pcf_readmetricsdata(void *base, unsigned int index, struct pcf_metricsdata 
     if (format & PCF_FORMAT_COMPRESSED)
     {
 
-        struct pcf_metricsdata_compressed compressed;
+        struct pcf_metricsdata_compressed *metrics = (struct pcf_metricsdata_compressed *)((unsigned char *)base + entry->offset + sizeof (unsigned int) + sizeof (struct pcf_metrics_compressed)) + index;
 
-        pcf_readmetricsdatacompressed(base, index, &compressed);
-
-        data->lbearing = compressed.lbearing;
-        data->rbearing = compressed.rbearing;
-        data->width = compressed.width;
-        data->ascent = compressed.ascent;
-        data->descent = compressed.descent;
+        data->lbearing = metrics->lbearing - 0x80;
+        data->rbearing = metrics->rbearing - 0x80;
+        data->width = metrics->width - 0x80;
+        data->ascent = metrics->ascent - 0x80;
+        data->descent = metrics->descent - 0x80;
         data->attributes = 0;
 
     }
@@ -142,7 +110,14 @@ void pcf_readmetricsdata(void *base, unsigned int index, struct pcf_metricsdata 
     else
     {
 
-        pcf_readmetricsdatanormal(base, index, data);
+        struct pcf_metricsdata *metrics = (struct pcf_metricsdata *)((unsigned char *)base + entry->offset + sizeof (unsigned int) + sizeof (struct pcf_metrics)) + index;
+
+        data->lbearing = convert16(metrics->lbearing, format);
+        data->rbearing = convert16(metrics->rbearing, format);
+        data->width = convert16(metrics->width, format);
+        data->ascent = convert16(metrics->ascent, format);
+        data->descent = convert16(metrics->descent, format);
+        data->attributes = convert16(metrics->attributes, format);
 
     }
 
