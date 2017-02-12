@@ -527,52 +527,56 @@ static void onmouserelease(struct event_header *header, struct event_mousereleas
 static void onvideomode(struct event_header *header, struct event_videomode *videomode)
 {
 
-    unsigned int factor = (videomode->h / 320) * 2;
+    unsigned int factor = (videomode->h / 320);
 
-    switch (videomode->h / 320)
+    render_initpaint(videomode->bpp);
+
+    switch (factor)
     {
 
     case 3:
-        lineheight = 18 + factor;
-        padding = 4 + factor;
+        lineheight = 18 + factor * 2;
+        padding = 4 + factor * 2;
 
-        render_initmouse(24);
         file_walk(CALL_L8, "/share/ter-118n.pcf");
+        render_initmouse(24);
+        render_initfont(CALL_L8, lineheight);
 
         break;
 
     case 2:
-        lineheight = 16 + factor;
-        padding = 4 + factor;
+        lineheight = 16 + factor * 2;
+        padding = 4 + factor * 2;
 
-        render_initmouse(24);
         file_walk(CALL_L8, "/share/ter-116n.pcf");
+        render_initmouse(24);
+        render_initfont(CALL_L8, lineheight);
 
         break;
 
     case 1:
-        lineheight = 14 + factor;
-        padding = 4 + factor;
+        lineheight = 14 + factor * 2;
+        padding = 4 + factor * 2;
 
-        render_initmouse(16);
         file_walk(CALL_L8, "/share/ter-114n.pcf");
+        render_initmouse(16);
+        render_initfont(CALL_L8, lineheight);
 
         break;
 
     case 0:
     default:
-        lineheight = 12 + factor;
-        padding = 4 + factor;
+        lineheight = 12 + factor * 2;
+        padding = 4 + factor * 2;
 
-        render_initmouse(16);
         file_walk(CALL_L8, "/share/ter-112n.pcf");
+        render_initmouse(16);
+        render_initfont(CALL_L8, lineheight);
 
         break;
 
     }
 
-    render_initpaint(videomode->bpp);
-    render_initfont(CALL_L8, lineheight + factor);
     ev_sendwmresize(CALL_L1, header->destination, 0, 0, videomode->w, videomode->h, padding, lineheight);
     ev_sendwmshow(CALL_L1, header->destination);
 
