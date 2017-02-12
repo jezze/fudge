@@ -312,14 +312,33 @@ static void rendercharlineinverted(unsigned int x, unsigned int w, unsigned char
 
 }
 
-static void rendertextline(struct element_text *text, char *string, unsigned char color, unsigned int rowtop, unsigned int rowline, unsigned int rowstart, unsigned int rowcount)
+static void rendertext(struct element *element, void *data, unsigned int line)
 {
 
+    struct element_text *text = data;
+    unsigned int stringcount = element->count - sizeof (struct element_text);
+    char *string = (char *)(text + 1);
+    unsigned char color = textcolor[text->type];
+    unsigned int localline = line - text->size.y;
+    unsigned int rowindex = localline / fontlineheight;
+    unsigned int rowline = localline % fontlineheight;
+    unsigned int rowstart;
+    unsigned int rowcount;
     struct box size;
     unsigned int i;
 
+    rowstart = findrowstart(text, rowindex, stringcount, string);
+
+    if (!rowstart && rowindex > 0)
+        return;
+
+    rowcount = findrowcount(text, rowstart, stringcount, string);
+
+    if (!rowcount)
+        return;
+
     size.x = text->size.x;
-    size.y = text->size.y + rowtop;
+    size.y = text->size.y + rowindex * fontlineheight;
 
     for (i = rowstart; i < rowcount; i++)
     {
@@ -352,42 +371,6 @@ static void rendertextline(struct element_text *text, char *string, unsigned cha
         size.x += size.w;
 
     }
-
-}
-
-static void rendertext(struct element *element, void *data, unsigned int line)
-{
-
-    struct element_text *text = data;
-    unsigned int stringcount = element->count - sizeof (struct element_text);
-    char *string = (char *)(text + 1);
-    unsigned char color = textcolor[text->type];
-    unsigned int row;
-    unsigned int rowline;
-    unsigned int rowtop;
-    unsigned int rowtotal;
-    unsigned int rowstart;
-    unsigned int rowcount;
-
-    if (!stringcount)
-        return;
-
-    line = (line - text->size.y);
-    row = line / fontlineheight;
-    rowline = line % fontlineheight;
-    rowtop = row * fontlineheight;
-    rowtotal = ascii_count(string, stringcount, '\n') + 1;
-
-    if (row >= rowtotal)
-        return;
-
-    rowstart = findrowstart(text, row, stringcount, string);
-    rowcount = findrowcount(text, rowstart, stringcount, string);
-
-    if (!rowcount)
-        return;
-
-    rendertextline(text, string, color, rowtop, rowline, rowstart, rowcount);
 
 }
 
