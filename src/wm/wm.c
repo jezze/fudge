@@ -765,7 +765,7 @@ void main(void)
     file_open(CALL_L3);
     file_open(CALL_L4);
     render_init();
-    render_initvideo(CALL_L6, 1920, 1080, 32);
+    render_initvideo(CALL_L6, 1024, 768, 32);
     render_initcolormap(CALL_L7);
 
     while (!quit && ev_read(&handlers, CALL_L1))
