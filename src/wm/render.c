@@ -528,14 +528,14 @@ static void renderlayerline(unsigned int line, unsigned char *data, unsigned int
 
 }
 
-void render_update(unsigned int descriptor, struct ctrl_videosettings *settings)
+void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
 {
 
     unsigned int line;
 
     file_open(descriptor);
 
-    for (line = 0; line < settings->h; line++)
+    for (line = 0; line < h; line++)
     {
 
         if (testline(line))
@@ -543,7 +543,7 @@ void render_update(unsigned int descriptor, struct ctrl_videosettings *settings)
 
             renderlayerline(line, layerdata1, layercount1);
             renderlayerline(line, layerdata2, layercount2);
-            file_seekwriteall(descriptor, drawdata, settings->w, settings->w * line);
+            file_seekwriteall(descriptor, drawdata, w, w * line);
 
         }
 
@@ -624,10 +624,14 @@ void render_initvideo(unsigned int descriptor, struct ctrl_videosettings *settin
 
     file_open(descriptor);
     file_seekwriteall(descriptor, settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekreadall(descriptor, settings, sizeof (struct ctrl_videosettings), 0);
     file_close(descriptor);
 
-    switch (settings->bpp)
+}
+
+void render_initpaint(unsigned int bpp)
+{
+
+    switch (bpp)
     {
 
     case 8:

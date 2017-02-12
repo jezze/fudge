@@ -1,21 +1,4 @@
 B:=\
-    $(DIR_SRC)/wm/wdraw \
-
-O:=\
-    $(DIR_SRC)/wm/wdraw.o \
-    $(DIR_SRC)/wm/box.o \
-    $(DIR_SRC)/wm/element.o \
-    $(DIR_SRC)/wm/ev.o \
-    $(DIR_SRC)/wm/render.o \
-
-L:=\
-    $(DIR_SRC)/abi/abi.a \
-    $(DIR_SRC)/fudge/fudge.a \
-    $(DIR_SRC)/format/format.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
     $(DIR_SRC)/wm/wedit \
 
 O:=\
@@ -41,10 +24,12 @@ O:=\
     $(DIR_SRC)/wm/element.o \
     $(DIR_SRC)/wm/ev.o \
     $(DIR_SRC)/wm/print.o \
+    $(DIR_SRC)/wm/render.o \
 
 L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_SRC)/format/format.a \
 
 include $(DIR_MK)/bin.mk
 

@@ -5,6 +5,7 @@
 #include "print.h"
 #include "keymap.h"
 #include "ev.h"
+#include "render.h"
 
 #define REMOTES                         64
 #define VIEWS                           8
@@ -526,13 +527,59 @@ static void onmouserelease(struct event_header *header, struct event_mousereleas
 static void onvideomode(struct event_header *header, struct event_videomode *videomode)
 {
 
+    unsigned int factor = (videomode->h / 320) * 2;
+
+    switch (videomode->h / 320)
+    {
+
+    case 3:
+        lineheight = 18 + factor;
+        padding = 4 + factor;
+
+        render_initmouse(24);
+        file_walk(CALL_L8, "/share/ter-118n.pcf");
+
+        break;
+
+    case 2:
+        lineheight = 16 + factor;
+        padding = 4 + factor;
+
+        render_initmouse(24);
+        file_walk(CALL_L8, "/share/ter-116n.pcf");
+
+        break;
+
+    case 1:
+        lineheight = 14 + factor;
+        padding = 4 + factor;
+
+        render_initmouse(16);
+        file_walk(CALL_L8, "/share/ter-114n.pcf");
+
+        break;
+
+    case 0:
+    default:
+        lineheight = 12 + factor;
+        padding = 4 + factor;
+
+        render_initmouse(16);
+        file_walk(CALL_L8, "/share/ter-112n.pcf");
+
+        break;
+
+    }
+
+    render_initpaint(videomode->bpp);
+    render_initfont(CALL_L8, lineheight + factor);
+    ev_sendwmresize(CALL_L1, header->destination, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    ev_sendwmshow(CALL_L1, header->destination);
+
 }
 
 static void onwmmap(struct event_header *header)
 {
-
-    if (header->source == header->destination)
-        return;
 
     if (viewfocus->remotefocus)
         deactivateremote(viewfocus->remotefocus);
@@ -580,8 +627,6 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
     box_setsize(&body, size.x, size.y + (wmresize->lineheight + wmresize->padding * 2), size.w, size.h - (wmresize->lineheight + wmresize->padding * 2));
     box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
-    padding = wmresize->padding;
-    lineheight = wmresize->lineheight;
     steplength = body.w / 32;
 
     for (i = 0; i < VIEWS; i++)
@@ -631,6 +676,15 @@ static void onwmhide(struct event_header *header)
 
 }
 
+static void onwmflush(struct event_header *header)
+{
+
+    render_parse(CALL_L0);
+    render_update(CALL_L5, size.w, size.h);
+    render_complete();
+
+}
+
 static void setup(void)
 {
 
@@ -660,6 +714,18 @@ static void setup(void)
 
 }
 
+static void initgraphics()
+{
+
+    struct ctrl_videosettings settings;
+
+    ctrl_setvideosettings(&settings, 1920, 1080, 32);
+    render_init();
+    render_initvideo(CALL_L6, &settings);
+    render_initcolormap(CALL_L7);
+
+}
+
 void main(void)
 {
 
@@ -674,6 +740,7 @@ void main(void)
     handlers.wmresize = onwmresize;
     handlers.wmshow = onwmshow;
     handlers.wmhide = onwmhide;
+    handlers.wmflush = onwmflush;
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
     element_initfill(&background, 2);
@@ -695,12 +762,21 @@ void main(void)
     if (!file_walk(CALL_L4, "/system/video/if:0/event"))
         return;
 
+    if (!file_walk(CALL_L5, "/system/video/if:0/data"))
+        return;
+
+    if (!file_walk(CALL_L6, "/system/video/if:0/ctrl"))
+        return;
+
+    if (!file_walk(CALL_L7, "/system/video/if:0/colormap"))
+        return;
+
     file_open(CALL_L0);
     file_open(CALL_L1);
     file_open(CALL_L2);
     file_open(CALL_L3);
     file_open(CALL_L4);
-    ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
+    initgraphics();
 
     while (!quit && ev_read(&handlers, CALL_L1))
     {
