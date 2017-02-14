@@ -35,20 +35,38 @@ struct layer
 
 };
 
+struct font
+{
+
+    unsigned char *data;
+    unsigned char *bitmapdata;
+    unsigned int padding;
+    unsigned int lineheight;
+
+};
+
+struct mouse
+{
+
+    unsigned char *data;
+    unsigned int width;
+    unsigned int height;
+
+};
+
+static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
 static struct drawable drawables[5];
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
 static unsigned char layerdata1[0x8000];
 static unsigned char layerdata2[0x1000];
-static unsigned char fontdata[0x8000];
-static unsigned char *fontbitmapdata;
-static unsigned int fontpadding;
-static unsigned int fontlineheight;
-static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
 static struct layer layers[LAYERS] = {
     {layerdata1, 0, 0x8000},
     {layerdata2, 0, 0x1000}
 };
+static unsigned char fontdata[0x8000];
+static struct font font = {fontdata, 0, 0, 0};
+static struct mouse mousecursor = {0, 0, 0};
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -93,9 +111,6 @@ unsigned char mousedata16[] = {
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
-static unsigned int mousewidth;
-static unsigned int mouseheight;
-static unsigned char *mousedata;
 static unsigned char colormap8[] = {
     0x00, 0x00, 0x00,
     0x3F, 0x3F, 0x3F,
@@ -173,7 +188,7 @@ static unsigned int testmouse(struct element *element, void *data, unsigned int 
 
     struct element_mouse *mouse = data;
 
-    return isoverlap(line, mouse->y, mouseheight);
+    return isoverlap(line, mouse->y, mousecursor.height);
 
 }
 
@@ -181,10 +196,10 @@ static void rendermouse(struct element *element, void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
-    unsigned char *md = mousedata + (line - mouse->y) * mousewidth;
+    unsigned char *md = mousecursor.data + (line - mouse->y) * mousecursor.width;
     unsigned int i;
 
-    for (i = 0; i < mousewidth; i++)
+    for (i = 0; i < mousecursor.width; i++)
     {
 
         if (md[i] != 0xFF)
@@ -332,8 +347,8 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     char *string = (char *)(text + 1);
     unsigned char color = textcolor[text->type];
     unsigned int localline = line - text->size.y;
-    unsigned int rowindex = localline / fontlineheight;
-    unsigned int rowline = localline % fontlineheight;
+    unsigned int rowindex = localline / font.lineheight;
+    unsigned int rowline = localline % font.lineheight;
     unsigned int rowstart;
     unsigned int rowcount;
     struct box size;
@@ -350,16 +365,16 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         return;
 
     size.x = text->size.x;
-    size.y = text->size.y + rowindex * fontlineheight;
+    size.y = text->size.y + rowindex * font.lineheight;
 
     for (i = rowstart; i < rowcount; i++)
     {
 
-        unsigned short index = (string[i] == '\n') ? pcf_getindex(fontdata, ' ') : pcf_getindex(fontdata, string[i]);
-        unsigned char *data = fontbitmapdata + pcf_getbitmapoffset(fontdata, index) + rowline * fontpadding;
+        unsigned short index = (string[i] == '\n') ? pcf_getindex(font.data, ' ') : pcf_getindex(font.data, string[i]);
+        unsigned char *data = font.bitmapdata + pcf_getbitmapoffset(font.data, index) + rowline * font.padding;
         struct pcf_metricsdata metricsdata;
 
-        pcf_readmetricsdata(fontdata, index, &metricsdata);
+        pcf_readmetricsdata(font.data, index, &metricsdata);
 
         size.w = metricsdata.width;
         size.h = metricsdata.ascent + metricsdata.descent;
@@ -630,16 +645,16 @@ void render_initmouse(unsigned int size)
     {
 
     case 16:
-        mousewidth = 12;
-        mouseheight = 16;
-        mousedata = mousedata16;
+        mousecursor.data = mousedata16;
+        mousecursor.width = 12;
+        mousecursor.height = 16;
 
         break;
 
     case 24:
-        mousewidth = 18;
-        mouseheight = 24;
-        mousedata = mousedata24;
+        mousecursor.data = mousedata24;
+        mousecursor.width = 18;
+        mousecursor.height = 24;
 
         break;
 
@@ -651,12 +666,12 @@ void render_initfont(unsigned int descriptor, unsigned int lineheight)
 {
 
     file_open(descriptor);
-    file_read(descriptor, fontdata, 0x8000);
+    file_read(descriptor, font.data, 0x8000);
     file_close(descriptor);
 
-    fontbitmapdata = pcf_getbitmapdata(fontdata);
-    fontpadding = pcf_getpadding(fontdata);
-    fontlineheight = lineheight;
+    font.bitmapdata = pcf_getbitmapdata(font.data);
+    font.padding = pcf_getpadding(font.data);
+    font.lineheight = lineheight;
 
 }
 
