@@ -84,40 +84,6 @@ unsigned int ascii_wzerovalue(void *out, unsigned int count, unsigned int value,
 
 }
 
-unsigned int ascii_search(char *in, unsigned int offset, unsigned int count, char c)
-{
-
-    while (offset < count)
-    {
-
-        if (in[offset] == c)
-            return offset;
-
-        offset++;
-
-    }
-
-    return offset;
-
-}
-
-unsigned int ascii_searchreverse(char *in, unsigned int offset, unsigned int count, char c)
-{
-
-    while (count > offset)
-    {
-
-        if (in[count - 1] == c)
-            return count;
-
-        count--;
-
-    }
-
-    return 0;
-
-}
-
 unsigned int ascii_count(char *in, unsigned int count, char c)
 {
 
