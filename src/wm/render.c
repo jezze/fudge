@@ -457,7 +457,7 @@ static struct element *nextelement(struct element *element, unsigned char *data,
 
 }
 
-static unsigned int insertelement(struct element *element, struct layer *layer)
+static void insertelement(struct element *element, struct layer *layer)
 {
 
     struct element *current = 0;
@@ -470,18 +470,19 @@ static unsigned int insertelement(struct element *element, struct layer *layer)
 
     }
 
-    return (element->damage == ELEMENT_DAMAGE_UPDATE) ? memory_write(layer->data, layer->total, element, sizeof (struct element) + element->count, layer->count) : 0;
+    if (element->damage == ELEMENT_DAMAGE_UPDATE)
+        layer->count += memory_write(layer->data, layer->total, element, sizeof (struct element) + element->count, layer->count);
 
 }
 
-static unsigned int removeelement(struct element *element, struct layer *layer)
+static void removeelement(struct element *element, struct layer *layer)
 {
 
     unsigned int length = sizeof (struct element) + element->count;
 
     memory_copy(element, (unsigned char *)element + length, layer->count - ((unsigned char *)element - layer->data) - length);
 
-    return length;
+    layer->count -= length;
 
 }
 
@@ -567,7 +568,7 @@ void render_parse(unsigned int descriptor)
         struct element *current = 0;
 
         while ((current = nextelement(current, buffer, count)))
-            layers[current->z - 1].count += insertelement(current, &layers[current->z - 1]);
+            insertelement(current, &layers[current->z - 1]);
 
     }
 
@@ -587,7 +588,7 @@ void render_complete(void)
         {
 
             if (current->damage == ELEMENT_DAMAGE_REMOVE)
-                layers[i].count -= removeelement(current, &layers[i]);
+                removeelement(current, &layers[i]);
             else
                 current->damage = ELEMENT_DAMAGE_NONE;
 
