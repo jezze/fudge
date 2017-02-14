@@ -529,7 +529,7 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
 
     unsigned int factor = (videomode->h / 320);
 
-    render_initpaint(videomode->bpp);
+    render_setpaint(videomode->bpp);
 
     switch (factor)
     {
@@ -539,8 +539,8 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         padding = 4 + factor * 2;
 
         file_walk(CALL_L8, "/share/ter-118n.pcf");
-        render_initmouse(24);
-        render_initfont(CALL_L8, lineheight);
+        render_setmouse(24);
+        render_setfont(CALL_L8, lineheight);
 
         break;
 
@@ -549,8 +549,8 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         padding = 4 + factor * 2;
 
         file_walk(CALL_L8, "/share/ter-116n.pcf");
-        render_initmouse(24);
-        render_initfont(CALL_L8, lineheight);
+        render_setmouse(24);
+        render_setfont(CALL_L8, lineheight);
 
         break;
 
@@ -559,8 +559,8 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         padding = 4 + factor * 2;
 
         file_walk(CALL_L8, "/share/ter-114n.pcf");
-        render_initmouse(16);
-        render_initfont(CALL_L8, lineheight);
+        render_setmouse(16);
+        render_setfont(CALL_L8, lineheight);
 
         break;
 
@@ -570,8 +570,8 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         padding = 4 + factor * 2;
 
         file_walk(CALL_L8, "/share/ter-112n.pcf");
-        render_initmouse(16);
-        render_initfont(CALL_L8, lineheight);
+        render_setmouse(16);
+        render_setfont(CALL_L8, lineheight);
 
         break;
 
@@ -769,8 +769,8 @@ void main(void)
     file_open(CALL_L3);
     file_open(CALL_L4);
     render_init();
-    render_initvideo(CALL_L6, 1024, 768, 32);
-    render_initcolormap(CALL_L7);
+    render_setvideo(CALL_L6, 1024, 768, 32);
+    render_setcolormap(CALL_L7);
 
     while (!quit && ev_read(&handlers, CALL_L1))
     {

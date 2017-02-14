@@ -29,7 +29,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
     case 0x01:
         render_init();
-        render_initvideo(CALL_L6, 1920, 1080, 32);
+        render_setvideo(CALL_L6, 1920, 1080, 32);
 
         break;
 
