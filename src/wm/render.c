@@ -45,15 +45,6 @@ struct font
 
 };
 
-struct mouse
-{
-
-    unsigned char *data;
-    unsigned int width;
-    unsigned int height;
-
-};
-
 static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
 static struct drawable drawables[5];
 static unsigned char textcolor[2];
@@ -66,7 +57,7 @@ static struct layer layers[LAYERS] = {
 };
 static unsigned char fontdata[0x8000];
 static struct font font = {fontdata, 0, 0, 0};
-static struct mouse mousecursor = {0, 0, 0};
+static unsigned char *mousedata;
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -188,7 +179,7 @@ static unsigned int testmouse(struct element *element, void *data, unsigned int 
 
     struct element_mouse *mouse = data;
 
-    return isoverlap(line, mouse->y, mousecursor.height);
+    return isoverlap(line, mouse->size.y, mouse->size.h);
 
 }
 
@@ -196,14 +187,14 @@ static void rendermouse(struct element *element, void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
-    unsigned char *md = mousecursor.data + (line - mouse->y) * mousecursor.width;
+    unsigned char *md = mousedata + (line - mouse->size.y) * mouse->size.w;
     unsigned int i;
 
-    for (i = 0; i < mousecursor.width; i++)
+    for (i = 0; i < mouse->size.w; i++)
     {
 
         if (md[i] != 0xFF)
-            paint(md[i], mouse->x + i, 1);
+            paint(md[i], mouse->size.x + i, 1);
 
     }
 
@@ -639,23 +630,23 @@ void render_setcolormap(unsigned int descriptor)
 
 }
 
-void render_setmouse(unsigned int size)
+void render_setmouse(struct element_mouse *mouse, unsigned int size)
 {
 
     switch (size)
     {
 
     case 16:
-        mousecursor.data = mousedata16;
-        mousecursor.width = 12;
-        mousecursor.height = 16;
+        mousedata = mousedata16;
+        mouse->size.w = 12;
+        mouse->size.h = 16;
 
         break;
 
     case 24:
-        mousecursor.data = mousedata24;
-        mousecursor.width = 18;
-        mousecursor.height = 24;
+        mousedata = mousedata24;
+        mouse->size.w = 18;
+        mouse->size.h = 24;
 
         break;
 

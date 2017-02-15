@@ -24,11 +24,12 @@ void element_initfill(struct element_fill *fill, unsigned int color)
 
 }
 
-void element_initmouse(struct element_mouse *mouse, unsigned int x, unsigned int y)
+void element_initmouse(struct element_mouse *mouse, unsigned int type)
 {
 
-    mouse->x = x;
-    mouse->y = y;
+    box_setsize(&mouse->size, 0, 0, 0, 0);
+
+    mouse->type = type;
 
 }
 

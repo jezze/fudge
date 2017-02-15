@@ -443,19 +443,19 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
 static void onmousemove(struct event_header *header, struct event_mousemove *mousemove)
 {
 
-    mouse.x += mousemove->relx;
-    mouse.y += mousemove->rely;
+    mouse.size.x += mousemove->relx;
+    mouse.size.y += mousemove->rely;
 
-    if (mouse.x < size.x || mouse.x >= size.x + size.w)
-        mouse.x = (mousemove->relx < 0) ? size.x : size.x + size.w - 1;
+    if (mouse.size.x < size.x || mouse.size.x >= size.x + size.w)
+        mouse.size.x = (mousemove->relx < 0) ? size.x : size.x + size.w - 1;
 
-    if (mouse.y < size.y || mouse.y >= size.y + size.h)
-        mouse.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
+    if (mouse.size.y < size.y || mouse.size.y >= size.y + size.h)
+        mouse.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
 
     print_insertmouse(&output, header->destination, &mouse, 2);
 
     if (viewfocus->remotefocus)
-        ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.x, mouse.y);
+        ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.size.x, mouse.size.y);
 
 }
 
@@ -472,7 +472,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
         for (i = 0; i < VIEWS; i++)
         {
 
-            if (!box_isinside(&views[i].panel.size, mouse.x, mouse.y))
+            if (!box_isinside(&views[i].panel.size, mouse.size.x, mouse.size.y))
                 continue;
 
             if (&views[i] == viewfocus)
@@ -491,7 +491,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
             struct remote *remote = current->data;
 
-            if (!box_isinside(&remote->window.size, mouse.x, mouse.y))
+            if (!box_isinside(&remote->window.size, mouse.size.x, mouse.size.y))
                 continue;
 
             if (remote == viewfocus->remotefocus)
@@ -534,23 +534,13 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
     switch (factor)
     {
 
-    case 3:
-        lineheight = 18 + factor * 2;
+    case 0:
+        lineheight = 12 + factor * 2;
         padding = 4 + factor * 2;
 
-        file_walk(CALL_L8, "/share/ter-118n.pcf");
-        render_setmouse(24);
+        file_walk(CALL_L8, "/share/ter-112n.pcf");
         render_setfont(CALL_L8, lineheight);
-
-        break;
-
-    case 2:
-        lineheight = 16 + factor * 2;
-        padding = 4 + factor * 2;
-
-        file_walk(CALL_L8, "/share/ter-116n.pcf");
-        render_setmouse(24);
-        render_setfont(CALL_L8, lineheight);
+        render_setmouse(&mouse, 16);
 
         break;
 
@@ -559,19 +549,28 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         padding = 4 + factor * 2;
 
         file_walk(CALL_L8, "/share/ter-114n.pcf");
-        render_setmouse(16);
         render_setfont(CALL_L8, lineheight);
+        render_setmouse(&mouse, 16);
 
         break;
 
-    case 0:
-    default:
-        lineheight = 12 + factor * 2;
+    case 2:
+        lineheight = 16 + factor * 2;
         padding = 4 + factor * 2;
 
-        file_walk(CALL_L8, "/share/ter-112n.pcf");
-        render_setmouse(16);
+        file_walk(CALL_L8, "/share/ter-116n.pcf");
         render_setfont(CALL_L8, lineheight);
+        render_setmouse(&mouse, 24);
+
+        break;
+
+    default:
+        lineheight = 18 + factor * 2;
+        padding = 4 + factor * 2;
+
+        file_walk(CALL_L8, "/share/ter-118n.pcf");
+        render_setfont(CALL_L8, lineheight);
+        render_setmouse(&mouse, 24);
 
         break;
 
@@ -645,8 +644,8 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
     }
 
-    mouse.x = size.x + size.w / 4;
-    mouse.y = size.y + size.h / 4;
+    mouse.size.x = size.x + size.w / 4;
+    mouse.size.y = size.y + size.h / 4;
 
 }
 
@@ -736,7 +735,7 @@ void main(void)
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
     element_initfill(&background, 2);
-    element_initmouse(&mouse, 0, 0);
+    element_initmouse(&mouse, ELEMENT_MOUSETYPE_DEFAULT);
     setup();
 
     if (!file_walk(CALL_L0, "/system/wm/data"))
