@@ -22,13 +22,14 @@ struct element
     unsigned int z;
     unsigned int damage;
     unsigned int count;
+    struct box size;
 
 };
 
 struct element_fill
 {
 
-    struct box size;
+    struct element element;
     unsigned int color;
 
 };
@@ -36,7 +37,7 @@ struct element_fill
 struct element_mouse
 {
 
-    struct box size;
+    struct element element;
     unsigned int type;
 
 };
@@ -44,7 +45,7 @@ struct element_mouse
 struct element_panel
 {
 
-    struct box size;
+    struct element element;
     unsigned int active;
 
 };
@@ -52,7 +53,7 @@ struct element_panel
 struct element_text
 {
 
-    struct box size;
+    struct element element;
     unsigned int type;
     unsigned int flow;
     unsigned int cursor;
@@ -62,7 +63,7 @@ struct element_text
 struct element_window
 {
 
-    struct box size;
+    struct element element;
     unsigned int active;
 
 };

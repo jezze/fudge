@@ -94,8 +94,8 @@ static void deactivateremote(struct remote *remote)
 static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
-    box_setsize(&remote->window.size, x, y, w, h);
-    ev_sendwmresize(CALL_L1, remote->source, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+    box_setsize(&remote->window.element.size, x, y, w, h);
+    ev_sendwmresize(CALL_L1, remote->source, remote->window.element.size.x + 2, remote->window.element.size.y + 2, remote->window.element.size.w - 4, remote->window.element.size.h - 4, padding, lineheight);
 
 }
 
@@ -443,19 +443,19 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
 static void onmousemove(struct event_header *header, struct event_mousemove *mousemove)
 {
 
-    mouse.size.x += mousemove->relx;
-    mouse.size.y += mousemove->rely;
+    mouse.element.size.x += mousemove->relx;
+    mouse.element.size.y += mousemove->rely;
 
-    if (mouse.size.x < size.x || mouse.size.x >= size.x + size.w)
-        mouse.size.x = (mousemove->relx < 0) ? size.x : size.x + size.w - 1;
+    if (mouse.element.size.x < size.x || mouse.element.size.x >= size.x + size.w)
+        mouse.element.size.x = (mousemove->relx < 0) ? size.x : size.x + size.w - 1;
 
-    if (mouse.size.y < size.y || mouse.size.y >= size.y + size.h)
-        mouse.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
+    if (mouse.element.size.y < size.y || mouse.element.size.y >= size.y + size.h)
+        mouse.element.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
 
     print_insertmouse(&output, header->destination, &mouse, 2);
 
     if (viewfocus->remotefocus)
-        ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.size.x, mouse.size.y);
+        ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.element.size.x, mouse.element.size.y);
 
 }
 
@@ -472,7 +472,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
         for (i = 0; i < VIEWS; i++)
         {
 
-            if (!box_isinside(&views[i].panel.size, mouse.size.x, mouse.size.y))
+            if (!box_isinside(&views[i].panel.element.size, mouse.element.size.x, mouse.element.size.y))
                 continue;
 
             if (&views[i] == viewfocus)
@@ -491,7 +491,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
             struct remote *remote = current->data;
 
-            if (!box_isinside(&remote->window.size, mouse.size.x, mouse.size.y))
+            if (!box_isinside(&remote->window.element.size, mouse.element.size.x, mouse.element.size.y))
                 continue;
 
             if (remote == viewfocus->remotefocus)
@@ -628,7 +628,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
     box_setsize(&body, size.x, size.y + (wmresize->lineheight + wmresize->padding * 2), size.w, size.h - (wmresize->lineheight + wmresize->padding * 2));
-    box_setsize(&background.size, size.x, size.y, size.w, size.h);
+    box_setsize(&background.element.size, size.x, size.y, size.w, size.h);
 
     steplength = body.w / 32;
 
@@ -637,15 +637,15 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
         views[i].center = 18 * steplength;
 
-        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
-        box_setsize(&views[i].number.size, views[i].panel.size.x, views[i].panel.size.y, views[i].panel.size.w, views[i].panel.size.h);
-        box_resize(&views[i].number.size, wmresize->padding);
+        box_setsize(&views[i].panel.element.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
+        box_setsize(&views[i].number.element.size, views[i].panel.element.size.x, views[i].panel.element.size.y, views[i].panel.element.size.w, views[i].panel.element.size.h);
+        box_resize(&views[i].number.element.size, wmresize->padding);
         arrangeview(&views[i]);
 
     }
 
-    mouse.size.x = size.x + size.w / 4;
-    mouse.size.y = size.y + size.h / 4;
+    mouse.element.size.x = size.x + size.w / 4;
+    mouse.element.size.y = size.y + size.h / 4;
 
 }
 

@@ -18,14 +18,6 @@
 #define COLOR_TEXTLIGHT                 0x0A
 #define LAYERS                          2
 
-struct drawable
-{
-
-    unsigned int (*test)(struct element *element, void *data, unsigned int line);
-    void (*render)(struct element *element, void *data, unsigned int line);
-
-};
-
 struct layer
 {
 
@@ -45,8 +37,8 @@ struct font
 
 };
 
+static void (*drawables[5])(void *data, unsigned int line);
 static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
-static struct drawable drawables[5];
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
 static unsigned char layerdata1[0x8000];
@@ -149,112 +141,74 @@ static void paint32(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static unsigned int isoverlap(unsigned int line, unsigned int y, unsigned int h)
+static unsigned int isoverlap(unsigned int line, struct box *size)
 {
 
-    return line >= y && line < y + h;
+    return line >= size->y && line < size->y + size->h;
 
 }
 
-static unsigned int testfill(struct element *element, void *data, unsigned int line)
+static void renderfill(void *data, unsigned int line)
 {
 
     struct element_fill *fill = data;
 
-    return isoverlap(line, fill->size.y, fill->size.h);
+    paint(fill->color, fill->element.size.x, fill->element.size.w);
 
 }
 
-static void renderfill(struct element *element, void *data, unsigned int line)
-{
-
-    struct element_fill *fill = data;
-
-    paint(fill->color, fill->size.x, fill->size.w);
-
-}
-
-static unsigned int testmouse(struct element *element, void *data, unsigned int line)
+static void rendermouse(void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
-
-    return isoverlap(line, mouse->size.y, mouse->size.h);
-
-}
-
-static void rendermouse(struct element *element, void *data, unsigned int line)
-{
-
-    struct element_mouse *mouse = data;
-    unsigned char *md = mousedata + (line - mouse->size.y) * mouse->size.w;
+    unsigned char *md = mousedata + line * mouse->element.size.w;
     unsigned int i;
 
-    for (i = 0; i < mouse->size.w; i++)
+    for (i = 0; i < mouse->element.size.w; i++)
     {
 
         if (md[i] != 0xFF)
-            paint(md[i], mouse->size.x + i, 1);
+            paint(md[i], mouse->element.size.x + i, 1);
 
     }
 
 }
 
-static unsigned int testpanel(struct element *element, void *data, unsigned int line)
-{
-
-    struct element_panel *panel = data;
-
-    return isoverlap(line, panel->size.y, panel->size.h);
-
-}
-
-static void renderpanel(struct element *element, void *data, unsigned int line)
+static void renderpanel(void *data, unsigned int line)
 {
 
     struct element_panel *panel = data;
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
 
-    line = (line - panel->size.y);
-
-    if (line > panel->size.h / 2)
-        line = panel->size.h - line - 1;
+    if (line > panel->element.size.h / 2)
+        line = panel->element.size.h - line - 1;
 
     switch (line)
     {
 
     case 0:
-        paint(COLOR_DARK, panel->size.x, panel->size.w);
+        paint(COLOR_DARK, panel->element.size.x, panel->element.size.w);
 
         break;
 
     case 1:
-        paint(COLOR_DARK, panel->size.x + 0, 1);
-        paint(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
-        paint(framecolor, panel->size.x + 1, panel->size.w - 2);
+        paint(COLOR_DARK, panel->element.size.x + 0, 1);
+        paint(COLOR_DARK, panel->element.size.x + panel->element.size.w - 1, 1);
+        paint(framecolor, panel->element.size.x + 1, panel->element.size.w - 2);
 
         break;
 
     default:
-        paint(COLOR_DARK, panel->size.x + 0, 1);
-        paint(COLOR_DARK, panel->size.x + panel->size.w - 1, 1);
-        paint(framecolor, panel->size.x + 1, 1);
-        paint(framecolor, panel->size.x + panel->size.w - 2, 1);
-        paint(backgroundcolor, panel->size.x + 2, panel->size.w - 4);
+        paint(COLOR_DARK, panel->element.size.x + 0, 1);
+        paint(COLOR_DARK, panel->element.size.x + panel->element.size.w - 1, 1);
+        paint(framecolor, panel->element.size.x + 1, 1);
+        paint(framecolor, panel->element.size.x + panel->element.size.w - 2, 1);
+        paint(backgroundcolor, panel->element.size.x + 2, panel->element.size.w - 4);
 
         break;
 
     }
-
-}
-
-static unsigned int testtext(struct element *element, void *data, unsigned int line)
-{
-
-    struct element_text *text = data;
-
-    return isoverlap(line, text->size.y, text->size.h);
 
 }
 
@@ -330,16 +284,15 @@ static void rendercharlineinverted(unsigned int x, unsigned int w, unsigned char
 
 }
 
-static void rendertext(struct element *element, void *data, unsigned int line)
+static void rendertext(void *data, unsigned int line)
 {
 
     struct element_text *text = data;
-    unsigned int stringcount = element->count - sizeof (struct element_text);
+    unsigned int stringcount = text->element.count - sizeof (struct element_text);
     char *string = (char *)(text + 1);
     unsigned char color = textcolor[text->type];
-    unsigned int localline = line - text->size.y;
-    unsigned int rowindex = localline / font.lineheight;
-    unsigned int rowline = localline % font.lineheight;
+    unsigned int rowindex = line / font.lineheight;
+    unsigned int rowline = line % font.lineheight;
     unsigned int rowstart;
     unsigned int rowcount;
     struct box size;
@@ -355,8 +308,8 @@ static void rendertext(struct element *element, void *data, unsigned int line)
     if (!rowcount)
         return;
 
-    size.x = text->size.x;
-    size.y = text->size.y + rowindex * font.lineheight;
+    size.x = text->element.size.x;
+    size.y = text->element.size.y + rowindex * font.lineheight;
 
     for (i = rowstart; i < rowcount; i++)
     {
@@ -370,10 +323,10 @@ static void rendertext(struct element *element, void *data, unsigned int line)
         size.w = metricsdata.width;
         size.h = metricsdata.ascent + metricsdata.descent;
 
-        if (size.x + size.w > text->size.x + text->size.w)
+        if (size.x + size.w > text->element.size.x + text->element.size.w)
             return;
 
-        if (size.y + size.h > text->size.y + text->size.h)
+        if (size.y + size.h > text->element.size.y + text->element.size.h)
             return;
 
         if (rowline < size.h)
@@ -392,46 +345,35 @@ static void rendertext(struct element *element, void *data, unsigned int line)
 
 }
 
-static unsigned int testwindow(struct element *element, void *data, unsigned int line)
-{
-
-    struct element_window *window = data;
-
-    return isoverlap(line, window->size.y, window->size.h);
-
-}
-
-static void renderwindow(struct element *element, void *data, unsigned int line)
+static void renderwindow(void *data, unsigned int line)
 {
 
     struct element_window *window = data;
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
-    line = (line - window->size.y);
-
-    if (line > window->size.h / 2)
-        line = window->size.h - line - 1;
+    if (line > window->element.size.h / 2)
+        line = window->element.size.h - line - 1;
 
     switch (line)
     {
 
     case 0:
-        paint(COLOR_DARK, window->size.x, window->size.w);
+        paint(COLOR_DARK, window->element.size.x, window->element.size.w);
 
         break;
 
     case 1:
-        paint(COLOR_DARK, window->size.x + 0, 1);
-        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        paint(framecolor, window->size.x + 1, window->size.w - 2);
+        paint(COLOR_DARK, window->element.size.x + 0, 1);
+        paint(COLOR_DARK, window->element.size.x + window->element.size.w - 1, 1);
+        paint(framecolor, window->element.size.x + 1, window->element.size.w - 2);
 
         break;
 
     default:
-        paint(COLOR_DARK, window->size.x + 0, 1);
-        paint(COLOR_DARK, window->size.x + window->size.w - 1, 1);
-        paint(framecolor, window->size.x + 1, 1);
-        paint(framecolor, window->size.x + window->size.w - 2, 1);
+        paint(COLOR_DARK, window->element.size.x + 0, 1);
+        paint(COLOR_DARK, window->element.size.x + window->element.size.w - 1, 1);
+        paint(framecolor, window->element.size.x + 1, 1);
+        paint(framecolor, window->element.size.x + window->element.size.w - 2, 1);
 
         break;
 
@@ -442,7 +384,7 @@ static void renderwindow(struct element *element, void *data, unsigned int line)
 static struct element *nextelement(struct element *element, unsigned char *data, unsigned int count)
 {
 
-    element = (element) ? (struct element *)((unsigned char *)(element + 1) + element->count) : (struct element *)data;
+    element = (element) ? (struct element *)(((unsigned char *)element) + element->count) : (struct element *)data;
 
     return ((unsigned int)element < (unsigned int)data + count) ? element : 0;
 
@@ -462,14 +404,14 @@ static void insertelement(struct element *element, struct layer *layer)
     }
 
     if (element->damage == ELEMENT_DAMAGE_UPDATE)
-        layer->count += memory_write(layer->data, layer->total, element, sizeof (struct element) + element->count, layer->count);
+        layer->count += memory_write(layer->data, layer->total, element, element->count, layer->count);
 
 }
 
 static void removeelement(struct element *element, struct layer *layer)
 {
 
-    unsigned int length = sizeof (struct element) + element->count;
+    unsigned int length = element->count;
 
     memory_copy(element, (unsigned char *)element + length, layer->count - ((unsigned char *)element - layer->data) - length);
 
@@ -490,7 +432,7 @@ static unsigned int testline(unsigned int line)
         while ((current = nextelement(current, layers[i].data, layers[i].count)))
         {
 
-            if (current->damage && drawables[current->type].test(current, current + 1, line))
+            if (current->damage && isoverlap(line, &current->size))
                 return 1;
 
         }
@@ -514,8 +456,8 @@ static void renderline(unsigned int line)
         while ((current = nextelement(current, layers[i].data, layers[i].count)))
         {
 
-            if (current->damage != ELEMENT_DAMAGE_REMOVE && drawables[current->type].test(current, current + 1, line))
-                drawables[current->type].render(current, current + 1, line);
+            if (current->damage != ELEMENT_DAMAGE_REMOVE && isoverlap(line, &current->size))
+                drawables[current->type](current, line - current->size.y);
 
         }
 
@@ -638,15 +580,15 @@ void render_setmouse(struct element_mouse *mouse, unsigned int size)
 
     case 16:
         mousedata = mousedata16;
-        mouse->size.w = 12;
-        mouse->size.h = 16;
+        mouse->element.size.w = 12;
+        mouse->element.size.h = 16;
 
         break;
 
     case 24:
         mousedata = mousedata24;
-        mouse->size.w = 18;
-        mouse->size.h = 24;
+        mouse->element.size.w = 18;
+        mouse->element.size.h = 24;
 
         break;
 
@@ -672,16 +614,11 @@ void render_init()
 
     textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
     textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
-    drawables[ELEMENT_TYPE_FILL].test = testfill;
-    drawables[ELEMENT_TYPE_FILL].render = renderfill;
-    drawables[ELEMENT_TYPE_MOUSE].test = testmouse;
-    drawables[ELEMENT_TYPE_MOUSE].render = rendermouse;
-    drawables[ELEMENT_TYPE_PANEL].test = testpanel;
-    drawables[ELEMENT_TYPE_PANEL].render = renderpanel;
-    drawables[ELEMENT_TYPE_TEXT].test = testtext;
-    drawables[ELEMENT_TYPE_TEXT].render = rendertext;
-    drawables[ELEMENT_TYPE_WINDOW].test = testwindow;
-    drawables[ELEMENT_TYPE_WINDOW].render = renderwindow;
+    drawables[ELEMENT_TYPE_FILL] = renderfill;
+    drawables[ELEMENT_TYPE_MOUSE] = rendermouse;
+    drawables[ELEMENT_TYPE_PANEL] = renderpanel;
+    drawables[ELEMENT_TYPE_TEXT] = rendertext;
+    drawables[ELEMENT_TYPE_WINDOW] = renderwindow;
 
 }
 

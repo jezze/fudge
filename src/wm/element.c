@@ -18,16 +18,12 @@ void element_init(struct element *element, unsigned int id, unsigned int type, u
 void element_initfill(struct element_fill *fill, unsigned int color)
 {
 
-    box_setsize(&fill->size, 0, 0, 0, 0);
-
     fill->color = color;
 
 }
 
 void element_initmouse(struct element_mouse *mouse, unsigned int type)
 {
-
-    box_setsize(&mouse->size, 0, 0, 0, 0);
 
     mouse->type = type;
 
@@ -36,16 +32,12 @@ void element_initmouse(struct element_mouse *mouse, unsigned int type)
 void element_initpanel(struct element_panel *panel, unsigned int active)
 {
 
-    box_setsize(&panel->size, 0, 0, 0, 0);
-
     panel->active = active;
 
 }
 
 void element_inittext(struct element_text *text, unsigned int type, unsigned int flow)
 {
-
-    box_setsize(&text->size, 0, 0, 0, 0);
 
     text->type = type;
     text->flow = flow;
@@ -55,8 +47,6 @@ void element_inittext(struct element_text *text, unsigned int type, unsigned int
 
 void element_initwindow(struct element_window *window, unsigned int active)
 {
-
-    box_setsize(&window->size, 0, 0, 0, 0);
 
     window->active = active;
 
