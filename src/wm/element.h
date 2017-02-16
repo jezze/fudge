@@ -68,9 +68,10 @@ struct element_window
 
 };
 
-void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int source, unsigned int z, unsigned int damage, unsigned int count);
+void element_init(struct element *element, unsigned int id, unsigned int type, unsigned int z);
 void element_initfill(struct element_fill *fill, unsigned int color);
 void element_initmouse(struct element_mouse *mouse, unsigned int type);
 void element_initpanel(struct element_panel *panel, unsigned int active);
 void element_inittext(struct element_text *text, unsigned int type, unsigned int flow);
 void element_initwindow(struct element_window *window, unsigned int active);
+void element_set(struct element *element, unsigned int source, unsigned int damage, unsigned int count);

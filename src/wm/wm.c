@@ -49,22 +49,22 @@ static unsigned int steplength;
 static void printinsertremote(unsigned int source, struct remote *remote)
 {
 
-    print_insertwindow(&output, source, &remote->window, 1);
+    print_insertwindow(&output, source, &remote->window);
 
 }
 
 static void printremoveremote(unsigned int source, struct remote *remote)
 {
 
-    print_removewindow(&output, source, &remote->window, 1);
+    print_removewindow(&output, source, &remote->window);
 
 }
 
 static void printinsertview(unsigned int source, struct view *view)
 {
 
-    print_insertpanel(&output, source, &view->panel, 1);
-    print_inserttext(&output, source, &view->number, 1, 1);
+    print_insertpanel(&output, source, &view->panel);
+    print_inserttext(&output, source, &view->number, 1);
     ring_write(&output, &view->numberstring, 1);
 
 }
@@ -72,8 +72,8 @@ static void printinsertview(unsigned int source, struct view *view)
 static void printremoveview(unsigned int source, struct view *view)
 {
 
-    print_removepanel(&output, source, &view->panel, 1);
-    print_removetext(&output, source, &view->number, 1);
+    print_removepanel(&output, source, &view->panel);
+    print_removetext(&output, source, &view->number);
 
 }
 
@@ -452,7 +452,7 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
     if (mouse.element.size.y < size.y || mouse.element.size.y >= size.y + size.h)
         mouse.element.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
 
-    print_insertmouse(&output, header->destination, &mouse, 2);
+    print_insertmouse(&output, header->destination, &mouse);
 
     if (viewfocus->remotefocus)
         ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.element.size.x, mouse.element.size.y);
@@ -654,12 +654,12 @@ static void onwmshow(struct event_header *header)
 
     unsigned int i;
 
-    print_insertfill(&output, header->destination, &background, 1);
+    print_insertfill(&output, header->destination, &background);
 
     for (i = 0; i < VIEWS; i++)
         printinsertview(header->destination, &views[i]);
 
-    print_insertmouse(&output, header->destination, &mouse, 2);
+    print_insertmouse(&output, header->destination, &mouse);
     showremotes(header->destination, &viewfocus->remotes);
 
 }
@@ -669,12 +669,12 @@ static void onwmhide(struct event_header *header)
 
     unsigned int i;
 
-    print_removefill(&output, header->destination, &background, 1);
+    print_removefill(&output, header->destination, &background);
 
     for (i = 0; i < VIEWS; i++)
         printremoveview(header->destination, &views[i]);
 
-    print_removemouse(&output, header->destination, &mouse, 2);
+    print_removemouse(&output, header->destination, &mouse);
     hideremotes(header->destination, &viewfocus->remotes);
 
 }

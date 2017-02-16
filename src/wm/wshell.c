@@ -26,7 +26,7 @@ static void printinsert(unsigned int source)
 
     content.cursor = ring_count(&text) + ring_count(&input1);
 
-    print_inserttext(&output, source, &content, 1, ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1);
+    print_inserttext(&output, source, &content, ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1);
     ring_copy(&output, &text);
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
@@ -37,7 +37,7 @@ static void printinsert(unsigned int source)
 static void printremove(unsigned int source)
 {
 
-    print_removetext(&output, source, &content, 1);
+    print_removetext(&output, source, &content);
 
 }
 
