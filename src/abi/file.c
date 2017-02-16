@@ -53,6 +53,9 @@ unsigned int file_readall(unsigned int descriptor, void *buffer, unsigned int co
     unsigned char *b = buffer;
     unsigned int n;
 
+    if (!count)
+        return 0;
+
     while ((n = call_read(descriptor, b, count)))
     {
 
@@ -77,6 +80,9 @@ unsigned int file_writeall(unsigned int descriptor, void *buffer, unsigned int c
 
     unsigned char *b = buffer;
     unsigned int n;
+
+    if (!count)
+        return 0;
 
     while ((n = call_write(descriptor, b, count)))
     {

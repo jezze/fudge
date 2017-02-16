@@ -361,9 +361,6 @@ void main(void)
 
         char buffer[FUDGE_BSIZE];
 
-        if (!ring_count(&output))
-            continue;
-
         if (file_writeall(CALL_L0, buffer, ring_read(&output, buffer, FUDGE_BSIZE)))
             ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST);
 

@@ -41,6 +41,9 @@ unsigned int ring_skip(struct ring *ring, unsigned int count)
 
     unsigned int c;
 
+    if (!count)
+        return 0;
+
     for (c = 0; count--; c++)
     {
 
@@ -59,6 +62,9 @@ unsigned int ring_skipreverse(struct ring *ring, unsigned int count)
 {
 
     unsigned int c;
+
+    if (!count)
+        return 0;
 
     for (c = 0; count--; c++)
     {
@@ -80,6 +86,9 @@ unsigned int ring_read(struct ring *ring, void *buffer, unsigned int count)
     char *b = buffer;
     unsigned int c;
 
+    if (!count)
+        return 0;
+
     for (c = 0; count--; c++)
     {
 
@@ -99,6 +108,9 @@ unsigned int ring_readreverse(struct ring *ring, void *buffer, unsigned int coun
 
     char *b = buffer;
     unsigned int c;
+
+    if (!count)
+        return 0;
 
     for (c = 0; count--; c++)
     {
@@ -120,6 +132,9 @@ unsigned int ring_write(struct ring *ring, void *buffer, unsigned int count)
     char *b = buffer;
     unsigned int c;
 
+    if (!count)
+        return 0;
+
     for (c = 0; count--; c++)
     {
 
@@ -140,6 +155,9 @@ unsigned int ring_writereverse(struct ring *ring, void *buffer, unsigned int cou
     char *b = buffer;
     unsigned int c;
 
+    if (!count)
+        return 0;
+
     for (c = 0; count--; c++)
     {
 
@@ -159,6 +177,9 @@ unsigned int ring_overwrite(struct ring *ring, void *buffer, unsigned int count)
 
     char *b = buffer;
     unsigned int c;
+
+    if (!count)
+        return 0;
 
     for (c = 0; count--; c++)
     {
