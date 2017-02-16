@@ -90,3 +90,18 @@ unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int
 
 }
 
+unsigned int memory_erase(void *out, unsigned int ocount, unsigned int count, unsigned int offset)
+{
+
+    unsigned char *op = out;
+
+    if (offset + count > ocount)
+        return 0;
+
+    memory_copy(op + offset, op + offset + count, (ocount - count));
+
+    return count;
+
+}
+
+

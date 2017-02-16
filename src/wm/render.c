@@ -49,7 +49,6 @@ static struct layer layers[LAYERS] = {
 };
 static unsigned char fontdata[0x8000];
 static struct font font = {fontdata, 0, 0, 0};
-static unsigned char *mousedata;
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -141,13 +140,6 @@ static void paint32(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static unsigned int isoverlap(unsigned int line, struct box *size)
-{
-
-    return line >= size->y && line < size->y + size->h;
-
-}
-
 static void renderfill(void *data, unsigned int line)
 {
 
@@ -161,6 +153,7 @@ static void rendermouse(void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
+    unsigned char *mousedata = (mouse->element.size.h == 16) ? mousedata16 : mousedata24;
     unsigned char *md = mousedata + line * mouse->element.size.w;
     unsigned int i;
 
@@ -381,41 +374,27 @@ static void renderwindow(void *data, unsigned int line)
 
 }
 
-static struct element *nextelement(struct element *element, struct layer *layer)
+static struct element *nextelement(struct layer *layer, struct element *element)
 {
 
-    element = (element) ? (struct element *)(((unsigned char *)element) + element->count) : (struct element *)layer->data;
+    unsigned char *position = (element) ? (unsigned char *)element + element->count : layer->data;
 
-    return ((unsigned int)element < (unsigned int)layer->data + layer->count) ? element : 0;
+    return position < layer->data + layer->count ? (struct element *)position : 0;
 
 }
 
-static void insertelement(struct element *element, struct layer *layer)
+static void removeduplicates(struct layer *layer, unsigned int source, unsigned int id)
 {
 
     struct element *current = 0;
 
-    while ((current = nextelement(current, layer)))
+    while ((current = nextelement(layer, current)))
     {
 
-        if (current->source == element->source && current->id == element->id)
+        if (current->source == source && current->id == id)
             current->damage = ELEMENT_DAMAGE_REMOVE;
 
     }
-
-    if (element->damage == ELEMENT_DAMAGE_UPDATE)
-        layer->count += memory_write(layer->data, layer->total, element, element->count, layer->count);
-
-}
-
-static void removeelement(struct element *element, struct layer *layer)
-{
-
-    unsigned int length = element->count;
-
-    memory_copy(element, (unsigned char *)element + length, layer->count - ((unsigned char *)element - layer->data) - length);
-
-    layer->count -= length;
 
 }
 
@@ -429,10 +408,10 @@ static unsigned int testline(unsigned int line)
 
         struct element *current = 0;
 
-        while ((current = nextelement(current, &layers[i])))
+        while ((current = nextelement(&layers[i], current)))
         {
 
-            if (current->damage && isoverlap(line, &current->size))
+            if (current->damage != ELEMENT_DAMAGE_NONE && line >= current->size.y && line < current->size.y + current->size.h)
                 return 1;
 
         }
@@ -443,7 +422,7 @@ static unsigned int testline(unsigned int line)
 
 }
 
-static void renderline(unsigned int line)
+static void drawline(unsigned int line)
 {
 
     unsigned int i;
@@ -453,11 +432,41 @@ static void renderline(unsigned int line)
 
         struct element *current = 0;
 
-        while ((current = nextelement(current, &layers[i])))
+        while ((current = nextelement(&layers[i], current)))
         {
 
-            if (current->damage != ELEMENT_DAMAGE_REMOVE && isoverlap(line, &current->size))
+            if (current->damage != ELEMENT_DAMAGE_REMOVE && line >= current->size.y && line < current->size.y + current->size.h)
                 drawables[current->type](current, line - current->size.y);
+
+        }
+
+    }
+
+}
+
+void render_begin(unsigned int descriptor)
+{
+
+    unsigned char buffer[FUDGE_BSIZE];
+    struct layer insert;
+
+    insert.data = buffer;
+    insert.count = 0;
+    insert.total = FUDGE_BSIZE;
+
+    while ((insert.count = file_read(descriptor, insert.data, insert.total)))
+    {
+
+        struct element *current = 0;
+
+        while ((current = nextelement(&insert, current)))
+        {
+
+            struct layer *layer = &layers[current->z - 1];
+
+            removeduplicates(layer, current->source, current->id);
+
+            layer->count += memory_write(layer->data, layer->total, current, current->count, layer->count);
 
         }
 
@@ -478,7 +487,7 @@ void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
         if (testline(line))
         {
 
-            renderline(line);
+            drawline(line);
             file_seekwriteall(descriptor, drawdata, w, w * line);
 
         }
@@ -486,28 +495,6 @@ void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
     }
 
     file_close(descriptor);
-
-}
-
-void render_parse(unsigned int descriptor)
-{
-
-    unsigned char buffer[FUDGE_BSIZE];
-    struct layer insert;
-
-    insert.data = buffer;
-    insert.count = 0;
-    insert.total = FUDGE_BSIZE;
-
-    while ((insert.count = file_read(descriptor, insert.data, insert.total)))
-    {
-
-        struct element *current = 0;
-
-        while ((current = nextelement(current, &insert)))
-            insertelement(current, &layers[current->z - 1]);
-
-    }
 
 }
 
@@ -521,11 +508,11 @@ void render_complete(void)
 
         struct element *current = 0;
 
-        while ((current = nextelement(current, &layers[i])))
+        while ((current = nextelement(&layers[i], current)))
         {
 
             if (current->damage == ELEMENT_DAMAGE_REMOVE)
-                removeelement(current, &layers[i]);
+                layers[i].count -= memory_erase(layers[i].data, layers[i].total, current->count, (unsigned char *)current - (unsigned char *)layers[i].data);
             else
                 current->damage = ELEMENT_DAMAGE_NONE;
 
@@ -583,14 +570,12 @@ void render_setmouse(struct element_mouse *mouse, unsigned int size)
     {
 
     case 16:
-        mousedata = mousedata16;
         mouse->element.size.w = 12;
         mouse->element.size.h = 16;
 
         break;
 
     case 24:
-        mousedata = mousedata24;
         mouse->element.size.w = 18;
         mouse->element.size.h = 24;
 
