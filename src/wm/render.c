@@ -381,12 +381,12 @@ static void renderwindow(void *data, unsigned int line)
 
 }
 
-static struct element *nextelement(struct element *element, unsigned char *data, unsigned int count)
+static struct element *nextelement(struct element *element, struct layer *layer)
 {
 
-    element = (element) ? (struct element *)(((unsigned char *)element) + element->count) : (struct element *)data;
+    element = (element) ? (struct element *)(((unsigned char *)element) + element->count) : (struct element *)layer->data;
 
-    return ((unsigned int)element < (unsigned int)data + count) ? element : 0;
+    return ((unsigned int)element < (unsigned int)layer->data + layer->count) ? element : 0;
 
 }
 
@@ -395,7 +395,7 @@ static void insertelement(struct element *element, struct layer *layer)
 
     struct element *current = 0;
 
-    while ((current = nextelement(current, layer->data, layer->count)))
+    while ((current = nextelement(current, layer)))
     {
 
         if (current->source == element->source && current->id == element->id)
@@ -429,7 +429,7 @@ static unsigned int testline(unsigned int line)
 
         struct element *current = 0;
 
-        while ((current = nextelement(current, layers[i].data, layers[i].count)))
+        while ((current = nextelement(current, &layers[i])))
         {
 
             if (current->damage && isoverlap(line, &current->size))
@@ -453,7 +453,7 @@ static void renderline(unsigned int line)
 
         struct element *current = 0;
 
-        while ((current = nextelement(current, layers[i].data, layers[i].count)))
+        while ((current = nextelement(current, &layers[i])))
         {
 
             if (current->damage != ELEMENT_DAMAGE_REMOVE && isoverlap(line, &current->size))
@@ -493,14 +493,18 @@ void render_parse(unsigned int descriptor)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count;
+    struct layer insert;
 
-    while ((count = file_read(descriptor, buffer, FUDGE_BSIZE)))
+    insert.data = buffer;
+    insert.count = 0;
+    insert.total = FUDGE_BSIZE;
+
+    while ((insert.count = file_read(descriptor, insert.data, insert.total)))
     {
 
         struct element *current = 0;
 
-        while ((current = nextelement(current, buffer, count)))
+        while ((current = nextelement(current, &insert)))
             insertelement(current, &layers[current->z - 1]);
 
     }
@@ -517,7 +521,7 @@ void render_complete(void)
 
         struct element *current = 0;
 
-        while ((current = nextelement(current, layers[i].data, layers[i].count)))
+        while ((current = nextelement(current, &layers[i])))
         {
 
             if (current->damage == ELEMENT_DAMAGE_REMOVE)
