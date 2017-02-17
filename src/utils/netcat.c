@@ -24,7 +24,10 @@ void main(void)
     file_close(CALL_L2);
     file_open(CALL_PO);
     file_open(CALL_L3);
-    file_writeall(CALL_PO, "== Listening on UDP port 8080 ==\n\n", 34);
+    file_writeall(CALL_PO, "IP: 10.0.5.5\n", 13);
+    file_writeall(CALL_PO, "Protocol: UDP\n", 14);
+    file_writeall(CALL_PO, "Port: 8080\n", 11);
+    file_writeall(CALL_PO, "Listening...\n\n", 14);
 
     while ((count = file_read(CALL_L3, buffer, FUDGE_BSIZE)))
         file_writeall(CALL_PO, buffer, count);
