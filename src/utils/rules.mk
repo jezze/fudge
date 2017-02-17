@@ -217,10 +217,10 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/ipserver \
+    $(DIR_SRC)/utils/netcat \
 
 O:=\
-    $(DIR_SRC)/utils/ipserver.o \
+    $(DIR_SRC)/utils/netcat.o \
 
 L:=\
     $(DIR_SRC)/abi/abi.a \
