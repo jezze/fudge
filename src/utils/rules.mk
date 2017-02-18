@@ -362,6 +362,19 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/utils/tcpdump \
+
+O:=\
+    $(DIR_SRC)/utils/tcpdump.o \
+    $(DIR_SRC)/utils/write.o \
+
+L:=\
+    $(DIR_SRC)/abi/abi.a \
+    $(DIR_SRC)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/timestamp \
 
 O:=\
