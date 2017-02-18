@@ -83,6 +83,28 @@ static unsigned char *arphook_lookup(void *paddress)
 
 }
 
+static unsigned int protocoldata_open(struct system_node *self, struct service_state *state)
+{
+
+    struct ipv4_protocol *protocol = self->resource->data;
+
+    list_add(&protocol->datalinks, &state->link);
+
+    return state->id;
+
+}
+
+static unsigned int protocoldata_close(struct system_node *self, struct service_state *state)
+{
+
+    struct ipv4_protocol *protocol = self->resource->data;
+
+    list_remove(&protocol->datalinks, &state->link);
+
+    return state->id;
+
+}
+
 void ipv4_registerprotocol(struct ipv4_protocol *protocol)
 {
 
@@ -110,6 +132,9 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 
     protocol->id = id;
     protocol->notify = notify;
+    protocol->data.open = protocoldata_open;
+    protocol->data.close = protocoldata_close;
+    protocol->data.read = system_readtask;
 
 }
 
