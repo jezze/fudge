@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <net/ipv6.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
@@ -7,7 +6,7 @@
 
 static struct ethernet_protocol ethernetprotocol;
 
-static void ethernetprotocol_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
+static void ethernetprotocol_notify(struct ethernet_interface *interface, struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
     kernel_multicast(&ethernetprotocol.datalinks, buffer, count);

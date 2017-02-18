@@ -1,6 +1,22 @@
 #define ETHERNET_MTU                    1500
 #define ETHERNET_ADDRSIZE               6
 
+struct ethernet_header
+{
+
+    unsigned char tha[6];
+    unsigned char sha[6];
+    unsigned char type[2];
+
+};
+
+struct ethernet_footer
+{
+
+    unsigned char crc[4];
+
+};
+
 struct ethernet_interface
 {
 
@@ -24,7 +40,7 @@ struct ethernet_protocol
     struct system_node data;
     struct list datalinks;
     unsigned short type;
-    void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count);
+    void (*notify)(struct ethernet_interface *interface, struct ethernet_header *header, void *buffer, unsigned int count);
 
 };
 
@@ -35,4 +51,4 @@ void ethernet_registerprotocol(struct ethernet_protocol *protocol);
 void ethernet_unregisterinterface(struct ethernet_interface *interface);
 void ethernet_unregisterprotocol(struct ethernet_protocol *protocol);
 void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (*send)(void *buffer, unsigned int count));
-void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count));
+void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, struct ethernet_header *header, void *buffer, unsigned int count));

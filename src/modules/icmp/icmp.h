@@ -1,4 +1,4 @@
-struct icmpv4_header
+struct icmp_header
 {
 
     unsigned char type;

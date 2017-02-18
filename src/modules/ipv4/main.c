@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <net/ipv4.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
@@ -25,7 +24,7 @@ unsigned int ipv4_writeheader(unsigned char *sip, unsigned char *tip, void *buff
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
+static void ethernetprotocol_notify(struct ethernet_interface *interface, struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
     struct ipv4_header *header = buffer;
@@ -38,7 +37,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, void *
         struct ipv4_protocol *protocol = current->data;
 
         if (protocol->id == header->protocol)
-            protocol->notify(interface, header + 1, length - sizeof (struct ipv4_header));
+            protocol->notify(interface, header, header + 1, length - sizeof (struct ipv4_header));
 
     }
 
@@ -102,7 +101,7 @@ void ipv4_unregisterprotocol(struct ipv4_protocol *protocol)
 
 }
 
-void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count))
+void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, struct ipv4_header *header, void *buffer, unsigned int count))
 {
 
     resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);

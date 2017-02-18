@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <net/arp.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
@@ -32,7 +31,7 @@ unsigned int arp_writeheader(unsigned short htype, unsigned char hlength, unsign
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
+static void ethernetprotocol_notify(struct ethernet_interface *interface, struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
     struct arp_header *header = buffer;

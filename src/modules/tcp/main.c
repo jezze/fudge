@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <net/tcp.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
@@ -9,7 +8,7 @@
 static struct ipv4_protocol ipv4protocol;
 static struct list hooks;
 
-void ipv4protocol_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
+void ipv4protocol_notify(struct ethernet_interface *interface, struct ipv4_header *ipv4header, void *buffer, unsigned int count)
 {
 
     struct tcp_header *header = buffer;

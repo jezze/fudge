@@ -6,7 +6,7 @@
 
 static struct ipv4_protocol ipv4protocol;
 
-void ipv4protocol_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
+void ipv4protocol_notify(struct ethernet_interface *interface, struct ipv4_header *ipv4header, void *buffer, unsigned int count)
 {
 
     kernel_multicast(&ipv4protocol.datalinks, buffer, count);

@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <net/ethernet.h>
 #include <modules/system/system.h>
 #include "ethernet.h"
 
@@ -34,7 +33,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
         struct ethernet_protocol *protocol = current->data;
 
         if (protocol->type == type)
-            protocol->notify(interface, header + 1, count - 18);
+            protocol->notify(interface, header, header + 1, count - 18);
 
     }
 
@@ -132,7 +131,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
 
 }
 
-void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, struct ethernet_header *header, void *buffer, unsigned int count))
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);
