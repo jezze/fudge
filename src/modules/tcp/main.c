@@ -13,7 +13,7 @@ void ipv4protocol_notify(struct ethernet_interface *interface, struct ipv4_heade
 
     struct tcp_header *header = buffer;
     unsigned int port = (header->tp[0] << 8) | header->tp[1];
-    unsigned int length = 0;
+    unsigned int length = ((ipv4header->length[0] << 8) | ipv4header->length[1]) - (sizeof (struct ipv4_header) + sizeof (struct tcp_header));
     struct list_item *current;
 
     for (current = hooks.head; current; current = current->next)
