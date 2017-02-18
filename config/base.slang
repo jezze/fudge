@@ -18,6 +18,7 @@ elfload < /mod/ipv4.ko
 elfload < /mod/ipv6.ko
 elfload < /mod/icmp.ko
 elfload < /mod/udp.ko
+elfload < /mod/tcp.ko
 elfload < /mod/pipe.ko
 elfload < /mod/pipe.ko.0
 elfload < /mod/pipe.ko.1

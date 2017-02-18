@@ -18,6 +18,7 @@ include $(DIR_SRC)/modules/null/rules.mk
 include $(DIR_SRC)/modules/part/rules.mk
 include $(DIR_SRC)/modules/pipe/rules.mk
 include $(DIR_SRC)/modules/system/rules.mk
+include $(DIR_SRC)/modules/tcp/rules.mk
 include $(DIR_SRC)/modules/timer/rules.mk
 include $(DIR_SRC)/modules/udp/rules.mk
 include $(DIR_SRC)/modules/video/rules.mk
