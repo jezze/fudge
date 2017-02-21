@@ -5,18 +5,18 @@
 
 static struct system_node root;
 
-unsigned int ethernet_writeheader(struct ethernet_protocol *protocol, unsigned char *sha, unsigned char *tha, void *buffer)
+void *ethernet_writeheader(void *buffer, unsigned int type, unsigned char *sha, unsigned char *tha)
 {
 
     struct ethernet_header *header = buffer;
 
-    header->type[0] = protocol->type >> 8;
-    header->type[1] = protocol->type;
+    header->type[0] = type >> 8;
+    header->type[1] = type;
 
     memory_copy(header->sha, sha, ETHERNET_ADDRSIZE);
     memory_copy(header->tha, tha, ETHERNET_ADDRSIZE);
 
-    return sizeof (struct ethernet_header);
+    return header + 1;
 
 }
 

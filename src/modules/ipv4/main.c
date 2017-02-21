@@ -12,7 +12,7 @@ static struct arp_hook arphook;
 static struct ipv4_arpentry arptable[ARPTABLESIZE];
 static struct system_node arptablenode;
 
-unsigned int ipv4_writeheader(unsigned char *sip, unsigned char *tip, void *buffer)
+void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip)
 {
 
     struct ipv4_header *header = buffer;
@@ -20,7 +20,7 @@ unsigned int ipv4_writeheader(unsigned char *sip, unsigned char *tip, void *buff
     memory_copy(header->sip, sip, IPV4_ADDRSIZE);
     memory_copy(header->tip, tip, IPV4_ADDRSIZE);
 
-    return sizeof (struct ipv4_header);
+    return header + 1;
 
 }
 
@@ -28,7 +28,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
 {
 
     struct ipv4_header *header = buffer;
-    unsigned short length = (header->length[0] << 8) | header->length[1];
+    unsigned int length = (header->length[0] << 8) | header->length[1];
     struct resource *current = 0;
 
     while ((current = resource_findtype(current, RESOURCE_IPV4PROTOCOL)))
@@ -59,7 +59,7 @@ static unsigned int arptablenode_write(struct system_node *self, struct service_
 
 }
 
-static unsigned int arphook_match(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength)
+static unsigned int arphook_match(unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength)
 {
 
     return htype == 1 && hlength == ETHERNET_ADDRSIZE && ptype == ethernetprotocol.type && plength == IPV4_ADDRSIZE;

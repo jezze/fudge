@@ -37,7 +37,7 @@ struct ipv4_protocol
 
 };
 
-unsigned int ipv4_writeheader(unsigned char *sip, unsigned char *tip, void *buffer);
+void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip);
 void ipv4_registerprotocol(struct ipv4_protocol *protocol);
 void ipv4_unregisterprotocol(struct ipv4_protocol *protocol);
 void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, struct ipv4_header *header, void *buffer, unsigned int count));

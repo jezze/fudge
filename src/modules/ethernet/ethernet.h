@@ -44,7 +44,7 @@ struct ethernet_protocol
 
 };
 
-unsigned int ethernet_writeheader(struct ethernet_protocol *protocol, unsigned char *sha, unsigned char *tha, void *buffer);
+void *ethernet_writeheader(void *buffer, unsigned int type, unsigned char *sha, unsigned char *tha);
 void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigned int count);
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id);
 void ethernet_registerprotocol(struct ethernet_protocol *protocol);

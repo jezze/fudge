@@ -7,11 +7,10 @@
 static struct ethernet_protocol ethernetprotocol;
 static struct list hooks;
 
-unsigned int arp_writeheader(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength, unsigned short operation, unsigned char *sha, unsigned char *shp, unsigned char *tha, unsigned char *thp, void *buffer)
+void *arp_writeheader(void *buffer, unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength, unsigned int operation)
 {
 
     struct arp_header *header = buffer;
-    unsigned char *data = (unsigned char *)(header + 1);
 
     header->htype[0] = htype >> 8;
     header->htype[1] = htype;
@@ -22,12 +21,21 @@ unsigned int arp_writeheader(unsigned short htype, unsigned char hlength, unsign
     header->operation[0] = operation >> 8;
     header->operation[1] = operation;
 
-    memory_copy(data, sha, hlength);
-    memory_copy(data + hlength, shp, plength);
-    memory_copy(data + hlength + plength, tha, hlength);
-    memory_copy(data + hlength + plength + hlength, thp, plength);
+    return header + 1;
 
-    return sizeof (struct arp_header) + hlength + plength + hlength + plength;
+}
+
+void *arp_writedata(void *buffer, struct arp_header *header, unsigned char *sha, unsigned char *shp, unsigned char *tha, unsigned char *thp)
+{
+
+    unsigned char *data = buffer;
+
+    memory_copy(data, sha, header->hlength);
+    memory_copy(data + header->hlength, shp, header->plength);
+    memory_copy(data + header->hlength + header->plength, tha, header->hlength);
+    memory_copy(data + header->hlength + header->plength + header->hlength, thp, header->plength);
+
+    return data + header->hlength + header->plength + header->hlength + header->plength;
 
 }
 
@@ -36,9 +44,9 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
 
     struct arp_header *header = buffer;
     unsigned char *data = (unsigned char *)(header + 1);
-    unsigned short htype;
-    unsigned short ptype;
-    unsigned short operation;
+    unsigned int htype;
+    unsigned int ptype;
+    unsigned int operation;
     struct list_item *current;
 
     if (count < sizeof (struct arp_header))
@@ -54,7 +62,6 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
         struct arp_hook *hook = current->data;
         unsigned char response[ETHERNET_MTU];
         unsigned char *haddress;
-        unsigned int c = 0;
 
         if (!hook->match(htype, header->hlength, ptype, header->plength))
             continue;
@@ -67,13 +74,16 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
 
             haddress = hook->lookup(data + header->hlength + header->plength + header->hlength);
 
-            if (!haddress)
-                continue;
+            if (haddress)
+            {
 
-            c += ethernet_writeheader(&ethernetprotocol, interface->haddress, data, response);
-            c += arp_writeheader(htype, header->hlength, ptype, header->plength, ARP_REPLY, haddress, data + header->hlength + header->plength + header->hlength, data, data + header->hlength, response + c);
+                struct arp_header *arpheader = ethernet_writeheader(response, ethernetprotocol.type, interface->haddress, data);
+                unsigned char *arpdata = arp_writeheader(arpheader, htype, header->hlength, ptype, header->plength, ARP_REPLY);
+                unsigned char *responsetotal = arp_writedata(arpdata, arpheader, haddress, data + header->hlength + header->plength + header->hlength, data, data + header->hlength);
 
-            interface->send(response, c);
+                interface->send(response, responsetotal - response);
+
+            }
 
             break;
 
@@ -104,7 +114,7 @@ void arp_unregisterhook(struct arp_hook *hook)
 
 }
 
-void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength), unsigned char *(*lookup)(void *paddress), void (*save)(void *haddress, void *paddress))
+void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength), unsigned char *(*lookup)(void *paddress), void (*save)(void *haddress, void *paddress))
 {
 
     list_inititem(&hook->item, hook);
