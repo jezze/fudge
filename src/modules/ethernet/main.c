@@ -24,7 +24,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 {
 
     struct ethernet_header *header = buffer;
-    unsigned short type = (header->type[0] << 8) | header->type[1];
+    unsigned int type = (header->type[0] << 8) | header->type[1];
     struct resource *current = 0;
 
     while ((current = resource_findtype(current, RESOURCE_ETHERNETPROTOCOL)))
@@ -131,7 +131,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
 
 }
 
-void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned short type, void (*notify)(struct ethernet_interface *interface, struct ethernet_header *header, void *buffer, unsigned int count))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned int type, void (*notify)(struct ethernet_interface *interface, struct ethernet_header *header, void *buffer, unsigned int count))
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);

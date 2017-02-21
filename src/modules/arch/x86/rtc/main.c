@@ -83,7 +83,7 @@ static unsigned char clockinterface_getmonth(void)
 
 }
 
-static unsigned short clockinterface_getyear(void)
+static unsigned int clockinterface_getyear(void)
 {
 
     return 2000 + read(0x09);

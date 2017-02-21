@@ -21,7 +21,7 @@ struct vga_character
 static struct base_driver driver;
 static struct console_interface consoleinterface;
 static struct video_interface videointerface;
-static struct {unsigned char color; unsigned short offset;} cursor;
+static struct {unsigned char color; unsigned int offset;} cursor;
 static struct vga_character *taddress;
 static void *gaddress;
 
