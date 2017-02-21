@@ -63,6 +63,8 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
         {
 
         case ARP_REQUEST:
+            hook->save(data, data + header->hlength);
+
             haddress = hook->lookup(data + header->hlength + header->plength + header->hlength);
 
             if (!haddress)
@@ -72,6 +74,11 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
             c += arp_writeheader(htype, header->hlength, ptype, header->plength, ARP_REPLY, haddress, data + header->hlength + header->plength + header->hlength, data, data + header->hlength, response + c);
 
             interface->send(response, c);
+
+            break;
+
+        case ARP_REPLY:
+            hook->save(data, data + header->hlength);
 
             break;
 
@@ -97,13 +104,14 @@ void arp_unregisterhook(struct arp_hook *hook)
 
 }
 
-void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength), unsigned char *(*lookup)(void *paddress))
+void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength), unsigned char *(*lookup)(void *paddress), void (*save)(void *haddress, void *paddress))
 {
 
     list_inititem(&hook->item, hook);
 
     hook->match = match;
     hook->lookup = lookup;
+    hook->save = save;
 
 }
 

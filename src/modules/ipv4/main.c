@@ -66,7 +66,7 @@ static unsigned int arphook_match(unsigned short htype, unsigned char hlength, u
 
 }
 
-static unsigned char *arphook_lookup(void *paddress)
+static struct ipv4_arpentry *findarpentry(void *paddress)
 {
 
     unsigned int i;
@@ -75,11 +75,38 @@ static unsigned char *arphook_lookup(void *paddress)
     {
 
         if (memory_match(arptable[i].paddress, paddress, IPV4_ADDRSIZE))
-            return arptable[i].haddress;
+            return &arptable[i];
 
     }
 
     return 0;
+
+}
+
+static unsigned char *arphook_lookup(void *paddress)
+{
+
+    struct ipv4_arpentry *entry = findarpentry(paddress);
+
+    return (entry) ? entry->haddress : 0;
+
+}
+
+static void arphook_save(void *haddress, void *paddress)
+{
+
+    struct ipv4_arpentry *entry = findarpentry(paddress);
+
+    if (entry)
+        return;
+
+    entry = findarpentry("\0\0\0\0");
+
+    if (!entry)
+        return;
+
+    memory_copy(entry->haddress, haddress, ETHERNET_ADDRSIZE);
+    memory_copy(entry->paddress, paddress, IPV4_ADDRSIZE);
 
 }
 
@@ -142,7 +169,7 @@ void module_init(void)
 {
 
     ethernet_initprotocol(&ethernetprotocol, "ipv4", IPV4_PROTOCOL, ethernetprotocol_notify);
-    arp_inithook(&arphook, arphook_match, arphook_lookup);
+    arp_inithook(&arphook, arphook_match, arphook_lookup, arphook_save);
     system_initnode(&arptablenode, SYSTEM_NODETYPE_NORMAL, "arptable");
 
     arptablenode.read = arptablenode_read;
