@@ -25,15 +25,15 @@ void *arp_writeheader(void *buffer, unsigned int htype, unsigned char hlength, u
 
 }
 
-void *arp_writedata(void *buffer, struct arp_header *header, unsigned char *sha, unsigned char *shp, unsigned char *tha, unsigned char *thp)
+void *arp_writedata(void *buffer, struct arp_header *header, unsigned char *sha, unsigned char *spa, unsigned char *tha, unsigned char *tpa)
 {
 
     unsigned char *data = buffer;
 
     memory_copy(data, sha, header->hlength);
-    memory_copy(data + header->hlength, shp, header->plength);
+    memory_copy(data + header->hlength, spa, header->plength);
     memory_copy(data + header->hlength + header->plength, tha, header->hlength);
-    memory_copy(data + header->hlength + header->plength + header->hlength, thp, header->plength);
+    memory_copy(data + header->hlength + header->plength + header->hlength, tpa, header->plength);
 
     return data + header->hlength + header->plength + header->hlength + header->plength;
 
