@@ -39,47 +39,58 @@ void *arp_writedata(void *buffer, struct arp_header *header, unsigned char *sha,
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_interface *interface, struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
+static struct arp_hook *findhook(unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned int plength)
 {
 
-    struct arp_header *header = buffer;
-    unsigned char *data = (unsigned char *)(header + 1);
-    unsigned int htype;
-    unsigned int ptype;
-    unsigned int operation;
     struct list_item *current;
-
-    if (count < sizeof (struct arp_header))
-        return;
-
-    htype = (header->htype[0] << 8) | header->htype[1];
-    ptype = (header->ptype[0] << 8) | header->ptype[1];
-    operation = (header->operation[0] << 8) | header->operation[1];
 
     for (current = hooks.head; current; current = current->next)
     {
 
         struct arp_hook *hook = current->data;
-        unsigned char response[ETHERNET_MTU];
-        unsigned char *haddress;
 
-        if (!hook->match(htype, header->hlength, ptype, header->plength))
-            continue;
+        if (hook->match(htype, hlength, ptype, plength))
+            return hook;
+
+    }
+
+    return 0;
+
+}
+
+static void ethernetprotocol_notify(struct ethernet_interface *interface, struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
+{
+
+    struct arp_header *header = buffer;
+    unsigned int htype = (header->htype[0] << 8) | header->htype[1];
+    unsigned int ptype = (header->ptype[0] << 8) | header->ptype[1];
+    unsigned int operation = (header->operation[0] << 8) | header->operation[1];
+    struct arp_hook *hook = findhook(htype, header->hlength, ptype, header->plength);
+
+    if (hook)
+    {
+
+        unsigned char *data = (unsigned char *)(header + 1);
+        unsigned char *sha = data;
+        unsigned char *spa = data + header->hlength;
+        unsigned char *tha = data + header->hlength + header->plength;
+        unsigned char *tpa = data + header->hlength + header->plength + header->hlength;
 
         switch (operation)
         {
 
         case ARP_REQUEST:
-            hook->save(data, data + header->hlength);
+            hook->save(sha, spa);
 
-            haddress = hook->lookup(data + header->hlength + header->plength + header->hlength);
+            tha = hook->lookup(tpa);
 
-            if (haddress)
+            if (tha)
             {
 
-                struct arp_header *arpheader = ethernet_writeheader(response, ethernetprotocol.type, interface->haddress, data);
+                unsigned char response[ETHERNET_MTU];
+                struct arp_header *arpheader = ethernet_writeheader(response, ethernetprotocol.type, interface->haddress, sha);
                 unsigned char *arpdata = arp_writeheader(arpheader, htype, header->hlength, ptype, header->plength, ARP_REPLY);
-                unsigned char *responsetotal = arp_writedata(arpdata, arpheader, haddress, data + header->hlength + header->plength + header->hlength, data, data + header->hlength);
+                unsigned char *responsetotal = arp_writedata(arpdata, arpheader, tha, tpa, sha, spa);
 
                 interface->send(response, responsetotal - response);
 
@@ -88,7 +99,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
             break;
 
         case ARP_REPLY:
-            hook->save(data, data + header->hlength);
+            hook->save(sha, spa);
 
             break;
 
