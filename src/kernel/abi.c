@@ -134,11 +134,17 @@ static unsigned int open(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    unsigned int id;
+
+    id = descriptor->server->protocol->open(descriptor->server->backend, &descriptor->state);
+
+    if (!id && descriptor->state.link.list)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
 
     descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, &descriptor->state, 0);
     descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, &descriptor->state);
 
-    return descriptor->server->protocol->open(descriptor->server->backend, &descriptor->state);
+    return id;
 
 }
 
@@ -147,8 +153,17 @@ static unsigned int close(struct container *container, struct task *task, void *
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    unsigned int id;
 
-    return descriptor->server->protocol->close(descriptor->server->backend, &descriptor->state);
+    id = descriptor->server->protocol->close(descriptor->server->backend, &descriptor->state);
+
+    if (!id && descriptor->state.link.list)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    descriptor->state.offset = 0;
+    descriptor->state.current = 0;
+
+    return id;
 
 }
 
@@ -157,19 +172,20 @@ static unsigned int read(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    unsigned int count;
 
     if (!args->buffer || !args->count)
         return 0;
 
-    descriptor->state.count = descriptor->server->protocol->read(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
+    count = descriptor->server->protocol->read(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
 
-    if (!descriptor->state.count && descriptor->state.link.list)
+    if (!count && descriptor->state.link.list)
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
-    descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, &descriptor->state, descriptor->state.offset + descriptor->state.count);
+    descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, &descriptor->state, descriptor->state.offset + count);
     descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, &descriptor->state);
 
-    return descriptor->state.count;
+    return count;
 
 }
 
@@ -178,19 +194,20 @@ static unsigned int write(struct container *container, struct task *task, void *
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    unsigned int count;
 
     if (!args->buffer || !args->count)
         return 0;
 
-    descriptor->state.count = descriptor->server->protocol->write(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
+    count = descriptor->server->protocol->write(descriptor->server->backend, &descriptor->state, args->buffer, args->count);
 
-    if (!descriptor->state.count && descriptor->state.link.list)
+    if (!count && descriptor->state.link.list)
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
-    descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, &descriptor->state, descriptor->state.offset + descriptor->state.count);
+    descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, &descriptor->state, descriptor->state.offset + count);
     descriptor->state.current = descriptor->server->protocol->step(descriptor->server->backend, &descriptor->state);
 
-    return descriptor->state.count;
+    return count;
 
 }
 

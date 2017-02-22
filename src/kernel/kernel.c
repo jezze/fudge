@@ -13,7 +13,6 @@ static void copydescriptor(struct task *target, struct task_descriptor *tdescrip
 
     tdescriptor->server = (sdescriptor) ? sdescriptor->server : 0;
     tdescriptor->state.id = (sdescriptor) ? sdescriptor->state.id : 0;
-    tdescriptor->state.count = 0;
     tdescriptor->state.offset = 0;
     tdescriptor->state.current = 0;
 
