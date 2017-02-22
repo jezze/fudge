@@ -56,7 +56,7 @@ static void printinsertremote(struct event_header *header, struct remote *remote
 static void printremoveremote(struct event_header *header, struct remote *remote)
 {
 
-    print_remove(&output, header, &remote->window.element);
+    print_removewindow(&output, header, &remote->window);
 
 }
 
@@ -72,8 +72,8 @@ static void printinsertview(struct event_header *header, struct view *view)
 static void printremoveview(struct event_header *header, struct view *view)
 {
 
-    print_remove(&output, header, &view->panel.element);
-    print_remove(&output, header, &view->number.element);
+    print_removepanel(&output, header, &view->panel);
+    print_removetext(&output, header, &view->number);
 
 }
 
@@ -669,12 +669,12 @@ static void onwmhide(struct event_header *header)
 
     unsigned int i;
 
-    print_remove(&output, header, &background.element);
+    print_removefill(&output, header, &background);
 
     for (i = 0; i < VIEWS; i++)
         printremoveview(header, &views[i]);
 
-    print_remove(&output, header, &mouse.element);
+    print_removemouse(&output, header, &mouse);
     hideremotes(header, &viewfocus->remotes);
 
 }
@@ -682,7 +682,7 @@ static void onwmhide(struct event_header *header)
 static void onwmflush(struct event_header *header)
 {
 
-    render_begin(CALL_L0);
+    render_parse(CALL_L0);
     render_update(CALL_L5, size.w, size.h);
     render_complete();
 

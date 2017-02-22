@@ -37,7 +37,7 @@ static void printinsert(struct event_header *header)
 static void printremove(struct event_header *header)
 {
 
-    print_remove(&output, header, &content.element);
+    print_removetext(&output, header, &content);
 
 }
 
