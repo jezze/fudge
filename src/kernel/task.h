@@ -26,7 +26,6 @@ struct task_state
 struct task_descriptor
 {
 
-    struct resource resource;
     struct container_server *server;
     struct service_state state;
 

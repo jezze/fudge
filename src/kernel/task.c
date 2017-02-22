@@ -95,12 +95,7 @@ void task_resume(struct task *task, unsigned int ip, unsigned int sp)
 unsigned int task_read(struct task *task, void *buffer, unsigned int count)
 {
 
-    count = ring_read(&task->mailbox.ring, buffer, count);
-
-    if (!count)
-        task_setstatus(task, TASK_STATUS_BLOCKED);
-
-    return count;
+    return ring_read(&task->mailbox.ring, buffer, count);
 
 }
 
@@ -130,19 +125,9 @@ void task_unregister(struct task *task)
 void task_init(struct task *task)
 {
 
-    unsigned int i;
-
     resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
     ring_init(&task->mailbox.ring, TASK_MAILBOXSIZE, task->mailbox.buffer);
-
-    for (i = 0; i < TASK_DESCRIPTORS; i++)
-    {
-
-        resource_init(&task->descriptors[i].resource, RESOURCE_TASKDESCRIPTOR, &task->descriptors[i]);
-        list_inititem(&task->descriptors[i].state.link, task);
-
-    }
 
 }
 

@@ -6,8 +6,10 @@
 #include "task.h"
 #include "kernel.h"
 
-static void copydescriptor(struct task_descriptor *tdescriptor, struct task_descriptor *sdescriptor)
+static void copydescriptor(struct task *target, struct task_descriptor *tdescriptor, struct task_descriptor *sdescriptor)
 {
+
+    list_inititem(&tdescriptor->state.link, target);
 
     tdescriptor->server = (sdescriptor) ? sdescriptor->server : 0;
     tdescriptor->state.id = (sdescriptor) ? sdescriptor->state.id : 0;
@@ -25,10 +27,10 @@ void kernel_copydescriptors(struct task *source, struct task *target)
     for (i = 0x00; i < 0x08; i++)
     {
 
-        copydescriptor(&target->descriptors[i + 0x00], &source->descriptors[i + 0x08]);
-        copydescriptor(&target->descriptors[i + 0x08], &source->descriptors[i + 0x08]);
-        copydescriptor(&target->descriptors[i + 0x10], 0);
-        copydescriptor(&target->descriptors[i + 0x18], 0);
+        copydescriptor(target, &target->descriptors[i + 0x00], &source->descriptors[i + 0x08]);
+        copydescriptor(target, &target->descriptors[i + 0x08], &source->descriptors[i + 0x08]);
+        copydescriptor(target, &target->descriptors[i + 0x10], 0);
+        copydescriptor(target, &target->descriptors[i + 0x18], 0);
 
     }
 
