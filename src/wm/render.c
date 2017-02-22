@@ -49,7 +49,6 @@ static struct layer layers[LAYERS] = {
 };
 static unsigned char fontdata[0x8000];
 static struct font font = {fontdata, 0, 0, 0};
-static unsigned char *mousedata;
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -161,6 +160,7 @@ static void rendermouse(void *data, unsigned int line)
 {
 
     struct element_mouse *mouse = data;
+    unsigned char *mousedata = (mouse->element.size.h == 16) ? mousedata16 : mousedata24;
     unsigned char *md = mousedata + line * mouse->element.size.w;
     unsigned int i;
 
@@ -432,7 +432,7 @@ static unsigned int testline(unsigned int line)
         while ((current = nextelement(current, &layers[i])))
         {
 
-            if (current->damage && isoverlap(line, &current->size))
+            if (current->damage != ELEMENT_DAMAGE_NONE && isoverlap(line, &current->size))
                 return 1;
 
         }
@@ -489,7 +489,7 @@ void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
 
 }
 
-void render_parse(unsigned int descriptor)
+void render_begin(unsigned int descriptor)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
@@ -583,14 +583,12 @@ void render_setmouse(struct element_mouse *mouse, unsigned int size)
     {
 
     case 16:
-        mousedata = mousedata16;
         mouse->element.size.w = 12;
         mouse->element.size.h = 16;
 
         break;
 
     case 24:
-        mousedata = mousedata24;
         mouse->element.size.w = 18;
         mouse->element.size.h = 24;
 

@@ -682,7 +682,7 @@ static void onwmhide(struct event_header *header)
 static void onwmflush(struct event_header *header)
 {
 
-    render_parse(CALL_L0);
+    render_begin(CALL_L0);
     render_update(CALL_L5, size.w, size.h);
     render_complete();
 
