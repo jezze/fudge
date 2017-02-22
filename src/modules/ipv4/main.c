@@ -12,15 +12,114 @@ static struct arp_hook arphook;
 static struct ipv4_arpentry arptable[ARPTABLESIZE];
 static struct system_node arptablenode;
 
-void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip)
+static struct ipv4_arpentry *findarpentrybypaddress(void *paddress)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ARPTABLESIZE; i++)
+    {
+
+        if (memory_match(arptable[i].paddress, paddress, IPV4_ADDRSIZE))
+            return &arptable[i];
+
+    }
+
+    return 0;
+
+}
+
+static struct ipv4_arpentry *findarpentrybyhaddress(void *haddress)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ARPTABLESIZE; i++)
+    {
+
+        if (memory_match(arptable[i].haddress, haddress, ETHERNET_ADDRSIZE))
+            return &arptable[i];
+
+    }
+
+    return 0;
+
+}
+
+void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol)
 {
 
     struct ipv4_header *header = buffer;
+
+    header->version = 0x45;
+    header->dscp = 0;
+    header->length[0] = 20;
+    header->length[1] = 0;
+    header->identification[0] = 0;
+    header->identification[1] = 0;
+    header->fragment[0] = 0;
+    header->fragment[1] = 0;
+    header->ttl = 10;
+    header->protocol = protocol;
+    header->checksum[0] = 0;
+    header->checksum[1] = 0;
 
     memory_copy(header->sip, sip, IPV4_ADDRSIZE);
     memory_copy(header->tip, tip, IPV4_ADDRSIZE);
 
     return header + 1;
+
+}
+
+void *ipv4_writedata(void *buffer, void *payload, unsigned int count)
+{
+
+    unsigned char *data = buffer;
+
+    memory_copy(buffer, payload, count);
+
+    return data + count;
+
+}
+
+void ipv4_send(unsigned char *tip, unsigned int protocol, void *payload, unsigned int count)
+{
+
+    unsigned char response[ETHERNET_MTU];
+    struct resource *resource;
+    struct ethernet_interface *interface;
+    struct ipv4_header *header;
+    struct ipv4_arpentry *sentry;
+    struct ipv4_arpentry *tentry;
+    unsigned char *data;
+    unsigned char *responsetotal;
+
+    /* Should be through routing */
+    resource = resource_findtype(0, RESOURCE_ETHERNETINTERFACE);
+
+    if (!resource)
+        return;
+
+    interface = resource->data;
+
+    if (!interface)
+        return;
+
+    sentry = findarpentrybyhaddress(interface->haddress);
+
+    if (!sentry)
+        return;
+
+    tentry = findarpentrybypaddress(tip);
+
+    if (!tentry)
+        return;
+
+    header = ethernet_writeheader(response, ethernetprotocol.type, interface->haddress, tentry->haddress);
+    data = ipv4_writeheader(header, sentry->paddress, tentry->paddress, protocol);
+    responsetotal = ipv4_writedata(data, payload, count);
+
+    interface->send(response, responsetotal - response);
 
 }
 
@@ -66,27 +165,10 @@ static unsigned int arphook_match(unsigned int htype, unsigned char hlength, uns
 
 }
 
-static struct ipv4_arpentry *findarpentry(void *paddress)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < ARPTABLESIZE; i++)
-    {
-
-        if (memory_match(arptable[i].paddress, paddress, IPV4_ADDRSIZE))
-            return &arptable[i];
-
-    }
-
-    return 0;
-
-}
-
 static unsigned char *arphook_lookup(void *paddress)
 {
 
-    struct ipv4_arpentry *entry = findarpentry(paddress);
+    struct ipv4_arpentry *entry = findarpentrybypaddress(paddress);
 
     return (entry) ? entry->haddress : 0;
 
@@ -95,12 +177,12 @@ static unsigned char *arphook_lookup(void *paddress)
 static void arphook_save(void *haddress, void *paddress)
 {
 
-    struct ipv4_arpentry *entry = findarpentry(paddress);
+    struct ipv4_arpentry *entry = findarpentrybypaddress(paddress);
 
     if (entry)
         return;
 
-    entry = findarpentry("\0\0\0\0");
+    entry = findarpentrybypaddress("\0\0\0\0");
 
     if (!entry)
         return;
