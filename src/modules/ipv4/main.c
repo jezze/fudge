@@ -46,10 +46,36 @@ static struct ipv4_arpentry *findarpentrybyhaddress(void *haddress)
 
 }
 
+static unsigned int calculatechecksum(void *buffer, unsigned int count)
+{
+
+    unsigned short *ip1 = buffer;
+    unsigned int sum = 0;
+
+    while (count > 1)
+    {
+
+        sum += *ip1++;
+
+        if (sum & 0x80000000)
+            sum = (sum & 0xFFFF) + (sum >> 16);
+
+        count -= 2;
+
+    }
+
+    while (sum >> 16)
+        sum = (sum & 0xFFFF) + (sum >> 16);
+
+    return ~sum;
+
+}
+
 void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol)
 {
 
     struct ipv4_header *header = buffer;
+    unsigned int checksum;
 
     header->version = 0x45;
     header->dscp = 0;
@@ -66,6 +92,11 @@ void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, uns
 
     memory_copy(header->sip, sip, IPV4_ADDRSIZE);
     memory_copy(header->tip, tip, IPV4_ADDRSIZE);
+
+    checksum = calculatechecksum(header, sizeof (struct ipv4_header));
+
+    header->checksum[0] = checksum & 0xFF;
+    header->checksum[1] = (checksum >> 8) & 0xFF;
 
     return header + 1;
 
