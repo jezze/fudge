@@ -26,6 +26,7 @@ struct task_state
 struct task_descriptor
 {
 
+    struct task *task;
     struct container_server *server;
     struct list_item link;
     unsigned int id;
