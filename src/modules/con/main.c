@@ -100,6 +100,7 @@ void con_register(struct con *con)
 void con_unregister(struct con *con)
 {
 
+    system_removechild(&con->root, &con->ctrl);
     system_removechild(&con->root, &con->data);
     system_removechild(&root, &con->root);
 
