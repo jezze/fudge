@@ -1,6 +1,9 @@
 #include <fudge.h>
 #include <format/cpio.h>
 #include "resource.h"
+#include "binary.h"
+#include "container.h"
+#include "task.h"
 #include "service.h"
 
 static struct service_protocol protocol;
@@ -84,18 +87,18 @@ static unsigned int protocol_root(struct service_backend *backend)
 
 }
 
-static unsigned int protocol_parent(struct service_backend *backend, struct service_state *state)
+static unsigned int protocol_parent(struct task_descriptor *descriptor)
 {
 
     struct cpio_header header;
     struct cpio_header eheader;
     unsigned char name[1024];
-    unsigned int id = state->id;
+    unsigned int id = descriptor->id;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(descriptor->server->backend, &header, descriptor->id))
         return 0;
 
-    if (!readname(backend, &header, state->id, name, 1024))
+    if (!readname(descriptor->server->backend, &header, descriptor->id, name, 1024))
         return 0;
 
     while (name[header.namesize] != '/')
@@ -104,7 +107,7 @@ static unsigned int protocol_parent(struct service_backend *backend, struct serv
     do
     {
 
-        if (!readheader(backend, &eheader, id))
+        if (!readheader(descriptor->server->backend, &eheader, id))
             break;
 
         if ((eheader.mode & 0xF000) != 0x4000)
@@ -113,7 +116,7 @@ static unsigned int protocol_parent(struct service_backend *backend, struct serv
         if (eheader.namesize == header.namesize + 1)
         {
 
-            state->id = id;
+            descriptor->id = id;
 
             return 1;
 
@@ -125,7 +128,7 @@ static unsigned int protocol_parent(struct service_backend *backend, struct serv
 
 }
 
-static unsigned int protocol_child(struct service_backend *backend, struct service_state *state, char *path, unsigned int length)
+static unsigned int protocol_child(struct task_descriptor *descriptor, char *path, unsigned int length)
 {
 
     struct cpio_header header;
@@ -136,10 +139,10 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
     if (!length)
         return 1;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(descriptor->server->backend, &header, descriptor->id))
         return 0;
 
-    if (!readname(backend, &header, state->id, name, 1024))
+    if (!readname(descriptor->server->backend, &header, descriptor->id, name, 1024))
         return 0;
 
     if (path[length - 1] == '/')
@@ -150,22 +153,22 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 
         unsigned char cname[1024];
 
-        if (id == state->id)
+        if (id == descriptor->id)
             break;
 
-        if (!readheader(backend, &eheader, id))
+        if (!readheader(descriptor->server->backend, &eheader, id))
             break;
 
         if (eheader.namesize - header.namesize != length + 1)
             continue;
 
-        if (!readname(backend, &eheader, id, cname, 1024))
+        if (!readname(descriptor->server->backend, &eheader, id, cname, 1024))
             break;
 
         if (memory_match(cname + header.namesize, path, length))
         {
 
-            state->id = id;
+            descriptor->id = id;
 
             return 1;
 
@@ -177,14 +180,14 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int protocol_create(struct service_backend *backend, struct service_state *state, char *name, unsigned int length)
+static unsigned int protocol_create(struct task_descriptor *descriptor, char *name, unsigned int length)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_destroy(struct service_backend *backend, struct service_state *state, char *name, unsigned int length)
+static unsigned int protocol_destroy(struct task_descriptor *descriptor, char *name, unsigned int length)
 {
 
     return 0;
@@ -217,19 +220,19 @@ static unsigned int stepdirectory(struct service_backend *backend, unsigned int 
 
 }
 
-static unsigned int protocol_step(struct service_backend *backend, struct service_state *state)
+static unsigned int protocol_step(struct task_descriptor *descriptor)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(descriptor->server->backend, &header, descriptor->id))
         return 0;
 
     switch (header.mode & 0xF000)
     {
 
     case 0x4000:
-        return stepdirectory(backend, state->id, state->current);
+        return stepdirectory(descriptor->server->backend, descriptor->id, descriptor->current);
 
     }
 
@@ -237,17 +240,17 @@ static unsigned int protocol_step(struct service_backend *backend, struct servic
 
 }
 
-static unsigned int protocol_open(struct service_backend *backend, struct service_state *state)
+static unsigned int protocol_open(struct task_descriptor *descriptor)
 {
 
-    return state->id;
+    return descriptor->id;
 
 }
 
-static unsigned int protocol_close(struct service_backend *backend, struct service_state *state)
+static unsigned int protocol_close(struct task_descriptor *descriptor)
 {
 
-    return state->id;
+    return descriptor->id;
 
 }
 
@@ -295,22 +298,22 @@ static unsigned int readdirectory(struct service_backend *backend, void *buffer,
 
 }
 
-static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int protocol_read(struct task_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(descriptor->server->backend, &header, descriptor->id))
         return 0;
 
     switch (header.mode & 0xF000)
     {
 
     case 0x8000:
-        return readfile(backend, buffer, count, state->offset, state->id, &header);
+        return readfile(descriptor->server->backend, buffer, count, descriptor->offset, descriptor->id, &header);
 
     case 0x4000:
-        return readdirectory(backend, buffer, count, state->current, &header);
+        return readdirectory(descriptor->server->backend, buffer, count, descriptor->current, &header);
 
     }
 
@@ -328,19 +331,19 @@ static unsigned int writefile(struct service_backend *backend, void *buffer, uns
 
 }
 
-static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int protocol_write(struct task_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(descriptor->server->backend, &header, descriptor->id))
         return 0;
 
     switch (header.mode & 0xF000)
     {
 
     case 0x8000:
-        return writefile(backend, buffer, count, state->offset, state->id, &header);
+        return writefile(descriptor->server->backend, buffer, count, descriptor->offset, descriptor->id, &header);
 
     }
 
@@ -348,22 +351,22 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
+static unsigned int protocol_seek(struct task_descriptor *descriptor, unsigned int offset)
 {
 
     return offset;
 
 }
 
-static unsigned long protocol_map(struct service_backend *backend, struct service_state *state)
+static unsigned long protocol_map(struct task_descriptor *descriptor)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(descriptor->server->backend, &header, descriptor->id))
         return 0;
 
-    return backend->map(cpio_filedata(&header, state->id), cpio_filesize(&header));
+    return descriptor->server->backend->map(cpio_filedata(&header, descriptor->id), cpio_filesize(&header));
 
 }
 

@@ -6,18 +6,18 @@
 static struct system_node root;
 static struct system_node clone;
 
-static unsigned int end_open(struct system_node *self, struct service_state *state)
+static unsigned int end_open(struct system_node *self, struct task_descriptor *descriptor)
 {
 
     struct pipe_end *end = (struct pipe_end *)self;
 
     end->refcount++;
 
-    return state->id;
+    return descriptor->id;
 
 }
 
-static unsigned int end_close(struct system_node *self, struct service_state *state)
+static unsigned int end_close(struct system_node *self, struct task_descriptor *descriptor)
 {
 
     struct pipe_end *end = (struct pipe_end *)self;
@@ -42,11 +42,11 @@ static unsigned int end_close(struct system_node *self, struct service_state *st
 
     }
 
-    return state->id;
+    return descriptor->id;
 
 }
 
-static unsigned int end_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int end_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct pipe_end *end = (struct pipe_end *)self;
@@ -73,7 +73,7 @@ static unsigned int end_read(struct system_node *self, struct service_state *sta
         if (end->refcount > 1)
         {
 
-            end->read = &state->link;
+            end->read = &descriptor->link;
 
             task_setstatus(end->read->data, TASK_STATUS_BLOCKED);
 
@@ -85,7 +85,7 @@ static unsigned int end_read(struct system_node *self, struct service_state *sta
 
 }
 
-static unsigned int end_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int end_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct pipe_end *end = (struct pipe_end *)self;
@@ -112,7 +112,7 @@ static unsigned int end_write(struct system_node *self, struct service_state *st
         if (end->refcount > 1)
         {
 
-            end->write = &state->link;
+            end->write = &descriptor->link;
 
             task_setstatus(end->write->data, TASK_STATUS_BLOCKED);
 
@@ -124,7 +124,7 @@ static unsigned int end_write(struct system_node *self, struct service_state *st
 
 }
 
-static unsigned int clone_child(struct system_node *self, char *path, unsigned int length)
+static unsigned int clone_child(struct system_node *self, struct task_descriptor *descriptor, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -141,7 +141,7 @@ static unsigned int clone_child(struct system_node *self, char *path, unsigned i
         if (pipe->end0.refcount || pipe->end1.refcount)
             continue;
 
-        return node->child(node, path, length);
+        return node->child(node, descriptor, path, length);
 
     }
 

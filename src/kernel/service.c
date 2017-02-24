@@ -1,5 +1,8 @@
 #include <fudge.h>
 #include "resource.h"
+#include "binary.h"
+#include "container.h"
+#include "task.h"
 #include "service.h"
 
 struct service_backend *service_findbackend(unsigned int id)
@@ -52,7 +55,7 @@ void service_initbackend(struct service_backend *backend, unsigned int id, unsig
 
 }
 
-void service_initprotocol(struct service_protocol *protocol, unsigned int (*match)(struct service_backend *backend), unsigned int (*root)(struct service_backend *backend), unsigned int (*parent)(struct service_backend *backend, struct service_state *state), unsigned int (*child)(struct service_backend *backend, struct service_state *state, char *path, unsigned int length), unsigned int (*create)(struct service_backend *backend, struct service_state *state, char *name, unsigned int length), unsigned int (*destroy)(struct service_backend *backend, struct service_state *state, char *name, unsigned int length), unsigned int (*step)(struct service_backend *backend, struct service_state *state), unsigned int (*open)(struct service_backend *backend, struct service_state *state), unsigned int (*close)(struct service_backend *backend, struct service_state *state), unsigned int (*read)(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count), unsigned int (*write)(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count), unsigned int (*seek)(struct service_backend *backend, struct service_state *state, unsigned int offset), unsigned long (*map)(struct service_backend *backend, struct service_state *state))
+void service_initprotocol(struct service_protocol *protocol, unsigned int (*match)(struct service_backend *backend), unsigned int (*root)(struct service_backend *backend), unsigned int (*parent)(struct task_descriptor *descriptor), unsigned int (*child)(struct task_descriptor *descriptor, char *path, unsigned int length), unsigned int (*create)(struct task_descriptor *descriptor, char *name, unsigned int length), unsigned int (*destroy)(struct task_descriptor *descriptor, char *name, unsigned int length), unsigned int (*step)(struct task_descriptor *descriptor), unsigned int (*open)(struct task_descriptor *descriptor), unsigned int (*close)(struct task_descriptor *descriptor), unsigned int (*read)(struct task_descriptor *descriptor, void *buffer, unsigned int count), unsigned int (*write)(struct task_descriptor *descriptor, void *buffer, unsigned int count), unsigned int (*seek)(struct task_descriptor *descriptor, unsigned int offset), unsigned long (*map)(struct task_descriptor *descriptor))
 {
 
     resource_init(&protocol->resource, RESOURCE_SERVICEPROTOCOL, protocol);

@@ -39,12 +39,12 @@ void event_multicast(struct list *links, struct event_header *header, unsigned i
 
 }
 
-unsigned int event_send(struct list *links, struct service_state *state, void *buffer, unsigned int count)
+unsigned int event_send(struct list *links, struct task_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct event_header *header = buffer;
 
-    header->source = (unsigned int)state->link.data;
+    header->source = (unsigned int)descriptor->link.data;
 
     if (header->destination)
         event_unicast(links, header, count);

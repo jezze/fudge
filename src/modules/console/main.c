@@ -12,38 +12,38 @@ void console_notify(struct console_interface *interface, void *buffer, unsigned 
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int interfacectrl_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct console_interface *interface = self->resource->data;
 
-    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_consolesettings), state->offset);
+    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_consolesettings), descriptor->offset);
 
 }
 
-static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
+static unsigned int interfacedata_open(struct system_node *self, struct task_descriptor *descriptor)
 {
 
     struct console_interface *interface = self->resource->data;
 
-    list_add(&interface->datalinks, &state->link);
+    list_add(&interface->datalinks, &descriptor->link);
 
-    return state->id;
+    return descriptor->id;
 
 }
 
-static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
+static unsigned int interfacedata_close(struct system_node *self, struct task_descriptor *descriptor)
 {
 
     struct console_interface *interface = self->resource->data;
 
-    list_remove(&interface->datalinks, &state->link);
+    list_remove(&interface->datalinks, &descriptor->link);
 
-    return state->id;
+    return descriptor->id;
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int interfacedata_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct console_interface *interface = self->resource->data;

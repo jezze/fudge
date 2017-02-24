@@ -27,47 +27,47 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 
 }
 
-static unsigned int interfacesleep_open(struct system_node *self, struct service_state *state)
+static unsigned int interfacesleep_open(struct system_node *self, struct task_descriptor *descriptor)
 {
 
     struct timer_interface *interface = self->resource->data;
 
-    list_add(&interface->sleeplinks, &state->link);
+    list_add(&interface->sleeplinks, &descriptor->link);
 
-    return state->id;
+    return descriptor->id;
 
 }
 
-static unsigned int interfacesleep_close(struct system_node *self, struct service_state *state)
+static unsigned int interfacesleep_close(struct system_node *self, struct task_descriptor *descriptor)
 {
 
     struct timer_interface *interface = self->resource->data;
 
-    list_remove(&interface->sleeplinks, &state->link);
+    list_remove(&interface->sleeplinks, &descriptor->link);
 
-    return state->id;
+    return descriptor->id;
 
 }
 
-static unsigned int interfaceevent_open(struct system_node *self, struct service_state *state)
+static unsigned int interfaceevent_open(struct system_node *self, struct task_descriptor *descriptor)
 {
 
     struct timer_interface *interface = self->resource->data;
 
-    list_add(&interface->eventlinks, &state->link);
+    list_add(&interface->eventlinks, &descriptor->link);
 
-    return state->id;
+    return descriptor->id;
 
 }
 
-static unsigned int interfaceevent_close(struct system_node *self, struct service_state *state)
+static unsigned int interfaceevent_close(struct system_node *self, struct task_descriptor *descriptor)
 {
 
     struct timer_interface *interface = self->resource->data;
 
-    list_remove(&interface->eventlinks, &state->link);
+    list_remove(&interface->eventlinks, &descriptor->link);
 
-    return state->id;
+    return descriptor->id;
 
 }
 

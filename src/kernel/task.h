@@ -27,7 +27,10 @@ struct task_descriptor
 {
 
     struct container_server *server;
-    struct service_state state;
+    struct list_item link;
+    unsigned int id;
+    unsigned int offset;
+    unsigned int current;
 
 };
 

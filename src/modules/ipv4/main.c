@@ -175,17 +175,17 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
 
 }
 
-static unsigned int arptablenode_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int arptablenode_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
-    return memory_read(buffer, count, arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, state->offset);
+    return memory_read(buffer, count, arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, descriptor->offset);
 
 }
 
-static unsigned int arptablenode_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int arptablenode_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
-    return memory_write(arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, buffer, count, state->offset);
+    return memory_write(arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, buffer, count, descriptor->offset);
 
 }
 
@@ -223,25 +223,25 @@ static void arphook_save(void *haddress, void *paddress)
 
 }
 
-static unsigned int protocoldata_open(struct system_node *self, struct service_state *state)
+static unsigned int protocoldata_open(struct system_node *self, struct task_descriptor *descriptor)
 {
 
     struct ipv4_protocol *protocol = self->resource->data;
 
-    list_add(&protocol->datalinks, &state->link);
+    list_add(&protocol->datalinks, &descriptor->link);
 
-    return state->id;
+    return descriptor->id;
 
 }
 
-static unsigned int protocoldata_close(struct system_node *self, struct service_state *state)
+static unsigned int protocoldata_close(struct system_node *self, struct task_descriptor *descriptor)
 {
 
     struct ipv4_protocol *protocol = self->resource->data;
 
-    list_remove(&protocol->datalinks, &state->link);
+    list_remove(&protocol->datalinks, &descriptor->link);
 
-    return state->id;
+    return descriptor->id;
 
 }
 

@@ -1,20 +1,20 @@
 #include <fudge.h>
 #include "resource.h"
 #include "binary.h"
-#include "service.h"
 #include "container.h"
 #include "task.h"
+#include "service.h"
 #include "kernel.h"
 
 static void copydescriptor(struct task *target, struct task_descriptor *tdescriptor, struct task_descriptor *sdescriptor)
 {
 
-    list_inititem(&tdescriptor->state.link, target);
+    list_inititem(&tdescriptor->link, target);
 
     tdescriptor->server = (sdescriptor) ? sdescriptor->server : 0;
-    tdescriptor->state.id = (sdescriptor) ? sdescriptor->state.id : 0;
-    tdescriptor->state.offset = 0;
-    tdescriptor->state.current = 0;
+    tdescriptor->id = (sdescriptor) ? sdescriptor->id : 0;
+    tdescriptor->offset = 0;
+    tdescriptor->current = 0;
 
 }
 
@@ -56,7 +56,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     struct task_descriptor *descriptor = &task->descriptors[0x00];
 
-    task->node.physical = descriptor->server->protocol->map(descriptor->server->backend, &descriptor->state);
+    task->node.physical = descriptor->server->protocol->map(descriptor);
 
     if (!task->node.physical)
         return 0;
@@ -87,12 +87,16 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
     mount->child.server = server;
     mount->child.id = server->protocol->root(backend);
     root->server = mount->parent.server;
-    root->state.id = mount->parent.id;
+    root->id = mount->parent.id;
+    root->offset = 0;
+    root->current = 0;
     init->server = mount->parent.server;
-    init->state.id = mount->parent.id;
+    init->id = mount->parent.id;
+    init->offset = 0;
+    init->current = 0;
 
-    init->server->protocol->child(init->server->backend, &init->state, "bin/", 4);
-    init->server->protocol->child(init->server->backend, &init->state, "init", 4);
+    init->server->protocol->child(init, "bin/", 4);
+    init->server->protocol->child(init, "init", 4);
 
     container->nservers++;
     container->nmounts++;
