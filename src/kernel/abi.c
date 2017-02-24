@@ -108,11 +108,17 @@ static unsigned int create(struct container *container, struct task *task, void 
 
     struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    unsigned int id;
 
     if (!args->length || !args->name)
         return 0;
 
-    return descriptor->server->protocol->create(descriptor, args->name, args->length);
+    id = descriptor->server->protocol->create(descriptor, args->name, args->length);
+
+    if (!id && descriptor->link.list)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    return id;
 
 }
 
@@ -121,11 +127,17 @@ static unsigned int destroy(struct container *container, struct task *task, void
 
     struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
     struct task_descriptor *descriptor = getdescriptor(task, args->descriptor);
+    unsigned int id;
 
     if (!args->length || !args->name)
         return 0;
 
-    return descriptor->server->protocol->destroy(descriptor, args->name, args->length);
+    id = descriptor->server->protocol->destroy(descriptor, args->name, args->length);
+
+    if (!id && descriptor->link.list)
+        task_setstatus(task, TASK_STATUS_BLOCKED);
+
+    return id;
 
 }
 
