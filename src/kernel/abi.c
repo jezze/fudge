@@ -160,8 +160,8 @@ static unsigned int close(struct container *container, struct task *task, void *
     if (!id && descriptor->link.list)
         task_setstatus(task, TASK_STATUS_BLOCKED);
 
-    descriptor->offset = 0;
-    descriptor->current = 0;
+    descriptor->offset = descriptor->server->protocol->seek(descriptor, 0);
+    descriptor->current = descriptor->server->protocol->step(descriptor);
 
     return id;
 
