@@ -56,7 +56,7 @@ unsigned int system_childgroup(struct system_node *self, struct task_descriptor 
 unsigned int system_readtask(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
-    return task_read(descriptor->task, buffer, count);
+    return task_read(descriptor->link.data, buffer, count);
 
 }
 
