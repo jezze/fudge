@@ -12,14 +12,14 @@ static unsigned int (*calls[CALLS])(struct container *container, struct task *ta
 static struct container_server *getserver(struct container *container, unsigned int server)
 {
 
-    return &container->servers[server];
+    return &container->servers[server & (CONTAINER_SERVERS - 1)];
 
 }
 
 static struct container_mount *getmount(struct container *container, unsigned int mount)
 {
 
-    return &container->mounts[mount];
+    return &container->mounts[mount & (CONTAINER_MOUNTS - 1)];
 
 }
 

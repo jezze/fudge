@@ -1,3 +1,5 @@
+#define SERVICE_DESCRIPTORS             4096
+
 struct service_backend
 {
 

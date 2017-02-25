@@ -8,7 +8,7 @@
 #include "isr.h"
 #include "mmu.h"
 
-#define CONTAINERS                      1
+#define CONTAINERS                      16
 #define TASKS                           128
 #define GDTDESCRIPTORS                  6
 #define IDTDESCRIPTORS                  256
