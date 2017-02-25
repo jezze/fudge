@@ -442,7 +442,7 @@ static struct task *setuptasks(unsigned int count)
 
         struct arch_task *task = &tasks[index];
 
-        task_init(&task->base);
+        task_init(&task->base, index);
 
         task->code = PHYSBASE + index * (CODESIZE + STACKSIZE);
         task->stack = task->code + CODESIZE;
@@ -454,6 +454,24 @@ static struct task *setuptasks(unsigned int count)
     }
 
     return &tasks[0].base;
+
+}
+
+static void setupdescriptors()
+{
+
+    unsigned int i;
+
+    for (i = 0; i < TASKS; i++)
+    {
+
+        struct arch_task *task = &tasks[i];
+        unsigned int j;
+
+        for (j = 0; j < TASK_DESCRIPTORS; j++)
+            task_initdescriptor(&task->base.descriptors[j], &task->base);
+
+    }
 
 }
 
@@ -500,6 +518,7 @@ void arch_setup(struct service_backend *backend)
     current.ip = (unsigned int)cpu_halt;
     current.sp = KERNELSTACK;
 
+    setupdescriptors();
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainer(current.container);
     copymap(current.container, current.task);

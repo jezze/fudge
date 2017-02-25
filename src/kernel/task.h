@@ -31,6 +31,7 @@ struct task_descriptor
 struct task
 {
 
+    unsigned int id;
     struct resource resource;
     struct task_state state;
     struct binary_format *format;
@@ -49,4 +50,4 @@ unsigned int task_write(struct task *task, void *buffer, unsigned int count);
 void task_register(struct task *task);
 void task_unregister(struct task *task);
 void task_initdescriptor(struct task_descriptor *descriptor, struct task *task);
-void task_init(struct task *task);
+void task_init(struct task *task, unsigned int id);
