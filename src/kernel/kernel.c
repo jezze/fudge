@@ -6,7 +6,7 @@
 #include "service.h"
 #include "kernel.h"
 
-static void copydescriptor(struct task *target, struct task_descriptor *tdescriptor, struct task_descriptor *sdescriptor)
+static void copydescriptor(struct task *target, struct service_descriptor *tdescriptor, struct service_descriptor *sdescriptor)
 {
 
     tdescriptor->server = (sdescriptor) ? sdescriptor->server : 0;
@@ -39,7 +39,7 @@ void kernel_multicast(struct list *links, void *buffer, unsigned int count)
     for (current = links->head; current; current = current->next)
     {
 
-        struct task_descriptor *descriptor = current->data;
+        struct service_descriptor *descriptor = current->data;
 
         task_write(descriptor->task, buffer, count);
 
@@ -50,7 +50,7 @@ void kernel_multicast(struct list *links, void *buffer, unsigned int count)
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
-    struct task_descriptor *descriptor = service_getdescriptor(task, 0);
+    struct service_descriptor *descriptor = service_getdescriptor(task, 0);
 
     task->node.physical = descriptor->server->protocol->map(descriptor);
 
@@ -73,8 +73,8 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
 
     struct container_server *server = &container->servers[0x00];
     struct container_mount *mount = &container->mounts[0x00];
-    struct task_descriptor *init = service_getdescriptor(task, 8);
-    struct task_descriptor *root = service_getdescriptor(task, 9);
+    struct service_descriptor *init = service_getdescriptor(task, 8);
+    struct service_descriptor *root = service_getdescriptor(task, 9);
 
     server->backend = backend;
     server->protocol = service_findprotocol(backend);

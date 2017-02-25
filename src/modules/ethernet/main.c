@@ -41,7 +41,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
 }
 
-static unsigned int interfaceaddr_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfaceaddr_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct ethernet_interface *interface = self->resource->data;
@@ -50,7 +50,7 @@ static unsigned int interfaceaddr_read(struct system_node *self, struct task_des
 
 }
 
-static unsigned int interfacedata_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfacedata_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct ethernet_interface *interface = self->resource->data;
@@ -61,7 +61,7 @@ static unsigned int interfacedata_open(struct system_node *self, struct task_des
 
 }
 
-static unsigned int interfacedata_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfacedata_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct ethernet_interface *interface = self->resource->data;

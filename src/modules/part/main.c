@@ -26,7 +26,7 @@ static struct block_interface *findinterface(unsigned int index)
 
 }
 
-static unsigned int clone_child(struct system_node *self, struct task_descriptor *descriptor, char *path, unsigned int length)
+static unsigned int clone_child(struct system_node *self, struct service_descriptor *descriptor, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -47,7 +47,7 @@ static unsigned int clone_child(struct system_node *self, struct task_descriptor
 
 }
 
-static unsigned int partctrl_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int partctrl_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
@@ -56,7 +56,7 @@ static unsigned int partctrl_read(struct system_node *self, struct task_descript
 
 }
 
-static unsigned int partctrl_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int partctrl_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
@@ -65,7 +65,7 @@ static unsigned int partctrl_write(struct system_node *self, struct task_descrip
 
 }
 
-static unsigned int partdata_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int partdata_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct part *part = self->resource->data;
@@ -77,7 +77,7 @@ static unsigned int partdata_open(struct system_node *self, struct task_descript
 
 }
 
-static unsigned int partdata_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int partdata_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct part *part = self->resource->data;
@@ -87,7 +87,7 @@ static unsigned int partdata_close(struct system_node *self, struct task_descrip
 
 }
 
-static unsigned int partdata_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int partdata_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
@@ -97,7 +97,7 @@ static unsigned int partdata_read(struct system_node *self, struct task_descript
 
 }
 
-static unsigned int partdata_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int partdata_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;

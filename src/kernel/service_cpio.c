@@ -87,7 +87,7 @@ static unsigned int protocol_root(struct service_backend *backend)
 
 }
 
-static unsigned int protocol_parent(struct task_descriptor *descriptor)
+static unsigned int protocol_parent(struct service_descriptor *descriptor)
 {
 
     struct cpio_header header;
@@ -128,7 +128,7 @@ static unsigned int protocol_parent(struct task_descriptor *descriptor)
 
 }
 
-static unsigned int protocol_child(struct task_descriptor *descriptor, char *path, unsigned int length)
+static unsigned int protocol_child(struct service_descriptor *descriptor, char *path, unsigned int length)
 {
 
     struct cpio_header header;
@@ -180,14 +180,14 @@ static unsigned int protocol_child(struct task_descriptor *descriptor, char *pat
 
 }
 
-static unsigned int protocol_create(struct task_descriptor *descriptor, char *name, unsigned int length)
+static unsigned int protocol_create(struct service_descriptor *descriptor, char *name, unsigned int length)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_destroy(struct task_descriptor *descriptor, char *name, unsigned int length)
+static unsigned int protocol_destroy(struct service_descriptor *descriptor, char *name, unsigned int length)
 {
 
     return 0;
@@ -220,7 +220,7 @@ static unsigned int stepdirectory(struct service_backend *backend, unsigned int 
 
 }
 
-static unsigned int protocol_step(struct task_descriptor *descriptor)
+static unsigned int protocol_step(struct service_descriptor *descriptor)
 {
 
     struct cpio_header header;
@@ -240,14 +240,14 @@ static unsigned int protocol_step(struct task_descriptor *descriptor)
 
 }
 
-static unsigned int protocol_open(struct task_descriptor *descriptor)
+static unsigned int protocol_open(struct service_descriptor *descriptor)
 {
 
     return descriptor->id;
 
 }
 
-static unsigned int protocol_close(struct task_descriptor *descriptor)
+static unsigned int protocol_close(struct service_descriptor *descriptor)
 {
 
     return descriptor->id;
@@ -298,7 +298,7 @@ static unsigned int readdirectory(struct service_backend *backend, void *buffer,
 
 }
 
-static unsigned int protocol_read(struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int protocol_read(struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct cpio_header header;
@@ -331,7 +331,7 @@ static unsigned int writefile(struct service_backend *backend, void *buffer, uns
 
 }
 
-static unsigned int protocol_write(struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int protocol_write(struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct cpio_header header;
@@ -351,14 +351,14 @@ static unsigned int protocol_write(struct task_descriptor *descriptor, void *buf
 
 }
 
-static unsigned int protocol_seek(struct task_descriptor *descriptor, unsigned int offset)
+static unsigned int protocol_seek(struct service_descriptor *descriptor, unsigned int offset)
 {
 
     return offset;
 
 }
 
-static unsigned int protocol_map(struct task_descriptor *descriptor)
+static unsigned int protocol_map(struct service_descriptor *descriptor)
 {
 
     struct cpio_header header;

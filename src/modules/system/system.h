@@ -20,17 +20,17 @@ struct system_node
     char *name;
     struct resource *resource;
     unsigned int index;
-    unsigned int (*open)(struct system_node *self, struct task_descriptor *descriptor);
-    unsigned int (*close)(struct system_node *self, struct task_descriptor *descriptor);
-    unsigned int (*read)(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count);
-    unsigned int (*write)(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count);
-    unsigned int (*child)(struct system_node *self, struct task_descriptor *descriptor, char *path, unsigned int length);
+    unsigned int (*open)(struct system_node *self, struct service_descriptor *descriptor);
+    unsigned int (*close)(struct system_node *self, struct service_descriptor *descriptor);
+    unsigned int (*read)(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count);
+    unsigned int (*write)(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count);
+    unsigned int (*child)(struct system_node *self, struct service_descriptor *descriptor, char *path, unsigned int length);
 
 };
 
-unsigned int system_childgroup(struct system_node *self, struct task_descriptor *descriptor, char *path, unsigned int length);
-unsigned int system_readtask(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count);
-unsigned int system_readgroup(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count);
+unsigned int system_childgroup(struct system_node *self, struct service_descriptor *descriptor, char *path, unsigned int length);
+unsigned int system_readtask(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count);
+unsigned int system_readgroup(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count);
 void system_addchild(struct system_node *group, struct system_node *node);
 void system_removechild(struct system_node *group, struct system_node *node);
 void system_registernode(struct system_node *node);

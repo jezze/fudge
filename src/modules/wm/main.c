@@ -10,21 +10,21 @@ static struct list eventlinks;
 static char databuffer[FUDGE_BSIZE];
 static struct ring dataring;
 
-static unsigned int data_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int data_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     return ring_read(&dataring, buffer, count);
 
 }
 
-static unsigned int data_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int data_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     return ring_write(&dataring, buffer, count);
 
 }
 
-static unsigned int event_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int event_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     list_add(&eventlinks, &descriptor->link);
@@ -33,7 +33,7 @@ static unsigned int event_open(struct system_node *self, struct task_descriptor 
 
 }
 
-static unsigned int event_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int event_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     list_remove(&eventlinks, &descriptor->link);
@@ -42,7 +42,7 @@ static unsigned int event_close(struct system_node *self, struct task_descriptor
 
 }
 
-static unsigned int event_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int event_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     return event_send(&eventlinks, descriptor, buffer, count);

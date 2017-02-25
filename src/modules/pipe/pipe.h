@@ -3,8 +3,8 @@ struct pipe_end
 
     struct system_node node;
     struct ring ring;
-    struct task_descriptor *read;
-    struct task_descriptor *write;
+    struct service_descriptor *read;
+    struct service_descriptor *write;
     unsigned int refcount;
 
 };

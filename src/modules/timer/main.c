@@ -27,7 +27,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 
 }
 
-static unsigned int interfacesleep_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfacesleep_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct timer_interface *interface = self->resource->data;
@@ -38,7 +38,7 @@ static unsigned int interfacesleep_open(struct system_node *self, struct task_de
 
 }
 
-static unsigned int interfacesleep_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfacesleep_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct timer_interface *interface = self->resource->data;
@@ -49,7 +49,7 @@ static unsigned int interfacesleep_close(struct system_node *self, struct task_d
 
 }
 
-static unsigned int interfaceevent_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfaceevent_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct timer_interface *interface = self->resource->data;
@@ -60,7 +60,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct task_de
 
 }
 
-static unsigned int interfaceevent_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfaceevent_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct timer_interface *interface = self->resource->data;

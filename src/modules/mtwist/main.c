@@ -139,7 +139,7 @@ static double mtwist_drand(struct mtwist_state *state)
 }
 */
 
-static unsigned int root_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int root_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     unsigned int x = rand(&normal);

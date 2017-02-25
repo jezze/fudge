@@ -56,7 +56,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
 
 }
 
-static unsigned int interfacedata_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfacedata_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct mouse_interface *interface = self->resource->data;
@@ -67,7 +67,7 @@ static unsigned int interfacedata_open(struct system_node *self, struct task_des
 
 }
 
-static unsigned int interfacedata_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfacedata_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct mouse_interface *interface = self->resource->data;
@@ -78,7 +78,7 @@ static unsigned int interfacedata_close(struct system_node *self, struct task_de
 
 }
 
-static unsigned int interfaceevent_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfaceevent_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct mouse_interface *interface = self->resource->data;
@@ -89,7 +89,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct task_de
 
 }
 
-static unsigned int interfaceevent_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfaceevent_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct mouse_interface *interface = self->resource->data;

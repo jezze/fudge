@@ -175,14 +175,14 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
 
 }
 
-static unsigned int arptablenode_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int arptablenode_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     return memory_read(buffer, count, arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, descriptor->offset);
 
 }
 
-static unsigned int arptablenode_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int arptablenode_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     return memory_write(arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, buffer, count, descriptor->offset);
@@ -223,7 +223,7 @@ static void arphook_save(void *haddress, void *paddress)
 
 }
 
-static unsigned int protocoldata_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int protocoldata_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct ipv4_protocol *protocol = self->resource->data;
@@ -234,7 +234,7 @@ static unsigned int protocoldata_open(struct system_node *self, struct task_desc
 
 }
 
-static unsigned int protocoldata_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int protocoldata_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct ipv4_protocol *protocol = self->resource->data;

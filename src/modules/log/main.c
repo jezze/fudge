@@ -69,7 +69,7 @@ static void log_write(unsigned int level, char *string, char *file, unsigned int
 
 }
 
-static unsigned int critical_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int critical_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     list_add(&criticallinks, &descriptor->link);
@@ -78,7 +78,7 @@ static unsigned int critical_open(struct system_node *self, struct task_descript
 
 }
 
-static unsigned int critical_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int critical_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     list_remove(&criticallinks, &descriptor->link);
@@ -87,7 +87,7 @@ static unsigned int critical_close(struct system_node *self, struct task_descrip
 
 }
 
-static unsigned int error_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int error_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     list_add(&errorlinks, &descriptor->link);
@@ -96,7 +96,7 @@ static unsigned int error_open(struct system_node *self, struct task_descriptor 
 
 }
 
-static unsigned int error_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int error_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     list_remove(&errorlinks, &descriptor->link);
@@ -105,7 +105,7 @@ static unsigned int error_close(struct system_node *self, struct task_descriptor
 
 }
 
-static unsigned int warning_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int warning_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     list_add(&warninglinks, &descriptor->link);
@@ -114,7 +114,7 @@ static unsigned int warning_open(struct system_node *self, struct task_descripto
 
 }
 
-static unsigned int warning_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int warning_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     list_remove(&warninglinks, &descriptor->link);
@@ -123,7 +123,7 @@ static unsigned int warning_close(struct system_node *self, struct task_descript
 
 }
 
-static unsigned int info_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int info_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     list_add(&infolinks, &descriptor->link);
@@ -132,7 +132,7 @@ static unsigned int info_open(struct system_node *self, struct task_descriptor *
 
 }
 
-static unsigned int info_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int info_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     list_remove(&infolinks, &descriptor->link);

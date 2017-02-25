@@ -22,7 +22,7 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacectrl_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -31,7 +31,7 @@ static unsigned int interfacectrl_read(struct system_node *self, struct task_des
 
 }
 
-static unsigned int interfacectrl_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacectrl_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -44,7 +44,7 @@ static unsigned int interfacectrl_write(struct system_node *self, struct task_de
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacedata_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -53,7 +53,7 @@ static unsigned int interfacedata_read(struct system_node *self, struct task_des
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacedata_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -62,7 +62,7 @@ static unsigned int interfacedata_write(struct system_node *self, struct task_de
 
 }
 
-static unsigned int interfacecolormap_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacecolormap_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -71,7 +71,7 @@ static unsigned int interfacecolormap_read(struct system_node *self, struct task
 
 }
 
-static unsigned int interfacecolormap_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacecolormap_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -80,7 +80,7 @@ static unsigned int interfacecolormap_write(struct system_node *self, struct tas
 
 }
 
-static unsigned int interfaceevent_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfaceevent_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct video_interface *interface = self->resource->data;
@@ -91,7 +91,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct task_de
 
 }
 
-static unsigned int interfaceevent_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int interfaceevent_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct video_interface *interface = self->resource->data;

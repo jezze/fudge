@@ -6,7 +6,7 @@
 static struct system_node root;
 static struct system_node clone;
 
-static unsigned int clone_child(struct system_node *self, struct task_descriptor *descriptor, char *path, unsigned int length)
+static unsigned int clone_child(struct system_node *self, struct service_descriptor *descriptor, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -27,7 +27,7 @@ static unsigned int clone_child(struct system_node *self, struct task_descriptor
 
 }
 
-static unsigned int conctrl_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int conctrl_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct con *con = self->resource->data;
@@ -36,7 +36,7 @@ static unsigned int conctrl_read(struct system_node *self, struct task_descripto
 
 }
 
-static unsigned int conctrl_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int conctrl_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct con *con = self->resource->data;
@@ -45,7 +45,7 @@ static unsigned int conctrl_write(struct system_node *self, struct task_descript
 
 }
 
-static unsigned int condata_open(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int condata_open(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct con *con = self->resource->data;
@@ -57,7 +57,7 @@ static unsigned int condata_open(struct system_node *self, struct task_descripto
 
 }
 
-static unsigned int condata_close(struct system_node *self, struct task_descriptor *descriptor)
+static unsigned int condata_close(struct system_node *self, struct service_descriptor *descriptor)
 {
 
     struct con *con = self->resource->data;

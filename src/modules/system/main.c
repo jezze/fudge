@@ -5,7 +5,7 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-unsigned int system_childgroup(struct system_node *self, struct task_descriptor *descriptor, char *path, unsigned int length)
+unsigned int system_childgroup(struct system_node *self, struct service_descriptor *descriptor, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -53,14 +53,14 @@ unsigned int system_childgroup(struct system_node *self, struct task_descriptor 
 
 }
 
-unsigned int system_readtask(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+unsigned int system_readtask(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     return ring_read(&descriptor->task->mailbox, buffer, count);
 
 }
 
-unsigned int system_readgroup(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+unsigned int system_readgroup(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct record *record = buffer;

@@ -5,7 +5,7 @@
 
 static struct system_node root;
 
-static unsigned int interfacedata_read(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacedata_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct audio_interface *interface = self->resource->data;
@@ -14,7 +14,7 @@ static unsigned int interfacedata_read(struct system_node *self, struct task_des
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacedata_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct audio_interface *interface = self->resource->data;

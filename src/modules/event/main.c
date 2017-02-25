@@ -10,7 +10,7 @@ void event_unicast(struct list *links, struct event_header *header, unsigned int
     for (current = links->head; current; current = current->next)
     {
 
-        struct task_descriptor *descriptor = current->data;
+        struct service_descriptor *descriptor = current->data;
 
         if (header->destination != (unsigned int)descriptor->task)
             continue;
@@ -29,7 +29,7 @@ void event_multicast(struct list *links, struct event_header *header, unsigned i
     for (current = links->head; current; current = current->next)
     {
 
-        struct task_descriptor *descriptor = current->data;
+        struct service_descriptor *descriptor = current->data;
 
         header->destination = (unsigned int)descriptor->task;
 
@@ -39,7 +39,7 @@ void event_multicast(struct list *links, struct event_header *header, unsigned i
 
 }
 
-unsigned int event_send(struct list *links, struct task_descriptor *descriptor, void *buffer, unsigned int count)
+unsigned int event_send(struct list *links, struct service_descriptor *descriptor, void *buffer, unsigned int count)
 {
 
     struct event_header *header = buffer;
