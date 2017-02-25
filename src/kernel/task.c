@@ -86,8 +86,8 @@ void task_resume(struct task *task, unsigned int ip, unsigned int sp)
 
     task_setstatus(task, TASK_STATUS_ACTIVE);
 
-    task->state.registers.ip = ip;
-    task->state.registers.sp = sp;
+    task->state.ip = ip;
+    task->state.sp = sp;
     task->state.rewind = 0;
 
 }

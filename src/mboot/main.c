@@ -7,7 +7,7 @@
 #define MBOOT_MAGIC                     0x2BADB002
 
 static struct service_backend backend;
-static unsigned long address;
+static unsigned int address;
 static unsigned int limit;
 
 static unsigned int read(void *buffer, unsigned int count, unsigned int offset)
@@ -24,7 +24,7 @@ static unsigned int write(void *buffer, unsigned int count, unsigned int offset)
 
 }
 
-static unsigned long map(unsigned long offset, unsigned int count)
+static unsigned int map(unsigned int offset, unsigned int count)
 {
 
     return address + offset;

@@ -18,7 +18,7 @@ static unsigned int relocate(struct binary_node *node, struct elf_sectionheader 
     {
 
         struct elf_symbol *symbol = &symbols[(relocations[i].info >> 8)];
-        unsigned long *entry = (unsigned long *)(node->physical + sectionheaders[relocationheader->info].offset + relocations[i].offset);
+        unsigned int *entry = (unsigned int *)(node->physical + sectionheaders[relocationheader->info].offset + relocations[i].offset);
         unsigned int addend = (symbol->shindex) ? node->physical + sectionheaders[symbol->shindex].offset + symbol->value : 0;
 
         switch (relocations[i].info & 0x0F)
@@ -30,7 +30,7 @@ static unsigned int relocate(struct binary_node *node, struct elf_sectionheader 
             break;
 
         case ELF_RELOC_TYPE_PC32:
-            *entry += addend - (unsigned long)entry;
+            *entry += addend - (unsigned int)entry;
 
             break;
 
@@ -42,7 +42,7 @@ static unsigned int relocate(struct binary_node *node, struct elf_sectionheader 
 
 }
 
-static unsigned long findsymbol(struct binary_node *node, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
+static unsigned int findsymbol(struct binary_node *node, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
 {
 
     struct elf_header *header = (struct elf_header *)node->physical;
@@ -75,7 +75,7 @@ static unsigned int format_match(struct binary_node *node)
 
 }
 
-static unsigned long format_findsymbol(struct binary_node *node, unsigned int count, char *symbolname)
+static unsigned int format_findsymbol(struct binary_node *node, unsigned int count, char *symbolname)
 {
 
     struct elf_header *header = (struct elf_header *)node->physical;
@@ -101,7 +101,7 @@ static unsigned long format_findsymbol(struct binary_node *node, unsigned int co
 
 }
 
-static unsigned long format_findentry(struct binary_node *node)
+static unsigned int format_findentry(struct binary_node *node)
 {
 
     struct elf_header *header = (struct elf_header *)node->physical;
@@ -110,7 +110,7 @@ static unsigned long format_findentry(struct binary_node *node)
 
 }
 
-static unsigned long format_findbase(struct binary_node *node, unsigned long address)
+static unsigned int format_findbase(struct binary_node *node, unsigned int address)
 {
 
     struct elf_header *header = (struct elf_header *)node->physical;

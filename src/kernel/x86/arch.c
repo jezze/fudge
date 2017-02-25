@@ -196,8 +196,8 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
     if (current.task)
     {
 
-        current.task->state.registers.ip = ip;
-        current.task->state.registers.sp = sp;
+        current.task->state.ip = ip;
+        current.task->state.sp = sp;
 
         saveregisters(current.task, general);
 
@@ -209,7 +209,7 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
     {
 
         if (current.task->state.status == TASK_STATUS_UNBLOCKED)
-            task_resume(current.task, current.task->state.registers.ip - current.task->state.rewind, current.task->state.registers.sp);
+            task_resume(current.task, current.task->state.ip - current.task->state.rewind, current.task->state.sp);
 
         loadregisters(current.task, general);
         activate(current.task);
@@ -230,8 +230,8 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 
         interrupt->cs.value = selector.ucode;
         interrupt->ss.value = selector.ustack;
-        interrupt->eip.value = context->task->state.registers.ip;
-        interrupt->esp.value = context->task->state.registers.sp;
+        interrupt->eip.value = context->task->state.ip;
+        interrupt->esp.value = context->task->state.sp;
 
     }
 
@@ -470,7 +470,7 @@ void arch_setup(struct service_backend *backend)
     selector.kstack = gdt_setdescriptor(&gdt.pointer, 0x02, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.ucode = gdt_setdescriptor(&gdt.pointer, 0x03, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.ustack = gdt_setdescriptor(&gdt.pointer, 0x04, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    selector.tlink = gdt_setdescriptor(&gdt.pointer, 0x05, (unsigned long)tss.pointer.descriptors, (unsigned long)tss.pointer.descriptors + tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    selector.tlink = gdt_setdescriptor(&gdt.pointer, 0x05, (unsigned int)tss.pointer.descriptors, (unsigned int)tss.pointer.descriptors + tss.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
 
     idt_setdescriptor(&idt.pointer, 0x00, isr_zero, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x01, isr_debug, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
@@ -511,8 +511,8 @@ void arch_setup(struct service_backend *backend)
 
     interrupt.cs.value = selector.ucode;
     interrupt.ss.value = selector.ustack;
-    interrupt.eip.value = current.task->state.registers.ip;
-    interrupt.esp.value = current.task->state.registers.sp;
+    interrupt.eip.value = current.task->state.ip;
+    interrupt.esp.value = current.task->state.sp;
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
     cpu_leave(interrupt);

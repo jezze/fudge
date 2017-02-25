@@ -140,7 +140,7 @@ static void setintflags(unsigned short flags)
 static void setrx(void)
 {
 
-    io_outd(io + REGISTERRBSTART, (unsigned long)rx);
+    io_outd(io + REGISTERRBSTART, (unsigned int)rx);
     io_outd(io + REGISTERRCR, RCRAAP | RCRAPM | RCRAM | RCRAB | RCRWRAP);
 
 }
@@ -148,10 +148,10 @@ static void setrx(void)
 static void settx(void)
 {
 
-    io_outd(io + REGISTERTSAD0, (unsigned long)tx0);
-    io_outd(io + REGISTERTSAD1, (unsigned long)tx1);
-    io_outd(io + REGISTERTSAD2, (unsigned long)tx2);
-    io_outd(io + REGISTERTSAD3, (unsigned long)tx3);
+    io_outd(io + REGISTERTSAD0, (unsigned int)tx0);
+    io_outd(io + REGISTERTSAD1, (unsigned int)tx1);
+    io_outd(io + REGISTERTSAD2, (unsigned int)tx2);
+    io_outd(io + REGISTERTSAD3, (unsigned int)tx3);
 
 }
 

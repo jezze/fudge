@@ -22,7 +22,7 @@ unsigned short gdt_setdescriptor(struct gdt_pointer *pointer, unsigned char inde
 void gdt_initpointer(struct gdt_pointer *pointer, unsigned int count, struct gdt_descriptor *descriptors)
 {
 
-    unsigned long base = (unsigned long)descriptors;
+    unsigned int base = (unsigned int)descriptors;
     unsigned short limit = (sizeof (struct gdt_descriptor) * count) - 1;
 
     pointer->base0 = base;

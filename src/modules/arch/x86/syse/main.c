@@ -13,8 +13,8 @@ void syse_resume(struct cpu_general *general)
     if (context->task)
     {
 
-        general->edx.value = context->task->state.registers.ip;
-        general->ecx.value = context->task->state.registers.sp;
+        general->edx.value = context->task->state.ip;
+        general->ecx.value = context->task->state.sp;
 
     }
 

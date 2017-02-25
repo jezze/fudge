@@ -127,7 +127,7 @@ static unsigned int protocol_seek(struct task_descriptor *descriptor, unsigned i
 
 }
 
-static unsigned long protocol_map(struct task_descriptor *descriptor)
+static unsigned int protocol_map(struct task_descriptor *descriptor)
 {
 
     return 0;

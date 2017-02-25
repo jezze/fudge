@@ -19,7 +19,7 @@ static unsigned int backend_write(void *buffer, unsigned int count, unsigned int
 
 }
 
-static unsigned long backend_map(unsigned long offset, unsigned int count)
+static unsigned int backend_map(unsigned int offset, unsigned int count)
 {
 
     return 0;

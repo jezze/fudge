@@ -1,6 +1,6 @@
 #include "utf8.h"
 
-unsigned int utf8_decode(char *s, long *u)
+unsigned int utf8_decode(char *s, int *u)
 {
 
     unsigned char c;
@@ -75,11 +75,11 @@ invalid:
 
 }
 
-unsigned int utf8_encode(long *u, char *s)
+unsigned int utf8_encode(int *u, char *s)
 {
 
     unsigned char *sp = (unsigned char *)s;
-    unsigned long uc = *u;
+    unsigned int uc = *u;
     int i;
     int n;
 

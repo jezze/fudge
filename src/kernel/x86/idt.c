@@ -5,7 +5,7 @@ void idt_setdescriptor(struct idt_pointer *pointer, unsigned char index, void (*
 {
 
     struct idt_descriptor *descriptor = (struct idt_descriptor *)(pointer->base0 | pointer->base1 << 8 | pointer->base2 << 16 | pointer->base3 << 24) + index;
-    unsigned long base = (unsigned long)callback;
+    unsigned int base = (unsigned int)callback;
 
     descriptor->base0 = base;
     descriptor->base1 = base >> 8;
@@ -20,7 +20,7 @@ void idt_setdescriptor(struct idt_pointer *pointer, unsigned char index, void (*
 void idt_initpointer(struct idt_pointer *pointer, unsigned int count, struct idt_descriptor *descriptors)
 {
 
-    unsigned long base = (unsigned long)descriptors;
+    unsigned int base = (unsigned int)descriptors;
     unsigned short limit = (sizeof (struct idt_descriptor) * count) - 1;
 
     pointer->base0 = base;

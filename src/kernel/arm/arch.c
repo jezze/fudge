@@ -59,7 +59,7 @@ static unsigned int backend_write(unsigned int offset, void *buffer, unsigned in
 
 }
 
-static unsigned long backend_getphysical(void)
+static unsigned int backend_getphysical(void)
 {
 
     return 0;
