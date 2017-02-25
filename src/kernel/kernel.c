@@ -6,13 +6,6 @@
 #include "service.h"
 #include "kernel.h"
 
-static struct task_descriptor *getdescriptor(struct container *container, struct task *task, unsigned int descriptor)
-{
-
-    return &container->descriptors[task->id * TASK_DESCRIPTORS + descriptor];
-
-}
-
 static void copydescriptor(struct task *target, struct task_descriptor *tdescriptor, struct task_descriptor *sdescriptor)
 {
 
@@ -21,7 +14,7 @@ static void copydescriptor(struct task *target, struct task_descriptor *tdescrip
 
 }
 
-void kernel_copydescriptors(struct container *container, struct task *source, struct task *target)
+void kernel_copydescriptors(struct task *source, struct task *target)
 {
 
     unsigned int i;
@@ -29,10 +22,10 @@ void kernel_copydescriptors(struct container *container, struct task *source, st
     for (i = 0x00; i < 0x08; i++)
     {
 
-        copydescriptor(target, getdescriptor(container, target, i + 0x00), getdescriptor(container, source, i + 0x08));
-        copydescriptor(target, getdescriptor(container, target, i + 0x08), getdescriptor(container, source, i + 0x08));
-        copydescriptor(target, getdescriptor(container, target, i + 0x10), 0);
-        copydescriptor(target, getdescriptor(container, target, i + 0x18), 0);
+        copydescriptor(target, service_getdescriptor(target, i + 0x00), service_getdescriptor(source, i + 0x08));
+        copydescriptor(target, service_getdescriptor(target, i + 0x08), service_getdescriptor(source, i + 0x08));
+        copydescriptor(target, service_getdescriptor(target, i + 0x10), 0);
+        copydescriptor(target, service_getdescriptor(target, i + 0x18), 0);
 
     }
 
@@ -54,10 +47,10 @@ void kernel_multicast(struct list *links, void *buffer, unsigned int count)
 
 }
 
-unsigned int kernel_setupbinary(struct container *container, struct task *task, unsigned int sp)
+unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
-    struct task_descriptor *descriptor = getdescriptor(container, task, 0);
+    struct task_descriptor *descriptor = service_getdescriptor(task, 0);
 
     task->node.physical = descriptor->server->protocol->map(descriptor);
 
@@ -80,8 +73,8 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
 
     struct container_server *server = &container->servers[0x00];
     struct container_mount *mount = &container->mounts[0x00];
-    struct task_descriptor *init = getdescriptor(container, task, 8);
-    struct task_descriptor *root = getdescriptor(container, task, 9);
+    struct task_descriptor *init = service_getdescriptor(task, 8);
+    struct task_descriptor *root = service_getdescriptor(task, 9);
 
     server->backend = backend;
     server->protocol = service_findprotocol(backend);

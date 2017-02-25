@@ -5,6 +5,15 @@
 #include "task.h"
 #include "service.h"
 
+static struct task_descriptor descriptors[4096];
+
+struct task_descriptor *service_getdescriptor(struct task *task, unsigned int descriptor)
+{
+
+    return &descriptors[task->id * TASK_DESCRIPTORS + descriptor];
+
+}
+
 struct service_backend *service_findbackend(unsigned int id)
 {
 
@@ -52,6 +61,19 @@ void service_initbackend(struct service_backend *backend, unsigned int id, unsig
     backend->read = read;
     backend->write = write;
     backend->map = map;
+
+}
+
+void service_initdescriptor(struct task_descriptor *descriptor, struct task *task)
+{
+
+    list_inititem(&descriptor->link, descriptor);
+
+    descriptor->task = task;
+    descriptor->server = 0;
+    descriptor->id = 0;
+    descriptor->offset = 0;
+    descriptor->current = 0;
 
 }
 
