@@ -92,13 +92,6 @@ void task_resume(struct task *task, unsigned int ip, unsigned int sp)
 
 }
 
-unsigned int task_read(struct task *task, void *buffer, unsigned int count)
-{
-
-    return ring_read(&task->mailbox, buffer, count);
-
-}
-
 unsigned int task_write(struct task *task, void *buffer, unsigned int count)
 {
 
