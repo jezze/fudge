@@ -5,14 +5,6 @@
 #define TASK_STATUS_UNBLOCKED           2
 #define TASK_STATUS_BLOCKED             3
 
-struct task_mailbox
-{
-
-    struct ring ring;
-    unsigned char buffer[TASK_MAILBOXSIZE];
-
-};
-
 struct task_state
 {
 
@@ -40,10 +32,11 @@ struct task
 
     struct resource resource;
     struct task_state state;
-    struct task_mailbox mailbox;
     struct binary_format *format;
     struct binary_node node;
     struct task_descriptor descriptors[TASK_DESCRIPTORS];
+    struct ring mailbox;
+    unsigned char mailboxdata[TASK_MAILBOXSIZE];
 
 };
 
