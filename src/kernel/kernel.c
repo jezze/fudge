@@ -9,12 +9,8 @@
 static void copydescriptor(struct task *target, struct task_descriptor *tdescriptor, struct task_descriptor *sdescriptor)
 {
 
-    list_inititem(&tdescriptor->link, target);
-
     tdescriptor->server = (sdescriptor) ? sdescriptor->server : 0;
     tdescriptor->id = (sdescriptor) ? sdescriptor->id : 0;
-    tdescriptor->offset = 0;
-    tdescriptor->current = 0;
 
 }
 
@@ -87,19 +83,10 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
     mount->child.server = server;
     mount->child.id = server->protocol->root(backend);
 
-    list_inititem(&root->link, task);
-
     root->server = mount->parent.server;
     root->id = mount->parent.id;
-    root->offset = 0;
-    root->current = 0;
-
-    list_inititem(&init->link, task);
-
     init->server = mount->parent.server;
     init->id = mount->parent.id;
-    init->offset = 0;
-    init->current = 0;
 
     init->server->protocol->child(init, "bin/", 4);
     init->server->protocol->child(init, "init", 4);

@@ -122,12 +122,31 @@ void task_unregister(struct task *task)
 
 }
 
+void task_initdescriptor(struct task_descriptor *descriptor, struct task *task)
+{
+
+    /* Should not have task as second argument */
+    list_inititem(&descriptor->link, task);
+
+    descriptor->task = task;
+    descriptor->server = 0;
+    descriptor->id = 0;
+    descriptor->offset = 0;
+    descriptor->current = 0;
+
+}
+
 void task_init(struct task *task)
 {
+
+    unsigned int i;
 
     resource_init(&task->resource, RESOURCE_TASK, task);
     list_inititem(&task->state.item, task);
     ring_init(&task->mailbox.ring, TASK_MAILBOXSIZE, task->mailbox.buffer);
+
+    for (i = 0; i < TASK_DESCRIPTORS; i++)
+        task_initdescriptor(&task->descriptors[i], task);
 
 }
 

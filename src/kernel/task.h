@@ -26,8 +26,9 @@ struct task_state
 struct task_descriptor
 {
 
-    struct container_server *server;
     struct list_item link;
+    struct task *task;
+    struct container_server *server;
     unsigned int id;
     unsigned int offset;
     unsigned int current;
@@ -54,4 +55,5 @@ unsigned int task_read(struct task *task, void *buffer, unsigned int count);
 unsigned int task_write(struct task *task, void *buffer, unsigned int count);
 void task_register(struct task *task);
 void task_unregister(struct task *task);
+void task_initdescriptor(struct task_descriptor *descriptor, struct task *task);
 void task_init(struct task *task);
