@@ -118,8 +118,7 @@ void task_unregister(struct task *task)
 void task_initdescriptor(struct task_descriptor *descriptor, struct task *task)
 {
 
-    /* Should not have task as second argument */
-    list_inititem(&descriptor->link, task);
+    list_inititem(&descriptor->link, descriptor);
 
     descriptor->task = task;
     descriptor->server = 0;

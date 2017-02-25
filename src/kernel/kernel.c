@@ -39,9 +39,9 @@ void kernel_multicast(struct list *links, void *buffer, unsigned int count)
     for (current = links->head; current; current = current->next)
     {
 
-        struct task *task = current->data;
+        struct task_descriptor *descriptor = current->data;
 
-        task_write(task, buffer, count);
+        task_write(descriptor->task, buffer, count);
 
     }
 

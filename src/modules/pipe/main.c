@@ -27,7 +27,7 @@ static unsigned int end_close(struct system_node *self, struct task_descriptor *
     if (end->read)
     {
 
-        task_setstatus(end->read->data, TASK_STATUS_UNBLOCKED);
+        task_setstatus(end->read->task, TASK_STATUS_UNBLOCKED);
 
         end->read = 0;
 
@@ -36,7 +36,7 @@ static unsigned int end_close(struct system_node *self, struct task_descriptor *
     if (end->write)
     {
 
-        task_setstatus(end->write->data, TASK_STATUS_UNBLOCKED);
+        task_setstatus(end->write->task, TASK_STATUS_UNBLOCKED);
 
         end->write = 0;
 
@@ -59,7 +59,7 @@ static unsigned int end_read(struct system_node *self, struct task_descriptor *d
         if (end->write)
         {
 
-            task_setstatus(end->write->data, TASK_STATUS_UNBLOCKED);
+            task_setstatus(end->write->task, TASK_STATUS_UNBLOCKED);
 
             end->write = 0;
 
@@ -73,9 +73,9 @@ static unsigned int end_read(struct system_node *self, struct task_descriptor *d
         if (end->refcount > 1)
         {
 
-            end->read = &descriptor->link;
+            end->read = descriptor;
 
-            task_setstatus(end->read->data, TASK_STATUS_BLOCKED);
+            task_setstatus(end->read->task, TASK_STATUS_BLOCKED);
 
         }
 
@@ -98,7 +98,7 @@ static unsigned int end_write(struct system_node *self, struct task_descriptor *
         if (end->read)
         {
 
-            task_setstatus(end->read->data, TASK_STATUS_UNBLOCKED);
+            task_setstatus(end->read->task, TASK_STATUS_UNBLOCKED);
 
             end->read = 0;
 
@@ -112,9 +112,9 @@ static unsigned int end_write(struct system_node *self, struct task_descriptor *
         if (end->refcount > 1)
         {
 
-            end->write = &descriptor->link;
+            end->write = descriptor;
 
-            task_setstatus(end->write->data, TASK_STATUS_BLOCKED);
+            task_setstatus(end->write->task, TASK_STATUS_BLOCKED);
 
         }
 
