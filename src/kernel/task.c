@@ -115,19 +115,6 @@ void task_unregister(struct task *task)
 
 }
 
-void task_initdescriptor(struct task_descriptor *descriptor, struct task *task)
-{
-
-    list_inititem(&descriptor->link, descriptor);
-
-    descriptor->task = task;
-    descriptor->server = 0;
-    descriptor->id = 0;
-    descriptor->offset = 0;
-    descriptor->current = 0;
-
-}
-
 void task_init(struct task *task, unsigned int id)
 {
 

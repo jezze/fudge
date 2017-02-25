@@ -8,7 +8,7 @@
 #include "isr.h"
 #include "mmu.h"
 
-#define CONTAINERS                      16
+#define CONTAINERS                      1
 #define TASKS                           128
 #define GDTDESCRIPTORS                  6
 #define IDTDESCRIPTORS                  256
@@ -149,9 +149,9 @@ static unsigned int spawn(struct container *container, struct task *task, void *
         return 0;
 
     copymap(container, next);
-    kernel_copydescriptors(task, next);
+    kernel_copydescriptors(container, task, next);
 
-    return kernel_setupbinary(next, TASKSTACK);
+    return kernel_setupbinary(container, next, TASKSTACK);
 
 }
 
@@ -469,7 +469,7 @@ static void setupdescriptors()
         unsigned int j;
 
         for (j = 0; j < TASK_DESCRIPTORS; j++)
-            task_initdescriptor(&task->base.descriptors[j], &task->base);
+            container_initdescriptor(&current.container->descriptors[task->base.id * TASK_DESCRIPTORS + j], &task->base);
 
     }
 
@@ -522,8 +522,8 @@ void arch_setup(struct service_backend *backend)
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainer(current.container);
     copymap(current.container, current.task);
-    kernel_copydescriptors(current.task, current.task);
-    kernel_setupbinary(current.task, TASKSTACK);
+    kernel_copydescriptors(current.container, current.task, current.task);
+    kernel_setupbinary(current.container, current.task, TASKSTACK);
     activate(current.task);
     mmu_setup();
     abi_setup(spawn, despawn);

@@ -26,6 +26,18 @@ struct container_mount
 
 };
 
+struct task_descriptor
+{
+
+    struct list_item link;
+    struct task *task;
+    struct container_server *server;
+    unsigned int id;
+    unsigned int offset;
+    unsigned int current;
+
+};
+
 struct container
 {
 
@@ -34,7 +46,9 @@ struct container
     unsigned int nservers;
     struct container_mount mounts[CONTAINER_MOUNTS];
     unsigned int nmounts;
+    struct task_descriptor descriptors[4096];
 
 };
 
+void container_initdescriptor(struct task_descriptor *descriptor, struct task *task);
 void container_init(struct container *container);
