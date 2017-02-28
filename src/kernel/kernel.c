@@ -19,13 +19,13 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
     unsigned int i;
 
-    for (i = 0x00; i < 0x08; i++)
+    for (i = 0; i < 8; i++)
     {
 
-        copydescriptor(target, service_getdescriptor(target, i + 0x00), service_getdescriptor(source, i + 0x08));
-        copydescriptor(target, service_getdescriptor(target, i + 0x08), service_getdescriptor(source, i + 0x08));
-        copydescriptor(target, service_getdescriptor(target, i + 0x10), 0);
-        copydescriptor(target, service_getdescriptor(target, i + 0x18), 0);
+        copydescriptor(target, service_getdescriptor(target, i + 0), service_getdescriptor(source, i + 8));
+        copydescriptor(target, service_getdescriptor(target, i + 8), service_getdescriptor(source, i + 8));
+        copydescriptor(target, service_getdescriptor(target, i + 16), 0);
+        copydescriptor(target, service_getdescriptor(target, i + 24), 0);
 
     }
 
@@ -71,8 +71,8 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 void kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
 {
 
-    struct container_server *server = &container->servers[0x00];
-    struct container_mount *mount = &container->mounts[0x00];
+    struct container_server *server = &container->servers[0];
+    struct container_mount *mount = &container->mounts[0];
     struct service_descriptor *init = service_getdescriptor(task, 8);
     struct service_descriptor *root = service_getdescriptor(task, 9);
 
@@ -88,8 +88,8 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
     init->server = mount->parent.server;
     init->state.id = mount->parent.id;
 
-    init->server->protocol->child(init->server->backend, &init->state, "bin/", 4);
-    init->server->protocol->child(init->server->backend, &init->state, "init", 4);
+    server->protocol->child(server->backend, &init->state, "bin/", 4);
+    server->protocol->child(server->backend, &init->state, "init", 4);
 
     container->nservers++;
     container->nmounts++;
