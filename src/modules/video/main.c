@@ -22,21 +22,21 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_videosettings), descriptor->offset);
+    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_videosettings), state->offset);
 
 }
 
-static unsigned int interfacectrl_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacectrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    count = memory_write(&interface->settings, sizeof (struct ctrl_videosettings), buffer, count, descriptor->offset);
+    count = memory_write(&interface->settings, sizeof (struct ctrl_videosettings), buffer, count, state->offset);
 
     interface->setmode(&interface->settings);
 
@@ -44,61 +44,61 @@ static unsigned int interfacectrl_write(struct system_node *self, struct service
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->rdata(descriptor->offset, buffer, count);
+    return interface->rdata(state->offset, buffer, count);
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->wdata(descriptor->offset, buffer, count);
+    return interface->wdata(state->offset, buffer, count);
 
 }
 
-static unsigned int interfacecolormap_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacecolormap_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->rcolormap(descriptor->offset, buffer, count);
+    return interface->rcolormap(state->offset, buffer, count);
 
 }
 
-static unsigned int interfacecolormap_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacecolormap_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    return interface->wcolormap(descriptor->offset, buffer, count);
+    return interface->wcolormap(state->offset, buffer, count);
 
 }
 
-static unsigned int interfaceevent_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int interfaceevent_open(struct system_node *self, struct service_state *state)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    list_add(&interface->eventlinks, &descriptor->link);
+    list_add(&interface->eventlinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int interfaceevent_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int interfaceevent_close(struct system_node *self, struct service_state *state)
 {
 
     struct video_interface *interface = self->resource->data;
 
-    list_remove(&interface->eventlinks, &descriptor->link);
+    list_remove(&interface->eventlinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 

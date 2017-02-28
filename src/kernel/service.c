@@ -64,20 +64,19 @@ void service_initbackend(struct service_backend *backend, unsigned int id, unsig
 
 }
 
-void service_initdescriptor(struct service_descriptor *descriptor, struct task *task)
+void service_initstate(struct service_state *state, struct task *task)
 {
 
-    list_inititem(&descriptor->link, descriptor);
+    list_inititem(&state->link, state);
 
-    descriptor->task = task;
-    descriptor->server = 0;
-    descriptor->id = 0;
-    descriptor->offset = 0;
-    descriptor->current = 0;
+    state->task = task;
+    state->id = 0;
+    state->offset = 0;
+    state->current = 0;
 
 }
 
-void service_initprotocol(struct service_protocol *protocol, unsigned int (*match)(struct service_backend *backend), unsigned int (*root)(struct service_backend *backend), unsigned int (*parent)(struct service_descriptor *descriptor), unsigned int (*child)(struct service_descriptor *descriptor, char *path, unsigned int length), unsigned int (*create)(struct service_descriptor *descriptor, char *name, unsigned int length), unsigned int (*destroy)(struct service_descriptor *descriptor, char *name, unsigned int length), unsigned int (*step)(struct service_descriptor *descriptor), unsigned int (*open)(struct service_descriptor *descriptor), unsigned int (*close)(struct service_descriptor *descriptor), unsigned int (*read)(struct service_descriptor *descriptor, void *buffer, unsigned int count), unsigned int (*write)(struct service_descriptor *descriptor, void *buffer, unsigned int count), unsigned int (*seek)(struct service_descriptor *descriptor, unsigned int offset), unsigned int (*map)(struct service_descriptor *descriptor))
+void service_initprotocol(struct service_protocol *protocol, unsigned int (*match)(struct service_backend *backend), unsigned int (*root)(struct service_backend *backend), unsigned int (*parent)(struct service_backend *backend, struct service_state *state), unsigned int (*child)(struct service_backend *backend, struct service_state *state, char *path, unsigned int length), unsigned int (*create)(struct service_backend *backend, struct service_state *state, char *name, unsigned int length), unsigned int (*destroy)(struct service_backend *backend, struct service_state *state, char *name, unsigned int length), unsigned int (*step)(struct service_backend *backend, struct service_state *state), unsigned int (*open)(struct service_backend *backend, struct service_state *state), unsigned int (*close)(struct service_backend *backend, struct service_state *state), unsigned int (*read)(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count), unsigned int (*write)(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count), unsigned int (*seek)(struct service_backend *backend, struct service_state *state, unsigned int offset), unsigned int (*map)(struct service_backend *backend, struct service_state *state))
 {
 
     resource_init(&protocol->resource, RESOURCE_SERVICEPROTOCOL, protocol);
@@ -95,6 +94,15 @@ void service_initprotocol(struct service_protocol *protocol, unsigned int (*matc
     protocol->write = write;
     protocol->seek = seek;
     protocol->map = map;
+
+}
+
+void service_initdescriptor(struct service_descriptor *descriptor, struct task *task)
+{
+
+    service_initstate(&descriptor->state, task);
+
+    descriptor->server = 0;
 
 }
 

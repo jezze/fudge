@@ -10,7 +10,7 @@ static void copydescriptor(struct task *target, struct service_descriptor *tdesc
 {
 
     tdescriptor->server = (sdescriptor) ? sdescriptor->server : 0;
-    tdescriptor->id = (sdescriptor) ? sdescriptor->id : 0;
+    tdescriptor->state.id = (sdescriptor) ? sdescriptor->state.id : 0;
 
 }
 
@@ -39,9 +39,9 @@ void kernel_multicast(struct list *links, void *buffer, unsigned int count)
     for (current = links->head; current; current = current->next)
     {
 
-        struct service_descriptor *descriptor = current->data;
+        struct service_state *state = current->data;
 
-        task_write(descriptor->task, buffer, count);
+        task_write(state->task, buffer, count);
 
     }
 
@@ -52,7 +52,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     struct service_descriptor *descriptor = service_getdescriptor(task, 0);
 
-    task->node.physical = descriptor->server->protocol->map(descriptor);
+    task->node.physical = descriptor->server->protocol->map(descriptor->server->backend, &descriptor->state);
 
     if (!task->node.physical)
         return 0;
@@ -84,12 +84,12 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
     mount->child.id = server->protocol->root(backend);
 
     root->server = mount->parent.server;
-    root->id = mount->parent.id;
+    root->state.id = mount->parent.id;
     init->server = mount->parent.server;
-    init->id = mount->parent.id;
+    init->state.id = mount->parent.id;
 
-    init->server->protocol->child(init, "bin/", 4);
-    init->server->protocol->child(init, "init", 4);
+    init->server->protocol->child(init->server->backend, &init->state, "bin/", 4);
+    init->server->protocol->child(init->server->backend, &init->state, "init", 4);
 
     container->nservers++;
     container->nmounts++;

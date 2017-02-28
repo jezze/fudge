@@ -41,47 +41,47 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 
 }
 
-static unsigned int interfacedata_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
 {
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_add(&interface->datalinks, &descriptor->link);
+    list_add(&interface->datalinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int interfacedata_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
 {
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_remove(&interface->datalinks, &descriptor->link);
+    list_remove(&interface->datalinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int interfaceevent_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int interfaceevent_open(struct system_node *self, struct service_state *state)
 {
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_add(&interface->eventlinks, &descriptor->link);
+    list_add(&interface->eventlinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int interfaceevent_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int interfaceevent_close(struct system_node *self, struct service_state *state)
 {
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_remove(&interface->eventlinks, &descriptor->link);
+    list_remove(&interface->eventlinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 

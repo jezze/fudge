@@ -5,7 +5,7 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-unsigned int system_childgroup(struct system_node *self, struct service_descriptor *descriptor, char *path, unsigned int length)
+unsigned int system_childgroup(struct system_node *self, struct service_state *state, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -45,7 +45,7 @@ unsigned int system_childgroup(struct system_node *self, struct service_descript
         length -= length0;
         path += length0;
 
-        return (self->child) ? self->child(self, descriptor, path, length) : (length ? 0 : (unsigned int)self);
+        return (self->child) ? self->child(self, state, path, length) : (length ? 0 : (unsigned int)self);
 
     }
 
@@ -53,23 +53,23 @@ unsigned int system_childgroup(struct system_node *self, struct service_descript
 
 }
 
-unsigned int system_readtask(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+unsigned int system_readtask(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return ring_read(&descriptor->task->mailbox, buffer, count);
+    return ring_read(&state->task->mailbox, buffer, count);
 
 }
 
-unsigned int system_readgroup(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+unsigned int system_readgroup(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct record *record = buffer;
-    struct system_node *current = (struct system_node *)descriptor->current;
+    struct system_node *current = (struct system_node *)state->current;
 
-    if (!descriptor->current)
+    if (!state->current)
         return 0;
 
-    record->id = descriptor->current;
+    record->id = state->current;
     record->size = 0;
     record->length = memory_read(record->name, RECORD_NAMESIZE, current->name, ascii_length(current->name), 0);
 

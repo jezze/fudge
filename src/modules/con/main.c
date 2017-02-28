@@ -6,7 +6,7 @@
 static struct system_node root;
 static struct system_node clone;
 
-static unsigned int clone_child(struct system_node *self, struct service_descriptor *descriptor, char *path, unsigned int length)
+static unsigned int clone_child(struct system_node *self, struct service_state *state, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -19,7 +19,7 @@ static unsigned int clone_child(struct system_node *self, struct service_descrip
         if (node == self)
             continue;
 
-        return node->child(node, descriptor, path, length);
+        return node->child(node, state, path, length);
 
     }
 
@@ -27,45 +27,45 @@ static unsigned int clone_child(struct system_node *self, struct service_descrip
 
 }
 
-static unsigned int conctrl_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int conctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct con *con = self->resource->data;
 
-    return memory_read(buffer, count, &con->settings, sizeof (struct ctrl_consettings), descriptor->offset);
+    return memory_read(buffer, count, &con->settings, sizeof (struct ctrl_consettings), state->offset);
 
 }
 
-static unsigned int conctrl_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int conctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct con *con = self->resource->data;
 
-    return memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, descriptor->offset);
+    return memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, state->offset);
 
 }
 
-static unsigned int condata_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int condata_open(struct system_node *self, struct service_state *state)
 {
 
     struct con *con = self->resource->data;
 
-    list_add(&con->links, &descriptor->link);
+    list_add(&con->links, &state->link);
     con->open();
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int condata_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int condata_close(struct system_node *self, struct service_state *state)
 {
 
     struct con *con = self->resource->data;
 
-    list_remove(&con->links, &descriptor->link);
+    list_remove(&con->links, &state->link);
     con->close();
 
-    return descriptor->id;
+    return state->id;
 
 }
 

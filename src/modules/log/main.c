@@ -69,75 +69,75 @@ static void log_write(unsigned int level, char *string, char *file, unsigned int
 
 }
 
-static unsigned int critical_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int critical_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&criticallinks, &descriptor->link);
+    list_add(&criticallinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int critical_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int critical_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&criticallinks, &descriptor->link);
+    list_remove(&criticallinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int error_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int error_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&errorlinks, &descriptor->link);
+    list_add(&errorlinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int error_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int error_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&errorlinks, &descriptor->link);
+    list_remove(&errorlinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int warning_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int warning_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&warninglinks, &descriptor->link);
+    list_add(&warninglinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int warning_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int warning_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&warninglinks, &descriptor->link);
+    list_remove(&warninglinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int info_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int info_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&infolinks, &descriptor->link);
+    list_add(&infolinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int info_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int info_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&infolinks, &descriptor->link);
+    list_remove(&infolinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 

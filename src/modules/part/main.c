@@ -26,7 +26,7 @@ static struct block_interface *findinterface(unsigned int index)
 
 }
 
-static unsigned int clone_child(struct system_node *self, struct service_descriptor *descriptor, char *path, unsigned int length)
+static unsigned int clone_child(struct system_node *self, struct service_state *state, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -39,7 +39,7 @@ static unsigned int clone_child(struct system_node *self, struct service_descrip
         if (node == self)
             continue;
 
-        return node->child(node, descriptor, path, length);
+        return node->child(node, state, path, length);
 
     }
 
@@ -47,63 +47,63 @@ static unsigned int clone_child(struct system_node *self, struct service_descrip
 
 }
 
-static unsigned int partctrl_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int partctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
 
-    return memory_read(buffer, count, &part->settings, sizeof (struct ctrl_partsettings), descriptor->offset);
+    return memory_read(buffer, count, &part->settings, sizeof (struct ctrl_partsettings), state->offset);
 
 }
 
-static unsigned int partctrl_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int partctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
 
-    return memory_write(&part->settings, sizeof (struct ctrl_partsettings), buffer, count, descriptor->offset);
+    return memory_write(&part->settings, sizeof (struct ctrl_partsettings), buffer, count, state->offset);
 
 }
 
-static unsigned int partdata_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int partdata_open(struct system_node *self, struct service_state *state)
 {
 
     struct part *part = self->resource->data;
     struct block_interface *interface = findinterface(part->settings.interface);
 
-    descriptor->offset = part->settings.start;
+    state->offset = part->settings.start;
 
-    return interface->data.open(&interface->data, descriptor);
+    return interface->data.open(&interface->data, state);
 
 }
 
-static unsigned int partdata_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int partdata_close(struct system_node *self, struct service_state *state)
 {
 
     struct part *part = self->resource->data;
     struct block_interface *interface = findinterface(part->settings.interface);
 
-    return interface->data.close(&interface->data, descriptor);
+    return interface->data.close(&interface->data, state);
 
 }
 
-static unsigned int partdata_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int partdata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
     struct block_interface *interface = findinterface(part->settings.interface);
 
-    return interface->data.read(&interface->data, descriptor, buffer, count);
+    return interface->data.read(&interface->data, state, buffer, count);
 
 }
 
-static unsigned int partdata_write(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int partdata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct part *part = self->resource->data;
     struct block_interface *interface = findinterface(part->settings.interface);
 
-    return interface->data.write(&interface->data, descriptor, buffer, count);
+    return interface->data.write(&interface->data, state, buffer, count);
 
 }
 

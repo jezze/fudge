@@ -12,36 +12,36 @@ void block_notify(struct block_interface *interface, void *buffer, unsigned int 
 
 }
 
-static unsigned int interfacedata_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
 {
 
     struct block_interface *interface = self->resource->data;
 
-    list_add(&interface->datalinks, &descriptor->link);
+    list_add(&interface->datalinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int interfacedata_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
 {
 
     struct block_interface *interface = self->resource->data;
 
-    list_remove(&interface->datalinks, &descriptor->link);
+    list_remove(&interface->datalinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct block_interface *interface = self->resource->data;
-    unsigned int c = ring_read(&descriptor->task->mailbox, buffer, count);
+    unsigned int c = ring_read(&state->task->mailbox, buffer, count);
 
     if (!c)
-        interface->rdata(buffer, count, descriptor->offset);
+        interface->rdata(buffer, count, state->offset);
 
     return c;
 

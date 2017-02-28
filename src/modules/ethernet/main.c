@@ -41,34 +41,34 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
 }
 
-static unsigned int interfaceaddr_read(struct system_node *self, struct service_descriptor *descriptor, void *buffer, unsigned int count)
+static unsigned int interfaceaddr_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct ethernet_interface *interface = self->resource->data;
 
-    return memory_read(buffer, count, interface->haddress, ETHERNET_ADDRSIZE, descriptor->offset);
+    return memory_read(buffer, count, interface->haddress, ETHERNET_ADDRSIZE, state->offset);
 
 }
 
-static unsigned int interfacedata_open(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
 {
 
     struct ethernet_interface *interface = self->resource->data;
 
-    list_add(&interface->datalinks, &descriptor->link);
+    list_add(&interface->datalinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
-static unsigned int interfacedata_close(struct system_node *self, struct service_descriptor *descriptor)
+static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
 {
 
     struct ethernet_interface *interface = self->resource->data;
 
-    list_remove(&interface->datalinks, &descriptor->link);
+    list_remove(&interface->datalinks, &state->link);
 
-    return descriptor->id;
+    return state->id;
 
 }
 
