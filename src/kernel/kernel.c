@@ -82,7 +82,6 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
     mount->parent.id = server->protocol->root(backend);
     mount->child.server = server;
     mount->child.id = server->protocol->root(backend);
-
     root->server = mount->parent.server;
     root->state.id = mount->parent.id;
     init->server = mount->parent.server;
