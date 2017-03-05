@@ -421,7 +421,7 @@ static struct container *setupcontainers(unsigned int count)
 
         struct arch_container *container = &containers[index];
 
-        container_init(&container->base);
+        container_init(&container->base, index);
 
         container->directory = (struct mmu_directory *)CONTAINERMMUBASE + index * CONTAINERMMUCOUNT;
         container->table = (struct mmu_table *)CONTAINERMMUBASE + index * CONTAINERMMUCOUNT + 1;

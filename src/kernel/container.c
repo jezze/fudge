@@ -5,7 +5,7 @@
 #include "task.h"
 #include "service.h"
 
-void container_init(struct container *container)
+void container_init(struct container *container, unsigned int id)
 {
 
     unsigned int i;
@@ -14,6 +14,8 @@ void container_init(struct container *container)
 
     for (i = 0; i < CONTAINER_MOUNTS; i++)
         resource_init(&container->mounts[i].resource, RESOURCE_CONTAINERMOUNT, &container->mounts[i]);
+
+    container->id = id;
 
 }
 

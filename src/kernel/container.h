@@ -29,6 +29,7 @@ struct container_mount
 struct container
 {
 
+    unsigned int id;
     struct resource resource;
     struct container_server servers[CONTAINER_SERVERS];
     unsigned int nservers;
@@ -37,4 +38,4 @@ struct container
 
 };
 
-void container_init(struct container *container);
+void container_init(struct container *container, unsigned int id);
