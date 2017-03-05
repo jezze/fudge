@@ -84,59 +84,46 @@ static struct arch_context current;
 static void copymap(struct container *container, struct task *task)
 {
 
-    struct arch_task *atask = (struct arch_task *)task;
-    struct arch_container *acontainer = (struct arch_container *)container;
-
-    memory_copy(atask->directory, acontainer->directory, sizeof (struct mmu_directory));
+    memory_copy(tasks[task->id].directory, containers[container->id].directory, sizeof (struct mmu_directory));
 
 }
 
 static void mapcontainer(struct container *container)
 {
 
-    struct arch_container *acontainer = (struct arch_container *)container;
-
-    mmu_map(acontainer->directory, &acontainer->table[0], 0x00000000, 0x00000000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_map(acontainer->directory, &acontainer->table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_map(acontainer->directory, &acontainer->table[2], 0x00800000, 0x00800000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_map(acontainer->directory, &acontainer->table[3], 0x00C00000, 0x00C00000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(containers[container->id].directory, &containers[container->id].table[0], 0x00000000, 0x00000000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(containers[container->id].directory, &containers[container->id].table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(containers[container->id].directory, &containers[container->id].table[2], 0x00800000, 0x00800000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(containers[container->id].directory, &containers[container->id].table[3], 0x00C00000, 0x00C00000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
 static void maptask(struct task *task, unsigned int code, unsigned int stack)
 {
 
-    struct arch_task *atask = (struct arch_task *)task;
-
-    mmu_map(atask->directory, &atask->table[0], atask->code, code, CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(atask->directory, &atask->table[1], atask->stack, stack, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(tasks[task->id].directory, &tasks[task->id].table[0], tasks[task->id].code, code, CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(tasks[task->id].directory, &tasks[task->id].table[1], tasks[task->id].stack, stack, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
 static void activate(struct task *task)
 {
 
-    struct arch_task *atask = (struct arch_task *)task;
-
-    mmu_setdirectory(atask->directory);
+    mmu_setdirectory(tasks[task->id].directory);
 
 }
 
 static void saveregisters(struct task *task, struct cpu_general *general)
 {
 
-    struct arch_task *atask = (struct arch_task *)task;
-
-    memory_copy(&atask->general, general, sizeof (struct cpu_general));
+    memory_copy(&tasks[task->id].general, general, sizeof (struct cpu_general));
 
 }
 
 static void loadregisters(struct task *task, struct cpu_general *general)
 {
 
-    struct arch_task *atask = (struct arch_task *)task;
-
-    memory_copy(general, &atask->general, sizeof (struct cpu_general));
+    memory_copy(general, &tasks[task->id].general, sizeof (struct cpu_general));
 
 }
 
@@ -174,10 +161,8 @@ void arch_setinterrupt(unsigned char index, void (*callback)(void))
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct arch_container *acontainer = (struct arch_container *)current.container;
-
-    mmu_map(acontainer->directory, &acontainer->table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_setdirectory(acontainer->directory);
+    mmu_map(containers[current.container->id].directory, &containers[current.container->id].table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_setdirectory(containers[current.container->id].directory);
 
 }
 
