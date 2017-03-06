@@ -96,7 +96,7 @@ static unsigned int create(struct container *container, struct task *task, void 
     id = service->server->protocol->create(service->server->backend, &service->state, args->name, args->length);
 
     if (!id && service->state.link.list)
-        kernel_settaskstate(task, TASK_STATUS_BLOCKED);
+        kernel_blocktask(task);
 
     return id;
 
@@ -115,7 +115,7 @@ static unsigned int destroy(struct container *container, struct task *task, void
     id = service->server->protocol->destroy(service->server->backend, &service->state, args->name, args->length);
 
     if (!id && service->state.link.list)
-        kernel_settaskstate(task, TASK_STATUS_BLOCKED);
+        kernel_blocktask(task);
 
     return id;
 
@@ -131,7 +131,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
     id = service->server->protocol->open(service->server->backend, &service->state);
 
     if (!id && service->state.link.list)
-        kernel_settaskstate(task, TASK_STATUS_BLOCKED);
+        kernel_blocktask(task);
 
     service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
     service->state.current = service->server->protocol->step(service->server->backend, &service->state);
@@ -150,7 +150,7 @@ static unsigned int close(struct container *container, struct task *task, void *
     id = service->server->protocol->close(service->server->backend, &service->state);
 
     if (!id && service->state.link.list)
-        kernel_settaskstate(task, TASK_STATUS_BLOCKED);
+        kernel_blocktask(task);
 
     service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
     service->state.current = service->server->protocol->step(service->server->backend, &service->state);
@@ -172,7 +172,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
     count = service->server->protocol->read(service->server->backend, &service->state, args->buffer, args->count);
 
     if (!count && service->state.link.list)
-        kernel_settaskstate(task, TASK_STATUS_BLOCKED);
+        kernel_blocktask(task);
 
     service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.offset + count);
     service->state.current = service->server->protocol->step(service->server->backend, &service->state);
@@ -194,7 +194,7 @@ static unsigned int write(struct container *container, struct task *task, void *
     count = service->server->protocol->write(service->server->backend, &service->state, args->buffer, args->count);
 
     if (!count && service->state.link.list)
-        kernel_settaskstate(task, TASK_STATUS_BLOCKED);
+        kernel_blocktask(task);
 
     service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.offset + count);
     service->state.current = service->server->protocol->step(service->server->backend, &service->state);

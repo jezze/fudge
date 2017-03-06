@@ -27,7 +27,7 @@ static unsigned int end_close(struct system_node *self, struct service_state *st
     if (end->read)
     {
 
-        kernel_settaskstate(end->read->task, TASK_STATUS_UNBLOCKED);
+        kernel_unblocktask(end->read->task);
 
         end->read = 0;
 
@@ -36,7 +36,7 @@ static unsigned int end_close(struct system_node *self, struct service_state *st
     if (end->write)
     {
 
-        kernel_settaskstate(end->write->task, TASK_STATUS_UNBLOCKED);
+        kernel_unblocktask(end->write->task);
 
         end->write = 0;
 
@@ -59,7 +59,7 @@ static unsigned int end_read(struct system_node *self, struct service_state *sta
         if (end->write)
         {
 
-            kernel_settaskstate(end->write->task, TASK_STATUS_UNBLOCKED);
+            kernel_unblocktask(end->write->task);
 
             end->write = 0;
 
@@ -75,7 +75,7 @@ static unsigned int end_read(struct system_node *self, struct service_state *sta
 
             end->read = state;
 
-            kernel_settaskstate(end->read->task, TASK_STATUS_BLOCKED);
+            kernel_blocktask(end->read->task);
 
         }
 
@@ -98,7 +98,7 @@ static unsigned int end_write(struct system_node *self, struct service_state *st
         if (end->read)
         {
 
-            kernel_settaskstate(end->read->task, TASK_STATUS_UNBLOCKED);
+            kernel_unblocktask(end->read->task);
 
             end->read = 0;
 
@@ -114,7 +114,7 @@ static unsigned int end_write(struct system_node *self, struct service_state *st
 
             end->write = state;
 
-            kernel_settaskstate(end->write->task, TASK_STATUS_BLOCKED);
+            kernel_blocktask(end->write->task);
 
         }
 

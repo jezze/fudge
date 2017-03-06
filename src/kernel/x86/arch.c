@@ -148,7 +148,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 static unsigned int despawn(struct container *container, struct task *task, void *stack)
 {
 
-    kernel_settaskstate(task, TASK_STATUS_INACTIVE);
+    kernel_inactivatetask(task);
 
     return 1;
 
@@ -202,7 +202,7 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
         if (current.task->state.status == TASK_STATUS_UNBLOCKED)
         {
 
-            kernel_settaskstate(current.task, TASK_STATUS_ACTIVE);
+            kernel_activatetask(current.task);
             task_setstate(current.task, current.task->state.ip - current.task->state.rewind, current.task->state.sp);
 
         }
@@ -251,7 +251,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     DEBUG(DEBUG_INFO, "exception: divide by zero");
 
     if (interrupt.cs.value == selector.ucode)
-        kernel_settaskstate(current.task, TASK_STATUS_INACTIVE);
+        kernel_inactivatetask(current.task);
 
     return arch_resume(&general, &interrupt);
 
@@ -388,7 +388,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         else
         {
 
-            kernel_settaskstate(current.task, TASK_STATUS_INACTIVE);
+            kernel_inactivatetask(current.task);
 
         }
 

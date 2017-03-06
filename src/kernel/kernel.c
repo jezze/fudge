@@ -27,57 +27,70 @@ struct task *kernel_findinactivetask(void)
 
 }
 
-void kernel_settaskstate(struct task *task, unsigned int status)
+void kernel_inactivatetask(struct task *task)
 {
 
-    switch (status)
+    switch (task->state.status)
     {
 
-    case TASK_STATUS_INACTIVE:
-        if (task->state.status == TASK_STATUS_ACTIVE)
-        {
+    case TASK_STATUS_ACTIVE:
+        list_move(&inactive, &task->state.item);
 
-            list_move(&inactive, &task->state.item);
-
-            task->state.status = TASK_STATUS_INACTIVE;
-
-        }
+        task->state.status = TASK_STATUS_INACTIVE;
 
         break;
+
+    }
+
+}
+
+void kernel_activatetask(struct task *task)
+{
+
+    switch (task->state.status)
+    {
 
     case TASK_STATUS_ACTIVE:
-        if (task->state.status == TASK_STATUS_ACTIVE || task->state.status == TASK_STATUS_INACTIVE || task->state.status == TASK_STATUS_UNBLOCKED)
-        {
+    case TASK_STATUS_INACTIVE:
+    case TASK_STATUS_UNBLOCKED:
+        list_move(&active, &task->state.item);
 
-            list_move(&active, &task->state.item);
-
-            task->state.status = TASK_STATUS_ACTIVE;
-
-        }
+        task->state.status = TASK_STATUS_ACTIVE;
 
         break;
+
+    }
+
+}
+
+void kernel_blocktask(struct task *task)
+{
+
+    switch (task->state.status)
+    {
+
+    case TASK_STATUS_ACTIVE:
+        list_move(&blocked, &task->state.item);
+
+        task->state.status = TASK_STATUS_BLOCKED;
+
+        break;
+
+    }
+
+}
+
+void kernel_unblocktask(struct task *task)
+{
+
+    switch (task->state.status)
+    {
 
     case TASK_STATUS_BLOCKED:
-        if (task->state.status == TASK_STATUS_ACTIVE)
-        {
-
-            list_move(&blocked, &task->state.item);
-
-            task->state.status = TASK_STATUS_BLOCKED;
-
-        }
-
-        break;
-
     case TASK_STATUS_UNBLOCKED:
-        if (task->state.status == TASK_STATUS_UNBLOCKED || task->state.status == TASK_STATUS_BLOCKED)
-        {
+        list_move(&active, &task->state.item);
 
-            list_move(&active, &task->state.item);
-
-            task->state.status = TASK_STATUS_UNBLOCKED;
-
-        }
+        task->state.status = TASK_STATUS_UNBLOCKED;
 
         break;
 
@@ -120,7 +133,7 @@ void kernel_copyservices(struct task *source, struct task *target)
 unsigned int kernel_unicast(struct task *task, void *buffer, unsigned int count)
 {
 
-    kernel_settaskstate(task, TASK_STATUS_UNBLOCKED);
+    kernel_unblocktask(task);
 
     return (count < ring_avail(&task->mailbox)) ? ring_write(&task->mailbox, buffer, count) : 0;
 
@@ -157,7 +170,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
     if (!task->format)
         return 0;
 
-    kernel_settaskstate(task, TASK_STATUS_ACTIVE);
+    kernel_activatetask(task);
     task_setstate(task, task->format->findentry(&task->node), sp);
 
     return 1;

@@ -4,7 +4,10 @@
 
 struct task *kernel_findactivetask(void);
 struct task *kernel_findinactivetask(void);
-void kernel_settaskstate(struct task *task, unsigned int state);
+void kernel_inactivatetask(struct task *task);
+void kernel_activatetask(struct task *task);
+void kernel_blocktask(struct task *task);
+void kernel_unblocktask(struct task *task);
 struct service *kernel_getservice(struct task *task, unsigned int service);
 void kernel_copyservices(struct task *source, struct task *target);
 unsigned int kernel_unicast(struct task *task, void *buffer, unsigned int count);
