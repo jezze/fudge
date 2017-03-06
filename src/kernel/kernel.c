@@ -6,9 +6,9 @@
 #include "service.h"
 #include "kernel.h"
 
-#define DESCRIPTORS                     4096
-
-static struct service_descriptor descriptors[DESCRIPTORS];
+static struct container containers[KERNEL_CONTAINERS];
+static struct task tasks[KERNEL_TASKS];
+static struct service_descriptor descriptors[KERNEL_DESCRIPTORS];
 
 struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor)
 {
@@ -103,6 +103,61 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
 
     container->nservers++;
     container->nmounts++;
+
+}
+
+struct container *kernel_setupcontainers(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < KERNEL_CONTAINERS; i++)
+    {
+
+        struct container *container = &containers[i];
+
+        container_init(container, i);
+
+    }
+
+    return &containers[0];
+
+}
+
+struct task *kernel_setuptasks(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < KERNEL_TASKS; i++)
+    {
+
+        struct task *task = &tasks[i];
+
+        task_init(task, i);
+        task_register(task);
+
+    }
+
+    return &tasks[0];
+
+}
+
+void kernel_setupdescriptors(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < KERNEL_TASKS; i++)
+    {
+
+        struct task *task = &tasks[i];
+        unsigned int j;
+
+        for (j = 0; j < TASK_DESCRIPTORS; j++)
+            service_initdescriptor(kernel_getdescriptor(task, j), task);
+
+    }
 
 }
 

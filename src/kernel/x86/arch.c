@@ -8,8 +8,6 @@
 #include "isr.h"
 #include "mmu.h"
 
-#define CONTAINERS                      16
-#define TASKS                           128
 #define GDTDESCRIPTORS                  6
 #define IDTDESCRIPTORS                  256
 #define TSSDESCRIPTORS                  1
@@ -58,9 +56,7 @@ static struct
 
 } selector;
 
-static struct container containers[CONTAINERS];
-static struct task tasks[TASKS];
-static struct cpu_general registers[TASKS];
+static struct cpu_general registers[KERNEL_TASKS];
 static struct arch_context current;
 
 static void copymap(struct container *container, struct task *task)
@@ -392,61 +388,6 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-static struct container *setupcontainers(unsigned int count)
-{
-
-    unsigned int index;
-
-    for (index = 0; index < count; index++)
-    {
-
-        struct container *container = &containers[index];
-
-        container_init(container, index);
-
-    }
-
-    return &containers[0];
-
-}
-
-static struct task *setuptasks(unsigned int count)
-{
-
-    unsigned int index;
-
-    for (index = 0; index < count; index++)
-    {
-
-        struct task *task = &tasks[index];
-
-        task_init(task, index);
-        task_register(task);
-
-    }
-
-    return &tasks[0];
-
-}
-
-static void setupdescriptors()
-{
-
-    unsigned int i;
-
-    for (i = 0; i < TASKS; i++)
-    {
-
-        struct task *task = &tasks[i];
-        unsigned int j;
-
-        for (j = 0; j < TASK_DESCRIPTORS; j++)
-            service_initdescriptor(kernel_getdescriptor(task, j), task);
-
-    }
-
-}
-
 void arch_setup(struct service_backend *backend)
 {
 
@@ -485,12 +426,12 @@ void arch_setup(struct service_backend *backend)
     cpu_settss(selector.tlink);
     kernel_setup();
 
-    current.container = setupcontainers(CONTAINERS);
-    current.task = setuptasks(TASKS);
+    current.container = kernel_setupcontainers();
+    current.task = kernel_setuptasks();
     current.ip = (unsigned int)cpu_halt;
     current.sp = KERNELSTACK;
 
-    setupdescriptors();
+    kernel_setupdescriptors();
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainer(current.container);
     copymap(current.container, current.task);
