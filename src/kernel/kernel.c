@@ -9,6 +9,81 @@
 static struct container containers[KERNEL_CONTAINERS];
 static struct task tasks[KERNEL_TASKS];
 static struct service services[KERNEL_SERVICES];
+static struct list active;
+static struct list inactive;
+static struct list blocked;
+
+struct task *kernel_findactivetask(void)
+{
+
+    return (active.tail) ? active.tail->data : 0;
+
+}
+
+struct task *kernel_findinactivetask(void)
+{
+
+    return (inactive.tail) ? inactive.tail->data : 0;
+
+}
+
+void kernel_settaskstate(struct task *task, unsigned int status)
+{
+
+    switch (status)
+    {
+
+    case TASK_STATUS_INACTIVE:
+        if (task->state.status == TASK_STATUS_ACTIVE)
+        {
+
+            list_move(&inactive, &task->state.item);
+
+            task->state.status = TASK_STATUS_INACTIVE;
+
+        }
+
+        break;
+
+    case TASK_STATUS_ACTIVE:
+        if (task->state.status == TASK_STATUS_ACTIVE || task->state.status == TASK_STATUS_INACTIVE || task->state.status == TASK_STATUS_UNBLOCKED)
+        {
+
+            list_move(&active, &task->state.item);
+
+            task->state.status = TASK_STATUS_ACTIVE;
+
+        }
+
+        break;
+
+    case TASK_STATUS_BLOCKED:
+        if (task->state.status == TASK_STATUS_ACTIVE)
+        {
+
+            list_move(&blocked, &task->state.item);
+
+            task->state.status = TASK_STATUS_BLOCKED;
+
+        }
+
+        break;
+
+    case TASK_STATUS_UNBLOCKED:
+        if (task->state.status == TASK_STATUS_UNBLOCKED || task->state.status == TASK_STATUS_BLOCKED)
+        {
+
+            list_move(&active, &task->state.item);
+
+            task->state.status = TASK_STATUS_UNBLOCKED;
+
+        }
+
+        break;
+
+    }
+
+}
 
 struct service *kernel_getservice(struct task *task, unsigned int service)
 {
@@ -42,6 +117,15 @@ void kernel_copyservices(struct task *source, struct task *target)
 
 }
 
+unsigned int kernel_unicast(struct task *task, void *buffer, unsigned int count)
+{
+
+    kernel_settaskstate(task, TASK_STATUS_UNBLOCKED);
+
+    return (count < ring_avail(&task->mailbox)) ? ring_write(&task->mailbox, buffer, count) : 0;
+
+}
+
 void kernel_multicast(struct list *links, void *buffer, unsigned int count)
 {
 
@@ -52,7 +136,7 @@ void kernel_multicast(struct list *links, void *buffer, unsigned int count)
 
         struct service_state *state = current->data;
 
-        task_write(state->task, buffer, count);
+        kernel_unicast(state->task, buffer, count);
 
     }
 
@@ -73,7 +157,8 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
     if (!task->format)
         return 0;
 
-    task_resume(task, task->format->findentry(&task->node), sp);
+    kernel_settaskstate(task, TASK_STATUS_ACTIVE);
+    task_setstate(task, task->format->findentry(&task->node), sp);
 
     return 1;
 
@@ -135,7 +220,7 @@ struct task *kernel_setuptasks(void)
         struct task *task = &tasks[i];
 
         task_init(task, i);
-        task_register(task);
+        list_add(&inactive, &task->state.item);
 
     }
 

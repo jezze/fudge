@@ -59,11 +59,25 @@ static struct
 static struct cpu_general registers[KERNEL_TASKS];
 static struct arch_context current;
 
+static struct mmu_directory *getdirectory(unsigned int index, unsigned int base, unsigned int count)
+{
+
+    return (struct mmu_directory *)base + index * count;
+
+}
+
+static struct mmu_table *gettable(unsigned int index, unsigned int base, unsigned int count)
+{
+
+    return (struct mmu_table *)base + index * count + 1;
+
+}
+
 static void copymap(struct container *container, struct task *task)
 {
 
-    struct mmu_directory *cdirectory = (struct mmu_directory *)CONTAINERMMUBASE + container->id * CONTAINERMMUCOUNT;
-    struct mmu_directory *tdirectory = (struct mmu_directory *)TASKMMUBASE + task->id * TASKMMUCOUNT;
+    struct mmu_directory *cdirectory = getdirectory(container->id, CONTAINERMMUBASE, CONTAINERMMUCOUNT);
+    struct mmu_directory *tdirectory = getdirectory(task->id, TASKMMUBASE, TASKMMUCOUNT);
 
     memory_copy(tdirectory, cdirectory, sizeof (struct mmu_directory));
 
@@ -72,8 +86,8 @@ static void copymap(struct container *container, struct task *task)
 static void mapcontainer(struct container *container)
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)CONTAINERMMUBASE + container->id * CONTAINERMMUCOUNT;
-    struct mmu_table *table = (struct mmu_table *)CONTAINERMMUBASE + container->id * CONTAINERMMUCOUNT + 1;
+    struct mmu_directory *directory = getdirectory(container->id, CONTAINERMMUBASE, CONTAINERMMUCOUNT);
+    struct mmu_table *table = gettable(container->id, CONTAINERMMUBASE, CONTAINERMMUCOUNT);
 
     mmu_map(directory, &table[0], 0x00000000, 0x00000000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(directory, &table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
@@ -85,8 +99,8 @@ static void mapcontainer(struct container *container)
 static void maptask(struct task *task, unsigned int code, unsigned int stack)
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)TASKMMUBASE + task->id * TASKMMUCOUNT;
-    struct mmu_table *table = (struct mmu_table *)TASKMMUBASE + task->id * TASKMMUCOUNT + 1;
+    struct mmu_directory *directory = getdirectory(task->id, TASKMMUBASE, TASKMMUCOUNT);
+    struct mmu_table *table = gettable(task->id, TASKMMUBASE, TASKMMUCOUNT);
 
     mmu_map(directory, &table[0], PHYSBASE + task->id * (CODESIZE + STACKSIZE), code, CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
     mmu_map(directory, &table[1], PHYSBASE + task->id * (CODESIZE + STACKSIZE) + CODESIZE, stack, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
@@ -96,7 +110,7 @@ static void maptask(struct task *task, unsigned int code, unsigned int stack)
 static void activate(struct task *task)
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)TASKMMUBASE + task->id * TASKMMUCOUNT;
+    struct mmu_directory *directory = getdirectory(task->id, TASKMMUBASE, TASKMMUCOUNT);
 
     mmu_setdirectory(directory);
 
@@ -119,7 +133,7 @@ static void loadregisters(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
-    struct task *next = task_findinactive();
+    struct task *next = kernel_findinactivetask();
 
     if (!next)
         return 0;
@@ -134,7 +148,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 static unsigned int despawn(struct container *container, struct task *task, void *stack)
 {
 
-    task_setstatus(task, TASK_STATUS_INACTIVE);
+    kernel_settaskstate(task, TASK_STATUS_INACTIVE);
 
     return 1;
 
@@ -150,8 +164,8 @@ void arch_setinterrupt(unsigned char index, void (*callback)(void))
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)CONTAINERMMUBASE + current.container->id * CONTAINERMMUCOUNT;
-    struct mmu_table *table = (struct mmu_table *)CONTAINERMMUBASE + current.container->id * CONTAINERMMUCOUNT + 1;
+    struct mmu_directory *directory = getdirectory(current.container->id, CONTAINERMMUBASE, CONTAINERMMUCOUNT);
+    struct mmu_table *table = gettable(current.container->id, CONTAINERMMUBASE, CONTAINERMMUCOUNT);
 
     mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_setdirectory(directory);
@@ -180,13 +194,18 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
 
     }
 
-    current.task = task_findactive();
+    current.task = kernel_findactivetask();
 
     if (current.task)
     {
 
         if (current.task->state.status == TASK_STATUS_UNBLOCKED)
-            task_resume(current.task, current.task->state.ip - current.task->state.rewind, current.task->state.sp);
+        {
+
+            kernel_settaskstate(current.task, TASK_STATUS_ACTIVE);
+            task_setstate(current.task, current.task->state.ip - current.task->state.rewind, current.task->state.sp);
+
+        }
 
         loadregisters(current.task, general);
         activate(current.task);
@@ -232,7 +251,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     DEBUG(DEBUG_INFO, "exception: divide by zero");
 
     if (interrupt.cs.value == selector.ucode)
-        task_setstatus(current.task, TASK_STATUS_INACTIVE);
+        kernel_settaskstate(current.task, TASK_STATUS_INACTIVE);
 
     return arch_resume(&general, &interrupt);
 
@@ -369,7 +388,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         else
         {
 
-            task_setstatus(current.task, TASK_STATUS_INACTIVE);
+            kernel_settaskstate(current.task, TASK_STATUS_INACTIVE);
 
         }
 

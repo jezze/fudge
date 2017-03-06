@@ -5,113 +5,12 @@
 #include "task.h"
 #include "service.h"
 
-static struct list active;
-static struct list inactive;
-static struct list blocked;
-
-struct task *task_findactive(void)
+void task_setstate(struct task *task, unsigned int ip, unsigned int sp)
 {
-
-    return (active.tail) ? active.tail->data : 0;
-
-}
-
-struct task *task_findinactive(void)
-{
-
-    return (inactive.tail) ? inactive.tail->data : 0;
-
-}
-
-void task_setstatus(struct task *task, unsigned int status)
-{
-
-    switch (status)
-    {
-
-    case TASK_STATUS_INACTIVE:
-        if (task->state.status == TASK_STATUS_ACTIVE)
-        {
-
-            list_move(&inactive, &task->state.item);
-
-            task->state.status = TASK_STATUS_INACTIVE;
-
-        }
-
-        break;
-
-    case TASK_STATUS_ACTIVE:
-        if (task->state.status == TASK_STATUS_ACTIVE || task->state.status == TASK_STATUS_INACTIVE || task->state.status == TASK_STATUS_UNBLOCKED)
-        {
-
-            list_move(&active, &task->state.item);
-
-            task->state.status = TASK_STATUS_ACTIVE;
-
-        }
-
-        break;
-
-    case TASK_STATUS_BLOCKED:
-        if (task->state.status == TASK_STATUS_ACTIVE)
-        {
-
-            list_move(&blocked, &task->state.item);
-
-            task->state.status = TASK_STATUS_BLOCKED;
-
-        }
-
-        break;
-
-    case TASK_STATUS_UNBLOCKED:
-        if (task->state.status == TASK_STATUS_UNBLOCKED || task->state.status == TASK_STATUS_BLOCKED)
-        {
-
-            list_move(&active, &task->state.item);
-
-            task->state.status = TASK_STATUS_UNBLOCKED;
-
-        }
-
-        break;
-
-    }
-
-}
-
-void task_resume(struct task *task, unsigned int ip, unsigned int sp)
-{
-
-    task_setstatus(task, TASK_STATUS_ACTIVE);
 
     task->state.ip = ip;
     task->state.sp = sp;
     task->state.rewind = 0;
-
-}
-
-unsigned int task_write(struct task *task, void *buffer, unsigned int count)
-{
-
-    task_setstatus(task, TASK_STATUS_UNBLOCKED);
-
-    return (count < ring_avail(&task->mailbox)) ? ring_write(&task->mailbox, buffer, count) : 0;
-
-}
-
-void task_register(struct task *task)
-{
-
-    list_add(&inactive, &task->state.item);
-
-}
-
-void task_unregister(struct task *task)
-{
-
-    list_remove(&inactive, &task->state.item);
 
 }
 
