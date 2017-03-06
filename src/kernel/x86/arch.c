@@ -441,7 +441,7 @@ static void setupdescriptors()
         unsigned int j;
 
         for (j = 0; j < TASK_DESCRIPTORS; j++)
-            service_initdescriptor(service_getdescriptor(task, j), task);
+            service_initdescriptor(kernel_getdescriptor(task, j), task);
 
     }
 

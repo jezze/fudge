@@ -38,4 +38,6 @@ struct container
 
 };
 
+struct container_server *container_getserver(struct container *container, unsigned int server);
+struct container_mount *container_getmount(struct container *container, unsigned int mount);
 void container_init(struct container *container, unsigned int id);

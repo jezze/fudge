@@ -6,6 +6,17 @@
 #include "service.h"
 #include "kernel.h"
 
+#define DESCRIPTORS                     4096
+
+static struct service_descriptor descriptors[DESCRIPTORS];
+
+struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor)
+{
+
+    return &descriptors[task->id * TASK_DESCRIPTORS + (descriptor & (TASK_DESCRIPTORS - 1))];
+
+}
+
 static void copydescriptor(struct task *target, struct service_descriptor *tdescriptor, struct service_descriptor *sdescriptor)
 {
 
@@ -22,10 +33,10 @@ void kernel_copydescriptors(struct task *source, struct task *target)
     for (i = 0; i < 8; i++)
     {
 
-        copydescriptor(target, service_getdescriptor(target, i + 0), service_getdescriptor(source, i + 8));
-        copydescriptor(target, service_getdescriptor(target, i + 8), service_getdescriptor(source, i + 8));
-        copydescriptor(target, service_getdescriptor(target, i + 16), 0);
-        copydescriptor(target, service_getdescriptor(target, i + 24), 0);
+        copydescriptor(target, kernel_getdescriptor(target, i + 0), kernel_getdescriptor(source, i + 8));
+        copydescriptor(target, kernel_getdescriptor(target, i + 8), kernel_getdescriptor(source, i + 8));
+        copydescriptor(target, kernel_getdescriptor(target, i + 16), 0);
+        copydescriptor(target, kernel_getdescriptor(target, i + 24), 0);
 
     }
 
@@ -50,7 +61,7 @@ void kernel_multicast(struct list *links, void *buffer, unsigned int count)
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
-    struct service_descriptor *descriptor = service_getdescriptor(task, 0);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, 0);
 
     task->node.physical = descriptor->server->protocol->map(descriptor->server->backend, &descriptor->state);
 
@@ -71,10 +82,10 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 void kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
 {
 
-    struct container_server *server = &container->servers[0];
-    struct container_mount *mount = &container->mounts[0];
-    struct service_descriptor *init = service_getdescriptor(task, 8);
-    struct service_descriptor *root = service_getdescriptor(task, 9);
+    struct container_server *server = container_getserver(container, 0);
+    struct container_mount *mount = container_getmount(container, 0);
+    struct service_descriptor *init = kernel_getdescriptor(task, 8);
+    struct service_descriptor *root = kernel_getdescriptor(task, 9);
 
     server->backend = backend;
     server->protocol = service_findprotocol(backend);

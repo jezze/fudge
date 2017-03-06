@@ -5,15 +5,6 @@
 #include "task.h"
 #include "service.h"
 
-static struct service_descriptor descriptors[SERVICE_DESCRIPTORS];
-
-struct service_descriptor *service_getdescriptor(struct task *task, unsigned int descriptor)
-{
-
-    return &descriptors[task->id * TASK_DESCRIPTORS + (descriptor & (TASK_DESCRIPTORS - 1))];
-
-}
-
 struct service_backend *service_findbackend(unsigned int id)
 {
 

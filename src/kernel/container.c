@@ -5,6 +5,20 @@
 #include "task.h"
 #include "service.h"
 
+struct container_server *container_getserver(struct container *container, unsigned int server)
+{
+
+    return &container->servers[server & (CONTAINER_SERVERS - 1)];
+
+}
+
+struct container_mount *container_getmount(struct container *container, unsigned int mount)
+{
+
+    return &container->mounts[mount & (CONTAINER_MOUNTS - 1)];
+
+}
+
 void container_init(struct container *container, unsigned int id)
 {
 

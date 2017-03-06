@@ -1,5 +1,3 @@
-#define SERVICE_DESCRIPTORS             4096
-
 struct service_backend
 {
 
@@ -50,7 +48,6 @@ struct service_descriptor
 
 };
 
-struct service_descriptor *service_getdescriptor(struct task *task, unsigned int descriptor);
 struct service_backend *service_findbackend(unsigned int id);
 struct service_protocol *service_findprotocol(struct service_backend *backend);
 void service_initbackend(struct service_backend *backend, unsigned int id, unsigned int (*read)(void *buffer, unsigned int count, unsigned int offset), unsigned int (*write)(void *buffer, unsigned int count, unsigned int offset), unsigned int (*map)(unsigned int offset, unsigned int count));

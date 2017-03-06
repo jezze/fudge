@@ -4,24 +4,11 @@
 #include "container.h"
 #include "task.h"
 #include "service.h"
+#include "kernel.h"
 
 #define CALLS                           16
 
 static unsigned int (*calls[CALLS])(struct container *container, struct task *task, void *stack);
-
-static struct container_server *getserver(struct container *container, unsigned int server)
-{
-
-    return &container->servers[server & (CONTAINER_SERVERS - 1)];
-
-}
-
-static struct container_mount *getmount(struct container *container, unsigned int mount)
-{
-
-    return &container->mounts[mount & (CONTAINER_MOUNTS - 1)];
-
-}
 
 static void walkmount(struct container *container, struct service_descriptor *descriptor, unsigned int parent)
 {
@@ -53,8 +40,8 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *path; unsigned int length;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
-    struct service_descriptor *pdescriptor = service_getdescriptor(task, args->pdescriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct service_descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
     unsigned int offset;
     unsigned int length;
 
@@ -100,7 +87,7 @@ static unsigned int create(struct container *container, struct task *task, void 
 {
 
     struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     unsigned int id;
 
     if (!args->length || !args->name)
@@ -119,7 +106,7 @@ static unsigned int destroy(struct container *container, struct task *task, void
 {
 
     struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     unsigned int id;
 
     if (!args->length || !args->name)
@@ -138,7 +125,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     unsigned int id;
 
     id = descriptor->server->protocol->open(descriptor->server->backend, &descriptor->state);
@@ -157,7 +144,7 @@ static unsigned int close(struct container *container, struct task *task, void *
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     unsigned int id;
 
     id = descriptor->server->protocol->close(descriptor->server->backend, &descriptor->state);
@@ -176,7 +163,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     unsigned int count;
 
     if (!args->buffer || !args->count)
@@ -198,7 +185,7 @@ static unsigned int write(struct container *container, struct task *task, void *
 {
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     unsigned int count;
 
     if (!args->buffer || !args->count)
@@ -220,9 +207,9 @@ static unsigned int auth(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int backend;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
-    descriptor->server = getserver(container, container->nservers + 1);
+    descriptor->server = container_getserver(container, container->nservers + 1);
 
     if (!descriptor->server)
         return 0;
@@ -247,9 +234,9 @@ static unsigned int mount(struct container *container, struct task *task, void *
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int cdescriptor;} *args = stack;
-    struct container_mount *mount = getmount(container, container->nmounts + 1);
-    struct service_descriptor *pdescriptor = service_getdescriptor(task, args->pdescriptor);
-    struct service_descriptor *cdescriptor = service_getdescriptor(task, args->cdescriptor);
+    struct container_mount *mount = container_getmount(container, container->nmounts + 1);
+    struct service_descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
+    struct service_descriptor *cdescriptor = kernel_getdescriptor(task, args->cdescriptor);
 
     mount->parent.server = pdescriptor->server;
     mount->parent.id = pdescriptor->state.id;
@@ -264,7 +251,7 @@ static unsigned int load(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     struct binary_format *format;
     struct binary_node node;
     void (*module_init)(void);
@@ -301,7 +288,7 @@ static unsigned int unload(struct container *container, struct task *task, void 
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     struct binary_format *format;
     struct binary_node node;
     void (*module_unregister)(void);
@@ -329,7 +316,7 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int offset;} *args = stack;
-    struct service_descriptor *descriptor = service_getdescriptor(task, args->descriptor);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     return descriptor->state.offset = descriptor->server->protocol->seek(descriptor->server->backend, &descriptor->state, args->offset);
 
