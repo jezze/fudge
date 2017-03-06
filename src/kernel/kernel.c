@@ -148,14 +148,12 @@ void kernel_setupservices(void)
 
     unsigned int i;
 
-    for (i = 0; i < KERNEL_TASKS; i++)
+    for (i = 0; i < KERNEL_SERVICES; i++)
     {
 
-        struct task *task = &tasks[i];
-        unsigned int j;
+        struct service *service = &services[i];
 
-        for (j = 0; j < TASK_DESCRIPTORS; j++)
-            service_init(kernel_getservice(task, j), task);
+        service_init(service, &tasks[i / TASK_DESCRIPTORS]);
 
     }
 
