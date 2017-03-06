@@ -17,7 +17,7 @@ struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int 
 
 }
 
-static void copydescriptor(struct task *target, struct service_descriptor *tdescriptor, struct service_descriptor *sdescriptor)
+static void copydescriptor(struct service_descriptor *tdescriptor, struct service_descriptor *sdescriptor)
 {
 
     tdescriptor->server = (sdescriptor) ? sdescriptor->server : 0;
@@ -33,10 +33,10 @@ void kernel_copydescriptors(struct task *source, struct task *target)
     for (i = 0; i < 8; i++)
     {
 
-        copydescriptor(target, kernel_getdescriptor(target, i + 0), kernel_getdescriptor(source, i + 8));
-        copydescriptor(target, kernel_getdescriptor(target, i + 8), kernel_getdescriptor(source, i + 8));
-        copydescriptor(target, kernel_getdescriptor(target, i + 16), 0);
-        copydescriptor(target, kernel_getdescriptor(target, i + 24), 0);
+        copydescriptor(kernel_getdescriptor(target, i + 0), kernel_getdescriptor(source, i + 8));
+        copydescriptor(kernel_getdescriptor(target, i + 8), kernel_getdescriptor(source, i + 8));
+        copydescriptor(kernel_getdescriptor(target, i + 16), 0);
+        copydescriptor(kernel_getdescriptor(target, i + 24), 0);
 
     }
 
