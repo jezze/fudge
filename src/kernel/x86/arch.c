@@ -388,10 +388,23 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-void arch_setup(struct service_backend *backend)
+static void leave(void)
 {
 
     struct cpu_interrupt interrupt;
+
+    interrupt.cs.value = selector.ucode;
+    interrupt.ss.value = selector.ustack;
+    interrupt.eip.value = current.task->state.ip;
+    interrupt.esp.value = current.task->state.sp;
+    interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
+
+    cpu_leave(interrupt);
+
+}
+
+void arch_setup(struct service_backend *backend)
+{
 
     gdt_initpointer(&gdt.pointer, GDTDESCRIPTORS, gdt.descriptors);
     idt_initpointer(&idt.pointer, IDTDESCRIPTORS, idt.descriptors);
@@ -440,14 +453,7 @@ void arch_setup(struct service_backend *backend)
     activate(current.task);
     mmu_setup();
     abi_setup(spawn, despawn);
-
-    interrupt.cs.value = selector.ucode;
-    interrupt.ss.value = selector.ustack;
-    interrupt.eip.value = current.task->state.ip;
-    interrupt.esp.value = current.task->state.sp;
-    interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
-
-    cpu_leave(interrupt);
+    leave();
 
 }
 
