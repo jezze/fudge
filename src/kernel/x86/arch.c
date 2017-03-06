@@ -125,7 +125,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
         return 0;
 
     copymap(container, next);
-    kernel_copydescriptors(task, next);
+    kernel_copyservices(task, next);
 
     return kernel_setupbinary(next, TASKSTACK);
 
@@ -431,11 +431,11 @@ void arch_setup(struct service_backend *backend)
     current.ip = (unsigned int)cpu_halt;
     current.sp = KERNELSTACK;
 
-    kernel_setupdescriptors();
+    kernel_setupservices();
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainer(current.container);
     copymap(current.container, current.task);
-    kernel_copydescriptors(current.task, current.task);
+    kernel_copyservices(current.task, current.task);
     kernel_setupbinary(current.task, TASKSTACK);
     activate(current.task);
     mmu_setup();

@@ -88,12 +88,12 @@ void service_initprotocol(struct service_protocol *protocol, unsigned int (*matc
 
 }
 
-void service_initdescriptor(struct service_descriptor *descriptor, struct task *task)
+void service_init(struct service *service, struct task *task)
 {
 
-    service_initstate(&descriptor->state, task);
+    service_initstate(&service->state, task);
 
-    descriptor->server = 0;
+    service->server = 0;
 
 }
 

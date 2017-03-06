@@ -8,24 +8,24 @@
 
 static struct container containers[KERNEL_CONTAINERS];
 static struct task tasks[KERNEL_TASKS];
-static struct service_descriptor descriptors[KERNEL_DESCRIPTORS];
+static struct service services[KERNEL_SERVICES];
 
-struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor)
+struct service *kernel_getservice(struct task *task, unsigned int service)
 {
 
-    return &descriptors[task->id * TASK_DESCRIPTORS + (descriptor & (TASK_DESCRIPTORS - 1))];
+    return &services[task->id * TASK_DESCRIPTORS + (service & (TASK_DESCRIPTORS - 1))];
 
 }
 
-static void copydescriptor(struct service_descriptor *tdescriptor, struct service_descriptor *sdescriptor)
+static void copyservice(struct service *tservice, struct service *sservice)
 {
 
-    tdescriptor->server = (sdescriptor) ? sdescriptor->server : 0;
-    tdescriptor->state.id = (sdescriptor) ? sdescriptor->state.id : 0;
+    tservice->server = (sservice) ? sservice->server : 0;
+    tservice->state.id = (sservice) ? sservice->state.id : 0;
 
 }
 
-void kernel_copydescriptors(struct task *source, struct task *target)
+void kernel_copyservices(struct task *source, struct task *target)
 {
 
     unsigned int i;
@@ -33,10 +33,10 @@ void kernel_copydescriptors(struct task *source, struct task *target)
     for (i = 0; i < 8; i++)
     {
 
-        copydescriptor(kernel_getdescriptor(target, i + 0), kernel_getdescriptor(source, i + 8));
-        copydescriptor(kernel_getdescriptor(target, i + 8), kernel_getdescriptor(source, i + 8));
-        copydescriptor(kernel_getdescriptor(target, i + 16), 0);
-        copydescriptor(kernel_getdescriptor(target, i + 24), 0);
+        copyservice(kernel_getservice(target, i + 0), kernel_getservice(source, i + 8));
+        copyservice(kernel_getservice(target, i + 8), kernel_getservice(source, i + 8));
+        copyservice(kernel_getservice(target, i + 16), 0);
+        copyservice(kernel_getservice(target, i + 24), 0);
 
     }
 
@@ -61,9 +61,9 @@ void kernel_multicast(struct list *links, void *buffer, unsigned int count)
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
-    struct service_descriptor *descriptor = kernel_getdescriptor(task, 0);
+    struct service *service = kernel_getservice(task, 0);
 
-    task->node.physical = descriptor->server->protocol->map(descriptor->server->backend, &descriptor->state);
+    task->node.physical = service->server->protocol->map(service->server->backend, &service->state);
 
     if (!task->node.physical)
         return 0;
@@ -84,15 +84,15 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
 
     struct container_server *server = container_getserver(container, 0);
     struct container_mount *mount = container_getmount(container, 0);
-    struct service_descriptor *init = kernel_getdescriptor(task, 8);
-    struct service_descriptor *root = kernel_getdescriptor(task, 9);
+    struct service *init = kernel_getservice(task, 8);
+    struct service *root = kernel_getservice(task, 9);
 
     server->backend = backend;
     server->protocol = service_findprotocol(backend);
     mount->parent.server = server;
     mount->parent.id = server->protocol->root(backend);
-    mount->child.server = server;
-    mount->child.id = server->protocol->root(backend);
+    mount->child.server = mount->parent.server;
+    mount->child.id = mount->parent.id;
     root->server = mount->parent.server;
     root->state.id = mount->parent.id;
     init->server = mount->parent.server;
@@ -143,7 +143,7 @@ struct task *kernel_setuptasks(void)
 
 }
 
-void kernel_setupdescriptors(void)
+void kernel_setupservices(void)
 {
 
     unsigned int i;
@@ -155,7 +155,7 @@ void kernel_setupdescriptors(void)
         unsigned int j;
 
         for (j = 0; j < TASK_DESCRIPTORS; j++)
-            service_initdescriptor(kernel_getdescriptor(task, j), task);
+            service_init(kernel_getservice(task, j), task);
 
     }
 
