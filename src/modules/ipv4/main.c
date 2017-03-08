@@ -7,6 +7,14 @@
 
 #define ARPTABLESIZE                    8
 
+struct ipv4_arpentry
+{
+
+    unsigned char haddress[ETHERNET_ADDRSIZE];
+    unsigned char paddress[IPV4_ADDRSIZE];
+
+};
+
 static struct ethernet_protocol ethernetprotocol;
 static struct arp_hook arphook;
 static struct ipv4_arpentry arptable[ARPTABLESIZE];
@@ -167,7 +175,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
         struct ipv4_protocol *protocol = current->data;
 
         if (protocol->id == header->protocol)
-            protocol->notify(interface, header, header + 1, length - sizeof (struct ipv4_header));
+            protocol->notify(header, header + 1, length - sizeof (struct ipv4_header));
 
     }
 
@@ -263,7 +271,7 @@ void ipv4_unregisterprotocol(struct ipv4_protocol *protocol)
 
 }
 
-void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, struct ipv4_header *header, void *buffer, unsigned int count))
+void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ipv4_header *header, void *buffer, unsigned int count))
 {
 
     resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);

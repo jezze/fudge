@@ -17,14 +17,6 @@ struct ipv4_header
 
 };
 
-struct ipv4_arpentry
-{
-
-    unsigned char haddress[ETHERNET_ADDRSIZE];
-    unsigned char paddress[IPV4_ADDRSIZE];
-
-};
-
 struct ipv4_protocol
 {
 
@@ -33,11 +25,13 @@ struct ipv4_protocol
     struct system_node data;
     struct list datalinks;
     unsigned char id;
-    void (*notify)(struct ethernet_interface *interface, struct ipv4_header *header, void *buffer, unsigned int count);
+    void (*notify)(struct ipv4_header *header, void *buffer, unsigned int count);
 
 };
 
 void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol);
+void *ipv4_writedata(void *buffer, void *payload, unsigned int count);
+void ipv4_send(unsigned char *tip, unsigned int protocol, void *payload, unsigned int count);
 void ipv4_registerprotocol(struct ipv4_protocol *protocol);
 void ipv4_unregisterprotocol(struct ipv4_protocol *protocol);
-void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ethernet_interface *interface, struct ipv4_header *header, void *buffer, unsigned int count));
+void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ipv4_header *header, void *buffer, unsigned int count));

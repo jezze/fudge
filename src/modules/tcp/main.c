@@ -1,14 +1,13 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/ethernet/ethernet.h>
 #include <modules/ipv4/ipv4.h>
 #include "tcp.h"
 
 static struct ipv4_protocol ipv4protocol;
 static struct list hooks;
 
-void ipv4protocol_notify(struct ethernet_interface *interface, struct ipv4_header *ipv4header, void *buffer, unsigned int count)
+void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned int count)
 {
 
     struct tcp_header *header = buffer;
@@ -22,7 +21,7 @@ void ipv4protocol_notify(struct ethernet_interface *interface, struct ipv4_heade
         struct tcp_hook *hook = current->data;
 
         if (hook->match(port))
-            hook->notify(interface, header + 1, length - sizeof (struct tcp_header));
+            hook->notify(header + 1, length - sizeof (struct tcp_header));
 
     }
 
@@ -44,7 +43,7 @@ void tcp_unregisterhook(struct tcp_hook *hook)
 
 }
 
-void tcp_inithook(struct tcp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count))
+void tcp_inithook(struct tcp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(void *buffer, unsigned int count))
 {
 
     list_inititem(&hook->item, hook);

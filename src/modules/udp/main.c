@@ -1,14 +1,13 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/ethernet/ethernet.h>
 #include <modules/ipv4/ipv4.h>
 #include "udp.h"
 
 static struct ipv4_protocol ipv4protocol;
 static struct list hooks;
 
-void ipv4protocol_notify(struct ethernet_interface *interface, struct ipv4_header *ipv4header, void *buffer, unsigned int count)
+void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned int count)
 {
 
     struct udp_header *header = buffer;
@@ -22,11 +21,18 @@ void ipv4protocol_notify(struct ethernet_interface *interface, struct ipv4_heade
         struct udp_hook *hook = current->data;
 
         if (hook->match(port))
-            hook->notify(interface, header + 1, length - sizeof (struct udp_header));
+            hook->notify(header + 1, length - sizeof (struct udp_header));
 
     }
 
     kernel_multicast(&ipv4protocol.datalinks, buffer, count);
+
+}
+
+void udp_send(unsigned char *tip, unsigned int port, void *payload, unsigned int count)
+{
+
+    ipv4_send(tip, 0x11, payload, count);
 
 }
 
@@ -44,7 +50,7 @@ void udp_unregisterhook(struct udp_hook *hook)
 
 }
 
-void udp_inithook(struct udp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(struct ethernet_interface *interface, void *buffer, unsigned int count))
+void udp_inithook(struct udp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(void *buffer, unsigned int count))
 {
 
     list_inititem(&hook->item, hook);
