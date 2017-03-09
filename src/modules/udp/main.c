@@ -29,7 +29,7 @@ void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned 
 
 }
 
-void udp_send(unsigned char *tip, unsigned int port, void *payload, unsigned int count)
+void udp_send(unsigned char *tip, void *payload, unsigned int count)
 {
 
     ipv4_send(tip, 0x11, payload, count);

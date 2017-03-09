@@ -32,8 +32,23 @@ static unsigned int hook_match(unsigned int port)
 static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *header, void *buffer, unsigned int count)
 {
 
+    char *data[FUDGE_BSIZE];
+    struct udp_header nheader;
+
     kernel_multicast(&con.links, buffer, count);
-    udp_send(ipv4header->sip, header->sp[0], "k", 1);
+
+    memory_copy(nheader.sp, header->tp, 2);
+    memory_copy(nheader.tp, header->sp, 2);
+
+    nheader.length[0] = 0;
+    nheader.length[1] = 8 + 1;
+    nheader.checksum[0] = 0;
+    nheader.checksum[1] = 0;
+
+    memory_copy(data, &nheader, sizeof (struct udp_header));
+    memory_copy(data + sizeof (struct udp_header), "k", 1);
+
+    ipv4_send(ipv4header->sip, 0x11, data, sizeof (struct udp_header) + 1);
 
 }
 
