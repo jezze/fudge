@@ -103,8 +103,8 @@ void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, uns
 
     checksum = calculatechecksum(header, sizeof (struct ipv4_header));
 
-    header->checksum[0] = checksum & 0xFF;
-    header->checksum[1] = (checksum >> 8) & 0xFF;
+    header->checksum[0] = checksum;
+    header->checksum[1] = (checksum >> 8);
 
     return header + 1;
 
