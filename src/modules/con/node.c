@@ -29,10 +29,8 @@ static unsigned int hook_match(unsigned int port)
 
 }
 
-static void hook_notify(struct udp_header *header, void *buffer, unsigned int count)
+static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *header, void *buffer, unsigned int count)
 {
-
-    struct ipv4_header *ipv4header = buffer;
 
     kernel_multicast(&con.links, buffer, count);
     udp_send(ipv4header->sip, header->sp[0], "k", 1);
