@@ -21,7 +21,7 @@ void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned 
         struct udp_hook *hook = current->data;
 
         if (hook->match(port))
-            hook->notify(header + 1, length - sizeof (struct udp_header));
+            hook->notify(header, header + 1, length - sizeof (struct udp_header));
 
     }
 
@@ -50,7 +50,7 @@ void udp_unregisterhook(struct udp_hook *hook)
 
 }
 
-void udp_inithook(struct udp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(void *buffer, unsigned int count))
+void udp_inithook(struct udp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(struct udp_header *header, void *buffer, unsigned int count))
 {
 
     list_inititem(&hook->item, hook);

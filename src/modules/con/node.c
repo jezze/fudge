@@ -29,7 +29,7 @@ static unsigned int hook_match(unsigned int port)
 
 }
 
-static void hook_notify(void *buffer, unsigned int count)
+static void hook_notify(struct udp_header *header, void *buffer, unsigned int count)
 {
 
     kernel_multicast(&con.links, buffer, count);

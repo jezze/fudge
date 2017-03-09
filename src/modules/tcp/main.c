@@ -21,7 +21,7 @@ void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned 
         struct tcp_hook *hook = current->data;
 
         if (hook->match(port))
-            hook->notify(header + 1, length - sizeof (struct tcp_header));
+            hook->notify(header, header + 1, length - sizeof (struct tcp_header));
 
     }
 
@@ -43,7 +43,7 @@ void tcp_unregisterhook(struct tcp_hook *hook)
 
 }
 
-void tcp_inithook(struct tcp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(void *buffer, unsigned int count))
+void tcp_inithook(struct tcp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(struct tcp_header *header, void *buffer, unsigned int count))
 {
 
     list_inititem(&hook->item, hook);
