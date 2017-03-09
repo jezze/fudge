@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/system/system.h>
-#include <modules/ethernet/ethernet.h>
+#include <modules/ipv4/ipv4.h>
 #include <modules/udp/udp.h>
 #include "con.h"
 
@@ -32,7 +32,10 @@ static unsigned int hook_match(unsigned int port)
 static void hook_notify(struct udp_header *header, void *buffer, unsigned int count)
 {
 
+    struct ipv4_header *ipv4header = buffer;
+
     kernel_multicast(&con.links, buffer, count);
+    udp_send(ipv4header->sip, header->sp[0], "k", 1);
 
 }
 

@@ -79,21 +79,23 @@ static unsigned int calculatechecksum(void *buffer, unsigned int count)
 
 }
 
-void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol)
+void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol, unsigned int count)
 {
 
     struct ipv4_header *header = buffer;
     unsigned int checksum;
 
+    count += 20;
+
     header->version = 0x45;
     header->dscp = 0;
-    header->length[0] = 20;
-    header->length[1] = 0;
+    header->length[0] = count >> 8;
+    header->length[1] = count;
     header->identification[0] = 0;
     header->identification[1] = 0;
     header->fragment[0] = 0;
     header->fragment[1] = 0;
-    header->ttl = 10;
+    header->ttl = 64;
     header->protocol = protocol;
     header->checksum[0] = 0;
     header->checksum[1] = 0;
@@ -104,7 +106,7 @@ void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, uns
     checksum = calculatechecksum(header, sizeof (struct ipv4_header));
 
     header->checksum[0] = checksum;
-    header->checksum[1] = (checksum >> 8);
+    header->checksum[1] = checksum >> 8;
 
     return header + 1;
 
@@ -155,7 +157,7 @@ void ipv4_send(unsigned char *tip, unsigned int protocol, void *payload, unsigne
         return;
 
     header = ethernet_writeheader(response, ethernetprotocol.type, interface->haddress, tentry->haddress);
-    data = ipv4_writeheader(header, sentry->paddress, tentry->paddress, protocol);
+    data = ipv4_writeheader(header, sentry->paddress, tentry->paddress, protocol, count);
     responsetotal = ipv4_writedata(data, payload, count);
 
     interface->send(response, responsetotal - response);

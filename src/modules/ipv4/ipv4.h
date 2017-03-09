@@ -29,7 +29,7 @@ struct ipv4_protocol
 
 };
 
-void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol);
+void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol, unsigned int count);
 void *ipv4_writedata(void *buffer, void *payload, unsigned int count);
 void ipv4_send(unsigned char *tip, unsigned int protocol, void *payload, unsigned int count);
 void ipv4_registerprotocol(struct ipv4_protocol *protocol);
