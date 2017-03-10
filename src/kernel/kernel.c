@@ -110,6 +110,8 @@ static void copyservice(struct service *tservice, struct service *sservice)
 
     tservice->server = (sservice) ? sservice->server : 0;
     tservice->state.id = (sservice) ? sservice->state.id : 0;
+    tservice->state.offset = 0;
+    tservice->state.current = 0;
 
 }
 
