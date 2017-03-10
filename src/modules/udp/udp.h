@@ -17,7 +17,7 @@ struct udp_hook
 
 };
 
-void *udp_writeheader(void *buffer, unsigned char *tip, unsigned char *tp, unsigned char *sp, unsigned int count);
+void *udp_writeheader(void *buffer, unsigned char *sp, unsigned char *tp, unsigned int count);
 void udp_send(unsigned char *tip, unsigned char *tp, unsigned char *sp, void *payload, unsigned int count);
 void udp_registerhook(struct udp_hook *hook);
 void udp_unregisterhook(struct udp_hook *hook);
