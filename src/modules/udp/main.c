@@ -48,14 +48,14 @@ void *udp_writeheader(void *buffer, unsigned char *sp, unsigned char *tp, unsign
 
 }
 
-void udp_send(unsigned char *tip, unsigned char *tp, unsigned char *sp, void *payload, unsigned int count)
+void udp_send(unsigned char *sip, unsigned char *sp, unsigned char *tip, unsigned char *tp, void *payload, unsigned int count)
 {
 
     unsigned char data[FUDGE_BSIZE];
 
     udp_writeheader(data, sp, tp, count);
     memory_copy(data + 8, payload, count);
-    ipv4_send(tip, ipv4protocol.id, data, 8 + count);
+    ipv4_send(sip, tip, ipv4protocol.id, data, 8 + count);
 
 }
 

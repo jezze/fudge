@@ -18,7 +18,7 @@ struct udp_hook
 };
 
 void *udp_writeheader(void *buffer, unsigned char *sp, unsigned char *tp, unsigned int count);
-void udp_send(unsigned char *tip, unsigned char *tp, unsigned char *sp, void *payload, unsigned int count);
+void udp_send(unsigned char *sip, unsigned char *sp, unsigned char *tip, unsigned char *tp, void *payload, unsigned int count);
 void udp_registerhook(struct udp_hook *hook);
 void udp_unregisterhook(struct udp_hook *hook);
 void udp_inithook(struct udp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(struct ipv4_header *ipv4header, struct udp_header *header, void *buffer, unsigned int count));

@@ -20,6 +20,26 @@ void *ethernet_writeheader(void *buffer, unsigned int type, unsigned char *sha, 
 
 }
 
+void ethernet_send(void *buffer, unsigned int count)
+{
+
+    struct resource *resource;
+    struct ethernet_interface *interface;
+
+    resource = resource_findtype(0, RESOURCE_ETHERNETINTERFACE);
+
+    if (!resource)
+        return;
+
+    interface = resource->data;
+
+    if (!interface)
+        return;
+
+    interface->send(buffer, count);
+
+}
+
 void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
