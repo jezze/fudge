@@ -29,10 +29,33 @@ void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned 
 
 }
 
-void udp_send(unsigned char *tip, void *payload, unsigned int count)
+void *udp_writeheader(void *buffer, unsigned char *tip, unsigned char *tp, unsigned char *sp, unsigned int count)
 {
 
-    ipv4_send(tip, 0x11, payload, count);
+    struct udp_header *header = buffer;
+
+    count += 8;
+    header->sp[0] = sp[0];
+    header->sp[1] = sp[1];
+    header->tp[0] = tp[0];
+    header->tp[1] = tp[1];
+    header->length[0] = count >> 8;
+    header->length[1] = count;
+    header->checksum[0] = 0;
+    header->checksum[1] = 0;
+
+    return header + 1;
+
+}
+
+void udp_send(unsigned char *tip, unsigned char *tp, unsigned char *sp, void *payload, unsigned int count)
+{
+
+    unsigned char data[FUDGE_BSIZE];
+
+    udp_writeheader(data, tip, tp, sp, count);
+    memory_copy(data + 8, payload, count);
+    ipv4_send(tip, ipv4protocol.id, data, 8 + count);
 
 }
 

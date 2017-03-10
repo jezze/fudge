@@ -33,22 +33,10 @@ static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *heade
 {
 
     unsigned char data[FUDGE_BSIZE];
-    struct udp_header nheader;
 
+    memory_copy(data, "hello", 5);
+    udp_send(ipv4header->sip, header->sp, header->tp, data, 5);
     kernel_multicast(&con.links, buffer, count);
-
-    memory_copy(nheader.sp, header->tp, 2);
-    memory_copy(nheader.tp, header->sp, 2);
-
-    nheader.length[0] = 0;
-    nheader.length[1] = sizeof (struct udp_header) + 5;
-    nheader.checksum[0] = 0;
-    nheader.checksum[1] = 0;
-
-    memory_copy(data, &nheader, sizeof (struct udp_header));
-    memory_copy(data + sizeof (struct udp_header), "hello", 5);
-
-    ipv4_send(ipv4header->sip, 0x11, data, sizeof (struct udp_header) + 5);
 
 }
 
