@@ -68,8 +68,6 @@ void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, uns
     struct ipv4_header *header = buffer;
     unsigned int checksum;
 
-    count += 20;
-
     header->version = 0x45;
     header->dscp = 0;
     header->length[0] = count >> 8;
@@ -118,7 +116,7 @@ void ipv4_send(unsigned char *sip, unsigned char *tip, unsigned int protocol, vo
         return;
 
     current = ethernet_writeheader(current, ethernetprotocol.type, sentry->haddress, tentry->haddress);
-    current = ipv4_writeheader(current, sentry->paddress, tentry->paddress, protocol, count);
+    current = ipv4_writeheader(current, sentry->paddress, tentry->paddress, protocol, count + 20);
     current = ipv4_writedata(current, payload, count);
 
     ethernet_send(response, current - response);

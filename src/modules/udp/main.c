@@ -34,7 +34,6 @@ void *udp_writeheader(void *buffer, unsigned char *sp, unsigned char *tp, unsign
 
     struct udp_header *header = buffer;
 
-    count += 8;
     header->sp[0] = sp[0];
     header->sp[1] = sp[1];
     header->tp[0] = tp[0];
@@ -48,14 +47,27 @@ void *udp_writeheader(void *buffer, unsigned char *sp, unsigned char *tp, unsign
 
 }
 
+void *udp_writedata(void *buffer, void *payload, unsigned int count)
+{
+
+    unsigned char *data = buffer;
+
+    memory_copy(buffer, payload, count);
+
+    return data + count;
+
+}
+
 void udp_send(unsigned char *sip, unsigned char *sp, unsigned char *tip, unsigned char *tp, void *payload, unsigned int count)
 {
 
-    unsigned char data[FUDGE_BSIZE];
+    unsigned char response[FUDGE_BSIZE];
+    unsigned char *current = response;
 
-    udp_writeheader(data, sp, tp, count);
-    memory_copy(data + 8, payload, count);
-    ipv4_send(sip, tip, ipv4protocol.id, data, 8 + count);
+    current = udp_writeheader(current, sp, tp, count + 8);
+    current = udp_writedata(current, payload, count);
+
+    ipv4_send(sip, tip, ipv4protocol.id, response, current - response);
 
 }
 
