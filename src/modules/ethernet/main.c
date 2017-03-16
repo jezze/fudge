@@ -5,7 +5,7 @@
 
 static struct system_node root;
 
-void *ethernet_writeheader(void *buffer, unsigned int type, unsigned char *sha, unsigned char *tha)
+void *ethernet_writehead(void *buffer, unsigned int type, unsigned char *sha, unsigned char *tha)
 {
 
     struct ethernet_header *header = buffer;

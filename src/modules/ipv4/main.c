@@ -62,16 +62,26 @@ static unsigned int calculatechecksum(void *buffer, unsigned int count)
 
 }
 
-void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol, unsigned int count)
+void *ipv4_writehead(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol, unsigned int count)
 {
 
-    struct ipv4_header *header = buffer;
+    struct ipv4_arpentry *sentry = findarpentry(sip);
+    struct ipv4_arpentry *tentry = findarpentry(tip);
+    struct ipv4_header *header;
     unsigned int checksum;
+
+    if (!sentry || !tentry)
+        return 0;
+
+    header = ethernet_writehead(buffer, ethernetprotocol.type, sentry->haddress, tentry->haddress);
+
+    if (!header)
+        return 0;
 
     header->version = 0x45;
     header->dscp = 0;
-    header->length[0] = count >> 8;
-    header->length[1] = count;
+    header->length[0] = (count + 20) >> 8;
+    header->length[1] = (count + 20);
     header->identification[0] = 0;
     header->identification[1] = 0;
     header->fragment[0] = 0;
@@ -80,9 +90,14 @@ void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, uns
     header->protocol = protocol;
     header->checksum[0] = 0;
     header->checksum[1] = 0;
-
-    memory_copy(header->sip, sip, IPV4_ADDRSIZE);
-    memory_copy(header->tip, tip, IPV4_ADDRSIZE);
+    header->sip[0] = sip[0];
+    header->sip[1] = sip[1];
+    header->sip[2] = sip[2];
+    header->sip[3] = sip[3];
+    header->tip[0] = tip[0];
+    header->tip[1] = tip[1];
+    header->tip[2] = tip[2];
+    header->tip[3] = tip[3];
 
     checksum = calculatechecksum(header, sizeof (struct ipv4_header));
 
@@ -93,33 +108,10 @@ void *ipv4_writeheader(void *buffer, unsigned char *sip, unsigned char *tip, uns
 
 }
 
-void *ipv4_writedata(void *buffer, void *payload, unsigned int count)
+void ipv4_send(void *buffer, unsigned int count)
 {
 
-    unsigned char *data = buffer;
-
-    memory_copy(buffer, payload, count);
-
-    return data + count;
-
-}
-
-void ipv4_send(unsigned char *sip, unsigned char *tip, unsigned int protocol, void *payload, unsigned int count)
-{
-
-    unsigned char response[ETHERNET_MTU];
-    struct ipv4_arpentry *sentry = findarpentry(sip);
-    struct ipv4_arpentry *tentry = findarpentry(tip);
-    unsigned char *current = response;
-
-    if (!sentry || !tentry)
-        return;
-
-    current = ethernet_writeheader(current, ethernetprotocol.type, sentry->haddress, tentry->haddress);
-    current = ipv4_writeheader(current, sentry->paddress, tentry->paddress, protocol, count + 20);
-    current = ipv4_writedata(current, payload, count);
-
-    ethernet_send(response, current - response);
+    ethernet_send(buffer, count);
 
 }
 

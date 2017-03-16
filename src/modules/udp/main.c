@@ -29,17 +29,20 @@ void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned 
 
 }
 
-void *udp_writeheader(void *buffer, unsigned char *sp, unsigned char *tp, unsigned int count)
+void *udp_writehead(void *buffer, unsigned char *sip, unsigned char *sp, unsigned char *tip, unsigned char *tp, unsigned int count)
 {
 
-    struct udp_header *header = buffer;
+    struct udp_header *header = ipv4_writehead(buffer, sip, tip, ipv4protocol.id, count + 8);
+
+    if (!header)
+        return 0;
 
     header->sp[0] = sp[0];
     header->sp[1] = sp[1];
     header->tp[0] = tp[0];
     header->tp[1] = tp[1];
-    header->length[0] = count >> 8;
-    header->length[1] = count;
+    header->length[0] = (count + 8) >> 8;
+    header->length[1] = (count + 8);
     header->checksum[0] = 0;
     header->checksum[1] = 0;
 
@@ -47,27 +50,10 @@ void *udp_writeheader(void *buffer, unsigned char *sp, unsigned char *tp, unsign
 
 }
 
-void *udp_writedata(void *buffer, void *payload, unsigned int count)
+void udp_send(void *buffer, unsigned int count)
 {
 
-    unsigned char *data = buffer;
-
-    memory_copy(buffer, payload, count);
-
-    return data + count;
-
-}
-
-void udp_send(unsigned char *sip, unsigned char *sp, unsigned char *tip, unsigned char *tp, void *payload, unsigned int count)
-{
-
-    unsigned char response[FUDGE_BSIZE];
-    unsigned char *current = response;
-
-    current = udp_writeheader(current, sp, tp, count + 8);
-    current = udp_writedata(current, payload, count);
-
-    ipv4_send(sip, tip, ipv4protocol.id, response, current - response);
+    ipv4_send(buffer, count);
 
 }
 

@@ -88,7 +88,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
             {
 
                 unsigned char response[ETHERNET_MTU];
-                struct arp_header *arpheader = ethernet_writeheader(response, ethernetprotocol.type, interface->haddress, sha);
+                struct arp_header *arpheader = ethernet_writehead(response, ethernetprotocol.type, interface->haddress, sha);
                 unsigned char *arpdata = arp_writeheader(arpheader, htype, header->hlength, ptype, header->plength, ARP_REPLY);
                 unsigned char *responsetotal = arp_writedata(arpdata, arpheader, tha, tpa, sha, spa);
 
