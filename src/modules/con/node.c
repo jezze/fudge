@@ -7,27 +7,8 @@
 
 static struct con con;
 static struct udp_hook hook;
-
-static void con_open(void)
-{
-
-    udp_registerhook(&hook);
-
-}
-
-static void con_close(void)
-{
-
-    udp_unregisterhook(&hook);
-
-}
-
-static unsigned int hook_match(unsigned int port)
-{
-
-    return port == con.settings.port;
-
-}
+static struct ipv4_header *tempipv4header;
+static struct udp_header *tempudpheader;
 
 static void *writedata(void *buffer, void *payload, unsigned int count)
 {
@@ -53,10 +34,42 @@ static void send(unsigned char *sip, unsigned char *sp, unsigned char *tip, unsi
 
 }
 
+static void con_open(void)
+{
+
+    udp_registerhook(&hook);
+
+}
+
+static void con_close(void)
+{
+
+    udp_unregisterhook(&hook);
+
+}
+
+static unsigned int con_write(void *buffer, unsigned int count)
+{
+
+    send(tempipv4header->tip, tempudpheader->tp, tempipv4header->sip, tempudpheader->sp, buffer, count);
+
+    return count;
+
+}
+
+static unsigned int hook_match(unsigned int port)
+{
+
+    return port == con.settings.port;
+
+}
+
 static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *header, void *buffer, unsigned int count)
 {
 
-    send(ipv4header->tip, header->tp, ipv4header->sip, header->sp, "hello", 5);
+    tempipv4header = ipv4header;
+    tempudpheader = header;
+
     kernel_multicast(&con.links, buffer, count);
 
 }
@@ -64,7 +77,7 @@ static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *heade
 void module_init(void)
 {
 
-    con_init(&con, con_open, con_close);
+    con_init(&con, con_open, con_close, con_write);
     udp_inithook(&hook, hook_match, hook_notify);
 
 }

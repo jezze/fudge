@@ -69,7 +69,16 @@ static unsigned int condata_close(struct system_node *self, struct service_state
 
 }
 
-void con_init(struct con *con, void (*open)(void), void (*close)(void))
+static unsigned int condata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    struct con *con = self->resource->data;
+
+    return con->write(buffer, count);
+
+}
+
+void con_init(struct con *con, void (*open)(void), void (*close)(void), unsigned int (*write)(void *buffer, unsigned int count))
 {
 
     ctrl_setconsettings(&con->settings, 0, 0, 0);
@@ -80,11 +89,13 @@ void con_init(struct con *con, void (*open)(void), void (*close)(void))
 
     con->open = open;
     con->close = close;
+    con->write = write;
     con->ctrl.read = conctrl_read;
     con->ctrl.write = conctrl_write;
     con->data.open = condata_open;
     con->data.close = condata_close;
     con->data.read = system_readtask;
+    con->data.write = condata_write;
 
 }
 

@@ -9,9 +9,10 @@ struct con
     struct list links;
     void (*open)(void);
     void (*close)(void);
+    unsigned int (*write)(void *buffer, unsigned int count);
 
 };
 
-void con_init(struct con *con, void (*open)(void), void (*close)(void));
+void con_init(struct con *con, void (*open)(void), void (*close)(void), unsigned int (*write)(void *buffer, unsigned int count));
 void con_register(struct con *con);
 void con_unregister(struct con *con);

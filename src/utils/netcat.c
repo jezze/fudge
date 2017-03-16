@@ -30,7 +30,12 @@ void main(void)
     file_writeall(CALL_PO, "Listening...\n\n", 14);
 
     while ((count = file_read(CALL_L3, buffer, FUDGE_BSIZE)))
+    {
+
         file_writeall(CALL_PO, buffer, count);
+        file_writeall(CALL_L3, "HELLO", 5);
+
+    }
 
     file_close(CALL_L3);
     file_close(CALL_PO);
