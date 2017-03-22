@@ -115,7 +115,7 @@ void ipv4_send(void *buffer, unsigned int count)
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_interface *interface, struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
+static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
     struct ipv4_header *header = buffer;
