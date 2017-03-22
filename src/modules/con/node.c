@@ -64,11 +64,11 @@ static unsigned int hook_match(unsigned int port)
 
 }
 
-static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *header, void *buffer, unsigned int count)
+static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *udpheader, void *buffer, unsigned int count)
 {
 
     tempipv4header = ipv4header;
-    tempudpheader = header;
+    tempudpheader = udpheader;
 
     kernel_multicast(&con.links, buffer, count);
 

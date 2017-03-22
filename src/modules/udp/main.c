@@ -71,7 +71,7 @@ void udp_unregisterhook(struct udp_hook *hook)
 
 }
 
-void udp_inithook(struct udp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(struct ipv4_header *ipv4header, struct udp_header *header, void *buffer, unsigned int count))
+void udp_inithook(struct udp_hook *hook, unsigned int (*match)(unsigned int port), void (*notify)(struct ipv4_header *ipv4header, struct udp_header *udpheader, void *buffer, unsigned int count))
 {
 
     list_inititem(&hook->item, hook);

@@ -224,7 +224,7 @@ void ipv4_unregisterprotocol(struct ipv4_protocol *protocol)
 
 }
 
-void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ipv4_header *header, void *buffer, unsigned int count))
+void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ipv4_header *ipv4header, void *buffer, unsigned int count))
 {
 
     resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);
