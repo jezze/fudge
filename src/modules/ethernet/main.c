@@ -20,21 +20,8 @@ void *ethernet_writehead(void *buffer, unsigned int type, unsigned char *sha, un
 
 }
 
-void ethernet_send(void *buffer, unsigned int count)
+void ethernet_send(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
-
-    struct resource *resource;
-    struct ethernet_interface *interface;
-
-    resource = resource_findtype(0, RESOURCE_ETHERNETINTERFACE);
-
-    if (!resource)
-        return;
-
-    interface = resource->data;
-
-    if (!interface)
-        return;
 
     interface->send(buffer, count);
 

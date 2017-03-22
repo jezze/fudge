@@ -31,6 +31,26 @@ void *arp_writehead(void *buffer, unsigned int htype, unsigned char hlength, uns
 
 }
 
+void arp_send(void *buffer, unsigned int count)
+{
+
+    struct resource *resource;
+    struct ethernet_interface *interface;
+
+    resource = resource_findtype(0, RESOURCE_ETHERNETINTERFACE);
+
+    if (!resource)
+        return;
+
+    interface = resource->data;
+
+    if (!interface)
+        return;
+
+    ethernet_send(interface, buffer, count);
+
+}
+
 static struct arp_hook *findhook(unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned int plength)
 {
 
@@ -84,7 +104,7 @@ static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void
                 current = ethernet_writehead(current, ethernetprotocol.type, tha, sha);
                 current = arp_writehead(current, htype, header->hlength, ptype, header->plength, ARP_REPLY, tha, tpa, sha, spa);
 
-                ethernet_send(response, current - response);
+                arp_send(response, current - response);
 
             }
 

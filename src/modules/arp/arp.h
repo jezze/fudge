@@ -24,6 +24,7 @@ struct arp_hook
 };
 
 void *arp_writehead(void *buffer, unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength, unsigned int operation, unsigned char *sha, unsigned char *spa, unsigned char *tha, unsigned char *tpa);
+void arp_send(void *buffer, unsigned int count);
 void arp_registerhook(struct arp_hook *hook);
 void arp_unregisterhook(struct arp_hook *hook);
 void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength), unsigned char *(*lookup)(void *paddress), void (*save)(void *haddress, void *paddress));

@@ -111,7 +111,20 @@ void *ipv4_writehead(void *buffer, unsigned char *sip, unsigned char *tip, unsig
 void ipv4_send(void *buffer, unsigned int count)
 {
 
-    ethernet_send(buffer, count);
+    struct resource *resource;
+    struct ethernet_interface *interface;
+
+    resource = resource_findtype(0, RESOURCE_ETHERNETINTERFACE);
+
+    if (!resource)
+        return;
+
+    interface = resource->data;
+
+    if (!interface)
+        return;
+
+    ethernet_send(interface, buffer, count);
 
 }
 
