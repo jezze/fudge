@@ -7,10 +7,11 @@
 static struct ethernet_protocol ethernetprotocol;
 static struct list hooks;
 
-void *arp_writeheader(void *buffer, unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength, unsigned int operation)
+void *arp_writehead(void *buffer, unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength, unsigned int operation, unsigned char *sha, unsigned char *spa, unsigned char *tha, unsigned char *tpa)
 {
 
     struct arp_header *header = buffer;
+    unsigned char *data = (unsigned char *)(header + 1);
 
     header->htype[0] = htype >> 8;
     header->htype[1] = htype;
@@ -20,15 +21,6 @@ void *arp_writeheader(void *buffer, unsigned int htype, unsigned char hlength, u
     header->plength = plength;
     header->operation[0] = operation >> 8;
     header->operation[1] = operation;
-
-    return header + 1;
-
-}
-
-void *arp_writedata(void *buffer, struct arp_header *header, unsigned char *sha, unsigned char *spa, unsigned char *tha, unsigned char *tpa)
-{
-
-    unsigned char *data = buffer;
 
     memory_copy(data, sha, header->hlength);
     memory_copy(data + header->hlength, spa, header->plength);
@@ -62,19 +54,18 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
 {
 
     struct arp_header *header = buffer;
+    unsigned char *data = (unsigned char *)(header + 1);
     unsigned int htype = (header->htype[0] << 8) | header->htype[1];
     unsigned int ptype = (header->ptype[0] << 8) | header->ptype[1];
     unsigned int operation = (header->operation[0] << 8) | header->operation[1];
+    unsigned char *sha = data;
+    unsigned char *spa = data + header->hlength;
+    unsigned char *tha = data + header->hlength + header->plength;
+    unsigned char *tpa = data + header->hlength + header->plength + header->hlength;
     struct arp_hook *hook = findhook(htype, header->hlength, ptype, header->plength);
 
     if (hook)
     {
-
-        unsigned char *data = (unsigned char *)(header + 1);
-        unsigned char *sha = data;
-        unsigned char *spa = data + header->hlength;
-        unsigned char *tha = data + header->hlength + header->plength;
-        unsigned char *tpa = data + header->hlength + header->plength + header->hlength;
 
         switch (operation)
         {
@@ -88,11 +79,12 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
             {
 
                 unsigned char response[ETHERNET_MTU];
-                struct arp_header *arpheader = ethernet_writehead(response, ethernetprotocol.type, interface->haddress, sha);
-                unsigned char *arpdata = arp_writeheader(arpheader, htype, header->hlength, ptype, header->plength, ARP_REPLY);
-                unsigned char *responsetotal = arp_writedata(arpdata, arpheader, tha, tpa, sha, spa);
+                unsigned char *current = response;
 
-                interface->send(response, responsetotal - response);
+                current = ethernet_writehead(current, ethernetprotocol.type, interface->haddress, sha);
+                current = arp_writehead(current, htype, header->hlength, ptype, header->plength, ARP_REPLY, tha, tpa, sha, spa);
+
+                ethernet_send(response, current - response);
 
             }
 
