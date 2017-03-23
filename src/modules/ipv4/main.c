@@ -111,15 +111,8 @@ void *ipv4_writehead(void *buffer, unsigned char *sip, unsigned char *tip, unsig
 void ipv4_send(void *buffer, unsigned int count)
 {
 
-    struct resource *resource;
-    struct ethernet_interface *interface;
-
-    resource = resource_findtype(0, RESOURCE_ETHERNETINTERFACE);
-
-    if (!resource)
-        return;
-
-    interface = resource->data;
+    struct ethernet_header *header = buffer;
+    struct ethernet_interface *interface = ethernet_findinterface(header->sha);
 
     if (!interface)
         return;
@@ -128,7 +121,7 @@ void ipv4_send(void *buffer, unsigned int count)
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
+static void ethernetprotocol_notify(struct ethernet_interface *interface, struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
     struct ipv4_header *header = buffer;
