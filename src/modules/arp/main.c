@@ -101,7 +101,7 @@ static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void
                 unsigned char response[ETHERNET_MTU];
                 unsigned char *current = response;
 
-                current = ethernet_writehead(current, ethernetprotocol.type, tha, sha);
+                current = ethernet_writehead(current, ethernetprotocol.type, ethernetheader->tha, ethernetheader->sha);
                 current = arp_writehead(current, htype, header->hlength, ptype, header->plength, ARP_REPLY, tha, tpa, sha, spa);
 
                 arp_send(response, current - response);
