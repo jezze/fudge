@@ -8,6 +8,16 @@ struct udp_header
 
 };
 
+struct udp_session
+{
+
+    unsigned char sip[IPV4_ADDRSIZE];
+    unsigned char tip[IPV4_ADDRSIZE];
+    unsigned char sp[2];
+    unsigned char tp[2];
+
+};
+
 struct udp_hook
 {
 
