@@ -1,4 +1,3 @@
-#define IPV4_PROTOCOL                   0x0800
 #define IPV4_ADDRSIZE                   4
 
 struct ipv4_header

@@ -248,7 +248,7 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 void module_init(void)
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "ipv4", IPV4_PROTOCOL, ethernetprotocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_notify);
     arp_inithook(&arphook, arphook_match, arphook_lookup, arphook_save);
     system_initnode(&arptablenode, SYSTEM_NODETYPE_NORMAL, "arptable");
 

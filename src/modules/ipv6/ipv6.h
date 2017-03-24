@@ -1,4 +1,3 @@
-#define IPV6_PROTOCOL                   0x86DD
 #define IPV6_ADDRSIZE                   16
 
 struct ipv6_header

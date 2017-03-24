@@ -85,7 +85,7 @@ void ipv6_initprotocol(struct ipv6_protocol *protocol, char *name, unsigned char
 void module_init(void)
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "ipv6", IPV6_PROTOCOL, ethernetprotocol_notify);
+    ethernet_initprotocol(&ethernetprotocol, "ipv6", 0x86DD, ethernetprotocol_notify);
 
 }
 
