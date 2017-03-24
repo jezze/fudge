@@ -5,11 +5,12 @@
 #include <modules/udp/udp.h>
 #include "con.h"
 
-#define UDPTABLESIZE                    64
+#define UDPTABLESIZE                    8
 
 static struct con con;
 static struct udp_hook hook;
-static struct udp_session sessions[UDPTABLESIZE];
+static struct udp_session udptable[UDPTABLESIZE];
+static struct system_node udptablenode;
 
 static void *writedata(void *buffer, void *payload, unsigned int count)
 {
@@ -39,7 +40,7 @@ static void con_close(void)
 static unsigned int con_write(void *buffer, unsigned int count)
 {
 
-    struct udp_session *session = &sessions[0];
+    struct udp_session *session = &udptable[0];
     unsigned char response[FUDGE_BSIZE];
     unsigned char *current = response;
 
@@ -62,7 +63,7 @@ static unsigned int hook_match(unsigned int port)
 static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *udpheader, void *buffer, unsigned int count)
 {
 
-    struct udp_session *session = &sessions[0];
+    struct udp_session *session = &udptable[0];
 
     session->sip[0] = ipv4header->tip[0];
     session->sip[1] = ipv4header->tip[1];
@@ -81,11 +82,29 @@ static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *udphe
 
 }
 
+static unsigned int udptablenode_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return memory_read(buffer, count, udptable, sizeof (struct udp_session) * UDPTABLESIZE, state->offset);
+
+}
+
+static unsigned int udptablenode_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+{
+
+    return memory_write(udptable, sizeof (struct udp_session) * UDPTABLESIZE, buffer, count, state->offset);
+
+}
+
 void module_init(void)
 {
 
     con_init(&con, con_open, con_close, con_write);
     udp_inithook(&hook, hook_match, hook_notify);
+    system_initnode(&udptablenode, SYSTEM_NODETYPE_NORMAL, "udptable");
+
+    udptablenode.read = udptablenode_read;
+    udptablenode.write = udptablenode_write;
 
 }
 
@@ -93,6 +112,7 @@ void module_register(void)
 {
 
     con_register(&con);
+    system_addchild(&con.root, &udptablenode);
 
 }
 
@@ -100,6 +120,7 @@ void module_unregister(void)
 {
 
     con_unregister(&con);
+    system_removechild(&con.root, &udptablenode);
 
 }
 
