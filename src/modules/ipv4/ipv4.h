@@ -12,8 +12,8 @@ struct ipv4_header
     unsigned char ttl;
     unsigned char protocol;
     unsigned char checksum[2];
-    unsigned char sip[4];
-    unsigned char tip[4];
+    unsigned char sip[IPV4_ADDRSIZE];
+    unsigned char tip[IPV4_ADDRSIZE];
 
 };
 
