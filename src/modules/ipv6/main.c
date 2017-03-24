@@ -9,6 +9,20 @@ static struct ethernet_protocol ethernetprotocol;
 static void ethernetprotocol_notify(struct ethernet_interface *interface, struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
+    struct ipv6_header *header = buffer;
+    unsigned int length = (header->length[0] << 8) | header->length[1];
+    struct resource *current = 0;
+
+    while ((current = resource_findtype(current, RESOURCE_IPV6PROTOCOL)))
+    {
+
+        struct ipv6_protocol *protocol = current->data;
+
+        if (protocol->id == header->next)
+            protocol->notify(header, header + 1, length * 8);
+
+    }
+
     kernel_multicast(&ethernetprotocol.datalinks, buffer, count);
 
 }

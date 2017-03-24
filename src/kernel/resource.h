@@ -11,17 +11,18 @@
 #define RESOURCE_ETHERNETINTERFACE      11
 #define RESOURCE_ETHERNETPROTOCOL       12
 #define RESOURCE_IPV4PROTOCOL           13
-#define RESOURCE_AUDIOINTERFACE         14
-#define RESOURCE_VIDEOINTERFACE         15
-#define RESOURCE_TIMERINTERFACE         16
-#define RESOURCE_CLOCKINTERFACE         17
-#define RESOURCE_KEYBOARDINTERFACE      18
-#define RESOURCE_MOUSEINTERFACE         19
-#define RESOURCE_BLOCKINTERFACE         20
-#define RESOURCE_CONSOLEINTERFACE       21
-#define RESOURCE_DEBUGLOG               22
-#define RESOURCE_CON                    23
-#define RESOURCE_PART                   24
+#define RESOURCE_IPV6PROTOCOL           14
+#define RESOURCE_AUDIOINTERFACE         15
+#define RESOURCE_VIDEOINTERFACE         16
+#define RESOURCE_TIMERINTERFACE         17
+#define RESOURCE_CLOCKINTERFACE         18
+#define RESOURCE_KEYBOARDINTERFACE      19
+#define RESOURCE_MOUSEINTERFACE         20
+#define RESOURCE_BLOCKINTERFACE         21
+#define RESOURCE_CONSOLEINTERFACE       22
+#define RESOURCE_DEBUGLOG               23
+#define RESOURCE_CON                    24
+#define RESOURCE_PART                   25
 
 struct resource
 {
