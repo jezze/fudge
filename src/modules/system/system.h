@@ -25,6 +25,7 @@ struct system_node
     unsigned int (*read)(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
     unsigned int (*write)(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
     unsigned int (*child)(struct system_node *self, struct service_state *state, char *path, unsigned int length);
+    unsigned int (*seek)(struct system_node *self, struct service_state *state, unsigned int offset);
 
 };
 

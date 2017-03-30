@@ -354,7 +354,20 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
 {
 
-    return offset;
+    struct cpio_header header;
+
+    if (!readheader(backend, &header, state->id))
+        return 0;
+
+    switch (header.mode & 0xF000)
+    {
+
+    case 0x8000:
+        return offset;
+
+    }
+
+    return 0;
 
 }
 

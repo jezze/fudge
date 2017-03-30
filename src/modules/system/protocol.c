@@ -123,7 +123,9 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
 {
 
-    return offset;
+    struct system_node *node = (struct system_node *)state->id;
+
+    return (node->seek) ? node->seek(node, state, offset) : 0;
 
 }
 
