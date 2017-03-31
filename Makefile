@@ -67,7 +67,7 @@ $(RAMDISK_NAME).cpio: $(DIR_BUILD)
 	@echo RAMDISK $@
 	@find $^ -depth | cpio -o > $@
 
-$(IMAGE): $(KERNEL) $(RAMDISK)
+$(IMAGE_NAME).img: $(KERNEL) $(RAMDISK)
 	@echo IMAGE $@
 	@dd if=/dev/zero of=$@ count=65536
 	@dd if=$(KERNEL) of=$@ conv=notrunc
