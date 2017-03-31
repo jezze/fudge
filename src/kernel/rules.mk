@@ -18,7 +18,4 @@ L:=\
     $(DIR_SRC)/format/format.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
-
-$(B): LDFLAGS:=$(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld
-
-include $(DIR_MK)/bin.mk
+include $(DIR_MK)/kernel.mk
