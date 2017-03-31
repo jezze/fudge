@@ -1,7 +1,6 @@
-$(B): LDFLAGS:=$(LDFLAGS) -Tplatform/$(PLATFORM)/linker.ld
 $(B): $(O) $(L)
 	@echo LD $@
-	@$(LD) $(LDFLAGS) -o $@ $^
+	@$(TARGET)-ld -static -Tplatform/$(PLATFORM)/linker.ld -o $@ $^
 
 BIN:=$(BIN) $(B)
 OBJ:=$(OBJ) $(O)

@@ -1,6 +1,6 @@
 $(L): $(O)
 	@echo AR $@ 
-	@$(AR) $(ARFLAGS) $@ $^
+	@$(TARGET)-ar rcs $@ $^
 
 LIB:=$(LIB) $(L)
 OBJ:=$(OBJ) $(O)

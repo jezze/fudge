@@ -1,7 +1,6 @@
-$(M): LDFLAGS:=$(LDFLAGS) -T$(DIR_SRC)/modules/linker.ld -r
 $(M): $(O) $(L)
 	@echo LD $@
-	@$(LD) $(LDFLAGS) -o $@ $^
+	@$(TARGET)-ld -static -T$(DIR_SRC)/modules/linker.ld -r -o $@ $^
 
 MOD:=$(MOD) $(M)
 OBJ:=$(OBJ) $(O)

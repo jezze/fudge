@@ -1,30 +1,6 @@
 ARCH:=x86
 KERNEL:=fudge
 
-DIR_BUILD:=build
-DIR_INCLUDE:=include
-DIR_MK:=mk
-DIR_SRC:=src
-DIR_SNAPSHOT:=snapbuild
-DIR_INSTALL:=/boot
-
-TARGET_x86:=i386-unknown-elf
-TARGET_arm:=arm-unknown-eabi
-TARGET:=$(TARGET_$(ARCH))
-
-PLATFORM_x86:=pc
-PLATFORM_arm:=integratorcp
-PLATFORM:=$(PLATFORM_$(ARCH))
-
-AR:=$(TARGET)-ar
-AS:=$(TARGET)-as
-CC:=$(TARGET)-cc
-LD:=$(TARGET)-ld
-ARFLAGS:=rcs
-ASFLAGS:=
-CFLAGS:=-msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2
-LDFLAGS:=-static
-
 RAMDISK_NAME:=$(KERNEL)
 RAMDISK_TYPE:=cpio
 RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
@@ -32,6 +8,13 @@ RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
 IMAGE_NAME:=$(KERNEL)
 IMAGE_TYPE:=img
 IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
+
+DIR_BUILD:=build
+DIR_INCLUDE:=include
+DIR_MK:=mk
+DIR_SRC:=src
+DIR_SNAPSHOT:=snapbuild
+DIR_INSTALL:=/boot
 
 .PHONY: all clean snapshot install
 .SUFFIXES:
@@ -46,6 +29,7 @@ snapshot: $(DIR_SNAPSHOT)
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
 include $(DIR_MK)/all.mk
+include $(DIR_MK)/$(ARCH).mk
 include $(DIR_SRC)/rules.mk
 
 $(DIR_BUILD): $(BIN) $(MOD)
