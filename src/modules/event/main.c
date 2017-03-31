@@ -15,7 +15,7 @@ void event_unicast(struct list *links, struct event_header *header, unsigned int
         if (header->destination != (unsigned int)state->task)
             continue;
 
-        kernel_unicast(state->task, header, count);
+        kernel_writetask(state->task, header, count);
 
     }
 
@@ -33,7 +33,7 @@ void event_multicast(struct list *links, struct event_header *header, unsigned i
 
         header->destination = (unsigned int)state->task;
 
-        kernel_unicast(state->task, header, count);
+        kernel_writetask(state->task, header, count);
 
     }
 
