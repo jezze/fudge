@@ -56,12 +56,7 @@ unsigned int system_childgroup(struct system_node *self, struct service_state *s
 unsigned int system_readtask(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    count = ring_read(&state->task->mailbox, buffer, count);
-
-    if (!count)
-        kernel_blocktask(state->task);
-
-    return count;
+    return kernel_readtask(state->task, buffer, count);
 
 }
 
