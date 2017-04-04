@@ -63,30 +63,30 @@ unsigned int system_readtask(struct system_node *self, struct service_state *sta
 unsigned int system_readgroup(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    struct record *record = buffer;
+    struct record record;
     struct system_node *current = (struct system_node *)state->current;
 
     if (!state->current)
         return 0;
 
-    record->id = state->current;
-    record->size = 0;
-    record->length = memory_read(record->name, RECORD_NAMESIZE, current->name, ascii_length(current->name), 0);
+    record.id = state->current;
+    record.size = 0;
+    record.length = memory_read(record.name, RECORD_NAMESIZE, current->name, ascii_length(current->name), 0);
 
     if (current->type & SYSTEM_NODETYPE_MULTI)
     {
 
         char num[FUDGE_NSIZE];
 
-        record->length += memory_write(record->name, RECORD_NAMESIZE, ":", 1, record->length);
-        record->length += memory_write(record->name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, current->index, 10, 0), record->length);
+        record.length += memory_write(record.name, RECORD_NAMESIZE, ":", 1, record.length);
+        record.length += memory_write(record.name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, current->index, 10, 0), record.length);
 
     }
 
     if (current->type & SYSTEM_NODETYPE_GROUP)
-        record->length += memory_write(record->name, RECORD_NAMESIZE, "/", 1, record->length);
+        record.length += memory_write(record.name, RECORD_NAMESIZE, "/", 1, record.length);
 
-    return sizeof (struct record);
+    return memory_read(buffer, count, &record, sizeof (struct record), state->offset);
 
 }
 
