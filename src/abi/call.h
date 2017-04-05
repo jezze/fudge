@@ -36,6 +36,7 @@ unsigned int call_open(unsigned int descriptor);
 unsigned int call_read(unsigned int descriptor, void *buffer, unsigned int count);
 unsigned int call_seek(unsigned int descriptor, unsigned int offset);
 unsigned int call_spawn(void);
+unsigned int call_step(unsigned int descriptor);
 unsigned int call_unload(unsigned int descriptor);
 unsigned int call_walk(unsigned int descriptor, unsigned int pdescriptor, char *path, unsigned int length);
 unsigned int call_write(unsigned int descriptor, void *buffer, unsigned int count);

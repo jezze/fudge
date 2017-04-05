@@ -151,7 +151,6 @@ static unsigned int read(struct container *container, struct task *task, void *s
 
     count = service->server->protocol->read(service->server->backend, &service->state, args->buffer, args->count);
     service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.offset + count);
-    service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.current);
 
     return count;
 
@@ -169,7 +168,6 @@ static unsigned int write(struct container *container, struct task *task, void *
 
     count = service->server->protocol->write(service->server->backend, &service->state, args->buffer, args->count);
     service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.offset + count);
-    service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.current);
 
     return count;
 
@@ -294,6 +292,16 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 
 }
 
+static unsigned int step(struct container *container, struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int service;} *args = stack;
+    struct service *service = kernel_getservice(task, args->service);
+
+    return service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.current);
+
+}
+
 unsigned int abi_call(unsigned int index, struct container *container, struct task *task, void *stack)
 {
 
@@ -320,6 +328,7 @@ void abi_setup(unsigned int (*spawn)(struct container *container, struct task *t
     calls[0x0C] = spawn;
     calls[0x0D] = despawn;
     calls[0x0E] = seek;
+    calls[0x0F] = step;
 
 }
 
