@@ -15,7 +15,7 @@ void main(void)
 
         file_writeall(CALL_PO, record.name, record.length);
         file_writeall(CALL_PO, "\n", 1);
-        call_step(CALL_PW);
+        file_step(CALL_PW);
 
     }
 

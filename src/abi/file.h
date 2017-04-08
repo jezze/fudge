@@ -3,6 +3,7 @@ unsigned int file_walkfrom(unsigned int descriptor, unsigned int pdescriptor, ch
 unsigned int file_duplicate(unsigned int descriptor, unsigned int pdescriptor);
 unsigned int file_open(unsigned int descriptor);
 unsigned int file_close(unsigned int descriptor);
+unsigned int file_step(unsigned int descriptor);
 unsigned int file_read(unsigned int descriptor, void *buffer, unsigned int count);
 unsigned int file_readall(unsigned int descriptor, void *buffer, unsigned int count);
 unsigned int file_write(unsigned int descriptor, void *buffer, unsigned int count);

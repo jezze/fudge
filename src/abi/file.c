@@ -40,6 +40,13 @@ unsigned int file_close(unsigned int descriptor)
 
 }
 
+unsigned int file_step(unsigned int descriptor)
+{
+
+    return call_step(descriptor);
+
+}
+
 unsigned int file_read(unsigned int descriptor, void *buffer, unsigned int count)
 {
 
