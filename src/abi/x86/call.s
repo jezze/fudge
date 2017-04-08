@@ -6,16 +6,16 @@
 .set CALL_INDEX_DESTROY,                0x03
 .set CALL_INDEX_OPEN,                   0x04
 .set CALL_INDEX_CLOSE,                  0x05
-.set CALL_INDEX_READ,                   0x06
-.set CALL_INDEX_WRITE,                  0x07
-.set CALL_INDEX_AUTH,                   0x08
-.set CALL_INDEX_MOUNT,                  0x09
-.set CALL_INDEX_LOAD,                   0x0A
-.set CALL_INDEX_UNLOAD,                 0x0B
-.set CALL_INDEX_SPAWN,                  0x0C
-.set CALL_INDEX_DESPAWN,                0x0D
-.set CALL_INDEX_SEEK,                   0x0E
-.set CALL_INDEX_STEP,                   0x0F
+.set CALL_INDEX_STEP,                   0x06
+.set CALL_INDEX_READ,                   0x07
+.set CALL_INDEX_WRITE,                  0x08
+.set CALL_INDEX_SEEK,                   0x09
+.set CALL_INDEX_AUTH,                   0x0A
+.set CALL_INDEX_MOUNT,                  0x0B
+.set CALL_INDEX_LOAD,                   0x0C
+.set CALL_INDEX_UNLOAD,                 0x0D
+.set CALL_INDEX_SPAWN,                  0x0E
+.set CALL_INDEX_DESPAWN,                0x0F
 
 .global call_auth
 call_auth:

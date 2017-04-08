@@ -137,6 +137,19 @@ static unsigned int close(struct container *container, struct task *task, void *
 
 }
 
+static unsigned int step(struct container *container, struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int service;} *args = stack;
+    struct service *service = kernel_getservice(task, args->service);
+
+    service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.current);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
+
+    return service->state.current;
+
+}
+
 static unsigned int read(struct container *container, struct task *task, void *stack)
 {
 
@@ -168,6 +181,16 @@ static unsigned int write(struct container *container, struct task *task, void *
     service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.offset + count);
 
     return count;
+
+}
+
+static unsigned int seek(struct container *container, struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int service; unsigned int offset;} *args = stack;
+    struct service *service = kernel_getservice(task, args->service);
+
+    return service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, args->offset);
 
 }
 
@@ -280,29 +303,6 @@ static unsigned int unload(struct container *container, struct task *task, void 
 
 }
 
-static unsigned int seek(struct container *container, struct task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int service; unsigned int offset;} *args = stack;
-    struct service *service = kernel_getservice(task, args->service);
-
-    return service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, args->offset);
-
-}
-
-static unsigned int step(struct container *container, struct task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int service;} *args = stack;
-    struct service *service = kernel_getservice(task, args->service);
-
-    service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.current);
-    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
-
-    return service->state.current;
-
-}
-
 unsigned int abi_call(unsigned int index, struct container *container, struct task *task, void *stack)
 {
 
@@ -320,16 +320,16 @@ void abi_setup(unsigned int (*spawn)(struct container *container, struct task *t
     calls[0x03] = destroy;
     calls[0x04] = open;
     calls[0x05] = close;
-    calls[0x06] = read;
-    calls[0x07] = write;
-    calls[0x08] = auth;
-    calls[0x09] = mount;
-    calls[0x0A] = load;
-    calls[0x0B] = unload;
-    calls[0x0C] = spawn;
-    calls[0x0D] = despawn;
-    calls[0x0E] = seek;
-    calls[0x0F] = step;
+    calls[0x06] = step;
+    calls[0x07] = read;
+    calls[0x08] = write;
+    calls[0x09] = seek;
+    calls[0x0A] = auth;
+    calls[0x0B] = mount;
+    calls[0x0C] = load;
+    calls[0x0D] = unload;
+    calls[0x0E] = spawn;
+    calls[0x0F] = despawn;
 
 }
 
