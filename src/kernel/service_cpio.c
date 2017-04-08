@@ -232,8 +232,6 @@ static unsigned int protocol_step(struct service_backend *backend, struct servic
     {
 
     case 0x4000:
-        state->offset = 0;
-
         return stepdirectory(backend, state->id, current);
 
     }

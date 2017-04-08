@@ -114,13 +114,12 @@ static unsigned int open(struct container *container, struct task *task, void *s
 
     struct {void *caller; unsigned int service;} *args = stack;
     struct service *service = kernel_getservice(task, args->service);
-    unsigned int id;
 
-    id = service->server->protocol->open(service->server->backend, &service->state);
-    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
+    service->state.id = service->server->protocol->open(service->server->backend, &service->state);
     service->state.current = service->server->protocol->step(service->server->backend, &service->state, 0);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
 
-    return id;
+    return service->state.id;
 
 }
 
@@ -129,13 +128,12 @@ static unsigned int close(struct container *container, struct task *task, void *
 
     struct {void *caller; unsigned int service;} *args = stack;
     struct service *service = kernel_getservice(task, args->service);
-    unsigned int id;
 
-    id = service->server->protocol->close(service->server->backend, &service->state);
-    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
+    service->state.id = service->server->protocol->close(service->server->backend, &service->state);
     service->state.current = service->server->protocol->step(service->server->backend, &service->state, 0);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
 
-    return id;
+    return service->state.id;
 
 }
 
@@ -298,7 +296,10 @@ static unsigned int step(struct container *container, struct task *task, void *s
     struct {void *caller; unsigned int service;} *args = stack;
     struct service *service = kernel_getservice(task, args->service);
 
-    return service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.current);
+    service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.current);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
+
+    return service->state.current;
 
 }
 
