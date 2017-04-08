@@ -182,7 +182,6 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
     if (!task->format)
         return 0;
 
-    kernel_activatetask(task);
     task_setstate(task, task->format->findentry(&task->node), sp);
 
     return 1;

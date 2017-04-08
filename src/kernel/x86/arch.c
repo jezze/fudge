@@ -141,7 +141,12 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     copymap(container, next);
     kernel_copyservices(task, next);
 
-    return kernel_setupbinary(next, TASKSTACK);
+    if (!kernel_setupbinary(next, TASKSTACK))
+        return 0;
+
+    kernel_activatetask(next);
+
+    return 1;
 
 }
 
@@ -469,6 +474,7 @@ void arch_setup(struct service_backend *backend)
     copymap(current.container, current.task);
     kernel_copyservices(current.task, current.task);
     kernel_setupbinary(current.task, TASKSTACK);
+    kernel_activatetask(current.task);
     activate(current.task);
     mmu_setup();
     abi_setup(spawn, despawn);
