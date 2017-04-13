@@ -1,11 +1,3 @@
-L:=\
-    $(DIR_SRC)/elf/libelf.a \
-
-O:=\
-    $(DIR_SRC)/elf/libelf.o \
-
-include $(DIR_MK)/lib.mk
-
 B:=\
     $(DIR_SRC)/elf/elfload \
 
@@ -13,9 +5,9 @@ O:=\
     $(DIR_SRC)/elf/elfload.o \
 
 L:=\
-    $(DIR_SRC)/abi/abi.a \
-    $(DIR_SRC)/fudge/fudge.a \
-    $(DIR_SRC)/elf/libelf.a \
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/elf/elf.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -26,8 +18,8 @@ O:=\
     $(DIR_SRC)/elf/elfunload.o \
 
 L:=\
-    $(DIR_SRC)/abi/abi.a \
-    $(DIR_SRC)/fudge/fudge.a \
-    $(DIR_SRC)/elf/libelf.a \
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/elf/elf.a \
 
 include $(DIR_MK)/bin.mk

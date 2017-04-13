@@ -10,8 +10,8 @@ O:=\
     $(DIR_SRC)/wm/print.o \
 
 L:=\
-    $(DIR_SRC)/abi/abi.a \
-    $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -27,9 +27,9 @@ O:=\
     $(DIR_SRC)/wm/render.o \
 
 L:=\
-    $(DIR_SRC)/abi/abi.a \
-    $(DIR_SRC)/fudge/fudge.a \
-    $(DIR_SRC)/pcf/pcf.a \
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/pcf/pcf.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -45,9 +45,9 @@ O:=\
     $(DIR_SRC)/wm/render.o \
 
 L:=\
-    $(DIR_SRC)/abi/abi.a \
-    $(DIR_SRC)/fudge/fudge.a \
-    $(DIR_SRC)/pcf/pcf.a \
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/pcf/pcf.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -63,7 +63,7 @@ O:=\
     $(DIR_SRC)/wm/print.o \
 
 L:=\
-    $(DIR_SRC)/abi/abi.a \
-    $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/bin.mk

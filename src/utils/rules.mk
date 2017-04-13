@@ -1,6 +1,6 @@
 L:=\
-    $(DIR_SRC)/abi/abi.a \
-    $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
 
 B:=\
     $(DIR_SRC)/utils/cat \

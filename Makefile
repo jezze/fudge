@@ -12,6 +12,7 @@ IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
 DIR_BUILD:=build
 DIR_INCLUDE:=include
 DIR_MK:=mk
+DIR_LIB:=lib
 DIR_SRC:=src
 DIR_SNAPSHOT:=snapbuild
 DIR_INSTALL:=/boot
@@ -30,6 +31,7 @@ install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
 include $(DIR_MK)/all.mk
 include $(DIR_MK)/$(ARCH).mk
+include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk
 
 $(DIR_BUILD): $(BIN) $(MOD)

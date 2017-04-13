@@ -10,4 +10,4 @@ O:=\
 
 L:=\
     $(L) \
-    $(DIR_SRC)/mboot/mboot.a \
+    $(DIR_LIB)/mboot/mboot.a \

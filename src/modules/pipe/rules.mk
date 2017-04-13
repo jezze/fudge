@@ -5,7 +5,7 @@ O:=\
     $(DIR_SRC)/modules/pipe/main.o \
 
 L:=\
-    $(DIR_SRC)/fudge/fudge.a \
+    $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/mod.mk
 

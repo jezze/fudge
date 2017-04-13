@@ -14,9 +14,9 @@ O:=\
     $(DIR_SRC)/kernel/service_cpio.o \
 
 L:=\
-    $(DIR_SRC)/fudge/fudge.a \
-    $(DIR_SRC)/cpio/cpio.a \
-    $(DIR_SRC)/elf/libelf.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/cpio/cpio.a \
+    $(DIR_LIB)/elf/elf.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
 include $(DIR_MK)/kernel.mk

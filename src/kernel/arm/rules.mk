@@ -10,4 +10,4 @@ O:=\
 
 L:=\
     $(L) \
-    $(DIR_SRC)/std/std.a \
+    $(DIR_LIB)/std/std.a \
