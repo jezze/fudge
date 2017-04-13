@@ -1,6 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
-#include "sha1.h"
+#include "sha.h"
 
 void main(void)
 {
