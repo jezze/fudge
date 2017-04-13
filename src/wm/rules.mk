@@ -29,7 +29,7 @@ O:=\
 L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
-    $(DIR_SRC)/format/format.a \
+    $(DIR_SRC)/pcf/pcf.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -47,7 +47,7 @@ O:=\
 L:=\
     $(DIR_SRC)/abi/abi.a \
     $(DIR_SRC)/fudge/fudge.a \
-    $(DIR_SRC)/format/format.a \
+    $(DIR_SRC)/pcf/pcf.a \
 
 include $(DIR_MK)/bin.mk
 

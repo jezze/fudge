@@ -1,6 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
-#include <format/elf.h>
+#include "elf.h"
 
 void main(void)
 {

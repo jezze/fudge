@@ -1,6 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
-#include <format/md5.h>
+#include "md5.h"
 
 void main(void)
 {

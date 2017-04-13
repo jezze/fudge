@@ -1,6 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
-#include <format/pcf.h>
+#include <pcf/pcf.h>
 #include "box.h"
 #include "element.h"
 #include "ev.h"

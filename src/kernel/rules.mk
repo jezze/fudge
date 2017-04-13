@@ -15,7 +15,8 @@ O:=\
 
 L:=\
     $(DIR_SRC)/fudge/fudge.a \
-    $(DIR_SRC)/format/format.a \
+    $(DIR_SRC)/cpio/cpio.a \
+    $(DIR_SRC)/elf/libelf.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
 include $(DIR_MK)/kernel.mk
