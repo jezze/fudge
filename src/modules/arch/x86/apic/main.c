@@ -98,7 +98,7 @@ void module_init(void)
 
     msr_set(MSR_LAPIC, &msrdata);
 
-    arch_setmap(6, mmio, mmio, 0x1000);
+    arch_setmap(7, mmio, mmio, 0x1000);
     arch_setinterrupt(0xFF, apic_spurious);
     apic_outd(REGISTERSV, 0xFF | (1 << 8));
 
