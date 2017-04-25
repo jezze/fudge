@@ -26,9 +26,9 @@ static void setmadt(void)
         if (entry->type == 0)
         {
 
-            struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;
+            struct acpi_madt_apic *apic = (struct acpi_madt_apic *)entry;
 
-            architecture.cpus[architecture.count].id = lapic->id;
+            architecture.cpus[architecture.count].id = apic->id;
             architecture.count++;
 
         }

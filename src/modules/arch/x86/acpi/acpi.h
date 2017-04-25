@@ -21,6 +21,15 @@ struct acpi_rsdt
 
 };
 
+struct acpi_madt
+{
+
+    struct acpi_sdth base;
+    unsigned int lica;
+    unsigned int flags;
+
+};
+
 struct acpi_madt_entry
 {
 
@@ -29,22 +38,35 @@ struct acpi_madt_entry
 
 };
 
-struct acpi_madt_lapic
+struct acpi_madt_apic
 {
 
     struct acpi_madt_entry base;
-    unsigned char processorId;
+    unsigned char processor;
     unsigned char id;
     unsigned int flags;
 
 };
 
-struct acpi_madt
+struct acpi_madt_ioapic
 {
 
-    struct acpi_sdth base;
-    unsigned int lica;
-    unsigned int flags;
+    struct acpi_madt_entry base;
+    unsigned char id;
+    unsigned char reserved;
+    unsigned int address;
+    unsigned int intbase;
+
+};
+
+struct acpi_madt_intsource
+{
+
+    struct acpi_madt_entry base;
+    unsigned char bus;
+    unsigned char irq;
+    unsigned int intbase;
+    unsigned char flags[2];
 
 };
 
@@ -56,7 +78,7 @@ struct acpi_srat_entry
 
 };
 
-struct acpi_srat_lapic
+struct acpi_srat_apic
 {
 
     struct acpi_srat_entry base;
