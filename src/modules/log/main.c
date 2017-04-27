@@ -153,12 +153,16 @@ void module_init(void)
 
     critical.open = critical_open;
     critical.close = critical_close;
+    critical.read = system_readtask;
     error.open = error_open;
     error.close = error_close;
+    error.read = system_readtask;
     warning.open = warning_open;
     warning.close = warning_close;
+    warning.read = system_readtask;
     info.open = info_open;
     info.close = info_close;
+    info.read = system_readtask;
 
     system_addchild(&root, &critical);
     system_addchild(&root, &error);
