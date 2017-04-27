@@ -375,8 +375,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
     unsigned int address = cpu_getcr2();
 
-    DEBUG(DEBUG_INFO, "exception: page fault");
-
     if (current.task)
     {
 
@@ -448,9 +446,7 @@ void arch_setup(struct service_backend *backend)
     idt_setdescriptor(&idt.pointer, 0x05, isr_bound, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x06, isr_opcode, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x07, isr_device, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-
     idt_setdescriptor(&idt.pointer, 0x08, isr_doublefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-
     idt_setdescriptor(&idt.pointer, 0x0A, isr_tss, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x0B, isr_segment, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt.pointer, 0x0C, isr_stack, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);

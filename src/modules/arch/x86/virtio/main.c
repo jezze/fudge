@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
-#include <modules/block/block.h>
+#include <modules/ethernet/ethernet.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/io/io.h>
 #include <modules/arch/x86/pci/pci.h>
@@ -28,6 +28,7 @@
 #define REGISTERISR                     0x13
 
 static struct base_driver driver;
+static struct ethernet_interface ethernetinterface;
 static unsigned short io;
 
 static void reset(void)
@@ -43,8 +44,17 @@ static void handleirq(unsigned int irq)
 
 }
 
+static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
+{
+
+    return 0;
+
+}
+
 static void driver_init(void)
 {
+
+    ethernet_initinterface(&ethernetinterface, ethernetinterface_send);
 
 }
 
@@ -60,10 +70,9 @@ static void driver_attach(unsigned int id)
 
     io = pci_inw(id, PCI_CONFIG_BAR0) & ~1;
 
-    memory_copy((void *)0xB8000, "a ", 2);
     pci_setmaster(id);
     reset();
-
+    ethernet_registerinterface(&ethernetinterface, id);
     pic_setroutine(pci_getirq(id), handleirq);
 
 }
@@ -71,6 +80,7 @@ static void driver_attach(unsigned int id)
 static void driver_detach(unsigned int id)
 {
 
+    ethernet_unregisterinterface(&ethernetinterface);
     pic_unsetroutine(pci_getirq(id));
 
 }
