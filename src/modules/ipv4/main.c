@@ -149,13 +149,6 @@ static unsigned int arptablenode_read(struct system_node *self, struct service_s
 
 }
 
-static unsigned int arptablenode_seek(struct system_node *self, struct service_state *state, unsigned int offset)
-{
-
-    return offset;
-
-}
-
 static unsigned int arptablenode_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -260,8 +253,8 @@ void module_init(void)
     system_initnode(&arptablenode, SYSTEM_NODETYPE_NORMAL, "arptable");
 
     arptablenode.read = arptablenode_read;
-    arptablenode.seek = arptablenode_seek;
     arptablenode.write = arptablenode_write;
+    arptablenode.seek = system_seek;
 
 }
 

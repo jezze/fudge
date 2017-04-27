@@ -90,7 +90,7 @@ unsigned int system_readgroup(struct system_node *self, struct service_state *st
 
 }
 
-unsigned int system_seekgroup(struct system_node *self, struct service_state *state, unsigned int offset)
+unsigned int system_seek(struct system_node *self, struct service_state *state, unsigned int offset)
 {
 
     return offset;
@@ -150,7 +150,7 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
         node->read = system_readgroup;
         node->child = system_childgroup;
-        node->seek = system_seekgroup;
+        node->seek = system_seek;
 
     }
 

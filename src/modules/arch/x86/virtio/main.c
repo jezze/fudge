@@ -72,6 +72,14 @@ static void driver_attach(unsigned int id)
 
     pci_setmaster(id);
     reset();
+
+    ethernetinterface.haddress[0] = io_inb(io + 0x14);
+    ethernetinterface.haddress[1] = io_inb(io + 0x15);
+    ethernetinterface.haddress[2] = io_inb(io + 0x16);
+    ethernetinterface.haddress[3] = io_inb(io + 0x17);
+    ethernetinterface.haddress[4] = io_inb(io + 0x18);
+    ethernetinterface.haddress[5] = io_inb(io + 0x19);
+
     ethernet_registerinterface(&ethernetinterface, id);
     pic_setroutine(pci_getirq(id), handleirq);
 

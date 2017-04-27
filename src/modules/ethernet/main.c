@@ -151,6 +151,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
 
     interface->send = send;
     interface->addr.read = interfaceaddr_read;
+    interface->addr.seek = system_seek;
     interface->data.open = interfacedata_open;
     interface->data.close = interfacedata_close;
     interface->data.read = system_readtask;

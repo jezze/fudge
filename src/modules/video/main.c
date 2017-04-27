@@ -53,13 +53,6 @@ static unsigned int interfacedata_read(struct system_node *self, struct service_
 
 }
 
-static unsigned int interfacedata_seek(struct system_node *self, struct service_state *state, unsigned int offset)
-{
-
-    return offset;
-
-}
-
 static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
@@ -75,13 +68,6 @@ static unsigned int interfacecolormap_read(struct system_node *self, struct serv
     struct video_interface *interface = self->resource->data;
 
     return interface->rcolormap(state->offset, buffer, count);
-
-}
-
-static unsigned int interfacecolormap_seek(struct system_node *self, struct service_state *state, unsigned int offset)
-{
-
-    return offset;
 
 }
 
@@ -160,11 +146,11 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
     interface->ctrl.read = interfacectrl_read;
     interface->ctrl.write = interfacectrl_write;
     interface->data.read = interfacedata_read;
-    interface->data.seek = interfacedata_seek;
     interface->data.write = interfacedata_write;
+    interface->data.seek = system_seek;
     interface->colormap.read = interfacecolormap_read;
-    interface->colormap.seek = interfacecolormap_seek;
     interface->colormap.write = interfacecolormap_write;
+    interface->colormap.seek = system_seek;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
     interface->event.read = system_readtask;
