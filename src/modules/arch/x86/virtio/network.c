@@ -61,7 +61,20 @@ static void driver_init(void)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR;
+    char revision = pci_inb(id, PCI_CONFIG_REVISION);
+
+    switch (revision)
+    {
+
+    case 1:
+        return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1041;
+
+    case 0:
+        return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1000;
+
+    }
+
+    return 0;
 
 }
 
