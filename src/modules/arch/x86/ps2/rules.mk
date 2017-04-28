@@ -10,7 +10,7 @@ L:=\
 include $(DIR_MK)/mod.mk
 
 M:=\
-    $(DIR_SRC)/modules/arch/x86/ps2/ps2keyboard.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/ps2/ps2-keyboard.ko.0 \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/ps2/keyboard.o \
@@ -21,7 +21,7 @@ L:=\
 include $(DIR_MK)/mod.mk
 
 M:=\
-    $(DIR_SRC)/modules/arch/x86/ps2/ps2mouse.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/ps2/ps2-mouse.ko.0 \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/ps2/mouse.o \
