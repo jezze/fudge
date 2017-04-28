@@ -4,7 +4,7 @@
 #include <modules/system/system.h>
 #include <modules/keyboard/keyboard.h>
 #include <modules/arch/x86/pic/pic.h>
-#include <modules/arch/x86/ps2/ps2.h>
+#include "ps2.h"
 
 static struct base_driver driver;
 static struct keyboard_interface keyboardinterface;

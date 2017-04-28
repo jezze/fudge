@@ -4,7 +4,7 @@
 #include <modules/system/system.h>
 #include <modules/mouse/mouse.h>
 #include <modules/arch/x86/pic/pic.h>
-#include <modules/arch/x86/ps2/ps2.h>
+#include "ps2.h"
 
 static struct base_driver driver;
 static struct mouse_interface mouseinterface;
