@@ -136,9 +136,6 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
     unsigned char name[1024];
     unsigned int id = 0;
 
-    if (!length)
-        return 1;
-
     if (!readheader(backend, &header, state->id))
         return 0;
 

@@ -10,19 +10,16 @@ unsigned int system_childgroup(struct system_node *self, struct service_state *s
 
     struct list_item *current;
 
-    if (!length)
-        return (unsigned int)self;
-
     for (current = self->children.head; current; current = current->next)
     {
 
-        struct system_node *self = current->data;
-        unsigned int length0 = ascii_length(self->name);
+        struct system_node *node = current->data;
+        unsigned int length0 = ascii_length(node->name);
 
-        if (!memory_match(self->name, path, length0))
+        if (!memory_match(node->name, path, length0))
             continue;
 
-        if (self->type & SYSTEM_NODETYPE_MULTI)
+        if (node->type & SYSTEM_NODETYPE_MULTI)
         {
 
             unsigned int val;
@@ -32,12 +29,12 @@ unsigned int system_childgroup(struct system_node *self, struct service_state *s
 
             val = path[length0 + 1] - '0';
 
-            if (val != self->index)
+            if (val != node->index)
                 continue;
 
         }
 
-        return (unsigned int)current;
+        return (unsigned int)node;
 
     }
 
