@@ -1,6 +1,6 @@
 $(M): $(O) $(L)
 	@echo LD $@
-	@$(LD) -static -T$(DIR_SRC)/modules/linker.ld -r -o $@ $^
+	@$(LD) $@ -T$(DIR_SRC)/modules/linker.ld -r $^
 
 MOD:=$(MOD) $(M)
 OBJ:=$(OBJ) $(O)

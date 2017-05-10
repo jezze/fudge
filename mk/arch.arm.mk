@@ -1,18 +1,17 @@
-CROSS_COMPILE=arm-unknown-eabi-
-AR=$(CROSS_COMPILE)ar
-AS=$(CROSS_COMPILE)as
-CC=$(CROSS_COMPILE)cc
-LD=$(CROSS_COMPILE)ld
-PP=$(CROSS_COMPILE)cc
+AR=arm-unknown-eabi-ar rcs
+AS=arm-unknown-eabi-as -c -o
+CC=arm-unknown-eabi-cc -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -c -S -o
+LD=arm-unknown-eabi-ld -static -o
+PP=arm-unknown-eabi-cc -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -E -I$(DIR_INCLUDE) -I$(DIR_SRC) -I$(DIR_LIB) -o
 
 %.i: %.c
 	@echo PP $@
-	@$(PP) -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -E -o $@ -I$(DIR_INCLUDE) -I$(DIR_SRC) -I$(DIR_LIB) $^
+	@$(PP) $@ $^
 
 %.s: %.i
 	@echo CC $@
-	@$(CC) -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -c -S -o $@ $^
+	@$(CC) $@ $^
 
 %.o: %.s
 	@echo AS $@
-	@$(AS) -c -o $@ $^
+	@$(AS) $@ $^
