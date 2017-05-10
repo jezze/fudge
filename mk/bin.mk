@@ -1,6 +1,6 @@
 $(B): $(O) $(L)
 	@echo LD $@
-	@$(TARGET)-ld -static -o $@ $^
+	@$(LD) -static -o $@ $^
 
 BIN:=$(BIN) $(B)
 OBJ:=$(OBJ) $(O)

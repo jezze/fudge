@@ -1,6 +1,6 @@
 $(B): $(O) $(L)
 	@echo LD $@
-	@$(TARGET)-ld -static -Tplatform/$(PLATFORM)/linker.ld -o $@ $^
+	@$(LD) -static -T$(DIR_SRC)/kernel/$(ARCH)/linker.ld -o $@ $^
 
 BIN:=$(BIN) $(B)
 OBJ:=$(OBJ) $(O)
