@@ -280,16 +280,6 @@ static unsigned int readdirectory(struct service_backend *backend, void *buffer,
     record.size = cpio_filesize(&eheader);
     record.length = readname(backend, &eheader, current, record.name, RECORD_NAMESIZE, header->namesize) - 1;
 
-    switch (eheader.mode & 0xF000)
-    {
-
-    case 0x4000:
-        record.length += memory_write(record.name, RECORD_NAMESIZE, "/", 1, record.length);
-
-        break;
-
-    }
-
     return memory_read(buffer, count, &record, sizeof (struct record), offset);
 
 }

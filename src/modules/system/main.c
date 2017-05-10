@@ -35,17 +35,9 @@ unsigned int system_childgroup(struct system_node *self, struct service_state *s
             if (val != self->index)
                 continue;
 
-            length0 += 2;
-
         }
 
-        if (self->type & SYSTEM_NODETYPE_GROUP)
-            length0 += 1;
-
-        length -= length0;
-        path += length0;
-
-        return (self->child) ? self->child(self, state, path, length) : (length ? 0 : (unsigned int)self);
+        return (unsigned int)current;
 
     }
 
@@ -82,9 +74,6 @@ unsigned int system_readgroup(struct system_node *self, struct service_state *st
         record.length += memory_write(record.name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, current->index, 10, 0), record.length);
 
     }
-
-    if (current->type & SYSTEM_NODETYPE_GROUP)
-        record.length += memory_write(record.name, RECORD_NAMESIZE, "/", 1, record.length);
 
     return memory_read(buffer, count, &record, sizeof (struct record), state->offset);
 

@@ -13,8 +13,7 @@ void main(void)
     file_writeall(CALL_PO, " ", 1);
     file_writeall(CALL_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0));
     file_writeall(CALL_PO, " ", 1);
-    file_writeall(CALL_PO, "../", 3);
-    file_writeall(CALL_PO, "\n", 1);
+    file_writeall(CALL_PO, "..\n", 3);
 
     while (file_readall(CALL_PW, &record, sizeof (struct record)))
     {

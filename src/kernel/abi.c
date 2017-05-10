@@ -57,7 +57,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
     for (offset = 0; (length = memory_findbyte(args->path + offset, args->length - offset, '/')); offset += length)
     {
 
-        if (length == 3 && memory_match(args->path + offset, "../", 3))
+        if (length == 2 && memory_match(args->path + offset, "..", length))
         {
 
             walkmount(container, service, 1);

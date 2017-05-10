@@ -8,7 +8,7 @@ void main(void)
 
     file_open(CALL_PO);
     file_open(CALL_PW);
-    file_writeall(CALL_PO, "../\n", 4);
+    file_writeall(CALL_PO, "..\n", 3);
 
     while (file_readall(CALL_PW, &record, sizeof (struct record)))
     {
