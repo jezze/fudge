@@ -538,7 +538,7 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         lineheight = 12 + factor * 2;
         padding = 4 + factor * 2;
 
-        file_walk(CALL_L8, "/share/ter-112n.pcf");
+        file_walk(CALL_L8, "/data/ter-112n.pcf");
         render_setfont(CALL_L8, lineheight);
         render_setmouse(&mouse, 16);
 
@@ -548,7 +548,7 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         lineheight = 14 + factor * 2;
         padding = 4 + factor * 2;
 
-        file_walk(CALL_L8, "/share/ter-114n.pcf");
+        file_walk(CALL_L8, "/data/ter-114n.pcf");
         render_setfont(CALL_L8, lineheight);
         render_setmouse(&mouse, 16);
 
@@ -558,7 +558,7 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         lineheight = 16 + factor * 2;
         padding = 4 + factor * 2;
 
-        file_walk(CALL_L8, "/share/ter-116n.pcf");
+        file_walk(CALL_L8, "/data/ter-116n.pcf");
         render_setfont(CALL_L8, lineheight);
         render_setmouse(&mouse, 24);
 
@@ -568,7 +568,7 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         lineheight = 18 + factor * 2;
         padding = 4 + factor * 2;
 
-        file_walk(CALL_L8, "/share/ter-118n.pcf");
+        file_walk(CALL_L8, "/data/ter-118n.pcf");
         render_setfont(CALL_L8, lineheight);
         render_setmouse(&mouse, 24);
 

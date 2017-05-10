@@ -52,8 +52,8 @@ $(DIR_BUILD): $(BIN) $(MOD)
 	@mkdir -p $@/mount/5
 	@mkdir -p $@/mount/6
 	@mkdir -p $@/mount/7
-	@mkdir -p $@/share
-	@cp share/* $@/share
+	@mkdir -p $@/data
+	@cp data/* $@/data
 	@mkdir -p $@/system
 
 $(KERNEL): $(DIR_SRC)/kernel/$(KERNEL)

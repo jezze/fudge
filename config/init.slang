@@ -7,4 +7,4 @@ shell < /system/console/if:0/data > /system/console/if:1/data
 wm
 wshell
 wshell
-wedit < /share/wm-man.txt
+wedit < /data/wm-man.txt
