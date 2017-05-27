@@ -774,10 +774,14 @@ void main(void)
     while (!quit && ev_read(&handlers, CALL_L1))
     {
 
-        char buffer[FUDGE_BSIZE];
+        if (ring_count(&output))
+        {
 
-        if (file_writeall(CALL_L0, buffer, ring_read(&output, buffer, FUDGE_BSIZE)))
+            file_writeall(CALL_L0, outputdata, ring_count(&output));
+            ring_reset(&output);
             ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST);
+
+        }
 
     }
 
