@@ -25,7 +25,7 @@ static void printinsert(struct event_header *header)
 
     content.cursor = ring_count(&text) + ring_count(&input1);
 
-    widget_set(&content.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_text) + ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1);
+    widget_set(&content.widget, header->destination, sizeof (struct widget_text) + ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1);
     ring_write(&output, &content, sizeof (struct widget_text));
     ring_copy(&output, &text);
     ring_copy(&output, &input1);
@@ -37,8 +37,7 @@ static void printinsert(struct event_header *header)
 static void printremove(struct event_header *header)
 {
 
-    widget_set(&content.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_text));
-    ring_write(&output, &content, sizeof (struct widget_text));
+    widget_writeremove(&output, content.widget.id, 1, header->destination);
 
 }
 

@@ -37,7 +37,7 @@ struct font
 
 };
 
-static void (*drawables[5])(void *data, unsigned int line);
+static void (*drawables[6])(void *data, unsigned int line);
 static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
@@ -144,6 +144,11 @@ static unsigned int isoverlap(unsigned int line, struct box *size)
 {
 
     return line >= size->y && line < size->y + size->h;
+
+}
+
+static void rendernull(void *data, unsigned int line)
+{
 
 }
 
@@ -616,6 +621,7 @@ void render_init()
 
     textcolor[WIDGET_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
     textcolor[WIDGET_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
+    drawables[WIDGET_TYPE_NULL] = rendernull;
     drawables[WIDGET_TYPE_FILL] = renderfill;
     drawables[WIDGET_TYPE_MOUSE] = rendermouse;
     drawables[WIDGET_TYPE_PANEL] = renderpanel;

@@ -9,6 +9,7 @@ void widget_init(struct widget *widget, unsigned int id, unsigned int type, unsi
     widget->id = id;
     widget->type = type;
     widget->z = z;
+    widget->damage = WIDGET_DAMAGE_UPDATE;
 
 }
 
@@ -59,12 +60,51 @@ void widget_initwindow(struct widget_window *window, unsigned int active)
 
 }
 
-void widget_set(struct widget *widget, unsigned int source, unsigned int damage, unsigned int count)
+void widget_set(struct widget *widget, unsigned int source, unsigned int count)
 {
 
     widget->source = source;
-    widget->damage = damage;
     widget->count = count;
+
+}
+
+void widget_writeupdate(struct ring *ring, unsigned int id, unsigned int z, unsigned int source, unsigned int type, unsigned int count, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+{
+
+    struct widget widget;
+
+    widget.id = id;
+    widget.type = type;
+    widget.z = z;
+    widget.damage = WIDGET_DAMAGE_REMOVE;
+    widget.source = source;
+    widget.count = sizeof (struct widget) + count;
+    widget.size.x = x;
+    widget.size.y = y;
+    widget.size.w = w;
+    widget.size.h = h;
+
+    ring_write(ring, &widget, sizeof (struct widget));
+
+}
+
+void widget_writeremove(struct ring *ring, unsigned int id, unsigned int z, unsigned int source)
+{
+
+    struct widget widget;
+
+    widget.id = id;
+    widget.type = WIDGET_TYPE_NULL;
+    widget.z = z;
+    widget.damage = WIDGET_DAMAGE_REMOVE;
+    widget.source = source;
+    widget.count = sizeof (struct widget);
+    widget.size.x = 0;
+    widget.size.y = 0;
+    widget.size.w = 0;
+    widget.size.h = 0;
+
+    ring_write(ring, &widget, sizeof (struct widget));
 
 }
 

@@ -1,8 +1,9 @@
-#define WIDGET_TYPE_FILL                0
-#define WIDGET_TYPE_WINDOW              1
-#define WIDGET_TYPE_TEXT                2
-#define WIDGET_TYPE_PANEL               3
-#define WIDGET_TYPE_MOUSE               4
+#define WIDGET_TYPE_NULL                0
+#define WIDGET_TYPE_FILL                1
+#define WIDGET_TYPE_WINDOW              2
+#define WIDGET_TYPE_TEXT                3
+#define WIDGET_TYPE_PANEL               4
+#define WIDGET_TYPE_MOUSE               5
 #define WIDGET_DAMAGE_NONE              0
 #define WIDGET_DAMAGE_UPDATE            1
 #define WIDGET_DAMAGE_REMOVE            2
@@ -74,4 +75,6 @@ void widget_initmouse(struct widget_mouse *mouse, unsigned int type);
 void widget_initpanel(struct widget_panel *panel, unsigned int active);
 void widget_inittext(struct widget_text *text, unsigned int type, unsigned int flow);
 void widget_initwindow(struct widget_window *window, unsigned int active);
-void widget_set(struct widget *widget, unsigned int source, unsigned int damage, unsigned int count);
+void widget_set(struct widget *widget, unsigned int source, unsigned int count);
+void widget_writeupdate(struct ring *ring, unsigned int id, unsigned int z, unsigned int source, unsigned int type, unsigned int count, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
+void widget_writeremove(struct ring *ring, unsigned int id, unsigned int z, unsigned int source);

@@ -48,7 +48,7 @@ static unsigned int steplength;
 static void printinsertremote(struct event_header *header, struct remote *remote)
 {
 
-    widget_set(&remote->window.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_window));
+    widget_set(&remote->window.widget, header->destination, sizeof (struct widget_window));
     ring_write(&output, &remote->window, sizeof (struct widget_window));
 
 }
@@ -56,16 +56,15 @@ static void printinsertremote(struct event_header *header, struct remote *remote
 static void printremoveremote(struct event_header *header, struct remote *remote)
 {
 
-    widget_set(&remote->window.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_window));
-    ring_write(&output, &remote->window, sizeof (struct widget_window));
+    widget_writeremove(&output, remote->window.widget.id, 1, header->destination);
 
 }
 
 static void printinsertview(struct event_header *header, struct view *view)
 {
 
-    widget_set(&view->panel.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_panel));
-    widget_set(&view->number.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_text) + 1);
+    widget_set(&view->panel.widget, header->destination, sizeof (struct widget_panel));
+    widget_set(&view->number.widget, header->destination, sizeof (struct widget_text) + 1);
     ring_write(&output, &view->panel, sizeof (struct widget_panel));
     ring_write(&output, &view->number, sizeof (struct widget_text));
     ring_write(&output, &view->numberstring, 1);
@@ -75,10 +74,8 @@ static void printinsertview(struct event_header *header, struct view *view)
 static void printremoveview(struct event_header *header, struct view *view)
 {
 
-    widget_set(&view->panel.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_panel));
-    widget_set(&view->number.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_text));
-    ring_write(&output, &view->panel, sizeof (struct widget_panel));
-    ring_write(&output, &view->number, sizeof (struct widget_text));
+    widget_writeremove(&output, view->panel.widget.id, 1, header->destination);
+    widget_writeremove(&output, view->number.widget.id, 1, header->destination);
 
 }
 
@@ -457,7 +454,7 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
     if (mouse.widget.size.y < size.y || mouse.widget.size.y >= size.y + size.h)
         mouse.widget.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
 
-    widget_set(&mouse.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_mouse));
+    widget_set(&mouse.widget, header->destination, sizeof (struct widget_mouse));
     ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
     if (viewfocus->remotefocus)
@@ -661,8 +658,8 @@ static void onwmshow(struct event_header *header)
 
     unsigned int i;
 
-    widget_set(&background.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_fill));
-    widget_set(&mouse.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_mouse));
+    widget_set(&background.widget, header->destination, sizeof (struct widget_fill));
+    widget_set(&mouse.widget, header->destination, sizeof (struct widget_mouse));
     ring_write(&output, &background, sizeof (struct widget_fill));
     ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
@@ -678,10 +675,8 @@ static void onwmhide(struct event_header *header)
 
     unsigned int i;
 
-    widget_set(&background.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_fill));
-    widget_set(&mouse.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_mouse));
-    ring_write(&output, &background, sizeof (struct widget_fill));
-    ring_write(&output, &mouse, sizeof (struct widget_mouse));
+    widget_writeremove(&output, background.widget.id, 1, header->destination);
+    widget_writeremove(&output, mouse.widget.id, 2, header->destination);
 
     for (i = 0; i < VIEWS; i++)
         printremoveview(header, &views[i]);
