@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 #include "box.h"
-#include "element.h"
+#include "widget.h"
 #include "print.h"
 #include "ev.h"
 #include "render.h"

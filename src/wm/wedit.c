@@ -1,13 +1,13 @@
 #include <abi.h>
 #include <fudge.h>
 #include "box.h"
-#include "element.h"
+#include "widget.h"
 #include "print.h"
 #include "keymap.h"
 #include "ev.h"
 
-static struct element_text content;
-static struct element_text status;
+static struct widget_text content;
+static struct widget_text status;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
@@ -218,12 +218,12 @@ static void readfile(void)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    box_setsize(&content.element.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h - (wmresize->lineheight + 2 * wmresize->padding));
-    box_resize(&content.element.size, wmresize->padding);
-    box_setsize(&status.element.size, wmresize->x, wmresize->y + wmresize->h - (wmresize->lineheight + 2 * wmresize->padding), wmresize->w, (wmresize->lineheight + 2 * wmresize->padding));
-    box_resize(&status.element.size, wmresize->padding);
+    box_setsize(&content.widget.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h - (wmresize->lineheight + 2 * wmresize->padding));
+    box_resize(&content.widget.size, wmresize->padding);
+    box_setsize(&status.widget.size, wmresize->x, wmresize->y + wmresize->h - (wmresize->lineheight + 2 * wmresize->padding), wmresize->w, (wmresize->lineheight + 2 * wmresize->padding));
+    box_resize(&status.widget.size, wmresize->padding);
 
-    visiblerows = (content.element.size.h / wmresize->lineheight) - 1;
+    visiblerows = (content.widget.size.h / wmresize->lineheight) - 1;
     totalrows = 0;
 
     ring_reset(&input1);
@@ -259,8 +259,8 @@ void main(void)
     ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
-    element_inittext(&status, ELEMENT_TEXTTYPE_HIGHLIGHT, ELEMENT_TEXTFLOW_NORMAL);
+    widget_inittext(&content, WIDGET_TEXTTYPE_NORMAL, WIDGET_TEXTFLOW_INPUT);
+    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT, WIDGET_TEXTFLOW_NORMAL);
 
     if (!file_walk(CALL_L0, "/system/wm/data"))
         return;

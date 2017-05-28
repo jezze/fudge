@@ -2,7 +2,7 @@
 #include <fudge.h>
 #include <pcf/pcf.h>
 #include "box.h"
-#include "element.h"
+#include "widget.h"
 #include "ev.h"
 
 #define COLOR_DARK                      0x00
@@ -150,25 +150,25 @@ static unsigned int isoverlap(unsigned int line, struct box *size)
 static void renderfill(void *data, unsigned int line)
 {
 
-    struct element_fill *fill = data;
+    struct widget_fill *fill = data;
 
-    paint(fill->color, fill->element.size.x, fill->element.size.w);
+    paint(fill->color, fill->widget.size.x, fill->widget.size.w);
 
 }
 
 static void rendermouse(void *data, unsigned int line)
 {
 
-    struct element_mouse *mouse = data;
-    unsigned char *mousedata = (mouse->element.size.h == 16) ? mousedata16 : mousedata24;
-    unsigned char *md = mousedata + line * mouse->element.size.w;
+    struct widget_mouse *mouse = data;
+    unsigned char *mousedata = (mouse->widget.size.h == 16) ? mousedata16 : mousedata24;
+    unsigned char *md = mousedata + line * mouse->widget.size.w;
     unsigned int i;
 
-    for (i = 0; i < mouse->element.size.w; i++)
+    for (i = 0; i < mouse->widget.size.w; i++)
     {
 
         if (md[i] != 0xFF)
-            paint(md[i], mouse->element.size.x + i, 1);
+            paint(md[i], mouse->widget.size.x + i, 1);
 
     }
 
@@ -177,34 +177,34 @@ static void rendermouse(void *data, unsigned int line)
 static void renderpanel(void *data, unsigned int line)
 {
 
-    struct element_panel *panel = data;
+    struct widget_panel *panel = data;
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
 
-    if (line > panel->element.size.h / 2)
-        line = panel->element.size.h - line - 1;
+    if (line > panel->widget.size.h / 2)
+        line = panel->widget.size.h - line - 1;
 
     switch (line)
     {
 
     case 0:
-        paint(COLOR_DARK, panel->element.size.x, panel->element.size.w);
+        paint(COLOR_DARK, panel->widget.size.x, panel->widget.size.w);
 
         break;
 
     case 1:
-        paint(COLOR_DARK, panel->element.size.x + 0, 1);
-        paint(COLOR_DARK, panel->element.size.x + panel->element.size.w - 1, 1);
-        paint(framecolor, panel->element.size.x + 1, panel->element.size.w - 2);
+        paint(COLOR_DARK, panel->widget.size.x + 0, 1);
+        paint(COLOR_DARK, panel->widget.size.x + panel->widget.size.w - 1, 1);
+        paint(framecolor, panel->widget.size.x + 1, panel->widget.size.w - 2);
 
         break;
 
     default:
-        paint(COLOR_DARK, panel->element.size.x + 0, 1);
-        paint(COLOR_DARK, panel->element.size.x + panel->element.size.w - 1, 1);
-        paint(framecolor, panel->element.size.x + 1, 1);
-        paint(framecolor, panel->element.size.x + panel->element.size.w - 2, 1);
-        paint(backgroundcolor, panel->element.size.x + 2, panel->element.size.w - 4);
+        paint(COLOR_DARK, panel->widget.size.x + 0, 1);
+        paint(COLOR_DARK, panel->widget.size.x + panel->widget.size.w - 1, 1);
+        paint(framecolor, panel->widget.size.x + 1, 1);
+        paint(framecolor, panel->widget.size.x + panel->widget.size.w - 2, 1);
+        paint(backgroundcolor, panel->widget.size.x + 2, panel->widget.size.w - 4);
 
         break;
 
@@ -212,7 +212,7 @@ static void renderpanel(void *data, unsigned int line)
 
 }
 
-static unsigned int findrowcount(struct element_text *text, unsigned int offset, unsigned int count, char *string)
+static unsigned int findrowcount(struct widget_text *text, unsigned int offset, unsigned int count, char *string)
 {
 
     unsigned int i;
@@ -229,7 +229,7 @@ static unsigned int findrowcount(struct element_text *text, unsigned int offset,
 
 }
 
-static unsigned int findrowstart(struct element_text *text, unsigned int row, unsigned int count, char *string)
+static unsigned int findrowstart(struct widget_text *text, unsigned int row, unsigned int count, char *string)
 {
 
     unsigned int i;
@@ -287,8 +287,8 @@ static void rendercharlineinverted(unsigned int x, unsigned int w, unsigned char
 static void rendertext(void *data, unsigned int line)
 {
 
-    struct element_text *text = data;
-    unsigned int stringcount = text->element.count - sizeof (struct element_text);
+    struct widget_text *text = data;
+    unsigned int stringcount = text->widget.count - sizeof (struct widget_text);
     char *string = (char *)(text + 1);
     unsigned char color = textcolor[text->type];
     unsigned int rowindex = line / font.lineheight;
@@ -308,8 +308,8 @@ static void rendertext(void *data, unsigned int line)
     if (!rowcount)
         return;
 
-    size.x = text->element.size.x;
-    size.y = text->element.size.y + rowindex * font.lineheight;
+    size.x = text->widget.size.x;
+    size.y = text->widget.size.y + rowindex * font.lineheight;
 
     for (i = rowstart; i < rowcount; i++)
     {
@@ -323,16 +323,16 @@ static void rendertext(void *data, unsigned int line)
         size.w = metricsdata.width;
         size.h = metricsdata.ascent + metricsdata.descent;
 
-        if (size.x + size.w > text->element.size.x + text->element.size.w)
+        if (size.x + size.w > text->widget.size.x + text->widget.size.w)
             return;
 
-        if (size.y + size.h > text->element.size.y + text->element.size.h)
+        if (size.y + size.h > text->widget.size.y + text->widget.size.h)
             return;
 
         if (rowline < size.h)
         {
 
-            if (text->flow == ELEMENT_TEXTFLOW_INPUT && i == text->cursor)
+            if (text->flow == WIDGET_TEXTFLOW_INPUT && i == text->cursor)
                 rendercharlineinverted(size.x, size.w, color, data);
             else
                 rendercharline(size.x, size.w, color, data);
@@ -348,32 +348,32 @@ static void rendertext(void *data, unsigned int line)
 static void renderwindow(void *data, unsigned int line)
 {
 
-    struct element_window *window = data;
+    struct widget_window *window = data;
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
-    if (line > window->element.size.h / 2)
-        line = window->element.size.h - line - 1;
+    if (line > window->widget.size.h / 2)
+        line = window->widget.size.h - line - 1;
 
     switch (line)
     {
 
     case 0:
-        paint(COLOR_DARK, window->element.size.x, window->element.size.w);
+        paint(COLOR_DARK, window->widget.size.x, window->widget.size.w);
 
         break;
 
     case 1:
-        paint(COLOR_DARK, window->element.size.x + 0, 1);
-        paint(COLOR_DARK, window->element.size.x + window->element.size.w - 1, 1);
-        paint(framecolor, window->element.size.x + 1, window->element.size.w - 2);
+        paint(COLOR_DARK, window->widget.size.x + 0, 1);
+        paint(COLOR_DARK, window->widget.size.x + window->widget.size.w - 1, 1);
+        paint(framecolor, window->widget.size.x + 1, window->widget.size.w - 2);
 
         break;
 
     default:
-        paint(COLOR_DARK, window->element.size.x + 0, 1);
-        paint(COLOR_DARK, window->element.size.x + window->element.size.w - 1, 1);
-        paint(framecolor, window->element.size.x + 1, 1);
-        paint(framecolor, window->element.size.x + window->element.size.w - 2, 1);
+        paint(COLOR_DARK, window->widget.size.x + 0, 1);
+        paint(COLOR_DARK, window->widget.size.x + window->widget.size.w - 1, 1);
+        paint(framecolor, window->widget.size.x + 1, 1);
+        paint(framecolor, window->widget.size.x + window->widget.size.w - 2, 1);
 
         break;
 
@@ -381,39 +381,39 @@ static void renderwindow(void *data, unsigned int line)
 
 }
 
-static struct element *nextelement(struct element *element, struct layer *layer)
+static struct widget *nextwidget(struct widget *widget, struct layer *layer)
 {
 
-    element = (element) ? (struct element *)(((unsigned char *)element) + element->count) : (struct element *)layer->data;
+    widget = (widget) ? (struct widget *)(((unsigned char *)widget) + widget->count) : (struct widget *)layer->data;
 
-    return ((unsigned int)element < (unsigned int)layer->data + layer->count) ? element : 0;
+    return ((unsigned int)widget < (unsigned int)layer->data + layer->count) ? widget : 0;
 
 }
 
-static void insertelement(struct element *element, struct layer *layer)
+static void insertwidget(struct widget *widget, struct layer *layer)
 {
 
-    struct element *current = 0;
+    struct widget *current = 0;
 
-    while ((current = nextelement(current, layer)))
+    while ((current = nextwidget(current, layer)))
     {
 
-        if (current->source == element->source && current->id == element->id)
-            current->damage = ELEMENT_DAMAGE_REMOVE;
+        if (current->source == widget->source && current->id == widget->id)
+            current->damage = WIDGET_DAMAGE_REMOVE;
 
     }
 
-    if (element->damage == ELEMENT_DAMAGE_UPDATE)
-        layer->count += memory_write(layer->data, layer->total, element, element->count, layer->count);
+    if (widget->damage == WIDGET_DAMAGE_UPDATE)
+        layer->count += memory_write(layer->data, layer->total, widget, widget->count, layer->count);
 
 }
 
-static void removeelement(struct element *element, struct layer *layer)
+static void removewidget(struct widget *widget, struct layer *layer)
 {
 
-    unsigned int length = element->count;
+    unsigned int length = widget->count;
 
-    memory_copy(element, (unsigned char *)element + length, layer->count - ((unsigned char *)element - layer->data) - length);
+    memory_copy(widget, (unsigned char *)widget + length, layer->count - ((unsigned char *)widget - layer->data) - length);
 
     layer->count -= length;
 
@@ -427,12 +427,12 @@ static unsigned int testline(unsigned int line)
     for (i = 0; i < LAYERS; i++)
     {
 
-        struct element *current = 0;
+        struct widget *current = 0;
 
-        while ((current = nextelement(current, &layers[i])))
+        while ((current = nextwidget(current, &layers[i])))
         {
 
-            if (current->damage != ELEMENT_DAMAGE_NONE && isoverlap(line, &current->size))
+            if (current->damage != WIDGET_DAMAGE_NONE && isoverlap(line, &current->size))
                 return 1;
 
         }
@@ -451,12 +451,12 @@ static void renderline(unsigned int line)
     for (i = 0; i < LAYERS; i++)
     {
 
-        struct element *current = 0;
+        struct widget *current = 0;
 
-        while ((current = nextelement(current, &layers[i])))
+        while ((current = nextwidget(current, &layers[i])))
         {
 
-            if (current->damage != ELEMENT_DAMAGE_REMOVE && isoverlap(line, &current->size))
+            if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &current->size))
                 drawables[current->type](current, line - current->size.y);
 
         }
@@ -502,10 +502,10 @@ void render_begin(unsigned int descriptor)
     while ((insert.count = file_read(descriptor, insert.data, insert.total)))
     {
 
-        struct element *current = 0;
+        struct widget *current = 0;
 
-        while ((current = nextelement(current, &insert)))
-            insertelement(current, &layers[current->z - 1]);
+        while ((current = nextwidget(current, &insert)))
+            insertwidget(current, &layers[current->z - 1]);
 
     }
 
@@ -519,15 +519,15 @@ void render_complete(void)
     for (i = 0; i < LAYERS; i++)
     {
 
-        struct element *current = 0;
+        struct widget *current = 0;
 
-        while ((current = nextelement(current, &layers[i])))
+        while ((current = nextwidget(current, &layers[i])))
         {
 
-            if (current->damage == ELEMENT_DAMAGE_REMOVE)
-                removeelement(current, &layers[i]);
+            if (current->damage == WIDGET_DAMAGE_REMOVE)
+                removewidget(current, &layers[i]);
             else
-                current->damage = ELEMENT_DAMAGE_NONE;
+                current->damage = WIDGET_DAMAGE_NONE;
 
         }
 
@@ -576,21 +576,21 @@ void render_setcolormap(unsigned int descriptor)
 
 }
 
-void render_setmouse(struct element_mouse *mouse, unsigned int size)
+void render_setmouse(struct widget_mouse *mouse, unsigned int size)
 {
 
     switch (size)
     {
 
     case 16:
-        mouse->element.size.w = 12;
-        mouse->element.size.h = 16;
+        mouse->widget.size.w = 12;
+        mouse->widget.size.h = 16;
 
         break;
 
     case 24:
-        mouse->element.size.w = 18;
-        mouse->element.size.h = 24;
+        mouse->widget.size.w = 18;
+        mouse->widget.size.h = 24;
 
         break;
 
@@ -614,13 +614,13 @@ void render_setfont(unsigned int descriptor, unsigned int lineheight)
 void render_init()
 {
 
-    textcolor[ELEMENT_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
-    textcolor[ELEMENT_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
-    drawables[ELEMENT_TYPE_FILL] = renderfill;
-    drawables[ELEMENT_TYPE_MOUSE] = rendermouse;
-    drawables[ELEMENT_TYPE_PANEL] = renderpanel;
-    drawables[ELEMENT_TYPE_TEXT] = rendertext;
-    drawables[ELEMENT_TYPE_WINDOW] = renderwindow;
+    textcolor[WIDGET_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
+    textcolor[WIDGET_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
+    drawables[WIDGET_TYPE_FILL] = renderfill;
+    drawables[WIDGET_TYPE_MOUSE] = rendermouse;
+    drawables[WIDGET_TYPE_PANEL] = renderpanel;
+    drawables[WIDGET_TYPE_TEXT] = rendertext;
+    drawables[WIDGET_TYPE_WINDOW] = renderwindow;
 
 }
 

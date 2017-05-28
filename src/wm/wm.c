@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 #include "box.h"
-#include "element.h"
+#include "widget.h"
 #include "print.h"
 #include "keymap.h"
 #include "ev.h"
@@ -14,7 +14,7 @@ static struct remote
 {
 
     struct list_item item;
-    struct element_window window;
+    struct widget_window window;
     unsigned int source;
 
 } remotes[REMOTES];
@@ -24,8 +24,8 @@ static struct view
 
     struct list remotes;
     unsigned int center;
-    struct element_panel panel;
-    struct element_text number;
+    struct widget_panel panel;
+    struct widget_text number;
     char numberstring;
     struct remote *remotefocus;
 
@@ -38,8 +38,8 @@ static struct ring output;
 static struct box size;
 static struct box body;
 static struct list remotelist;
-static struct element_fill background;
-static struct element_mouse mouse;
+static struct widget_fill background;
+static struct widget_mouse mouse;
 static struct view *viewfocus = &views[0];
 static struct ev_handlers handlers;
 static unsigned int padding;
@@ -94,8 +94,8 @@ static void deactivateremote(struct remote *remote)
 static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
-    box_setsize(&remote->window.element.size, x, y, w, h);
-    ev_sendwmresize(CALL_L1, remote->source, remote->window.element.size.x + 2, remote->window.element.size.y + 2, remote->window.element.size.w - 4, remote->window.element.size.h - 4, padding, lineheight);
+    box_setsize(&remote->window.widget.size, x, y, w, h);
+    ev_sendwmresize(CALL_L1, remote->source, remote->window.widget.size.x + 2, remote->window.widget.size.y + 2, remote->window.widget.size.w - 4, remote->window.widget.size.h - 4, padding, lineheight);
 
 }
 
@@ -187,7 +187,7 @@ static void activateview(struct view *view)
 {
 
     view->panel.active = 1;
-    view->number.type = ELEMENT_TEXTTYPE_HIGHLIGHT;
+    view->number.type = WIDGET_TEXTTYPE_HIGHLIGHT;
 
 }
 
@@ -195,7 +195,7 @@ static void deactivateview(struct view *view)
 {
 
     view->panel.active = 0;
-    view->number.type = ELEMENT_TEXTTYPE_NORMAL;
+    view->number.type = WIDGET_TEXTTYPE_NORMAL;
 
 }
 
@@ -443,19 +443,19 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
 static void onmousemove(struct event_header *header, struct event_mousemove *mousemove)
 {
 
-    mouse.element.size.x += mousemove->relx;
-    mouse.element.size.y += mousemove->rely;
+    mouse.widget.size.x += mousemove->relx;
+    mouse.widget.size.y += mousemove->rely;
 
-    if (mouse.element.size.x < size.x || mouse.element.size.x >= size.x + size.w)
-        mouse.element.size.x = (mousemove->relx < 0) ? size.x : size.x + size.w - 1;
+    if (mouse.widget.size.x < size.x || mouse.widget.size.x >= size.x + size.w)
+        mouse.widget.size.x = (mousemove->relx < 0) ? size.x : size.x + size.w - 1;
 
-    if (mouse.element.size.y < size.y || mouse.element.size.y >= size.y + size.h)
-        mouse.element.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
+    if (mouse.widget.size.y < size.y || mouse.widget.size.y >= size.y + size.h)
+        mouse.widget.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
 
     print_insertmouse(&output, header, &mouse);
 
     if (viewfocus->remotefocus)
-        ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.element.size.x, mouse.element.size.y);
+        ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.widget.size.x, mouse.widget.size.y);
 
 }
 
@@ -472,7 +472,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
         for (i = 0; i < VIEWS; i++)
         {
 
-            if (!box_isinside(&views[i].panel.element.size, mouse.element.size.x, mouse.element.size.y))
+            if (!box_isinside(&views[i].panel.widget.size, mouse.widget.size.x, mouse.widget.size.y))
                 continue;
 
             if (&views[i] == viewfocus)
@@ -491,7 +491,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
             struct remote *remote = current->data;
 
-            if (!box_isinside(&remote->window.element.size, mouse.element.size.x, mouse.element.size.y))
+            if (!box_isinside(&remote->window.widget.size, mouse.widget.size.x, mouse.widget.size.y))
                 continue;
 
             if (remote == viewfocus->remotefocus)
@@ -629,7 +629,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
     box_setsize(&body, size.x, size.y + (wmresize->lineheight + wmresize->padding * 2), size.w, size.h - (wmresize->lineheight + wmresize->padding * 2));
-    box_setsize(&background.element.size, size.x, size.y, size.w, size.h);
+    box_setsize(&background.widget.size, size.x, size.y, size.w, size.h);
 
     steplength = body.w / 32;
 
@@ -638,15 +638,15 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
         views[i].center = 18 * steplength;
 
-        box_setsize(&views[i].panel.element.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
-        box_setsize(&views[i].number.element.size, views[i].panel.element.size.x, views[i].panel.element.size.y, views[i].panel.element.size.w, views[i].panel.element.size.h);
-        box_resize(&views[i].number.element.size, wmresize->padding);
+        box_setsize(&views[i].panel.widget.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
+        box_setsize(&views[i].number.widget.size, views[i].panel.widget.size.x, views[i].panel.widget.size.y, views[i].panel.widget.size.w, views[i].panel.widget.size.h);
+        box_resize(&views[i].number.widget.size, wmresize->padding);
         arrangeview(&views[i]);
 
     }
 
-    mouse.element.size.x = size.x + size.w / 4;
-    mouse.element.size.y = size.y + size.h / 4;
+    mouse.widget.size.x = size.x + size.w / 4;
+    mouse.widget.size.y = size.y + size.h / 4;
 
 }
 
@@ -697,8 +697,8 @@ static void setup(void)
     for (i = 0; i < VIEWS; i++)
     {
 
-        element_initpanel(&views[i].panel, 0);
-        element_inittext(&views[i].number, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_NORMAL);
+        widget_initpanel(&views[i].panel, 0);
+        widget_inittext(&views[i].number, WIDGET_TEXTTYPE_NORMAL, WIDGET_TEXTFLOW_NORMAL);
 
         views[i].numberstring = '1' + i;
         views[i].remotefocus = 0;
@@ -709,7 +709,7 @@ static void setup(void)
     {
 
         list_inititem(&remotes[i].item, &remotes[i]);
-        element_initwindow(&remotes[i].window, 0);
+        widget_initwindow(&remotes[i].window, 0);
         list_add(&remotelist, &remotes[i].item);
 
     }
@@ -735,8 +735,8 @@ void main(void)
     handlers.wmflush = onwmflush;
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
-    element_initfill(&background, 2);
-    element_initmouse(&mouse, ELEMENT_MOUSETYPE_DEFAULT);
+    widget_initfill(&background, 2);
+    widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     setup();
 
     if (!file_walk(CALL_L0, "/system/wm/data"))

@@ -1,12 +1,12 @@
 #include <abi.h>
 #include <fudge.h>
 #include "box.h"
-#include "element.h"
+#include "widget.h"
 #include "print.h"
 #include "keymap.h"
 #include "ev.h"
 
-static struct element_text content;
+static struct widget_text content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
@@ -305,10 +305,10 @@ static void onwmexit(struct event_header *header)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    box_setsize(&content.element.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_resize(&content.element.size, wmresize->padding);
+    box_setsize(&content.widget.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
+    box_resize(&content.widget.size, wmresize->padding);
 
-    visiblerows = (content.element.size.h / wmresize->lineheight) - 1;
+    visiblerows = (content.widget.size.h / wmresize->lineheight) - 1;
 
     if (totalrows > visiblerows)
         removerows(totalrows - visiblerows);
@@ -343,7 +343,7 @@ void main(void)
     ring_init(&input1, FUDGE_BSIZE >> 5, inputdata1);
     ring_init(&input2, FUDGE_BSIZE >> 5, inputdata2);
     ring_init(&text, FUDGE_BSIZE, textdata);
-    element_inittext(&content, ELEMENT_TEXTTYPE_NORMAL, ELEMENT_TEXTFLOW_INPUT);
+    widget_inittext(&content, WIDGET_TEXTTYPE_NORMAL, WIDGET_TEXTFLOW_INPUT);
     copybuffer("$ ", 2);
 
     if (!file_walk(CALL_L0, "/system/wm/data"))
