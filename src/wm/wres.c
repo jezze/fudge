@@ -37,7 +37,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
 }
 
-static void onwmunmap(struct event_header *header)
+static void onwmexit(struct event_header *header)
 {
 
     quit = 1;
@@ -67,7 +67,7 @@ void main(void)
 {
 
     handlers.mousepress = onmousepress;
-    handlers.wmunmap = onwmunmap;
+    handlers.wmexit = onwmexit;
     handlers.wmresize = onwmresize;
     handlers.wmshow = onwmshow;
     handlers.wmhide = onwmhide;

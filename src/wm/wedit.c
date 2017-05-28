@@ -172,7 +172,7 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
 
 }
 
-static void onwmunmap(struct event_header *header)
+static void onwmexit(struct event_header *header)
 {
 
     quit = 1;
@@ -251,7 +251,7 @@ void main(void)
 
     handlers.keypress = onkeypress;
     handlers.keyrelease = onkeyrelease;
-    handlers.wmunmap = onwmunmap;
+    handlers.wmexit = onwmexit;
     handlers.wmresize = onwmresize;
     handlers.wmshow = onwmshow;
     handlers.wmhide = onwmhide;

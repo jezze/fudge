@@ -9,7 +9,8 @@ struct ev_handlers
     void (*timertick)(struct event_header *header, struct event_timertick *timertick);
     void (*videomode)(struct event_header *header, struct event_videomode *videomode);
     void (*wmmap)(struct event_header *header);
-    void (*wmunmap)(struct event_header *header);
+    void (*wminit)(struct event_header *header);
+    void (*wmexit)(struct event_header *header);
     void (*wmresize)(struct event_header *header, struct event_wmresize *wmresize);
     void (*wmshow)(struct event_header *header);
     void (*wmhide)(struct event_header *header);
@@ -24,7 +25,8 @@ void ev_sendmousemove(unsigned int descriptor, unsigned int destination, char re
 void ev_sendmousepress(unsigned int descriptor, unsigned int destination, unsigned int button);
 void ev_sendmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button);
 void ev_sendwmmap(unsigned int descriptor, unsigned int destination);
-void ev_sendwmunmap(unsigned int descriptor, unsigned int destination);
+void ev_sendwminit(unsigned int descriptor, unsigned int destination);
+void ev_sendwmexit(unsigned int descriptor, unsigned int destination);
 void ev_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
 void ev_sendwmshow(unsigned int descriptor, unsigned int destination);
 void ev_sendwmhide(unsigned int descriptor, unsigned int destination);

@@ -301,7 +301,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
             break;
 
         ev_sendwmhide(CALL_L1, viewfocus->remotefocus->source);
-        ev_sendwmunmap(CALL_L1, viewfocus->remotefocus->source);
+        ev_sendwmexit(CALL_L1, viewfocus->remotefocus->source);
         printremoveremote(header, viewfocus->remotefocus);
         list_move(&remotelist, &viewfocus->remotefocus->item);
 
@@ -401,7 +401,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
             break;
 
         ev_sendwmhide(CALL_L1, header->destination);
-        ev_sendwmunmap(CALL_L1, header->destination);
+        ev_sendwmexit(CALL_L1, header->destination);
 
         break;
 
@@ -594,10 +594,11 @@ static void onwmmap(struct event_header *header)
     activateremote(viewfocus->remotefocus);
     arrangeview(viewfocus);
     showremotes(header, &viewfocus->remotes);
+    ev_sendwminit(CALL_L1, header->source);
 
 }
 
-static void onwmunmap(struct event_header *header)
+static void onwmexit(struct event_header *header)
 {
 
     unsigned int i;
@@ -610,7 +611,7 @@ static void onwmunmap(struct event_header *header)
 
             struct remote *remote = views[i].remotes.head->data;
 
-            ev_sendwmunmap(CALL_L1, remote->source);
+            ev_sendwmexit(CALL_L1, remote->source);
             list_move(&remotelist, &remote->item);
 
         }
@@ -727,7 +728,7 @@ void main(void)
     handlers.mouserelease = onmouserelease;
     handlers.videomode = onvideomode;
     handlers.wmmap = onwmmap;
-    handlers.wmunmap = onwmunmap;
+    handlers.wmexit = onwmexit;
     handlers.wmresize = onwmresize;
     handlers.wmshow = onwmshow;
     handlers.wmhide = onwmhide;

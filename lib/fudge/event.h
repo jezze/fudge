@@ -8,11 +8,12 @@
 #define EVENT_TIMERTICK                 0x06
 #define EVENT_VIDEOMODE                 0x07
 #define EVENT_WMMAP                     0x08
-#define EVENT_WMUNMAP                   0x09
-#define EVENT_WMRESIZE                  0x0A
-#define EVENT_WMSHOW                    0x0B
-#define EVENT_WMHIDE                    0x0C
-#define EVENT_WMFLUSH                   0x0D
+#define EVENT_WMINIT                    0x09
+#define EVENT_WMEXIT                    0x0A
+#define EVENT_WMRESIZE                  0x0B
+#define EVENT_WMSHOW                    0x0C
+#define EVENT_WMHIDE                    0x0D
+#define EVENT_WMFLUSH                   0x0E
 
 struct event_header
 {
