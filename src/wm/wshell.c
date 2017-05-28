@@ -2,7 +2,6 @@
 #include <fudge.h>
 #include "box.h"
 #include "widget.h"
-#include "print.h"
 #include "keymap.h"
 #include "ev.h"
 
@@ -26,7 +25,8 @@ static void printinsert(struct event_header *header)
 
     content.cursor = ring_count(&text) + ring_count(&input1);
 
-    print_inserttext(&output, header, &content, ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1);
+    widget_set(&content.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_text) + ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1);
+    ring_write(&output, &content, sizeof (struct widget_text));
     ring_copy(&output, &text);
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
@@ -37,7 +37,8 @@ static void printinsert(struct event_header *header)
 static void printremove(struct event_header *header)
 {
 
-    print_removetext(&output, header, &content);
+    widget_set(&content.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_text));
+    ring_write(&output, &content, sizeof (struct widget_text));
 
 }
 

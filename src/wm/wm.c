@@ -2,7 +2,6 @@
 #include <fudge.h>
 #include "box.h"
 #include "widget.h"
-#include "print.h"
 #include "keymap.h"
 #include "ev.h"
 #include "render.h"
@@ -49,22 +48,26 @@ static unsigned int steplength;
 static void printinsertremote(struct event_header *header, struct remote *remote)
 {
 
-    print_insertwindow(&output, header, &remote->window);
+    widget_set(&remote->window.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_window));
+    ring_write(&output, &remote->window, sizeof (struct widget_window));
 
 }
 
 static void printremoveremote(struct event_header *header, struct remote *remote)
 {
 
-    print_removewindow(&output, header, &remote->window);
+    widget_set(&remote->window.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_window));
+    ring_write(&output, &remote->window, sizeof (struct widget_window));
 
 }
 
 static void printinsertview(struct event_header *header, struct view *view)
 {
 
-    print_insertpanel(&output, header, &view->panel);
-    print_inserttext(&output, header, &view->number, 1);
+    widget_set(&view->panel.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_panel));
+    widget_set(&view->number.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_text) + 1);
+    ring_write(&output, &view->panel, sizeof (struct widget_panel));
+    ring_write(&output, &view->number, sizeof (struct widget_text));
     ring_write(&output, &view->numberstring, 1);
 
 }
@@ -72,8 +75,10 @@ static void printinsertview(struct event_header *header, struct view *view)
 static void printremoveview(struct event_header *header, struct view *view)
 {
 
-    print_removepanel(&output, header, &view->panel);
-    print_removetext(&output, header, &view->number);
+    widget_set(&view->panel.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_panel));
+    widget_set(&view->number.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_text));
+    ring_write(&output, &view->panel, sizeof (struct widget_panel));
+    ring_write(&output, &view->number, sizeof (struct widget_text));
 
 }
 
@@ -452,7 +457,8 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
     if (mouse.widget.size.y < size.y || mouse.widget.size.y >= size.y + size.h)
         mouse.widget.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
 
-    print_insertmouse(&output, header, &mouse);
+    widget_set(&mouse.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_mouse));
+    ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
     if (viewfocus->remotefocus)
         ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.widget.size.x, mouse.widget.size.y);
@@ -655,12 +661,14 @@ static void onwmshow(struct event_header *header)
 
     unsigned int i;
 
-    print_insertfill(&output, header, &background);
+    widget_set(&background.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_fill));
+    widget_set(&mouse.widget, header->destination, WIDGET_DAMAGE_UPDATE, sizeof (struct widget_mouse));
+    ring_write(&output, &background, sizeof (struct widget_fill));
+    ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
     for (i = 0; i < VIEWS; i++)
         printinsertview(header, &views[i]);
 
-    print_insertmouse(&output, header, &mouse);
     showremotes(header, &viewfocus->remotes);
 
 }
@@ -670,12 +678,14 @@ static void onwmhide(struct event_header *header)
 
     unsigned int i;
 
-    print_removefill(&output, header, &background);
+    widget_set(&background.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_fill));
+    widget_set(&mouse.widget, header->destination, WIDGET_DAMAGE_REMOVE, sizeof (struct widget_mouse));
+    ring_write(&output, &background, sizeof (struct widget_fill));
+    ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
     for (i = 0; i < VIEWS; i++)
         printremoveview(header, &views[i]);
 
-    print_removemouse(&output, header, &mouse);
     hideremotes(header, &viewfocus->remotes);
 
 }

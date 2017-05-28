@@ -7,7 +7,6 @@ O:=\
     $(DIR_SRC)/wm/widget.o \
     $(DIR_SRC)/wm/ev.o \
     $(DIR_SRC)/wm/keymap.o \
-    $(DIR_SRC)/wm/print.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
@@ -23,7 +22,6 @@ O:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/widget.o \
     $(DIR_SRC)/wm/ev.o \
-    $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/render.o \
 
 L:=\
@@ -41,7 +39,6 @@ O:=\
     $(DIR_SRC)/wm/box.o \
     $(DIR_SRC)/wm/widget.o \
     $(DIR_SRC)/wm/ev.o \
-    $(DIR_SRC)/wm/print.o \
     $(DIR_SRC)/wm/render.o \
 
 L:=\
@@ -60,7 +57,6 @@ O:=\
     $(DIR_SRC)/wm/widget.o \
     $(DIR_SRC)/wm/ev.o \
     $(DIR_SRC)/wm/keymap.o \
-    $(DIR_SRC)/wm/print.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
