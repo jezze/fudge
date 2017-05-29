@@ -76,7 +76,7 @@ void widget_writeupdate(struct ring *ring, unsigned int id, unsigned int z, unsi
     widget.id = id;
     widget.type = type;
     widget.z = z;
-    widget.damage = WIDGET_DAMAGE_REMOVE;
+    widget.damage = WIDGET_DAMAGE_UPDATE;
     widget.source = source;
     widget.count = sizeof (struct widget) + count;
     widget.size.x = x;
