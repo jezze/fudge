@@ -254,7 +254,6 @@ static void painttext(char *string, unsigned int length, unsigned char color, un
     {
 
         unsigned short index = (string[i] == '\n') ? pcf_getindex(font.data, ' ') : pcf_getindex(font.data, string[i]);
-        unsigned char *data = font.bitmapdata + pcf_getbitmapoffset(font.data, index) + rowline * font.padding;
         struct pcf_metricsdata metricsdata;
 
         pcf_readmetricsdata(font.data, index, &metricsdata);
@@ -270,6 +269,8 @@ static void painttext(char *string, unsigned int length, unsigned char color, un
 
         if (rowline < size.h)
         {
+
+            unsigned char *data = font.bitmapdata + pcf_getbitmapoffset(font.data, index) + rowline * font.padding;
 
             if (flow == WIDGET_TEXTFLOW_INPUT && i == cursor)
                 paintcharlineinverted(size.x, size.w, color, data);
