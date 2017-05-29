@@ -22,10 +22,12 @@ static unsigned int visiblerows;
 static void printinsert(struct event_header *header)
 {
 
+    content.length = ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&input1);
+    status.length = 18;
 
-    widget_set(&content.widget, header->destination, sizeof (struct widget_text) + ring_count(&input1) + ring_count(&input2) + 1);
-    widget_set(&status.widget, header->destination, sizeof (struct widget_text) + 18);
+    widget_set(&content.widget, header->destination, sizeof (struct widget_text) + content.length);
+    widget_set(&status.widget, header->destination, sizeof (struct widget_text) + status.length);
     ring_write(&output, &content, sizeof (struct widget_text));
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);

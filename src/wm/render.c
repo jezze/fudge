@@ -293,7 +293,6 @@ static void rendertext(void *data, unsigned int line)
 {
 
     struct widget_text *text = data;
-    unsigned int stringcount = text->widget.count - sizeof (struct widget_text);
     char *string = (char *)(text + 1);
     unsigned char color = textcolor[text->type];
     unsigned int rowindex = line / font.lineheight;
@@ -303,12 +302,12 @@ static void rendertext(void *data, unsigned int line)
     struct box size;
     unsigned int i;
 
-    rowstart = findrowstart(text, rowindex, stringcount, string);
+    rowstart = findrowstart(text, rowindex, text->length, string);
 
     if (!rowstart && rowindex > 0)
         return;
 
-    rowcount = findrowcount(text, rowstart, stringcount, string);
+    rowcount = findrowcount(text, rowstart, text->length, string);
 
     if (!rowcount)
         return;

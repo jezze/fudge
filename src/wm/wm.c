@@ -705,6 +705,7 @@ static void setup(void)
         widget_initpanel(&views[i].panel, 0);
         widget_inittext(&views[i].number, WIDGET_TEXTTYPE_NORMAL, WIDGET_TEXTFLOW_NORMAL);
 
+        views[i].number.length = 1;
         views[i].numberstring = '1' + i;
         views[i].remotefocus = 0;
 

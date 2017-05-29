@@ -57,6 +57,7 @@ struct widget_text
     struct widget widget;
     unsigned int type;
     unsigned int flow;
+    unsigned int length;
     unsigned int cursor;
 
 };
