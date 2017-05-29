@@ -140,10 +140,132 @@ static void paint32(unsigned int color, unsigned int offset, unsigned int count)
 
 }
 
-static unsigned int isoverlap(unsigned int line, struct box *size)
+static unsigned int findrowcount(unsigned int offset, unsigned int count, char *string)
 {
 
-    return line >= size->y && line < size->y + size->h;
+    unsigned int i;
+
+    for (i = offset; i < count; i++)
+    {
+
+        if (string[i] == '\n')
+            return i + 1;
+
+    }
+
+    return count;
+
+}
+
+static unsigned int findrowstart(unsigned int row, unsigned int count, char *string)
+{
+
+    unsigned int i;
+
+    if (!row)
+        return 0;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (string[i] == '\n')
+        {
+
+            if (!--row)
+                return i + 1;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static void paintcharline(unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
+{
+
+    unsigned int p;
+
+    for (p = 0; p < w; p++)
+    {
+
+        if (data[(p >> 3)] & (0x80 >> (p % 8)))
+            paint(color, x + p, 1);
+
+    }
+
+}
+
+static void paintcharlineinverted(unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
+{
+
+    unsigned int p;
+
+    for (p = 0; p < w; p++)
+    {
+
+        if (!(data[(p >> 3)] & (0x80 >> (p % 8))))
+            paint(color, x + p, 1);
+
+    }
+
+}
+
+static void painttext(char *string, unsigned int length, unsigned char color, unsigned int line, struct box *from, unsigned int flow, unsigned int cursor)
+{
+
+    unsigned int rowindex = line / font.lineheight;
+    unsigned int rowline = line % font.lineheight;
+    unsigned int rowstart;
+    unsigned int rowcount;
+    struct box size;
+    unsigned int i;
+
+    rowstart = findrowstart(rowindex, length, string);
+
+    if (!rowstart && rowindex > 0)
+        return;
+
+    rowcount = findrowcount(rowstart, length, string);
+
+    if (!rowcount)
+        return;
+
+    size.x = from->x;
+    size.y = from->y + rowindex * font.lineheight;
+
+    for (i = rowstart; i < rowcount; i++)
+    {
+
+        unsigned short index = (string[i] == '\n') ? pcf_getindex(font.data, ' ') : pcf_getindex(font.data, string[i]);
+        unsigned char *data = font.bitmapdata + pcf_getbitmapoffset(font.data, index) + rowline * font.padding;
+        struct pcf_metricsdata metricsdata;
+
+        pcf_readmetricsdata(font.data, index, &metricsdata);
+
+        size.w = metricsdata.width;
+        size.h = metricsdata.ascent + metricsdata.descent;
+
+        if (size.x + size.w > from->x + from->w)
+            return;
+
+        if (size.y + size.h > from->y + from->h)
+            return;
+
+        if (rowline < size.h)
+        {
+
+            if (flow == WIDGET_TEXTFLOW_INPUT && i == cursor)
+                paintcharlineinverted(size.x, size.w, color, data);
+            else
+                paintcharline(size.x, size.w, color, data);
+
+        }
+
+        size.x += size.w;
+
+    }
 
 }
 
@@ -217,135 +339,13 @@ static void renderpanel(void *data, unsigned int line)
 
 }
 
-static unsigned int findrowcount(struct widget_text *text, unsigned int offset, unsigned int count, char *string)
-{
-
-    unsigned int i;
-
-    for (i = offset; i < count; i++)
-    {
-
-        if (string[i] == '\n')
-            return i + 1;
-
-    }
-
-    return count;
-
-}
-
-static unsigned int findrowstart(struct widget_text *text, unsigned int row, unsigned int count, char *string)
-{
-
-    unsigned int i;
-
-    if (!row)
-        return 0;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (string[i] == '\n')
-        {
-
-            if (!--row)
-                return i + 1;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-static void rendercharline(unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
-{
-
-    unsigned int p;
-
-    for (p = 0; p < w; p++)
-    {
-
-        if (data[(p >> 3)] & (0x80 >> (p % 8)))
-            paint(color, x + p, 1);
-
-    }
-
-}
-
-static void rendercharlineinverted(unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
-{
-
-    unsigned int p;
-
-    for (p = 0; p < w; p++)
-    {
-
-        if (!(data[(p >> 3)] & (0x80 >> (p % 8))))
-            paint(color, x + p, 1);
-
-    }
-
-}
-
 static void rendertext(void *data, unsigned int line)
 {
 
     struct widget_text *text = data;
     char *string = (char *)(text + 1);
-    unsigned char color = textcolor[text->type];
-    unsigned int rowindex = line / font.lineheight;
-    unsigned int rowline = line % font.lineheight;
-    unsigned int rowstart;
-    unsigned int rowcount;
-    struct box size;
-    unsigned int i;
-
-    rowstart = findrowstart(text, rowindex, text->length, string);
-
-    if (!rowstart && rowindex > 0)
-        return;
-
-    rowcount = findrowcount(text, rowstart, text->length, string);
-
-    if (!rowcount)
-        return;
-
-    size.x = text->widget.size.x;
-    size.y = text->widget.size.y + rowindex * font.lineheight;
-
-    for (i = rowstart; i < rowcount; i++)
-    {
-
-        unsigned short index = (string[i] == '\n') ? pcf_getindex(font.data, ' ') : pcf_getindex(font.data, string[i]);
-        unsigned char *data = font.bitmapdata + pcf_getbitmapoffset(font.data, index) + rowline * font.padding;
-        struct pcf_metricsdata metricsdata;
-
-        pcf_readmetricsdata(font.data, index, &metricsdata);
-
-        size.w = metricsdata.width;
-        size.h = metricsdata.ascent + metricsdata.descent;
-
-        if (size.x + size.w > text->widget.size.x + text->widget.size.w)
-            return;
-
-        if (size.y + size.h > text->widget.size.y + text->widget.size.h)
-            return;
-
-        if (rowline < size.h)
-        {
-
-            if (text->flow == WIDGET_TEXTFLOW_INPUT && i == text->cursor)
-                rendercharlineinverted(size.x, size.w, color, data);
-            else
-                rendercharline(size.x, size.w, color, data);
-
-        }
-
-        size.x += size.w;
-
-    }
+ 
+    painttext(string, text->length, textcolor[text->type], line, &text->widget.size, text->flow, text->cursor);
 
 }
 
@@ -420,6 +420,13 @@ static void removewidget(struct widget *widget, struct layer *layer)
     memory_copy(widget, (unsigned char *)widget + length, layer->count - ((unsigned char *)widget - layer->data) - length);
 
     layer->count -= length;
+
+}
+
+static unsigned int isoverlap(unsigned int line, struct box *size)
+{
+
+    return line >= size->y && line < size->y + size->h;
 
 }
 
