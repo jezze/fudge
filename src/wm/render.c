@@ -120,26 +120,6 @@ static unsigned int colormap32[] = {
     0xFFFFFFFF
 };
 
-static void paint8(unsigned int color, unsigned int offset, unsigned int count)
-{
-
-    unsigned char *buffer = drawdata + offset;
-
-    while (count--)
-        *buffer++ = color;
-
-}
-
-static void paint32(unsigned int color, unsigned int offset, unsigned int count)
-{
-
-    unsigned int *buffer = (unsigned int *)drawdata + offset;
-
-    while (count--)
-        *buffer++ = colormap32[color];
-
-}
-
 static unsigned int findrowcount(unsigned int offset, unsigned int count, char *string)
 {
 
@@ -182,16 +162,51 @@ static unsigned int findrowstart(unsigned int row, unsigned int count, char *str
 
 }
 
+static void paint8(unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    unsigned char *buffer = drawdata + offset;
+
+    while (count--)
+        *buffer++ = color;
+
+}
+
+static void paint32(unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    unsigned int *buffer = (unsigned int *)drawdata + offset;
+
+    while (count--)
+        *buffer++ = colormap32[color];
+
+}
+
+static void paintbuffer(unsigned char *buffer, unsigned int x, unsigned int w, unsigned char transparent)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < w; i++)
+    {
+
+        if (buffer[i] != transparent)
+            paint(buffer[i], x + i, 1);
+
+    }
+
+}
+
 static void paintcharline(unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
 {
 
-    unsigned int p;
+    unsigned int i;
 
-    for (p = 0; p < w; p++)
+    for (i = 0; i < w; i++)
     {
 
-        if (data[(p >> 3)] & (0x80 >> (p % 8)))
-            paint(color, x + p, 1);
+        if (data[(i >> 3)] & (0x80 >> (i % 8)))
+            paint(color, x + i, 1);
 
     }
 
@@ -200,13 +215,13 @@ static void paintcharline(unsigned int x, unsigned int w, unsigned char color, u
 static void paintcharlineinverted(unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
 {
 
-    unsigned int p;
+    unsigned int i;
 
-    for (p = 0; p < w; p++)
+    for (i = 0; i < w; i++)
     {
 
-        if (!(data[(p >> 3)] & (0x80 >> (p % 8))))
-            paint(color, x + p, 1);
+        if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
+            paint(color, x + i, 1);
 
     }
 
@@ -269,6 +284,39 @@ static void painttext(char *string, unsigned int length, unsigned char color, un
 
 }
 
+static void paintframe(unsigned int framecolor, struct box *size, unsigned int line)
+{
+
+    if (line > size->h / 2)
+        line = size->h - line - 1;
+
+    switch (line)
+    {
+
+    case 0:
+        paint(COLOR_DARK, size->x, size->w);
+
+        break;
+
+    case 1:
+        paint(COLOR_DARK, size->x + 0, 1);
+        paint(COLOR_DARK, size->x + size->w - 1, 1);
+        paint(framecolor, size->x + 1, size->w - 2);
+
+        break;
+
+    default:
+        paint(COLOR_DARK, size->x + 0, 1);
+        paint(COLOR_DARK, size->x + size->w - 1, 1);
+        paint(framecolor, size->x + 1, 1);
+        paint(framecolor, size->x + size->w - 2, 1);
+
+        break;
+
+    }
+
+}
+
 static void rendernull(void *data, unsigned int line)
 {
 
@@ -288,16 +336,8 @@ static void rendermouse(void *data, unsigned int line)
 
     struct widget_mouse *mouse = data;
     unsigned char *mousedata = (mouse->widget.size.h == 16) ? mousedata16 : mousedata24;
-    unsigned char *md = mousedata + line * mouse->widget.size.w;
-    unsigned int i;
 
-    for (i = 0; i < mouse->widget.size.w; i++)
-    {
-
-        if (md[i] != 0xFF)
-            paint(md[i], mouse->widget.size.x + i, 1);
-
-    }
+    paintbuffer(mousedata + line * mouse->widget.size.w, mouse->widget.size.x, mouse->widget.size.w, 0xFF);
 
 }
 
@@ -308,34 +348,8 @@ static void renderpanel(void *data, unsigned int line)
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
 
-    if (line > panel->widget.size.h / 2)
-        line = panel->widget.size.h - line - 1;
-
-    switch (line)
-    {
-
-    case 0:
-        paint(COLOR_DARK, panel->widget.size.x, panel->widget.size.w);
-
-        break;
-
-    case 1:
-        paint(COLOR_DARK, panel->widget.size.x + 0, 1);
-        paint(COLOR_DARK, panel->widget.size.x + panel->widget.size.w - 1, 1);
-        paint(framecolor, panel->widget.size.x + 1, panel->widget.size.w - 2);
-
-        break;
-
-    default:
-        paint(COLOR_DARK, panel->widget.size.x + 0, 1);
-        paint(COLOR_DARK, panel->widget.size.x + panel->widget.size.w - 1, 1);
-        paint(framecolor, panel->widget.size.x + 1, 1);
-        paint(framecolor, panel->widget.size.x + panel->widget.size.w - 2, 1);
-        paint(backgroundcolor, panel->widget.size.x + 2, panel->widget.size.w - 4);
-
-        break;
-
-    }
+    paint(backgroundcolor, panel->widget.size.x, panel->widget.size.w);
+    paintframe(framecolor, &panel->widget.size, line);
 
 }
 
@@ -355,33 +369,7 @@ static void renderwindow(void *data, unsigned int line)
     struct widget_window *window = data;
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
-    if (line > window->widget.size.h / 2)
-        line = window->widget.size.h - line - 1;
-
-    switch (line)
-    {
-
-    case 0:
-        paint(COLOR_DARK, window->widget.size.x, window->widget.size.w);
-
-        break;
-
-    case 1:
-        paint(COLOR_DARK, window->widget.size.x + 0, 1);
-        paint(COLOR_DARK, window->widget.size.x + window->widget.size.w - 1, 1);
-        paint(framecolor, window->widget.size.x + 1, window->widget.size.w - 2);
-
-        break;
-
-    default:
-        paint(COLOR_DARK, window->widget.size.x + 0, 1);
-        paint(COLOR_DARK, window->widget.size.x + window->widget.size.w - 1, 1);
-        paint(framecolor, window->widget.size.x + 1, 1);
-        paint(framecolor, window->widget.size.x + window->widget.size.w - 2, 1);
-
-        break;
-
-    }
+    paintframe(framecolor, &window->widget.size, line);
 
 }
 
