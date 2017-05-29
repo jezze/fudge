@@ -16,7 +16,7 @@
 #define COLOR_POINTERFRAME              0x08
 #define COLOR_TEXTNORMAL                0x09
 #define COLOR_TEXTLIGHT                 0x0A
-#define LAYERS                          2
+#define LAYERS                          3
 
 struct layer
 {
@@ -41,9 +41,11 @@ static void (*drawables[6])(void *data, unsigned int line);
 static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
+static unsigned char layerdata0[0x1000];
 static unsigned char layerdata1[0x8000];
 static unsigned char layerdata2[0x1000];
 static struct layer layers[LAYERS] = {
+    {layerdata0, 0, 0x1000},
     {layerdata1, 0, 0x8000},
     {layerdata2, 0, 0x1000}
 };
@@ -505,7 +507,7 @@ void render_begin(unsigned int descriptor)
         struct widget *current = 0;
 
         while ((current = nextwidget(current, &insert)))
-            insertwidget(current, &layers[current->z - 1]);
+            insertwidget(current, &layers[current->z]);
 
     }
 
