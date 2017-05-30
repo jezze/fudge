@@ -328,8 +328,7 @@ static void rendernull(void *data, unsigned int line)
 static void renderfill(void *data, unsigned int line)
 {
 
-    struct widget *widget = data;
-    struct widget_fill *fill = (struct widget_fill *)(widget + 1);
+    struct widget_fill *fill = data;
 
     paint(fill->color, fill->size.x, fill->size.w);
 
@@ -338,8 +337,7 @@ static void renderfill(void *data, unsigned int line)
 static void rendermouse(void *data, unsigned int line)
 {
 
-    struct widget *widget = data;
-    struct widget_mouse *mouse = (struct widget_mouse *)(widget + 1);
+    struct widget_mouse *mouse = data;
     unsigned char *mousedata = (mouse->size.h == 16) ? mousedata16 : mousedata24;
 
     paintbuffer(mousedata + line * mouse->size.w, mouse->size.x, mouse->size.w, 0xFF);
@@ -349,8 +347,7 @@ static void rendermouse(void *data, unsigned int line)
 static void renderpanel(void *data, unsigned int line)
 {
 
-    struct widget *widget = data;
-    struct widget_panel *panel = (struct widget_panel *)(widget + 1);
+    struct widget_panel *panel = data;
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
 
@@ -362,8 +359,7 @@ static void renderpanel(void *data, unsigned int line)
 static void rendertext(void *data, unsigned int line)
 {
 
-    struct widget *widget = data;
-    struct widget_text *text = (struct widget_text *)(widget + 1);
+    struct widget_text *text = data;
     char *string = (char *)(text + 1);
  
     painttext(string, text->length, textcolor[text->type], line, &text->size, text->flow, text->cursor);
@@ -373,8 +369,7 @@ static void rendertext(void *data, unsigned int line)
 static void renderwindow(void *data, unsigned int line)
 {
 
-    struct widget *widget = data;
-    struct widget_window *window = (struct widget_window *)(widget + 1);
+    struct widget_window *window = data;
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
     paintframe(framecolor, &window->size, line);
@@ -464,7 +459,7 @@ static void renderline(unsigned int line)
         {
 
             if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &current->size))
-                drawables[current->type](current, line - current->size.y);
+                drawables[current->type](current + 1, line - current->size.y);
 
         }
 
