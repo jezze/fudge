@@ -48,7 +48,7 @@ static unsigned int steplength;
 static void updateremote(struct event_header *header, struct remote *remote)
 {
 
-    widget_set(&remote->window.widget, header->destination, sizeof (struct widget_window));
+    widget_update(&output, (unsigned int)&remote->window, 1, header->destination, WIDGET_TYPE_WINDOW, sizeof (struct widget_window), remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
     ring_write(&output, &remote->window, sizeof (struct widget_window));
 
 }
@@ -56,9 +56,9 @@ static void updateremote(struct event_header *header, struct remote *remote)
 static void updateview(struct event_header *header, struct view *view)
 {
 
-    widget_set(&view->panel.widget, header->destination, sizeof (struct widget_panel));
-    widget_set(&view->number.widget, header->destination, sizeof (struct widget_text) + 1);
+    widget_update(&output, (unsigned int)&view->panel, 1, header->destination, WIDGET_TYPE_PANEL, sizeof (struct widget_panel), view->panel.size.x, view->panel.size.y, view->panel.size.w, view->panel.size.h);
     ring_write(&output, &view->panel, sizeof (struct widget_panel));
+    widget_update(&output, (unsigned int)&view->number, 1, header->destination, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + view->number.length, view->number.size.x, view->number.size.y, view->number.size.w, view->number.size.h);
     ring_write(&output, &view->number, sizeof (struct widget_text));
     ring_write(&output, &view->numberstring, 1);
 
@@ -67,7 +67,7 @@ static void updateview(struct event_header *header, struct view *view)
 static void updatemouse(struct event_header *header)
 {
 
-    widget_set(&mouse.widget, header->destination, sizeof (struct widget_mouse));
+    widget_update(&output, (unsigned int)&mouse, 2, header->destination, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse), mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
     ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
 }
@@ -75,7 +75,7 @@ static void updatemouse(struct event_header *header)
 static void updatebackground(struct event_header *header)
 {
 
-    widget_set(&background.widget, header->destination, sizeof (struct widget_fill));
+    widget_update(&output, (unsigned int)&background, 1, header->destination, WIDGET_TYPE_FILL, sizeof (struct widget_fill), background.size.x, background.size.y, background.size.w, background.size.h);
     ring_write(&output, &background, sizeof (struct widget_fill));
 
 }
@@ -83,29 +83,29 @@ static void updatebackground(struct event_header *header)
 static void removeremote(struct event_header *header, struct remote *remote)
 {
 
-    widget_writeremove(&output, remote->window.widget.id, 1, header->destination);
+    widget_remove(&output, (unsigned int)&remote->window, 1, header->destination);
 
 }
 
 static void removeview(struct event_header *header, struct view *view)
 {
 
-    widget_writeremove(&output, view->panel.widget.id, 1, header->destination);
-    widget_writeremove(&output, view->number.widget.id, 1, header->destination);
+    widget_remove(&output, (unsigned int)&view->panel, 1, header->destination);
+    widget_remove(&output, (unsigned int)&view->number, 1, header->destination);
 
 }
 
 static void removemouse(struct event_header *header)
 {
 
-    widget_writeremove(&output, mouse.widget.id, 2, header->destination);
+    widget_remove(&output, (unsigned int)&mouse, 2, header->destination);
 
 }
 
 static void removebackground(struct event_header *header)
 {
 
-    widget_writeremove(&output, background.widget.id, 1, header->destination);
+    widget_remove(&output, (unsigned int)&background, 1, header->destination);
 
 }
 
@@ -126,8 +126,8 @@ static void deactivateremote(struct remote *remote)
 static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
-    box_setsize(&remote->window.widget.size, x, y, w, h);
-    ev_sendwmresize(CALL_L1, remote->source, remote->window.widget.size.x + 2, remote->window.widget.size.y + 2, remote->window.widget.size.w - 4, remote->window.widget.size.h - 4, padding, lineheight);
+    box_setsize(&remote->window.size, x, y, w, h);
+    ev_sendwmresize(CALL_L1, remote->source, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
 
 }
 
@@ -475,19 +475,19 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
 static void onmousemove(struct event_header *header, struct event_mousemove *mousemove)
 {
 
-    mouse.widget.size.x += mousemove->relx;
-    mouse.widget.size.y += mousemove->rely;
+    mouse.size.x += mousemove->relx;
+    mouse.size.y += mousemove->rely;
 
-    if (mouse.widget.size.x < size.x || mouse.widget.size.x >= size.x + size.w)
-        mouse.widget.size.x = (mousemove->relx < 0) ? size.x : size.x + size.w - 1;
+    if (mouse.size.x < size.x || mouse.size.x >= size.x + size.w)
+        mouse.size.x = (mousemove->relx < 0) ? size.x : size.x + size.w - 1;
 
-    if (mouse.widget.size.y < size.y || mouse.widget.size.y >= size.y + size.h)
-        mouse.widget.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
+    if (mouse.size.y < size.y || mouse.size.y >= size.y + size.h)
+        mouse.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
 
     updatemouse(header);
 
     if (viewfocus->remotefocus)
-        ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.widget.size.x, mouse.widget.size.y);
+        ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.size.x, mouse.size.y);
 
 }
 
@@ -504,7 +504,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
         for (i = 0; i < VIEWS; i++)
         {
 
-            if (!box_isinside(&views[i].panel.widget.size, mouse.widget.size.x, mouse.widget.size.y))
+            if (!box_isinside(&views[i].panel.size, mouse.size.x, mouse.size.y))
                 continue;
 
             if (&views[i] == viewfocus)
@@ -523,7 +523,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
             struct remote *remote = current->data;
 
-            if (!box_isinside(&remote->window.widget.size, mouse.widget.size.x, mouse.widget.size.y))
+            if (!box_isinside(&remote->window.size, mouse.size.x, mouse.size.y))
                 continue;
 
             if (remote == viewfocus->remotefocus)
@@ -661,7 +661,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
     box_setsize(&body, size.x, size.y + (wmresize->lineheight + wmresize->padding * 2), size.w, size.h - (wmresize->lineheight + wmresize->padding * 2));
-    box_setsize(&background.widget.size, size.x, size.y, size.w, size.h);
+    box_setsize(&background.size, size.x, size.y, size.w, size.h);
 
     steplength = body.w / 32;
 
@@ -670,15 +670,15 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
         views[i].center = 18 * steplength;
 
-        box_setsize(&views[i].panel.widget.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
-        box_setsize(&views[i].number.widget.size, views[i].panel.widget.size.x, views[i].panel.widget.size.y, views[i].panel.widget.size.w, views[i].panel.widget.size.h);
-        box_resize(&views[i].number.widget.size, wmresize->padding);
+        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
+        box_setsize(&views[i].number.size, views[i].panel.size.x, views[i].panel.size.y, views[i].panel.size.w, views[i].panel.size.h);
+        box_resize(&views[i].number.size, wmresize->padding);
         arrangeview(&views[i]);
 
     }
 
-    mouse.widget.size.x = size.x + size.w / 4;
-    mouse.widget.size.y = size.y + size.h / 4;
+    mouse.size.x = size.x + size.w / 4;
+    mouse.size.y = size.y + size.h / 4;
 
 }
 

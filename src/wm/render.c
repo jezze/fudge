@@ -328,51 +328,56 @@ static void rendernull(void *data, unsigned int line)
 static void renderfill(void *data, unsigned int line)
 {
 
-    struct widget_fill *fill = data;
+    struct widget *widget = data;
+    struct widget_fill *fill = (struct widget_fill *)(widget + 1);
 
-    paint(fill->color, fill->widget.size.x, fill->widget.size.w);
+    paint(fill->color, fill->size.x, fill->size.w);
 
 }
 
 static void rendermouse(void *data, unsigned int line)
 {
 
-    struct widget_mouse *mouse = data;
-    unsigned char *mousedata = (mouse->widget.size.h == 16) ? mousedata16 : mousedata24;
+    struct widget *widget = data;
+    struct widget_mouse *mouse = (struct widget_mouse *)(widget + 1);
+    unsigned char *mousedata = (mouse->size.h == 16) ? mousedata16 : mousedata24;
 
-    paintbuffer(mousedata + line * mouse->widget.size.w, mouse->widget.size.x, mouse->widget.size.w, 0xFF);
+    paintbuffer(mousedata + line * mouse->size.w, mouse->size.x, mouse->size.w, 0xFF);
 
 }
 
 static void renderpanel(void *data, unsigned int line)
 {
 
-    struct widget_panel *panel = data;
+    struct widget *widget = data;
+    struct widget_panel *panel = (struct widget_panel *)(widget + 1);
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
 
-    paint(backgroundcolor, panel->widget.size.x, panel->widget.size.w);
-    paintframe(framecolor, &panel->widget.size, line);
+    paint(backgroundcolor, panel->size.x, panel->size.w);
+    paintframe(framecolor, &panel->size, line);
 
 }
 
 static void rendertext(void *data, unsigned int line)
 {
 
-    struct widget_text *text = data;
+    struct widget *widget = data;
+    struct widget_text *text = (struct widget_text *)(widget + 1);
     char *string = (char *)(text + 1);
  
-    painttext(string, text->length, textcolor[text->type], line, &text->widget.size, text->flow, text->cursor);
+    painttext(string, text->length, textcolor[text->type], line, &text->size, text->flow, text->cursor);
 
 }
 
 static void renderwindow(void *data, unsigned int line)
 {
 
-    struct widget_window *window = data;
+    struct widget *widget = data;
+    struct widget_window *window = (struct widget_window *)(widget + 1);
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
-    paintframe(framecolor, &window->widget.size, line);
+    paintframe(framecolor, &window->size, line);
 
 }
 
@@ -585,14 +590,14 @@ void render_setmouse(struct widget_mouse *mouse, unsigned int size)
     {
 
     case 16:
-        mouse->widget.size.w = 12;
-        mouse->widget.size.h = 16;
+        mouse->size.w = 12;
+        mouse->size.h = 16;
 
         break;
 
     case 24:
-        mouse->widget.size.w = 18;
-        mouse->widget.size.h = 24;
+        mouse->size.w = 18;
+        mouse->size.h = 24;
 
         break;
 

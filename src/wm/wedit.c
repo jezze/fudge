@@ -25,7 +25,7 @@ static void updatecontent(struct event_header *header)
     content.length = ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&input1);
 
-    widget_set(&content.widget, header->destination, sizeof (struct widget_text) + content.length);
+    widget_update(&output, (unsigned int)&content, 1, header->destination, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
     ring_write(&output, &content, sizeof (struct widget_text));
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
@@ -38,7 +38,7 @@ static void updatestatus(struct event_header *header)
 
     status.length = 18;
 
-    widget_set(&status.widget, header->destination, sizeof (struct widget_text) + status.length);
+    widget_update(&output, (unsigned int)&status, 1, header->destination, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, status.size.x, status.size.y, status.size.w, status.size.h);
     ring_write(&output, &status, sizeof (struct widget_text));
     ring_write(&output, "^S: Save, ^Q: Quit", 18);
 
@@ -47,14 +47,14 @@ static void updatestatus(struct event_header *header)
 static void removecontent(struct event_header *header)
 {
 
-    widget_writeremove(&output, content.widget.id, 1, header->destination);
+    widget_remove(&output, (unsigned int)&content, 1, header->destination);
 
 }
 
 static void removestatus(struct event_header *header)
 {
 
-    widget_writeremove(&output, status.widget.id, 1, header->destination);
+    widget_remove(&output, (unsigned int)&status, 1, header->destination);
 
 }
 
@@ -234,12 +234,12 @@ static void readfile(void)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    box_setsize(&content.widget.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h - (wmresize->lineheight + 2 * wmresize->padding));
-    box_resize(&content.widget.size, wmresize->padding);
-    box_setsize(&status.widget.size, wmresize->x, wmresize->y + wmresize->h - (wmresize->lineheight + 2 * wmresize->padding), wmresize->w, (wmresize->lineheight + 2 * wmresize->padding));
-    box_resize(&status.widget.size, wmresize->padding);
+    box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h - (wmresize->lineheight + 2 * wmresize->padding));
+    box_resize(&content.size, wmresize->padding);
+    box_setsize(&status.size, wmresize->x, wmresize->y + wmresize->h - (wmresize->lineheight + 2 * wmresize->padding), wmresize->w, (wmresize->lineheight + 2 * wmresize->padding));
+    box_resize(&status.size, wmresize->padding);
 
-    visiblerows = (content.widget.size.h / wmresize->lineheight) - 1;
+    visiblerows = (content.size.h / wmresize->lineheight) - 1;
     totalrows = 0;
 
     ring_reset(&input1);

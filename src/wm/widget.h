@@ -30,7 +30,7 @@ struct widget
 struct widget_fill
 {
 
-    struct widget widget;
+    struct box size;
     unsigned int color;
 
 };
@@ -38,7 +38,7 @@ struct widget_fill
 struct widget_mouse
 {
 
-    struct widget widget;
+    struct box size;
     unsigned int type;
 
 };
@@ -46,7 +46,7 @@ struct widget_mouse
 struct widget_panel
 {
 
-    struct widget widget;
+    struct box size;
     unsigned int active;
 
 };
@@ -54,7 +54,7 @@ struct widget_panel
 struct widget_text
 {
 
-    struct widget widget;
+    struct box size;
     unsigned int type;
     unsigned int flow;
     unsigned int length;
@@ -65,17 +65,15 @@ struct widget_text
 struct widget_window
 {
 
-    struct widget widget;
+    struct box size;
     unsigned int active;
 
 };
 
-void widget_init(struct widget *widget, unsigned int id, unsigned int type, unsigned int z);
 void widget_initfill(struct widget_fill *fill, unsigned int color);
 void widget_initmouse(struct widget_mouse *mouse, unsigned int type);
 void widget_initpanel(struct widget_panel *panel, unsigned int active);
 void widget_inittext(struct widget_text *text, unsigned int type, unsigned int flow);
 void widget_initwindow(struct widget_window *window, unsigned int active);
-void widget_set(struct widget *widget, unsigned int source, unsigned int count);
-void widget_writeupdate(struct ring *ring, unsigned int id, unsigned int z, unsigned int source, unsigned int type, unsigned int count, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
-void widget_writeremove(struct ring *ring, unsigned int id, unsigned int z, unsigned int source);
+void widget_update(struct ring *ring, unsigned int id, unsigned int z, unsigned int source, unsigned int type, unsigned int count, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
+void widget_remove(struct ring *ring, unsigned int id, unsigned int z, unsigned int source);

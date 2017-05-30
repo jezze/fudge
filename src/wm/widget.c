@@ -3,20 +3,8 @@
 #include "box.h"
 #include "widget.h"
 
-void widget_init(struct widget *widget, unsigned int id, unsigned int type, unsigned int z)
-{
-
-    widget->id = id;
-    widget->type = type;
-    widget->z = z;
-    widget->damage = WIDGET_DAMAGE_UPDATE;
-
-}
-
 void widget_initfill(struct widget_fill *fill, unsigned int color)
 {
-
-    widget_init(&fill->widget, (unsigned int)fill, WIDGET_TYPE_FILL, 1);
 
     fill->color = color;
 
@@ -25,8 +13,6 @@ void widget_initfill(struct widget_fill *fill, unsigned int color)
 void widget_initmouse(struct widget_mouse *mouse, unsigned int type)
 {
 
-    widget_init(&mouse->widget, (unsigned int)mouse, WIDGET_TYPE_MOUSE, 2);
-
     mouse->type = type;
 
 }
@@ -34,16 +20,12 @@ void widget_initmouse(struct widget_mouse *mouse, unsigned int type)
 void widget_initpanel(struct widget_panel *panel, unsigned int active)
 {
 
-    widget_init(&panel->widget, (unsigned int)panel, WIDGET_TYPE_PANEL, 1);
-
     panel->active = active;
 
 }
 
 void widget_inittext(struct widget_text *text, unsigned int type, unsigned int flow)
 {
-
-    widget_init(&text->widget, (unsigned int)text, WIDGET_TYPE_TEXT, 1);
 
     text->type = type;
     text->flow = flow;
@@ -54,21 +36,11 @@ void widget_inittext(struct widget_text *text, unsigned int type, unsigned int f
 void widget_initwindow(struct widget_window *window, unsigned int active)
 {
 
-    widget_init(&window->widget, (unsigned int)window, WIDGET_TYPE_WINDOW, 1);
-
     window->active = active;
 
 }
 
-void widget_set(struct widget *widget, unsigned int source, unsigned int count)
-{
-
-    widget->source = source;
-    widget->count = count;
-
-}
-
-void widget_writeupdate(struct ring *ring, unsigned int id, unsigned int z, unsigned int source, unsigned int type, unsigned int count, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void widget_update(struct ring *ring, unsigned int id, unsigned int z, unsigned int source, unsigned int type, unsigned int count, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
     struct widget widget;
@@ -88,7 +60,7 @@ void widget_writeupdate(struct ring *ring, unsigned int id, unsigned int z, unsi
 
 }
 
-void widget_writeremove(struct ring *ring, unsigned int id, unsigned int z, unsigned int source)
+void widget_remove(struct ring *ring, unsigned int id, unsigned int z, unsigned int source)
 {
 
     struct widget widget;

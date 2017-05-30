@@ -26,7 +26,7 @@ static void updatecontent(struct event_header *header)
     content.length = ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&text) + ring_count(&input1);
 
-    widget_set(&content.widget, header->destination, sizeof (struct widget_text) + content.length);
+    widget_update(&output, (unsigned int)&content, 1, header->destination, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
     ring_write(&output, &content, sizeof (struct widget_text));
     ring_copy(&output, &text);
     ring_copy(&output, &input1);
@@ -38,7 +38,7 @@ static void updatecontent(struct event_header *header)
 static void removecontent(struct event_header *header)
 {
 
-    widget_writeremove(&output, content.widget.id, 1, header->destination);
+    widget_remove(&output, (unsigned int)&content, 1, header->destination);
 
 }
 
@@ -306,10 +306,10 @@ static void onwmexit(struct event_header *header)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    box_setsize(&content.widget.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_resize(&content.widget.size, wmresize->padding);
+    box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
+    box_resize(&content.size, wmresize->padding);
 
-    visiblerows = (content.widget.size.h / wmresize->lineheight) - 1;
+    visiblerows = (content.size.h / wmresize->lineheight) - 1;
 
     if (totalrows > visiblerows)
         removerows(totalrows - visiblerows);
