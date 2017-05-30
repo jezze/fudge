@@ -20,7 +20,7 @@ static struct ev_handlers handlers;
 static unsigned int totalrows;
 static unsigned int visiblerows;
 
-static void printinsert(struct event_header *header)
+static void updatecontent(struct event_header *header)
 {
 
     content.length = ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1;
@@ -35,7 +35,7 @@ static void printinsert(struct event_header *header)
 
 }
 
-static void printremove(struct event_header *header)
+static void removecontent(struct event_header *header)
 {
 
     widget_writeremove(&output, content.widget.id, 1, header->destination);
@@ -186,7 +186,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
     case 0x0E:
         ring_skipreverse(&input1, 1);
-        printinsert(header);
+        updatecontent(header);
 
         break;
 
@@ -196,7 +196,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         copyring(&input1);
         interpret(&input1);
         copybuffer("$ ", 2);
-        printinsert(header);
+        updatecontent(header);
 
         break;
 
@@ -217,7 +217,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         else
             keymap_write(&input1, keypress->scancode, keymod);
 
-        printinsert(header);
+        updatecontent(header);
 
         break;
 
@@ -227,7 +227,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         else
             keymap_write(&input1, keypress->scancode, keymod);
 
-        printinsert(header);
+        updatecontent(header);
 
         break;
 
@@ -237,37 +237,37 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         else
             keymap_write(&input1, keypress->scancode, keymod);
 
-        printinsert(header);
+        updatecontent(header);
 
         break;
 
     case 0x47:
         moveleft(ring_count(&input1));
-        printinsert(header);
+        updatecontent(header);
 
         break;
 
     case 0x4B:
         moveleft(1);
-        printinsert(header);
+        updatecontent(header);
 
         break;
 
     case 0x4D:
         moveright(1);
-        printinsert(header);
+        updatecontent(header);
 
         break;
 
     case 0x4F:
         moveright(ring_count(&input2));
-        printinsert(header);
+        updatecontent(header);
 
         break;
 
     default:
         keymap_write(&input1, keypress->scancode, keymod);
-        printinsert(header);
+        updatecontent(header);
 
         break;
 
@@ -319,14 +319,14 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 static void onwmshow(struct event_header *header)
 {
 
-    printinsert(header);
+    updatecontent(header);
 
 }
 
 static void onwmhide(struct event_header *header)
 {
 
-    printremove(header);
+    removecontent(header);
 
 }
 

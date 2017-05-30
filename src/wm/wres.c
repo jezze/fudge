@@ -10,16 +10,6 @@ static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static struct ev_handlers handlers;
 
-static void printinsert(unsigned int source)
-{
-
-}
-
-static void printremove(unsigned int source)
-{
-
-}
-
 static void onmousepress(struct event_header *header, struct event_mousepress *mousepress)
 {
 
@@ -51,14 +41,10 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 static void onwmshow(struct event_header *header)
 {
 
-    printinsert(header->destination);
-
 }
 
 static void onwmhide(struct event_header *header)
 {
-
-    printremove(header->destination);
 
 }
 

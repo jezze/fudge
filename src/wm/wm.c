@@ -45,7 +45,7 @@ static unsigned int padding;
 static unsigned int lineheight;
 static unsigned int steplength;
 
-static void printinsertremote(struct event_header *header, struct remote *remote)
+static void updateremote(struct event_header *header, struct remote *remote)
 {
 
     widget_set(&remote->window.widget, header->destination, sizeof (struct widget_window));
@@ -53,14 +53,7 @@ static void printinsertremote(struct event_header *header, struct remote *remote
 
 }
 
-static void printremoveremote(struct event_header *header, struct remote *remote)
-{
-
-    widget_writeremove(&output, remote->window.widget.id, 1, header->destination);
-
-}
-
-static void printinsertview(struct event_header *header, struct view *view)
+static void updateview(struct event_header *header, struct view *view)
 {
 
     widget_set(&view->panel.widget, header->destination, sizeof (struct widget_panel));
@@ -71,11 +64,48 @@ static void printinsertview(struct event_header *header, struct view *view)
 
 }
 
-static void printremoveview(struct event_header *header, struct view *view)
+static void updatemouse(struct event_header *header)
+{
+
+    widget_set(&mouse.widget, header->destination, sizeof (struct widget_mouse));
+    ring_write(&output, &mouse, sizeof (struct widget_mouse));
+
+}
+
+static void updatebackground(struct event_header *header)
+{
+
+    widget_set(&background.widget, header->destination, sizeof (struct widget_fill));
+    ring_write(&output, &background, sizeof (struct widget_fill));
+
+}
+
+static void removeremote(struct event_header *header, struct remote *remote)
+{
+
+    widget_writeremove(&output, remote->window.widget.id, 1, header->destination);
+
+}
+
+static void removeview(struct event_header *header, struct view *view)
 {
 
     widget_writeremove(&output, view->panel.widget.id, 1, header->destination);
     widget_writeremove(&output, view->number.widget.id, 1, header->destination);
+
+}
+
+static void removemouse(struct event_header *header)
+{
+
+    widget_writeremove(&output, mouse.widget.id, 2, header->destination);
+
+}
+
+static void removebackground(struct event_header *header)
+{
+
+    widget_writeremove(&output, background.widget.id, 1, header->destination);
 
 }
 
@@ -112,7 +142,7 @@ static void showremotes(struct event_header *header, struct list *remotes)
         struct remote *remote = current->data;
 
         ev_sendwmshow(CALL_L1, remote->source);
-        printinsertremote(header, remote);
+        updateremote(header, remote);
 
     }
 
@@ -129,7 +159,7 @@ static void hideremotes(struct event_header *header, struct list *remotes)
         struct remote *remote = current->data;
 
         ev_sendwmhide(CALL_L1, remote->source);
-        printremoveremote(header, remote);
+        removeremote(header, remote);
 
     }
 
@@ -205,7 +235,7 @@ static void showview(struct event_header *header, struct view *view)
 {
 
     activateview(view);
-    printinsertview(header, view);
+    updateview(header, view);
     showremotes(header, &view->remotes);
 
 }
@@ -214,7 +244,7 @@ static void hideview(struct event_header *header, struct view *view)
 {
 
     deactivateview(view);
-    printinsertview(header, view);
+    updateview(header, view);
     hideremotes(header, &view->remotes);
 
 }
@@ -304,7 +334,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
         ev_sendwmhide(CALL_L1, viewfocus->remotefocus->source);
         ev_sendwmexit(CALL_L1, viewfocus->remotefocus->source);
-        printremoveremote(header, viewfocus->remotefocus);
+        removeremote(header, viewfocus->remotefocus);
         list_move(&remotelist, &viewfocus->remotefocus->item);
 
         viewfocus->remotefocus = (viewfocus->remotes.tail) ? viewfocus->remotes.tail->data : 0;
@@ -359,12 +389,12 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
             break;
 
         deactivateremote(viewfocus->remotefocus);
-        printinsertremote(header, viewfocus->remotefocus);
+        updateremote(header, viewfocus->remotefocus);
 
         viewfocus->remotefocus = nextremote;
 
         activateremote(viewfocus->remotefocus);
-        printinsertremote(header, viewfocus->remotefocus);
+        updateremote(header, viewfocus->remotefocus);
 
         break;
 
@@ -378,12 +408,12 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
             break;
 
         deactivateremote(viewfocus->remotefocus);
-        printinsertremote(header, viewfocus->remotefocus);
+        updateremote(header, viewfocus->remotefocus);
 
         viewfocus->remotefocus = nextremote;
 
         activateremote(viewfocus->remotefocus);
-        printinsertremote(header, viewfocus->remotefocus);
+        updateremote(header, viewfocus->remotefocus);
 
         break;
 
@@ -454,8 +484,7 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
     if (mouse.widget.size.y < size.y || mouse.widget.size.y >= size.y + size.h)
         mouse.widget.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
 
-    widget_set(&mouse.widget, header->destination, sizeof (struct widget_mouse));
-    ring_write(&output, &mouse, sizeof (struct widget_mouse));
+    updatemouse(header);
 
     if (viewfocus->remotefocus)
         ev_sendmousemove(CALL_L1, viewfocus->remotefocus->source, mouse.widget.size.x, mouse.widget.size.y);
@@ -501,12 +530,12 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
                 break;
 
             deactivateremote(viewfocus->remotefocus);
-            printinsertremote(header, viewfocus->remotefocus);
+            updateremote(header, viewfocus->remotefocus);
 
             viewfocus->remotefocus = remote;
 
             activateremote(viewfocus->remotefocus);
-            printinsertremote(header, viewfocus->remotefocus);
+            updateremote(header, viewfocus->remotefocus);
 
         }
 
@@ -658,13 +687,11 @@ static void onwmshow(struct event_header *header)
 
     unsigned int i;
 
-    widget_set(&background.widget, header->destination, sizeof (struct widget_fill));
-    widget_set(&mouse.widget, header->destination, sizeof (struct widget_mouse));
-    ring_write(&output, &background, sizeof (struct widget_fill));
-    ring_write(&output, &mouse, sizeof (struct widget_mouse));
+    updatebackground(header);
+    updatemouse(header);
 
     for (i = 0; i < VIEWS; i++)
-        printinsertview(header, &views[i]);
+        updateview(header, &views[i]);
 
     showremotes(header, &viewfocus->remotes);
 
@@ -675,11 +702,11 @@ static void onwmhide(struct event_header *header)
 
     unsigned int i;
 
-    widget_writeremove(&output, background.widget.id, 1, header->destination);
-    widget_writeremove(&output, mouse.widget.id, 2, header->destination);
+    removebackground(header);
+    removemouse(header);
 
     for (i = 0; i < VIEWS; i++)
-        printremoveview(header, &views[i]);
+        removeview(header, &views[i]);
 
     hideremotes(header, &viewfocus->remotes);
 
