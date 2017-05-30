@@ -75,7 +75,7 @@ static void updatemouse(struct event_header *header)
 static void updatebackground(struct event_header *header)
 {
 
-    widget_update(&output, (unsigned int)&background, 1, header->destination, WIDGET_TYPE_FILL, sizeof (struct widget_fill), background.size.x, background.size.y, background.size.w, background.size.h);
+    widget_update(&output, (unsigned int)&background, 0, header->destination, WIDGET_TYPE_FILL, sizeof (struct widget_fill), background.size.x, background.size.y, background.size.w, background.size.h);
     ring_write(&output, &background, sizeof (struct widget_fill));
 
 }
@@ -105,7 +105,7 @@ static void removemouse(struct event_header *header)
 static void removebackground(struct event_header *header)
 {
 
-    widget_remove(&output, (unsigned int)&background, 1, header->destination);
+    widget_remove(&output, (unsigned int)&background, 0, header->destination);
 
 }
 
