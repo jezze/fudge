@@ -24,7 +24,6 @@ static struct view
     struct list remotes;
     unsigned int center;
     struct widget_panel panel;
-    struct widget_text number;
     char numberstring;
     struct remote *remotefocus;
 
@@ -48,7 +47,7 @@ static unsigned int steplength;
 static void updateremote(struct event_header *header, struct remote *remote)
 {
 
-    widget_update(&output, (unsigned int)&remote->window, 1, header->destination, WIDGET_TYPE_WINDOW, sizeof (struct widget_window), remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+    widget_update(&output, &remote->window, WIDGET_Z_MIDDLE, header->destination, WIDGET_TYPE_WINDOW, sizeof (struct widget_window), remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
     ring_write(&output, &remote->window, sizeof (struct widget_window));
 
 }
@@ -56,10 +55,10 @@ static void updateremote(struct event_header *header, struct remote *remote)
 static void updateview(struct event_header *header, struct view *view)
 {
 
-    widget_update(&output, (unsigned int)&view->panel, 1, header->destination, WIDGET_TYPE_PANEL, sizeof (struct widget_panel), view->panel.size.x, view->panel.size.y, view->panel.size.w, view->panel.size.h);
+    view->panel.length = 1;
+
+    widget_update(&output, &view->panel, WIDGET_Z_MIDDLE, header->destination, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length, view->panel.size.x, view->panel.size.y, view->panel.size.w, view->panel.size.h);
     ring_write(&output, &view->panel, sizeof (struct widget_panel));
-    widget_update(&output, (unsigned int)&view->number, 1, header->destination, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + view->number.length, view->number.size.x, view->number.size.y, view->number.size.w, view->number.size.h);
-    ring_write(&output, &view->number, sizeof (struct widget_text));
     ring_write(&output, &view->numberstring, 1);
 
 }
@@ -67,7 +66,7 @@ static void updateview(struct event_header *header, struct view *view)
 static void updatemouse(struct event_header *header)
 {
 
-    widget_update(&output, (unsigned int)&mouse, 2, header->destination, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse), mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
+    widget_update(&output, &mouse, WIDGET_Z_TOP, header->destination, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse), mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
     ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
 }
@@ -75,7 +74,7 @@ static void updatemouse(struct event_header *header)
 static void updatebackground(struct event_header *header)
 {
 
-    widget_update(&output, (unsigned int)&background, 0, header->destination, WIDGET_TYPE_FILL, sizeof (struct widget_fill), background.size.x, background.size.y, background.size.w, background.size.h);
+    widget_update(&output, &background, WIDGET_Z_BOTTOM, header->destination, WIDGET_TYPE_FILL, sizeof (struct widget_fill), background.size.x, background.size.y, background.size.w, background.size.h);
     ring_write(&output, &background, sizeof (struct widget_fill));
 
 }
@@ -83,29 +82,28 @@ static void updatebackground(struct event_header *header)
 static void removeremote(struct event_header *header, struct remote *remote)
 {
 
-    widget_remove(&output, (unsigned int)&remote->window, 1, header->destination);
+    widget_remove(&output, &remote->window, WIDGET_Z_MIDDLE, header->destination);
 
 }
 
 static void removeview(struct event_header *header, struct view *view)
 {
 
-    widget_remove(&output, (unsigned int)&view->panel, 1, header->destination);
-    widget_remove(&output, (unsigned int)&view->number, 1, header->destination);
+    widget_remove(&output, &view->panel, WIDGET_Z_MIDDLE, header->destination);
 
 }
 
 static void removemouse(struct event_header *header)
 {
 
-    widget_remove(&output, (unsigned int)&mouse, 2, header->destination);
+    widget_remove(&output, &mouse, WIDGET_Z_TOP, header->destination);
 
 }
 
 static void removebackground(struct event_header *header)
 {
 
-    widget_remove(&output, (unsigned int)&background, 0, header->destination);
+    widget_remove(&output, &background, WIDGET_Z_BOTTOM, header->destination);
 
 }
 
@@ -219,7 +217,6 @@ static void activateview(struct view *view)
 {
 
     view->panel.active = 1;
-    view->number.type = WIDGET_TEXTTYPE_HIGHLIGHT;
 
 }
 
@@ -227,7 +224,6 @@ static void deactivateview(struct view *view)
 {
 
     view->panel.active = 0;
-    view->number.type = WIDGET_TEXTTYPE_NORMAL;
 
 }
 
@@ -671,8 +667,6 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
         views[i].center = 18 * steplength;
 
         box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
-        box_setsize(&views[i].number.size, views[i].panel.size.x, views[i].panel.size.y, views[i].panel.size.w, views[i].panel.size.h);
-        box_resize(&views[i].number.size, wmresize->padding);
         arrangeview(&views[i]);
 
     }
@@ -730,9 +724,7 @@ static void setup(void)
     {
 
         widget_initpanel(&views[i].panel, 0);
-        widget_inittext(&views[i].number, WIDGET_TEXTTYPE_NORMAL, WIDGET_TEXTFLOW_NORMAL);
 
-        views[i].number.length = 1;
         views[i].numberstring = '1' + i;
         views[i].remotefocus = 0;
 

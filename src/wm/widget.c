@@ -24,12 +24,15 @@ void widget_initpanel(struct widget_panel *panel, unsigned int active)
 
 }
 
-void widget_inittext(struct widget_text *text, unsigned int type, unsigned int flow)
+void widget_inittext(struct widget_text *text, unsigned int type)
 {
 
     text->type = type;
-    text->flow = flow;
-    text->cursor = 0;
+
+}
+
+void widget_inittextbox(struct widget_textbox *textbox)
+{
 
 }
 
@@ -40,12 +43,12 @@ void widget_initwindow(struct widget_window *window, unsigned int active)
 
 }
 
-void widget_update(struct ring *ring, unsigned int id, unsigned int z, unsigned int source, unsigned int type, unsigned int count, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void widget_update(struct ring *ring, void *item, unsigned int z, unsigned int source, unsigned int type, unsigned int count, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
     struct widget widget;
 
-    widget.id = id;
+    widget.id = (unsigned int)item;
     widget.type = type;
     widget.z = z;
     widget.damage = WIDGET_DAMAGE_UPDATE;
@@ -60,12 +63,12 @@ void widget_update(struct ring *ring, unsigned int id, unsigned int z, unsigned 
 
 }
 
-void widget_remove(struct ring *ring, unsigned int id, unsigned int z, unsigned int source)
+void widget_remove(struct ring *ring, void *item, unsigned int z, unsigned int source)
 {
 
     struct widget widget;
 
-    widget.id = id;
+    widget.id = (unsigned int)item;
     widget.type = WIDGET_TYPE_NULL;
     widget.z = z;
     widget.damage = WIDGET_DAMAGE_REMOVE;

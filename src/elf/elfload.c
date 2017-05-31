@@ -101,7 +101,7 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
 static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 {
 
-    unsigned int length = memory_findbyte(symbolname, count, '_') - 1;
+    unsigned int length = memory_findbyte(symbolname, count, '_');
     unsigned int offset = 0;
     unsigned int address;
     char module[32];

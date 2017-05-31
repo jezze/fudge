@@ -27,10 +27,7 @@ unsigned int memory_findbyte(void *in, unsigned int count, char value)
     unsigned char *ip = in;
     unsigned int offset;
 
-    if (!count)
-        return 0;
-
-    for (offset = 1; offset < count && ip[offset - 1] != value; offset++);
+    for (offset = 0; offset < count && ip[offset] != value; offset++);
 
     return offset;
 

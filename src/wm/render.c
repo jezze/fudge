@@ -37,7 +37,7 @@ struct font
 
 };
 
-static void (*drawables[6])(void *data, unsigned int line);
+static void (*drawables[7])(void *data, unsigned int line);
 static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
 static unsigned char drawdata[0x2000];
@@ -122,24 +122,25 @@ static unsigned int colormap32[] = {
     0xFFFFFFFF
 };
 
-static unsigned int findrowcount(unsigned int offset, unsigned int count, char *string)
+static unsigned int findrowtotal(char *string, unsigned int count)
 {
 
     unsigned int i;
+    unsigned int total = 0;
 
-    for (i = offset; i < count; i++)
+    for (i = 0; i < count; i++)
     {
 
         if (string[i] == '\n')
-            return i + 1;
+            total++;
 
     }
 
-    return count;
+    return total;
 
 }
 
-static unsigned int findrowstart(unsigned int row, unsigned int count, char *string)
+static unsigned int findrowstart(char *string, unsigned int count, unsigned int row)
 {
 
     unsigned int i;
@@ -161,6 +162,38 @@ static unsigned int findrowstart(unsigned int row, unsigned int count, char *str
     }
 
     return 0;
+
+}
+
+static unsigned int findrowcount(char *string, unsigned int count, unsigned int offset)
+{
+
+    unsigned int i;
+
+    for (i = offset; i < count; i++)
+    {
+
+        if (string[i] == '\n')
+            return i + 1;
+
+    }
+
+    return count;
+
+}
+
+static unsigned short getfontindex(char c)
+{
+
+    switch (c)
+    {
+
+    case '\n':
+        return pcf_getindex(font.data, ' ');
+
+    }
+
+    return pcf_getindex(font.data, c);
 
 }
 
@@ -229,59 +262,66 @@ static void paintcharlineinverted(unsigned int x, unsigned int w, unsigned char 
 
 }
 
-static void painttext(char *string, unsigned int length, unsigned char color, unsigned int line, struct box *from, unsigned int flow, unsigned int cursor)
+static void painttext(char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row)
 {
 
-    unsigned int rowindex = line / font.lineheight;
-    unsigned int rowline = line % font.lineheight;
-    unsigned int rowstart;
-    unsigned int rowcount;
-    struct box size;
     unsigned int i;
 
-    rowstart = findrowstart(rowindex, length, string);
-
-    if (!rowstart && rowindex > 0)
-        return;
-
-    rowcount = findrowcount(rowstart, length, string);
-
-    if (!rowcount)
-        return;
-
-    size.x = from->x;
-    size.y = from->y + rowindex * font.lineheight;
-
-    for (i = rowstart; i < rowcount; i++)
+    for (i = 0; i < length; i++)
     {
 
-        unsigned short index = (string[i] == '\n') ? pcf_getindex(font.data, ' ') : pcf_getindex(font.data, string[i]);
+        unsigned short index = getfontindex(string[i]);
         struct pcf_metricsdata metricsdata;
 
         pcf_readmetricsdata(font.data, index, &metricsdata);
 
-        size.w = metricsdata.width;
-        size.h = metricsdata.ascent + metricsdata.descent;
-
-        if (size.x + size.w > from->x + from->w)
+        if (x + metricsdata.width > w)
             return;
 
-        if (size.y + size.h > from->y + from->h)
-            return;
-
-        if (rowline < size.h)
+        if (row < metricsdata.ascent + metricsdata.descent)
         {
 
-            unsigned char *data = font.bitmapdata + pcf_getbitmapoffset(font.data, index) + rowline * font.padding;
+            unsigned int offset = pcf_getbitmapoffset(font.data, index) + row * font.padding;
 
-            if (flow == WIDGET_TEXTFLOW_INPUT && i == cursor)
-                paintcharlineinverted(size.x, size.w, color, data);
-            else
-                paintcharline(size.x, size.w, color, data);
+            paintcharline(x, metricsdata.width, color, font.bitmapdata + offset);
 
         }
 
-        size.x += size.w;
+        x += metricsdata.width;
+
+    }
+
+}
+
+static void painttextinput(char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row, unsigned int cursor)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        unsigned short index = getfontindex(string[i]);
+        struct pcf_metricsdata metricsdata;
+
+        pcf_readmetricsdata(font.data, index, &metricsdata);
+
+        if (x + metricsdata.width > w)
+            return;
+
+        if (row < metricsdata.ascent + metricsdata.descent)
+        {
+
+            unsigned int offset = pcf_getbitmapoffset(font.data, index) + row * font.padding;
+
+            if (i == cursor)
+                paintcharlineinverted(x, metricsdata.width, color, font.bitmapdata + offset);
+            else
+                paintcharline(x, metricsdata.width, color, font.bitmapdata + offset);
+
+        }
+
+        x += metricsdata.width;
 
     }
 
@@ -348,11 +388,20 @@ static void renderpanel(void *data, unsigned int line)
 {
 
     struct widget_panel *panel = data;
+    char *string = (char *)(panel + 1);
+    unsigned int stringcolor = panel->active ? textcolor[WIDGET_TEXTTYPE_HIGHLIGHT] : textcolor[WIDGET_TEXTTYPE_NORMAL];
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
+    struct box textbox;
+    unsigned int padding = 8;
 
+    box_setsize(&textbox, panel->size.x, panel->size.y, panel->size.w, panel->size.h);
+    box_resize(&textbox, padding);
     paint(backgroundcolor, panel->size.x, panel->size.w);
     paintframe(framecolor, &panel->size, line);
+
+    if (line >= padding && ((line - padding) / font.lineheight == 0))
+        painttext(string, panel->length, textbox.x, textbox.x + textbox.w, stringcolor, (line - padding) % font.lineheight);
 
 }
 
@@ -361,8 +410,38 @@ static void rendertext(void *data, unsigned int line)
 
     struct widget_text *text = data;
     char *string = (char *)(text + 1);
- 
-    painttext(string, text->length, textcolor[text->type], line, &text->size, text->flow, text->cursor);
+    unsigned int rowindex = line / font.lineheight;
+    unsigned int rowtotal = findrowtotal(string, text->length);
+    unsigned int rowstart;
+    unsigned int rowcount;
+
+    if (rowindex >= rowtotal)
+        return;
+
+    rowstart = findrowstart(string, text->length, rowindex);
+    rowcount = findrowcount(string, text->length, rowstart);
+
+    painttext(string + rowstart, rowcount - rowstart, text->size.x, text->size.x + text->size.w, textcolor[text->type], line % font.lineheight);
+
+}
+
+static void rendertextbox(void *data, unsigned int line)
+{
+
+    struct widget_textbox *textbox = data;
+    char *string = (char *)(textbox + 1);
+    unsigned int rowindex = line / font.lineheight;
+    unsigned int rowtotal = findrowtotal(string, textbox->length);
+    unsigned int rowstart;
+    unsigned int rowcount;
+
+    if (rowindex >= rowtotal)
+        return;
+
+    rowstart = findrowstart(string, textbox->length, rowindex);
+    rowcount = findrowcount(string, textbox->length, rowstart);
+
+    painttextinput(string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
 
 }
 
@@ -623,6 +702,7 @@ void render_init()
     drawables[WIDGET_TYPE_MOUSE] = rendermouse;
     drawables[WIDGET_TYPE_PANEL] = renderpanel;
     drawables[WIDGET_TYPE_TEXT] = rendertext;
+    drawables[WIDGET_TYPE_TEXTBOX] = rendertextbox;
     drawables[WIDGET_TYPE_WINDOW] = renderwindow;
 
 }

@@ -5,7 +5,7 @@
 #include "keymap.h"
 #include "ev.h"
 
-static struct widget_text content;
+static struct widget_textbox content;
 static struct widget_text status;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
@@ -25,8 +25,8 @@ static void updatecontent(struct event_header *header)
     content.length = ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&input1);
 
-    widget_update(&output, (unsigned int)&content, 1, header->destination, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
-    ring_write(&output, &content, sizeof (struct widget_text));
+    widget_update(&output, &content, WIDGET_Z_MIDDLE, header->destination, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
+    ring_write(&output, &content, sizeof (struct widget_textbox));
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
     ring_write(&output, "\n", 1);
@@ -38,7 +38,7 @@ static void updatestatus(struct event_header *header)
 
     status.length = 18;
 
-    widget_update(&output, (unsigned int)&status, 1, header->destination, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, status.size.x, status.size.y, status.size.w, status.size.h);
+    widget_update(&output, &status, WIDGET_Z_MIDDLE, header->destination, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, status.size.x, status.size.y, status.size.w, status.size.h);
     ring_write(&output, &status, sizeof (struct widget_text));
     ring_write(&output, "^S: Save, ^Q: Quit", 18);
 
@@ -47,14 +47,14 @@ static void updatestatus(struct event_header *header)
 static void removecontent(struct event_header *header)
 {
 
-    widget_remove(&output, (unsigned int)&content, 1, header->destination);
+    widget_remove(&output, &content, WIDGET_Z_MIDDLE, header->destination);
 
 }
 
 static void removestatus(struct event_header *header)
 {
 
-    widget_remove(&output, (unsigned int)&status, 1, header->destination);
+    widget_remove(&output, &status, WIDGET_Z_MIDDLE, header->destination);
 
 }
 
@@ -277,8 +277,8 @@ void main(void)
     ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    widget_inittext(&content, WIDGET_TEXTTYPE_NORMAL, WIDGET_TEXTFLOW_INPUT);
-    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT, WIDGET_TEXTFLOW_NORMAL);
+    widget_inittextbox(&content);
+    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
 
     if (!file_walk(CALL_L0, "/system/wm/data"))
         return;
