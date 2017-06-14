@@ -28,8 +28,10 @@ static void readmadt(void)
         {
 
             struct acpi_madt_apic *apic = (struct acpi_madt_apic *)entry;
+            struct smp_cpu *cpu = &architecture.cpus[architecture.ncpus];
 
-            architecture.cpus[architecture.ncpus].id = apic->id;
+            cpu->id = apic->id;
+
             architecture.ncpus++;
 
         }
@@ -38,9 +40,11 @@ static void readmadt(void)
         {
 
             struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
+            struct smp_io *io = &architecture.ios[architecture.nios];
 
-            architecture.ios[architecture.nios].id = ioapic->id;
-            architecture.ios[architecture.nios].address = ioapic->address;
+            io->id = ioapic->id;
+            io->address = ioapic->address;
+
             architecture.nios++;
 
         }
