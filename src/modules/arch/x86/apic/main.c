@@ -56,19 +56,41 @@
 
 static unsigned int mmio;
 
-static void apic_outd(unsigned int reg, unsigned int value)
+unsigned int apic_ind(unsigned int reg)
 {
 
-    unsigned int *base = (unsigned int *)mmio;
+    unsigned int *address = (unsigned int *)(mmio + reg);
 
-    *(base + reg) = value;
+    return *address;
+
+}
+
+void apic_outd(unsigned int reg, unsigned int value)
+{
+
+    unsigned int *address = (unsigned int *)(mmio + reg);
+
+    *address = value;
 
 }
 
 unsigned short apic_interrupt(struct cpu_general general, unsigned int index, unsigned int slave, struct cpu_interrupt interrupt)
 {
 
+    DEBUG(DEBUG_INFO, "APIC INTERRUPT");
+    DEBUG(DEBUG_INFO, "APIC INTERRUPT");
+    DEBUG(DEBUG_INFO, "APIC INTERRUPT");
+    DEBUG(DEBUG_INFO, "APIC INTERRUPT");
+
     return arch_resume(&general, &interrupt);
+
+}
+
+void apic_sendint(unsigned int id, unsigned int index)
+{
+
+    apic_outd(REGISTERICR1, (1 << 14) | index);
+    apic_outd(REGISTERICR0, (id << 24) | (1 << 14) | index);
 
 }
 
@@ -101,6 +123,7 @@ void module_init(void)
     arch_setmap(7, mmio, mmio, 0x1000);
     arch_setinterrupt(0xFF, apic_spurious);
     apic_outd(REGISTERSV, 0xFF | (1 << 8));
+    apic_sendint(0, 0x01); 
 
 }
 
