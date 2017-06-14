@@ -56,7 +56,8 @@
 
 static unsigned int mmio;
 
-unsigned int apic_ind(unsigned int reg)
+/*
+static unsigned int apic_ind(unsigned int reg)
 {
 
     unsigned int *address = (unsigned int *)(mmio + reg);
@@ -64,8 +65,9 @@ unsigned int apic_ind(unsigned int reg)
     return *address;
 
 }
+*/
 
-void apic_outd(unsigned int reg, unsigned int value)
+static void apic_outd(unsigned int reg, unsigned int value)
 {
 
     unsigned int *address = (unsigned int *)(mmio + reg);
@@ -86,7 +88,7 @@ unsigned short apic_interrupt(struct cpu_general general, unsigned int index, un
 
 }
 
-void apic_sendint(unsigned int id, unsigned int index)
+static void apic_sendint(unsigned int id, unsigned int index)
 {
 
     apic_outd(REGISTERICR1, (1 << 14) | index);
