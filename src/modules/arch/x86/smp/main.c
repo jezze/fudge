@@ -1,16 +1,17 @@
 #include <fudge.h>
+#include <kernel.h>
 #include <modules/arch/x86/acpi/acpi.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include "smp.h"
 
 static struct smp_architecture architecture;
 
-static void setmadt(void)
+static void readmadt(void)
 {
 
+    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
     unsigned int madttable;
     unsigned int madtend;
-    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
 
     if (!madt)
         return;
@@ -28,41 +29,23 @@ static void setmadt(void)
 
             struct acpi_madt_apic *apic = (struct acpi_madt_apic *)entry;
 
-            architecture.cpus[architecture.count].id = apic->id;
-            architecture.count++;
+            architecture.cpus[architecture.ncpus].id = apic->id;
+            architecture.ncpus++;
+
+        }
+
+        if (entry->type == 1)
+        {
+
+            struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
+
+            architecture.ios[architecture.nios].id = ioapic->id;
+            architecture.ios[architecture.nios].address = ioapic->address;
+            architecture.nios++;
 
         }
 
         madttable += entry->length;
-
-    }
-
-}
-
-static void setsrat(void)
-{
-
-    unsigned int srattable;
-    unsigned int sratend;
-    struct acpi_srat *srat = (struct acpi_srat *)acpi_findheader("SRAT");
-
-    if (!srat)
-        return;
-
-    srattable = (unsigned int)srat + sizeof (struct acpi_srat);
-    sratend = (unsigned int)srat + srat->base.length;
-
-    while (srattable < sratend)
-    {
-
-        struct acpi_srat_entry *entry = (struct acpi_srat_entry *)srattable;
-
-        if (entry->type == 0)
-        {
-
-        }
-
-        srattable += entry->length;
 
     }
 
@@ -85,13 +68,13 @@ void module_init(void)
 
     }
 
-    setmadt();
-    setsrat();
+    readmadt();
 
-    for (i = 0; i < architecture.count; i++)
-    {
+    for (i = 0; i < architecture.ncpus; i++)
+        DEBUG(DEBUG_INFO, "SMP CPU FOUND");
 
-    }
+    for (i = 0; i < architecture.nios; i++)
+        DEBUG(DEBUG_INFO, "SMP IO FOUND");
 
 }
 
