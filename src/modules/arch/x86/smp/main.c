@@ -56,18 +56,6 @@ void module_init(void)
 
     unsigned int i;
 
-    for (i = 0; i < 32; i++)
-    {
-
-        struct smp_cpu *cpu = &architecture.cpus[i];
-
-        cpu->id = 0;
-        cpu->core = 0;
-        cpu->chip = 0;
-        cpu->domain = 0;
-
-    }
-
     readmadt();
 
     for (i = 0; i < architecture.ncpus; i++)
