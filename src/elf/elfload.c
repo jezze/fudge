@@ -69,7 +69,7 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
 
         struct elf_sectionheader symbolheader;
         struct elf_sectionheader stringheader;
-        char strings[FUDGE_BSIZE];
+        char strings[FUDGE_BSIZE * 4];
         unsigned int value;
 
         if (!readsectionheader(id, &header, i, &symbolheader))
@@ -81,7 +81,7 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
         if (!readsectionheader(id, &header, symbolheader.link, &stringheader))
             return 0;
 
-        if (stringheader.size > FUDGE_BSIZE)
+        if (stringheader.size > FUDGE_BSIZE * 4)
             return 0;
 
         if (!file_seekreadall(id, strings, stringheader.size, stringheader.offset))
