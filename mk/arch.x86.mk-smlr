@@ -1,0 +1,21 @@
+AR=i386-unknown-elf-ar rcs
+AS=i386-unknown-elf-as -c -o
+CC=i386-unknown-elf-cc -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -S -o
+LD=i386-unknown-elf-ld -static -o
+PP=i386-unknown-elf-cc -msoft-float -Wall -Werror -ffreestanding -nostdlib -nostdinc -std=c89 -pedantic -O2 -E -I$(DIR_INCLUDE) -I$(DIR_SRC) -I$(DIR_LIB) -o
+
+%.i: %.c
+	@echo PP $@
+	@smlrpp -Iinclude -Ilib -Isrc $^ > $@
+
+%.asm: %.i
+	@echo CC $@
+	@smlrcc -S -no-leading-underscore $^
+
+%.o: %.asm
+	@echo AS $@
+	@smlrcc -c -no-leading-underscore $^
+
+%.o: %.s
+	@echo AS $@
+	@$(AS) $@ $^
