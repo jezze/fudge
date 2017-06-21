@@ -76,12 +76,9 @@ static void apic_outd(unsigned int reg, unsigned int value)
 
 }
 
-unsigned short apic_interrupt(struct cpu_general general, unsigned int index, unsigned int slave, struct cpu_interrupt interrupt)
+unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG(DEBUG_INFO, "APIC INTERRUPT");
-    DEBUG(DEBUG_INFO, "APIC INTERRUPT");
-    DEBUG(DEBUG_INFO, "APIC INTERRUPT");
     DEBUG(DEBUG_INFO, "APIC INTERRUPT");
 
     return arch_resume(&general, &interrupt);
@@ -113,19 +110,26 @@ void module_init(void)
     if (!(data.edx & CPUID_FEATURES01_APIC))
         return;
 
+/*
+    if (!(data.ecx & CPUID_FEATURES00_2XAPIC))
+        return;
+*/
+
+    DEBUG(DEBUG_INFO, "APIC FOUND");
+
     msr_get(MSR_LAPIC, &msrdata);
 
     mmio = (msrdata.eax & 0xFFFFF000);
 
-    msrdata.eax = mmio | (1 << 11);
-    msrdata.edx = 0;
-
-    msr_set(MSR_LAPIC, &msrdata);
-
     arch_setmap(7, mmio, mmio, 0x1000);
     arch_setinterrupt(0xFF, apic_spurious);
     apic_outd(REGISTERSV, 0xFF | (1 << 8));
-    apic_sendint(0, 0x01); 
+    apic_outd(REGISTERLVTTIMER, 0x10000);
+    apic_outd(REGISTERLVTPERF, 0x10000);
+    apic_outd(REGISTERLVTLINT0, 0x8700);
+    apic_outd(REGISTERLVTLINT1, 0x400);
+    apic_outd(REGISTERLVTERROR, 0x10000);
+    apic_sendint(0, 0xFF); 
 
 }
 

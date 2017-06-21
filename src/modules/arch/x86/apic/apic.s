@@ -4,9 +4,6 @@
 
 .global apic_spurious
 apic_spurious:
-    jmp apic_common
-
-apic_common:
     pusha
     movw %ss, %ax
     movw %ax, %ds

@@ -50,7 +50,7 @@
 #define CPUID_FEATURES00_DCA            (1 << 18)
 #define CPUID_FEATURES00_SSE41          (1 << 19)
 #define CPUID_FEATURES00_SSE42          (1 << 20)
-#define CPUID_FEATURES00_X2APIC         (1 << 21)
+#define CPUID_FEATURES00_2XAPIC         (1 << 21)
 #define CPUID_FEATURES00_MOVBE          (1 << 22)
 #define CPUID_FEATURES00_POPCNT         (1 << 23)
 #define CPUID_FEATURES00_XSAVE          (1 << 26)
