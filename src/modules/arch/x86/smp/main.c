@@ -1,10 +1,28 @@
 #include <fudge.h>
 #include <kernel.h>
+#include <kernel/x86/cpu.h>
+#include <kernel/x86/arch.h>
 #include <modules/arch/x86/acpi/acpi.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include "smp.h"
 
 static struct smp_architecture architecture;
+
+void ioapic_outd(unsigned int base, unsigned int index, unsigned int value)
+{
+
+    *(unsigned int *)(base) = index;
+    *(unsigned int *)(base + 0x10) = value;
+
+}
+
+unsigned int ioapic_ind(unsigned int base, unsigned int index)
+{
+
+    *(unsigned int *)(base) = index;
+
+    return *(unsigned int *)(base + 0x10);
+}
 
 static void readmadt(void)
 {
@@ -41,9 +59,36 @@ static void readmadt(void)
 
             struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
             struct smp_io *io = &architecture.ios[architecture.nios];
+            unsigned int test;
 
             io->id = ioapic->id;
             io->address = ioapic->address;
+
+            arch_setmap(7, ioapic->address, ioapic->address, 0x1000);
+
+            test = ioapic_ind(ioapic->address, 0);
+
+            debug_write(DEBUG_INFO, "IOAPIC", "id", test);
+
+            test = ioapic_ind(ioapic->address, 1);
+
+            debug_write(DEBUG_INFO, "IOAPIC", "ver", test);
+
+            test = ioapic_ind(ioapic->address, 0x10);
+
+            debug_write(DEBUG_INFO, "IOAPIC", "redtbl", test);
+
+            test = ioapic_ind(ioapic->address, 0x11);
+
+            debug_write(DEBUG_INFO, "IOAPIC", "redtbl", test);
+
+            test = ioapic_ind(ioapic->address, 0x12);
+
+            debug_write(DEBUG_INFO, "IOAPIC", "redtbl", test);
+
+            test = ioapic_ind(ioapic->address, 0x13);
+
+            debug_write(DEBUG_INFO, "IOAPIC", "redtbl", test);
 
             architecture.nios++;
 
