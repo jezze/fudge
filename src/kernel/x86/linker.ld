@@ -7,17 +7,19 @@ SECTIONS
 
     .mboot :
     {
-        src/kernel/x86/init.o (.data)
+        src/kernel/x86/init.o(.data)
     }
 
     .text :
     {
-        * (.text)
+        *(.text)
     }
 
     .data :
     {
-        * (.data)
+        *(.data)
+        *(.rodata*)
+        *(.bss)
     }
 
 }
