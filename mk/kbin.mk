@@ -2,5 +2,5 @@ $(B): $(O) $(L)
 	@echo LD $@
 	@$(LD_KBIN) $@ $^
 
-BIN:=$(BIN) $(B)
+KBIN:=$(KBIN) $(B)
 OBJ:=$(OBJ) $(O)

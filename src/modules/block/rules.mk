@@ -7,4 +7,4 @@ O:=\
 L:=\
     $(DIR_LIB)/fudge/fudge.a \
 
-include $(DIR_MK)/mod.mk
+include $(DIR_MK)/kmod.mk

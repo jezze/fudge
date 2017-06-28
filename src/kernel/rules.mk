@@ -19,4 +19,4 @@ L:=\
     $(DIR_LIB)/elf/elf.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
-include $(DIR_MK)/kernel.mk
+include $(DIR_MK)/kbin.mk

@@ -7,7 +7,7 @@ O:=\
 L:=\
     $(DIR_LIB)/fudge/fudge.a \
 
-include $(DIR_MK)/mod.mk
+include $(DIR_MK)/kmod.mk
 
 M:=\
     $(DIR_SRC)/modules/arch/x86/usb/ohci.ko.0 \
@@ -18,7 +18,7 @@ O:=\
 L:=\
     $(DIR_LIB)/fudge/fudge.a \
 
-include $(DIR_MK)/mod.mk
+include $(DIR_MK)/kmod.mk
 
 M:=\
     $(DIR_SRC)/modules/arch/x86/usb/uhci.ko.0 \
@@ -29,4 +29,4 @@ O:=\
 L:=\
     $(DIR_LIB)/fudge/fudge.a \
 
-include $(DIR_MK)/mod.mk
+include $(DIR_MK)/kmod.mk

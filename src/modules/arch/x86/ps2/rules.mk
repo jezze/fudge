@@ -7,7 +7,7 @@ O:=\
 L:=\
     $(DIR_LIB)/fudge/fudge.a \
 
-include $(DIR_MK)/mod.mk
+include $(DIR_MK)/kmod.mk
 
 M:=\
     $(DIR_SRC)/modules/arch/x86/ps2/ps2-keyboard.ko.0 \
@@ -18,7 +18,7 @@ O:=\
 L:=\
     $(DIR_LIB)/fudge/fudge.a \
 
-include $(DIR_MK)/mod.mk
+include $(DIR_MK)/kmod.mk
 
 M:=\
     $(DIR_SRC)/modules/arch/x86/ps2/ps2-mouse.ko.0 \
@@ -29,4 +29,4 @@ O:=\
 L:=\
     $(DIR_LIB)/fudge/fudge.a \
 
-include $(DIR_MK)/mod.mk
+include $(DIR_MK)/kmod.mk

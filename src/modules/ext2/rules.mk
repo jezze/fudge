@@ -9,4 +9,4 @@ O:=\
 L:=\
     $(DIR_SRC)/fudge/fudge.a \
 
-include $(DIR_MK)/mod.mk
+include $(DIR_MK)/kmod.mk
