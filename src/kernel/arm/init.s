@@ -1,4 +1,5 @@
-.section .text.boot
+.section .data
+
 b arch_reset
 b arch_undefined
 b arch_swi
@@ -9,6 +10,7 @@ b arch_irq
 b arch_fiq
 
 .section .text
+
 .global init
 init:
     mov r4, #0x10000

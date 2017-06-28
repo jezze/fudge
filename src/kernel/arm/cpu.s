@@ -1,3 +1,5 @@
+.section .text
+
 .global cpu_get_cpsr
 cpu_get_cpsr:
     mrs r0, cpsr

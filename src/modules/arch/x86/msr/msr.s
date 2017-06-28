@@ -1,5 +1,7 @@
 .code32
 
+.section .text
+
 .global msr_get
 msr_get:
     pushl %ebp

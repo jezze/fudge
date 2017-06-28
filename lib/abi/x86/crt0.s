@@ -3,6 +3,8 @@
 .extern main
 .extern call_despawn
 
+.section .text
+
 .global _start
 _start:
     call main

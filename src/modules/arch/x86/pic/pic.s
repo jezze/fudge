@@ -2,6 +2,8 @@
 
 .extern pic_interrupt
 
+.section .text
+
 .global pic_routine00
 pic_routine00:
     push $0

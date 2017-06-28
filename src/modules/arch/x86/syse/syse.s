@@ -2,6 +2,8 @@
 
 .extern syse_syscall
 
+.section .text
+
 .global syse_interrupt
 syse_interrupt:
     pusha

@@ -15,6 +15,8 @@
 .set CALL_INDEX_DESPAWN,                0x0D
 .set CALL_INDEX_SEEK,                   0x0E
 
+.section .text
+
 .global call_auth
 call_auth:
     pushl %ecx

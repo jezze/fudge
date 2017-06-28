@@ -1,5 +1,7 @@
 .code32
 
+.section .text
+
 .global cpuid_exist
 cpuid_exist:
     pushf

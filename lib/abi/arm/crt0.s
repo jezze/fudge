@@ -1,3 +1,5 @@
+.section .text
+
 .extern main
 .extern call_despawn
 

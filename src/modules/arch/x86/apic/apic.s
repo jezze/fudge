@@ -2,6 +2,8 @@
 
 .extern apic_interrupt
 
+.section .text
+
 .global apic_spurious
 apic_spurious:
     pusha

@@ -16,6 +16,8 @@
 .extern arch_pagefault
 .extern arch_syscall
 
+.section .text
+
 .global isr_zero
 isr_zero:
     pusha

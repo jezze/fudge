@@ -17,6 +17,8 @@
 .set CALL_INDEX_SPAWN,                  0x0E
 .set CALL_INDEX_DESPAWN,                0x0F
 
+.section .text
+
 .global call_auth
 call_auth:
     movl $CALL_INDEX_AUTH, %eax
