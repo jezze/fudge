@@ -1,8 +1,8 @@
 AR=i386-unknown-elf-ar rcs
 AS=i386-unknown-elf-as -c -o
 LD=i386-unknown-elf-ld -static -o
-ASM=smlrcc -c -no-leading-underscore
-CC=smlrcc -S -no-leading-underscore
+NASM=nasm -f elf -o
+CC=smlrc -Wall -seg32 -nopp -no-leading-underscore -nobss
 PP=smlrpp -Iinclude -Ilib -Isrc
 
 %.i: %.c
@@ -11,11 +11,11 @@ PP=smlrpp -Iinclude -Ilib -Isrc
 
 %.asm: %.i
 	@echo CC $@
-	@$(CC) $^
+	$(CC) $^ $@
 
 %.o: %.asm
-	@echo ASM $@
-	@$(ASM) $^
+	@echo NASM $@
+	@$(NASM) $@ $^
 
 %.o: %.s
 	@echo AS $@
