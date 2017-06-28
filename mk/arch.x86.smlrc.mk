@@ -1,9 +1,11 @@
 AR=i386-unknown-elf-ar rcs
 AS=i386-unknown-elf-as -c -o
 CC=smlrc -Wall -seg32 -nopp -no-leading-underscore -nobss
-LD=i386-unknown-elf-ld -static -nostdlib -o
-NASM=nasm -f elf -o
 PP=smlrpp -Iinclude -Ilib -Isrc
+LD_BIN=i386-unknown-elf-ld -static -nostdlib -o
+LD_KBIN=i386-unknown-elf-ld -static -nostdlib -T$(DIR_SRC)/kernel/$(ARCH)/linker.ld -o
+LD_KMOD=i386-unknown-elf-ld -static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r -o
+NASM=nasm -f elf -o
 
 %.i: %.c
 	@echo PP $@

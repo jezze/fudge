@@ -29,7 +29,7 @@ snapshot: $(DIR_SNAPSHOT)
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
-include $(DIR_MK)/arch.$(ARCH).mk
+include $(DIR_MK)/arch.$(ARCH).gcc.mk
 include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk
 
