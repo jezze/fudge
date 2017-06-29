@@ -1,6 +1,7 @@
 AR=i386-unknown-elf-ar rcs
 AS=i386-unknown-elf-as -c -o
 CC=smlrc -Wall -seg32 -nopp -no-leading-underscore -nobss
+NM=i386-unknown-elf-nm -g
 PP=smlrpp -Iinclude -Ilib -Isrc
 LD_BIN=smlrl -elf -entry _start -o
 LD_KBIN=i386-unknown-elf-ld -static -nostdlib -T$(DIR_LIB)/$(LOADER)/linker.ld -o

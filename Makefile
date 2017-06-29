@@ -24,7 +24,7 @@ DIR_INSTALL:=/boot
 all: $(KERNEL) $(RAMDISK)
 
 clean:
-	@rm -rf $(DIR_BUILD) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ) $(LIB) $(BIN) $(KBIN) $(KMOD)
+	@rm -rf $(DIR_BUILD) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 
 snapshot: $(DIR_SNAPSHOT)
 
@@ -34,13 +34,14 @@ include $(DIR_MK)/arch.$(ARCH).gcc.mk
 include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk
 
-$(DIR_BUILD): $(BIN) $(KBIN) $(KMOD)
+$(DIR_BUILD): $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@echo BUILDROOT $@
 	@mkdir -p $@
 	@mkdir -p $@/bin
 	@cp $(BIN) $@/bin
 	@cp $(KBIN) $@/bin
 	@mkdir -p $@/mod
+	@cp $(KMAP) $@/mod
 	@cp $(KMOD) $@/mod
 	@mkdir -p $@/config
 	@cp config/* $@/config

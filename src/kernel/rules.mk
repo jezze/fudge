@@ -1,6 +1,9 @@
 B:=\
     $(DIR_SRC)/kernel/$(KERNEL) \
 
+M:=\
+    $(DIR_SRC)/kernel/$(KERNEL).map \
+
 O:=\
     $(DIR_SRC)/kernel/abi.o \
     $(DIR_SRC)/kernel/binary.o \
@@ -21,3 +24,4 @@ L:=\
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
 include $(DIR_MK)/kbin.mk
+include $(DIR_MK)/kmap.mk
