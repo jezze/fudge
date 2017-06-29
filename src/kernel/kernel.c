@@ -268,11 +268,3 @@ void kernel_setupservices(void)
 
 }
 
-void kernel_setup(void)
-{
-
-    binary_setupelf();
-    service_setupcpio();
-
-}
-

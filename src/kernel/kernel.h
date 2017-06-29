@@ -18,4 +18,3 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
 struct container *kernel_setupcontainers(void);
 struct task *kernel_setuptasks(void);
 void kernel_setupservices(void);
-void kernel_setup(void);
