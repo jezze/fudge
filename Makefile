@@ -71,6 +71,12 @@ $(RAMDISK_NAME).cpio: $(DIR_BUILD)
 	@echo RAMDISK $@
 	@find $^ -depth | cpio -o > $@
 
+$(IMAGE_NAME).img: $(KERNEL) $(RAMDISK)
+	@echo IMAGE $@
+	@dd if=/dev/zero of=$@ count=65536
+	@dd if=$(KERNEL) of=$@ conv=notrunc
+	@dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
+
 $(DIR_SNAPSHOT)/latest: $(KERNEL) $(RAMDISK)
 	@echo SNAPSHOT $(DIR_SNAPSHOT)/`git describe --always`
 	@mkdir -p $@
@@ -78,12 +84,6 @@ $(DIR_SNAPSHOT)/latest: $(KERNEL) $(RAMDISK)
 	@sha1sum $^ > $@/checksum.sha1
 	@cp $^ $@
 	@mv $@ $(DIR_SNAPSHOT)/`git describe --always`
-
-$(IMAGE_NAME).img: $(KERNEL) $(RAMDISK)
-	@echo IMAGE $@
-	@dd if=/dev/zero of=$@ count=65536
-	@dd if=$(KERNEL) of=$@ conv=notrunc
-	@dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
 
 $(DIR_INSTALL)/$(KERNEL): $(KERNEL)
 	@echo INSTALL $@
