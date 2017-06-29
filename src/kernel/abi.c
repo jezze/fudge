@@ -10,6 +10,13 @@
 
 static unsigned int (*calls[CALLS])(struct container *container, struct task *task, void *stack);
 
+static unsigned int debug(struct container *container, struct task *task, void *stack)
+{
+
+    return 0;
+
+}
+
 static void walkmount(struct container *container, struct service *service, unsigned int parent)
 {
 
@@ -320,15 +327,14 @@ static unsigned int unload(struct container *container, struct task *task, void 
 unsigned int abi_call(unsigned int index, struct container *container, struct task *task, void *stack)
 {
 
-    unsigned int (*call)(struct container *container, struct task *task, void *stack) = calls[index & (CALLS - 1)];
-
-    return call ? call(container, task, stack) : 0;
+    return calls[index & (CALLS - 1)](container, task, stack);
 
 }
 
 void abi_setup(unsigned int (*spawn)(struct container *container, struct task *task, void *stack), unsigned int (*despawn)(struct container *container, struct task *task, void *stack))
 {
 
+    calls[0x00] = debug;
     calls[0x01] = walk;
     calls[0x02] = create;
     calls[0x03] = destroy;

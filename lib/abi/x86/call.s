@@ -1,6 +1,7 @@
 .code32
 
 .set CALL_INTERRUPT,                    0x80
+.set CALL_INDEX_DEBUG,                  0x00
 .set CALL_INDEX_WALK,                   0x01
 .set CALL_INDEX_CREATE,                 0x02
 .set CALL_INDEX_DESTROY,                0x03
@@ -34,6 +35,12 @@ call_close:
 .global call_create
 call_create:
     movl $CALL_INDEX_CREATE, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_debug
+call_debug:
+    movl $CALL_INDEX_DEBUG, %eax
     int $CALL_INTERRUPT
     ret
 

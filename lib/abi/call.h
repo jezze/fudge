@@ -28,6 +28,7 @@
 unsigned int call_auth(unsigned int descriptor, unsigned int backend);
 unsigned int call_close(unsigned int descriptor);
 unsigned int call_create(unsigned int descriptor, char *name, unsigned int length);
+unsigned int call_debug();
 unsigned int call_destroy(unsigned int descriptor, char *name, unsigned int length);
 unsigned int call_despawn(void);
 unsigned int call_load(unsigned int descriptor);
