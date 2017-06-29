@@ -1,4 +1,4 @@
-ENTRY (init)
+ENTRY (mboot_init)
 
 SECTIONS
 {
@@ -7,7 +7,7 @@ SECTIONS
 
     .mboot :
     {
-        src/kernel/x86/init.o(.data)
+        lib/mboot/init.o(.data)
     }
 
     .text :

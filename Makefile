@@ -1,5 +1,6 @@
 ARCH:=x86
 KERNEL:=fudge
+LOADER:=mboot
 
 RAMDISK_NAME:=$(KERNEL)
 RAMDISK_TYPE:=cpio

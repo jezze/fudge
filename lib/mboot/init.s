@@ -14,8 +14,8 @@
 
 .section .text
 
-.global init
-init:
+.global mboot_init
+mboot_init:
     pushl %eax
     pushl %ebx
     call mboot_setup

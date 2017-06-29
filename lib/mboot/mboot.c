@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include "cpu.h"
-#include "arch.h"
+#include <kernel/x86/cpu.h>
+#include <kernel/x86/arch.h>
 #include "mboot.h"
 
 #define MBOOT_MAGIC                     0x2BADB002
