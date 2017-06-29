@@ -18,15 +18,13 @@ DIR_SRC:=src
 DIR_SNAPSHOT:=snapshot
 DIR_INSTALL:=/boot
 
-.PHONY: all clean snapshot install
+.PHONY: all clean install
 .SUFFIXES:
 
 all: $(KERNEL) $(RAMDISK)
 
 clean:
-	@rm -rf $(DIR_BUILD) $(DIR_SNAPSHOT) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
-
-snapshot: $(DIR_SNAPSHOT)/latest
+	@rm -rf $(DIR_BUILD) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
@@ -77,13 +75,15 @@ $(IMAGE_NAME).img: $(KERNEL) $(RAMDISK)
 	@dd if=$(KERNEL) of=$@ conv=notrunc
 	@dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
 
-$(DIR_SNAPSHOT)/latest: $(KERNEL) $(RAMDISK)
-	@echo SNAPSHOT $(DIR_SNAPSHOT)/`git describe --always`
+$(DIR_SNAPSHOT): $(KERNEL) $(RAMDISK)
+	@echo SNAPSHOT fudge-`git describe --always`.tar.gz
 	@mkdir -p $@
 	@md5sum $^ > $@/checksum.md5
 	@sha1sum $^ > $@/checksum.sha1
 	@cp $^ $@
-	@mv $@ $(DIR_SNAPSHOT)/`git describe --always`
+	@mv $@ fudge-`git describe --always`
+	@tar -czf fudge-`git describe --always`.tar.gz fudge-`git describe --always`
+	@rm -rf fudge-`git describe --always`
 
 $(DIR_INSTALL)/$(KERNEL): $(KERNEL)
 	@echo INSTALL $@
