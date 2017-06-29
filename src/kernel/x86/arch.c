@@ -457,23 +457,20 @@ void arch_setup(struct service_backend *backend)
     cpu_setgdt(&gdt.pointer, selector.kcode, selector.kstack);
     cpu_setidt(&idt.pointer);
     cpu_settss(selector.tlink);
-    kernel_setup();
 
     current.container = kernel_setupcontainers();
     current.task = kernel_setuptasks();
     current.ip = (unsigned int)cpu_halt;
     current.sp = KERNELSTACK;
 
+    abi_setup(spawn, despawn);
+    kernel_setup();
     kernel_setupservices();
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainer(current.container);
-    copymap(current.container, current.task);
-    kernel_copyservices(current.task, current.task);
-    kernel_setupbinary(current.task, TASKSTACK);
-    kernel_activatetask(current.task);
+    spawn(current.container, current.task, 0);
     activate(current.task);
     mmu_setup();
-    abi_setup(spawn, despawn);
     leave();
 
 }

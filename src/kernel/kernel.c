@@ -248,7 +248,7 @@ struct task *kernel_setuptasks(void)
 
     }
 
-    return &tasks[0];
+    return kernel_findinactivetask();
 
 }
 
