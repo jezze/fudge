@@ -27,23 +27,6 @@ struct task *kernel_findinactivetask(void)
 
 }
 
-void kernel_inactivatetask(struct task *task)
-{
-
-    switch (task->state.status)
-    {
-
-    case TASK_STATUS_ACTIVE:
-        list_move(&inactive, &task->state.item);
-
-        task->state.status = TASK_STATUS_INACTIVE;
-
-        break;
-
-    }
-
-}
-
 void kernel_activatetask(struct task *task)
 {
 
@@ -56,6 +39,23 @@ void kernel_activatetask(struct task *task)
         list_move(&active, &task->state.item);
 
         task->state.status = TASK_STATUS_ACTIVE;
+
+        break;
+
+    }
+
+}
+
+void kernel_inactivatetask(struct task *task)
+{
+
+    switch (task->state.status)
+    {
+
+    case TASK_STATUS_ACTIVE:
+        list_move(&inactive, &task->state.item);
+
+        task->state.status = TASK_STATUS_INACTIVE;
 
         break;
 

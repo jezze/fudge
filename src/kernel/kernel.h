@@ -4,8 +4,8 @@
 
 struct task *kernel_findactivetask(void);
 struct task *kernel_findinactivetask(void);
-void kernel_inactivatetask(struct task *task);
 void kernel_activatetask(struct task *task);
+void kernel_inactivatetask(struct task *task);
 void kernel_blocktask(struct task *task);
 void kernel_unblocktask(struct task *task);
 struct service *kernel_getservice(struct task *task, unsigned int service);
