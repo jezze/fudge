@@ -15,7 +15,7 @@ DIR_INCLUDE:=include
 DIR_MK:=mk
 DIR_LIB:=lib
 DIR_SRC:=src
-DIR_SNAPSHOT:=snapbuild
+DIR_SNAPSHOT:=snapshot
 DIR_INSTALL:=/boot
 
 .PHONY: all clean snapshot install
@@ -24,9 +24,9 @@ DIR_INSTALL:=/boot
 all: $(KERNEL) $(RAMDISK)
 
 clean:
-	@rm -rf $(DIR_BUILD) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
+	@rm -rf $(DIR_BUILD) $(DIR_SNAPSHOT) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 
-snapshot: $(DIR_SNAPSHOT)
+snapshot: $(DIR_SNAPSHOT)/latest
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
@@ -71,18 +71,19 @@ $(RAMDISK_NAME).cpio: $(DIR_BUILD)
 	@echo RAMDISK $@
 	@find $^ -depth | cpio -o > $@
 
+$(DIR_SNAPSHOT)/latest: $(KERNEL) $(RAMDISK)
+	@echo SNAPSHOT $(DIR_SNAPSHOT)/`git describe --always`
+	@mkdir -p $@
+	@md5sum $^ > $@/checksum.md5
+	@sha1sum $^ > $@/checksum.sha1
+	@cp $^ $@
+	@mv $@ $(DIR_SNAPSHOT)/`git describe --always`
+
 $(IMAGE_NAME).img: $(KERNEL) $(RAMDISK)
 	@echo IMAGE $@
 	@dd if=/dev/zero of=$@ count=65536
 	@dd if=$(KERNEL) of=$@ conv=notrunc
 	@dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
-
-$(DIR_SNAPSHOT): $(KERNEL) $(RAMDISK)
-	@echo SNAPSHOT $@
-	@mkdir -p $@
-	@cp $^ $@
-	@echo `git describe --always` > $@/commit
-	@mv $@ `date --iso-8601=seconds`
 
 $(DIR_INSTALL)/$(KERNEL): $(KERNEL)
 	@echo INSTALL $@
