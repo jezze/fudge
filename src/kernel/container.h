@@ -32,4 +32,5 @@ struct container
 struct container_mount *container_getfreemount(struct container *container);
 void container_usemount(struct container *container, struct container_mount *mount);
 void container_unusemount(struct container *container, struct container_mount *mount);
+void container_initmount(struct container_mount *mount);
 void container_init(struct container *container, unsigned int id);

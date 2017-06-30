@@ -26,6 +26,14 @@ void container_unusemount(struct container *container, struct container_mount *m
 
 }
 
+void container_initmount(struct container_mount *mount)
+{
+
+    resource_init(&mount->resource, RESOURCE_CONTAINERMOUNT, mount);
+    list_inititem(&mount->item, mount);
+
+}
+
 void container_init(struct container *container, unsigned int id)
 {
 
@@ -36,8 +44,7 @@ void container_init(struct container *container, unsigned int id)
     for (i = 0; i < CONTAINER_MOUNTS; i++)
     {
 
-        resource_init(&container->mounts[i].resource, RESOURCE_CONTAINERMOUNT, &container->mounts[i]);
-        list_inititem(&container->mounts[i].item, &container->mounts[i]);
+        container_initmount(&container->mounts[i]);
         list_add(&container->freemounts, &container->mounts[i].item);
 
     }
