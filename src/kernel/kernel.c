@@ -8,10 +8,13 @@
 
 static struct container containers[KERNEL_CONTAINERS];
 static struct task tasks[KERNEL_TASKS];
+static struct service_server servers[KERNEL_SERVERS];
 static struct service services[KERNEL_SERVICES];
 static struct list active;
 static struct list inactive;
 static struct list blocked;
+static struct list usedservers;
+static struct list freeservers;
 
 struct task *kernel_findactivetask(void)
 {
@@ -95,6 +98,27 @@ void kernel_unblocktask(struct task *task)
         break;
 
     }
+
+}
+
+struct service_server *kernel_getfreeserver(void)
+{
+
+    return (freeservers.tail) ? freeservers.tail->data : 0;
+
+}
+
+void kernel_useserver(struct service_server *server)
+{
+
+    list_move(&usedservers, &server->item);
+
+}
+
+void kernel_unuseserver(struct service_server *server)
+{
+
+    list_move(&freeservers, &server->item);
 
 }
 
@@ -191,10 +215,10 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 void kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
 {
 
-    struct service_server *server = container_getserver(container, 0);
+    struct service_server *server = kernel_getfreeserver();
     struct service *init = kernel_getservice(task, 8);
     struct service *root = kernel_getservice(task, 9);
-    struct container_mount *mount = container_getmount(container, 0);
+    struct container_mount *mount = container_getfreemount(container);
 
     server->backend = backend;
     server->protocol = service_findprotocol(backend);
@@ -210,7 +234,7 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
     server->protocol->child(server->backend, &init->state, "bin/", 4);
     server->protocol->child(server->backend, &init->state, "init", 4);
 
-    container_useserver(container, server);
+    kernel_useserver(server);
     container_usemount(container, mount);
 
 }
@@ -249,6 +273,23 @@ struct task *kernel_setuptasks(void)
     }
 
     return kernel_findinactivetask();
+
+}
+
+void kernel_setupservers(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < KERNEL_SERVERS; i++)
+    {
+
+        struct service_server *server = &servers[i];
+
+        service_initserver(server);
+        list_add(&freeservers, &server->item);
+
+    }
 
 }
 

@@ -221,7 +221,7 @@ static unsigned int auth(struct container *container, struct task *task, void *s
     struct {void *caller; unsigned int service; unsigned int backend;} *args = stack;
     struct service *service = kernel_getservice(task, args->service);
 
-    service->server = container_getfreeserver(container);
+    service->server = kernel_getfreeserver();
 
     if (!service->server)
         return 0;
@@ -238,7 +238,7 @@ static unsigned int auth(struct container *container, struct task *task, void *s
 
     service->state.id = service->server->protocol->root(service->server->backend);
 
-    container_useserver(container, service->server);
+    kernel_useserver(service->server);
 
     return 0;
 

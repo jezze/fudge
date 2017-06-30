@@ -464,6 +464,7 @@ void arch_setup(struct service_backend *backend)
     current.ip = (unsigned int)cpu_halt;
     current.sp = KERNELSTACK;
 
+    kernel_setupservers();
     kernel_setupservices();
     kernel_setupramdisk(current.container, current.task, backend);
     mapcontainer(current.container);
