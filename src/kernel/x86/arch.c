@@ -96,14 +96,14 @@ static void mapcontainer(struct container *container)
 
 }
 
-static void maptask(struct task *task, unsigned int code, unsigned int stack)
+static void maptask(struct task *task, unsigned int code)
 {
 
     struct mmu_directory *directory = getdirectory(task->id, TASKMMUBASE, TASKMMUCOUNT);
     struct mmu_table *table = gettable(task->id, TASKMMUBASE, TASKMMUCOUNT);
 
     mmu_map(directory, &table[0], PHYSBASE + task->id * (CODESIZE + STACKSIZE), code, CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(directory, &table[1], PHYSBASE + task->id * (CODESIZE + STACKSIZE) + CODESIZE, stack, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(directory, &table[1], PHYSBASE + task->id * (CODESIZE + STACKSIZE) + CODESIZE, TASKSTACK - STACKSIZE, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -373,17 +373,15 @@ unsigned short arch_generalfault(struct cpu_general general, unsigned int select
 unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
 {
 
-    unsigned int address = cpu_getcr2();
-
     if (current.task)
     {
 
-        address = current.task->format->findbase(&current.task->node, address);
+        unsigned int code = current.task->format->findbase(&current.task->node, cpu_getcr2());
 
-        if (address)
+        if (code)
         {
 
-            maptask(current.task, address, TASKSTACK - STACKSIZE);
+            maptask(current.task, code);
             current.task->format->copyprogram(&current.task->node);
 
         }
