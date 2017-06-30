@@ -1,18 +1,10 @@
 #define CONTAINER_SERVERS               32
 #define CONTAINER_MOUNTS                32
 
-struct container_server
-{
-
-    struct service_backend *backend;
-    struct service_protocol *protocol;
-
-};
-
 struct container_node
 {
 
-    struct container_server *server;
+    struct service_server *server;
     unsigned int id;
 
 };
@@ -31,13 +23,13 @@ struct container
 
     unsigned int id;
     struct resource resource;
-    struct container_server servers[CONTAINER_SERVERS];
+    struct service_server servers[CONTAINER_SERVERS];
     unsigned int nservers;
     struct container_mount mounts[CONTAINER_MOUNTS];
     unsigned int nmounts;
 
 };
 
-struct container_server *container_getserver(struct container *container, unsigned int server);
+struct service_server *container_getserver(struct container *container, unsigned int server);
 struct container_mount *container_getmount(struct container *container, unsigned int mount);
 void container_init(struct container *container, unsigned int id);

@@ -1,11 +1,11 @@
 #include <fudge.h>
 #include "resource.h"
 #include "binary.h"
-#include "container.h"
 #include "task.h"
 #include "service.h"
+#include "container.h"
 
-struct container_server *container_getserver(struct container *container, unsigned int server)
+struct service_server *container_getserver(struct container *container, unsigned int server)
 {
 
     return &container->servers[server & (CONTAINER_SERVERS - 1)];

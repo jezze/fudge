@@ -40,10 +40,18 @@ struct service_protocol
 
 };
 
+struct service_server
+{
+
+    struct service_backend *backend;
+    struct service_protocol *protocol;
+
+};
+
 struct service
 {
 
-    struct container_server *server;
+    struct service_server *server;
     struct service_state state;
 
 };

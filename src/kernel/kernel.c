@@ -1,9 +1,9 @@
 #include <fudge.h>
 #include "resource.h"
 #include "binary.h"
-#include "container.h"
 #include "task.h"
 #include "service.h"
+#include "container.h"
 #include "kernel.h"
 
 static struct container containers[KERNEL_CONTAINERS];
@@ -191,21 +191,21 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 void kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
 {
 
-    struct container_server *server = container_getserver(container, 0);
-    struct container_mount *mount = container_getmount(container, 0);
+    struct service_server *server = container_getserver(container, 0);
     struct service *init = kernel_getservice(task, 8);
     struct service *root = kernel_getservice(task, 9);
+    struct container_mount *mount = container_getmount(container, 0);
 
     server->backend = backend;
     server->protocol = service_findprotocol(backend);
-    mount->parent.server = server;
-    mount->parent.id = server->protocol->root(backend);
-    mount->child.server = mount->parent.server;
-    mount->child.id = mount->parent.id;
-    root->server = mount->parent.server;
-    root->state.id = mount->parent.id;
-    init->server = mount->parent.server;
-    init->state.id = mount->parent.id;
+    root->server = server;
+    root->state.id = server->protocol->root(backend);
+    init->server = server;
+    init->state.id = server->protocol->root(backend);
+    mount->parent.server = root->server;
+    mount->parent.id = root->state.id;
+    mount->child.server = root->server;
+    mount->child.id = root->state.id;
 
     server->protocol->child(server->backend, &init->state, "bin/", 4);
     server->protocol->child(server->backend, &init->state, "init", 4);

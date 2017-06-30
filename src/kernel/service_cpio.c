@@ -2,7 +2,6 @@
 #include <cpio/cpio.h>
 #include "resource.h"
 #include "binary.h"
-#include "container.h"
 #include "task.h"
 #include "service.h"
 

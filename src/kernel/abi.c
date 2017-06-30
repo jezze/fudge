@@ -1,9 +1,9 @@
 #include <fudge.h>
 #include "resource.h"
 #include "binary.h"
-#include "container.h"
 #include "task.h"
 #include "service.h"
+#include "container.h"
 #include "kernel.h"
 
 #define CALLS                           16

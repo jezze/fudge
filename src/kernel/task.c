@@ -1,9 +1,7 @@
 #include <fudge.h>
 #include "resource.h"
 #include "binary.h"
-#include "container.h"
 #include "task.h"
-#include "service.h"
 
 void task_setstate(struct task *task, unsigned int ip, unsigned int sp)
 {
