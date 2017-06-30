@@ -10,23 +10,23 @@ static struct container containers[KERNEL_CONTAINERS];
 static struct task tasks[KERNEL_TASKS];
 static struct service_server servers[KERNEL_SERVERS];
 static struct service services[KERNEL_SERVICES];
-static struct list active;
-static struct list inactive;
-static struct list blocked;
+static struct list activetasks;
+static struct list inactivetasks;
+static struct list blockedtasks;
 static struct list usedservers;
 static struct list freeservers;
 
 struct task *kernel_findactivetask(void)
 {
 
-    return (active.tail) ? active.tail->data : 0;
+    return (activetasks.tail) ? activetasks.tail->data : 0;
 
 }
 
 struct task *kernel_findinactivetask(void)
 {
 
-    return (inactive.tail) ? inactive.tail->data : 0;
+    return (inactivetasks.tail) ? inactivetasks.tail->data : 0;
 
 }
 
@@ -39,7 +39,7 @@ void kernel_activatetask(struct task *task)
     case TASK_STATUS_ACTIVE:
     case TASK_STATUS_INACTIVE:
     case TASK_STATUS_UNBLOCKED:
-        list_move(&active, &task->state.item);
+        list_move(&activetasks, &task->state.item);
 
         task->state.status = TASK_STATUS_ACTIVE;
 
@@ -56,7 +56,7 @@ void kernel_inactivatetask(struct task *task)
     {
 
     case TASK_STATUS_ACTIVE:
-        list_move(&inactive, &task->state.item);
+        list_move(&inactivetasks, &task->state.item);
 
         task->state.status = TASK_STATUS_INACTIVE;
 
@@ -73,7 +73,7 @@ void kernel_blocktask(struct task *task)
     {
 
     case TASK_STATUS_ACTIVE:
-        list_move(&blocked, &task->state.item);
+        list_move(&blockedtasks, &task->state.item);
 
         task->state.status = TASK_STATUS_BLOCKED;
 
@@ -91,7 +91,7 @@ void kernel_unblocktask(struct task *task)
 
     case TASK_STATUS_BLOCKED:
     case TASK_STATUS_UNBLOCKED:
-        list_move(&active, &task->state.item);
+        list_move(&activetasks, &task->state.item);
 
         task->state.status = TASK_STATUS_UNBLOCKED;
 
@@ -269,7 +269,7 @@ struct task *kernel_setuptasks(void)
         struct task *task = &tasks[i];
 
         task_init(task, i);
-        list_add(&inactive, &task->state.item);
+        list_add(&inactivetasks, &task->state.item);
 
     }
 
