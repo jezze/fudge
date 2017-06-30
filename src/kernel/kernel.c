@@ -215,9 +215,9 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 void kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
 {
 
-    struct service_server *server = kernel_getfreeserver();
     struct service *init = kernel_getservice(task, 8);
     struct service *root = kernel_getservice(task, 9);
+    struct service_server *server = kernel_getfreeserver();
     struct container_mount *mount = container_getfreemount(container);
 
     server->backend = backend;

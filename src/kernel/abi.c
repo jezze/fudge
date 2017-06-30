@@ -219,8 +219,8 @@ static unsigned int auth(struct container *container, struct task *task, void *s
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int backend;} *args = stack;
-    struct service_server *server = kernel_getfreeserver();
     struct service *service = kernel_getservice(task, args->descriptor);
+    struct service_server *server = kernel_getfreeserver();
 
     if (!server)
         return 0;
@@ -253,9 +253,9 @@ static unsigned int mount(struct container *container, struct task *task, void *
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int cdescriptor;} *args = stack;
-    struct container_mount *mount = container_getfreemount(container);
     struct service *pservice = kernel_getservice(task, args->pdescriptor);
     struct service *cservice = kernel_getservice(task, args->cdescriptor);
+    struct container_mount *mount = container_getfreemount(container);
 
     if (!mount)
         return 0;
