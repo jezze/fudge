@@ -4,10 +4,10 @@
 void write_keyvalue(char *key, void *value, unsigned int count)
 {
 
-    file_writeall(CALL_PO, key, ascii_length(key));
-    file_writeall(CALL_PO, ": ", 2);
-    file_writeall(CALL_PO, value, count);
-    file_writeall(CALL_PO, "\n", 1);
+    file_writeall(FILE_PO, key, ascii_length(key));
+    file_writeall(FILE_PO, ": ", 2);
+    file_writeall(FILE_PO, value, count);
+    file_writeall(FILE_PO, "\n", 1);
 
 }
 

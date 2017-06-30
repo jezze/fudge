@@ -105,12 +105,12 @@ static void readback(void)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(CALL_CO);
+    file_open(FILE_CO);
 
-    while ((count = file_read(CALL_CO, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(FILE_CO, buffer, FUDGE_BSIZE)))
         copybuffer(buffer, count);
 
-    file_close(CALL_CO);
+    file_close(FILE_CO);
 
 }
 
@@ -132,11 +132,11 @@ static void interpret(struct ring *ring)
 
         command[count - 1] = '\0';
 
-        if (file_walk(CALL_L8, command + 3))
+        if (file_walk(FILE_L8, command + 3))
         {
 
-            file_duplicate(CALL_PW, CALL_L8);
-            file_duplicate(CALL_CW, CALL_L8);
+            file_duplicate(FILE_PW, FILE_L8);
+            file_duplicate(FILE_CW, FILE_L8);
 
         }
 
@@ -144,18 +144,18 @@ static void interpret(struct ring *ring)
 
     }
 
-    if (!file_walk(CALL_CP, "/bin/slang"))
+    if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
-    if (!file_walk(CALL_L8, "/system/pipe/clone/"))
+    if (!file_walk(FILE_L8, "/system/pipe/clone/"))
         return;
 
-    file_walkfrom(CALL_CI, CALL_L8, "0");
-    file_walkfrom(CALL_CO, CALL_L8, "1");
-    file_open(CALL_CI);
-    file_writeall(CALL_CI, command, count);
+    file_walkfrom(FILE_CI, FILE_L8, "0");
+    file_walkfrom(FILE_CO, FILE_L8, "1");
+    file_open(FILE_CI);
+    file_writeall(FILE_CI, command, count);
     call_spawn();
-    file_close(CALL_CI);
+    file_close(FILE_CI);
     readback();
 
 }
@@ -347,32 +347,32 @@ void main(void)
     widget_inittextbox(&content);
     copybuffer("$ ", 2);
 
-    if (!file_walk(CALL_L0, "/system/wm/data"))
+    if (!file_walk(FILE_L0, "/system/wm/data"))
         return;
 
-    if (!file_walk(CALL_L1, "/system/wm/event"))
+    if (!file_walk(FILE_L1, "/system/wm/event"))
         return;
 
-    file_open(CALL_L0);
-    file_open(CALL_L1);
-    ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
+    file_open(FILE_L0);
+    file_open(FILE_L1);
+    ev_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
 
-    while (!quit && ev_read(&handlers, CALL_L1))
+    while (!quit && ev_read(&handlers, FILE_L1))
     {
 
         if (ring_count(&output))
         {
 
-            file_writeall(CALL_L0, outputdata, ring_count(&output));
+            file_writeall(FILE_L0, outputdata, ring_count(&output));
             ring_reset(&output);
-            ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST);
+            ev_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST);
 
         }
 
     }
 
-    file_close(CALL_L1);
-    file_close(CALL_L0);
+    file_close(FILE_L1);
+    file_close(FILE_L0);
 
 }
 

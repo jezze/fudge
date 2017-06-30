@@ -27,22 +27,22 @@ void main(void)
     unsigned int dmonth;
     unsigned int timestamp;
 
-    if (!file_walk(CALL_L0, "/system/clock/if:0/ctrl"))
+    if (!file_walk(FILE_L0, "/system/clock/if:0/ctrl"))
         return;
 
-    file_open(CALL_L0);
-    file_readall(CALL_L0, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(CALL_L0);
+    file_open(FILE_L0);
+    file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(FILE_L0);
 
     year = settings.year - 1970;
     dyear = ((((365 * year) + (year / 4)) - (year / 100)) + (year / 400));
     dmonth = isleapyear(year) ? dotm366[settings.month - 1] : dotm365[settings.month - 1];
     timestamp = ((dyear + dmonth + settings.day) * 86400) + ((settings.hours * 3600) + (settings.minutes * 60) + settings.seconds);
 
-    file_open(CALL_PO);
-    file_writeall(CALL_PO, num, ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10, 0));
-    file_writeall(CALL_PO, "\n", 1);
-    file_close(CALL_PO);
+    file_open(FILE_PO);
+    file_writeall(FILE_PO, num, ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10, 0));
+    file_writeall(FILE_PO, "\n", 1);
+    file_close(FILE_PO);
 
 }
 

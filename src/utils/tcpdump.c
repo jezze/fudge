@@ -32,13 +32,13 @@ void main(void)
     unsigned int checksum;
     unsigned int urgent;
 
-    file_open(CALL_PO);
-    file_open(CALL_PI);
+    file_open(FILE_PO);
+    file_open(FILE_PI);
 
     for (;;)
     {
 
-        file_readall(CALL_PI, &header, sizeof (struct tcp_header));
+        file_readall(FILE_PI, &header, sizeof (struct tcp_header));
 
         sp = (header.sp[0] << 8) | header.sp[1];
         tp = (header.tp[0] << 8) | header.tp[1];
@@ -69,7 +69,7 @@ void main(void)
 
             char options[FUDGE_BSIZE];
 
-            file_readall(CALL_PI, options, 4 * (dataoff - 5));
+            file_readall(FILE_PI, options, 4 * (dataoff - 5));
 
         }
 
@@ -77,8 +77,8 @@ void main(void)
 
     }
 
-    file_close(CALL_PI);
-    file_close(CALL_PO);
+    file_close(FILE_PI);
+    file_close(FILE_PO);
 
 }
 

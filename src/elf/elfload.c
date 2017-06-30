@@ -109,14 +109,14 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
     offset += memory_write(module, 32, symbolname, length, offset);
     offset += memory_write(module, 32, ".ko", 4, offset);
 
-    if (!file_walkfrom(CALL_L2, CALL_L1, module))
+    if (!file_walkfrom(FILE_L2, FILE_L1, module))
         return 0;
 
-    file_open(CALL_L2);
+    file_open(FILE_L2);
 
-    address = findsymbol(CALL_L2, count, symbolname);
+    address = findsymbol(FILE_L2, count, symbolname);
 
-    file_close(CALL_L2);
+    file_close(FILE_L2);
 
     return address;
 
@@ -154,7 +154,7 @@ static unsigned int resolvesymbols(unsigned int id, struct elf_sectionheader *re
         address = findmodulesymbol(count, symbolname);
 
         if (!address)
-            address = findsymbol(CALL_L0, count, symbolname);
+            address = findsymbol(FILE_L0, count, symbolname);
 
         if (!address)
             return 0;
@@ -227,20 +227,20 @@ static unsigned int resolve(unsigned int id)
 void main(void)
 {
 
-    if (!file_walk(CALL_L0, "/bin/fudge"))
+    if (!file_walk(FILE_L0, "/bin/fudge"))
         return;
 
-    if (!file_walk(CALL_L1, "/mod/"))
+    if (!file_walk(FILE_L1, "/mod/"))
         return;
 
-    file_open(CALL_PI);
-    file_open(CALL_L0);
+    file_open(FILE_PI);
+    file_open(FILE_L0);
 
-    if (resolve(CALL_PI))
-        call_load(CALL_PI);
+    if (resolve(FILE_PI))
+        call_load(FILE_PI);
 
-    file_close(CALL_L0);
-    file_close(CALL_PI);
+    file_close(FILE_L0);
+    file_close(FILE_PI);
 
 }
 

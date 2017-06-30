@@ -8,13 +8,13 @@ static struct pcx_surface pcx;
 void main(void)
 {
 
-    file_open(CALL_PI);
-    file_open(CALL_PO);
-    pcx_initsurface(&pcx, CALL_PI);
+    file_open(FILE_PI);
+    file_open(FILE_PO);
+    pcx_initsurface(&pcx, FILE_PI);
     pcx_load(&pcx);
-    gfx_wsurface(CALL_PO, &pcx.base);
-    file_close(CALL_PO);
-    file_close(CALL_PI);
+    gfx_wsurface(FILE_PO, &pcx.base);
+    file_close(FILE_PO);
+    file_close(FILE_PI);
 
 }
 

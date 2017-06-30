@@ -21,10 +21,10 @@ void setup(struct ctrl_videosettings *settings)
 
     }
 
-    file_walkfrom(CALL_L1, CALL_L0, "colormap");
-    file_open(CALL_L1);
-    file_seekwriteall(CALL_L1, colormap, 768, 0);
-    file_close(CALL_L1);
+    file_walkfrom(FILE_L1, FILE_L0, "colormap");
+    file_open(FILE_L1);
+    file_seekwriteall(FILE_L1, colormap, 768, 0);
+    file_close(FILE_L1);
 
 }
 
@@ -37,8 +37,8 @@ void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, u
     unsigned int x;
     unsigned int y;
 
-    file_walkfrom(CALL_L1, CALL_L0, "data");
-    file_open(CALL_L1);
+    file_walkfrom(FILE_L1, FILE_L0, "data");
+    file_open(FILE_L1);
 
     for (y = 0; y < settings->h; y++)
     {
@@ -67,11 +67,11 @@ void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, u
 
         }
 
-        file_seekwriteall(CALL_L1, buffer, settings->w, settings->w * y);
+        file_seekwriteall(FILE_L1, buffer, settings->w, settings->w * y);
 
     }
 
-    file_close(CALL_L1);
+    file_close(FILE_L1);
 
 }
 
@@ -81,14 +81,14 @@ void main(void)
     struct ctrl_videosettings settings;
 
     ctrl_setvideosettings(&settings, 320, 200, 8);
-    file_walk(CALL_L0, "/system/video/if:0/");
-    file_walkfrom(CALL_L1, CALL_L0, "ctrl");
-    file_open(CALL_L1);
-    file_writeall(CALL_L1, &settings, sizeof (struct ctrl_videosettings));
-    file_close(CALL_L1);
-    file_open(CALL_L1);
-    file_readall(CALL_L1, &settings, sizeof (struct ctrl_videosettings));
-    file_close(CALL_L1);
+    file_walk(FILE_L0, "/system/video/if:0/");
+    file_walkfrom(FILE_L1, FILE_L0, "ctrl");
+    file_open(FILE_L1);
+    file_writeall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
+    file_close(FILE_L1);
+    file_open(FILE_L1);
+    file_readall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
+    file_close(FILE_L1);
     setup(&settings);
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
 

@@ -258,7 +258,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!file_walk(CALL_CI, t->str))
+            if (!file_walk(FILE_CI, t->str))
                 return;
 
             break;
@@ -269,7 +269,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!file_walk(CALL_CO, t->str))
+            if (!file_walk(FILE_CO, t->str))
                 return;
 
             break;
@@ -280,15 +280,15 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!(file_walkfrom(CALL_CP, CALL_L0, t->str) || file_walk(CALL_CP, t->str)))
+            if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            if (!file_walk(CALL_L8, "/system/pipe/clone/"))
+            if (!file_walk(FILE_L8, "/system/pipe/clone/"))
                 return;
 
-            file_walkfrom(CALL_CO, CALL_L8, "0");
+            file_walkfrom(FILE_CO, FILE_L8, "0");
             call_spawn();
-            file_walkfrom(CALL_CI, CALL_L8, "0");
+            file_walkfrom(FILE_CI, FILE_L8, "0");
 
             break;
 
@@ -298,12 +298,12 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!(file_walkfrom(CALL_CP, CALL_L0, t->str) || file_walk(CALL_CP, t->str)))
+            if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            file_duplicate(CALL_CO, CALL_PO);
+            file_duplicate(FILE_CO, FILE_PO);
             call_spawn();
-            file_duplicate(CALL_CI, CALL_PI);
+            file_duplicate(FILE_CI, FILE_PI);
 
             break;
 
@@ -332,15 +332,15 @@ void main(void)
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
 
-    if (!file_walk(CALL_L0, "/bin/"))
+    if (!file_walk(FILE_L0, "/bin/"))
         return;
 
-    file_open(CALL_PI);
+    file_open(FILE_PI);
 
-    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    file_close(CALL_PI);
+    file_close(FILE_PI);
 
     if (stack.head)
         return;

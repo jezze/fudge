@@ -201,9 +201,9 @@ static void readfile(void)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(CALL_PI);
+    file_open(FILE_PI);
 
-    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
     {
 
         unsigned int i;
@@ -227,7 +227,7 @@ static void readfile(void)
 
     }
 
-    file_close(CALL_PI);
+    file_close(FILE_PI);
 
 }
 
@@ -280,32 +280,32 @@ void main(void)
     widget_inittextbox(&content);
     widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
 
-    if (!file_walk(CALL_L0, "/system/wm/data"))
+    if (!file_walk(FILE_L0, "/system/wm/data"))
         return;
 
-    if (!file_walk(CALL_L1, "/system/wm/event"))
+    if (!file_walk(FILE_L1, "/system/wm/event"))
         return;
 
-    file_open(CALL_L0);
-    file_open(CALL_L1);
-    ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
+    file_open(FILE_L0);
+    file_open(FILE_L1);
+    ev_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
 
-    while (!quit && ev_read(&handlers, CALL_L1))
+    while (!quit && ev_read(&handlers, FILE_L1))
     {
 
         if (ring_count(&output))
         {
 
-            file_writeall(CALL_L0, outputdata, ring_count(&output));
+            file_writeall(FILE_L0, outputdata, ring_count(&output));
             ring_reset(&output);
-            ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST);
+            ev_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST);
 
         }
 
     }
 
-    file_close(CALL_L1);
-    file_close(CALL_L0);
+    file_close(FILE_L1);
+    file_close(FILE_L0);
 
 }
 

@@ -6,9 +6,9 @@ unsigned int file_walk(unsigned int descriptor, char *path)
 {
 
     if (path[0] == '/')
-        return file_walkfrom(descriptor, CALL_PR, path + 1);
+        return file_walkfrom(descriptor, FILE_PR, path + 1);
     else
-        return file_walkfrom(descriptor, CALL_PW, path);
+        return file_walkfrom(descriptor, FILE_PW, path);
 
 }
 

@@ -8,13 +8,13 @@ static struct pcx_surface pcx;
 void main(void)
 {
 
-    file_open(CALL_PI);
-    file_open(CALL_PO);
-    pcx_initsurface(&pcx, CALL_PI);
+    file_open(FILE_PI);
+    file_open(FILE_PO);
+    pcx_initsurface(&pcx, FILE_PI);
     pcx_load(&pcx);
-    file_writeall(CALL_PO, pcx.colormap, 768);
-    file_close(CALL_PO);
-    file_close(CALL_PI);
+    file_writeall(FILE_PO, pcx.colormap, 768);
+    file_close(FILE_PO);
+    file_close(FILE_PI);
 
 }
 

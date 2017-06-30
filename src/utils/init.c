@@ -4,13 +4,13 @@
 void main(void)
 {
 
-    if (!file_walk(CALL_CW, "/home/"))
+    if (!file_walk(FILE_CW, "/home/"))
         return;
 
-    if (!file_walk(CALL_CP, "/bin/slang"))
+    if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
-    if (!file_walk(CALL_CI, "/config/init.slang"))
+    if (!file_walk(FILE_CI, "/config/init.slang"))
         return;
 
     call_spawn();

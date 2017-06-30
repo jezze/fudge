@@ -61,12 +61,12 @@ void main(void)
 	char data[512];
     struct bpb *bpb = (struct bpb *)data;
 
-    file_open(CALL_PI);
-    file_readall(CALL_PI, data, 512);
-    file_close(CALL_PI);
-    file_open(CALL_PO);
+    file_open(FILE_PI);
+    file_readall(FILE_PI, data, 512);
+    file_close(FILE_PI);
+    file_open(FILE_PO);
     write_dec("Table count", bpb->table_count);
-    file_close(CALL_PO);
+    file_close(FILE_PO);
 
 }
 

@@ -18,7 +18,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
     case 0x01:
         render_init();
-        render_setvideo(CALL_L6, 1920, 1080, 32);
+        render_setvideo(FILE_L6, 1920, 1080, 32);
 
         break;
 
@@ -59,35 +59,35 @@ void main(void)
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
 
-    if (!file_walk(CALL_L0, "/system/wm/data"))
+    if (!file_walk(FILE_L0, "/system/wm/data"))
         return;
 
-    if (!file_walk(CALL_L1, "/system/wm/event"))
+    if (!file_walk(FILE_L1, "/system/wm/event"))
         return;
 
-    if (!file_walk(CALL_L6, "/system/video/if:0/ctrl"))
+    if (!file_walk(FILE_L6, "/system/video/if:0/ctrl"))
         return;
 
-    file_open(CALL_L0);
-    file_open(CALL_L1);
-    ev_sendwmmap(CALL_L1, EVENT_ADDR_BROADCAST);
+    file_open(FILE_L0);
+    file_open(FILE_L1);
+    ev_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
 
-    while (!quit && ev_read(&handlers, CALL_L1))
+    while (!quit && ev_read(&handlers, FILE_L1))
     {
 
         if (ring_count(&output))
         {
 
-            file_writeall(CALL_L0, outputdata, ring_count(&output));
+            file_writeall(FILE_L0, outputdata, ring_count(&output));
             ring_reset(&output);
-            ev_sendwmflush(CALL_L1, EVENT_ADDR_BROADCAST);
+            ev_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST);
 
         }
 
     }
 
-    file_close(CALL_L1);
-    file_close(CALL_L0);
+    file_close(FILE_L1);
+    file_close(FILE_L0);
 
 }
 

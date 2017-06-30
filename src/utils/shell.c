@@ -7,12 +7,12 @@ static void readback(void)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(CALL_CO);
+    file_open(FILE_CO);
 
-    while ((count = file_read(CALL_CO, buffer, FUDGE_BSIZE)))
-        file_writeall(CALL_PO, buffer, count);
+    while ((count = file_read(FILE_CO, buffer, FUDGE_BSIZE)))
+        file_writeall(FILE_PO, buffer, count);
 
-    file_close(CALL_CO);
+    file_close(FILE_CO);
 
 }
 
@@ -34,11 +34,11 @@ static void interpret(struct ring *ring)
 
         command[count - 1] = '\0';
 
-        if (file_walk(CALL_L8, command + 3))
+        if (file_walk(FILE_L8, command + 3))
         {
 
-            file_duplicate(CALL_PW, CALL_L8);
-            file_duplicate(CALL_CW, CALL_L8);
+            file_duplicate(FILE_PW, FILE_L8);
+            file_duplicate(FILE_CW, FILE_L8);
 
         }
 
@@ -46,18 +46,18 @@ static void interpret(struct ring *ring)
 
     }
 
-    if (!file_walk(CALL_CP, "/bin/slang"))
+    if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
-    if (!file_walk(CALL_L8, "/system/pipe/clone/"))
+    if (!file_walk(FILE_L8, "/system/pipe/clone/"))
         return;
 
-    file_walkfrom(CALL_CI, CALL_L8, "0");
-    file_walkfrom(CALL_CO, CALL_L8, "1");
-    file_open(CALL_CI);
-    file_writeall(CALL_CI, command, count);
+    file_walkfrom(FILE_CI, FILE_L8, "0");
+    file_walkfrom(FILE_CO, FILE_L8, "1");
+    file_open(FILE_CI);
+    file_writeall(FILE_CI, command, count);
     call_spawn();
-    file_close(CALL_CI);
+    file_close(FILE_CI);
     readback();
 
 }
@@ -86,7 +86,7 @@ static void handle(struct ring *ring, unsigned char c)
         if (!ring_skipreverse(ring, 1))
             break;
 
-        file_writeall(CALL_PO, "\b \b", 3);
+        file_writeall(FILE_PO, "\b \b", 3);
 
         break;
 
@@ -94,16 +94,16 @@ static void handle(struct ring *ring, unsigned char c)
         c = '\n';
 
     case '\n':
-        file_writeall(CALL_PO, &c, 1);
+        file_writeall(FILE_PO, &c, 1);
         ring_write(ring, &c, 1);
         interpret(ring);
-        file_writeall(CALL_PO, "$ ", 2);
+        file_writeall(FILE_PO, "$ ", 2);
 
         break;
 
     default:
         ring_write(ring, &c, 1);
-        file_writeall(CALL_PO, &c, 1);
+        file_writeall(FILE_PO, &c, 1);
 
         break;
 
@@ -120,11 +120,11 @@ void main(void)
     struct ring input;
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
-    file_open(CALL_PI);
-    file_open(CALL_PO);
-    file_writeall(CALL_PO, "$ ", 2);
+    file_open(FILE_PI);
+    file_open(FILE_PO);
+    file_writeall(FILE_PO, "$ ", 2);
 
-    while ((count = file_read(CALL_PI, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
     {
 
         unsigned int i;
@@ -134,8 +134,8 @@ void main(void)
 
     }
 
-    file_close(CALL_PO);
-    file_close(CALL_PI);
+    file_close(FILE_PO);
+    file_close(FILE_PI);
 
 }
 

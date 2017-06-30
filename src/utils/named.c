@@ -7,17 +7,17 @@ void main(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(CALL_PI);
+    file_open(FILE_PI);
 
-    count = file_read(CALL_PI, buffer, FUDGE_BSIZE);
+    count = file_read(FILE_PI, buffer, FUDGE_BSIZE);
 
-    file_close(CALL_PI);
+    file_close(FILE_PI);
 
     while (--count && buffer[count - 1] != '/');
 
-    file_open(CALL_PO);
-    file_writeall(CALL_PO, buffer, count);
-    file_close(CALL_PO);
+    file_open(FILE_PO);
+    file_writeall(FILE_PO, buffer, count);
+    file_close(FILE_PO);
 
 }
 

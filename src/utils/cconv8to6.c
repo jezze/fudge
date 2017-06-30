@@ -20,14 +20,14 @@ void main(void)
     unsigned char in[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(CALL_PO);
-    file_open(CALL_PI);
+    file_open(FILE_PO);
+    file_open(FILE_PI);
 
-    while ((count = file_read(CALL_PI, in, FUDGE_BSIZE)))
-        file_writeall(CALL_PO, out, convert(out, FUDGE_BSIZE, in, count));
+    while ((count = file_read(FILE_PI, in, FUDGE_BSIZE)))
+        file_writeall(FILE_PO, out, convert(out, FUDGE_BSIZE, in, count));
 
-    file_close(CALL_PI);
-    file_close(CALL_PO);
+    file_close(FILE_PI);
+    file_close(FILE_PO);
 
 }
 

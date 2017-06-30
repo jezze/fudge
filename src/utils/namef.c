@@ -8,19 +8,19 @@ void main(void)
     unsigned int count;
     unsigned int offset;
 
-    file_open(CALL_PI);
+    file_open(FILE_PI);
 
-    count = file_read(CALL_PI, buffer, FUDGE_BSIZE);
+    count = file_read(FILE_PI, buffer, FUDGE_BSIZE);
 
-    file_close(CALL_PI);
+    file_close(FILE_PI);
 
     offset = count;
 
     while (--offset && buffer[offset - 1] != '/');
 
-    file_open(CALL_PO);
-    file_writeall(CALL_PO, buffer + offset, count - offset);
-    file_close(CALL_PO);
+    file_open(FILE_PO);
+    file_writeall(FILE_PO, buffer + offset, count - offset);
+    file_close(FILE_PO);
 
 }
 

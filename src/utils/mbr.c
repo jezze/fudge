@@ -33,14 +33,14 @@ void main(void)
     struct mbr mbr;
     unsigned int i;
 
-    file_open(CALL_PI);
-    file_readall(CALL_PI, &mbr, 512);
-    file_close(CALL_PI);
+    file_open(FILE_PI);
+    file_readall(FILE_PI, &mbr, 512);
+    file_close(FILE_PI);
 
     if (mbr.signature[0] != 0x55 || mbr.signature[1] != 0xAA)
         return;
 
-    file_open(CALL_PO);
+    file_open(FILE_PO);
 
     for (i = 0; i < 4; i++)
     {
@@ -87,7 +87,7 @@ void main(void)
 
     }
 
-    file_close(CALL_PO);
+    file_close(FILE_PO);
 
 }
 
