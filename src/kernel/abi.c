@@ -221,7 +221,7 @@ static unsigned int auth(struct container *container, struct task *task, void *s
     struct {void *caller; unsigned int service; unsigned int backend;} *args = stack;
     struct service *service = kernel_getservice(task, args->service);
 
-    service->server = container_getserver(container, container->nservers + 1);
+    service->server = container_getfreeserver(container);
 
     if (!service->server)
         return 0;
@@ -238,7 +238,9 @@ static unsigned int auth(struct container *container, struct task *task, void *s
 
     service->state.id = service->server->protocol->root(service->server->backend);
 
-    return ++container->nservers;
+    container_useserver(container, service->server);
+
+    return 0;
 
 }
 
@@ -246,7 +248,7 @@ static unsigned int mount(struct container *container, struct task *task, void *
 {
 
     struct {void *caller; unsigned int pservice; unsigned int cservice;} *args = stack;
-    struct container_mount *mount = container_getmount(container, container->nmounts + 1);
+    struct container_mount *mount = container_getfreemount(container);
     struct service *pservice = kernel_getservice(task, args->pservice);
     struct service *cservice = kernel_getservice(task, args->cservice);
 
@@ -255,7 +257,9 @@ static unsigned int mount(struct container *container, struct task *task, void *
     mount->child.server = cservice->server;
     mount->child.id = cservice->state.id;
 
-    return ++container->nmounts;
+    container_usemount(container, mount);
+
+    return 0;
 
 }
 

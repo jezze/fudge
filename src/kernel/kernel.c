@@ -210,8 +210,8 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
     server->protocol->child(server->backend, &init->state, "bin/", 4);
     server->protocol->child(server->backend, &init->state, "init", 4);
 
-    container->nservers++;
-    container->nmounts++;
+    container_useserver(container, server);
+    container_usemount(container, mount);
 
 }
 

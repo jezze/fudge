@@ -87,6 +87,13 @@ void service_initprotocol(struct service_protocol *protocol, unsigned int (*matc
 
 }
 
+void service_initserver(struct service_server *server)
+{
+
+    list_inititem(&server->item, server);
+
+}
+
 void service_init(struct service *service, struct task *task)
 {
 
