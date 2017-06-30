@@ -133,7 +133,7 @@ static void loadregisters(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct container *container, struct task *task, void *stack)
 {
 
-    struct task *next = kernel_findinactivetask();
+    struct task *next = kernel_getinactivetask();
 
     if (!next)
         return 0;
@@ -199,7 +199,7 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
 
     }
 
-    current.task = kernel_findactivetask();
+    current.task = kernel_getactivetask();
 
     if (current.task)
     {

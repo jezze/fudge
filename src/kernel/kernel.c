@@ -16,17 +16,31 @@ static struct list blockedtasks;
 static struct list usedservers;
 static struct list freeservers;
 
-struct task *kernel_findactivetask(void)
+struct task *kernel_getactivetask(void)
 {
 
     return (activetasks.tail) ? activetasks.tail->data : 0;
 
 }
 
-struct task *kernel_findinactivetask(void)
+struct task *kernel_getinactivetask(void)
 {
 
     return (inactivetasks.tail) ? inactivetasks.tail->data : 0;
+
+}
+
+struct service_server *kernel_getfreeserver(void)
+{
+
+    return (freeservers.tail) ? freeservers.tail->data : 0;
+
+}
+
+struct service *kernel_getservice(struct task *task, unsigned int service)
+{
+
+    return &services[task->id * TASK_DESCRIPTORS + (service & (TASK_DESCRIPTORS - 1))];
 
 }
 
@@ -101,13 +115,6 @@ void kernel_unblocktask(struct task *task)
 
 }
 
-struct service_server *kernel_getfreeserver(void)
-{
-
-    return (freeservers.tail) ? freeservers.tail->data : 0;
-
-}
-
 void kernel_useserver(struct service_server *server)
 {
 
@@ -119,13 +126,6 @@ void kernel_unuseserver(struct service_server *server)
 {
 
     list_move(&freeservers, &server->item);
-
-}
-
-struct service *kernel_getservice(struct task *task, unsigned int service)
-{
-
-    return &services[task->id * TASK_DESCRIPTORS + (service & (TASK_DESCRIPTORS - 1))];
 
 }
 
@@ -273,7 +273,7 @@ struct task *kernel_setuptasks(void)
 
     }
 
-    return kernel_findinactivetask();
+    return kernel_getinactivetask();
 
 }
 

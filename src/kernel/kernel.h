@@ -3,16 +3,16 @@
 #define KERNEL_SERVERS                  32
 #define KERNEL_SERVICES                 4096
 
-struct task *kernel_findactivetask(void);
-struct task *kernel_findinactivetask(void);
+struct task *kernel_getactivetask(void);
+struct task *kernel_getinactivetask(void);
+struct service_server *kernel_getfreeserver(void);
+struct service *kernel_getservice(struct task *task, unsigned int service);
 void kernel_activatetask(struct task *task);
 void kernel_inactivatetask(struct task *task);
 void kernel_blocktask(struct task *task);
 void kernel_unblocktask(struct task *task);
-struct service_server *kernel_getfreeserver(void);
 void kernel_useserver(struct service_server *server);
 void kernel_unuseserver(struct service_server *server);
-struct service *kernel_getservice(struct task *task, unsigned int service);
 void kernel_copyservices(struct task *source, struct task *target);
 unsigned int kernel_readtask(struct task *task, void *buffer, unsigned int count);
 unsigned int kernel_writetask(struct task *task, void *buffer, unsigned int count);
