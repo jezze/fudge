@@ -235,10 +235,15 @@ static unsigned int auth(struct container *container, struct task *task, void *s
     if (!server->protocol)
         return 0;
 
+    server->root = server->protocol->root(server->backend);
+
+    if (!server->root)
+        return 0;
+
     kernel_useserver(server);
 
     service->server = server;
-    service->state.id = server->protocol->root(server->backend);
+    service->state.id = server->root;
 
     return 0;
 

@@ -46,6 +46,7 @@ struct service_server
     struct list_item item;
     struct service_backend *backend;
     struct service_protocol *protocol;
+    unsigned int root;
 
 };
 
