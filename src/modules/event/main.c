@@ -1,6 +1,9 @@
 #include <fudge.h>
 #include <kernel.h>
+#include <modules/system/system.h>
 #include "event.h"
+
+static struct system_node root;
 
 void event_unicast(struct list *links, struct event_header *header, unsigned int count)
 {
@@ -52,6 +55,29 @@ unsigned int event_send(struct list *links, struct service_state *state, void *b
         event_multicast(links, header, count);
 
     return count;
+
+}
+
+void module_init(void)
+{
+
+    system_initnode(&root, SYSTEM_NODETYPE_NORMAL, "event");
+
+    root.read = system_readtask;
+
+}
+
+void module_register(void)
+{
+
+    system_registernode(&root);
+
+}
+
+void module_unregister(void)
+{
+
+    system_unregisternode(&root);
 
 }
 

@@ -280,30 +280,35 @@ void main(void)
     widget_inittextbox(&content);
     widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
 
-    if (!file_walk(FILE_L0, "/system/wm/data"))
+    if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    if (!file_walk(FILE_L1, "/system/wm/event"))
+    if (!file_walk(FILE_L1, "/system/wm/data"))
+        return;
+
+    if (!file_walk(FILE_L2, "/system/wm/event"))
         return;
 
     file_open(FILE_L0);
     file_open(FILE_L1);
-    ev_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
+    file_open(FILE_L2);
+    ev_sendwmmap(FILE_L2, EVENT_ADDR_BROADCAST);
 
-    while (!quit && ev_read(&handlers, FILE_L1))
+    while (!quit && ev_read(&handlers, FILE_L0))
     {
 
         if (ring_count(&output))
         {
 
-            file_writeall(FILE_L0, outputdata, ring_count(&output));
+            file_writeall(FILE_L1, outputdata, ring_count(&output));
             ring_reset(&output);
-            ev_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST);
+            ev_sendwmflush(FILE_L2, EVENT_ADDR_BROADCAST);
 
         }
 
     }
 
+    file_close(FILE_L2);
     file_close(FILE_L1);
     file_close(FILE_L0);
 

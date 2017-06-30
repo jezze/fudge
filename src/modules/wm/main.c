@@ -61,7 +61,6 @@ void module_init(void)
     data.write = data_write;
     event.open = event_open;
     event.close = event_close;
-    event.read = system_readtask;
     event.write = event_write;
 
     system_addchild(&root, &data);

@@ -120,7 +120,6 @@ void keyboard_initinterface(struct keyboard_interface *interface)
     interface->data.read = system_readtask;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
-    interface->event.read = system_readtask;
 
 }
 

@@ -106,7 +106,6 @@ void timer_initinterface(struct timer_interface *interface)
     interface->sleep.read = system_readtask;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
-    interface->event.read = system_readtask;
 
 }
 

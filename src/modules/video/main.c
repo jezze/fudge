@@ -153,7 +153,6 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
     interface->colormap.seek = system_seek;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
-    interface->event.read = system_readtask;
 
 }
 
