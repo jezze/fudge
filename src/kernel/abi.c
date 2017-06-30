@@ -20,12 +20,12 @@ static unsigned int debug(struct container *container, struct task *task, void *
 static void walkmount(struct container *container, struct service *service, unsigned int parent)
 {
 
-    unsigned int i;
+    struct list_item *current;
 
-    for (i = 0; i < CONTAINER_MOUNTS; i++)
+    for (current = container->usedmounts.head; current; current = current->next)
     {
 
-        struct container_mount *mount = &container->mounts[i];
+        struct container_mount *mount = current->data;
         struct container_node *from = (parent) ? &mount->child : &mount->parent;
         struct container_node *to = (parent) ? &mount->parent : &mount->child;
 
