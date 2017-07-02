@@ -99,7 +99,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *ethernetinterface
 
     }
 
-    kernel_multicast(&ethernetprotocol.datalinks, buffer, count);
+    kernel_multicast(&ethernetprotocol.datastates, buffer, count);
 
 }
 

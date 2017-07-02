@@ -6,7 +6,7 @@
 static struct system_node root;
 static struct system_node data;
 static struct system_node event;
-static struct list eventlinks;
+static struct list eventstates;
 static char databuffer[FUDGE_BSIZE];
 static struct ring dataring;
 
@@ -27,7 +27,7 @@ static unsigned int data_write(struct system_node *self, struct service_state *s
 static unsigned int event_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&eventlinks, &state->item);
+    list_add(&eventstates, &state->item);
 
     return state->id;
 
@@ -36,7 +36,7 @@ static unsigned int event_open(struct system_node *self, struct service_state *s
 static unsigned int event_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&eventlinks, &state->item);
+    list_remove(&eventstates, &state->item);
 
     return state->id;
 
@@ -45,7 +45,7 @@ static unsigned int event_close(struct system_node *self, struct service_state *
 static unsigned int event_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
 {
 
-    return event_send(&eventlinks, state, buffer, count);
+    return event_send(&eventstates, state, buffer, count);
 
 }
 

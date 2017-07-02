@@ -7,7 +7,7 @@ struct video_interface
     struct system_node data;
     struct system_node colormap;
     struct system_node event;
-    struct list eventlinks;
+    struct list eventstates;
     unsigned int id;
     struct ctrl_videosettings settings;
     void (*setmode)(struct ctrl_videosettings *settings);

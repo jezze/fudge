@@ -9,7 +9,7 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->sleeplinks, buffer, count);
+    kernel_multicast(&interface->sleepstates, buffer, count);
 
 }
 
@@ -23,7 +23,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
     message.header.destination = 0;
     message.timertick.counter = counter;
 
-    event_multicast(&interface->eventlinks, &message.header, sizeof (struct event_header) + sizeof (struct event_timertick));
+    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_timertick));
 
 }
 
@@ -32,7 +32,7 @@ static unsigned int interfacesleep_open(struct system_node *self, struct service
 
     struct timer_interface *interface = self->resource->data;
 
-    list_add(&interface->sleeplinks, &state->item);
+    list_add(&interface->sleepstates, &state->item);
 
     return state->id;
 
@@ -43,7 +43,7 @@ static unsigned int interfacesleep_close(struct system_node *self, struct servic
 
     struct timer_interface *interface = self->resource->data;
 
-    list_remove(&interface->sleeplinks, &state->item);
+    list_remove(&interface->sleepstates, &state->item);
 
     return state->id;
 
@@ -54,7 +54,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct timer_interface *interface = self->resource->data;
 
-    list_add(&interface->eventlinks, &state->item);
+    list_add(&interface->eventstates, &state->item);
 
     return state->id;
 
@@ -65,7 +65,7 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct timer_interface *interface = self->resource->data;
 
-    list_remove(&interface->eventlinks, &state->item);
+    list_remove(&interface->eventstates, &state->item);
 
     return state->id;
 

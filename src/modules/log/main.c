@@ -8,12 +8,12 @@ static struct system_node critical;
 static struct system_node error;
 static struct system_node warning;
 static struct system_node info;
-static struct list criticallinks;
-static struct list errorlinks;
-static struct list warninglinks;
-static struct list infolinks;
+static struct list criticalstates;
+static struct list errorstates;
+static struct list warningstates;
+static struct list infostates;
 
-static void write(struct list *links, unsigned int level, char *string, char *file, unsigned int line)
+static void write(struct list *states, unsigned int level, char *string, char *file, unsigned int line)
 {
 
     char num[FUDGE_NSIZE];
@@ -22,33 +22,33 @@ static void write(struct list *links, unsigned int level, char *string, char *fi
     {
 
     case DEBUG_CRITICAL:
-        kernel_multicast(links, "[CRIT] ", 7);
+        kernel_multicast(states, "[CRIT] ", 7);
 
         break;
 
     case DEBUG_ERROR:
-        kernel_multicast(links, "[ERRO] ", 7);
+        kernel_multicast(states, "[ERRO] ", 7);
 
         break;
 
     case DEBUG_WARNING:
-        kernel_multicast(links, "[WARN] ", 7);
+        kernel_multicast(states, "[WARN] ", 7);
 
         break;
 
     case DEBUG_INFO:
-        kernel_multicast(links, "[INFO] ", 7);
+        kernel_multicast(states, "[INFO] ", 7);
 
         break;
 
     }
 
-    kernel_multicast(links, string, ascii_length(string));
-    kernel_multicast(links, " (", 2);
-    kernel_multicast(links, file, ascii_length(file));
-    kernel_multicast(links, ":", 1);
-    kernel_multicast(links, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
-    kernel_multicast(links, ")\n", 2);
+    kernel_multicast(states, string, ascii_length(string));
+    kernel_multicast(states, " (", 2);
+    kernel_multicast(states, file, ascii_length(file));
+    kernel_multicast(states, ":", 1);
+    kernel_multicast(states, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
+    kernel_multicast(states, ")\n", 2);
 
 }
 
@@ -56,23 +56,23 @@ static void log_write(unsigned int level, char *string, char *file, unsigned int
 {
 
     if (level <= DEBUG_CRITICAL)
-        write(&criticallinks, level, string, file, line);
+        write(&criticalstates, level, string, file, line);
 
     if (level <= DEBUG_ERROR)
-        write(&errorlinks, level, string, file, line);
+        write(&errorstates, level, string, file, line);
 
     if (level <= DEBUG_WARNING)
-        write(&warninglinks, level, string, file, line);
+        write(&warningstates, level, string, file, line);
 
     if (level <= DEBUG_INFO)
-        write(&infolinks, level, string, file, line);
+        write(&infostates, level, string, file, line);
 
 }
 
 static unsigned int critical_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&criticallinks, &state->item);
+    list_add(&criticalstates, &state->item);
 
     return state->id;
 
@@ -81,7 +81,7 @@ static unsigned int critical_open(struct system_node *self, struct service_state
 static unsigned int critical_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&criticallinks, &state->item);
+    list_remove(&criticalstates, &state->item);
 
     return state->id;
 
@@ -90,7 +90,7 @@ static unsigned int critical_close(struct system_node *self, struct service_stat
 static unsigned int error_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&errorlinks, &state->item);
+    list_add(&errorstates, &state->item);
 
     return state->id;
 
@@ -99,7 +99,7 @@ static unsigned int error_open(struct system_node *self, struct service_state *s
 static unsigned int error_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&errorlinks, &state->item);
+    list_remove(&errorstates, &state->item);
 
     return state->id;
 
@@ -108,7 +108,7 @@ static unsigned int error_close(struct system_node *self, struct service_state *
 static unsigned int warning_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&warninglinks, &state->item);
+    list_add(&warningstates, &state->item);
 
     return state->id;
 
@@ -117,7 +117,7 @@ static unsigned int warning_open(struct system_node *self, struct service_state 
 static unsigned int warning_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&warninglinks, &state->item);
+    list_remove(&warningstates, &state->item);
 
     return state->id;
 
@@ -126,7 +126,7 @@ static unsigned int warning_close(struct system_node *self, struct service_state
 static unsigned int info_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&infolinks, &state->item);
+    list_add(&infostates, &state->item);
 
     return state->id;
 
@@ -135,7 +135,7 @@ static unsigned int info_open(struct system_node *self, struct service_state *st
 static unsigned int info_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&infolinks, &state->item);
+    list_remove(&infostates, &state->item);
 
     return state->id;
 

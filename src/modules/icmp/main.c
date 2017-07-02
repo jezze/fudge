@@ -11,14 +11,14 @@ static struct ipv6_protocol ipv6protocol;
 static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&ipv4protocol.datalinks, buffer, count);
+    kernel_multicast(&ipv4protocol.datastates, buffer, count);
 
 }
 
 static void ipv6protocol_notify(struct ipv6_header *ipv6header, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&ipv6protocol.datalinks, buffer, count);
+    kernel_multicast(&ipv6protocol.datastates, buffer, count);
 
 }
 

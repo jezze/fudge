@@ -5,12 +5,12 @@
 
 static struct system_node root;
 
-void event_unicast(struct list *links, struct event_header *header, unsigned int count)
+void event_unicast(struct list *states, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
 
-    for (current = links->head; current; current = current->next)
+    for (current = states->head; current; current = current->next)
     {
 
         struct service_state *state = current->data;
@@ -24,12 +24,12 @@ void event_unicast(struct list *links, struct event_header *header, unsigned int
 
 }
 
-void event_multicast(struct list *links, struct event_header *header, unsigned int count)
+void event_multicast(struct list *states, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
 
-    for (current = links->head; current; current = current->next)
+    for (current = states->head; current; current = current->next)
     {
 
         struct service_state *state = current->data;
@@ -42,7 +42,7 @@ void event_multicast(struct list *links, struct event_header *header, unsigned i
 
 }
 
-unsigned int event_send(struct list *links, struct service_state *state, void *buffer, unsigned int count)
+unsigned int event_send(struct list *states, struct service_state *state, void *buffer, unsigned int count)
 {
 
     struct event_header *header = buffer;
@@ -50,9 +50,9 @@ unsigned int event_send(struct list *links, struct service_state *state, void *b
     header->source = (unsigned int)state->task;
 
     if (header->destination)
-        event_unicast(links, header, count);
+        event_unicast(states, header, count);
     else
-        event_multicast(links, header, count);
+        event_multicast(states, header, count);
 
     return count;
 

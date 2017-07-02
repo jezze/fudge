@@ -9,7 +9,7 @@ static struct system_node root;
 void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->datalinks, buffer, count);
+    kernel_multicast(&interface->datastates, buffer, count);
 
 }
 
@@ -23,7 +23,7 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
     message.header.destination = 0;
     message.keypress.scancode = scancode;
 
-    event_multicast(&interface->eventlinks, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
+    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
 
 }
 
@@ -37,7 +37,7 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
     message.header.destination = 0;
     message.keyrelease.scancode = scancode;
 
-    event_multicast(&interface->eventlinks, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
+    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
 
 }
 
@@ -46,7 +46,7 @@ static unsigned int interfacedata_open(struct system_node *self, struct service_
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_add(&interface->datalinks, &state->item);
+    list_add(&interface->datastates, &state->item);
 
     return state->id;
 
@@ -57,7 +57,7 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_remove(&interface->datalinks, &state->item);
+    list_remove(&interface->datastates, &state->item);
 
     return state->id;
 
@@ -68,7 +68,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_add(&interface->eventlinks, &state->item);
+    list_add(&interface->eventstates, &state->item);
 
     return state->id;
 
@@ -79,7 +79,7 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_remove(&interface->eventlinks, &state->item);
+    list_remove(&interface->eventstates, &state->item);
 
     return state->id;
 

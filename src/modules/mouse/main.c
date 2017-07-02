@@ -9,7 +9,7 @@ static struct system_node root;
 void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->datalinks, buffer, count);
+    kernel_multicast(&interface->datastates, buffer, count);
 
 }
 
@@ -24,7 +24,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
-    event_multicast(&interface->eventlinks, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
+    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
 
 }
 
@@ -38,7 +38,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     message.header.destination = 0;
     message.mousepress.button = button;
 
-    event_multicast(&interface->eventlinks, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
+    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
 
 }
 
@@ -52,7 +52,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     message.header.destination = 0;
     message.mouserelease.button = button;
 
-    event_multicast(&interface->eventlinks, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
+    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
 
 }
 
@@ -61,7 +61,7 @@ static unsigned int interfacedata_open(struct system_node *self, struct service_
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_add(&interface->datalinks, &state->item);
+    list_add(&interface->datastates, &state->item);
 
     return state->id;
 
@@ -72,7 +72,7 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_remove(&interface->datalinks, &state->item);
+    list_remove(&interface->datastates, &state->item);
 
     return state->id;
 
@@ -83,7 +83,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_add(&interface->eventlinks, &state->item);
+    list_add(&interface->eventstates, &state->item);
 
     return state->id;
 
@@ -94,7 +94,7 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_remove(&interface->eventlinks, &state->item);
+    list_remove(&interface->eventstates, &state->item);
 
     return state->id;
 

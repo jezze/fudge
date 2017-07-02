@@ -25,7 +25,7 @@ struct ethernet_interface
     struct system_node ctrl;
     struct system_node data;
     struct system_node addr;
-    struct list datalinks;
+    struct list datastates;
     unsigned int id;
     unsigned char haddress[ETHERNET_ADDRSIZE];
     unsigned int (*send)(void *buffer, unsigned int count);
@@ -38,7 +38,7 @@ struct ethernet_protocol
     struct resource resource;
     struct system_node root;
     struct system_node data;
-    struct list datalinks;
+    struct list datastates;
     unsigned int type;
     void (*notify)(struct ethernet_interface *ethernetinterface, struct ethernet_header *header, void *buffer, unsigned int count);
 

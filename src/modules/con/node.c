@@ -78,7 +78,7 @@ static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *udphe
     session->tp[0] = udpheader->sp[0];
     session->tp[1] = udpheader->sp[1];
 
-    kernel_multicast(&con.links, buffer, count);
+    kernel_multicast(&con.states, buffer, count);
 
 }
 

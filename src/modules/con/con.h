@@ -6,7 +6,7 @@ struct con
     struct system_node ctrl;
     struct system_node data;
     struct ctrl_consettings settings;
-    struct list links;
+    struct list states;
     void (*open)(void);
     void (*close)(void);
     unsigned int (*write)(void *buffer, unsigned int count);

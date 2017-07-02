@@ -18,7 +18,7 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
     message.videomode.h = h;
     message.videomode.bpp = bpp;
 
-    event_multicast(&interface->eventlinks, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
+    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
 
 }
 
@@ -85,7 +85,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct video_interface *interface = self->resource->data;
 
-    list_add(&interface->eventlinks, &state->item);
+    list_add(&interface->eventstates, &state->item);
 
     return state->id;
 
@@ -96,7 +96,7 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct video_interface *interface = self->resource->data;
 
-    list_remove(&interface->eventlinks, &state->item);
+    list_remove(&interface->eventstates, &state->item);
 
     return state->id;
 

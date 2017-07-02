@@ -175,12 +175,12 @@ unsigned int kernel_writetask(struct task *task, void *buffer, unsigned int coun
 
 }
 
-void kernel_multicast(struct list *links, void *buffer, unsigned int count)
+void kernel_multicast(struct list *states, void *buffer, unsigned int count)
 {
 
     struct list_item *current;
 
-    for (current = links->head; current; current = current->next)
+    for (current = states->head; current; current = current->next)
     {
 
         struct service_state *state = current->data;

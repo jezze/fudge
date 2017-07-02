@@ -4,7 +4,7 @@ struct block_interface
     struct resource resource;
     struct system_node root;
     struct system_node data;
-    struct list datalinks;
+    struct list datastates;
     unsigned int id;
     unsigned int (*rdata)(void *buffer, unsigned int count, unsigned int offset);
     unsigned int (*wdata)(void *buffer, unsigned int count, unsigned int offset);
