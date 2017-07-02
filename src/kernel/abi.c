@@ -240,12 +240,12 @@ static unsigned int auth(struct container *container, struct task *task, void *s
     if (!server->root)
         return 0;
 
-    kernel_useserver(server);
-
     service->server = server;
     service->state.id = server->root;
 
-    return 0;
+    kernel_useserver(server);
+
+    return 1;
 
 }
 
@@ -260,14 +260,14 @@ static unsigned int mount(struct container *container, struct task *task, void *
     if (!mount)
         return 0;
 
-    container_usemount(container, mount);
-
     mount->parent.server = pservice->server;
     mount->parent.id = pservice->state.id;
     mount->child.server = cservice->server;
     mount->child.id = cservice->state.id;
 
-    return 0;
+    container_usemount(container, mount);
+
+    return 1;
 
 }
 
