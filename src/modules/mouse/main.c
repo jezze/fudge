@@ -61,7 +61,7 @@ static unsigned int interfacedata_open(struct system_node *self, struct service_
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_add(&interface->datalinks, &state->link);
+    list_add(&interface->datalinks, &state->item);
 
     return state->id;
 
@@ -72,7 +72,7 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_remove(&interface->datalinks, &state->link);
+    list_remove(&interface->datalinks, &state->item);
 
     return state->id;
 
@@ -83,7 +83,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_add(&interface->eventlinks, &state->link);
+    list_add(&interface->eventlinks, &state->item);
 
     return state->id;
 
@@ -94,7 +94,7 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_remove(&interface->eventlinks, &state->link);
+    list_remove(&interface->eventlinks, &state->item);
 
     return state->id;
 

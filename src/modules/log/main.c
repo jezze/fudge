@@ -72,7 +72,7 @@ static void log_write(unsigned int level, char *string, char *file, unsigned int
 static unsigned int critical_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&criticallinks, &state->link);
+    list_add(&criticallinks, &state->item);
 
     return state->id;
 
@@ -81,7 +81,7 @@ static unsigned int critical_open(struct system_node *self, struct service_state
 static unsigned int critical_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&criticallinks, &state->link);
+    list_remove(&criticallinks, &state->item);
 
     return state->id;
 
@@ -90,7 +90,7 @@ static unsigned int critical_close(struct system_node *self, struct service_stat
 static unsigned int error_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&errorlinks, &state->link);
+    list_add(&errorlinks, &state->item);
 
     return state->id;
 
@@ -99,7 +99,7 @@ static unsigned int error_open(struct system_node *self, struct service_state *s
 static unsigned int error_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&errorlinks, &state->link);
+    list_remove(&errorlinks, &state->item);
 
     return state->id;
 
@@ -108,7 +108,7 @@ static unsigned int error_close(struct system_node *self, struct service_state *
 static unsigned int warning_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&warninglinks, &state->link);
+    list_add(&warninglinks, &state->item);
 
     return state->id;
 
@@ -117,7 +117,7 @@ static unsigned int warning_open(struct system_node *self, struct service_state 
 static unsigned int warning_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&warninglinks, &state->link);
+    list_remove(&warninglinks, &state->item);
 
     return state->id;
 
@@ -126,7 +126,7 @@ static unsigned int warning_close(struct system_node *self, struct service_state
 static unsigned int info_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&infolinks, &state->link);
+    list_add(&infolinks, &state->item);
 
     return state->id;
 
@@ -135,7 +135,7 @@ static unsigned int info_open(struct system_node *self, struct service_state *st
 static unsigned int info_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&infolinks, &state->link);
+    list_remove(&infolinks, &state->item);
 
     return state->id;
 

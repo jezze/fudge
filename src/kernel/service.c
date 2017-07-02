@@ -57,7 +57,7 @@ void service_initbackend(struct service_backend *backend, unsigned int id, unsig
 void service_initstate(struct service_state *state, struct task *task)
 {
 
-    list_inititem(&state->link, state);
+    list_inititem(&state->item, state);
 
     state->task = task;
     state->id = 0;

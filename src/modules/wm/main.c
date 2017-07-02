@@ -27,7 +27,7 @@ static unsigned int data_write(struct system_node *self, struct service_state *s
 static unsigned int event_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&eventlinks, &state->link);
+    list_add(&eventlinks, &state->item);
 
     return state->id;
 
@@ -36,7 +36,7 @@ static unsigned int event_open(struct system_node *self, struct service_state *s
 static unsigned int event_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&eventlinks, &state->link);
+    list_remove(&eventlinks, &state->item);
 
     return state->id;
 

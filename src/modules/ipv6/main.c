@@ -32,7 +32,7 @@ static unsigned int protocoldata_open(struct system_node *self, struct service_s
 
     struct ipv6_protocol *protocol = self->resource->data;
 
-    list_add(&protocol->datalinks, &state->link);
+    list_add(&protocol->datalinks, &state->item);
 
     return state->id;
 
@@ -43,7 +43,7 @@ static unsigned int protocoldata_close(struct system_node *self, struct service_
 
     struct ipv6_protocol *protocol = self->resource->data;
 
-    list_remove(&protocol->datalinks, &state->link);
+    list_remove(&protocol->datalinks, &state->item);
 
     return state->id;
 

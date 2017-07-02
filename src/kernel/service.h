@@ -12,7 +12,7 @@ struct service_backend
 struct service_state
 {
 
-    struct list_item link;
+    struct list_item item;
     struct task *task;
     unsigned int id;
     unsigned int offset;

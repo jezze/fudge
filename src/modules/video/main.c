@@ -85,7 +85,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct video_interface *interface = self->resource->data;
 
-    list_add(&interface->eventlinks, &state->link);
+    list_add(&interface->eventlinks, &state->item);
 
     return state->id;
 
@@ -96,7 +96,7 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct video_interface *interface = self->resource->data;
 
-    list_remove(&interface->eventlinks, &state->link);
+    list_remove(&interface->eventlinks, &state->item);
 
     return state->id;
 
