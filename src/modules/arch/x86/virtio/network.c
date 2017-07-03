@@ -26,6 +26,10 @@
 #define REGISTERQNOTIFY                 0x10
 #define REGISTERSTATUS                  0x12
 #define REGISTERISR                     0x13
+#define VIRTIO_ACKNOWLEDGE              0x01
+#define VIRTIO_DRIVER                   0x02
+#define VIRTIO_READY                    0x04
+#define VIRTIO_FEATURES                 0x08
 
 static struct base_driver driver;
 static struct ethernet_interface ethernetinterface;
@@ -48,6 +52,46 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
     return 0;
+
+}
+
+static void setupqueue(unsigned short index)
+{
+
+    unsigned short queuesize;
+
+    io_outw(io + REGISTERQSELECT, index);
+
+    queuesize = io_inw(io + REGISTERQSIZE);
+
+    debug_write(DEBUG_INFO, "QUEUESIZE:", "", queuesize);
+
+    if (!queuesize)
+        return;
+
+    /* SETUP VQUEUES */
+
+}
+
+static void setupqueues()
+{
+
+    unsigned short i;
+
+    for (i = 0; i < 16; i++)
+        setupqueue(i);
+
+}
+
+static void setupfeatures()
+{
+
+    unsigned int features = io_ind(io + REGISTERDEVFEATURES);
+
+    debug_write(DEBUG_INFO, "FEATURES:", "", features);
+    /* MODIFY FEATURES */
+
+    io_outd(io + REGISTERGUESTFEATURES, features);
 
 }
 
@@ -81,10 +125,24 @@ static unsigned int driver_match(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    unsigned char status;
+
     io = pci_inw(id, PCI_CONFIG_BAR0) & ~1;
 
-    pci_setmaster(id);
     reset();
+    io_outb(io + REGISTERSTATUS, VIRTIO_ACKNOWLEDGE);
+    io_outb(io + REGISTERSTATUS, VIRTIO_ACKNOWLEDGE | VIRTIO_DRIVER);
+    setupfeatures();
+    io_outb(io + REGISTERSTATUS, VIRTIO_ACKNOWLEDGE | VIRTIO_DRIVER | VIRTIO_FEATURES);
+
+    status = io_inb(io + REGISTERSTATUS);
+
+    debug_write(DEBUG_INFO, "STATUS:", "", status);
+
+    if (!(status & VIRTIO_FEATURES))
+        return;
+
+    setupqueues();
 
     ethernetinterface.haddress[0] = io_inb(io + 0x14);
     ethernetinterface.haddress[1] = io_inb(io + 0x15);
@@ -93,6 +151,8 @@ static void driver_attach(unsigned int id)
     ethernetinterface.haddress[4] = io_inb(io + 0x18);
     ethernetinterface.haddress[5] = io_inb(io + 0x19);
 
+    io_outb(io + REGISTERSTATUS, VIRTIO_ACKNOWLEDGE | VIRTIO_DRIVER | VIRTIO_FEATURES | VIRTIO_READY);
+    pci_setmaster(id);
     ethernet_registerinterface(&ethernetinterface, id);
     pic_setroutine(pci_getirq(id), handleirq);
 
