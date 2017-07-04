@@ -111,11 +111,11 @@ static unsigned int driver_match(unsigned int id)
     switch (revision)
     {
 
-    case 1:
-        return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1041;
-
     case 0:
         return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1000;
+
+    case 1:
+        return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1041;
 
     }
 
