@@ -64,10 +64,10 @@ static void setupqueue(unsigned short index)
 
     queuesize = io_inw(io + REGISTERQSIZE);
 
-    debug_write(DEBUG_INFO, "QUEUESIZE:", "", queuesize);
-
     if (!queuesize)
         return;
+
+    debug_write(DEBUG_INFO, "QUEUESIZE:", "", queuesize);
 
     /* SETUP VQUEUES */
 
@@ -89,6 +89,7 @@ static void setupfeatures()
     unsigned int features = io_ind(io + REGISTERDEVFEATURES);
 
     debug_write(DEBUG_INFO, "FEATURES:", "", features);
+
     /* MODIFY FEATURES */
 
     io_outd(io + REGISTERGUESTFEATURES, features);
@@ -136,8 +137,6 @@ static void driver_attach(unsigned int id)
     io_outb(io + REGISTERSTATUS, VIRTIO_ACKNOWLEDGE | VIRTIO_DRIVER | VIRTIO_FEATURES);
 
     status = io_inb(io + REGISTERSTATUS);
-
-    debug_write(DEBUG_INFO, "STATUS:", "", status);
 
     if (!(status & VIRTIO_FEATURES))
         return;
