@@ -67,6 +67,8 @@ static void reset(void)
 static void handleirq(unsigned int irq)
 {
 
+    DEBUG(DEBUG_INFO, "VIRTIO INTERRUPT");
+
 }
 
 static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
