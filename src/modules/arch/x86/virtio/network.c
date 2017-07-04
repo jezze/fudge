@@ -6,6 +6,7 @@
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/io/io.h>
 #include <modules/arch/x86/pci/pci.h>
+#include "virtio.h"
 
 #define PCIVENDOR                       0x1AF4
 #define TYPENETWORK                     1
@@ -55,21 +56,59 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 
 }
 
+char virtqbuffer[3][0x2000];
+
+struct virtqueue
+{
+
+    unsigned short size;
+    unsigned int address;
+    struct virtio_buffer *buffers;
+    unsigned int bufferssize;
+    struct virtio_availablehead *availablehead;
+    struct virtio_availablering *availablering;
+    struct virtio_availabletail *availabletail;
+    unsigned int availablesize;
+    struct virtio_usedhead *usedhead;
+    struct virtio_usedring *usedring;
+    struct virtio_usedtail *usedtail;
+    unsigned int usedsize;
+
+};
+
+struct virtqueue vqs[16];
+
 static void setupqueue(unsigned short index)
 {
 
-    unsigned short queuesize;
+    struct virtqueue *vq = &vqs[index];
 
     io_outw(io + REGISTERQSELECT, index);
 
-    queuesize = io_inw(io + REGISTERQSIZE);
+    vq->size = io_inw(io + REGISTERQSIZE);
 
-    if (!queuesize)
+    if (!vq->size)
         return;
 
-    debug_write(DEBUG_INFO, "QUEUESIZE:", "", queuesize);
+    vq->address = memory_pagealign((unsigned int)virtqbuffer[index]);
+    vq->buffers = (struct virtio_buffer *)vq->address;
+    vq->bufferssize = sizeof (struct virtio_buffer) * vq->size;
+    vq->availablehead = (struct virtio_availablehead *)(vq->address + vq->bufferssize);
+    vq->availablering = (struct virtio_availablering *)(vq->availablehead + 1);
+    vq->availabletail = (struct virtio_availabletail *)(vq->availablering + sizeof (struct virtio_availablering) * vq->size);
+    vq->availablesize = (sizeof (struct virtio_availablehead)) + (sizeof (struct virtio_availablering) * vq->size) + sizeof (struct virtio_availabletail);
+    vq->usedhead = (struct virtio_usedhead *)(vq->address + memory_pagealign(vq->bufferssize + vq->availablesize));
+    vq->usedring = (struct virtio_usedring *)(vq->usedhead + 1);
+    vq->usedtail = (struct virtio_usedtail *)(vq->usedring + sizeof (struct virtio_usedring) * vq->size);
+    vq->usedsize = (sizeof (struct virtio_usedhead)) + (sizeof (struct virtio_usedring) * vq->size) + sizeof (struct virtio_usedtail);
 
-    /* SETUP VQUEUES */
+    io_outw(io + REGISTERQADDRESS, vq->address >> 12);
+
+    debug_write(DEBUG_INFO, "QUEUESIZE:", "", vq->size);
+    debug_write(DEBUG_INFO, "QUEUEORIG:", "", (unsigned int)virtqbuffer[index]);
+    debug_write(DEBUG_INFO, "QUEUEADDR:", "", vq->address);
+    debug_write(DEBUG_INFO, "PAGEALIGN:", "", memory_pagealign(vq->bufferssize + vq->availablesize) + memory_pagealign(vq->usedsize));
+    debug_write(DEBUG_INFO, "PAGECOUNT:", "", memory_pagecount(vq->bufferssize + vq->availablesize) + memory_pagecount(vq->usedsize));
 
 }
 

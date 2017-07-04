@@ -1,3 +1,4 @@
+#include "define.h"
 #include "memory.h"
 
 void memory_clear(void *out, unsigned int count)
@@ -84,6 +85,20 @@ unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int
     memory_copy(op + offset, ip, icount);
 
     return icount;
+
+}
+
+unsigned int memory_pagecount(unsigned int value)
+{
+
+    return (value + (FUDGE_BSIZE - 1)) / FUDGE_BSIZE; 
+
+}
+
+unsigned int memory_pagealign(unsigned int value)
+{
+
+    return memory_pagecount(value) * FUDGE_BSIZE;
 
 }
 
