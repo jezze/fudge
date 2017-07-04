@@ -32,9 +32,29 @@
 #define VIRTIO_READY                    0x04
 #define VIRTIO_FEATURES                 0x08
 
+struct virtqueue
+{
+
+    unsigned short size;
+    unsigned int address;
+    struct virtio_buffer *buffers;
+    unsigned int bufferssize;
+    struct virtio_availablehead *availablehead;
+    struct virtio_availablering *availablering;
+    struct virtio_availabletail *availabletail;
+    unsigned int availablesize;
+    struct virtio_usedhead *usedhead;
+    struct virtio_usedring *usedring;
+    struct virtio_usedtail *usedtail;
+    unsigned int usedsize;
+
+};
+
 static struct base_driver driver;
 static struct ethernet_interface ethernetinterface;
 static unsigned short io;
+static char virtqbuffer[3][0x4000];
+static struct virtqueue vqs[16];
 
 static void reset(void)
 {
@@ -55,28 +75,6 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
     return 0;
 
 }
-
-char virtqbuffer[3][0x2000];
-
-struct virtqueue
-{
-
-    unsigned short size;
-    unsigned int address;
-    struct virtio_buffer *buffers;
-    unsigned int bufferssize;
-    struct virtio_availablehead *availablehead;
-    struct virtio_availablering *availablering;
-    struct virtio_availabletail *availabletail;
-    unsigned int availablesize;
-    struct virtio_usedhead *usedhead;
-    struct virtio_usedring *usedring;
-    struct virtio_usedtail *usedtail;
-    unsigned int usedsize;
-
-};
-
-struct virtqueue vqs[16];
 
 static void setupqueue(unsigned short index)
 {
