@@ -87,6 +87,10 @@ static void handleirq(unsigned int irq)
     if (status & 1)
     {
 
+        struct virtqueue *vq = &vqs[0];
+
+        vq->availablehead->index = 0;
+
     }
 
 }
