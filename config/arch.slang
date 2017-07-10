@@ -16,3 +16,4 @@ elfload < /mod/uart.ko.0
 elfload < /mod/rtl8139.ko.0
 elfload < /mod/ide.ko
 elfload < /mod/ata.ko.0
+elfload < /mod/virtio-network.ko.0

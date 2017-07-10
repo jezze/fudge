@@ -56,22 +56,43 @@ struct virtqueue
     struct virtio_usedhead *usedhead;
     struct virtio_usedring *usedring;
     unsigned int usedsize;
+    unsigned int lastindex;
 
 };
 
 static struct base_driver driver;
 static struct ethernet_interface ethernetinterface;
 static unsigned short io;
-static char virtqbuffer[3][0x4000];
 static struct virtqueue vqs[16];
-static char rxbuffer[0x4000];
-static struct netheader nheader;
+static unsigned char virtqbuffer[3][0x4000];
+static unsigned char rxbuffer[0x4000];
+static unsigned char txbuffer[0x4000];
 
 static void reset(void)
 {
 
     io_outb(io + REGISTERSTATUS, 0);
     io_inb(io + REGISTERSTATUS);
+
+}
+
+static void handlequeue(struct virtqueue *vq)
+{
+
+    struct virtio_usedring *usedring = &vq->usedring[(vq->usedhead->index - 1) % vq->size];
+    struct virtio_buffer *buffer = &vq->buffers[usedring->index];
+    struct netheader *header = (struct netheader *)buffer->address;
+
+    ethernet_notify(&ethernetinterface, header + 1, usedring->length);
+
+    if (buffer->flags == 2)
+    {
+
+        vq->availablehead->index = 0;
+
+    }
+
+    vq->lastindex = vq->usedhead->index;
 
 }
 
@@ -85,20 +106,17 @@ static void handleirq(unsigned int irq)
     if (status & 1)
     {
 
-        struct virtqueue *vq = &vqs[0];
-        struct virtio_usedring *usedring = &vq->usedring[(vq->usedhead->index - 1) % vq->size];
-        struct virtio_buffer *buffer = &vq->buffers[usedring->index];
-        struct netheader *header = (struct netheader *)buffer->address;
+        unsigned int i;
 
-        debug_write(DEBUG_INFO, "VIRTIO", "USEDHEAD INDEX", vq->usedhead->index);
-        debug_write(DEBUG_INFO, "VIRTIO", "USEDRING INDEX", usedring->index);
-        debug_write(DEBUG_INFO, "VIRTIO", "USEDRING LENGTH", usedring->length);
-        debug_write(DEBUG_INFO, "VIRTIO", "D0", rxbuffer[10]);
-        debug_write(DEBUG_INFO, "VIRTIO", "D1", rxbuffer[11]);
-        debug_write(DEBUG_INFO, "VIRTIO", "D2", rxbuffer[12]);
-        ethernet_notify(&ethernetinterface, header + 1, usedring->length);
+        for (i = 0; i < 2; i++)
+        {
 
-        vq->availablehead->index = 0;
+            struct virtqueue *vq = &vqs[i];
+
+            if (vq->lastindex != vq->usedhead->index)
+                handlequeue(vq);
+
+        }
 
     }
 
@@ -108,26 +126,31 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
     struct virtqueue *vq = &vqs[1];
+    struct netheader nheader;
 
     nheader.flags = 1;
     nheader.checksumstart = 0;
     nheader.checksumoffset = count;
 
-    vq->buffers[0].address = (unsigned int)&nheader;
-    vq->buffers[0].length = sizeof (struct netheader);
-    vq->buffers[0].flags = 1;
-    vq->buffers[0].next = 1;
-    vq->availablering[0].index = 0;
+    memory_copy(txbuffer, &nheader, sizeof (struct netheader));
+    memory_copy(txbuffer + sizeof (struct netheader), buffer, count);
+
+    vq->buffers[0].address = (unsigned int)&txbuffer;
+    vq->buffers[0].length = sizeof (struct netheader) + count;
+    vq->buffers[0].flags = 0;
+    vq->availablering[vq->availablehead->index % vq->size].index = 0;
     vq->availablehead->index++;
+
+/*
     vq->buffers[1].address = (unsigned int)&buffer;
     vq->buffers[1].length = count;
     vq->buffers[1].flags = 0;
     vq->buffers[1].next = 0;
-    vq->availablering[1].index = 1;
+    vq->availablering[vq->availablehead->index % vq->size].index = 1;
     vq->availablehead->index++;
+*/
 
     io_outw(io + REGISTERQNOTIFY, 1);
-    debug_write(DEBUG_INFO, "VIRTIO", "TX", 0);
 
     return count;
 
@@ -195,8 +218,7 @@ static void setrx(void)
     vq->buffers[0].address = (unsigned int)&rxbuffer;
     vq->buffers[0].length = 0x4000;
     vq->buffers[0].flags = 2;
-    vq->buffers[0].next = 0;
-    vq->availablering[0].index = 0;
+    vq->availablering[vq->availablehead->index % vq->size].index = 0;
     vq->availablehead->index++;
 
     io_outw(io + REGISTERQNOTIFY, 0);
@@ -250,6 +272,8 @@ static void driver_attach(unsigned int id)
 
     setqueues();
     setrx();
+    io_outb(io + REGISTERSTATUS, VIRTIO_ACKNOWLEDGE | VIRTIO_DRIVER | VIRTIO_FEATURES | VIRTIO_READY);
+    pci_setmaster(id);
 
     ethernetinterface.haddress[0] = io_inb(io + 0x14);
     ethernetinterface.haddress[1] = io_inb(io + 0x15);
@@ -258,8 +282,6 @@ static void driver_attach(unsigned int id)
     ethernetinterface.haddress[4] = io_inb(io + 0x18);
     ethernetinterface.haddress[5] = io_inb(io + 0x19);
 
-    io_outb(io + REGISTERSTATUS, VIRTIO_ACKNOWLEDGE | VIRTIO_DRIVER | VIRTIO_FEATURES | VIRTIO_READY);
-    pci_setmaster(id);
     ethernet_registerinterface(&ethernetinterface, id);
     pic_setroutine(pci_getirq(id), handleirq);
 

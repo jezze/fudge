@@ -79,6 +79,28 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
 }
 
+static unsigned int protocoldata_open(struct system_node *self, struct service_state *state)
+{
+
+    struct ethernet_protocol *protocol = self->resource->data;
+
+    list_add(&protocol->datastates, &state->item);
+
+    return state->id;
+
+}
+
+static unsigned int protocoldata_close(struct system_node *self, struct service_state *state)
+{
+
+    struct ethernet_protocol *protocol = self->resource->data;
+
+    list_remove(&protocol->datastates, &state->item);
+
+    return state->id;
+
+}
+
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id)
 {
 
@@ -167,6 +189,9 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
 
     protocol->type = type;
     protocol->notify = notify;
+    protocol->data.open = protocoldata_open;
+    protocol->data.close = protocoldata_close;
+    protocol->data.read = system_readtask;
 
 }
 
