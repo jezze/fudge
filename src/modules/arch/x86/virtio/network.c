@@ -32,6 +32,19 @@
 #define VIRTIO_READY                    0x04
 #define VIRTIO_FEATURES                 0x08
 
+struct netheader
+{
+
+    unsigned char flags;
+    unsigned char segmentation;
+    unsigned short hlength;
+    unsigned short slength;
+    unsigned short checksumstart;
+    unsigned short checksumoffset;
+    unsigned short buffercount;
+
+};
+
 struct virtqueue
 {
 
@@ -41,11 +54,9 @@ struct virtqueue
     unsigned int bufferssize;
     struct virtio_availablehead *availablehead;
     struct virtio_availablering *availablering;
-    struct virtio_availabletail *availabletail;
     unsigned int availablesize;
     struct virtio_usedhead *usedhead;
     struct virtio_usedring *usedring;
-    struct virtio_usedtail *usedtail;
     unsigned int usedsize;
 
 };
@@ -55,6 +66,8 @@ static struct ethernet_interface ethernetinterface;
 static unsigned short io;
 static char virtqbuffer[3][0x4000];
 static struct virtqueue vqs[16];
+static char rxbuffer[0x4000];
+static struct netheader nheader;
 
 static void reset(void)
 {
@@ -67,18 +80,47 @@ static void reset(void)
 static void handleirq(unsigned int irq)
 {
 
-    DEBUG(DEBUG_INFO, "VIRTIO INTERRUPT");
+    unsigned char status = io_inb(io + REGISTERISR);
+
+    debug_write(DEBUG_INFO, "VIRTIO", "INTERRUPT", status);
+
+    if (status & 1)
+    {
+
+    }
 
 }
 
 static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
-    return 0;
+    struct virtqueue *vq = &vqs[1];
+
+    nheader.flags = 1;
+    nheader.checksumstart = 0;
+    nheader.checksumoffset = count;
+
+    vq->buffers[0].address = (unsigned int)&nheader;
+    vq->buffers[0].length = sizeof (struct netheader);
+    vq->buffers[0].flags = 1;
+    vq->buffers[0].next = 1;
+    vq->availablering[0].index = 0;
+    vq->availablehead->index++;
+    vq->buffers[1].address = (unsigned int)&buffer;
+    vq->buffers[1].length = count;
+    vq->buffers[1].flags = 0;
+    vq->buffers[1].next = 0;
+    vq->availablering[1].index = 1;
+    vq->availablehead->index++;
+
+    io_outw(io + REGISTERQNOTIFY, 1);
+    debug_write(DEBUG_INFO, "VIRTIO", "TX", 0);
+
+    return count;
 
 }
 
-static void setupqueue(unsigned short index)
+static void setqueue(unsigned short index)
 {
 
     struct virtqueue *vq = &vqs[index];
@@ -92,46 +134,59 @@ static void setupqueue(unsigned short index)
 
     vq->address = memory_pagealign((unsigned int)virtqbuffer[index]);
     vq->buffers = (struct virtio_buffer *)vq->address;
-    vq->bufferssize = sizeof (struct virtio_buffer) * vq->size;
+    vq->bufferssize = 16 * vq->size;
     vq->availablehead = (struct virtio_availablehead *)(vq->address + vq->bufferssize);
     vq->availablering = (struct virtio_availablering *)(vq->availablehead + 1);
-    vq->availabletail = (struct virtio_availabletail *)(vq->availablering + sizeof (struct virtio_availablering) * vq->size);
-    vq->availablesize = (sizeof (struct virtio_availablehead)) + (sizeof (struct virtio_availablering) * vq->size) + sizeof (struct virtio_availabletail);
+    vq->availablesize = 6 + 2 * vq->size;
     vq->usedhead = (struct virtio_usedhead *)(vq->address + memory_pagealign(vq->bufferssize + vq->availablesize));
     vq->usedring = (struct virtio_usedring *)(vq->usedhead + 1);
-    vq->usedtail = (struct virtio_usedtail *)(vq->usedring + sizeof (struct virtio_usedring) * vq->size);
-    vq->usedsize = (sizeof (struct virtio_usedhead)) + (sizeof (struct virtio_usedring) * vq->size) + sizeof (struct virtio_usedtail);
+    vq->usedsize = 6 + 8 * vq->size;
 
-    io_outw(io + REGISTERQADDRESS, vq->address >> 12);
-
-    debug_write(DEBUG_INFO, "QUEUESIZE:", "", vq->size);
-    debug_write(DEBUG_INFO, "QUEUEORIG:", "", (unsigned int)virtqbuffer[index]);
-    debug_write(DEBUG_INFO, "QUEUEADDR:", "", vq->address);
-    debug_write(DEBUG_INFO, "PAGEALIGN:", "", memory_pagealign(vq->bufferssize + vq->availablesize) + memory_pagealign(vq->usedsize));
-    debug_write(DEBUG_INFO, "PAGECOUNT:", "", memory_pagecount(vq->bufferssize + vq->availablesize) + memory_pagecount(vq->usedsize));
+    io_outd(io + REGISTERQADDRESS, vq->address >> 12);
+    debug_write(DEBUG_INFO, "VIRTIO", "QUEUESIZE", vq->size);
+    debug_write(DEBUG_INFO, "VIRTIO", "QUEUEORIG", (unsigned int)virtqbuffer[index]);
+    debug_write(DEBUG_INFO, "VIRTIO", "QUEUEADDR", vq->address);
+    debug_write(DEBUG_INFO, "VIRTIO", "PAGEALIGN", memory_pagealign(vq->bufferssize + vq->availablesize) + memory_pagealign(vq->usedsize));
+    debug_write(DEBUG_INFO, "VIRTIO", "PAGECOUNT", memory_pagecount(vq->bufferssize + vq->availablesize) + memory_pagecount(vq->usedsize));
 
 }
 
-static void setupqueues()
+static void setqueues()
 {
 
     unsigned short i;
 
     for (i = 0; i < 16; i++)
-        setupqueue(i);
+        setqueue(i);
 
 }
 
-static void setupfeatures()
+static void setfeatures()
 {
 
     unsigned int features = io_ind(io + REGISTERDEVFEATURES);
 
-    debug_write(DEBUG_INFO, "FEATURES:", "", features);
+    debug_write(DEBUG_INFO, "VIRTIO", "FEATURES", features);
 
     /* MODIFY FEATURES */
 
     io_outd(io + REGISTERGUESTFEATURES, features);
+
+}
+
+static void setrx(void)
+{
+
+    struct virtqueue *vq = &vqs[0];
+
+    vq->buffers[0].address = (unsigned int)&rxbuffer;
+    vq->buffers[0].length = 0x4000;
+    vq->buffers[0].flags = 2;
+    vq->buffers[0].next = 0;
+    vq->availablering[0].index = 0;
+    vq->availablehead->index++;
+
+    io_outw(io + REGISTERQNOTIFY, 0);
 
 }
 
@@ -172,7 +227,7 @@ static void driver_attach(unsigned int id)
     reset();
     io_outb(io + REGISTERSTATUS, VIRTIO_ACKNOWLEDGE);
     io_outb(io + REGISTERSTATUS, VIRTIO_ACKNOWLEDGE | VIRTIO_DRIVER);
-    setupfeatures();
+    setfeatures();
     io_outb(io + REGISTERSTATUS, VIRTIO_ACKNOWLEDGE | VIRTIO_DRIVER | VIRTIO_FEATURES);
 
     status = io_inb(io + REGISTERSTATUS);
@@ -180,7 +235,8 @@ static void driver_attach(unsigned int id)
     if (!(status & VIRTIO_FEATURES))
         return;
 
-    setupqueues();
+    setqueues();
+    setrx();
 
     ethernetinterface.haddress[0] = io_inb(io + 0x14);
     ethernetinterface.haddress[1] = io_inb(io + 0x15);
