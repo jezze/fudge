@@ -35,13 +35,11 @@
 struct netheader
 {
 
-    unsigned char flags;
-    unsigned char segmentation;
+    unsigned short flags;
     unsigned short hlength;
     unsigned short slength;
     unsigned short checksumstart;
     unsigned short checksumoffset;
-    unsigned short buffercount;
 
 };
 
@@ -88,6 +86,17 @@ static void handleirq(unsigned int irq)
     {
 
         struct virtqueue *vq = &vqs[0];
+        struct virtio_usedring *usedring = &vq->usedring[(vq->usedhead->index - 1) % vq->size];
+        struct virtio_buffer *buffer = &vq->buffers[usedring->index];
+        struct netheader *header = (struct netheader *)buffer->address;
+
+        debug_write(DEBUG_INFO, "VIRTIO", "USEDHEAD INDEX", vq->usedhead->index);
+        debug_write(DEBUG_INFO, "VIRTIO", "USEDRING INDEX", usedring->index);
+        debug_write(DEBUG_INFO, "VIRTIO", "USEDRING LENGTH", usedring->length);
+        debug_write(DEBUG_INFO, "VIRTIO", "D0", rxbuffer[10]);
+        debug_write(DEBUG_INFO, "VIRTIO", "D1", rxbuffer[11]);
+        debug_write(DEBUG_INFO, "VIRTIO", "D2", rxbuffer[12]);
+        ethernet_notify(&ethernetinterface, header + 1, usedring->length);
 
         vq->availablehead->index = 0;
 
