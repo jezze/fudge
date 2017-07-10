@@ -52,8 +52,11 @@ static unsigned int interfaceaddr_read(struct system_node *self, struct service_
 {
 
     struct ethernet_interface *interface = self->resource->data;
+    unsigned char address[ETHERNET_ADDRSIZE];
 
-    return memory_read(buffer, count, interface->haddress, ETHERNET_ADDRSIZE, state->offset);
+    interface->getaddress(address);
+
+    return memory_read(buffer, count, address, ETHERNET_ADDRSIZE, state->offset);
 
 }
 
@@ -132,8 +135,11 @@ struct ethernet_interface *ethernet_findinterface(void *haddress)
     {
 
         struct ethernet_interface *interface = current->data;
+        unsigned char address[ETHERNET_ADDRSIZE];
 
-        if (memory_match(interface->haddress, haddress, ETHERNET_ADDRSIZE))
+        interface->getaddress(address);
+
+        if (memory_match(address, haddress, ETHERNET_ADDRSIZE))
             return interface;
 
     }
@@ -162,7 +168,7 @@ void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (*send)(void *buffer, unsigned int count))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (*getaddress)(void *buffer), unsigned int (*send)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
@@ -171,6 +177,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
     system_initresourcenode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr", &interface->resource);
 
+    interface->getaddress = getaddress;
     interface->send = send;
     interface->addr.read = interfaceaddr_read;
     interface->addr.seek = system_seek;

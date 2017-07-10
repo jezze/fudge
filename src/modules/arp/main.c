@@ -81,7 +81,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *ethernetinterface
                 unsigned char response[ETHERNET_MTU];
                 unsigned char *current = response;
 
-                current = ethernet_writehead(current, ethernetprotocol.type, ethernetinterface->haddress, ethernetheader->sha);
+                current = ethernet_writehead(current, ethernetprotocol.type, ethernetheader->tha, ethernetheader->sha);
                 current = arp_writehead(current, htype, header->hlength, ptype, header->plength, ARP_REPLY, tha, tpa, sha, spa);
 
                 ethernet_send(ethernetinterface, response, current - response);

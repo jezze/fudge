@@ -235,6 +235,22 @@ static void handleirq(unsigned int irq)
 
 }
 
+static unsigned int ethernetinterface_getaddress(void *buffer)
+{
+
+    unsigned char *haddress = buffer;
+
+    haddress[0] = io_inb(io + REGISTERIDR0);
+    haddress[1] = io_inb(io + REGISTERIDR1);
+    haddress[2] = io_inb(io + REGISTERIDR2);
+    haddress[3] = io_inb(io + REGISTERIDR3);
+    haddress[4] = io_inb(io + REGISTERIDR4);
+    haddress[5] = io_inb(io + REGISTERIDR5);
+
+    return ETHERNET_ADDRSIZE;
+
+}
+
 static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
@@ -279,7 +295,7 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 static void driver_init(void)
 {
 
-    ethernet_initinterface(&ethernetinterface, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, ethernetinterface_getaddress, ethernetinterface_send);
 
 }
 
@@ -303,14 +319,6 @@ static void driver_attach(unsigned int id)
     settx();
     enable();
     pci_setmaster(id);
-
-    ethernetinterface.haddress[0] = io_inb(io + REGISTERIDR0);
-    ethernetinterface.haddress[1] = io_inb(io + REGISTERIDR1);
-    ethernetinterface.haddress[2] = io_inb(io + REGISTERIDR2);
-    ethernetinterface.haddress[3] = io_inb(io + REGISTERIDR3);
-    ethernetinterface.haddress[4] = io_inb(io + REGISTERIDR4);
-    ethernetinterface.haddress[5] = io_inb(io + REGISTERIDR5);
-
     ethernet_registerinterface(&ethernetinterface, id);
     pic_setroutine(pci_getirq(id), handleirq);
 
