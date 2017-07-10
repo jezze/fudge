@@ -8,7 +8,7 @@
 #include <modules/arch/x86/pci/pci.h>
 #include "virtio.h"
 
-struct netheader
+struct header
 {
 
     unsigned short flags;
@@ -40,7 +40,7 @@ static void handlequeue(struct virtio_queue *vq)
 
     struct virtio_usedring *usedring = &vq->usedring[(vq->usedhead->index - 1) % vq->size];
     struct virtio_buffer *buffer = &vq->buffers[usedring->index];
-    struct netheader *header = (struct netheader *)buffer->address;
+    struct header *header = (struct header *)buffer->address;
 
     if (buffer->flags == 2)
     {
@@ -99,17 +99,17 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 
     struct virtio_queue *vq = &vqs[1];
     unsigned int bi = vq->numbuffers;
-    struct netheader nheader;
+    struct header nheader;
 
     nheader.flags = 1;
     nheader.checksumstart = 0;
     nheader.checksumoffset = count;
 
-    memory_copy(txbuffer, &nheader, sizeof (struct netheader));
-    memory_copy(txbuffer + sizeof (struct netheader), buffer, count);
+    memory_copy(txbuffer, &nheader, sizeof (struct header));
+    memory_copy(txbuffer + sizeof (struct header), buffer, count);
 
     vq->buffers[bi].address = (unsigned int)&txbuffer;
-    vq->buffers[bi].length = sizeof (struct netheader) + count;
+    vq->buffers[bi].length = sizeof (struct header) + count;
     vq->buffers[bi].flags = 0;
     vq->availablering[vq->availablehead->index % vq->size].index = bi;
     vq->availablehead->index++;

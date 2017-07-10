@@ -87,7 +87,7 @@
 #define HEADERFLAGPAM                   (1 << 14)
 #define HEADERFLAGMAR                   (1 << 15)
 
-struct rtl8139_header
+struct header
 {
 
     unsigned short flags;
@@ -169,7 +169,7 @@ static void handleirq(unsigned int irq)
         while (rxp < limit)
         {
 
-            struct rtl8139_header *header = (struct rtl8139_header *)(rx + rxp);
+            struct header *header = (struct header *)(rx + rxp);
 
             ethernet_notify(&ethernetinterface, header + 1, header->length);
 
