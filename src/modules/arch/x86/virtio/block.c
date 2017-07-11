@@ -2,30 +2,18 @@
 #include <kernel.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
-#include <modules/ethernet/ethernet.h>
+#include <modules/block/block.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/io/io.h>
 #include <modules/arch/x86/pci/pci.h>
 #include "virtio.h"
 
-struct header
-{
-
-    unsigned short flags;
-    unsigned short hlength;
-    unsigned short slength;
-    unsigned short checksumstart;
-    unsigned short checksumoffset;
-
-};
-
 static struct base_driver driver;
-static struct ethernet_interface ethernetinterface;
+static struct block_interface blockinterface;
 static unsigned short io;
 static struct virtio_queue vqs[16];
 static unsigned char virtqbuffer[3][0x4000];
 static unsigned char rxbuffer[0x4000];
-static unsigned char txbuffer[0x4000];
 
 static void reset(void)
 {
@@ -40,12 +28,11 @@ static void handlequeue(struct virtio_queue *vq)
 
     struct virtio_usedring *usedring = &vq->usedring[(vq->usedhead->index - 1) % vq->size];
     struct virtio_buffer *buffer = &vq->buffers[usedring->index];
-    struct header *header = (struct header *)buffer->address;
 
     if (buffer->flags == 2)
     {
 
-        ethernet_notify(&ethernetinterface, header + 1, usedring->length);
+        /* NOTIFY */
         vq->availablehead->index = 0;
 
     }
@@ -78,53 +65,15 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int ethernetinterface_getaddress(void *buffer)
+static unsigned int blockinterface_rdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned char *haddress = buffer;
-
-    haddress[0] = io_inb(io + 0x14);
-    haddress[1] = io_inb(io + 0x15);
-    haddress[2] = io_inb(io + 0x16);
-    haddress[3] = io_inb(io + 0x17);
-    haddress[4] = io_inb(io + 0x18);
-    haddress[5] = io_inb(io + 0x19);
-
-    return ETHERNET_ADDRSIZE;
+    return count;
 
 }
 
-static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
+static unsigned int blockinterface_wdata(void *buffer, unsigned int count, unsigned int offset)
 {
-
-    struct virtio_queue *vq = &vqs[1];
-    unsigned int bi = vq->numbuffers;
-    struct header nheader;
-
-    nheader.flags = 1;
-    nheader.checksumstart = 0;
-    nheader.checksumoffset = count;
-
-    memory_copy(txbuffer, &nheader, sizeof (struct header));
-    memory_copy(txbuffer + sizeof (struct header), buffer, count);
-
-    vq->buffers[bi].address = (unsigned int)&txbuffer;
-    vq->buffers[bi].length = sizeof (struct header) + count;
-    vq->buffers[bi].flags = 0;
-    vq->availablering[vq->availablehead->index % vq->size].index = bi;
-    vq->availablehead->index++;
-    vq->numbuffers++;
-
-/*
-    vq->buffers[1].address = (unsigned int)&buffer;
-    vq->buffers[1].length = count;
-    vq->buffers[1].flags = 0;
-    vq->buffers[1].next = 0;
-    vq->availablering[vq->availablehead->index % vq->size].index = 1;
-    vq->availablehead->index++;
-*/
-
-    io_outw(io + VIRTIO_REGISTERQNOTIFY, 1);
 
     return count;
 
@@ -197,7 +146,7 @@ static void setrx(void)
 static void driver_init(void)
 {
 
-    ethernet_initinterface(&ethernetinterface, ethernetinterface_getaddress, ethernetinterface_send);
+    block_initinterface(&blockinterface, blockinterface_rdata, blockinterface_wdata);
 
 }
 
@@ -210,10 +159,10 @@ static unsigned int driver_match(unsigned int id)
     {
 
     case 0:
-        return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1000;
+        return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1001;
 
     case 1:
-        return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1041;
+        return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1042;
 
     }
 
@@ -243,7 +192,7 @@ static void driver_attach(unsigned int id)
     setrx();
     io_outb(io + VIRTIO_REGISTERSTATUS, VIRTIO_STATUSACKNOWLEDGE | VIRTIO_STATUSDRIVER | VIRTIO_STATUSFEATURES | VIRTIO_STATUSREADY);
     pci_setmaster(id);
-    ethernet_registerinterface(&ethernetinterface, id);
+    block_registerinterface(&blockinterface, id);
     pic_setroutine(pci_getirq(id), handleirq);
 
 }
@@ -251,7 +200,7 @@ static void driver_attach(unsigned int id)
 static void driver_detach(unsigned int id)
 {
 
-    ethernet_unregisterinterface(&ethernetinterface);
+    block_unregisterinterface(&blockinterface);
     pic_unsetroutine(pci_getirq(id));
 
 }
@@ -259,7 +208,7 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
-    base_initdriver(&driver, "virtio-network", driver_init, driver_match, driver_attach, driver_detach);
+    base_initdriver(&driver, "virtio-block", driver_init, driver_match, driver_attach, driver_detach);
 
 }
 
