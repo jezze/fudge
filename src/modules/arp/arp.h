@@ -1,4 +1,3 @@
-#define ARP_PROTOCOL                    0x0806
 #define ARP_REQUEST                     1
 #define ARP_REPLY                       2
 
