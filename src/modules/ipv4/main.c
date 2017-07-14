@@ -37,7 +37,7 @@ static struct ipv4_arpentry *findarpentry(void *paddress)
 
 }
 
-static unsigned int calculatechecksum(void *buffer, unsigned int count)
+unsigned int ipv4_calculatechecksum(void *buffer, unsigned int count)
 {
 
     unsigned short *ip1 = buffer;
@@ -99,7 +99,7 @@ void *ipv4_writehead(void *buffer, unsigned char *sip, unsigned char *tip, unsig
     header->tip[2] = tip[2];
     header->tip[3] = tip[3];
 
-    checksum = calculatechecksum(header, sizeof (struct ipv4_header));
+    checksum = ipv4_calculatechecksum(header, sizeof (struct ipv4_header));
 
     header->checksum[0] = checksum;
     header->checksum[1] = checksum >> 8;

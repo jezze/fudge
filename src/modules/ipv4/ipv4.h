@@ -28,6 +28,7 @@ struct ipv4_protocol
 
 };
 
+unsigned int ipv4_calculatechecksum(void *buffer, unsigned int count);
 void *ipv4_writehead(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol, unsigned int count);
 void ipv4_send(void *buffer, unsigned int count);
 void ipv4_registerprotocol(struct ipv4_protocol *protocol);
