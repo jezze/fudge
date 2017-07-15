@@ -8,17 +8,25 @@
 static struct ipv4_protocol ipv4protocol;
 static struct ipv6_protocol ipv6protocol;
 
-static void *icmp_writehead(void *buffer, unsigned char type, unsigned char code)
+static void *icmp_writehead(void *buffer, unsigned char type, unsigned char code, unsigned char *sip, unsigned char *tip, unsigned int count, void *payload)
 {
 
-    struct icmp_header *header = buffer;
+    struct icmp_header *header = ipv4_writehead(buffer, sip, tip, ipv4protocol.id, count);
+    unsigned int checksum;
+
+    memory_copy(header, payload, count);
 
     header->type = type;
     header->code = code;
     header->checksum[0] = 0;
     header->checksum[1] = 0;
 
-    return header + 1;
+    checksum = ipv4_calculatechecksum(header, count);
+
+    header->checksum[0] = checksum;
+    header->checksum[1] = checksum >> 8;
+
+    return header + count;
 
 }
 
@@ -31,25 +39,10 @@ static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, un
     {
 
     case ICMP_ECHOREQUEST:
-        debug_write(DEBUG_INFO, "ICMP", "type", header->type);
         {
 
             unsigned char response[0x2000];
-            unsigned char *current = response;
-            struct icmp_header *header2;
-            unsigned int checksum;
-
-            header2 = ipv4_writehead(current, ipv4header->tip, ipv4header->sip, ipv4protocol.id, count);
-
-            memory_copy(header2, buffer, count);
-
-            current = icmp_writehead(header2, ICMP_ECHOREPLY, 0);
-            current += count - sizeof (struct icmp_header);
-
-            checksum = ipv4_calculatechecksum(header2, count);
-
-            header2->checksum[0] = checksum;
-            header2->checksum[1] = checksum >> 8;
+            unsigned char *current = icmp_writehead(response, ICMP_ECHOREPLY, 0, ipv4header->tip, ipv4header->sip, count, buffer);
 
             ipv4_send(response, current - response);
 

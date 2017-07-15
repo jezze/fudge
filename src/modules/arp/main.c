@@ -10,7 +10,7 @@ static struct list hooks;
 void *arp_writehead(void *buffer, unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength, unsigned int operation, unsigned char *sha, unsigned char *spa, unsigned char *tha, unsigned char *tpa)
 {
 
-    struct arp_header *header = buffer;
+    struct arp_header *header = ethernet_writehead(buffer, ethernetprotocol.type, sha, tha);
     unsigned char *data = (unsigned char *)(header + 1);
 
     header->htype[0] = htype >> 8;
@@ -79,10 +79,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *ethernetinterface
             {
 
                 unsigned char response[ETHERNET_MTU];
-                unsigned char *current = response;
-
-                current = ethernet_writehead(current, ethernetprotocol.type, ethernetheader->tha, ethernetheader->sha);
-                current = arp_writehead(current, htype, header->hlength, ptype, header->plength, ARP_REPLY, tha, tpa, sha, spa);
+                unsigned char *current = arp_writehead(response, htype, header->hlength, ptype, header->plength, ARP_REPLY, tha, tpa, sha, spa);
 
                 ethernet_send(ethernetinterface, response, current - response);
 
