@@ -1,9 +1,9 @@
 #include <abi.h>
 #include <fudge.h>
+#include <event/event.h>
 #include "box.h"
 #include "widget.h"
 #include "keymap.h"
-#include "ev.h"
 
 static struct widget_textbox content;
 static struct widget_text status;
@@ -15,7 +15,7 @@ static char inputdata1[FUDGE_BSIZE];
 static struct ring input1;
 static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
-static struct ev_handlers handlers;
+static struct event_handlers handlers;
 static unsigned int totalrows;
 static unsigned int visiblerows;
 
@@ -292,9 +292,9 @@ void main(void)
     file_open(FILE_L0);
     file_open(FILE_L1);
     file_open(FILE_L2);
-    ev_sendwmmap(FILE_L2, EVENT_ADDR_BROADCAST);
+    event_sendwmmap(FILE_L2, EVENT_ADDR_BROADCAST);
 
-    while (!quit && ev_read(&handlers, FILE_L0))
+    while (!quit && event_read(&handlers, FILE_L0))
     {
 
         if (ring_count(&output))
@@ -302,7 +302,7 @@ void main(void)
 
             file_writeall(FILE_L1, outputdata, ring_count(&output));
             ring_reset(&output);
-            ev_sendwmflush(FILE_L2, EVENT_ADDR_BROADCAST);
+            event_sendwmflush(FILE_L2, EVENT_ADDR_BROADCAST);
 
         }
 

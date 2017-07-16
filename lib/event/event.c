@@ -1,8 +1,8 @@
 #include <abi.h>
 #include <fudge.h>
-#include "ev.h"
+#include "event.h"
 
-static void onkeypress(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onkeypress(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     struct event_keypress keypress;
@@ -14,7 +14,7 @@ static void onkeypress(struct ev_handlers *handlers, unsigned int descriptor, st
 
 }
 
-static void onkeyrelease(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onkeyrelease(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     struct event_keyrelease keyrelease;
@@ -26,7 +26,7 @@ static void onkeyrelease(struct ev_handlers *handlers, unsigned int descriptor, 
 
 }
 
-static void onmousemove(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onmousemove(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     struct event_mousemove mousemove;
@@ -38,7 +38,7 @@ static void onmousemove(struct ev_handlers *handlers, unsigned int descriptor, s
 
 }
 
-static void onmousepress(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onmousepress(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     struct event_mousepress mousepress;
@@ -50,7 +50,7 @@ static void onmousepress(struct ev_handlers *handlers, unsigned int descriptor, 
 
 }
 
-static void onmouserelease(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onmouserelease(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     struct event_mouserelease mouserelease;
@@ -62,7 +62,7 @@ static void onmouserelease(struct ev_handlers *handlers, unsigned int descriptor
 
 }
 
-static void ontimertick(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void ontimertick(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     struct event_timertick timertick;
@@ -74,7 +74,7 @@ static void ontimertick(struct ev_handlers *handlers, unsigned int descriptor, s
 
 }
 
-static void onvideomode(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onvideomode(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     struct event_videomode videomode;
@@ -86,7 +86,7 @@ static void onvideomode(struct ev_handlers *handlers, unsigned int descriptor, s
 
 }
 
-static void onwmmap(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onwmmap(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     if (handlers->wmmap)
@@ -94,7 +94,7 @@ static void onwmmap(struct ev_handlers *handlers, unsigned int descriptor, struc
 
 }
 
-static void onwminit(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onwminit(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     if (handlers->wminit)
@@ -102,7 +102,7 @@ static void onwminit(struct ev_handlers *handlers, unsigned int descriptor, stru
 
 }
 
-static void onwmexit(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onwmexit(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     if (handlers->wmexit)
@@ -110,7 +110,7 @@ static void onwmexit(struct ev_handlers *handlers, unsigned int descriptor, stru
 
 }
 
-static void onwmresize(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onwmresize(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     struct event_wmresize wmresize;
@@ -122,7 +122,7 @@ static void onwmresize(struct ev_handlers *handlers, unsigned int descriptor, st
 
 }
 
-static void onwmshow(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onwmshow(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     if (handlers->wmshow)
@@ -130,7 +130,7 @@ static void onwmshow(struct ev_handlers *handlers, unsigned int descriptor, stru
 
 }
 
-static void onwmhide(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onwmhide(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     if (handlers->wmhide)
@@ -138,7 +138,7 @@ static void onwmhide(struct ev_handlers *handlers, unsigned int descriptor, stru
 
 }
 
-static void onwmflush(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header)
+static void onwmflush(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
     if (handlers->wmflush)
@@ -146,7 +146,7 @@ static void onwmflush(struct ev_handlers *handlers, unsigned int descriptor, str
 
 }
 
-static void (*funcs[EVENTS])(struct ev_handlers *handlers, unsigned int descriptor, struct event_header *header) = {
+static void (*funcs[EVENTS])(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header) = {
     0,
     onkeypress,
     onkeyrelease,
@@ -164,7 +164,7 @@ static void (*funcs[EVENTS])(struct ev_handlers *handlers, unsigned int descript
     onwmflush
 };
 
-unsigned int ev_read(struct ev_handlers *handlers, unsigned int descriptor)
+unsigned int event_read(struct event_handlers *handlers, unsigned int descriptor)
 {
 
     struct event_header header;
@@ -195,7 +195,7 @@ static void send(unsigned int descriptor, unsigned int destination, unsigned int
 
 }
 
-void ev_sendkeypress(unsigned int descriptor, unsigned int destination, unsigned char scancode)
+void event_sendkeypress(unsigned int descriptor, unsigned int destination, unsigned char scancode)
 {
 
     struct event_keypress keypress;
@@ -206,7 +206,7 @@ void ev_sendkeypress(unsigned int descriptor, unsigned int destination, unsigned
 
 }
 
-void ev_sendkeyrelease(unsigned int descriptor, unsigned int destination, unsigned char scancode)
+void event_sendkeyrelease(unsigned int descriptor, unsigned int destination, unsigned char scancode)
 {
 
     struct event_keyrelease keyrelease;
@@ -217,7 +217,7 @@ void ev_sendkeyrelease(unsigned int descriptor, unsigned int destination, unsign
 
 }
 
-void ev_sendmousemove(unsigned int descriptor, unsigned int destination, char relx, char rely)
+void event_sendmousemove(unsigned int descriptor, unsigned int destination, char relx, char rely)
 {
 
     struct event_mousemove mousemove;
@@ -229,7 +229,7 @@ void ev_sendmousemove(unsigned int descriptor, unsigned int destination, char re
 
 }
 
-void ev_sendmousepress(unsigned int descriptor, unsigned int destination, unsigned int button)
+void event_sendmousepress(unsigned int descriptor, unsigned int destination, unsigned int button)
 {
 
     struct event_mousepress mousepress;
@@ -240,7 +240,7 @@ void ev_sendmousepress(unsigned int descriptor, unsigned int destination, unsign
 
 }
 
-void ev_sendmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button)
+void event_sendmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button)
 {
 
     struct event_mouserelease mouserelease;
@@ -251,28 +251,28 @@ void ev_sendmouserelease(unsigned int descriptor, unsigned int destination, unsi
 
 }
 
-void ev_sendwmmap(unsigned int descriptor, unsigned int destination)
+void event_sendwmmap(unsigned int descriptor, unsigned int destination)
 {
 
     send(descriptor, destination, EVENT_WMMAP, 0, 0);
 
 }
 
-void ev_sendwminit(unsigned int descriptor, unsigned int destination)
+void event_sendwminit(unsigned int descriptor, unsigned int destination)
 {
 
     send(descriptor, destination, EVENT_WMINIT, 0, 0);
 
 }
 
-void ev_sendwmexit(unsigned int descriptor, unsigned int destination)
+void event_sendwmexit(unsigned int descriptor, unsigned int destination)
 {
 
     send(descriptor, destination, EVENT_WMEXIT, 0, 0);
 
 }
 
-void ev_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
+void event_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 
     struct event_wmresize wmresize;
@@ -288,21 +288,21 @@ void ev_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned
 
 }
 
-void ev_sendwmshow(unsigned int descriptor, unsigned int destination)
+void event_sendwmshow(unsigned int descriptor, unsigned int destination)
 {
 
     send(descriptor, destination, EVENT_WMSHOW, 0, 0);
 
 }
 
-void ev_sendwmhide(unsigned int descriptor, unsigned int destination)
+void event_sendwmhide(unsigned int descriptor, unsigned int destination)
 {
 
     send(descriptor, destination, EVENT_WMHIDE, 0, 0);
 
 }
 
-void ev_sendwmflush(unsigned int descriptor, unsigned int destination)
+void event_sendwmflush(unsigned int descriptor, unsigned int destination)
 {
 
     send(descriptor, destination, EVENT_WMFLUSH, 0, 0);

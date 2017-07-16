@@ -1,14 +1,14 @@
 #include <abi.h>
 #include <fudge.h>
+#include <event/event.h>
 #include "box.h"
 #include "widget.h"
-#include "ev.h"
 #include "render.h"
 
 static unsigned int quit;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
-static struct ev_handlers handlers;
+static struct event_handlers handlers;
 
 static void onmousepress(struct event_header *header, struct event_mousepress *mousepress)
 {
@@ -70,9 +70,9 @@ void main(void)
 
     file_open(FILE_L0);
     file_open(FILE_L1);
-    ev_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
+    event_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
 
-    while (!quit && ev_read(&handlers, FILE_L1))
+    while (!quit && event_read(&handlers, FILE_L1))
     {
 
         if (ring_count(&output))
@@ -80,7 +80,7 @@ void main(void)
 
             file_writeall(FILE_L0, outputdata, ring_count(&output));
             ring_reset(&output);
-            ev_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST);
+            event_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST);
 
         }
 

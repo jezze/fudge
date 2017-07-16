@@ -3,7 +3,6 @@
 #include <pcf/pcf.h>
 #include "box.h"
 #include "widget.h"
-#include "ev.h"
 
 #define COLOR_DARK                      0x00
 #define COLOR_LIGHT                     0x01

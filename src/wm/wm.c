@@ -1,9 +1,9 @@
 #include <abi.h>
 #include <fudge.h>
+#include <event/event.h>
 #include "box.h"
 #include "widget.h"
 #include "keymap.h"
-#include "ev.h"
 #include "render.h"
 
 #define REMOTES                         64
@@ -39,7 +39,7 @@ static struct list remotelist;
 static struct widget_fill background;
 static struct widget_mouse mouse;
 static struct view *viewfocus = &views[0];
-static struct ev_handlers handlers;
+static struct event_handlers handlers;
 static unsigned int padding;
 static unsigned int lineheight;
 static unsigned int steplength;
@@ -125,7 +125,7 @@ static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, 
 {
 
     box_setsize(&remote->window.size, x, y, w, h);
-    ev_sendwmresize(FILE_L2, remote->source, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+    event_sendwmresize(FILE_L2, remote->source, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
 
 }
 
@@ -139,7 +139,7 @@ static void showremotes(struct event_header *header, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        ev_sendwmshow(FILE_L2, remote->source);
+        event_sendwmshow(FILE_L2, remote->source);
         updateremote(header, remote);
 
     }
@@ -156,7 +156,7 @@ static void hideremotes(struct event_header *header, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        ev_sendwmhide(FILE_L2, remote->source);
+        event_sendwmhide(FILE_L2, remote->source);
         removeremote(header, remote);
 
     }
@@ -271,7 +271,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     {
 
         if (viewfocus->remotefocus)
-            ev_sendkeypress(FILE_L2, viewfocus->remotefocus->source, keypress->scancode);
+            event_sendkeypress(FILE_L2, viewfocus->remotefocus->source, keypress->scancode);
 
         return;
 
@@ -328,8 +328,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (!viewfocus->remotefocus)
             break;
 
-        ev_sendwmhide(FILE_L2, viewfocus->remotefocus->source);
-        ev_sendwmexit(FILE_L2, viewfocus->remotefocus->source);
+        event_sendwmhide(FILE_L2, viewfocus->remotefocus->source);
+        event_sendwmexit(FILE_L2, viewfocus->remotefocus->source);
         removeremote(header, viewfocus->remotefocus);
         list_move(&remotelist, &viewfocus->remotefocus->item);
 
@@ -428,8 +428,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (!(keymod & KEYMOD_SHIFT))
             break;
 
-        ev_sendwmhide(FILE_L2, header->destination);
-        ev_sendwmexit(FILE_L2, header->destination);
+        event_sendwmhide(FILE_L2, header->destination);
+        event_sendwmexit(FILE_L2, header->destination);
 
         break;
 
@@ -460,7 +460,7 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
     {
 
         if (viewfocus->remotefocus)
-            ev_sendkeyrelease(FILE_L2, viewfocus->remotefocus->source, keyrelease->scancode);
+            event_sendkeyrelease(FILE_L2, viewfocus->remotefocus->source, keyrelease->scancode);
 
         return;
 
@@ -483,7 +483,7 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
     updatemouse(header);
 
     if (viewfocus->remotefocus)
-        ev_sendmousemove(FILE_L2, viewfocus->remotefocus->source, mouse.size.x, mouse.size.y);
+        event_sendmousemove(FILE_L2, viewfocus->remotefocus->source, mouse.size.x, mouse.size.y);
 
 }
 
@@ -540,7 +540,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
     }
 
     if (viewfocus->remotefocus)
-        ev_sendmousepress(FILE_L2, viewfocus->remotefocus->source, mousepress->button);
+        event_sendmousepress(FILE_L2, viewfocus->remotefocus->source, mousepress->button);
 
 }
 
@@ -548,7 +548,7 @@ static void onmouserelease(struct event_header *header, struct event_mousereleas
 {
 
     if (viewfocus->remotefocus)
-        ev_sendmouserelease(FILE_L2, viewfocus->remotefocus->source, mouserelease->button);
+        event_sendmouserelease(FILE_L2, viewfocus->remotefocus->source, mouserelease->button);
 
 }
 
@@ -604,8 +604,8 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
 
     }
 
-    ev_sendwmresize(FILE_L2, header->destination, 0, 0, videomode->w, videomode->h, padding, lineheight);
-    ev_sendwmshow(FILE_L2, header->destination);
+    event_sendwmresize(FILE_L2, header->destination, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    event_sendwmshow(FILE_L2, header->destination);
 
 }
 
@@ -622,7 +622,7 @@ static void onwmmap(struct event_header *header)
     activateremote(viewfocus->remotefocus);
     arrangeview(viewfocus);
     showremotes(header, &viewfocus->remotes);
-    ev_sendwminit(FILE_L2, header->source);
+    event_sendwminit(FILE_L2, header->source);
 
 }
 
@@ -639,7 +639,7 @@ static void onwmexit(struct event_header *header)
 
             struct remote *remote = views[i].remotes.head->data;
 
-            ev_sendwmexit(FILE_L2, remote->source);
+            event_sendwmexit(FILE_L2, remote->source);
             list_move(&remotelist, &remote->item);
 
         }
@@ -801,7 +801,7 @@ void main(void)
     render_setvideo(FILE_L7, 1024, 768, 32);
     render_setcolormap(FILE_L8);
 
-    while (!quit && ev_read(&handlers, FILE_L0))
+    while (!quit && event_read(&handlers, FILE_L0))
     {
 
         if (ring_count(&output))
@@ -809,7 +809,7 @@ void main(void)
 
             file_writeall(FILE_L1, outputdata, ring_count(&output));
             ring_reset(&output);
-            ev_sendwmflush(FILE_L2, EVENT_ADDR_BROADCAST);
+            event_sendwmflush(FILE_L2, EVENT_ADDR_BROADCAST);
 
         }
 
