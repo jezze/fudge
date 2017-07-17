@@ -1,4 +1,4 @@
-#include <fudge/memory.h>
+#include <fudge.h>
 #include "cpio.h"
 
 unsigned int cpio_validate(struct cpio_header *header)

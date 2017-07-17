@@ -1,5 +1,3 @@
-#include <abi.h>
-#include <fudge.h>
 #include "box.h"
 
 unsigned int box_isinside(struct box *box, unsigned int x, unsigned int y)
