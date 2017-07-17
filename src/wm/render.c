@@ -121,7 +121,7 @@ static unsigned int colormap32[] = {
     0xFFFFFFFF
 };
 
-static unsigned int findrowtotal(char *string, unsigned int count)
+static unsigned int findrowtotal(unsigned char *string, unsigned int count)
 {
 
     unsigned int i;
@@ -139,7 +139,7 @@ static unsigned int findrowtotal(char *string, unsigned int count)
 
 }
 
-static unsigned int findrowstart(char *string, unsigned int count, unsigned int row)
+static unsigned int findrowstart(unsigned char *string, unsigned int count, unsigned int row)
 {
 
     unsigned int i;
@@ -164,7 +164,7 @@ static unsigned int findrowstart(char *string, unsigned int count, unsigned int 
 
 }
 
-static unsigned int findrowcount(char *string, unsigned int count, unsigned int offset)
+static unsigned int findrowcount(unsigned char *string, unsigned int count, unsigned int offset)
 {
 
     unsigned int i;
@@ -181,7 +181,7 @@ static unsigned int findrowcount(char *string, unsigned int count, unsigned int 
 
 }
 
-static unsigned short getfontindex(char c)
+static unsigned short getfontindex(unsigned short c)
 {
 
     switch (c)
@@ -261,7 +261,7 @@ static void paintcharlineinverted(unsigned int x, unsigned int w, unsigned char 
 
 }
 
-static void painttext(char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row)
+static void painttext(unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row)
 {
 
     unsigned int i;
@@ -292,7 +292,7 @@ static void painttext(char *string, unsigned int length, unsigned int x, unsigne
 
 }
 
-static void painttextinput(char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row, unsigned int cursor)
+static void painttextinput(unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row, unsigned int cursor)
 {
 
     unsigned int i;
@@ -387,7 +387,7 @@ static void renderpanel(void *data, unsigned int line)
 {
 
     struct widget_panel *panel = data;
-    char *string = (char *)(panel + 1);
+    unsigned char *string = (unsigned char *)(panel + 1);
     unsigned int stringcolor = panel->active ? textcolor[WIDGET_TEXTTYPE_HIGHLIGHT] : textcolor[WIDGET_TEXTTYPE_NORMAL];
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
@@ -408,7 +408,7 @@ static void rendertext(void *data, unsigned int line)
 {
 
     struct widget_text *text = data;
-    char *string = (char *)(text + 1);
+    unsigned char *string = (unsigned char *)(text + 1);
     unsigned int rowindex = line / font.lineheight;
     unsigned int rowtotal = findrowtotal(string, text->length);
     unsigned int rowstart;
@@ -428,7 +428,7 @@ static void rendertextbox(void *data, unsigned int line)
 {
 
     struct widget_textbox *textbox = data;
-    char *string = (char *)(textbox + 1);
+    unsigned char *string = (unsigned char *)(textbox + 1);
     unsigned int rowindex = line / font.lineheight;
     unsigned int rowtotal = findrowtotal(string, textbox->length);
     unsigned int rowstart;
