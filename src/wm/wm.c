@@ -251,21 +251,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     struct view *nextview;
     struct remote *nextremote;
 
-    switch (keypress->scancode)
-    {
-
-    case 0x2A:
-    case 0x36:
-        keymod |= KEYMOD_SHIFT;
-
-        break;
-
-    case 0x38:
-        keymod |= KEYMOD_ALT;
-
-        break;
-
-    }
+    keymod = keymap_modkey(keypress->scancode, keymod);
 
     if (!(keymod & KEYMOD_ALT))
     {
@@ -440,21 +426,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 static void onkeyrelease(struct event_header *header, struct event_keyrelease *keyrelease)
 {
 
-    switch (keyrelease->scancode)
-    {
-
-    case 0x2A:
-    case 0x36:
-        keymod &= ~KEYMOD_SHIFT;
-
-        break;
-
-    case 0x38:
-        keymod &= ~KEYMOD_ALT;
-
-        break;
-
-    }
+    keymod = keymap_modkey(keyrelease->scancode, keymod);
 
     if (!(keymod & KEYMOD_ALT))
     {

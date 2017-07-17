@@ -147,3 +147,35 @@ struct keycode *keymap_getkeycode(struct keymap *keymap, unsigned int scancode, 
 
 }
 
+unsigned int keymap_modkey(unsigned int scancode, unsigned int modifier)
+{
+
+    switch (scancode)
+    {
+
+    case 0x1D:
+        return modifier | KEYMOD_CTRL;
+
+    case 0x9D:
+        return modifier & ~KEYMOD_CTRL;
+
+    case 0x2A:
+    case 0x36:
+        return modifier | KEYMOD_SHIFT;
+
+    case 0xAA:
+    case 0xB6:
+        return modifier & ~KEYMOD_SHIFT;
+
+    case 0x38:
+        return modifier | KEYMOD_ALT;
+
+    case 0xB8:
+        return modifier & ~KEYMOD_ALT;
+
+    }
+
+    return modifier;
+
+}
+

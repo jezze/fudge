@@ -2,43 +2,15 @@
 #include <fudge.h>
 #include <keymap/keymap.h>
 
-static unsigned int escaped;
 static unsigned int modifier;
 
 static struct keycode *scancode2keycode(struct keymap *map, unsigned char scancode)
 {
 
-    switch (scancode)
-    {
+    modifier = keymap_modkey(scancode, modifier);
 
-    case 0xE0:
-        escaped = 1;
-
+    if (scancode == 0xE0)
         return 0;
-
-    case 0x2A:
-    case 0x36:
-        modifier |= KEYMOD_SHIFT;
-
-        return 0;
-
-    case 0x38:
-        modifier |= KEYMOD_ALT;
-
-        return 0;
-
-    case 0xAA:
-    case 0xB6:
-        modifier &= ~KEYMOD_SHIFT;
-
-        return 0;
-
-    case 0xB8:
-        modifier &= ~KEYMOD_ALT;
-
-        return 0;
-
-    }
 
     if (scancode & 0x80)
         return 0;
@@ -54,7 +26,6 @@ void main(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    escaped = 0;
     modifier = 0;
 
     file_open(FILE_PO);

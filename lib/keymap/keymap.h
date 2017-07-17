@@ -1,7 +1,7 @@
 #define KEYMOD_NONE                     0
 #define KEYMOD_SHIFT                    1
 #define KEYMOD_ALT                      2
-#define KEYMOD_CTRL                     3
+#define KEYMOD_CTRL                     4
 #define KEYMAP_NONE                     0
 #define KEYMAP_US                       1
 #define KEYMAP_SE                       2
@@ -23,3 +23,4 @@ struct keymap
 
 struct keymap *keymap_load(unsigned int type);
 struct keycode *keymap_getkeycode(struct keymap *keymap, unsigned int scancode, unsigned int modifier);
+unsigned int keymap_modkey(unsigned int scancode, unsigned int modifier);

@@ -114,18 +114,14 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
 
+    keymod = keymap_modkey(keypress->scancode, keymod);
+
     switch (keypress->scancode)
     {
 
     case 0x0E:
         ring_skipreverse(&input1, 1);
         updatecontent(header);
-
-        break;
-
-    case 0x2A:
-    case 0x36:
-        keymod |= KEYMOD_SHIFT;
 
         break;
 
@@ -178,16 +174,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 static void onkeyrelease(struct event_header *header, struct event_keyrelease *keyrelease)
 {
 
-    switch (keyrelease->scancode)
-    {
-
-    case 0x2A:
-    case 0x36:
-        keymod &= ~KEYMOD_SHIFT;
-
-        break;
-
-    }
+    keymod = keymap_modkey(keyrelease->scancode, keymod);
 
 }
 
