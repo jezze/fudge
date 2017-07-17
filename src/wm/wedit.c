@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 #include <event/event.h>
-#include "box.h"
+#include <math/box.h>
 #include "widget.h"
 #include "keymap.h"
 
