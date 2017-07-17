@@ -6,4 +6,20 @@
 #define KEYMAP_US                       1
 #define KEYMAP_SE                       2
 
-void keymap_write(struct ring *ring, unsigned int scancode, unsigned int modifier);
+struct keycode
+{
+
+    unsigned char length;
+    unsigned char value[4];
+
+};
+
+struct keymap
+{
+
+    struct keycode keycode[4];
+
+};
+
+struct keymap *keymap_load(unsigned int type);
+struct keycode *keymap_getkeycode(struct keymap *keymap, unsigned int scancode, unsigned int modifier);

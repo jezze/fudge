@@ -2,8 +2,8 @@
 #include <fudge.h>
 #include <event/event.h>
 #include <math/box.h>
+#include <keymap/keymap.h>
 #include "widget.h"
-#include "keymap.h"
 
 static struct widget_textbox content;
 static unsigned int quit;
@@ -181,6 +181,9 @@ static void moveright(unsigned int steps)
 static void onkeypress(struct event_header *header, struct event_keypress *keypress)
 {
 
+    struct keymap *keymap = keymap_load(KEYMAP_US);
+    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
+
     switch (keypress->scancode)
     {
 
@@ -192,7 +195,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
     case 0x1C:
         ring_move(&input1, &input2);
-        keymap_write(&input1, keypress->scancode, keymod);
+        ring_write(&input1, keycode->value, keycode->length);
         copyring(&input1);
         interpret(&input1);
         copybuffer("$ ", 2);
@@ -215,7 +218,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (keymod & KEYMOD_CTRL)
             ring_reset(&input1);
         else
-            keymap_write(&input1, keypress->scancode, keymod);
+            ring_write(&input1, keycode->value, keycode->length);
 
         updatecontent(header);
 
@@ -225,7 +228,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (keymod & KEYMOD_CTRL)
             ring_reset(&input2);
         else
-            keymap_write(&input1, keypress->scancode, keymod);
+            ring_write(&input1, keycode->value, keycode->length);
 
         updatecontent(header);
 
@@ -235,7 +238,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (keymod & KEYMOD_CTRL)
             removerows(totalrows);
         else
-            keymap_write(&input1, keypress->scancode, keymod);
+            ring_write(&input1, keycode->value, keycode->length);
 
         updatecontent(header);
 
@@ -266,7 +269,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     default:
-        keymap_write(&input1, keypress->scancode, keymod);
+        ring_write(&input1, keycode->value, keycode->length);
         updatecontent(header);
 
         break;

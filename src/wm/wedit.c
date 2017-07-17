@@ -1,9 +1,9 @@
 #include <abi.h>
 #include <fudge.h>
 #include <event/event.h>
+#include <keymap/keymap.h>
 #include <math/box.h>
 #include "widget.h"
-#include "keymap.h"
 
 static struct widget_textbox content;
 static struct widget_text status;
@@ -111,6 +111,9 @@ static void movedown(void)
 static void onkeypress(struct event_header *header, struct event_keypress *keypress)
 {
 
+    struct keymap *keymap = keymap_load(KEYMAP_US);
+    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
+
     switch (keypress->scancode)
     {
 
@@ -163,7 +166,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     default:
-        keymap_write(&input1, keypress->scancode, keymod);
+        ring_write(&input1, keycode->value, keycode->length);
         updatecontent(header);
 
         break;

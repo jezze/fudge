@@ -2,8 +2,8 @@
 #include <fudge.h>
 #include <event/event.h>
 #include <math/box.h>
+#include <keymap/keymap.h>
 #include "widget.h"
-#include "keymap.h"
 #include "render.h"
 
 #define REMOTES                         64

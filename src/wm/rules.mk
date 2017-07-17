@@ -4,12 +4,12 @@ B:=\
 O:=\
     $(DIR_SRC)/wm/wedit.o \
     $(DIR_SRC)/wm/widget.o \
-    $(DIR_SRC)/wm/keymap.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/event/event.a \
+    $(DIR_LIB)/keymap/keymap.a \
     $(DIR_LIB)/math/math.a \
 
 include $(DIR_MK)/bin.mk
@@ -54,12 +54,12 @@ B:=\
 O:=\
     $(DIR_SRC)/wm/wshell.o \
     $(DIR_SRC)/wm/widget.o \
-    $(DIR_SRC)/wm/keymap.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/event/event.a \
+    $(DIR_LIB)/keymap/keymap.a \
     $(DIR_LIB)/math/math.a \
 
 include $(DIR_MK)/bin.mk
