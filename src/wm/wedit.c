@@ -108,15 +108,15 @@ static void movedown(void)
 
 }
 
-static void onkeypress(struct event_header *header, struct event_keypress *keypress)
+static void onwmkeypress(struct event_header *header, struct event_wmkeypress *wmkeypress)
 {
 
     struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
+    struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
-    keymod = keymap_modkey(keypress->scancode, keymod);
+    keymod = keymap_modkey(wmkeypress->scancode, keymod);
 
-    switch (keypress->scancode)
+    switch (wmkeypress->scancode)
     {
 
     case 0x0E:
@@ -171,10 +171,10 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
 }
 
-static void onkeyrelease(struct event_header *header, struct event_keyrelease *keyrelease)
+static void onwmkeyrelease(struct event_header *header, struct event_wmkeyrelease *wmkeyrelease)
 {
 
-    keymod = keymap_modkey(keyrelease->scancode, keymod);
+    keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
 }
 
@@ -257,8 +257,8 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    handlers.keypress = onkeypress;
-    handlers.keyrelease = onkeyrelease;
+    handlers.wmkeypress = onwmkeypress;
+    handlers.wmkeyrelease = onwmkeyrelease;
     handlers.wmexit = onwmexit;
     handlers.wmresize = onwmresize;
     handlers.wmshow = onwmshow;

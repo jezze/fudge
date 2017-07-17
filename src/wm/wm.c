@@ -257,7 +257,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     {
 
         if (viewfocus->remotefocus)
-            event_sendkeypress(FILE_L2, viewfocus->remotefocus->source, keypress->scancode);
+            event_sendwmkeypress(FILE_L2, viewfocus->remotefocus->source, keypress->scancode);
 
         return;
 
@@ -432,7 +432,7 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
     {
 
         if (viewfocus->remotefocus)
-            event_sendkeyrelease(FILE_L2, viewfocus->remotefocus->source, keyrelease->scancode);
+            event_sendwmkeyrelease(FILE_L2, viewfocus->remotefocus->source, keyrelease->scancode);
 
         return;
 
@@ -455,7 +455,7 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
     updatemouse(header);
 
     if (viewfocus->remotefocus)
-        event_sendmousemove(FILE_L2, viewfocus->remotefocus->source, mouse.size.x, mouse.size.y);
+        event_sendwmmousemove(FILE_L2, viewfocus->remotefocus->source, mouse.size.x, mouse.size.y);
 
 }
 
@@ -512,7 +512,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
     }
 
     if (viewfocus->remotefocus)
-        event_sendmousepress(FILE_L2, viewfocus->remotefocus->source, mousepress->button);
+        event_sendwmmousepress(FILE_L2, viewfocus->remotefocus->source, mousepress->button);
 
 }
 
@@ -520,7 +520,7 @@ static void onmouserelease(struct event_header *header, struct event_mousereleas
 {
 
     if (viewfocus->remotefocus)
-        event_sendmouserelease(FILE_L2, viewfocus->remotefocus->source, mouserelease->button);
+        event_sendwmmouserelease(FILE_L2, viewfocus->remotefocus->source, mouserelease->button);
 
 }
 

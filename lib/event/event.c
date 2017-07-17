@@ -146,6 +146,66 @@ static void onwmflush(struct event_handlers *handlers, unsigned int descriptor, 
 
 }
 
+static void onwmkeypress(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
+{
+
+    struct event_wmkeypress wmkeypress;
+
+    file_readall(descriptor, &wmkeypress, sizeof (struct event_wmkeypress));
+
+    if (handlers->wmkeypress)
+        handlers->wmkeypress(header, &wmkeypress);
+
+}
+
+static void onwmkeyrelease(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
+{
+
+    struct event_wmkeyrelease wmkeyrelease;
+
+    file_readall(descriptor, &wmkeyrelease, sizeof (struct event_wmkeyrelease));
+
+    if (handlers->wmkeyrelease)
+        handlers->wmkeyrelease(header, &wmkeyrelease);
+
+}
+
+static void onwmmousemove(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
+{
+
+    struct event_wmmousemove wmmousemove;
+
+    file_readall(descriptor, &wmmousemove, sizeof (struct event_wmmousemove));
+
+    if (handlers->wmmousemove)
+        handlers->wmmousemove(header, &wmmousemove);
+
+}
+
+static void onwmmousepress(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
+{
+
+    struct event_wmmousepress wmmousepress;
+
+    file_readall(descriptor, &wmmousepress, sizeof (struct event_wmmousepress));
+
+    if (handlers->wmmousepress)
+        handlers->wmmousepress(header, &wmmousepress);
+
+}
+
+static void onwmmouserelease(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
+{
+
+    struct event_wmmouserelease wmmouserelease;
+
+    file_readall(descriptor, &wmmouserelease, sizeof (struct event_wmmouserelease));
+
+    if (handlers->wmmouserelease)
+        handlers->wmmouserelease(header, &wmmouserelease);
+
+}
+
 static void (*funcs[EVENTS])(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header) = {
     0,
     onkeypress,
@@ -161,7 +221,12 @@ static void (*funcs[EVENTS])(struct event_handlers *handlers, unsigned int descr
     onwmresize,
     onwmshow,
     onwmhide,
-    onwmflush
+    onwmflush,
+    onwmkeypress,
+    onwmkeyrelease,
+    onwmmousemove,
+    onwmmousepress,
+    onwmmouserelease
 };
 
 unsigned int event_read(struct event_handlers *handlers, unsigned int descriptor)
@@ -306,6 +371,62 @@ void event_sendwmflush(unsigned int descriptor, unsigned int destination)
 {
 
     send(descriptor, destination, EVENT_WMFLUSH, 0, 0);
+
+}
+
+void event_sendwmkeypress(unsigned int descriptor, unsigned int destination, unsigned char scancode)
+{
+
+    struct event_wmkeypress wmkeypress;
+
+    wmkeypress.scancode = scancode;
+
+    send(descriptor, destination, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
+
+}
+
+void event_sendwmkeyrelease(unsigned int descriptor, unsigned int destination, unsigned char scancode)
+{
+
+    struct event_wmkeyrelease wmkeyrelease;
+
+    wmkeyrelease.scancode = scancode;
+
+    send(descriptor, destination, EVENT_WMKEYRELEASE, sizeof (struct event_wmkeyrelease), &wmkeyrelease);
+
+}
+
+void event_sendwmmousemove(unsigned int descriptor, unsigned int destination, char relx, char rely)
+{
+
+    struct event_wmmousemove wmmousemove;
+
+    wmmousemove.relx = relx;
+    wmmousemove.rely = rely;
+
+    send(descriptor, destination, EVENT_WMMOUSEMOVE, sizeof (struct event_wmmousemove), &wmmousemove);
+
+}
+
+void event_sendwmmousepress(unsigned int descriptor, unsigned int destination, unsigned int button)
+{
+
+    struct event_wmmousepress wmmousepress;
+
+    wmmousepress.button = button;
+
+    send(descriptor, destination, EVENT_WMMOUSEPRESS, sizeof (struct event_wmmousepress), &wmmousepress);
+
+}
+
+void event_sendwmmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button)
+{
+
+    struct event_wmmouserelease wmmouserelease;
+
+    wmmouserelease.button = button;
+
+    send(descriptor, destination, EVENT_WMMOUSERELEASE, sizeof (struct event_wmmouserelease), &wmmouserelease);
 
 }
 
