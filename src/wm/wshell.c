@@ -3,7 +3,7 @@
 #include <event/event.h>
 #include <math/box.h>
 #include <keymap/keymap.h>
-#include "widget.h"
+#include <widget/widget.h>
 
 static struct widget_textbox content;
 static unsigned int quit;

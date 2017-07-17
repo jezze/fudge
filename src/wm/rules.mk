@@ -3,7 +3,6 @@ B:=\
 
 O:=\
     $(DIR_SRC)/wm/wedit.o \
-    $(DIR_SRC)/wm/widget.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
@@ -11,6 +10,7 @@ L:=\
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/keymap/keymap.a \
     $(DIR_LIB)/math/math.a \
+    $(DIR_LIB)/widget/widget.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -19,7 +19,6 @@ B:=\
 
 O:=\
     $(DIR_SRC)/wm/wres.o \
-    $(DIR_SRC)/wm/widget.o \
     $(DIR_SRC)/wm/render.o \
 
 L:=\
@@ -28,6 +27,7 @@ L:=\
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/math/math.a \
     $(DIR_LIB)/pcf/pcf.a \
+    $(DIR_LIB)/widget/widget.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -36,7 +36,6 @@ B:=\
 
 O:=\
     $(DIR_SRC)/wm/wm.o \
-    $(DIR_SRC)/wm/widget.o \
     $(DIR_SRC)/wm/render.o \
 
 L:=\
@@ -46,6 +45,7 @@ L:=\
     $(DIR_LIB)/keymap/keymap.a \
     $(DIR_LIB)/math/math.a \
     $(DIR_LIB)/pcf/pcf.a \
+    $(DIR_LIB)/widget/widget.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -54,7 +54,6 @@ B:=\
 
 O:=\
     $(DIR_SRC)/wm/wshell.o \
-    $(DIR_SRC)/wm/widget.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
@@ -62,5 +61,6 @@ L:=\
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/keymap/keymap.a \
     $(DIR_LIB)/math/math.a \
+    $(DIR_LIB)/widget/widget.a \
 
 include $(DIR_MK)/bin.mk

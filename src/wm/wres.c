@@ -2,7 +2,7 @@
 #include <fudge.h>
 #include <event/event.h>
 #include <math/box.h>
-#include "widget.h"
+#include <widget/widget.h>
 #include "render.h"
 
 static unsigned int quit;

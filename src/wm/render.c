@@ -2,7 +2,7 @@
 #include <fudge.h>
 #include <math/box.h>
 #include <pcf/pcf.h>
-#include "widget.h"
+#include <widget/widget.h>
 
 #define COLOR_DARK                      0x00
 #define COLOR_LIGHT                     0x01
