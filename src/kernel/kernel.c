@@ -1,12 +1,10 @@
 #include <fudge.h>
 #include "resource.h"
-#include "container.h"
 #include "binary.h"
 #include "task.h"
 #include "service.h"
 #include "kernel.h"
 
-static struct container containers[KERNEL_CONTAINERS];
 static struct task tasks[KERNEL_TASKS];
 static struct service_server servers[KERNEL_SERVERS];
 static struct service_mount mounts[KERNEL_MOUNTS];
@@ -282,24 +280,6 @@ void kernel_setupramdisk(struct task *task, struct service_backend *backend)
 
     kernel_useserver(server);
     kernel_usemount(mount);
-
-}
-
-struct container *kernel_setupcontainers(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < KERNEL_CONTAINERS; i++)
-    {
-
-        struct container *container = &containers[i];
-
-        container_init(container, i);
-
-    }
-
-    return &containers[0];
 
 }
 

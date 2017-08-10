@@ -1,4 +1,3 @@
-#define KERNEL_CONTAINERS               16
 #define KERNEL_TASKS                    128
 #define KERNEL_SERVERS                  32
 #define KERNEL_MOUNTS                   32
@@ -24,7 +23,6 @@ unsigned int kernel_writetask(struct task *task, void *buffer, unsigned int coun
 void kernel_multicast(struct list *states, void *buffer, unsigned int count);
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp);
 void kernel_setupramdisk(struct task *task, struct service_backend *backend);
-struct container *kernel_setupcontainers(void);
 struct task *kernel_setuptasks(void);
 void kernel_setupservers(void);
 void kernel_setupmounts(void);
