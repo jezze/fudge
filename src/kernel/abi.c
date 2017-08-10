@@ -19,24 +19,13 @@ static unsigned int debug(struct task *task, void *stack)
 static void walkmount(struct service *service, unsigned int parent)
 {
 
-    struct list_item *current;
+    struct service_node *node = kernel_findnode(service->server, service->state.id, parent);
 
-    for (current = kernel_getusedmounthead(); current; current = current->next)
+    if (node)
     {
 
-        struct service_mount *mount = current->data;
-        struct service_node *from = (parent) ? &mount->child : &mount->parent;
-        struct service_node *to = (parent) ? &mount->parent : &mount->child;
-
-        if (service->server == from->server && service->state.id == from->id)
-        {
-
-            service->server = to->server;
-            service->state.id = to->id;
-
-            break;
-
-        }
+        service->server = node->server;
+        service->state.id = node->id;
 
     }
 

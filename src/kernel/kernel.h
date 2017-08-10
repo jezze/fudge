@@ -8,7 +8,7 @@ struct task *kernel_getactivetask(void);
 struct task *kernel_getinactivetask(void);
 struct service_server *kernel_getfreeserver(void);
 struct service_mount *kernel_getfreemount(void);
-struct list_item *kernel_getusedmounthead(void);
+struct service_node *kernel_findnode(struct service_server *server, unsigned int id, unsigned int parent);
 struct service *kernel_getservice(struct task *task, unsigned int service);
 void kernel_activatetask(struct task *task);
 void kernel_inactivatetask(struct task *task);
