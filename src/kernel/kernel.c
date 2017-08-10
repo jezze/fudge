@@ -1,9 +1,9 @@
 #include <fudge.h>
 #include "resource.h"
+#include "container.h"
 #include "binary.h"
 #include "task.h"
 #include "service.h"
-#include "container.h"
 #include "kernel.h"
 
 static struct container containers[KERNEL_CONTAINERS];
@@ -243,7 +243,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
 }
 
-void kernel_setupramdisk(struct container *container, struct task *task, struct service_backend *backend)
+void kernel_setupramdisk(struct task *task, struct service_backend *backend)
 {
 
     struct service *init = kernel_getservice(task, 8);

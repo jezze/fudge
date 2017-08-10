@@ -130,7 +130,7 @@ static void loadregisters(struct task *task, struct cpu_general *general)
 
 }
 
-static unsigned int spawn(struct container *container, struct task *task, void *stack)
+static unsigned int spawn(struct task *task, void *stack)
 {
 
     struct task *next = kernel_getinactivetask();
@@ -138,7 +138,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
     if (!next)
         return 0;
 
-    copymap(container, next);
+    copymap(current.container, next);
     kernel_copyservices(task, next);
 
     if (!kernel_setupbinary(next, TASKSTACK))
@@ -150,7 +150,7 @@ static unsigned int spawn(struct container *container, struct task *task, void *
 
 }
 
-static unsigned int despawn(struct container *container, struct task *task, void *stack)
+static unsigned int despawn(struct task *task, void *stack)
 {
 
     kernel_inactivatetask(task);
@@ -182,7 +182,7 @@ unsigned int arch_call(unsigned int index, void *stack, unsigned int rewind)
 
     current.task->state.rewind = rewind;
 
-    return abi_call(index, current.container, current.task, stack);
+    return abi_call(index, current.task, stack);
 
 }
 
@@ -467,9 +467,9 @@ void arch_setup(struct service_backend *backend)
     kernel_setupservers();
     kernel_setupmounts();
     kernel_setupservices();
-    kernel_setupramdisk(current.container, current.task, backend);
+    kernel_setupramdisk(current.task, backend);
     mapcontainer(current.container);
-    spawn(current.container, current.task, 0);
+    spawn(current.task, 0);
     activate(current.task);
     mmu_setup();
     leave();

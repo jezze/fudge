@@ -3,21 +3,20 @@
 #include "binary.h"
 #include "task.h"
 #include "service.h"
-#include "container.h"
 #include "kernel.h"
 
 #define CALLS                           16
 
-static unsigned int (*calls[CALLS])(struct container *container, struct task *task, void *stack);
+static unsigned int (*calls[CALLS])(struct task *task, void *stack);
 
-static unsigned int debug(struct container *container, struct task *task, void *stack)
+static unsigned int debug(struct task *task, void *stack)
 {
 
     return 0;
 
 }
 
-static void walkmount(struct container *container, struct service *service, unsigned int parent)
+static void walkmount(struct service *service, unsigned int parent)
 {
 
     struct list_item *current;
@@ -57,7 +56,7 @@ static unsigned int walknext(char *path, unsigned int length)
 
 }
 
-static unsigned int walk(struct container *container, struct task *task, void *stack)
+static unsigned int walk(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *path; unsigned int length;} *args = stack;
@@ -81,7 +80,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
         if (length == 2 && args->path[offset] == '.' && args->path[offset + 1] == '.')
         {
 
-            walkmount(container, service, 1);
+            walkmount(service, 1);
 
             if (!service->server->protocol->parent(service->server->backend, &service->state))
                 return 0;
@@ -94,7 +93,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
             if (!service->server->protocol->child(service->server->backend, &service->state, args->path + offset, length))
                 return 0;
 
-            walkmount(container, service, 0);
+            walkmount(service, 0);
 
         }
 
@@ -104,7 +103,7 @@ static unsigned int walk(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int create(struct container *container, struct task *task, void *stack)
+static unsigned int create(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
@@ -117,7 +116,7 @@ static unsigned int create(struct container *container, struct task *task, void 
 
 }
 
-static unsigned int destroy(struct container *container, struct task *task, void *stack)
+static unsigned int destroy(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
@@ -130,7 +129,7 @@ static unsigned int destroy(struct container *container, struct task *task, void
 
 }
 
-static unsigned int open(struct container *container, struct task *task, void *stack)
+static unsigned int open(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
@@ -144,7 +143,7 @@ static unsigned int open(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int close(struct container *container, struct task *task, void *stack)
+static unsigned int close(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
@@ -158,7 +157,7 @@ static unsigned int close(struct container *container, struct task *task, void *
 
 }
 
-static unsigned int step(struct container *container, struct task *task, void *stack)
+static unsigned int step(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
@@ -171,7 +170,7 @@ static unsigned int step(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int read(struct container *container, struct task *task, void *stack)
+static unsigned int read(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
@@ -188,7 +187,7 @@ static unsigned int read(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int write(struct container *container, struct task *task, void *stack)
+static unsigned int write(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
@@ -205,7 +204,7 @@ static unsigned int write(struct container *container, struct task *task, void *
 
 }
 
-static unsigned int seek(struct container *container, struct task *task, void *stack)
+static unsigned int seek(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int offset;} *args = stack;
@@ -215,7 +214,7 @@ static unsigned int seek(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int auth(struct container *container, struct task *task, void *stack)
+static unsigned int auth(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int backend;} *args = stack;
@@ -249,7 +248,7 @@ static unsigned int auth(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int mount(struct container *container, struct task *task, void *stack)
+static unsigned int mount(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int cdescriptor;} *args = stack;
@@ -271,7 +270,7 @@ static unsigned int mount(struct container *container, struct task *task, void *
 
 }
 
-static unsigned int load(struct container *container, struct task *task, void *stack)
+static unsigned int load(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
@@ -308,7 +307,7 @@ static unsigned int load(struct container *container, struct task *task, void *s
 
 }
 
-static unsigned int unload(struct container *container, struct task *task, void *stack)
+static unsigned int unload(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
@@ -336,14 +335,14 @@ static unsigned int unload(struct container *container, struct task *task, void 
 
 }
 
-unsigned int abi_call(unsigned int index, struct container *container, struct task *task, void *stack)
+unsigned int abi_call(unsigned int index, struct task *task, void *stack)
 {
 
-    return calls[index & (CALLS - 1)](container, task, stack);
+    return calls[index & (CALLS - 1)](task, stack);
 
 }
 
-void abi_setup(unsigned int (*spawn)(struct container *container, struct task *task, void *stack), unsigned int (*despawn)(struct container *container, struct task *task, void *stack))
+void abi_setup(unsigned int (*spawn)(struct task *task, void *stack), unsigned int (*despawn)(struct task *task, void *stack))
 {
 
     calls[0x00] = debug;
