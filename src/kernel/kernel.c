@@ -9,12 +9,15 @@
 static struct container containers[KERNEL_CONTAINERS];
 static struct task tasks[KERNEL_TASKS];
 static struct service_server servers[KERNEL_SERVERS];
+static struct service_mount mounts[KERNEL_MOUNTS];
 static struct service services[KERNEL_SERVICES];
 static struct list activetasks;
 static struct list inactivetasks;
 static struct list blockedtasks;
 static struct list usedservers;
 static struct list freeservers;
+static struct list usedmounts;
+static struct list freemounts;
 
 struct task *kernel_getactivetask(void)
 {
@@ -34,6 +37,20 @@ struct service_server *kernel_getfreeserver(void)
 {
 
     return (freeservers.tail) ? freeservers.tail->data : 0;
+
+}
+
+struct service_mount *kernel_getfreemount(void)
+{
+
+    return (freemounts.tail) ? freemounts.tail->data : 0;
+
+}
+
+struct list_item *kernel_getusedmounthead(void)
+{
+
+    return usedmounts.head;
 
 }
 
@@ -129,6 +146,20 @@ void kernel_unuseserver(struct service_server *server)
 
 }
 
+void kernel_usemount(struct service_mount *mount)
+{
+
+    list_move(&usedmounts, &mount->item);
+
+}
+
+void kernel_unusemount(struct service_mount *mount)
+{
+
+    list_move(&freemounts, &mount->item);
+
+}
+
 static void copyservice(struct service *tservice, struct service *sservice)
 {
 
@@ -218,7 +249,7 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
     struct service *init = kernel_getservice(task, 8);
     struct service *root = kernel_getservice(task, 9);
     struct service_server *server = kernel_getfreeserver();
-    struct container_mount *mount = container_getfreemount(container);
+    struct service_mount *mount = kernel_getfreemount();
 
     server->backend = backend;
     server->protocol = service_findprotocol(backend);
@@ -236,7 +267,7 @@ void kernel_setupramdisk(struct container *container, struct task *task, struct 
     server->protocol->child(server->backend, &init->state, "init", 4);
 
     kernel_useserver(server);
-    container_usemount(container, mount);
+    kernel_usemount(mount);
 
 }
 
@@ -289,6 +320,23 @@ void kernel_setupservers(void)
 
         service_initserver(server);
         list_add(&freeservers, &server->item);
+
+    }
+
+}
+
+void kernel_setupmounts(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < KERNEL_MOUNTS; i++)
+    {
+
+        struct service_mount *mount = &mounts[i];
+
+        service_initmount(mount);
+        list_add(&freemounts, &mount->item);
 
     }
 

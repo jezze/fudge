@@ -22,12 +22,12 @@ static void walkmount(struct container *container, struct service *service, unsi
 
     struct list_item *current;
 
-    for (current = container->usedmounts.head; current; current = current->next)
+    for (current = kernel_getusedmounthead(); current; current = current->next)
     {
 
-        struct container_mount *mount = current->data;
-        struct container_node *from = (parent) ? &mount->child : &mount->parent;
-        struct container_node *to = (parent) ? &mount->parent : &mount->child;
+        struct service_mount *mount = current->data;
+        struct service_node *from = (parent) ? &mount->child : &mount->parent;
+        struct service_node *to = (parent) ? &mount->parent : &mount->child;
 
         if (service->server == from->server && service->state.id == from->id)
         {
@@ -255,7 +255,7 @@ static unsigned int mount(struct container *container, struct task *task, void *
     struct {void *caller; unsigned int pdescriptor; unsigned int cdescriptor;} *args = stack;
     struct service *pservice = kernel_getservice(task, args->pdescriptor);
     struct service *cservice = kernel_getservice(task, args->cdescriptor);
-    struct container_mount *mount = container_getfreemount(container);
+    struct service_mount *mount = kernel_getfreemount();
 
     if (!mount)
         return 0;
@@ -265,7 +265,7 @@ static unsigned int mount(struct container *container, struct task *task, void *
     mount->child.server = cservice->server;
     mount->child.id = cservice->state.id;
 
-    container_usemount(container, mount);
+    kernel_usemount(mount);
 
     return 1;
 

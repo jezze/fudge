@@ -50,6 +50,23 @@ struct service_server
 
 };
 
+struct service_node
+{
+
+    struct service_server *server;
+    unsigned int id;
+
+};
+
+struct service_mount
+{
+
+    struct list_item item;
+    struct service_node parent;
+    struct service_node child;
+
+};
+
 struct service
 {
 
@@ -64,5 +81,6 @@ void service_initbackend(struct service_backend *backend, unsigned int id, unsig
 void service_initstate(struct service_state *state, struct task *task);
 void service_initprotocol(struct service_protocol *protocol, unsigned int (*match)(struct service_backend *backend), unsigned int (*root)(struct service_backend *backend), unsigned int (*parent)(struct service_backend *backend, struct service_state *state), unsigned int (*child)(struct service_backend *backend, struct service_state *state, char *path, unsigned int length), unsigned int (*create)(struct service_backend *backend, struct service_state *state, char *name, unsigned int length), unsigned int (*destroy)(struct service_backend *backend, struct service_state *state, char *name, unsigned int length), unsigned int (*step)(struct service_backend *backend, struct service_state *state, unsigned int current), unsigned int (*open)(struct service_backend *backend, struct service_state *state), unsigned int (*close)(struct service_backend *backend, struct service_state *state), unsigned int (*read)(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count), unsigned int (*write)(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count), unsigned int (*seek)(struct service_backend *backend, struct service_state *state, unsigned int offset), unsigned int (*map)(struct service_backend *backend, struct service_state *state));
 void service_initserver(struct service_server *server);
+void service_initmount(struct service_mount *mount);
 void service_init(struct service *service, struct task *task);
 void service_setupcpio(void);

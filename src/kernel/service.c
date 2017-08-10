@@ -94,6 +94,13 @@ void service_initserver(struct service_server *server)
 
 }
 
+void service_initmount(struct service_mount *mount)
+{
+
+    list_inititem(&mount->item, mount);
+
+}
+
 void service_init(struct service *service, struct task *task)
 {
 
