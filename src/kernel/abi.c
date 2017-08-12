@@ -206,7 +206,7 @@ static unsigned int seek(struct task *task, void *stack)
 static unsigned int auth(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int backend;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int backend; unsigned int protocol;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
     struct service_server *server = kernel_getfreeserver();
 
@@ -218,9 +218,12 @@ static unsigned int auth(struct task *task, void *stack)
     if (!server->backend)
         return 0;
 
-    server->protocol = service_findprotocol(server->backend);
+    server->protocol = service_findprotocol(args->protocol);
 
     if (!server->protocol)
+        return 0;
+
+    if (!server->protocol->match(server->backend))
         return 0;
 
     server->root = server->protocol->root(server->backend);

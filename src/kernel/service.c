@@ -23,7 +23,7 @@ struct service_backend *service_findbackend(unsigned int id)
 
 }
 
-struct service_protocol *service_findprotocol(struct service_backend *backend)
+struct service_protocol *service_findprotocol(unsigned int id)
 {
 
     struct resource *current = 0;
@@ -33,7 +33,7 @@ struct service_protocol *service_findprotocol(struct service_backend *backend)
 
         struct service_protocol *protocol = current->data;
 
-        if (protocol->match(backend))
+        if (protocol->id == id)
             return protocol;
 
     }
@@ -66,11 +66,12 @@ void service_initstate(struct service_state *state, struct task *task)
 
 }
 
-void service_initprotocol(struct service_protocol *protocol, unsigned int (*match)(struct service_backend *backend), unsigned int (*root)(struct service_backend *backend), unsigned int (*parent)(struct service_backend *backend, struct service_state *state), unsigned int (*child)(struct service_backend *backend, struct service_state *state, char *path, unsigned int length), unsigned int (*create)(struct service_backend *backend, struct service_state *state, char *name, unsigned int length), unsigned int (*destroy)(struct service_backend *backend, struct service_state *state, char *name, unsigned int length), unsigned int (*step)(struct service_backend *backend, struct service_state *state, unsigned int current), unsigned int (*open)(struct service_backend *backend, struct service_state *state), unsigned int (*close)(struct service_backend *backend, struct service_state *state), unsigned int (*read)(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count), unsigned int (*write)(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count), unsigned int (*seek)(struct service_backend *backend, struct service_state *state, unsigned int offset), unsigned int (*map)(struct service_backend *backend, struct service_state *state))
+void service_initprotocol(struct service_protocol *protocol, unsigned int id, unsigned int (*match)(struct service_backend *backend), unsigned int (*root)(struct service_backend *backend), unsigned int (*parent)(struct service_backend *backend, struct service_state *state), unsigned int (*child)(struct service_backend *backend, struct service_state *state, char *path, unsigned int length), unsigned int (*create)(struct service_backend *backend, struct service_state *state, char *name, unsigned int length), unsigned int (*destroy)(struct service_backend *backend, struct service_state *state, char *name, unsigned int length), unsigned int (*step)(struct service_backend *backend, struct service_state *state, unsigned int current), unsigned int (*open)(struct service_backend *backend, struct service_state *state), unsigned int (*close)(struct service_backend *backend, struct service_state *state), unsigned int (*read)(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count), unsigned int (*write)(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count), unsigned int (*seek)(struct service_backend *backend, struct service_state *state, unsigned int offset), unsigned int (*map)(struct service_backend *backend, struct service_state *state))
 {
 
     resource_init(&protocol->resource, RESOURCE_SERVICEPROTOCOL, protocol);
 
+    protocol->id = id;
     protocol->match = match;
     protocol->root = root;
     protocol->parent = parent;

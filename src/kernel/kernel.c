@@ -264,7 +264,7 @@ void kernel_setupramdisk(struct task *task, struct service_backend *backend)
     struct service_mount *mount = kernel_getfreemount();
 
     server->backend = backend;
-    server->protocol = service_findprotocol(backend);
+    server->protocol = service_findprotocol(1000);
     server->root = server->protocol->root(backend);
     root->server = server;
     root->state.id = server->root;

@@ -1,4 +1,4 @@
-unsigned int call_auth(unsigned int descriptor, unsigned int backend);
+unsigned int call_auth(unsigned int descriptor, unsigned int backend, unsigned int protocol);
 unsigned int call_close(unsigned int descriptor);
 unsigned int call_create(unsigned int descriptor, char *name, unsigned int length);
 unsigned int call_debug();
