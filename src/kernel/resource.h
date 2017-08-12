@@ -1,8 +1,6 @@
 #define RESOURCE_TASK                   1
-#define RESOURCE_TASKDESCRIPTOR         2
 #define RESOURCE_SERVICEBACKEND         3
 #define RESOURCE_SERVICEPROTOCOL        4
-#define RESOURCE_SERVICECHANNEL         5
 #define RESOURCE_BINARYFORMAT           6
 #define RESOURCE_BUS                    7
 #define RESOURCE_DRIVER                 8

@@ -8,6 +8,7 @@ include $(DIR_SRC)/modules/console/rules.mk
 include $(DIR_SRC)/modules/ethernet/rules.mk
 include $(DIR_SRC)/modules/event/rules.mk
 include $(DIR_SRC)/modules/icmp/rules.mk
+include $(DIR_SRC)/modules/internals/rules.mk
 include $(DIR_SRC)/modules/ipv4/rules.mk
 include $(DIR_SRC)/modules/ipv6/rules.mk
 include $(DIR_SRC)/modules/keyboard/rules.mk
