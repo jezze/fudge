@@ -29,6 +29,7 @@ static unsigned int parent(struct service_backend *backend, struct cpio_header *
     struct cpio_header eheader;
     unsigned char name[1024];
     unsigned int length;
+    unsigned int current = id;
 
     if (!readname(backend, header, id, name, 1024, 0))
         return 0;
@@ -38,18 +39,18 @@ static unsigned int parent(struct service_backend *backend, struct cpio_header *
     do
     {
 
-        if (!readheader(backend, &eheader, id))
+        if (!readheader(backend, &eheader, current))
             break;
 
         if ((eheader.mode & 0xF000) != 0x4000)
             continue;
 
         if (eheader.namesize == length + 1)
-            return id;
+            return current;
 
-    } while ((id = cpio_next(&eheader, id)));
+    } while ((current = cpio_next(&eheader, current)));
 
-    return 0;
+    return id;
 
 }
 
@@ -67,22 +68,22 @@ static unsigned int protocol_root(struct service_backend *backend)
 
     struct cpio_header header;
     unsigned int id = 0;
-    unsigned int last = id;
+    unsigned int current = id;
 
     do
     {
 
-        if (!readheader(backend, &header, id))
+        if (!readheader(backend, &header, current))
             break;
 
         if ((header.mode & 0xF000) != 0x4000)
             continue;
 
-        last = id;
+        id = current;
 
-    } while ((id = cpio_next(&header, id)));
+    } while ((current = cpio_next(&header, current)));
 
-    return last;
+    return id;
 
 }
 
@@ -90,40 +91,13 @@ static unsigned int protocol_parent(struct service_backend *backend, struct serv
 {
 
     struct cpio_header header;
-    struct cpio_header eheader;
-    unsigned char name[1024];
-    unsigned int id = state->id;
 
     if (!readheader(backend, &header, state->id))
         return 0;
 
-    if (!readname(backend, &header, state->id, name, 1024, 0))
-        return 0;
+    state->id = parent(backend, &header, state->id);
 
-    while (name[header.namesize] != '/')
-        header.namesize--;
-
-    do
-    {
-
-        if (!readheader(backend, &eheader, id))
-            break;
-
-        if ((eheader.mode & 0xF000) != 0x4000)
-            continue;
-
-        if (eheader.namesize == header.namesize + 1)
-        {
-
-            state->id = id;
-
-            return 1;
-
-        }
-
-    } while ((id = cpio_next(&eheader, id)));
-
-    return 0;
+    return 1;
 
 }
 
@@ -133,7 +107,7 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
     struct cpio_header header;
     struct cpio_header eheader;
     unsigned char name[1024];
-    unsigned int id = 0;
+    unsigned int current = 0;
 
     if (!readheader(backend, &header, state->id))
         return 0;
@@ -149,28 +123,26 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 
         unsigned char cname[1024];
 
-        if (id == state->id)
+        if (current == state->id)
             break;
 
-        if (!readheader(backend, &eheader, id))
+        if (!readheader(backend, &eheader, current))
             break;
 
         if (eheader.namesize - header.namesize != length + 1)
             continue;
 
-        if (!readname(backend, &eheader, id, cname, 1024, 0))
+        if (!readname(backend, &eheader, current, cname, 1024, header.namesize))
             break;
 
-        if (memory_match(cname + header.namesize, path, length))
-        {
+        if (!memory_match(cname, path, length))
+            continue;
 
-            state->id = id;
+        state->id = current;
 
-            return 1;
+        return 1;
 
-        }
-
-    } while ((id = cpio_next(&eheader, id)));
+    } while ((current = cpio_next(&eheader, current)));
 
     return 0;
 
