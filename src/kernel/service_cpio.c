@@ -16,7 +16,7 @@ static unsigned int readheader(struct service_backend *backend, struct cpio_head
 
 }
 
-static unsigned int readname(struct service_backend *backend, struct cpio_header *header, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int readname(struct service_backend *backend, struct cpio_header *header, unsigned int id, char *buffer, unsigned int count, unsigned int offset)
 {
 
     return (header->namesize <= count) ? backend->read(buffer, header->namesize - offset, id + sizeof (struct cpio_header) + offset) : 0;
@@ -27,14 +27,15 @@ static unsigned int parent(struct service_backend *backend, struct cpio_header *
 {
 
     struct cpio_header eheader;
-    unsigned char name[1024];
+    char name[1024];
+    char dname[1024];
     unsigned int length;
     unsigned int current = id;
 
     if (!readname(backend, header, id, name, 1024, 0))
         return 0;
 
-    for (length = header->namesize - 1; length && name[length] != '/'; length--);
+    length = ascii_dname(dname, 1024, name, header->namesize - 1);
 
     do
     {
@@ -106,7 +107,7 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 
     struct cpio_header header;
     struct cpio_header eheader;
-    unsigned char name[1024];
+    char name[1024];
     unsigned int current = 0;
 
     if (!readheader(backend, &header, state->id))
@@ -121,7 +122,7 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
     do
     {
 
-        unsigned char cname[1024];
+        char cname[1024];
 
         if (current == state->id)
             break;
