@@ -49,7 +49,7 @@ static void interpret(struct ring *ring)
     if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
-    if (!file_walk(FILE_L8, "/system/pipe/clone/"))
+    if (!file_walk(FILE_L8, "/system/pipe/clone"))
         return;
 
     file_walkfrom(FILE_CI, FILE_L8, "0");

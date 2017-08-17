@@ -81,7 +81,7 @@ void main(void)
     struct ctrl_videosettings settings;
 
     ctrl_setvideosettings(&settings, 320, 200, 8);
-    file_walk(FILE_L0, "/system/video/if:0/");
+    file_walk(FILE_L0, "/system/video/if:0");
     file_walkfrom(FILE_L1, FILE_L0, "ctrl");
     file_open(FILE_L1);
     file_writeall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));

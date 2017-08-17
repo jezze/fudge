@@ -230,7 +230,7 @@ void main(void)
     if (!file_walk(FILE_L0, "/bin/fudge"))
         return;
 
-    if (!file_walk(FILE_L1, "/mod/"))
+    if (!file_walk(FILE_L1, "/mod"))
         return;
 
     file_open(FILE_PI);

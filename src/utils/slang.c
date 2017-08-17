@@ -283,7 +283,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            if (!file_walk(FILE_L8, "/system/pipe/clone/"))
+            if (!file_walk(FILE_L8, "/system/pipe/clone"))
                 return;
 
             file_walkfrom(FILE_CO, FILE_L8, "0");
@@ -332,7 +332,7 @@ void main(void)
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
 
-    if (!file_walk(FILE_L0, "/bin/"))
+    if (!file_walk(FILE_L0, "/bin"))
         return;
 
     file_open(FILE_PI);
