@@ -102,3 +102,55 @@ unsigned int ascii_count(char *in, unsigned int count, char c)
 
 }
 
+unsigned int ascii_dname(char *out, unsigned int ocount, char *in, unsigned int icount)
+{
+
+    unsigned int i = 0;
+    unsigned int p = 0;
+
+    if (!icount)
+        return 0;
+
+    if (in[icount - 1] == '/')
+        icount--;
+
+    for (i = 0; i < icount; i++)
+    {
+
+        if (in[i] == '/')
+            p = i;
+
+    }
+
+    memory_copy(out, in, p);
+
+    return p;
+
+}
+
+unsigned int ascii_bname(char *out, unsigned int ocount, char *in, unsigned int icount)
+{
+
+    unsigned int i = 0;
+    unsigned int p = 0;
+
+    if (!icount)
+        return 0;
+
+    if (in[icount - 1] == '/')
+        icount--;
+
+    for (i = 0; i < icount; i++)
+    {
+
+        if (in[i] == '/')
+            p = i + 1;
+
+    }
+
+    memory_copy(out, in + p, i - p);
+
+    return i - p;
+
+}
+
