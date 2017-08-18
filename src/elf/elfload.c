@@ -101,13 +101,13 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
 static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 {
 
-    unsigned int length = memory_findbyte(symbolname, count, '_');
+    char *extension = ".ko";
     unsigned int offset = 0;
     unsigned int address;
     char module[32];
 
-    offset += memory_write(module, 32, symbolname, length, offset);
-    offset += memory_write(module, 32, ".ko", 4, offset);
+    offset += memory_write(module, 32, symbolname, memory_findbyte(symbolname, count, '_'), offset);
+    offset += memory_write(module, 32, extension, ascii_length(extension) + 1, offset);
 
     if (!file_walkfrom(FILE_L2, FILE_L1, module))
         return 0;
