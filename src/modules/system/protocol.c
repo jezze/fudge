@@ -91,7 +91,7 @@ static unsigned int protocol_close(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct system_node *node = (struct system_node *)id;
@@ -100,7 +100,7 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
         
 }
 
-static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct system_node *node = (struct system_node *)id;

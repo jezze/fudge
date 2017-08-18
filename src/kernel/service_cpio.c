@@ -253,7 +253,7 @@ static unsigned int readdirectory(struct service_backend *backend, void *buffer,
 
 }
 
-static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header header;
@@ -268,7 +268,7 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
         return readfile(backend, buffer, count, offset, id, &header);
 
     case 0x4000:
-        return readdirectory(backend, buffer, count, offset, state->current, &header);
+        return readdirectory(backend, buffer, count, offset, current, &header);
 
     }
 
@@ -286,7 +286,7 @@ static unsigned int writefile(struct service_backend *backend, void *buffer, uns
 
 }
 
-static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header header;
