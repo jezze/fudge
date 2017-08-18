@@ -63,6 +63,7 @@ void service_initstate(struct service_state *state, struct task *task)
     state->id = 0;
     state->offset = 0;
     state->current = 0;
+    state->count = 0;
 
 }
 

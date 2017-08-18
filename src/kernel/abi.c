@@ -136,15 +136,14 @@ static unsigned int read(struct task *task, void *stack)
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
-    unsigned int count;
 
     if (!args->buffer || !args->count)
         return 0;
 
-    count = service->server->protocol->read(service->server->backend, &service->state, service->state.id, service->state.current, args->buffer, args->count, service->state.offset);
-    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, service->state.offset + count);
+    service->state.count = service->server->protocol->read(service->server->backend, &service->state, service->state.id, service->state.current, args->buffer, args->count, service->state.offset);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, service->state.offset + service->state.count);
 
-    return count;
+    return service->state.count;
 
 }
 
@@ -153,15 +152,14 @@ static unsigned int write(struct task *task, void *stack)
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
-    unsigned int count;
 
     if (!args->buffer || !args->count)
         return 0;
 
-    count = service->server->protocol->write(service->server->backend, &service->state, service->state.id, service->state.current, args->buffer, args->count, service->state.offset);
-    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, service->state.offset + count);
+    service->state.count = service->server->protocol->write(service->server->backend, &service->state, service->state.id, service->state.current, args->buffer, args->count, service->state.offset);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, service->state.offset + service->state.count);
 
-    return count;
+    return service->state.count;
 
 }
 
@@ -171,7 +169,9 @@ static unsigned int seek(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor; unsigned int offset;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
 
-    return service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, args->offset);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, args->offset);
+
+    return service->state.offset;
 
 }
 

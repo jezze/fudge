@@ -17,6 +17,7 @@ struct service_state
     unsigned int id;
     unsigned int offset;
     unsigned int current;
+    unsigned int count;
 
 };
 
