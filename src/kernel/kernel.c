@@ -45,7 +45,7 @@ struct service_mount *kernel_getfreemount(void)
 
 }
 
-unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
+static unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
 {
 
     if (service->server == from->server && service->state.id == from->id)
