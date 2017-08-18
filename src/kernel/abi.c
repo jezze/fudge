@@ -46,15 +46,14 @@ static unsigned int walk(struct task *task, void *stack)
     service->server = pservice->server;
     service->state.id = pservice->state.id;
 
-    if (!args->length)
-        return 1;
-
     for (offset = 0; offset < args->length; offset += length + 1)
     {
 
-        length = memory_findbyte(args->path + offset, args->length - offset, '/');
+        char *path = args->path + offset;
 
-        if (length == 2 && args->path[offset] == '.' && args->path[offset + 1] == '.')
+        length = memory_findbyte(path, args->length - offset, '/');
+
+        if (length == 2 && path[0] == '.' && path[1] == '.')
         {
 
             walkmount(service, 1);
@@ -67,7 +66,7 @@ static unsigned int walk(struct task *task, void *stack)
         else
         {
 
-            if (!service->server->protocol->child(service->server->backend, &service->state, service->state.id, args->path + offset, length))
+            if (!service->server->protocol->child(service->server->backend, &service->state, service->state.id, path, length))
                 return 0;
 
             walkmount(service, 0);
