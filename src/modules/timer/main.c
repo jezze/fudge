@@ -35,7 +35,7 @@ static unsigned int interfacesleep_open(struct system_node *self, struct service
 
     list_add(&interface->sleepstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -46,7 +46,7 @@ static unsigned int interfacesleep_close(struct system_node *self, struct servic
 
     list_remove(&interface->sleepstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -57,7 +57,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     list_add(&interface->eventstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -68,7 +68,7 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     list_remove(&interface->eventstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 

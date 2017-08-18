@@ -64,7 +64,7 @@ static unsigned int interfacedata_open(struct system_node *self, struct service_
 
     list_add(&interface->datastates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -75,7 +75,7 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
     list_remove(&interface->datastates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -86,7 +86,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     list_add(&interface->eventstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -97,7 +97,7 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     list_remove(&interface->eventstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 

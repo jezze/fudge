@@ -74,7 +74,7 @@ static unsigned int critical_open(struct system_node *self, struct service_state
 
     list_add(&criticalstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -83,7 +83,7 @@ static unsigned int critical_close(struct system_node *self, struct service_stat
 
     list_remove(&criticalstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -92,7 +92,7 @@ static unsigned int error_open(struct system_node *self, struct service_state *s
 
     list_add(&errorstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -101,7 +101,7 @@ static unsigned int error_close(struct system_node *self, struct service_state *
 
     list_remove(&errorstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -110,7 +110,7 @@ static unsigned int warning_open(struct system_node *self, struct service_state 
 
     list_add(&warningstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -119,7 +119,7 @@ static unsigned int warning_close(struct system_node *self, struct service_state
 
     list_remove(&warningstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -128,7 +128,7 @@ static unsigned int info_open(struct system_node *self, struct service_state *st
 
     list_add(&infostates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -137,7 +137,7 @@ static unsigned int info_close(struct system_node *self, struct service_state *s
 
     list_remove(&infostates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 

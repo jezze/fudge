@@ -13,7 +13,7 @@ static unsigned int end_open(struct system_node *self, struct service_state *sta
 
     end->refcount++;
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -42,7 +42,7 @@ static unsigned int end_close(struct system_node *self, struct service_state *st
 
     }
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 

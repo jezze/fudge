@@ -30,7 +30,7 @@ static unsigned int event_open(struct system_node *self, struct service_state *s
 
     list_add(&eventstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -39,7 +39,7 @@ static unsigned int event_close(struct system_node *self, struct service_state *
 
     list_remove(&eventstates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 

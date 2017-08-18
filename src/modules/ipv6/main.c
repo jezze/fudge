@@ -34,7 +34,7 @@ static unsigned int protocoldata_open(struct system_node *self, struct service_s
 
     list_add(&protocol->datastates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
@@ -45,7 +45,7 @@ static unsigned int protocoldata_close(struct system_node *self, struct service_
 
     list_remove(&protocol->datastates, &state->item);
 
-    return state->id;
+    return (unsigned int)self;
 
 }
 
