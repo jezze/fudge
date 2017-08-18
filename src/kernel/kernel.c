@@ -239,7 +239,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     struct service *service = kernel_getservice(task, 0);
 
-    task->node.physical = service->server->protocol->map(service->server->backend, &service->state);
+    task->node.physical = service->server->protocol->map(service->server->backend, &service->state, service->state.id);
 
     if (!task->node.physical)
         return 0;
@@ -275,8 +275,8 @@ void kernel_setupramdisk(struct task *task, struct service_backend *backend)
     mount->child.server = server;
     mount->child.id = server->root;
 
-    server->protocol->child(server->backend, &init->state, "bin", 3);
-    server->protocol->child(server->backend, &init->state, "init", 4);
+    server->protocol->child(server->backend, &init->state, init->state.id, "bin", 3);
+    server->protocol->child(server->backend, &init->state, init->state.id, "init", 4);
 
     kernel_useserver(server);
     kernel_usemount(mount);

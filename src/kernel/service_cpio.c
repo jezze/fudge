@@ -88,21 +88,21 @@ static unsigned int protocol_root(struct service_backend *backend)
 
 }
 
-static unsigned int protocol_parent(struct service_backend *backend, struct service_state *state)
+static unsigned int protocol_parent(struct service_backend *backend, struct service_state *state, unsigned int id)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(backend, &header, id))
         return 0;
 
-    state->id = parent(backend, &header, state->id);
+    state->id = parent(backend, &header, id);
 
     return 1;
 
 }
 
-static unsigned int protocol_child(struct service_backend *backend, struct service_state *state, char *path, unsigned int length)
+static unsigned int protocol_child(struct service_backend *backend, struct service_state *state, unsigned int id, char *path, unsigned int length)
 {
 
     struct cpio_header header;
@@ -110,10 +110,10 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
     char name[1024];
     unsigned int current = 0;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(backend, &header, id))
         return 0;
 
-    if (!readname(backend, &header, state->id, name, 1024, 0))
+    if (!readname(backend, &header, id, name, 1024, 0))
         return 0;
 
     if (path[length - 1] == '/')
@@ -124,7 +124,7 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 
         char cname[1024];
 
-        if (current == state->id)
+        if (current == id)
             break;
 
         if (!readheader(backend, &eheader, current))
@@ -149,14 +149,14 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int protocol_create(struct service_backend *backend, struct service_state *state, char *name, unsigned int length)
+static unsigned int protocol_create(struct service_backend *backend, struct service_state *state, unsigned int id, char *name, unsigned int length)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_destroy(struct service_backend *backend, struct service_state *state, char *name, unsigned int length)
+static unsigned int protocol_destroy(struct service_backend *backend, struct service_state *state, unsigned int id, char *name, unsigned int length)
 {
 
     return 0;
@@ -189,19 +189,19 @@ static unsigned int stepdirectory(struct service_backend *backend, unsigned int 
 
 }
 
-static unsigned int protocol_step(struct service_backend *backend, struct service_state *state, unsigned int current)
+static unsigned int protocol_step(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(backend, &header, id))
         return 0;
 
     switch (header.mode & 0xF000)
     {
 
     case 0x4000:
-        return stepdirectory(backend, state->id, current);
+        return stepdirectory(backend, id, (id == current) ? 0 : current);
 
     }
 
@@ -209,17 +209,17 @@ static unsigned int protocol_step(struct service_backend *backend, struct servic
 
 }
 
-static unsigned int protocol_open(struct service_backend *backend, struct service_state *state)
+static unsigned int protocol_open(struct service_backend *backend, struct service_state *state, unsigned int id)
 {
 
-    return state->id;
+    return id;
 
 }
 
-static unsigned int protocol_close(struct service_backend *backend, struct service_state *state)
+static unsigned int protocol_close(struct service_backend *backend, struct service_state *state, unsigned int id)
 {
 
-    return state->id;
+    return id;
 
 }
 
@@ -253,22 +253,22 @@ static unsigned int readdirectory(struct service_backend *backend, void *buffer,
 
 }
 
-static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(backend, &header, id))
         return 0;
 
     switch (header.mode & 0xF000)
     {
 
     case 0x8000:
-        return readfile(backend, buffer, count, state->offset, state->id, &header);
+        return readfile(backend, buffer, count, offset, id, &header);
 
     case 0x4000:
-        return readdirectory(backend, buffer, count, state->offset, state->current, &header);
+        return readdirectory(backend, buffer, count, offset, state->current, &header);
 
     }
 
@@ -286,19 +286,19 @@ static unsigned int writefile(struct service_backend *backend, void *buffer, uns
 
 }
 
-static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(backend, &header, id))
         return 0;
 
     switch (header.mode & 0xF000)
     {
 
     case 0x8000:
-        return writefile(backend, buffer, count, state->offset, state->id, &header);
+        return writefile(backend, buffer, count, offset, id, &header);
 
     }
 
@@ -306,22 +306,22 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 
 }
 
-static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int offset)
+static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int offset)
 {
 
     return offset;
 
 }
 
-static unsigned int protocol_map(struct service_backend *backend, struct service_state *state)
+static unsigned int protocol_map(struct service_backend *backend, struct service_state *state, unsigned int id)
 {
 
     struct cpio_header header;
 
-    if (!readheader(backend, &header, state->id))
+    if (!readheader(backend, &header, id))
         return 0;
 
-    return backend->map(cpio_filedata(&header, state->id), cpio_filesize(&header));
+    return backend->map(cpio_filedata(&header, id), cpio_filesize(&header));
 
 }
 

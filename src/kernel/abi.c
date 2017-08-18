@@ -71,7 +71,7 @@ static unsigned int walk(struct task *task, void *stack)
 
             walkmount(service, 1);
 
-            if (!service->server->protocol->parent(service->server->backend, &service->state))
+            if (!service->server->protocol->parent(service->server->backend, &service->state, service->state.id))
                 return 0;
 
         }
@@ -79,7 +79,7 @@ static unsigned int walk(struct task *task, void *stack)
         else
         {
 
-            if (!service->server->protocol->child(service->server->backend, &service->state, args->path + offset, length))
+            if (!service->server->protocol->child(service->server->backend, &service->state, service->state.id, args->path + offset, length))
                 return 0;
 
             walkmount(service, 0);
@@ -101,7 +101,7 @@ static unsigned int create(struct task *task, void *stack)
     if (!args->length || !args->name)
         return 0;
 
-    return service->server->protocol->create(service->server->backend, &service->state, args->name, args->length);
+    return service->server->protocol->create(service->server->backend, &service->state, service->state.id, args->name, args->length);
 
 }
 
@@ -114,7 +114,7 @@ static unsigned int destroy(struct task *task, void *stack)
     if (!args->length || !args->name)
         return 0;
 
-    return service->server->protocol->destroy(service->server->backend, &service->state, args->name, args->length);
+    return service->server->protocol->destroy(service->server->backend, &service->state, service->state.id, args->name, args->length);
 
 }
 
@@ -124,9 +124,9 @@ static unsigned int open(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
 
-    service->state.id = service->server->protocol->open(service->server->backend, &service->state);
-    service->state.current = service->server->protocol->step(service->server->backend, &service->state, 0);
-    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
+    service->state.id = service->server->protocol->open(service->server->backend, &service->state, service->state.id);
+    service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.id, service->state.id);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, 0);
 
     return service->state.id;
 
@@ -138,9 +138,9 @@ static unsigned int close(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
 
-    service->state.id = service->server->protocol->close(service->server->backend, &service->state);
-    service->state.current = service->server->protocol->step(service->server->backend, &service->state, 0);
-    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
+    service->state.id = service->server->protocol->close(service->server->backend, &service->state, service->state.id);
+    service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.id, service->state.id);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, 0);
 
     return service->state.id;
 
@@ -152,8 +152,8 @@ static unsigned int step(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
 
-    service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.current);
-    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, 0);
+    service->state.current = service->server->protocol->step(service->server->backend, &service->state, service->state.id, service->state.current);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, 0);
 
     return service->state.current;
 
@@ -169,8 +169,8 @@ static unsigned int read(struct task *task, void *stack)
     if (!args->buffer || !args->count)
         return 0;
 
-    count = service->server->protocol->read(service->server->backend, &service->state, args->buffer, args->count);
-    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.offset + count);
+    count = service->server->protocol->read(service->server->backend, &service->state, service->state.id, args->buffer, args->count, service->state.offset);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, service->state.offset + count);
 
     return count;
 
@@ -186,8 +186,8 @@ static unsigned int write(struct task *task, void *stack)
     if (!args->buffer || !args->count)
         return 0;
 
-    count = service->server->protocol->write(service->server->backend, &service->state, args->buffer, args->count);
-    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.offset + count);
+    count = service->server->protocol->write(service->server->backend, &service->state, service->state.id, args->buffer, args->count, service->state.offset);
+    service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, service->state.offset + count);
 
     return count;
 
@@ -199,7 +199,7 @@ static unsigned int seek(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor; unsigned int offset;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
 
-    return service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, args->offset);
+    return service->state.offset = service->server->protocol->seek(service->server->backend, &service->state, service->state.id, args->offset);
 
 }
 
@@ -272,7 +272,7 @@ static unsigned int load(struct task *task, void *stack)
     void (*module_init)(void);
     void (*module_register)(void);
 
-    node.physical = service->server->protocol->map(service->server->backend, &service->state);
+    node.physical = service->server->protocol->map(service->server->backend, &service->state, service->state.id);
 
     if (!node.physical)
         return 0;
@@ -308,7 +308,7 @@ static unsigned int unload(struct task *task, void *stack)
     struct binary_node node;
     void (*module_unregister)(void);
 
-    node.physical = service->server->protocol->map(service->server->backend, &service->state);
+    node.physical = service->server->protocol->map(service->server->backend, &service->state, service->state.id);
 
     if (!node.physical)
         return 0;
