@@ -45,7 +45,7 @@ struct service_mount *kernel_getfreemount(void)
 
 }
 
-struct service_node *kernel_findnode(struct service_server *server, unsigned int id, unsigned int parent)
+void kernel_findmountparent(struct service *service)
 {
 
     struct list_item *current;
@@ -54,15 +54,38 @@ struct service_node *kernel_findnode(struct service_server *server, unsigned int
     {
 
         struct service_mount *mount = current->data;
-        struct service_node *from = (parent) ? &mount->child : &mount->parent;
-        struct service_node *to = (parent) ? &mount->parent : &mount->child;
 
-        if (server == from->server && id == from->id)
-            return to;
+        if (service->server == mount->child.server && service->state.id == mount->child.id)
+        {
+
+            service->server = mount->parent.server;
+            service->state.id = mount->parent.id;
+
+        }
 
     }
 
-    return 0;
+}
+
+void kernel_findmountchild(struct service *service)
+{
+
+    struct list_item *current;
+
+    for (current = usedmounts.head; current; current = current->next)
+    {
+
+        struct service_mount *mount = current->data;
+
+        if (service->server == mount->parent.server && service->state.id == mount->parent.id)
+        {
+
+            service->server = mount->child.server;
+            service->state.id = mount->child.id;
+
+        }
+
+    }
 
 }
 

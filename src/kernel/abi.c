@@ -16,21 +16,6 @@ static unsigned int debug(struct task *task, void *stack)
 
 }
 
-static void walkmount(struct service *service, unsigned int parent)
-{
-
-    struct service_node *node = kernel_findnode(service->server, service->state.id, parent);
-
-    if (node)
-    {
-
-        service->server = node->server;
-        service->state.id = node->id;
-
-    }
-
-}
-
 static unsigned int walk(struct task *task, void *stack)
 {
 
@@ -54,7 +39,7 @@ static unsigned int walk(struct task *task, void *stack)
         if (length == 2 && path[0] == '.' && path[1] == '.')
         {
 
-            walkmount(service, 1);
+            kernel_findmountparent(service);
 
             if (!service->server->protocol->parent(service->server->backend, &service->state, service->state.id))
                 return 0;
@@ -67,7 +52,7 @@ static unsigned int walk(struct task *task, void *stack)
             if (!service->server->protocol->child(service->server->backend, &service->state, service->state.id, path, length))
                 return 0;
 
-            walkmount(service, 0);
+            kernel_findmountchild(service);
 
         }
 
