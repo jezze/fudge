@@ -55,6 +55,45 @@ static unsigned int parent(struct service_backend *backend, struct cpio_header *
 
 }
 
+static unsigned int child(struct service_backend *backend, struct cpio_header *header, unsigned int id, char *path, unsigned int length)
+{
+
+    struct cpio_header eheader;
+    char name[1024];
+    unsigned int current = 0;
+
+    if (!readname(backend, header, id, name, 1024, 0))
+        return 0;
+
+    if (path[length - 1] == '/')
+        length--;
+
+    do
+    {
+
+        char cname[1024];
+
+        if (current == id)
+            break;
+
+        if (!readheader(backend, &eheader, current))
+            break;
+
+        if (eheader.namesize - header->namesize != length + 1)
+            continue;
+
+        if (!readname(backend, &eheader, current, cname, 1024, header->namesize))
+            break;
+
+        if (memory_match(cname, path, length))
+            return current;
+
+    } while ((current = cpio_next(&eheader, current)));
+
+    return 0;
+
+}
+
 static unsigned int protocol_match(struct service_backend *backend)
 {
 
@@ -106,46 +145,13 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 {
 
     struct cpio_header header;
-    struct cpio_header eheader;
-    char name[1024];
-    unsigned int current = 0;
 
     if (!readheader(backend, &header, id))
         return 0;
 
-    if (!readname(backend, &header, id, name, 1024, 0))
-        return 0;
+    state->id = child(backend, &header, id, path, length);
 
-    if (path[length - 1] == '/')
-        length--;
-
-    do
-    {
-
-        char cname[1024];
-
-        if (current == id)
-            break;
-
-        if (!readheader(backend, &eheader, current))
-            break;
-
-        if (eheader.namesize - header.namesize != length + 1)
-            continue;
-
-        if (!readname(backend, &eheader, current, cname, 1024, header.namesize))
-            break;
-
-        if (!memory_match(cname, path, length))
-            continue;
-
-        state->id = current;
-
-        return 1;
-
-    } while ((current = cpio_next(&eheader, current)));
-
-    return 0;
+    return 1;
 
 }
 
