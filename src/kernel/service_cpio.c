@@ -65,9 +65,6 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
     if (!readname(backend, header, id, name, 1024, 0))
         return id;
 
-    if (path[length - 1] == '/')
-        length--;
-
     do
     {
 

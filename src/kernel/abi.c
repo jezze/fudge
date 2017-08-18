@@ -31,20 +31,6 @@ static void walkmount(struct service *service, unsigned int parent)
 
 }
 
-static unsigned int walknext(char *path, unsigned int length)
-{
-
-    unsigned int i;
-
-    if (!length)
-        return 0;
-
-    for (i = 1; i < length && path[i - 1] != '/'; i++);
-
-    return i;
-
-}
-
 static unsigned int walk(struct task *task, void *stack)
 {
 
@@ -63,8 +49,10 @@ static unsigned int walk(struct task *task, void *stack)
     if (!args->length)
         return 1;
 
-    for (offset = 0; (length = walknext(args->path + offset, args->length - offset)); offset += length)
+    for (offset = 0; offset < args->length; offset += length + 1)
     {
+
+        length = memory_findbyte(args->path + offset, args->length - offset, '/');
 
         if (length == 2 && args->path[offset] == '.' && args->path[offset + 1] == '.')
         {
