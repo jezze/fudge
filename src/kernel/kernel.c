@@ -45,7 +45,24 @@ struct service_mount *kernel_getfreemount(void)
 
 }
 
-void kernel_findmountparent(struct service *service)
+unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
+{
+
+    if (service->server == from->server && service->state.id == from->id)
+    {
+
+        service->server = to->server;
+        service->state.id = to->id;
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+void kernel_walkmountparent(struct service *service)
 {
 
     struct list_item *current;
@@ -55,19 +72,14 @@ void kernel_findmountparent(struct service *service)
 
         struct service_mount *mount = current->data;
 
-        if (service->server == mount->child.server && service->state.id == mount->child.id)
-        {
-
-            service->server = mount->parent.server;
-            service->state.id = mount->parent.id;
-
-        }
+        if (walkmount(service, &mount->child, &mount->parent))
+            break;
 
     }
 
 }
 
-void kernel_findmountchild(struct service *service)
+void kernel_walkmountchild(struct service *service)
 {
 
     struct list_item *current;
@@ -77,13 +89,8 @@ void kernel_findmountchild(struct service *service)
 
         struct service_mount *mount = current->data;
 
-        if (service->server == mount->parent.server && service->state.id == mount->parent.id)
-        {
-
-            service->server = mount->child.server;
-            service->state.id = mount->child.id;
-
-        }
+        if (walkmount(service, &mount->parent, &mount->child))
+            break;
 
     }
 

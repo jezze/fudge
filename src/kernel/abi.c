@@ -39,7 +39,7 @@ static unsigned int walk(struct task *task, void *stack)
         if (length == 2 && path[0] == '.' && path[1] == '.')
         {
 
-            kernel_findmountparent(service);
+            kernel_walkmountparent(service);
 
             if (!service->server->protocol->parent(service->server->backend, &service->state, service->state.id))
                 return 0;
@@ -52,7 +52,7 @@ static unsigned int walk(struct task *task, void *stack)
             if (!service->server->protocol->child(service->server->backend, &service->state, service->state.id, path, length))
                 return 0;
 
-            kernel_findmountchild(service);
+            kernel_walkmountchild(service);
 
         }
 
