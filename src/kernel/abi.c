@@ -37,8 +37,7 @@ static unsigned int walk(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *path; unsigned int length;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
     struct service *pservice = kernel_getservice(task, args->pdescriptor);
-    unsigned int offset;
-    unsigned int length;
+    unsigned int offset = 0;
 
     if (!pservice->server)
         return 0;
@@ -46,12 +45,11 @@ static unsigned int walk(struct task *task, void *stack)
     service->server = pservice->server;
     service->state.id = pservice->state.id;
 
-    for (offset = 0; offset < args->length; offset += length + 1)
+    while (offset < args->length)
     {
 
         char *path = args->path + offset;
-
-        length = memory_findbyte(path, args->length - offset, '/');
+        unsigned int length = memory_findbyte(path, args->length - offset, '/');
 
         if (length == 2 && path[0] == '.' && path[1] == '.')
         {
@@ -72,6 +70,8 @@ static unsigned int walk(struct task *task, void *stack)
             walkmount(service, 0);
 
         }
+
+        offset += length + 1;
 
     }
 
