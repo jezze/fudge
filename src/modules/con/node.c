@@ -82,17 +82,17 @@ static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *udphe
 
 }
 
-static unsigned int udptablenode_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int udptablenode_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, udptable, sizeof (struct udp_session) * UDPTABLESIZE, state->offset);
+    return memory_read(buffer, count, udptable, sizeof (struct udp_session) * UDPTABLESIZE, offset);
 
 }
 
-static unsigned int udptablenode_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int udptablenode_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write(udptable, sizeof (struct udp_session) * UDPTABLESIZE, buffer, count, state->offset);
+    return memory_write(udptable, sizeof (struct udp_session) * UDPTABLESIZE, buffer, count, offset);
 
 }
 

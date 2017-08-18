@@ -42,14 +42,14 @@ unsigned int system_childgroup(struct system_node *self, struct service_state *s
 
 }
 
-unsigned int system_readtask(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+unsigned int system_readtask(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return kernel_readtask(state->task, buffer, count);
 
 }
 
-unsigned int system_readgroup(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+unsigned int system_readgroup(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct record record;
@@ -72,7 +72,7 @@ unsigned int system_readgroup(struct system_node *self, struct service_state *st
 
     }
 
-    return memory_read(buffer, count, &record, sizeof (struct record), state->offset);
+    return memory_read(buffer, count, &record, sizeof (struct record), offset);
 
 }
 

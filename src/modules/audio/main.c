@@ -5,21 +5,21 @@
 
 static struct system_node root;
 
-static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct audio_interface *interface = self->resource->data;
 
-    return interface->rdata(state->offset, buffer, count);
+    return interface->rdata(offset, buffer, count);
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct audio_interface *interface = self->resource->data;
 
-    return interface->wdata(state->offset, buffer, count);
+    return interface->wdata(offset, buffer, count);
 
 }
 

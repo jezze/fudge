@@ -34,14 +34,14 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct block_interface *interface = self->resource->data;
     unsigned int c = ring_read(&state->task->mailbox, buffer, count);
 
     if (!c)
-        interface->rdata(buffer, count, state->offset);
+        interface->rdata(buffer, count, offset);
 
     return c;
 

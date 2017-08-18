@@ -11,14 +11,14 @@ static struct list eventstates;
 static char databuffer[FUDGE_BSIZE];
 static struct ring dataring;
 
-static unsigned int data_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int data_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return ring_read(&dataring, buffer, count);
 
 }
 
-static unsigned int data_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int data_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return ring_write(&dataring, buffer, count);
@@ -43,7 +43,7 @@ static unsigned int event_close(struct system_node *self, struct service_state *
 
 }
 
-static unsigned int event_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int event_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return event_send(&eventstates, state, buffer, count);

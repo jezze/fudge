@@ -46,7 +46,7 @@ static unsigned int end_close(struct system_node *self, struct service_state *st
 
 }
 
-static unsigned int end_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int end_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct pipe_end *end = (struct pipe_end *)self;
@@ -85,7 +85,7 @@ static unsigned int end_read(struct system_node *self, struct service_state *sta
 
 }
 
-static unsigned int end_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int end_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct pipe_end *end = (struct pipe_end *)self;

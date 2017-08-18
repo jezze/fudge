@@ -22,16 +22,16 @@ struct system_node
     unsigned int index;
     unsigned int (*open)(struct system_node *self, struct service_state *state);
     unsigned int (*close)(struct system_node *self, struct service_state *state);
-    unsigned int (*read)(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
-    unsigned int (*write)(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
+    unsigned int (*read)(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
+    unsigned int (*write)(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
     unsigned int (*child)(struct system_node *self, struct service_state *state, char *path, unsigned int length);
     unsigned int (*seek)(struct system_node *self, struct service_state *state, unsigned int offset);
 
 };
 
 unsigned int system_childgroup(struct system_node *self, struct service_state *state, char *path, unsigned int length);
-unsigned int system_readtask(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
-unsigned int system_readgroup(struct system_node *self, struct service_state *state, void *buffer, unsigned int count);
+unsigned int system_readtask(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
+unsigned int system_readgroup(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
 unsigned int system_seek(struct system_node *self, struct service_state *state, unsigned int offset);
 void system_addchild(struct system_node *group, struct system_node *node);
 void system_removechild(struct system_node *group, struct system_node *node);

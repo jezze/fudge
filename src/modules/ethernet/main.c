@@ -48,7 +48,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
 }
 
-static unsigned int interfaceaddr_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int interfaceaddr_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct ethernet_interface *interface = self->resource->data;
@@ -56,7 +56,7 @@ static unsigned int interfaceaddr_read(struct system_node *self, struct service_
 
     interface->getaddress(address);
 
-    return memory_read(buffer, count, address, ETHERNET_ADDRSIZE, state->offset);
+    return memory_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
 
 }
 

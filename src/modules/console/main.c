@@ -12,12 +12,12 @@ void console_notify(struct console_interface *interface, void *buffer, unsigned 
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct console_interface *interface = self->resource->data;
 
-    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_consolesettings), state->offset);
+    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 
@@ -43,7 +43,7 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
 }
 
-static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int interfacedata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct console_interface *interface = self->resource->data;

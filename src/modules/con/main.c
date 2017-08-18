@@ -27,21 +27,21 @@ static unsigned int clone_child(struct system_node *self, struct service_state *
 
 }
 
-static unsigned int conctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int conctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct con *con = self->resource->data;
 
-    return memory_read(buffer, count, &con->settings, sizeof (struct ctrl_consettings), state->offset);
+    return memory_read(buffer, count, &con->settings, sizeof (struct ctrl_consettings), offset);
 
 }
 
-static unsigned int conctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int conctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct con *con = self->resource->data;
 
-    return memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, state->offset);
+    return memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, offset);
 
 }
 
@@ -69,7 +69,7 @@ static unsigned int condata_close(struct system_node *self, struct service_state
 
 }
 
-static unsigned int condata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count)
+static unsigned int condata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct con *con = self->resource->data;
