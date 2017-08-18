@@ -38,7 +38,7 @@ unsigned int system_childgroup(struct system_node *self, struct service_state *s
 
     }
 
-    return 0;
+    return (unsigned int)self;
 
 }
 

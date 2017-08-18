@@ -33,7 +33,7 @@ static unsigned int parent(struct service_backend *backend, struct cpio_header *
     unsigned int current = id;
 
     if (!readname(backend, header, id, name, 1024, 0))
-        return 0;
+        return id;
 
     length = ascii_dname(dname, 1024, name, header->namesize - 1);
 
@@ -63,7 +63,7 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
     unsigned int current = 0;
 
     if (!readname(backend, header, id, name, 1024, 0))
-        return 0;
+        return id;
 
     if (path[length - 1] == '/')
         length--;
@@ -90,7 +90,7 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
 
     } while ((current = cpio_next(&eheader, current)));
 
-    return 0;
+    return id;
 
 }
 

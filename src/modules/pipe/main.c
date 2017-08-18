@@ -145,7 +145,7 @@ static unsigned int clone_child(struct system_node *self, struct service_state *
 
     }
 
-    return 0;
+    return (unsigned int)self;
 
 }
 
