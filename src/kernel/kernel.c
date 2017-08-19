@@ -48,11 +48,11 @@ struct service_mount *kernel_getfreemount(void)
 static unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
 {
 
-    if (service->server == from->server && service->descriptor.id == from->id)
+    if (service->server == from->server && service->id == from->id)
     {
 
         service->server = to->server;
-        service->descriptor.id = to->id;
+        service->id = to->id;
 
         return 1;
 
@@ -206,7 +206,7 @@ static void copyservice(struct service *tservice, struct service *sservice)
 {
 
     tservice->server = (sservice) ? sservice->server : 0;
-    tservice->descriptor.id = (sservice) ? sservice->descriptor.id : 0;
+    tservice->id = (sservice) ? sservice->id : 0;
 
 }
 
@@ -269,7 +269,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     struct service *service = kernel_getservice(task, 0);
 
-    task->node.physical = service->server->protocol->map(service->server->backend, &service->state, service->descriptor.id);
+    task->node.physical = service->server->protocol->map(service->server->backend, &service->state, service->id);
 
     if (!task->node.physical)
         return 0;
@@ -297,16 +297,16 @@ void kernel_setupramdisk(struct task *task, struct service_backend *backend)
     server->protocol = service_findprotocol(1000);
     server->root = server->protocol->root(backend);
     root->server = server;
-    root->descriptor.id = server->root;
+    root->id = server->root;
     init->server = server;
-    init->descriptor.id = server->root;
+    init->id = server->root;
     mount->parent.server = server;
     mount->parent.id = server->root;
     mount->child.server = server;
     mount->child.id = server->root;
 
-    init->descriptor.id = server->protocol->child(server->backend, &init->state, init->descriptor.id, "bin", 3);
-    init->descriptor.id = server->protocol->child(server->backend, &init->state, init->descriptor.id, "init", 4);
+    init->id = server->protocol->child(server->backend, &init->state, init->id, "bin", 3);
+    init->id = server->protocol->child(server->backend, &init->state, init->id, "init", 4);
 
     kernel_useserver(server);
     kernel_usemount(mount);

@@ -63,16 +63,6 @@ void service_initstate(struct service_state *state, struct task *task)
 
 }
 
-void service_initdescriptor(struct service_descriptor *descriptor)
-{
-
-    descriptor->id = 0;
-    descriptor->offset = 0;
-    descriptor->current = 0;
-    descriptor->count = 0;
-
-}
-
 void service_initprotocol(struct service_protocol *protocol, unsigned int id, unsigned int (*match)(struct service_backend *backend), unsigned int (*root)(struct service_backend *backend), unsigned int (*parent)(struct service_backend *backend, struct service_state *state, unsigned int id), unsigned int (*child)(struct service_backend *backend, struct service_state *state, unsigned int id, char *path, unsigned int length), unsigned int (*create)(struct service_backend *backend, struct service_state *state, unsigned int id, char *name, unsigned int length), unsigned int (*destroy)(struct service_backend *backend, struct service_state *state, unsigned int id, char *name, unsigned int length), unsigned int (*step)(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current), unsigned int (*open)(struct service_backend *backend, struct service_state *state, unsigned int id), unsigned int (*close)(struct service_backend *backend, struct service_state *state, unsigned int id), unsigned int (*read)(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset), unsigned int (*write)(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset), unsigned int (*seek)(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int offset), unsigned int (*map)(struct service_backend *backend, struct service_state *state, unsigned int id))
 {
 
@@ -113,7 +103,6 @@ void service_init(struct service *service, struct task *task)
 {
 
     service_initstate(&service->state, task);
-    service_initdescriptor(&service->descriptor);
 
     service->server = 0;
 
