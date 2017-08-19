@@ -60,10 +60,16 @@ void service_initstate(struct service_state *state, struct task *task)
     list_inititem(&state->item, state);
 
     state->task = task;
-    state->id = 0;
-    state->offset = 0;
-    state->current = 0;
-    state->count = 0;
+
+}
+
+void service_initdescriptor(struct service_descriptor *descriptor)
+{
+
+    descriptor->id = 0;
+    descriptor->offset = 0;
+    descriptor->current = 0;
+    descriptor->count = 0;
 
 }
 
@@ -107,6 +113,7 @@ void service_init(struct service *service, struct task *task)
 {
 
     service_initstate(&service->state, task);
+    service_initdescriptor(&service->descriptor);
 
     service->server = 0;
 
