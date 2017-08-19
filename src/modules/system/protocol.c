@@ -95,8 +95,9 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
 {
 
     struct system_node *node = (struct system_node *)id;
+    struct system_node *currentnode = (struct system_node *)current;
 
-    return (node->read) ? node->read(node, state, buffer, count, offset) : 0;
+    return (node->read) ? node->read(node, currentnode, state, buffer, count, offset) : 0;
         
 }
 
@@ -104,8 +105,9 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 {
 
     struct system_node *node = (struct system_node *)id;
+    struct system_node *currentnode = (struct system_node *)current;
 
-    return (node->write) ? node->write(node, state, buffer, count, offset) : 0;
+    return (node->write) ? node->write(node, currentnode, state, buffer, count, offset) : 0;
 
 }
 

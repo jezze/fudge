@@ -5,7 +5,7 @@
 
 static struct system_node root;
 
-static unsigned int interfacectrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int interfacectrl_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct clock_interface *interface = self->resource->data;

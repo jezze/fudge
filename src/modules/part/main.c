@@ -47,7 +47,7 @@ static unsigned int clone_child(struct system_node *self, struct service_state *
 
 }
 
-static unsigned int partctrl_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int partctrl_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct part *part = self->resource->data;
@@ -56,7 +56,7 @@ static unsigned int partctrl_read(struct system_node *self, struct service_state
 
 }
 
-static unsigned int partctrl_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int partctrl_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct part *part = self->resource->data;
@@ -85,23 +85,23 @@ static unsigned int partdata_close(struct system_node *self, struct service_stat
 
 }
 
-static unsigned int partdata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int partdata_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct part *part = self->resource->data;
     struct block_interface *interface = findinterface(part->settings.interface);
 
-    return interface->data.read(&interface->data, state, buffer, count, offset);
+    return interface->data.read(&interface->data, current, state, buffer, count, offset);
 
 }
 
-static unsigned int partdata_write(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int partdata_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct part *part = self->resource->data;
     struct block_interface *interface = findinterface(part->settings.interface);
 
-    return interface->data.write(&interface->data, state, buffer, count, offset);
+    return interface->data.write(&interface->data, current, state, buffer, count, offset);
 
 }
 

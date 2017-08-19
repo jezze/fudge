@@ -34,7 +34,7 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int interfacedata_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct block_interface *interface = self->resource->data;
