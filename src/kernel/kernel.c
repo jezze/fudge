@@ -305,8 +305,8 @@ void kernel_setupramdisk(struct task *task, struct service_backend *backend)
     mount->child.server = server;
     mount->child.id = server->root;
 
-    server->protocol->child(server->backend, &init->state, init->state.id, "bin", 3);
-    server->protocol->child(server->backend, &init->state, init->state.id, "init", 4);
+    init->state.id = server->protocol->child(server->backend, &init->state, init->state.id, "bin", 3);
+    init->state.id = server->protocol->child(server->backend, &init->state, init->state.id, "init", 4);
 
     kernel_useserver(server);
     kernel_usemount(mount);

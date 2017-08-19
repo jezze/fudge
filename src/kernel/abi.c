@@ -40,14 +40,16 @@ static unsigned int walk(struct task *task, void *stack)
         {
 
             kernel_walkmountparent(service);
-            service->server->protocol->parent(service->server->backend, &service->state, service->state.id);
+
+            service->state.id = service->server->protocol->parent(service->server->backend, &service->state, service->state.id);
 
         }
 
         else
         {
 
-            service->server->protocol->child(service->server->backend, &service->state, service->state.id, path, length);
+            service->state.id = service->server->protocol->child(service->server->backend, &service->state, service->state.id, path, length);
+
             kernel_walkmountchild(service);
 
         }

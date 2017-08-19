@@ -132,9 +132,7 @@ static unsigned int protocol_parent(struct service_backend *backend, struct serv
     if (!readheader(backend, &header, id))
         return 0;
 
-    state->id = parent(backend, &header, id);
-
-    return 1;
+    return parent(backend, &header, id);
 
 }
 
@@ -146,9 +144,7 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
     if (!readheader(backend, &header, id))
         return 0;
 
-    state->id = child(backend, &header, id, path, length);
-
-    return 1;
+    return child(backend, &header, id, path, length);
 
 }
 
