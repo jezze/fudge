@@ -183,7 +183,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
     interface->addr.seek = system_seek;
     interface->data.open = interfacedata_open;
     interface->data.close = interfacedata_close;
-    interface->data.read = system_readtask;
+    interface->data.read = system_readtaskmailbox;
 
 }
 
@@ -198,7 +198,7 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
     protocol->notify = notify;
     protocol->data.open = protocoldata_open;
     protocol->data.close = protocoldata_close;
-    protocol->data.read = system_readtask;
+    protocol->data.read = system_readtaskmailbox;
 
 }
 

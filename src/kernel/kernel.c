@@ -229,7 +229,7 @@ void kernel_copyservices(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_readtask(struct task *task, void *buffer, unsigned int count)
+unsigned int kernel_readtaskmailbox(struct task *task, void *buffer, unsigned int count)
 {
 
     count = ring_read(&task->mailbox, buffer, count);
@@ -241,7 +241,7 @@ unsigned int kernel_readtask(struct task *task, void *buffer, unsigned int count
 
 }
 
-unsigned int kernel_writetask(struct task *task, void *buffer, unsigned int count)
+unsigned int kernel_writetaskmailbox(struct task *task, void *buffer, unsigned int count)
 {
 
     kernel_unblocktask(task);
@@ -260,7 +260,7 @@ void kernel_multicast(struct list *states, void *buffer, unsigned int count)
 
         struct service_state *state = current->data;
 
-        kernel_writetask(state->task, buffer, count);
+        kernel_writetaskmailbox(state->task, buffer, count);
 
     }
 

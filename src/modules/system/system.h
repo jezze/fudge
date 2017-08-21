@@ -30,7 +30,7 @@ struct system_node
 };
 
 unsigned int system_childgroup(struct system_node *self, struct service_state *state, char *path, unsigned int length);
-unsigned int system_readtask(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
+unsigned int system_readtaskmailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
 unsigned int system_readgroup(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
 unsigned int system_seek(struct system_node *self, struct service_state *state, unsigned int offset);
 void system_addchild(struct system_node *group, struct system_node *node);

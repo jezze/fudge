@@ -78,7 +78,7 @@ void ipv6_initprotocol(struct ipv6_protocol *protocol, char *name, unsigned char
     protocol->notify = notify;
     protocol->data.open = protocoldata_open;
     protocol->data.close = protocoldata_close;
-    protocol->data.read = system_readtask;
+    protocol->data.read = system_readtaskmailbox;
 
 }
 

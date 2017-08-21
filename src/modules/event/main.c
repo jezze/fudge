@@ -19,7 +19,7 @@ void event_unicast(struct list *states, struct event_header *header, unsigned in
         if (header->destination != (unsigned int)state->task)
             continue;
 
-        kernel_writetask(state->task, header, count);
+        kernel_writetaskmailbox(state->task, header, count);
 
     }
 
@@ -37,7 +37,7 @@ void event_multicast(struct list *states, struct event_header *header, unsigned 
 
         header->destination = (unsigned int)state->task;
 
-        kernel_writetask(state->task, header, count);
+        kernel_writetaskmailbox(state->task, header, count);
 
     }
 
@@ -64,7 +64,7 @@ void module_init(void)
 
     system_initnode(&root, SYSTEM_NODETYPE_NORMAL, "event");
 
-    root.read = system_readtask;
+    root.read = system_readtaskmailbox;
 
 }
 

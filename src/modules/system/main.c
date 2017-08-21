@@ -42,10 +42,10 @@ unsigned int system_childgroup(struct system_node *self, struct service_state *s
 
 }
 
-unsigned int system_readtask(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+unsigned int system_readtaskmailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return kernel_readtask(state->task, buffer, count);
+    return kernel_readtaskmailbox(state->task, buffer, count);
 
 }
 

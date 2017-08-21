@@ -104,7 +104,7 @@ void timer_initinterface(struct timer_interface *interface)
 
     interface->sleep.open = interfacesleep_open;
     interface->sleep.close = interfacesleep_close;
-    interface->sleep.read = system_readtask;
+    interface->sleep.read = system_readtaskmailbox;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
 

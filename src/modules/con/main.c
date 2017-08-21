@@ -94,7 +94,7 @@ void con_init(struct con *con, void (*open)(void), void (*close)(void), unsigned
     con->ctrl.write = conctrl_write;
     con->data.open = condata_open;
     con->data.close = condata_close;
-    con->data.read = system_readtask;
+    con->data.read = system_readtaskmailbox;
     con->data.write = condata_write;
 
 }

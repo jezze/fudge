@@ -86,7 +86,7 @@ void console_initinterface(struct console_interface *interface, unsigned int (*s
     interface->ctrl.read = interfacectrl_read;
     interface->data.open = interfacedata_open;
     interface->data.close = interfacedata_close;
-    interface->data.read = system_readtask;
+    interface->data.read = system_readtaskmailbox;
     interface->data.write = interfacedata_write;
 
 }

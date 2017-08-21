@@ -118,7 +118,7 @@ void keyboard_initinterface(struct keyboard_interface *interface)
 
     interface->data.open = interfacedata_open;
     interface->data.close = interfacedata_close;
-    interface->data.read = system_readtask;
+    interface->data.read = system_readtaskmailbox;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
 
