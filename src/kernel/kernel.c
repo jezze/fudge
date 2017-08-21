@@ -10,7 +10,7 @@ static struct service_server servers[KERNEL_SERVERS];
 static struct service_mount mounts[KERNEL_MOUNTS];
 static struct service services[KERNEL_SERVICES];
 static struct list activetasks;
-static struct list inactivetasks;
+static struct list freetasks;
 static struct list blockedtasks;
 static struct list usedservers;
 static struct list freeservers;
@@ -25,10 +25,10 @@ struct task *kernel_getactivetask(void)
 
 }
 
-struct task *kernel_getinactivetask(void)
+struct task *kernel_getfreetask(void)
 {
 
-    return (inactivetasks.tail) ? inactivetasks.tail->data : 0;
+    return (freetasks.tail) ? freetasks.tail->data : 0;
 
 }
 
@@ -130,7 +130,7 @@ void kernel_inactivatetask(struct task *task)
     {
 
     case TASK_STATUS_ACTIVE:
-        list_move(&inactivetasks, &task->state.item);
+        list_move(&freetasks, &task->state.item);
 
         task->state.status = TASK_STATUS_INACTIVE;
 
@@ -325,7 +325,7 @@ void kernel_setuptasks(void)
         struct task *task = &tasks[i];
 
         task_init(task, i);
-        list_add(&inactivetasks, &task->state.item);
+        list_add(&freetasks, &task->state.item);
 
     }
 

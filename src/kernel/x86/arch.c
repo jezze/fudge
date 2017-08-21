@@ -133,7 +133,7 @@ static void loadregisters(struct task *task, struct cpu_general *general)
 static unsigned int spawn(struct task *task, void *stack)
 {
 
-    struct task *next = kernel_getinactivetask();
+    struct task *next = kernel_getfreetask();
 
     if (!next)
         return 0;
@@ -463,7 +463,7 @@ void arch_setup(struct service_backend *backend)
     kernel_setupmounts();
     kernel_setupservices();
 
-    current.task = kernel_getinactivetask();
+    current.task = kernel_getfreetask();
     current.ip = (unsigned int)cpu_halt;
     current.sp = KERNELSTACK;
 

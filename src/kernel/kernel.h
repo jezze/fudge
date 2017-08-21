@@ -4,7 +4,7 @@
 #define KERNEL_SERVICES                 4096
 
 struct task *kernel_getactivetask(void);
-struct task *kernel_getinactivetask(void);
+struct task *kernel_getfreetask(void);
 struct service_server *kernel_getfreeserver(void);
 struct service_mount *kernel_getfreemount(void);
 void kernel_walkmountparent(struct service *service);
