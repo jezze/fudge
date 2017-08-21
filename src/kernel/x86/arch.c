@@ -153,7 +153,7 @@ static unsigned int spawn(struct task *task, void *stack)
 static unsigned int despawn(struct task *task, void *stack)
 {
 
-    kernel_inactivatetask(task);
+    kernel_freetask(task);
 
     return 1;
 
@@ -256,7 +256,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     DEBUG(DEBUG_INFO, "exception: divide by zero");
 
     if (interrupt.cs.value == selector.ucode)
-        kernel_inactivatetask(current.task);
+        kernel_freetask(current.task);
 
     return arch_resume(&general, &interrupt);
 
@@ -389,7 +389,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         else
         {
 
-            kernel_inactivatetask(current.task);
+            kernel_freetask(current.task);
 
         }
 

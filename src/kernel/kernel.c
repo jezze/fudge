@@ -111,7 +111,7 @@ void kernel_activatetask(struct task *task)
     {
 
     case TASK_STATUS_ACTIVE:
-    case TASK_STATUS_INACTIVE:
+    case TASK_STATUS_FREE:
     case TASK_STATUS_UNBLOCKED:
         list_move(&activetasks, &task->state.item);
 
@@ -123,7 +123,7 @@ void kernel_activatetask(struct task *task)
 
 }
 
-void kernel_inactivatetask(struct task *task)
+void kernel_freetask(struct task *task)
 {
 
     switch (task->state.status)
@@ -132,7 +132,7 @@ void kernel_inactivatetask(struct task *task)
     case TASK_STATUS_ACTIVE:
         list_move(&freetasks, &task->state.item);
 
-        task->state.status = TASK_STATUS_INACTIVE;
+        task->state.status = TASK_STATUS_FREE;
 
         break;
 
@@ -182,7 +182,7 @@ void kernel_useserver(struct service_server *server)
 
 }
 
-void kernel_unuseserver(struct service_server *server)
+void kernel_freeserver(struct service_server *server)
 {
 
     list_move(&freeservers, &server->item);
@@ -196,7 +196,7 @@ void kernel_usemount(struct service_mount *mount)
 
 }
 
-void kernel_unusemount(struct service_mount *mount)
+void kernel_freemount(struct service_mount *mount)
 {
 
     list_move(&freemounts, &mount->item);
