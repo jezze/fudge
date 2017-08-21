@@ -68,6 +68,7 @@ struct service_mount
 struct service
 {
 
+    struct list_item item;
     struct service_server *server;
     struct service_state state;
     unsigned int id;

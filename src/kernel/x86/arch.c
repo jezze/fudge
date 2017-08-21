@@ -458,14 +458,15 @@ void arch_setup(struct service_backend *backend)
     abi_setup(spawn, despawn);
     binary_setupelf();
     service_setupcpio();
-
-    current.task = kernel_setuptasks();
-    current.ip = (unsigned int)cpu_halt;
-    current.sp = KERNELSTACK;
-
+    kernel_setuptasks();
     kernel_setupservers();
     kernel_setupmounts();
     kernel_setupservices();
+
+    current.task = kernel_getinactivetask();
+    current.ip = (unsigned int)cpu_halt;
+    current.sp = KERNELSTACK;
+
     kernel_setupramdisk(current.task, backend);
     mapcontainer();
     spawn(current.task, 0);

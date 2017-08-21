@@ -16,6 +16,7 @@ static struct list usedservers;
 static struct list freeservers;
 static struct list usedmounts;
 static struct list freemounts;
+static struct list freeservices;
 
 struct task *kernel_getactivetask(void)
 {
@@ -314,7 +315,7 @@ void kernel_setupramdisk(struct task *task, struct service_backend *backend)
 
 }
 
-struct task *kernel_setuptasks(void)
+void kernel_setuptasks(void)
 {
 
     unsigned int i;
@@ -328,8 +329,6 @@ struct task *kernel_setuptasks(void)
         list_add(&inactivetasks, &task->state.item);
 
     }
-
-    return kernel_getinactivetask();
 
 }
 
@@ -378,6 +377,7 @@ void kernel_setupservices(void)
         struct service *service = &services[i];
 
         service_init(service);
+        list_add(&freeservices, &service->item);
 
     }
 
