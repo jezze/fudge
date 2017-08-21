@@ -12,12 +12,26 @@ void task_setstate(struct task *task, unsigned int ip, unsigned int sp)
 
 }
 
+void task_initstate(struct task_state *state, struct task *task)
+{
+
+    list_inititem(&state->item, task);
+
+}
+
+void task_initmailbox(struct task_mailbox *mailbox)
+{
+
+    ring_init(&mailbox->ring, TASK_MAILBOXSIZE, mailbox->data);
+
+}
+
 void task_init(struct task *task, unsigned int id)
 {
 
     resource_init(&task->resource, RESOURCE_TASK, task);
-    list_inititem(&task->state.item, task);
-    ring_init(&task->mailbox, TASK_MAILBOXSIZE, task->mailboxdata);
+    task_initstate(&task->state, task);
+    task_initmailbox(&task->mailbox);
 
     task->id = id;
 

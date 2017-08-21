@@ -38,7 +38,7 @@ static unsigned int interfacedata_read(struct system_node *self, struct system_n
 {
 
     struct block_interface *interface = self->resource->data;
-    unsigned int c = ring_read(&state->task->mailbox, buffer, count);
+    unsigned int c = ring_read(&state->task->mailbox.ring, buffer, count);
 
     if (!c)
         interface->rdata(buffer, count, offset);

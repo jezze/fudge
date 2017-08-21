@@ -232,7 +232,7 @@ void kernel_copyservices(struct task *source, struct task *target)
 unsigned int kernel_readtaskmailbox(struct task *task, void *buffer, unsigned int count)
 {
 
-    count = ring_read(&task->mailbox, buffer, count);
+    count = ring_read(&task->mailbox.ring, buffer, count);
 
     if (!count)
         kernel_blocktask(task);
@@ -246,7 +246,7 @@ unsigned int kernel_writetaskmailbox(struct task *task, void *buffer, unsigned i
 
     kernel_unblocktask(task);
 
-    return (count < ring_avail(&task->mailbox)) ? ring_write(&task->mailbox, buffer, count) : 0;
+    return (count < ring_avail(&task->mailbox.ring)) ? ring_write(&task->mailbox.ring, buffer, count) : 0;
 
 }
 
