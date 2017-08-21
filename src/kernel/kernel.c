@@ -202,11 +202,12 @@ void kernel_unusemount(struct service_mount *mount)
 
 }
 
-static void copyservice(struct service *tservice, struct service *sservice)
+static void copyservice(struct service *tservice, struct service *sservice, struct task *task)
 {
 
     tservice->server = (sservice) ? sservice->server : 0;
     tservice->id = (sservice) ? sservice->id : 0;
+    tservice->state.task = task;
 
 }
 
@@ -218,10 +219,10 @@ void kernel_copyservices(struct task *source, struct task *target)
     for (i = 0; i < 8; i++)
     {
 
-        copyservice(kernel_getservice(target, i + 0), kernel_getservice(source, i + 8));
-        copyservice(kernel_getservice(target, i + 8), kernel_getservice(source, i + 8));
-        copyservice(kernel_getservice(target, i + 16), 0);
-        copyservice(kernel_getservice(target, i + 24), 0);
+        copyservice(kernel_getservice(target, i + 0), kernel_getservice(source, i + 8), target);
+        copyservice(kernel_getservice(target, i + 8), kernel_getservice(source, i + 8), target);
+        copyservice(kernel_getservice(target, i + 16), 0, target);
+        copyservice(kernel_getservice(target, i + 24), 0, target);
 
     }
 
@@ -376,7 +377,7 @@ void kernel_setupservices(void)
 
         struct service *service = &services[i];
 
-        service_init(service, &tasks[i / TASK_DESCRIPTORS]);
+        service_init(service);
 
     }
 

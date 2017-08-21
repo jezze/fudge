@@ -54,12 +54,10 @@ void service_initbackend(struct service_backend *backend, unsigned int id, unsig
 
 }
 
-void service_initstate(struct service_state *state, struct task *task)
+void service_initstate(struct service_state *state)
 {
 
     list_inititem(&state->item, state);
-
-    state->task = task;
 
 }
 
@@ -99,10 +97,10 @@ void service_initmount(struct service_mount *mount)
 
 }
 
-void service_init(struct service *service, struct task *task)
+void service_init(struct service *service)
 {
 
-    service_initstate(&service->state, task);
+    service_initstate(&service->state);
 
     service->server = 0;
 
