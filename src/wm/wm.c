@@ -227,21 +227,18 @@ static void deactivateview(struct view *view)
 
 }
 
-static void showview(struct event_header *header, struct view *view)
+static void changeview(struct event_header *header, struct view *view)
 {
 
-    activateview(view);
-    updateview(header, view);
-    showremotes(header, &view->remotes);
+    deactivateview(viewfocus);
+    updateview(header, viewfocus);
+    hideremotes(header, &viewfocus->remotes);
 
-}
+    viewfocus = view;
 
-static void hideview(struct event_header *header, struct view *view)
-{
-
-    deactivateview(view);
-    updateview(header, view);
-    hideremotes(header, &view->remotes);
+    activateview(viewfocus);
+    updateview(header, viewfocus);
+    showremotes(header, &viewfocus->remotes);
 
 }
 
@@ -299,11 +296,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
         }
 
-        hideview(header, viewfocus);
-
-        viewfocus = nextview;
-
-        showview(header, viewfocus);
+        changeview(header, nextview);
 
         break;
 
@@ -479,11 +472,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
             if (box_isinside(&view->panel.size, mouse.size.x, mouse.size.y))
             {
 
-                hideview(header, viewfocus);
-
-                viewfocus = view;
-
-                showview(header, viewfocus);
+                changeview(header, view);
 
                 break;
 
