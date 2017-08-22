@@ -57,11 +57,9 @@ static void updateremote(struct event_header *header, struct remote *remote)
 static void updateview(struct event_header *header, struct view *view)
 {
 
-    view->panel.length = 1;
-
     widget_update(&output, &view->panel, WIDGET_Z_MIDDLE, header->destination, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length, view->panel.size.x, view->panel.size.y, view->panel.size.w, view->panel.size.h);
     ring_write(&output, &view->panel, sizeof (struct widget_panel));
-    ring_write(&output, &view->numberstring, 1);
+    ring_write(&output, &view->numberstring, view->panel.length);
 
 }
 
@@ -720,6 +718,7 @@ static void setupviews(void)
         list_add(&viewlist, &view->item);
 
         view->numberstring = '1' + i;
+        view->panel.length = 1;
 
     }
 
