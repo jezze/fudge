@@ -31,8 +31,9 @@ struct font
 
     unsigned char *data;
     unsigned char *bitmapdata;
-    unsigned int padding;
+    unsigned int bitmapalign;
     unsigned int lineheight;
+    unsigned int padding;
 
 };
 
@@ -280,7 +281,7 @@ static void painttext(unsigned char *string, unsigned int length, unsigned int x
         if (row < metricsdata.ascent + metricsdata.descent)
         {
 
-            unsigned int offset = pcf_getbitmapoffset(font.data, index) + row * font.padding;
+            unsigned int offset = pcf_getbitmapoffset(font.data, index) + row * font.bitmapalign;
 
             paintcharline(x, metricsdata.width, color, font.bitmapdata + offset);
 
@@ -311,7 +312,7 @@ static void painttextinput(unsigned char *string, unsigned int length, unsigned 
         if (row < metricsdata.ascent + metricsdata.descent)
         {
 
-            unsigned int offset = pcf_getbitmapoffset(font.data, index) + row * font.padding;
+            unsigned int offset = pcf_getbitmapoffset(font.data, index) + row * font.bitmapalign;
 
             if (i == cursor)
                 paintcharlineinverted(x, metricsdata.width, color, font.bitmapdata + offset);
@@ -392,15 +393,14 @@ static void renderpanel(void *data, unsigned int line)
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
     struct box textbox;
-    unsigned int padding = 8;
 
     box_setsize(&textbox, panel->size.x, panel->size.y, panel->size.w, panel->size.h);
-    box_resize(&textbox, padding);
+    box_resize(&textbox, font.padding);
     paint(backgroundcolor, panel->size.x, panel->size.w);
     paintframe(framecolor, &panel->size, line);
 
-    if (line >= padding && ((line - padding) / font.lineheight == 0))
-        painttext(string, panel->length, textbox.x, textbox.x + textbox.w, stringcolor, (line - padding) % font.lineheight);
+    if (line >= font.padding && ((line - font.padding) / font.lineheight == 0))
+        painttext(string, panel->length, textbox.x, textbox.x + textbox.w, stringcolor, (line - font.padding) % font.lineheight);
 
 }
 
@@ -678,7 +678,7 @@ void render_setmouse(struct widget_mouse *mouse, unsigned int size)
 
 }
 
-void render_setfont(unsigned int descriptor, unsigned int lineheight)
+void render_setfont(unsigned int descriptor, unsigned int lineheight, unsigned int padding)
 {
 
     file_open(descriptor);
@@ -686,8 +686,9 @@ void render_setfont(unsigned int descriptor, unsigned int lineheight)
     file_close(descriptor);
 
     font.bitmapdata = pcf_getbitmapdata(font.data);
-    font.padding = pcf_getpadding(font.data);
+    font.bitmapalign = pcf_getbitmapalign(font.data);
     font.lineheight = lineheight;
+    font.padding = padding;
 
 }
 

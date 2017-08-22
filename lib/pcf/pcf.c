@@ -87,6 +87,16 @@ unsigned char *pcf_getbitmapdata(void *base)
 
 }
 
+unsigned int pcf_getbitmapalign(void *base)
+{
+
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_BITMAPS);
+    unsigned int format = getformat(base, entry);
+
+    return 1 << (format & 3);
+
+}
+
 void pcf_readmetricsdata(void *base, unsigned int index, struct pcf_metricsdata *data)
 {
 
@@ -135,16 +145,6 @@ void pcf_readbdfencoding(void *base, struct pcf_bdfencoding *data)
     data->minbyte1 = convert16(bdfencoding->minbyte1, format);
     data->maxbyte1 = convert16(bdfencoding->maxbyte1, format);
     data->defaultchar = convert16(bdfencoding->defaultchar, format);
-
-}
-
-unsigned int pcf_getpadding(void *base)
-{
-
-    struct pcf_entry *entry = getentry(base, PCF_TYPE_BITMAPS);
-    unsigned int format = getformat(base, entry);
-
-    return 1 << (format & 3);
 
 }
 

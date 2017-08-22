@@ -96,7 +96,7 @@ void pcf_readbitmap(void *base, struct pcf_bitmap *data);
 unsigned int pcf_getbitmapoffset(void *base, unsigned short index);
 unsigned int *pcf_getbitmapsizes(void *base);
 unsigned char *pcf_getbitmapdata(void *base);
+unsigned int pcf_getbitmapalign(void *base);
 void pcf_readmetricsdata(void *base, unsigned int index, struct pcf_metricsdata *data);
 void pcf_readbdfencoding(void *base, struct pcf_bdfencoding *data);
-unsigned int pcf_getpadding(void *base);
 unsigned short pcf_getindex(void *base, unsigned short encoding);
