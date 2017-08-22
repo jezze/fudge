@@ -21,6 +21,7 @@ static struct remote
 static struct view
 {
 
+    struct list_item item;
     struct list remotes;
     unsigned int center;
     struct widget_panel panel;
@@ -35,6 +36,7 @@ static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static struct box size;
 static struct box body;
+static struct list viewlist;
 static struct list remotelist;
 static struct widget_fill background;
 static struct widget_mouse mouse;
@@ -463,24 +465,25 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 {
 
     struct list_item *current;
-    unsigned int i;
 
     switch (mousepress->button)
     {
 
     case 0x01:
-        for (i = 0; i < VIEWS; i++)
+        for (current = viewlist.head; current; current = current->next)
         {
 
-            if (!box_isinside(&views[i].panel.size, mouse.size.x, mouse.size.y))
+            struct view *view = current->data;
+
+            if (!box_isinside(&view->panel.size, mouse.size.x, mouse.size.y))
                 continue;
 
-            if (&views[i] == viewfocus)
+            if (view == viewfocus)
                 break;
 
             hideview(header, viewfocus);
 
-            viewfocus = &views[i];
+            viewfocus = view;
 
             showview(header, viewfocus);
 
@@ -601,15 +604,17 @@ static void onwmmap(struct event_header *header)
 static void onwmexit(struct event_header *header)
 {
 
-    unsigned int i;
+    struct list_item *current;
 
-    for (i = 0; i < VIEWS; i++)
+    for (current = viewlist.head; current; current = current->next)
     {
 
-        while (views[i].remotes.count)
+        struct view *view = current->data;
+
+        while (view->remotes.count)
         {
 
-            struct remote *remote = views[i].remotes.head->data;
+            struct remote *remote = view->remotes.head->data;
 
             event_sendwmexit(FILE_L2, remote->source);
             list_move(&remotelist, &remote->item);
@@ -625,7 +630,8 @@ static void onwmexit(struct event_header *header)
 static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
 {
 
-    unsigned int i;
+    struct list_item *current;
+    unsigned int i = 0;
 
     box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
     box_setsize(&body, size.x, size.y + (wmresize->lineheight + wmresize->padding * 2), size.w, size.h - (wmresize->lineheight + wmresize->padding * 2));
@@ -633,13 +639,17 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
     steplength = body.w / 32;
 
-    for (i = 0; i < VIEWS; i++)
+    for (current = viewlist.head; current; current = current->next)
     {
 
-        views[i].center = 18 * steplength;
+        struct view *view = current->data;
 
-        box_setsize(&views[i].panel.size, size.x + i * size.w / VIEWS, size.y, size.w / VIEWS, (wmresize->lineheight + wmresize->padding * 2));
-        arrangeview(&views[i]);
+        view->center = 18 * steplength;
+
+        box_setsize(&view->panel.size, size.x + i * size.w / viewlist.count, size.y, size.w / viewlist.count, (wmresize->lineheight + wmresize->padding * 2));
+        arrangeview(view);
+
+        i++;
 
     }
 
@@ -651,13 +661,13 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 static void onwmshow(struct event_header *header)
 {
 
-    unsigned int i;
+    struct list_item *current;
 
     updatebackground(header);
     updatemouse(header);
 
-    for (i = 0; i < VIEWS; i++)
-        updateview(header, &views[i]);
+    for (current = viewlist.head; current; current = current->next)
+        updateview(header, current->data);
 
     showremotes(header, &viewfocus->remotes);
 
@@ -666,13 +676,13 @@ static void onwmshow(struct event_header *header)
 static void onwmhide(struct event_header *header)
 {
 
-    unsigned int i;
+    struct list_item *current;
 
     removebackground(header);
     removemouse(header);
 
-    for (i = 0; i < VIEWS; i++)
-        removeview(header, &views[i]);
+    for (current = viewlist.head; current; current = current->next)
+        removeview(header, current->data);
 
     hideremotes(header, &viewfocus->remotes);
 
@@ -687,7 +697,7 @@ static void onwmflush(struct event_header *header)
 
 }
 
-static void setup(void)
+static void setupviews(void)
 {
 
     unsigned int i;
@@ -695,23 +705,33 @@ static void setup(void)
     for (i = 0; i < VIEWS; i++)
     {
 
-        widget_initpanel(&views[i].panel, 0);
+        struct view *view = &views[i];
 
-        views[i].numberstring = '1' + i;
-        views[i].remotefocus = 0;
+        list_inititem(&view->item, view);
+        widget_initpanel(&view->panel, 0);
+        list_add(&viewlist, &view->item);
+
+        view->numberstring = '1' + i;
 
     }
+
+}
+
+static void setupremotes(void)
+{
+
+    unsigned int i;
 
     for (i = 0; i < REMOTES; i++)
     {
 
-        list_inititem(&remotes[i].item, &remotes[i]);
-        widget_initwindow(&remotes[i].window, 0);
-        list_add(&remotelist, &remotes[i].item);
+        struct remote *remote = &remotes[i];
+
+        list_inititem(&remote->item, remote);
+        widget_initwindow(&remote->window, 0);
+        list_add(&remotelist, &remote->item);
 
     }
-
-    activateview(viewfocus);
 
 }
 
@@ -734,7 +754,9 @@ void main(void)
     ring_init(&output, FUDGE_BSIZE, outputdata);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
-    setup();
+    setupviews();
+    setupremotes();
+    activateview(viewfocus);
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;
