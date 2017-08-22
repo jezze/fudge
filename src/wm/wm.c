@@ -279,8 +279,6 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (nextview == viewfocus)
             break;
 
-        hideview(header, viewfocus);
-
         if (viewfocus->remotefocus && keymod & KEYMOD_SHIFT)
         {
 
@@ -300,6 +298,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
             nextview->remotefocus = (nextview->remotes.tail) ? nextview->remotes.tail->data : 0;
 
         }
+
+        hideview(header, viewfocus);
 
         viewfocus = nextview;
 
