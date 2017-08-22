@@ -26,7 +26,7 @@ static struct view
     unsigned int center;
     struct widget_panel panel;
     char numberstring;
-    struct remote *remotefocus;
+    struct remote *currentremote;
 
 } views[VIEWS];
 
@@ -40,7 +40,7 @@ static struct list viewlist;
 static struct list remotelist;
 static struct widget_fill background;
 static struct widget_mouse mouse;
-static struct view *viewfocus = &views[0];
+static struct view *currentview = &views[0];
 static struct event_handlers handlers;
 static unsigned int padding;
 static unsigned int lineheight;
@@ -107,10 +107,24 @@ static void removebackground(struct event_header *header)
 
 }
 
+static void activateview(struct view *view)
+{
+
+    view->panel.active = 1;
+
+}
+
 static void activateremote(struct remote *remote)
 {
 
     remote->window.active = 1;
+
+}
+
+static void deactivateview(struct view *view)
+{
+
+    view->panel.active = 0;
 
 }
 
@@ -160,6 +174,21 @@ static void hideremotes(struct event_header *header, struct list *remotes)
         removeremote(header, remote);
 
     }
+
+}
+
+static void flipview(struct event_header *header, struct view *view)
+{
+
+    deactivateview(currentview);
+    hideremotes(header, &currentview->remotes);
+    updateview(header, currentview);
+
+    currentview = view;
+
+    activateview(currentview);
+    showremotes(header, &currentview->remotes);
+    updateview(header, currentview);
 
 }
 
@@ -213,35 +242,6 @@ static void arrangeview(struct view *view)
 
 }
 
-static void activateview(struct view *view)
-{
-
-    view->panel.active = 1;
-
-}
-
-static void deactivateview(struct view *view)
-{
-
-    view->panel.active = 0;
-
-}
-
-static void changeview(struct event_header *header, struct view *view)
-{
-
-    deactivateview(viewfocus);
-    updateview(header, viewfocus);
-    hideremotes(header, &viewfocus->remotes);
-
-    viewfocus = view;
-
-    activateview(viewfocus);
-    updateview(header, viewfocus);
-    showremotes(header, &viewfocus->remotes);
-
-}
-
 static void onkeypress(struct event_header *header, struct event_keypress *keypress)
 {
 
@@ -253,8 +253,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     if (!(keymod & KEYMOD_ALT))
     {
 
-        if (viewfocus->remotefocus)
-            event_sendwmkeypress(FILE_L2, viewfocus->remotefocus->source, keypress->scancode);
+        if (currentview->currentremote)
+            event_sendwmkeypress(FILE_L2, currentview->currentremote->source, keypress->scancode);
 
         return;
 
@@ -273,30 +273,30 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     case 0x09:
         nextview = &views[keypress->scancode - 0x02];
 
-        if (nextview == viewfocus)
+        if (nextview == currentview)
             break;
 
-        if (viewfocus->remotefocus && keymod & KEYMOD_SHIFT)
+        if (currentview->currentremote && keymod & KEYMOD_SHIFT)
         {
 
-            list_move(&nextview->remotes, &viewfocus->remotefocus->item);
+            list_move(&nextview->remotes, &currentview->currentremote->item);
 
-            viewfocus->remotefocus = (viewfocus->remotes.tail) ? viewfocus->remotes.tail->data : 0;
+            currentview->currentremote = (currentview->remotes.tail) ? currentview->remotes.tail->data : 0;
 
-            if (viewfocus->remotefocus)
-                activateremote(viewfocus->remotefocus);
+            if (currentview->currentremote)
+                activateremote(currentview->currentremote);
 
-            arrangeview(viewfocus);
+            arrangeview(currentview);
             arrangeview(nextview);
 
-            if (nextview->remotefocus)
-                deactivateremote(nextview->remotefocus);
+            if (nextview->currentremote)
+                deactivateremote(nextview->currentremote);
 
-            nextview->remotefocus = (nextview->remotes.tail) ? nextview->remotes.tail->data : 0;
+            nextview->currentremote = (nextview->remotes.tail) ? nextview->remotes.tail->data : 0;
 
         }
 
-        changeview(header, nextview);
+        flipview(header, nextview);
 
         break;
 
@@ -304,21 +304,21 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (!(keymod & KEYMOD_SHIFT))
             break;
 
-        if (!viewfocus->remotefocus)
+        if (!currentview->currentremote)
             break;
 
-        event_sendwmhide(FILE_L2, viewfocus->remotefocus->source);
-        event_sendwmexit(FILE_L2, viewfocus->remotefocus->source);
-        removeremote(header, viewfocus->remotefocus);
-        list_move(&remotelist, &viewfocus->remotefocus->item);
+        event_sendwmhide(FILE_L2, currentview->currentremote->source);
+        event_sendwmexit(FILE_L2, currentview->currentremote->source);
+        removeremote(header, currentview->currentremote);
+        list_move(&remotelist, &currentview->currentremote->item);
 
-        viewfocus->remotefocus = (viewfocus->remotes.tail) ? viewfocus->remotes.tail->data : 0;
+        currentview->currentremote = (currentview->remotes.tail) ? currentview->remotes.tail->data : 0;
 
-        if (viewfocus->remotefocus)
-            activateremote(viewfocus->remotefocus);
+        if (currentview->currentremote)
+            activateremote(currentview->currentremote);
 
-        arrangeview(viewfocus);
-        showremotes(header, &viewfocus->remotes);
+        arrangeview(currentview);
+        showremotes(header, &currentview->remotes);
 
         break;
 
@@ -334,72 +334,72 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         break;
 
     case 0x1C:
-        if (!viewfocus->remotefocus)
+        if (!currentview->currentremote)
             break;
 
-        list_move(&viewfocus->remotes, &viewfocus->remotefocus->item);
-        arrangeview(viewfocus);
-        showremotes(header, &viewfocus->remotes);
+        list_move(&currentview->remotes, &currentview->currentremote->item);
+        arrangeview(currentview);
+        showremotes(header, &currentview->remotes);
 
         break;
 
     case 0x23:
-        if (viewfocus->center <= 6 * steplength)
+        if (currentview->center <= 6 * steplength)
             break;
 
-        viewfocus->center -= 4 * steplength;
+        currentview->center -= 4 * steplength;
 
-        arrangeview(viewfocus);
-        showremotes(header, &viewfocus->remotes);
+        arrangeview(currentview);
+        showremotes(header, &currentview->remotes);
 
         break;
 
     case 0x24:
-        if (!viewfocus->remotefocus)
+        if (!currentview->currentremote)
             break;
 
-        nextremote = viewfocus->remotefocus->item.next ? viewfocus->remotefocus->item.next->data : viewfocus->remotes.head;
+        nextremote = currentview->currentremote->item.next ? currentview->currentremote->item.next->data : currentview->remotes.head;
 
-        if (!nextremote || nextremote == viewfocus->remotefocus)
+        if (!nextremote || nextremote == currentview->currentremote)
             break;
 
-        deactivateremote(viewfocus->remotefocus);
-        updateremote(header, viewfocus->remotefocus);
+        deactivateremote(currentview->currentremote);
+        updateremote(header, currentview->currentremote);
 
-        viewfocus->remotefocus = nextremote;
+        currentview->currentremote = nextremote;
 
-        activateremote(viewfocus->remotefocus);
-        updateremote(header, viewfocus->remotefocus);
+        activateremote(currentview->currentremote);
+        updateremote(header, currentview->currentremote);
 
         break;
 
     case 0x25:
-        if (!viewfocus->remotefocus)
+        if (!currentview->currentremote)
             break;
 
-        nextremote = viewfocus->remotefocus->item.prev ? viewfocus->remotefocus->item.prev->data : viewfocus->remotes.tail;
+        nextremote = currentview->currentremote->item.prev ? currentview->currentremote->item.prev->data : currentview->remotes.tail;
 
-        if (!nextremote || nextremote == viewfocus->remotefocus)
+        if (!nextremote || nextremote == currentview->currentremote)
             break;
 
-        deactivateremote(viewfocus->remotefocus);
-        updateremote(header, viewfocus->remotefocus);
+        deactivateremote(currentview->currentremote);
+        updateremote(header, currentview->currentremote);
 
-        viewfocus->remotefocus = nextremote;
+        currentview->currentremote = nextremote;
 
-        activateremote(viewfocus->remotefocus);
-        updateremote(header, viewfocus->remotefocus);
+        activateremote(currentview->currentremote);
+        updateremote(header, currentview->currentremote);
 
         break;
 
     case 0x26:
-        if (viewfocus->center >= 26 * steplength)
+        if (currentview->center >= 26 * steplength)
             break;
 
-        viewfocus->center += 4 * steplength;
+        currentview->center += 4 * steplength;
 
-        arrangeview(viewfocus);
-        showremotes(header, &viewfocus->remotes);
+        arrangeview(currentview);
+        showremotes(header, &currentview->remotes);
 
         break;
 
@@ -424,8 +424,8 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
     if (!(keymod & KEYMOD_ALT))
     {
 
-        if (viewfocus->remotefocus)
-            event_sendwmkeyrelease(FILE_L2, viewfocus->remotefocus->source, keyrelease->scancode);
+        if (currentview->currentremote)
+            event_sendwmkeyrelease(FILE_L2, currentview->currentremote->source, keyrelease->scancode);
 
         return;
 
@@ -447,8 +447,8 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
 
     updatemouse(header);
 
-    if (viewfocus->remotefocus)
-        event_sendwmmousemove(FILE_L2, viewfocus->remotefocus->source, mouse.size.x, mouse.size.y);
+    if (currentview->currentremote)
+        event_sendwmmousemove(FILE_L2, currentview->currentremote->source, mouse.size.x, mouse.size.y);
 
 }
 
@@ -466,13 +466,13 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
             struct view *view = current->data;
 
-            if (view == viewfocus)
+            if (view == currentview)
                 continue;
 
             if (box_isinside(&view->panel.size, mouse.size.x, mouse.size.y))
             {
 
-                changeview(header, view);
+                flipview(header, view);
 
                 break;
 
@@ -480,24 +480,24 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
         }
 
-        for (current = viewfocus->remotes.head; current; current = current->next)
+        for (current = currentview->remotes.head; current; current = current->next)
         {
 
             struct remote *remote = current->data;
 
-            if (remote == viewfocus->remotefocus)
+            if (remote == currentview->currentremote)
                 continue;
 
             if (box_isinside(&remote->window.size, mouse.size.x, mouse.size.y))
             {
 
-                deactivateremote(viewfocus->remotefocus);
-                updateremote(header, viewfocus->remotefocus);
+                deactivateremote(currentview->currentremote);
+                updateremote(header, currentview->currentremote);
 
-                viewfocus->remotefocus = remote;
+                currentview->currentremote = remote;
 
-                activateremote(viewfocus->remotefocus);
-                updateremote(header, viewfocus->remotefocus);
+                activateremote(currentview->currentremote);
+                updateremote(header, currentview->currentremote);
 
                 break;
 
@@ -509,16 +509,16 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
     }
 
-    if (viewfocus->remotefocus)
-        event_sendwmmousepress(FILE_L2, viewfocus->remotefocus->source, mousepress->button);
+    if (currentview->currentremote)
+        event_sendwmmousepress(FILE_L2, currentview->currentremote->source, mousepress->button);
 
 }
 
 static void onmouserelease(struct event_header *header, struct event_mouserelease *mouserelease)
 {
 
-    if (viewfocus->remotefocus)
-        event_sendwmmouserelease(FILE_L2, viewfocus->remotefocus->source, mouserelease->button);
+    if (currentview->currentremote)
+        event_sendwmmouserelease(FILE_L2, currentview->currentremote->source, mouserelease->button);
 
 }
 
@@ -582,16 +582,16 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
 static void onwmmap(struct event_header *header)
 {
 
-    if (viewfocus->remotefocus)
-        deactivateremote(viewfocus->remotefocus);
+    if (currentview->currentremote)
+        deactivateremote(currentview->currentremote);
 
-    viewfocus->remotefocus = remotelist.head->data;
-    viewfocus->remotefocus->source = header->source;
+    currentview->currentremote = remotelist.head->data;
+    currentview->currentremote->source = header->source;
 
-    list_move(&viewfocus->remotes, &viewfocus->remotefocus->item);
-    activateremote(viewfocus->remotefocus);
-    arrangeview(viewfocus);
-    showremotes(header, &viewfocus->remotes);
+    list_move(&currentview->remotes, &currentview->currentremote->item);
+    activateremote(currentview->currentremote);
+    arrangeview(currentview);
+    showremotes(header, &currentview->remotes);
     event_sendwminit(FILE_L2, header->source);
 
 }
@@ -664,7 +664,7 @@ static void onwmshow(struct event_header *header)
     for (current = viewlist.head; current; current = current->next)
         updateview(header, current->data);
 
-    showremotes(header, &viewfocus->remotes);
+    showremotes(header, &currentview->remotes);
 
 }
 
@@ -679,7 +679,7 @@ static void onwmhide(struct event_header *header)
     for (current = viewlist.head; current; current = current->next)
         removeview(header, current->data);
 
-    hideremotes(header, &viewfocus->remotes);
+    hideremotes(header, &currentview->remotes);
 
 }
 
@@ -752,7 +752,7 @@ void main(void)
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     setupviews();
     setupremotes();
-    activateview(viewfocus);
+    activateview(currentview);
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;
