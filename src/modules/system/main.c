@@ -68,7 +68,7 @@ static unsigned int readgroup(struct system_node *self, struct system_node *curr
 
 }
 
-unsigned int system_readtaskmailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+unsigned int readtaskmailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return kernel_readtaskmailbox(state->task, buffer, count);
@@ -134,6 +134,13 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     {
 
         node->seek = seek;
+
+    }
+
+    if (type & SYSTEM_NODETYPE_MAILBOX)
+    {
+
+        node->read = readtaskmailbox;
 
     }
 

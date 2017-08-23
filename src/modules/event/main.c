@@ -62,9 +62,7 @@ unsigned int event_send(struct list *states, struct service_state *state, void *
 void module_init(void)
 {
 
-    system_initnode(&root, SYSTEM_NODETYPE_NORMAL, "event");
-
-    root.read = system_readtaskmailbox;
+    system_initnode(&root, SYSTEM_NODETYPE_MAILBOX, "event");
 
 }
 

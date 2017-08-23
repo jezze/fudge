@@ -99,12 +99,11 @@ void timer_initinterface(struct timer_interface *interface)
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
-    system_initresourcenode(&interface->sleep, SYSTEM_NODETYPE_NORMAL, "sleep", &interface->resource);
+    system_initresourcenode(&interface->sleep, SYSTEM_NODETYPE_MAILBOX, "sleep", &interface->resource);
     system_initresourcenode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event", &interface->resource);
 
     interface->sleep.open = interfacesleep_open;
     interface->sleep.close = interfacesleep_close;
-    interface->sleep.read = system_readtaskmailbox;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
 

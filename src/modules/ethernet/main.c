@@ -174,7 +174,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
-    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
+    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
     system_initresourcenode(&interface->addr, SYSTEM_NODETYPE_SEEK, "addr", &interface->resource);
 
     interface->getaddress = getaddress;
@@ -182,7 +182,6 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
     interface->addr.read = interfaceaddr_read;
     interface->data.open = interfacedata_open;
     interface->data.close = interfacedata_close;
-    interface->data.read = system_readtaskmailbox;
 
 }
 
@@ -191,13 +190,12 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);
     system_initresourcenode(&protocol->root, SYSTEM_NODETYPE_GROUP, name, &protocol->resource);
-    system_initresourcenode(&protocol->data, SYSTEM_NODETYPE_NORMAL, "data", &protocol->resource);
+    system_initresourcenode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data", &protocol->resource);
 
     protocol->type = type;
     protocol->notify = notify;
     protocol->data.open = protocoldata_open;
     protocol->data.close = protocoldata_close;
-    protocol->data.read = system_readtaskmailbox;
 
 }
 

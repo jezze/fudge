@@ -146,23 +146,19 @@ void module_init(void)
 
     debug_initlog(&log, log_write);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "log");
-    system_initnode(&critical, SYSTEM_NODETYPE_NORMAL, "critical");
-    system_initnode(&error, SYSTEM_NODETYPE_NORMAL, "error");
-    system_initnode(&warning, SYSTEM_NODETYPE_NORMAL, "warning");
-    system_initnode(&info, SYSTEM_NODETYPE_NORMAL, "info");
+    system_initnode(&critical, SYSTEM_NODETYPE_MAILBOX, "critical");
+    system_initnode(&error, SYSTEM_NODETYPE_MAILBOX, "error");
+    system_initnode(&warning, SYSTEM_NODETYPE_MAILBOX, "warning");
+    system_initnode(&info, SYSTEM_NODETYPE_MAILBOX, "info");
 
     critical.open = critical_open;
     critical.close = critical_close;
-    critical.read = system_readtaskmailbox;
     error.open = error_open;
     error.close = error_close;
-    error.read = system_readtaskmailbox;
     warning.open = warning_open;
     warning.close = warning_close;
-    warning.read = system_readtaskmailbox;
     info.open = info_open;
     info.close = info_close;
-    info.read = system_readtaskmailbox;
 
     system_addchild(&root, &critical);
     system_addchild(&root, &error);

@@ -85,7 +85,7 @@ void con_init(struct con *con, void (*open)(void), void (*close)(void), unsigned
     resource_init(&con->resource, RESOURCE_CON, con);
     system_initresourcenode(&con->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "con", &con->resource);
     system_initresourcenode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &con->resource);
-    system_initresourcenode(&con->data, SYSTEM_NODETYPE_NORMAL, "data", &con->resource);
+    system_initresourcenode(&con->data, SYSTEM_NODETYPE_MAILBOX, "data", &con->resource);
 
     con->open = open;
     con->close = close;
@@ -94,7 +94,6 @@ void con_init(struct con *con, void (*open)(void), void (*close)(void), unsigned
     con->ctrl.write = conctrl_write;
     con->data.open = condata_open;
     con->data.close = condata_close;
-    con->data.read = system_readtaskmailbox;
     con->data.write = condata_write;
 
 }

@@ -82,14 +82,13 @@ void console_initinterface(struct console_interface *interface, unsigned int (*s
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
-    system_initresourcenode(&interface->idata, SYSTEM_NODETYPE_NORMAL, "idata", &interface->resource);
+    system_initresourcenode(&interface->idata, SYSTEM_NODETYPE_MAILBOX, "idata", &interface->resource);
     system_initresourcenode(&interface->odata, SYSTEM_NODETYPE_NORMAL, "odata", &interface->resource);
 
     interface->send = send;
     interface->ctrl.read = interfacectrl_read;
     interface->idata.open = interfacedata_open;
     interface->idata.close = interfacedata_close;
-    interface->idata.read = system_readtaskmailbox;
     interface->odata.write = interfacedata_write;
 
 }

@@ -72,13 +72,12 @@ void ipv6_initprotocol(struct ipv6_protocol *protocol, char *name, unsigned char
 
     resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);
     system_initresourcenode(&protocol->root, SYSTEM_NODETYPE_GROUP, name, &protocol->resource);
-    system_initresourcenode(&protocol->data, SYSTEM_NODETYPE_NORMAL, "data", &protocol->resource);
+    system_initresourcenode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data", &protocol->resource);
 
     protocol->id = id;
     protocol->notify = notify;
     protocol->data.open = protocoldata_open;
     protocol->data.close = protocoldata_close;
-    protocol->data.read = system_readtaskmailbox;
 
 }
 
