@@ -135,8 +135,8 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
-    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
-    system_initresourcenode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap", &interface->resource);
+    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_SEEK, "data", &interface->resource);
+    system_initresourcenode(&interface->colormap, SYSTEM_NODETYPE_SEEK, "colormap", &interface->resource);
     system_initresourcenode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event", &interface->resource);
 
     interface->setmode = setmode;
@@ -148,10 +148,8 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
     interface->ctrl.write = interfacectrl_write;
     interface->data.read = interfacedata_read;
     interface->data.write = interfacedata_write;
-    interface->data.seek = system_seek;
     interface->colormap.read = interfacecolormap_read;
     interface->colormap.write = interfacecolormap_write;
-    interface->colormap.seek = system_seek;
     interface->event.open = interfaceevent_open;
     interface->event.close = interfaceevent_close;
 

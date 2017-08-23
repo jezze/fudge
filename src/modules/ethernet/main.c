@@ -175,12 +175,11 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
-    system_initresourcenode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr", &interface->resource);
+    system_initresourcenode(&interface->addr, SYSTEM_NODETYPE_SEEK, "addr", &interface->resource);
 
     interface->getaddress = getaddress;
     interface->send = send;
     interface->addr.read = interfaceaddr_read;
-    interface->addr.seek = system_seek;
     interface->data.open = interfacedata_open;
     interface->data.close = interfacedata_close;
     interface->data.read = system_readtaskmailbox;

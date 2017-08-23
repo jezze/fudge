@@ -1,6 +1,7 @@
 #define SYSTEM_NODETYPE_NORMAL          0
-#define SYSTEM_NODETYPE_GROUP           1
-#define SYSTEM_NODETYPE_MULTI           2
+#define SYSTEM_NODETYPE_SEEK            1
+#define SYSTEM_NODETYPE_GROUP           2
+#define SYSTEM_NODETYPE_MULTI           4
 
 struct system_header
 {
@@ -30,7 +31,6 @@ struct system_node
 };
 
 unsigned int system_readtaskmailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
-unsigned int system_seek(struct system_node *self, struct service_state *state, unsigned int offset);
 void system_addchild(struct system_node *group, struct system_node *node);
 void system_removechild(struct system_node *group, struct system_node *node);
 void system_registernode(struct system_node *node);
