@@ -63,6 +63,7 @@ static void copybuffer(void *buffer, unsigned int count)
 
     char *b = buffer;
     unsigned int i;
+    unsigned int c;
 
     for (i = 0; i < count; i++)
     {
@@ -77,7 +78,15 @@ static void copybuffer(void *buffer, unsigned int count)
 
         }
 
-        ring_write(&text, &b[i], 1);
+        c = ring_write(&text, &b[i], 1);
+
+        if (!c)
+        {
+
+            removerows(1);
+            ring_write(&text, &b[i], 1);
+
+        }
 
     }
 
