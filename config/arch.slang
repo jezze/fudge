@@ -11,8 +11,8 @@ elfload < /mod/ps2-mouse.ko.0
 elfload < /mod/pit.ko.0
 elfload < /mod/rtc.ko.0
 elfload < /mod/bga.ko.0
-elfload < /mod/vga.ko.0
 elfload < /mod/uart.ko.0
+elfload < /mod/vga.ko.0
 elfload < /mod/rtl8139.ko.0
 elfload < /mod/ide.ko
 elfload < /mod/ata.ko.0

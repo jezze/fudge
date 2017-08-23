@@ -57,7 +57,8 @@ void console_registerinterface(struct console_interface *interface, unsigned int
 
     resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->ctrl);
-    system_addchild(&interface->root, &interface->data);
+    system_addchild(&interface->root, &interface->idata);
+    system_addchild(&interface->root, &interface->odata);
     system_addchild(&root, &interface->root);
 
     interface->id = id;
@@ -69,7 +70,8 @@ void console_unregisterinterface(struct console_interface *interface)
 
     resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->ctrl);
-    system_removechild(&interface->root, &interface->data);
+    system_removechild(&interface->root, &interface->idata);
+    system_removechild(&interface->root, &interface->odata);
     system_removechild(&root, &interface->root);
 
 }
@@ -80,14 +82,15 @@ void console_initinterface(struct console_interface *interface, unsigned int (*s
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
-    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
+    system_initresourcenode(&interface->idata, SYSTEM_NODETYPE_NORMAL, "idata", &interface->resource);
+    system_initresourcenode(&interface->odata, SYSTEM_NODETYPE_NORMAL, "odata", &interface->resource);
 
     interface->send = send;
     interface->ctrl.read = interfacectrl_read;
-    interface->data.open = interfacedata_open;
-    interface->data.close = interfacedata_close;
-    interface->data.read = system_readtaskmailbox;
-    interface->data.write = interfacedata_write;
+    interface->idata.open = interfacedata_open;
+    interface->idata.close = interfacedata_close;
+    interface->idata.read = system_readtaskmailbox;
+    interface->odata.write = interfacedata_write;
 
 }
 
