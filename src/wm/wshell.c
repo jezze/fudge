@@ -67,8 +67,6 @@ static void copybuffer(void *buffer, unsigned int count)
     for (i = 0; i < count; i++)
     {
 
-        ring_write(&text, &b[i], 1);
-
         if (b[i] == '\n')
         {
 
@@ -78,6 +76,8 @@ static void copybuffer(void *buffer, unsigned int count)
                 removerows(totalrows - visiblerows);
 
         }
+
+        ring_write(&text, &b[i], 1);
 
     }
 
