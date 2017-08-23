@@ -5,7 +5,7 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-unsigned int system_childgroup(struct system_node *self, struct service_state *state, char *path, unsigned int length)
+static unsigned int childgroup(struct system_node *self, struct service_state *state, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -42,14 +42,7 @@ unsigned int system_childgroup(struct system_node *self, struct service_state *s
 
 }
 
-unsigned int system_readtaskmailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return kernel_readtaskmailbox(state->task, buffer, count);
-
-}
-
-unsigned int system_readgroup(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int readgroup(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct record record;
@@ -72,6 +65,13 @@ unsigned int system_readgroup(struct system_node *self, struct system_node *curr
     }
 
     return memory_read(buffer, count, &record, sizeof (struct record), offset);
+
+}
+
+unsigned int system_readtaskmailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return kernel_readtaskmailbox(state->task, buffer, count);
 
 }
 
@@ -133,8 +133,8 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type & SYSTEM_NODETYPE_GROUP)
     {
 
-        node->read = system_readgroup;
-        node->child = system_childgroup;
+        node->read = readgroup;
+        node->child = childgroup;
         node->seek = system_seek;
 
     }
