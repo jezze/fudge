@@ -358,6 +358,7 @@ void main(void)
 
     }
 
+    event_sendwmunmap(FILE_L2, EVENT_ADDR_BROADCAST);
     file_close(FILE_L2);
     file_close(FILE_L1);
     file_close(FILE_L0);

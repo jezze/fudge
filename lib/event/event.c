@@ -94,6 +94,14 @@ static void onwmmap(struct event_handlers *handlers, unsigned int descriptor, st
 
 }
 
+static void onwmunmap(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
+{
+
+    if (handlers->wmunmap)
+        handlers->wmunmap(header);
+
+}
+
 static void onwminit(struct event_handlers *handlers, unsigned int descriptor, struct event_header *header)
 {
 
@@ -216,6 +224,7 @@ static void (*funcs[EVENTS])(struct event_handlers *handlers, unsigned int descr
     ontimertick,
     onvideomode,
     onwmmap,
+    onwmunmap,
     onwminit,
     onwmexit,
     onwmresize,
@@ -320,6 +329,13 @@ void event_sendwmmap(unsigned int descriptor, unsigned int destination)
 {
 
     send(descriptor, destination, EVENT_WMMAP, 0, 0);
+
+}
+
+void event_sendwmunmap(unsigned int descriptor, unsigned int destination)
+{
+
+    send(descriptor, destination, EVENT_WMUNMAP, 0, 0);
 
 }
 

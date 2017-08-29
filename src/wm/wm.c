@@ -309,16 +309,6 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
         event_sendwmhide(FILE_L2, currentview->currentremote->source);
         event_sendwmexit(FILE_L2, currentview->currentremote->source);
-        removeremote(header, currentview->currentremote);
-        list_move(&remotelist, &currentview->currentremote->item);
-
-        currentview->currentremote = (currentview->remotes.tail) ? currentview->remotes.tail->data : 0;
-
-        if (currentview->currentremote)
-            activateremote(currentview->currentremote);
-
-        arrangeview(currentview);
-        showremotes(header, &currentview->remotes);
 
         break;
 
@@ -596,6 +586,44 @@ static void onwmmap(struct event_header *header)
 
 }
 
+static void onwmunmap(struct event_header *header)
+{
+
+    struct list_item *current;
+
+    for (current = viewlist.head; current; current = current->next)
+    {
+
+        struct view *view = current->data;
+        struct list_item *current2;
+
+        for (current2 = view->remotes.head; current2; current2 = current2->next)
+        {
+
+            struct remote *remote = current2->data;
+
+            if (header->source != remote->source)
+                continue;
+
+            removeremote(header, remote);
+            list_move(&remotelist, &remote->item);
+
+            view->currentremote = (view->remotes.tail) ? view->remotes.tail->data : 0;
+
+            if (view->currentremote)
+                activateremote(view->currentremote);
+
+            arrangeview(view);
+
+            if (view == currentview)
+                showremotes(header, &view->remotes);
+
+        }
+
+    }
+
+}
+
 static void onwmexit(struct event_header *header)
 {
 
@@ -605,14 +633,15 @@ static void onwmexit(struct event_header *header)
     {
 
         struct view *view = current->data;
+        struct list_item *current2;
 
-        while (view->remotes.count)
+        for (current2 = view->remotes.head; current; current = current->next)
         {
 
-            struct remote *remote = view->remotes.head->data;
+            struct remote *remote = current2->data;
 
+            event_sendwmhide(FILE_L2, remote->source);
             event_sendwmexit(FILE_L2, remote->source);
-            list_move(&remotelist, &remote->item);
 
         }
 
@@ -741,6 +770,7 @@ void main(void)
     handlers.mouserelease = onmouserelease;
     handlers.videomode = onvideomode;
     handlers.wmmap = onwmmap;
+    handlers.wmunmap = onwmunmap;
     handlers.wmexit = onwmexit;
     handlers.wmresize = onwmresize;
     handlers.wmshow = onwmshow;

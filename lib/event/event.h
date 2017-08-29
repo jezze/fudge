@@ -1,4 +1,4 @@
-#define EVENTS                          20
+#define EVENTS                          21
 #define EVENT_ADDR_BROADCAST            0
 #define EVENT_KEYPRESS                  0x01
 #define EVENT_KEYRELEASE                0x02
@@ -8,17 +8,18 @@
 #define EVENT_TIMERTICK                 0x06
 #define EVENT_VIDEOMODE                 0x07
 #define EVENT_WMMAP                     0x08
-#define EVENT_WMINIT                    0x09
-#define EVENT_WMEXIT                    0x0A
-#define EVENT_WMRESIZE                  0x0B
-#define EVENT_WMSHOW                    0x0C
-#define EVENT_WMHIDE                    0x0D
-#define EVENT_WMFLUSH                   0x0E
-#define EVENT_WMKEYPRESS                0x0F
-#define EVENT_WMKEYRELEASE              0x10
-#define EVENT_WMMOUSEMOVE               0x11
-#define EVENT_WMMOUSEPRESS              0x12
-#define EVENT_WMMOUSERELEASE            0x13
+#define EVENT_WMUNMAP                   0x09
+#define EVENT_WMINIT                    0x0A
+#define EVENT_WMEXIT                    0x0B
+#define EVENT_WMRESIZE                  0x0C
+#define EVENT_WMSHOW                    0x0D
+#define EVENT_WMHIDE                    0x0E
+#define EVENT_WMFLUSH                   0x0F
+#define EVENT_WMKEYPRESS                0x10
+#define EVENT_WMKEYRELEASE              0x11
+#define EVENT_WMMOUSEMOVE               0x12
+#define EVENT_WMMOUSEPRESS              0x13
+#define EVENT_WMMOUSERELEASE            0x14
 
 struct event_header
 {
@@ -140,6 +141,7 @@ struct event_handlers
     void (*timertick)(struct event_header *header, struct event_timertick *timertick);
     void (*videomode)(struct event_header *header, struct event_videomode *videomode);
     void (*wmmap)(struct event_header *header);
+    void (*wmunmap)(struct event_header *header);
     void (*wminit)(struct event_header *header);
     void (*wmexit)(struct event_header *header);
     void (*wmresize)(struct event_header *header, struct event_wmresize *wmresize);
@@ -161,6 +163,7 @@ void event_sendmousemove(unsigned int descriptor, unsigned int destination, char
 void event_sendmousepress(unsigned int descriptor, unsigned int destination, unsigned int button);
 void event_sendmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button);
 void event_sendwmmap(unsigned int descriptor, unsigned int destination);
+void event_sendwmunmap(unsigned int descriptor, unsigned int destination);
 void event_sendwminit(unsigned int descriptor, unsigned int destination);
 void event_sendwmexit(unsigned int descriptor, unsigned int destination);
 void event_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
