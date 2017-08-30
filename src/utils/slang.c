@@ -238,6 +238,9 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
     unsigned int i;
 
+    file_duplicate(FILE_L1, FILE_PI);
+    file_duplicate(FILE_L2, FILE_PO);
+
     for (i = 0; i < postfix->head; i++)
     {
 
@@ -258,7 +261,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!file_walk(FILE_CI, t->str))
+            if (!file_walk(FILE_L1, t->str))
                 return;
 
             break;
@@ -269,7 +272,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!file_walk(FILE_CO, t->str))
+            if (!file_walk(FILE_L2, t->str))
                 return;
 
             break;
@@ -286,9 +289,11 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!file_walk(FILE_L8, "/system/pipe/clone"))
                 return;
 
+            file_duplicate(FILE_CI, FILE_L1);
             file_walkfrom(FILE_CO, FILE_L8, "0");
             call_spawn();
             file_walkfrom(FILE_CI, FILE_L8, "0");
+            file_duplicate(FILE_CO, FILE_L2);
 
             break;
 
@@ -301,9 +306,9 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            file_duplicate(FILE_CO, FILE_PO);
+            file_duplicate(FILE_CI, FILE_L1);
+            file_duplicate(FILE_CO, FILE_L2);
             call_spawn();
-            file_duplicate(FILE_CI, FILE_PI);
 
             break;
 
