@@ -16,20 +16,32 @@ static unsigned int childgroup(struct system_node *self, struct service_state *s
         struct system_node *node = current->data;
         unsigned int length0 = ascii_length(node->name);
 
-        if (!memory_match(node->name, path, length0))
-            continue;
-
         if (node->type & SYSTEM_NODETYPE_MULTI)
         {
 
+            unsigned int colon = memory_findbyte(path, length, ':');
             unsigned int val;
 
-            if (path[length0] != ':')
+            if (length0 != colon)
                 continue;
 
-            val = path[length0 + 1] - '0';
+            if (!memory_match(node->name, path, colon))
+                continue;
+
+            val = ascii_rvalue(path, length, 10, colon + 1);
 
             if (val != node->index)
+                continue;
+
+        }
+
+        else
+        {
+
+            if (length0 != length)
+                continue;
+
+            if (!memory_match(node->name, path, length))
                 continue;
 
         }

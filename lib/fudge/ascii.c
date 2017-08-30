@@ -49,13 +49,13 @@ unsigned int ascii_fromint(void *out, unsigned int count, unsigned int value, un
 
 }
 
-unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base)
+unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base, unsigned int offset)
 {
 
     unsigned int value = 0;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = offset; i < count; i++)
         value = value * base + ascii_toint(in[i]);
 
     return value;
