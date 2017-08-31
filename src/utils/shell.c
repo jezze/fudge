@@ -7,12 +7,8 @@ static void readback(void)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(FILE_CO);
-
-    while ((count = file_read(FILE_CO, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(FILE_LD, buffer, FUDGE_BSIZE)))
         file_writeall(FILE_PO, buffer, count);
-
-    file_close(FILE_CO);
 
 }
 
@@ -49,16 +45,23 @@ static void interpret(struct ring *ring)
     if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
-    if (!file_walk(FILE_L8, "/system/pipe/clone"))
+    if (!file_walk(FILE_LA, "/system/buf:2"))
         return;
 
-    file_walkfrom(FILE_CI, FILE_L8, "0");
-    file_walkfrom(FILE_CO, FILE_L8, "1");
-    file_open(FILE_CI);
-    file_writeall(FILE_CI, command, count);
+    if (!file_walk(FILE_LB, "/system/buf:3"))
+        return;
+
+    file_walkfrom(FILE_CI, FILE_LA, "idata");
+    file_walkfrom(FILE_LC, FILE_LA, "odata");
+    file_walkfrom(FILE_LD, FILE_LB, "idata");
+    file_walkfrom(FILE_CO, FILE_LB, "odata");
+    file_open(FILE_LC);
     call_spawn();
-    file_close(FILE_CI);
+    file_writeall(FILE_LC, command, count);
+    file_close(FILE_LC);
+    file_open(FILE_LD);
     readback();
+    file_close(FILE_LD);
 
 }
 

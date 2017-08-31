@@ -28,6 +28,14 @@ elfload < /mod/pipe.ko.4
 elfload < /mod/pipe.ko.5
 elfload < /mod/pipe.ko.6
 elfload < /mod/pipe.ko.7
+elfload < /mod/buf.ko.0
+elfload < /mod/buf.ko.1
+elfload < /mod/buf.ko.2
+elfload < /mod/buf.ko.3
+elfload < /mod/buf.ko.4
+elfload < /mod/buf.ko.5
+elfload < /mod/buf.ko.6
+elfload < /mod/buf.ko.7
 elfload < /mod/con.ko
 elfload < /mod/con.ko.0
 elfload < /mod/con.ko.1

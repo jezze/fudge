@@ -2,6 +2,7 @@ include $(DIR_SRC)/modules/arp/rules.mk
 include $(DIR_SRC)/modules/audio/rules.mk
 include $(DIR_SRC)/modules/base/rules.mk
 include $(DIR_SRC)/modules/block/rules.mk
+include $(DIR_SRC)/modules/buf/rules.mk
 include $(DIR_SRC)/modules/clock/rules.mk
 include $(DIR_SRC)/modules/con/rules.mk
 include $(DIR_SRC)/modules/console/rules.mk
