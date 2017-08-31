@@ -30,6 +30,7 @@ static unsigned int idata_open(struct system_node *self, struct service_state *s
 {
 
     list_add(&idatalist, &state->item);
+    unblock(&odatalist);
 
     return (unsigned int)self;
 
@@ -40,25 +41,6 @@ static unsigned int idata_close(struct system_node *self, struct service_state *
 
     list_remove(&idatalist, &state->item);
     unblock(&odatalist);
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int odata_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&odatalist, &state->item);
-
-    return (unsigned int)self;
-
-}
-
-static unsigned int odata_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&odatalist, &state->item);
-    unblock(&idatalist);
 
     return (unsigned int)self;
 
@@ -75,6 +57,26 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
         kernel_blocktask(state->task);
 
     return count;
+
+}
+
+static unsigned int odata_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&odatalist, &state->item);
+    unblock(&idatalist);
+
+    return (unsigned int)self;
+
+}
+
+static unsigned int odata_close(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&odatalist, &state->item);
+    unblock(&idatalist);
+
+    return (unsigned int)self;
 
 }
 
