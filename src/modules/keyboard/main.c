@@ -20,8 +20,8 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
     struct {struct event_header header; struct event_keypress keypress;} message;
 
     message.header.type = EVENT_KEYPRESS;
-    message.header.source = 0;
-    message.header.destination = 0;
+    message.header.source = EVENT_ADDR_BROADCAST;
+    message.header.destination = EVENT_ADDR_BROADCAST;
     message.keypress.scancode = scancode;
 
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
@@ -34,8 +34,8 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
     struct {struct event_header header; struct event_keyrelease keyrelease;} message;
 
     message.header.type = EVENT_KEYRELEASE;
-    message.header.source = 0;
-    message.header.destination = 0;
+    message.header.source = EVENT_ADDR_BROADCAST;
+    message.header.destination = EVENT_ADDR_BROADCAST;
     message.keyrelease.scancode = scancode;
 
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));

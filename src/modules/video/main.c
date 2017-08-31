@@ -13,8 +13,8 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
     struct {struct event_header header; struct event_videomode videomode;} message;
 
     message.header.type = EVENT_VIDEOMODE;
-    message.header.source = 0;
-    message.header.destination = 0;
+    message.header.source = EVENT_ADDR_BROADCAST;
+    message.header.destination = EVENT_ADDR_BROADCAST;
     message.videomode.w = w;
     message.videomode.h = h;
     message.videomode.bpp = bpp;
