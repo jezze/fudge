@@ -250,6 +250,22 @@ unsigned int kernel_writetaskmailbox(struct task *task, void *buffer, unsigned i
 
 }
 
+void kernel_unblockall(struct list *states)
+{
+
+    struct list_item *current;
+
+    for (current = states->head; current; current = current->next)
+    {
+
+        struct service_state *state = current->data;
+
+        kernel_unblocktask(state->task);
+
+    }
+
+}
+
 void kernel_multicast(struct list *states, void *buffer, unsigned int count)
 {
 

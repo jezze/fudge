@@ -21,6 +21,7 @@ void kernel_freemount(struct service_mount *mount);
 void kernel_copyservices(struct task *source, struct task *target);
 unsigned int kernel_readtaskmailbox(struct task *task, void *buffer, unsigned int count);
 unsigned int kernel_writetaskmailbox(struct task *task, void *buffer, unsigned int count);
+void kernel_unblockall(struct list *states);
 void kernel_multicast(struct list *states, void *buffer, unsigned int count);
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp);
 void kernel_setupramdisk(struct task *task, struct service_backend *backend);
