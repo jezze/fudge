@@ -105,7 +105,13 @@ static void copyring(struct ring *ring)
 static void interpretbuiltin(unsigned int count, char *command)
 {
 
-    /* This is a temporary fix */
+    if (memory_match(command, "exit", 4))
+    {
+
+        quit = 1;
+
+    }
+
     if (memory_match(command, "cd ", 3))
     {
 

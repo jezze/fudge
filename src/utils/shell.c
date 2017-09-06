@@ -1,10 +1,18 @@
 #include <abi.h>
 #include <fudge.h>
 
+static unsigned int quit;
+
 static void interpretbuiltin(unsigned int count, char *command)
 {
 
-    /* This is a temporary fix */
+    if (memory_match(command, "exit", 4))
+    {
+
+        quit = 1;
+
+    }
+
     if (memory_match(command, "cd ", 3))
     {
 
@@ -134,7 +142,7 @@ void main(void)
     file_open(FILE_PO);
     file_writeall(FILE_PO, "$ ", 2);
 
-    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
+    while (!quit && (count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
     {
 
         unsigned int i;
