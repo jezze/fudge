@@ -102,25 +102,8 @@ static void copyring(struct ring *ring)
 
 }
 
-static void readback(void)
+static void interpretbuiltin(unsigned int count, char *command)
 {
-
-    char buffer[FUDGE_BSIZE];
-    unsigned int count;
-
-    while ((count = file_read(FILE_LD, buffer, FUDGE_BSIZE)))
-        copybuffer(buffer, count);
-
-}
-
-static void interpret(struct ring *ring)
-{
-
-    char command[FUDGE_BSIZE >> 5];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE >> 5);
-
-    if (count < 2)
-        return;
 
     /* This is a temporary fix */
     if (memory_match(command, "cd ", 3))
@@ -143,6 +126,13 @@ static void interpret(struct ring *ring)
 
     }
 
+}
+
+static void interpretslang(unsigned int count, char *command)
+{
+
+    char buffer[FUDGE_BSIZE];
+
     if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
@@ -161,8 +151,25 @@ static void interpret(struct ring *ring)
     file_writeall(FILE_LC, command, count);
     file_close(FILE_LC);
     file_open(FILE_LD);
-    readback();
+
+    while ((count = file_read(FILE_LD, buffer, FUDGE_BSIZE)))
+        copybuffer(buffer, count);
+
     file_close(FILE_LD);
+
+}
+
+static void interpret(struct ring *ring)
+{
+
+    char command[FUDGE_BSIZE >> 5];
+    unsigned int count = ring_read(ring, command, FUDGE_BSIZE >> 5);
+
+    if (count < 2)
+        return;
+
+    interpretbuiltin(count, command);
+    interpretslang(count, command);
 
 }
 
