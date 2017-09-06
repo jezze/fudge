@@ -16,9 +16,6 @@ static void interpretbuiltin(unsigned int count, char *command)
     if (memory_match(command, "cd ", 3))
     {
 
-        if (count < 4)
-            return;
-
         command[count - 1] = '\0';
 
         if (file_walk(FILE_L8, command + 3))
@@ -28,8 +25,6 @@ static void interpretbuiltin(unsigned int count, char *command)
             file_duplicate(FILE_CW, FILE_L8);
 
         }
-
-        return;
 
     }
 
