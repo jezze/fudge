@@ -4,6 +4,7 @@
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include <modules/arch/x86/msr/msr.h>
+#include <modules/arch/x86/pic/pic.h>
 #include "apic.h"
 
 #define REGISTERID                      0x0020
@@ -13,8 +14,8 @@
 #define REGISTERCPR                     0x00A0
 #define REGISTEREOI                     0x00B0
 #define REGISTERREMOTEREAD              0x00C0
-#define REGISTERLOGICDEST               0x00D0
-#define REGISTERDESTFORMAT              0x00E0
+#define REGISTERLDR                     0x00D0
+#define REGISTERDFR                     0x00E0
 #define REGISTERSV                      0x00F0
 #define REGISTERISR0                    0x0100
 #define REGISTERISR1                    0x0110
@@ -56,7 +57,6 @@
 
 static unsigned int mmio;
 
-/*
 static unsigned int apic_ind(unsigned int reg)
 {
 
@@ -65,7 +65,6 @@ static unsigned int apic_ind(unsigned int reg)
     return *address;
 
 }
-*/
 
 static void apic_outd(unsigned int reg, unsigned int value)
 {
@@ -81,15 +80,21 @@ unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt i
 
     DEBUG(DEBUG_INFO, "APIC INTERRUPT");
 
+/*
+    apic_outd(REGISTEREOI, 0);
+*/
+
     return arch_resume(&general, &interrupt);
 
 }
 
-static void apic_sendint(unsigned int id, unsigned int index)
+void apic_sendint(unsigned int id, unsigned int value)
 {
 
-    apic_outd(REGISTERICR1, (1 << 14) | index);
-    apic_outd(REGISTERICR0, (id << 24) | (1 << 14) | index);
+    apic_outd(REGISTERICR1, id << 24);
+    apic_outd(REGISTERICR0, value);
+
+    while (apic_ind(REGISTERICR0) & APIC_ICR_STATUS);
 
 }
 
@@ -115,6 +120,10 @@ void module_init(void)
         return;
 */
 
+/*
+    pic_disable();
+*/
+
     DEBUG(DEBUG_INFO, "APIC FOUND");
 
     msr_get(MSR_LAPIC, &msrdata);
@@ -122,14 +131,17 @@ void module_init(void)
     mmio = (msrdata.eax & 0xFFFFF000);
 
     arch_setmap(7, mmio, mmio, 0x1000);
+    arch_setinterrupt(0xFE, apic_test);
     arch_setinterrupt(0xFF, apic_spurious);
-    apic_outd(REGISTERSV, 0xFF | (1 << 8));
+    apic_outd(REGISTERTPR, 0);
+    apic_outd(REGISTERLDR, 0x01000000);
+    apic_outd(REGISTERDFR, 0xFFFFFFFF);
+    apic_outd(REGISTERSV, (1 << 8) | 0xFF);
     apic_outd(REGISTERLVTTIMER, 0x10000);
     apic_outd(REGISTERLVTPERF, 0x10000);
     apic_outd(REGISTERLVTLINT0, 0x8700);
     apic_outd(REGISTERLVTLINT1, 0x400);
     apic_outd(REGISTERLVTERROR, 0x10000);
-    apic_sendint(0, 0xFF); 
 
 }
 

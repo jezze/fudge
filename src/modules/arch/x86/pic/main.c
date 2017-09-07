@@ -108,6 +108,14 @@ unsigned int pic_unsetroutine(unsigned int irq)
 
 }
 
+void pic_disable(void)
+{
+
+    setmask(REGISTERDATA0, 0xFF);
+    setmask(REGISTERDATA1, 0xFF);
+
+}
+
 void module_init(void)
 {
 

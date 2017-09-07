@@ -16,3 +16,4 @@ void pic_routine0E(void);
 void pic_routine0F(void);
 unsigned int pic_setroutine(unsigned int irq, void (*routine)(unsigned int irq));
 unsigned int pic_unsetroutine(unsigned int irq);
+void pic_disable(void);

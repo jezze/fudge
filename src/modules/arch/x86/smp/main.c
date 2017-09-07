@@ -4,25 +4,8 @@
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/acpi/acpi.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
-#include "smp.h"
-
-static struct smp_architecture architecture;
-
-void ioapic_outd(unsigned int base, unsigned int index, unsigned int value)
-{
-
-    *(unsigned int *)(base) = index;
-    *(unsigned int *)(base + 0x10) = value;
-
-}
-
-unsigned int ioapic_ind(unsigned int base, unsigned int index)
-{
-
-    *(unsigned int *)(base) = index;
-
-    return *(unsigned int *)(base + 0x10);
-}
+#include <modules/arch/x86/apic/apic.h>
+#include <modules/arch/x86/ioapic/ioapic.h>
 
 static void readmadt(void)
 {
@@ -46,11 +29,10 @@ static void readmadt(void)
         {
 
             struct acpi_madt_apic *apic = (struct acpi_madt_apic *)entry;
-            struct smp_cpu *cpu = &architecture.cpus[architecture.ncpus];
 
-            cpu->id = apic->id;
+            DEBUG(DEBUG_INFO, "SMP APIC FOUND");
 
-            architecture.ncpus++;
+            debug_write(DEBUG_INFO, "  ", "id", apic->id);
 
         }
 
@@ -58,39 +40,38 @@ static void readmadt(void)
         {
 
             struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
-            struct smp_io *io = &architecture.ios[architecture.nios];
-            unsigned int test;
+            unsigned int id;
+            unsigned int version;
+            unsigned int count;
+            unsigned int i;
 
-            io->id = ioapic->id;
-            io->address = ioapic->address;
+            DEBUG(DEBUG_INFO, "SMP IOAPIC FOUND");
 
             arch_setmap(7, ioapic->address, ioapic->address, 0x1000);
 
-            test = ioapic_ind(ioapic->address, 0);
+            id = ioapic_ind(ioapic->address, 0);
+            version = ioapic_ind(ioapic->address, 1);
+            count = ((version >> 16) & 0xFF) + 1;
 
-            debug_write(DEBUG_INFO, "IOAPIC", "id", test);
+            debug_write(DEBUG_INFO, "  ", "id", ioapic->id);
+            debug_write(DEBUG_INFO, "  ", "address", ioapic->address);
+            debug_write(DEBUG_INFO, "  ", "id", id);
+            debug_write(DEBUG_INFO, "  ", "version", version);
 
-            test = ioapic_ind(ioapic->address, 1);
+            for (i = 0; i < count; i++)
+            {
 
-            debug_write(DEBUG_INFO, "IOAPIC", "ver", test);
+                unsigned int test;
 
-            test = ioapic_ind(ioapic->address, 0x10);
+                test = ioapic_ind(ioapic->address, 0x10);
 
-            debug_write(DEBUG_INFO, "IOAPIC", "redtbl", test);
+                debug_write(DEBUG_INFO, "  ", "redtbl0", test);
 
-            test = ioapic_ind(ioapic->address, 0x11);
+                test = ioapic_ind(ioapic->address, 0x11);
 
-            debug_write(DEBUG_INFO, "IOAPIC", "redtbl", test);
+                debug_write(DEBUG_INFO, "  ", "redtbl1", test);
 
-            test = ioapic_ind(ioapic->address, 0x12);
-
-            debug_write(DEBUG_INFO, "IOAPIC", "redtbl", test);
-
-            test = ioapic_ind(ioapic->address, 0x13);
-
-            debug_write(DEBUG_INFO, "IOAPIC", "redtbl", test);
-
-            architecture.nios++;
+            }
 
         }
 
@@ -103,15 +84,8 @@ static void readmadt(void)
 void module_init(void)
 {
 
-    unsigned int i;
-
     readmadt();
-
-    for (i = 0; i < architecture.ncpus; i++)
-        DEBUG(DEBUG_INFO, "SMP CPU FOUND");
-
-    for (i = 0; i < architecture.nios; i++)
-        DEBUG(DEBUG_INFO, "SMP IO FOUND");
+    apic_sendint(0, APIC_ICR_NORMAL | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0xFE); 
 
 }
 

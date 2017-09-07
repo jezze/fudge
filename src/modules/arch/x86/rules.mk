@@ -10,6 +10,7 @@ include $(DIR_SRC)/modules/arch/x86/fpu/rules.mk
 include $(DIR_SRC)/modules/arch/x86/i915/rules.mk
 include $(DIR_SRC)/modules/arch/x86/ide/rules.mk
 include $(DIR_SRC)/modules/arch/x86/io/rules.mk
+include $(DIR_SRC)/modules/arch/x86/ioapic/rules.mk
 include $(DIR_SRC)/modules/arch/x86/msr/rules.mk
 include $(DIR_SRC)/modules/arch/x86/pci/rules.mk
 include $(DIR_SRC)/modules/arch/x86/pic/rules.mk

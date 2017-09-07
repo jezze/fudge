@@ -4,8 +4,8 @@
 
 .section .text
 
-.global apic_spurious
-apic_spurious:
+.global apic_test
+apic_test:
     pusha
     movw %ss, %ax
     movw %ax, %ds
@@ -18,5 +18,9 @@ apic_spurious:
     movw %ax, %fs
     movw %ax, %gs
     popa
+    iret
+
+.global apic_spurious
+apic_spurious:
     iret
 
