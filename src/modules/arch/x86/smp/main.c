@@ -63,11 +63,11 @@ static void readmadt(void)
 
                 unsigned int test;
 
-                test = ioapic_ind(ioapic->address, 0x10);
+                test = ioapic_ind(ioapic->address, i * 2 + 0x10);
 
                 debug_write(DEBUG_INFO, "  ", "redtbl0", test);
 
-                test = ioapic_ind(ioapic->address, 0x11);
+                test = ioapic_ind(ioapic->address, i * 2 + 0x11);
 
                 debug_write(DEBUG_INFO, "  ", "redtbl1", test);
 
