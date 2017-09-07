@@ -118,13 +118,9 @@ void module_init(void)
 /*
     if (!(data.ecx & CPUID_FEATURES00_2XAPIC))
         return;
-*/
 
-/*
     pic_disable();
 */
-
-    DEBUG(DEBUG_INFO, "APIC FOUND");
 
     msr_get(MSR_LAPIC, &msrdata);
 

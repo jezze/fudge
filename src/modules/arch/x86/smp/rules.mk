@@ -3,6 +3,7 @@ M:=\
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/smp/main.o \
+    $(DIR_SRC)/modules/arch/x86/smp/init.o \
 
 L:=\
     $(DIR_LIB)/fudge/fudge.a \
