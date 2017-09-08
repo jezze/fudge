@@ -1,1 +1,2 @@
-void smp_init(void);
+void smp_begin(void);
+void smp_end(void);

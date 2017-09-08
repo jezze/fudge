@@ -85,10 +85,16 @@ static void readmadt(void)
 void module_init(void)
 {
 
+    unsigned int origin = 0x8000;
+    unsigned int begin = (unsigned int)smp_begin;
+    unsigned int end = (unsigned int)smp_end;
+    unsigned int length = end - begin;
+
     readmadt();
     apic_sendint(0, APIC_ICR_NORMAL | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0xFE); 
     apic_sendint(0, APIC_ICR_NORMAL | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0xFE); 
-    memory_copy((void *)0x8000, (void *)((unsigned int)smp_init), 0x1000);
+
+    memory_copy((void *)origin, (void *)begin, length);
     apic_sendint(1, APIC_ICR_INIT | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x00); 
     apic_sendint(1, APIC_ICR_SIPI | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x08); 
     memory_copy((void *)0xB8080, "t e s t ", 8);
