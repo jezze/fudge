@@ -8,6 +8,10 @@
 #include <modules/arch/x86/ioapic/ioapic.h>
 #include "smp.h"
 
+#define KERNELSTACK                     0x00400000 - 0x8000
+
+static struct arch_context current[32];
+
 static void readmadt(void)
 {
 
@@ -82,22 +86,39 @@ static void readmadt(void)
 
 }
 
+static void copytrampoline()
+{
+
+    unsigned int address = 0x8000;
+    unsigned int begin = (unsigned int)smp_begin;
+    unsigned int end = (unsigned int)smp_end;
+
+    memory_copy((void *)address, (void *)begin, end - begin);
+
+}
+
+void smp_setup(void)
+{
+
+    memory_copy((void *)0xB8000, "X ", 2);
+
+    current[1].task = kernel_getfreetask();
+    current[1].ip = (unsigned int)cpu_halt;
+    current[1].sp = KERNELSTACK;
+
+    for (;;);
+
+}
+
 void module_init(void)
 {
 
-    unsigned int origin = 0x8000;
-    unsigned int begin = (unsigned int)smp_begin;
-    unsigned int end = (unsigned int)smp_end;
-    unsigned int length = end - begin;
-
+    copytrampoline();
     readmadt();
     apic_sendint(0, APIC_ICR_NORMAL | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0xFE); 
     apic_sendint(0, APIC_ICR_NORMAL | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0xFE); 
-
-    memory_copy((void *)origin, (void *)begin, length);
     apic_sendint(1, APIC_ICR_INIT | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x00); 
     apic_sendint(1, APIC_ICR_SIPI | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x08); 
-    memory_copy((void *)0xB8080, "t e s t ", 8);
 
 }
 
