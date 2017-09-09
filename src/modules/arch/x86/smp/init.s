@@ -43,8 +43,6 @@ smp_end16:
 
 .code32
 
-.extern smp_setup
-
 .global smp_begin32
 smp_begin32:
 
@@ -56,10 +54,20 @@ smp_init32:
     movw %ax, %gs
     movw %ax, %ss
     movl $0xB8000, %eax
-    movl $0x4121, (%eax)
+    movl $0x4020, (%eax)
+#    jmp smp_arne
 #    call smp_setup
     hlt
 
 .global smp_end32
 smp_end32:
+
+.extern smp_setup
+
+.global smp_arne
+smp_arne:
+    movl $0xB8000, %eax
+    movl $0x4121, (%eax)
+#    call smp_setup
+    hlt
 
