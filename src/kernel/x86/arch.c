@@ -63,7 +63,7 @@ static struct gdt *gdt = (struct gdt *)GDTADDRESS;
 static struct idt *idt = (struct idt *)IDTADDRESS;
 static struct tss *tss = (struct tss *)TSSADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
-static struct arch_context current;
+static struct arch_context context;
 
 static struct mmu_directory *getdirectory(unsigned int index, unsigned int base, unsigned int count)
 {
@@ -186,44 +186,44 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 unsigned int arch_call(unsigned int index, void *stack, unsigned int rewind)
 {
 
-    current.task->state.rewind = rewind;
+    context.task->state.rewind = rewind;
 
-    return abi_call(index, current.task, stack);
+    return abi_call(index, context.task, stack);
 
 }
 
 struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip, unsigned int sp)
 {
 
-    if (current.task)
+    if (context.task)
     {
 
-        current.task->state.ip = ip;
-        current.task->state.sp = sp;
+        context.task->state.ip = ip;
+        context.task->state.sp = sp;
 
-        saveregisters(current.task, general);
+        saveregisters(context.task, general);
 
     }
 
-    current.task = kernel_getactivetask();
+    context.task = kernel_getactivetask();
 
-    if (current.task)
+    if (context.task)
     {
 
-        if (current.task->state.status == TASK_STATUS_UNBLOCKED)
+        if (context.task->state.status == TASK_STATUS_UNBLOCKED)
         {
 
-            kernel_activatetask(current.task);
-            task_setstate(current.task, current.task->state.ip - current.task->state.rewind, current.task->state.sp);
+            kernel_activatetask(context.task);
+            task_setstate(context.task, context.task->state.ip - context.task->state.rewind, context.task->state.sp);
 
         }
 
-        loadregisters(current.task, general);
-        activate(current.task);
+        loadregisters(context.task, general);
+        activate(context.task);
 
     }
 
-    return &current;
+    return &context;
 
 }
 
@@ -262,7 +262,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     DEBUG(DEBUG_INFO, "exception: divide by zero");
 
     if (interrupt.cs.value == selector.ucode)
-        kernel_freetask(current.task);
+        kernel_freetask(context.task);
 
     return arch_resume(&general, &interrupt);
 
@@ -379,23 +379,23 @@ unsigned short arch_generalfault(struct cpu_general general, unsigned int select
 unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
 {
 
-    if (current.task)
+    if (context.task)
     {
 
-        unsigned int code = current.task->format->findbase(&current.task->node, cpu_getcr2());
+        unsigned int code = context.task->format->findbase(&context.task->node, cpu_getcr2());
 
         if (code)
         {
 
-            maptask(current.task, code);
-            current.task->format->copyprogram(&current.task->node);
+            maptask(context.task, code);
+            context.task->format->copyprogram(&context.task->node);
 
         }
 
         else
         {
 
-            kernel_freetask(current.task);
+            kernel_freetask(context.task);
 
         }
 
@@ -421,8 +421,8 @@ static void leave(void)
 
     interrupt.cs.value = selector.ucode;
     interrupt.ss.value = selector.ustack;
-    interrupt.eip.value = current.task->state.ip;
-    interrupt.esp.value = current.task->state.sp;
+    interrupt.eip.value = context.task->state.ip;
+    interrupt.esp.value = context.task->state.sp;
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
     cpu_leave(interrupt);
@@ -469,14 +469,14 @@ void arch_setup(struct service_backend *backend)
     kernel_setupmounts();
     kernel_setupservices();
 
-    current.task = kernel_getfreetask();
-    current.ip = (unsigned int)cpu_halt;
-    current.sp = KERNELSTACK;
+    context.task = kernel_getfreetask();
+    context.ip = (unsigned int)cpu_halt;
+    context.sp = KERNELSTACK;
 
-    kernel_setupramdisk(current.task, backend);
+    kernel_setupramdisk(context.task, backend);
     mapcontainer();
-    spawn(current.task, 0);
-    activate(current.task);
+    spawn(context.task, 0);
+    activate(context.task);
     mmu_setup();
     leave();
 

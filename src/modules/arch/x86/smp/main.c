@@ -12,7 +12,7 @@
 #define INIT32ADDRESS                   0x00008100
 #define KERNELSTACK                     0x00400000
 
-static struct arch_context current[32];
+static struct arch_context context[32];
 
 static void readmadt(void)
 {
@@ -113,9 +113,9 @@ void smp_setup(void)
 
     unsigned int id = 1;
 
-    current[id].task = 0;
-    current[id].ip = (unsigned int)cpu_halt;
-    current[id].sp = KERNELSTACK - id * 0x8000;
+    context[id].task = 0;
+    context[id].ip = (unsigned int)cpu_halt;
+    context[id].sp = KERNELSTACK - id * 0x8000;
 
     memory_copy((void *)0xB8000, "X ", 2);
 
