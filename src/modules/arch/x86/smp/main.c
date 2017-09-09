@@ -100,7 +100,7 @@ static void copytrampoline16()
 static void copytrampoline32()
 {
 
-    unsigned int address = 0x9000;
+    unsigned int address = 0x8100;
     unsigned int begin = (unsigned int)smp_begin32;
     unsigned int end = (unsigned int)smp_end32;
 

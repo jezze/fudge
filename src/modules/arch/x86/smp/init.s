@@ -22,14 +22,14 @@ init16:
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
-    movl $0x8C00, %esp
-    movl $0x8C00, %ebp
+    movl $0x8800, %esp
+    movl $0x8800, %ebp
     movl $0x1000, %eax
     lgdt (%eax)
     movl %cr0, %eax
     orl $1, %eax
     movl %eax, %cr0
-    ljmp $0x08, $0x9000
+    ljmp $0x08, $0x8100
 
 .global smp_end16
 smp_end16:
