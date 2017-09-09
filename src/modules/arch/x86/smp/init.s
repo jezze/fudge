@@ -4,27 +4,11 @@
 
 .section .text
 
-.code32
-
-init32:
-    movw $0x10, %ax
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
-    movw %ax, %ss
-    ljmp $0x08, $print32
-
-print32:
-    movl $0xB8000, %eax
-    movl $0x4121, (%eax)
-    jmp .
-    call smp_setup
-
-.global smp_begin
-smp_begin:
-
 .code16
+
+.global smp_begin16
+smp_begin16:
+
 init:
     cli
     xorw %ax, %ax
@@ -34,24 +18,62 @@ init:
     movw %ax, %gs
     movw %ax, %ss
 
+    # setup stack
     movw $0x8800, %ax
     movw %ax, %sp
+    movw %ax, %bp
 
+    # load gdt
     movl $0x1000, %eax
     lgdt (%eax)
 
-#    ljmp $0x08, $init32
+    # protected mode
+#    movl %cr0, %eax
+#    orl $1, %eax
+#    movl %eax, %cr0
 
-    call print
-    hlt
-
-print:
+    # print red thing
     movw $0xB800, %ax
     movw %ax, %es
     xorw %bx, %bx
     movw $0x4020, %ax
     movw %ax, %es:(%bx)
-    ret
 
-.global smp_end
-smp_end:
+    # long jump
+#    ljmp $0x08, $0x9000
+
+    # long ret
+#    pushl $0x08
+#    pushl $0x9000
+#    lret
+
+    hlt
+
+.global smp_end16
+smp_end16:
+
+.code32
+
+.global smp_begin32
+smp_begin32:
+
+smp_init32:
+    movl $0xB8000, %eax
+    movl $0x4121, (%eax)
+
+    movw $0x10, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movw %ax, %ss
+
+    movl $0xB8000, %eax
+    movl $0x4121, (%eax)
+
+    jmp .
+    call smp_setup
+
+.global smp_end32
+smp_end32:
+

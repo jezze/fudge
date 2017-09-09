@@ -86,12 +86,23 @@ static void readmadt(void)
 
 }
 
-static void copytrampoline()
+static void copytrampoline16()
 {
 
     unsigned int address = 0x8000;
-    unsigned int begin = (unsigned int)smp_begin;
-    unsigned int end = (unsigned int)smp_end;
+    unsigned int begin = (unsigned int)smp_begin16;
+    unsigned int end = (unsigned int)smp_end16;
+
+    memory_copy((void *)address, (void *)begin, end - begin);
+
+}
+
+static void copytrampoline32()
+{
+
+    unsigned int address = 0x9000;
+    unsigned int begin = (unsigned int)smp_begin32;
+    unsigned int end = (unsigned int)smp_end32;
 
     memory_copy((void *)address, (void *)begin, end - begin);
 
@@ -113,7 +124,8 @@ void smp_setup(void)
 void module_init(void)
 {
 
-    copytrampoline();
+    copytrampoline16();
+    copytrampoline32();
     readmadt();
     apic_sendint(0, APIC_ICR_NORMAL | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0xFE); 
     apic_sendint(0, APIC_ICR_NORMAL | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0xFE); 
