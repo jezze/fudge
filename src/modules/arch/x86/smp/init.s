@@ -1,7 +1,5 @@
 .code32
 
-.extern smp_setup
-
 .section .text
 
 .code16
@@ -45,6 +43,8 @@ smp_end16:
 
 .code32
 
+.extern smp_setup
+
 .global smp_begin32
 smp_begin32:
 
@@ -57,8 +57,8 @@ smp_init32:
     movw %ax, %ss
     movl $0xB8000, %eax
     movl $0x4121, (%eax)
-    hlt
 #    call smp_setup
+    hlt
 
 .global smp_end32
 smp_end32:
