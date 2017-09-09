@@ -12,11 +12,6 @@
 .set SMP_CODESEL,                       0x08
 .set SMP_DATASEL,                       0x10
 
-.global smp_init
-smp_init:
-    call smp_setup
-    hlt
-
 .code16
 
 .global smp_begin16
@@ -56,7 +51,7 @@ init32:
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
-    ljmp $SMP_CODESEL, $smp_init
+    lcall $SMP_CODESEL, $smp_setup
 
 .global smp_end32
 smp_end32:
