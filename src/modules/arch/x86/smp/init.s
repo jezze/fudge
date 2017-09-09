@@ -2,6 +2,15 @@
 
 .section .text
 
+.extern smp_setup
+
+.global smp_arne
+smp_arne:
+    movl $0xB8000, %eax
+    movl $0x4121, (%eax)
+    call smp_setup
+    hlt
+
 .code16
 
 .global smp_begin16
@@ -17,7 +26,8 @@ init:
     movw %ax, %ss
 
     # setup stack
-    movl $0x8800, %esp
+    movl $0x8C00, %esp
+    movl $0x8C00, %ebp
 
     # load gdt
     movl $0x1000, %eax
@@ -61,13 +71,4 @@ smp_init32:
 
 .global smp_end32
 smp_end32:
-
-.extern smp_setup
-
-.global smp_arne
-smp_arne:
-    movl $0xB8000, %eax
-    movl $0x4121, (%eax)
-#    call smp_setup
-    hlt
 
