@@ -10,9 +10,7 @@
 
 #define KERNELSTACK                     0x00400000 - 0x8000
 
-/*
 static struct arch_context current[32];
-*/
 
 static void readmadt(void)
 {
@@ -114,12 +112,14 @@ void smp_setup(void)
 {
 
     memory_copy((void *)0xB8000, "X ", 2);
+    cpu_setidt((void *)0x2000);
+    memory_copy((void *)0xB8000, "Y ", 2);
 
-/*
-    current[1].task = kernel_getfreetask();
+    current[1].task = 0;
     current[1].ip = (unsigned int)cpu_halt;
     current[1].sp = KERNELSTACK;
-*/
+
+    memory_copy((void *)0xB8000, "Z ", 2);
 
     for (;;);
 
