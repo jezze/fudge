@@ -19,9 +19,7 @@ init:
     movw %ax, %ss
 
     # setup stack
-    movw $0x8800, %ax
-    movw %ax, %ss
-    xorl %esp, %esp
+    movl $0x8800, %esp
 
     # load gdt
     movl $0x1000, %eax
