@@ -5,6 +5,7 @@
 .extern smp_setup
 
 .set SMP_GDTADDRESS,                    0x1000
+.set SMP_IDTADDRESS,                    0x2000
 .set SMP_INIT16ADDRESS,                 0x8000
 .set SMP_INIT32ADDRESS,                 0x8100
 .set SMP_STACKADDRESS,                  0x8800
@@ -33,6 +34,8 @@ init16:
     movl $SMP_STACKADDRESS, %ebp
     movl $SMP_GDTADDRESS, %eax
     lgdt (%eax)
+    movl $SMP_IDTADDRESS, %eax
+    lidt (%eax)
     movl %cr0, %eax
     orl $1, %eax
     movl %eax, %cr0

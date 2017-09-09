@@ -113,15 +113,11 @@ void smp_setup(void)
 
     unsigned int id = 1;
 
-    memory_copy((void *)0xB8000, "X ", 2);
-    cpu_setidt((void *)0x2000);
-    memory_copy((void *)0xB8000, "Y ", 2);
-
     current[id].task = 0;
     current[id].ip = (unsigned int)cpu_halt;
     current[id].sp = KERNELSTACK - id * 0x8000;
 
-    memory_copy((void *)0xB8000, "Z ", 2);
+    memory_copy((void *)0xB8000, "X ", 2);
 
     for (;;);
 
