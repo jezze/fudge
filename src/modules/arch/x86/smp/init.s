@@ -4,8 +4,8 @@
 
 .extern smp_setup
 
-.global smp_arne
-smp_arne:
+.global smp_init
+smp_init:
     call smp_setup
     hlt
 
@@ -14,7 +14,7 @@ smp_arne:
 .global smp_begin16
 smp_begin16:
 
-init:
+init16:
     cli
     xorw %ax, %ax
     movw %ax, %ds
@@ -39,14 +39,14 @@ smp_end16:
 .global smp_begin32
 smp_begin32:
 
-smp_init32:
+init32:
     movw $0x10, %ax
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
-    ljmp $0x08, $smp_arne
+    ljmp $0x08, $smp_init
 
 .global smp_end32
 smp_end32:
