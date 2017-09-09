@@ -6,8 +6,6 @@
 
 .global smp_arne
 smp_arne:
-    movl $0xB8000, %eax
-    movl $0x4121, (%eax)
     call smp_setup
     hlt
 
@@ -24,29 +22,14 @@ init:
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
-
-    # setup stack
     movl $0x8C00, %esp
     movl $0x8C00, %ebp
-
-    # load gdt
     movl $0x1000, %eax
     lgdt (%eax)
-
-    # protected mode
     movl %cr0, %eax
     orl $1, %eax
     movl %eax, %cr0
-
-    # long jump
     ljmp $0x08, $0x9000
-
-    # long ret
-    #pushl $0x08
-    #pushl $0x9000
-    #lret
-
-    hlt
 
 .global smp_end16
 smp_end16:
@@ -63,11 +46,7 @@ smp_init32:
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
-    movl $0xB8000, %eax
-    movl $0x4020, (%eax)
-#    jmp smp_arne
-#    call smp_setup
-    hlt
+    ljmp $0x08, $smp_arne
 
 .global smp_end32
 smp_end32:
