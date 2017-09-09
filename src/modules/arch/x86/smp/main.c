@@ -8,7 +8,9 @@
 #include <modules/arch/x86/ioapic/ioapic.h>
 #include "smp.h"
 
-#define KERNELSTACK                     0x00400000 - 0x8000
+#define INIT16ADDRESS                   0x00008000
+#define INIT32ADDRESS                   0x00008100
+#define KERNELSTACK                     0x00400000
 
 static struct arch_context current[32];
 
@@ -89,35 +91,35 @@ static void readmadt(void)
 static void copytrampoline16()
 {
 
-    unsigned int address = 0x8000;
     unsigned int begin = (unsigned int)smp_begin16;
     unsigned int end = (unsigned int)smp_end16;
 
-    memory_copy((void *)address, (void *)begin, end - begin);
+    memory_copy((void *)INIT16ADDRESS, (void *)begin, end - begin);
 
 }
 
 static void copytrampoline32()
 {
 
-    unsigned int address = 0x8100;
     unsigned int begin = (unsigned int)smp_begin32;
     unsigned int end = (unsigned int)smp_end32;
 
-    memory_copy((void *)address, (void *)begin, end - begin);
+    memory_copy((void *)INIT32ADDRESS, (void *)begin, end - begin);
 
 }
 
 void smp_setup(void)
 {
 
+    unsigned int id = 1;
+
     memory_copy((void *)0xB8000, "X ", 2);
     cpu_setidt((void *)0x2000);
     memory_copy((void *)0xB8000, "Y ", 2);
 
-    current[1].task = 0;
-    current[1].ip = (unsigned int)cpu_halt;
-    current[1].sp = KERNELSTACK;
+    current[id].task = 0;
+    current[id].ip = (unsigned int)cpu_halt;
+    current[id].sp = KERNELSTACK - id * 0x8000;
 
     memory_copy((void *)0xB8000, "Z ", 2);
 
@@ -131,8 +133,6 @@ void module_init(void)
     copytrampoline16();
     copytrampoline32();
     readmadt();
-    apic_sendint(0, APIC_ICR_NORMAL | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0xFE); 
-    apic_sendint(0, APIC_ICR_NORMAL | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0xFE); 
     apic_sendint(1, APIC_ICR_INIT | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x00); 
     apic_sendint(1, APIC_ICR_SIPI | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x08); 
 

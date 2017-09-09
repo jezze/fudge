@@ -4,6 +4,13 @@
 
 .extern smp_setup
 
+.set SMP_GDTADDRESS,                    0x1000
+.set SMP_INIT16ADDRESS,                 0x8000
+.set SMP_INIT32ADDRESS,                 0x8100
+.set SMP_STACKADDRESS,                  0x8800
+.set SMP_CODESEL,                       0x08
+.set SMP_DATASEL,                       0x10
+
 .global smp_init
 smp_init:
     call smp_setup
@@ -22,14 +29,14 @@ init16:
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
-    movl $0x8800, %esp
-    movl $0x8800, %ebp
-    movl $0x1000, %eax
+    movl $SMP_STACKADDRESS, %esp
+    movl $SMP_STACKADDRESS, %ebp
+    movl $SMP_GDTADDRESS, %eax
     lgdt (%eax)
     movl %cr0, %eax
     orl $1, %eax
     movl %eax, %cr0
-    ljmp $0x08, $0x8100
+    ljmp $SMP_CODESEL, $SMP_INIT32ADDRESS
 
 .global smp_end16
 smp_end16:
@@ -40,13 +47,13 @@ smp_end16:
 smp_begin32:
 
 init32:
-    movw $0x10, %ax
+    movw $SMP_DATASEL, %ax
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
-    ljmp $0x08, $smp_init
+    ljmp $SMP_CODESEL, $smp_init
 
 .global smp_end32
 smp_end32:
