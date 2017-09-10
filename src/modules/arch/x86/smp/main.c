@@ -14,18 +14,11 @@
 
 static struct arch_context context[32];
 
-static void readmadt(void)
+static void detect(struct acpi_madt *madt)
 {
 
-    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
-    unsigned int madttable;
-    unsigned int madtend;
-
-    if (!madt)
-        return;
-
-    madttable = (unsigned int)madt + sizeof (struct acpi_madt);
-    madtend = (unsigned int)madt + madt->base.length;
+    unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
+    unsigned int madtend = (unsigned int)madt + madt->base.length;
 
     while (madttable < madtend)
     {
@@ -142,9 +135,14 @@ void smp_setup(void)
 void module_init(void)
 {
 
+    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
+
+    if (!madt)
+        return;
+
     copytrampoline16();
     copytrampoline32();
-    readmadt();
+    detect(madt);
 
 }
 
