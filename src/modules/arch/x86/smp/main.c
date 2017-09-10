@@ -40,6 +40,14 @@ static void readmadt(void)
             DEBUG(DEBUG_INFO, "SMP APIC FOUND");
             debug_write(DEBUG_INFO, "  ", "id", apic->id);
 
+            if (apic->id)
+            {
+
+                apic_sendint(apic->id, APIC_ICR_INIT | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x00); 
+                apic_sendint(apic->id, APIC_ICR_SIPI | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x08); 
+
+            }
+
         }
 
         if (entry->type == 1)
@@ -117,8 +125,11 @@ static void leave(unsigned int id)
     interrupt.esp.value = KERNELSTACK - id * 0x8000;
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
+/*
     DEBUG(DEBUG_INFO, "SMP CPU READY");
     debug_write(DEBUG_INFO, "  ", "id", id);
+*/
+
     cpu_leave(interrupt);
 
 }
@@ -142,8 +153,6 @@ void module_init(void)
     copytrampoline16();
     copytrampoline32();
     readmadt();
-    apic_sendint(1, APIC_ICR_INIT | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x00); 
-    apic_sendint(1, APIC_ICR_SIPI | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x08); 
 
 }
 
