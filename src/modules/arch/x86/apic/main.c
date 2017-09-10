@@ -75,6 +75,13 @@ static void apic_outd(unsigned int reg, unsigned int value)
 
 }
 
+unsigned int apic_getid(void)
+{
+
+    return apic_ind(REGISTERID) >> 24;
+
+}
+
 unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 

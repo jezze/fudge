@@ -14,6 +14,7 @@
 #define APIC_ICR_ALLINCLSELF            (2 << 18)
 #define APIC_ICR_ALLEXCLSELF            (3 << 18)
 
+unsigned int apic_getid(void);
 void apic_test(void);
 void apic_spurious(void);
 void apic_sendint(unsigned int id, unsigned int value);

@@ -126,7 +126,7 @@ static void leave(unsigned int id)
 void smp_setup(void)
 {
 
-    unsigned int id = 1;
+    unsigned int id = apic_getid();
 
     context[id].task = 0;
     context[id].ip = (unsigned int)cpu_halt;
