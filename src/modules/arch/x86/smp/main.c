@@ -37,9 +37,6 @@ static void readmadt(void)
 
             struct acpi_madt_apic *apic = (struct acpi_madt_apic *)entry;
 
-            DEBUG(DEBUG_INFO, "SMP APIC FOUND");
-            debug_write(DEBUG_INFO, "  ", "id", apic->id);
-
             if (apic->id)
             {
 
@@ -59,13 +56,13 @@ static void readmadt(void)
             unsigned int count;
             unsigned int i;
 
-            DEBUG(DEBUG_INFO, "SMP IOAPIC FOUND");
             arch_setmap(7, ioapic->address, ioapic->address, 0x1000);
 
             id = ioapic_ind(ioapic->address, 0);
             version = ioapic_ind(ioapic->address, 1);
             count = ((version >> 16) & 0xFF) + 1;
 
+            DEBUG(DEBUG_INFO, "SMP IOAPIC");
             debug_write(DEBUG_INFO, "  ", "id", ioapic->id);
             debug_write(DEBUG_INFO, "  ", "address", ioapic->address);
             debug_write(DEBUG_INFO, "  ", "id", id);
@@ -124,11 +121,6 @@ static void leave(unsigned int id)
     interrupt.eip.value = (unsigned int)cpu_halt;
     interrupt.esp.value = KERNELSTACK - id * 0x8000;
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
-
-/*
-    DEBUG(DEBUG_INFO, "SMP CPU READY");
-    debug_write(DEBUG_INFO, "  ", "id", id);
-*/
 
     cpu_leave(interrupt);
 
