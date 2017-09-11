@@ -5,3 +5,4 @@
 #include <fudge/ctrl.h>
 #include <fudge/record.h>
 #include <fudge/ring.h>
+#include <fudge/spinlock.h>
