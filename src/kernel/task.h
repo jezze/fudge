@@ -21,6 +21,7 @@ struct task_mailbox
 
     struct ring ring;
     unsigned char data[TASK_MAILBOXSIZE];
+    struct spinlock spinlock;
 
 };
 
