@@ -8,18 +8,18 @@
 .set SMP_IDTADDRESS,                    0x2000
 .set SMP_INIT16ADDRESS,                 0x8000
 .set SMP_INIT32ADDRESS,                 0x8200
-.set SMP_STACKADDRESS,                  0x00380000
-.set SMP_STACKSIZE,                     0x1000
+.set SMP_STACKSIZE,                     0x4000
 .set SMP_KCODE,                         0x08
 .set SMP_KDATA,                         0x10
 
 stackaddr:
-.int SMP_STACKADDRESS
+.int 0
 
 .global smp_prep
 smp_prep:
     movl stackaddr, %eax
-    movl $SMP_STACKADDRESS, (%eax)
+    movl 4(%esp), %ebx
+    movl %ebx, (%eax)
     ret
 
 setup:
@@ -28,7 +28,6 @@ setup:
     lock
     xaddl %ebx, (%eax)
     movl %ebx, %esp
-    addl $SMP_STACKSIZE, %esp
     pushl %esp
     call smp_setup
 
