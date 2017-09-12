@@ -24,10 +24,9 @@ smp_prep:
 
 setup:
     movl stackaddr, %eax
-    movl $SMP_STACKSIZE, %ebx
+    movl $SMP_STACKSIZE, %esp
     lock
-    xaddl %ebx, (%eax)
-    movl %ebx, %esp
+    xaddl %esp, (%eax)
     pushl %esp
     call smp_setup
 
