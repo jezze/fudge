@@ -10,7 +10,6 @@
 
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
-#define KERNELSTACK                     0x00400000
 
 static struct arch_context context[32];
 
@@ -56,10 +55,10 @@ static void detect(struct acpi_madt *madt)
             count = ((version >> 16) & 0xFF) + 1;
 
             DEBUG(DEBUG_INFO, "SMP IOAPIC");
-            debug_write(DEBUG_INFO, "  ", "id", ioapic->id);
-            debug_write(DEBUG_INFO, "  ", "address", ioapic->address);
-            debug_write(DEBUG_INFO, "  ", "id", id);
-            debug_write(DEBUG_INFO, "  ", "version", version);
+            debug_write(DEBUG_INFO, "  ", "ioapic id", ioapic->id);
+            debug_write(DEBUG_INFO, "  ", "ioapic address", ioapic->address);
+            debug_write(DEBUG_INFO, "  ", "ioapic id", id);
+            debug_write(DEBUG_INFO, "  ", "ioapic version", version);
 
             for (i = 0; i < count; i++)
             {
@@ -104,23 +103,17 @@ static void copytrampoline32()
 
 }
 
-void smp_setup(void)
+void smp_setup(unsigned int stack)
 {
 
     unsigned int id = apic_getid();
 
     context[id].task = 0;
     context[id].ip = (unsigned int)cpu_halt;
-    context[id].sp = KERNELSTACK - id * 0x8000;
+    context[id].sp = stack;
 
     DEBUG(DEBUG_INFO, "SMP CPU READY");
-    DEBUG(DEBUG_INFO, "SMP CPU READY");
-    DEBUG(DEBUG_INFO, "SMP CPU READY");
-    DEBUG(DEBUG_INFO, "SMP CPU READY");
-    DEBUG(DEBUG_INFO, "SMP CPU READY");
-    DEBUG(DEBUG_INFO, "SMP CPU READY");
-    DEBUG(DEBUG_INFO, "SMP CPU READY");
-    DEBUG(DEBUG_INFO, "SMP CPU READY");
+    debug_write(DEBUG_INFO, "  ", "cpu id", id);
 
     arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
 
