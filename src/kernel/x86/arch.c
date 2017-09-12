@@ -52,9 +52,9 @@ static struct
 {
 
     unsigned short kcode;
-    unsigned short kstack;
+    unsigned short kdata;
     unsigned short ucode;
-    unsigned short ustack;
+    unsigned short udata;
     unsigned short tlink;
 
 } selector;
@@ -236,7 +236,7 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
     {
 
         interrupt->cs.value = selector.ucode;
-        interrupt->ss.value = selector.ustack;
+        interrupt->ss.value = selector.udata;
         interrupt->eip.value = context->task->state.ip;
         interrupt->esp.value = context->task->state.sp;
 
@@ -246,7 +246,7 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
     {
 
         interrupt->cs.value = selector.kcode;
-        interrupt->ss.value = selector.kstack;
+        interrupt->ss.value = selector.kdata;
         interrupt->eip.value = context->ip;
         interrupt->esp.value = context->sp;
 
@@ -414,15 +414,15 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-static void leave(void)
+void arch_leave(unsigned short code, unsigned short data, unsigned int ip, unsigned int sp)
 {
 
     struct cpu_interrupt interrupt;
 
-    interrupt.cs.value = selector.ucode;
-    interrupt.ss.value = selector.ustack;
-    interrupt.eip.value = context.task->state.ip;
-    interrupt.esp.value = context.task->state.sp;
+    interrupt.cs.value = code;
+    interrupt.ss.value = data;
+    interrupt.eip.value = ip;
+    interrupt.esp.value = sp;
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
     cpu_leave(interrupt);
@@ -437,9 +437,9 @@ void arch_setup(struct service_backend *backend)
     tss_initpointer(&tss->pointer, TSSDESCRIPTORS, tss->descriptors);
 
     selector.kcode = gdt_setdescriptor(&gdt->pointer, 0x01, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    selector.kstack = gdt_setdescriptor(&gdt->pointer, 0x02, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    selector.kdata = gdt_setdescriptor(&gdt->pointer, 0x02, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.ucode = gdt_setdescriptor(&gdt->pointer, 0x03, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    selector.ustack = gdt_setdescriptor(&gdt->pointer, 0x04, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    selector.udata = gdt_setdescriptor(&gdt->pointer, 0x04, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     selector.tlink = gdt_setdescriptor(&gdt->pointer, 0x05, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
 
     idt_setdescriptor(&idt->pointer, 0x00, isr_zero, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
@@ -457,8 +457,8 @@ void arch_setup(struct service_backend *backend)
     idt_setdescriptor(&idt->pointer, 0x0D, isr_generalfault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x0E, isr_pagefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x80, isr_syscall, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    tss_setdescriptor(&tss->pointer, 0x00, selector.kstack, KERNELSTACK);
-    cpu_setgdt(&gdt->pointer, selector.kcode, selector.kstack);
+    tss_setdescriptor(&tss->pointer, 0x00, selector.kdata, KERNELSTACK);
+    cpu_setgdt(&gdt->pointer, selector.kcode, selector.kdata);
     cpu_setidt(&idt->pointer);
     cpu_settss(selector.tlink);
     abi_setup(spawn, despawn);
@@ -478,7 +478,7 @@ void arch_setup(struct service_backend *backend)
     spawn(context.task, 0);
     activate(context.task);
     mmu_setup();
-    leave();
+    arch_leave(selector.ucode, selector.udata, context.task->state.ip, context.task->state.sp);
 
 }
 

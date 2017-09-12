@@ -104,21 +104,6 @@ static void copytrampoline32()
 
 }
 
-static void leave(unsigned int id)
-{
-
-    struct cpu_interrupt interrupt;
-
-    interrupt.cs.value = 0x08;
-    interrupt.ss.value = 0x10;
-    interrupt.eip.value = context[id].ip;
-    interrupt.esp.value = context[id].sp;
-    interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
-
-    cpu_leave(interrupt);
-
-}
-
 void smp_setup(void)
 {
 
@@ -128,7 +113,7 @@ void smp_setup(void)
     context[id].ip = (unsigned int)cpu_halt;
     context[id].sp = KERNELSTACK - id * 0x8000;
 
-    leave(id);
+    arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
 
 }
 
