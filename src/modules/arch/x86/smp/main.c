@@ -9,7 +9,7 @@
 #include "smp.h"
 
 #define INIT16ADDRESS                   0x00008000
-#define INIT32ADDRESS                   0x00008100
+#define INIT32ADDRESS                   0x00008200
 #define KERNELSTACK                     0x00400000
 
 static struct arch_context context[32];
@@ -112,6 +112,15 @@ void smp_setup(void)
     context[id].task = 0;
     context[id].ip = (unsigned int)cpu_halt;
     context[id].sp = KERNELSTACK - id * 0x8000;
+
+    DEBUG(DEBUG_INFO, "SMP CPU READY");
+    DEBUG(DEBUG_INFO, "SMP CPU READY");
+    DEBUG(DEBUG_INFO, "SMP CPU READY");
+    DEBUG(DEBUG_INFO, "SMP CPU READY");
+    DEBUG(DEBUG_INFO, "SMP CPU READY");
+    DEBUG(DEBUG_INFO, "SMP CPU READY");
+    DEBUG(DEBUG_INFO, "SMP CPU READY");
+    DEBUG(DEBUG_INFO, "SMP CPU READY");
 
     arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
 

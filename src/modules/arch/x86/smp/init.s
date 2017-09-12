@@ -7,10 +7,15 @@
 .set SMP_GDTADDRESS,                    0x1000
 .set SMP_IDTADDRESS,                    0x2000
 .set SMP_INIT16ADDRESS,                 0x8000
-.set SMP_INIT32ADDRESS,                 0x8100
-.set SMP_STACKADDRESS,                  0x8800
-.set SMP_CODESEL,                       0x08
-.set SMP_DATASEL,                       0x10
+.set SMP_INIT32ADDRESS,                 0x8200
+.set SMP_STACKADDRESS,                  0x003F8000
+.set SMP_KCODE,                         0x08
+.set SMP_KDATA,                         0x10
+
+setup:
+    movl $SMP_STACKADDRESS, %esp
+    movl $SMP_STACKADDRESS, %ebp
+    call smp_setup
 
 .code16
 
@@ -25,8 +30,6 @@ init16:
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
-    movl $SMP_STACKADDRESS, %esp
-    movl $SMP_STACKADDRESS, %ebp
     movl $SMP_GDTADDRESS, %eax
     lgdt (%eax)
     movl $SMP_IDTADDRESS, %eax
@@ -34,7 +37,7 @@ init16:
     movl %cr0, %eax
     orl $1, %eax
     movl %eax, %cr0
-    ljmp $SMP_CODESEL, $SMP_INIT32ADDRESS
+    ljmp $SMP_KCODE, $SMP_INIT32ADDRESS
 
 .global smp_end16
 smp_end16:
@@ -45,13 +48,13 @@ smp_end16:
 smp_begin32:
 
 init32:
-    movw $SMP_DATASEL, %ax
+    movw $SMP_KDATA, %ax
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
-    lcall $SMP_CODESEL, $smp_setup
+    ljmp $SMP_KCODE, $setup
 
 .global smp_end32
 smp_end32:

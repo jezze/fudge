@@ -12,11 +12,14 @@ static struct list criticalstates;
 static struct list errorstates;
 static struct list warningstates;
 static struct list infostates;
+static struct spinlock spinlock;
 
 static void write(struct list *states, unsigned int level, char *string, char *file, unsigned int line)
 {
 
     char num[FUDGE_NSIZE];
+
+    spinlock_hold(&spinlock);
 
     switch (level)
     {
@@ -49,6 +52,7 @@ static void write(struct list *states, unsigned int level, char *string, char *f
     kernel_multicast(states, ":", 1);
     kernel_multicast(states, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
     kernel_multicast(states, ")\n", 2);
+    spinlock_release(&spinlock);
 
 }
 
