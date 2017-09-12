@@ -1,18 +1,17 @@
+#include "atomic.h"
 #include "spinlock.h"
 
 void spinlock_hold(struct spinlock *spinlock)
 {
 
-    while (spinlock->lock);
-
-    spinlock->lock = 1;
+    while (atomic_testandset(1, &spinlock->lock));
 
 }
 
 void spinlock_release(struct spinlock *spinlock)
 {
 
-    spinlock->lock = 0;
+    atomic_testandset(0, &spinlock->lock);
 
 }
 
