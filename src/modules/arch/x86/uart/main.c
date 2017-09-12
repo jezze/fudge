@@ -101,18 +101,30 @@ static unsigned short io;
 static unsigned char read(void)
 {
 
+    unsigned char value;
+
+    spinlock_hold(&consoleinterface.rspinlock);
+
     while (!(io_inb(io + REGISTERLSR) & LSRREADY));
 
-    return io_inb(io);
+    value = io_inb(io);
+
+    spinlock_release(&consoleinterface.rspinlock);
+
+    return value;
 
 }
 
 static void write(unsigned char c)
 {
 
+    spinlock_hold(&consoleinterface.wspinlock);
+
     while (!(io_inb(io + REGISTERLSR) & LSRTRANSMIT));
 
     io_outb(io, c);
+
+    spinlock_release(&consoleinterface.wspinlock);
 
 }
 

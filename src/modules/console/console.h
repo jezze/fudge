@@ -7,6 +7,8 @@ struct console_interface
     struct system_node idata;
     struct system_node odata;
     struct list datastates;
+    struct spinlock rspinlock;
+    struct spinlock wspinlock;
     unsigned int id;
     struct ctrl_consolesettings settings;
     unsigned int (*send)(void *buffer, unsigned int count);
