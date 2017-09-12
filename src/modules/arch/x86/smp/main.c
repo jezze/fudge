@@ -111,8 +111,8 @@ static void leave(unsigned int id)
 
     interrupt.cs.value = 0x08;
     interrupt.ss.value = 0x10;
-    interrupt.eip.value = (unsigned int)cpu_halt;
-    interrupt.esp.value = KERNELSTACK - id * 0x8000;
+    interrupt.eip.value = context[id].ip;
+    interrupt.esp.value = context[id].sp;
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
     cpu_leave(interrupt);
