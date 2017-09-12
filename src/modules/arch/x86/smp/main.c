@@ -127,7 +127,7 @@ void module_init(void)
     if (!madt)
         return;
 
-    smp_prep(0x00380000);
+    smp_prep(0x00384000);
     copytrampoline16();
     copytrampoline32();
     detect(madt);
