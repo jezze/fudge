@@ -16,6 +16,12 @@
 stackaddr:
 .int SMP_STACKADDRESS
 
+.global smp_prep
+smp_prep:
+    movl stackaddr, %eax
+    movl $SMP_STACKADDRESS, (%eax)
+    ret
+
 setup:
     movl stackaddr, %eax
     movl $SMP_STACKSIZE, %ebx

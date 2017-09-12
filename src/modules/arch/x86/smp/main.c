@@ -113,7 +113,7 @@ void smp_setup(unsigned int stack)
     context[id].sp = stack;
 
     DEBUG(DEBUG_INFO, "SMP CPU READY");
-    debug_write(DEBUG_INFO, "  ", "cpu id", id);
+    debug_write(DEBUG_INFO, "  ", "cpu stack", stack);
 
     arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
 
@@ -127,6 +127,7 @@ void module_init(void)
     if (!madt)
         return;
 
+    smp_prep();
     copytrampoline16();
     copytrampoline32();
     detect(madt);
