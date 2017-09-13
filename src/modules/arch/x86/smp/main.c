@@ -11,7 +11,7 @@
 
 #define KERNELSTACKADDRESS              0x00400000
 #define KERNELSTACKSIZE                 0x00004000
-#define KERNELMMUADDRESS                0x00800000
+#define MMUKERNELADDRESS                0x00800000
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
 
@@ -95,7 +95,7 @@ static void copytrampoline32()
 void smp_setup(unsigned int stack)
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)KERNELMMUADDRESS;
+    struct mmu_directory *directory = (struct mmu_directory *)MMUKERNELADDRESS;
     unsigned int id = apic_getid();
 
     context[id].task = 0;

@@ -14,14 +14,14 @@
 #define IDTDESCRIPTORS                  256
 #define TSSADDRESS                      0x3000
 #define TSSDESCRIPTORS                  1
-#define KERNELMMUADDRESS                0x00800000
-#define KERNELMMUCOUNT                  32
 #define KERNELCODEADDRESS               0x00100000
 #define KERNELCODESIZE                  0x00300000
 #define KERNELSTACKADDRESS              0x00400000
 #define KERNELSTACKSIZE                 0x00004000
-#define TASKMMUADDRESS                  0x00820000
-#define TASKMMUCOUNT                    4
+#define MMUKERNELADDRESS                0x00800000
+#define MMUKERNELCOUNT                  32
+#define MMUTASKADDRESS                  0x00820000
+#define MMUTASKCOUNT                    4
 #define TASKCODEADDRESS                 0x01000000
 #define TASKCODESIZE                    0x00080000
 #define TASKSTACKADDRESS                0x80000000
@@ -85,8 +85,8 @@ static struct mmu_table *gettable(unsigned int index, unsigned int address, unsi
 static void copymap(struct task *task)
 {
 
-    struct mmu_directory *cdirectory = (struct mmu_directory *)KERNELMMUADDRESS;
-    struct mmu_directory *tdirectory = getdirectory(task->id, TASKMMUADDRESS, TASKMMUCOUNT);
+    struct mmu_directory *cdirectory = (struct mmu_directory *)MMUKERNELADDRESS;
+    struct mmu_directory *tdirectory = getdirectory(task->id, MMUTASKADDRESS, MMUTASKCOUNT);
 
     memory_copy(tdirectory, cdirectory, sizeof (struct mmu_directory));
 
@@ -95,8 +95,8 @@ static void copymap(struct task *task)
 static void mapkernel()
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)KERNELMMUADDRESS;
-    struct mmu_table *table = (struct mmu_table *)(KERNELMMUADDRESS + 0x1000);
+    struct mmu_directory *directory = (struct mmu_directory *)MMUKERNELADDRESS;
+    struct mmu_table *table = (struct mmu_table *)(MMUKERNELADDRESS + 0x1000);
 
     mmu_map(directory, &table[0], 0x00000000, 0x00000000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(directory, &table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
@@ -108,8 +108,8 @@ static void mapkernel()
 static void maptask(struct task *task, unsigned int code)
 {
 
-    struct mmu_directory *directory = getdirectory(task->id, TASKMMUADDRESS, TASKMMUCOUNT);
-    struct mmu_table *table = gettable(task->id, TASKMMUADDRESS, TASKMMUCOUNT);
+    struct mmu_directory *directory = getdirectory(task->id, MMUTASKADDRESS, MMUTASKCOUNT);
+    struct mmu_table *table = gettable(task->id, MMUTASKADDRESS, MMUTASKCOUNT);
 
     mmu_map(directory, &table[0], TASKCODEADDRESS + task->id * (TASKCODESIZE + TASKSTACKSIZE), code, TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
     mmu_map(directory, &table[1], TASKCODEADDRESS + task->id * (TASKCODESIZE + TASKSTACKSIZE) + TASKCODESIZE, TASKSTACKADDRESS - TASKSTACKSIZE, TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
@@ -119,7 +119,7 @@ static void maptask(struct task *task, unsigned int code)
 static void activate(struct task *task)
 {
 
-    struct mmu_directory *directory = getdirectory(task->id, TASKMMUADDRESS, TASKMMUCOUNT);
+    struct mmu_directory *directory = getdirectory(task->id, MMUTASKADDRESS, MMUTASKCOUNT);
 
     mmu_setdirectory(directory);
 
@@ -178,8 +178,8 @@ void arch_setinterrupt(unsigned char index, void (*callback)(void))
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)KERNELMMUADDRESS;
-    struct mmu_table *table = (struct mmu_table *)(KERNELMMUADDRESS + 0x1000);
+    struct mmu_directory *directory = (struct mmu_directory *)MMUKERNELADDRESS;
+    struct mmu_table *table = (struct mmu_table *)(MMUKERNELADDRESS + 0x1000);
 
     mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_setdirectory(directory);
