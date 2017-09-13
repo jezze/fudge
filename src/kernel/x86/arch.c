@@ -476,7 +476,7 @@ void arch_setup(struct service_backend *backend)
     mapkernel();
     spawn(context.task, 0);
     activate(context.task);
-    mmu_setup();
+    mmu_enable();
     arch_leave(selector.ucode, selector.udata, context.task->state.ip, context.task->state.sp);
 
 }

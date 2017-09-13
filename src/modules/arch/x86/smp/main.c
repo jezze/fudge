@@ -101,7 +101,7 @@ void smp_setup(unsigned int stack)
     context[id].sp = stack;
 
     mmu_setdirectory(directory);
-    mmu_setup();
+    mmu_enable();
 
     DEBUG(DEBUG_INFO, "SMP CPU READY");
     debug_write(DEBUG_INFO, "  ", "cpu id", id);

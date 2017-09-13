@@ -39,7 +39,7 @@ void mmu_setdirectory(struct mmu_directory *directory)
 
 }
 
-void mmu_setup(void)
+void mmu_enable(void)
 {
 
     cpu_setcr0(cpu_getcr0() | 0x80000000);
