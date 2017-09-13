@@ -19,7 +19,7 @@
 #define KERNELCODEADDRESS               0x00100000
 #define KERNELCODESIZE                  0x00300000
 #define KERNELSTACKADDRESS              0x00400000
-#define KERNELSTACKSIZE                 0x4000
+#define KERNELSTACKSIZE                 0x00004000
 #define TASKMMUADDRESS                  0x00820000
 #define TASKMMUCOUNT                    4
 #define TASKCODEADDRESS                 0x01000000
