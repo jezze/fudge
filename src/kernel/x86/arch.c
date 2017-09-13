@@ -16,8 +16,7 @@
 #define TSSDESCRIPTORS                  1
 #define KERNELSTACK                     0x00400000
 #define TASKSTACK                       0x80000000
-#define CONTAINERMMUBASE                0x00400000
-#define CONTAINERMMUCOUNT               8
+#define KERNELMMUBASE                   0x00400000
 #define TASKMMUBASE                     0x00480000
 #define TASKMMUCOUNT                    4
 #define PHYSBASE                        0x01000000
@@ -82,18 +81,18 @@ static struct mmu_table *gettable(unsigned int index, unsigned int base, unsigne
 static void copymap(struct task *task)
 {
 
-    struct mmu_directory *cdirectory = getdirectory(0, CONTAINERMMUBASE, CONTAINERMMUCOUNT);
+    struct mmu_directory *cdirectory = (struct mmu_directory *)KERNELMMUBASE;
     struct mmu_directory *tdirectory = getdirectory(task->id, TASKMMUBASE, TASKMMUCOUNT);
 
     memory_copy(tdirectory, cdirectory, sizeof (struct mmu_directory));
 
 }
 
-static void mapcontainer()
+static void mapkernel()
 {
 
-    struct mmu_directory *directory = getdirectory(0, CONTAINERMMUBASE, CONTAINERMMUCOUNT);
-    struct mmu_table *table = gettable(0, CONTAINERMMUBASE, CONTAINERMMUCOUNT);
+    struct mmu_directory *directory = (struct mmu_directory *)KERNELMMUBASE;
+    struct mmu_table *table = (struct mmu_table *)(KERNELMMUBASE + 0x1000);
 
     mmu_map(directory, &table[0], 0x00000000, 0x00000000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(directory, &table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
@@ -175,8 +174,8 @@ void arch_setinterrupt(unsigned char index, void (*callback)(void))
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct mmu_directory *directory = getdirectory(0, CONTAINERMMUBASE, CONTAINERMMUCOUNT);
-    struct mmu_table *table = gettable(0, CONTAINERMMUBASE, CONTAINERMMUCOUNT);
+    struct mmu_directory *directory = (struct mmu_directory *)KERNELMMUBASE;
+    struct mmu_table *table = (struct mmu_table *)(KERNELMMUBASE + 0x1000);
 
     mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_setdirectory(directory);
@@ -474,7 +473,7 @@ void arch_setup(struct service_backend *backend)
     context.sp = KERNELSTACK;
 
     kernel_setupramdisk(context.task, backend);
-    mapcontainer();
+    mapkernel();
     spawn(context.task, 0);
     activate(context.task);
     mmu_setup();

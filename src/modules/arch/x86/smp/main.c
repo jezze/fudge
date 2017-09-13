@@ -2,12 +2,14 @@
 #include <kernel.h>
 #include <kernel/x86/cpu.h>
 #include <kernel/x86/arch.h>
+#include <kernel/x86/mmu.h>
 #include <modules/arch/x86/acpi/acpi.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/ioapic/ioapic.h>
 #include "smp.h"
 
+#define KERNELMMUBASE                   0x00400000
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
 
@@ -91,11 +93,15 @@ static void copytrampoline32()
 void smp_setup(unsigned int stack)
 {
 
+    struct mmu_directory *directory = (struct mmu_directory *)KERNELMMUBASE;
     unsigned int id = apic_getid();
 
     context[id].task = 0;
     context[id].ip = (unsigned int)cpu_halt;
     context[id].sp = stack;
+
+    mmu_setdirectory(directory);
+    mmu_setup();
 
     DEBUG(DEBUG_INFO, "SMP CPU READY");
     debug_write(DEBUG_INFO, "  ", "cpu id", id);
