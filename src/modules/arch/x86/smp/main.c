@@ -46,7 +46,6 @@ static void detect(struct acpi_madt *madt)
             unsigned int id;
             unsigned int version;
             unsigned int count;
-            unsigned int i;
 
             arch_setmap(7, ioapic->address, ioapic->address, 0x1000);
 
@@ -59,21 +58,7 @@ static void detect(struct acpi_madt *madt)
             debug_write(DEBUG_INFO, "  ", "ioapic address", ioapic->address);
             debug_write(DEBUG_INFO, "  ", "ioapic id", id);
             debug_write(DEBUG_INFO, "  ", "ioapic version", version);
-
-            for (i = 0; i < count; i++)
-            {
-
-                unsigned int test;
-
-                test = ioapic_ind(ioapic->address, i * 2 + 0x10);
-
-                debug_write(DEBUG_INFO, "  ", "redtbl0", test);
-
-                test = ioapic_ind(ioapic->address, i * 2 + 0x11);
-
-                debug_write(DEBUG_INFO, "  ", "redtbl1", test);
-
-            }
+            debug_write(DEBUG_INFO, "  ", "ioapic count", count);
 
         }
 
@@ -113,7 +98,7 @@ void smp_setup(unsigned int stack)
     context[id].sp = stack;
 
     DEBUG(DEBUG_INFO, "SMP CPU READY");
-    debug_write(DEBUG_INFO, "  ", "cpu stack", stack);
+    debug_write(DEBUG_INFO, "  ", "cpu id", id);
 
     arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
 
