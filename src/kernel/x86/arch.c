@@ -14,14 +14,18 @@
 #define IDTDESCRIPTORS                  256
 #define TSSADDRESS                      0x3000
 #define TSSDESCRIPTORS                  1
-#define KERNELSTACK                     0x00400000
-#define TASKSTACK                       0x80000000
-#define KERNELMMUBASE                   0x00400000
-#define TASKMMUBASE                     0x00480000
+#define KERNELMMUADDRESS                0x00800000
+#define KERNELMMUCOUNT                  32
+#define KERNELCODEADDRESS               0x00100000
+#define KERNELCODESIZE                  0x00300000
+#define KERNELSTACKADDRESS              0x00400000
+#define KERNELSTACKSIZE                 0x4000
+#define TASKMMUADDRESS                  0x00820000
 #define TASKMMUCOUNT                    4
-#define PHYSBASE                        0x01000000
-#define CODESIZE                        0x00080000
-#define STACKSIZE                       0x00008000
+#define TASKCODEADDRESS                 0x01000000
+#define TASKCODESIZE                    0x00080000
+#define TASKSTACKADDRESS                0x80000000
+#define TASKSTACKSIZE                   0x00008000
 
 struct gdt
 {
@@ -64,25 +68,25 @@ static struct tss *tss = (struct tss *)TSSADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
 static struct arch_context context;
 
-static struct mmu_directory *getdirectory(unsigned int index, unsigned int base, unsigned int count)
+static struct mmu_directory *getdirectory(unsigned int index, unsigned int address, unsigned int count)
 {
 
-    return (struct mmu_directory *)base + index * count;
+    return (struct mmu_directory *)address + index * count;
 
 }
 
-static struct mmu_table *gettable(unsigned int index, unsigned int base, unsigned int count)
+static struct mmu_table *gettable(unsigned int index, unsigned int address, unsigned int count)
 {
 
-    return (struct mmu_table *)base + index * count + 1;
+    return (struct mmu_table *)address + index * count + 1;
 
 }
 
 static void copymap(struct task *task)
 {
 
-    struct mmu_directory *cdirectory = (struct mmu_directory *)KERNELMMUBASE;
-    struct mmu_directory *tdirectory = getdirectory(task->id, TASKMMUBASE, TASKMMUCOUNT);
+    struct mmu_directory *cdirectory = (struct mmu_directory *)KERNELMMUADDRESS;
+    struct mmu_directory *tdirectory = getdirectory(task->id, TASKMMUADDRESS, TASKMMUCOUNT);
 
     memory_copy(tdirectory, cdirectory, sizeof (struct mmu_directory));
 
@@ -91,8 +95,8 @@ static void copymap(struct task *task)
 static void mapkernel()
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)KERNELMMUBASE;
-    struct mmu_table *table = (struct mmu_table *)(KERNELMMUBASE + 0x1000);
+    struct mmu_directory *directory = (struct mmu_directory *)KERNELMMUADDRESS;
+    struct mmu_table *table = (struct mmu_table *)(KERNELMMUADDRESS + 0x1000);
 
     mmu_map(directory, &table[0], 0x00000000, 0x00000000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_map(directory, &table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
@@ -104,18 +108,18 @@ static void mapkernel()
 static void maptask(struct task *task, unsigned int code)
 {
 
-    struct mmu_directory *directory = getdirectory(task->id, TASKMMUBASE, TASKMMUCOUNT);
-    struct mmu_table *table = gettable(task->id, TASKMMUBASE, TASKMMUCOUNT);
+    struct mmu_directory *directory = getdirectory(task->id, TASKMMUADDRESS, TASKMMUCOUNT);
+    struct mmu_table *table = gettable(task->id, TASKMMUADDRESS, TASKMMUCOUNT);
 
-    mmu_map(directory, &table[0], PHYSBASE + task->id * (CODESIZE + STACKSIZE), code, CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(directory, &table[1], PHYSBASE + task->id * (CODESIZE + STACKSIZE) + CODESIZE, TASKSTACK - STACKSIZE, STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(directory, &table[0], TASKCODEADDRESS + task->id * (TASKCODESIZE + TASKSTACKSIZE), code, TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(directory, &table[1], TASKCODEADDRESS + task->id * (TASKCODESIZE + TASKSTACKSIZE) + TASKCODESIZE, TASKSTACKADDRESS - TASKSTACKSIZE, TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
 static void activate(struct task *task)
 {
 
-    struct mmu_directory *directory = getdirectory(task->id, TASKMMUBASE, TASKMMUCOUNT);
+    struct mmu_directory *directory = getdirectory(task->id, TASKMMUADDRESS, TASKMMUCOUNT);
 
     mmu_setdirectory(directory);
 
@@ -146,7 +150,7 @@ static unsigned int spawn(struct task *task, void *stack)
     copymap(next);
     kernel_copyservices(task, next);
 
-    if (!kernel_setupbinary(next, TASKSTACK))
+    if (!kernel_setupbinary(next, TASKSTACKADDRESS))
         return 0;
 
     kernel_activatetask(next);
@@ -174,8 +178,8 @@ void arch_setinterrupt(unsigned char index, void (*callback)(void))
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)KERNELMMUBASE;
-    struct mmu_table *table = (struct mmu_table *)(KERNELMMUBASE + 0x1000);
+    struct mmu_directory *directory = (struct mmu_directory *)KERNELMMUADDRESS;
+    struct mmu_table *table = (struct mmu_table *)(KERNELMMUADDRESS + 0x1000);
 
     mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
     mmu_setdirectory(directory);
@@ -456,7 +460,7 @@ void arch_setup(struct service_backend *backend)
     idt_setdescriptor(&idt->pointer, 0x0D, isr_generalfault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x0E, isr_pagefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x80, isr_syscall, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    tss_setdescriptor(&tss->pointer, 0x00, selector.kdata, KERNELSTACK);
+    tss_setdescriptor(&tss->pointer, 0x00, selector.kdata, KERNELSTACKADDRESS + KERNELSTACKSIZE);
     cpu_setgdt(&gdt->pointer, selector.kcode, selector.kdata);
     cpu_setidt(&idt->pointer);
     cpu_settss(selector.tlink);
@@ -470,7 +474,7 @@ void arch_setup(struct service_backend *backend)
 
     context.task = kernel_getfreetask();
     context.ip = (unsigned int)cpu_halt;
-    context.sp = KERNELSTACK;
+    context.sp = KERNELSTACKADDRESS + KERNELSTACKSIZE;
 
     kernel_setupramdisk(context.task, backend);
     mapkernel();

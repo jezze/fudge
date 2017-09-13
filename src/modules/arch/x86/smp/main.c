@@ -9,7 +9,7 @@
 #include <modules/arch/x86/ioapic/ioapic.h>
 #include "smp.h"
 
-#define KERNELMMUBASE                   0x00400000
+#define KERNELMMUBASE                   0x00800000
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
 
@@ -105,6 +105,7 @@ void smp_setup(unsigned int stack)
 
     DEBUG(DEBUG_INFO, "SMP CPU READY");
     debug_write(DEBUG_INFO, "  ", "cpu id", id);
+    debug_write(DEBUG_INFO, "  ", "stack", stack);
 
     arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
 
@@ -118,7 +119,7 @@ void module_init(void)
     if (!madt)
         return;
 
-    smp_prep(0x00384000);
+    smp_prep(0x00408000);
     copytrampoline16();
     copytrampoline32();
     detect(madt);
