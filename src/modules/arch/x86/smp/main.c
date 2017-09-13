@@ -13,7 +13,7 @@
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
 
-static struct arch_context context[32];
+static struct arch_context context[256];
 
 static void detect(struct acpi_madt *madt)
 {
