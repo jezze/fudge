@@ -16,6 +16,8 @@
 #define INIT32ADDRESS                   0x00008200
 
 static struct arch_context context[256];
+static unsigned int total;
+static struct spinlock spinlock;
 
 static void detect(struct acpi_madt *madt)
 {
@@ -57,12 +59,16 @@ static void detect(struct acpi_madt *madt)
             version = ioapic_ind(ioapic->address, 1);
             count = ((version >> 16) & 0xFF) + 1;
 
+            spinlock_hold(&spinlock);
+
             DEBUG(DEBUG_INFO, "SMP IOAPIC");
             debug_write(DEBUG_INFO, "  ", "ioapic id", ioapic->id);
             debug_write(DEBUG_INFO, "  ", "ioapic address", ioapic->address);
             debug_write(DEBUG_INFO, "  ", "ioapic id", id);
             debug_write(DEBUG_INFO, "  ", "ioapic version", version);
             debug_write(DEBUG_INFO, "  ", "ioapic count", count);
+
+            spinlock_release(&spinlock);
 
         }
 
@@ -102,12 +108,18 @@ void smp_setup(unsigned int stack)
     context[id].ip = (unsigned int)cpu_halt;
     context[id].sp = stack;
 
+    spinlock_hold(&spinlock);
+
+    total++;
     mmu_setdirectory(directory);
     mmu_enable();
 
     DEBUG(DEBUG_INFO, "SMP CPU READY");
     debug_write(DEBUG_INFO, "  ", "cpu id", id);
     debug_write(DEBUG_INFO, "  ", "stack", stack);
+    debug_write(DEBUG_INFO, "  ", "total", total);
+
+    spinlock_release(&spinlock);
 
     arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
 
