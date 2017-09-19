@@ -6,6 +6,7 @@
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/io/io.h>
 #include <modules/arch/x86/platform/platform.h>
+#include "pit.h"
 
 #define FREQUENCY                       1193182
 #define REGISTERCHANNEL0                0x0000
@@ -34,6 +35,20 @@ static struct timer_interface timerinterface;
 static unsigned short io;
 static unsigned short divisor;
 static unsigned int jiffies;
+
+void pit_wait(unsigned int ms)
+{
+
+    unsigned short x = 1193 * ms;
+
+    io_outb(0x43, 0x30);
+    io_outb(0x40, x >> 8);
+    io_outb(0x40, x);
+    io_outb(0x43, 0xE2);
+
+    while (!(io_inb(0x40) & (1 << 7)));
+
+}
 
 static void handleirq(unsigned int irq)
 {

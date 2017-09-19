@@ -3,10 +3,12 @@
 #include <kernel/x86/cpu.h>
 #include <kernel/x86/arch.h>
 #include <kernel/x86/mmu.h>
+#include <modules/system/system.h>
 #include <modules/arch/x86/acpi/acpi.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/ioapic/ioapic.h>
+#include <modules/arch/x86/pit/pit.h>
 #include "smp.h"
 
 #define KERNELSTACKADDRESS              0x00400000
@@ -18,6 +20,8 @@
 static struct arch_context context[256];
 static unsigned int total;
 static struct spinlock spinlock;
+static struct system_node root;
+static struct system_node cpus;
 
 static void detect(struct acpi_madt *madt)
 {
@@ -39,6 +43,7 @@ static void detect(struct acpi_madt *madt)
             {
 
                 apic_sendint(apic->id, APIC_ICR_INIT | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x00); 
+                pit_wait(10);
                 apic_sendint(apic->id, APIC_ICR_SIPI | APIC_ICR_PHYSICAL | APIC_ICR_ASSERT | APIC_ICR_SINGLE | 0x08); 
 
             }
@@ -121,10 +126,25 @@ void smp_setup(unsigned int stack)
 
 }
 
+static unsigned int cpus_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    char num[FUDGE_NSIZE];
+
+    return memory_read(buffer, count, num, ascii_wvalue(num, FUDGE_NSIZE, total, 10, 0), offset);
+
+}
+
 void module_init(void)
 {
 
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
+
+    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
+    system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
+    system_addchild(&root, &cpus);
+
+    cpus.read = cpus_read;
 
     if (!madt)
         return;
@@ -133,6 +153,20 @@ void module_init(void)
     copytrampoline16();
     copytrampoline32();
     detect(madt);
+
+}
+
+void module_register(void)
+{
+
+    system_registernode(&root);
+
+}
+
+void module_unregister(void)
+{
+
+    system_unregisternode(&root);
 
 }
 
