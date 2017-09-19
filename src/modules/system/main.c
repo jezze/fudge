@@ -87,10 +87,17 @@ unsigned int readtaskmailbox(struct system_node *self, struct system_node *curre
 
 }
 
-static unsigned int seek(struct system_node *self, struct service_state *state, unsigned int offset)
+static unsigned int seeknormal(struct system_node *self, struct service_state *state, unsigned int offset)
 {
 
     return offset;
+
+}
+
+static unsigned int seekmailbox(struct system_node *self, struct service_state *state, unsigned int offset)
+{
+
+    return 0;
 
 }
 
@@ -141,18 +148,13 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
     node->type = type;
     node->name = name;
-
-    if (type & SYSTEM_NODETYPE_SEEK)
-    {
-
-        node->seek = seek;
-
-    }
+    node->seek = seeknormal;
 
     if (type & SYSTEM_NODETYPE_MAILBOX)
     {
 
         node->read = readtaskmailbox;
+        node->seek = seekmailbox;
 
     }
 
@@ -161,7 +163,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
         node->read = readgroup;
         node->child = childgroup;
-        node->seek = seek;
 
     }
 

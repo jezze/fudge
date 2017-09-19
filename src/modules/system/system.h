@@ -1,8 +1,7 @@
 #define SYSTEM_NODETYPE_NORMAL          0
-#define SYSTEM_NODETYPE_SEEK            1
-#define SYSTEM_NODETYPE_MAILBOX         2
-#define SYSTEM_NODETYPE_GROUP           4
-#define SYSTEM_NODETYPE_MULTI           8
+#define SYSTEM_NODETYPE_MAILBOX         1
+#define SYSTEM_NODETYPE_GROUP           2
+#define SYSTEM_NODETYPE_MULTI           4
 
 struct system_header
 {

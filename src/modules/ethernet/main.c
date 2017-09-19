@@ -175,7 +175,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
-    system_initresourcenode(&interface->addr, SYSTEM_NODETYPE_SEEK, "addr", &interface->resource);
+    system_initresourcenode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr", &interface->resource);
 
     interface->getaddress = getaddress;
     interface->send = send;
