@@ -17,7 +17,7 @@ static void writeclocksettings(struct ctrl_header *header)
 
     struct ctrl_clocksettings settings;
 
-    file_readall(FILE_PI, &settings, sizeof (struct ctrl_clocksettings));
+    file_seekreadall(FILE_PI, &settings, sizeof (struct ctrl_clocksettings), 0);
     write_dec("seconds", settings.seconds);
     write_dec("minutes", settings.minutes);
     write_dec("hours", settings.hours);
@@ -33,7 +33,7 @@ static void writeconsettings(struct ctrl_header *header)
 
     struct ctrl_consettings settings;
 
-    file_readall(FILE_PI, &settings, sizeof (struct ctrl_consettings));
+    file_seekreadall(FILE_PI, &settings, sizeof (struct ctrl_consettings), 0);
     write_dec("interface", settings.interface);
     write_dec("port", settings.port);
 
@@ -44,7 +44,7 @@ static void writeconsolesettings(struct ctrl_header *header)
 
     struct ctrl_consolesettings settings;
 
-    file_readall(FILE_PI, &settings, sizeof (struct ctrl_consolesettings));
+    file_seekreadall(FILE_PI, &settings, sizeof (struct ctrl_consolesettings), 0);
     write_boolean("scroll", settings.scroll);
 
 }
@@ -54,7 +54,7 @@ static void writepartsettings(struct ctrl_header *header)
 
     struct ctrl_partsettings settings;
 
-    file_readall(FILE_PI, &settings, sizeof (struct ctrl_partsettings));
+    file_seekreadall(FILE_PI, &settings, sizeof (struct ctrl_partsettings), 0);
     write_dec("interface", settings.interface);
     write_dec("start", settings.start);
     write_dec("end", settings.end);
@@ -66,7 +66,7 @@ static void writevideosettings(struct ctrl_header *header)
 
     struct ctrl_videosettings settings;
 
-    file_readall(FILE_PI, &settings, sizeof (struct ctrl_videosettings));
+    file_seekreadall(FILE_PI, &settings, sizeof (struct ctrl_videosettings), 0);
     write_dec("width", settings.w);
     write_dec("height", settings.h);
     write_dec("bpp", settings.bpp);
