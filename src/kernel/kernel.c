@@ -229,7 +229,7 @@ void kernel_copyservices(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_readtaskmailbox(struct task *task, void *buffer, unsigned int count)
+unsigned int kernel_readmailbox(struct task *task, void *buffer, unsigned int count)
 {
 
     spinlock_hold(&task->mailbox.spinlock);
@@ -245,7 +245,7 @@ unsigned int kernel_readtaskmailbox(struct task *task, void *buffer, unsigned in
 
 }
 
-unsigned int kernel_writetaskmailbox(struct task *task, void *buffer, unsigned int count)
+unsigned int kernel_writemailbox(struct task *task, void *buffer, unsigned int count)
 {
 
     spinlock_hold(&task->mailbox.spinlock);
@@ -285,7 +285,7 @@ void kernel_multicast(struct list *states, void *buffer, unsigned int count)
 
         struct service_state *state = current->data;
 
-        kernel_writetaskmailbox(state->task, buffer, count);
+        kernel_writemailbox(state->task, buffer, count);
 
     }
 

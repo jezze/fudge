@@ -19,7 +19,7 @@ void event_unicast(struct list *states, struct event_header *header, unsigned in
         if (header->destination != (unsigned int)state->task)
             continue;
 
-        kernel_writetaskmailbox(state->task, header, count);
+        kernel_writemailbox(state->task, header, count);
 
     }
 
@@ -37,7 +37,7 @@ void event_multicast(struct list *states, struct event_header *header, unsigned 
 
         header->destination = (unsigned int)state->task;
 
-        kernel_writetaskmailbox(state->task, header, count);
+        kernel_writemailbox(state->task, header, count);
 
     }
 
