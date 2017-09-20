@@ -64,14 +64,12 @@ static void detect(struct acpi_madt *madt)
             version = ioapic_ind(ioapic->address, 1);
             count = ((version >> 16) & 0xFF) + 1;
 
-            spinlock_hold(&spinlock);
             DEBUG(DEBUG_INFO, "SMP IOAPIC");
             debug_write(DEBUG_INFO, "  ", "ioapic id", ioapic->id);
             debug_write(DEBUG_INFO, "  ", "ioapic address", ioapic->address);
             debug_write(DEBUG_INFO, "  ", "ioapic id", id);
             debug_write(DEBUG_INFO, "  ", "ioapic version", version);
             debug_write(DEBUG_INFO, "  ", "ioapic count", count);
-            spinlock_release(&spinlock);
 
         }
 
@@ -118,10 +116,11 @@ void smp_setup(unsigned int stack)
     mmu_setdirectory(directory);
     mmu_enable();
 
+    spinlock_release(&spinlock);
+
     DEBUG(DEBUG_INFO, "SMP CPU READY");
     debug_write(DEBUG_INFO, "  ", "cpu id", id);
     debug_write(DEBUG_INFO, "  ", "total", total);
-    spinlock_release(&spinlock);
     arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
 
 }

@@ -19,8 +19,6 @@ static void write(struct list *states, unsigned int level, char *string, char *f
 
     char num[FUDGE_NSIZE];
 
-    spinlock_hold(&spinlock);
-
     switch (level)
     {
 
@@ -52,12 +50,13 @@ static void write(struct list *states, unsigned int level, char *string, char *f
     kernel_multicast(states, ":", 1);
     kernel_multicast(states, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
     kernel_multicast(states, ")\n", 2);
-    spinlock_release(&spinlock);
 
 }
 
 static void log_write(unsigned int level, char *string, char *file, unsigned int line)
 {
+
+    spinlock_hold(&spinlock);
 
     if (level <= DEBUG_CRITICAL)
         write(&criticalstates, level, string, file, line);
@@ -70,6 +69,8 @@ static void log_write(unsigned int level, char *string, char *file, unsigned int
 
     if (level <= DEBUG_INFO)
         write(&infostates, level, string, file, line);
+
+    spinlock_release(&spinlock);
 
 }
 
