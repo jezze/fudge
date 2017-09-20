@@ -66,7 +66,7 @@ static struct gdt *gdt = (struct gdt *)GDTADDRESS;
 static struct idt *idt = (struct idt *)IDTADDRESS;
 static struct tss *tss = (struct tss *)TSSADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
-static struct arch_context context;
+static struct arch_context context0;
 
 static struct mmu_directory *getdirectory(unsigned int index, unsigned int address, unsigned int count)
 {
@@ -215,39 +215,43 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 unsigned int arch_call(unsigned int index, void *stack, unsigned int rewind)
 {
 
-    context.task->state.rewind = rewind;
+    struct arch_context *context = &context0;
 
-    return abi_call(index, context.task, stack);
+    context->task->state.rewind = rewind;
+
+    return abi_call(index, context->task, stack);
 
 }
 
 struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip, unsigned int sp)
 {
 
-    if (context.task)
-        savetask(context.task, general, ip, sp);
+    struct arch_context *context = &context0;
 
-    context.task = kernel_getactivetask();
+    if (context->task)
+        savetask(context->task, general, ip, sp);
 
-    if (context.task)
-        loadtask(context.task, general);
+    context->task = kernel_getactivetask();
 
-    return &context;
+    if (context->task)
+        loadtask(context->task, general);
+
+    return context;
 
 }
 
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct arch_context *c = arch_schedule(general, interrupt->eip.value, interrupt->esp.value);
+    struct arch_context *context = arch_schedule(general, interrupt->eip.value, interrupt->esp.value);
 
-    if (c->task)
+    if (context->task)
     {
 
         interrupt->cs.value = selector.ucode;
         interrupt->ss.value = selector.udata;
-        interrupt->eip.value = c->task->state.ip;
-        interrupt->esp.value = c->task->state.sp;
+        interrupt->eip.value = context->task->state.ip;
+        interrupt->esp.value = context->task->state.sp;
 
     }
 
@@ -256,8 +260,8 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 
         interrupt->cs.value = selector.kcode;
         interrupt->ss.value = selector.kdata;
-        interrupt->eip.value = c->ip;
-        interrupt->esp.value = c->sp;
+        interrupt->eip.value = context->ip;
+        interrupt->esp.value = context->sp;
 
     }
 
@@ -268,10 +272,12 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
+    struct arch_context *context = &context0;
+
     DEBUG(DEBUG_INFO, "exception: divide by zero");
 
     if (interrupt.cs.value == selector.ucode)
-        kernel_freetask(context.task);
+        kernel_freetask(context->task);
 
     return arch_resume(&general, &interrupt);
 
@@ -388,23 +394,25 @@ unsigned short arch_generalfault(struct cpu_general general, unsigned int select
 unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
 {
 
-    if (context.task)
+    struct arch_context *context = &context0;
+
+    if (context->task)
     {
 
-        unsigned int code = context.task->format->findbase(&context.task->node, cpu_getcr2());
+        unsigned int code = context->task->format->findbase(&context->task->node, cpu_getcr2());
 
         if (code)
         {
 
-            maptask(context.task, code);
-            context.task->format->copyprogram(&context.task->node);
+            maptask(context->task, code);
+            context->task->format->copyprogram(&context->task->node);
 
         }
 
         else
         {
 
-            kernel_freetask(context.task);
+            kernel_freetask(context->task);
 
         }
 
@@ -478,16 +486,16 @@ void arch_setup(struct service_backend *backend)
     kernel_setupmounts();
     kernel_setupservices();
 
-    context.task = kernel_getfreetask();
-    context.ip = (unsigned int)cpu_halt;
-    context.sp = KERNELSTACKADDRESS + KERNELSTACKSIZE;
+    context0.task = kernel_getfreetask();
+    context0.ip = (unsigned int)cpu_halt;
+    context0.sp = KERNELSTACKADDRESS + KERNELSTACKSIZE;
 
-    kernel_setupramdisk(context.task, backend);
+    kernel_setupramdisk(context0.task, backend);
     mapkernel();
-    spawn(context.task, 0);
-    activate(context.task);
+    spawn(context0.task, 0);
+    activate(context0.task);
     mmu_enable();
-    arch_leave(selector.ucode, selector.udata, context.task->state.ip, context.task->state.sp);
+    arch_leave(selector.ucode, selector.udata, context0.task->state.ip, context0.task->state.sp);
 
 }
 
