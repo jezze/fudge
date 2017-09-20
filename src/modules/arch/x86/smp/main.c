@@ -23,6 +23,26 @@ static struct spinlock spinlock;
 static struct system_node root;
 static struct system_node cpus;
 
+static struct arch_context *setupcontext(unsigned int ip, unsigned int sp)
+{
+
+    unsigned int id = apic_getid();
+    struct arch_context *c = &context[id];
+
+    c->task = 0;
+    c->ip = ip;
+    c->sp = sp;
+
+    spinlock_hold(&spinlock);
+
+    total++;
+
+    spinlock_release(&spinlock);
+
+    return c;
+
+}
+
 static void detect(struct acpi_madt *madt)
 {
 
@@ -103,25 +123,11 @@ void smp_setup(unsigned int stack)
 {
 
     struct mmu_directory *directory = (struct mmu_directory *)MMUKERNELADDRESS;
-    unsigned int id = apic_getid();
-
-    context[id].task = 0;
-    context[id].ip = (unsigned int)cpu_halt;
-    context[id].sp = stack;
-
-    spinlock_hold(&spinlock);
-
-    total++;
+    struct arch_context *context = setupcontext((unsigned int)cpu_halt, stack);
 
     mmu_setdirectory(directory);
     mmu_enable();
-
-    spinlock_release(&spinlock);
-
-    DEBUG(DEBUG_INFO, "SMP CPU READY");
-    debug_write(DEBUG_INFO, "  ", "cpu id", id);
-    debug_write(DEBUG_INFO, "  ", "total", total);
-    arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
+    arch_leave(0x08, 0x10, context->ip, context->sp);
 
 }
 
@@ -138,12 +144,15 @@ void module_init(void)
 {
 
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
+    struct arch_context *c = arch_getcontext();
 
+    setupcontext(c->ip, c->sp);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
-    system_addchild(&root, &cpus);
 
     cpus.read = cpus_read;
+
+    system_addchild(&root, &cpus);
 
     if (!madt)
         return;
