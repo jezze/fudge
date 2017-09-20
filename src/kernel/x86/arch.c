@@ -195,36 +195,42 @@ unsigned int arch_call(unsigned int index, void *stack, unsigned int rewind)
 
 }
 
+static void savetask(struct task *task, struct cpu_general *general, unsigned int ip, unsigned int sp)
+{
+
+    task->state.ip = ip;
+    task->state.sp = sp;
+
+    saveregisters(task, general);
+
+}
+
+static void loadtask(struct task *task, struct cpu_general *general)
+{
+
+    if (task->state.status == TASK_STATUS_UNBLOCKED)
+    {
+
+        kernel_activatetask(task);
+        task_setstate(task, task->state.ip - task->state.rewind, task->state.sp);
+
+    }
+
+    loadregisters(task, general);
+    activate(task);
+
+}
+
 struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip, unsigned int sp)
 {
 
     if (context.task)
-    {
-
-        context.task->state.ip = ip;
-        context.task->state.sp = sp;
-
-        saveregisters(context.task, general);
-
-    }
+        savetask(context.task, general, ip, sp);
 
     context.task = kernel_getactivetask();
 
     if (context.task)
-    {
-
-        if (context.task->state.status == TASK_STATUS_UNBLOCKED)
-        {
-
-            kernel_activatetask(context.task);
-            task_setstate(context.task, context.task->state.ip - context.task->state.rewind, context.task->state.sp);
-
-        }
-
-        loadregisters(context.task, general);
-        activate(context.task);
-
-    }
+        loadtask(context.task, general);
 
     return &context;
 
@@ -233,15 +239,15 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct arch_context *context = arch_schedule(general, interrupt->eip.value, interrupt->esp.value);
+    struct arch_context *c = arch_schedule(general, interrupt->eip.value, interrupt->esp.value);
 
-    if (context->task)
+    if (c->task)
     {
 
         interrupt->cs.value = selector.ucode;
         interrupt->ss.value = selector.udata;
-        interrupt->eip.value = context->task->state.ip;
-        interrupt->esp.value = context->task->state.sp;
+        interrupt->eip.value = c->task->state.ip;
+        interrupt->esp.value = c->task->state.sp;
 
     }
 
@@ -250,8 +256,8 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 
         interrupt->cs.value = selector.kcode;
         interrupt->ss.value = selector.kdata;
-        interrupt->eip.value = context->ip;
-        interrupt->esp.value = context->sp;
+        interrupt->eip.value = c->ip;
+        interrupt->esp.value = c->sp;
 
     }
 
