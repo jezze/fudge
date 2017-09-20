@@ -132,10 +132,36 @@ static void saveregisters(struct task *task, struct cpu_general *general)
 
 }
 
+static void savetask(struct task *task, struct cpu_general *general, unsigned int ip, unsigned int sp)
+{
+
+    task->state.ip = ip;
+    task->state.sp = sp;
+
+    saveregisters(task, general);
+
+}
+
 static void loadregisters(struct task *task, struct cpu_general *general)
 {
 
     memory_copy(general, &registers[task->id], sizeof (struct cpu_general));
+
+}
+
+static void loadtask(struct task *task, struct cpu_general *general)
+{
+
+    if (task->state.status == TASK_STATUS_UNBLOCKED)
+    {
+
+        kernel_activatetask(task);
+        task_setstate(task, task->state.ip - task->state.rewind, task->state.sp);
+
+    }
+
+    loadregisters(task, general);
+    activate(task);
 
 }
 
@@ -192,32 +218,6 @@ unsigned int arch_call(unsigned int index, void *stack, unsigned int rewind)
     context.task->state.rewind = rewind;
 
     return abi_call(index, context.task, stack);
-
-}
-
-static void savetask(struct task *task, struct cpu_general *general, unsigned int ip, unsigned int sp)
-{
-
-    task->state.ip = ip;
-    task->state.sp = sp;
-
-    saveregisters(task, general);
-
-}
-
-static void loadtask(struct task *task, struct cpu_general *general)
-{
-
-    if (task->state.status == TASK_STATUS_UNBLOCKED)
-    {
-
-        kernel_activatetask(task);
-        task_setstate(task, task->state.ip - task->state.rewind, task->state.sp);
-
-    }
-
-    loadregisters(task, general);
-    activate(task);
 
 }
 
