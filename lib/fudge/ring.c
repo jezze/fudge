@@ -149,6 +149,16 @@ unsigned int ring_write(struct ring *ring, void *buffer, unsigned int count)
 
 }
 
+unsigned int ring_writeall(struct ring *ring, void *buffer, unsigned int count)
+{
+
+    if (count > ring_avail(ring))
+        return 0;
+
+    return ring_write(ring, buffer, count);
+
+}
+
 unsigned int ring_writereverse(struct ring *ring, void *buffer, unsigned int count)
 {
 
@@ -169,6 +179,16 @@ unsigned int ring_writereverse(struct ring *ring, void *buffer, unsigned int cou
     }
 
     return c;
+
+}
+
+unsigned int ring_writeallreverse(struct ring *ring, void *buffer, unsigned int count)
+{
+
+    if (count > ring_avail(ring))
+        return 0;
+
+    return ring_writereverse(ring, buffer, count);
 
 }
 

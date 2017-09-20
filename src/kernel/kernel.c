@@ -249,9 +249,11 @@ unsigned int kernel_writemailbox(struct task *task, void *buffer, unsigned int c
 {
 
     spinlock_hold(&task->mailbox.spinlock);
-    kernel_unblocktask(task);
 
-    count = (count < ring_avail(&task->mailbox.ring)) ? ring_write(&task->mailbox.ring, buffer, count) : 0;
+    count = ring_writeall(&task->mailbox.ring, buffer, count);
+
+    if (count)
+        kernel_unblocktask(task);
 
     spinlock_release(&task->mailbox.spinlock);
 
