@@ -1,5 +1,5 @@
-void write_keyvalue(char *key, void *value, unsigned int count);
-void write_keystring(char *key, char *value);
-void write_keyboolean(char *key, unsigned int value);
-void write_keydec(char *key, unsigned int value);
-void write_keyhex(char *key, unsigned int value, unsigned int padding);
+void write_keyvalue(unsigned int descriptor, char *key, void *value, unsigned int count);
+void write_keystring(unsigned int descriptor, char *key, char *value);
+void write_keyboolean(unsigned int descriptor, char *key, unsigned int value);
+void write_keydec(unsigned int descriptor, char *key, unsigned int value);
+void write_keyhex(unsigned int descriptor, char *key, unsigned int value, unsigned int padding);

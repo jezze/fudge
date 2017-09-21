@@ -56,16 +56,16 @@ void main(void)
         char data[64];
         unsigned int count;
 
-        write_keydec("Partition", i);
+        write_keydec(FILE_PO, "Partition", i);
 
         if (!mbr.partition[i].systemid)
             continue;
 
-        write_keyhex("    Boot", mbr.partition[i].boot, 2);
-        write_keyhex("    Id", mbr.partition[i].systemid, 2);
-        write_keydec("    Start", start);
-        write_keydec("    End", start + sectors - 1);
-        write_keydec("    Sectors", sectors);
+        write_keyhex(FILE_PO, "    Boot", mbr.partition[i].boot, 2);
+        write_keyhex(FILE_PO, "    Id", mbr.partition[i].systemid, 2);
+        write_keydec(FILE_PO, "    Start", start);
+        write_keydec(FILE_PO, "    End", start + sectors - 1);
+        write_keydec(FILE_PO, "    Sectors", sectors);
 
         count = 0;
         count += ascii_wvalue(data, 64, cstart, 10, count);
@@ -74,7 +74,7 @@ void main(void)
         count += memory_write(data, 64, "/", 1, count);
         count += ascii_wvalue(data, 64, sstart, 10, count);
 
-        write_keyvalue("    Start-C/H/S", data, count);
+        write_keyvalue(FILE_PO, "    Start-C/H/S", data, count);
 
         count = 0;
         count += ascii_wvalue(data, 64, cend, 10, count);
@@ -83,7 +83,7 @@ void main(void)
         count += memory_write(data, 64, "/", 1, count);
         count += ascii_wvalue(data, 64, send, 10, count);
 
-        write_keyvalue("    End-C/H/S", data, count);
+        write_keyvalue(FILE_PO, "    End-C/H/S", data, count);
 
     }
 

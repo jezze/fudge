@@ -8,7 +8,7 @@ static void (*writers[32])(struct ctrl_header *header);
 static void writeheader(struct ctrl_header *header)
 {
 
-    write_keystring("type", names[header->type]);
+    write_keystring(FILE_PO, "type", names[header->type]);
 
 }
 
@@ -18,13 +18,13 @@ static void writeclocksettings(struct ctrl_header *header)
     struct ctrl_clocksettings settings;
 
     file_seekreadall(FILE_PI, &settings, sizeof (struct ctrl_clocksettings), 0);
-    write_keydec("seconds", settings.seconds);
-    write_keydec("minutes", settings.minutes);
-    write_keydec("hours", settings.hours);
-    write_keydec("weekday", settings.weekday);
-    write_keydec("day", settings.day);
-    write_keydec("month", settings.month);
-    write_keydec("year", settings.year);
+    write_keydec(FILE_PO, "seconds", settings.seconds);
+    write_keydec(FILE_PO, "minutes", settings.minutes);
+    write_keydec(FILE_PO, "hours", settings.hours);
+    write_keydec(FILE_PO, "weekday", settings.weekday);
+    write_keydec(FILE_PO, "day", settings.day);
+    write_keydec(FILE_PO, "month", settings.month);
+    write_keydec(FILE_PO, "year", settings.year);
 
 }
 
@@ -34,8 +34,8 @@ static void writeconsettings(struct ctrl_header *header)
     struct ctrl_consettings settings;
 
     file_seekreadall(FILE_PI, &settings, sizeof (struct ctrl_consettings), 0);
-    write_keydec("interface", settings.interface);
-    write_keydec("port", settings.port);
+    write_keydec(FILE_PO, "interface", settings.interface);
+    write_keydec(FILE_PO, "port", settings.port);
 
 }
 
@@ -45,7 +45,7 @@ static void writeconsolesettings(struct ctrl_header *header)
     struct ctrl_consolesettings settings;
 
     file_seekreadall(FILE_PI, &settings, sizeof (struct ctrl_consolesettings), 0);
-    write_keyboolean("scroll", settings.scroll);
+    write_keyboolean(FILE_PO, "scroll", settings.scroll);
 
 }
 
@@ -55,9 +55,9 @@ static void writepartsettings(struct ctrl_header *header)
     struct ctrl_partsettings settings;
 
     file_seekreadall(FILE_PI, &settings, sizeof (struct ctrl_partsettings), 0);
-    write_keydec("interface", settings.interface);
-    write_keydec("start", settings.start);
-    write_keydec("end", settings.end);
+    write_keydec(FILE_PO, "interface", settings.interface);
+    write_keydec(FILE_PO, "start", settings.start);
+    write_keydec(FILE_PO, "end", settings.end);
 
 }
 
@@ -67,9 +67,9 @@ static void writevideosettings(struct ctrl_header *header)
     struct ctrl_videosettings settings;
 
     file_seekreadall(FILE_PI, &settings, sizeof (struct ctrl_videosettings), 0);
-    write_keydec("width", settings.w);
-    write_keydec("height", settings.h);
-    write_keydec("bpp", settings.bpp);
+    write_keydec(FILE_PO, "width", settings.w);
+    write_keydec(FILE_PO, "height", settings.h);
+    write_keydec(FILE_PO, "bpp", settings.bpp);
 
 }
 
