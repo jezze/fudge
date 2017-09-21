@@ -9,14 +9,8 @@ apic_test:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call apic_interrupt
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 

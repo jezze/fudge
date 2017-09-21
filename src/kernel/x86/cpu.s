@@ -105,8 +105,5 @@ cpu_leave:
     addl $4, %esp
     movw 16(%esp), %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     iret
 

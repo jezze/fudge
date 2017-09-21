@@ -23,14 +23,8 @@ isr_zero:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_zero
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 
@@ -39,14 +33,8 @@ isr_debug:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_debug
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 
@@ -55,14 +43,8 @@ isr_nmi:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_nmi
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 
@@ -71,14 +53,8 @@ isr_breakpoint:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_breakpoint
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 
@@ -87,14 +63,8 @@ isr_overflow:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_overflow
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 
@@ -103,14 +73,8 @@ isr_bound:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_bound
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 
@@ -119,14 +83,8 @@ isr_opcode:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_opcode
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 
@@ -135,14 +93,8 @@ isr_device:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_device
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 
@@ -151,14 +103,8 @@ isr_doublefault:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_doublefault
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 
@@ -167,14 +113,8 @@ isr_tss:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_tss
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     addl $4, %esp
     iret
@@ -184,14 +124,8 @@ isr_segment:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_segment
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     addl $4, %esp
     iret
@@ -201,14 +135,8 @@ isr_stack:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_stack
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     addl $4, %esp
     iret
@@ -218,14 +146,8 @@ isr_generalfault:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_generalfault
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     addl $4, %esp
     iret
@@ -235,14 +157,8 @@ isr_pagefault:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_pagefault
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     addl $4, %esp
     iret
@@ -252,14 +168,8 @@ isr_syscall:
     pusha
     movw %ss, %ax
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     call arch_syscall
     movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
     popa
     iret
 
