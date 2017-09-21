@@ -212,10 +212,8 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
-struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip, unsigned int sp)
+void arch_schedule(struct cpu_general *general, struct arch_context *context, unsigned int ip, unsigned int sp)
 {
-
-    struct arch_context *context = arch_getcontext();
 
     if (context->task)
         savetask(context->task, general, ip, sp);
@@ -225,22 +223,22 @@ struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip,
     if (context->task)
         loadtask(context->task, general);
 
-    return context;
-
 }
 
-unsigned short arch_resume(struct arch_context *context, struct cpu_general *general, struct cpu_interrupt *interrupt)
+unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct arch_context *c = arch_schedule(general, interrupt->eip.value, interrupt->esp.value);
+    struct arch_context *context = arch_getcontext();
 
-    if (c->task)
+    arch_schedule(general, context, interrupt->eip.value, interrupt->esp.value);
+
+    if (context->task)
     {
 
         interrupt->cs.value = selector.ucode;
         interrupt->ss.value = selector.udata;
-        interrupt->eip.value = c->task->state.ip;
-        interrupt->esp.value = c->task->state.sp;
+        interrupt->eip.value = context->task->state.ip;
+        interrupt->esp.value = context->task->state.sp;
 
     }
 
@@ -249,8 +247,8 @@ unsigned short arch_resume(struct arch_context *context, struct cpu_general *gen
 
         interrupt->cs.value = selector.kcode;
         interrupt->ss.value = selector.kdata;
-        interrupt->eip.value = c->ip;
-        interrupt->esp.value = c->sp;
+        interrupt->eip.value = context->ip;
+        interrupt->esp.value = context->sp;
 
     }
 
@@ -268,139 +266,115 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     if (interrupt.cs.value == selector.ucode)
         kernel_freetask(context->task);
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_debug(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: debug");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_nmi(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: non-maskable interrupt");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_breakpoint(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: breakpoint");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_overflow(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: overflow");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_bound(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: bound range exceeded");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_opcode(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: invalid opcode");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_device(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: device unavailable");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: double fault");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_tss(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: invalid tss");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_segment(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: segment not present");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_stack(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: stack segment fault");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
 unsigned short arch_generalfault(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
-
     DEBUG(DEBUG_INFO, "exception: general fault");
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
@@ -431,7 +405,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
     }
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
@@ -443,7 +417,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
     context->task->state.rewind = 7;
     general.eax.value = abi_call(general.eax.value, context->task, interrupt.esp.reference);
 
-    return arch_resume(context, &general, &interrupt);
+    return arch_resume(&general, &interrupt);
 
 }
 
