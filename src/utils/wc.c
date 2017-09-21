@@ -5,7 +5,8 @@ void main(void)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, bytes = 0, spaces = 0, lines = 0;
+    unsigned int count, bytes = 0, words = 0, lines = 0;
+    unsigned int whitespace = 1;
 
     file_open(FILE_PI);
 
@@ -21,12 +22,21 @@ void main(void)
             {
 
             case '\n':
+                whitespace = 1;
                 lines++;
 
                 break;
 
             case ' ':
-                spaces++;
+                whitespace = 1;
+
+                break;
+
+            default:
+                if (whitespace)
+                    words++;
+
+                whitespace = 0;
 
                 break;
 
@@ -40,11 +50,11 @@ void main(void)
 
     file_close(FILE_PI);
     file_open(FILE_PO);
-    file_writeall(FILE_PO, buffer, ascii_fromint(buffer, FUDGE_BSIZE, bytes, 10));
-    file_writeall(FILE_PO, "\n", 1);
-    file_writeall(FILE_PO, buffer, ascii_fromint(buffer, FUDGE_BSIZE, spaces, 10));
-    file_writeall(FILE_PO, "\n", 1);
     file_writeall(FILE_PO, buffer, ascii_fromint(buffer, FUDGE_BSIZE, lines, 10));
+    file_writeall(FILE_PO, "\n", 1);
+    file_writeall(FILE_PO, buffer, ascii_fromint(buffer, FUDGE_BSIZE, words, 10));
+    file_writeall(FILE_PO, "\n", 1);
+    file_writeall(FILE_PO, buffer, ascii_fromint(buffer, FUDGE_BSIZE, bytes, 10));
     file_writeall(FILE_PO, "\n", 1);
     file_close(FILE_PO);
 
