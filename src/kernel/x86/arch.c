@@ -356,7 +356,7 @@ unsigned short arch_device(struct cpu_general general, struct cpu_interrupt inte
 
 }
 
-unsigned short arch_doublefault(struct cpu_general general, struct cpu_interrupt interrupt)
+unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, struct cpu_interrupt interrupt)
 {
 
     struct arch_context *context = arch_getcontext();
@@ -490,7 +490,6 @@ void arch_setup(struct service_backend *backend)
     idt_setdescriptor(&idt->pointer, 0x05, isr_bound, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x06, isr_opcode, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x07, isr_device, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x08, isr_doublefault, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x0A, isr_tss, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x0B, isr_segment, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x0C, isr_stack, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);

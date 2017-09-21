@@ -106,6 +106,7 @@ isr_doublefault:
     call arch_doublefault
     movw %ax, %ds
     popa
+    addl $4, %esp
     iret
 
 .global isr_tss
