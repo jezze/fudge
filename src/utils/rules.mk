@@ -280,22 +280,10 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/named \
+    $(DIR_SRC)/utils/name \
 
 O:=\
-    $(DIR_SRC)/utils/named.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/namef \
-
-O:=\
-    $(DIR_SRC)/utils/namef.o \
+    $(DIR_SRC)/utils/name.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \

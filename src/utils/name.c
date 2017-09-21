@@ -19,7 +19,10 @@ void main(void)
     while (--offset && buffer[offset - 1] != '/');
 
     file_open(FILE_PO);
-    file_writeall(FILE_PO, buffer + offset, count - offset);
+    file_writeall(FILE_PO, buffer + offset, count - offset - 1);
+    file_writeall(FILE_PO, "\n", 1);
+    file_writeall(FILE_PO, buffer, offset - 1);
+    file_writeall(FILE_PO, "\n", 1);
     file_close(FILE_PO);
 
 }
