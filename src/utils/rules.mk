@@ -35,30 +35,6 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/countb \
-
-O:=\
-    $(DIR_SRC)/utils/countb.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/countl \
-
-O:=\
-    $(DIR_SRC)/utils/countl.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
     $(DIR_SRC)/utils/crc \
 
 O:=\
@@ -381,6 +357,18 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/timestamp.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/wc \
+
+O:=\
+    $(DIR_SRC)/utils/wc.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
