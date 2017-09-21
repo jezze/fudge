@@ -63,6 +63,8 @@ static void disableline(unsigned short port, unsigned char line)
 unsigned short pic_interrupt(struct cpu_general general, unsigned int index, unsigned int slave, struct cpu_interrupt interrupt)
 {
 
+    struct arch_context *context = arch_getcontext();
+
     routines[index](index);
 
     if (slave)
@@ -70,7 +72,7 @@ unsigned short pic_interrupt(struct cpu_general general, unsigned int index, uns
 
     io_outb(REGISTERCOMMAND0, COMMANDEOI);
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(context, &general, &interrupt);
 
 }
 

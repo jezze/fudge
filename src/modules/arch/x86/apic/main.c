@@ -85,13 +85,15 @@ unsigned int apic_getid(void)
 unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
+    struct arch_context *context = arch_getcontext();
+
     DEBUG(DEBUG_INFO, "APIC INTERRUPT");
 
 /*
     apic_outd(REGISTEREOI, 0);
 */
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(context, &general, &interrupt);
 
 }
 
