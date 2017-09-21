@@ -201,13 +201,6 @@ struct arch_context *arch_getcontext(void)
 
 }
 
-void arch_setinterrupt(unsigned char index, void (*callback)(void))
-{
-
-    idt_setdescriptor(&idt->pointer, index, callback, selector.kcode, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-
-}
-
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 

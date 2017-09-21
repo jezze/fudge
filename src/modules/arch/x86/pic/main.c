@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <kernel/x86/cpu.h>
+#include <kernel/x86/idt.h>
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/io/io.h>
 #include "pic.h"
@@ -121,6 +122,8 @@ void pic_disable(void)
 void module_init(void)
 {
 
+    struct idt_pointer *pointer = cpu_getidt();
+
     setchip(REGISTERCOMMAND0, REGISTERDATA0, DATAVECTOR0, 0x04);
     setchip(REGISTERCOMMAND1, REGISTERDATA1, DATAVECTOR1, 0x02);
     setmask(REGISTERDATA0, 0xFB);
@@ -137,22 +140,22 @@ void module_init(void)
     while (getstatus(REGISTERCOMMAND0, COMMANDISR))
         io_outb(REGISTERCOMMAND0, COMMANDEOI);
 
-    arch_setinterrupt(DATAVECTOR0 + 0x00, pic_routine00);
-    arch_setinterrupt(DATAVECTOR0 + 0x01, pic_routine01);
-    arch_setinterrupt(DATAVECTOR0 + 0x02, pic_routine02);
-    arch_setinterrupt(DATAVECTOR0 + 0x03, pic_routine03);
-    arch_setinterrupt(DATAVECTOR0 + 0x04, pic_routine04);
-    arch_setinterrupt(DATAVECTOR0 + 0x05, pic_routine05);
-    arch_setinterrupt(DATAVECTOR0 + 0x06, pic_routine06);
-    arch_setinterrupt(DATAVECTOR0 + 0x07, pic_routine07);
-    arch_setinterrupt(DATAVECTOR1 + 0x00, pic_routine08);
-    arch_setinterrupt(DATAVECTOR1 + 0x01, pic_routine09);
-    arch_setinterrupt(DATAVECTOR1 + 0x02, pic_routine0A);
-    arch_setinterrupt(DATAVECTOR1 + 0x03, pic_routine0B);
-    arch_setinterrupt(DATAVECTOR1 + 0x04, pic_routine0C);
-    arch_setinterrupt(DATAVECTOR1 + 0x05, pic_routine0D);
-    arch_setinterrupt(DATAVECTOR1 + 0x06, pic_routine0E);
-    arch_setinterrupt(DATAVECTOR1 + 0x07, pic_routine0F);
+    idt_setdescriptor(pointer, DATAVECTOR0 + 0x00, pic_routine00, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR0 + 0x01, pic_routine01, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR0 + 0x02, pic_routine02, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR0 + 0x03, pic_routine03, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR0 + 0x04, pic_routine04, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR0 + 0x05, pic_routine05, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR0 + 0x06, pic_routine06, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR0 + 0x07, pic_routine07, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR1 + 0x00, pic_routine08, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR1 + 0x01, pic_routine09, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR1 + 0x02, pic_routine0A, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR1 + 0x03, pic_routine0B, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR1 + 0x04, pic_routine0C, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR1 + 0x05, pic_routine0D, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR1 + 0x06, pic_routine0E, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(pointer, DATAVECTOR1 + 0x07, pic_routine0F, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
 
 }
 
