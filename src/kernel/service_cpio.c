@@ -35,7 +35,7 @@ static unsigned int parent(struct service_backend *backend, struct cpio_header *
     if (!readname(backend, header, id, name, 1024, 0))
         return id;
 
-    length = ascii_dname(dname, 1024, name, header->namesize - 1);
+    length = ascii_dname(dname, 1024, name, header->namesize - 1, '/');
 
     do
     {

@@ -102,7 +102,7 @@ unsigned int ascii_count(char *in, unsigned int count, char c)
 
 }
 
-unsigned int ascii_dname(char *out, unsigned int ocount, char *in, unsigned int icount)
+unsigned int ascii_dname(char *out, unsigned int ocount, char *in, unsigned int icount, char c)
 {
 
     unsigned int i = 0;
@@ -111,13 +111,13 @@ unsigned int ascii_dname(char *out, unsigned int ocount, char *in, unsigned int 
     if (!icount)
         return 0;
 
-    if (in[icount - 1] == '/')
+    if (in[icount - 1] == c)
         icount--;
 
     for (i = 0; i < icount; i++)
     {
 
-        if (in[i] == '/')
+        if (in[i] == c)
             p = i;
 
     }
@@ -128,7 +128,7 @@ unsigned int ascii_dname(char *out, unsigned int ocount, char *in, unsigned int 
 
 }
 
-unsigned int ascii_bname(char *out, unsigned int ocount, char *in, unsigned int icount)
+unsigned int ascii_fname(char *out, unsigned int ocount, char *in, unsigned int icount, char c)
 {
 
     unsigned int i = 0;
@@ -137,13 +137,13 @@ unsigned int ascii_bname(char *out, unsigned int ocount, char *in, unsigned int 
     if (!icount)
         return 0;
 
-    if (in[icount - 1] == '/')
+    if (in[icount - 1] == c)
         icount--;
 
     for (i = 0; i < icount; i++)
     {
 
-        if (in[i] == '/')
+        if (in[i] == c)
             p = i + 1;
 
     }
