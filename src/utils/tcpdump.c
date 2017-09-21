@@ -1,6 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
-#include "write.h"
+#include <common.h>
 
 struct tcp_header
 {

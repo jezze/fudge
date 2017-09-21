@@ -1,4 +1,5 @@
 include $(DIR_LIB)/abi/rules.mk
+include $(DIR_LIB)/common/rules.mk
 include $(DIR_LIB)/cpio/rules.mk
 include $(DIR_LIB)/elf/rules.mk
 include $(DIR_LIB)/event/rules.mk

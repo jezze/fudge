@@ -7,6 +7,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -19,6 +20,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -31,6 +33,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -43,6 +46,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -51,11 +55,11 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/ctrl.o \
-    $(DIR_SRC)/utils/write.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -68,6 +72,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -80,6 +85,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -92,6 +98,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -104,6 +111,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -112,11 +120,11 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/fat.o \
-    $(DIR_SRC)/utils/write.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -129,6 +137,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -141,6 +150,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -153,6 +163,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -165,6 +176,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -177,6 +189,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -189,6 +202,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -201,6 +215,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -213,6 +228,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/keymap/keymap.a \
 
 include $(DIR_MK)/bin.mk
@@ -226,6 +242,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/keymap/keymap.a \
 
 include $(DIR_MK)/bin.mk
@@ -239,6 +256,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -251,6 +269,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -259,11 +278,11 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/mbr.o \
-    $(DIR_SRC)/utils/write.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -276,6 +295,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -288,6 +308,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -300,6 +321,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -312,6 +334,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -324,6 +347,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -332,11 +356,11 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/tcpdump.o \
-    $(DIR_SRC)/utils/write.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -349,6 +373,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -361,5 +386,6 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
 
 include $(DIR_MK)/bin.mk

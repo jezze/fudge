@@ -1,6 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
-#include "write.h"
+#include <common.h>
 
 static char *names[32];
 static void (*writers[32])(struct ctrl_header *header);
