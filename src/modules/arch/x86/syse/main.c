@@ -31,7 +31,9 @@ void syse_resume(struct cpu_general *general)
 void syse_syscall(struct cpu_general general)
 {
 
-    general.eax.value = arch_call(general.eax.value, (void *)(general.ecx.value + 8), 0);
+    struct arch_context *context = arch_getcontext();
+
+    general.eax.value = abi_call(general.eax.value, context->task, (void *)(general.ecx.value + 8));
 
     syse_resume(&general);
 

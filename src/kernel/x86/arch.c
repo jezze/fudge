@@ -219,17 +219,6 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
-unsigned int arch_call(unsigned int index, void *stack, unsigned int rewind)
-{
-
-    struct arch_context *context = arch_getcontext();
-
-    context->task->state.rewind = rewind;
-
-    return abi_call(index, context->task, stack);
-
-}
-
 struct arch_context *arch_schedule(struct cpu_general *general, unsigned int ip, unsigned int sp)
 {
 
@@ -458,7 +447,8 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
     struct arch_context *context = arch_getcontext();
 
-    general.eax.value = arch_call(general.eax.value, interrupt.esp.reference, 7);
+    context->task->state.rewind = 7;
+    general.eax.value = abi_call(general.eax.value, context->task, interrupt.esp.reference);
 
     return arch_resume(context, &general, &interrupt);
 
