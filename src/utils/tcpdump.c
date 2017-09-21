@@ -52,17 +52,17 @@ void main(void)
         checksum = (header.checksum[0] << 8) | header.checksum[1];
         urgent = (header.urgent[0] << 8) | header.urgent[1];
 
-        write_dec("source port", sp);
-        write_dec("target port", tp);
-        write_dec("seq number", seq);
-        write_dec("ack number", ack);
-        write_dec("data offset", dataoff);
-        write_dec("flags0", flags0);
-        write_dec("flags1", flags1);
-        write_dec("flags2", flags2);
-        write_dec("window size", windowsize);
-        write_dec("checksum", checksum);
-        write_dec("urgent", urgent);
+        write_keydec("source port", sp);
+        write_keydec("target port", tp);
+        write_keydec("seq number", seq);
+        write_keydec("ack number", ack);
+        write_keydec("data offset", dataoff);
+        write_keydec("flags0", flags0);
+        write_keydec("flags1", flags1);
+        write_keydec("flags2", flags2);
+        write_keydec("window size", windowsize);
+        write_keydec("checksum", checksum);
+        write_keydec("urgent", urgent);
 
         if (dataoff > 5)
         {
@@ -73,7 +73,7 @@ void main(void)
 
         }
 
-        write_string("---", "");
+        write_keystring("---", "");
 
     }
 

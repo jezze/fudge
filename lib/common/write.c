@@ -11,21 +11,21 @@ void write_keyvalue(char *key, void *value, unsigned int count)
 
 }
 
-void write_string(char *key, char *value)
+void write_keystring(char *key, char *value)
 {
 
     write_keyvalue(key, value, ascii_length(value));
 
 }
 
-void write_boolean(char *key, unsigned int value)
+void write_keyboolean(char *key, unsigned int value)
 {
 
-    write_string(key, (value) ? "true" : "false");
+    write_keystring(key, (value) ? "true" : "false");
 
 }
 
-void write_dec(char *key, unsigned int value)
+void write_keydec(char *key, unsigned int value)
 {
 
     char num[FUDGE_NSIZE];
@@ -35,7 +35,7 @@ void write_dec(char *key, unsigned int value)
 
 }
 
-void write_hex(char *key, unsigned int value, unsigned int padding)
+void write_keyhex(char *key, unsigned int value, unsigned int padding)
 {
 
     char num[FUDGE_NSIZE];

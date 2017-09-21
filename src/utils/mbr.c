@@ -56,16 +56,16 @@ void main(void)
         char data[64];
         unsigned int count;
 
-        write_dec("Partition", i);
+        write_keydec("Partition", i);
 
         if (!mbr.partition[i].systemid)
             continue;
 
-        write_hex("    Boot", mbr.partition[i].boot, 2);
-        write_hex("    Id", mbr.partition[i].systemid, 2);
-        write_dec("    Start", start);
-        write_dec("    End", start + sectors - 1);
-        write_dec("    Sectors", sectors);
+        write_keyhex("    Boot", mbr.partition[i].boot, 2);
+        write_keyhex("    Id", mbr.partition[i].systemid, 2);
+        write_keydec("    Start", start);
+        write_keydec("    End", start + sectors - 1);
+        write_keydec("    Sectors", sectors);
 
         count = 0;
         count += ascii_wvalue(data, 64, cstart, 10, count);

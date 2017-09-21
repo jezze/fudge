@@ -65,7 +65,7 @@ void main(void)
     file_readall(FILE_PI, data, 512);
     file_close(FILE_PI);
     file_open(FILE_PO);
-    write_dec("Table count", bpb->table_count);
+    write_keydec("Table count", bpb->table_count);
     file_close(FILE_PO);
 
 }
