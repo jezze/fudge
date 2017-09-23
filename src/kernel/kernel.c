@@ -182,8 +182,6 @@ struct task *kernel_schedule(void)
         task->state.ip -= task->state.rewind;
         task->state.rewind = 0;
 
-
-
     }
 
     return (activetasks.tail) ? activetasks.tail->data : 0;
