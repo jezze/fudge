@@ -3,7 +3,6 @@
 #define KERNEL_MOUNTS                   32
 #define KERNEL_SERVICES                 4096
 
-struct task *kernel_getactivetask(void);
 struct task *kernel_getfreetask(void);
 struct service_server *kernel_getfreeserver(void);
 struct service_mount *kernel_getfreemount(void);
@@ -14,6 +13,7 @@ void kernel_activatetask(struct task *task);
 void kernel_freetask(struct task *task);
 void kernel_blocktask(struct task *task);
 void kernel_unblocktask(struct task *task);
+struct task *kernel_schedule(void);
 void kernel_useserver(struct service_server *server);
 void kernel_freeserver(struct service_server *server);
 void kernel_usemount(struct service_mount *mount);

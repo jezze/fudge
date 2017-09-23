@@ -12,18 +12,12 @@ static struct service services[KERNEL_SERVICES];
 static struct list activetasks;
 static struct list freetasks;
 static struct list blockedtasks;
+static struct list unblockedtasks;
 static struct list usedservers;
 static struct list freeservers;
 static struct list usedmounts;
 static struct list freemounts;
 static struct list freeservices;
-
-struct task *kernel_getactivetask(void)
-{
-
-    return (activetasks.tail) ? activetasks.tail->data : 0;
-
-}
 
 struct task *kernel_getfreetask(void)
 {
@@ -110,9 +104,7 @@ void kernel_activatetask(struct task *task)
     switch (task->state.status)
     {
 
-    case TASK_STATUS_ACTIVE:
     case TASK_STATUS_FREE:
-    case TASK_STATUS_UNBLOCKED:
         list_move(&activetasks, &task->state.item);
 
         task->state.status = TASK_STATUS_ACTIVE;
@@ -164,14 +156,34 @@ void kernel_unblocktask(struct task *task)
     {
 
     case TASK_STATUS_BLOCKED:
-    case TASK_STATUS_UNBLOCKED:
-        list_move(&activetasks, &task->state.item);
+        list_move(&unblockedtasks, &task->state.item);
 
         task->state.status = TASK_STATUS_UNBLOCKED;
 
         break;
 
     }
+
+}
+
+struct task *kernel_schedule(void)
+{
+
+    struct list_item *current;
+
+    for (current = unblockedtasks.head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+
+        task->state.status = TASK_STATUS_ACTIVE;
+
+        task_setstate(task, task->state.ip - task->state.rewind, task->state.sp);
+        list_move(&activetasks, current);
+
+    }
+
+    return (activetasks.tail) ? activetasks.tail->data : 0;
 
 }
 
