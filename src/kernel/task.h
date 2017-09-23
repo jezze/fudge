@@ -37,7 +37,6 @@ struct task
 
 };
 
-void task_setstate(struct task *task, unsigned int ip, unsigned int sp);
 void task_initstate(struct task_state *state, struct task *task);
 void task_initmailbox(struct task_mailbox *mailbox);
 void task_init(struct task *task, unsigned int id);

@@ -179,8 +179,10 @@ struct task *kernel_schedule(void)
         list_move(&activetasks, current);
 
         task->state.status = TASK_STATUS_ACTIVE;
+        task->state.ip -= task->state.rewind;
+        task->state.rewind = 0;
 
-        task_setstate(task, task->state.ip - task->state.rewind, task->state.sp);
+
 
     }
 
@@ -321,7 +323,8 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
     if (!task->format)
         return 0;
 
-    task_setstate(task, task->format->findentry(&task->node), sp);
+    task->state.ip = task->format->findentry(&task->node);
+    task->state.sp = sp;
 
     return 1;
 

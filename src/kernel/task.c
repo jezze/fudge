@@ -3,15 +3,6 @@
 #include "binary.h"
 #include "task.h"
 
-void task_setstate(struct task *task, unsigned int ip, unsigned int sp)
-{
-
-    task->state.ip = ip;
-    task->state.sp = sp;
-    task->state.rewind = 0;
-
-}
-
 void task_initstate(struct task_state *state, struct task *task)
 {
 
