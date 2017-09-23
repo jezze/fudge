@@ -176,10 +176,11 @@ struct task *kernel_schedule(void)
 
         struct task *task = current->data;
 
+        list_move(&activetasks, current);
+
         task->state.status = TASK_STATUS_ACTIVE;
 
         task_setstate(task, task->state.ip - task->state.rewind, task->state.sp);
-        list_move(&activetasks, current);
 
     }
 
