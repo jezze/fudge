@@ -82,27 +82,23 @@ static struct mmu_table *gettable(unsigned int index)
 
 }
 
-static void mapkernel()
+static void mapkernel(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     struct mmu_directory *directory = (struct mmu_directory *)MMUKERNELADDRESS;
     struct mmu_table *table = (struct mmu_table *)(MMUKERNELADDRESS + 0x1000);
 
-    mmu_map(directory, &table[0], 0x00000000, 0x00000000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_map(directory, &table[1], 0x00400000, 0x00400000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_map(directory, &table[2], 0x00800000, 0x00800000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_map(directory, &table[3], 0x00C00000, 0x00C00000, 0x00400000, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
-static void maptask(struct task *task, unsigned int code)
+static void maptask(struct task *task, unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     struct mmu_directory *directory = getdirectory(task->id);
     struct mmu_table *table = gettable(task->id);
 
-    mmu_map(directory, &table[0], TASKCODEADDRESS + task->id * (TASKCODESIZE + TASKSTACKSIZE), code, TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-    mmu_map(directory, &table[1], TASKCODEADDRESS + task->id * (TASKCODESIZE + TASKSTACKSIZE) + TASKCODESIZE, TASKSTACKADDRESS - TASKSTACKSIZE, TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -145,11 +141,8 @@ struct arch_context *arch_getcontext(void)
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)MMUKERNELADDRESS;
-    struct mmu_table *table = (struct mmu_table *)(MMUKERNELADDRESS + 0x1000);
-
-    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-    mmu_setdirectory(directory);
+    mapkernel(index, paddress, vaddress, size);
+    mmu_setdirectory((struct mmu_directory *)MMUKERNELADDRESS);
 
 }
 
@@ -344,7 +337,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (code)
         {
 
-            maptask(context->task, code);
+            maptask(context->task, 0, TASKCODEADDRESS + context->task->id * (TASKCODESIZE + TASKSTACKSIZE), code, TASKCODESIZE);
+            maptask(context->task, 1, TASKCODEADDRESS + context->task->id * (TASKCODESIZE + TASKSTACKSIZE) + TASKCODESIZE, TASKSTACKADDRESS - TASKSTACKSIZE, TASKSTACKSIZE);
             context->task->format->copyprogram(&context->task->node);
 
         }
@@ -433,7 +427,10 @@ void arch_setup(struct service_backend *backend)
     context0.sp = KERNELSTACKADDRESS + KERNELSTACKSIZE;
 
     kernel_setupramdisk(context0.task, backend);
-    mapkernel();
+    mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
+    mapkernel(1, 0x00400000, 0x00400000, 0x00400000);
+    mapkernel(2, 0x00800000, 0x00800000, 0x00400000);
+    mapkernel(3, 0x00C00000, 0x00C00000, 0x00400000);
     spawn(context0.task, 0);
     mmu_setdirectory(getdirectory(context0.task->id));
     mmu_enable();
