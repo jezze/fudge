@@ -68,17 +68,17 @@ static struct tss *tss = (struct tss *)TSSADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
 static struct arch_context context0;
 
-static struct mmu_directory *getdirectory(unsigned int index, unsigned int address, unsigned int count)
+static struct mmu_directory *getdirectory(unsigned int index)
 {
 
-    return (struct mmu_directory *)address + index * count;
+    return (struct mmu_directory *)MMUTASKADDRESS + index * MMUTASKCOUNT;
 
 }
 
-static struct mmu_table *gettable(unsigned int index, unsigned int address, unsigned int count)
+static struct mmu_table *gettable(unsigned int index)
 {
 
-    return (struct mmu_table *)address + index * count + 1;
+    return (struct mmu_table *)MMUTASKADDRESS + index * MMUTASKCOUNT + 1;
 
 }
 
@@ -98,8 +98,8 @@ static void mapkernel()
 static void maptask(struct task *task, unsigned int code)
 {
 
-    struct mmu_directory *directory = getdirectory(task->id, MMUTASKADDRESS, MMUTASKCOUNT);
-    struct mmu_table *table = gettable(task->id, MMUTASKADDRESS, MMUTASKCOUNT);
+    struct mmu_directory *directory = getdirectory(task->id);
+    struct mmu_table *table = gettable(task->id);
 
     mmu_map(directory, &table[0], TASKCODEADDRESS + task->id * (TASKCODESIZE + TASKSTACKSIZE), code, TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
     mmu_map(directory, &table[1], TASKCODEADDRESS + task->id * (TASKCODESIZE + TASKSTACKSIZE) + TASKCODESIZE, TASKSTACKADDRESS - TASKSTACKSIZE, TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
@@ -114,7 +114,7 @@ static unsigned int spawn(struct task *task, void *stack)
     if (!next)
         return 0;
 
-    memory_copy(getdirectory(next->id, MMUTASKADDRESS, MMUTASKCOUNT), (struct mmu_directory *)MMUKERNELADDRESS, sizeof (struct mmu_directory));
+    memory_copy(getdirectory(next->id), (struct mmu_directory *)MMUKERNELADDRESS, sizeof (struct mmu_directory));
     kernel_copyservices(task, next);
 
     if (!kernel_setupbinary(next, TASKSTACKADDRESS))
@@ -172,7 +172,7 @@ void arch_schedule(struct cpu_general *general, struct arch_context *context, un
     {
 
         memory_copy(general, &registers[context->task->id], sizeof (struct cpu_general));
-        mmu_setdirectory(getdirectory(context->task->id, MMUTASKADDRESS, MMUTASKCOUNT));
+        mmu_setdirectory(getdirectory(context->task->id));
 
     }
 
@@ -435,7 +435,7 @@ void arch_setup(struct service_backend *backend)
     kernel_setupramdisk(context0.task, backend);
     mapkernel();
     spawn(context0.task, 0);
-    mmu_setdirectory(getdirectory(context0.task->id, MMUTASKADDRESS, MMUTASKCOUNT));
+    mmu_setdirectory(getdirectory(context0.task->id));
     mmu_enable();
     arch_leave(selector.ucode, selector.udata, context0.task->state.ip, context0.task->state.sp);
 
