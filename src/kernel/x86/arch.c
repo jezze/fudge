@@ -125,24 +125,6 @@ static void activate(struct task *task)
 
 }
 
-static void savetask(struct task *task, struct cpu_general *general, unsigned int ip, unsigned int sp)
-{
-
-    task->state.ip = ip;
-    task->state.sp = sp;
-
-    memory_copy(&registers[task->id], general, sizeof (struct cpu_general));
-
-}
-
-static void loadtask(struct task *task, struct cpu_general *general)
-{
-
-    memory_copy(general, &registers[task->id], sizeof (struct cpu_general));
-    activate(task);
-
-}
-
 static unsigned int spawn(struct task *task, void *stack)
 {
 
@@ -194,12 +176,24 @@ void arch_schedule(struct cpu_general *general, struct arch_context *context, un
 {
 
     if (context->task)
-        savetask(context->task, general, ip, sp);
+    {
+
+        context->task->state.ip = ip;
+        context->task->state.sp = sp;
+
+        memory_copy(&registers[context->task->id], general, sizeof (struct cpu_general));
+
+    }
 
     context->task = kernel_schedule();
 
     if (context->task)
-        loadtask(context->task, general);
+    {
+
+        memory_copy(general, &registers[context->task->id], sizeof (struct cpu_general));
+        activate(context->task);
+
+    }
 
 }
 
