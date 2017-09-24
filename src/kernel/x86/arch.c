@@ -82,16 +82,6 @@ static struct mmu_table *gettable(unsigned int index, unsigned int address, unsi
 
 }
 
-static void copymap(struct task *task)
-{
-
-    struct mmu_directory *cdirectory = (struct mmu_directory *)MMUKERNELADDRESS;
-    struct mmu_directory *tdirectory = getdirectory(task->id, MMUTASKADDRESS, MMUTASKCOUNT);
-
-    memory_copy(tdirectory, cdirectory, sizeof (struct mmu_directory));
-
-}
-
 static void mapkernel()
 {
 
@@ -116,15 +106,6 @@ static void maptask(struct task *task, unsigned int code)
 
 }
 
-static void activate(struct task *task)
-{
-
-    struct mmu_directory *directory = getdirectory(task->id, MMUTASKADDRESS, MMUTASKCOUNT);
-
-    mmu_setdirectory(directory);
-
-}
-
 static unsigned int spawn(struct task *task, void *stack)
 {
 
@@ -133,7 +114,7 @@ static unsigned int spawn(struct task *task, void *stack)
     if (!next)
         return 0;
 
-    copymap(next);
+    memory_copy(getdirectory(next->id, MMUTASKADDRESS, MMUTASKCOUNT), (struct mmu_directory *)MMUKERNELADDRESS, sizeof (struct mmu_directory));
     kernel_copyservices(task, next);
 
     if (!kernel_setupbinary(next, TASKSTACKADDRESS))
@@ -191,7 +172,7 @@ void arch_schedule(struct cpu_general *general, struct arch_context *context, un
     {
 
         memory_copy(general, &registers[context->task->id], sizeof (struct cpu_general));
-        activate(context->task);
+        mmu_setdirectory(getdirectory(context->task->id, MMUTASKADDRESS, MMUTASKCOUNT));
 
     }
 
@@ -454,7 +435,7 @@ void arch_setup(struct service_backend *backend)
     kernel_setupramdisk(context0.task, backend);
     mapkernel();
     spawn(context0.task, 0);
-    activate(context0.task);
+    mmu_setdirectory(getdirectory(context0.task->id, MMUTASKADDRESS, MMUTASKCOUNT));
     mmu_enable();
     arch_leave(selector.ucode, selector.udata, context0.task->state.ip, context0.task->state.sp);
 
