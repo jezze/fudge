@@ -18,6 +18,7 @@ static struct list freeservers;
 static struct list usedmounts;
 static struct list freemounts;
 static struct list freeservices;
+static struct spinlock tasklock;
 
 struct task *kernel_getfreetask(void)
 {
@@ -101,6 +102,8 @@ struct service *kernel_getservice(struct task *task, unsigned int service)
 void kernel_assigntask(struct core *core, struct task *task)
 {
 
+    spinlock_hold(&tasklock);
+
     switch (task->state.status)
     {
 
@@ -113,10 +116,14 @@ void kernel_assigntask(struct core *core, struct task *task)
 
     }
 
+    spinlock_release(&tasklock);
+
 }
 
 void kernel_freetask(struct task *task)
 {
+
+    spinlock_hold(&tasklock);
 
     switch (task->state.status)
     {
@@ -130,10 +137,14 @@ void kernel_freetask(struct task *task)
 
     }
 
+    spinlock_release(&tasklock);
+
 }
 
 void kernel_blocktask(struct task *task)
 {
+
+    spinlock_hold(&tasklock);
 
     switch (task->state.status)
     {
@@ -147,10 +158,14 @@ void kernel_blocktask(struct task *task)
 
     }
 
+    spinlock_release(&tasklock);
+
 }
 
 void kernel_unblocktask(struct task *task)
 {
+
+    spinlock_hold(&tasklock);
 
     switch (task->state.status)
     {
@@ -164,12 +179,16 @@ void kernel_unblocktask(struct task *task)
 
     }
 
+    spinlock_release(&tasklock);
+
 }
 
 struct task *kernel_schedule(struct core *core)
 {
 
     struct list_item *current;
+
+    spinlock_hold(&tasklock);
 
     for (current = unblockedtasks.head; current; current = current->next)
     {
@@ -183,6 +202,8 @@ struct task *kernel_schedule(struct core *core)
         task->state.rewind = 0;
 
     }
+
+    spinlock_release(&tasklock);
 
     return (core->tasks.tail) ? core->tasks.tail->data : 0;
 
