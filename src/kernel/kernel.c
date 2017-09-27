@@ -270,10 +270,10 @@ unsigned int kernel_readmailbox(struct task *task, void *buffer, unsigned int co
 
     count = ring_read(&task->mailbox.ring, buffer, count);
 
+    spinlock_release(&task->mailbox.spinlock);
+
     if (!count)
         kernel_blocktask(task);
-
-    spinlock_release(&task->mailbox.spinlock);
 
     return count;
 
@@ -286,10 +286,10 @@ unsigned int kernel_writemailbox(struct task *task, void *buffer, unsigned int c
 
     count = ring_writeall(&task->mailbox.ring, buffer, count);
 
+    spinlock_release(&task->mailbox.spinlock);
+
     if (count)
         kernel_unblocktask(task);
-
-    spinlock_release(&task->mailbox.spinlock);
 
     return count;
 
