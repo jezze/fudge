@@ -1,6 +1,7 @@
 struct arch_context
 {
 
+    struct core core;
     struct task *task;
     unsigned int ip;
     unsigned int sp;

@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "binary.h"
 #include "task.h"
+#include "core.h"
 #include "service.h"
 #include "kernel.h"
 

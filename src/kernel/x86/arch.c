@@ -105,6 +105,7 @@ static void maptask(struct task *task, unsigned int index, unsigned int paddress
 static unsigned int spawn(struct task *task, void *stack)
 {
 
+    struct arch_context *context = arch_getcontext();
     struct task *next = kernel_getfreetask();
 
     if (!next)
@@ -116,7 +117,7 @@ static unsigned int spawn(struct task *task, void *stack)
     if (!kernel_setupbinary(next, TASKSTACKADDRESS))
         return 0;
 
-    kernel_activatetask(next);
+    kernel_assigntask(&context->core, next);
 
     return 1;
 
@@ -159,7 +160,7 @@ void arch_schedule(struct cpu_general *general, struct arch_context *context, un
 
     }
 
-    context->task = kernel_schedule();
+    context->task = kernel_schedule(&context->core);
 
     if (context->task)
     {
@@ -421,6 +422,7 @@ void arch_setup(struct service_backend *backend)
     kernel_setupservers();
     kernel_setupmounts();
     kernel_setupservices();
+    core_init(&context0.core, 0);
 
     context0.task = kernel_getfreetask();
     context0.ip = (unsigned int)cpu_halt;

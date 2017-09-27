@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "binary.h"
 #include "task.h"
+#include "core.h"
 #include "service.h"
 #include "kernel.h"
 
@@ -9,7 +10,6 @@ static struct task tasks[KERNEL_TASKS];
 static struct service_server servers[KERNEL_SERVERS];
 static struct service_mount mounts[KERNEL_MOUNTS];
 static struct service services[KERNEL_SERVICES];
-static struct list activetasks;
 static struct list freetasks;
 static struct list blockedtasks;
 static struct list unblockedtasks;
@@ -98,14 +98,14 @@ struct service *kernel_getservice(struct task *task, unsigned int service)
 
 }
 
-void kernel_activatetask(struct task *task)
+void kernel_assigntask(struct core *core, struct task *task)
 {
 
     switch (task->state.status)
     {
 
     case TASK_STATUS_FREE:
-        list_move(&activetasks, &task->state.item);
+        list_move(&core->tasks, &task->state.item);
 
         task->state.status = TASK_STATUS_ACTIVE;
 
@@ -166,7 +166,7 @@ void kernel_unblocktask(struct task *task)
 
 }
 
-struct task *kernel_schedule(void)
+struct task *kernel_schedule(struct core *core)
 {
 
     struct list_item *current;
@@ -176,7 +176,7 @@ struct task *kernel_schedule(void)
 
         struct task *task = current->data;
 
-        list_move(&activetasks, current);
+        list_move(&core->tasks, current);
 
         task->state.status = TASK_STATUS_ACTIVE;
         task->state.ip -= task->state.rewind;
@@ -184,7 +184,7 @@ struct task *kernel_schedule(void)
 
     }
 
-    return (activetasks.tail) ? activetasks.tail->data : 0;
+    return (core->tasks.tail) ? core->tasks.tail->data : 0;
 
 }
 

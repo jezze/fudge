@@ -1,4 +1,5 @@
 #define RESOURCE_TASK                   1
+#define RESOURCE_CORE                   2
 #define RESOURCE_SERVICEBACKEND         3
 #define RESOURCE_SERVICEPROTOCOL        4
 #define RESOURCE_BINARYFORMAT           6

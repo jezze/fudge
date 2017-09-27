@@ -29,6 +29,8 @@ static struct arch_context *setupcontext(unsigned int ip, unsigned int sp)
     unsigned int id = apic_getid();
     struct arch_context *c = &context[id];
 
+    core_init(&c->core, id);
+
     c->task = 0;
     c->ip = ip;
     c->sp = sp;
