@@ -5,21 +5,21 @@
 
 static struct binary_format format;
 
-static unsigned int relocate(unsigned int physical, struct elf_sectionheader *relocationheader)
+static unsigned int relocate(struct binary_node *node, struct elf_sectionheader *relocationheader)
 {
 
-    struct elf_header *header = (struct elf_header *)physical;
-    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(physical + header->shoffset);
-    struct elf_relocation *relocations = (struct elf_relocation *)(physical + relocationheader->offset);
-    struct elf_symbol *symbols = (struct elf_symbol *)(physical + sectionheaders[relocationheader->link].offset);
+    struct elf_header *header = (struct elf_header *)node->physical;
+    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(node->physical + header->shoffset);
+    struct elf_relocation *relocations = (struct elf_relocation *)(node->physical + relocationheader->offset);
+    struct elf_symbol *symbols = (struct elf_symbol *)(node->physical + sectionheaders[relocationheader->link].offset);
     unsigned int i;
 
     for (i = 0; i < relocationheader->size / relocationheader->esize; i++)
     {
 
         struct elf_symbol *symbol = &symbols[(relocations[i].info >> 8)];
-        unsigned int *entry = (unsigned int *)(physical + sectionheaders[relocationheader->info].offset + relocations[i].offset);
-        unsigned int addend = (symbol->shindex) ? physical + sectionheaders[symbol->shindex].offset + symbol->value : 0;
+        unsigned int *entry = (unsigned int *)(node->physical + sectionheaders[relocationheader->info].offset + relocations[i].offset);
+        unsigned int addend = (symbol->shindex) ? node->physical + sectionheaders[symbol->shindex].offset + symbol->value : 0;
 
         switch (relocations[i].info & 0x0F)
         {
@@ -42,13 +42,13 @@ static unsigned int relocate(unsigned int physical, struct elf_sectionheader *re
 
 }
 
-static unsigned int findsymbol(unsigned int physical, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
+static unsigned int findsymbol(struct binary_node *node, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
 {
 
-    struct elf_header *header = (struct elf_header *)physical;
-    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(physical + header->shoffset);
-    struct elf_symbol *symbols = (struct elf_symbol *)(physical + symbolheader->offset);
-    char *strings = (char *)(physical + sectionheaders[symbolheader->link].offset);
+    struct elf_header *header = (struct elf_header *)node->physical;
+    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(node->physical + header->shoffset);
+    struct elf_symbol *symbols = (struct elf_symbol *)(node->physical + symbolheader->offset);
+    char *strings = (char *)(node->physical + sectionheaders[symbolheader->link].offset);
     unsigned int i;
 
     for (i = 0; i < symbolheader->size / symbolheader->esize; i++)
@@ -66,20 +66,20 @@ static unsigned int findsymbol(unsigned int physical, struct elf_sectionheader *
 
 }
 
-static unsigned int format_match(unsigned int physical)
+static unsigned int format_match(struct binary_node *node)
 {
 
-    struct elf_header *header = (struct elf_header *)physical;
+    struct elf_header *header = (struct elf_header *)node->physical;
 
     return elf_validate(header);
 
 }
 
-static unsigned int format_findsymbol(unsigned int physical, unsigned int count, char *symbolname)
+static unsigned int format_findsymbol(struct binary_node *node, unsigned int count, char *symbolname)
 {
 
-    struct elf_header *header = (struct elf_header *)physical;
-    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(physical + header->shoffset);
+    struct elf_header *header = (struct elf_header *)node->physical;
+    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(node->physical + header->shoffset);
     unsigned int i;
 
     for (i = 0; i < header->shcount; i++)
@@ -90,7 +90,7 @@ static unsigned int format_findsymbol(unsigned int physical, unsigned int count,
         if (sectionheaders[i].type != ELF_SECTION_TYPE_SYMTAB)
             continue;
 
-        address = findsymbol(physical, &sectionheaders[i], count, symbolname);
+        address = findsymbol(node, &sectionheaders[i], count, symbolname);
 
         if (address)
             return address;
@@ -101,20 +101,20 @@ static unsigned int format_findsymbol(unsigned int physical, unsigned int count,
 
 }
 
-static unsigned int format_findentry(unsigned int physical)
+static unsigned int format_findentry(struct binary_node *node)
 {
 
-    struct elf_header *header = (struct elf_header *)physical;
+    struct elf_header *header = (struct elf_header *)node->physical;
 
     return header->entry;
 
 }
 
-static unsigned int format_findbase(unsigned int physical, unsigned int address)
+static unsigned int format_findbase(struct binary_node *node, unsigned int address)
 {
 
-    struct elf_header *header = (struct elf_header *)physical;
-    struct elf_programheader *programheaders = (struct elf_programheader *)(physical + header->phoffset);
+    struct elf_header *header = (struct elf_header *)node->physical;
+    struct elf_programheader *programheaders = (struct elf_programheader *)(node->physical + header->phoffset);
     unsigned int i;
 
     for (i = 0; i < header->phcount; i++)
@@ -129,18 +129,18 @@ static unsigned int format_findbase(unsigned int physical, unsigned int address)
 
 }
 
-static unsigned int format_copyprogram(unsigned int physical)
+static unsigned int format_copyprogram(struct binary_node *node)
 {
 
-    struct elf_header *header = (struct elf_header *)physical;
-    struct elf_programheader *programheaders = (struct elf_programheader *)(physical + header->phoffset);
+    struct elf_header *header = (struct elf_header *)node->physical;
+    struct elf_programheader *programheaders = (struct elf_programheader *)(node->physical + header->phoffset);
     unsigned int i;
 
     for (i = 0; i < header->phcount; i++)
     {
 
         if (programheaders[i].fsize)
-            memory_copy((void *)programheaders[i].vaddress, (void *)(physical + programheaders[i].offset), programheaders[i].fsize);
+            memory_copy((void *)programheaders[i].vaddress, (void *)(node->physical + programheaders[i].offset), programheaders[i].fsize);
 
         memory_clear((void *)(programheaders[i].vaddress + programheaders[i].fsize), programheaders[i].msize - programheaders[i].fsize);
 
@@ -150,22 +150,22 @@ static unsigned int format_copyprogram(unsigned int physical)
 
 }
 
-static unsigned int format_relocate(unsigned int physical)
+static unsigned int format_relocate(struct binary_node *node)
 {
 
-    struct elf_header *header = (struct elf_header *)physical;
-    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(physical + header->shoffset);
+    struct elf_header *header = (struct elf_header *)node->physical;
+    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(node->physical + header->shoffset);
     unsigned int i;
 
     for (i = 0; i < header->shcount; i++)
     {
 
-        sectionheaders[i].address += physical;
+        sectionheaders[i].address += node->physical;
 
         if (sectionheaders[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        if (!relocate(physical, &sectionheaders[i]))
+        if (!relocate(node, &sectionheaders[i]))
             return 0;
 
     }

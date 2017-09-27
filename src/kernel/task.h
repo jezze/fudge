@@ -33,7 +33,7 @@ struct task
     struct task_state state;
     struct task_mailbox mailbox;
     struct binary_format *format;
-    unsigned int physical;
+    struct binary_node node;
 
 };
 
