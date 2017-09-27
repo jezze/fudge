@@ -332,17 +332,17 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     struct service *service = kernel_getservice(task, 0);
 
-    task->node.physical = service->server->protocol->map(service->server->backend, &service->state, service->id);
+    task->physical = service->server->protocol->map(service->server->backend, &service->state, service->id);
 
-    if (!task->node.physical)
+    if (!task->physical)
         return 0;
 
-    task->format = binary_findformat(&task->node);
+    task->format = binary_findformat(task->physical);
 
     if (!task->format)
         return 0;
 
-    task->state.ip = task->format->findentry(&task->node);
+    task->state.ip = task->format->findentry(task->physical);
     task->state.sp = sp;
 
     return 1;

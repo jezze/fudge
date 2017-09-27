@@ -239,29 +239,29 @@ static unsigned int load(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
     struct binary_format *format;
-    struct binary_node node;
     void (*module_init)(void);
     void (*module_register)(void);
+    unsigned int physical;
 
-    node.physical = service->server->protocol->map(service->server->backend, &service->state, service->id);
+    physical = service->server->protocol->map(service->server->backend, &service->state, service->id);
 
-    if (!node.physical)
+    if (!physical)
         return 0;
 
-    format = binary_findformat(&node);
+    format = binary_findformat(physical);
 
     if (!format)
         return 0;
 
-    if (!format->relocate(&node))
+    if (!format->relocate(physical))
         return 0;
 
-    module_init = (void (*)(void))(format->findsymbol(&node, 11, "module_init"));
+    module_init = (void (*)(void))(format->findsymbol(physical, 11, "module_init"));
 
     if (module_init)
         module_init();
 
-    module_register = (void (*)(void))(format->findsymbol(&node, 15, "module_register"));
+    module_register = (void (*)(void))(format->findsymbol(physical, 15, "module_register"));
 
     if (module_register)
         module_register();
@@ -276,20 +276,20 @@ static unsigned int unload(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct service *service = kernel_getservice(task, args->descriptor);
     struct binary_format *format;
-    struct binary_node node;
     void (*module_unregister)(void);
+    unsigned int physical;
 
-    node.physical = service->server->protocol->map(service->server->backend, &service->state, service->id);
+    physical = service->server->protocol->map(service->server->backend, &service->state, service->id);
 
-    if (!node.physical)
+    if (!physical)
         return 0;
 
-    format = binary_findformat(&node);
+    format = binary_findformat(physical);
 
     if (!format)
         return 0;
 
-    module_unregister = (void (*)(void))(format->findsymbol(&node, 17, "module_unregister"));
+    module_unregister = (void (*)(void))(format->findsymbol(physical, 17, "module_unregister"));
 
     if (module_unregister)
         module_unregister();

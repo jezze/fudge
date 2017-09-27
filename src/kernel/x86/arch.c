@@ -333,14 +333,14 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (context->task)
     {
 
-        unsigned int code = context->task->format->findbase(&context->task->node, cpu_getcr2());
+        unsigned int code = context->task->format->findbase(context->task->physical, cpu_getcr2());
 
         if (code)
         {
 
             maptask(context->task, 0, TASKCODEADDRESS + context->task->id * (TASKCODESIZE + TASKSTACKSIZE), code, TASKCODESIZE);
             maptask(context->task, 1, TASKCODEADDRESS + context->task->id * (TASKCODESIZE + TASKSTACKSIZE) + TASKCODESIZE, TASKSTACKADDRESS - TASKSTACKSIZE, TASKSTACKSIZE);
-            context->task->format->copyprogram(&context->task->node);
+            context->task->format->copyprogram(context->task->physical);
 
         }
 
