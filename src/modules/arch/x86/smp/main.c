@@ -35,7 +35,7 @@ static struct arch_context *setupcontext(unsigned int ip, unsigned int sp)
     c->ip = ip;
     c->sp = sp;
 
-    spinlock_hold(&spinlock);
+    spinlock_acquire(&spinlock);
 
     total++;
 

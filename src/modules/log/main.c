@@ -56,7 +56,7 @@ static void write(struct list *states, unsigned int level, char *string, char *f
 static void log_write(unsigned int level, char *string, char *file, unsigned int line)
 {
 
-    spinlock_hold(&spinlock);
+    spinlock_acquire(&spinlock);
 
     if (level <= DEBUG_CRITICAL)
         write(&criticalstates, level, string, file, line);

@@ -1,7 +1,7 @@
 #include "atomic.h"
 #include "spinlock.h"
 
-void spinlock_hold(struct spinlock *spinlock)
+void spinlock_acquire(struct spinlock *spinlock)
 {
 
     while (atomic_testandset(1, &spinlock->lock));

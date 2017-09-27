@@ -102,7 +102,7 @@ struct service *kernel_getservice(struct task *task, unsigned int service)
 void kernel_assigntask(struct core *core, struct task *task)
 {
 
-    spinlock_hold(&tasklock);
+    spinlock_acquire(&tasklock);
 
     switch (task->state.status)
     {
@@ -123,7 +123,7 @@ void kernel_assigntask(struct core *core, struct task *task)
 void kernel_freetask(struct task *task)
 {
 
-    spinlock_hold(&tasklock);
+    spinlock_acquire(&tasklock);
 
     switch (task->state.status)
     {
@@ -144,7 +144,7 @@ void kernel_freetask(struct task *task)
 void kernel_blocktask(struct task *task)
 {
 
-    spinlock_hold(&tasklock);
+    spinlock_acquire(&tasklock);
 
     switch (task->state.status)
     {
@@ -165,7 +165,7 @@ void kernel_blocktask(struct task *task)
 void kernel_unblocktask(struct task *task)
 {
 
-    spinlock_hold(&tasklock);
+    spinlock_acquire(&tasklock);
 
     switch (task->state.status)
     {
@@ -188,7 +188,7 @@ struct task *kernel_schedule(struct core *core)
 
     struct list_item *current;
 
-    spinlock_hold(&tasklock);
+    spinlock_acquire(&tasklock);
 
     for (current = unblockedtasks.head; current; current = current->next)
     {
@@ -266,7 +266,7 @@ void kernel_copyservices(struct task *source, struct task *target)
 unsigned int kernel_readmailbox(struct task *task, void *buffer, unsigned int count)
 {
 
-    spinlock_hold(&task->mailbox.spinlock);
+    spinlock_acquire(&task->mailbox.spinlock);
 
     count = ring_read(&task->mailbox.ring, buffer, count);
 
@@ -282,7 +282,7 @@ unsigned int kernel_readmailbox(struct task *task, void *buffer, unsigned int co
 unsigned int kernel_writemailbox(struct task *task, void *buffer, unsigned int count)
 {
 
-    spinlock_hold(&task->mailbox.spinlock);
+    spinlock_acquire(&task->mailbox.spinlock);
 
     count = ring_writeall(&task->mailbox.ring, buffer, count);
 

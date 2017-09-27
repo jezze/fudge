@@ -103,7 +103,7 @@ static unsigned char read(void)
 
     unsigned char value;
 
-    spinlock_hold(&consoleinterface.rspinlock);
+    spinlock_acquire(&consoleinterface.rspinlock);
 
     while (!(io_inb(io + REGISTERLSR) & LSRREADY));
 
@@ -118,7 +118,7 @@ static unsigned char read(void)
 static void write(unsigned char c)
 {
 
-    spinlock_hold(&consoleinterface.wspinlock);
+    spinlock_acquire(&consoleinterface.wspinlock);
 
     while (!(io_inb(io + REGISTERLSR) & LSRTRANSMIT));
 
