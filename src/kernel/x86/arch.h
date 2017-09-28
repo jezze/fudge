@@ -31,5 +31,5 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 void arch_schedule(struct cpu_general *general, struct arch_context *context, unsigned int ip, unsigned int sp);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);
 void arch_leave(unsigned short code, unsigned short data, unsigned int ip, unsigned int sp);
-void arch_initcontext(struct arch_context *context, unsigned int id, unsigned int ip, unsigned int sp);
+void arch_initcontext(struct arch_context *context, unsigned int id, struct task *task, unsigned int ip, unsigned int sp);
 void arch_setup(struct service_backend *backend);

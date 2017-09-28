@@ -354,11 +354,12 @@ void arch_leave(unsigned short code, unsigned short data, unsigned int ip, unsig
 
 }
 
-void arch_initcontext(struct arch_context *context, unsigned int id, unsigned int ip, unsigned int sp)
+void arch_initcontext(struct arch_context *context, unsigned int id, struct task *task, unsigned int ip, unsigned int sp)
 {
 
     core_init(&context->core, id);
 
+    context->task = task;
     context->ip = ip;
     context->sp = sp;
 
@@ -367,7 +368,6 @@ void arch_initcontext(struct arch_context *context, unsigned int id, unsigned in
 void arch_setup(struct service_backend *backend)
 {
 
-    arch_initcontext(&context0, 0, (unsigned int)cpu_halt, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     gdt_initpointer(&gdt->pointer, ARCH_GDTDESCRIPTORS, gdt->descriptors);
     gdt_cleardescriptors(&gdt->pointer, ARCH_GDTDESCRIPTORS);
     gdt_setdescriptor(&gdt->pointer, 0x01, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
@@ -392,10 +392,6 @@ void arch_setup(struct service_backend *backend)
     idt_setdescriptor(&idt->pointer, 0x0E, isr_pagefault, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x80, isr_syscall, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
     cpu_setidt(&idt->pointer);
-    tss_initpointer(&tss0.pointer, ARCH_TSSDESCRIPTORS, tss0.descriptors);
-    tss_setdescriptor(&tss0.pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context0.sp);
-    gdt_setdescriptor(&gdt->pointer, 0x05, (unsigned int)tss0.pointer.descriptors, (unsigned int)tss0.pointer.descriptors + tss0.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-    cpu_settss(gdt_getselector(&gdt->pointer, 5));
     abi_setup(spawn, despawn);
     binary_setupelf();
     service_setupcpio();
@@ -403,9 +399,11 @@ void arch_setup(struct service_backend *backend)
     kernel_setupservers();
     kernel_setupmounts();
     kernel_setupservices();
-
-    context0.task = kernel_getfreetask();
-
+    arch_initcontext(&context0, 0, kernel_getfreetask(), (unsigned int)cpu_halt, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
+    tss_initpointer(&tss0.pointer, ARCH_TSSDESCRIPTORS, tss0.descriptors);
+    tss_setdescriptor(&tss0.pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context0.sp);
+    gdt_setdescriptor(&gdt->pointer, 0x05, (unsigned int)tss0.pointer.descriptors, (unsigned int)tss0.pointer.descriptors + tss0.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    cpu_settss(gdt_getselector(&gdt->pointer, 5));
     kernel_setupramdisk(context0.task, backend);
     mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
     mapkernel(1, 0x00400000, 0x00400000, 0x00400000);
