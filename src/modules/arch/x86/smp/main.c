@@ -35,12 +35,10 @@ static struct spinlock spinlock;
 static struct system_node root;
 static struct system_node cpus;
 
-static struct arch_context *setupcontext(unsigned int ip, unsigned int sp)
+static struct arch_context *setupcontext(unsigned int id, unsigned int ip, unsigned int sp)
 {
 
-    unsigned int id = apic_getid();
     struct arch_context *c = &context[id];
-    struct gdt_pointer *gpointer = cpu_getgdt();
 
     core_init(&c->core, id);
 
@@ -53,11 +51,6 @@ static struct arch_context *setupcontext(unsigned int ip, unsigned int sp)
     total++;
 
     spinlock_release(&spinlock);
-
-    tss_initpointer(&tss[id].pointer, TSSDESCRIPTORS, tss[id].descriptors);
-    tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(gpointer, 2), c->sp);
-    gdt_setdescriptor(gpointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-    cpu_settss(gdt_getselector(gpointer, id + 5));
 
     return c;
 
@@ -142,10 +135,15 @@ static void copytrampoline32()
 void smp_setup(unsigned int stack)
 {
 
+    unsigned int id = apic_getid();
     struct mmu_directory *directory = (struct mmu_directory *)MMUKERNELADDRESS;
-    struct arch_context *context = setupcontext((unsigned int)cpu_halt, stack);
+    struct arch_context *context = setupcontext(id, (unsigned int)cpu_halt, stack);
     struct gdt_pointer *gpointer = cpu_getgdt();
 
+    tss_initpointer(&tss[id].pointer, TSSDESCRIPTORS, tss[id].descriptors);
+    tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(gpointer, 2), stack);
+    gdt_setdescriptor(gpointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    cpu_settss(gdt_getselector(gpointer, id + 5));
     mmu_setdirectory(directory);
     mmu_enable();
     arch_leave(gdt_getselector(gpointer, 1), gdt_getselector(gpointer, 2), context->ip, context->sp);
@@ -164,10 +162,11 @@ static unsigned int cpus_read(struct system_node *self, struct system_node *curr
 void module_init(void)
 {
 
+    unsigned int id = apic_getid();
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
     struct arch_context *c = arch_getcontext();
 
-    setupcontext(c->ip, c->sp);
+    setupcontext(id, c->ip, c->sp);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 
