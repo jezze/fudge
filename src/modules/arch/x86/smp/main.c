@@ -127,18 +127,25 @@ static void addtotal(void)
 
 }
 
+static void configure(unsigned int id, struct task *task, unsigned int ip, unsigned int sp)
+{
+
+    arch_initcontext(&context[id], id, task, ip, sp);
+    addtotal();
+    tss_initpointer(&tss[id].pointer, ARCH_TSSDESCRIPTORS, tss[id].descriptors);
+    tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context[id].sp);
+    gdt_setdescriptor(&gdt->pointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    cpu_settss(gdt_getselector(&gdt->pointer, id + 5));
+
+}
+
 void smp_setup(unsigned int stack)
 {
 
     unsigned int id = apic_getid();
     struct mmu_directory *directory = (struct mmu_directory *)ARCH_MMUKERNELADDRESS;
 
-    arch_initcontext(&context[id], id, 0, (unsigned int)cpu_halt, stack);
-    addtotal();
-    tss_initpointer(&tss[id].pointer, ARCH_TSSDESCRIPTORS, tss[id].descriptors);
-    tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context[id].sp);
-    gdt_setdescriptor(&gdt->pointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-    cpu_settss(gdt_getselector(&gdt->pointer, id + 5));
+    configure(id, 0, (unsigned int)cpu_halt, stack);
     mmu_setdirectory(directory);
     mmu_enable();
     arch_leave(gdt_getselector(&gdt->pointer, 1), gdt_getselector(&gdt->pointer, 2), context[id].ip, context[id].sp);
@@ -161,8 +168,7 @@ void module_init(void)
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
     struct arch_context *c = arch_getcontext();
 
-    arch_initcontext(&context[id], id, c->task, c->ip, c->sp);
-    addtotal();
+    configure(id, c->task, c->ip, c->sp);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 
