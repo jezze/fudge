@@ -48,7 +48,7 @@ static struct mmu_directory *getdirectory(unsigned int index)
 static struct mmu_table *gettable(unsigned int index)
 {
 
-    return (struct mmu_table *)ARCH_MMUTASKADDRESS + index * ARCH_MMUTASKCOUNT + 1;
+    return (struct mmu_table *)(ARCH_MMUTASKADDRESS + 0x1000) + index * ARCH_MMUTASKCOUNT;
 
 }
 
