@@ -61,5 +61,7 @@ void arch_schedule(struct cpu_general *general, struct arch_context *context, un
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);
 void arch_leave(unsigned short code, unsigned short data, unsigned int ip, unsigned int sp);
 void arch_initcontext(struct arch_context *context, unsigned int id, struct task *task, unsigned int ip, unsigned int sp);
+void arch_configuregdt(void);
+void arch_configureidt(void);
 void arch_configuretss(struct arch_context *context, struct arch_tss *tss, unsigned int id);
 void arch_setup(struct service_backend *backend);

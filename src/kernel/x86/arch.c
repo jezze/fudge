@@ -341,17 +341,7 @@ void arch_initcontext(struct arch_context *context, unsigned int id, struct task
 
 }
 
-void arch_configuretss(struct arch_context *context, struct arch_tss *tss, unsigned int id)
-{
-
-    tss_initpointer(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);
-    tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), context->sp);
-    gdt_setdescriptor(&gdt->pointer, id, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-    cpu_settss(gdt_getselector(&gdt->pointer, id));
-
-}
-
-void arch_setup(struct service_backend *backend)
+void arch_configuregdt(void)
 {
 
     gdt_initpointer(&gdt->pointer, ARCH_GDTDESCRIPTORS, gdt->descriptors);
@@ -361,6 +351,12 @@ void arch_setup(struct service_backend *backend)
     gdt_setdescriptor(&gdt->pointer, ARCH_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(&gdt->pointer, ARCH_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     cpu_setgdt(&gdt->pointer, gdt_getselector(&gdt->pointer, ARCH_KCODE), gdt_getselector(&gdt->pointer, ARCH_KDATA));
+
+}
+
+void arch_configureidt(void)
+{
+
     idt_initpointer(&idt->pointer, ARCH_IDTDESCRIPTORS, idt->descriptors);
     idt_cleardescriptors(&idt->pointer, ARCH_IDTDESCRIPTORS);
     idt_setdescriptor(&idt->pointer, 0x00, isr_zero, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
@@ -378,6 +374,24 @@ void arch_setup(struct service_backend *backend)
     idt_setdescriptor(&idt->pointer, 0x0E, isr_pagefault, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x80, isr_syscall, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
     cpu_setidt(&idt->pointer);
+
+}
+
+void arch_configuretss(struct arch_context *context, struct arch_tss *tss, unsigned int id)
+{
+
+    tss_initpointer(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);
+    tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), context->sp);
+    gdt_setdescriptor(&gdt->pointer, id, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    cpu_settss(gdt_getselector(&gdt->pointer, id));
+
+}
+
+void arch_setup(struct service_backend *backend)
+{
+
+    arch_configuregdt();
+    arch_configureidt();
     abi_setup(spawn, despawn);
     binary_setupelf();
     service_setupcpio();
