@@ -57,6 +57,24 @@
 #define REGISTERCURRENTCOUNT            0x0390
 #define REGISTERDIVIDECONFIG            0x03E0
 
+struct gdt
+{
+
+    struct gdt_pointer pointer;
+    struct gdt_descriptor descriptors[ARCH_GDTDESCRIPTORS];
+
+};
+
+struct idt
+{
+
+    struct idt_pointer pointer;
+    struct idt_descriptor descriptors[ARCH_IDTDESCRIPTORS];
+
+};
+
+static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
+static struct idt *idt = (struct idt *)ARCH_IDTADDRESS;
 static unsigned int mmio;
 
 static unsigned int apic_ind(unsigned int reg)
@@ -112,8 +130,6 @@ void module_init(void)
 
     struct cpuid_data data;
     struct msr_data msrdata;
-    struct gdt_pointer *gpointer = cpu_getgdt();
-    struct idt_pointer *ipointer = cpu_getidt();
 
     if (!cpuid_exist())
         return;
@@ -138,8 +154,8 @@ void module_init(void)
     mmio = (msrdata.eax & 0xFFFFF000);
 
     arch_setmap(7, mmio, mmio, 0x1000);
-    idt_setdescriptor(ipointer, 0xFE, apic_test, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(ipointer, 0xFF, apic_spurious, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     apic_outd(REGISTERTPR, 0);
     apic_outd(REGISTERLDR, 0x01000000);
     apic_outd(REGISTERDFR, 0xFFFFFFFF);
