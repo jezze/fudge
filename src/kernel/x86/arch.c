@@ -9,7 +9,7 @@
 #include "mmu.h"
 
 #define GDTADDRESS                      0x1000
-#define GDTDESCRIPTORS                  6
+#define GDTDESCRIPTORS                  256
 #define IDTADDRESS                      0x2000
 #define IDTDESCRIPTORS                  256
 #define TSSADDRESS                      0x3000
