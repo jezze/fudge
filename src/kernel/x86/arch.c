@@ -8,11 +8,11 @@
 #include "mmu.h"
 #include "arch.h"
 
-static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
-static struct idt *idt = (struct idt *)ARCH_IDTADDRESS;
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
 static struct arch_context context0;
-static struct tss tss0;
+static struct arch_tss tss0;
 
 static struct mmu_directory *getdirectory(unsigned int index)
 {
@@ -341,7 +341,7 @@ void arch_initcontext(struct arch_context *context, unsigned int id, struct task
 
 }
 
-void arch_configuretss(struct arch_context *context, struct tss *tss, unsigned int id)
+void arch_configuretss(struct arch_context *context, struct arch_tss *tss, unsigned int id)
 {
 
     tss_initpointer(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);

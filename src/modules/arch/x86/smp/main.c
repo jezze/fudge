@@ -17,8 +17,8 @@
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
 
-static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
-static struct tss tss[256];
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
+static struct arch_tss tss[256];
 static struct arch_context context[256];
 static unsigned int total;
 static struct spinlock spinlock;

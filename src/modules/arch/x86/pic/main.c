@@ -21,8 +21,8 @@
 #define DATAVECTOR0                     0x20
 #define DATAVECTOR1                     0x28
 
-static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
-static struct idt *idt = (struct idt *)ARCH_IDTADDRESS;
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static void (*routines[ROUTINES])(unsigned int irq);
 
 static void setchip(unsigned char command, unsigned char data, unsigned char vector, unsigned char wire)

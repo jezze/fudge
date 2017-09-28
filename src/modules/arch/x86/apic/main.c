@@ -58,8 +58,8 @@
 #define REGISTERCURRENTCOUNT            0x0390
 #define REGISTERDIVIDECONFIG            0x03E0
 
-static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
-static struct idt *idt = (struct idt *)ARCH_IDTADDRESS;
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static unsigned int mmio;
 
 static unsigned int apic_ind(unsigned int reg)

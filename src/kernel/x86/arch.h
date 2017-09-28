@@ -26,7 +26,7 @@ struct arch_context
 
 };
 
-struct gdt
+struct arch_gdt
 {
 
     struct gdt_pointer pointer;
@@ -34,7 +34,7 @@ struct gdt
 
 };
 
-struct idt
+struct arch_idt
 {
 
     struct idt_pointer pointer;
@@ -42,7 +42,7 @@ struct idt
 
 };
 
-struct tss
+struct arch_tss
 {
 
     struct tss_pointer pointer;
@@ -56,5 +56,5 @@ void arch_schedule(struct cpu_general *general, struct arch_context *context, un
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);
 void arch_leave(unsigned short code, unsigned short data, unsigned int ip, unsigned int sp);
 void arch_initcontext(struct arch_context *context, unsigned int id, struct task *task, unsigned int ip, unsigned int sp);
-void arch_configuretss(struct arch_context *context, struct tss *tss, unsigned int id);
+void arch_configuretss(struct arch_context *context, struct arch_tss *tss, unsigned int id);
 void arch_setup(struct service_backend *backend);
