@@ -391,7 +391,7 @@ void arch_setup(struct service_backend *backend)
     idt_setdescriptor(&idt->pointer, 0x80, isr_syscall, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
     cpu_setidt(&idt->pointer);
     tss_initpointer(&tss0.pointer, ARCH_TSSDESCRIPTORS, tss0.descriptors);
-    tss_setdescriptor(&tss0.pointer, 0x00, gdt_getselector(&gdt->pointer, 2), ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
+    tss_setdescriptor(&tss0.pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context0.sp);
     gdt_setdescriptor(&gdt->pointer, 0x05, (unsigned int)tss0.pointer.descriptors, (unsigned int)tss0.pointer.descriptors + tss0.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(&gdt->pointer, 5));
     abi_setup(spawn, despawn);
