@@ -128,8 +128,8 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
     if (context->task)
     {
 
-        interrupt->cs.value = gdt_getselector(&gdt->pointer, 3);
-        interrupt->ss.value = gdt_getselector(&gdt->pointer, 4);
+        interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
+        interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
         interrupt->eip.value = context->task->state.ip;
         interrupt->esp.value = context->task->state.sp;
 
@@ -138,8 +138,8 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
     else
     {
 
-        interrupt->cs.value = gdt_getselector(&gdt->pointer, 1);
-        interrupt->ss.value = gdt_getselector(&gdt->pointer, 2);
+        interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
+        interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
         interrupt->eip.value = context->ip;
         interrupt->esp.value = context->sp;
 
@@ -156,7 +156,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
 
     DEBUG(DEBUG_INFO, "exception: divide by zero");
 
-    if (interrupt.cs.value == gdt_getselector(&gdt->pointer, 3))
+    if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
         kernel_freetask(context->task);
 
     return arch_resume(&general, &interrupt);
@@ -345,7 +345,7 @@ void arch_configuretss(struct arch_context *context, struct arch_tss *tss, unsig
 {
 
     tss_initpointer(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);
-    tss_setdescriptor(&tss->pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context->sp);
+    tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), context->sp);
     gdt_setdescriptor(&gdt->pointer, id, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(&gdt->pointer, id));
 
@@ -356,27 +356,27 @@ void arch_setup(struct service_backend *backend)
 
     gdt_initpointer(&gdt->pointer, ARCH_GDTDESCRIPTORS, gdt->descriptors);
     gdt_cleardescriptors(&gdt->pointer, ARCH_GDTDESCRIPTORS);
-    gdt_setdescriptor(&gdt->pointer, 0x01, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    gdt_setdescriptor(&gdt->pointer, 0x02, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    gdt_setdescriptor(&gdt->pointer, 0x03, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    gdt_setdescriptor(&gdt->pointer, 0x04, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    cpu_setgdt(&gdt->pointer, gdt_getselector(&gdt->pointer, 1), gdt_getselector(&gdt->pointer, 2));
+    gdt_setdescriptor(&gdt->pointer, ARCH_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    gdt_setdescriptor(&gdt->pointer, ARCH_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    gdt_setdescriptor(&gdt->pointer, ARCH_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    gdt_setdescriptor(&gdt->pointer, ARCH_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    cpu_setgdt(&gdt->pointer, gdt_getselector(&gdt->pointer, ARCH_KCODE), gdt_getselector(&gdt->pointer, ARCH_KDATA));
     idt_initpointer(&idt->pointer, ARCH_IDTDESCRIPTORS, idt->descriptors);
     idt_cleardescriptors(&idt->pointer, ARCH_IDTDESCRIPTORS);
-    idt_setdescriptor(&idt->pointer, 0x00, isr_zero, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x01, isr_debug, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x02, isr_nmi, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x03, isr_breakpoint, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    idt_setdescriptor(&idt->pointer, 0x04, isr_overflow, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x05, isr_bound, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x06, isr_opcode, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x07, isr_device, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x0A, isr_tss, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x0B, isr_segment, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x0C, isr_stack, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x0D, isr_generalfault, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x0E, isr_pagefault, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x80, isr_syscall, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
+    idt_setdescriptor(&idt->pointer, 0x00, isr_zero, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x01, isr_debug, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x02, isr_nmi, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x03, isr_breakpoint, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
+    idt_setdescriptor(&idt->pointer, 0x04, isr_overflow, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x05, isr_bound, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x06, isr_opcode, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x07, isr_device, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x0A, isr_tss, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x0B, isr_segment, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x0C, isr_stack, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x0D, isr_generalfault, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x0E, isr_pagefault, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0x80, isr_syscall, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
     cpu_setidt(&idt->pointer);
     abi_setup(spawn, despawn);
     binary_setupelf();
@@ -386,7 +386,7 @@ void arch_setup(struct service_backend *backend)
     kernel_setupmounts();
     kernel_setupservices();
     arch_initcontext(&context0, 0, kernel_getfreetask(), (unsigned int)cpu_halt, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    arch_configuretss(&context0, &tss0, 5);
+    arch_configuretss(&context0, &tss0, ARCH_TSS);
     kernel_setupramdisk(context0.task, backend);
     mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
     mapkernel(1, 0x00400000, 0x00400000, 0x00400000);
@@ -395,7 +395,7 @@ void arch_setup(struct service_backend *backend)
     spawn(context0.task, 0);
     mmu_setdirectory(getdirectory(context0.task->id));
     mmu_enable();
-    arch_leave(gdt_getselector(&gdt->pointer, 3), gdt_getselector(&gdt->pointer, 4), context0.task->state.ip, context0.task->state.sp);
+    arch_leave(gdt_getselector(&gdt->pointer, ARCH_UCODE), gdt_getselector(&gdt->pointer, ARCH_UDATA), context0.task->state.ip, context0.task->state.sp);
 
 }
 

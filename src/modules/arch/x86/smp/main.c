@@ -119,11 +119,11 @@ void smp_setup(unsigned int stack)
     struct mmu_directory *directory = (struct mmu_directory *)ARCH_MMUKERNELADDRESS;
 
     arch_initcontext(&context[id], id, 0, (unsigned int)cpu_halt, stack);
-    arch_configuretss(&context[id], &tss[id], id + 5);
+    arch_configuretss(&context[id], &tss[id], ARCH_TSS + id);
     addtotal();
     mmu_setdirectory(directory);
     mmu_enable();
-    arch_leave(gdt_getselector(&gdt->pointer, 1), gdt_getselector(&gdt->pointer, 2), context[id].ip, context[id].sp);
+    arch_leave(gdt_getselector(&gdt->pointer, ARCH_KCODE), gdt_getselector(&gdt->pointer, ARCH_KDATA), context[id].ip, context[id].sp);
 
 }
 
@@ -144,7 +144,7 @@ void module_init(void)
     struct arch_context *c = arch_getcontext();
 
     arch_initcontext(&context[id], id, c->task, c->ip, c->sp);
-    arch_configuretss(&context[id], &tss[id], id + 5);
+    arch_configuretss(&context[id], &tss[id], ARCH_TSS + id);
     addtotal();
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");

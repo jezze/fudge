@@ -15,6 +15,11 @@
 #define ARCH_TASKCODESIZE               0x00080000
 #define ARCH_TASKSTACKADDRESS           0x80000000
 #define ARCH_TASKSTACKSIZE              0x00008000
+#define ARCH_KCODE                      0x01
+#define ARCH_KDATA                      0x02
+#define ARCH_UCODE                      0x03
+#define ARCH_UDATA                      0x04
+#define ARCH_TSS                        0x05
 
 struct arch_context
 {
