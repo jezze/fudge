@@ -148,7 +148,7 @@ void smp_setup(unsigned int stack)
     cpu_settss(gdt_getselector(&gdt->pointer, id + 5));
     mmu_setdirectory(directory);
     mmu_enable();
-    arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
+    arch_leave(gdt_getselector(&gdt->pointer, 1), gdt_getselector(&gdt->pointer, 2), context[id].ip, context[id].sp);
 
 }
 
