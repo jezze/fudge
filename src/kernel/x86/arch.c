@@ -354,9 +354,20 @@ void arch_leave(unsigned short code, unsigned short data, unsigned int ip, unsig
 
 }
 
+void arch_initcontext(struct arch_context *context, unsigned int id, unsigned int ip, unsigned int sp)
+{
+
+    core_init(&context->core, id);
+
+    context->ip = ip;
+    context->sp = sp;
+
+}
+
 void arch_setup(struct service_backend *backend)
 {
 
+    arch_initcontext(&context0, 0, (unsigned int)cpu_halt, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     gdt_initpointer(&gdt->pointer, ARCH_GDTDESCRIPTORS, gdt->descriptors);
     gdt_setdescriptor(&gdt->pointer, 0x01, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(&gdt->pointer, 0x02, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
@@ -390,11 +401,8 @@ void arch_setup(struct service_backend *backend)
     kernel_setupservers();
     kernel_setupmounts();
     kernel_setupservices();
-    core_init(&context0.core, 0);
 
     context0.task = kernel_getfreetask();
-    context0.ip = (unsigned int)cpu_halt;
-    context0.sp = ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE;
 
     kernel_setupramdisk(context0.task, backend);
     mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
