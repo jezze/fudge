@@ -131,11 +131,11 @@ static void configure(unsigned int id, struct task *task, unsigned int ip, unsig
 {
 
     arch_initcontext(&context[id], id, task, ip, sp);
-    addtotal();
     tss_initpointer(&tss[id].pointer, ARCH_TSSDESCRIPTORS, tss[id].descriptors);
     tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context[id].sp);
     gdt_setdescriptor(&gdt->pointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(&gdt->pointer, id + 5));
+    addtotal();
 
 }
 
