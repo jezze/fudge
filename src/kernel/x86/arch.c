@@ -12,7 +12,6 @@
 #define GDTDESCRIPTORS                  256
 #define IDTADDRESS                      0x2000
 #define IDTDESCRIPTORS                  256
-#define TSSADDRESS                      0x3000
 #define TSSDESCRIPTORS                  1
 #define KERNELCODEADDRESS               0x00100000
 #define KERNELCODESIZE                  0x00300000
@@ -53,9 +52,9 @@ struct tss
 
 static struct gdt *gdt = (struct gdt *)GDTADDRESS;
 static struct idt *idt = (struct idt *)IDTADDRESS;
-static struct tss *tss = (struct tss *)TSSADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
 static struct arch_context context0;
+static struct tss tss0;
 
 static struct mmu_directory *getdirectory(unsigned int index)
 {
@@ -398,9 +397,9 @@ void arch_setup(struct service_backend *backend)
     idt_setdescriptor(&idt->pointer, 0x0E, isr_pagefault, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x80, isr_syscall, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
     cpu_setidt(&idt->pointer);
-    tss_initpointer(&tss->pointer, TSSDESCRIPTORS, tss->descriptors);
-    tss_setdescriptor(&tss->pointer, 0x00, gdt_getselector(&gdt->pointer, 2), KERNELSTACKADDRESS + KERNELSTACKSIZE);
-    gdt_setdescriptor(&gdt->pointer, 0x05, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    tss_initpointer(&tss0.pointer, TSSDESCRIPTORS, tss0.descriptors);
+    tss_setdescriptor(&tss0.pointer, 0x00, gdt_getselector(&gdt->pointer, 2), KERNELSTACKADDRESS + KERNELSTACKSIZE);
+    gdt_setdescriptor(&gdt->pointer, 0x05, (unsigned int)tss0.pointer.descriptors, (unsigned int)tss0.pointer.descriptors + tss0.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(&gdt->pointer, 5));
     abi_setup(spawn, despawn);
     binary_setupelf();

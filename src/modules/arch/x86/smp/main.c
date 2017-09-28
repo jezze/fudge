@@ -2,6 +2,7 @@
 #include <kernel.h>
 #include <kernel/x86/cpu.h>
 #include <kernel/x86/gdt.h>
+#include <kernel/x86/tss.h>
 #include <kernel/x86/arch.h>
 #include <kernel/x86/mmu.h>
 #include <modules/system/system.h>
@@ -17,7 +18,17 @@
 #define MMUKERNELADDRESS                0x00800000
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
+#define TSSDESCRIPTORS                  1
 
+struct tss
+{
+
+    struct tss_pointer pointer;
+    struct tss_descriptor descriptors[TSSDESCRIPTORS];
+
+};
+
+static struct tss tss[256];
 static struct arch_context context[256];
 static unsigned int total;
 static struct spinlock spinlock;
@@ -29,6 +40,7 @@ static struct arch_context *setupcontext(unsigned int ip, unsigned int sp)
 
     unsigned int id = apic_getid();
     struct arch_context *c = &context[id];
+    struct gdt_pointer *gpointer = cpu_getgdt();
 
     core_init(&c->core, id);
 
@@ -41,6 +53,11 @@ static struct arch_context *setupcontext(unsigned int ip, unsigned int sp)
     total++;
 
     spinlock_release(&spinlock);
+
+    tss_initpointer(&tss[id].pointer, TSSDESCRIPTORS, tss[id].descriptors);
+    tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(gpointer, 2), c->sp);
+    gdt_setdescriptor(gpointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    cpu_settss(gdt_getselector(gpointer, id + 5));
 
     return c;
 
