@@ -8,29 +8,11 @@
 #include "isr.h"
 #include "mmu.h"
 
-#define GDTADDRESS                      0x1000
-#define GDTDESCRIPTORS                  256
-#define IDTADDRESS                      0x2000
-#define IDTDESCRIPTORS                  256
-#define TSSDESCRIPTORS                  1
-#define KERNELCODEADDRESS               0x00100000
-#define KERNELCODESIZE                  0x00300000
-#define KERNELSTACKADDRESS              0x00400000
-#define KERNELSTACKSIZE                 0x00004000
-#define MMUKERNELADDRESS                0x00800000
-#define MMUKERNELCOUNT                  32
-#define MMUTASKADDRESS                  0x00820000
-#define MMUTASKCOUNT                    4
-#define TASKCODEADDRESS                 0x01000000
-#define TASKCODESIZE                    0x00080000
-#define TASKSTACKADDRESS                0x80000000
-#define TASKSTACKSIZE                   0x00008000
-
 struct gdt
 {
 
     struct gdt_pointer pointer;
-    struct gdt_descriptor descriptors[GDTDESCRIPTORS];
+    struct gdt_descriptor descriptors[ARCH_GDTDESCRIPTORS];
 
 };
 
@@ -38,7 +20,7 @@ struct idt
 {
 
     struct idt_pointer pointer;
-    struct idt_descriptor descriptors[IDTDESCRIPTORS];
+    struct idt_descriptor descriptors[ARCH_IDTDESCRIPTORS];
 
 };
 
@@ -46,12 +28,12 @@ struct tss
 {
 
     struct tss_pointer pointer;
-    struct tss_descriptor descriptors[TSSDESCRIPTORS];
+    struct tss_descriptor descriptors[ARCH_TSSDESCRIPTORS];
 
 };
 
-static struct gdt *gdt = (struct gdt *)GDTADDRESS;
-static struct idt *idt = (struct idt *)IDTADDRESS;
+static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
+static struct idt *idt = (struct idt *)ARCH_IDTADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
 static struct arch_context context0;
 static struct tss tss0;
@@ -59,22 +41,22 @@ static struct tss tss0;
 static struct mmu_directory *getdirectory(unsigned int index)
 {
 
-    return (struct mmu_directory *)MMUTASKADDRESS + index * MMUTASKCOUNT;
+    return (struct mmu_directory *)ARCH_MMUTASKADDRESS + index * ARCH_MMUTASKCOUNT;
 
 }
 
 static struct mmu_table *gettable(unsigned int index)
 {
 
-    return (struct mmu_table *)MMUTASKADDRESS + index * MMUTASKCOUNT + 1;
+    return (struct mmu_table *)ARCH_MMUTASKADDRESS + index * ARCH_MMUTASKCOUNT + 1;
 
 }
 
 static void mapkernel(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct mmu_directory *directory = (struct mmu_directory *)MMUKERNELADDRESS;
-    struct mmu_table *table = (struct mmu_table *)(MMUKERNELADDRESS + 0x1000);
+    struct mmu_directory *directory = (struct mmu_directory *)ARCH_MMUKERNELADDRESS;
+    struct mmu_table *table = (struct mmu_table *)(ARCH_MMUKERNELADDRESS + 0x1000);
 
     mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
@@ -99,10 +81,10 @@ static unsigned int spawn(struct task *task, void *stack)
     if (!next)
         return 0;
 
-    memory_copy(getdirectory(next->id), (struct mmu_directory *)MMUKERNELADDRESS, sizeof (struct mmu_directory));
+    memory_copy(getdirectory(next->id), (struct mmu_directory *)ARCH_MMUKERNELADDRESS, sizeof (struct mmu_directory));
     kernel_copyservices(task, next);
 
-    if (!kernel_setupbinary(next, TASKSTACKADDRESS))
+    if (!kernel_setupbinary(next, ARCH_TASKSTACKADDRESS))
         return 0;
 
     kernel_assigntask(&context->core, next);
@@ -131,7 +113,7 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 {
 
     mapkernel(index, paddress, vaddress, size);
-    mmu_setdirectory((struct mmu_directory *)MMUKERNELADDRESS);
+    mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
 
 }
 
@@ -326,8 +308,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (code)
         {
 
-            maptask(context->task, 0, TASKCODEADDRESS + context->task->id * (TASKCODESIZE + TASKSTACKSIZE), code, TASKCODESIZE);
-            maptask(context->task, 1, TASKCODEADDRESS + context->task->id * (TASKCODESIZE + TASKSTACKSIZE) + TASKCODESIZE, TASKSTACKADDRESS - TASKSTACKSIZE, TASKSTACKSIZE);
+            maptask(context->task, 0, ARCH_TASKCODEADDRESS + context->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE);
+            maptask(context->task, 1, ARCH_TASKCODEADDRESS + context->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKADDRESS - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE);
             context->task->format->copyprogram(&context->task->node);
 
         }
@@ -375,13 +357,13 @@ void arch_leave(unsigned short code, unsigned short data, unsigned int ip, unsig
 void arch_setup(struct service_backend *backend)
 {
 
-    gdt_initpointer(&gdt->pointer, GDTDESCRIPTORS, gdt->descriptors);
+    gdt_initpointer(&gdt->pointer, ARCH_GDTDESCRIPTORS, gdt->descriptors);
     gdt_setdescriptor(&gdt->pointer, 0x01, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(&gdt->pointer, 0x02, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(&gdt->pointer, 0x03, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(&gdt->pointer, 0x04, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     cpu_setgdt(&gdt->pointer, gdt_getselector(&gdt->pointer, 1), gdt_getselector(&gdt->pointer, 2));
-    idt_initpointer(&idt->pointer, IDTDESCRIPTORS, idt->descriptors);
+    idt_initpointer(&idt->pointer, ARCH_IDTDESCRIPTORS, idt->descriptors);
     idt_setdescriptor(&idt->pointer, 0x00, isr_zero, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x01, isr_debug, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x02, isr_nmi, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
@@ -397,8 +379,8 @@ void arch_setup(struct service_backend *backend)
     idt_setdescriptor(&idt->pointer, 0x0E, isr_pagefault, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x80, isr_syscall, gdt_getselector(&gdt->pointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
     cpu_setidt(&idt->pointer);
-    tss_initpointer(&tss0.pointer, TSSDESCRIPTORS, tss0.descriptors);
-    tss_setdescriptor(&tss0.pointer, 0x00, gdt_getselector(&gdt->pointer, 2), KERNELSTACKADDRESS + KERNELSTACKSIZE);
+    tss_initpointer(&tss0.pointer, ARCH_TSSDESCRIPTORS, tss0.descriptors);
+    tss_setdescriptor(&tss0.pointer, 0x00, gdt_getselector(&gdt->pointer, 2), ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     gdt_setdescriptor(&gdt->pointer, 0x05, (unsigned int)tss0.pointer.descriptors, (unsigned int)tss0.pointer.descriptors + tss0.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(&gdt->pointer, 5));
     abi_setup(spawn, despawn);
@@ -412,7 +394,7 @@ void arch_setup(struct service_backend *backend)
 
     context0.task = kernel_getfreetask();
     context0.ip = (unsigned int)cpu_halt;
-    context0.sp = KERNELSTACKADDRESS + KERNELSTACKSIZE;
+    context0.sp = ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE;
 
     kernel_setupramdisk(context0.task, backend);
     mapkernel(0, 0x00000000, 0x00000000, 0x00400000);

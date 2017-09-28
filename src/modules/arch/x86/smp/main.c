@@ -13,18 +13,14 @@
 #include <modules/arch/x86/pit/pit.h>
 #include "smp.h"
 
-#define KERNELSTACKADDRESS              0x00400000
-#define KERNELSTACKSIZE                 0x00004000
-#define MMUKERNELADDRESS                0x00800000
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
-#define TSSDESCRIPTORS                  1
 
 struct tss
 {
 
     struct tss_pointer pointer;
-    struct tss_descriptor descriptors[TSSDESCRIPTORS];
+    struct tss_descriptor descriptors[ARCH_TSSDESCRIPTORS];
 
 };
 
@@ -136,11 +132,11 @@ void smp_setup(unsigned int stack)
 {
 
     unsigned int id = apic_getid();
-    struct mmu_directory *directory = (struct mmu_directory *)MMUKERNELADDRESS;
+    struct mmu_directory *directory = (struct mmu_directory *)ARCH_MMUKERNELADDRESS;
     struct arch_context *context = setupcontext(id, (unsigned int)cpu_halt, stack);
     struct gdt_pointer *gpointer = cpu_getgdt();
 
-    tss_initpointer(&tss[id].pointer, TSSDESCRIPTORS, tss[id].descriptors);
+    tss_initpointer(&tss[id].pointer, ARCH_TSSDESCRIPTORS, tss[id].descriptors);
     tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(gpointer, 2), stack);
     gdt_setdescriptor(gpointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(gpointer, id + 5));
@@ -177,7 +173,7 @@ void module_init(void)
     if (!madt)
         return;
 
-    smp_prep(KERNELSTACKADDRESS + 2 * KERNELSTACKSIZE);
+    smp_prep(ARCH_KERNELSTACKADDRESS + 2 * ARCH_KERNELSTACKSIZE);
     copytrampoline16();
     copytrampoline32();
     detect(madt);
