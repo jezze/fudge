@@ -40,14 +40,14 @@ static struct spinlock spinlock;
 static struct system_node root;
 static struct system_node cpus;
 
-static struct arch_context *setupcontext(unsigned int id, unsigned int ip, unsigned int sp)
+static void setupcontext(unsigned int id, struct task *task, unsigned int ip, unsigned int sp)
 {
 
     struct arch_context *c = &context[id];
 
     core_init(&c->core, id);
 
-    c->task = 0;
+    c->task = task;
     c->ip = ip;
     c->sp = sp;
 
@@ -56,8 +56,6 @@ static struct arch_context *setupcontext(unsigned int id, unsigned int ip, unsig
     total++;
 
     spinlock_release(&spinlock);
-
-    return c;
 
 }
 
@@ -143,7 +141,7 @@ void smp_setup(unsigned int stack)
     unsigned int id = apic_getid();
     struct mmu_directory *directory = (struct mmu_directory *)ARCH_MMUKERNELADDRESS;
 
-    setupcontext(id, (unsigned int)cpu_halt, stack);
+    setupcontext(id, 0, (unsigned int)cpu_halt, stack);
     tss_initpointer(&tss[id].pointer, ARCH_TSSDESCRIPTORS, tss[id].descriptors);
     tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context[id].sp);
     gdt_setdescriptor(&gdt->pointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
@@ -170,7 +168,7 @@ void module_init(void)
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
     struct arch_context *c = arch_getcontext();
 
-    setupcontext(id, c->ip, c->sp);
+    setupcontext(id, c->task, c->ip, c->sp);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 
