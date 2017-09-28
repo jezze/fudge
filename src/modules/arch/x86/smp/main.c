@@ -16,6 +16,14 @@
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
 
+struct gdt
+{
+
+    struct gdt_pointer pointer;
+    struct gdt_descriptor descriptors[ARCH_GDTDESCRIPTORS];
+
+};
+
 struct tss
 {
 
@@ -24,6 +32,7 @@ struct tss
 
 };
 
+static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
 static struct tss tss[256];
 static struct arch_context context[256];
 static unsigned int total;
@@ -133,16 +142,15 @@ void smp_setup(unsigned int stack)
 
     unsigned int id = apic_getid();
     struct mmu_directory *directory = (struct mmu_directory *)ARCH_MMUKERNELADDRESS;
-    struct arch_context *context = setupcontext(id, (unsigned int)cpu_halt, stack);
-    struct gdt_pointer *gpointer = cpu_getgdt();
 
+    setupcontext(id, (unsigned int)cpu_halt, stack);
     tss_initpointer(&tss[id].pointer, ARCH_TSSDESCRIPTORS, tss[id].descriptors);
-    tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(gpointer, 2), stack);
-    gdt_setdescriptor(gpointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-    cpu_settss(gdt_getselector(gpointer, id + 5));
+    tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context[id].sp);
+    gdt_setdescriptor(&gdt->pointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    cpu_settss(gdt_getselector(&gdt->pointer, id + 5));
     mmu_setdirectory(directory);
     mmu_enable();
-    arch_leave(gdt_getselector(gpointer, 1), gdt_getselector(gpointer, 2), context->ip, context->sp);
+    arch_leave(0x08, 0x10, context[id].ip, context[id].sp);
 
 }
 
