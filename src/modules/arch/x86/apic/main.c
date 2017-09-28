@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <kernel/x86/cpu.h>
+#include <kernel/x86/gdt.h>
 #include <kernel/x86/idt.h>
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
@@ -111,7 +112,8 @@ void module_init(void)
 
     struct cpuid_data data;
     struct msr_data msrdata;
-    struct idt_pointer *pointer = cpu_getidt();
+    struct gdt_pointer *gpointer = cpu_getgdt();
+    struct idt_pointer *ipointer = cpu_getidt();
 
     if (!cpuid_exist())
         return;
@@ -136,8 +138,8 @@ void module_init(void)
     mmio = (msrdata.eax & 0xFFFFF000);
 
     arch_setmap(7, mmio, mmio, 0x1000);
-    idt_setdescriptor(pointer, 0xFE, apic_test, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, 0xFF, apic_spurious, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, 0xFE, apic_test, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, 0xFF, apic_spurious, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     apic_outd(REGISTERTPR, 0);
     apic_outd(REGISTERLDR, 0x01000000);
     apic_outd(REGISTERDFR, 0xFFFFFFFF);

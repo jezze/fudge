@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <kernel/x86/cpu.h>
+#include <kernel/x86/gdt.h>
 #include <kernel/x86/idt.h>
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/io/io.h>
@@ -120,7 +121,8 @@ void pic_disable(void)
 void module_init(void)
 {
 
-    struct idt_pointer *pointer = cpu_getidt();
+    struct gdt_pointer *gpointer = cpu_getgdt();
+    struct idt_pointer *ipointer = cpu_getidt();
 
     setchip(REGISTERCOMMAND0, REGISTERDATA0, DATAVECTOR0, 0x04);
     setchip(REGISTERCOMMAND1, REGISTERDATA1, DATAVECTOR1, 0x02);
@@ -138,22 +140,22 @@ void module_init(void)
     while (getstatus(REGISTERCOMMAND0, COMMANDISR))
         io_outb(REGISTERCOMMAND0, COMMANDEOI);
 
-    idt_setdescriptor(pointer, DATAVECTOR0 + 0x00, pic_routine00, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR0 + 0x01, pic_routine01, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR0 + 0x02, pic_routine02, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR0 + 0x03, pic_routine03, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR0 + 0x04, pic_routine04, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR0 + 0x05, pic_routine05, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR0 + 0x06, pic_routine06, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR0 + 0x07, pic_routine07, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR1 + 0x00, pic_routine08, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR1 + 0x01, pic_routine09, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR1 + 0x02, pic_routine0A, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR1 + 0x03, pic_routine0B, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR1 + 0x04, pic_routine0C, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR1 + 0x05, pic_routine0D, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR1 + 0x06, pic_routine0E, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(pointer, DATAVECTOR1 + 0x07, pic_routine0F, 0x08, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR0 + 0x00, pic_routine00, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR0 + 0x01, pic_routine01, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR0 + 0x02, pic_routine02, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR0 + 0x03, pic_routine03, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR0 + 0x04, pic_routine04, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR0 + 0x05, pic_routine05, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR0 + 0x06, pic_routine06, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR0 + 0x07, pic_routine07, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR1 + 0x00, pic_routine08, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR1 + 0x01, pic_routine09, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR1 + 0x02, pic_routine0A, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR1 + 0x03, pic_routine0B, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR1 + 0x04, pic_routine0C, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR1 + 0x05, pic_routine0D, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR1 + 0x06, pic_routine0E, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(ipointer, DATAVECTOR1 + 0x07, pic_routine0F, gdt_getselector(gpointer, 1), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
 
 }
 

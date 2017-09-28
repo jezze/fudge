@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <kernel/x86/cpu.h>
+#include <kernel/x86/gdt.h>
 #include <kernel/x86/arch.h>
 #include <kernel/x86/mmu.h>
 #include <modules/system/system.h>
@@ -126,10 +127,11 @@ void smp_setup(unsigned int stack)
 
     struct mmu_directory *directory = (struct mmu_directory *)MMUKERNELADDRESS;
     struct arch_context *context = setupcontext((unsigned int)cpu_halt, stack);
+    struct gdt_pointer *gpointer = cpu_getgdt();
 
     mmu_setdirectory(directory);
     mmu_enable();
-    arch_leave(0x08, 0x10, context->ip, context->sp);
+    arch_leave(gdt_getselector(gpointer, 1), gdt_getselector(gpointer, 2), context->ip, context->sp);
 
 }
 
