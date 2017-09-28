@@ -1,36 +1,12 @@
 #include <fudge.h>
 #include <kernel.h>
 #include "cpu.h"
-#include "arch.h"
 #include "gdt.h"
 #include "idt.h"
 #include "tss.h"
 #include "isr.h"
 #include "mmu.h"
-
-struct gdt
-{
-
-    struct gdt_pointer pointer;
-    struct gdt_descriptor descriptors[ARCH_GDTDESCRIPTORS];
-
-};
-
-struct idt
-{
-
-    struct idt_pointer pointer;
-    struct idt_descriptor descriptors[ARCH_IDTDESCRIPTORS];
-
-};
-
-struct tss
-{
-
-    struct tss_pointer pointer;
-    struct tss_descriptor descriptors[ARCH_TSSDESCRIPTORS];
-
-};
+#include "arch.h"
 
 static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
 static struct idt *idt = (struct idt *)ARCH_IDTADDRESS;
@@ -365,6 +341,16 @@ void arch_initcontext(struct arch_context *context, unsigned int id, struct task
 
 }
 
+void arch_configuretss(struct arch_context *context, struct tss *tss, unsigned int id)
+{
+
+    tss_initpointer(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);
+    tss_setdescriptor(&tss->pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context->sp);
+    gdt_setdescriptor(&gdt->pointer, id, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    cpu_settss(gdt_getselector(&gdt->pointer, id));
+
+}
+
 void arch_setup(struct service_backend *backend)
 {
 
@@ -400,10 +386,7 @@ void arch_setup(struct service_backend *backend)
     kernel_setupmounts();
     kernel_setupservices();
     arch_initcontext(&context0, 0, kernel_getfreetask(), (unsigned int)cpu_halt, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    tss_initpointer(&tss0.pointer, ARCH_TSSDESCRIPTORS, tss0.descriptors);
-    tss_setdescriptor(&tss0.pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context0.sp);
-    gdt_setdescriptor(&gdt->pointer, 0x05, (unsigned int)tss0.pointer.descriptors, (unsigned int)tss0.pointer.descriptors + tss0.pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-    cpu_settss(gdt_getselector(&gdt->pointer, 5));
+    arch_configuretss(&context0, &tss0, 5);
     kernel_setupramdisk(context0.task, backend);
     mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
     mapkernel(1, 0x00400000, 0x00400000, 0x00400000);

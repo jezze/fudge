@@ -26,10 +26,35 @@ struct arch_context
 
 };
 
+struct gdt
+{
+
+    struct gdt_pointer pointer;
+    struct gdt_descriptor descriptors[ARCH_GDTDESCRIPTORS];
+
+};
+
+struct idt
+{
+
+    struct idt_pointer pointer;
+    struct idt_descriptor descriptors[ARCH_IDTDESCRIPTORS];
+
+};
+
+struct tss
+{
+
+    struct tss_pointer pointer;
+    struct tss_descriptor descriptors[ARCH_TSSDESCRIPTORS];
+
+};
+
 struct arch_context *arch_getcontext(void);
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int count);
 void arch_schedule(struct cpu_general *general, struct arch_context *context, unsigned int ip, unsigned int sp);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);
 void arch_leave(unsigned short code, unsigned short data, unsigned int ip, unsigned int sp);
 void arch_initcontext(struct arch_context *context, unsigned int id, struct task *task, unsigned int ip, unsigned int sp);
+void arch_configuretss(struct arch_context *context, struct tss *tss, unsigned int id);
 void arch_setup(struct service_backend *backend);

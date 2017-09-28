@@ -3,6 +3,7 @@
 #include <kernel/x86/cpu.h>
 #include <kernel/x86/gdt.h>
 #include <kernel/x86/idt.h>
+#include <kernel/x86/tss.h>
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/io/io.h>
 #include "pic.h"
@@ -19,22 +20,6 @@
 #define DATA8086                        0x01
 #define DATAVECTOR0                     0x20
 #define DATAVECTOR1                     0x28
-
-struct gdt
-{
-
-    struct gdt_pointer pointer;
-    struct gdt_descriptor descriptors[ARCH_GDTDESCRIPTORS];
-
-};
-
-struct idt
-{
-
-    struct idt_pointer pointer;
-    struct idt_descriptor descriptors[ARCH_IDTDESCRIPTORS];
-
-};
 
 static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
 static struct idt *idt = (struct idt *)ARCH_IDTADDRESS;

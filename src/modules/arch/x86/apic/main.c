@@ -3,6 +3,7 @@
 #include <kernel/x86/cpu.h>
 #include <kernel/x86/gdt.h>
 #include <kernel/x86/idt.h>
+#include <kernel/x86/tss.h>
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include <modules/arch/x86/msr/msr.h>
@@ -56,22 +57,6 @@
 #define REGISTERINITIALCOUNT            0x0380
 #define REGISTERCURRENTCOUNT            0x0390
 #define REGISTERDIVIDECONFIG            0x03E0
-
-struct gdt
-{
-
-    struct gdt_pointer pointer;
-    struct gdt_descriptor descriptors[ARCH_GDTDESCRIPTORS];
-
-};
-
-struct idt
-{
-
-    struct idt_pointer pointer;
-    struct idt_descriptor descriptors[ARCH_IDTDESCRIPTORS];
-
-};
 
 static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
 static struct idt *idt = (struct idt *)ARCH_IDTADDRESS;

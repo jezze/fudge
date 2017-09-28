@@ -2,9 +2,10 @@
 #include <kernel.h>
 #include <kernel/x86/cpu.h>
 #include <kernel/x86/gdt.h>
+#include <kernel/x86/idt.h>
 #include <kernel/x86/tss.h>
-#include <kernel/x86/arch.h>
 #include <kernel/x86/mmu.h>
+#include <kernel/x86/arch.h>
 #include <modules/system/system.h>
 #include <modules/arch/x86/acpi/acpi.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
@@ -15,22 +16,6 @@
 
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
-
-struct gdt
-{
-
-    struct gdt_pointer pointer;
-    struct gdt_descriptor descriptors[ARCH_GDTDESCRIPTORS];
-
-};
-
-struct tss
-{
-
-    struct tss_pointer pointer;
-    struct tss_descriptor descriptors[ARCH_TSSDESCRIPTORS];
-
-};
 
 static struct gdt *gdt = (struct gdt *)ARCH_GDTADDRESS;
 static struct tss tss[256];
@@ -127,25 +112,15 @@ static void addtotal(void)
 
 }
 
-static void configure(unsigned int id, struct task *task, unsigned int ip, unsigned int sp)
-{
-
-    arch_initcontext(&context[id], id, task, ip, sp);
-    tss_initpointer(&tss[id].pointer, ARCH_TSSDESCRIPTORS, tss[id].descriptors);
-    tss_setdescriptor(&tss[id].pointer, 0x00, gdt_getselector(&gdt->pointer, 2), context[id].sp);
-    gdt_setdescriptor(&gdt->pointer, id + 5, (unsigned int)tss[id].pointer.descriptors, (unsigned int)tss[id].pointer.descriptors + tss[id].pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-    cpu_settss(gdt_getselector(&gdt->pointer, id + 5));
-    addtotal();
-
-}
-
 void smp_setup(unsigned int stack)
 {
 
     unsigned int id = apic_getid();
     struct mmu_directory *directory = (struct mmu_directory *)ARCH_MMUKERNELADDRESS;
 
-    configure(id, 0, (unsigned int)cpu_halt, stack);
+    arch_initcontext(&context[id], id, 0, (unsigned int)cpu_halt, stack);
+    arch_configuretss(&context[id], &tss[id], id + 5);
+    addtotal();
     mmu_setdirectory(directory);
     mmu_enable();
     arch_leave(gdt_getselector(&gdt->pointer, 1), gdt_getselector(&gdt->pointer, 2), context[id].ip, context[id].sp);
@@ -168,7 +143,9 @@ void module_init(void)
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
     struct arch_context *c = arch_getcontext();
 
-    configure(id, c->task, c->ip, c->sp);
+    arch_initcontext(&context[id], id, c->task, c->ip, c->sp);
+    arch_configuretss(&context[id], &tss[id], id + 5);
+    addtotal();
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 
