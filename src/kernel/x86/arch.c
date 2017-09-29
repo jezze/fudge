@@ -140,8 +140,8 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
-        interrupt->eip.value = context->ip;
-        interrupt->esp.value = context->sp;
+        interrupt->eip.value = (unsigned int)cpu_halt;
+        interrupt->esp.value = context->core.sp;
 
     }
 
@@ -330,14 +330,12 @@ void arch_leave(unsigned short code, unsigned short data, unsigned int ip, unsig
 
 }
 
-void arch_initcontext(struct arch_context *context, unsigned int id, struct task *task, unsigned int ip, unsigned int sp)
+void arch_initcontext(struct arch_context *context, unsigned int id, unsigned int sp, struct task *task)
 {
 
-    core_init(&context->core, id);
+    core_init(&context->core, id, sp);
 
     context->task = task;
-    context->ip = ip;
-    context->sp = sp;
 
 }
 
@@ -399,8 +397,8 @@ void arch_setup(struct service_backend *backend)
     kernel_setupservers();
     kernel_setupmounts();
     kernel_setupservices();
-    arch_initcontext(&context0, 0, kernel_getfreetask(), (unsigned int)cpu_halt, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    arch_configuretss(&tss0, ARCH_TSS, gdt_getselector(&gdt->pointer, ARCH_KDATA), context0.sp);
+    arch_initcontext(&context0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE, kernel_getfreetask());
+    arch_configuretss(&tss0, ARCH_TSS, gdt_getselector(&gdt->pointer, ARCH_KDATA), context0.core.sp);
     kernel_setupramdisk(context0.task, backend);
     mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
     mapkernel(1, 0x00400000, 0x00400000, 0x00400000);

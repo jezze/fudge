@@ -26,8 +26,8 @@ void syse_resume(struct cpu_general *general)
     else
     {
 
-        general->edx.value = context->ip;
-        general->ecx.value = context->sp;
+        general->edx.value = (unsigned int)cpu_halt;
+        general->ecx.value = context->core.sp;
 
     }
 
