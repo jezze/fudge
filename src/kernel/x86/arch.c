@@ -124,12 +124,8 @@ void arch_schedule(struct cpu_general *general, struct arch_context *context, un
 
 }
 
-unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
+static void setinterrupt(struct cpu_interrupt *interrupt, struct arch_context *context)
 {
-
-    struct arch_context *context = arch_getcontext();
-
-    arch_schedule(general, context, interrupt->eip.value, interrupt->esp.value);
 
     if (context->task)
     {
@@ -151,7 +147,29 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 
     }
 
+}
+
+unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
+{
+
+    struct arch_context *context = arch_getcontext();
+
+    arch_schedule(general, context, interrupt->eip.value, interrupt->esp.value);
+    setinterrupt(interrupt, context);
+
     return interrupt->ss.value;
+
+}
+
+void arch_leave(struct arch_context *context)
+{
+
+    struct cpu_interrupt interrupt;
+
+    interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
+
+    setinterrupt(&interrupt, context);
+    cpu_leave(interrupt);
 
 }
 
@@ -318,37 +336,6 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
     general.eax.value = abi_call(general.eax.value, context->task, interrupt.esp.reference);
 
     return arch_resume(&general, &interrupt);
-
-}
-
-void arch_leave(struct arch_context *context)
-{
-
-    struct cpu_interrupt interrupt;
-
-    interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
-
-    if (context->task)
-    {
-
-        interrupt.cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
-        interrupt.ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
-        interrupt.eip.value = context->task->state.ip;
-        interrupt.esp.value = context->task->state.sp;
-
-    }
-
-    else
-    {
-
-        interrupt.cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
-        interrupt.ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
-        interrupt.eip.value = (unsigned int)cpu_halt;
-        interrupt.esp.value = context->core.sp;
-
-    }
-
-    cpu_leave(interrupt);
 
 }
 
