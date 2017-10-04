@@ -116,14 +116,13 @@ void smp_setup(unsigned int stack)
 {
 
     unsigned int id = apic_getid();
-    struct mmu_directory *directory = (struct mmu_directory *)ARCH_MMUKERNELADDRESS;
 
+    addtotal();
     arch_initcontext(&context[id], id, stack, 0);
     arch_configuretss(&tss[id], ARCH_TSS + id, gdt_getselector(&gdt->pointer, ARCH_KDATA), context[id].core.sp);
-    addtotal();
-    mmu_setdirectory(directory);
+    mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
-    arch_leave(gdt_getselector(&gdt->pointer, ARCH_KCODE), gdt_getselector(&gdt->pointer, ARCH_KDATA), (unsigned int)cpu_halt, context[id].core.sp);
+    arch_leave(&context[id]);
 
 }
 
@@ -143,9 +142,9 @@ void module_init(void)
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
     struct arch_context *c = arch_getcontext();
 
+    addtotal();
     arch_initcontext(&context[id], id, c->core.sp, c->task);
     arch_configuretss(&tss[id], ARCH_TSS + id, gdt_getselector(&gdt->pointer, ARCH_KDATA), context[id].core.sp);
-    addtotal();
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 

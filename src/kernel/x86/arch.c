@@ -321,16 +321,32 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-void arch_leave(unsigned short code, unsigned short data, unsigned int ip, unsigned int sp)
+void arch_leave(struct arch_context *context)
 {
 
     struct cpu_interrupt interrupt;
 
-    interrupt.cs.value = code;
-    interrupt.ss.value = data;
-    interrupt.eip.value = ip;
-    interrupt.esp.value = sp;
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
+
+    if (context->task)
+    {
+
+        interrupt.cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
+        interrupt.ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
+        interrupt.eip.value = context->task->state.ip;
+        interrupt.esp.value = context->task->state.sp;
+
+    }
+
+    else
+    {
+
+        interrupt.cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
+        interrupt.ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
+        interrupt.eip.value = (unsigned int)cpu_halt;
+        interrupt.esp.value = context->core.sp;
+
+    }
 
     cpu_leave(interrupt);
 
@@ -396,6 +412,12 @@ void arch_setup(struct service_backend *backend)
 
     arch_configuregdt();
     arch_configureidt();
+    mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
+    mapkernel(1, 0x00400000, 0x00400000, 0x00400000);
+    mapkernel(2, 0x00800000, 0x00800000, 0x00400000);
+    mapkernel(3, 0x00C00000, 0x00C00000, 0x00400000);
+    mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
+    mmu_enable();
     abi_setup(spawn, despawn);
     binary_setupelf();
     service_setupcpio();
@@ -406,14 +428,9 @@ void arch_setup(struct service_backend *backend)
     arch_initcontext(&context0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE, kernel_getfreetask());
     arch_configuretss(&tss0, ARCH_TSS, gdt_getselector(&gdt->pointer, ARCH_KDATA), context0.core.sp);
     kernel_setupramdisk(context0.task, backend);
-    mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
-    mapkernel(1, 0x00400000, 0x00400000, 0x00400000);
-    mapkernel(2, 0x00800000, 0x00800000, 0x00400000);
-    mapkernel(3, 0x00C00000, 0x00C00000, 0x00400000);
     spawn(context0.task, 0);
     mmu_setdirectory(getdirectory(context0.task->id));
-    mmu_enable();
-    arch_leave(gdt_getselector(&gdt->pointer, ARCH_UCODE), gdt_getselector(&gdt->pointer, ARCH_UDATA), context0.task->state.ip, context0.task->state.sp);
+    arch_leave(&context0);
 
 }
 
