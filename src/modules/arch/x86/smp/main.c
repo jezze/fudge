@@ -17,7 +17,6 @@
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
 
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
 static struct arch_tss tss[256];
 static struct arch_context context[256];
 static unsigned int total;
@@ -119,7 +118,7 @@ void smp_setup(unsigned int stack)
 
     addtotal();
     arch_initcontext(&context[id], id, stack, 0);
-    arch_configuretss(&tss[id], ARCH_TSS + id, gdt_getselector(&gdt->pointer, ARCH_KDATA), context[id].core.sp);
+    arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
     arch_leave(&context[id]);
@@ -144,7 +143,7 @@ void module_init(void)
 
     addtotal();
     arch_initcontext(&context[id], id, c->core.sp, c->task);
-    arch_configuretss(&tss[id], ARCH_TSS + id, gdt_getselector(&gdt->pointer, ARCH_KDATA), context[id].core.sp);
+    arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 

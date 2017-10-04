@@ -61,5 +61,5 @@ void arch_leave(struct arch_context *context);
 void arch_initcontext(struct arch_context *context, unsigned int id, unsigned int sp, struct task *task);
 void arch_configuregdt(void);
 void arch_configureidt(void);
-void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int ss, unsigned int sp);
+void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp);
 void arch_setup(struct service_backend *backend);

@@ -384,11 +384,11 @@ void arch_configureidt(void)
 
 }
 
-void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int ss, unsigned int sp)
+void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
 {
 
     tss_initpointer(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);
-    tss_setdescriptor(&tss->pointer, 0, ss, sp);
+    tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), sp);
     gdt_setdescriptor(&gdt->pointer, id, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(&gdt->pointer, id));
 
@@ -413,7 +413,7 @@ void arch_setup(struct service_backend *backend)
     kernel_setupmounts();
     kernel_setupservices();
     arch_initcontext(&context0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE, kernel_getfreetask());
-    arch_configuretss(&tss0, ARCH_TSS, gdt_getselector(&gdt->pointer, ARCH_KDATA), context0.core.sp);
+    arch_configuretss(&tss0, ARCH_TSS, context0.core.sp);
     kernel_setupramdisk(context0.task, backend);
     spawn(context0.task, 0);
     mmu_setdirectory(getdirectory(context0.task->id));
