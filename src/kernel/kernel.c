@@ -11,6 +11,7 @@ static struct service_server servers[KERNEL_SERVERS];
 static struct service_mount mounts[KERNEL_MOUNTS];
 static struct service services[KERNEL_SERVICES];
 static struct list freetasks;
+static struct list readytasks;
 static struct list blockedtasks;
 static struct list unblockedtasks;
 static struct list usedservers;
@@ -99,7 +100,7 @@ struct service *kernel_getservice(struct task *task, unsigned int service)
 
 }
 
-void kernel_assigntask(struct core *core, struct task *task)
+void kernel_freetask(struct task *task)
 {
 
     spinlock_acquire(&tasklock);
@@ -107,10 +108,10 @@ void kernel_assigntask(struct core *core, struct task *task)
     switch (task->state.status)
     {
 
-    case TASK_STATUS_FREE:
-        list_move(&core->tasks, &task->state.item);
+    case TASK_STATUS_ASSIGNED:
+        list_move(&freetasks, &task->state.item);
 
-        task->state.status = TASK_STATUS_ACTIVE;
+        task->state.status = TASK_STATUS_FREE;
 
         break;
 
@@ -120,7 +121,7 @@ void kernel_assigntask(struct core *core, struct task *task)
 
 }
 
-void kernel_freetask(struct task *task)
+void kernel_readytask(struct task *task)
 {
 
     spinlock_acquire(&tasklock);
@@ -128,10 +129,10 @@ void kernel_freetask(struct task *task)
     switch (task->state.status)
     {
 
-    case TASK_STATUS_ACTIVE:
-        list_move(&freetasks, &task->state.item);
+    case TASK_STATUS_FREE:
+        list_move(&readytasks, &task->state.item);
 
-        task->state.status = TASK_STATUS_FREE;
+        task->state.status = TASK_STATUS_READY;
 
         break;
 
@@ -149,7 +150,7 @@ void kernel_blocktask(struct task *task)
     switch (task->state.status)
     {
 
-    case TASK_STATUS_ACTIVE:
+    case TASK_STATUS_ASSIGNED:
         list_move(&blockedtasks, &task->state.item);
 
         task->state.status = TASK_STATUS_BLOCKED;
@@ -195,11 +196,23 @@ struct task *kernel_schedule(struct core *core)
 
         struct task *task = current->data;
 
-        list_move(&core->tasks, current);
+        list_move(&readytasks, current);
 
-        task->state.status = TASK_STATUS_ACTIVE;
+        task->state.status = TASK_STATUS_READY;
         task->state.ip -= task->state.rewind;
         task->state.rewind = 0;
+
+    }
+
+    /* TODO: Allow assignment on multiple cores */
+    for (current = readytasks.head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+
+        list_move(&core->tasks, current);
+
+        task->state.status = TASK_STATUS_ASSIGNED;
 
     }
 

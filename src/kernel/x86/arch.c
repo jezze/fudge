@@ -51,7 +51,6 @@ static void maptask(struct task *task, unsigned int index, unsigned int paddress
 static unsigned int spawn(struct task *task, void *stack)
 {
 
-    struct arch_context *context = arch_getcontext();
     struct task *next = kernel_getfreetask();
 
     if (!next)
@@ -63,7 +62,7 @@ static unsigned int spawn(struct task *task, void *stack)
     if (!kernel_setupbinary(next, ARCH_TASKSTACKADDRESS))
         return 0;
 
-    kernel_assigntask(&context->core, next);
+    kernel_readytask(next);
 
     return 1;
 
