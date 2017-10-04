@@ -92,6 +92,13 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
+static void assign(struct task *task)
+{
+
+    list_move(&context0.core.tasks, &task->state.item);
+
+}
+
 void arch_schedule(struct cpu_general *general, struct arch_context *context, unsigned int ip, unsigned int sp)
 {
 
@@ -105,7 +112,7 @@ void arch_schedule(struct cpu_general *general, struct arch_context *context, un
 
     }
 
-    context->task = kernel_schedule(&context->core);
+    context->task = kernel_schedule(&context->core, assign);
 
     if (context->task)
     {

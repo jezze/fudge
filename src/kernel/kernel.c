@@ -184,7 +184,7 @@ void kernel_unblocktask(struct task *task)
 
 }
 
-struct task *kernel_schedule(struct core *core)
+struct task *kernel_schedule(struct core *core, void (*assign)(struct task *task))
 {
 
     struct list_item *current;
@@ -204,13 +204,12 @@ struct task *kernel_schedule(struct core *core)
 
     }
 
-    /* TODO: Allow assignment on multiple cores */
     for (current = readytasks.head; current; current = current->next)
     {
 
         struct task *task = current->data;
 
-        list_move(&core->tasks, current);
+        assign(task);
 
         task->state.status = TASK_STATUS_ASSIGNED;
 
