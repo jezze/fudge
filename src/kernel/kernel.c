@@ -30,7 +30,7 @@ struct task *kernel_getfreetask(void)
 
 }
 
-struct service_server *kernel_popfreeserver(void)
+struct service_server *kernel_pickserver(void)
 {
 
     struct list_item *current;
@@ -48,7 +48,7 @@ struct service_server *kernel_popfreeserver(void)
 
 }
 
-struct service_mount *kernel_popfreemount(void)
+struct service_mount *kernel_pickmount(void)
 {
 
     struct list_item *current;
@@ -398,8 +398,8 @@ void kernel_setupramdisk(struct task *task, struct service_backend *backend)
 
     struct service *init = kernel_getservice(task, 8);
     struct service *root = kernel_getservice(task, 9);
-    struct service_server *server = kernel_popfreeserver();
-    struct service_mount *mount = kernel_popfreemount();
+    struct service_server *server = kernel_pickserver();
+    struct service_mount *mount = kernel_pickmount();
 
     server->backend = backend;
     server->protocol = service_findprotocol(1000);
