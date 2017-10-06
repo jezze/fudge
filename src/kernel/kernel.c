@@ -448,7 +448,7 @@ void kernel_setupservers(void)
         struct service_server *server = &servers[i];
 
         service_initserver(server);
-        list_add(&freeservers, &server->item);
+        kernel_freeserver(server);
 
     }
 
@@ -465,7 +465,7 @@ void kernel_setupmounts(void)
         struct service_mount *mount = &mounts[i];
 
         service_initmount(mount);
-        list_add(&freemounts, &mount->item);
+        kernel_freemount(mount);
 
     }
 
