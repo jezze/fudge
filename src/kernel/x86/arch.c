@@ -421,8 +421,10 @@ static void setuptask(struct service_backend *backend)
 void arch_setup(struct service_backend *backend)
 {
 
+    arch_initcontext(&context0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     arch_configuregdt();
     arch_configureidt();
+    arch_configuretss(&tss0, ARCH_TSS, context0.core.sp);
     mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
     mapkernel(1, 0x00400000, 0x00400000, 0x00400000);
     mapkernel(2, 0x00800000, 0x00800000, 0x00400000);
@@ -436,8 +438,6 @@ void arch_setup(struct service_backend *backend)
     kernel_setupservers();
     kernel_setupmounts();
     kernel_setupservices();
-    arch_initcontext(&context0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    arch_configuretss(&tss0, ARCH_TSS, context0.core.sp);
     setuptask(backend);
     arch_leave(&context0);
 
