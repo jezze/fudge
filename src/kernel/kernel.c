@@ -97,18 +97,9 @@ void kernel_freetask(struct task *task)
 {
 
     spinlock_acquire(&tasklock);
+    list_move(&freetasks, &task->state.item);
 
-    switch (task->state.status)
-    {
-
-    case TASK_STATUS_ASSIGNED:
-        list_move(&freetasks, &task->state.item);
-
-        task->state.status = TASK_STATUS_FREE;
-
-        break;
-
-    }
+    task->state.status = TASK_STATUS_FREE;
 
     spinlock_release(&tasklock);
 
@@ -118,18 +109,9 @@ void kernel_readytask(struct task *task)
 {
 
     spinlock_acquire(&tasklock);
+    list_move(&readytasks, &task->state.item);
 
-    switch (task->state.status)
-    {
-
-    case TASK_STATUS_FREE:
-        list_move(&readytasks, &task->state.item);
-
-        task->state.status = TASK_STATUS_READY;
-
-        break;
-
-    }
+    task->state.status = TASK_STATUS_READY;
 
     spinlock_release(&tasklock);
 
@@ -452,7 +434,7 @@ void kernel_setuptasks(void)
         struct task *task = &tasks[i];
 
         task_init(task, i);
-        list_move(&freetasks, &task->state.item);
+        kernel_freetask(task);
 
     }
 
