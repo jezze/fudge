@@ -51,7 +51,7 @@ static void maptask(struct task *task, unsigned int index, unsigned int paddress
 static unsigned int spawn(struct task *task, void *stack)
 {
 
-    struct task *next = kernel_getfreetask();
+    struct task *next = kernel_picktask();
 
     if (!next)
         return 0;
@@ -59,12 +59,23 @@ static unsigned int spawn(struct task *task, void *stack)
     memory_copy(gettaskdirectory(next->id), getkerneldirectory(), sizeof (struct mmu_directory));
     kernel_copyservices(task, next);
 
-    if (!kernel_setupbinary(next, ARCH_TASKSTACKADDRESS))
+    if (kernel_setupbinary(next, ARCH_TASKSTACKADDRESS))
+    {
+
+        kernel_readytask(next);
+
+        return 1;
+
+    }
+
+    else
+    {
+
+        kernel_freetask(next);
+
         return 0;
 
-    kernel_readytask(next);
-
-    return 1;
+    }
 
 }
 
@@ -164,10 +175,12 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 void arch_leave(struct arch_context *context)
 {
 
+    struct cpu_general general;
     struct cpu_interrupt interrupt;
 
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
+    arch_schedule(&general, context, interrupt.eip.value, interrupt.esp.value);
     setinterrupt(&interrupt, context);
     cpu_leave(interrupt);
 
@@ -339,12 +352,10 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-void arch_initcontext(struct arch_context *context, unsigned int id, unsigned int sp, struct task *task)
+void arch_initcontext(struct arch_context *context, unsigned int id, unsigned int sp)
 {
 
     core_init(&context->core, id, sp);
-
-    context->task = task;
 
 }
 
@@ -394,6 +405,19 @@ void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
 
 }
 
+static void setuptask(struct service_backend *backend)
+{
+
+    struct task *task = kernel_picktask();
+
+    kernel_setupramdisk(task, backend);
+    memory_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
+    kernel_copyservices(task, task);
+    kernel_setupbinary(task, ARCH_TASKSTACKADDRESS);
+    kernel_readytask(task);
+
+}
+
 void arch_setup(struct service_backend *backend)
 {
 
@@ -412,11 +436,9 @@ void arch_setup(struct service_backend *backend)
     kernel_setupservers();
     kernel_setupmounts();
     kernel_setupservices();
-    arch_initcontext(&context0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE, kernel_getfreetask());
+    arch_initcontext(&context0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     arch_configuretss(&tss0, ARCH_TSS, context0.core.sp);
-    kernel_setupramdisk(context0.task, backend);
-    spawn(context0.task, 0);
-    mmu_setdirectory(gettaskdirectory(context0.task->id));
+    setuptask(backend);
     arch_leave(&context0);
 
 }

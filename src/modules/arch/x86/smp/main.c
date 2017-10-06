@@ -117,7 +117,7 @@ void smp_setup(unsigned int stack)
     unsigned int id = apic_getid();
 
     addtotal();
-    arch_initcontext(&context[id], id, stack, 0);
+    arch_initcontext(&context[id], id, stack);
     arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
@@ -142,8 +142,11 @@ void module_init(void)
     struct arch_context *c = arch_getcontext();
 
     addtotal();
-    arch_initcontext(&context[id], id, c->core.sp, c->task);
+    arch_initcontext(&context[id], id, c->core.sp);
     arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
+
+    context[id].task = c->task;
+
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 

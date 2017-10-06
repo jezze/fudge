@@ -75,10 +75,21 @@ void kernel_walkmountchild(struct service *service)
 
 }
 
-struct task *kernel_getfreetask(void)
+struct task *kernel_picktask(void)
 {
 
-    return (freetasks.tail) ? freetasks.tail->data : 0;
+    struct list_item *current;
+
+    spinlock_acquire(&tasklock);
+
+    current = freetasks.tail;
+
+    if (current)
+        list_remove(&freetasks, current);
+
+    spinlock_release(&tasklock);
+
+    return (current) ? current->data : 0;
 
 }
 
@@ -225,7 +236,7 @@ void kernel_useserver(struct service_server *server)
 {
 
     spinlock_acquire(&serverlock);
-    list_add(&usedservers, &server->item);
+    list_move(&usedservers, &server->item);
     spinlock_release(&serverlock);
 
 }
@@ -234,7 +245,7 @@ void kernel_freeserver(struct service_server *server)
 {
 
     spinlock_acquire(&serverlock);
-    list_add(&freeservers, &server->item);
+    list_move(&freeservers, &server->item);
     spinlock_release(&serverlock);
 
 }
@@ -261,7 +272,7 @@ void kernel_usemount(struct service_mount *mount)
 {
 
     spinlock_acquire(&mountlock);
-    list_add(&usedmounts, &mount->item);
+    list_move(&usedmounts, &mount->item);
     spinlock_release(&mountlock);
 
 }
@@ -270,7 +281,7 @@ void kernel_freemount(struct service_mount *mount)
 {
 
     spinlock_acquire(&mountlock);
-    list_add(&freemounts, &mount->item);
+    list_move(&freemounts, &mount->item);
     spinlock_release(&mountlock);
 
 }
@@ -286,7 +297,7 @@ void kernel_freeservice(struct service *service)
 {
 
     spinlock_acquire(&servicelock);
-    list_add(&freeservices, &service->item);
+    list_move(&freeservices, &service->item);
     spinlock_release(&servicelock);
 
 }
@@ -441,7 +452,7 @@ void kernel_setuptasks(void)
         struct task *task = &tasks[i];
 
         task_init(task, i);
-        list_add(&freetasks, &task->state.item);
+        list_move(&freetasks, &task->state.item);
 
     }
 
