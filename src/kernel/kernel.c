@@ -14,12 +14,14 @@ static struct list freetasks;
 static struct list readytasks;
 static struct list blockedtasks;
 static struct list unblockedtasks;
+static struct spinlock tasklock;
 static struct list usedservers;
 static struct list freeservers;
+static struct spinlock serverlock;
 static struct list usedmounts;
 static struct list freemounts;
+static struct spinlock mountlock;
 static struct list freeservices;
-static struct spinlock tasklock;
 
 struct task *kernel_getfreetask(void)
 {
@@ -28,17 +30,39 @@ struct task *kernel_getfreetask(void)
 
 }
 
-struct service_server *kernel_getfreeserver(void)
+struct service_server *kernel_popfreeserver(void)
 {
 
-    return (freeservers.tail) ? freeservers.tail->data : 0;
+    struct list_item *current;
+
+    spinlock_acquire(&serverlock);
+
+    current = freeservers.tail;
+
+    if (current)
+        list_remove(&freeservers, current);
+
+    spinlock_release(&serverlock);
+
+    return (current) ? current->data : 0;
 
 }
 
-struct service_mount *kernel_getfreemount(void)
+struct service_mount *kernel_popfreemount(void)
 {
 
-    return (freemounts.tail) ? freemounts.tail->data : 0;
+    struct list_item *current;
+
+    spinlock_acquire(&mountlock);
+
+    current = freemounts.tail;
+
+    if (current)
+        list_remove(&freemounts, current);
+
+    spinlock_release(&mountlock);
+
+    return (current) ? current->data : 0;
 
 }
 
@@ -224,28 +248,36 @@ struct task *kernel_schedule(struct core *core, void (*assign)(struct task *task
 void kernel_useserver(struct service_server *server)
 {
 
-    list_move(&usedservers, &server->item);
+    spinlock_acquire(&serverlock);
+    list_add(&usedservers, &server->item);
+    spinlock_release(&serverlock);
 
 }
 
 void kernel_freeserver(struct service_server *server)
 {
 
-    list_move(&freeservers, &server->item);
+    spinlock_acquire(&serverlock);
+    list_add(&freeservers, &server->item);
+    spinlock_release(&serverlock);
 
 }
 
 void kernel_usemount(struct service_mount *mount)
 {
 
-    list_move(&usedmounts, &mount->item);
+    spinlock_acquire(&mountlock);
+    list_add(&usedmounts, &mount->item);
+    spinlock_release(&mountlock);
 
 }
 
 void kernel_freemount(struct service_mount *mount)
 {
 
-    list_move(&freemounts, &mount->item);
+    spinlock_acquire(&mountlock);
+    list_add(&freemounts, &mount->item);
+    spinlock_release(&mountlock);
 
 }
 
@@ -366,8 +398,8 @@ void kernel_setupramdisk(struct task *task, struct service_backend *backend)
 
     struct service *init = kernel_getservice(task, 8);
     struct service *root = kernel_getservice(task, 9);
-    struct service_server *server = kernel_getfreeserver();
-    struct service_mount *mount = kernel_getfreemount();
+    struct service_server *server = kernel_popfreeserver();
+    struct service_mount *mount = kernel_popfreemount();
 
     server->backend = backend;
     server->protocol = service_findprotocol(1000);
