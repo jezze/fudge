@@ -18,6 +18,7 @@ struct service_mount *kernel_pickmount(void);
 void kernel_usemount(struct service_mount *mount);
 void kernel_freemount(struct service_mount *mount);
 struct service *kernel_getservice(struct task *task, unsigned int service);
+void kernel_freeservice(struct service *service);
 void kernel_copyservices(struct task *source, struct task *target);
 unsigned int kernel_readmailbox(struct task *task, void *buffer, unsigned int count);
 unsigned int kernel_writemailbox(struct task *task, void *buffer, unsigned int count);

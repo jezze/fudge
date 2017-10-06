@@ -22,6 +22,7 @@ static struct list usedmounts;
 static struct list freemounts;
 static struct spinlock mountlock;
 static struct list freeservices;
+static struct spinlock servicelock;
 
 static unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
 {
@@ -281,6 +282,15 @@ struct service *kernel_getservice(struct task *task, unsigned int service)
 
 }
 
+void kernel_freeservice(struct service *service)
+{
+
+    spinlock_acquire(&servicelock);
+    list_add(&freeservices, &service->item);
+    spinlock_release(&servicelock);
+
+}
+
 static void copyservice(struct service *tservice, struct service *sservice, struct task *task)
 {
 
@@ -482,7 +492,7 @@ void kernel_setupservices(void)
         struct service *service = &services[i];
 
         service_init(service);
-        list_add(&freeservices, &service->item);
+        kernel_freeservice(service);
 
     }
 
