@@ -120,11 +120,11 @@ static void assign(struct task *task)
 }
 */
 
-static void registercore(unsigned int id)
+static void registercore(struct core *core)
 {
 
     spinlock_acquire(&spinlock);
-    list_add(&corelist, &context[id].core.item);
+    list_add(&corelist, &core->item);
     spinlock_release(&spinlock);
 
 }
@@ -138,7 +138,7 @@ void smp_setup(unsigned int stack)
     arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
-    registercore(id);
+    registercore(&context[id].core);
     arch_leave(&context[id]);
 
 }
@@ -161,7 +161,7 @@ void module_init(void)
 
     arch_initcontext(&context[id], id, c->core.sp);
     arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
-    registercore(id);
+    registercore(&context[id].core);
 
     context[id].task = c->task;
 
