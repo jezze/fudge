@@ -13,6 +13,8 @@ static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
 static struct arch_context context0;
 static struct arch_tss tss0;
+static struct arch_context *(*contextcallback)(void);
+static void (*assigncallback)(struct task *task);
 
 static struct mmu_directory *getkerneldirectory(void)
 {
@@ -88,10 +90,38 @@ static unsigned int despawn(struct task *task, void *stack)
 
 }
 
-struct arch_context *arch_getcontext(void)
+static struct arch_context *getcontext0(void)
 {
 
     return &context0;
+
+}
+
+struct arch_context *arch_getcontext(void)
+{
+
+    return contextcallback();
+
+}
+
+void arch_setcontext(struct arch_context *(*callback)(void))
+{
+
+    contextcallback = callback;
+
+}
+
+static void assign0(struct task *task)
+{
+
+    list_move(&context0.core.tasks, &task->state.item);
+
+}
+
+void arch_setassign(void (*callback)(struct task *task))
+{
+
+    assigncallback = callback;
 
 }
 
@@ -100,13 +130,6 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
     mapkernel(index, paddress, vaddress, size);
     mmu_setdirectory(getkerneldirectory());
-
-}
-
-static void assign(struct task *task)
-{
-
-    list_move(&context0.core.tasks, &task->state.item);
 
 }
 
@@ -123,7 +146,7 @@ void arch_schedule(struct cpu_general *general, struct arch_context *context, un
 
     }
 
-    context->task = kernel_schedule(&context->core, assign);
+    context->task = kernel_schedule(&context->core, assigncallback);
 
     if (context->task)
     {
@@ -421,6 +444,8 @@ static void setuptask(struct service_backend *backend)
 void arch_setup(struct service_backend *backend)
 {
 
+    arch_setcontext(getcontext0);
+    arch_setassign(assign0);
     arch_initcontext(&context0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     arch_configuregdt();
     arch_configureidt();

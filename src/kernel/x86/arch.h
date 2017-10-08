@@ -54,6 +54,8 @@ struct arch_tss
 };
 
 struct arch_context *arch_getcontext(void);
+void arch_setcontext(struct arch_context *(*callback)(void));
+void arch_setassign(void (*callback)(struct task *task));
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int count);
 void arch_schedule(struct cpu_general *general, struct arch_context *context, unsigned int ip, unsigned int sp);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);

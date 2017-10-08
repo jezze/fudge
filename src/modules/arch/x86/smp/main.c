@@ -19,10 +19,10 @@
 
 static struct arch_tss tss[256];
 static struct arch_context context[256];
-static unsigned int total;
 static struct spinlock spinlock;
 static struct system_node root;
 static struct system_node cpus;
+static struct list corelist;
 
 static void detect(struct acpi_madt *madt)
 {
@@ -100,13 +100,31 @@ static void copytrampoline32()
 
 }
 
-static void addtotal(void)
+/*
+static struct arch_context *getcontext(void)
+{
+
+    unsigned int id = apic_getid();
+
+    return &context[id];
+
+}
+
+static void assign(struct task *task)
+{
+
+    struct core *core = corelist.tail->data;
+
+    list_move(&core->tasks, &task->state.item);
+
+}
+*/
+
+static void registercore(unsigned int id)
 {
 
     spinlock_acquire(&spinlock);
-
-    total++;
-
+    list_add(&corelist, &context[id].core.item);
     spinlock_release(&spinlock);
 
 }
@@ -116,7 +134,7 @@ void smp_setup(unsigned int stack)
 
     unsigned int id = apic_getid();
 
-    addtotal();
+    registercore(id);
     arch_initcontext(&context[id], id, stack);
     arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
@@ -130,7 +148,7 @@ static unsigned int cpus_read(struct system_node *self, struct system_node *curr
 
     char num[FUDGE_NSIZE];
 
-    return memory_read(buffer, count, num, ascii_wvalue(num, FUDGE_NSIZE, total, 10, 0), offset);
+    return memory_read(buffer, count, num, ascii_wvalue(num, FUDGE_NSIZE, corelist.count, 10, 0), offset);
 
 }
 
@@ -141,11 +159,16 @@ void module_init(void)
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
     struct arch_context *c = arch_getcontext();
 
-    addtotal();
+    registercore(id);
     arch_initcontext(&context[id], id, c->core.sp);
     arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
 
     context[id].task = c->task;
+
+/*
+    arch_setcontext(getcontext);
+    arch_setassign(assign);
+*/
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");

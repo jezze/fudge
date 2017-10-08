@@ -1,6 +1,7 @@
 struct core
 {
 
+    struct list_item item;
     unsigned int id;
     unsigned int sp;
     struct resource resource;
