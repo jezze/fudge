@@ -134,11 +134,11 @@ void smp_setup(unsigned int stack)
 
     unsigned int id = apic_getid();
 
-    registercore(id);
     arch_initcontext(&context[id], id, stack);
     arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
+    registercore(id);
     arch_leave(&context[id]);
 
 }
@@ -159,9 +159,9 @@ void module_init(void)
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
     struct arch_context *c = arch_getcontext();
 
-    registercore(id);
     arch_initcontext(&context[id], id, c->core.sp);
     arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
+    registercore(id);
 
     context[id].task = c->task;
 
