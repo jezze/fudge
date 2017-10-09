@@ -11,15 +11,15 @@
 void syse_resume(struct cpu_general *general)
 {
 
-    struct arch_context *context = arch_getcontext();
+    struct core *core = arch_getcore();
 
-    arch_schedule(general, context, general->edx.value, general->ecx.value);
+    arch_schedule(general, core, general->edx.value, general->ecx.value);
 
-    if (context->task)
+    if (core->task)
     {
 
-        general->edx.value = context->task->state.ip;
-        general->ecx.value = context->task->state.sp;
+        general->edx.value = core->task->state.ip;
+        general->ecx.value = core->task->state.sp;
 
     }
 
@@ -27,7 +27,7 @@ void syse_resume(struct cpu_general *general)
     {
 
         general->edx.value = (unsigned int)cpu_halt;
-        general->ecx.value = context->core.sp;
+        general->ecx.value = core->sp;
 
     }
 
@@ -36,9 +36,9 @@ void syse_resume(struct cpu_general *general)
 void syse_syscall(struct cpu_general general)
 {
 
-    struct arch_context *context = arch_getcontext();
+    struct core *core = arch_getcore();
 
-    general.eax.value = abi_call(general.eax.value, context->task, (void *)(general.ecx.value + 8));
+    general.eax.value = abi_call(general.eax.value, core->task, (void *)(general.ecx.value + 8));
 
     syse_resume(&general);
 

@@ -21,14 +21,6 @@
 #define ARCH_UDATA                      0x04
 #define ARCH_TSS                        0x05
 
-struct arch_context
-{
-
-    struct core core;
-    struct task *task;
-
-};
-
 struct arch_gdt
 {
 
@@ -53,13 +45,13 @@ struct arch_tss
 
 };
 
-struct arch_context *arch_getcontext(void);
-void arch_setcontext(struct arch_context *(*callback)(void));
+struct core *arch_getcore(void);
+void arch_setcore(struct core *(*callback)(void));
 void arch_setassign(void (*callback)(struct task *task));
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int count);
-void arch_schedule(struct cpu_general *general, struct arch_context *context, unsigned int ip, unsigned int sp);
+void arch_schedule(struct cpu_general *general, struct core *core, unsigned int ip, unsigned int sp);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);
-void arch_leave(struct arch_context *context);
+void arch_leave(struct core *core);
 void arch_configuregdt(void);
 void arch_configureidt(void);
 void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp);

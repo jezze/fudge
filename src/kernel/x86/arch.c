@@ -11,9 +11,9 @@
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
-static struct arch_context context0;
+static struct core core0;
 static struct arch_tss tss0;
-static struct arch_context *(*contextcallback)(void);
+static struct core *(*corecallback)(void);
 static void (*assigncallback)(struct task *task);
 
 static struct mmu_directory *getkerneldirectory(void)
@@ -90,31 +90,31 @@ static unsigned int despawn(struct task *task, void *stack)
 
 }
 
-static struct arch_context *getcontext0(void)
+static struct core *getcore0(void)
 {
 
-    return &context0;
+    return &core0;
 
 }
 
-struct arch_context *arch_getcontext(void)
+struct core *arch_getcore(void)
 {
 
-    return contextcallback();
+    return corecallback();
 
 }
 
-void arch_setcontext(struct arch_context *(*callback)(void))
+void arch_setcore(struct core *(*callback)(void))
 {
 
-    contextcallback = callback;
+    corecallback = callback;
 
 }
 
 static void assign0(struct task *task)
 {
 
-    list_move(&context0.core.tasks, &task->state.item);
+    list_move(&core0.tasks, &task->state.item);
 
 }
 
@@ -133,41 +133,41 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
-void arch_schedule(struct cpu_general *general, struct arch_context *context, unsigned int ip, unsigned int sp)
+void arch_schedule(struct cpu_general *general, struct core *core, unsigned int ip, unsigned int sp)
 {
 
-    if (context->task)
+    if (core->task)
     {
 
-        context->task->state.ip = ip;
-        context->task->state.sp = sp;
+        core->task->state.ip = ip;
+        core->task->state.sp = sp;
 
-        memory_copy(&registers[context->task->id], general, sizeof (struct cpu_general));
+        memory_copy(&registers[core->task->id], general, sizeof (struct cpu_general));
 
     }
 
-    context->task = kernel_schedule(&context->core, assigncallback);
+    core->task = kernel_schedule(core, assigncallback);
 
-    if (context->task)
+    if (core->task)
     {
 
-        memory_copy(general, &registers[context->task->id], sizeof (struct cpu_general));
-        mmu_setdirectory(gettaskdirectory(context->task->id));
+        memory_copy(general, &registers[core->task->id], sizeof (struct cpu_general));
+        mmu_setdirectory(gettaskdirectory(core->task->id));
 
     }
 
 }
 
-static void setinterrupt(struct cpu_interrupt *interrupt, struct arch_context *context)
+static void setinterrupt(struct cpu_interrupt *interrupt, struct core *core)
 {
 
-    if (context->task)
+    if (core->task)
     {
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
-        interrupt->eip.value = context->task->state.ip;
-        interrupt->esp.value = context->task->state.sp;
+        interrupt->eip.value = core->task->state.ip;
+        interrupt->esp.value = core->task->state.sp;
 
     }
 
@@ -177,7 +177,7 @@ static void setinterrupt(struct cpu_interrupt *interrupt, struct arch_context *c
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
         interrupt->eip.value = (unsigned int)cpu_halt;
-        interrupt->esp.value = context->core.sp;
+        interrupt->esp.value = core->sp;
 
     }
 
@@ -186,16 +186,16 @@ static void setinterrupt(struct cpu_interrupt *interrupt, struct arch_context *c
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
+    struct core *core = arch_getcore();
 
-    arch_schedule(general, context, interrupt->eip.value, interrupt->esp.value);
-    setinterrupt(interrupt, context);
+    arch_schedule(general, core, interrupt->eip.value, interrupt->esp.value);
+    setinterrupt(interrupt, core);
 
     return interrupt->ss.value;
 
 }
 
-void arch_leave(struct arch_context *context)
+void arch_leave(struct core *core)
 {
 
     struct cpu_general general;
@@ -203,8 +203,8 @@ void arch_leave(struct arch_context *context)
 
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
-    arch_schedule(&general, context, interrupt.eip.value, interrupt.esp.value);
-    setinterrupt(&interrupt, context);
+    arch_schedule(&general, core, interrupt.eip.value, interrupt.esp.value);
+    setinterrupt(&interrupt, core);
     cpu_leave(interrupt);
 
 }
@@ -212,12 +212,12 @@ void arch_leave(struct arch_context *context)
 unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
+    struct core *core = arch_getcore();
 
     DEBUG(DEBUG_INFO, "exception: divide by zero");
 
     if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
-        kernel_freetask(context->task);
+        kernel_freetask(core->task);
 
     return arch_resume(&general, &interrupt);
 
@@ -334,26 +334,26 @@ unsigned short arch_generalfault(struct cpu_general general, unsigned int select
 unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
+    struct core *core = arch_getcore();
 
-    if (context->task)
+    if (core->task)
     {
 
-        unsigned int code = context->task->format->findbase(&context->task->node, cpu_getcr2());
+        unsigned int code = core->task->format->findbase(&core->task->node, cpu_getcr2());
 
         if (code)
         {
 
-            maptask(context->task, 0, ARCH_TASKCODEADDRESS + context->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE);
-            maptask(context->task, 1, ARCH_TASKCODEADDRESS + context->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKADDRESS - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE);
-            context->task->format->copyprogram(&context->task->node);
+            maptask(core->task, 0, ARCH_TASKCODEADDRESS + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE);
+            maptask(core->task, 1, ARCH_TASKCODEADDRESS + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKADDRESS - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE);
+            core->task->format->copyprogram(&core->task->node);
 
         }
 
         else
         {
 
-            kernel_freetask(context->task);
+            kernel_freetask(core->task);
 
         }
 
@@ -366,10 +366,10 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct arch_context *context = arch_getcontext();
+    struct core *core = arch_getcore();
 
-    context->task->state.rewind = 7;
-    general.eax.value = abi_call(general.eax.value, context->task, interrupt.esp.reference);
+    core->task->state.rewind = 7;
+    general.eax.value = abi_call(general.eax.value, core->task, interrupt.esp.reference);
 
     return arch_resume(&general, &interrupt);
 
@@ -437,12 +437,12 @@ static void setuptask()
 void arch_setup(struct service_backend *backend)
 {
 
-    core_init(&context0.core, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    arch_setcontext(getcontext0);
+    core_init(&core0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
+    arch_setcore(getcore0);
     arch_setassign(assign0);
     arch_configuregdt();
     arch_configureidt();
-    arch_configuretss(&tss0, ARCH_TSS, context0.core.sp);
+    arch_configuretss(&tss0, ARCH_TSS, core0.sp);
     mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
     mapkernel(1, 0x00400000, 0x00400000, 0x00400000);
     mapkernel(2, 0x00800000, 0x00800000, 0x00400000);
@@ -458,7 +458,7 @@ void arch_setup(struct service_backend *backend)
     kernel_setupservices();
     resource_register(&backend->resource);
     setuptask();
-    arch_leave(&context0);
+    arch_leave(&core0);
 
 }
 

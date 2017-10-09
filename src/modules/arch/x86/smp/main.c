@@ -18,7 +18,7 @@
 #define INIT32ADDRESS                   0x00008200
 
 static struct arch_tss tss[256];
-static struct arch_context context[256];
+static struct core cores[256];
 static struct spinlock spinlock;
 static struct system_node root;
 static struct system_node cpus;
@@ -100,10 +100,10 @@ static void copytrampoline32()
 
 }
 
-static struct arch_context *getcontext(void)
+static struct core *getcore(void)
 {
 
-    return &context[0];
+    return &cores[0];
 
 }
 
@@ -135,12 +135,12 @@ void smp_setup(unsigned int stack)
 
     unsigned int id = apic_getid();
 
-    core_init(&context[id].core, id, stack);
-    arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
+    core_init(&cores[id], id, stack);
+    arch_configuretss(&tss[id], ARCH_TSS + id, cores[id].sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
-    registercore(&context[id].core);
-    arch_leave(&context[id]);
+    registercore(&cores[id]);
+    arch_leave(&cores[id]);
 
 }
 
@@ -158,18 +158,18 @@ void module_init(void)
 
     unsigned int id = apic_getid();
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
-    struct arch_context *c = arch_getcontext();
+    struct core *c = arch_getcore();
 
-    core_init(&context[id].core, id, c->core.sp);
-    arch_configuretss(&tss[id], ARCH_TSS + id, context[id].core.sp);
-    registercore(&context[id].core);
+    core_init(&cores[id], id, c->sp);
+    arch_configuretss(&tss[id], ARCH_TSS + id, cores[id].sp);
+    registercore(&cores[id]);
 
-    context[id].task = c->task;
+    cores[id].task = c->task;
 
-    while (c->core.tasks.count)
-        list_move(&context[id].core.tasks, c->core.tasks.tail);
+    while (c->tasks.count)
+        list_move(&cores[id].tasks, c->tasks.tail);
 
-    arch_setcontext(getcontext);
+    arch_setcore(getcore);
     arch_setassign(assign);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
