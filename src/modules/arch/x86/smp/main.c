@@ -100,25 +100,26 @@ static void copytrampoline32()
 
 }
 
-/*
 static struct arch_context *getcontext(void)
 {
 
-    unsigned int id = apic_getid();
-
-    return &context[id];
+    return &context[0];
 
 }
 
 static void assign(struct task *task)
 {
 
-    struct core *core = corelist.head->data;
+    struct core *core;
+
+    spinlock_acquire(&spinlock);
+
+    core = corelist.head->data;
 
     list_move(&core->tasks, &task->state.item);
+    spinlock_release(&spinlock);
 
 }
-*/
 
 static void registercore(struct core *core)
 {
@@ -165,13 +166,11 @@ void module_init(void)
 
     context[id].task = c->task;
 
-/*
     while (c->core.tasks.count)
         list_move(&context[id].core.tasks, c->core.tasks.tail);
 
     arch_setcontext(getcontext);
     arch_setassign(assign);
-*/
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
