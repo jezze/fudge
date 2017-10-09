@@ -375,13 +375,6 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-void arch_initcontext(struct arch_context *context, unsigned int id, unsigned int sp)
-{
-
-    core_init(&context->core, id, sp);
-
-}
-
 void arch_configuregdt(void)
 {
 
@@ -444,9 +437,9 @@ static void setuptask()
 void arch_setup(struct service_backend *backend)
 {
 
+    core_init(&context0.core, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     arch_setcontext(getcontext0);
     arch_setassign(assign0);
-    arch_initcontext(&context0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, ARCH_TSS, context0.core.sp);

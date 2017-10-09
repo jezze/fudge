@@ -60,7 +60,6 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 void arch_schedule(struct cpu_general *general, struct arch_context *context, unsigned int ip, unsigned int sp);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);
 void arch_leave(struct arch_context *context);
-void arch_initcontext(struct arch_context *context, unsigned int id, unsigned int sp);
 void arch_configuregdt(void);
 void arch_configureidt(void);
 void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp);
