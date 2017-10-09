@@ -113,7 +113,7 @@ static struct arch_context *getcontext(void)
 static void assign(struct task *task)
 {
 
-    struct core *core = corelist.tail->data;
+    struct core *core = corelist.head->data;
 
     list_move(&core->tasks, &task->state.item);
 
@@ -166,6 +166,9 @@ void module_init(void)
     context[id].task = c->task;
 
 /*
+    while (c->core.tasks.count)
+        list_move(&context[id].core.tasks, c->core.tasks.tail);
+
     arch_setcontext(getcontext);
     arch_setassign(assign);
 */
