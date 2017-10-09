@@ -171,7 +171,6 @@ void module_init(void)
 
     arch_setcontext(getcontext);
     arch_setassign(assign);
-
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 
