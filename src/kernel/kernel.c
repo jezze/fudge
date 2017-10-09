@@ -396,7 +396,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
 }
 
-void kernel_setupramdisk(struct task *task, struct service_backend *backend)
+void kernel_setupinit(struct task *task)
 {
 
     struct service *init = kernel_getservice(task, 8);
@@ -404,9 +404,9 @@ void kernel_setupramdisk(struct task *task, struct service_backend *backend)
     struct service_server *server = kernel_pickserver();
     struct service_mount *mount = kernel_pickmount();
 
-    server->backend = backend;
+    server->backend = service_findbackend(1000);
     server->protocol = service_findprotocol(1000);
-    server->root = server->protocol->root(backend);
+    server->root = server->protocol->root(server->backend);
     mount->parent.server = server;
     mount->parent.id = server->root;
     mount->child.server = server;

@@ -428,12 +428,12 @@ void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
 
 }
 
-static void setuptask(struct service_backend *backend)
+static void setuptask()
 {
 
     struct task *task = kernel_picktask();
 
-    kernel_setupramdisk(task, backend);
+    kernel_setupinit(task);
     memory_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
     kernel_copyservices(task, task);
     kernel_setupbinary(task, ARCH_TASKSTACKADDRESS);
@@ -463,7 +463,8 @@ void arch_setup(struct service_backend *backend)
     kernel_setupservers();
     kernel_setupmounts();
     kernel_setupservices();
-    setuptask(backend);
+    resource_register(&backend->resource);
+    setuptask();
     arch_leave(&context0);
 
 }
