@@ -185,7 +185,7 @@ struct task *kernel_schedule(struct core *core, void (*assign)(struct task *task
 
         struct task *task = current->data;
 
-        list_move(&readytasks, current);
+        assign(task);
 
         task->state.ip -= task->state.rewind;
 
