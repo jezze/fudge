@@ -175,7 +175,6 @@ struct task *kernel_schedule(struct core *core, void (*assign)(struct task *task
 
         task->state.status = TASK_STATUS_READY;
         task->state.ip -= task->state.rewind;
-        task->state.rewind = 0;
 
     }
 
