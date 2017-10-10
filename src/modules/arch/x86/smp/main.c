@@ -54,12 +54,13 @@ static void detect(struct acpi_madt *madt)
         if (entry->type == 1)
         {
 
+/*
             struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
             unsigned int id;
             unsigned int version;
             unsigned int count;
 
-            arch_setmap(7, ioapic->address, ioapic->address, 0x1000);
+            arch_setmap(8, ioapic->address, ioapic->address, 0x1000);
 
             id = ioapic_ind(ioapic->address, 0);
             version = ioapic_ind(ioapic->address, 1);
@@ -71,6 +72,7 @@ static void detect(struct acpi_madt *madt)
             debug_write(DEBUG_INFO, "  ", "ioapic id", id);
             debug_write(DEBUG_INFO, "  ", "ioapic version", version);
             debug_write(DEBUG_INFO, "  ", "ioapic count", count);
+*/
 
         }
 
