@@ -1,10 +1,7 @@
 #define TASK_DESCRIPTORS                32
 #define TASK_MAILBOXSIZE                4096
-#define TASK_STATUS_FREE                0
-#define TASK_STATUS_READY               1
-#define TASK_STATUS_ASSIGNED            2
-#define TASK_STATUS_UNBLOCKED           3
-#define TASK_STATUS_BLOCKED             4
+#define TASK_STATUS_NORMAL              0
+#define TASK_STATUS_BLOCKED             1
 
 struct task_state
 {

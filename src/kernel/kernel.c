@@ -97,9 +97,16 @@ void kernel_freetask(struct task *task)
 {
 
     spinlock_acquire(&tasklock);
-    list_move(&freetasks, &task->state.item);
 
-    task->state.status = TASK_STATUS_FREE;
+    switch (task->state.status)
+    {
+
+    case TASK_STATUS_NORMAL:
+        list_move(&freetasks, &task->state.item);
+
+        break;
+
+    }
 
     spinlock_release(&tasklock);
 
@@ -109,9 +116,16 @@ void kernel_readytask(struct task *task)
 {
 
     spinlock_acquire(&tasklock);
-    list_move(&readytasks, &task->state.item);
 
-    task->state.status = TASK_STATUS_READY;
+    switch (task->state.status)
+    {
+
+    case TASK_STATUS_NORMAL:
+        list_move(&readytasks, &task->state.item);
+
+        break;
+
+    }
 
     spinlock_release(&tasklock);
 
@@ -125,7 +139,7 @@ void kernel_blocktask(struct task *task)
     switch (task->state.status)
     {
 
-    case TASK_STATUS_ASSIGNED:
+    case TASK_STATUS_NORMAL:
         list_move(&blockedtasks, &task->state.item);
 
         task->state.status = TASK_STATUS_BLOCKED;
@@ -149,7 +163,7 @@ void kernel_unblocktask(struct task *task)
     case TASK_STATUS_BLOCKED:
         list_move(&unblockedtasks, &task->state.item);
 
-        task->state.status = TASK_STATUS_UNBLOCKED;
+        task->state.status = TASK_STATUS_NORMAL;
 
         break;
 
@@ -173,7 +187,6 @@ struct task *kernel_schedule(struct core *core, void (*assign)(struct task *task
 
         list_move(&readytasks, current);
 
-        task->state.status = TASK_STATUS_READY;
         task->state.ip -= task->state.rewind;
 
     }
@@ -184,8 +197,6 @@ struct task *kernel_schedule(struct core *core, void (*assign)(struct task *task
         struct task *task = current->data;
 
         assign(task);
-
-        task->state.status = TASK_STATUS_ASSIGNED;
 
     }
 
