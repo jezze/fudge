@@ -139,14 +139,11 @@ void arch_schedule(struct cpu_general *general, struct core *core, unsigned int 
     if (core->task)
     {
 
-        core->task->state.ip = ip;
-        core->task->state.sp = sp;
-
         memory_copy(&registers[core->task->id], general, sizeof (struct cpu_general));
 
     }
 
-    core->task = kernel_schedule(core, assigncallback);
+    core->task = kernel_schedule(core, ip, sp, assigncallback);
 
     if (core->task)
     {

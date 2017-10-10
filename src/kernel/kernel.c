@@ -173,12 +173,15 @@ void kernel_unblocktask(struct task *task)
 
 }
 
-struct task *kernel_schedule(struct core *core, void (*assign)(struct task *task))
+struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp, void (*assign)(struct task *task))
 {
 
     struct list_item *current;
 
     spinlock_acquire(&tasklock);
+
+    core->task->state.ip = ip;
+    core->task->state.sp = sp;
 
     for (current = unblockedtasks.head; current; current = current->next)
     {
