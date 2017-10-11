@@ -102,10 +102,20 @@ static void copytrampoline32()
 
 }
 
+/* TODO: Remove changing of CR3 register. This is a workaround because existing tasks cant access apic mapped register. */
 static struct core *getcore(void)
 {
 
-    return &cores[0];
+    unsigned int directory = cpu_getcr3();
+    unsigned int id;
+
+    cpu_setcr3(ARCH_MMUKERNELADDRESS);
+
+    id = apic_getid();
+
+    cpu_setcr3(directory);
+
+    return &cores[id];
 
 }
 
