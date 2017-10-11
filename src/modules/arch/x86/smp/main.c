@@ -128,6 +128,14 @@ static void assign(struct task *task)
 
     core = corelist.head->data;
 
+/*
+    Round robin scheuling.
+
+    list_move(&corelist, &core->item);
+
+    TODO: Send wakeup to core->id
+*/
+
     list_move(&core->tasks, &task->state.item);
     spinlock_release(&spinlock);
 
