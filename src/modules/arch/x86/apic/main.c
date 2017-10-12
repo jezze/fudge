@@ -80,11 +80,20 @@ static void apic_outd(unsigned int reg, unsigned int value)
 
 }
 
+/* TODO: Remove changing of CR3 register. This is a workaround because existing tasks cant access apic mapped register. */
 unsigned int apic_getid(void)
 {
 
-    return apic_ind(REGISTERID) >> 24;
+    unsigned int directory = cpu_getcr3();
+    unsigned int id;
 
+    cpu_setcr3(ARCH_MMUKERNELADDRESS);
+
+    id = apic_ind(REGISTERID) >> 24;
+
+    cpu_setcr3(directory);
+
+    return id;
 }
 
 /* TODO: Remove changing of CR3 register. This is a workaround because existing tasks cant access apic mapped register. */
