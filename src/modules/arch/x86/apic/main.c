@@ -87,14 +87,16 @@ unsigned int apic_getid(void)
 
 }
 
+/* TODO: Remove changing of CR3 register. This is a workaround because existing tasks cant access apic mapped register. */
 unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG(DEBUG_INFO, "APIC INTERRUPT");
+    unsigned int directory = cpu_getcr3();
 
-/*
+    DEBUG(DEBUG_INFO, "APIC INTERRUPT");
+    cpu_setcr3(ARCH_MMUKERNELADDRESS);
     apic_outd(REGISTEREOI, 0);
-*/
+    cpu_setcr3(directory);
 
     return arch_resume(&general, &interrupt);
 

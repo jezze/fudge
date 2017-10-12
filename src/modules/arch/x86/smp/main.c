@@ -132,8 +132,7 @@ static void assign(struct task *task)
     Round robin scheuling.
 
     list_move(&corelist, &core->item);
-
-    TODO: Send wakeup to core->id
+    apic_sendint(core->id, APIC_ICR_ASSERT | 0xFE);
 */
 
     list_move(&core->tasks, &task->state.item);
