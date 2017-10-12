@@ -120,6 +120,8 @@ static void assign(struct task *task)
 
     core = corelist.head->data;
 
+    list_move(&core->tasks, &task->state.item);
+
 /*
     Round robin scheuling.
 
@@ -127,7 +129,6 @@ static void assign(struct task *task)
     apic_sendint(core->id, APIC_ICR_ASSERT | 0xFE);
 */
 
-    list_move(&core->tasks, &task->state.item);
     spinlock_release(&spinlock);
 
 }
