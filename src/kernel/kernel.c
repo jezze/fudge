@@ -180,8 +180,13 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 
     spinlock_acquire(&tasklock);
 
-    core->task->state.ip = ip;
-    core->task->state.sp = sp;
+    if (core->task)
+    {
+
+        core->task->state.ip = ip;
+        core->task->state.sp = sp;
+
+    }
 
     for (current = unblockedtasks.head; current; current = current->next)
     {
