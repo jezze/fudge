@@ -94,7 +94,7 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
     struct system_node *currentnode = (struct system_node *)current;
 
     return (node->read) ? node->read(node, currentnode, state, buffer, count, offset) : 0;
-        
+
 }
 
 static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)

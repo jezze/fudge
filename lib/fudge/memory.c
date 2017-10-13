@@ -91,7 +91,7 @@ unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int
 unsigned int memory_pagecount(unsigned int value)
 {
 
-    return (value + (FUDGE_BSIZE - 1)) / FUDGE_BSIZE; 
+    return (value + (FUDGE_BSIZE - 1)) / FUDGE_BSIZE;
 
 }
 

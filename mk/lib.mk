@@ -1,5 +1,5 @@
 $(L): $(O)
-	@echo AR $@ 
+	@echo AR $@
 	@$(AR) $@ $^
 
 LIB:=$(LIB) $(L)
