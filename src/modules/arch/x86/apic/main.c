@@ -117,7 +117,7 @@ void apic_sendint(unsigned int id, unsigned int value)
     apic_outd(REGISTERICR1, id << 24);
     apic_outd(REGISTERICR0, value);
 
-    while (apic_ind(REGISTERICR0) & APIC_ICR_STATUS);
+    while (apic_ind(REGISTERICR0) & APIC_ICR_STATUS_PENDING);
 
 }
 
