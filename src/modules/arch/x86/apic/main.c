@@ -135,32 +135,36 @@ void module_init(void)
 
     cpuid_getdata(CPUID_FEATURES0, &data);
 
-    if (!(data.edx & CPUID_FEATURES01_APIC))
-        return;
-
 /*
-    if (!(data.ecx & CPUID_FEATURES00_2XAPIC))
-        return;
+    if ((data.ecx & CPUID_FEATURES00_2XAPIC))
+    {
 
-    pic_disable();
+
+    }
 */
 
-    msr_get(MSR_LAPIC, &msrdata);
+    if ((data.edx & CPUID_FEATURES01_APIC))
+    {
 
-    mmio = (msrdata.eax & 0xFFFFF000);
+        msr_get(MSR_LAPIC, &msrdata);
 
-    arch_setmap(7, mmio, mmio, 0x1000);
-    idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    apic_outd(REGISTERTPR, 0);
-    apic_outd(REGISTERLDR, 0x01000000);
-    apic_outd(REGISTERDFR, 0xFFFFFFFF);
-    apic_outd(REGISTERSV, (1 << 8) | 0xFF);
-    apic_outd(REGISTERLVTTIMER, 0x10000);
-    apic_outd(REGISTERLVTPERF, 0x10000);
-    apic_outd(REGISTERLVTLINT0, 0x8700);
-    apic_outd(REGISTERLVTLINT1, 0x400);
-    apic_outd(REGISTERLVTERROR, 0x10000);
+        mmio = (msrdata.eax & 0xFFFFF000);
+
+        arch_setmap(7, mmio, mmio, 0x1000);
+        idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+        idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+        apic_outd(REGISTERTPR, 0x00000000);
+        apic_outd(REGISTERLDR, 0x00000000);
+        apic_outd(REGISTERDFR, 0xFFFFFFFF);
+        apic_outd(REGISTERSV, (1 << 8) | 0xFF);
+        apic_outd(REGISTERLVTCMCI, 0x00010000);
+        apic_outd(REGISTERLVTTIMER, 0x00010000);
+        apic_outd(REGISTERLVTPERF, 0x00010000);
+        apic_outd(REGISTERLVTLINT0, 0x00000700);
+        apic_outd(REGISTERLVTLINT1, 0x00000400);
+        apic_outd(REGISTERLVTERROR, 0x00010000);
+
+    }
 
 }
 
