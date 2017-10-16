@@ -151,6 +151,7 @@ void smp_setup(unsigned int stack)
     arch_configuretss(&tss[id], ARCH_TSS + id, cores[id].sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
+    apic_setup();
     registercore(&cores[id]);
     arch_leave(&cores[id]);
 
