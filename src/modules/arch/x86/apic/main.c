@@ -102,7 +102,6 @@ unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt i
 
     unsigned int directory = cpu_getcr3();
 
-    DEBUG(DEBUG_INFO, "APIC INTERRUPT");
     cpu_setcr3(ARCH_MMUKERNELADDRESS);
     apic_outd(REGISTEREOI, 0);
     cpu_setcr3(directory);
@@ -130,10 +129,16 @@ void apic_setup()
 void apic_sendint(unsigned int id, unsigned int value)
 {
 
+    unsigned int directory = cpu_getcr3();
+
+    cpu_setcr3(ARCH_MMUKERNELADDRESS);
+
     apic_outd(REGISTERICR1, id << 24);
     apic_outd(REGISTERICR0, value);
 
     while (apic_ind(REGISTERICR0) & APIC_ICR_STATUS_PENDING);
+
+    cpu_setcr3(directory);
 
 }
 
