@@ -65,7 +65,7 @@ static unsigned int mmio;
 static unsigned int apic_ind(unsigned int reg)
 {
 
-    unsigned int *address = (unsigned int *)(mmio + reg);
+    volatile unsigned int *address = (volatile unsigned int *)(mmio + reg);
 
     return *address;
 
@@ -74,7 +74,7 @@ static unsigned int apic_ind(unsigned int reg)
 static void apic_outd(unsigned int reg, unsigned int value)
 {
 
-    unsigned int *address = (unsigned int *)(mmio + reg);
+    volatile unsigned int *address = (volatile unsigned int *)(mmio + reg);
 
     *address = value;
 
