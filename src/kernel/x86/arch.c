@@ -180,10 +180,8 @@ static void setinterrupt(struct cpu_interrupt *interrupt, struct core *core)
 
 }
 
-unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
+unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt, struct core *core)
 {
-
-    struct core *core = arch_getcore();
 
     arch_schedule(general, core, interrupt->eip.value, interrupt->esp.value);
     setinterrupt(interrupt, core);
@@ -198,10 +196,12 @@ void arch_leave(struct core *core)
     struct cpu_general general;
     struct cpu_interrupt interrupt;
 
+    memory_clear(&general, sizeof (struct cpu_general));
+    memory_clear(&interrupt, sizeof (struct cpu_interrupt));
+
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
-    arch_schedule(&general, core, interrupt.eip.value, interrupt.esp.value);
-    setinterrupt(&interrupt, core);
+    arch_resume(&general, &interrupt, core);
     cpu_leave(interrupt);
 
 }
@@ -216,115 +216,139 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
         kernel_freetask(core->task);
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_debug(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: debug");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_nmi(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: non-maskable interrupt");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_breakpoint(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: breakpoint");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_overflow(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: overflow");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_bound(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: bound range exceeded");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_opcode(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: invalid opcode");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_device(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: device unavailable");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: double fault");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_tss(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: invalid tss");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_segment(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: segment not present");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_stack(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: stack segment fault");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
 unsigned short arch_generalfault(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
+    struct core *core = arch_getcore();
+
     DEBUG(DEBUG_INFO, "exception: general fault");
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
@@ -356,7 +380,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
     }
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
@@ -368,7 +392,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
     core->task->state.rewind = 7;
     general.eax.value = abi_call(general.eax.value, core->task, interrupt.esp.reference);
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(&general, &interrupt, core);
 
 }
 
