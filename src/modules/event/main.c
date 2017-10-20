@@ -6,7 +6,7 @@
 
 static struct system_node root;
 
-void event_unicast(struct list *states, struct event_header *header, unsigned int count)
+unsigned int event_unicast(struct list *states, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
@@ -19,13 +19,15 @@ void event_unicast(struct list *states, struct event_header *header, unsigned in
         if (header->destination != (unsigned int)state->task)
             continue;
 
-        kernel_writemailbox(state->task, header, count);
+        return kernel_writemailbox(state->task, header, count);
 
     }
 
+    return 0;
+
 }
 
-void event_multicast(struct list *states, struct event_header *header, unsigned int count)
+unsigned int event_multicast(struct list *states, struct event_header *header, unsigned int count)
 {
 
     struct list_item *current;
@@ -41,6 +43,8 @@ void event_multicast(struct list *states, struct event_header *header, unsigned 
 
     }
 
+    return count;
+
 }
 
 unsigned int event_send(struct list *states, struct service_state *state, void *buffer, unsigned int count)
@@ -51,11 +55,9 @@ unsigned int event_send(struct list *states, struct service_state *state, void *
     header->source = (unsigned int)state->task;
 
     if (header->destination)
-        event_unicast(states, header, count);
+        return event_unicast(states, header, count);
     else
-        event_multicast(states, header, count);
-
-    return count;
+        return event_multicast(states, header, count);
 
 }
 
