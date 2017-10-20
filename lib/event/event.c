@@ -254,195 +254,171 @@ unsigned int event_read(struct event_handlers *handlers, unsigned int descriptor
 
 }
 
-static void send(unsigned int descriptor, unsigned int destination, unsigned int type, unsigned int datacount, void *databuffer)
-{
-
-    unsigned char buffer[512];
-    struct event_header header;
-
-    header.destination = destination;
-    header.type = type;
-
-    memory_write(buffer, 512, &header, sizeof (struct event_header), 0);
-    memory_write(buffer, 512, databuffer, datacount, sizeof (struct event_header));
-    file_writeall(descriptor, buffer, sizeof (struct event_header) + datacount);
-
-}
-
-void event_sendkeypress(unsigned int descriptor, unsigned int destination, unsigned char scancode)
-{
-
-    struct event_keypress keypress;
-
-    keypress.scancode = scancode;
-
-    send(descriptor, destination, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
-
-}
-
-void event_sendkeyrelease(unsigned int descriptor, unsigned int destination, unsigned char scancode)
-{
-
-    struct event_keyrelease keyrelease;
-
-    keyrelease.scancode = scancode;
-
-    send(descriptor, destination, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
-
-}
-
-void event_sendmousemove(unsigned int descriptor, unsigned int destination, char relx, char rely)
-{
-
-    struct event_mousemove mousemove;
-
-    mousemove.relx = relx;
-    mousemove.rely = rely;
-
-    send(descriptor, destination, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
-
-}
-
-void event_sendmousepress(unsigned int descriptor, unsigned int destination, unsigned int button)
-{
-
-    struct event_mousepress mousepress;
-
-    mousepress.button = button;
-
-    send(descriptor, destination, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
-
-}
-
-void event_sendmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button)
-{
-
-    struct event_mouserelease mouserelease;
-
-    mouserelease.button = button;
-
-    send(descriptor, destination, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
-
-}
-
 void event_sendwmmap(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, destination, EVENT_WMMAP, 0, 0);
+    struct event_header header;
+
+    header.destination = destination;
+    header.type = EVENT_WMMAP;
+
+    file_writeall(descriptor, &header, sizeof (struct event_header));
 
 }
 
 void event_sendwmunmap(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, destination, EVENT_WMUNMAP, 0, 0);
+    struct event_header header;
+
+    header.destination = destination;
+    header.type = EVENT_WMUNMAP;
+
+    file_writeall(descriptor, &header, sizeof (struct event_header));
 
 }
 
 void event_sendwminit(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, destination, EVENT_WMINIT, 0, 0);
+    struct event_header header;
+
+    header.destination = destination;
+    header.type = EVENT_WMINIT;
+
+    file_writeall(descriptor, &header, sizeof (struct event_header));
 
 }
 
 void event_sendwmexit(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, destination, EVENT_WMEXIT, 0, 0);
+    struct event_header header;
+
+    header.destination = destination;
+    header.type = EVENT_WMEXIT;
+
+    file_writeall(descriptor, &header, sizeof (struct event_header));
 
 }
 
 void event_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 
-    struct event_wmresize wmresize;
+    struct {struct event_header header; struct event_wmresize wmresize;} message;
 
-    wmresize.x = x;
-    wmresize.y = y;
-    wmresize.w = w;
-    wmresize.h = h;
-    wmresize.padding = padding;
-    wmresize.lineheight = lineheight;
+    message.header.destination = destination;
+    message.header.type = EVENT_WMRESIZE;
+    message.wmresize.x = x;
+    message.wmresize.y = y;
+    message.wmresize.w = w;
+    message.wmresize.h = h;
+    message.wmresize.padding = padding;
+    message.wmresize.lineheight = lineheight;
 
-    send(descriptor, destination, EVENT_WMRESIZE, sizeof (struct event_wmresize), &wmresize);
+    file_writeall(descriptor, &message, sizeof (struct event_header) + sizeof (struct event_wmresize));
 
 }
 
 void event_sendwmshow(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, destination, EVENT_WMSHOW, 0, 0);
+    struct event_header header;
+
+    header.destination = destination;
+    header.type = EVENT_WMSHOW;
+
+    file_writeall(descriptor, &header, sizeof (struct event_header));
 
 }
 
 void event_sendwmhide(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, destination, EVENT_WMHIDE, 0, 0);
+    struct event_header header;
+
+    header.destination = destination;
+    header.type = EVENT_WMHIDE;
+
+    file_writeall(descriptor, &header, sizeof (struct event_header));
 
 }
 
 void event_sendwmflush(unsigned int descriptor, unsigned int destination)
 {
 
-    send(descriptor, destination, EVENT_WMFLUSH, 0, 0);
+    struct event_header header;
+
+    header.destination = destination;
+    header.type = EVENT_WMFLUSH;
+
+    file_writeall(descriptor, &header, sizeof (struct event_header));
 
 }
 
 void event_sendwmkeypress(unsigned int descriptor, unsigned int destination, unsigned char scancode)
 {
 
-    struct event_wmkeypress wmkeypress;
+    struct {struct event_header header; struct event_wmkeypress wmkeypress;} message;
 
-    wmkeypress.scancode = scancode;
+    message.header.destination = destination;
+    message.header.type = EVENT_WMKEYPRESS;
+    message.wmkeypress.scancode = scancode;
 
-    send(descriptor, destination, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
+    file_writeall(descriptor, &message, sizeof (struct event_header) + sizeof (struct event_wmkeypress));
 
 }
 
 void event_sendwmkeyrelease(unsigned int descriptor, unsigned int destination, unsigned char scancode)
 {
 
-    struct event_wmkeyrelease wmkeyrelease;
+    struct {struct event_header header; struct event_wmkeyrelease wmkeyrelease;} message;
 
-    wmkeyrelease.scancode = scancode;
+    message.header.destination = destination;
+    message.header.type = EVENT_WMKEYRELEASE;
+    message.wmkeyrelease.scancode = scancode;
 
-    send(descriptor, destination, EVENT_WMKEYRELEASE, sizeof (struct event_wmkeyrelease), &wmkeyrelease);
+    file_writeall(descriptor, &message, sizeof (struct event_header) + sizeof (struct event_wmkeyrelease));
 
 }
 
 void event_sendwmmousemove(unsigned int descriptor, unsigned int destination, char relx, char rely)
 {
 
-    struct event_wmmousemove wmmousemove;
+    struct {struct event_header header; struct event_wmmousemove wmmousemove;} message;
 
-    wmmousemove.relx = relx;
-    wmmousemove.rely = rely;
+    message.header.destination = destination;
+    message.header.type = EVENT_WMMOUSEMOVE;
+    message.wmmousemove.relx = relx;
+    message.wmmousemove.rely = rely;
 
-    send(descriptor, destination, EVENT_WMMOUSEMOVE, sizeof (struct event_wmmousemove), &wmmousemove);
+    file_writeall(descriptor, &message, sizeof (struct event_header) + sizeof (struct event_wmmousemove));
 
 }
 
 void event_sendwmmousepress(unsigned int descriptor, unsigned int destination, unsigned int button)
 {
 
-    struct event_wmmousepress wmmousepress;
+    struct {struct event_header header; struct event_wmmousepress wmmousepress;} message;
 
-    wmmousepress.button = button;
+    message.header.destination = destination;
+    message.header.type = EVENT_WMMOUSEPRESS;
+    message.wmmousepress.button = button;
 
-    send(descriptor, destination, EVENT_WMMOUSEPRESS, sizeof (struct event_wmmousepress), &wmmousepress);
+    file_writeall(descriptor, &message, sizeof (struct event_header) + sizeof (struct event_wmmousepress));
 
 }
 
 void event_sendwmmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button)
 {
 
-    struct event_wmmouserelease wmmouserelease;
+    struct {struct event_header header; struct event_wmmouserelease wmmouserelease;} message;
 
-    wmmouserelease.button = button;
+    message.header.destination = destination;
+    message.header.type = EVENT_WMMOUSERELEASE;
+    message.wmmouserelease.button = button;
 
-    send(descriptor, destination, EVENT_WMMOUSERELEASE, sizeof (struct event_wmmouserelease), &wmmouserelease);
+    file_writeall(descriptor, &message, sizeof (struct event_header) + sizeof (struct event_wmmouserelease));
 
 }
 

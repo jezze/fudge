@@ -157,11 +157,6 @@ struct event_handlers
 };
 
 unsigned int event_read(struct event_handlers *handlers, unsigned int descriptor);
-void event_sendkeypress(unsigned int descriptor, unsigned int destination, unsigned char scancode);
-void event_sendkeyrelease(unsigned int descriptor, unsigned int destination, unsigned char scancode);
-void event_sendmousemove(unsigned int descriptor, unsigned int destination, char relx, char rely);
-void event_sendmousepress(unsigned int descriptor, unsigned int destination, unsigned int button);
-void event_sendmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button);
 void event_sendwmmap(unsigned int descriptor, unsigned int destination);
 void event_sendwmunmap(unsigned int descriptor, unsigned int destination);
 void event_sendwminit(unsigned int descriptor, unsigned int destination);
