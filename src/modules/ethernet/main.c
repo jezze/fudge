@@ -60,47 +60,47 @@ static unsigned int interfaceaddr_read(struct system_node *self, struct system_n
 
 }
 
-static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
+static struct system_node *interfacedata_open(struct system_node *self, struct service_state *state)
 {
 
     struct ethernet_interface *interface = self->resource->data;
 
     list_add(&interface->datastates, &state->item);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
+static struct system_node *interfacedata_close(struct system_node *self, struct service_state *state)
 {
 
     struct ethernet_interface *interface = self->resource->data;
 
     list_remove(&interface->datastates, &state->item);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int protocoldata_open(struct system_node *self, struct service_state *state)
+static struct system_node *protocoldata_open(struct system_node *self, struct service_state *state)
 {
 
     struct ethernet_protocol *protocol = self->resource->data;
 
     list_add(&protocol->datastates, &state->item);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int protocoldata_close(struct system_node *self, struct service_state *state)
+static struct system_node *protocoldata_close(struct system_node *self, struct service_state *state)
 {
 
     struct ethernet_protocol *protocol = self->resource->data;
 
     list_remove(&protocol->datastates, &state->item);
 
-    return (unsigned int)self;
+    return self;
 
 }
 

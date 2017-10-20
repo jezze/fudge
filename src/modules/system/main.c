@@ -5,7 +5,7 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
-static unsigned int childgroup(struct system_node *self, struct service_state *state, char *path, unsigned int length)
+static struct system_node *childgroup(struct system_node *self, struct service_state *state, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -46,11 +46,11 @@ static unsigned int childgroup(struct system_node *self, struct service_state *s
 
         }
 
-        return (unsigned int)node;
+        return node;
 
     }
 
-    return (unsigned int)self;
+    return self;
 
 }
 

@@ -32,47 +32,47 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 
 }
 
-static unsigned int interfacesleep_open(struct system_node *self, struct service_state *state)
+static struct system_node *interfacesleep_open(struct system_node *self, struct service_state *state)
 {
 
     struct timer_interface *interface = self->resource->data;
 
     list_lockadd(&interface->sleepstates, &state->item, &interface->sleeplock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int interfacesleep_close(struct system_node *self, struct service_state *state)
+static struct system_node *interfacesleep_close(struct system_node *self, struct service_state *state)
 {
 
     struct timer_interface *interface = self->resource->data;
 
     list_lockremove(&interface->sleepstates, &state->item, &interface->sleeplock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int interfaceevent_open(struct system_node *self, struct service_state *state)
+static struct system_node *interfaceevent_open(struct system_node *self, struct service_state *state)
 {
 
     struct timer_interface *interface = self->resource->data;
 
     list_lockadd(&interface->eventstates, &state->item, &interface->eventlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int interfaceevent_close(struct system_node *self, struct service_state *state)
+static struct system_node *interfaceevent_close(struct system_node *self, struct service_state *state)
 {
 
     struct timer_interface *interface = self->resource->data;
 
     list_lockremove(&interface->eventstates, &state->item, &interface->eventlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 

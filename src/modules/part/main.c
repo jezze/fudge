@@ -26,7 +26,7 @@ static struct block_interface *findinterface(unsigned int index)
 
 }
 
-static unsigned int clone_child(struct system_node *self, struct service_state *state, char *path, unsigned int length)
+static struct system_node *clone_child(struct system_node *self, struct service_state *state, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -47,7 +47,7 @@ static unsigned int clone_child(struct system_node *self, struct service_state *
 
     spinlock_release(&root.childlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
@@ -69,7 +69,7 @@ static unsigned int partctrl_write(struct system_node *self, struct system_node 
 
 }
 
-static unsigned int partdata_open(struct system_node *self, struct service_state *state)
+static struct system_node *partdata_open(struct system_node *self, struct service_state *state)
 {
 
     struct part *part = self->resource->data;
@@ -79,7 +79,7 @@ static unsigned int partdata_open(struct system_node *self, struct service_state
 
 }
 
-static unsigned int partdata_close(struct system_node *self, struct service_state *state)
+static struct system_node *partdata_close(struct system_node *self, struct service_state *state)
 {
 
     struct part *part = self->resource->data;

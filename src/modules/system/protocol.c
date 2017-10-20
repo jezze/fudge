@@ -39,7 +39,7 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 
     struct system_node *node = (struct system_node *)id;
 
-    return (node->child) ? node->child(node, state, path, length) : id;
+    return (node->child) ? (unsigned int)node->child(node, state, path, length) : id;
 
 }
 
@@ -89,7 +89,7 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
 
     struct system_node *node = (struct system_node *)id;
 
-    return (node->open) ? node->open(node, state) : id;
+    return (node->open) ? (unsigned int)node->open(node, state) : id;
 
 }
 
@@ -98,7 +98,7 @@ static unsigned int protocol_close(struct service_backend *backend, struct servi
 
     struct system_node *node = (struct system_node *)id;
 
-    return (node->close) ? node->close(node, state) : id;
+    return (node->close) ? (unsigned int)node->close(node, state) : id;
 
 }
 

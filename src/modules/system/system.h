@@ -22,11 +22,11 @@ struct system_node
     char *name;
     struct resource *resource;
     unsigned int index;
-    unsigned int (*open)(struct system_node *self, struct service_state *state);
-    unsigned int (*close)(struct system_node *self, struct service_state *state);
+    struct system_node *(*open)(struct system_node *self, struct service_state *state);
+    struct system_node *(*close)(struct system_node *self, struct service_state *state);
+    struct system_node *(*child)(struct system_node *self, struct service_state *state, char *path, unsigned int length);
     unsigned int (*read)(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
-    unsigned int (*child)(struct system_node *self, struct service_state *state, char *path, unsigned int length);
     unsigned int (*seek)(struct system_node *self, struct service_state *state, unsigned int offset);
 
 };

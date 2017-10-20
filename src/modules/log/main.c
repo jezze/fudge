@@ -74,75 +74,75 @@ static void log_write(unsigned int level, char *string, char *file, unsigned int
 
 }
 
-static unsigned int critical_open(struct system_node *self, struct service_state *state)
+static struct system_node *critical_open(struct system_node *self, struct service_state *state)
 {
 
     list_lockadd(&criticalstates, &state->item, &spinlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int critical_close(struct system_node *self, struct service_state *state)
+static struct system_node *critical_close(struct system_node *self, struct service_state *state)
 {
 
     list_lockremove(&criticalstates, &state->item, &spinlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int error_open(struct system_node *self, struct service_state *state)
+static struct system_node *error_open(struct system_node *self, struct service_state *state)
 {
 
     list_lockadd(&errorstates, &state->item, &spinlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int error_close(struct system_node *self, struct service_state *state)
+static struct system_node *error_close(struct system_node *self, struct service_state *state)
 {
 
     list_lockremove(&errorstates, &state->item, &spinlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int warning_open(struct system_node *self, struct service_state *state)
+static struct system_node *warning_open(struct system_node *self, struct service_state *state)
 {
 
     list_lockadd(&warningstates, &state->item, &spinlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int warning_close(struct system_node *self, struct service_state *state)
+static struct system_node *warning_close(struct system_node *self, struct service_state *state)
 {
 
     list_lockremove(&warningstates, &state->item, &spinlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int info_open(struct system_node *self, struct service_state *state)
+static struct system_node *info_open(struct system_node *self, struct service_state *state)
 {
 
     list_lockadd(&infostates, &state->item, &spinlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int info_close(struct system_node *self, struct service_state *state)
+static struct system_node *info_close(struct system_node *self, struct service_state *state)
 {
 
     list_lockremove(&infostates, &state->item, &spinlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 

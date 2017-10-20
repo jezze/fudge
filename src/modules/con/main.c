@@ -6,7 +6,7 @@
 static struct system_node root;
 static struct system_node clone;
 
-static unsigned int clone_child(struct system_node *self, struct service_state *state, char *path, unsigned int length)
+static struct system_node *clone_child(struct system_node *self, struct service_state *state, char *path, unsigned int length)
 {
 
     struct list_item *current;
@@ -27,7 +27,7 @@ static unsigned int clone_child(struct system_node *self, struct service_state *
 
     spinlock_release(&root.childlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
@@ -49,7 +49,7 @@ static unsigned int conctrl_write(struct system_node *self, struct system_node *
 
 }
 
-static unsigned int condata_open(struct system_node *self, struct service_state *state)
+static struct system_node *condata_open(struct system_node *self, struct service_state *state)
 {
 
     struct con *con = self->resource->data;
@@ -57,11 +57,11 @@ static unsigned int condata_open(struct system_node *self, struct service_state 
     list_add(&con->states, &state->item);
     con->open();
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int condata_close(struct system_node *self, struct service_state *state)
+static struct system_node *condata_close(struct system_node *self, struct service_state *state)
 {
 
     struct con *con = self->resource->data;
@@ -69,7 +69,7 @@ static unsigned int condata_close(struct system_node *self, struct service_state
     list_remove(&con->states, &state->item);
     con->close();
 
-    return (unsigned int)self;
+    return self;
 
 }
 

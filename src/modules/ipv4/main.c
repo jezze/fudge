@@ -190,25 +190,25 @@ static void arphook_save(void *haddress, void *paddress)
 
 }
 
-static unsigned int protocoldata_open(struct system_node *self, struct service_state *state)
+static struct system_node *protocoldata_open(struct system_node *self, struct service_state *state)
 {
 
     struct ipv4_protocol *protocol = self->resource->data;
 
     list_add(&protocol->datastates, &state->item);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int protocoldata_close(struct system_node *self, struct service_state *state)
+static struct system_node *protocoldata_close(struct system_node *self, struct service_state *state)
 {
 
     struct ipv4_protocol *protocol = self->resource->data;
 
     list_remove(&protocol->datastates, &state->item);
 
-    return (unsigned int)self;
+    return self;
 
 }
 

@@ -13,7 +13,7 @@ static struct ring ring;
 static char data[FUDGE_BSIZE];
 static struct spinlock datalock;
 
-static unsigned int idata_open(struct system_node *self, struct service_state *state)
+static struct system_node *idata_open(struct system_node *self, struct service_state *state)
 {
 
     list_lockadd(&idatalist, &state->item, &idatalock);
@@ -21,11 +21,11 @@ static unsigned int idata_open(struct system_node *self, struct service_state *s
     kernel_unblockall(&odatalist);
     spinlock_release(&odatalock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int idata_close(struct system_node *self, struct service_state *state)
+static struct system_node *idata_close(struct system_node *self, struct service_state *state)
 {
 
     list_lockremove(&idatalist, &state->item, &idatalock);
@@ -33,7 +33,7 @@ static unsigned int idata_close(struct system_node *self, struct service_state *
     kernel_unblockall(&odatalist);
     spinlock_release(&odatalock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
@@ -56,7 +56,7 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
 
 }
 
-static unsigned int odata_open(struct system_node *self, struct service_state *state)
+static struct system_node *odata_open(struct system_node *self, struct service_state *state)
 {
 
     list_lockadd(&odatalist, &state->item, &odatalock);
@@ -64,11 +64,11 @@ static unsigned int odata_open(struct system_node *self, struct service_state *s
     kernel_unblockall(&idatalist);
     spinlock_release(&idatalock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int odata_close(struct system_node *self, struct service_state *state)
+static struct system_node *odata_close(struct system_node *self, struct service_state *state)
 {
 
     list_lockremove(&odatalist, &state->item, &odatalock);
@@ -76,7 +76,7 @@ static unsigned int odata_close(struct system_node *self, struct service_state *
     kernel_unblockall(&idatalist);
     spinlock_release(&idatalock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 

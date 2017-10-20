@@ -12,25 +12,25 @@ void block_notify(struct block_interface *interface, void *buffer, unsigned int 
 
 }
 
-static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
+static struct system_node *interfacedata_open(struct system_node *self, struct service_state *state)
 {
 
     struct block_interface *interface = self->resource->data;
 
     list_add(&interface->datastates, &state->item);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
+static struct system_node *interfacedata_close(struct system_node *self, struct service_state *state)
 {
 
     struct block_interface *interface = self->resource->data;
 
     list_remove(&interface->datastates, &state->item);
 
-    return (unsigned int)self;
+    return self;
 
 }
 

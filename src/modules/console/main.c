@@ -23,25 +23,25 @@ static unsigned int interfacectrl_read(struct system_node *self, struct system_n
 
 }
 
-static unsigned int interfacedata_open(struct system_node *self, struct service_state *state)
+static struct system_node *interfacedata_open(struct system_node *self, struct service_state *state)
 {
 
     struct console_interface *interface = self->resource->data;
 
     list_lockadd(&interface->datastates, &state->item, &interface->datalock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int interfacedata_close(struct system_node *self, struct service_state *state)
+static struct system_node *interfacedata_close(struct system_node *self, struct service_state *state)
 {
 
     struct console_interface *interface = self->resource->data;
 
     list_lockremove(&interface->datastates, &state->item, &interface->datalock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 

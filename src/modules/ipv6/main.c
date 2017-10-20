@@ -27,25 +27,25 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
 
 }
 
-static unsigned int protocoldata_open(struct system_node *self, struct service_state *state)
+static struct system_node *protocoldata_open(struct system_node *self, struct service_state *state)
 {
 
     struct ipv6_protocol *protocol = self->resource->data;
 
     list_add(&protocol->datastates, &state->item);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int protocoldata_close(struct system_node *self, struct service_state *state)
+static struct system_node *protocoldata_close(struct system_node *self, struct service_state *state)
 {
 
     struct ipv6_protocol *protocol = self->resource->data;
 
     list_remove(&protocol->datastates, &state->item);
 
-    return (unsigned int)self;
+    return self;
 
 }
 

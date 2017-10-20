@@ -39,21 +39,21 @@ static unsigned int data_write(struct system_node *self, struct system_node *cur
 
 }
 
-static unsigned int event_open(struct system_node *self, struct service_state *state)
+static struct system_node *event_open(struct system_node *self, struct service_state *state)
 {
 
     list_lockadd(&eventstates, &state->item, &eventlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int event_close(struct system_node *self, struct service_state *state)
+static struct system_node *event_close(struct system_node *self, struct service_state *state)
 {
 
     list_lockremove(&eventstates, &state->item, &eventlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 

@@ -83,25 +83,25 @@ static unsigned int interfacecolormap_write(struct system_node *self, struct sys
 
 }
 
-static unsigned int interfaceevent_open(struct system_node *self, struct service_state *state)
+static struct system_node *interfaceevent_open(struct system_node *self, struct service_state *state)
 {
 
     struct video_interface *interface = self->resource->data;
 
     list_lockadd(&interface->eventstates, &state->item, &interface->eventlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
-static unsigned int interfaceevent_close(struct system_node *self, struct service_state *state)
+static struct system_node *interfaceevent_close(struct system_node *self, struct service_state *state)
 {
 
     struct video_interface *interface = self->resource->data;
 
     list_lockremove(&interface->eventstates, &state->item, &interface->eventlock);
 
-    return (unsigned int)self;
+    return self;
 
 }
 
