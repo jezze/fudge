@@ -77,9 +77,7 @@ static void log_write(unsigned int level, char *string, char *file, unsigned int
 static unsigned int critical_open(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&spinlock);
-    list_add(&criticalstates, &state->item);
-    spinlock_release(&spinlock);
+    list_lockadd(&criticalstates, &state->item, &spinlock);
 
     return (unsigned int)self;
 
@@ -88,9 +86,7 @@ static unsigned int critical_open(struct system_node *self, struct service_state
 static unsigned int critical_close(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&spinlock);
-    list_remove(&criticalstates, &state->item);
-    spinlock_release(&spinlock);
+    list_lockremove(&criticalstates, &state->item, &spinlock);
 
     return (unsigned int)self;
 
@@ -99,9 +95,7 @@ static unsigned int critical_close(struct system_node *self, struct service_stat
 static unsigned int error_open(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&spinlock);
-    list_add(&errorstates, &state->item);
-    spinlock_release(&spinlock);
+    list_lockadd(&errorstates, &state->item, &spinlock);
 
     return (unsigned int)self;
 
@@ -110,9 +104,7 @@ static unsigned int error_open(struct system_node *self, struct service_state *s
 static unsigned int error_close(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&spinlock);
-    list_remove(&errorstates, &state->item);
-    spinlock_release(&spinlock);
+    list_lockremove(&errorstates, &state->item, &spinlock);
 
     return (unsigned int)self;
 
@@ -121,9 +113,7 @@ static unsigned int error_close(struct system_node *self, struct service_state *
 static unsigned int warning_open(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&spinlock);
-    list_add(&warningstates, &state->item);
-    spinlock_release(&spinlock);
+    list_lockadd(&warningstates, &state->item, &spinlock);
 
     return (unsigned int)self;
 
@@ -132,9 +122,7 @@ static unsigned int warning_open(struct system_node *self, struct service_state 
 static unsigned int warning_close(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&spinlock);
-    list_remove(&warningstates, &state->item);
-    spinlock_release(&spinlock);
+    list_lockremove(&warningstates, &state->item, &spinlock);
 
     return (unsigned int)self;
 
@@ -143,9 +131,7 @@ static unsigned int warning_close(struct system_node *self, struct service_state
 static unsigned int info_open(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&spinlock);
-    list_add(&infostates, &state->item);
-    spinlock_release(&spinlock);
+    list_lockadd(&infostates, &state->item, &spinlock);
 
     return (unsigned int)self;
 
@@ -154,9 +140,7 @@ static unsigned int info_open(struct system_node *self, struct service_state *st
 static unsigned int info_close(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&spinlock);
-    list_remove(&infostates, &state->item);
-    spinlock_release(&spinlock);
+    list_lockremove(&infostates, &state->item, &spinlock);
 
     return (unsigned int)self;
 

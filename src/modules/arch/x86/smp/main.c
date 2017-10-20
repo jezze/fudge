@@ -126,19 +126,8 @@ static void assign(struct task *task)
     */
 
     spinlock_release(&corelock);
-    spinlock_acquire(&core->tasklock);
-    list_move(&core->tasks, &task->state.item);
-    spinlock_release(&core->tasklock);
+    list_lockmove(&core->tasks, &task->state.item, &core->tasklock);
     apic_sendint(core->id, APIC_ICR_TYPE_NORMAL | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | 0xFE);
-
-}
-
-static void registercore(struct core *core)
-{
-
-    spinlock_acquire(&corelock);
-    list_add(&corelist, &core->item);
-    spinlock_release(&corelock);
 
 }
 
@@ -152,7 +141,7 @@ void smp_setup(unsigned int stack)
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
     apic_setup_ap();
-    registercore(&cores[id]);
+    list_lockadd(&corelist, &cores[id].item, &corelock);
     arch_leave(&cores[id]);
 
 }
@@ -175,12 +164,12 @@ void module_init(void)
 
     core_init(&cores[id], id, c->sp);
     arch_configuretss(&tss[id], ARCH_TSS + id, cores[id].sp);
-    registercore(&cores[id]);
+    list_lockadd(&corelist, &cores[id].item, &corelock);
 
     cores[id].task = c->task;
 
     while (c->tasks.count)
-        list_move(&cores[id].tasks, c->tasks.tail);
+        list_lockmove(&cores[id].tasks, c->tasks.tail, &cores[id].tasklock);
 
     arch_setcore(getcore);
     arch_setassign(assign);
