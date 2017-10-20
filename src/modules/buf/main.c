@@ -6,15 +6,21 @@ static struct system_node root;
 static struct system_node idata;
 static struct system_node odata;
 static struct list idatalist;
+static struct spinlock idatalock;
 static struct list odatalist;
+static struct spinlock odatalock;
 static struct ring ring;
 static char data[FUDGE_BSIZE];
 
 static unsigned int idata_open(struct system_node *self, struct service_state *state)
 {
 
+    spinlock_acquire(&idatalock);
     list_add(&idatalist, &state->item);
+    spinlock_release(&idatalock);
+    spinlock_acquire(&odatalock);
     kernel_unblockall(&odatalist);
+    spinlock_release(&odatalock);
 
     return (unsigned int)self;
 
@@ -23,8 +29,12 @@ static unsigned int idata_open(struct system_node *self, struct service_state *s
 static unsigned int idata_close(struct system_node *self, struct service_state *state)
 {
 
+    spinlock_acquire(&idatalock);
     list_remove(&idatalist, &state->item);
+    spinlock_release(&idatalock);
+    spinlock_acquire(&odatalock);
     kernel_unblockall(&odatalist);
+    spinlock_release(&odatalock);
 
     return (unsigned int)self;
 
@@ -35,7 +45,9 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
 
     count = ring_read(&ring, buffer, count);
 
+    spinlock_acquire(&odatalock);
     kernel_unblockall(&odatalist);
+    spinlock_release(&odatalock);
 
     if (!count && odatalist.count)
         kernel_blocktask(state->task);
@@ -47,8 +59,12 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
 static unsigned int odata_open(struct system_node *self, struct service_state *state)
 {
 
+    spinlock_acquire(&odatalock);
     list_add(&odatalist, &state->item);
+    spinlock_release(&odatalock);
+    spinlock_acquire(&idatalock);
     kernel_unblockall(&idatalist);
+    spinlock_release(&idatalock);
 
     return (unsigned int)self;
 
@@ -57,8 +73,12 @@ static unsigned int odata_open(struct system_node *self, struct service_state *s
 static unsigned int odata_close(struct system_node *self, struct service_state *state)
 {
 
+    spinlock_acquire(&odatalock);
     list_remove(&odatalist, &state->item);
+    spinlock_release(&odatalock);
+    spinlock_acquire(&idatalock);
     kernel_unblockall(&idatalist);
+    spinlock_release(&idatalock);
 
     return (unsigned int)self;
 
@@ -69,7 +89,9 @@ static unsigned int odata_write(struct system_node *self, struct system_node *cu
 
     count = ring_write(&ring, buffer, count);
 
+    spinlock_acquire(&idatalock);
     kernel_unblockall(&idatalist);
+    spinlock_release(&idatalock);
 
     if (!count)
         kernel_blocktask(state->task);
