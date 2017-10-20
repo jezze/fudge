@@ -31,6 +31,8 @@ static unsigned int clone_child(struct system_node *self, struct service_state *
 
     struct list_item *current;
 
+    spinlock_acquire(&root.childlock);
+
     for (current = root.children.head; current; current = current->next)
     {
 
@@ -42,6 +44,8 @@ static unsigned int clone_child(struct system_node *self, struct service_state *
         return node->child(node, state, path, length);
 
     }
+
+    spinlock_release(&root.childlock);
 
     return (unsigned int)self;
 

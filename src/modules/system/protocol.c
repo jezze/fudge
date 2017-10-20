@@ -63,9 +63,24 @@ static unsigned int protocol_step(struct service_backend *backend, struct servic
     struct system_node *node = (struct system_node *)current;
 
     if (id == current)
-        return (node->children.head) ? (unsigned int)node->children.head->data : 0;
+    {
+
+        spinlock_acquire(&node->childlock);
+
+        id = (node->children.head) ? (unsigned int)node->children.head->data : 0;
+
+        spinlock_release(&node->childlock);
+
+        return id;
+
+    }
+
     else
+    {
+
         return (node->item.next) ? (unsigned int)node->item.next->data : 0;
+
+    }
 
 }
 
