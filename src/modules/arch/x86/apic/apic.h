@@ -20,5 +20,6 @@
 unsigned int apic_getid(void);
 void apic_test(void);
 void apic_spurious(void);
-void apic_setup();
+void apic_setup_ap(void);
+void apic_setup_bp(void);
 void apic_sendint(unsigned int id, unsigned int value);

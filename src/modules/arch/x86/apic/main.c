@@ -111,7 +111,23 @@ unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt i
 
 }
 
-void apic_setup()
+void apic_setup_ap(void)
+{
+
+    apic_outd(REGISTERTPR, 0x00000000);
+    apic_outd(REGISTERLDR, 0x00000000);
+    apic_outd(REGISTERDFR, 0xFFFFFFFF);
+    apic_outd(REGISTERSV, (1 << 8) | 0xFF);
+    apic_outd(REGISTERLVTCMCI, 0x00010000);
+    apic_outd(REGISTERLVTTIMER, 0x00010000);
+    apic_outd(REGISTERLVTPERF, 0x00010000);
+    apic_outd(REGISTERLVTLINT0, 0x00010000);
+    apic_outd(REGISTERLVTLINT1, 0x00010000);
+    apic_outd(REGISTERLVTERROR, 0x00010000);
+
+}
+
+void apic_setup_bp(void)
 {
 
     apic_outd(REGISTERTPR, 0x00000000);
@@ -175,7 +191,7 @@ void module_init(void)
         arch_setmap(7, mmio, mmio, 0x1000);
         idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
         idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-        apic_setup();
+        apic_setup_bp();
 
     }
 
