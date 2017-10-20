@@ -10,7 +10,9 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
+    spinlock_acquire(&interface->sleeplock);
     kernel_multicast(&interface->sleepstates, buffer, count);
+    spinlock_release(&interface->sleeplock);
 
 }
 
@@ -24,7 +26,9 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.timertick.counter = counter;
 
+    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_timertick));
+    spinlock_release(&interface->eventlock);
 
 }
 
@@ -33,7 +37,9 @@ static unsigned int interfacesleep_open(struct system_node *self, struct service
 
     struct timer_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->sleeplock);
     list_add(&interface->sleepstates, &state->item);
+    spinlock_release(&interface->sleeplock);
 
     return (unsigned int)self;
 
@@ -44,7 +50,9 @@ static unsigned int interfacesleep_close(struct system_node *self, struct servic
 
     struct timer_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->sleeplock);
     list_remove(&interface->sleepstates, &state->item);
+    spinlock_release(&interface->sleeplock);
 
     return (unsigned int)self;
 
@@ -55,7 +63,9 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct timer_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->eventlock);
     list_add(&interface->eventstates, &state->item);
+    spinlock_release(&interface->eventlock);
 
     return (unsigned int)self;
 
@@ -66,7 +76,9 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct timer_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->eventlock);
     list_remove(&interface->eventstates, &state->item);
+    spinlock_release(&interface->eventlock);
 
     return (unsigned int)self;
 

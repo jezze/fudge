@@ -10,7 +10,9 @@ static struct system_node root;
 void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int count)
 {
 
+    spinlock_acquire(&interface->datalock);
     kernel_multicast(&interface->datastates, buffer, count);
+    spinlock_release(&interface->datalock);
 
 }
 
@@ -25,7 +27,9 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
+    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
+    spinlock_release(&interface->eventlock);
 
 }
 
@@ -39,7 +43,9 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.mousepress.button = button;
 
+    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
+    spinlock_release(&interface->eventlock);
 
 }
 
@@ -53,7 +59,9 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.mouserelease.button = button;
 
+    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
+    spinlock_release(&interface->eventlock);
 
 }
 
@@ -62,7 +70,9 @@ static unsigned int interfacedata_open(struct system_node *self, struct service_
 
     struct mouse_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->datalock);
     list_add(&interface->datastates, &state->item);
+    spinlock_release(&interface->datalock);
 
     return (unsigned int)self;
 
@@ -73,7 +83,9 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
     struct mouse_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->datalock);
     list_remove(&interface->datastates, &state->item);
+    spinlock_release(&interface->datalock);
 
     return (unsigned int)self;
 
@@ -84,7 +96,9 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct mouse_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->eventlock);
     list_add(&interface->eventstates, &state->item);
+    spinlock_release(&interface->eventlock);
 
     return (unsigned int)self;
 
@@ -95,7 +109,9 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct mouse_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->eventlock);
     list_remove(&interface->eventstates, &state->item);
+    spinlock_release(&interface->eventlock);
 
     return (unsigned int)self;
 

@@ -6,7 +6,9 @@ struct timer_interface
     struct system_node sleep;
     struct system_node event;
     struct list sleepstates;
+    struct spinlock sleeplock;
     struct list eventstates;
+    struct spinlock eventlock;
     unsigned int id;
 
 };

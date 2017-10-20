@@ -8,7 +8,9 @@ static struct system_node root;
 void console_notify(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
+    spinlock_acquire(&interface->datalock);
     kernel_multicast(&interface->datastates, buffer, count);
+    spinlock_release(&interface->datalock);
 
 }
 
@@ -26,7 +28,9 @@ static unsigned int interfacedata_open(struct system_node *self, struct service_
 
     struct console_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->datalock);
     list_add(&interface->datastates, &state->item);
+    spinlock_release(&interface->datalock);
 
     return (unsigned int)self;
 
@@ -37,7 +41,9 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
     struct console_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->datalock);
     list_remove(&interface->datastates, &state->item);
+    spinlock_release(&interface->datalock);
 
     return (unsigned int)self;
 

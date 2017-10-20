@@ -19,7 +19,9 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
     message.videomode.h = h;
     message.videomode.bpp = bpp;
 
+    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
+    spinlock_release(&interface->eventlock);
 
 }
 
@@ -86,7 +88,9 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct video_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->eventlock);
     list_add(&interface->eventstates, &state->item);
+    spinlock_release(&interface->eventlock);
 
     return (unsigned int)self;
 
@@ -97,7 +101,9 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct video_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->eventlock);
     list_remove(&interface->eventstates, &state->item);
+    spinlock_release(&interface->eventlock);
 
     return (unsigned int)self;
 

@@ -10,7 +10,9 @@ static struct system_node root;
 void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigned int count)
 {
 
+    spinlock_acquire(&interface->datalock);
     kernel_multicast(&interface->datastates, buffer, count);
+    spinlock_release(&interface->datalock);
 
 }
 
@@ -24,7 +26,9 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.keypress.scancode = scancode;
 
+    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
+    spinlock_release(&interface->eventlock);
 
 }
 
@@ -38,7 +42,9 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.keyrelease.scancode = scancode;
 
+    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
+    spinlock_release(&interface->eventlock);
 
 }
 
@@ -47,7 +53,9 @@ static unsigned int interfacedata_open(struct system_node *self, struct service_
 
     struct keyboard_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->datalock);
     list_add(&interface->datastates, &state->item);
+    spinlock_release(&interface->datalock);
 
     return (unsigned int)self;
 
@@ -58,7 +66,9 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
     struct keyboard_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->datalock);
     list_remove(&interface->datastates, &state->item);
+    spinlock_release(&interface->datalock);
 
     return (unsigned int)self;
 
@@ -69,7 +79,9 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct keyboard_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->eventlock);
     list_add(&interface->eventstates, &state->item);
+    spinlock_release(&interface->eventlock);
 
     return (unsigned int)self;
 
@@ -80,7 +92,9 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct keyboard_interface *interface = self->resource->data;
 
+    spinlock_acquire(&interface->eventlock);
     list_remove(&interface->eventstates, &state->item);
+    spinlock_release(&interface->eventlock);
 
     return (unsigned int)self;
 
