@@ -88,9 +88,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct video_interface *interface = self->resource->data;
 
-    spinlock_acquire(&interface->eventlock);
-    list_add(&interface->eventstates, &state->item);
-    spinlock_release(&interface->eventlock);
+    list_lockadd(&interface->eventstates, &state->item, &interface->eventlock);
 
     return (unsigned int)self;
 
@@ -101,9 +99,7 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct video_interface *interface = self->resource->data;
 
-    spinlock_acquire(&interface->eventlock);
-    list_remove(&interface->eventstates, &state->item);
-    spinlock_release(&interface->eventlock);
+    list_lockremove(&interface->eventstates, &state->item, &interface->eventlock);
 
     return (unsigned int)self;
 

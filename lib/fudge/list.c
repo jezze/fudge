@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "spinlock.h"
 #include "list.h"
 
 void list_add(struct list *list, struct list_item *item)
@@ -62,6 +63,34 @@ void list_move(struct list *list, struct list_item *item)
         list_remove(item->list, item);
 
     list_add(list, item);
+
+}
+
+void list_lockadd(struct list *list, struct list_item *item, struct spinlock *spinlock)
+{
+
+    spinlock_acquire(spinlock);
+    list_add(list, item);
+    spinlock_release(spinlock);
+
+}
+
+void list_lockremove(struct list *list, struct list_item *item, struct spinlock *spinlock)
+{
+
+    spinlock_acquire(spinlock);
+    list_remove(list, item);
+    spinlock_release(spinlock);
+
+}
+
+void list_lockmove(struct list *list, struct list_item *item, struct spinlock *spinlock)
+{
+
+    if (item->list)
+        list_lockremove(item->list, item, spinlock);
+
+    list_lockadd(list, item, spinlock);
 
 }
 

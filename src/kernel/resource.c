@@ -39,18 +39,14 @@ struct resource *resource_findtype(struct resource *resource, unsigned int type)
 void resource_register(struct resource *resource)
 {
 
-    spinlock_acquire(&resourcelock);
-    list_add(&resources, &resource->item);
-    spinlock_release(&resourcelock);
+    list_lockadd(&resources, &resource->item, &resourcelock);
 
 }
 
 void resource_unregister(struct resource *resource)
 {
 
-    spinlock_acquire(&resourcelock);
-    list_remove(&resources, &resource->item);
-    spinlock_release(&resourcelock);
+    list_lockremove(&resources, &resource->item, &resourcelock);
 
 }
 

@@ -16,9 +16,7 @@ static struct spinlock datalock;
 static unsigned int idata_open(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&idatalock);
-    list_add(&idatalist, &state->item);
-    spinlock_release(&idatalock);
+    list_lockadd(&idatalist, &state->item, &idatalock);
     spinlock_acquire(&odatalock);
     kernel_unblockall(&odatalist);
     spinlock_release(&odatalock);
@@ -30,9 +28,7 @@ static unsigned int idata_open(struct system_node *self, struct service_state *s
 static unsigned int idata_close(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&idatalock);
-    list_remove(&idatalist, &state->item);
-    spinlock_release(&idatalock);
+    list_lockremove(&idatalist, &state->item, &idatalock);
     spinlock_acquire(&odatalock);
     kernel_unblockall(&odatalist);
     spinlock_release(&odatalock);
@@ -63,9 +59,7 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
 static unsigned int odata_open(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&odatalock);
-    list_add(&odatalist, &state->item);
-    spinlock_release(&odatalock);
+    list_lockadd(&odatalist, &state->item, &odatalock);
     spinlock_acquire(&idatalock);
     kernel_unblockall(&idatalist);
     spinlock_release(&idatalock);
@@ -77,9 +71,7 @@ static unsigned int odata_open(struct system_node *self, struct service_state *s
 static unsigned int odata_close(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&odatalock);
-    list_remove(&odatalist, &state->item);
-    spinlock_release(&odatalock);
+    list_lockremove(&odatalist, &state->item, &odatalock);
     spinlock_acquire(&idatalock);
     kernel_unblockall(&idatalist);
     spinlock_release(&idatalock);

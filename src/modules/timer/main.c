@@ -37,9 +37,7 @@ static unsigned int interfacesleep_open(struct system_node *self, struct service
 
     struct timer_interface *interface = self->resource->data;
 
-    spinlock_acquire(&interface->sleeplock);
-    list_add(&interface->sleepstates, &state->item);
-    spinlock_release(&interface->sleeplock);
+    list_lockadd(&interface->sleepstates, &state->item, &interface->sleeplock);
 
     return (unsigned int)self;
 
@@ -50,9 +48,7 @@ static unsigned int interfacesleep_close(struct system_node *self, struct servic
 
     struct timer_interface *interface = self->resource->data;
 
-    spinlock_acquire(&interface->sleeplock);
-    list_remove(&interface->sleepstates, &state->item);
-    spinlock_release(&interface->sleeplock);
+    list_lockremove(&interface->sleepstates, &state->item, &interface->sleeplock);
 
     return (unsigned int)self;
 
@@ -63,9 +59,7 @@ static unsigned int interfaceevent_open(struct system_node *self, struct service
 
     struct timer_interface *interface = self->resource->data;
 
-    spinlock_acquire(&interface->eventlock);
-    list_add(&interface->eventstates, &state->item);
-    spinlock_release(&interface->eventlock);
+    list_lockadd(&interface->eventstates, &state->item, &interface->eventlock);
 
     return (unsigned int)self;
 
@@ -76,9 +70,7 @@ static unsigned int interfaceevent_close(struct system_node *self, struct servic
 
     struct timer_interface *interface = self->resource->data;
 
-    spinlock_acquire(&interface->eventlock);
-    list_remove(&interface->eventstates, &state->item);
-    spinlock_release(&interface->eventlock);
+    list_lockremove(&interface->eventstates, &state->item, &interface->eventlock);
 
     return (unsigned int)self;
 

@@ -28,9 +28,7 @@ static unsigned int interfacedata_open(struct system_node *self, struct service_
 
     struct console_interface *interface = self->resource->data;
 
-    spinlock_acquire(&interface->datalock);
-    list_add(&interface->datastates, &state->item);
-    spinlock_release(&interface->datalock);
+    list_lockadd(&interface->datastates, &state->item, &interface->datalock);
 
     return (unsigned int)self;
 
@@ -41,9 +39,7 @@ static unsigned int interfacedata_close(struct system_node *self, struct service
 
     struct console_interface *interface = self->resource->data;
 
-    spinlock_acquire(&interface->datalock);
-    list_remove(&interface->datastates, &state->item);
-    spinlock_release(&interface->datalock);
+    list_lockremove(&interface->datastates, &state->item, &interface->datalock);
 
     return (unsigned int)self;
 

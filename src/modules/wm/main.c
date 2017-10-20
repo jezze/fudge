@@ -42,9 +42,7 @@ static unsigned int data_write(struct system_node *self, struct system_node *cur
 static unsigned int event_open(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&eventlock);
-    list_add(&eventstates, &state->item);
-    spinlock_release(&eventlock);
+    list_lockadd(&eventstates, &state->item, &eventlock);
 
     return (unsigned int)self;
 
@@ -53,9 +51,7 @@ static unsigned int event_open(struct system_node *self, struct service_state *s
 static unsigned int event_close(struct system_node *self, struct service_state *state)
 {
 
-    spinlock_acquire(&eventlock);
-    list_remove(&eventstates, &state->item);
-    spinlock_release(&eventlock);
+    list_lockremove(&eventstates, &state->item, &eventlock);
 
     return (unsigned int)self;
 
