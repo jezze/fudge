@@ -11,6 +11,7 @@ static struct list odatalist;
 static struct spinlock odatalock;
 static struct ring ring;
 static char data[FUDGE_BSIZE];
+static struct spinlock datalock;
 
 static unsigned int idata_open(struct system_node *self, struct service_state *state)
 {
@@ -43,8 +44,11 @@ static unsigned int idata_close(struct system_node *self, struct service_state *
 static unsigned int idata_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
+    spinlock_acquire(&datalock);
+
     count = ring_read(&ring, buffer, count);
 
+    spinlock_release(&datalock);
     spinlock_acquire(&odatalock);
     kernel_unblockall(&odatalist);
     spinlock_release(&odatalock);
@@ -87,8 +91,11 @@ static unsigned int odata_close(struct system_node *self, struct service_state *
 static unsigned int odata_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
+    spinlock_acquire(&datalock);
+
     count = ring_write(&ring, buffer, count);
 
+    spinlock_release(&datalock);
     spinlock_acquire(&idatalock);
     kernel_unblockall(&idatalist);
     spinlock_release(&idatalock);
