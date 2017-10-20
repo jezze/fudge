@@ -46,6 +46,8 @@ void kernel_walkmountparent(struct service *service)
 
     struct list_item *current;
 
+    spinlock_acquire(&mountlock);
+
     for (current = usedmounts.head; current; current = current->next)
     {
 
@@ -56,12 +58,16 @@ void kernel_walkmountparent(struct service *service)
 
     }
 
+    spinlock_release(&mountlock);
+
 }
 
 void kernel_walkmountchild(struct service *service)
 {
 
     struct list_item *current;
+
+    spinlock_acquire(&mountlock);
 
     for (current = usedmounts.head; current; current = current->next)
     {
@@ -72,6 +78,8 @@ void kernel_walkmountchild(struct service *service)
             break;
 
     }
+
+    spinlock_release(&mountlock);
 
 }
 
