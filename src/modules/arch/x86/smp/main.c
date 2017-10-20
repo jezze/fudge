@@ -19,10 +19,10 @@
 
 static struct arch_tss tss[256];
 static struct core cores[256];
-static struct spinlock spinlock;
 static struct system_node root;
 static struct system_node cpus;
 static struct list corelist;
+static struct spinlock corelock;
 
 static void detect(struct acpi_madt *madt)
 {
@@ -116,26 +116,29 @@ static void assign(struct task *task)
 
     struct core *core;
 
-    spinlock_acquire(&spinlock);
+    spinlock_acquire(&corelock);
 
     core = corelist.head->data;
 
-    list_move(&core->tasks, &task->state.item);
     /*
     Need to add more spinlocks before enabling this.
     list_move(&corelist, &core->item);
     */
+
+    spinlock_release(&corelock);
+    spinlock_acquire(&core->tasklock);
+    list_move(&core->tasks, &task->state.item);
+    spinlock_release(&core->tasklock);
     apic_sendint(core->id, APIC_ICR_TYPE_NORMAL | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | 0xFE);
-    spinlock_release(&spinlock);
 
 }
 
 static void registercore(struct core *core)
 {
 
-    spinlock_acquire(&spinlock);
+    spinlock_acquire(&corelock);
     list_add(&corelist, &core->item);
-    spinlock_release(&spinlock);
+    spinlock_release(&corelock);
 
 }
 

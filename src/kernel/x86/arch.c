@@ -114,7 +114,9 @@ void arch_setcore(struct core *(*callback)(void))
 static void assign0(struct task *task)
 {
 
+    spinlock_acquire(&core0.tasklock);
     list_move(&core0.tasks, &task->state.item);
+    spinlock_release(&core0.tasklock);
 
 }
 
