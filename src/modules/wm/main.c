@@ -8,27 +8,43 @@ static struct system_node root;
 static struct system_node data;
 static struct system_node event;
 static struct list eventstates;
+static struct spinlock eventlock;
 static char databuffer[FUDGE_BSIZE];
 static struct ring dataring;
+static struct spinlock datalock;
 
 static unsigned int data_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return ring_read(&dataring, buffer, count);
+    spinlock_acquire(&datalock);
+
+    count = ring_read(&dataring, buffer, count);
+
+    spinlock_release(&datalock);
+
+    return count;
 
 }
 
 static unsigned int data_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return ring_write(&dataring, buffer, count);
+    spinlock_acquire(&datalock);
+
+    count = ring_write(&dataring, buffer, count);
+
+    spinlock_release(&datalock);
+
+    return count;
 
 }
 
 static unsigned int event_open(struct system_node *self, struct service_state *state)
 {
 
+    spinlock_acquire(&eventlock);
     list_add(&eventstates, &state->item);
+    spinlock_release(&eventlock);
 
     return (unsigned int)self;
 
@@ -37,7 +53,9 @@ static unsigned int event_open(struct system_node *self, struct service_state *s
 static unsigned int event_close(struct system_node *self, struct service_state *state)
 {
 
+    spinlock_acquire(&eventlock);
     list_remove(&eventstates, &state->item);
+    spinlock_release(&eventlock);
 
     return (unsigned int)self;
 
@@ -46,7 +64,13 @@ static unsigned int event_close(struct system_node *self, struct service_state *
 static unsigned int event_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return event_send(&eventstates, state, buffer, count);
+    spinlock_acquire(&eventlock);
+
+    count = event_send(&eventstates, state, buffer, count);
+
+    spinlock_release(&eventlock);
+
+    return count;
 
 }
 
