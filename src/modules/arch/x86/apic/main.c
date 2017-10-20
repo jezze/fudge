@@ -100,14 +100,13 @@ unsigned int apic_getid(void)
 unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct core *core = arch_getcore();
     unsigned int directory = cpu_getcr3();
 
     cpu_setcr3(ARCH_MMUKERNELADDRESS);
     apic_outd(REGISTEREOI, 0);
     cpu_setcr3(directory);
 
-    return arch_resume(&general, &interrupt, core);
+    return arch_resume(&general, &interrupt);
 
 }
 
