@@ -23,40 +23,38 @@ static void write(struct list *states, unsigned int level, char *string, char *f
     {
 
     case DEBUG_CRITICAL:
-        kernel_multicast(states, "[CRIT] ", 7);
+        kernel_multicast(states, &spinlock, "[CRIT] ", 7);
 
         break;
 
     case DEBUG_ERROR:
-        kernel_multicast(states, "[ERRO] ", 7);
+        kernel_multicast(states, &spinlock, "[ERRO] ", 7);
 
         break;
 
     case DEBUG_WARNING:
-        kernel_multicast(states, "[WARN] ", 7);
+        kernel_multicast(states, &spinlock, "[WARN] ", 7);
 
         break;
 
     case DEBUG_INFO:
-        kernel_multicast(states, "[INFO] ", 7);
+        kernel_multicast(states, &spinlock, "[INFO] ", 7);
 
         break;
 
     }
 
-    kernel_multicast(states, string, ascii_length(string));
-    kernel_multicast(states, " (", 2);
-    kernel_multicast(states, file, ascii_length(file));
-    kernel_multicast(states, ":", 1);
-    kernel_multicast(states, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
-    kernel_multicast(states, ")\n", 2);
+    kernel_multicast(states, &spinlock, string, ascii_length(string));
+    kernel_multicast(states, &spinlock, " (", 2);
+    kernel_multicast(states, &spinlock, file, ascii_length(file));
+    kernel_multicast(states, &spinlock, ":", 1);
+    kernel_multicast(states, &spinlock, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
+    kernel_multicast(states, &spinlock, ")\n", 2);
 
 }
 
 static void log_write(unsigned int level, char *string, char *file, unsigned int line)
 {
-
-    spinlock_acquire(&spinlock);
 
     if (level <= DEBUG_CRITICAL)
         write(&criticalstates, level, string, file, line);
@@ -69,8 +67,6 @@ static void log_write(unsigned int level, char *string, char *file, unsigned int
 
     if (level <= DEBUG_INFO)
         write(&infostates, level, string, file, line);
-
-    spinlock_release(&spinlock);
 
 }
 

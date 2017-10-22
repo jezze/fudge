@@ -44,7 +44,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
     }
 
-    kernel_multicast(&interface->datastates, buffer, count);
+    kernel_multicast(&interface->datastates, &interface->datalock, buffer, count);
 
 }
 

@@ -23,7 +23,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
 
     }
 
-    kernel_multicast(&ethernetprotocol.datastates, buffer, count);
+    kernel_multicast(&ethernetprotocol.datastates, &ethernetprotocol.datalock, buffer, count);
 
 }
 
@@ -32,7 +32,7 @@ static struct system_node *protocoldata_open(struct system_node *self, struct se
 
     struct ipv6_protocol *protocol = self->resource->data;
 
-    list_add(&protocol->datastates, &state->item);
+    list_lockadd(&protocol->datastates, &state->item, &protocol->datalock);
 
     return self;
 
@@ -43,7 +43,7 @@ static struct system_node *protocoldata_close(struct system_node *self, struct s
 
     struct ipv6_protocol *protocol = self->resource->data;
 
-    list_remove(&protocol->datastates, &state->item);
+    list_lockremove(&protocol->datastates, &state->item, &protocol->datalock);
 
     return self;
 

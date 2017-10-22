@@ -8,9 +8,7 @@ static struct system_node root;
 void console_notify(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
-    spinlock_acquire(&interface->datalock);
-    kernel_multicast(&interface->datastates, buffer, count);
-    spinlock_release(&interface->datalock);
+    kernel_multicast(&interface->datastates, &interface->datalock, buffer, count);
 
 }
 

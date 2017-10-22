@@ -19,6 +19,7 @@ struct ipv6_protocol
     struct system_node root;
     struct system_node data;
     struct list datastates;
+    struct spinlock datalock;
     unsigned char id;
     void (*notify)(struct ipv6_header *ipv6header, void *buffer, unsigned int count);
 

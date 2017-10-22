@@ -8,7 +8,7 @@ static struct system_node root;
 void block_notify(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->datastates, buffer, count);
+    kernel_multicast(&interface->datastates, &interface->datalock, buffer, count);
 
 }
 

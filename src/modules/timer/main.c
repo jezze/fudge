@@ -10,9 +10,7 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
-    spinlock_acquire(&interface->sleeplock);
-    kernel_multicast(&interface->sleepstates, buffer, count);
-    spinlock_release(&interface->sleeplock);
+    kernel_multicast(&interface->sleepstates, &interface->sleeplock, buffer, count);
 
 }
 

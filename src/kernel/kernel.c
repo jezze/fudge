@@ -358,10 +358,12 @@ void kernel_unblockall(struct list *states)
 
 }
 
-void kernel_multicast(struct list *states, void *buffer, unsigned int count)
+void kernel_multicast(struct list *states, struct spinlock *spinlock, void *buffer, unsigned int count)
 {
 
     struct list_item *current;
+
+    spinlock_acquire(spinlock);
 
     for (current = states->head; current; current = current->next)
     {
@@ -371,6 +373,8 @@ void kernel_multicast(struct list *states, void *buffer, unsigned int count)
         kernel_writemailbox(state->task, buffer, count);
 
     }
+
+    spinlock_release(spinlock);
 
 }
 
