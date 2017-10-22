@@ -138,7 +138,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
 
     }
 
-    kernel_multicast(&ethernetprotocol.datastates, &ethernetprotocol.datalock, buffer, count);
+    kernel_multicast(&ethernetprotocol.datastates, buffer, count);
 
 }
 
@@ -195,7 +195,7 @@ static struct system_node *protocoldata_open(struct system_node *self, struct se
 
     struct ipv4_protocol *protocol = self->resource->data;
 
-    list_lockadd(&protocol->datastates, &state->item, &protocol->datalock);
+    list_add(&protocol->datastates, &state->item);
 
     return self;
 
@@ -206,7 +206,7 @@ static struct system_node *protocoldata_close(struct system_node *self, struct s
 
     struct ipv4_protocol *protocol = self->resource->data;
 
-    list_lockremove(&protocol->datastates, &state->item, &protocol->datalock);
+    list_remove(&protocol->datastates, &state->item);
 
     return self;
 

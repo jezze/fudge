@@ -23,7 +23,6 @@ struct ipv4_protocol
     struct system_node root;
     struct system_node data;
     struct list datastates;
-    struct spinlock datalock;
     unsigned char id;
     void (*notify)(struct ipv4_header *ipv4header, void *buffer, unsigned int count);
 

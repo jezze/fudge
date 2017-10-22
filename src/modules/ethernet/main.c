@@ -44,7 +44,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
     }
 
-    kernel_multicast(&interface->datastates, &interface->datalock, buffer, count);
+    kernel_multicast(&interface->datastates, buffer, count);
 
 }
 
@@ -65,7 +65,7 @@ static struct system_node *interfacedata_open(struct system_node *self, struct s
 
     struct ethernet_interface *interface = self->resource->data;
 
-    list_lockadd(&interface->datastates, &state->item, &interface->datalock);
+    list_add(&interface->datastates, &state->item);
 
     return self;
 
@@ -76,7 +76,7 @@ static struct system_node *interfacedata_close(struct system_node *self, struct 
 
     struct ethernet_interface *interface = self->resource->data;
 
-    list_lockremove(&interface->datastates, &state->item, &interface->datalock);
+    list_remove(&interface->datastates, &state->item);
 
     return self;
 
@@ -87,7 +87,7 @@ static struct system_node *protocoldata_open(struct system_node *self, struct se
 
     struct ethernet_protocol *protocol = self->resource->data;
 
-    list_lockadd(&protocol->datastates, &state->item, &protocol->datalock);
+    list_add(&protocol->datastates, &state->item);
 
     return self;
 
@@ -98,7 +98,7 @@ static struct system_node *protocoldata_close(struct system_node *self, struct s
 
     struct ethernet_protocol *protocol = self->resource->data;
 
-    list_lockremove(&protocol->datastates, &state->item, &protocol->datalock);
+    list_remove(&protocol->datastates, &state->item);
 
     return self;
 

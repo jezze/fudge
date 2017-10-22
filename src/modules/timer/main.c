@@ -10,7 +10,7 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->sleepstates, &interface->sleeplock, buffer, count);
+    kernel_multicast(&interface->sleepstates, buffer, count);
 
 }
 
@@ -24,9 +24,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.timertick.counter = counter;
 
-    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_timertick));
-    spinlock_release(&interface->eventlock);
 
 }
 
@@ -35,7 +33,7 @@ static struct system_node *interfacesleep_open(struct system_node *self, struct 
 
     struct timer_interface *interface = self->resource->data;
 
-    list_lockadd(&interface->sleepstates, &state->item, &interface->sleeplock);
+    list_add(&interface->sleepstates, &state->item);
 
     return self;
 
@@ -46,7 +44,7 @@ static struct system_node *interfacesleep_close(struct system_node *self, struct
 
     struct timer_interface *interface = self->resource->data;
 
-    list_lockremove(&interface->sleepstates, &state->item, &interface->sleeplock);
+    list_remove(&interface->sleepstates, &state->item);
 
     return self;
 
@@ -57,7 +55,7 @@ static struct system_node *interfaceevent_open(struct system_node *self, struct 
 
     struct timer_interface *interface = self->resource->data;
 
-    list_lockadd(&interface->eventstates, &state->item, &interface->eventlock);
+    list_add(&interface->eventstates, &state->item);
 
     return self;
 
@@ -68,7 +66,7 @@ static struct system_node *interfaceevent_close(struct system_node *self, struct
 
     struct timer_interface *interface = self->resource->data;
 
-    list_lockremove(&interface->eventstates, &state->item, &interface->eventlock);
+    list_remove(&interface->eventstates, &state->item);
 
     return self;
 

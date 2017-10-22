@@ -8,7 +8,7 @@ static struct system_node root;
 void console_notify(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->datastates, &interface->datalock, buffer, count);
+    kernel_multicast(&interface->datastates, buffer, count);
 
 }
 
@@ -26,7 +26,7 @@ static struct system_node *interfacedata_open(struct system_node *self, struct s
 
     struct console_interface *interface = self->resource->data;
 
-    list_lockadd(&interface->datastates, &state->item, &interface->datalock);
+    list_add(&interface->datastates, &state->item);
 
     return self;
 
@@ -37,7 +37,7 @@ static struct system_node *interfacedata_close(struct system_node *self, struct 
 
     struct console_interface *interface = self->resource->data;
 
-    list_lockremove(&interface->datastates, &state->item, &interface->datalock);
+    list_remove(&interface->datastates, &state->item);
 
     return self;
 

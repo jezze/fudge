@@ -10,7 +10,7 @@ static struct system_node root;
 void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->datastates, &interface->datalock, buffer, count);
+    kernel_multicast(&interface->datastates, buffer, count);
 
 }
 
@@ -25,9 +25,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
-    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
-    spinlock_release(&interface->eventlock);
 
 }
 
@@ -41,9 +39,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.mousepress.button = button;
 
-    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
-    spinlock_release(&interface->eventlock);
 
 }
 
@@ -57,9 +53,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.mouserelease.button = button;
 
-    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
-    spinlock_release(&interface->eventlock);
 
 }
 
@@ -68,7 +62,7 @@ static struct system_node *interfacedata_open(struct system_node *self, struct s
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_lockadd(&interface->datastates, &state->item, &interface->datalock);
+    list_add(&interface->datastates, &state->item);
 
     return self;
 
@@ -79,7 +73,7 @@ static struct system_node *interfacedata_close(struct system_node *self, struct 
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_lockremove(&interface->datastates, &state->item, &interface->datalock);
+    list_remove(&interface->datastates, &state->item);
 
     return self;
 
@@ -90,7 +84,7 @@ static struct system_node *interfaceevent_open(struct system_node *self, struct 
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_lockadd(&interface->eventstates, &state->item, &interface->eventlock);
+    list_add(&interface->eventstates, &state->item);
 
     return self;
 
@@ -101,7 +95,7 @@ static struct system_node *interfaceevent_close(struct system_node *self, struct
 
     struct mouse_interface *interface = self->resource->data;
 
-    list_lockremove(&interface->eventstates, &state->item, &interface->eventlock);
+    list_remove(&interface->eventstates, &state->item);
 
     return self;
 

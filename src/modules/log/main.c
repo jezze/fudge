@@ -12,7 +12,6 @@ static struct list criticalstates;
 static struct list errorstates;
 static struct list warningstates;
 static struct list infostates;
-static struct spinlock spinlock;
 
 static void write(struct list *states, unsigned int level, char *string, char *file, unsigned int line)
 {
@@ -23,33 +22,33 @@ static void write(struct list *states, unsigned int level, char *string, char *f
     {
 
     case DEBUG_CRITICAL:
-        kernel_multicast(states, &spinlock, "[CRIT] ", 7);
+        kernel_multicast(states, "[CRIT] ", 7);
 
         break;
 
     case DEBUG_ERROR:
-        kernel_multicast(states, &spinlock, "[ERRO] ", 7);
+        kernel_multicast(states, "[ERRO] ", 7);
 
         break;
 
     case DEBUG_WARNING:
-        kernel_multicast(states, &spinlock, "[WARN] ", 7);
+        kernel_multicast(states, "[WARN] ", 7);
 
         break;
 
     case DEBUG_INFO:
-        kernel_multicast(states, &spinlock, "[INFO] ", 7);
+        kernel_multicast(states, "[INFO] ", 7);
 
         break;
 
     }
 
-    kernel_multicast(states, &spinlock, string, ascii_length(string));
-    kernel_multicast(states, &spinlock, " (", 2);
-    kernel_multicast(states, &spinlock, file, ascii_length(file));
-    kernel_multicast(states, &spinlock, ":", 1);
-    kernel_multicast(states, &spinlock, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
-    kernel_multicast(states, &spinlock, ")\n", 2);
+    kernel_multicast(states, string, ascii_length(string));
+    kernel_multicast(states, " (", 2);
+    kernel_multicast(states, file, ascii_length(file));
+    kernel_multicast(states, ":", 1);
+    kernel_multicast(states, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
+    kernel_multicast(states, ")\n", 2);
 
 }
 
@@ -73,7 +72,7 @@ static void log_write(unsigned int level, char *string, char *file, unsigned int
 static struct system_node *critical_open(struct system_node *self, struct service_state *state)
 {
 
-    list_lockadd(&criticalstates, &state->item, &spinlock);
+    list_add(&criticalstates, &state->item);
 
     return self;
 
@@ -82,7 +81,7 @@ static struct system_node *critical_open(struct system_node *self, struct servic
 static struct system_node *critical_close(struct system_node *self, struct service_state *state)
 {
 
-    list_lockremove(&criticalstates, &state->item, &spinlock);
+    list_remove(&criticalstates, &state->item);
 
     return self;
 
@@ -91,7 +90,7 @@ static struct system_node *critical_close(struct system_node *self, struct servi
 static struct system_node *error_open(struct system_node *self, struct service_state *state)
 {
 
-    list_lockadd(&errorstates, &state->item, &spinlock);
+    list_add(&errorstates, &state->item);
 
     return self;
 
@@ -100,7 +99,7 @@ static struct system_node *error_open(struct system_node *self, struct service_s
 static struct system_node *error_close(struct system_node *self, struct service_state *state)
 {
 
-    list_lockremove(&errorstates, &state->item, &spinlock);
+    list_remove(&errorstates, &state->item);
 
     return self;
 
@@ -109,7 +108,7 @@ static struct system_node *error_close(struct system_node *self, struct service_
 static struct system_node *warning_open(struct system_node *self, struct service_state *state)
 {
 
-    list_lockadd(&warningstates, &state->item, &spinlock);
+    list_add(&warningstates, &state->item);
 
     return self;
 
@@ -118,7 +117,7 @@ static struct system_node *warning_open(struct system_node *self, struct service
 static struct system_node *warning_close(struct system_node *self, struct service_state *state)
 {
 
-    list_lockremove(&warningstates, &state->item, &spinlock);
+    list_remove(&warningstates, &state->item);
 
     return self;
 
@@ -127,7 +126,7 @@ static struct system_node *warning_close(struct system_node *self, struct servic
 static struct system_node *info_open(struct system_node *self, struct service_state *state)
 {
 
-    list_lockadd(&infostates, &state->item, &spinlock);
+    list_add(&infostates, &state->item);
 
     return self;
 
@@ -136,7 +135,7 @@ static struct system_node *info_open(struct system_node *self, struct service_st
 static struct system_node *info_close(struct system_node *self, struct service_state *state)
 {
 
-    list_lockremove(&infostates, &state->item, &spinlock);
+    list_remove(&infostates, &state->item);
 
     return self;
 

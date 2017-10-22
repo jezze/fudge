@@ -22,7 +22,6 @@ static struct core cores[256];
 static struct system_node root;
 static struct system_node cpus;
 static struct list corelist;
-static struct spinlock corelock;
 
 static void detect(struct acpi_madt *madt)
 {
@@ -114,19 +113,13 @@ static struct core *getcore(void)
 static void assign(struct task *task)
 {
 
-    struct core *core;
+    struct core *core = corelist.head->data;
 
-    spinlock_acquire(&corelock);
-
-    core = corelist.head->data;
-
-    /*
-    Need to add more spinlocks before enabling this.
+/*
     list_move(&corelist, &core->item);
-    */
+*/
 
-    spinlock_release(&corelock);
-    list_lockmove(&core->tasks, &task->state.item, &core->tasklock);
+    list_move(&core->tasks, &task->state.item);
     apic_sendint(core->id, APIC_ICR_TYPE_NORMAL | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | 0xFE);
 
 }
@@ -141,7 +134,7 @@ void smp_setup(unsigned int stack)
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
     apic_setup_ap();
-    list_lockadd(&corelist, &cores[id].item, &corelock);
+    list_add(&corelist, &cores[id].item);
     arch_leave(&cores[id]);
 
 }
@@ -164,12 +157,12 @@ void module_init(void)
 
     core_init(&cores[id], id, c->sp);
     arch_configuretss(&tss[id], ARCH_TSS + id, cores[id].sp);
-    list_lockadd(&corelist, &cores[id].item, &corelock);
+    list_add(&corelist, &cores[id].item);
 
     cores[id].task = c->task;
 
     while (c->tasks.count)
-        list_lockmove(&cores[id].tasks, c->tasks.tail, &cores[id].tasklock);
+        list_move(&cores[id].tasks, c->tasks.tail);
 
     arch_setcore(getcore);
     arch_setassign(assign);

@@ -14,15 +14,11 @@ static struct list freetasks;
 static struct list readytasks;
 static struct list blockedtasks;
 static struct list unblockedtasks;
-static struct spinlock tasklock;
 static struct list usedservers;
 static struct list freeservers;
-static struct spinlock serverlock;
 static struct list usedmounts;
 static struct list freemounts;
-static struct spinlock mountlock;
 static struct list freeservices;
-static struct spinlock servicelock;
 
 static unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
 {
@@ -46,7 +42,7 @@ void kernel_walkmountparent(struct service *service)
 
     struct list_item *current;
 
-    spinlock_acquire(&mountlock);
+    spinlock_acquire(&usedmounts.spinlock);
 
     for (current = usedmounts.head; current; current = current->next)
     {
@@ -58,7 +54,7 @@ void kernel_walkmountparent(struct service *service)
 
     }
 
-    spinlock_release(&mountlock);
+    spinlock_release(&usedmounts.spinlock);
 
 }
 
@@ -67,7 +63,7 @@ void kernel_walkmountchild(struct service *service)
 
     struct list_item *current;
 
-    spinlock_acquire(&mountlock);
+    spinlock_acquire(&usedmounts.spinlock);
 
     for (current = usedmounts.head; current; current = current->next)
     {
@@ -79,23 +75,17 @@ void kernel_walkmountchild(struct service *service)
 
     }
 
-    spinlock_release(&mountlock);
+    spinlock_release(&usedmounts.spinlock);
 
 }
 
 struct task *kernel_picktask(void)
 {
 
-    struct list_item *current;
-
-    spinlock_acquire(&tasklock);
-
-    current = freetasks.tail;
+    struct list_item *current = freetasks.tail;
 
     if (current)
         list_remove(&freetasks, current);
-
-    spinlock_release(&tasklock);
 
     return (current) ? current->data : 0;
 
@@ -108,7 +98,7 @@ void kernel_freetask(struct task *task)
     {
 
     case TASK_STATUS_NORMAL:
-        list_lockmove(&freetasks, &task->state.item, &tasklock);
+        list_move(&freetasks, &task->state.item);
 
         break;
 
@@ -123,7 +113,7 @@ void kernel_readytask(struct task *task)
     {
 
     case TASK_STATUS_NORMAL:
-        list_lockmove(&readytasks, &task->state.item, &tasklock);
+        list_move(&readytasks, &task->state.item);
 
         break;
 
@@ -138,7 +128,7 @@ void kernel_blocktask(struct task *task)
     {
 
     case TASK_STATUS_NORMAL:
-        list_lockmove(&blockedtasks, &task->state.item, &tasklock);
+        list_move(&blockedtasks, &task->state.item);
 
         task->state.status = TASK_STATUS_BLOCKED;
 
@@ -155,7 +145,7 @@ void kernel_unblocktask(struct task *task)
     {
 
     case TASK_STATUS_BLOCKED:
-        list_lockmove(&unblockedtasks, &task->state.item, &tasklock);
+        list_move(&unblockedtasks, &task->state.item);
 
         task->state.status = TASK_STATUS_NORMAL;
 
@@ -170,8 +160,6 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 
     struct list_item *current;
 
-    spinlock_acquire(&tasklock);
-
     if (core->task)
     {
 
@@ -179,6 +167,8 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
         core->task->state.sp = sp;
 
     }
+
+    spinlock_acquire(&unblockedtasks.spinlock);
 
     for (current = unblockedtasks.head; current; current = current->next)
     {
@@ -191,6 +181,9 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 
     }
 
+    spinlock_release(&unblockedtasks.spinlock);
+    spinlock_acquire(&readytasks.spinlock);
+
     for (current = readytasks.head; current; current = current->next)
     {
 
@@ -200,7 +193,7 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 
     }
 
-    spinlock_release(&tasklock);
+    spinlock_release(&readytasks.spinlock);
 
     return (core->tasks.tail) ? core->tasks.tail->data : 0;
 
@@ -209,16 +202,10 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 struct service_server *kernel_pickserver(void)
 {
 
-    struct list_item *current;
-
-    spinlock_acquire(&serverlock);
-
-    current = freeservers.tail;
+    struct list_item *current = freeservers.tail;
 
     if (current)
         list_remove(&freeservers, current);
-
-    spinlock_release(&serverlock);
 
     return (current) ? current->data : 0;
 
@@ -227,30 +214,24 @@ struct service_server *kernel_pickserver(void)
 void kernel_useserver(struct service_server *server)
 {
 
-    list_lockmove(&usedservers, &server->item, &serverlock);
+    list_move(&usedservers, &server->item);
 
 }
 
 void kernel_freeserver(struct service_server *server)
 {
 
-    list_lockmove(&freeservers, &server->item, &serverlock);
+    list_move(&freeservers, &server->item);
 
 }
 
 struct service_mount *kernel_pickmount(void)
 {
 
-    struct list_item *current;
-
-    spinlock_acquire(&mountlock);
-
-    current = freemounts.tail;
+    struct list_item *current = freemounts.tail;
 
     if (current)
         list_remove(&freemounts, current);
-
-    spinlock_release(&mountlock);
 
     return (current) ? current->data : 0;
 
@@ -259,14 +240,14 @@ struct service_mount *kernel_pickmount(void)
 void kernel_usemount(struct service_mount *mount)
 {
 
-    list_lockmove(&usedmounts, &mount->item, &mountlock);
+    list_move(&usedmounts, &mount->item);
 
 }
 
 void kernel_freemount(struct service_mount *mount)
 {
 
-    list_lockmove(&freemounts, &mount->item, &mountlock);
+    list_move(&freemounts, &mount->item);
 
 }
 
@@ -280,7 +261,7 @@ struct service *kernel_getservice(struct task *task, unsigned int service)
 void kernel_freeservice(struct service *service)
 {
 
-    list_lockmove(&freeservices, &service->item, &servicelock);
+    list_move(&freeservices, &service->item);
 
 }
 
@@ -347,6 +328,8 @@ void kernel_unblockall(struct list *states)
 
     struct list_item *current;
 
+    spinlock_acquire(&states->spinlock);
+
     for (current = states->head; current; current = current->next)
     {
 
@@ -356,14 +339,16 @@ void kernel_unblockall(struct list *states)
 
     }
 
+    spinlock_release(&states->spinlock);
+
 }
 
-void kernel_multicast(struct list *states, struct spinlock *spinlock, void *buffer, unsigned int count)
+void kernel_multicast(struct list *states, void *buffer, unsigned int count)
 {
 
     struct list_item *current;
 
-    spinlock_acquire(spinlock);
+    spinlock_acquire(&states->spinlock);
 
     for (current = states->head; current; current = current->next)
     {
@@ -374,7 +359,7 @@ void kernel_multicast(struct list *states, struct spinlock *spinlock, void *buff
 
     }
 
-    spinlock_release(spinlock);
+    spinlock_release(&states->spinlock);
 
 }
 

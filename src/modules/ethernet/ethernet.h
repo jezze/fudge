@@ -26,7 +26,6 @@ struct ethernet_interface
     struct system_node data;
     struct system_node addr;
     struct list datastates;
-    struct spinlock datalock;
     unsigned int id;
     unsigned int (*getaddress)(void *buffer);
     unsigned int (*send)(void *buffer, unsigned int count);
@@ -40,7 +39,6 @@ struct ethernet_protocol
     struct system_node root;
     struct system_node data;
     struct list datastates;
-    struct spinlock datalock;
     unsigned int type;
     void (*notify)(struct ethernet_interface *ethernetinterface, struct ethernet_header *header, void *buffer, unsigned int count);
 

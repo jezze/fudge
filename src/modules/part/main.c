@@ -31,7 +31,7 @@ static struct system_node *clone_child(struct system_node *self, struct service_
 
     struct list_item *current;
 
-    spinlock_acquire(&root.childlock);
+    spinlock_acquire(&root.children.spinlock);
 
     for (current = root.children.head; current; current = current->next)
     {
@@ -45,7 +45,7 @@ static struct system_node *clone_child(struct system_node *self, struct service_
 
     }
 
-    spinlock_release(&root.childlock);
+    spinlock_release(&root.children.spinlock);
 
     return self;
 

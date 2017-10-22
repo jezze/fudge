@@ -14,6 +14,7 @@ struct list
     struct list_item *head;
     struct list_item *tail;
     unsigned int count;
+    struct spinlock spinlock;
 
 };
 

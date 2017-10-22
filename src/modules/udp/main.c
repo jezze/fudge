@@ -27,14 +27,14 @@ static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, un
 
     }
 
-    kernel_multicast(&ipv4protocol.datastates, &ipv4protocol.datalock, buffer, count);
+    kernel_multicast(&ipv4protocol.datastates, buffer, count);
 
 }
 
 static void ipv6protocol_notify(struct ipv6_header *ipv6header, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&ipv6protocol.datastates, &ipv6protocol.datalock, buffer, count);
+    kernel_multicast(&ipv6protocol.datastates, buffer, count);
 
 }
 

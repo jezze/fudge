@@ -10,7 +10,7 @@ static struct system_node root;
 void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->datastates, &interface->datalock, buffer, count);
+    kernel_multicast(&interface->datastates, buffer, count);
 
 }
 
@@ -24,9 +24,7 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.keypress.scancode = scancode;
 
-    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
-    spinlock_release(&interface->eventlock);
 
 }
 
@@ -40,9 +38,7 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.keyrelease.scancode = scancode;
 
-    spinlock_acquire(&interface->eventlock);
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
-    spinlock_release(&interface->eventlock);
 
 }
 
@@ -51,7 +47,7 @@ static struct system_node *interfacedata_open(struct system_node *self, struct s
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_lockadd(&interface->datastates, &state->item, &interface->datalock);
+    list_add(&interface->datastates, &state->item);
 
     return self;
 
@@ -62,7 +58,7 @@ static struct system_node *interfacedata_close(struct system_node *self, struct 
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_lockremove(&interface->datastates, &state->item, &interface->datalock);
+    list_remove(&interface->datastates, &state->item);
 
     return self;
 
@@ -73,7 +69,7 @@ static struct system_node *interfaceevent_open(struct system_node *self, struct 
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_lockadd(&interface->eventstates, &state->item, &interface->eventlock);
+    list_add(&interface->eventstates, &state->item);
 
     return self;
 
@@ -84,7 +80,7 @@ static struct system_node *interfaceevent_close(struct system_node *self, struct
 
     struct keyboard_interface *interface = self->resource->data;
 
-    list_lockremove(&interface->eventstates, &state->item, &interface->eventlock);
+    list_remove(&interface->eventstates, &state->item);
 
     return self;
 

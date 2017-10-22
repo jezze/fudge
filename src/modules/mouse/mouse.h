@@ -6,9 +6,7 @@ struct mouse_interface
     struct system_node data;
     struct system_node event;
     struct list datastates;
-    struct spinlock datalock;
     struct list eventstates;
-    struct spinlock eventlock;
     unsigned int id;
 
 };

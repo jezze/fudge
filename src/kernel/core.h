@@ -6,7 +6,6 @@ struct core
     unsigned int sp;
     struct resource resource;
     struct list tasks;
-    struct spinlock tasklock;
     struct task *task;
 
 };

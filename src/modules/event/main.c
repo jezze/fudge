@@ -10,6 +10,9 @@ unsigned int event_unicast(struct list *states, struct event_header *header, uns
 {
 
     struct list_item *current;
+    unsigned int c = 0;
+
+    spinlock_acquire(&states->spinlock);
 
     for (current = states->head; current; current = current->next)
     {
@@ -19,11 +22,15 @@ unsigned int event_unicast(struct list *states, struct event_header *header, uns
         if (header->destination != (unsigned int)state->task)
             continue;
 
-        return kernel_writemailbox(state->task, header, count);
+        c = kernel_writemailbox(state->task, header, count);
+
+        break;
 
     }
 
-    return 0;
+    spinlock_release(&states->spinlock);
+
+    return c;
 
 }
 
@@ -31,6 +38,8 @@ unsigned int event_multicast(struct list *states, struct event_header *header, u
 {
 
     struct list_item *current;
+
+    spinlock_acquire(&states->spinlock);
 
     for (current = states->head; current; current = current->next)
     {
@@ -42,6 +51,8 @@ unsigned int event_multicast(struct list *states, struct event_header *header, u
         kernel_writemailbox(state->task, header, count);
 
     }
+
+    spinlock_release(&states->spinlock);
 
     return count;
 

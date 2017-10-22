@@ -126,7 +126,7 @@ void system_addchild(struct system_node *group, struct system_node *node)
 
     }
 
-    list_lockadd(&group->children, &node->item, &group->childlock);
+    list_add(&group->children, &node->item);
 
     node->parent = group;
 
@@ -135,7 +135,7 @@ void system_addchild(struct system_node *group, struct system_node *node)
 void system_removechild(struct system_node *group, struct system_node *node)
 {
 
-    list_lockremove(&group->children, &node->item, &group->childlock);
+    list_remove(&group->children, &node->item);
 
     node->parent = 0;
 
