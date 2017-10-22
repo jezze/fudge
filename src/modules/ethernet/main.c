@@ -65,7 +65,7 @@ static struct system_node *interfacedata_open(struct system_node *self, struct s
 
     struct ethernet_interface *interface = self->resource->data;
 
-    list_add(&interface->datastates, &state->item);
+    list_lockadd(&interface->datastates, &state->item, &interface->datalock);
 
     return self;
 
@@ -76,7 +76,7 @@ static struct system_node *interfacedata_close(struct system_node *self, struct 
 
     struct ethernet_interface *interface = self->resource->data;
 
-    list_remove(&interface->datastates, &state->item);
+    list_lockremove(&interface->datastates, &state->item, &interface->datalock);
 
     return self;
 
@@ -87,7 +87,7 @@ static struct system_node *protocoldata_open(struct system_node *self, struct se
 
     struct ethernet_protocol *protocol = self->resource->data;
 
-    list_add(&protocol->datastates, &state->item);
+    list_lockadd(&protocol->datastates, &state->item, &protocol->datalock);
 
     return self;
 
@@ -98,7 +98,7 @@ static struct system_node *protocoldata_close(struct system_node *self, struct s
 
     struct ethernet_protocol *protocol = self->resource->data;
 
-    list_remove(&protocol->datastates, &state->item);
+    list_lockremove(&protocol->datastates, &state->item, &protocol->datalock);
 
     return self;
 

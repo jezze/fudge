@@ -17,7 +17,7 @@ static struct system_node *interfacedata_open(struct system_node *self, struct s
 
     struct block_interface *interface = self->resource->data;
 
-    list_add(&interface->datastates, &state->item);
+    list_lockadd(&interface->datastates, &state->item, &interface->datalock);
 
     return self;
 
@@ -28,7 +28,7 @@ static struct system_node *interfacedata_close(struct system_node *self, struct 
 
     struct block_interface *interface = self->resource->data;
 
-    list_remove(&interface->datastates, &state->item);
+    list_lockremove(&interface->datastates, &state->item, &interface->datalock);
 
     return self;
 
