@@ -21,7 +21,4 @@ struct list
 void list_add(struct list *list, struct list_item *item);
 void list_remove(struct list *list, struct list_item *item);
 void list_move(struct list *list, struct list_item *item);
-void list_lockadd(struct list *list, struct list_item *item, struct spinlock *spinlock);
-void list_lockremove(struct list *list, struct list_item *item, struct spinlock *spinlock);
-void list_lockmove(struct list *list, struct list_item *item, struct spinlock *spinlock);
 void list_inititem(struct list_item *item, void *data);

@@ -84,34 +84,6 @@ void list_move(struct list *list, struct list_item *item)
 
 }
 
-void list_lockadd(struct list *list, struct list_item *item, struct spinlock *spinlock)
-{
-
-    spinlock_acquire(spinlock);
-    add(list, item);
-    spinlock_release(spinlock);
-
-}
-
-void list_lockremove(struct list *list, struct list_item *item, struct spinlock *spinlock)
-{
-
-    spinlock_acquire(spinlock);
-    remove(list, item);
-    spinlock_release(spinlock);
-
-}
-
-void list_lockmove(struct list *list, struct list_item *item, struct spinlock *spinlock)
-{
-
-    if (item->list)
-        list_lockremove(item->list, item, spinlock);
-
-    list_lockadd(list, item, spinlock);
-
-}
-
 void list_inititem(struct list_item *item, void *data)
 {
 
