@@ -9,6 +9,9 @@ static struct system_node *childgroup(struct system_node *self, struct service_s
 {
 
     struct list_item *current;
+    struct system_node *n = self;
+
+    spinlock_acquire(&self->children.spinlock);
 
     for (current = self->children.head; current; current = current->next)
     {
@@ -46,11 +49,15 @@ static struct system_node *childgroup(struct system_node *self, struct service_s
 
         }
 
-        return node;
+        n = node;
+
+        break;
 
     }
 
-    return self;
+    spinlock_release(&self->children.spinlock);
+
+    return n;
 
 }
 
@@ -111,6 +118,8 @@ void system_addchild(struct system_node *group, struct system_node *node)
 
         unsigned int length0 = ascii_length(node->name);
 
+        spinlock_acquire(&group->children.spinlock);
+
         for (current = group->children.head; current; current = current->next)
         {
 
@@ -123,6 +132,8 @@ void system_addchild(struct system_node *group, struct system_node *node)
             node->index++;
 
         }
+
+        spinlock_release(&group->children.spinlock);
 
     }
 
