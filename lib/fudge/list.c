@@ -77,10 +77,12 @@ void list_remove(struct list *list, struct list_item *item)
 void list_move(struct list *list, struct list_item *item)
 {
 
+    /* TODO: Remove should also be spinlocked */
+
     if (item->list)
         remove(item->list, item);
 
-    add(list, item);
+    list_add(list, item);
 
 }
 
