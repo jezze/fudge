@@ -18,7 +18,7 @@ unsigned int event_unicast(struct list *states, struct event_header *header, uns
 
         struct service_state *state = current->data;
 
-        if (header->destination != (unsigned int)state->task)
+        if (header->destination != state->task->id)
             continue;
 
         kernel_writemailbox(state->task, header, count);
@@ -43,7 +43,7 @@ unsigned int event_multicast(struct list *states, struct event_header *header, u
 
         struct service_state *state = current->data;
 
-        header->destination = (unsigned int)state->task;
+        header->destination = state->task->id;
 
         kernel_writemailbox(state->task, header, count);
 
@@ -60,7 +60,7 @@ unsigned int event_send(struct list *states, struct service_state *state, void *
 
     struct event_header *header = buffer;
 
-    header->source = (unsigned int)state->task;
+    header->source = state->task->id;
 
     if (header->destination)
         return event_unicast(states, header, count);
