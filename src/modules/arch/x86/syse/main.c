@@ -18,8 +18,8 @@ void syse_resume(struct cpu_general *general)
     if (core->task)
     {
 
-        general->edx.value = core->task->state.ip;
-        general->ecx.value = core->task->state.sp;
+        general->edx.value = core->task->thread.ip;
+        general->ecx.value = core->task->thread.sp;
 
     }
 

@@ -3,10 +3,8 @@
 #include "binary.h"
 #include "task.h"
 
-void task_initstate(struct task_state *state, struct task *task)
+void task_initthread(struct task_thread *thread)
 {
-
-    list_inititem(&state->item, task);
 
 }
 
@@ -21,7 +19,8 @@ void task_init(struct task *task, unsigned int id)
 {
 
     resource_init(&task->resource, RESOURCE_TASK, task);
-    task_initstate(&task->state, task);
+    list_inititem(&task->item, task);
+    task_initthread(&task->thread);
     task_initmailbox(&task->mailbox);
 
     task->id = id;

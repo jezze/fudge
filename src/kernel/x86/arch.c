@@ -114,7 +114,7 @@ void arch_setcore(struct core *(*callback)(void))
 static void assign0(struct task *task)
 {
 
-    list_move(&core0.tasks, &task->state.item);
+    list_move(&core0.tasks, &task->item);
 
 }
 
@@ -163,8 +163,8 @@ static void setinterrupt(struct cpu_interrupt *interrupt, struct core *core)
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
-        interrupt->eip.value = core->task->state.ip;
-        interrupt->esp.value = core->task->state.sp;
+        interrupt->eip.value = core->task->thread.ip;
+        interrupt->esp.value = core->task->thread.sp;
 
     }
 
@@ -365,7 +365,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
     struct core *core = arch_getcore();
 
-    core->task->state.rewind = 7;
+    core->task->thread.rewind = 7;
     general.eax.value = abi_call(general.eax.value, core->task, interrupt.esp.reference);
 
     return arch_resume(&general, &interrupt);

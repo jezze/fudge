@@ -3,10 +3,9 @@
 #define TASK_STATUS_NORMAL              0
 #define TASK_STATUS_BLOCKED             1
 
-struct task_state
+struct task_thread
 {
 
-    struct list_item item;
     unsigned int ip;
     unsigned int sp;
     unsigned int status;
@@ -28,13 +27,14 @@ struct task
 
     unsigned int id;
     struct resource resource;
-    struct task_state state;
+    struct list_item item;
+    struct task_thread thread;
     struct task_mailbox mailbox;
     struct binary_format *format;
     struct binary_node node;
 
 };
 
-void task_initstate(struct task_state *state, struct task *task);
+void task_initthread(struct task_thread *thread);
 void task_initmailbox(struct task_mailbox *mailbox);
 void task_init(struct task *task, unsigned int id);

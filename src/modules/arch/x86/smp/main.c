@@ -119,7 +119,7 @@ static void assign(struct task *task)
     list_move(&corelist, &core->item);
 */
 
-    list_move(&core->tasks, &task->state.item);
+    list_move(&core->tasks, &task->item);
     apic_sendint(core->id, APIC_ICR_TYPE_NORMAL | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | 0xFE);
 
 }

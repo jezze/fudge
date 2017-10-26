@@ -94,11 +94,11 @@ struct task *kernel_picktask(void)
 void kernel_freetask(struct task *task)
 {
 
-    switch (task->state.status)
+    switch (task->thread.status)
     {
 
     case TASK_STATUS_NORMAL:
-        list_move(&freetasks, &task->state.item);
+        list_move(&freetasks, &task->item);
 
         break;
 
@@ -109,11 +109,11 @@ void kernel_freetask(struct task *task)
 void kernel_readytask(struct task *task)
 {
 
-    switch (task->state.status)
+    switch (task->thread.status)
     {
 
     case TASK_STATUS_NORMAL:
-        list_move(&readytasks, &task->state.item);
+        list_move(&readytasks, &task->item);
 
         break;
 
@@ -124,13 +124,13 @@ void kernel_readytask(struct task *task)
 void kernel_blocktask(struct task *task)
 {
 
-    switch (task->state.status)
+    switch (task->thread.status)
     {
 
     case TASK_STATUS_NORMAL:
-        list_move(&blockedtasks, &task->state.item);
+        list_move(&blockedtasks, &task->item);
 
-        task->state.status = TASK_STATUS_BLOCKED;
+        task->thread.status = TASK_STATUS_BLOCKED;
 
         break;
 
@@ -141,13 +141,13 @@ void kernel_blocktask(struct task *task)
 void kernel_unblocktask(struct task *task)
 {
 
-    switch (task->state.status)
+    switch (task->thread.status)
     {
 
     case TASK_STATUS_BLOCKED:
-        list_move(&unblockedtasks, &task->state.item);
+        list_move(&unblockedtasks, &task->item);
 
-        task->state.status = TASK_STATUS_NORMAL;
+        task->thread.status = TASK_STATUS_NORMAL;
 
         break;
 
@@ -163,8 +163,8 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
     if (core->task)
     {
 
-        core->task->state.ip = ip;
-        core->task->state.sp = sp;
+        core->task->thread.ip = ip;
+        core->task->thread.sp = sp;
 
     }
 
@@ -177,7 +177,7 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 
         assign(task);
 
-        task->state.ip -= task->state.rewind;
+        task->thread.ip -= task->thread.rewind;
 
     }
 
@@ -378,8 +378,8 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
     if (!task->format)
         return 0;
 
-    task->state.ip = task->format->findentry(&task->node);
-    task->state.sp = sp;
+    task->thread.ip = task->format->findentry(&task->node);
+    task->thread.sp = sp;
 
     return 1;
 
