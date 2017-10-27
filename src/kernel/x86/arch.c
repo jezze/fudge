@@ -114,7 +114,7 @@ void arch_setcore(struct core *(*callback)(void))
 static void assign0(struct task *task)
 {
 
-    list_move(&core0.tasks, &task->item);
+    list_add(&core0.tasks, &task->item);
 
 }
 

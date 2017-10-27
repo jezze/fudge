@@ -82,10 +82,7 @@ void kernel_walkmountchild(struct service *service)
 struct task *kernel_picktask(void)
 {
 
-    struct list_item *current = freetasks.tail;
-
-    if (current)
-        list_remove(&freetasks, current);
+    struct list_item *current = list_picktail(&freetasks);
 
     return (current) ? current->data : 0;
 
@@ -168,23 +165,18 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 
     }
 
-    spinlock_acquire(&unblockedtasks.spinlock);
-
-    for (current = unblockedtasks.head; current; current = current->next)
+    while ((current = list_pickhead(&unblockedtasks)))
     {
 
         struct task *task = current->data;
-
-        assign(task);
 
         task->thread.ip -= task->thread.rewind;
 
+        assign(task);
+
     }
 
-    spinlock_release(&unblockedtasks.spinlock);
-    spinlock_acquire(&readytasks.spinlock);
-
-    for (current = readytasks.head; current; current = current->next)
+    while ((current = list_pickhead(&readytasks)))
     {
 
         struct task *task = current->data;
@@ -192,8 +184,6 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
         assign(task);
 
     }
-
-    spinlock_release(&readytasks.spinlock);
 
     return (core->tasks.tail) ? core->tasks.tail->data : 0;
 
@@ -202,10 +192,7 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 struct service_server *kernel_pickserver(void)
 {
 
-    struct list_item *current = freeservers.tail;
-
-    if (current)
-        list_remove(&freeservers, current);
+    struct list_item *current = list_picktail(&freeservers);
 
     return (current) ? current->data : 0;
 
@@ -228,10 +215,7 @@ void kernel_freeserver(struct service_server *server)
 struct service_mount *kernel_pickmount(void)
 {
 
-    struct list_item *current = freemounts.tail;
-
-    if (current)
-        list_remove(&freemounts, current);
+    struct list_item *current = list_picktail(&freemounts);
 
     return (current) ? current->data : 0;
 

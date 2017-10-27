@@ -77,12 +77,46 @@ void list_remove(struct list *list, struct list_item *item)
 void list_move(struct list *list, struct list_item *item)
 {
 
-    /* TODO: Remove should also be spinlocked */
-
     if (item->list)
-        remove(item->list, item);
+        list_remove(item->list, item);
 
     list_add(list, item);
+
+}
+
+struct list_item *list_pickhead(struct list *list)
+{
+
+    struct list_item *item;
+
+    spinlock_acquire(&list->spinlock);
+
+    item = list->head;
+
+    if (item && item->list)
+        remove(item->list, item);
+
+    spinlock_release(&list->spinlock);
+
+    return item;
+
+}
+
+struct list_item *list_picktail(struct list *list)
+{
+
+    struct list_item *item;
+
+    spinlock_acquire(&list->spinlock);
+
+    item = list->tail;
+
+    if (item && item->list)
+        remove(item->list, item);
+
+    spinlock_release(&list->spinlock);
+
+    return item;
 
 }
 
