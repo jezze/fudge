@@ -116,7 +116,8 @@ static void assign(struct task *task)
     struct core *core = corelist.head->data;
 
 /*
-    list_move(&corelist, &core->item);
+    list_remove(&corelist, &core->item);
+    list_add(&corelist, &core->item);
 */
 
     list_add(&core->tasks, &task->item);
@@ -154,6 +155,7 @@ void module_init(void)
     unsigned int id = apic_getid();
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
     struct core *c = arch_getcore();
+    struct list_item *current;
 
     core_init(&cores[id], id, c->sp);
     arch_configuretss(&tss[id], ARCH_TSS + id, cores[id].sp);
@@ -161,8 +163,8 @@ void module_init(void)
 
     cores[id].task = c->task;
 
-    while (c->tasks.count)
-        list_move(&cores[id].tasks, c->tasks.tail);
+    while ((current = list_pickhead(&c->tasks)))
+        list_add(&cores[id].tasks, current);
 
     arch_setcore(getcore);
     arch_setassign(assign);
