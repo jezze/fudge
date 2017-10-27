@@ -201,14 +201,14 @@ struct service_server *kernel_pickserver(void)
 void kernel_useserver(struct service_server *server)
 {
 
-    list_move(&usedservers, &server->item);
+    list_add(&usedservers, &server->item);
 
 }
 
 void kernel_freeserver(struct service_server *server)
 {
 
-    list_move(&freeservers, &server->item);
+    list_add(&freeservers, &server->item);
 
 }
 
@@ -224,14 +224,14 @@ struct service_mount *kernel_pickmount(void)
 void kernel_usemount(struct service_mount *mount)
 {
 
-    list_move(&usedmounts, &mount->item);
+    list_add(&usedmounts, &mount->item);
 
 }
 
 void kernel_freemount(struct service_mount *mount)
 {
 
-    list_move(&freemounts, &mount->item);
+    list_add(&freemounts, &mount->item);
 
 }
 
@@ -245,7 +245,7 @@ struct service *kernel_getservice(struct task *task, unsigned int service)
 void kernel_freeservice(struct service *service)
 {
 
-    list_move(&freeservices, &service->item);
+    list_add(&freeservices, &service->item);
 
 }
 
