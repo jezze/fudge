@@ -15,7 +15,6 @@ static struct system_node *idata_open(struct system_node *self, struct service_s
 {
 
     list_add(&idatalist, &state->item);
-    kernel_unblockall(&odatalist);
 
     return self;
 
@@ -52,7 +51,6 @@ static struct system_node *odata_open(struct system_node *self, struct service_s
 {
 
     list_add(&odatalist, &state->item);
-    kernel_unblockall(&idatalist);
 
     return self;
 
