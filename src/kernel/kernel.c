@@ -11,7 +11,7 @@ static struct service_server servers[KERNEL_SERVERS];
 static struct service_mount mounts[KERNEL_MOUNTS];
 static struct service services[KERNEL_SERVICES];
 static struct list freetasks;
-static struct list readytasks;
+static struct list usedtasks;
 static struct list blockedtasks;
 static struct list unblockedtasks;
 static struct list usedservers;
@@ -88,33 +88,17 @@ struct task *kernel_picktask(void)
 
 }
 
-void kernel_freetask(struct task *task)
+void kernel_usetask(struct task *task)
 {
 
-    switch (task->thread.status)
-    {
-
-    case TASK_STATUS_NORMAL:
-        list_add(&freetasks, &task->item);
-
-        break;
-
-    }
+    list_add(&usedtasks, &task->item);
 
 }
 
-void kernel_readytask(struct task *task)
+void kernel_freetask(struct task *task)
 {
 
-    switch (task->thread.status)
-    {
-
-    case TASK_STATUS_NORMAL:
-        list_add(&readytasks, &task->item);
-
-        break;
-
-    }
+    list_add(&freetasks, &task->item);
 
 }
 
@@ -197,7 +181,7 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 
     }
 
-    while ((current = list_pickhead(&readytasks)))
+    while ((current = list_pickhead(&usedtasks)))
     {
 
         struct task *task = current->data;

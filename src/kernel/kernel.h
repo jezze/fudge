@@ -6,8 +6,8 @@
 void kernel_walkmountparent(struct service *service);
 void kernel_walkmountchild(struct service *service);
 struct task *kernel_picktask(void);
+void kernel_usetask(struct task *task);
 void kernel_freetask(struct task *task);
-void kernel_readytask(struct task *task);
 void kernel_blocktask(struct task *task);
 void kernel_unblocktask(struct task *task);
 void kernel_killtask(struct task *task);

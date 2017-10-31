@@ -64,7 +64,7 @@ static unsigned int spawn(struct task *task, void *stack)
     if (kernel_setupbinary(next, ARCH_TASKSTACKADDRESS))
     {
 
-        kernel_readytask(next);
+        kernel_usetask(next);
 
         return 1;
 
@@ -427,7 +427,7 @@ static void setuptask()
     memory_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
     kernel_copyservices(task, task);
     kernel_setupbinary(task, ARCH_TASKSTACKADDRESS);
-    kernel_readytask(task);
+    kernel_usetask(task);
 
 }
 
