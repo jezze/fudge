@@ -95,7 +95,10 @@ void kernel_freetask(struct task *task)
     {
 
     case TASK_STATUS_NORMAL:
-        list_move(&freetasks, &task->item);
+        if (task->item.list)
+            list_remove(task->item.list, &task->item);
+
+        list_add(&freetasks, &task->item);
 
         break;
 
@@ -110,7 +113,7 @@ void kernel_readytask(struct task *task)
     {
 
     case TASK_STATUS_NORMAL:
-        list_move(&readytasks, &task->item);
+        list_add(&readytasks, &task->item);
 
         break;
 
