@@ -81,26 +81,6 @@ static void detect(struct acpi_madt *madt)
 
 }
 
-static void copytrampoline16()
-{
-
-    unsigned int begin = (unsigned int)smp_begin16;
-    unsigned int end = (unsigned int)smp_end16;
-
-    memory_copy((void *)INIT16ADDRESS, (void *)begin, end - begin);
-
-}
-
-static void copytrampoline32()
-{
-
-    unsigned int begin = (unsigned int)smp_begin32;
-    unsigned int end = (unsigned int)smp_end32;
-
-    memory_copy((void *)INIT32ADDRESS, (void *)begin, end - begin);
-
-}
-
 static struct core *getcore(void)
 {
 
@@ -181,9 +161,9 @@ void module_init(void)
     if (!madt)
         return;
 
+    memory_copy((void *)INIT16ADDRESS, (void *)(unsigned int)smp_begin16, (unsigned int)smp_end16 - (unsigned int)smp_begin16);
+    memory_copy((void *)INIT32ADDRESS, (void *)(unsigned int)smp_begin32, (unsigned int)smp_end32 - (unsigned int)smp_begin32);
     smp_prep(ARCH_KERNELSTACKADDRESS + 2 * ARCH_KERNELSTACKSIZE);
-    copytrampoline16();
-    copytrampoline32();
     detect(madt);
 
 }
