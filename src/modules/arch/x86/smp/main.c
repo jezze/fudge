@@ -108,17 +108,15 @@ static struct core *getcore(void)
 
 }
 
+/* Change from picktail to pickhead for round-robin */
 static void assign(struct task *task)
 {
 
-    struct core *core = corelist.head->data;
-
-/*
-    list_remove(&corelist, &core->item);
-    list_add(&corelist, &core->item);
-*/
+    struct list_item *current = list_picktail(&corelist);
+    struct core *core = current->data;
 
     list_add(&core->tasks, &task->item);
+    list_add(&corelist, &core->item);
     apic_sendint(core->id, APIC_ICR_TYPE_NORMAL | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | 0xFE);
 
 }
