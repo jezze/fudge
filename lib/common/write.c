@@ -1,46 +1,65 @@
 #include <abi.h>
 #include <fudge.h>
+#include "echo.h"
 
-void write_keyvalue(unsigned int descriptor, char *key, void *value, unsigned int count)
+void write_keybuffer(unsigned int descriptor, char *key, void *data, unsigned int length)
 {
 
-    file_writeall(descriptor, key, ascii_length(key));
-    file_writeall(descriptor, ": ", 2);
-    file_writeall(descriptor, value, count);
-    file_writeall(descriptor, "\n", 1);
+    union echo_arg a[2];
+
+    a[0].s = key;
+    a[1].b.data = data;
+    a[1].b.length = length;
+
+    echo(descriptor, "%s: %b\n", a);
 
 }
 
 void write_keystring(unsigned int descriptor, char *key, char *value)
 {
 
-    write_keyvalue(descriptor, key, value, ascii_length(value));
+    union echo_arg a[2];
+
+    a[0].s = key;
+    a[1].s = value;
+
+    echo(descriptor, "%s: %s\n", a);
 
 }
 
 void write_keyboolean(unsigned int descriptor, char *key, unsigned int value)
 {
 
-    write_keystring(descriptor, key, (value) ? "true" : "false");
+    union echo_arg a[2];
+
+    a[0].s = key;
+    a[1].s = (value) ? "true" : "false";
+
+    echo(descriptor, "%s: %s\n", a);
 
 }
 
 void write_keydec(unsigned int descriptor, char *key, unsigned int value)
 {
 
-    char num[FUDGE_NSIZE];
+    union echo_arg a[2];
 
-    write_keyvalue(descriptor, key, num, ascii_wvalue(num, FUDGE_NSIZE, value, 10, 0));
+    a[0].s = key;
+    a[1].d = value;
+
+    echo(descriptor, "%s: %d\n", a);
 
 }
 
 void write_keyhex(unsigned int descriptor, char *key, unsigned int value, unsigned int padding)
 {
 
-    char num[FUDGE_NSIZE];
-    unsigned int count = memory_write(num, FUDGE_NSIZE, "0x", 2, 0) + ascii_wzerovalue(num, FUDGE_NSIZE, value, 16, 2, padding);
+    union echo_arg a[2];
 
-    write_keyvalue(descriptor, key, num, count);
+    a[0].s = key;
+    a[1].d = value;
+
+    echo(descriptor, "%s: 0x%h\n", a);
 
 }
 

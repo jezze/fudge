@@ -74,7 +74,7 @@ void main(void)
         count += memory_write(data, 64, "/", 1, count);
         count += ascii_wvalue(data, 64, sstart, 10, count);
 
-        write_keyvalue(FILE_PO, "    Start-C/H/S", data, count);
+        write_keybuffer(FILE_PO, "    Start-C/H/S", data, count);
 
         count = 0;
         count += ascii_wvalue(data, 64, cend, 10, count);
@@ -83,7 +83,7 @@ void main(void)
         count += memory_write(data, 64, "/", 1, count);
         count += ascii_wvalue(data, 64, send, 10, count);
 
-        write_keyvalue(FILE_PO, "    End-C/H/S", data, count);
+        write_keybuffer(FILE_PO, "    End-C/H/S", data, count);
 
     }
 
