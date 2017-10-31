@@ -125,9 +125,11 @@ void kernel_blocktask(struct task *task)
     {
 
     case TASK_STATUS_NORMAL:
-        list_move(&blockedtasks, &task->item);
+        list_remove(task->item.list, &task->item);
 
         task->thread.status = TASK_STATUS_BLOCKED;
+
+        list_add(&blockedtasks, &task->item);
 
         break;
 
@@ -142,9 +144,11 @@ void kernel_unblocktask(struct task *task)
     {
 
     case TASK_STATUS_BLOCKED:
-        list_move(&unblockedtasks, &task->item);
+        list_remove(task->item.list, &task->item);
 
         task->thread.status = TASK_STATUS_NORMAL;
+
+        list_add(&unblockedtasks, &task->item);
 
         break;
 
@@ -171,6 +175,7 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
         struct task *task = current->data;
 
         task->thread.ip -= task->thread.rewind;
+        task->thread.rewind = 0;
 
         assign(task);
 
