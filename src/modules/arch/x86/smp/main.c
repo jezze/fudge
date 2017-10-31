@@ -44,7 +44,7 @@ static void detect(struct acpi_madt *madt)
 
                 apic_sendint(apic->id, APIC_ICR_TYPE_INIT | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | 0x00);
                 pit_wait(10);
-                apic_sendint(apic->id, APIC_ICR_TYPE_SIPI | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | 0x08);
+                apic_sendint(apic->id, APIC_ICR_TYPE_SIPI | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | (INIT32ADDRESS >> 12));
 
             }
 
