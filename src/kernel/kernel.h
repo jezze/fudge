@@ -10,6 +10,7 @@ void kernel_freetask(struct task *task);
 void kernel_readytask(struct task *task);
 void kernel_blocktask(struct task *task);
 void kernel_unblocktask(struct task *task);
+void kernel_killtask(struct task *task);
 struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp, void (*assign)(struct task *task));
 struct service_server *kernel_pickserver(void);
 void kernel_useserver(struct service_server *server);

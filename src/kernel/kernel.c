@@ -95,9 +95,6 @@ void kernel_freetask(struct task *task)
     {
 
     case TASK_STATUS_NORMAL:
-        if (task->item.list)
-            list_remove(task->item.list, &task->item);
-
         list_add(&freetasks, &task->item);
 
         break;
@@ -152,6 +149,22 @@ void kernel_unblocktask(struct task *task)
         task->thread.status = TASK_STATUS_NORMAL;
 
         list_add(&unblockedtasks, &task->item);
+
+        break;
+
+    }
+
+}
+
+void kernel_killtask(struct task *task)
+{
+
+    switch (task->thread.status)
+    {
+
+    case TASK_STATUS_NORMAL:
+        list_remove(task->item.list, &task->item);
+        list_add(&freetasks, &task->item);
 
         break;
 
