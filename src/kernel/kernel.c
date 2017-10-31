@@ -88,6 +88,24 @@ struct task *kernel_picktask(void)
 
 }
 
+struct service_server *kernel_pickserver(void)
+{
+
+    struct list_item *current = list_picktail(&freeservers);
+
+    return (current) ? current->data : 0;
+
+}
+
+struct service_mount *kernel_pickmount(void)
+{
+
+    struct list_item *current = list_picktail(&freemounts);
+
+    return (current) ? current->data : 0;
+
+}
+
 void kernel_usetask(struct task *task)
 {
 
@@ -95,10 +113,45 @@ void kernel_usetask(struct task *task)
 
 }
 
+void kernel_useserver(struct service_server *server)
+{
+
+    list_add(&usedservers, &server->item);
+
+}
+
+void kernel_usemount(struct service_mount *mount)
+{
+
+    list_add(&usedmounts, &mount->item);
+
+}
+
 void kernel_freetask(struct task *task)
 {
 
     list_add(&freetasks, &task->item);
+
+}
+
+void kernel_freeserver(struct service_server *server)
+{
+
+    list_add(&freeservers, &server->item);
+
+}
+
+void kernel_freemount(struct service_mount *mount)
+{
+
+    list_add(&freemounts, &mount->item);
+
+}
+
+void kernel_freeservice(struct service *service)
+{
+
+    list_add(&freeservices, &service->item);
 
 }
 
@@ -196,63 +249,10 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 
 }
 
-struct service_server *kernel_pickserver(void)
-{
-
-    struct list_item *current = list_picktail(&freeservers);
-
-    return (current) ? current->data : 0;
-
-}
-
-void kernel_useserver(struct service_server *server)
-{
-
-    list_add(&usedservers, &server->item);
-
-}
-
-void kernel_freeserver(struct service_server *server)
-{
-
-    list_add(&freeservers, &server->item);
-
-}
-
-struct service_mount *kernel_pickmount(void)
-{
-
-    struct list_item *current = list_picktail(&freemounts);
-
-    return (current) ? current->data : 0;
-
-}
-
-void kernel_usemount(struct service_mount *mount)
-{
-
-    list_add(&usedmounts, &mount->item);
-
-}
-
-void kernel_freemount(struct service_mount *mount)
-{
-
-    list_add(&freemounts, &mount->item);
-
-}
-
 struct service *kernel_getservice(struct task *task, unsigned int service)
 {
 
     return &services[task->id * TASK_DESCRIPTORS + (service & (TASK_DESCRIPTORS - 1))];
-
-}
-
-void kernel_freeservice(struct service *service)
-{
-
-    list_add(&freeservices, &service->item);
 
 }
 
