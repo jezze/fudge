@@ -2,7 +2,7 @@
 
 .section .text
 
-.extern smp_setup
+.extern smp_setupap
 
 .set SMP_GDTADDRESS,                    0x1000
 .set SMP_IDTADDRESS,                    0x2000
@@ -27,7 +27,7 @@ setup:
     movl $SMP_STACKSIZE, %esp
     lock xaddl %esp, (%eax)
     pushl %esp
-    call smp_setup
+    call smp_setupap
 
 .code16
 

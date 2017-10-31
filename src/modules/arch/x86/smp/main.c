@@ -104,9 +104,7 @@ static void copytrampoline32()
 static struct core *getcore(void)
 {
 
-    unsigned int id = apic_getid();
-
-    return &cores[id];
+    return &cores[apic_getid()];
 
 }
 
@@ -125,7 +123,25 @@ static void assign(struct task *task)
 
 }
 
-void smp_setup(unsigned int stack)
+void smp_setupbp(struct core *core)
+{
+
+    unsigned int id = apic_getid();
+    struct list_item *current;
+
+    core_init(&cores[id], id, core->sp);
+    arch_configuretss(&tss[id], ARCH_TSS + id, cores[id].sp);
+    apic_setup_bp();
+    list_add(&corelist, &cores[id].item);
+
+    cores[id].task = core->task;
+
+    while ((current = list_pickhead(&core->tasks)))
+        list_add(&cores[id].tasks, current);
+
+}
+
+void smp_setupap(unsigned int stack)
 {
 
     unsigned int id = apic_getid();
@@ -152,20 +168,9 @@ static unsigned int cpus_read(struct system_node *self, struct system_node *curr
 void module_init(void)
 {
 
-    unsigned int id = apic_getid();
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
-    struct core *c = arch_getcore();
-    struct list_item *current;
 
-    core_init(&cores[id], id, c->sp);
-    arch_configuretss(&tss[id], ARCH_TSS + id, cores[id].sp);
-    list_add(&corelist, &cores[id].item);
-
-    cores[id].task = c->task;
-
-    while ((current = list_pickhead(&c->tasks)))
-        list_add(&cores[id].tasks, current);
-
+    smp_setupbp(arch_getcore());
     arch_setcore(getcore);
     arch_setassign(assign);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
