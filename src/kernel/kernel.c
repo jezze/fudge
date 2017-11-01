@@ -13,7 +13,6 @@ static struct service services[KERNEL_SERVICES];
 static struct list usedtasks;
 static struct list freetasks;
 static struct list blockedtasks;
-static struct list unblockedtasks;
 static struct list usedservers;
 static struct list freeservers;
 static struct list usedmounts;
@@ -184,8 +183,10 @@ void kernel_unblocktask(struct task *task)
         list_remove(task->item.list, &task->item);
 
         task->thread.status = TASK_STATUS_NORMAL;
+        task->thread.ip -= task->thread.rewind;
+        task->thread.rewind = 0;
 
-        list_add(&unblockedtasks, &task->item);
+        list_add(&usedtasks, &task->item);
 
         break;
 
@@ -219,18 +220,6 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 
         core->task->thread.ip = ip;
         core->task->thread.sp = sp;
-
-    }
-
-    while ((current = list_pickhead(&unblockedtasks)))
-    {
-
-        struct task *task = current->data;
-
-        task->thread.ip -= task->thread.rewind;
-        task->thread.rewind = 0;
-
-        assign(task);
 
     }
 
