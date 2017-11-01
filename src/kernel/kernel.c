@@ -228,8 +228,6 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
 
         struct task *task = current->data;
 
-        task->thread.rewind = 0;
-
         assign(task);
 
     }
