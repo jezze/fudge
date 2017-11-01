@@ -224,13 +224,7 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
     }
 
     while ((current = list_pickhead(&usedtasks)))
-    {
-
-        struct task *task = current->data;
-
-        assign(task);
-
-    }
+        assign(current->data);
 
     return (core->tasks.tail) ? core->tasks.tail->data : 0;
 
