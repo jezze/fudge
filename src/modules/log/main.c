@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include <modules/system/system.h>
 
-static struct debug_log log;
+static struct debug_interface interface;
 static struct system_node root;
 static struct system_node critical;
 static struct system_node error;
@@ -52,7 +52,7 @@ static void write(struct list *states, unsigned int level, char *string, char *f
 
 }
 
-static void log_write(unsigned int level, char *string, char *file, unsigned int line)
+static void interface_write(unsigned int level, char *string, char *file, unsigned int line)
 {
 
     if (level <= DEBUG_CRITICAL)
@@ -144,7 +144,7 @@ static struct system_node *info_close(struct system_node *self, struct service_s
 void module_init(void)
 {
 
-    debug_initlog(&log, log_write);
+    debug_initinterface(&interface, interface_write);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "log");
     system_initnode(&critical, SYSTEM_NODETYPE_MAILBOX, "critical");
     system_initnode(&error, SYSTEM_NODETYPE_MAILBOX, "error");
@@ -170,7 +170,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    resource_register(&log.resource);
+    resource_register(&interface.resource);
     system_registernode(&root);
 
 }
@@ -178,7 +178,7 @@ void module_register(void)
 void module_unregister(void)
 {
 
-    resource_unregister(&log.resource);
+    resource_unregister(&interface.resource);
     system_unregisternode(&root);
 
 }

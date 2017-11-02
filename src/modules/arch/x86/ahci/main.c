@@ -12,7 +12,7 @@ static unsigned int mmio;
 static void bus_setup(void)
 {
 
-    DEBUG(DEBUG_INFO, "AHCI INIT\n");
+    DEBUG_LOG(DEBUG_INFO, "AHCI INIT\n");
 
 }
 

@@ -2,7 +2,7 @@
 #include "resource.h"
 #include "debug.h"
 
-void debug_write(unsigned int level, char *string, char *file, unsigned int line)
+void debug_log(unsigned int level, char *string, char *file, unsigned int line)
 {
 
     struct resource *current = 0;
@@ -10,20 +10,28 @@ void debug_write(unsigned int level, char *string, char *file, unsigned int line
     while ((current = resource_findtype(current, RESOURCE_DEBUGLOG)))
     {
 
-        struct debug_log *log = current->data;
+        struct debug_interface *interface = current->data;
 
-        log->write(level, string, file, line);
+        interface->write(level, string, file, line);
 
     }
 
 }
 
-void debug_initlog(struct debug_log *log, void (*write)(unsigned int level, char *string, char *file, unsigned int line))
+void debug_assert(unsigned int level, unsigned int test, char *file, unsigned int line)
 {
 
-    resource_init(&log->resource, RESOURCE_DEBUGLOG, log);
+    if (!test)
+        debug_log(level, "ASSERT FAIL", file, line);
 
-    log->write = write;
+}
+
+void debug_initinterface(struct debug_interface *interface, void (*write)(unsigned int level, char *string, char *file, unsigned int line))
+{
+
+    resource_init(&interface->resource, RESOURCE_DEBUGLOG, interface);
+
+    interface->write = write;
 
 }
 
