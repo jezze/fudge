@@ -78,8 +78,10 @@ void main(void)
     file_open(FILE_L2);
     event_sendwmmap(FILE_L2, EVENT_ADDR_BROADCAST);
 
-    while (!quit && event_read(&handlers, FILE_L0))
+    while (!quit)
     {
+
+        event_read(&handlers, FILE_L0);
 
         if (ring_count(&output))
         {

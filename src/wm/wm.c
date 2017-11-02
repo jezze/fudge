@@ -821,8 +821,10 @@ void main(void)
     render_setvideo(FILE_L7, 1024, 768, 32);
     render_setcolormap(FILE_L8);
 
-    while (!quit && event_read(&handlers, FILE_L0))
+    while (!quit)
     {
+
+        event_read(&handlers, FILE_L0);
 
         if (ring_count(&output))
         {
