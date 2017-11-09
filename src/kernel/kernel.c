@@ -220,16 +220,8 @@ void kernel_unblocktask(struct task *task)
 void kernel_killtask(struct task *task)
 {
 
-    switch (task->thread.status)
-    {
-
-    case TASK_STATUS_NORMAL:
-        list_remove(task->item.list, &task->item);
-        list_add(&freetasks, &task->item);
-
-        break;
-
-    }
+    list_remove(task->item.list, &task->item);
+    list_add(&freetasks, &task->item);
 
 }
 
