@@ -11,7 +11,7 @@
 void syse_resume(struct cpu_general *general)
 {
 
-    struct core *core = arch_getcore();
+    struct core *core = kernel_getcore();
 
     arch_schedule(general, core, general->edx.value, general->ecx.value);
 
@@ -36,7 +36,7 @@ void syse_resume(struct cpu_general *general)
 void syse_syscall(struct cpu_general general)
 {
 
-    struct core *core = arch_getcore();
+    struct core *core = kernel_getcore();
 
     general.eax.value = abi_call(general.eax.value, core->task, (void *)(general.ecx.value + 8));
 

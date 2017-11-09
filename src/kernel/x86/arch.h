@@ -45,8 +45,6 @@ struct arch_tss
 
 };
 
-struct core *arch_getcore(void);
-void arch_setcore(struct core *(*callback)(void));
 void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int count);
 void arch_schedule(struct cpu_general *general, struct core *core, unsigned int ip, unsigned int sp);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);

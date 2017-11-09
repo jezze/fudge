@@ -101,20 +101,20 @@ static void assign(struct task *task)
 
 }
 
-void smp_setupbp(struct core *core)
+void smp_setupbp(unsigned int stack, struct task *task, struct list *tasks)
 {
 
     unsigned int id = apic_getid();
     struct list_item *current;
 
-    core_init(&cores[id], id, core->sp);
+    core_init(&cores[id], id, stack);
     arch_configuretss(&tss[id], ARCH_TSS + id, cores[id].sp);
     apic_setup_bp();
     list_add(&corelist, &cores[id].item);
 
-    cores[id].task = core->task;
+    cores[id].task = task;
 
-    while ((current = list_pickhead(&core->tasks)))
+    while ((current = list_pickhead(tasks)))
         list_add(&cores[id].tasks, current);
 
 }
@@ -147,9 +147,10 @@ void module_init(void)
 {
 
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
+    struct core *core = kernel_getcore();
 
-    smp_setupbp(arch_getcore());
-    arch_setcore(getcore);
+    smp_setupbp(core->sp, core->task, &core->tasks);
+    kernel_setcore(getcore);
     kernel_setassign(assign);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");

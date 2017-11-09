@@ -18,6 +18,7 @@ static struct list freeservers;
 static struct list usedmounts;
 static struct list freemounts;
 static struct list freeservices;
+static struct core *(*corecallback)(void);
 static void (*assigncallback)(struct task *task);
 
 static unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
@@ -76,6 +77,20 @@ void kernel_walkmountchild(struct service *service)
     }
 
     spinlock_release(&usedmounts.spinlock);
+
+}
+
+struct core *kernel_getcore(void)
+{
+
+    return corecallback();
+
+}
+
+void kernel_setcore(struct core *(*callback)(void))
+{
+
+    corecallback = callback;
 
 }
 

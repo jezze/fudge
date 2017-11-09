@@ -13,7 +13,6 @@ static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
 static struct core core0;
 static struct arch_tss tss0;
-static struct core *(*corecallback)(void);
 
 static struct mmu_directory *getkerneldirectory(void)
 {
@@ -96,20 +95,6 @@ static struct core *getcore(void)
 
 }
 
-struct core *arch_getcore(void)
-{
-
-    return corecallback();
-
-}
-
-void arch_setcore(struct core *(*callback)(void))
-{
-
-    corecallback = callback;
-
-}
-
 static void assign(struct task *task)
 {
 
@@ -175,7 +160,7 @@ static void setinterrupt(struct cpu_interrupt *interrupt, struct core *core)
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct core *core = arch_getcore();
+    struct core *core = kernel_getcore();
 
     arch_schedule(general, core, interrupt->eip.value, interrupt->esp.value);
     setinterrupt(interrupt, core);
@@ -201,7 +186,7 @@ void arch_leave(struct core *core)
 unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct core *core = arch_getcore();
+    struct core *core = kernel_getcore();
 
     DEBUG_LOG(DEBUG_INFO, "exception: divide by zero");
 
@@ -323,7 +308,7 @@ unsigned short arch_generalfault(struct cpu_general general, unsigned int select
 unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
 {
 
-    struct core *core = arch_getcore();
+    struct core *core = kernel_getcore();
 
     if (core->task)
     {
@@ -355,7 +340,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct core *core = arch_getcore();
+    struct core *core = kernel_getcore();
 
     core->task->thread.rewind = 7;
     general.eax.value = abi_call(general.eax.value, core->task, interrupt.esp.reference);
@@ -427,7 +412,6 @@ void arch_setup(struct service_backend *backend)
 {
 
     core_init(&core0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    arch_setcore(getcore);
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, ARCH_TSS, core0.sp);
@@ -440,6 +424,7 @@ void arch_setup(struct service_backend *backend)
     abi_setup(spawn, despawn);
     binary_setupelf();
     service_setupcpio();
+    kernel_setcore(getcore);
     kernel_setassign(assign);
     kernel_setuptasks();
     kernel_setupservers();
