@@ -150,7 +150,7 @@ void module_init(void)
 
     smp_setupbp(arch_getcore());
     arch_setcore(getcore);
-    arch_setassign(assign);
+    kernel_setassign(assign);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 

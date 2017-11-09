@@ -14,7 +14,6 @@ static struct cpu_general registers[KERNEL_TASKS];
 static struct core core0;
 static struct arch_tss tss0;
 static struct core *(*corecallback)(void);
-static void (*assigncallback)(struct task *task);
 
 static struct mmu_directory *getkerneldirectory(void)
 {
@@ -90,7 +89,7 @@ static unsigned int despawn(struct task *task, void *stack)
 
 }
 
-static struct core *getcore0(void)
+static struct core *getcore(void)
 {
 
     return &core0;
@@ -111,17 +110,10 @@ void arch_setcore(struct core *(*callback)(void))
 
 }
 
-static void assign0(struct task *task)
+static void assign(struct task *task)
 {
 
     list_add(&core0.tasks, &task->item);
-
-}
-
-void arch_setassign(void (*callback)(struct task *task))
-{
-
-    assigncallback = callback;
 
 }
 
@@ -143,7 +135,7 @@ void arch_schedule(struct cpu_general *general, struct core *core, unsigned int 
 
     }
 
-    core->task = kernel_schedule(core, ip, sp, assigncallback);
+    core->task = kernel_schedule(core, ip, sp);
 
     if (core->task)
     {
@@ -435,8 +427,7 @@ void arch_setup(struct service_backend *backend)
 {
 
     core_init(&core0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    arch_setcore(getcore0);
-    arch_setassign(assign0);
+    arch_setcore(getcore);
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, ARCH_TSS, core0.sp);
@@ -449,6 +440,7 @@ void arch_setup(struct service_backend *backend)
     abi_setup(spawn, despawn);
     binary_setupelf();
     service_setupcpio();
+    kernel_setassign(assign);
     kernel_setuptasks();
     kernel_setupservers();
     kernel_setupmounts();

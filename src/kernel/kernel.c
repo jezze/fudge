@@ -18,6 +18,7 @@ static struct list freeservers;
 static struct list usedmounts;
 static struct list freemounts;
 static struct list freeservices;
+static void (*assigncallback)(struct task *task);
 
 static unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
 {
@@ -75,6 +76,13 @@ void kernel_walkmountchild(struct service *service)
     }
 
     spinlock_release(&usedmounts.spinlock);
+
+}
+
+void kernel_setassign(void (*callback)(struct task *task))
+{
+
+    assigncallback = callback;
 
 }
 
@@ -210,7 +218,7 @@ void kernel_killtask(struct task *task)
 
 }
 
-struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp, void (*assign)(struct task *task))
+struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp)
 {
 
     struct list_item *current;
@@ -224,7 +232,7 @@ struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp
     }
 
     while ((current = list_pickhead(&usedtasks)))
-        assign(current->data);
+        assigncallback(current->data);
 
     return (core->tasks.tail) ? core->tasks.tail->data : 0;
 
