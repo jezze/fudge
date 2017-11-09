@@ -295,9 +295,6 @@ unsigned int kernel_readmailbox(struct task *task, void *buffer, unsigned int co
 
     spinlock_release(&task->mailbox.spinlock);
 
-    if (!count)
-        kernel_blocktask(task);
-
     return count;
 
 }
@@ -310,9 +307,6 @@ unsigned int kernel_writemailbox(struct task *task, void *buffer, unsigned int c
     count = ring_writeall(&task->mailbox.ring, buffer, count);
 
     spinlock_release(&task->mailbox.spinlock);
-
-    if (count)
-        kernel_unblocktask(task);
 
     return count;
 
@@ -351,6 +345,7 @@ void kernel_multicast(struct list *states, void *buffer, unsigned int count)
         struct service_state *state = current->data;
 
         kernel_writemailbox(state->task, buffer, count);
+        kernel_unblocktask(state->task);
 
     }
 
