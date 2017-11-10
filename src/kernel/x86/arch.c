@@ -129,12 +129,13 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     {
 
         memory_copy(general, &registers[core->task->id], sizeof (struct cpu_general));
-        mmu_setdirectory(gettaskdirectory(core->task->id));
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
         interrupt->eip.value = core->task->thread.ip;
         interrupt->esp.value = core->task->thread.sp;
+
+        mmu_setdirectory(gettaskdirectory(core->task->id));
 
     }
 
