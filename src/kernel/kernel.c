@@ -180,11 +180,13 @@ void kernel_freeservice(struct service *service)
 void kernel_blocktask(struct task *task)
 {
 
+    struct core *core = kernel_getcore();
+
     switch (task->thread.status)
     {
 
     case TASK_STATUS_NORMAL:
-        list_remove(task->item.list, &task->item);
+        list_remove(&core->tasks, &task->item);
 
         task->thread.status = TASK_STATUS_BLOCKED;
 
@@ -203,7 +205,7 @@ void kernel_unblocktask(struct task *task)
     {
 
     case TASK_STATUS_BLOCKED:
-        list_remove(task->item.list, &task->item);
+        list_remove(&blockedtasks, &task->item);
 
         task->thread.status = TASK_STATUS_NORMAL;
         task->thread.ip -= task->thread.rewind;
