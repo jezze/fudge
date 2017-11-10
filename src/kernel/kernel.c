@@ -206,18 +206,10 @@ void kernel_unblocktask(struct task *task)
 
 }
 
-struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp)
+struct task *kernel_schedule(struct core *core)
 {
 
     struct list_item *current;
-
-    if (core->task)
-    {
-
-        core->task->thread.ip = ip;
-        core->task->thread.sp = sp;
-
-    }
 
     while ((current = list_pickhead(&usedtasks)))
         assigncallback(current->data);

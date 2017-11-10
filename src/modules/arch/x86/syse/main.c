@@ -13,7 +13,9 @@ void syse_resume(struct cpu_general *general)
 
     struct core *core = kernel_getcore();
 
-    arch_schedule(general, core, general->edx.value, general->ecx.value);
+    core->task->thread.ip = general->edx.value;
+    core->task->thread.sp = general->ecx.value;
+    core->task = kernel_schedule(core);
 
     if (core->task)
     {

@@ -113,7 +113,7 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
-void arch_schedule(struct cpu_general *general, struct core *core, unsigned int ip, unsigned int sp)
+static void schedule(struct cpu_general *general, struct cpu_interrupt *interrupt, struct core *core, unsigned int ip, unsigned int sp)
 {
 
     if (core->task)
@@ -121,25 +121,18 @@ void arch_schedule(struct cpu_general *general, struct core *core, unsigned int 
 
         memory_copy(&registers[core->task->id], general, sizeof (struct cpu_general));
 
+        core->task->thread.ip = interrupt->eip.value;
+        core->task->thread.sp = interrupt->esp.value;
+
     }
 
-    core->task = kernel_schedule(core, ip, sp);
+    core->task = kernel_schedule(core);
 
     if (core->task)
     {
 
         memory_copy(general, &registers[core->task->id], sizeof (struct cpu_general));
         mmu_setdirectory(gettaskdirectory(core->task->id));
-
-    }
-
-}
-
-static void setinterrupt(struct cpu_interrupt *interrupt, struct core *core)
-{
-
-    if (core->task)
-    {
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
@@ -165,8 +158,7 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 
     struct core *core = kernel_getcore();
 
-    arch_schedule(general, core, interrupt->eip.value, interrupt->esp.value);
-    setinterrupt(interrupt, core);
+    schedule(general, interrupt, core, interrupt->eip.value, interrupt->esp.value);
 
     return interrupt->ss.value;
 
@@ -180,8 +172,7 @@ void arch_leave(struct core *core)
 
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
-    arch_schedule(&general, core, interrupt.eip.value, interrupt.esp.value);
-    setinterrupt(&interrupt, core);
+    schedule(&general, &interrupt, core, interrupt.eip.value, interrupt.esp.value);
     cpu_leave(interrupt);
 
 }
