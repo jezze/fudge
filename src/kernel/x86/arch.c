@@ -113,7 +113,7 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
-static void schedule(struct cpu_general *general, struct cpu_interrupt *interrupt, struct core *core, unsigned int ip, unsigned int sp)
+static void schedule(struct cpu_general *general, struct cpu_interrupt *interrupt, struct core *core)
 {
 
     if (core->task)
@@ -158,7 +158,7 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 
     struct core *core = kernel_getcore();
 
-    schedule(general, interrupt, core, interrupt->eip.value, interrupt->esp.value);
+    schedule(general, interrupt, core);
 
     return interrupt->ss.value;
 
@@ -172,7 +172,7 @@ void arch_leave(struct core *core)
 
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
-    schedule(&general, &interrupt, core, interrupt.eip.value, interrupt.esp.value);
+    schedule(&general, &interrupt, core);
     cpu_leave(interrupt);
 
 }
