@@ -180,10 +180,6 @@ void kernel_freeservice(struct service *service)
 void kernel_blocktask(struct task *task)
 {
 
-    struct core *core = kernel_getcore();
-
-    list_remove(&core->tasks, &task->item);
-
     task->thread.status = TASK_STATUS_BLOCKED;
 
     list_add(&blockedtasks, &task->item);
@@ -206,15 +202,20 @@ void kernel_unblocktask(struct task *task)
 
 }
 
-struct task *kernel_schedule(struct core *core)
+void kernel_schedule(struct core *core)
 {
 
     struct list_item *current;
 
+    if (core->task)
+        list_add(&core->tasks, &core->task->item);
+
     while ((current = list_pickhead(&usedtasks)))
         assigncallback(current->data);
 
-    return (core->tasks.tail) ? core->tasks.tail->data : 0;
+    current = list_picktail(&core->tasks);
+
+    core->task = (current) ? current->data : 0;
 
 }
 

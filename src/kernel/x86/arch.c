@@ -82,9 +82,6 @@ static unsigned int spawn(struct task *task, void *stack)
 static unsigned int despawn(struct task *task, void *stack)
 {
 
-    struct core *core = kernel_getcore();
-
-    list_remove(&core->tasks, &task->item);
     kernel_freetask(task);
 
     return 1;
@@ -126,7 +123,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
     }
 
-    core->task = kernel_schedule(core);
+    kernel_schedule(core);
 
     if (core->task)
     {
@@ -185,12 +182,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     DEBUG_LOG(DEBUG_INFO, "exception: divide by zero");
 
     if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
-    {
-
-        list_remove(&core->tasks, &core->task->item);
         kernel_freetask(core->task);
-
-    }
 
     return arch_resume(&general, &interrupt);
 
@@ -326,7 +318,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         else
         {
 
-            list_remove(&core->tasks, &core->task->item);
             kernel_freetask(core->task);
 
         }
