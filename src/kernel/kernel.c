@@ -213,16 +213,6 @@ void kernel_unblocktask(struct task *task)
 
 }
 
-void kernel_killtask(struct task *task)
-{
-
-    struct core *core = kernel_getcore();
-
-    list_remove(&core->tasks, &task->item);
-    list_add(&freetasks, &task->item);
-
-}
-
 struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp)
 {
 

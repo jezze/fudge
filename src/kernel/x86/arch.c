@@ -82,7 +82,10 @@ static unsigned int spawn(struct task *task, void *stack)
 static unsigned int despawn(struct task *task, void *stack)
 {
 
-    kernel_killtask(task);
+    struct core *core = kernel_getcore();
+
+    list_remove(&core->tasks, &task->item);
+    kernel_freetask(task);
 
     return 1;
 
@@ -191,7 +194,12 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     DEBUG_LOG(DEBUG_INFO, "exception: divide by zero");
 
     if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
-        kernel_killtask(core->task);
+    {
+
+        list_remove(&core->tasks, &core->task->item);
+        kernel_freetask(core->task);
+
+    }
 
     return arch_resume(&general, &interrupt);
 
@@ -327,7 +335,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         else
         {
 
-            kernel_killtask(core->task);
+            list_remove(&core->tasks, &core->task->item);
+            kernel_freetask(core->task);
 
         }
 

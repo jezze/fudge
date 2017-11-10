@@ -20,7 +20,6 @@ void kernel_freemount(struct service_mount *mount);
 void kernel_freeservice(struct service *service);
 void kernel_blocktask(struct task *task);
 void kernel_unblocktask(struct task *task);
-void kernel_killtask(struct task *task);
 struct task *kernel_schedule(struct core *core, unsigned int ip, unsigned int sp);
 struct service *kernel_getservice(struct task *task, unsigned int service);
 void kernel_copyservices(struct task *source, struct task *target);
