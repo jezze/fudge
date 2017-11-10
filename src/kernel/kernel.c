@@ -180,36 +180,29 @@ void kernel_freeservice(struct service *service)
 void kernel_blocktask(struct task *task)
 {
 
-    if (task->thread.status == TASK_STATUS_NORMAL)
-    {
+    struct core *core = kernel_getcore();
 
-        struct core *core = kernel_getcore();
+    list_remove(&core->tasks, &task->item);
 
-        list_remove(&core->tasks, &task->item);
+    task->thread.status = TASK_STATUS_BLOCKED;
 
-        task->thread.status = TASK_STATUS_BLOCKED;
-
-        list_add(&blockedtasks, &task->item);
-
-    }
+    list_add(&blockedtasks, &task->item);
 
 }
 
 void kernel_unblocktask(struct task *task)
 {
 
-    if (task->thread.status == TASK_STATUS_BLOCKED)
-    {
+    if (task->thread.status != TASK_STATUS_BLOCKED)
+        return;
 
-        list_remove(&blockedtasks, &task->item);
+    list_remove(&blockedtasks, &task->item);
 
-        task->thread.status = TASK_STATUS_NORMAL;
-        task->thread.ip -= task->thread.rewind;
-        task->thread.rewind = 0;
+    task->thread.status = TASK_STATUS_NORMAL;
+    task->thread.ip -= task->thread.rewind;
+    task->thread.rewind = 0;
 
-        list_add(&usedtasks, &task->item);
-
-    }
+    list_add(&usedtasks, &task->item);
 
 }
 
