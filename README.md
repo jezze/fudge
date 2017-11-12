@@ -48,5 +48,5 @@ Please see the LICENCE file included in the source.
 
 Come talk to us on irc.
 
-Server: irc.freenode.net
+Server: irc.freenode.net<br>
 Channel: #fudge
