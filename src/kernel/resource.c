@@ -3,16 +3,10 @@
 
 static struct list resources;
 
-struct resource *resource_find(struct resource *resource)
+static struct resource *next(struct resource *resource)
 {
 
-    struct list_item *current;
-
-    spinlock_acquire(&resources.spinlock);
-
-    current = (resource) ? resource->item.next : resources.head;
-
-    spinlock_release(&resources.spinlock);
+    struct list_item *current = (resource) ? resource->item.next : resources.head;
 
     return (current) ? current->data : 0;
 
@@ -21,17 +15,19 @@ struct resource *resource_find(struct resource *resource)
 struct resource *resource_findtype(struct resource *resource, unsigned int type)
 {
 
-    struct resource *current = resource;
+    spinlock_acquire(&resources.spinlock);
 
-    while ((current = resource_find(current)))
+    while ((resource = next(resource)))
     {
 
-        if (current->type == type)
-            return current;
+        if (resource->type == type)
+            break;
 
     }
 
-    return 0;
+    spinlock_release(&resources.spinlock);
+
+    return resource;
 
 }
 
