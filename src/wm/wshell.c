@@ -102,13 +102,15 @@ static void copyring(struct ring *ring)
 
 }
 
-static void interpretbuiltin(unsigned int count, char *command)
+static unsigned int interpretbuiltin(unsigned int count, char *command)
 {
 
     if (memory_match(command, "exit", 4))
     {
 
         quit = 1;
+
+        return 1;
 
     }
 
@@ -125,7 +127,11 @@ static void interpretbuiltin(unsigned int count, char *command)
 
         }
 
+        return 1;
+
     }
+
+    return 0;
 
 }
 
@@ -147,8 +153,8 @@ static void interpretslang(unsigned int count, char *command)
     file_walkfrom(FILE_LC, FILE_LA, "odata");
     file_walkfrom(FILE_LD, FILE_LB, "idata");
     file_walkfrom(FILE_CO, FILE_LB, "odata");
-    file_open(FILE_LC);
     call_spawn();
+    file_open(FILE_LC);
     file_writeall(FILE_LC, command, count);
     file_close(FILE_LC);
     file_open(FILE_LD);
@@ -169,8 +175,8 @@ static void interpret(struct ring *ring)
     if (count < 2)
         return;
 
-    interpretbuiltin(count, command);
-    interpretslang(count, command);
+    if (!interpretbuiltin(count, command))
+        interpretslang(count, command);
 
 }
 
