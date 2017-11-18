@@ -14,13 +14,7 @@ static struct spinlock datalock;
 static struct system_node *idata_open(struct system_node *self, struct service_state *state)
 {
 
-    if (odatalist.count)
-        kernel_unblockall(&odatalist);
-    else
-        kernel_blocktask(state->task);
-
-    if (!idatalist.count)
-        list_add(&idatalist, &state->item);
+    list_add(&idatalist, &state->item);
 
     return self;
 
@@ -56,13 +50,7 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
 static struct system_node *odata_open(struct system_node *self, struct service_state *state)
 {
 
-    if (idatalist.count)
-        kernel_unblockall(&idatalist);
-    else
-        kernel_blocktask(state->task);
-
-    if (!odatalist.count)
-        list_add(&odatalist, &state->item);
+    list_add(&odatalist, &state->item);
 
     return self;
 
@@ -88,7 +76,7 @@ static unsigned int odata_write(struct system_node *self, struct system_node *cu
     spinlock_release(&datalock);
     kernel_unblockall(&idatalist);
 
-    if (!count && idatalist.count)
+    if (!count)
         kernel_blocktask(state->task);
 
     return count;
