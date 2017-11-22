@@ -10,10 +10,6 @@ LD_KBIN=$(CROSS_COMPILE)ld -static -nostdlib -T$(DIR_LIB)/$(LOADER)/linker.ld -o
 LD_KMOD=$(CROSS_COMPILE)ld -static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r -o
 NASM=nasm -f elf -o
 
-%.i: %.c
-	@echo PP $@
-	@$(PP) $^ > $@
-
 %.asm: %.i
 	@echo CC $@
 	$(CC) $^ $@
@@ -21,7 +17,3 @@ NASM=nasm -f elf -o
 %.o: %.asm
 	@echo NASM $@
 	@$(NASM) $@ $^
-
-%.o: %.s
-	@echo AS $@
-	@$(AS) $@ $^

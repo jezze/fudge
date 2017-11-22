@@ -24,13 +24,16 @@ DIR_INSTALL:=/boot
 all: $(KERNEL) $(RAMDISK)
 
 clean:
-	@rm -rf $(DIR_BUILD) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
+	@rm -rf $(DIR_BUILD) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ) $(OBJ:.o=.d) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
+include $(DIR_MK)/base.mk
 include $(DIR_MK)/arch.$(ARCH).gcc.mk
 include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk
+
+deps: $(OBJ:.o=.d)
 
 $(DIR_BUILD): $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@echo BUILDROOT $@

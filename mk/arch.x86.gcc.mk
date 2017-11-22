@@ -8,15 +8,3 @@ PP=$(CROSS_COMPILE)cc -Wall -Werror -nostdinc -std=c89 -pedantic -E -I$(DIR_INCL
 LD_BIN=$(CROSS_COMPILE)ld -static -nostdlib -o
 LD_KBIN=$(CROSS_COMPILE)ld -static -nostdlib -T$(DIR_LIB)/$(LOADER)/linker.ld -o
 LD_KMOD=$(CROSS_COMPILE)ld -static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r -o
-
-%.i: %.c
-	@echo PP $@
-	@$(PP) $@ $^
-
-%.s: %.i
-	@echo CC $@
-	@$(CC) $@ $^
-
-%.o: %.s
-	@echo AS $@
-	@$(AS) $@ $^
