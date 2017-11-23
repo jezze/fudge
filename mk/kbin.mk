@@ -4,3 +4,4 @@ $(B): $(O) $(L)
 
 KBIN:=$(KBIN) $(B)
 OBJ:=$(OBJ) $(O)
+DEP:=$(DEP) $(O:.o=.d)

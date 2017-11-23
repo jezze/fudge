@@ -4,3 +4,4 @@ $(M): $(O) $(L)
 
 KMOD:=$(KMOD) $(M)
 OBJ:=$(OBJ) $(O)
+DEP:=$(DEP) $(O:.o=.d)

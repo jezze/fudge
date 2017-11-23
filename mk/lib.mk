@@ -4,3 +4,4 @@ $(L): $(O)
 
 LIB:=$(LIB) $(L)
 OBJ:=$(OBJ) $(O)
+DEP:=$(DEP) $(O:.o=.d)
