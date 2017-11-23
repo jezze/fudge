@@ -9,3 +9,23 @@ DEP=$(CROSS_COMPILE)cc -MM -MT
 LD_BIN=$(CROSS_COMPILE)ld -static -nostdlib -o
 LD_KBIN=$(CROSS_COMPILE)ld -static -nostdlib -T$(DIR_LIB)/$(LOADER)/linker.ld -o
 LD_KMOD=$(CROSS_COMPILE)ld -static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r -o
+
+%.d: %.s
+	@echo DEP $@
+	@echo $*.o: > $*.d
+
+%.d: %.c
+	@echo DEP $@
+	@$(DEP) $*.o $*.c > $*.d
+
+%.i: %.c
+	@echo PP $@
+	@$(PP) $@ $^
+
+%.s: %.i
+	@echo CC $@
+	@$(CC) $@ $^
+
+%.o: %.s
+	@echo AS $@
+	@$(AS) $@ $^
