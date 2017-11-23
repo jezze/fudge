@@ -4,7 +4,7 @@
 
 %.d: %.c
 	@echo DEP $@
-	@$(CROSS_COMPILE)gcc -MM -MT $*.o $*.c > $*.d
+	@$(DEP) $*.o $*.c > $*.d
 
 %.i: %.c
 	@echo PP $@
