@@ -11,11 +11,11 @@ LD_KMOD=$(CROSS_COMPILE)ld -static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r -
 NASM=nasm -f elf -o
 
 %.d: %.s
-	@echo DEP $@
+	@echo DP $@
 	@echo $*.o: > $*.d
 
 %.d: %.c
-	@echo DEP $@
+	@echo DP $@
 	@echo $*.o: > $*.d
 
 %.i: %.c
