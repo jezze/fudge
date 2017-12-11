@@ -29,7 +29,4 @@ void kernel_unblockall(struct list *states);
 void kernel_multicast(struct list *states, void *buffer, unsigned int count);
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp);
 void kernel_setupinit(struct task *task);
-void kernel_setuptasks(void);
-void kernel_setupservers(void);
-void kernel_setupmounts(void);
-void kernel_setupservices(void);
+void kernel_setup(void);

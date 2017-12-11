@@ -368,7 +368,7 @@ void kernel_setupinit(struct task *task)
 
 }
 
-void kernel_setuptasks(void)
+void kernel_setup(void)
 {
 
     unsigned int i;
@@ -383,13 +383,6 @@ void kernel_setuptasks(void)
 
     }
 
-}
-
-void kernel_setupservers(void)
-{
-
-    unsigned int i;
-
     for (i = 0; i < KERNEL_SERVERS; i++)
     {
 
@@ -400,13 +393,6 @@ void kernel_setupservers(void)
 
     }
 
-}
-
-void kernel_setupmounts(void)
-{
-
-    unsigned int i;
-
     for (i = 0; i < KERNEL_MOUNTS; i++)
     {
 
@@ -416,13 +402,6 @@ void kernel_setupmounts(void)
         kernel_freemount(mount);
 
     }
-
-}
-
-void kernel_setupservices(void)
-{
-
-    unsigned int i;
 
     for (i = 0; i < KERNEL_SERVICES; i++)
     {

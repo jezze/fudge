@@ -413,15 +413,12 @@ void arch_setup(struct service_backend *backend)
     mapkernel(3, 0x00C00000, 0x00C00000, 0x00400000);
     mmu_setdirectory(getkerneldirectory());
     mmu_enable();
+    kernel_setup();
+    kernel_setcore(getcore);
+    kernel_setassign(assign);
     abi_setup(spawn, despawn);
     binary_setupelf();
     service_setupcpio();
-    kernel_setcore(getcore);
-    kernel_setassign(assign);
-    kernel_setuptasks();
-    kernel_setupservers();
-    kernel_setupmounts();
-    kernel_setupservices();
     resource_register(&backend->resource);
     setuptask();
     arch_leave(&core0);
