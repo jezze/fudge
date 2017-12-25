@@ -9,6 +9,7 @@ include $(DIR_LIB)/math/rules.mk
 include $(DIR_LIB)/mboot/rules.mk
 include $(DIR_LIB)/md5/rules.mk
 include $(DIR_LIB)/pcf/rules.mk
+include $(DIR_LIB)/regexp/rules.mk
 include $(DIR_LIB)/sha/rules.mk
 include $(DIR_LIB)/tar/rules.mk
 include $(DIR_LIB)/utf8/rules.mk
