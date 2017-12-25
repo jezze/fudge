@@ -3,13 +3,16 @@
 
 #define RE_MAX (~(unsigned int)0)
 
-struct re_data {
+struct re_data
+{
+
     unsigned int (*cont)(char *, char *, struct re_data *, unsigned int);
     struct re_data *data;
     char *pat;
     char *str;
     unsigned int ok;
     unsigned int incarn;
+
 };
 
 static unsigned int re_seq(char *p, char *s, unsigned int (*c)(char *, char *, struct re_data *, unsigned int), struct re_data *d, unsigned int o);
