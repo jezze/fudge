@@ -30,7 +30,7 @@ static unsigned int re_seq_atom_tail(char *p, char *s, struct re_data *d, unsign
     if (*p != ')')
         return RE_E_SYNTAX;
 
-    return d->cont(p+1, s, d->data, o);
+    return d->cont(p + 1, s, d->data, o);
 
 }
 
@@ -55,10 +55,10 @@ static unsigned int re_class1(char *p, char *s, unsigned int (*c)(char *, char *
     {
 
     case '\\':
-        return re_special(p+1, s, re_class1_tail, &d2, 1);
+        return re_special(p + 1, s, re_class1_tail, &d2, 1);
 
     case ']':
-        return c(p+1, s, d, o);
+        return c(p + 1, s, d, o);
 
     case '\0':
         return RE_E_SYNTAX;
@@ -68,7 +68,7 @@ static unsigned int re_class1(char *p, char *s, unsigned int (*c)(char *, char *
 
     default:
         if (p[1] != '-')
-            return re_eat1(p+1, s, re_class1_tail, &d2, (*s == *p));
+            return re_eat1(p + 1, s, re_class1_tail, &d2, (*s == *p));
 
         switch (p[2])
         {
@@ -81,8 +81,7 @@ static unsigned int re_class1(char *p, char *s, unsigned int (*c)(char *, char *
 
         }
 
-        return re_eat1(p+3, s, re_class1_tail, &d2,
-            (*s >= p[0]) && (*s <= p[2]));
+        return re_eat1(p + 3, s, re_class1_tail, &d2, (*s >= p[0]) && (*s <= p[2]));
 
     }
 
