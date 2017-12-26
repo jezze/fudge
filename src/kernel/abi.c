@@ -243,9 +243,9 @@ static unsigned int load(struct task *task, void *stack)
     void (*module_init)(void);
     void (*module_register)(void);
 
-    node.physical = service->server->protocol->map(service->server->backend, &service->state, service->id);
+    node.address = service->server->protocol->map(service->server->backend, &service->state, service->id);
 
-    if (!node.physical)
+    if (!node.address)
         return 0;
 
     format = binary_findformat(&node);
@@ -279,9 +279,9 @@ static unsigned int unload(struct task *task, void *stack)
     struct binary_node node;
     void (*module_unregister)(void);
 
-    node.physical = service->server->protocol->map(service->server->backend, &service->state, service->id);
+    node.address = service->server->protocol->map(service->server->backend, &service->state, service->id);
 
-    if (!node.physical)
+    if (!node.address)
         return 0;
 
     format = binary_findformat(&node);

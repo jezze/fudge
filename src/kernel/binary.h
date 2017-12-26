@@ -1,7 +1,7 @@
 struct binary_node
 {
 
-    unsigned int physical;
+    unsigned int address;
 
 };
 
