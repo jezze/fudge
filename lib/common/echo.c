@@ -25,13 +25,13 @@ static void interpret(unsigned int descriptor, char c, union echo_arg *a)
 
         break;
 
-    case 'd':
-        file_writeall(descriptor, num, ascii_wvalue(num, FUDGE_NSIZE, a->d, 10));
+    case 'u':
+        file_writeall(descriptor, num, ascii_wvalue(num, FUDGE_NSIZE, a->u, 10));
 
         break;
 
     case 'h':
-        file_writeall(descriptor, num, ascii_wvalue(num, FUDGE_NSIZE, a->d, 16));
+        file_writeall(descriptor, num, ascii_wvalue(num, FUDGE_NSIZE, a->u, 16));
 
         break;
 

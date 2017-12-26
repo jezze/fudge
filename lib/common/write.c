@@ -45,9 +45,9 @@ void write_keydec(unsigned int descriptor, char *key, unsigned int value)
     union echo_arg a[2];
 
     a[0].s = key;
-    a[1].d = value;
+    a[1].u = value;
 
-    echo(descriptor, "%s: %d\n", a);
+    echo(descriptor, "%s: %u\n", a);
 
 }
 
@@ -57,7 +57,7 @@ void write_keyhex(unsigned int descriptor, char *key, unsigned int value, unsign
     union echo_arg a[2];
 
     a[0].s = key;
-    a[1].d = value;
+    a[1].u = value;
 
     echo(descriptor, "%s: 0x%h\n", a);
 

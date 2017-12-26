@@ -10,7 +10,7 @@ union echo_arg
 {
 
     char *s;
-    int d;
+    int u;
     struct echo_buf b;
 
 };
