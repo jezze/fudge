@@ -84,24 +84,6 @@ unsigned int ascii_wzerovalue(void *out, unsigned int count, unsigned int value,
 
 }
 
-unsigned int ascii_count(char *in, unsigned int count, char c)
-{
-
-    unsigned int total = 0;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (in[i] == c)
-            total++;
-
-    }
-
-    return total;
-
-}
-
 unsigned int ascii_dname(char *out, unsigned int ocount, char *in, unsigned int icount, char c)
 {
 
