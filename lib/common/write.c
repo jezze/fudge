@@ -51,7 +51,7 @@ void write_keydec(unsigned int descriptor, char *key, unsigned int value)
 
 }
 
-void write_keyhex(unsigned int descriptor, char *key, unsigned int value, unsigned int padding)
+void write_keyhex(unsigned int descriptor, char *key, unsigned int value)
 {
 
     union echo_arg a[2];

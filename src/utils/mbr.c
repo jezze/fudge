@@ -61,8 +61,8 @@ void main(void)
         if (!mbr.partition[i].systemid)
             continue;
 
-        write_keyhex(FILE_PO, "    Boot", mbr.partition[i].boot, 2);
-        write_keyhex(FILE_PO, "    Id", mbr.partition[i].systemid, 2);
+        write_keyhex(FILE_PO, "    Boot", mbr.partition[i].boot);
+        write_keyhex(FILE_PO, "    Id", mbr.partition[i].systemid);
         write_keydec(FILE_PO, "    Start", start);
         write_keydec(FILE_PO, "    End", start + sectors - 1);
         write_keydec(FILE_PO, "    Sectors", sectors);
