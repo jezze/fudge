@@ -30,13 +30,13 @@ unsigned int ascii_toint(unsigned char c)
 
 }
 
-unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base, unsigned int offset)
+unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base)
 {
 
     unsigned int value = 0;
     unsigned int i;
 
-    for (i = offset; i < count; i++)
+    for (i = 0; i < count; i++)
         value = value * base + ascii_toint(in[i]);
 
     return value;

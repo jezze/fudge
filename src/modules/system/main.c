@@ -31,7 +31,7 @@ static struct system_node *childgroup(struct system_node *self, struct service_s
             if (!memory_match(node->name, path, colon))
                 continue;
 
-            val = ascii_rvalue(path, length, 10, colon + 1);
+            val = ascii_rvalue(path + colon + 1, length - colon - 1, 10);
 
             if (val != node->index)
                 continue;
