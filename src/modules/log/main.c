@@ -47,7 +47,7 @@ static void write(struct list *states, unsigned int level, char *string, char *f
     kernel_multicast(states, " (", 2);
     kernel_multicast(states, file, ascii_length(file));
     kernel_multicast(states, ":", 1);
-    kernel_multicast(states, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0));
+    kernel_multicast(states, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10));
     kernel_multicast(states, ")\n", 2);
 
 }

@@ -62,7 +62,7 @@ void main(void)
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
     file_open(FILE_PO);
-    file_writeall(FILE_PO, buffer, ascii_fromint(buffer, 32, ~crc, 10));
+    file_writeall(FILE_PO, buffer, ascii_wvalue(buffer, 32, ~crc, 10));
     file_close(FILE_PO);
 
 }

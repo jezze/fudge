@@ -139,7 +139,7 @@ static unsigned int cpus_read(struct system_node *self, struct system_node *curr
 
     char num[FUDGE_NSIZE];
 
-    return memory_read(buffer, count, num, ascii_wvalue(num, FUDGE_NSIZE, corelist.count, 10, 0), offset);
+    return memory_read(buffer, count, num, ascii_wvalue(num, FUDGE_NSIZE, corelist.count, 10), offset);
 
 }
 

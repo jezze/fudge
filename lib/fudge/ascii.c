@@ -30,25 +30,6 @@ unsigned int ascii_toint(unsigned char c)
 
 }
 
-unsigned int ascii_fromint(void *out, unsigned int count, unsigned int value, unsigned int base)
-{
-
-    unsigned int current = value / base;
-    unsigned int i = 0;
-    unsigned char *o = out;
-
-    if (!count)
-        return 0;
-
-    if (current)
-        i = ascii_fromint(out, count - 1, current, base);
-
-    o[i] = "0123456789abcdef"[value % base];
-
-    return ++i;
-
-}
-
 unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base, unsigned int offset)
 {
 
@@ -62,12 +43,22 @@ unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base, unsig
 
 }
 
-unsigned int ascii_wvalue(void *out, unsigned int count, unsigned int value, unsigned int base, unsigned int offset)
+unsigned int ascii_wvalue(void *out, unsigned int count, unsigned int value, unsigned int base)
 {
 
-    char num[FUDGE_NSIZE];
+    unsigned int current = value / base;
+    unsigned int i = 0;
+    unsigned char *o = out;
 
-    return memory_write(out, count, num, ascii_fromint(num, FUDGE_NSIZE, value, base), offset);
+    if (!count)
+        return 0;
+
+    if (current)
+        i = ascii_wvalue(out, count - 1, current, base);
+
+    o[i] = "0123456789abcdef"[value % base];
+
+    return ++i;
 
 }
 
@@ -75,7 +66,7 @@ unsigned int ascii_wzerovalue(void *out, unsigned int count, unsigned int value,
 {
 
     char num[FUDGE_NSIZE];
-    unsigned int bcount = ascii_fromint(num, FUDGE_NSIZE, value, base);
+    unsigned int bcount = ascii_wvalue(num, FUDGE_NSIZE, value, base);
 
     memory_write(out, count, "00000000000000000000000000000000", padding, offset);
     memory_write(out, count, num, bcount, offset + padding - bcount);

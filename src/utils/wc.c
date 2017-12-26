@@ -50,11 +50,11 @@ void main(void)
 
     file_close(FILE_PI);
     file_open(FILE_PO);
-    file_writeall(FILE_PO, buffer, ascii_fromint(buffer, FUDGE_BSIZE, lines, 10));
+    file_writeall(FILE_PO, buffer, ascii_wvalue(buffer, FUDGE_BSIZE, lines, 10));
     file_writeall(FILE_PO, "\n", 1);
-    file_writeall(FILE_PO, buffer, ascii_fromint(buffer, FUDGE_BSIZE, words, 10));
+    file_writeall(FILE_PO, buffer, ascii_wvalue(buffer, FUDGE_BSIZE, words, 10));
     file_writeall(FILE_PO, "\n", 1);
-    file_writeall(FILE_PO, buffer, ascii_fromint(buffer, FUDGE_BSIZE, bytes, 10));
+    file_writeall(FILE_PO, buffer, ascii_wvalue(buffer, FUDGE_BSIZE, bytes, 10));
     file_writeall(FILE_PO, "\n", 1);
     file_close(FILE_PO);
 

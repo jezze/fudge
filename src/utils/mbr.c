@@ -68,20 +68,20 @@ void main(void)
         write_keydec(FILE_PO, "    Sectors", sectors);
 
         count = 0;
-        count += ascii_wvalue(data, 64, cstart, 10, count);
+        count += ascii_wvalue(data + count, 64, cstart, 10);
         count += memory_write(data, 64, "/", 1, count);
-        count += ascii_wvalue(data, 64, hstart, 10, count);
+        count += ascii_wvalue(data + count, 64, hstart, 10);
         count += memory_write(data, 64, "/", 1, count);
-        count += ascii_wvalue(data, 64, sstart, 10, count);
+        count += ascii_wvalue(data + count, 64, sstart, 10);
 
         write_keybuffer(FILE_PO, "    Start-C/H/S", data, count);
 
         count = 0;
-        count += ascii_wvalue(data, 64, cend, 10, count);
+        count += ascii_wvalue(data + count, 64, cend, 10);
         count += memory_write(data, 64, "/", 1, count);
-        count += ascii_wvalue(data, 64, hend, 10, count);
+        count += ascii_wvalue(data + count, 64, hend, 10);
         count += memory_write(data, 64, "/", 1, count);
-        count += ascii_wvalue(data, 64, send, 10, count);
+        count += ascii_wvalue(data + count, 64, send, 10);
 
         write_keybuffer(FILE_PO, "    End-C/H/S", data, count);
 

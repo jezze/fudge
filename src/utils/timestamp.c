@@ -40,7 +40,7 @@ void main(void)
     timestamp = ((dyear + dmonth + settings.day) * 86400) + ((settings.hours * 3600) + (settings.minutes * 60) + settings.seconds);
 
     file_open(FILE_PO);
-    file_writeall(FILE_PO, num, ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10, 0));
+    file_writeall(FILE_PO, num, ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10));
     file_writeall(FILE_PO, "\n", 1);
     file_close(FILE_PO);
 
