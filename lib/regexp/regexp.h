@@ -1,6 +1,6 @@
-#define RE_E_OK                         0
-#define RE_E_FAIL                       1
-#define RE_E_SYNTAX                     2
-#define RE_E_NOTIMPL                    3
+#define REGEXP_OK                       0
+#define REGEXP_FAIL                     1
+#define REGEXP_SYNTAX                   2
+#define REGEXP_NOTIMPL                  3
 
-unsigned int re_match(char *p, char *s);
+unsigned int regexp_match(char *p, char *s);
