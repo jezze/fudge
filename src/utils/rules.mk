@@ -125,7 +125,7 @@ L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/elf/elf.a \
+    $(DIR_LIB)/format/format.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -139,7 +139,7 @@ L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/elf/elf.a \
+    $(DIR_LIB)/format/format.a \
 
 include $(DIR_MK)/bin.mk
 

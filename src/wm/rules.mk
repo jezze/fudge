@@ -26,7 +26,7 @@ L:=\
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/math/math.a \
-    $(DIR_LIB)/pcf/pcf.a \
+    $(DIR_LIB)/format/format.a \
     $(DIR_LIB)/widget/widget.a \
 
 include $(DIR_MK)/bin.mk
@@ -44,7 +44,7 @@ L:=\
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/keymap/keymap.a \
     $(DIR_LIB)/math/math.a \
-    $(DIR_LIB)/pcf/pcf.a \
+    $(DIR_LIB)/format/format.a \
     $(DIR_LIB)/widget/widget.a \
 
 include $(DIR_MK)/bin.mk

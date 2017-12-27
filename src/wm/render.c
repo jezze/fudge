@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 #include <math/box.h>
-#include <pcf/pcf.h>
+#include <format/pcf.h>
 #include <widget/widget.h>
 
 #define COLOR_DARK                      0x00

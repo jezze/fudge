@@ -18,8 +18,7 @@ O:=\
 
 L:=\
     $(DIR_LIB)/fudge/fudge.a \
-    $(DIR_LIB)/cpio/cpio.a \
-    $(DIR_LIB)/elf/elf.a \
+    $(DIR_LIB)/format/format.a \
     $(DIR_LIB)/$(LOADER)/$(LOADER).a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
