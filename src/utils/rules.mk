@@ -116,6 +116,34 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/utils/elfload \
+
+O:=\
+    $(DIR_SRC)/utils/elfload.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
+    $(DIR_LIB)/elf/elf.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/elfunload \
+
+O:=\
+    $(DIR_SRC)/utils/elfunload.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
+    $(DIR_LIB)/elf/elf.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/fat \
 
 O:=\
@@ -287,6 +315,20 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/utils/md5 \
+
+O:=\
+    $(DIR_SRC)/utils/md5.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
+    $(DIR_LIB)/crypt/crypt.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/motd \
 
 O:=\
@@ -322,6 +364,20 @@ L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/common/common.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/sha1 \
+
+O:=\
+    $(DIR_SRC)/utils/sha1.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/common/common.a \
+    $(DIR_LIB)/crypt/crypt.a \
 
 include $(DIR_MK)/bin.mk
 
