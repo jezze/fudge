@@ -34,9 +34,11 @@ include $(DIR_SRC)/rules.mk
 
 deps: $(DEP)
 
-$(DIR_BUILD): $(BIN) $(KBIN) $(KMAP) $(KMOD)
+$(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@echo BUILDROOT $@
 	@mkdir -p $@
+	@mkdir -p $@/lib
+	@cp $(LIB) $@/lib
 	@mkdir -p $@/bin
 	@cp $(BIN) $@/bin
 	@cp $(KBIN) $@/bin
