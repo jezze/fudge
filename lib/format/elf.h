@@ -141,6 +141,3 @@ struct elf_relocation
 };
 
 unsigned int elf_validate(struct elf_header *header);
-unsigned int elf_findsymbol(struct elf_header *header, struct elf_sectionheader *sectionheader, struct elf_sectionheader *symbolheader, struct elf_symbol *symbols, char *strings, unsigned int count, char *symbol);
-void elf_relocatesymbol(unsigned int address, unsigned int type, unsigned int addend);
-void elf_relocatesection(struct elf_sectionheader *sectionheader, struct elf_sectionheader *relocationheader, struct elf_sectionheader *dataheader, struct elf_relocation *relocations, struct elf_symbol *symbols, unsigned int address);
