@@ -1,13 +1,18 @@
 #include <fudge.h>
+#include <kernel.h>
+#include <kernel/x86/cpu.h>
+#include <kernel/x86/gdt.h>
+#include <kernel/x86/idt.h>
+#include <kernel/x86/tss.h>
+#include <kernel/x86/arch.h>
+#include <modules/arch/x86/uart/uart.h>
+#include "gdb.h"
 
 #define BUFMAX                          400
 #define NUMREGS                         16
 #define NUMREGBYTES                     (NUMREGS * 4)
 #define STACKSIZE                       10000
 
-extern void putDebugChar();             /* write a single character */
-extern int getDebugChar();              /* read and return a single char */
-extern void exceptionHandler();         /* assign an exception handler */
 static char initialized;                /* boolean flag. != 0 means we've been initialized */
 int remote_debug;                       /* debug > 0 prints ill-formed commands in valid packets & checksum errors */
 static const char hexchars[] = "0123456789abcdef";
@@ -15,6 +20,8 @@ enum regnames {EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI, PC, PS, CS, SS, DS, ES, F
 int registers[NUMREGS];
 int remcomStack[STACKSIZE / sizeof (int)];
 int *stackPtr = &remcomStack[STACKSIZE / sizeof (int) - 1];
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 
 extern void return_to_prog();
 __asm__(".text");
@@ -215,7 +222,7 @@ SAVE_REGISTERS2();
 __asm__ ("pushl $16");
 CALL_HOOK();
 
-extern void _catchException13 ();
+extern void _catchException13();
 __asm__ (".text");
 __asm__ (".globl _catchException13");
 __asm__ ("_catchException13:");
@@ -226,7 +233,7 @@ SAVE_REGISTERS2();
 __asm__ ("pushl $13");
 CALL_HOOK();
 
-extern void _catchException11 ();
+extern void _catchException11();
 __asm__ (".text");
 __asm__ (".globl _catchException11");
 __asm__ ("_catchException11:");
@@ -237,7 +244,7 @@ SAVE_REGISTERS2();
 __asm__ ("pushl $11");
 CALL_HOOK();
 
-extern void _catchException14 ();
+extern void _catchException14();
 __asm__ (".text");
 __asm__ (".globl _catchException14");
 __asm__ ("_catchException14:");
@@ -254,6 +261,27 @@ __asm__("    popl %eax");
 __asm__("    movl stackPtr, %esp");
 __asm__("    pushl %eax");
 __asm__("    call handle_exception");
+
+void exceptionHandler(int num, void (*pointer)())
+{
+
+    idt_setdescriptor(&idt->pointer, num, pointer, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+
+}
+
+void putDebugChar(char c)
+{
+
+    uart_put(c);
+
+}
+
+int getDebugChar()
+{
+
+    return uart_get();
+
+}
 
 void returnFromException()
 {

@@ -98,7 +98,7 @@ static struct base_driver driver;
 static struct console_interface consoleinterface;
 static unsigned short io;
 
-static unsigned char read(void)
+unsigned char uart_get(void)
 {
 
     while (!(io_inb(io + REGISTERLSR) & LSRREADY));
@@ -107,7 +107,7 @@ static unsigned char read(void)
 
 }
 
-static void write(unsigned char c)
+void uart_put(unsigned char c)
 {
 
     while (!(io_inb(io + REGISTERLSR) & LSRTRANSMIT));
@@ -119,7 +119,7 @@ static void write(unsigned char c)
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char data = read();
+    unsigned char data = uart_get();
 
     console_notify(&consoleinterface, &data, 1);
 
@@ -132,7 +132,7 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        write(b[i]);
+        uart_put(b[i]);
 
     return count;
 
