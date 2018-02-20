@@ -12,7 +12,7 @@
 #define NUMREGBYTES                     (NUMREGS * 4)
 #define STACKSIZE                       10000
 
-int remote_debug;                       /* debug > 0 prints ill-formed commands in valid packets & checksum errors */
+int remote_debug;
 static const char hexchars[] = "0123456789abcdef";
 enum regnames {EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI, PC, PS, CS, SS, DS, ES, FS, GS};
 int registers[NUMREGS];
@@ -25,86 +25,86 @@ extern void return_to_prog();
 __asm__(".text");
 __asm__(".globl return_to_prog");
 __asm__("return_to_prog:");
-__asm__("    movw registers+44, %ss");
-__asm__("    movl registers+16, %esp");
-__asm__("    movl registers+4, %ecx");
-__asm__("    movl registers+8, %edx");
-__asm__("    movl registers+12, %ebx");
-__asm__("    movl registers+20, %ebp");
-__asm__("    movl registers+24, %esi");
-__asm__("    movl registers+28, %edi");
-__asm__("    movw registers+48, %ds");
-__asm__("    movw registers+52, %es");
-__asm__("    movw registers+56, %fs");
-__asm__("    movw registers+60, %gs");
-__asm__("    movl registers+36, %eax");
-__asm__("    pushl %eax");
-__asm__("    movl registers+40, %eax");
-__asm__("    pushl %eax");
-__asm__("    movl registers+32, %eax");
-__asm__("    pushl %eax");
-__asm__("    movl registers, %eax");
-__asm__("    iret");
+__asm__("movw registers+44, %ss");
+__asm__("movl registers+16, %esp");
+__asm__("movl registers+4, %ecx");
+__asm__("movl registers+8, %edx");
+__asm__("movl registers+12, %ebx");
+__asm__("movl registers+20, %ebp");
+__asm__("movl registers+24, %esi");
+__asm__("movl registers+28, %edi");
+__asm__("movw registers+48, %ds");
+__asm__("movw registers+52, %es");
+__asm__("movw registers+56, %fs");
+__asm__("movw registers+60, %gs");
+__asm__("movl registers+36, %eax");
+__asm__("pushl %eax");
+__asm__("movl registers+40, %eax");
+__asm__("pushl %eax");
+__asm__("movl registers+32, %eax");
+__asm__("pushl %eax");
+__asm__("movl registers, %eax");
+__asm__("iret");
 
 int gdb_i386errcode;
 int gdb_i386vector = -1;
 
 #define SAVE_REGISTERS1()                       \
-    __asm__ ("movl %eax, registers");           \
-    __asm__ ("movl %ecx, registers+4");         \
-    __asm__ ("movl %edx, registers+8");         \
-    __asm__ ("movl %ebx, registers+12");        \
-    __asm__ ("movl %ebp, registers+20");        \
-    __asm__ ("movl %esi, registers+24");        \
-    __asm__ ("movl %edi, registers+28");        \
-    __asm__ ("movw $0, %ax");                   \
-    __asm__ ("movw %ds, registers+48");         \
-    __asm__ ("movw %ax, registers+50");         \
-    __asm__ ("movw %es, registers+52");         \
-    __asm__ ("movw %ax, registers+54");         \
-    __asm__ ("movw %fs, registers+56");         \
-    __asm__ ("movw %ax, registers+58");         \
-    __asm__ ("movw %gs, registers+60");         \
-    __asm__ ("movw %ax, registers+62")
+    __asm__("movl %eax, registers");           \
+    __asm__("movl %ecx, registers+4");         \
+    __asm__("movl %edx, registers+8");         \
+    __asm__("movl %ebx, registers+12");        \
+    __asm__("movl %ebp, registers+20");        \
+    __asm__("movl %esi, registers+24");        \
+    __asm__("movl %edi, registers+28");        \
+    __asm__("movw $0, %ax");                   \
+    __asm__("movw %ds, registers+48");         \
+    __asm__("movw %ax, registers+50");         \
+    __asm__("movw %es, registers+52");         \
+    __asm__("movw %ax, registers+54");         \
+    __asm__("movw %fs, registers+56");         \
+    __asm__("movw %ax, registers+58");         \
+    __asm__("movw %gs, registers+60");         \
+    __asm__("movw %ax, registers+62")
 
 #define SAVE_ERRCODE()                          \
-    __asm__ ("popl %ebx");                      \
-    __asm__ ("movl %ebx, gdb_i386errcode")
+    __asm__("popl %ebx");                      \
+    __asm__("movl %ebx, gdb_i386errcode")
 
 #define SAVE_REGISTERS2()                       \
-    __asm__ ("popl %ebx");                      \
-    __asm__ ("movl %ebx, registers+32");        \
-    __asm__ ("popl %ebx");                      \
-    __asm__ ("movl %ebx, registers+40");        \
-    __asm__ ("movw %ax, registers+42");         \
-    __asm__ ("popl %ebx");                      \
-    __asm__ ("movl %ebx, registers+36");        \
-    __asm__ ("movw %ss, registers+44");         \
-    __asm__ ("movw %ax, registers+46");         \
-    __asm__ ("movl %esp, registers+16")
+    __asm__("popl %ebx");                      \
+    __asm__("movl %ebx, registers+32");        \
+    __asm__("popl %ebx");                      \
+    __asm__("movl %ebx, registers+40");        \
+    __asm__("movw %ax, registers+42");         \
+    __asm__("popl %ebx");                      \
+    __asm__("movl %ebx, registers+36");        \
+    __asm__("movw %ss, registers+44");         \
+    __asm__("movw %ax, registers+46");         \
+    __asm__("movl %esp, registers+16")
 
 #define CHECK_FAULT()                           \
-    __asm__ ("cmpl $0, mem_fault_routine");     \
-    __asm__ ("jne mem_fault")
-
-__asm__ (".text");
-__asm__ ("mem_fault:");
-__asm__ ("     popl %eax");
-__asm__ ("     movl %eax, gdb_i386errcode");
-__asm__ ("     popl %eax");
-__asm__ ("     movl mem_fault_routine, %eax");
-__asm__ ("     popl %ecx");
-__asm__ ("     popl %edx");
-__asm__ ("     leave");
-__asm__ ("     pushl %edx");
-__asm__ ("     pushl %ecx");
-__asm__ ("     pushl %eax");
-__asm__ ("     movl $0, %eax");
-__asm__ ("     movl %eax, mem_fault_routine");
-__asm__ ("iret");
+    __asm__("cmpl $0, mem_fault_routine");     \
+    __asm__("jne mem_fault")
 
 #define CALL_HOOK()                             \
     __asm__("call _remcomHandler")
+
+__asm__(".text");
+__asm__("mem_fault:");
+__asm__("popl %eax");
+__asm__("movl %eax, gdb_i386errcode");
+__asm__("popl %eax");
+__asm__("movl mem_fault_routine, %eax");
+__asm__("popl %ecx");
+__asm__("popl %edx");
+__asm__("leave");
+__asm__("pushl %edx");
+__asm__("pushl %ecx");
+__asm__("pushl %eax");
+__asm__("movl $0, %eax");
+__asm__("movl %eax, mem_fault_routine");
+__asm__("iret");
 
 extern void _catchException3();
 __asm__(".text");
@@ -112,7 +112,7 @@ __asm__(".globl _catchException3");
 __asm__("_catchException3:");
 SAVE_REGISTERS1();
 SAVE_REGISTERS2();
-__asm__ ("pushl $3");
+__asm__("pushl $3");
 CALL_HOOK();
 
 extern void _catchException1();
@@ -121,7 +121,7 @@ __asm__(".globl _catchException1");
 __asm__("_catchException1:");
 SAVE_REGISTERS1();
 SAVE_REGISTERS2();
-__asm__ ("pushl $1");
+__asm__("pushl $1");
 CALL_HOOK();
 
 extern void _catchException0();
@@ -130,7 +130,7 @@ __asm__(".globl _catchException0");
 __asm__("_catchException0:");
 SAVE_REGISTERS1();
 SAVE_REGISTERS2();
-__asm__ ("pushl $0");
+__asm__("pushl $0");
 CALL_HOOK();
 
 extern void _catchException4();
@@ -139,7 +139,7 @@ __asm__(".globl _catchException4");
 __asm__("_catchException4:");
 SAVE_REGISTERS1();
 SAVE_REGISTERS2();
-__asm__ ("pushl $4");
+__asm__("pushl $4");
 CALL_HOOK();
 
 extern void _catchException5();
@@ -148,7 +148,7 @@ __asm__(".globl _catchException5");
 __asm__("_catchException5:");
 SAVE_REGISTERS1();
 SAVE_REGISTERS2();
-__asm__ ("pushl $5");
+__asm__("pushl $5");
 CALL_HOOK();
 
 extern void _catchException6();
@@ -157,7 +157,7 @@ __asm__(".globl _catchException6");
 __asm__("_catchException6:");
 SAVE_REGISTERS1();
 SAVE_REGISTERS2();
-__asm__ ("pushl $6");
+__asm__("pushl $6");
 CALL_HOOK();
 
 extern void _catchException7();
@@ -166,7 +166,7 @@ __asm__(".globl _catchException7");
 __asm__("_catchException7:");
 SAVE_REGISTERS1();
 SAVE_REGISTERS2();
-__asm__ ("pushl $7");
+__asm__("pushl $7");
 CALL_HOOK();
 
 extern void _catchException8();
@@ -176,7 +176,7 @@ __asm__("_catchException8:");
 SAVE_REGISTERS1();
 SAVE_ERRCODE();
 SAVE_REGISTERS2();
-__asm__ ("pushl $8");
+__asm__("pushl $8");
 CALL_HOOK();
 
 extern void _catchException9();
@@ -185,7 +185,7 @@ __asm__(".globl _catchException9");
 __asm__("_catchException9:");
 SAVE_REGISTERS1();
 SAVE_REGISTERS2();
-__asm__ ("pushl $9");
+__asm__("pushl $9");
 CALL_HOOK();
 
 extern void _catchException10();
@@ -195,7 +195,7 @@ __asm__("_catchException10:");
 SAVE_REGISTERS1();
 SAVE_ERRCODE();
 SAVE_REGISTERS2();
-__asm__ ("pushl $10");
+__asm__("pushl $10");
 CALL_HOOK();
 
 extern void _catchException12();
@@ -205,7 +205,7 @@ __asm__("_catchException12:");
 SAVE_REGISTERS1();
 SAVE_ERRCODE();
 SAVE_REGISTERS2();
-__asm__ ("pushl $12");
+__asm__("pushl $12");
 CALL_HOOK();
 
 extern void _catchException16();
@@ -214,76 +214,48 @@ __asm__(".globl _catchException16");
 __asm__("_catchException16:");
 SAVE_REGISTERS1();
 SAVE_REGISTERS2();
-__asm__ ("pushl $16");
+__asm__("pushl $16");
 CALL_HOOK();
 
 extern void _catchException13();
-__asm__ (".text");
-__asm__ (".globl _catchException13");
-__asm__ ("_catchException13:");
+__asm__(".text");
+__asm__(".globl _catchException13");
+__asm__("_catchException13:");
 CHECK_FAULT();
 SAVE_REGISTERS1();
 SAVE_ERRCODE();
 SAVE_REGISTERS2();
-__asm__ ("pushl $13");
+__asm__("pushl $13");
 CALL_HOOK();
 
 extern void _catchException11();
-__asm__ (".text");
-__asm__ (".globl _catchException11");
-__asm__ ("_catchException11:");
+__asm__(".text");
+__asm__(".globl _catchException11");
+__asm__("_catchException11:");
 CHECK_FAULT();
 SAVE_REGISTERS1();
 SAVE_ERRCODE();
 SAVE_REGISTERS2();
-__asm__ ("pushl $11");
+__asm__("pushl $11");
 CALL_HOOK();
 
 extern void _catchException14();
-__asm__ (".text");
-__asm__ (".globl _catchException14");
-__asm__ ("_catchException14:");
+__asm__(".text");
+__asm__(".globl _catchException14");
+__asm__("_catchException14:");
 CHECK_FAULT();
 SAVE_REGISTERS1();
 SAVE_ERRCODE();
 SAVE_REGISTERS2();
-__asm__ ("pushl $14");
+__asm__("pushl $14");
 CALL_HOOK();
 
 __asm__("_remcomHandler:");
-__asm__("    popl %eax");
-__asm__("    popl %eax");
-__asm__("    movl stackPtr, %esp");
-__asm__("    pushl %eax");
-__asm__("    call handle_exception");
-
-void exceptionHandler(int num, void (*pointer)())
-{
-
-    idt_setdescriptor(&idt->pointer, num, pointer, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-
-}
-
-void putDebugChar(char c)
-{
-
-    uart_put(c);
-
-}
-
-int getDebugChar()
-{
-
-    return uart_get();
-
-}
-
-void returnFromException()
-{
-
-    return_to_prog();
-
-}
+__asm__("popl %eax");
+__asm__("popl %eax");
+__asm__("movl stackPtr, %esp");
+__asm__("pushl %eax");
+__asm__("call handle_exception");
 
 int hex(char ch)
 {
@@ -316,7 +288,7 @@ char *getpacket(void)
     while (1)
     {
 
-        while ((ch = getDebugChar()) != '$');
+        while ((ch = uart_get()) != '$');
 
     retry:
         checksum = 0;
@@ -326,7 +298,7 @@ char *getpacket(void)
         while (count < BUFMAX - 1)
         {
 
-            ch = getDebugChar();
+            ch = uart_get();
 
             if (ch == '$')
                 goto retry;
@@ -345,9 +317,9 @@ char *getpacket(void)
         if (ch == '#')
         {
 
-            ch = getDebugChar();
+            ch = uart_get();
             xmitcsum = hex(ch) << 4;
-            ch = getDebugChar();
+            ch = uart_get();
             xmitcsum += hex(ch);
 
             if (checksum != xmitcsum)
@@ -362,19 +334,19 @@ char *getpacket(void)
 
                 }
 
-                putDebugChar('-');
+                uart_put('-');
             }
 
             else
             {
 
-                putDebugChar('+');
+                uart_put('+');
 
                 if (buffer[2] == ':')
                 {
 
-                    putDebugChar(buffer[0]);
-                    putDebugChar(buffer[1]);
+                    uart_put(buffer[0]);
+                    uart_put(buffer[1]);
 
                     return &buffer[3];
 
@@ -400,7 +372,7 @@ void putpacket(char *buffer)
     do
     {
 
-        putDebugChar('$');
+        uart_put('$');
 
         checksum = 0;
         count = 0;
@@ -408,20 +380,20 @@ void putpacket(char *buffer)
         while ((ch = buffer[count]))
         {
 
-            putDebugChar(ch);
+            uart_put(ch);
 
             checksum += ch;
             count += 1;
 
         }
 
-        putDebugChar('#');
-        putDebugChar(hexchars[checksum >> 4]);
-        putDebugChar(hexchars[checksum % 16]);
+        uart_put('#');
+        uart_put(hexchars[checksum >> 4]);
+        uart_put(hexchars[checksum % 16]);
 
     }
 
-    while (getDebugChar() != '+');
+    while (uart_get() != '+');
 
 }
 
@@ -820,7 +792,7 @@ void handle_exception(int exceptionVector)
             if (stepping)
                 registers[PS] |= 0x100;
 
-            returnFromException();
+            return_to_prog();
 
             break;
 
@@ -840,21 +812,21 @@ void module_init(void)
 
     stackPtr = &remcomStack[STACKSIZE / sizeof (int) - 1];
 
-    exceptionHandler(0, _catchException0);
-    exceptionHandler(1, _catchException1);
-    exceptionHandler(3, _catchException3);
-    exceptionHandler(4, _catchException4);
-    exceptionHandler(5, _catchException5);
-    exceptionHandler(6, _catchException6);
-    exceptionHandler(7, _catchException7);
-    exceptionHandler(8, _catchException8);
-    exceptionHandler(9, _catchException9);
-    exceptionHandler(10, _catchException10);
-    exceptionHandler(11, _catchException11);
-    exceptionHandler(12, _catchException12);
-    exceptionHandler(13, _catchException13);
-    exceptionHandler(14, _catchException14);
-    exceptionHandler(16, _catchException16);
+    idt_setdescriptor(&idt->pointer, 0, _catchException0, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 1, _catchException1, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 3, _catchException3, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 4, _catchException4, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 5, _catchException5, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 6, _catchException6, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 7, _catchException7, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 8, _catchException8, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 9, _catchException9, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 10, _catchException10, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 11, _catchException11, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 12, _catchException12, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 13, _catchException13, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 14, _catchException14, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 16, _catchException16, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     __asm__("int $3");
 
 }
