@@ -14,6 +14,14 @@ unsigned int ascii_length(char *in)
 
 }
 
+void ascii_copy(char *out, char *in)
+{
+
+    while (*in)
+        *out++ = *in++;
+
+}
+
 unsigned int ascii_toint(unsigned char c)
 {
 
