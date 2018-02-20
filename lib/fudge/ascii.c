@@ -17,8 +17,7 @@ unsigned int ascii_length(char *in)
 void ascii_copy(char *out, char *in)
 {
 
-    while (*in)
-        *out++ = *in++;
+    while ((*out++ = *in++));
 
 }
 
