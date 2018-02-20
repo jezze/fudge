@@ -1,5 +1,5 @@
 M:=\
-    $(DIR_SRC)/modules/arch/x86/uart/uart.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/uart/uart.ko \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/uart/main.o \
