@@ -102,20 +102,22 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 {
 
     unsigned int offset = 0;
-    unsigned int address;
+    unsigned int address = 0;
     char module[32];
 
     offset += memory_write(module, 32, symbolname, memory_findbyte(symbolname, count, '_'), offset);
     offset += memory_write(module, 32, ".ko", 4, offset);
 
-    if (!file_walkfrom(FILE_L2, FILE_L1, module))
-        return 0;
+    if (file_walkfrom(FILE_L2, FILE_L1, module))
+    {
 
-    file_open(FILE_L2);
+        file_open(FILE_L2);
 
-    address = findsymbol(FILE_L2, count, symbolname);
+        address = findsymbol(FILE_L2, count, symbolname);
 
-    file_close(FILE_L2);
+        file_close(FILE_L2);
+
+    }
 
     return address;
 
