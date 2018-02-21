@@ -30,6 +30,7 @@ struct resource
 
 };
 
+struct resource *resource_next(struct resource *resource);
 struct resource *resource_findtype(struct resource *resource, unsigned int type);
 void resource_register(struct resource *resource);
 void resource_unregister(struct resource *resource);
