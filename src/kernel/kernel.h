@@ -6,8 +6,7 @@
 void kernel_walkmountparent(struct service *service);
 void kernel_walkmountchild(struct service *service);
 struct core *kernel_getcore(void);
-void kernel_setcore(struct core *(*callback)(void));
-void kernel_setassign(void (*callback)(struct task *task));
+void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *task));
 struct task *kernel_picktask(void);
 struct service_server *kernel_pickserver(void);
 struct service_mount *kernel_pickmount(void);

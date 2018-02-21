@@ -88,14 +88,14 @@ static unsigned int despawn(struct task *task, void *stack)
 
 }
 
-static struct core *getcore(void)
+static struct core *coreget(void)
 {
 
     return &core0;
 
 }
 
-static void assign(struct task *task)
+static void coreassign(struct task *task)
 {
 
     list_add(&core0.tasks, &task->item);
@@ -414,8 +414,7 @@ void arch_setup(struct service_backend *backend)
     mmu_setdirectory(getkerneldirectory());
     mmu_enable();
     kernel_setup();
-    kernel_setcore(getcore);
-    kernel_setassign(assign);
+    kernel_setcallback(coreget, coreassign);
     abi_setup(spawn, despawn);
     binary_setupelf();
     service_setupcpio();

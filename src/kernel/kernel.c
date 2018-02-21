@@ -18,8 +18,8 @@ static struct list freeservers;
 static struct list usedmounts;
 static struct list freemounts;
 static struct list freeservices;
-static struct core *(*corecallback)(void);
-static void (*assigncallback)(struct task *task);
+static struct core *(*coreget)(void);
+static void (*coreassign)(struct task *task);
 
 static unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
 {
@@ -83,21 +83,15 @@ void kernel_walkmountchild(struct service *service)
 struct core *kernel_getcore(void)
 {
 
-    return corecallback();
+    return coreget();
 
 }
 
-void kernel_setcore(struct core *(*callback)(void))
+void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *task))
 {
 
-    corecallback = callback;
-
-}
-
-void kernel_setassign(void (*callback)(struct task *task))
-{
-
-    assigncallback = callback;
+    coreget = get;
+    coreassign = assign;
 
 }
 
@@ -211,7 +205,7 @@ void kernel_schedule(struct core *core)
         list_add(&core->tasks, &core->task->item);
 
     while ((current = list_pickhead(&usedtasks)))
-        assigncallback(current->data);
+        coreassign(current->data);
 
     current = list_picktail(&core->tasks);
 

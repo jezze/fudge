@@ -81,7 +81,7 @@ static void detect(struct acpi_madt *madt)
 
 }
 
-static struct core *getcore(void)
+static struct core *coreget(void)
 {
 
     return &cores[apic_getid()];
@@ -89,7 +89,7 @@ static struct core *getcore(void)
 }
 
 /* Change from picktail to pickhead for round-robin */
-static void assign(struct task *task)
+static void coreassign(struct task *task)
 {
 
     struct list_item *current = list_picktail(&corelist);
@@ -150,8 +150,7 @@ void module_init(void)
     struct core *core = kernel_getcore();
 
     smp_setupbp(core->sp, core->task, &core->tasks);
-    kernel_setcore(getcore);
-    kernel_setassign(assign);
+    kernel_setcallback(coreget, coreassign);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 
