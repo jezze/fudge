@@ -382,8 +382,8 @@ void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
 
     tss_initpointer(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);
     tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), sp);
-    gdt_setdescriptor(&gdt->pointer, id, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-    cpu_settss(gdt_getselector(&gdt->pointer, id));
+    gdt_setdescriptor(&gdt->pointer, ARCH_TSS + id, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    cpu_settss(gdt_getselector(&gdt->pointer, ARCH_TSS + id));
 
 }
 
@@ -403,10 +403,10 @@ static void setuptask()
 void arch_setup(struct service_backend *backend)
 {
 
-    core_init(&core0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
+    core_init(&core0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE, 0);
     arch_configuregdt();
     arch_configureidt();
-    arch_configuretss(&tss0, ARCH_TSS, core0.sp);
+    arch_configuretss(&tss0, core0.id, core0.sp);
     mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
     mapkernel(1, 0x00400000, 0x00400000, 0x00400000);
     mapkernel(2, 0x00800000, 0x00800000, 0x00400000);
