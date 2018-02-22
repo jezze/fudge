@@ -16,12 +16,19 @@ static struct cpio_header *getheader(struct service_backend *backend, unsigned i
 
 }
 
+static char *getname(struct cpio_header *header)
+{
+
+    return (char *)(header + 1);
+
+}
+
 static unsigned int parent(struct service_backend *backend, struct cpio_header *header, unsigned int id)
 {
 
     struct cpio_header *eheader;
     char dname[1024];
-    unsigned int length = ascii_dname(dname, 1024, (char *)(header + 1), header->namesize - 1, '/');
+    unsigned int length = ascii_dname(dname, 1024, getname(header), header->namesize - 1, '/');
     unsigned int current = id;
 
     do
@@ -66,7 +73,7 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
         if (eheader->namesize - header->namesize != length + 1)
             continue;
 
-        if (!memory_read(cname, 1024, eheader + 1, eheader->namesize, header->namesize))
+        if (!memory_read(cname, 1024, getname(eheader), eheader->namesize, header->namesize))
             return id;
 
         if (memory_match(cname, path, length))
