@@ -12,7 +12,6 @@ struct system_node *opennone(struct system_node *self, struct service_state *sta
 
 }
 
-
 struct system_node *closenone(struct system_node *self, struct service_state *state)
 {
 
