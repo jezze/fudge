@@ -98,15 +98,14 @@ void module_init(void)
     odata.close = odata_close;
     odata.write = odata_write;
 
-    system_addchild(&root, &idata);
-    system_addchild(&root, &odata);
-
 }
 
 void module_register(void)
 {
 
     system_registernode(&root);
+    system_addchild(&root, &idata);
+    system_addchild(&root, &odata);
 
 }
 
@@ -114,6 +113,8 @@ void module_unregister(void)
 {
 
     system_unregisternode(&root);
+    system_removechild(&root, &idata);
+    system_removechild(&root, &odata);
 
 }
 

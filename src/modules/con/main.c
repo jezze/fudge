@@ -128,14 +128,13 @@ void module_init(void)
 
     clone.child = clone_child;
 
-    system_addchild(&root, &clone);
-
 }
 
 void module_register(void)
 {
 
     system_registernode(&root);
+    system_addchild(&root, &clone);
 
 }
 
@@ -143,6 +142,7 @@ void module_unregister(void)
 {
 
     system_unregisternode(&root);
+    system_removechild(&root, &clone);
 
 }
 

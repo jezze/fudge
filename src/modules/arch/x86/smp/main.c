@@ -154,8 +154,6 @@ void module_init(void)
 
     cpus.read = cpus_read;
 
-    system_addchild(&root, &cpus);
-
     if (!madt)
         return;
 
@@ -170,6 +168,7 @@ void module_register(void)
 {
 
     system_registernode(&root);
+    system_addchild(&root, &cpus);
 
 }
 
@@ -177,6 +176,7 @@ void module_unregister(void)
 {
 
     system_unregisternode(&root);
+    system_removechild(&root, &cpus);
 
 }
 

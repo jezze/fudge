@@ -160,11 +160,6 @@ void module_init(void)
     info.open = info_open;
     info.close = info_close;
 
-    system_addchild(&root, &critical);
-    system_addchild(&root, &error);
-    system_addchild(&root, &warning);
-    system_addchild(&root, &info);
-
 }
 
 void module_register(void)
@@ -172,6 +167,10 @@ void module_register(void)
 
     resource_register(&interface.resource);
     system_registernode(&root);
+    system_addchild(&root, &critical);
+    system_addchild(&root, &error);
+    system_addchild(&root, &warning);
+    system_addchild(&root, &info);
 
 }
 
@@ -180,6 +179,10 @@ void module_unregister(void)
 
     resource_unregister(&interface.resource);
     system_unregisternode(&root);
+    system_removechild(&root, &critical);
+    system_removechild(&root, &error);
+    system_removechild(&root, &warning);
+    system_removechild(&root, &info);
 
 }
 
