@@ -7,7 +7,7 @@ struct binary_format *binary_findformat(struct binary_node *node)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_BINARYFORMAT)))
+    while ((current = resource_foreachtype(current, RESOURCE_BINARYFORMAT)))
     {
 
         struct binary_format *format = current->data;

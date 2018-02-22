@@ -34,7 +34,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
     unsigned int type = (header->type[0] << 8) | header->type[1];
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_ETHERNETPROTOCOL)))
+    while ((current = resource_foreachtype(current, RESOURCE_ETHERNETPROTOCOL)))
     {
 
         struct ethernet_protocol *protocol = current->data;
@@ -131,7 +131,7 @@ struct ethernet_interface *ethernet_findinterface(void *haddress)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_ETHERNETINTERFACE)))
+    while ((current = resource_foreachtype(current, RESOURCE_ETHERNETINTERFACE)))
     {
 
         struct ethernet_interface *interface = current->data;

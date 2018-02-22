@@ -16,7 +16,7 @@ void base_registerdriver(struct base_driver *driver, unsigned int type)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_BUS)))
+    while ((current = resource_foreachtype(current, RESOURCE_BUS)))
     {
 
         struct base_bus *bus = current->data;
@@ -54,7 +54,7 @@ void base_unregisterdriver(struct base_driver *driver, unsigned int type)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_BUS)))
+    while ((current = resource_foreachtype(current, RESOURCE_BUS)))
     {
 
         struct base_bus *bus = current->data;

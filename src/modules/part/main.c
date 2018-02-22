@@ -12,7 +12,7 @@ static struct block_interface *findinterface(unsigned int index)
 
     struct resource *resource = 0;
 
-    while ((resource = resource_findtype(resource, RESOURCE_BLOCKINTERFACE)))
+    while ((resource = resource_foreachtype(resource, RESOURCE_BLOCKINTERFACE)))
     {
 
         if (!index)

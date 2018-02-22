@@ -3,7 +3,7 @@
 
 static struct list resources;
 
-struct resource *resource_next(struct resource *resource)
+struct resource *resource_foreach(struct resource *resource)
 {
 
     struct list_item *current = (resource) ? resource->item.next : resources.head;
@@ -12,12 +12,12 @@ struct resource *resource_next(struct resource *resource)
 
 }
 
-struct resource *resource_findtype(struct resource *resource, unsigned int type)
+struct resource *resource_foreachtype(struct resource *resource, unsigned int type)
 {
 
     spinlock_acquire(&resources.spinlock);
 
-    while ((resource = resource_next(resource)))
+    while ((resource = resource_foreach(resource)))
     {
 
         if (resource->type == type)

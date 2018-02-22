@@ -12,7 +12,7 @@ static void findall()
     struct resource *current = 0;
     unsigned int n = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_SERVICEBACKEND)))
+    while ((current = resource_foreachtype(current, RESOURCE_SERVICEBACKEND)))
     {
 
         struct service_backend *backend = current->data;
@@ -24,7 +24,7 @@ static void findall()
 
     }
 
-    while ((current = resource_findtype(current, RESOURCE_SERVICEPROTOCOL)))
+    while ((current = resource_foreachtype(current, RESOURCE_SERVICEPROTOCOL)))
     {
 
         struct service_backend *backend = current->data;

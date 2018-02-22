@@ -13,7 +13,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
     unsigned int length = (header->length[0] << 8) | header->length[1];
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_IPV6PROTOCOL)))
+    while ((current = resource_foreachtype(current, RESOURCE_IPV6PROTOCOL)))
     {
 
         struct ipv6_protocol *protocol = current->data;

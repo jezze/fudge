@@ -7,7 +7,7 @@ void debug_log(unsigned int level, char *string, char *file, unsigned int line)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_DEBUGLOG)))
+    while ((current = resource_foreachtype(current, RESOURCE_DEBUGLOG)))
     {
 
         struct debug_interface *interface = current->data;

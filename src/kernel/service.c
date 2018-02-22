@@ -9,7 +9,7 @@ struct service_backend *service_findbackend(unsigned int id)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_SERVICEBACKEND)))
+    while ((current = resource_foreachtype(current, RESOURCE_SERVICEBACKEND)))
     {
 
         struct service_backend *backend = current->data;
@@ -28,7 +28,7 @@ struct service_protocol *service_findprotocol(unsigned int id)
 
     struct resource *current = 0;
 
-    while ((current = resource_findtype(current, RESOURCE_SERVICEPROTOCOL)))
+    while ((current = resource_foreachtype(current, RESOURCE_SERVICEPROTOCOL)))
     {
 
         struct service_protocol *protocol = current->data;
