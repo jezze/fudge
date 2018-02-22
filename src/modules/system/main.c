@@ -5,6 +5,28 @@
 static struct service_backend backend;
 static struct service_protocol protocol;
 
+struct system_node *opennone(struct system_node *self, struct service_state *state)
+{
+
+    return self;
+
+}
+
+
+struct system_node *closenone(struct system_node *self, struct service_state *state)
+{
+
+    return self;
+
+}
+
+static struct system_node *childnone(struct system_node *self, struct service_state *state, char *path, unsigned int length)
+{
+
+    return self;
+
+}
+
 static struct system_node *childgroup(struct system_node *self, struct service_state *state, char *path, unsigned int length)
 {
 
@@ -61,6 +83,13 @@ static struct system_node *childgroup(struct system_node *self, struct service_s
 
 }
 
+static unsigned int readnone(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return 0;
+
+}
+
 static unsigned int readgroup(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -99,17 +128,24 @@ static unsigned int readmailbox(struct system_node *self, struct system_node *cu
 
 }
 
+static unsigned int writenone(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return 0;
+
+}
+
+static unsigned int seeknone(struct system_node *self, struct service_state *state, unsigned int offset)
+{
+
+    return 0;
+
+}
+
 static unsigned int seeknormal(struct system_node *self, struct service_state *state, unsigned int offset)
 {
 
     return offset;
-
-}
-
-static unsigned int seekmailbox(struct system_node *self, struct service_state *state, unsigned int offset)
-{
-
-    return 0;
 
 }
 
@@ -164,21 +200,26 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
     node->type = type;
     node->name = name;
+    node->open = opennone;
+    node->close = closenone;
+    node->child = childnone;
+    node->read = readnone;
+    node->write = writenone;
     node->seek = seeknormal;
 
     if (type & SYSTEM_NODETYPE_MAILBOX)
     {
 
         node->read = readmailbox;
-        node->seek = seekmailbox;
+        node->seek = seeknone;
 
     }
 
     if (type & SYSTEM_NODETYPE_GROUP)
     {
 
-        node->read = readgroup;
         node->child = childgroup;
+        node->read = readgroup;
 
     }
 

@@ -39,7 +39,7 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 
     struct system_node *node = (struct system_node *)id;
 
-    return (node->child) ? (unsigned int)node->child(node, state, path, length) : id;
+    return (unsigned int)node->child(node, state, path, length);
 
 }
 
@@ -89,7 +89,7 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
 
     struct system_node *node = (struct system_node *)id;
 
-    return (node->open) ? (unsigned int)node->open(node, state) : id;
+    return (unsigned int)node->open(node, state);
 
 }
 
@@ -98,7 +98,7 @@ static unsigned int protocol_close(struct service_backend *backend, struct servi
 
     struct system_node *node = (struct system_node *)id;
 
-    return (node->close) ? (unsigned int)node->close(node, state) : id;
+    return (unsigned int)node->close(node, state);
 
 }
 
@@ -108,7 +108,7 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
     struct system_node *node = (struct system_node *)id;
     struct system_node *currentnode = (struct system_node *)current;
 
-    return (node->read) ? node->read(node, currentnode, state, buffer, count, offset) : 0;
+    return node->read(node, currentnode, state, buffer, count, offset);
 
 }
 
@@ -118,7 +118,7 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
     struct system_node *node = (struct system_node *)id;
     struct system_node *currentnode = (struct system_node *)current;
 
-    return (node->write) ? node->write(node, currentnode, state, buffer, count, offset) : 0;
+    return node->write(node, currentnode, state, buffer, count, offset);
 
 }
 
@@ -127,7 +127,7 @@ static unsigned int protocol_seek(struct service_backend *backend, struct servic
 
     struct system_node *node = (struct system_node *)id;
 
-    return (node->seek) ? node->seek(node, state, offset) : 0;
+    return node->seek(node, state, offset);
 
 }
 
