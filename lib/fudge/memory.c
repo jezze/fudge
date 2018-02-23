@@ -34,6 +34,25 @@ unsigned int memory_findbyte(void *in, unsigned int count, char value)
 
 }
 
+unsigned int memory_findlastbyte(void *in, unsigned int count, char value)
+{
+
+    unsigned char *ip = in;
+    unsigned int offset;
+    unsigned int position = 0;
+
+    for (offset = 0; offset < count; offset++)
+    {
+
+        if (ip[offset] == value)
+            position = offset;
+
+    }
+
+    return position;
+
+}
+
 unsigned int memory_match(void *in1, void *in2, unsigned int count)
 {
 

@@ -27,8 +27,7 @@ static unsigned int parent(struct service_backend *backend, struct cpio_header *
 {
 
     struct cpio_header *eheader;
-    char dname[1024];
-    unsigned int length = ascii_dname(dname, 1024, getname(header), header->namesize - 1, '/');
+    unsigned int length = memory_findlastbyte(getname(header), header->namesize - 1, '/');
     unsigned int current = id;
 
     do
