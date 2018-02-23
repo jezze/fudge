@@ -68,7 +68,7 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
         if (!eheader)
             break;
 
-        if (eheader->namesize - header->namesize != length + 1)
+        if (eheader->namesize != header->namesize + length + 1)
             continue;
 
         if (memory_match(getname(eheader) + header->namesize, path, length))
