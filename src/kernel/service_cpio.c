@@ -59,9 +59,6 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
     do
     {
 
-        if (current == id)
-            break;
-
         eheader = getheader(backend, current);
 
         if (!eheader)
