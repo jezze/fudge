@@ -23,11 +23,37 @@ static char *getname(struct cpio_header *header)
 
 }
 
-static unsigned int parent(struct service_backend *backend, struct cpio_header *header, unsigned int id)
+static unsigned int root(struct service_backend *backend)
 {
 
     struct cpio_header *eheader;
+    unsigned int id = 0;
+    unsigned int current = 0;
+
+    do
+    {
+
+        eheader = getheader(backend, current);
+
+        if (!eheader)
+            break;
+
+        if ((eheader->mode & 0xF000) != 0x4000)
+            continue;
+
+        id = current;
+
+    } while ((current = cpio_next(eheader, current)));
+
+    return id;
+
+}
+
+static unsigned int parent(struct service_backend *backend, struct cpio_header *header, unsigned int id)
+{
+
     unsigned int length = memory_findlastbyte(getname(header), header->namesize - 1, '/');
+    struct cpio_header *eheader;
     unsigned int current = id;
 
     do
@@ -86,26 +112,7 @@ static unsigned int protocol_match(struct service_backend *backend)
 static unsigned int protocol_root(struct service_backend *backend)
 {
 
-    struct cpio_header *header;
-    unsigned int id = 0;
-    unsigned int current = id;
-
-    do
-    {
-
-        header = getheader(backend, current);
-
-        if (!header)
-            break;
-
-        if ((header->mode & 0xF000) != 0x4000)
-            continue;
-
-        id = current;
-
-    } while ((current = cpio_next(header, current)));
-
-    return id;
+    return root(backend);
 
 }
 
