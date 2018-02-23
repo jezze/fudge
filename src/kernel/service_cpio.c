@@ -60,8 +60,6 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
     do
     {
 
-        char cname[1024];
-
         if (current == id)
             break;
 
@@ -73,10 +71,7 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
         if (eheader->namesize - header->namesize != length + 1)
             continue;
 
-        if (!memory_read(cname, 1024, getname(eheader), eheader->namesize, header->namesize))
-            return id;
-
-        if (memory_match(cname, path, length))
+        if (memory_match(getname(eheader) + header->namesize, path, length))
             return current;
 
     } while ((current = cpio_next(eheader, current)));
