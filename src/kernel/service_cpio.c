@@ -85,6 +85,8 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
     do
     {
 
+        char *name;
+
         eheader = getheader(backend, current);
 
         if (!eheader)
@@ -93,7 +95,12 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
         if (eheader->namesize != header->namesize + length + 1)
             continue;
 
-        if (memory_match(getname(backend, eheader, current) + header->namesize, path, length))
+        name = getname(backend, eheader, current);
+
+        if (!name)
+            break;
+
+        if (memory_match(name + header->namesize, path, length))
             return current;
 
     } while ((current = cpio_next(eheader, current)));
@@ -231,6 +238,7 @@ static unsigned int readdirectory(struct service_backend *backend, void *buffer,
 
     struct record record;
     struct cpio_header *eheader;
+    char *name;
 
     if (!current)
         return 0;
@@ -240,9 +248,14 @@ static unsigned int readdirectory(struct service_backend *backend, void *buffer,
     if (!eheader)
         return 0;
 
+    name = getname(backend, eheader, current);
+
+    if (!name)
+        return 0;
+
     record.id = current;
     record.size = cpio_filesize(eheader);
-    record.length = memory_read(record.name, RECORD_NAMESIZE, eheader + 1, eheader->namesize - 1, header->namesize);
+    record.length = memory_read(record.name, RECORD_NAMESIZE, name, eheader->namesize - 1, header->namesize);
 
     return memory_read(buffer, count, &record, sizeof (struct record), offset);
 
