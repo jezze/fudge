@@ -16,10 +16,10 @@ static struct cpio_header *getheader(struct service_backend *backend, unsigned i
 
 }
 
-static char *getname(struct cpio_header *header)
+static char *getname(struct service_backend *backend, struct cpio_header *header, unsigned int id)
 {
 
-    return (char *)(header + 1);
+    return (char *)backend->map(id + sizeof (struct cpio_header), header->namesize);
 
 }
 
@@ -52,7 +52,7 @@ static unsigned int root(struct service_backend *backend)
 static unsigned int parent(struct service_backend *backend, struct cpio_header *header, unsigned int id)
 {
 
-    unsigned int length = memory_findlastbyte(getname(header), header->namesize - 1, '/');
+    unsigned int length = memory_findlastbyte(getname(backend, header, id), header->namesize - 1, '/');
     struct cpio_header *eheader;
     unsigned int current = id;
 
@@ -93,7 +93,7 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
         if (eheader->namesize != header->namesize + length + 1)
             continue;
 
-        if (memory_match(getname(eheader) + header->namesize, path, length))
+        if (memory_match(getname(backend, eheader, current) + header->namesize, path, length))
             return current;
 
     } while ((current = cpio_next(eheader, current)));
