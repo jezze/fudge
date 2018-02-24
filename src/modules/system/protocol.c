@@ -2,6 +2,8 @@
 #include <kernel.h>
 #include "system.h"
 
+static struct service_protocol protocol;
+
 static unsigned int protocol_match(struct service_backend *backend)
 {
 
@@ -138,10 +140,11 @@ static unsigned int protocol_map(struct service_backend *backend, struct service
 
 }
 
-void system_initprotocol(struct service_protocol *protocol)
+void system_initprotocol(void)
 {
 
-    service_initprotocol(protocol, 2000, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
+    service_initprotocol(&protocol, 2000, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
+    resource_register(&protocol.resource);
 
 }
 

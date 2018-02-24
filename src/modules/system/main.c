@@ -2,9 +2,6 @@
 #include <kernel.h>
 #include "system.h"
 
-static struct service_backend backend;
-static struct service_protocol protocol;
-
 static struct system_node *open(struct system_node *self, struct service_state *state)
 {
 
@@ -236,24 +233,8 @@ void system_initresourcenode(struct system_node *node, unsigned int type, char *
 void module_init(void)
 {
 
-    system_initbackend(&backend);
-    system_initprotocol(&protocol);
-
-}
-
-void module_register(void)
-{
-
-    resource_register(&backend.resource);
-    resource_register(&protocol.resource);
-
-}
-
-void module_unregister(void)
-{
-
-    resource_unregister(&backend.resource);
-    resource_unregister(&protocol.resource);
+    system_initbackend();
+    system_initprotocol();
 
 }
 
