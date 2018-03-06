@@ -7,30 +7,25 @@ static struct service_protocol protocol;
 static unsigned int protocol_match(struct service_backend *backend, struct service_state *state)
 {
 
-    struct system_header header;
+    struct system_header *header = (struct system_header *)backend->map(state, 0, sizeof (struct system_header));
 
-    if (backend->read(&header, sizeof (struct system_header), 0) < sizeof (struct system_header))
-        return 0;
-
-    return memory_match(header.id, "FUDGE_SYSTEM", 12);
+    return (header) ? memory_match(header->id, "FUDGE_SYSTEM", 12) : 0;
 
 }
 
 static unsigned int protocol_root(struct service_backend *backend, struct service_state *state)
 {
 
-    struct system_header header;
+    struct system_header *header = (struct system_header *)backend->map(state, 0, sizeof (struct system_header));
 
-    backend->read(&header, sizeof (struct system_header), 0);
-
-    return header.root;
+    return (header) ? header->root : 0;
 
 }
 
 static unsigned int protocol_parent(struct service_backend *backend, struct service_state *state, unsigned int id)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
 
     return (unsigned int)node->parent;
 
@@ -39,7 +34,7 @@ static unsigned int protocol_parent(struct service_backend *backend, struct serv
 static unsigned int protocol_child(struct service_backend *backend, struct service_state *state, unsigned int id, char *path, unsigned int length)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
 
     return (unsigned int)node->child(node, state, path, length);
 
@@ -62,7 +57,7 @@ static unsigned int protocol_destroy(struct service_backend *backend, struct ser
 static unsigned int protocol_step(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current)
 {
 
-    struct system_node *node = (struct system_node *)current;
+    struct system_node *node = (struct system_node *)backend->map(state, current, sizeof (struct system_node));
 
     if (id == current)
     {
@@ -89,7 +84,7 @@ static unsigned int protocol_step(struct service_backend *backend, struct servic
 static unsigned int protocol_open(struct service_backend *backend, struct service_state *state, unsigned int id)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
 
     return (unsigned int)node->open(node, state);
 
@@ -98,7 +93,7 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
 static unsigned int protocol_close(struct service_backend *backend, struct service_state *state, unsigned int id)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
 
     return (unsigned int)node->close(node, state);
 
@@ -107,8 +102,8 @@ static unsigned int protocol_close(struct service_backend *backend, struct servi
 static unsigned int protocol_read(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct system_node *node = (struct system_node *)id;
-    struct system_node *currentnode = (struct system_node *)current;
+    struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
+    struct system_node *currentnode = (struct system_node *)backend->map(state, current, sizeof (struct system_node));
 
     return node->read(node, currentnode, state, buffer, count, offset);
 
@@ -117,8 +112,8 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
 static unsigned int protocol_write(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct system_node *node = (struct system_node *)id;
-    struct system_node *currentnode = (struct system_node *)current;
+    struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
+    struct system_node *currentnode = (struct system_node *)backend->map(state, current, sizeof (struct system_node));
 
     return node->write(node, currentnode, state, buffer, count, offset);
 
@@ -127,7 +122,7 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
 static unsigned int protocol_seek(struct service_backend *backend, struct service_state *state, unsigned int id, unsigned int offset)
 {
 
-    struct system_node *node = (struct system_node *)id;
+    struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
 
     return node->seek(node, state, offset);
 
@@ -136,7 +131,7 @@ static unsigned int protocol_seek(struct service_backend *backend, struct servic
 static unsigned int protocol_map(struct service_backend *backend, struct service_state *state, unsigned int id)
 {
 
-    return 0;
+    return backend->map(state, id, sizeof (struct system_node));
 
 }
 

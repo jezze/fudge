@@ -27,7 +27,7 @@ static unsigned int write(void *buffer, unsigned int count, unsigned int offset)
 
 }
 
-static unsigned int map(unsigned int offset, unsigned int count)
+static unsigned int map(struct service_state *state, unsigned int offset, unsigned int count)
 {
 
     return address + offset;

@@ -9,7 +9,7 @@ static struct service_backend backend;
 static unsigned int backend_read(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, &header, sizeof (struct system_header), offset);
+    return 0;
 
 }
 
@@ -20,10 +20,13 @@ static unsigned int backend_write(void *buffer, unsigned int count, unsigned int
 
 }
 
-static unsigned int backend_map(unsigned int offset, unsigned int count)
+static unsigned int backend_map(struct service_state *state, unsigned int offset, unsigned int count)
 {
 
-    return 0;
+    if (!offset && count == sizeof (struct system_header))
+        return (unsigned int)&header;
+    else
+        return offset;
 
 }
 
