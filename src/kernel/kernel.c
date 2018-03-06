@@ -345,7 +345,7 @@ void kernel_setupinit(struct task *task)
 
     server->backend = service_findbackend(1000);
     server->protocol = service_findprotocol(1000);
-    server->root = server->protocol->root(server->backend);
+    server->root = server->protocol->root(server->backend, &root->state);
     mount->parent.server = server;
     mount->parent.id = server->root;
     mount->child.server = server;

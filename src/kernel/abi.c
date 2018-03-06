@@ -194,10 +194,10 @@ static unsigned int auth(struct task *task, void *stack)
     if (!server->protocol)
         return 0;
 
-    if (!server->protocol->match(server->backend))
+    if (!server->protocol->match(server->backend, &service->state))
         return 0;
 
-    server->root = server->protocol->root(server->backend);
+    server->root = server->protocol->root(server->backend, &service->state);
 
     if (!server->root)
         return 0;

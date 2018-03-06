@@ -109,14 +109,14 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
 
 }
 
-static unsigned int protocol_match(struct service_backend *backend)
+static unsigned int protocol_match(struct service_backend *backend, struct service_state *state)
 {
 
     return getheader(backend, 0) != 0;
 
 }
 
-static unsigned int protocol_root(struct service_backend *backend)
+static unsigned int protocol_root(struct service_backend *backend, struct service_state *state)
 {
 
     return root(backend);

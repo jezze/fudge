@@ -4,7 +4,7 @@
 
 static struct service_protocol protocol;
 
-static unsigned int protocol_match(struct service_backend *backend)
+static unsigned int protocol_match(struct service_backend *backend, struct service_state *state)
 {
 
     struct system_header header;
@@ -16,7 +16,7 @@ static unsigned int protocol_match(struct service_backend *backend)
 
 }
 
-static unsigned int protocol_root(struct service_backend *backend)
+static unsigned int protocol_root(struct service_backend *backend, struct service_state *state)
 {
 
     struct system_header header;
