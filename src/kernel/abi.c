@@ -197,13 +197,8 @@ static unsigned int auth(struct task *task, void *stack)
     if (!server->protocol->match(server->backend, &service->state))
         return 0;
 
-    server->root = server->protocol->root(server->backend, &service->state);
-
-    if (!server->root)
-        return 0;
-
     service->server = server;
-    service->id = server->root;
+    service->id = server->protocol->root(server->backend, &service->state);
 
     kernel_useserver(server);
 

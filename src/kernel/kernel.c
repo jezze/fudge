@@ -345,17 +345,16 @@ void kernel_setupinit(struct task *task)
 
     server->backend = service_findbackend(1000);
     server->protocol = service_findprotocol(1000);
-    server->root = server->protocol->root(server->backend, &root->state);
-    mount->parent.server = server;
-    mount->parent.id = server->root;
-    mount->child.server = server;
-    mount->child.id = server->root;
     root->server = server;
-    root->id = server->root;
+    root->id = server->protocol->root(server->backend, &root->state);
     init->server = server;
-    init->id = server->root;
+    init->id = server->protocol->root(server->backend, &init->state);
     init->id = server->protocol->child(server->backend, &init->state, init->id, "bin", 3);
     init->id = server->protocol->child(server->backend, &init->state, init->id, "init", 4);
+    mount->parent.server = server;
+    mount->parent.id = root->id;
+    mount->child.server = server;
+    mount->child.id = root->id;
 
     kernel_useserver(server);
     kernel_usemount(mount);
