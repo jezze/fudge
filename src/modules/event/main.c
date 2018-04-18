@@ -21,7 +21,7 @@ unsigned int event_unicast(struct list *states, struct event_header *header, uns
         if (header->destination != state->task->id)
             continue;
 
-        kernel_writemailbox(state->task, header, count);
+        task_writeall(state->task, header, count);
         kernel_unblocktask(state->task);
 
     }
@@ -46,7 +46,7 @@ unsigned int event_multicast(struct list *states, struct event_header *header, u
 
         header->destination = state->task->id;
 
-        kernel_writemailbox(state->task, header, count);
+        task_writeall(state->task, header, count);
         kernel_unblocktask(state->task);
 
     }

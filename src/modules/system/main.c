@@ -115,7 +115,7 @@ static unsigned int readgroup(struct system_node *self, struct system_node *curr
 static unsigned int readmailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    count = kernel_readmailbox(state->task, buffer, count);
+    count = task_read(state->task, buffer, count);
 
     if (!count)
         kernel_blocktask(state->task);

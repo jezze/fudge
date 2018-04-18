@@ -246,52 +246,6 @@ void kernel_copyservices(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_readmailbox(struct task *task, void *buffer, unsigned int count)
-{
-
-    spinlock_acquire(&task->mailbox.spinlock);
-
-    count = ring_read(&task->mailbox.ring, buffer, count);
-
-    spinlock_release(&task->mailbox.spinlock);
-
-    return count;
-
-}
-
-unsigned int kernel_writemailbox(struct task *task, void *buffer, unsigned int count)
-{
-
-    spinlock_acquire(&task->mailbox.spinlock);
-
-    count = ring_writeall(&task->mailbox.ring, buffer, count);
-
-    spinlock_release(&task->mailbox.spinlock);
-
-    return count;
-
-}
-
-void kernel_unblockall(struct list *states)
-{
-
-    struct list_item *current;
-
-    spinlock_acquire(&states->spinlock);
-
-    for (current = states->head; current; current = current->next)
-    {
-
-        struct service_state *state = current->data;
-
-        kernel_unblocktask(state->task);
-
-    }
-
-    spinlock_release(&states->spinlock);
-
-}
-
 void kernel_multicast(struct list *states, void *buffer, unsigned int count)
 {
 
@@ -304,7 +258,7 @@ void kernel_multicast(struct list *states, void *buffer, unsigned int count)
 
         struct service_state *state = current->data;
 
-        kernel_writemailbox(state->task, buffer, count);
+        task_writeall(state->task, buffer, count);
         kernel_unblocktask(state->task);
 
     }
