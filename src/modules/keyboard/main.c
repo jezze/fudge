@@ -7,12 +7,11 @@
 
 static struct system_node root;
 static struct system_node event;
-static struct list eventstates;
 
 void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->datastates, buffer, count);
+    kernel_multicast(&interface->data.states, buffer, count);
 
 }
 
@@ -26,8 +25,8 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.keypress.scancode = scancode;
 
-    event_multicast(&eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
-    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
+    event_multicast(&event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
+    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
 
 }
 
@@ -41,70 +40,8 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.keyrelease.scancode = scancode;
 
-    event_multicast(&eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
-    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
-
-}
-
-static struct system_node *event_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&eventstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *event_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&eventstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfacedata_open(struct system_node *self, struct service_state *state)
-{
-
-    struct keyboard_interface *interface = self->resource->data;
-
-    list_add(&interface->datastates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfacedata_close(struct system_node *self, struct service_state *state)
-{
-
-    struct keyboard_interface *interface = self->resource->data;
-
-    list_remove(&interface->datastates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfaceevent_open(struct system_node *self, struct service_state *state)
-{
-
-    struct keyboard_interface *interface = self->resource->data;
-
-    list_add(&interface->eventstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfaceevent_close(struct system_node *self, struct service_state *state)
-{
-
-    struct keyboard_interface *interface = self->resource->data;
-
-    list_remove(&interface->eventstates, &state->item);
-
-    return self;
+    event_multicast(&event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
+    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
 
 }
 
@@ -136,12 +73,7 @@ void keyboard_initinterface(struct keyboard_interface *interface)
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
-    system_initresourcenode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event", &interface->resource);
-
-    interface->data.open = interfacedata_open;
-    interface->data.close = interfacedata_close;
-    interface->event.open = interfaceevent_open;
-    interface->event.close = interfaceevent_close;
+    system_initresourcenode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event", &interface->resource);
 
 }
 
@@ -150,9 +82,6 @@ void module_init(void)
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "keyboard");
     system_initnode(&event, SYSTEM_NODETYPE_MAILBOX, "event");
-
-    event.open = event_open;
-    event.close = event_close;
 
 }
 

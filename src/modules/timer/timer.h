@@ -5,8 +5,6 @@ struct timer_interface
     struct system_node root;
     struct system_node sleep;
     struct system_node event;
-    struct list sleepstates;
-    struct list eventstates;
     unsigned int id;
 
 };

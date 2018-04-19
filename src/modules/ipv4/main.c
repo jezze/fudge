@@ -138,7 +138,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *interface, struct
 
     }
 
-    kernel_multicast(&ethernetprotocol.datastates, buffer, count);
+    kernel_multicast(&ethernetprotocol.data.states, buffer, count);
 
 }
 
@@ -190,28 +190,6 @@ static void arphook_save(void *haddress, void *paddress)
 
 }
 
-static struct system_node *protocoldata_open(struct system_node *self, struct service_state *state)
-{
-
-    struct ipv4_protocol *protocol = self->resource->data;
-
-    list_add(&protocol->datastates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *protocoldata_close(struct system_node *self, struct service_state *state)
-{
-
-    struct ipv4_protocol *protocol = self->resource->data;
-
-    list_remove(&protocol->datastates, &state->item);
-
-    return self;
-
-}
-
 void ipv4_registerprotocol(struct ipv4_protocol *protocol)
 {
 
@@ -239,8 +217,6 @@ void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char
 
     protocol->id = id;
     protocol->notify = notify;
-    protocol->data.open = protocoldata_open;
-    protocol->data.close = protocoldata_close;
 
 }
 

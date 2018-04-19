@@ -10,7 +10,7 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->sleepstates, buffer, count);
+    kernel_multicast(&interface->sleep.states, buffer, count);
 
 }
 
@@ -24,51 +24,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.timertick.counter = counter;
 
-    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_timertick));
-
-}
-
-static struct system_node *interfacesleep_open(struct system_node *self, struct service_state *state)
-{
-
-    struct timer_interface *interface = self->resource->data;
-
-    list_add(&interface->sleepstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfacesleep_close(struct system_node *self, struct service_state *state)
-{
-
-    struct timer_interface *interface = self->resource->data;
-
-    list_remove(&interface->sleepstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfaceevent_open(struct system_node *self, struct service_state *state)
-{
-
-    struct timer_interface *interface = self->resource->data;
-
-    list_add(&interface->eventstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfaceevent_close(struct system_node *self, struct service_state *state)
-{
-
-    struct timer_interface *interface = self->resource->data;
-
-    list_remove(&interface->eventstates, &state->item);
-
-    return self;
+    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_timertick));
 
 }
 
@@ -100,12 +56,7 @@ void timer_initinterface(struct timer_interface *interface)
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->sleep, SYSTEM_NODETYPE_MAILBOX, "sleep", &interface->resource);
-    system_initresourcenode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event", &interface->resource);
-
-    interface->sleep.open = interfacesleep_open;
-    interface->sleep.close = interfacesleep_close;
-    interface->event.open = interfaceevent_open;
-    interface->event.close = interfaceevent_close;
+    system_initresourcenode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event", &interface->resource);
 
 }
 

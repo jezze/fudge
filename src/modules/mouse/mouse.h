@@ -5,8 +5,6 @@ struct mouse_interface
     struct system_node root;
     struct system_node data;
     struct system_node event;
-    struct list datastates;
-    struct list eventstates;
     unsigned int id;
 
 };

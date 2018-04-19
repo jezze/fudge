@@ -44,7 +44,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
     }
 
-    kernel_multicast(&interface->datastates, buffer, count);
+    kernel_multicast(&interface->data.states, buffer, count);
 
 }
 
@@ -57,50 +57,6 @@ static unsigned int interfaceaddr_read(struct system_node *self, struct system_n
     interface->getaddress(address);
 
     return memory_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
-
-}
-
-static struct system_node *interfacedata_open(struct system_node *self, struct service_state *state)
-{
-
-    struct ethernet_interface *interface = self->resource->data;
-
-    list_add(&interface->datastates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfacedata_close(struct system_node *self, struct service_state *state)
-{
-
-    struct ethernet_interface *interface = self->resource->data;
-
-    list_remove(&interface->datastates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *protocoldata_open(struct system_node *self, struct service_state *state)
-{
-
-    struct ethernet_protocol *protocol = self->resource->data;
-
-    list_add(&protocol->datastates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *protocoldata_close(struct system_node *self, struct service_state *state)
-{
-
-    struct ethernet_protocol *protocol = self->resource->data;
-
-    list_remove(&protocol->datastates, &state->item);
-
-    return self;
 
 }
 
@@ -180,8 +136,6 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
     interface->getaddress = getaddress;
     interface->send = send;
     interface->addr.read = interfaceaddr_read;
-    interface->data.open = interfacedata_open;
-    interface->data.close = interfacedata_close;
 
 }
 
@@ -194,8 +148,6 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
 
     protocol->type = type;
     protocol->notify = notify;
-    protocol->data.open = protocoldata_open;
-    protocol->data.close = protocoldata_close;
 
 }
 

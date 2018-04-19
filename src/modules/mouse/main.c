@@ -7,12 +7,11 @@
 
 static struct system_node root;
 static struct system_node event;
-static struct list eventstates;
 
 void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->datastates, buffer, count);
+    kernel_multicast(&interface->data.states, buffer, count);
 
 }
 
@@ -27,8 +26,8 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
-    event_multicast(&eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
-    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
+    event_multicast(&event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
+    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
 
 }
 
@@ -42,8 +41,8 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.mousepress.button = button;
 
-    event_multicast(&eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
-    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
+    event_multicast(&event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
+    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
 
 }
 
@@ -57,69 +56,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.mouserelease.button = button;
 
-    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
-
-}
-
-static struct system_node *event_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&eventstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *event_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&eventstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfacedata_open(struct system_node *self, struct service_state *state)
-{
-
-    struct mouse_interface *interface = self->resource->data;
-
-    list_add(&interface->datastates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfacedata_close(struct system_node *self, struct service_state *state)
-{
-
-    struct mouse_interface *interface = self->resource->data;
-
-    list_remove(&interface->datastates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfaceevent_open(struct system_node *self, struct service_state *state)
-{
-
-    struct mouse_interface *interface = self->resource->data;
-
-    list_add(&interface->eventstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfaceevent_close(struct system_node *self, struct service_state *state)
-{
-
-    struct mouse_interface *interface = self->resource->data;
-
-    list_remove(&interface->eventstates, &state->item);
-
-    return self;
+    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
 
 }
 
@@ -151,12 +88,7 @@ void mouse_initinterface(struct mouse_interface *interface)
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
-    system_initresourcenode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event", &interface->resource);
-
-    interface->data.open = interfacedata_open;
-    interface->data.close = interfacedata_close;
-    interface->event.open = interfaceevent_open;
-    interface->event.close = interfaceevent_close;
+    system_initresourcenode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event", &interface->resource);
 
 }
 
@@ -165,9 +97,6 @@ void module_init(void)
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "mouse");
     system_initnode(&event, SYSTEM_NODETYPE_MAILBOX, "event");
-
-    event.open = event_open;
-    event.close = event_close;
 
 }
 

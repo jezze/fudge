@@ -54,7 +54,7 @@ static struct system_node *condata_open(struct system_node *self, struct service
 
     struct con *con = self->resource->data;
 
-    list_add(&con->states, &state->item);
+    list_add(&self->states, &state->item);
     con->open();
 
     return self;
@@ -66,7 +66,7 @@ static struct system_node *condata_close(struct system_node *self, struct servic
 
     struct con *con = self->resource->data;
 
-    list_remove(&con->states, &state->item);
+    list_remove(&self->states, &state->item);
     con->close();
 
     return self;

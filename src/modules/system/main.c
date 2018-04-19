@@ -9,8 +9,27 @@ static struct system_node *open(struct system_node *self, struct service_state *
 
 }
 
+
+static struct system_node *openmailbox(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&self->states, &state->item);
+
+    return self;
+
+}
+
 static struct system_node *close(struct system_node *self, struct service_state *state)
 {
+
+    return self;
+
+}
+
+static struct system_node *closemailbox(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&self->states, &state->item);
 
     return self;
 
@@ -206,6 +225,8 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type & SYSTEM_NODETYPE_MAILBOX)
     {
 
+        node->open = openmailbox;
+        node->close = closemailbox;
         node->read = readmailbox;
         node->seek = seekmailbox;
 

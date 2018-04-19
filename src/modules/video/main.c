@@ -19,7 +19,7 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
     message.videomode.h = h;
     message.videomode.bpp = bpp;
 
-    event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
+    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_videomode));
 
 }
 
@@ -81,28 +81,6 @@ static unsigned int interfacecolormap_write(struct system_node *self, struct sys
 
 }
 
-static struct system_node *interfaceevent_open(struct system_node *self, struct service_state *state)
-{
-
-    struct video_interface *interface = self->resource->data;
-
-    list_add(&interface->eventstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfaceevent_close(struct system_node *self, struct service_state *state)
-{
-
-    struct video_interface *interface = self->resource->data;
-
-    list_remove(&interface->eventstates, &state->item);
-
-    return self;
-
-}
-
 void video_registerinterface(struct video_interface *interface, unsigned int id)
 {
 
@@ -137,7 +115,7 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
     system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
     system_initresourcenode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap", &interface->resource);
-    system_initresourcenode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event", &interface->resource);
+    system_initresourcenode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event", &interface->resource);
 
     interface->setmode = setmode;
     interface->rdata = rdata;
@@ -150,8 +128,6 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
     interface->data.write = interfacedata_write;
     interface->colormap.read = interfacecolormap_read;
     interface->colormap.write = interfacecolormap_write;
-    interface->event.open = interfaceevent_open;
-    interface->event.close = interfaceevent_close;
 
 }
 

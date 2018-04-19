@@ -8,10 +8,6 @@ static struct system_node critical;
 static struct system_node error;
 static struct system_node warning;
 static struct system_node info;
-static struct list criticalstates;
-static struct list errorstates;
-static struct list warningstates;
-static struct list infostates;
 
 static void write(struct list *states, unsigned int level, char *string, char *file, unsigned int line)
 {
@@ -56,88 +52,16 @@ static void interface_write(unsigned int level, char *string, char *file, unsign
 {
 
     if (level <= DEBUG_CRITICAL)
-        write(&criticalstates, level, string, file, line);
+        write(&critical.states, level, string, file, line);
 
     if (level <= DEBUG_ERROR)
-        write(&errorstates, level, string, file, line);
+        write(&error.states, level, string, file, line);
 
     if (level <= DEBUG_WARNING)
-        write(&warningstates, level, string, file, line);
+        write(&warning.states, level, string, file, line);
 
     if (level <= DEBUG_INFO)
-        write(&infostates, level, string, file, line);
-
-}
-
-static struct system_node *critical_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&criticalstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *critical_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&criticalstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *error_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&errorstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *error_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&errorstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *warning_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&warningstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *warning_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&warningstates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *info_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&infostates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *info_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&infostates, &state->item);
-
-    return self;
+        write(&info.states, level, string, file, line);
 
 }
 
@@ -150,15 +74,6 @@ void module_init(void)
     system_initnode(&error, SYSTEM_NODETYPE_MAILBOX, "error");
     system_initnode(&warning, SYSTEM_NODETYPE_MAILBOX, "warning");
     system_initnode(&info, SYSTEM_NODETYPE_MAILBOX, "info");
-
-    critical.open = critical_open;
-    critical.close = critical_close;
-    error.open = error_open;
-    error.close = error_close;
-    warning.open = warning_open;
-    warning.close = warning_close;
-    info.open = info_open;
-    info.close = info_close;
 
 }
 

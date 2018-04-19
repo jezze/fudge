@@ -38,7 +38,6 @@ struct ethernet_protocol
     struct resource resource;
     struct system_node root;
     struct system_node data;
-    struct list datastates;
     unsigned int type;
     void (*notify)(struct ethernet_interface *ethernetinterface, struct ethernet_header *header, void *buffer, unsigned int count);
 
