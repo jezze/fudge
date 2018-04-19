@@ -56,6 +56,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.mouserelease.button = button;
 
+    event_multicast(&event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
     event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
 
 }
