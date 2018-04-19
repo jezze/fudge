@@ -9,7 +9,6 @@ static struct system_node *open(struct system_node *self, struct service_state *
 
 }
 
-
 static struct system_node *openmailbox(struct system_node *self, struct service_state *state)
 {
 
