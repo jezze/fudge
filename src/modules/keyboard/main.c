@@ -6,6 +6,8 @@
 #include "keyboard.h"
 
 static struct system_node root;
+static struct system_node event;
+static struct list eventstates;
 
 void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigned int count)
 {
@@ -24,6 +26,7 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.keypress.scancode = scancode;
 
+    event_multicast(&eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
 
 }
@@ -38,7 +41,26 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.keyrelease.scancode = scancode;
 
+    event_multicast(&eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
+
+}
+
+static struct system_node *event_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&eventstates, &state->item);
+
+    return self;
+
+}
+
+static struct system_node *event_close(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&eventstates, &state->item);
+
+    return self;
 
 }
 
@@ -127,6 +149,10 @@ void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "keyboard");
+    system_initnode(&event, SYSTEM_NODETYPE_MAILBOX, "event");
+
+    event.open = event_open;
+    event.close = event_close;
 
 }
 
@@ -134,6 +160,7 @@ void module_register(void)
 {
 
     system_registernode(&root);
+    system_addchild(&root, &event);
 
 }
 
@@ -141,6 +168,7 @@ void module_unregister(void)
 {
 
     system_unregisternode(&root);
+    system_removechild(&root, &event);
 
 }
 

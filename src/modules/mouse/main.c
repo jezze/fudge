@@ -6,6 +6,8 @@
 #include "mouse.h"
 
 static struct system_node root;
+static struct system_node event;
+static struct list eventstates;
 
 void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int count)
 {
@@ -25,6 +27,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
+    event_multicast(&eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
 
 }
@@ -39,6 +42,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.mousepress.button = button;
 
+    event_multicast(&eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
 
 }
@@ -54,6 +58,24 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     message.mouserelease.button = button;
 
     event_multicast(&interface->eventstates, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
+
+}
+
+static struct system_node *event_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&eventstates, &state->item);
+
+    return self;
+
+}
+
+static struct system_node *event_close(struct system_node *self, struct service_state *state)
+{
+
+    list_remove(&eventstates, &state->item);
+
+    return self;
 
 }
 
@@ -142,6 +164,10 @@ void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "mouse");
+    system_initnode(&event, SYSTEM_NODETYPE_MAILBOX, "event");
+
+    event.open = event_open;
+    event.close = event_close;
 
 }
 
@@ -149,6 +175,7 @@ void module_register(void)
 {
 
     system_registernode(&root);
+    system_addchild(&root, &event);
 
 }
 
@@ -156,6 +183,7 @@ void module_unregister(void)
 {
 
     system_unregisternode(&root);
+    system_removechild(&root, &event);
 
 }
 

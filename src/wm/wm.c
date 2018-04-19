@@ -793,10 +793,10 @@ void main(void)
     if (!file_walk(FILE_L2, "/system/wm/event"))
         return;
 
-    if (!file_walk(FILE_L3, "/system/keyboard/if:0/event"))
+    if (!file_walk(FILE_L3, "/system/keyboard/event"))
         return;
 
-    if (!file_walk(FILE_L4, "/system/mouse/if:0/event"))
+    if (!file_walk(FILE_L4, "/system/mouse/event"))
         return;
 
     if (!file_walk(FILE_L5, "/system/video/if:0/event"))
