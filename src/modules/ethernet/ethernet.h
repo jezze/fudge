@@ -25,7 +25,6 @@ struct ethernet_interface
     struct system_node ctrl;
     struct system_node data;
     struct system_node addr;
-    struct list datastates;
     unsigned int id;
     unsigned int (*getaddress)(void *buffer);
     unsigned int (*send)(void *buffer, unsigned int count);

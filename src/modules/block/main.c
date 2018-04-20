@@ -8,29 +8,7 @@ static struct system_node root;
 void block_notify(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->datastates, buffer, count);
-
-}
-
-static struct system_node *interfacedata_open(struct system_node *self, struct service_state *state)
-{
-
-    struct block_interface *interface = self->resource->data;
-
-    list_add(&interface->datastates, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *interfacedata_close(struct system_node *self, struct service_state *state)
-{
-
-    struct block_interface *interface = self->resource->data;
-
-    list_remove(&interface->datastates, &state->item);
-
-    return self;
+    kernel_multicast(&interface->data.states, buffer, count);
 
 }
 
@@ -72,12 +50,10 @@ void block_initinterface(struct block_interface *interface, unsigned int (*rdata
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
-    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
+    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
 
     interface->rdata = rdata;
     interface->wdata = wdata;
-    interface->data.open = interfacedata_open;
-    interface->data.close = interfacedata_close;
     interface->data.read = interfacedata_read;
 
 }
