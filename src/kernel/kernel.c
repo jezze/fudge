@@ -275,7 +275,6 @@ void kernel_setupinit(struct task *task)
     root->backend = service_findbackend(1000);
     root->protocol = service_findprotocol(1000);
     root->id = root->protocol->root(root->backend, &root->state);
-
     init->backend = root->backend;
     init->protocol = root->protocol;
     init->id = init->protocol->root(init->backend, &init->state);
