@@ -35,7 +35,7 @@ static unsigned int walkmount(struct service_descriptor *descriptor, struct serv
 
 }
 
-void kernel_walkmountparent(struct service_descriptor *descriptor)
+static void walkmountparent(struct service_descriptor *descriptor)
 {
 
     struct list_item *current;
@@ -56,7 +56,7 @@ void kernel_walkmountparent(struct service_descriptor *descriptor)
 
 }
 
-void kernel_walkmountchild(struct service_descriptor *descriptor)
+static void walkmountchild(struct service_descriptor *descriptor)
 {
 
     struct list_item *current;
@@ -74,6 +74,43 @@ void kernel_walkmountchild(struct service_descriptor *descriptor)
     }
 
     spinlock_release(&usedmounts.spinlock);
+
+}
+
+void kernel_walk(struct service_descriptor *descriptor, char *path, unsigned int length)
+{
+
+    unsigned int offset = 0;
+
+    while (offset < length)
+    {
+
+        char *cp = path + offset;
+        unsigned int cl = length - offset;
+
+        cl = memory_findbyte(cp, cl, '/');
+
+        if (cl == 2 && cp[0] == '.' && cp[1] == '.')
+        {
+
+            walkmountparent(descriptor);
+
+            descriptor->id = descriptor->protocol->parent(descriptor->backend, &descriptor->state, descriptor->id);
+
+        }
+
+        else
+        {
+
+            descriptor->id = descriptor->protocol->child(descriptor->backend, &descriptor->state, descriptor->id, cp, cl);
+
+            walkmountchild(descriptor);
+
+        }
+
+        offset += cl + 1;
+
+    }
 
 }
 

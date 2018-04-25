@@ -2,8 +2,7 @@
 #define KERNEL_DESCRIPTORS              32
 #define KERNEL_MOUNTS                   32
 
-void kernel_walkmountparent(struct service_descriptor *descriptor);
-void kernel_walkmountchild(struct service_descriptor *descriptor);
+void kernel_walk(struct service_descriptor *descriptor, char *path, unsigned int length);
 struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *task));
 struct task *kernel_picktask(void);
