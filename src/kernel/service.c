@@ -42,6 +42,13 @@ struct service_protocol *service_findprotocol(unsigned int id)
 
 }
 
+void service_initstate(struct service_state *state)
+{
+
+    list_inititem(&state->item, state);
+
+}
+
 void service_initbackend(struct service_backend *backend, unsigned int id, unsigned int (*read)(struct service_state *state, void *buffer, unsigned int count, unsigned int offset), unsigned int (*write)(struct service_state *state, void *buffer, unsigned int count, unsigned int offset), unsigned int (*map)(struct service_state *state, unsigned int offset, unsigned int count))
 {
 
@@ -51,13 +58,6 @@ void service_initbackend(struct service_backend *backend, unsigned int id, unsig
     backend->read = read;
     backend->write = write;
     backend->map = map;
-
-}
-
-void service_initstate(struct service_state *state)
-{
-
-    list_inititem(&state->item, state);
 
 }
 
@@ -83,17 +83,17 @@ void service_initprotocol(struct service_protocol *protocol, unsigned int id, un
 
 }
 
+void service_initdescriptor(struct service_descriptor *descriptor)
+{
+
+    service_initstate(&descriptor->state);
+
+}
+
 void service_initmount(struct service_mount *mount)
 {
 
     list_inititem(&mount->item, mount);
-
-}
-
-void service_init(struct service *service)
-{
-
-    service_initstate(&service->state);
 
 }
 

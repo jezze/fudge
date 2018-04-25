@@ -7,26 +7,26 @@
 #include "kernel.h"
 
 static struct task tasks[KERNEL_TASKS];
+static struct service_descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct service_mount mounts[KERNEL_MOUNTS];
-static struct service services[KERNEL_SERVICES * KERNEL_TASKS];
 static struct list usedtasks;
 static struct list freetasks;
 static struct list blockedtasks;
 static struct list usedmounts;
 static struct list freemounts;
-static struct list freeservices;
+static struct list freedescriptors;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct task *task);
 
-static unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
+static unsigned int walkmount(struct service_descriptor *descriptor, struct service_mountpoint *from, struct service_mountpoint *to)
 {
 
-    if (service->backend == from->backend && service->protocol == from->protocol && service->id == from->id)
+    if (descriptor->backend == from->backend && descriptor->protocol == from->protocol && descriptor->id == from->id)
     {
 
-        service->backend = to->backend;
-        service->protocol = to->protocol;
-        service->id = to->id;
+        descriptor->backend = to->backend;
+        descriptor->protocol = to->protocol;
+        descriptor->id = to->id;
 
         return 1;
 
@@ -36,7 +36,7 @@ static unsigned int walkmount(struct service *service, struct service_node *from
 
 }
 
-void kernel_walkmountparent(struct service *service)
+void kernel_walkmountparent(struct service_descriptor *descriptor)
 {
 
     struct list_item *current;
@@ -48,7 +48,7 @@ void kernel_walkmountparent(struct service *service)
 
         struct service_mount *mount = current->data;
 
-        if (walkmount(service, &mount->child, &mount->parent))
+        if (walkmount(descriptor, &mount->child, &mount->parent))
             break;
 
     }
@@ -57,7 +57,7 @@ void kernel_walkmountparent(struct service *service)
 
 }
 
-void kernel_walkmountchild(struct service *service)
+void kernel_walkmountchild(struct service_descriptor *descriptor)
 {
 
     struct list_item *current;
@@ -69,7 +69,7 @@ void kernel_walkmountchild(struct service *service)
 
         struct service_mount *mount = current->data;
 
-        if (walkmount(service, &mount->parent, &mount->child))
+        if (walkmount(descriptor, &mount->parent, &mount->child))
             break;
 
     }
@@ -139,10 +139,10 @@ void kernel_freemount(struct service_mount *mount)
 
 }
 
-void kernel_freeservice(struct service *service)
+void kernel_freedescriptor(struct service_descriptor *descriptor)
 {
 
-    list_add(&freeservices, &service->item);
+    list_add(&freedescriptors, &descriptor->item);
 
 }
 
@@ -188,24 +188,24 @@ void kernel_schedule(struct core *core)
 
 }
 
-struct service *kernel_getservice(struct task *task, unsigned int service)
+struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor)
 {
 
-    return &services[task->id * KERNEL_SERVICES + (service & (KERNEL_SERVICES - 1))];
+    return &descriptors[task->id * KERNEL_DESCRIPTORS + (descriptor & (KERNEL_DESCRIPTORS - 1))];
 
 }
 
-static void copyservice(struct service *tservice, struct service *sservice, struct task *task)
+static void copydescriptor(struct service_descriptor *tdescriptor, struct service_descriptor *sdescriptor, struct task *task)
 {
 
-    tservice->backend = (sservice) ? sservice->backend : 0;
-    tservice->protocol = (sservice) ? sservice->protocol : 0;
-    tservice->id = (sservice) ? sservice->id : 0;
-    tservice->state.task = task;
+    tdescriptor->backend = (sdescriptor) ? sdescriptor->backend : 0;
+    tdescriptor->protocol = (sdescriptor) ? sdescriptor->protocol : 0;
+    tdescriptor->id = (sdescriptor) ? sdescriptor->id : 0;
+    tdescriptor->state.task = task;
 
 }
 
-void kernel_copyservices(struct task *source, struct task *target)
+void kernel_copydescriptors(struct task *source, struct task *target)
 {
 
     unsigned int i;
@@ -213,10 +213,10 @@ void kernel_copyservices(struct task *source, struct task *target)
     for (i = 0; i < 8; i++)
     {
 
-        copyservice(kernel_getservice(target, i + 0), kernel_getservice(source, i + 8), target);
-        copyservice(kernel_getservice(target, i + 8), kernel_getservice(source, i + 8), target);
-        copyservice(kernel_getservice(target, i + 16), 0, target);
-        copyservice(kernel_getservice(target, i + 24), 0, target);
+        copydescriptor(kernel_getdescriptor(target, i + 0), kernel_getdescriptor(source, i + 8), target);
+        copydescriptor(kernel_getdescriptor(target, i + 8), kernel_getdescriptor(source, i + 8), target);
+        copydescriptor(kernel_getdescriptor(target, i + 16), 0, target);
+        copydescriptor(kernel_getdescriptor(target, i + 24), 0, target);
 
     }
 
@@ -246,9 +246,9 @@ void kernel_multicast(struct list *states, void *buffer, unsigned int count)
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
-    struct service *service = kernel_getservice(task, 0);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, 0);
 
-    task->node.address = service->protocol->map(service->backend, &service->state, service->id);
+    task->node.address = descriptor->protocol->map(descriptor->backend, &descriptor->state, descriptor->id);
 
     if (!task->node.address)
         return 0;
@@ -268,8 +268,8 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 void kernel_setupinit(struct task *task)
 {
 
-    struct service *init = kernel_getservice(task, 8);
-    struct service *root = kernel_getservice(task, 9);
+    struct service_descriptor *init = kernel_getdescriptor(task, 8);
+    struct service_descriptor *root = kernel_getdescriptor(task, 9);
     struct service_mount *mount = kernel_pickmount();
 
     root->backend = service_findbackend(1000);
@@ -306,6 +306,16 @@ void kernel_setup(void)
 
     }
 
+    for (i = 0; i < KERNEL_DESCRIPTORS * KERNEL_TASKS; i++)
+    {
+
+        struct service_descriptor *descriptor = &descriptors[i];
+
+        service_initdescriptor(descriptor);
+        kernel_freedescriptor(descriptor);
+
+    }
+
     for (i = 0; i < KERNEL_MOUNTS; i++)
     {
 
@@ -313,16 +323,6 @@ void kernel_setup(void)
 
         service_initmount(mount);
         kernel_freemount(mount);
-
-    }
-
-    for (i = 0; i < KERNEL_SERVICES * KERNEL_TASKS; i++)
-    {
-
-        struct service *service = &services[i];
-
-        service_init(service);
-        kernel_freeservice(service);
 
     }
 
