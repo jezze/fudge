@@ -14,7 +14,6 @@ static struct list freetasks;
 static struct list blockedtasks;
 static struct list usedmounts;
 static struct list freemounts;
-static struct list freedescriptors;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct task *task);
 
@@ -136,13 +135,6 @@ void kernel_freemount(struct service_mount *mount)
 {
 
     list_add(&freemounts, &mount->item);
-
-}
-
-void kernel_freedescriptor(struct service_descriptor *descriptor)
-{
-
-    list_add(&freedescriptors, &descriptor->item);
 
 }
 
@@ -291,19 +283,19 @@ void kernel_setup(void)
     {
 
         struct task *task = &tasks[i];
+        unsigned int j;
 
         task_init(task, i);
         kernel_freetask(task);
 
-    }
+        for (j = 0; j < KERNEL_DESCRIPTORS; j++)
+        {
 
-    for (i = 0; i < KERNEL_DESCRIPTORS * KERNEL_TASKS; i++)
-    {
+            struct service_descriptor *descriptor = &descriptors[i * KERNEL_DESCRIPTORS + j];
 
-        struct service_descriptor *descriptor = &descriptors[i];
+            service_initdescriptor(descriptor, task);
 
-        service_initdescriptor(descriptor);
-        kernel_freedescriptor(descriptor);
+        }
 
     }
 

@@ -42,10 +42,12 @@ struct service_protocol *service_findprotocol(unsigned int id)
 
 }
 
-void service_initstate(struct service_state *state)
+void service_initstate(struct service_state *state, struct task *task)
 {
 
     list_inititem(&state->item, state);
+
+    state->task = task;
 
 }
 
@@ -83,10 +85,10 @@ void service_initprotocol(struct service_protocol *protocol, unsigned int id, un
 
 }
 
-void service_initdescriptor(struct service_descriptor *descriptor)
+void service_initdescriptor(struct service_descriptor *descriptor, struct task *task)
 {
 
-    service_initstate(&descriptor->state);
+    service_initstate(&descriptor->state, task);
 
 }
 
