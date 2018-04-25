@@ -270,7 +270,6 @@ void kernel_setupinit(struct task *task)
 
     struct service_descriptor *init = kernel_getdescriptor(task, 8);
     struct service_descriptor *root = kernel_getdescriptor(task, 9);
-    struct service_mount *mount = kernel_pickmount();
 
     root->backend = service_findbackend(1000);
     root->protocol = service_findprotocol(1000);
@@ -280,14 +279,6 @@ void kernel_setupinit(struct task *task)
     init->id = init->protocol->root(init->backend, &init->state);
     init->id = init->protocol->child(init->backend, &init->state, init->id, "bin", 3);
     init->id = init->protocol->child(init->backend, &init->state, init->id, "init", 4);
-    mount->parent.backend = root->backend;
-    mount->parent.protocol = root->protocol;
-    mount->parent.id = root->id;
-    mount->child.backend = root->backend;
-    mount->child.protocol = root->protocol;
-    mount->child.id = root->id;
-
-    kernel_usemount(mount);
 
 }
 
