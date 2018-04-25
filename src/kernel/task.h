@@ -1,4 +1,3 @@
-#define TASK_DESCRIPTORS                32
 #define TASK_MAILBOXSIZE                4096
 #define TASK_STATUS_NORMAL              0
 #define TASK_STATUS_BLOCKED             1

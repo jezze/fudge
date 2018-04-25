@@ -1,7 +1,7 @@
 #define KERNEL_TASKS                    128
 #define KERNEL_SERVERS                  32
 #define KERNEL_MOUNTS                   32
-#define KERNEL_SERVICES                 4096
+#define KERNEL_SERVICES                 32
 
 void kernel_walkmountparent(struct service *service);
 void kernel_walkmountchild(struct service *service);

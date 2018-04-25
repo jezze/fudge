@@ -9,7 +9,7 @@
 static struct task tasks[KERNEL_TASKS];
 static struct service_server servers[KERNEL_SERVERS];
 static struct service_mount mounts[KERNEL_MOUNTS];
-static struct service services[KERNEL_SERVICES];
+static struct service services[KERNEL_SERVICES * KERNEL_TASKS];
 static struct list usedtasks;
 static struct list freetasks;
 static struct list blockedtasks;
@@ -216,7 +216,7 @@ void kernel_schedule(struct core *core)
 struct service *kernel_getservice(struct task *task, unsigned int service)
 {
 
-    return &services[task->id * TASK_DESCRIPTORS + (service & (TASK_DESCRIPTORS - 1))];
+    return &services[task->id * KERNEL_SERVICES + (service & (KERNEL_SERVICES - 1))];
 
 }
 
@@ -350,7 +350,7 @@ void kernel_setup(void)
 
     }
 
-    for (i = 0; i < KERNEL_SERVICES; i++)
+    for (i = 0; i < KERNEL_SERVICES * KERNEL_TASKS; i++)
     {
 
         struct service *service = &services[i];
