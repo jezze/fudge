@@ -83,13 +83,6 @@ void service_initprotocol(struct service_protocol *protocol, unsigned int id, un
 
 }
 
-void service_initserver(struct service_server *server)
-{
-
-    list_inititem(&server->item, server);
-
-}
-
 void service_initmount(struct service_mount *mount)
 {
 
@@ -101,8 +94,6 @@ void service_init(struct service *service)
 {
 
     service_initstate(&service->state);
-
-    service->server = 0;
 
 }
 

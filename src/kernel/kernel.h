@@ -1,5 +1,4 @@
 #define KERNEL_TASKS                    128
-#define KERNEL_SERVERS                  32
 #define KERNEL_MOUNTS                   32
 #define KERNEL_SERVICES                 32
 
@@ -8,13 +7,10 @@ void kernel_walkmountchild(struct service *service);
 struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *task));
 struct task *kernel_picktask(void);
-struct service_server *kernel_pickserver(void);
 struct service_mount *kernel_pickmount(void);
 void kernel_usetask(struct task *task);
-void kernel_useserver(struct service_server *server);
 void kernel_usemount(struct service_mount *mount);
 void kernel_freetask(struct task *task);
-void kernel_freeserver(struct service_server *server);
 void kernel_freemount(struct service_mount *mount);
 void kernel_freeservice(struct service *service);
 void kernel_blocktask(struct task *task);

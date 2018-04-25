@@ -7,14 +7,11 @@
 #include "kernel.h"
 
 static struct task tasks[KERNEL_TASKS];
-static struct service_server servers[KERNEL_SERVERS];
 static struct service_mount mounts[KERNEL_MOUNTS];
 static struct service services[KERNEL_SERVICES * KERNEL_TASKS];
 static struct list usedtasks;
 static struct list freetasks;
 static struct list blockedtasks;
-static struct list usedservers;
-static struct list freeservers;
 static struct list usedmounts;
 static struct list freemounts;
 static struct list freeservices;
@@ -24,10 +21,11 @@ static void (*coreassign)(struct task *task);
 static unsigned int walkmount(struct service *service, struct service_node *from, struct service_node *to)
 {
 
-    if (service->server == from->server && service->id == from->id)
+    if (service->backend == from->backend && service->protocol == from->protocol && service->id == from->id)
     {
 
-        service->server = to->server;
+        service->backend = to->backend;
+        service->protocol = to->protocol;
         service->id = to->id;
 
         return 1;
@@ -104,15 +102,6 @@ struct task *kernel_picktask(void)
 
 }
 
-struct service_server *kernel_pickserver(void)
-{
-
-    struct list_item *current = list_picktail(&freeservers);
-
-    return (current) ? current->data : 0;
-
-}
-
 struct service_mount *kernel_pickmount(void)
 {
 
@@ -129,13 +118,6 @@ void kernel_usetask(struct task *task)
 
 }
 
-void kernel_useserver(struct service_server *server)
-{
-
-    list_add(&usedservers, &server->item);
-
-}
-
 void kernel_usemount(struct service_mount *mount)
 {
 
@@ -147,13 +129,6 @@ void kernel_freetask(struct task *task)
 {
 
     list_add(&freetasks, &task->item);
-
-}
-
-void kernel_freeserver(struct service_server *server)
-{
-
-    list_add(&freeservers, &server->item);
 
 }
 
@@ -223,7 +198,8 @@ struct service *kernel_getservice(struct task *task, unsigned int service)
 static void copyservice(struct service *tservice, struct service *sservice, struct task *task)
 {
 
-    tservice->server = (sservice) ? sservice->server : 0;
+    tservice->backend = (sservice) ? sservice->backend : 0;
+    tservice->protocol = (sservice) ? sservice->protocol : 0;
     tservice->id = (sservice) ? sservice->id : 0;
     tservice->state.task = task;
 
@@ -272,7 +248,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
     struct service *service = kernel_getservice(task, 0);
 
-    task->node.address = service->server->protocol->map(service->server->backend, &service->state, service->id);
+    task->node.address = service->protocol->map(service->backend, &service->state, service->id);
 
     if (!task->node.address)
         return 0;
@@ -294,23 +270,24 @@ void kernel_setupinit(struct task *task)
 
     struct service *init = kernel_getservice(task, 8);
     struct service *root = kernel_getservice(task, 9);
-    struct service_server *server = kernel_pickserver();
     struct service_mount *mount = kernel_pickmount();
 
-    server->backend = service_findbackend(1000);
-    server->protocol = service_findprotocol(1000);
-    root->server = server;
-    root->id = server->protocol->root(server->backend, &root->state);
-    init->server = server;
-    init->id = server->protocol->root(server->backend, &init->state);
-    init->id = server->protocol->child(server->backend, &init->state, init->id, "bin", 3);
-    init->id = server->protocol->child(server->backend, &init->state, init->id, "init", 4);
-    mount->parent.server = server;
+    root->backend = service_findbackend(1000);
+    root->protocol = service_findprotocol(1000);
+    root->id = root->protocol->root(root->backend, &root->state);
+
+    init->backend = root->backend;
+    init->protocol = root->protocol;
+    init->id = init->protocol->root(init->backend, &init->state);
+    init->id = init->protocol->child(init->backend, &init->state, init->id, "bin", 3);
+    init->id = init->protocol->child(init->backend, &init->state, init->id, "init", 4);
+    mount->parent.backend = root->backend;
+    mount->parent.protocol = root->protocol;
     mount->parent.id = root->id;
-    mount->child.server = server;
+    mount->child.backend = root->backend;
+    mount->child.protocol = root->protocol;
     mount->child.id = root->id;
 
-    kernel_useserver(server);
     kernel_usemount(mount);
 
 }
@@ -327,16 +304,6 @@ void kernel_setup(void)
 
         task_init(task, i);
         kernel_freetask(task);
-
-    }
-
-    for (i = 0; i < KERNEL_SERVERS; i++)
-    {
-
-        struct service_server *server = &servers[i];
-
-        service_initserver(server);
-        kernel_freeserver(server);
 
     }
 
