@@ -41,7 +41,6 @@ struct service_protocol
 struct service_descriptor
 {
 
-    struct list_item item;
     struct service_backend *backend;
     struct service_protocol *protocol;
     struct service_state state;

@@ -12,7 +12,6 @@ void kernel_usetask(struct task *task);
 void kernel_usemount(struct service_mount *mount);
 void kernel_freetask(struct task *task);
 void kernel_freemount(struct service_mount *mount);
-void kernel_freedescriptor(struct service_descriptor *descriptor);
 void kernel_blocktask(struct task *task);
 void kernel_unblocktask(struct task *task);
 void kernel_schedule(struct core *core);
