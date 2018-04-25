@@ -193,7 +193,6 @@ static void copydescriptor(struct service_descriptor *tdescriptor, struct servic
     tdescriptor->backend = (sdescriptor) ? sdescriptor->backend : 0;
     tdescriptor->protocol = (sdescriptor) ? sdescriptor->protocol : 0;
     tdescriptor->id = (sdescriptor) ? sdescriptor->id : 0;
-    tdescriptor->state.task = task;
 
 }
 
