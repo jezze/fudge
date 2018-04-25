@@ -229,7 +229,7 @@ static unsigned int readfile(struct service_backend *backend, struct service_sta
     unsigned int s = cpio_filesize(header) - offset;
     unsigned int o = id + cpio_filedata(header) + offset;
 
-    return backend->read(buffer, (count > s) ? s : count, o);
+    return backend->read(state, buffer, (count > s) ? s : count, o);
 
 }
 
@@ -290,7 +290,7 @@ static unsigned int writefile(struct service_backend *backend, struct service_st
     unsigned int s = cpio_filesize(header) - offset;
     unsigned int o = id + cpio_filedata(header) + offset;
 
-    return backend->write(buffer, (count > s) ? s : count, o);
+    return backend->write(state, buffer, (count > s) ? s : count, o);
 
 }
 

@@ -6,14 +6,14 @@ static struct system_node root;
 static struct system_header header;
 static struct service_backend backend;
 
-static unsigned int backend_read(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int backend_read(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return 0;
 
 }
 
-static unsigned int backend_write(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int backend_write(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return 0;

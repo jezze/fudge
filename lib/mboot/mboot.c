@@ -13,14 +13,14 @@ static struct service_backend backend;
 static unsigned int address;
 static unsigned int limit;
 
-static unsigned int read(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int read(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, (void *)address, limit, offset);
 
 }
 
-static unsigned int write(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int write(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_write((void *)address, limit, buffer, count, offset);
