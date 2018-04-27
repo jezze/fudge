@@ -233,7 +233,7 @@ static void copydescriptor(struct service_descriptor *tdescriptor, struct servic
 
 }
 
-void kernel_copydescriptors(struct task *source, struct task *target)
+static void copydescriptors(struct task *source, struct task *target)
 {
 
     unsigned int i;
@@ -247,6 +247,18 @@ void kernel_copydescriptors(struct task *source, struct task *target)
         copydescriptor(kernel_getdescriptor(target, i + 24), 0, target);
 
     }
+
+}
+
+void kernel_clone(struct task *next, struct task *task, unsigned int stack)
+{
+
+    copydescriptors(task, next);
+
+    if (kernel_setupbinary(next, stack))
+        kernel_usetask(next);
+    else
+        kernel_freetask(next);
 
 }
 

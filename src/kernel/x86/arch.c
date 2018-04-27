@@ -56,26 +56,10 @@ static unsigned int spawn(struct task *task, void *stack)
     if (!next)
         return 0;
 
+    kernel_clone(next, task, ARCH_TASKSTACKADDRESS);
     memory_copy(gettaskdirectory(next->id), getkerneldirectory(), sizeof (struct mmu_directory));
-    kernel_copydescriptors(task, next);
 
-    if (kernel_setupbinary(next, ARCH_TASKSTACKADDRESS))
-    {
-
-        kernel_usetask(next);
-
-        return 1;
-
-    }
-
-    else
-    {
-
-        kernel_freetask(next);
-
-        return 0;
-
-    }
+    return 1;
 
 }
 
@@ -393,10 +377,8 @@ static void setuptask()
     struct task *task = kernel_picktask();
 
     kernel_setupinit(task);
+    kernel_clone(task, task, ARCH_TASKSTACKADDRESS);
     memory_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
-    kernel_copydescriptors(task, task);
-    kernel_setupbinary(task, ARCH_TASKSTACKADDRESS);
-    kernel_usetask(task);
 
 }
 

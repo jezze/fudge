@@ -15,7 +15,7 @@ void kernel_blocktask(struct task *task);
 void kernel_unblocktask(struct task *task);
 void kernel_schedule(struct core *core);
 struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor);
-void kernel_copydescriptors(struct task *source, struct task *target);
+void kernel_clone(struct task *next, struct task *task, unsigned int stack);
 void kernel_multicast(struct list *states, void *buffer, unsigned int count);
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp);
 void kernel_setupinit(struct task *task);
