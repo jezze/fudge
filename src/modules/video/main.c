@@ -1,6 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <event/event.h>
+#include <event/base.h>
 #include <modules/system/system.h>
 #include <modules/event/event.h>
 #include "video.h"

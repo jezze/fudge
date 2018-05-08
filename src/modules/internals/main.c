@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <event/event.h>
 #include <modules/system/system.h>
 
 static struct system_node root;
