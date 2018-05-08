@@ -22,7 +22,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
     message.header.type = EVENT_TIMERTICK;
     message.header.source = EVENT_ADDR_BROADCAST;
     message.header.destination = EVENT_ADDR_BROADCAST;
-    message.header.length = sizeof (struct event_header) + sizeof (struct event_timertick);
+    message.header.length = sizeof (message);
     message.timertick.counter = counter;
 
     event_multicast(&interface->event.states, &message.header);
