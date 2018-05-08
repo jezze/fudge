@@ -37,24 +37,6 @@ static unsigned int data_write(struct system_node *self, struct system_node *cur
 
 }
 
-static struct system_node *event_open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&self->states, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *event_close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&self->states, &state->item);
-
-    return self;
-
-}
-
 static unsigned int event_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -81,12 +63,10 @@ void module_init(void)
     ring_init(&dataring, FUDGE_BSIZE, databuffer);
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "wm");
     system_initnode(&data, SYSTEM_NODETYPE_NORMAL, "data");
-    system_initnode(&event, SYSTEM_NODETYPE_NORMAL, "event");
+    system_initnode(&event, SYSTEM_NODETYPE_MAILBOX, "event");
 
     data.read = data_read;
     data.write = data_write;
-    event.open = event_open;
-    event.close = event_close;
     event.write = event_write;
 
 }
