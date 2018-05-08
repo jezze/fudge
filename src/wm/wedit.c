@@ -15,7 +15,6 @@ static char inputdata1[FUDGE_BSIZE];
 static struct ring input1;
 static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
-static struct event_handlers handlers;
 static unsigned int totalrows;
 static unsigned int visiblerows;
 
@@ -257,13 +256,6 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    handlers.wmkeypress = onwmkeypress;
-    handlers.wmkeyrelease = onwmkeyrelease;
-    handlers.wmexit = onwmexit;
-    handlers.wmresize = onwmresize;
-    handlers.wmshow = onwmshow;
-    handlers.wmhide = onwmhide;
-
     ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
@@ -287,7 +279,44 @@ void main(void)
     while (!quit)
     {
 
-        event_read(&handlers, FILE_L0);
+        struct event event;
+
+        event_read(&event, FILE_L0);
+
+        switch (event.header.type)
+        {
+
+        case EVENT_WMKEYPRESS:
+            onwmkeypress(&event.header, (struct event_wmkeypress *)event.data);
+
+            break;
+
+        case EVENT_WMKEYRELEASE:
+            onwmkeyrelease(&event.header, (struct event_wmkeyrelease *)event.data);
+
+            break;
+
+        case EVENT_WMEXIT:
+            onwmexit(&event.header);
+
+            break;
+
+        case EVENT_WMRESIZE:
+            onwmresize(&event.header, (struct event_wmresize *)event.data);
+
+            break;
+
+        case EVENT_WMSHOW:
+            onwmshow(&event.header);
+
+            break;
+
+        case EVENT_WMHIDE:
+            onwmhide(&event.header);
+
+            break;
+
+        }
 
         if (ring_count(&output))
         {

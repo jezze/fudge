@@ -6,7 +6,7 @@
 
 static struct system_node root;
 
-unsigned int event_unicast(struct list *states, struct event_header *header, unsigned int count)
+unsigned int event_unicast(struct list *states, struct event_header *header)
 {
 
     struct list_item *current;
@@ -21,18 +21,18 @@ unsigned int event_unicast(struct list *states, struct event_header *header, uns
         if (header->destination != state->task->id)
             continue;
 
-        task_writeall(state->task, header, count);
+        task_writeall(state->task, header, header->length);
         kernel_unblocktask(state->task);
 
     }
 
     spinlock_release(&states->spinlock);
 
-    return count;
+    return header->length;
 
 }
 
-unsigned int event_multicast(struct list *states, struct event_header *header, unsigned int count)
+unsigned int event_multicast(struct list *states, struct event_header *header)
 {
 
     struct list_item *current;
@@ -46,28 +46,14 @@ unsigned int event_multicast(struct list *states, struct event_header *header, u
 
         header->destination = state->task->id;
 
-        task_writeall(state->task, header, count);
+        task_writeall(state->task, header, header->length);
         kernel_unblocktask(state->task);
 
     }
 
     spinlock_release(&states->spinlock);
 
-    return count;
-
-}
-
-unsigned int event_send(struct list *states, struct service_state *state, void *buffer, unsigned int count)
-{
-
-    struct event_header *header = buffer;
-
-    header->source = state->task->id;
-
-    if (header->destination)
-        return event_unicast(states, header, count);
-    else
-        return event_multicast(states, header, count);
+    return header->length;
 
 }
 

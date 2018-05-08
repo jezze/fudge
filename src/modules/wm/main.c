@@ -58,7 +58,20 @@ static struct system_node *event_close(struct system_node *self, struct service_
 static unsigned int event_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return event_send(&self->states, state, buffer, count);
+    struct event_header *header = buffer;
+
+    if (count < sizeof (struct event_header))
+        return 0;
+
+    if (header->length != count)
+        return 0;
+
+    header->source = state->task->id;
+
+    if (header->destination)
+        return event_unicast(&self->states, header);
+    else
+        return event_multicast(&self->states, header);
 
 }
 

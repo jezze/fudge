@@ -8,7 +8,6 @@
 static unsigned int quit;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
-static struct event_handlers handlers;
 
 static void onwmmousepress(struct event_header *header, struct event_wmmousepress *wmmousepress)
 {
@@ -53,12 +52,6 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    handlers.wmmousepress = onwmmousepress;
-    handlers.wmexit = onwmexit;
-    handlers.wmresize = onwmresize;
-    handlers.wmshow = onwmshow;
-    handlers.wmhide = onwmhide;
-
     ring_init(&output, FUDGE_BSIZE, outputdata);
 
     if (!file_walk(FILE_L0, "/system/event"))
@@ -81,7 +74,39 @@ void main(void)
     while (!quit)
     {
 
-        event_read(&handlers, FILE_L0);
+        struct event event;
+
+        event_read(&event, FILE_L0);
+
+        switch (event.header.type)
+        {
+
+        case EVENT_WMMOUSEPRESS:
+            onwmmousepress(&event.header, (struct event_wmmousepress *)event.data);
+
+            break;
+
+        case EVENT_WMEXIT:
+            onwmexit(&event.header);
+
+            break;
+
+        case EVENT_WMRESIZE:
+            onwmresize(&event.header, (struct event_wmresize *)event.data);
+
+            break;
+
+        case EVENT_WMSHOW:
+            onwmshow(&event.header);
+
+            break;
+
+        case EVENT_WMHIDE:
+            onwmhide(&event.header);
+
+            break;
+
+        }
 
         if (ring_count(&output))
         {

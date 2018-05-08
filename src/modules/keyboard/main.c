@@ -23,10 +23,11 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
     message.header.type = EVENT_KEYPRESS;
     message.header.source = EVENT_ADDR_BROADCAST;
     message.header.destination = EVENT_ADDR_BROADCAST;
+    message.header.length = sizeof (struct event_header) + sizeof (struct event_keypress);
     message.keypress.scancode = scancode;
 
-    event_multicast(&event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
-    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_keypress));
+    event_multicast(&event.states, &message.header);
+    event_multicast(&interface->event.states, &message.header);
 
 }
 
@@ -38,10 +39,11 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
     message.header.type = EVENT_KEYRELEASE;
     message.header.source = EVENT_ADDR_BROADCAST;
     message.header.destination = EVENT_ADDR_BROADCAST;
+    message.header.length = sizeof (struct event_header) + sizeof (struct event_keyrelease);
     message.keyrelease.scancode = scancode;
 
-    event_multicast(&event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
-    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_keyrelease));
+    event_multicast(&event.states, &message.header);
+    event_multicast(&interface->event.states, &message.header);
 
 }
 

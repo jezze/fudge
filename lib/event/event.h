@@ -27,6 +27,7 @@ struct event_header
     unsigned int destination;
     unsigned int source;
     unsigned int type;
+    unsigned int length;
 
 };
 
@@ -130,33 +131,15 @@ struct event_wmmousemove
 
 };
 
-struct event_handlers
+struct event
 {
 
-    void (*keypress)(struct event_header *header, struct event_keypress *keypress);
-    void (*keyrelease)(struct event_header *header, struct event_keyrelease *keyrelease);
-    void (*mousemove)(struct event_header *header, struct event_mousemove *mousemove);
-    void (*mousepress)(struct event_header *header, struct event_mousepress *mousepress);
-    void (*mouserelease)(struct event_header *header, struct event_mouserelease *mouserelease);
-    void (*timertick)(struct event_header *header, struct event_timertick *timertick);
-    void (*videomode)(struct event_header *header, struct event_videomode *videomode);
-    void (*wmmap)(struct event_header *header);
-    void (*wmunmap)(struct event_header *header);
-    void (*wminit)(struct event_header *header);
-    void (*wmexit)(struct event_header *header);
-    void (*wmresize)(struct event_header *header, struct event_wmresize *wmresize);
-    void (*wmshow)(struct event_header *header);
-    void (*wmhide)(struct event_header *header);
-    void (*wmflush)(struct event_header *header);
-    void (*wmkeypress)(struct event_header *header, struct event_wmkeypress *wmkeypress);
-    void (*wmkeyrelease)(struct event_header *header, struct event_wmkeyrelease *wmkeyrelease);
-    void (*wmmousemove)(struct event_header *header, struct event_wmmousemove *wmmousemove);
-    void (*wmmousepress)(struct event_header *header, struct event_wmmousepress *wmmousepress);
-    void (*wmmouserelease)(struct event_header *header, struct event_wmmouserelease *wmmouserelease);
+    struct event_header header;
+    char data[FUDGE_BSIZE];
 
 };
 
-unsigned int event_read(struct event_handlers *handlers, unsigned int descriptor);
+unsigned int event_read(struct event *event, unsigned int descriptor);
 void event_sendwmmap(unsigned int descriptor, unsigned int destination);
 void event_sendwmunmap(unsigned int descriptor, unsigned int destination);
 void event_sendwminit(unsigned int descriptor, unsigned int destination);

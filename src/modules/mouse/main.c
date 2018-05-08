@@ -23,11 +23,12 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     message.header.type = EVENT_MOUSEMOVE;
     message.header.source = EVENT_ADDR_BROADCAST;
     message.header.destination = EVENT_ADDR_BROADCAST;
+    message.header.length = sizeof (struct event_header) + sizeof (struct event_mousemove);
     message.mousemove.relx = relx;
     message.mousemove.rely = rely;
 
-    event_multicast(&event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
-    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mousemove));
+    event_multicast(&event.states, &message.header);
+    event_multicast(&interface->event.states, &message.header);
 
 }
 
@@ -39,10 +40,11 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     message.header.type = EVENT_MOUSEPRESS;
     message.header.source = EVENT_ADDR_BROADCAST;
     message.header.destination = EVENT_ADDR_BROADCAST;
+    message.header.length = sizeof (struct event_header) + sizeof (struct event_mousepress);
     message.mousepress.button = button;
 
-    event_multicast(&event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
-    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mousepress));
+    event_multicast(&event.states, &message.header);
+    event_multicast(&interface->event.states, &message.header);
 
 }
 
@@ -54,10 +56,11 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     message.header.type = EVENT_MOUSERELEASE;
     message.header.source = EVENT_ADDR_BROADCAST;
     message.header.destination = EVENT_ADDR_BROADCAST;
+    message.header.length = sizeof (struct event_header) + sizeof (struct event_mouserelease);
     message.mouserelease.button = button;
 
-    event_multicast(&event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
-    event_multicast(&interface->event.states, &message.header, sizeof (struct event_header) + sizeof (struct event_mouserelease));
+    event_multicast(&event.states, &message.header);
+    event_multicast(&interface->event.states, &message.header);
 
 }
 

@@ -41,7 +41,6 @@ static struct list remotelist;
 static struct widget_fill background;
 static struct widget_mouse mouse;
 static struct view *currentview = &views[0];
-static struct event_handlers handlers;
 static unsigned int padding = 4;
 static unsigned int lineheight = 12;
 static unsigned int steplength;
@@ -763,20 +762,6 @@ static void setupremotes(void)
 void main(void)
 {
 
-    handlers.keypress = onkeypress;
-    handlers.keyrelease = onkeyrelease;
-    handlers.mousemove = onmousemove;
-    handlers.mousepress = onmousepress;
-    handlers.mouserelease = onmouserelease;
-    handlers.videomode = onvideomode;
-    handlers.wmmap = onwmmap;
-    handlers.wmunmap = onwmunmap;
-    handlers.wmexit = onwmexit;
-    handlers.wmresize = onwmresize;
-    handlers.wmshow = onwmshow;
-    handlers.wmhide = onwmhide;
-    handlers.wmflush = onwmflush;
-
     ring_init(&output, FUDGE_BSIZE, outputdata);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
@@ -824,7 +809,79 @@ void main(void)
     while (!quit)
     {
 
-        event_read(&handlers, FILE_L0);
+        struct event event;
+
+        event_read(&event, FILE_L0);
+
+        switch (event.header.type)
+        {
+
+        case EVENT_KEYPRESS:
+            onkeypress(&event.header, (struct event_keypress *)event.data);
+
+            break;
+
+        case EVENT_KEYRELEASE:
+            onkeyrelease(&event.header, (struct event_keyrelease *)event.data);
+
+            break;
+
+        case EVENT_MOUSEMOVE:
+            onmousemove(&event.header, (struct event_mousemove *)event.data);
+
+            break;
+
+        case EVENT_MOUSEPRESS:
+            onmousepress(&event.header, (struct event_mousepress *)event.data);
+
+            break;
+
+        case EVENT_MOUSERELEASE:
+            onmouserelease(&event.header, (struct event_mouserelease *)event.data);
+
+            break;
+
+        case EVENT_VIDEOMODE:
+            onvideomode(&event.header, (struct event_videomode *)event.data);
+
+            break;
+
+        case EVENT_WMMAP:
+            onwmmap(&event.header);
+
+            break;
+
+        case EVENT_WMUNMAP:
+            onwmunmap(&event.header);
+
+            break;
+
+        case EVENT_WMEXIT:
+            onwmexit(&event.header);
+
+            break;
+
+        case EVENT_WMRESIZE:
+            onwmresize(&event.header, (struct event_wmresize *)event.data);
+
+            break;
+
+        case EVENT_WMSHOW:
+            onwmshow(&event.header);
+
+            break;
+
+        case EVENT_WMHIDE:
+            onwmhide(&event.header);
+
+            break;
+
+        case EVENT_WMFLUSH:
+            onwmflush(&event.header);
+
+            break;
+
+        }
 
         if (ring_count(&output))
         {
