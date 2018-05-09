@@ -7,7 +7,7 @@
 static struct system_node root;
 static struct system_node clone;
 
-static struct block_interface *findinterface(unsigned int index)
+struct block_interface *part_findinterface(unsigned int index)
 {
 
     struct resource *resource = 0;
@@ -51,79 +51,14 @@ static struct system_node *clone_child(struct system_node *self, struct service_
 
 }
 
-static unsigned int partctrl_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct part *part = self->resource->data;
-
-    return memory_read(buffer, count, &part->settings, sizeof (struct ctrl_partsettings), offset);
-
-}
-
-static unsigned int partctrl_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct part *part = self->resource->data;
-
-    return memory_write(&part->settings, sizeof (struct ctrl_partsettings), buffer, count, offset);
-
-}
-
-static struct system_node *partdata_open(struct system_node *self, struct service_state *state)
-{
-
-    struct part *part = self->resource->data;
-    struct block_interface *interface = findinterface(part->settings.interface);
-
-    return interface->data.open(&interface->data, state);
-
-}
-
-static struct system_node *partdata_close(struct system_node *self, struct service_state *state)
-{
-
-    struct part *part = self->resource->data;
-    struct block_interface *interface = findinterface(part->settings.interface);
-
-    return interface->data.close(&interface->data, state);
-
-}
-
-static unsigned int partdata_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct part *part = self->resource->data;
-    struct block_interface *interface = findinterface(part->settings.interface);
-
-    return interface->data.read(&interface->data, current, state, buffer, count, offset);
-
-}
-
-static unsigned int partdata_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct part *part = self->resource->data;
-    struct block_interface *interface = findinterface(part->settings.interface);
-
-    return interface->data.write(&interface->data, current, state, buffer, count, offset);
-
-}
-
 void part_init(struct part *part)
 {
 
     ctrl_setpartsettings(&part->settings, 0, 0, 0);
     resource_init(&part->resource, RESOURCE_PART, part);
-    system_initresourcenode(&part->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "part", &part->resource);
-    system_initresourcenode(&part->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &part->resource);
-    system_initresourcenode(&part->data, SYSTEM_NODETYPE_NORMAL, "data", &part->resource);
-
-    part->ctrl.read = partctrl_read;
-    part->ctrl.write = partctrl_write;
-    part->data.open = partdata_open;
-    part->data.close = partdata_close;
-    part->data.read = partdata_read;
-    part->data.write = partdata_write;
+    system_initnode(&part->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "part");
+    system_initnode(&part->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&part->data, SYSTEM_NODETYPE_NORMAL, "data");
 
 }
 

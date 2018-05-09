@@ -125,7 +125,14 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int consoleinterface_send(void *buffer, unsigned int count)
+static unsigned int consoleinterface_ctrlread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return memory_read(buffer, count, &consoleinterface.settings, sizeof (struct ctrl_consolesettings), offset);
+
+}
+
+static unsigned int consoleinterface_odatawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;
@@ -141,8 +148,11 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 static void driver_init(void)
 {
 
-    console_initinterface(&consoleinterface, consoleinterface_send);
+    console_initinterface(&consoleinterface);
     ctrl_setconsolesettings(&consoleinterface.settings, 1);
+
+    consoleinterface.ctrl.read = consoleinterface_ctrlread;
+    consoleinterface.odata.write = consoleinterface_odatawrite;
 
 }
 

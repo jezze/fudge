@@ -45,8 +45,17 @@ static void setreg(unsigned short index, unsigned short data)
 
 }
 
-static void videointerface_setmode(struct ctrl_videosettings *settings)
+static unsigned int videointerface_ctrlread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
+
+    return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
+
+}
+
+static unsigned int videointerface_ctrlwrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    struct ctrl_videosettings *settings = buffer;
 
     ctrl_setvideosettings(&videointerface.settings, settings->w, settings->h, settings->bpp);
     setreg(COMMANDENABLE, 0x00);
@@ -55,6 +64,8 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
     setreg(COMMANDBPP, videointerface.settings.bpp);
     setreg(COMMANDENABLE, 0x40 | 0x01);
     video_notifymode(&videointerface, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+
+    return count;
 
 }
 
@@ -84,8 +95,10 @@ static unsigned int videointerface_datawrite(struct system_node *self, struct sy
 static void driver_init(void)
 {
 
-    video_initinterface(&videointerface, videointerface_setmode);
+    video_initinterface(&videointerface);
 
+    videointerface.ctrl.read = videointerface_ctrlread;
+    videointerface.ctrl.write = videointerface_ctrlwrite;
     videointerface.data.read = videointerface_dataread;
     videointerface.data.write = videointerface_datawrite;
 

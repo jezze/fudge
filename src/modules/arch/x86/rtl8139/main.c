@@ -292,10 +292,23 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 
 }
 
+static unsigned int ethernetinterface_addrread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    unsigned char address[ETHERNET_ADDRSIZE];
+
+    ethernetinterface.getaddress(address);
+
+    return memory_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
+
+}
+
 static void driver_init(void)
 {
 
     ethernet_initinterface(&ethernetinterface, ethernetinterface_getaddress, ethernetinterface_send);
+
+    ethernetinterface.addr.read = ethernetinterface_addrread;
 
 }
 

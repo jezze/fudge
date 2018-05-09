@@ -24,28 +24,6 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct video_interface *interface = self->resource->data;
-
-    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_videosettings), offset);
-
-}
-
-static unsigned int interfacectrl_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct video_interface *interface = self->resource->data;
-
-    count = memory_write(&interface->settings, sizeof (struct ctrl_videosettings), buffer, count, offset);
-
-    interface->setmode(&interface->settings);
-
-    return count;
-
-}
-
 void video_registerinterface(struct video_interface *interface, unsigned int id)
 {
 
@@ -72,19 +50,15 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, void (*setmode)(struct ctrl_videosettings *settings))
+void video_initinterface(struct video_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
-    system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
-    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
-    system_initresourcenode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap", &interface->resource);
-    system_initresourcenode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event", &interface->resource);
-
-    interface->setmode = setmode;
-    interface->ctrl.read = interfacectrl_read;
-    interface->ctrl.write = interfacectrl_write;
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if");
+    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
+    system_initnode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event");
 
 }
 

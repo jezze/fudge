@@ -14,9 +14,7 @@ static void findall()
     while ((current = resource_foreachtype(current, RESOURCE_SERVICEBACKEND)))
     {
 
-        struct service_backend *backend = current->data;
-
-        system_initresourcenode(&nodes[n], SYSTEM_NODETYPE_NORMAL | SYSTEM_NODETYPE_MULTI, "backend", &backend->resource);
+        system_initnode(&nodes[n], SYSTEM_NODETYPE_NORMAL | SYSTEM_NODETYPE_MULTI, "backend");
         system_addchild(&root, &nodes[n]);
 
         n++;
@@ -26,9 +24,7 @@ static void findall()
     while ((current = resource_foreachtype(current, RESOURCE_SERVICEPROTOCOL)))
     {
 
-        struct service_backend *backend = current->data;
-
-        system_initresourcenode(&nodes[n], SYSTEM_NODETYPE_NORMAL | SYSTEM_NODETYPE_MULTI, "protocol", &backend->resource);
+        system_initnode(&nodes[n], SYSTEM_NODETYPE_NORMAL | SYSTEM_NODETYPE_MULTI, "protocol");
         system_addchild(&root, &nodes[n]);
 
         n++;

@@ -20,7 +20,6 @@ struct system_node
     struct list states;
     unsigned int type;
     char *name;
-    struct resource *resource;
     unsigned int index;
     struct system_node *(*open)(struct system_node *self, struct service_state *state);
     struct system_node *(*close)(struct system_node *self, struct service_state *state);
@@ -38,4 +37,3 @@ void system_unregisternode(struct system_node *node);
 void system_initbackend(void);
 void system_initprotocol(void);
 void system_initnode(struct system_node *node, unsigned int type, char *name);
-void system_initresourcenode(struct system_node *node, unsigned int type, char *name, struct resource *resource);

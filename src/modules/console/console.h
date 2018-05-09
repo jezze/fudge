@@ -8,11 +8,10 @@ struct console_interface
     struct system_node odata;
     unsigned int id;
     struct ctrl_consolesettings settings;
-    unsigned int (*send)(void *buffer, unsigned int count);
 
 };
 
 void console_notify(struct console_interface *interface, void *buffer, unsigned int count);
 void console_registerinterface(struct console_interface *interface, unsigned int id);
 void console_unregisterinterface(struct console_interface *interface);
-void console_initinterface(struct console_interface *interface, unsigned int (*send)(void *buffer, unsigned int count));
+void console_initinterface(struct console_interface *interface);

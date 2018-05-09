@@ -9,6 +9,7 @@ struct part
 
 };
 
+struct block_interface *part_findinterface(unsigned int index);
 void part_init(struct part *part);
 void part_register(struct part *part);
 void part_unregister(struct part *part);

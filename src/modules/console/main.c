@@ -12,24 +12,6 @@ void console_notify(struct console_interface *interface, void *buffer, unsigned 
 
 }
 
-static unsigned int interfacectrl_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct console_interface *interface = self->resource->data;
-
-    return memory_read(buffer, count, &interface->settings, sizeof (struct ctrl_consolesettings), offset);
-
-}
-
-static unsigned int interfacedata_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct console_interface *interface = self->resource->data;
-
-    return interface->send(buffer, count);
-
-}
-
 void console_registerinterface(struct console_interface *interface, unsigned int id)
 {
 
@@ -54,18 +36,14 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface, unsigned int (*send)(void *buffer, unsigned int count))
+void console_initinterface(struct console_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
-    system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
-    system_initresourcenode(&interface->idata, SYSTEM_NODETYPE_MAILBOX, "idata", &interface->resource);
-    system_initresourcenode(&interface->odata, SYSTEM_NODETYPE_NORMAL, "odata", &interface->resource);
-
-    interface->send = send;
-    interface->ctrl.read = interfacectrl_read;
-    interface->odata.write = interfacedata_write;
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if");
+    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&interface->idata, SYSTEM_NODETYPE_MAILBOX, "idata");
+    system_initnode(&interface->odata, SYSTEM_NODETYPE_NORMAL, "odata");
 
 }
 

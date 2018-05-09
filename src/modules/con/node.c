@@ -23,31 +23,51 @@ static void *writedata(void *buffer, void *payload, unsigned int count)
 
 }
 
-static void con_open(void)
+static unsigned int conctrl_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
+    return memory_read(buffer, count, &con.settings, sizeof (struct ctrl_consettings), offset);
+
+}
+
+static unsigned int conctrl_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return memory_write(&con.settings, sizeof (struct ctrl_consettings), buffer, count, offset);
+
+}
+
+static struct system_node *condata_open(struct system_node *self, struct service_state *state)
+{
+
+    list_add(&self->states, &state->item);
     udp_registerhook(&hook);
 
+    return self;
+
 }
 
-static void con_close(void)
+static struct system_node *condata_close(struct system_node *self, struct service_state *state)
 {
 
+    list_remove(&self->states, &state->item);
     udp_unregisterhook(&hook);
+
+    return self;
 
 }
 
-static unsigned int con_write(void *buffer, unsigned int count)
+static unsigned int condata_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct udp_session *session = &udptable[0];
     unsigned char response[FUDGE_BSIZE];
-    unsigned char *current = response;
+    unsigned char *c = response;
 
-    current = udp_writehead(current, session->sip, session->sp, session->tip, session->tp, count);
-    current = writedata(current, buffer, count);
+    c = udp_writehead(c, session->sip, session->sp, session->tip, session->tp, count);
+    c = writedata(c, buffer, count);
 
-    udp_send(response, current - response);
+    udp_send(response, c - response);
 
     return count;
 
@@ -99,10 +119,15 @@ static unsigned int udptablenode_write(struct system_node *self, struct system_n
 void module_init(void)
 {
 
-    con_init(&con, con_open, con_close, con_write);
+    con_init(&con);
     udp_inithook(&hook, hook_match, hook_notify);
     system_initnode(&udptablenode, SYSTEM_NODETYPE_NORMAL, "udptable");
 
+    con.ctrl.read = conctrl_read;
+    con.ctrl.write = conctrl_write;
+    con.data.open = condata_open;
+    con.data.close = condata_close;
+    con.data.write = condata_write;
     udptablenode.read = udptablenode_read;
     udptablenode.write = udptablenode_write;
 

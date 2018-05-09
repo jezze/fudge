@@ -41,60 +41,28 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned char clockinterface_getseconds(void)
+static unsigned int clockinterface_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return read(0x00);
+    clockinterface.settings.seconds = read(0x00);
+    clockinterface.settings.minutes = read(0x02);
+    clockinterface.settings.hours = read(0x04);
+    clockinterface.settings.weekday = read(0x06);
+    clockinterface.settings.day = read(0x07);
+    clockinterface.settings.month = read(0x08);
+    clockinterface.settings.year = 2000 + read(0x09);
 
-}
-
-static unsigned char clockinterface_getminutes(void)
-{
-
-    return read(0x02);
-
-}
-
-static unsigned char clockinterface_gethours(void)
-{
-
-    return read(0x04);
-
-}
-
-static unsigned char clockinterface_getweekday(void)
-{
-
-    return read(0x06);
-
-}
-
-static unsigned char clockinterface_getday(void)
-{
-
-    return read(0x07);
-
-}
-
-static unsigned char clockinterface_getmonth(void)
-{
-
-    return read(0x08);
-
-}
-
-static unsigned int clockinterface_getyear(void)
-{
-
-    return 2000 + read(0x09);
+    return memory_read(buffer, count, &clockinterface.settings, sizeof (struct ctrl_clocksettings), offset);
 
 }
 
 static void driver_init(void)
 {
 
-    clock_initinterface(&clockinterface, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
+    clock_initinterface(&clockinterface);
     ctrl_setclocksettings(&clockinterface.settings, 0, 0, 0, 0, 0, 0, 0);
+
+    clockinterface.ctrl.read = clockinterface_readctrl;
 
 }
 

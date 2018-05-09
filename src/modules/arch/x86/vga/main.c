@@ -41,7 +41,14 @@ static void clear(unsigned int offset)
 
 }
 
-static unsigned int consoleinterface_wout(void *buffer, unsigned int count)
+static unsigned int consoleinterface_ctrlread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return memory_read(buffer, count, &consoleinterface.settings, sizeof (struct ctrl_consolesettings), offset);
+
+}
+
+static unsigned int consoleinterface_odatawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int total = videointerface.settings.w * videointerface.settings.h;
@@ -95,8 +102,17 @@ static unsigned int consoleinterface_wout(void *buffer, unsigned int count)
 
 }
 
-static void videointerface_setmode(struct ctrl_videosettings *settings)
+static unsigned int videointerface_ctrlread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
+
+    return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
+
+}
+
+static unsigned int videointerface_ctrlwrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    struct ctrl_videosettings *settings = buffer;
 
     if (settings->w == 80)
     {
@@ -121,6 +137,8 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
     }
 
     video_notifymode(&videointerface, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+
+    return count;
 
 }
 
@@ -206,12 +224,16 @@ static void driver_init(void)
     gaddress = (void *)0x000A0000;
     cursor.color = 0x0F;
 
-    console_initinterface(&consoleinterface, consoleinterface_wout);
-    video_initinterface(&videointerface, videointerface_setmode);
+    console_initinterface(&consoleinterface);
+    video_initinterface(&videointerface);
     ctrl_setconsolesettings(&consoleinterface.settings, 1);
     ctrl_setvideosettings(&videointerface.settings, 80, 25, 16);
     clear(0);
 
+    consoleinterface.ctrl.read = consoleinterface_ctrlread;
+    consoleinterface.odata.write = consoleinterface_odatawrite;
+    videointerface.ctrl.read = videointerface_ctrlread;
+    videointerface.ctrl.write = videointerface_ctrlwrite;
     videointerface.data.read = videointerface_dataread;
     videointerface.data.write = videointerface_datawrite;
     videointerface.colormap.read = videointerface_colormapread;

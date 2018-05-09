@@ -48,18 +48,6 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
 }
 
-static unsigned int interfaceaddr_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct ethernet_interface *interface = self->resource->data;
-    unsigned char address[ETHERNET_ADDRSIZE];
-
-    interface->getaddress(address);
-
-    return memory_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
-
-}
-
 void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id)
 {
 
@@ -128,14 +116,13 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
-    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
-    system_initresourcenode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &interface->resource);
-    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
-    system_initresourcenode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr", &interface->resource);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if");
+    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    system_initnode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr");
 
     interface->getaddress = getaddress;
     interface->send = send;
-    interface->addr.read = interfaceaddr_read;
 
 }
 
@@ -143,8 +130,8 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);
-    system_initresourcenode(&protocol->root, SYSTEM_NODETYPE_GROUP, name, &protocol->resource);
-    system_initresourcenode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data", &protocol->resource);
+    system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
+    system_initnode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
     protocol->type = type;
     protocol->notify = notify;

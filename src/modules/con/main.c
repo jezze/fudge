@@ -31,74 +31,14 @@ static struct system_node *clone_child(struct system_node *self, struct service_
 
 }
 
-static unsigned int conctrl_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct con *con = self->resource->data;
-
-    return memory_read(buffer, count, &con->settings, sizeof (struct ctrl_consettings), offset);
-
-}
-
-static unsigned int conctrl_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct con *con = self->resource->data;
-
-    return memory_write(&con->settings, sizeof (struct ctrl_consettings), buffer, count, offset);
-
-}
-
-static struct system_node *condata_open(struct system_node *self, struct service_state *state)
-{
-
-    struct con *con = self->resource->data;
-
-    list_add(&self->states, &state->item);
-    con->open();
-
-    return self;
-
-}
-
-static struct system_node *condata_close(struct system_node *self, struct service_state *state)
-{
-
-    struct con *con = self->resource->data;
-
-    list_remove(&self->states, &state->item);
-    con->close();
-
-    return self;
-
-}
-
-static unsigned int condata_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct con *con = self->resource->data;
-
-    return con->write(buffer, count);
-
-}
-
-void con_init(struct con *con, void (*open)(void), void (*close)(void), unsigned int (*write)(void *buffer, unsigned int count))
+void con_init(struct con *con)
 {
 
     ctrl_setconsettings(&con->settings, 0, 0, 0);
     resource_init(&con->resource, RESOURCE_CON, con);
-    system_initresourcenode(&con->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "con", &con->resource);
-    system_initresourcenode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl", &con->resource);
-    system_initresourcenode(&con->data, SYSTEM_NODETYPE_MAILBOX, "data", &con->resource);
-
-    con->open = open;
-    con->close = close;
-    con->write = write;
-    con->ctrl.read = conctrl_read;
-    con->ctrl.write = conctrl_write;
-    con->data.open = condata_open;
-    con->data.close = condata_close;
-    con->data.write = condata_write;
+    system_initnode(&con->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "con");
+    system_initnode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+    system_initnode(&con->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
 }
 

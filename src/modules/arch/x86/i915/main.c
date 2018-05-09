@@ -121,17 +121,10 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void videointerface_setmode(struct ctrl_videosettings *settings)
-{
-
-    ctrl_setvideosettings(&videointerface.settings, settings->w, settings->h, settings->bpp);
-
-}
-
 static void driver_init(void)
 {
 
-    video_initinterface(&videointerface, videointerface_setmode);
+    video_initinterface(&videointerface);
 
 }
 

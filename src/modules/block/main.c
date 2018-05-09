@@ -36,8 +36,8 @@ void block_initinterface(struct block_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
-    system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
-    system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
+    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if");
+    system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
 
 }
 
