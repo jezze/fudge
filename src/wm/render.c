@@ -560,7 +560,7 @@ void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
         {
 
             renderline(line);
-            file_seekwriteall(descriptor, drawdata, w * currentbpp / 8, w * line * currentbpp / 8);
+            file_seekwriteall(descriptor, drawdata, w * currentbpp, w * line * currentbpp);
 
         }
 
@@ -634,12 +634,12 @@ void render_setpaint(unsigned int bpp)
     switch (bpp)
     {
 
-    case 8:
+    case 1:
         paint = paint8;
 
         break;
 
-    case 32:
+    case 4:
         paint = paint32;
 
         break;

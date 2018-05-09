@@ -61,7 +61,7 @@ static unsigned int videointerface_ctrlwrite(struct system_node *self, struct sy
     setreg(COMMANDENABLE, 0x00);
     setreg(COMMANDXRES, videointerface.settings.w);
     setreg(COMMANDYRES, videointerface.settings.h);
-    setreg(COMMANDBPP, videointerface.settings.bpp);
+    setreg(COMMANDBPP, videointerface.settings.bpp * 8);
     setreg(COMMANDENABLE, 0x40 | 0x01);
     video_notifymode(&videointerface, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
@@ -72,7 +72,7 @@ static unsigned int videointerface_ctrlwrite(struct system_node *self, struct sy
 static unsigned int videointerface_dataread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
+    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp;
 
     return memory_read(buffer, count, lfb, s, offset);
 
@@ -81,7 +81,7 @@ static unsigned int videointerface_dataread(struct system_node *self, struct sys
 static unsigned int videointerface_datawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
+    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp;
 
     return memory_write(lfb, s, buffer, count, offset);
 

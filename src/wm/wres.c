@@ -18,7 +18,7 @@ static void onwmmousepress(struct event_header *header, struct event_wmmousepres
 
     case 0x01:
         render_init();
-        render_setvideo(FILE_L6, 1920, 1080, 32);
+        render_setvideo(FILE_L6, 1920, 1080, 4);
 
         quit = 1;
 

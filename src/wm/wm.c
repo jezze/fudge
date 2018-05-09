@@ -804,7 +804,7 @@ void main(void)
     file_open(FILE_L4);
     file_open(FILE_L5);
     render_init();
-    render_setvideo(FILE_L7, 1024, 768, 32);
+    render_setvideo(FILE_L7, 1024, 768, 4);
     render_setcolormap(FILE_L8);
 
     while (!quit)

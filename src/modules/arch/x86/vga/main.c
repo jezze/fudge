@@ -120,7 +120,7 @@ static unsigned int videointerface_ctrlwrite(struct system_node *self, struct sy
         if (videointerface.settings.w == 320)
             vga_restore();
 
-        ctrl_setvideosettings(&videointerface.settings, 80, 25, 16);
+        ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
         vga_settext();
 
     }
@@ -131,7 +131,7 @@ static unsigned int videointerface_ctrlwrite(struct system_node *self, struct sy
         if (videointerface.settings.w == 80)
             vga_save();
 
-        ctrl_setvideosettings(&videointerface.settings, 320, 200, 8);
+        ctrl_setvideosettings(&videointerface.settings, 320, 200, 1);
         vga_setgraphic();
 
     }
@@ -145,7 +145,7 @@ static unsigned int videointerface_ctrlwrite(struct system_node *self, struct sy
 static unsigned int videointerface_dataread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
+    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp;
 
     return memory_read(buffer, count, gaddress, s, offset);
 
@@ -154,7 +154,7 @@ static unsigned int videointerface_dataread(struct system_node *self, struct sys
 static unsigned int videointerface_datawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
+    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp;
 
     return memory_write(gaddress, s, buffer, count, offset);
 
