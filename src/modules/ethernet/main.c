@@ -70,7 +70,7 @@ void ethernet_registerprotocol(struct ethernet_protocol *protocol)
 
 }
 
-struct ethernet_interface *ethernet_findinterface(void *haddress)
+struct ethernet_interface *ethernet_findinterface(void *address)
 {
 
     struct resource *current = 0;
@@ -79,11 +79,8 @@ struct ethernet_interface *ethernet_findinterface(void *haddress)
     {
 
         struct ethernet_interface *interface = current->data;
-        unsigned char address[ETHERNET_ADDRSIZE];
 
-        interface->getaddress(address);
-
-        if (memory_match(address, haddress, ETHERNET_ADDRSIZE))
+        if (interface->matchaddress(address, ETHERNET_ADDRSIZE))
             return interface;
 
     }
@@ -112,7 +109,7 @@ void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (*getaddress)(void *buffer), unsigned int (*send)(void *buffer, unsigned int count))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (*matchaddress)(void *buffer, unsigned int count), unsigned int (*send)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
@@ -121,7 +118,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
     system_initnode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr");
 
-    interface->getaddress = getaddress;
+    interface->matchaddress = matchaddress;
     interface->send = send;
 
 }

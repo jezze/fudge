@@ -235,19 +235,19 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int ethernetinterface_getaddress(void *buffer)
+static unsigned int ethernetinterface_matchaddress(void *buffer, unsigned int count)
 {
 
-    unsigned char *haddress = buffer;
+    unsigned char address[ETHERNET_ADDRSIZE];
 
-    haddress[0] = io_inb(io + REGISTERIDR0);
-    haddress[1] = io_inb(io + REGISTERIDR1);
-    haddress[2] = io_inb(io + REGISTERIDR2);
-    haddress[3] = io_inb(io + REGISTERIDR3);
-    haddress[4] = io_inb(io + REGISTERIDR4);
-    haddress[5] = io_inb(io + REGISTERIDR5);
+    address[0] = io_inb(io + REGISTERIDR0);
+    address[1] = io_inb(io + REGISTERIDR1);
+    address[2] = io_inb(io + REGISTERIDR2);
+    address[3] = io_inb(io + REGISTERIDR3);
+    address[4] = io_inb(io + REGISTERIDR4);
+    address[5] = io_inb(io + REGISTERIDR5);
 
-    return ETHERNET_ADDRSIZE;
+    return memory_match(address, buffer, count);
 
 }
 
@@ -297,7 +297,12 @@ static unsigned int ethernetinterface_addrread(struct system_node *self, struct 
 
     unsigned char address[ETHERNET_ADDRSIZE];
 
-    ethernetinterface.getaddress(address);
+    address[0] = io_inb(io + REGISTERIDR0);
+    address[1] = io_inb(io + REGISTERIDR1);
+    address[2] = io_inb(io + REGISTERIDR2);
+    address[3] = io_inb(io + REGISTERIDR3);
+    address[4] = io_inb(io + REGISTERIDR4);
+    address[5] = io_inb(io + REGISTERIDR5);
 
     return memory_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
 
@@ -306,7 +311,7 @@ static unsigned int ethernetinterface_addrread(struct system_node *self, struct 
 static void driver_init(void)
 {
 
-    ethernet_initinterface(&ethernetinterface, ethernetinterface_getaddress, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, ethernetinterface_matchaddress, ethernetinterface_send);
 
     ethernetinterface.addr.read = ethernetinterface_addrread;
 
