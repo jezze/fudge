@@ -42,7 +42,7 @@ static unsigned int driver_match(unsigned int id)
 
 }
 
-static void driver_attach(unsigned int id)
+static void driver_reset(unsigned int id)
 {
 
     ps2_disable(id);
@@ -51,6 +51,12 @@ static void driver_attach(unsigned int id)
     ps2_enable(id);
     ps2_enablescanning(id);
     ps2_enableinterrupt(id);
+
+}
+
+static void driver_attach(unsigned int id)
+{
+
     keyboard_registerinterface(&keyboardinterface, id);
     pic_setroutine(ps2_getirq(id), handleirq);
 
@@ -67,7 +73,7 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
-    base_initdriver(&driver, "ps2keyboard", driver_init, driver_match, driver_attach, driver_detach);
+    base_initdriver(&driver, "ps2keyboard", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }
 

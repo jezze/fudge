@@ -109,7 +109,7 @@ static unsigned int driver_match(unsigned int id)
 
 }
 
-static void driver_attach(unsigned int id)
+static void driver_reset(unsigned int id)
 {
 
     bank = (void *)0xA0000;
@@ -117,6 +117,12 @@ static void driver_attach(unsigned int id)
 
     arch_setmap(4, (unsigned int)lfb, (unsigned int)lfb, 0x00400000);
     arch_setmap(5, (unsigned int)lfb + 0x00400000, (unsigned int)lfb + 0x00400000, 0x00400000);
+
+}
+
+static void driver_attach(unsigned int id)
+{
+
     video_registerinterface(&videointerface, id);
 
 }
@@ -131,7 +137,7 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
-    base_initdriver(&driver, "bga", driver_init, driver_match, driver_attach, driver_detach);
+    base_initdriver(&driver, "bga", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }
 

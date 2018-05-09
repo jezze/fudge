@@ -32,6 +32,7 @@ void base_registerdriver(struct base_driver *driver, unsigned int type)
                 continue;
 
             driver->init();
+            driver->reset(id);
             driver->attach(id);
 
         }
@@ -91,7 +92,7 @@ void base_initbus(struct base_bus *bus, unsigned int type, char *name, void (*se
 
 }
 
-void base_initdriver(struct base_driver *driver, char *name, void (*init)(void), unsigned int (*match)(unsigned int id), void (*attach)(unsigned int id), void (*detach)(unsigned int id))
+void base_initdriver(struct base_driver *driver, char *name, void (*init)(void), unsigned int (*match)(unsigned int id), void (*reset)(unsigned int id), void (*attach)(unsigned int id), void (*detach)(unsigned int id))
 {
 
     resource_init(&driver->resource, RESOURCE_DRIVER, driver);
@@ -99,6 +100,7 @@ void base_initdriver(struct base_driver *driver, char *name, void (*init)(void),
     driver->name = name;
     driver->init = init;
     driver->match = match;
+    driver->reset = reset;
     driver->attach = attach;
     driver->detach = detach;
 

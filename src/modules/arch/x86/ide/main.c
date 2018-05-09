@@ -250,7 +250,7 @@ static unsigned int driver_match(unsigned int id)
 
 }
 
-static void driver_attach(unsigned int id)
+static void driver_reset(unsigned int id)
 {
 
     unsigned int bar0 = pci_ind(id, PCI_CONFIG_BAR0);
@@ -264,6 +264,11 @@ static void driver_attach(unsigned int id)
     sdata = (bar2 & 0xFFFFFFFC) + 0x170 * (!bar2);
     scontrol = (bar3 & 0xFFFFFFFC) + 0x376 * (!bar3);
     busmaster = (bar4 & 0xFFFFFFFC) + 8;
+
+}
+
+static void driver_attach(unsigned int id)
+{
 
     base_registerbus(&bus);
 
@@ -279,7 +284,7 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
-    base_initdriver(&driver, "ide", driver_init, driver_match, driver_attach, driver_detach);
+    base_initdriver(&driver, "ide", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }
 

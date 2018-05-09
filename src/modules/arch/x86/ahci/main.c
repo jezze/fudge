@@ -37,10 +37,15 @@ static unsigned int driver_match(unsigned int id)
 
 }
 
-static void driver_attach(unsigned int id)
+static void driver_reset(unsigned int id)
 {
 
     mmio = pci_ind(id, PCI_CONFIG_BAR5);
+
+}
+
+static void driver_attach(unsigned int id)
+{
 
     base_registerbus(&bus);
 
@@ -56,7 +61,7 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
-    base_initdriver(&driver, "ahci", driver_init, driver_match, driver_attach, driver_detach);
+    base_initdriver(&driver, "ahci", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }
 
