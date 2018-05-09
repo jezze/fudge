@@ -5,24 +5,6 @@
 
 static struct system_node root;
 
-static unsigned int interfacedata_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct audio_interface *interface = self->resource->data;
-
-    return interface->rdata(offset, buffer, count);
-
-}
-
-static unsigned int interfacedata_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct audio_interface *interface = self->resource->data;
-
-    return interface->wdata(offset, buffer, count);
-
-}
-
 void audio_registerinterface(struct audio_interface *interface, unsigned int id)
 {
 
@@ -43,17 +25,12 @@ void audio_unregisterinterface(struct audio_interface *interface)
 
 }
 
-void audio_initinterface(struct audio_interface *interface, unsigned int (*rdata)(unsigned int offset, void *buffer, unsigned int count), unsigned int (*wdata)(unsigned int offset, void *buffer, unsigned int count))
+void audio_initinterface(struct audio_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data", &interface->resource);
-
-    interface->rdata = rdata;
-    interface->wdata = wdata;
-    interface->data.read = interfacedata_read;
-    interface->data.write = interfacedata_write;
 
 }
 

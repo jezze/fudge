@@ -12,19 +12,6 @@ void block_notify(struct block_interface *interface, void *buffer, unsigned int 
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct block_interface *interface = self->resource->data;
-    unsigned int c = ring_read(&state->task->mailbox.ring, buffer, count);
-
-    if (!c)
-        interface->rdata(buffer, count, offset);
-
-    return c;
-
-}
-
 void block_registerinterface(struct block_interface *interface, unsigned int id)
 {
 
@@ -45,16 +32,12 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int (*rdata)(void *buffer, unsigned int count, unsigned int offset), unsigned int (*wdata)(void *buffer, unsigned int count, unsigned int offset))
+void block_initinterface(struct block_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
     system_initresourcenode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if", &interface->resource);
     system_initresourcenode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data", &interface->resource);
-
-    interface->rdata = rdata;
-    interface->wdata = wdata;
-    interface->data.read = interfacedata_read;
 
 }
 

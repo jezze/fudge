@@ -46,42 +46,6 @@ static unsigned int interfacectrl_write(struct system_node *self, struct system_
 
 }
 
-static unsigned int interfacedata_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct video_interface *interface = self->resource->data;
-
-    return interface->rdata(offset, buffer, count);
-
-}
-
-static unsigned int interfacedata_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct video_interface *interface = self->resource->data;
-
-    return interface->wdata(offset, buffer, count);
-
-}
-
-static unsigned int interfacecolormap_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct video_interface *interface = self->resource->data;
-
-    return interface->rcolormap(offset, buffer, count);
-
-}
-
-static unsigned int interfacecolormap_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct video_interface *interface = self->resource->data;
-
-    return interface->wcolormap(offset, buffer, count);
-
-}
-
 void video_registerinterface(struct video_interface *interface, unsigned int id)
 {
 
@@ -108,7 +72,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, void (*setmode)(struct ctrl_videosettings *settings), unsigned int (*rdata)(unsigned int offset, void *buffer, unsigned int count), unsigned int (*wdata)(unsigned int offset, void *buffer, unsigned int count), unsigned int (*rcolormap)(unsigned int offset, void *buffer, unsigned int count), unsigned int (*wcolormap)(unsigned int offset, void *buffer, unsigned int count))
+void video_initinterface(struct video_interface *interface, void (*setmode)(struct ctrl_videosettings *settings))
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
@@ -119,16 +83,8 @@ void video_initinterface(struct video_interface *interface, void (*setmode)(stru
     system_initresourcenode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event", &interface->resource);
 
     interface->setmode = setmode;
-    interface->rdata = rdata;
-    interface->wdata = wdata;
-    interface->rcolormap = rcolormap;
-    interface->wcolormap = wcolormap;
     interface->ctrl.read = interfacectrl_read;
     interface->ctrl.write = interfacectrl_write;
-    interface->data.read = interfacedata_read;
-    interface->data.write = interfacedata_write;
-    interface->colormap.read = interfacecolormap_read;
-    interface->colormap.write = interfacecolormap_write;
 
 }
 

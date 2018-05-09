@@ -65,20 +65,6 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int blockinterface_rdata(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return count;
-
-}
-
-static unsigned int blockinterface_wdata(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return count;
-
-}
-
 static void setqueue(unsigned short index)
 {
 
@@ -146,7 +132,7 @@ static void setrx(void)
 static void driver_init(void)
 {
 
-    block_initinterface(&blockinterface, blockinterface_rdata, blockinterface_wdata);
+    block_initinterface(&blockinterface);
 
 }
 

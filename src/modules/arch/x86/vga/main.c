@@ -124,21 +124,17 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 
 }
 
-static unsigned int videointerface_rdata(unsigned int offset, void *buffer, unsigned int count)
+static unsigned int videointerface_dataread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int s = videointerface.settings.h * videointerface.settings.w * videointerface.settings.bpp / 8;
+    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
 
     return memory_read(buffer, count, gaddress, s, offset);
 
 }
 
-static unsigned int videointerface_wdata(unsigned int offset, void *buffer, unsigned int count)
+static unsigned int videointerface_datawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
-
-    /*
-    unsigned int s = videointerface.settings.h * videointerface.settings.w * videointerface.settings.bpp / 8;
-    */
 
     unsigned char *g = gaddress;
     unsigned char *b = buffer;
@@ -151,7 +147,7 @@ static unsigned int videointerface_wdata(unsigned int offset, void *buffer, unsi
 
 }
 
-static unsigned int videointerface_rcolormap(unsigned int offset, void *buffer, unsigned int count)
+static unsigned int videointerface_colormapread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     char *c = buffer;
@@ -177,7 +173,7 @@ static unsigned int videointerface_rcolormap(unsigned int offset, void *buffer, 
 
 }
 
-static unsigned int videointerface_wcolormap(unsigned int offset, void *buffer, unsigned int count)
+static unsigned int videointerface_colormapwrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     char *c = buffer;
@@ -211,10 +207,15 @@ static void driver_init(void)
     cursor.color = 0x0F;
 
     console_initinterface(&consoleinterface, consoleinterface_wout);
-    video_initinterface(&videointerface, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+    video_initinterface(&videointerface, videointerface_setmode);
     ctrl_setconsolesettings(&consoleinterface.settings, 1);
     ctrl_setvideosettings(&videointerface.settings, 80, 25, 16);
     clear(0);
+
+    videointerface.data.read = videointerface_dataread;
+    videointerface.data.write = videointerface_datawrite;
+    videointerface.colormap.read = videointerface_colormapread;
+    videointerface.colormap.write = videointerface_colormapwrite;
 
 }
 

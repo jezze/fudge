@@ -58,7 +58,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 
 }
 
-static unsigned int videointerface_rdata(unsigned int offset, void *buffer, unsigned int count)
+static unsigned int videointerface_dataread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
@@ -67,7 +67,7 @@ static unsigned int videointerface_rdata(unsigned int offset, void *buffer, unsi
 
 }
 
-static unsigned int videointerface_wdata(unsigned int offset, void *buffer, unsigned int count)
+static unsigned int videointerface_datawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int *g = lfb;
@@ -81,24 +81,13 @@ static unsigned int videointerface_wdata(unsigned int offset, void *buffer, unsi
 
 }
 
-static unsigned int videointerface_rcolormap(unsigned int offset, void *buffer, unsigned int count)
-{
-
-    return 0;
-
-}
-
-static unsigned int videointerface_wcolormap(unsigned int offset, void *buffer, unsigned int count)
-{
-
-    return 0;
-
-}
-
 static void driver_init(void)
 {
 
-    video_initinterface(&videointerface, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+    video_initinterface(&videointerface, videointerface_setmode);
+
+    videointerface.data.read = videointerface_dataread;
+    videointerface.data.write = videointerface_datawrite;
 
 }
 
