@@ -222,7 +222,7 @@ static void driver_init(void)
     console_initinterface(&consoleinterface);
     video_initinterface(&videointerface);
     ctrl_setconsolesettings(&consoleinterface.settings, 1);
-    ctrl_setvideosettings(&videointerface.settings, 80, 25, 16);
+    ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
     clear(0);
 
     consoleinterface.ctrl.read = consoleinterface_ctrlread;
