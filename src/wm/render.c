@@ -37,6 +37,7 @@ struct font
 
 };
 
+static unsigned int currentbpp;
 static void (*drawables[7])(void *data, unsigned int line);
 static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
@@ -559,7 +560,7 @@ void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
         {
 
             renderline(line);
-            file_seekwriteall(descriptor, drawdata, w, w * line);
+            file_seekwriteall(descriptor, drawdata, w * currentbpp / 8, w * line * currentbpp / 8);
 
         }
 
@@ -644,6 +645,8 @@ void render_setpaint(unsigned int bpp)
         break;
 
     }
+
+    currentbpp = bpp;
 
 }
 

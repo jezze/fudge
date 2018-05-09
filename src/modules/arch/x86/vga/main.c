@@ -154,14 +154,9 @@ static unsigned int videointerface_dataread(struct system_node *self, struct sys
 static unsigned int videointerface_datawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned char *g = gaddress;
-    unsigned char *b = buffer;
-    unsigned int i;
+    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp / 8;
 
-    for (i = 0; i < count; i++)
-        g[i + offset] = b[i];
-
-    return count;
+    return memory_write(gaddress, s, buffer, count, offset);
 
 }
 
