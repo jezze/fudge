@@ -56,7 +56,7 @@ void part_init(struct part *part)
 
     ctrl_setpartsettings(&part->settings, 0, 0, 0);
     resource_init(&part->resource, RESOURCE_PART, part);
-    system_initnode(&part->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "part");
+    system_initnode(&part->root, SYSTEM_NODETYPE_MULTIGROUP, "part");
     system_initnode(&part->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&part->data, SYSTEM_NODETYPE_NORMAL, "data");
 

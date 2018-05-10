@@ -14,7 +14,7 @@ static void findall()
     while ((current = resource_foreachtype(current, RESOURCE_SERVICEBACKEND)))
     {
 
-        system_initnode(&nodes[n], SYSTEM_NODETYPE_NORMAL | SYSTEM_NODETYPE_MULTI, "backend");
+        system_initnode(&nodes[n], SYSTEM_NODETYPE_MULTIGROUP, "backend");
         system_addchild(&root, &nodes[n]);
 
         n++;
@@ -24,7 +24,7 @@ static void findall()
     while ((current = resource_foreachtype(current, RESOURCE_SERVICEPROTOCOL)))
     {
 
-        system_initnode(&nodes[n], SYSTEM_NODETYPE_NORMAL | SYSTEM_NODETYPE_MULTI, "protocol");
+        system_initnode(&nodes[n], SYSTEM_NODETYPE_MULTIGROUP, "protocol");
         system_addchild(&root, &nodes[n]);
 
         n++;

@@ -1,7 +1,7 @@
 #define SYSTEM_NODETYPE_NORMAL          0
 #define SYSTEM_NODETYPE_MAILBOX         1
 #define SYSTEM_NODETYPE_GROUP           2
-#define SYSTEM_NODETYPE_MULTI           4
+#define SYSTEM_NODETYPE_MULTIGROUP      3
 
 struct system_header
 {

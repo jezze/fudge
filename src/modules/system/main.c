@@ -55,7 +55,7 @@ static struct system_node *childgroup(struct system_node *self, struct service_s
         struct system_node *node = current->data;
         unsigned int length0 = ascii_length(node->name);
 
-        if (node->type & SYSTEM_NODETYPE_MULTI)
+        if (node->type == SYSTEM_NODETYPE_MULTIGROUP)
         {
 
             unsigned int colon = memory_findbyte(path, length, ':');
@@ -116,7 +116,7 @@ static unsigned int readgroup(struct system_node *self, struct system_node *curr
     record.size = 0;
     record.length = memory_read(record.name, RECORD_NAMESIZE, current->name, ascii_length(current->name), 0);
 
-    if (current->type & SYSTEM_NODETYPE_MULTI)
+    if (current->type == SYSTEM_NODETYPE_MULTIGROUP)
     {
 
         char num[FUDGE_NSIZE];
@@ -168,7 +168,7 @@ void system_addchild(struct system_node *group, struct system_node *node)
 
     struct list_item *current;
 
-    if (node->type & SYSTEM_NODETYPE_MULTI)
+    if (node->type == SYSTEM_NODETYPE_MULTIGROUP)
     {
 
         unsigned int length0 = ascii_length(node->name);
@@ -221,7 +221,7 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     node->operations.write = write;
     node->operations.seek = seek;
 
-    if (type & SYSTEM_NODETYPE_MAILBOX)
+    if (type == SYSTEM_NODETYPE_MAILBOX)
     {
 
         node->operations.open = openmailbox;
@@ -231,7 +231,15 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
     }
 
-    if (type & SYSTEM_NODETYPE_GROUP)
+    if (type == SYSTEM_NODETYPE_GROUP)
+    {
+
+        node->operations.child = childgroup;
+        node->operations.read = readgroup;
+
+    }
+
+    if (type == SYSTEM_NODETYPE_MULTIGROUP)
     {
 
         node->operations.child = childgroup;

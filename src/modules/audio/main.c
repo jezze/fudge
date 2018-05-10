@@ -29,7 +29,7 @@ void audio_initinterface(struct audio_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if");
+    system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
 
 }

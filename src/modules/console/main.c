@@ -40,7 +40,7 @@ void console_initinterface(struct console_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "if");
+    system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->idata, SYSTEM_NODETYPE_MAILBOX, "idata");
     system_initnode(&interface->odata, SYSTEM_NODETYPE_NORMAL, "odata");

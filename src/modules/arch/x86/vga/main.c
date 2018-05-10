@@ -145,18 +145,14 @@ static unsigned int videointerface_writectrl(struct system_node *self, struct sy
 static unsigned int videointerface_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp;
-
-    return memory_read(buffer, count, gaddress, s, offset);
+    return memory_read(buffer, count, gaddress, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
 
 }
 
 static unsigned int videointerface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp;
-
-    return memory_write(gaddress, s, buffer, count, offset);
+    return memory_write(gaddress, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
 
 }
 

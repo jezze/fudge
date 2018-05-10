@@ -107,7 +107,7 @@ void module_init(void)
 {
 
     ring_init(&ring, FUDGE_BSIZE, data);
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP | SYSTEM_NODETYPE_MULTI, "buf");
+    system_initnode(&root, SYSTEM_NODETYPE_MULTIGROUP, "buf");
     system_initnode(&idata, SYSTEM_NODETYPE_NORMAL, "idata");
     system_initnode(&odata, SYSTEM_NODETYPE_NORMAL, "odata");
 
