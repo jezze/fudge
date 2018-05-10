@@ -37,13 +37,6 @@ static struct system_node *closemailbox(struct system_node *self, struct service
 static struct system_node *child(struct system_node *self, struct service_state *state, char *path, unsigned int length)
 {
 
-    return self;
-
-}
-
-static struct system_node *childgroup(struct system_node *self, struct service_state *state, char *path, unsigned int length)
-{
-
     struct list_item *current;
     struct system_node *n = self;
 
@@ -234,7 +227,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type == SYSTEM_NODETYPE_GROUP)
     {
 
-        node->operations.child = childgroup;
         node->operations.read = readgroup;
 
     }
@@ -242,7 +234,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     if (type == SYSTEM_NODETYPE_MULTIGROUP)
     {
 
-        node->operations.child = childgroup;
         node->operations.read = readgroup;
 
     }
