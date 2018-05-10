@@ -6,21 +6,21 @@
 
 static struct part part;
 
-static unsigned int part_ctrlread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int part_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, &part.settings, sizeof (struct ctrl_partsettings), offset);
 
 }
 
-static unsigned int part_ctrlwrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int part_writectrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_write(&part.settings, sizeof (struct ctrl_partsettings), buffer, count, offset);
 
 }
 
-static struct system_node *part_dataopen(struct system_node *self, struct service_state *state)
+static struct system_node *part_opendata(struct system_node *self, struct service_state *state)
 {
 
     struct block_interface *interface = part_findinterface(part.settings.interface);
@@ -29,7 +29,7 @@ static struct system_node *part_dataopen(struct system_node *self, struct servic
 
 }
 
-static struct system_node *part_dataclose(struct system_node *self, struct service_state *state)
+static struct system_node *part_closedata(struct system_node *self, struct service_state *state)
 {
 
     struct block_interface *interface = part_findinterface(part.settings.interface);
@@ -38,7 +38,7 @@ static struct system_node *part_dataclose(struct system_node *self, struct servi
 
 }
 
-static unsigned int part_dataread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int part_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct block_interface *interface = part_findinterface(part.settings.interface);
@@ -47,7 +47,7 @@ static unsigned int part_dataread(struct system_node *self, struct system_node *
 
 }
 
-static unsigned int part_datawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int part_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct block_interface *interface = part_findinterface(part.settings.interface);
@@ -61,12 +61,12 @@ void module_init(void)
 
     part_init(&part);
 
-    part.ctrl.operations.read = part_ctrlread;
-    part.ctrl.operations.write = part_ctrlwrite;
-    part.data.operations.open = part_dataopen;
-    part.data.operations.close = part_dataclose;
-    part.data.operations.read = part_dataread;
-    part.data.operations.write = part_datawrite;
+    part.ctrl.operations.read = part_readctrl;
+    part.ctrl.operations.write = part_writectrl;
+    part.data.operations.open = part_opendata;
+    part.data.operations.close = part_closedata;
+    part.data.operations.read = part_readdata;
+    part.data.operations.write = part_writedata;
 
 }
 

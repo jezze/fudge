@@ -41,14 +41,14 @@ static void clear(unsigned int offset)
 
 }
 
-static unsigned int consoleinterface_ctrlread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, &consoleinterface.settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 
-static unsigned int consoleinterface_odatawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_writeodata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int total = videointerface.settings.w * videointerface.settings.h;
@@ -102,14 +102,14 @@ static unsigned int consoleinterface_odatawrite(struct system_node *self, struct
 
 }
 
-static unsigned int videointerface_ctrlread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
-static unsigned int videointerface_ctrlwrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writectrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct ctrl_videosettings *settings = buffer;
@@ -142,7 +142,7 @@ static unsigned int videointerface_ctrlwrite(struct system_node *self, struct sy
 
 }
 
-static unsigned int videointerface_dataread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp;
@@ -151,7 +151,7 @@ static unsigned int videointerface_dataread(struct system_node *self, struct sys
 
 }
 
-static unsigned int videointerface_datawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp;
@@ -160,7 +160,7 @@ static unsigned int videointerface_datawrite(struct system_node *self, struct sy
 
 }
 
-static unsigned int videointerface_colormapread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readcolormap(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     char *c = buffer;
@@ -186,7 +186,7 @@ static unsigned int videointerface_colormapread(struct system_node *self, struct
 
 }
 
-static unsigned int videointerface_colormapwrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writecolormap(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     char *c = buffer;
@@ -225,14 +225,14 @@ static void driver_init(void)
     ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
     clear(0);
 
-    consoleinterface.ctrl.operations.read = consoleinterface_ctrlread;
-    consoleinterface.odata.operations.write = consoleinterface_odatawrite;
-    videointerface.ctrl.operations.read = videointerface_ctrlread;
-    videointerface.ctrl.operations.write = videointerface_ctrlwrite;
-    videointerface.data.operations.read = videointerface_dataread;
-    videointerface.data.operations.write = videointerface_datawrite;
-    videointerface.colormap.operations.read = videointerface_colormapread;
-    videointerface.colormap.operations.write = videointerface_colormapwrite;
+    consoleinterface.ctrl.operations.read = consoleinterface_readctrl;
+    consoleinterface.odata.operations.write = consoleinterface_writeodata;
+    videointerface.ctrl.operations.read = videointerface_readctrl;
+    videointerface.ctrl.operations.write = videointerface_writectrl;
+    videointerface.data.operations.read = videointerface_readdata;
+    videointerface.data.operations.write = videointerface_writedata;
+    videointerface.colormap.operations.read = videointerface_readcolormap;
+    videointerface.colormap.operations.write = videointerface_writecolormap;
 
 }
 

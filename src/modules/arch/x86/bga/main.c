@@ -45,14 +45,14 @@ static void setreg(unsigned short index, unsigned short data)
 
 }
 
-static unsigned int videointerface_ctrlread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
-static unsigned int videointerface_ctrlwrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writectrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct ctrl_videosettings *settings = buffer;
@@ -69,7 +69,7 @@ static unsigned int videointerface_ctrlwrite(struct system_node *self, struct sy
 
 }
 
-static unsigned int videointerface_dataread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp;
@@ -78,7 +78,7 @@ static unsigned int videointerface_dataread(struct system_node *self, struct sys
 
 }
 
-static unsigned int videointerface_datawrite(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int s = videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp;
@@ -92,10 +92,10 @@ static void driver_init(void)
 
     video_initinterface(&videointerface);
 
-    videointerface.ctrl.operations.read = videointerface_ctrlread;
-    videointerface.ctrl.operations.write = videointerface_ctrlwrite;
-    videointerface.data.operations.read = videointerface_dataread;
-    videointerface.data.operations.write = videointerface_datawrite;
+    videointerface.ctrl.operations.read = videointerface_readctrl;
+    videointerface.ctrl.operations.write = videointerface_writectrl;
+    videointerface.data.operations.read = videointerface_readdata;
+    videointerface.data.operations.write = videointerface_writedata;
 
 }
 

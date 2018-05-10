@@ -23,21 +23,21 @@ static void *writedata(void *buffer, void *payload, unsigned int count)
 
 }
 
-static unsigned int conctrl_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int con_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, &con.settings, sizeof (struct ctrl_consettings), offset);
 
 }
 
-static unsigned int conctrl_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int con_writectrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_write(&con.settings, sizeof (struct ctrl_consettings), buffer, count, offset);
 
 }
 
-static struct system_node *condata_open(struct system_node *self, struct service_state *state)
+static struct system_node *con_opendata(struct system_node *self, struct service_state *state)
 {
 
     list_add(&self->states, &state->item);
@@ -47,7 +47,7 @@ static struct system_node *condata_open(struct system_node *self, struct service
 
 }
 
-static struct system_node *condata_close(struct system_node *self, struct service_state *state)
+static struct system_node *con_closedata(struct system_node *self, struct service_state *state)
 {
 
     list_remove(&self->states, &state->item);
@@ -57,7 +57,7 @@ static struct system_node *condata_close(struct system_node *self, struct servic
 
 }
 
-static unsigned int condata_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int con_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct udp_session *session = &udptable[0];
@@ -123,11 +123,11 @@ void module_init(void)
     udp_inithook(&hook, hook_match, hook_notify);
     system_initnode(&udptablenode, SYSTEM_NODETYPE_NORMAL, "udptable");
 
-    con.ctrl.operations.read = conctrl_read;
-    con.ctrl.operations.write = conctrl_write;
-    con.data.operations.open = condata_open;
-    con.data.operations.close = condata_close;
-    con.data.operations.write = condata_write;
+    con.ctrl.operations.read = con_readctrl;
+    con.ctrl.operations.write = con_writectrl;
+    con.data.operations.open = con_opendata;
+    con.data.operations.close = con_closedata;
+    con.data.operations.write = con_writedata;
     udptablenode.operations.read = udptablenode_read;
     udptablenode.operations.write = udptablenode_write;
 

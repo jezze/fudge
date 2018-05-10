@@ -176,38 +176,10 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 
 }
 
-static unsigned int videointerface_rdata(unsigned int offset, unsigned int size, void *buffer, unsigned int count)
-{
-
-    return 0;
-
-}
-
-static unsigned int videointerface_wdata(unsigned int offset, unsigned int size, void *buffer, unsigned int count)
-{
-
-    return 0;
-
-}
-
-static unsigned int videointerface_rcolormap(unsigned int offset, unsigned int size, void *buffer, unsigned int count)
-{
-
-    return 0;
-
-}
-
-static unsigned int videointerface_wcolormap(unsigned int offset, unsigned int size, void *buffer, unsigned int count)
-{
-
-    return 0;
-
-}
-
 static void driver_init(void)
 {
 
-    video_initinterface(&videointerface, videointerface_setmode, videointerface_rdata, videointerface_wdata, videointerface_rcolormap, videointerface_wcolormap);
+    video_initinterface(&videointerface, videointerface_setmode);
 
 }
 

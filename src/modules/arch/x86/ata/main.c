@@ -23,7 +23,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int blockinterface_dataread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int blockinterface_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     ide_rpio28(blockinterface.id, 0, count, offset);
@@ -37,7 +37,7 @@ static void driver_init(void)
 
     block_initinterface(&blockinterface);
 
-    blockinterface.data.operations.read = blockinterface_dataread;
+    blockinterface.data.operations.read = blockinterface_readdata;
 
 }
 

@@ -194,7 +194,7 @@ static void setrx(void)
 
 }
 
-static unsigned int ethernetinterface_addrread(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int ethernetinterface_readaddr(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char address[ETHERNET_ADDRSIZE];
@@ -215,7 +215,7 @@ static void driver_init(void)
 
     ethernet_initinterface(&ethernetinterface, ethernetinterface_matchaddress, ethernetinterface_send);
 
-    ethernetinterface.addr.operations.read = ethernetinterface_addrread;
+    ethernetinterface.addr.operations.read = ethernetinterface_readaddr;
 
 }
 
