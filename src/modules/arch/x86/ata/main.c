@@ -37,7 +37,7 @@ static void driver_init(void)
 
     block_initinterface(&blockinterface);
 
-    blockinterface.data.read = blockinterface_dataread;
+    blockinterface.data.operations.read = blockinterface_dataread;
 
 }
 

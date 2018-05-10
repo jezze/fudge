@@ -313,7 +313,7 @@ static void driver_init(void)
 
     ethernet_initinterface(&ethernetinterface, ethernetinterface_matchaddress, ethernetinterface_send);
 
-    ethernetinterface.addr.read = ethernetinterface_addrread;
+    ethernetinterface.addr.operations.read = ethernetinterface_addrread;
 
 }
 

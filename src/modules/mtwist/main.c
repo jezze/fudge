@@ -154,7 +154,7 @@ void module_init(void)
     seed1(&normal, MTWIST_SEED);
     system_initnode(&root, SYSTEM_NODETYPE_NORMAL, "mtwist");
 
-    root.read = root_read;
+    root.operations.read = root_read;
 
 }
 

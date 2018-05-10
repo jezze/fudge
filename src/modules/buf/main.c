@@ -111,12 +111,12 @@ void module_init(void)
     system_initnode(&idata, SYSTEM_NODETYPE_NORMAL, "idata");
     system_initnode(&odata, SYSTEM_NODETYPE_NORMAL, "odata");
 
-    idata.open = idata_open;
-    idata.close = idata_close;
-    idata.read = idata_read;
-    odata.open = odata_open;
-    odata.close = odata_close;
-    odata.write = odata_write;
+    idata.operations.open = idata_open;
+    idata.operations.close = idata_close;
+    idata.operations.read = idata_read;
+    odata.operations.open = odata_open;
+    odata.operations.close = odata_close;
+    odata.operations.write = odata_write;
 
 }
 

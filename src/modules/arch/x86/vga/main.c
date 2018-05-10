@@ -225,14 +225,14 @@ static void driver_init(void)
     ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
     clear(0);
 
-    consoleinterface.ctrl.read = consoleinterface_ctrlread;
-    consoleinterface.odata.write = consoleinterface_odatawrite;
-    videointerface.ctrl.read = videointerface_ctrlread;
-    videointerface.ctrl.write = videointerface_ctrlwrite;
-    videointerface.data.read = videointerface_dataread;
-    videointerface.data.write = videointerface_datawrite;
-    videointerface.colormap.read = videointerface_colormapread;
-    videointerface.colormap.write = videointerface_colormapwrite;
+    consoleinterface.ctrl.operations.read = consoleinterface_ctrlread;
+    consoleinterface.odata.operations.write = consoleinterface_odatawrite;
+    videointerface.ctrl.operations.read = videointerface_ctrlread;
+    videointerface.ctrl.operations.write = videointerface_ctrlwrite;
+    videointerface.data.operations.read = videointerface_dataread;
+    videointerface.data.operations.write = videointerface_datawrite;
+    videointerface.colormap.operations.read = videointerface_colormapread;
+    videointerface.colormap.operations.write = videointerface_colormapwrite;
 
 }
 

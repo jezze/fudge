@@ -65,9 +65,9 @@ void module_init(void)
     system_initnode(&data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&event, SYSTEM_NODETYPE_MAILBOX, "event");
 
-    data.read = data_read;
-    data.write = data_write;
-    event.write = event_write;
+    data.operations.read = data_read;
+    data.operations.write = data_write;
+    event.operations.write = event_write;
 
 }
 

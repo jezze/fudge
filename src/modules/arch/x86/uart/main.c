@@ -151,8 +151,8 @@ static void driver_init(void)
     console_initinterface(&consoleinterface);
     ctrl_setconsolesettings(&consoleinterface.settings, 1);
 
-    consoleinterface.ctrl.read = consoleinterface_ctrlread;
-    consoleinterface.odata.write = consoleinterface_odatawrite;
+    consoleinterface.ctrl.operations.read = consoleinterface_ctrlread;
+    consoleinterface.odata.operations.write = consoleinterface_odatawrite;
 
 }
 

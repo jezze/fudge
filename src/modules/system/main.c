@@ -214,28 +214,28 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
     node->type = type;
     node->name = name;
-    node->open = open;
-    node->close = close;
-    node->child = child;
-    node->read = read;
-    node->write = write;
-    node->seek = seek;
+    node->operations.open = open;
+    node->operations.close = close;
+    node->operations.child = child;
+    node->operations.read = read;
+    node->operations.write = write;
+    node->operations.seek = seek;
 
     if (type & SYSTEM_NODETYPE_MAILBOX)
     {
 
-        node->open = openmailbox;
-        node->close = closemailbox;
-        node->read = readmailbox;
-        node->seek = seekmailbox;
+        node->operations.open = openmailbox;
+        node->operations.close = closemailbox;
+        node->operations.read = readmailbox;
+        node->operations.seek = seekmailbox;
 
     }
 
     if (type & SYSTEM_NODETYPE_GROUP)
     {
 
-        node->child = childgroup;
-        node->read = readgroup;
+        node->operations.child = childgroup;
+        node->operations.read = readgroup;
 
     }
 

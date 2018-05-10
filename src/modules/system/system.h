@@ -11,22 +11,29 @@ struct system_header
 
 };
 
-struct system_node
+struct system_operations
 {
 
-    struct list_item item;
-    struct system_node *parent;
-    struct list children;
-    struct list states;
-    unsigned int type;
-    char *name;
-    unsigned int index;
     struct system_node *(*open)(struct system_node *self, struct service_state *state);
     struct system_node *(*close)(struct system_node *self, struct service_state *state);
     struct system_node *(*child)(struct system_node *self, struct service_state *state, char *path, unsigned int length);
     unsigned int (*read)(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
     unsigned int (*seek)(struct system_node *self, struct service_state *state, unsigned int offset);
+
+};
+
+struct system_node
+{
+
+    char *name;
+    unsigned int type;
+    unsigned int index;
+    struct system_node *parent;
+    struct system_operations operations;
+    struct list_item item;
+    struct list children;
+    struct list states;
 
 };
 

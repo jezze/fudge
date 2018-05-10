@@ -227,8 +227,8 @@ void module_init(void)
     arp_inithook(&arphook, arphook_match, arphook_lookup, arphook_save);
     system_initnode(&arptablenode, SYSTEM_NODETYPE_NORMAL, "arptable");
 
-    arptablenode.read = arptablenode_read;
-    arptablenode.write = arptablenode_write;
+    arptablenode.operations.read = arptablenode_read;
+    arptablenode.operations.write = arptablenode_write;
 
 }
 

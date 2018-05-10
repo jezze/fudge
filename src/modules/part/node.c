@@ -25,7 +25,7 @@ static struct system_node *part_dataopen(struct system_node *self, struct servic
 
     struct block_interface *interface = part_findinterface(part.settings.interface);
 
-    return interface->data.open(&interface->data, state);
+    return interface->data.operations.open(&interface->data, state);
 
 }
 
@@ -34,7 +34,7 @@ static struct system_node *part_dataclose(struct system_node *self, struct servi
 
     struct block_interface *interface = part_findinterface(part.settings.interface);
 
-    return interface->data.close(&interface->data, state);
+    return interface->data.operations.close(&interface->data, state);
 
 }
 
@@ -43,7 +43,7 @@ static unsigned int part_dataread(struct system_node *self, struct system_node *
 
     struct block_interface *interface = part_findinterface(part.settings.interface);
 
-    return interface->data.read(&interface->data, current, state, buffer, count, offset);
+    return interface->data.operations.read(&interface->data, current, state, buffer, count, offset);
 
 }
 
@@ -52,7 +52,7 @@ static unsigned int part_datawrite(struct system_node *self, struct system_node 
 
     struct block_interface *interface = part_findinterface(part.settings.interface);
 
-    return interface->data.write(&interface->data, current, state, buffer, count, offset);
+    return interface->data.operations.write(&interface->data, current, state, buffer, count, offset);
 
 }
 
@@ -61,12 +61,12 @@ void module_init(void)
 
     part_init(&part);
 
-    part.ctrl.read = part_ctrlread;
-    part.ctrl.write = part_ctrlwrite;
-    part.data.open = part_dataopen;
-    part.data.close = part_dataclose;
-    part.data.read = part_dataread;
-    part.data.write = part_datawrite;
+    part.ctrl.operations.read = part_ctrlread;
+    part.ctrl.operations.write = part_ctrlwrite;
+    part.data.operations.open = part_dataopen;
+    part.data.operations.close = part_dataclose;
+    part.data.operations.read = part_dataread;
+    part.data.operations.write = part_datawrite;
 
 }
 

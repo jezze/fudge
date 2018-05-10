@@ -36,7 +36,7 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 
     struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
 
-    return (unsigned int)node->child(node, state, path, length);
+    return (unsigned int)node->operations.child(node, state, path, length);
 
 }
 
@@ -86,7 +86,7 @@ static unsigned int protocol_open(struct service_backend *backend, struct servic
 
     struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
 
-    return (unsigned int)node->open(node, state);
+    return (unsigned int)node->operations.open(node, state);
 
 }
 
@@ -95,7 +95,7 @@ static unsigned int protocol_close(struct service_backend *backend, struct servi
 
     struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
 
-    return (unsigned int)node->close(node, state);
+    return (unsigned int)node->operations.close(node, state);
 
 }
 
@@ -105,7 +105,7 @@ static unsigned int protocol_read(struct service_backend *backend, struct servic
     struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
     struct system_node *currentnode = (struct system_node *)backend->map(state, current, sizeof (struct system_node));
 
-    return node->read(node, currentnode, state, buffer, count, offset);
+    return node->operations.read(node, currentnode, state, buffer, count, offset);
 
 }
 
@@ -115,7 +115,7 @@ static unsigned int protocol_write(struct service_backend *backend, struct servi
     struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
     struct system_node *currentnode = (struct system_node *)backend->map(state, current, sizeof (struct system_node));
 
-    return node->write(node, currentnode, state, buffer, count, offset);
+    return node->operations.write(node, currentnode, state, buffer, count, offset);
 
 }
 
@@ -124,7 +124,7 @@ static unsigned int protocol_seek(struct service_backend *backend, struct servic
 
     struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
 
-    return node->seek(node, state, offset);
+    return node->operations.seek(node, state, offset);
 
 }
 

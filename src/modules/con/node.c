@@ -123,13 +123,13 @@ void module_init(void)
     udp_inithook(&hook, hook_match, hook_notify);
     system_initnode(&udptablenode, SYSTEM_NODETYPE_NORMAL, "udptable");
 
-    con.ctrl.read = conctrl_read;
-    con.ctrl.write = conctrl_write;
-    con.data.open = condata_open;
-    con.data.close = condata_close;
-    con.data.write = condata_write;
-    udptablenode.read = udptablenode_read;
-    udptablenode.write = udptablenode_write;
+    con.ctrl.operations.read = conctrl_read;
+    con.ctrl.operations.write = conctrl_write;
+    con.data.operations.open = condata_open;
+    con.data.operations.close = condata_close;
+    con.data.operations.write = condata_write;
+    udptablenode.operations.read = udptablenode_read;
+    udptablenode.operations.write = udptablenode_write;
 
 }
 

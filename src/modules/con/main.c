@@ -21,7 +21,7 @@ static struct system_node *clone_child(struct system_node *self, struct service_
         if (node == self)
             continue;
 
-        return node->child(node, state, path, length);
+        return node->operations.child(node, state, path, length);
 
     }
 
@@ -66,7 +66,7 @@ void module_init(void)
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "con");
     system_initnode(&clone, SYSTEM_NODETYPE_GROUP, "clone");
 
-    clone.child = clone_child;
+    clone.operations.child = clone_child;
 
 }
 

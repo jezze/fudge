@@ -302,7 +302,7 @@ void module_init(void)
     base_initbus(&bus, PS2_BUS, "ps2", bus_setup, bus_next);
     system_initnode(&reset, SYSTEM_NODETYPE_NORMAL, "reset");
 
-    reset.write = reset_write;
+    reset.operations.write = reset_write;
 
 }
 

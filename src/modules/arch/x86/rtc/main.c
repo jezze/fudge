@@ -62,7 +62,7 @@ static void driver_init(void)
     clock_initinterface(&clockinterface);
     ctrl_setclocksettings(&clockinterface.settings, 0, 0, 0, 0, 0, 0, 0);
 
-    clockinterface.ctrl.read = clockinterface_readctrl;
+    clockinterface.ctrl.operations.read = clockinterface_readctrl;
 
 }
 

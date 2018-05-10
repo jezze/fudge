@@ -92,10 +92,10 @@ static void driver_init(void)
 
     video_initinterface(&videointerface);
 
-    videointerface.ctrl.read = videointerface_ctrlread;
-    videointerface.ctrl.write = videointerface_ctrlwrite;
-    videointerface.data.read = videointerface_dataread;
-    videointerface.data.write = videointerface_datawrite;
+    videointerface.ctrl.operations.read = videointerface_ctrlread;
+    videointerface.ctrl.operations.write = videointerface_ctrlwrite;
+    videointerface.data.operations.read = videointerface_dataread;
+    videointerface.data.operations.write = videointerface_datawrite;
 
 }
 

@@ -152,7 +152,7 @@ void module_init(void)
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
     system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
 
-    cpus.read = cpus_read;
+    cpus.operations.read = cpus_read;
 
     if (!madt)
         return;
