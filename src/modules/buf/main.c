@@ -5,8 +5,6 @@
 static struct system_node root;
 static struct system_node idata;
 static struct system_node odata;
-static struct list idatalist;
-static struct list odatalist;
 static struct ring ring;
 static char data[FUDGE_BSIZE];
 static struct spinlock datalock;
@@ -34,7 +32,7 @@ static void unblock(struct list *states)
 static struct system_node *idata_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&idatalist, &state->item);
+    list_add(&idata.states, &state->item);
 
     return self;
 
@@ -43,8 +41,8 @@ static struct system_node *idata_open(struct system_node *self, struct service_s
 static struct system_node *idata_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&idatalist, &state->item);
-    unblock(&odatalist);
+    list_remove(&idata.states, &state->item);
+    unblock(&odata.states);
 
     return self;
 
@@ -58,9 +56,9 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
     count = ring_read(&ring, buffer, count);
 
     spinlock_release(&datalock);
-    unblock(&odatalist);
+    unblock(&odata.states);
 
-    if (!count && odatalist.count)
+    if (!count && odata.states.count)
         kernel_blocktask(state->task);
 
     return count;
@@ -70,7 +68,7 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
 static struct system_node *odata_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&odatalist, &state->item);
+    list_add(&odata.states, &state->item);
 
     return self;
 
@@ -79,8 +77,8 @@ static struct system_node *odata_open(struct system_node *self, struct service_s
 static struct system_node *odata_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&odatalist, &state->item);
-    unblock(&idatalist);
+    list_remove(&odata.states, &state->item);
+    unblock(&idata.states);
 
     return self;
 
@@ -94,7 +92,7 @@ static unsigned int odata_write(struct system_node *self, struct system_node *cu
     count = ring_write(&ring, buffer, count);
 
     spinlock_release(&datalock);
-    unblock(&idatalist);
+    unblock(&idata.states);
 
     if (!count)
         kernel_blocktask(state->task);
