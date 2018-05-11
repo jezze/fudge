@@ -4,32 +4,6 @@
 #include "con.h"
 
 static struct system_node root;
-static struct system_node clone;
-
-static struct system_node *clone_child(struct system_node *self, struct service_state *state, char *path, unsigned int length)
-{
-
-    struct list_item *current;
-
-    spinlock_acquire(&root.children.spinlock);
-
-    for (current = root.children.head; current; current = current->next)
-    {
-
-        struct system_node *node = current->data;
-
-        if (node == self)
-            continue;
-
-        return node->operations.child(node, state, path, length);
-
-    }
-
-    spinlock_release(&root.children.spinlock);
-
-    return self;
-
-}
 
 void con_init(struct con *con)
 {
@@ -64,9 +38,6 @@ void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "con");
-    system_initnode(&clone, SYSTEM_NODETYPE_GROUP, "clone");
-
-    clone.operations.child = clone_child;
 
 }
 
@@ -74,7 +45,6 @@ void module_register(void)
 {
 
     system_registernode(&root);
-    system_addchild(&root, &clone);
 
 }
 
@@ -82,7 +52,6 @@ void module_unregister(void)
 {
 
     system_unregisternode(&root);
-    system_removechild(&root, &clone);
 
 }
 

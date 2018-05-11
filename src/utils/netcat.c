@@ -10,7 +10,7 @@ void main(void)
 
     ctrl_setconsettings(&settings, 0, 0x11, 8080);
 
-    if (!file_walk(FILE_L1, "/system/con/clone"))
+    if (!file_walk(FILE_L1, "/system/con/con:0"))
         return;
 
     if (!file_walkfrom(FILE_L2, FILE_L1, "ctrl"))
