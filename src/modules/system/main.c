@@ -5,13 +5,6 @@
 static struct system_node *open(struct system_node *self, struct service_state *state)
 {
 
-    return self;
-
-}
-
-static struct system_node *openmailbox(struct system_node *self, struct service_state *state)
-{
-
     list_add(&self->states, &state->item);
 
     return self;
@@ -21,72 +14,9 @@ static struct system_node *openmailbox(struct system_node *self, struct service_
 static struct system_node *close(struct system_node *self, struct service_state *state)
 {
 
-    return self;
-
-}
-
-static struct system_node *closemailbox(struct system_node *self, struct service_state *state)
-{
-
     list_remove(&self->states, &state->item);
 
     return self;
-
-}
-
-static struct system_node *child(struct system_node *self, struct service_state *state, char *path, unsigned int length)
-{
-
-    struct list_item *current;
-    struct system_node *n = self;
-
-    spinlock_acquire(&self->children.spinlock);
-
-    for (current = self->children.head; current; current = current->next)
-    {
-
-        struct system_node *node = current->data;
-        unsigned int length0 = ascii_length(node->name);
-
-        if (node->type == SYSTEM_NODETYPE_MULTIGROUP)
-        {
-
-            unsigned int colon = memory_findbyte(path, length, ':');
-            unsigned int val;
-
-            if (length0 != colon)
-                continue;
-
-            if (!memory_match(node->name, path, colon))
-                continue;
-
-            val = ascii_rvalue(path + colon + 1, length - colon - 1, 10);
-
-            if (val != node->index)
-                continue;
-
-        }
-
-        else
-        {
-
-            if (length0 != length)
-                continue;
-
-            if (!memory_match(node->name, path, length))
-                continue;
-
-        }
-
-        n = node;
-
-        break;
-
-    }
-
-    spinlock_release(&self->children.spinlock);
-
-    return n;
 
 }
 
@@ -142,7 +72,28 @@ static unsigned int write(struct system_node *self, struct system_node *current,
 
 }
 
+static unsigned int writegroup(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return 0;
+
+}
+
+static unsigned int writemailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return 0;
+
+}
+
 static unsigned int seek(struct system_node *self, struct service_state *state, unsigned int offset)
+{
+
+    return offset;
+
+}
+
+static unsigned int seekgroup(struct system_node *self, struct service_state *state, unsigned int offset)
 {
 
     return offset;
@@ -209,32 +160,31 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     node->name = name;
     node->operations.open = open;
     node->operations.close = close;
-    node->operations.child = child;
-    node->operations.read = read;
-    node->operations.write = write;
-    node->operations.seek = seek;
 
-    if (type == SYSTEM_NODETYPE_MAILBOX)
+    switch (type)
     {
 
-        node->operations.open = openmailbox;
-        node->operations.close = closemailbox;
+    case SYSTEM_NODETYPE_MAILBOX:
         node->operations.read = readmailbox;
+        node->operations.write = writemailbox;
         node->operations.seek = seekmailbox;
 
-    }
+        break;
 
-    if (type == SYSTEM_NODETYPE_GROUP)
-    {
-
+    case SYSTEM_NODETYPE_GROUP:
+    case SYSTEM_NODETYPE_MULTIGROUP:
         node->operations.read = readgroup;
+        node->operations.write = writegroup;
+        node->operations.seek = seekgroup;
 
-    }
+        break;
 
-    if (type == SYSTEM_NODETYPE_MULTIGROUP)
-    {
+    default:
+        node->operations.read = read;
+        node->operations.write = write;
+        node->operations.seek = seek;
 
-        node->operations.read = readgroup;
+        break;
 
     }
 

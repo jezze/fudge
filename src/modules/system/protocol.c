@@ -35,8 +35,56 @@ static unsigned int protocol_child(struct service_backend *backend, struct servi
 {
 
     struct system_node *node = (struct system_node *)backend->map(state, id, sizeof (struct system_node));
+    struct list_item *current;
+    struct system_node *n = node;
 
-    return (unsigned int)node->operations.child(node, state, path, length);
+    spinlock_acquire(&node->children.spinlock);
+
+    for (current = node->children.head; current; current = current->next)
+    {
+
+        struct system_node *n2 = current->data;
+        unsigned int length0 = ascii_length(n2->name);
+
+        if (n2->type == SYSTEM_NODETYPE_MULTIGROUP)
+        {
+
+            unsigned int colon = memory_findbyte(path, length, ':');
+            unsigned int val;
+
+            if (length0 != colon)
+                continue;
+
+            if (!memory_match(n2->name, path, colon))
+                continue;
+
+            val = ascii_rvalue(path + colon + 1, length - colon - 1, 10);
+
+            if (val != n2->index)
+                continue;
+
+        }
+
+        else
+        {
+
+            if (length0 != length)
+                continue;
+
+            if (!memory_match(n2->name, path, length))
+                continue;
+
+        }
+
+        n = n2;
+
+        break;
+
+    }
+
+    spinlock_release(&node->children.spinlock);
+
+    return (unsigned int)n;
 
 }
 
