@@ -21,9 +21,9 @@ struct vga_character
 static struct base_driver driver;
 static struct console_interface consoleinterface;
 static struct video_interface videointerface;
-static struct {unsigned char color; unsigned int offset;} cursor;
-static struct vga_character *taddress;
-static void *gaddress;
+static struct {unsigned char color; unsigned int offset;} cursor = {0x0F, 0};
+static struct vga_character *taddress = (struct vga_character *)0x000B8000;
+static void *gaddress = (void *)0x000A0000;
 
 static void clear(unsigned int offset)
 {
@@ -210,10 +210,6 @@ static unsigned int videointerface_writecolormap(struct system_node *self, struc
 
 static void driver_init(void)
 {
-
-    taddress = (struct vga_character *)0x000B8000;
-    gaddress = (void *)0x000A0000;
-    cursor.color = 0x0F;
 
     console_initinterface(&consoleinterface);
     video_initinterface(&videointerface);
