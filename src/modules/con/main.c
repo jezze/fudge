@@ -8,7 +8,6 @@ static struct system_node root;
 void con_init(struct con *con)
 {
 
-    ctrl_setconsettings(&con->settings, 0, 0, 0);
     resource_init(&con->resource, RESOURCE_CON, con);
     system_initnode(&con->root, SYSTEM_NODETYPE_MULTIGROUP, "con");
     system_initnode(&con->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");

@@ -4,11 +4,9 @@
 void main(void)
 {
 
-    struct ctrl_consettings settings;
+    struct ctrl_consettings consettings;
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
-
-    ctrl_setconsettings(&settings, 0, 0x11, 8080);
 
     if (!file_walk(FILE_L1, "/system/con/con:0"))
         return;
@@ -19,8 +17,11 @@ void main(void)
     if (!file_walkfrom(FILE_L3, FILE_L1, "data"))
         return;
 
+    consettings.interface = 0;
+    consettings.port = 8080;
+
     file_open(FILE_L2);
-    file_writeall(FILE_L2, &settings, sizeof (struct ctrl_consettings));
+    file_writeall(FILE_L2, &consettings, sizeof (struct ctrl_consettings));
     file_close(FILE_L2);
     file_open(FILE_PO);
     file_open(FILE_L3);

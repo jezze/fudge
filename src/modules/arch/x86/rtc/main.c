@@ -46,8 +46,6 @@ static unsigned int clockinterface_readctrl(struct system_node *self, struct sys
 
     struct ctrl_clocksettings settings;
 
-    ctrl_setclocksettings(&settings, 0, 0, 0, 0, 0, 0, 0);
-
     settings.seconds = read(0x00);
     settings.minutes = read(0x02);
     settings.hours = read(0x04);

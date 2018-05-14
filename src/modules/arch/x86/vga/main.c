@@ -44,7 +44,11 @@ static void clear(unsigned int offset)
 static unsigned int consoleinterface_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, &consoleinterface.settings, sizeof (struct ctrl_consolesettings), offset);
+    struct ctrl_consolesettings settings;
+
+    settings.scroll = 1;
+
+    return memory_read(buffer, count, &settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 
@@ -213,7 +217,6 @@ static void driver_init(void)
 
     console_initinterface(&consoleinterface);
     video_initinterface(&videointerface);
-    ctrl_setconsolesettings(&consoleinterface.settings, 1);
     ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
     clear(0);
 

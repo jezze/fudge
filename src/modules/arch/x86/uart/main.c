@@ -128,7 +128,11 @@ static void handleirq(unsigned int irq)
 static unsigned int consoleinterface_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, &consoleinterface.settings, sizeof (struct ctrl_consolesettings), offset);
+    struct ctrl_consolesettings settings;
+
+    settings.scroll = 1;
+
+    return memory_read(buffer, count, &settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 
@@ -149,7 +153,6 @@ static void driver_init(void)
 {
 
     console_initinterface(&consoleinterface);
-    ctrl_setconsolesettings(&consoleinterface.settings, 1);
 
     consoleinterface.ctrl.operations.read = consoleinterface_readctrl;
     consoleinterface.odata.operations.write = consoleinterface_writeodata;
