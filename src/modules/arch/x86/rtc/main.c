@@ -44,15 +44,19 @@ static void handleirq(unsigned int irq)
 static unsigned int clockinterface_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    clockinterface.settings.seconds = read(0x00);
-    clockinterface.settings.minutes = read(0x02);
-    clockinterface.settings.hours = read(0x04);
-    clockinterface.settings.weekday = read(0x06);
-    clockinterface.settings.day = read(0x07);
-    clockinterface.settings.month = read(0x08);
-    clockinterface.settings.year = 2000 + read(0x09);
+    struct ctrl_clocksettings settings;
 
-    return memory_read(buffer, count, &clockinterface.settings, sizeof (struct ctrl_clocksettings), offset);
+    ctrl_setclocksettings(&settings, 0, 0, 0, 0, 0, 0, 0);
+
+    settings.seconds = read(0x00);
+    settings.minutes = read(0x02);
+    settings.hours = read(0x04);
+    settings.weekday = read(0x06);
+    settings.day = read(0x07);
+    settings.month = read(0x08);
+    settings.year = 2000 + read(0x09);
+
+    return memory_read(buffer, count, &settings, sizeof (struct ctrl_clocksettings), offset);
 
 }
 
@@ -60,7 +64,6 @@ static void driver_init(void)
 {
 
     clock_initinterface(&clockinterface);
-    ctrl_setclocksettings(&clockinterface.settings, 0, 0, 0, 0, 0, 0, 0);
 
     clockinterface.ctrl.operations.read = clockinterface_readctrl;
 

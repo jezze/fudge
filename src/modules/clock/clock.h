@@ -5,7 +5,6 @@ struct clock_interface
     struct system_node root;
     struct system_node ctrl;
     unsigned int id;
-    struct ctrl_clocksettings settings;
 
 };
 
