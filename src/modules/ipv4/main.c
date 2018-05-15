@@ -7,14 +7,6 @@
 
 #define ARPTABLESIZE                    8
 
-struct ipv4_arpentry
-{
-
-    unsigned char haddress[ETHERNET_ADDRSIZE];
-    unsigned char paddress[IPV4_ADDRSIZE];
-
-};
-
 static struct ethernet_protocol ethernetprotocol;
 static struct arp_hook arphook;
 static struct ipv4_arpentry arptable[ARPTABLESIZE];

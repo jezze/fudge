@@ -36,7 +36,15 @@ struct ctrl_videosettings
 
 };
 
-struct ipv4_address
+struct ipv4_arpentry
+{
+
+    unsigned char haddress[6];
+    unsigned char paddress[4];
+
+};
+
+struct ipv4_socket
 {
 
     unsigned char address[4];
@@ -47,8 +55,8 @@ struct ipv4_address
 struct ipv4_pair
 {
 
-    struct ipv4_address sender;
-    struct ipv4_address target;
+    struct ipv4_socket sender;
+    struct ipv4_socket target;
     unsigned int count;
 
 };
