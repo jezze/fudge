@@ -34,26 +34,6 @@ static unsigned int con_writectrl(struct system_node *self, struct system_node *
 
 }
 
-static struct system_node *con_opendata(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&self->states, &state->item);
-    udp_registerhook(&hook);
-
-    return self;
-
-}
-
-static struct system_node *con_closedata(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&self->states, &state->item);
-    udp_unregisterhook(&hook);
-
-    return self;
-
-}
-
 static unsigned int con_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -109,8 +89,6 @@ void module_init(void)
 
     con.ctrl.operations.read = con_readctrl;
     con.ctrl.operations.write = con_writectrl;
-    con.data.operations.open = con_opendata;
-    con.data.operations.close = con_closedata;
     con.data.operations.write = con_writedata;
 
 }
@@ -119,6 +97,7 @@ void module_register(void)
 {
 
     con_register(&con);
+    udp_registerhook(&hook);
 
 }
 
@@ -126,6 +105,7 @@ void module_unregister(void)
 {
 
     con_unregister(&con);
+    udp_unregisterhook(&hook);
 
 }
 
