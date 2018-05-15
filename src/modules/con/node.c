@@ -5,8 +5,6 @@
 #include <modules/udp/udp.h>
 #include "con.h"
 
-#define UDPTABLESIZE                    8
-
 static struct con con;
 static struct udp_hook hook;
 static struct ctrl_consettings consettings;
