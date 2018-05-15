@@ -9,8 +9,6 @@
 
 static struct con con;
 static struct udp_hook hook;
-static struct udp_session udptable[UDPTABLESIZE];
-static struct system_node udptablenode;
 static struct ctrl_consettings consettings;
 
 static void *writedata(void *buffer, void *payload, unsigned int count)
@@ -61,12 +59,12 @@ static struct system_node *con_closedata(struct system_node *self, struct servic
 static unsigned int con_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct udp_session *session = &udptable[0];
+    struct ipv4_pair *pair = buffer;
     unsigned char response[FUDGE_BSIZE];
     unsigned char *c = response;
 
-    c = udp_writehead(c, session->sip, session->sp, session->tip, session->tp, count);
-    c = writedata(c, buffer, count);
+    c = udp_writehead(c, pair->sender.address, pair->sender.port, pair->target.address, pair->target.port, pair->count);
+    c = writedata(c, pair + 1, pair->count);
 
     udp_send(response, c - response);
 
@@ -84,36 +82,24 @@ static unsigned int hook_match(unsigned int port)
 static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *udpheader, void *buffer, unsigned int count)
 {
 
-    struct udp_session *session = &udptable[0];
+    struct ipv4_pair pair;
 
-    session->sip[0] = ipv4header->tip[0];
-    session->sip[1] = ipv4header->tip[1];
-    session->sip[2] = ipv4header->tip[2];
-    session->sip[3] = ipv4header->tip[3];
-    session->tip[0] = ipv4header->sip[0];
-    session->tip[1] = ipv4header->sip[1];
-    session->tip[2] = ipv4header->sip[2];
-    session->tip[3] = ipv4header->sip[3];
-    session->sp[0] = udpheader->tp[0];
-    session->sp[1] = udpheader->tp[1];
-    session->tp[0] = udpheader->sp[0];
-    session->tp[1] = udpheader->sp[1];
+    pair.sender.address[0] = ipv4header->sip[0];
+    pair.sender.address[1] = ipv4header->sip[1];
+    pair.sender.address[2] = ipv4header->sip[2];
+    pair.sender.address[3] = ipv4header->sip[3];
+    pair.sender.port[0] = udpheader->sp[0];
+    pair.sender.port[1] = udpheader->sp[1];
+    pair.target.address[0] = ipv4header->tip[0];
+    pair.target.address[1] = ipv4header->tip[1];
+    pair.target.address[2] = ipv4header->tip[2];
+    pair.target.address[3] = ipv4header->tip[3];
+    pair.target.port[0] = udpheader->tp[0];
+    pair.target.port[1] = udpheader->tp[1];
+    pair.count = count;
 
+    kernel_multicast(&con.data.states, &pair, sizeof (struct ipv4_pair));
     kernel_multicast(&con.data.states, buffer, count);
-
-}
-
-static unsigned int udptablenode_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return memory_read(buffer, count, udptable, sizeof (struct udp_session) * UDPTABLESIZE, offset);
-
-}
-
-static unsigned int udptablenode_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return memory_write(udptable, sizeof (struct udp_session) * UDPTABLESIZE, buffer, count, offset);
 
 }
 
@@ -122,15 +108,12 @@ void module_init(void)
 
     con_init(&con);
     udp_inithook(&hook, hook_match, hook_notify);
-    system_initnode(&udptablenode, SYSTEM_NODETYPE_NORMAL, "udptable");
 
     con.ctrl.operations.read = con_readctrl;
     con.ctrl.operations.write = con_writectrl;
     con.data.operations.open = con_opendata;
     con.data.operations.close = con_closedata;
     con.data.operations.write = con_writedata;
-    udptablenode.operations.read = udptablenode_read;
-    udptablenode.operations.write = udptablenode_write;
 
 }
 
@@ -138,7 +121,6 @@ void module_register(void)
 {
 
     con_register(&con);
-    system_addchild(&con.root, &udptablenode);
 
 }
 
@@ -146,7 +128,6 @@ void module_unregister(void)
 {
 
     con_unregister(&con);
-    system_removechild(&con.root, &udptablenode);
 
 }
 
