@@ -18,12 +18,12 @@ void main(void)
     file_read(FILE_L0, &entry.haddress, 6);
     file_close(FILE_L0);
 
-    if (!file_walk(FILE_L1, "/system/ethernet/ipv4/arptable"))
+    if (!file_walk(FILE_L0, "/system/ethernet/ipv4/arptable"))
         return;
 
-    file_open(FILE_L1);
-    file_write(FILE_L1, &entry, sizeof (struct ipv4_arpentry));
-    file_close(FILE_L1);
+    file_open(FILE_L0);
+    file_write(FILE_L0, &entry, sizeof (struct ipv4_arpentry));
+    file_close(FILE_L0);
 
 }
 
