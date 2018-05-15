@@ -52,7 +52,7 @@ struct ipv4_socket
 
 };
 
-struct ipv4_pair
+struct ctrl_conheader
 {
 
     struct ipv4_socket sender;

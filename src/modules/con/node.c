@@ -57,12 +57,12 @@ static struct system_node *con_closedata(struct system_node *self, struct servic
 static unsigned int con_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct ipv4_pair *pair = buffer;
+    struct ctrl_conheader *header = buffer;
     unsigned char response[FUDGE_BSIZE];
     unsigned char *c = response;
 
-    c = udp_writehead(c, pair->sender.address, pair->sender.port, pair->target.address, pair->target.port, pair->count);
-    c = writedata(c, pair + 1, pair->count);
+    c = udp_writehead(c, header->sender.address, header->sender.port, header->target.address, header->target.port, header->count);
+    c = writedata(c, header + 1, header->count);
 
     udp_send(response, c - response);
 
@@ -80,23 +80,23 @@ static unsigned int hook_match(unsigned int port)
 static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *udpheader, void *buffer, unsigned int count)
 {
 
-    struct ipv4_pair pair;
+    struct ctrl_conheader header;
 
-    pair.sender.address[0] = ipv4header->sip[0];
-    pair.sender.address[1] = ipv4header->sip[1];
-    pair.sender.address[2] = ipv4header->sip[2];
-    pair.sender.address[3] = ipv4header->sip[3];
-    pair.sender.port[0] = udpheader->sp[0];
-    pair.sender.port[1] = udpheader->sp[1];
-    pair.target.address[0] = ipv4header->tip[0];
-    pair.target.address[1] = ipv4header->tip[1];
-    pair.target.address[2] = ipv4header->tip[2];
-    pair.target.address[3] = ipv4header->tip[3];
-    pair.target.port[0] = udpheader->tp[0];
-    pair.target.port[1] = udpheader->tp[1];
-    pair.count = count;
+    header.sender.address[0] = ipv4header->sip[0];
+    header.sender.address[1] = ipv4header->sip[1];
+    header.sender.address[2] = ipv4header->sip[2];
+    header.sender.address[3] = ipv4header->sip[3];
+    header.sender.port[0] = udpheader->sp[0];
+    header.sender.port[1] = udpheader->sp[1];
+    header.target.address[0] = ipv4header->tip[0];
+    header.target.address[1] = ipv4header->tip[1];
+    header.target.address[2] = ipv4header->tip[2];
+    header.target.address[3] = ipv4header->tip[3];
+    header.target.port[0] = udpheader->tp[0];
+    header.target.port[1] = udpheader->tp[1];
+    header.count = count;
 
-    kernel_multicast(&con.data.states, &pair, sizeof (struct ipv4_pair));
+    kernel_multicast(&con.data.states, &header, sizeof (struct ctrl_conheader));
     kernel_multicast(&con.data.states, buffer, count);
 
 }
