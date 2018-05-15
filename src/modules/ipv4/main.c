@@ -103,17 +103,11 @@ void *ipv4_writehead(void *buffer, unsigned char *sip, unsigned char *tip, unsig
 void ipv4_send(void *buffer, unsigned int count)
 {
 
-    struct ethernet_header *header = buffer;
-    struct ethernet_interface *interface = ethernet_findinterface(header->sha);
-
-    if (!interface)
-        return;
-
-    ethernet_send(interface, buffer, count);
+    ethernet_send(buffer, count);
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_interface *interface, struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
+static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
     struct ipv4_header *header = buffer;

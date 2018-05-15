@@ -50,7 +50,7 @@ static struct arp_hook *findhook(unsigned int htype, unsigned char hlength, unsi
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_interface *ethernetinterface, struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
+static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
     struct arp_header *header = buffer;
@@ -81,7 +81,7 @@ static void ethernetprotocol_notify(struct ethernet_interface *ethernetinterface
                 unsigned char response[ETHERNET_MTU];
                 unsigned char *current = arp_writehead(response, htype, header->hlength, ptype, header->plength, ARP_REPLY, tha, tpa, sha, spa);
 
-                ethernet_send(ethernetinterface, response, current - response);
+                ethernet_send(response, current - response);
 
             }
 

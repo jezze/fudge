@@ -5,6 +5,25 @@
 
 static struct system_node root;
 
+static struct ethernet_interface *findinterface(void *address)
+{
+
+    struct resource *current = 0;
+
+    while ((current = resource_foreachtype(current, RESOURCE_ETHERNETINTERFACE)))
+    {
+
+        struct ethernet_interface *interface = current->data;
+
+        if (interface->matchaddress(address, ETHERNET_ADDRSIZE))
+            return interface;
+
+    }
+
+    return 0;
+
+}
+
 void *ethernet_writehead(void *buffer, unsigned int type, unsigned char *sha, unsigned char *tha)
 {
 
@@ -20,8 +39,14 @@ void *ethernet_writehead(void *buffer, unsigned int type, unsigned char *sha, un
 
 }
 
-void ethernet_send(struct ethernet_interface *interface, void *buffer, unsigned int count)
+void ethernet_send(void *buffer, unsigned int count)
 {
+
+    struct ethernet_header *header = buffer;
+    struct ethernet_interface *interface = findinterface(header->sha);
+
+    if (!interface)
+        return;
 
     interface->send(buffer, count);
 
@@ -40,7 +65,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
         struct ethernet_protocol *protocol = current->data;
 
         if (protocol->type == type)
-            protocol->notify(interface, header, header + 1, count - 18);
+            protocol->notify(header, header + 1, count - 18);
 
     }
 
@@ -67,25 +92,6 @@ void ethernet_registerprotocol(struct ethernet_protocol *protocol)
     resource_register(&protocol->resource);
     system_addchild(&protocol->root, &protocol->data);
     system_addchild(&root, &protocol->root);
-
-}
-
-struct ethernet_interface *ethernet_findinterface(void *address)
-{
-
-    struct resource *current = 0;
-
-    while ((current = resource_foreachtype(current, RESOURCE_ETHERNETINTERFACE)))
-    {
-
-        struct ethernet_interface *interface = current->data;
-
-        if (interface->matchaddress(address, ETHERNET_ADDRSIZE))
-            return interface;
-
-    }
-
-    return 0;
 
 }
 
@@ -123,7 +129,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
 
 }
 
-void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned int type, void (*notify)(struct ethernet_interface *ethernetinterface, struct ethernet_header *header, void *buffer, unsigned int count))
+void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned int type, void (*notify)(struct ethernet_header *header, void *buffer, unsigned int count))
 {
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);
