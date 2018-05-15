@@ -7,7 +7,7 @@
 
 static struct con con;
 static struct udp_hook hook;
-static struct ctrl_consettings consettings;
+static struct ipv4_address address;
 
 static void *writedata(void *buffer, void *payload, unsigned int count)
 {
@@ -23,14 +23,14 @@ static void *writedata(void *buffer, void *payload, unsigned int count)
 static unsigned int con_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, &consettings, sizeof (struct ctrl_consettings), offset);
+    return memory_read(buffer, count, &address, sizeof (struct ipv4_address), offset);
 
 }
 
 static unsigned int con_writectrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write(&consettings, sizeof (struct ctrl_consettings), buffer, count, offset);
+    return memory_write(&address, sizeof (struct ipv4_address), buffer, count, offset);
 
 }
 
@@ -73,7 +73,7 @@ static unsigned int con_writedata(struct system_node *self, struct system_node *
 static unsigned int hook_match(unsigned int port)
 {
 
-    return port == consettings.port;
+    return port == ((address.port[0] << 8) | address.port[1]);
 
 }
 

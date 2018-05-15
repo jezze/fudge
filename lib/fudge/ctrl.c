@@ -1,13 +1,5 @@
 #include "ctrl.h"
 
-void ctrl_setconsettings(struct ctrl_consettings *settings, unsigned int interface, unsigned int protocol, unsigned int port)
-{
-
-    settings->interface = interface;
-    settings->port = port;
-
-}
-
 void ctrl_setpartsettings(struct ctrl_partsettings *settings, unsigned int interface, unsigned int start, unsigned int end)
 {
 
