@@ -1,0 +1,86 @@
+#!/bin/bash
+
+cmd_run() {
+    id=$1
+    sttybak=$(stty -g)
+
+    echo "Use ctrl+] to kill node$id"
+
+    stty intr ^]
+#    qemu-system-x86_64 -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio -serial stdio -display none -device virtio-net-pci,netdev=eth0,mac=52:54:00:00:0$id:01 -netdev tap,id=eth0,ifname=node$id-eth0,script=no,downscript=no
+    qemu-system-x86_64 -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio -serial stdio -display none -net nic,model=virtio,macaddr=52:54:00:00:0$id:01 -net tap,ifname=node$id-eth0,script=no,downscript=no
+    stty $sttybak
+}
+
+cmd_nat() {
+    iface=$1
+
+    sysctl -w net.ipv4.conf.all.forwarding=1
+    iptables -t nat -A POSTROUTING -o $iface -j MASQUERADE
+}
+
+cmd_connect() {
+    net="eth0"
+    bridge="bridge-$net"
+    interfaces=$(ls -1 /sys/class/net | grep node.*-$net)
+    address="10.0.5.1/24"
+
+    if ! test -e /sys/class/net/$bridge
+    then
+        brctl addbr $bridge
+        ip link set $bridge up
+        ip addr add $address dev $bridge
+    fi
+
+    for interface in $interfaces
+    do
+        brctl addif $bridge $interface
+        ip link set $interface up
+    done
+}
+
+cmd_disconnect() {
+    net="eth0"
+    bridge="bridge-$net"
+    interfaces=$(ls -1 /sys/class/net | grep node.*-$net)
+    address="10.0.5.1/24"
+
+    for interface in $interfaces
+    do
+        ip link set $interface down
+        brctl delif $bridge $interface
+    done
+
+    if test -e /sys/class/net/$bridge
+    then
+        ip addr del $address dev $bridge
+        ip link set $bridge down
+        brctl delbr $bridge
+    fi
+}
+
+cmd_help() {
+    echo "commands:"
+    echo "    run <id>"
+    echo "    nat <iface>"
+    echo "    connect"
+    echo "    disconnect"
+}
+
+case "$1" in
+run)
+    cmd_run $2
+    ;;
+nat)
+    cmd_nat $2
+    ;;
+connect)
+    cmd_connect
+    ;;
+disconnect)
+    cmd_disconnect
+    ;;
+*)
+    cmd_help
+    ;;
+esac
