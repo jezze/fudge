@@ -23,7 +23,7 @@ cmd_connect() {
     net="eth0"
     bridge="bridge-$net"
     interfaces=$(ls -1 /sys/class/net | grep node.*-$net)
-    address="10.0.5.1/24"
+    address="10.0.5.80/24"
 
     if ! test -e /sys/class/net/$bridge
     then
@@ -43,7 +43,7 @@ cmd_disconnect() {
     net="eth0"
     bridge="bridge-$net"
     interfaces=$(ls -1 /sys/class/net | grep node.*-$net)
-    address="10.0.5.1/24"
+    address="10.0.5.80/24"
 
     for interface in $interfaces
     do

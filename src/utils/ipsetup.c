@@ -6,11 +6,6 @@ void main(void)
 
     struct ipv4_arpentry entry;
 
-    entry.paddress[0] = 10;
-    entry.paddress[1] = 0;
-    entry.paddress[2] = 5;
-    entry.paddress[3] = 5;
-
     if (!file_walk(FILE_L0, "/system/ethernet/if:0/addr"))
         return;
 
@@ -20,6 +15,11 @@ void main(void)
 
     if (!file_walk(FILE_L0, "/system/ethernet/ipv4/arptable"))
         return;
+
+    entry.paddress[0] = 10;
+    entry.paddress[1] = 0;
+    entry.paddress[2] = 5;
+    entry.paddress[3] = entry.haddress[4];
 
     file_open(FILE_L0);
     file_write(FILE_L0, &entry, sizeof (struct ipv4_arpentry));
