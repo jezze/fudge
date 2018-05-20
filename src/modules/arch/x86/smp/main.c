@@ -50,31 +50,6 @@ static void detect(struct acpi_madt *madt)
 
         }
 
-        if (entry->type == 1)
-        {
-
-/*
-            struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
-            unsigned int id;
-            unsigned int version;
-            unsigned int count;
-
-            arch_setmap(8, ioapic->address, ioapic->address, 0x1000);
-
-            id = ioapic_ind(ioapic->address, 0);
-            version = ioapic_ind(ioapic->address, 1);
-            count = ((version >> 16) & 0xFF) + 1;
-
-            DEBUG(DEBUG_INFO, "SMP IOAPIC");
-            debug_write(DEBUG_INFO, "  ", "ioapic id", ioapic->id);
-            debug_write(DEBUG_INFO, "  ", "ioapic address", ioapic->address);
-            debug_write(DEBUG_INFO, "  ", "ioapic id", id);
-            debug_write(DEBUG_INFO, "  ", "ioapic version", version);
-            debug_write(DEBUG_INFO, "  ", "ioapic count", count);
-*/
-
-        }
-
         madttable += entry->length;
 
     }
@@ -88,10 +63,10 @@ static struct core *coreget(void)
 
 }
 
-/* Change from picktail to pickhead for round-robin */
 static void coreassign(struct task *task)
 {
 
+    /* Change from picktail to pickhead for round-robin */
     struct list_item *current = list_picktail(&corelist);
     struct core *core = current->data;
 
