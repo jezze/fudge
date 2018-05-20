@@ -10,7 +10,6 @@
 #include <modules/arch/x86/acpi/acpi.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include <modules/arch/x86/apic/apic.h>
-#include <modules/arch/x86/ioapic/ioapic.h>
 #include <modules/arch/x86/pit/pit.h>
 #include "smp.h"
 
