@@ -33,7 +33,7 @@ static struct view
 
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-struct {struct event_header header; char outputdata[FUDGE_BSIZE];} message;
+struct {struct event_header header; char data[FUDGE_BSIZE];} message;
 static struct ring output;
 static struct box size;
 static struct box body;
@@ -754,7 +754,7 @@ static void setupremotes(void)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, message.outputdata);
+    ring_init(&output, FUDGE_BSIZE, message.data);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     setupviews();

@@ -9,7 +9,7 @@
 static struct widget_textbox content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-struct {struct event_header header; char outputdata[FUDGE_BSIZE];} message;
+struct {struct event_header header; char data[FUDGE_BSIZE];} message;
 static struct ring output;
 static char inputdata1[FUDGE_BSIZE >> 5];
 static struct ring input1;
@@ -327,7 +327,7 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, message.outputdata);
+    ring_init(&output, FUDGE_BSIZE, message.data);
     ring_init(&input1, FUDGE_BSIZE >> 5, inputdata1);
     ring_init(&input2, FUDGE_BSIZE >> 5, inputdata2);
     ring_init(&text, FUDGE_BSIZE, textdata);

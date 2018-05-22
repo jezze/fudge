@@ -7,7 +7,7 @@
 #include "render.h"
 
 static unsigned int quit;
-struct {struct event_header header; char outputdata[FUDGE_BSIZE];} message;
+struct {struct event_header header; char data[FUDGE_BSIZE];} message;
 static struct ring output;
 
 static void onwmmousepress(struct event_header *header, struct event_wmmousepress *wmmousepress)
@@ -53,7 +53,7 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, message.outputdata);
+    ring_init(&output, FUDGE_BSIZE, message.data);
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;
