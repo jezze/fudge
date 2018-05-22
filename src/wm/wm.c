@@ -703,10 +703,10 @@ static void onwmhide(struct event_header *header)
 
 }
 
-static void onwmflush(struct event_header *header)
+static void onwmflush(struct event_header *header, void *buffer, unsigned int count)
 {
 
-    render_begin(header + 1, header->length - sizeof (struct event_header));
+    render_begin(buffer, count);
     render_update(FILE_L5, size.w, size.h);
     render_complete();
 
@@ -865,7 +865,7 @@ void main(void)
             break;
 
         case EVENT_WMFLUSH:
-            onwmflush(&event.header);
+            onwmflush(&event.header, event.data, event.header.length - sizeof (struct event_header));
 
             break;
 
