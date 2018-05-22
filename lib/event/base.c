@@ -17,3 +17,16 @@ unsigned int event_read(struct event *event, unsigned int descriptor)
 
 }
 
+void event_send(unsigned int descriptor, unsigned int destination, unsigned int type, void *buffer, unsigned int length)
+{
+
+    struct event_header *header = buffer;
+
+    header->destination = destination;
+    header->type = type;
+    header->length = length;
+
+    file_writeall(descriptor, header, header->length);
+
+}
+
