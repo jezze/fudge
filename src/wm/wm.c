@@ -517,15 +517,15 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
 
     unsigned int factor = (videomode->h / 320);
 
+    lineheight = 12 + factor * 4;
+    padding = 4 + factor * 2;
+
     render_setpaint(videomode->bpp);
 
     switch (factor)
     {
 
     case 0:
-        lineheight = 12 + factor * 2;
-        padding = 4 + factor * 2;
-
         file_walk(FILE_L9, "/data/ter-112n.pcf");
         render_setfont(FILE_L9, lineheight, padding);
         render_setmouse(&mouse, 16);
@@ -533,9 +533,6 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         break;
 
     case 1:
-        lineheight = 14 + factor * 2;
-        padding = 4 + factor * 2;
-
         file_walk(FILE_L9, "/data/ter-114n.pcf");
         render_setfont(FILE_L9, lineheight, padding);
         render_setmouse(&mouse, 16);
@@ -543,9 +540,6 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         break;
 
     case 2:
-        lineheight = 16 + factor * 2;
-        padding = 4 + factor * 2;
-
         file_walk(FILE_L9, "/data/ter-116n.pcf");
         render_setfont(FILE_L9, lineheight, padding);
         render_setmouse(&mouse, 24);
@@ -553,9 +547,6 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
         break;
 
     default:
-        lineheight = 18 + factor * 2;
-        padding = 4 + factor * 2;
-
         file_walk(FILE_L9, "/data/ter-118n.pcf");
         render_setfont(FILE_L9, lineheight, padding);
         render_setmouse(&mouse, 24);
