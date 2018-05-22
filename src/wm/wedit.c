@@ -10,7 +10,7 @@ static struct widget_textbox content;
 static struct widget_text status;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static char outputdata[FUDGE_BSIZE];
+struct {struct event_header header; char outputdata[FUDGE_BSIZE];} message;
 static struct ring output;
 static char inputdata1[FUDGE_BSIZE];
 static struct ring input1;
@@ -257,7 +257,7 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&output, FUDGE_BSIZE, message.outputdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     widget_inittextbox(&content);
@@ -266,16 +266,12 @@ void main(void)
     if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    if (!file_walk(FILE_L1, "/system/wm/data"))
-        return;
-
-    if (!file_walk(FILE_L2, "/system/wm/event"))
+    if (!file_walk(FILE_L1, "/system/wm/event"))
         return;
 
     file_open(FILE_L0);
     file_open(FILE_L1);
-    file_open(FILE_L2);
-    event_sendwmmap(FILE_L2, EVENT_ADDR_BROADCAST);
+    event_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit)
     {
@@ -322,16 +318,14 @@ void main(void)
         if (ring_count(&output))
         {
 
-            file_writeall(FILE_L1, outputdata, ring_count(&output));
+            event_send(FILE_L1, EVENT_ADDR_BROADCAST, EVENT_WMFLUSH, &message, sizeof (struct event_header) + ring_count(&output));
             ring_reset(&output);
-            event_sendwmflush(FILE_L2, EVENT_ADDR_BROADCAST);
 
         }
 
     }
 
-    event_sendwmunmap(FILE_L2, EVENT_ADDR_BROADCAST);
-    file_close(FILE_L2);
+    event_sendwmunmap(FILE_L1, EVENT_ADDR_BROADCAST);
     file_close(FILE_L1);
     file_close(FILE_L0);
 

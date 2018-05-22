@@ -7,7 +7,7 @@
 #include "render.h"
 
 static unsigned int quit;
-static char outputdata[FUDGE_BSIZE];
+struct {struct event_header header; char outputdata[FUDGE_BSIZE];} message;
 static struct ring output;
 
 static void onwmmousepress(struct event_header *header, struct event_wmmousepress *wmmousepress)
@@ -53,15 +53,12 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&output, FUDGE_BSIZE, message.outputdata);
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    if (!file_walk(FILE_L1, "/system/wm/data"))
-        return;
-
-    if (!file_walk(FILE_L2, "/system/wm/event"))
+    if (!file_walk(FILE_L1, "/system/wm/event"))
         return;
 
     if (!file_walk(FILE_L6, "/system/video/if:0/ctrl"))
@@ -69,8 +66,7 @@ void main(void)
 
     file_open(FILE_L0);
     file_open(FILE_L1);
-    file_open(FILE_L2);
-    event_sendwmmap(FILE_L2, EVENT_ADDR_BROADCAST);
+    event_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit)
     {
@@ -112,16 +108,14 @@ void main(void)
         if (ring_count(&output))
         {
 
-            file_writeall(FILE_L1, outputdata, ring_count(&output));
+            event_send(FILE_L1, EVENT_ADDR_BROADCAST, EVENT_WMFLUSH, &message, sizeof (struct event_header) + ring_count(&output));
             ring_reset(&output);
-            event_sendwmflush(FILE_L2, EVENT_ADDR_BROADCAST);
 
         }
 
     }
 
-    event_sendwmunmap(FILE_L2, EVENT_ADDR_BROADCAST);
-    file_close(FILE_L2);
+    event_sendwmunmap(FILE_L1, EVENT_ADDR_BROADCAST);
     file_close(FILE_L1);
     file_close(FILE_L0);
 

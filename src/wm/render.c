@@ -570,25 +570,18 @@ void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
 
 }
 
-void render_begin(unsigned int descriptor)
+void render_begin(void *buffer, unsigned int count)
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
+    struct widget *current = 0;
     struct layer insert;
 
     insert.data = buffer;
-    insert.count = 0;
-    insert.total = FUDGE_BSIZE;
+    insert.count = count;
+    insert.total = count;
 
-    while ((insert.count = file_read(descriptor, insert.data, insert.total)))
-    {
-
-        struct widget *current = 0;
-
-        while ((current = nextwidget(current, &insert)))
-            insertwidget(current, &layers[current->z]);
-
-    }
+    while ((current = nextwidget(current, &insert)))
+        insertwidget(current, &layers[current->z]);
 
 }
 

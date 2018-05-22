@@ -33,7 +33,7 @@ static struct view
 
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static char outputdata[FUDGE_BSIZE];
+struct {struct event_header header; char outputdata[FUDGE_BSIZE];} message;
 static struct ring output;
 static struct box size;
 static struct box body;
@@ -139,7 +139,7 @@ static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, 
 {
 
     box_setsize(&remote->window.size, x, y, w, h);
-    event_sendwmresize(FILE_L2, remote->source, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+    event_sendwmresize(FILE_L1, remote->source, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
 
 }
 
@@ -153,7 +153,7 @@ static void showremotes(struct event_header *header, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        event_sendwmshow(FILE_L2, remote->source);
+        event_sendwmshow(FILE_L1, remote->source);
         updateremote(header, remote);
 
     }
@@ -170,7 +170,7 @@ static void hideremotes(struct event_header *header, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        event_sendwmhide(FILE_L2, remote->source);
+        event_sendwmhide(FILE_L1, remote->source);
         removeremote(header, remote);
 
     }
@@ -254,7 +254,7 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
     {
 
         if (currentview->currentremote)
-            event_sendwmkeypress(FILE_L2, currentview->currentremote->source, keypress->scancode);
+            event_sendwmkeypress(FILE_L1, currentview->currentremote->source, keypress->scancode);
 
         return;
 
@@ -307,8 +307,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (!currentview->currentremote)
             break;
 
-        event_sendwmhide(FILE_L2, currentview->currentremote->source);
-        event_sendwmexit(FILE_L2, currentview->currentremote->source);
+        event_sendwmhide(FILE_L1, currentview->currentremote->source);
+        event_sendwmexit(FILE_L1, currentview->currentremote->source);
 
         break;
 
@@ -397,8 +397,8 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
         if (!(keymod & KEYMOD_SHIFT))
             break;
 
-        event_sendwmhide(FILE_L2, header->destination);
-        event_sendwmexit(FILE_L2, header->destination);
+        event_sendwmhide(FILE_L1, header->destination);
+        event_sendwmexit(FILE_L1, header->destination);
 
         break;
 
@@ -415,7 +415,7 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
     {
 
         if (currentview->currentremote)
-            event_sendwmkeyrelease(FILE_L2, currentview->currentremote->source, keyrelease->scancode);
+            event_sendwmkeyrelease(FILE_L1, currentview->currentremote->source, keyrelease->scancode);
 
         return;
 
@@ -438,7 +438,7 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
     updatemouse(header);
 
     if (currentview->currentremote)
-        event_sendwmmousemove(FILE_L2, currentview->currentremote->source, mouse.size.x, mouse.size.y);
+        event_sendwmmousemove(FILE_L1, currentview->currentremote->source, mouse.size.x, mouse.size.y);
 
 }
 
@@ -500,7 +500,7 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
     }
 
     if (currentview->currentremote)
-        event_sendwmmousepress(FILE_L2, currentview->currentremote->source, mousepress->button);
+        event_sendwmmousepress(FILE_L1, currentview->currentremote->source, mousepress->button);
 
 }
 
@@ -508,7 +508,7 @@ static void onmouserelease(struct event_header *header, struct event_mousereleas
 {
 
     if (currentview->currentremote)
-        event_sendwmmouserelease(FILE_L2, currentview->currentremote->source, mouserelease->button);
+        event_sendwmmouserelease(FILE_L1, currentview->currentremote->source, mouserelease->button);
 
 }
 
@@ -555,8 +555,8 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
 
     }
 
-    event_sendwmresize(FILE_L2, header->destination, 0, 0, videomode->w, videomode->h, padding, lineheight);
-    event_sendwmshow(FILE_L2, header->destination);
+    event_sendwmresize(FILE_L1, header->destination, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    event_sendwmshow(FILE_L1, header->destination);
 
 }
 
@@ -573,7 +573,7 @@ static void onwmmap(struct event_header *header)
     activateremote(currentview->currentremote);
     arrangeview(currentview);
     showremotes(header, &currentview->remotes);
-    event_sendwminit(FILE_L2, header->source);
+    event_sendwminit(FILE_L1, header->source);
 
 }
 
@@ -631,8 +631,8 @@ static void onwmexit(struct event_header *header)
 
             struct remote *remote = current2->data;
 
-            event_sendwmhide(FILE_L2, remote->source);
-            event_sendwmexit(FILE_L2, remote->source);
+            event_sendwmhide(FILE_L1, remote->source);
+            event_sendwmexit(FILE_L1, remote->source);
 
         }
 
@@ -706,8 +706,8 @@ static void onwmhide(struct event_header *header)
 static void onwmflush(struct event_header *header)
 {
 
-    render_begin(FILE_L1);
-    render_update(FILE_L6, size.w, size.h);
+    render_begin(header + 1, header->length - sizeof (struct event_header));
+    render_update(FILE_L5, size.w, size.h);
     render_complete();
 
 }
@@ -754,7 +754,7 @@ static void setupremotes(void)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&output, FUDGE_BSIZE, message.outputdata);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     setupviews();
@@ -764,28 +764,25 @@ void main(void)
     if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    if (!file_walk(FILE_L1, "/system/wm/data"))
+    if (!file_walk(FILE_L1, "/system/wm/event"))
         return;
 
-    if (!file_walk(FILE_L2, "/system/wm/event"))
+    if (!file_walk(FILE_L2, "/system/keyboard/event"))
         return;
 
-    if (!file_walk(FILE_L3, "/system/keyboard/event"))
+    if (!file_walk(FILE_L3, "/system/mouse/event"))
         return;
 
-    if (!file_walk(FILE_L4, "/system/mouse/event"))
+    if (!file_walk(FILE_L4, "/system/video/if:0/event"))
         return;
 
-    if (!file_walk(FILE_L5, "/system/video/if:0/event"))
+    if (!file_walk(FILE_L5, "/system/video/if:0/data"))
         return;
 
-    if (!file_walk(FILE_L6, "/system/video/if:0/data"))
+    if (!file_walk(FILE_L6, "/system/video/if:0/ctrl"))
         return;
 
-    if (!file_walk(FILE_L7, "/system/video/if:0/ctrl"))
-        return;
-
-    if (!file_walk(FILE_L8, "/system/video/if:0/colormap"))
+    if (!file_walk(FILE_L7, "/system/video/if:0/colormap"))
         return;
 
     file_open(FILE_L0);
@@ -793,10 +790,9 @@ void main(void)
     file_open(FILE_L2);
     file_open(FILE_L3);
     file_open(FILE_L4);
-    file_open(FILE_L5);
     render_init();
-    render_setvideo(FILE_L7, 1024, 768, 4);
-    render_setcolormap(FILE_L8);
+    render_setvideo(FILE_L6, 1024, 768, 4);
+    render_setcolormap(FILE_L7);
 
     while (!quit)
     {
@@ -878,15 +874,13 @@ void main(void)
         if (ring_count(&output))
         {
 
-            file_writeall(FILE_L1, outputdata, ring_count(&output));
+            event_send(FILE_L1, EVENT_ADDR_BROADCAST, EVENT_WMFLUSH, &message, sizeof (struct event_header) + ring_count(&output));
             ring_reset(&output);
-            event_sendwmflush(FILE_L2, EVENT_ADDR_BROADCAST);
 
         }
 
     }
 
-    file_close(FILE_L5);
     file_close(FILE_L4);
     file_close(FILE_L3);
     file_close(FILE_L2);
