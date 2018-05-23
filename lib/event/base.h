@@ -91,5 +91,5 @@ struct event
 
 };
 
-unsigned int event_read(struct event *event, unsigned int descriptor);
-void event_send(unsigned int descriptor, unsigned int destination, unsigned int type, void *buffer, unsigned int length);
+void event_read(unsigned int descriptor, struct event *event);
+void event_send(unsigned int descriptor, struct event *event, unsigned int destination, unsigned int type, unsigned int length);

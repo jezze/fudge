@@ -33,7 +33,7 @@ static struct view
 
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-struct {struct event_header header; char data[FUDGE_BSIZE];} message;
+struct event flush;
 static struct ring output;
 static struct box size;
 static struct box body;
@@ -242,9 +242,10 @@ static void arrangeview(struct view *view)
 
 }
 
-static void onkeypress(struct event_header *header, struct event_keypress *keypress)
+static void onkeypress(struct event_header *header, void *data)
 {
 
+    struct event_keypress *keypress = data;
     struct view *nextview;
     struct remote *nextremote;
 
@@ -406,8 +407,10 @@ static void onkeypress(struct event_header *header, struct event_keypress *keypr
 
 }
 
-static void onkeyrelease(struct event_header *header, struct event_keyrelease *keyrelease)
+static void onkeyrelease(struct event_header *header, void *data)
 {
+
+    struct event_keyrelease *keyrelease = data;
 
     keymod = keymap_modkey(keyrelease->scancode, keymod);
 
@@ -423,8 +426,10 @@ static void onkeyrelease(struct event_header *header, struct event_keyrelease *k
 
 }
 
-static void onmousemove(struct event_header *header, struct event_mousemove *mousemove)
+static void onmousemove(struct event_header *header, void *data)
 {
+
+    struct event_mousemove *mousemove = data;
 
     mouse.size.x += mousemove->relx;
     mouse.size.y += mousemove->rely;
@@ -442,9 +447,10 @@ static void onmousemove(struct event_header *header, struct event_mousemove *mou
 
 }
 
-static void onmousepress(struct event_header *header, struct event_mousepress *mousepress)
+static void onmousepress(struct event_header *header, void *data)
 {
 
+    struct event_mousepress *mousepress = data;
     struct list_item *current;
 
     switch (mousepress->button)
@@ -504,17 +510,20 @@ static void onmousepress(struct event_header *header, struct event_mousepress *m
 
 }
 
-static void onmouserelease(struct event_header *header, struct event_mouserelease *mouserelease)
+static void onmouserelease(struct event_header *header, void *data)
 {
+
+    struct event_mouserelease *mouserelease = data;
 
     if (currentview->currentremote)
         event_sendwmmouserelease(FILE_L1, currentview->currentremote->source, mouserelease->button);
 
 }
 
-static void onvideomode(struct event_header *header, struct event_videomode *videomode)
+static void onvideomode(struct event_header *header, void *data)
 {
 
+    struct event_videomode *videomode = data;
     unsigned int factor = (videomode->h / 320);
 
     lineheight = 12 + factor * 4;
@@ -560,7 +569,7 @@ static void onvideomode(struct event_header *header, struct event_videomode *vid
 
 }
 
-static void onwmmap(struct event_header *header)
+static void onwmmap(struct event_header *header, void *data)
 {
 
     if (currentview->currentremote)
@@ -577,7 +586,7 @@ static void onwmmap(struct event_header *header)
 
 }
 
-static void onwmunmap(struct event_header *header)
+static void onwmunmap(struct event_header *header, void *data)
 {
 
     struct list_item *current;
@@ -615,7 +624,7 @@ static void onwmunmap(struct event_header *header)
 
 }
 
-static void onwmexit(struct event_header *header)
+static void onwmexit(struct event_header *header, void *data)
 {
 
     struct list_item *current;
@@ -642,9 +651,10 @@ static void onwmexit(struct event_header *header)
 
 }
 
-static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
+static void onwmresize(struct event_header *header, void *data)
 {
 
+    struct event_wmresize *wmresize = data;
     struct list_item *current;
     unsigned int i = 0;
 
@@ -673,7 +683,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
 }
 
-static void onwmshow(struct event_header *header)
+static void onwmshow(struct event_header *header, void *data)
 {
 
     struct list_item *current;
@@ -688,7 +698,7 @@ static void onwmshow(struct event_header *header)
 
 }
 
-static void onwmhide(struct event_header *header)
+static void onwmhide(struct event_header *header, void *data)
 {
 
     struct list_item *current;
@@ -703,10 +713,10 @@ static void onwmhide(struct event_header *header)
 
 }
 
-static void onwmflush(struct event_header *header, void *buffer, unsigned int count)
+static void onwmflush(struct event_header *header, void *data)
 {
 
-    render_begin(buffer, count);
+    render_begin(data, header->length - sizeof (struct event_header));
     render_update(FILE_L5, size.w, size.h);
     render_complete();
 
@@ -754,7 +764,7 @@ static void setupremotes(void)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, message.data);
+    ring_init(&output, FUDGE_BSIZE, flush.data);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     setupviews();
@@ -799,73 +809,73 @@ void main(void)
 
         struct event event;
 
-        event_read(&event, FILE_L0);
+        event_read(FILE_L0, &event);
 
         switch (event.header.type)
         {
 
         case EVENT_KEYPRESS:
-            onkeypress(&event.header, (struct event_keypress *)event.data);
+            onkeypress(&event.header, event.data);
 
             break;
 
         case EVENT_KEYRELEASE:
-            onkeyrelease(&event.header, (struct event_keyrelease *)event.data);
+            onkeyrelease(&event.header, event.data);
 
             break;
 
         case EVENT_MOUSEMOVE:
-            onmousemove(&event.header, (struct event_mousemove *)event.data);
+            onmousemove(&event.header, event.data);
 
             break;
 
         case EVENT_MOUSEPRESS:
-            onmousepress(&event.header, (struct event_mousepress *)event.data);
+            onmousepress(&event.header, event.data);
 
             break;
 
         case EVENT_MOUSERELEASE:
-            onmouserelease(&event.header, (struct event_mouserelease *)event.data);
+            onmouserelease(&event.header, event.data);
 
             break;
 
         case EVENT_VIDEOMODE:
-            onvideomode(&event.header, (struct event_videomode *)event.data);
+            onvideomode(&event.header, event.data);
 
             break;
 
         case EVENT_WMMAP:
-            onwmmap(&event.header);
+            onwmmap(&event.header, event.data);
 
             break;
 
         case EVENT_WMUNMAP:
-            onwmunmap(&event.header);
+            onwmunmap(&event.header, event.data);
 
             break;
 
         case EVENT_WMEXIT:
-            onwmexit(&event.header);
+            onwmexit(&event.header, event.data);
 
             break;
 
         case EVENT_WMRESIZE:
-            onwmresize(&event.header, (struct event_wmresize *)event.data);
+            onwmresize(&event.header, event.data);
 
             break;
 
         case EVENT_WMSHOW:
-            onwmshow(&event.header);
+            onwmshow(&event.header, event.data);
 
             break;
 
         case EVENT_WMHIDE:
-            onwmhide(&event.header);
+            onwmhide(&event.header, event.data);
 
             break;
 
         case EVENT_WMFLUSH:
-            onwmflush(&event.header, event.data, event.header.length - sizeof (struct event_header));
+            onwmflush(&event.header, event.data);
 
             break;
 
@@ -874,7 +884,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_send(FILE_L1, EVENT_ADDR_BROADCAST, EVENT_WMFLUSH, &message, sizeof (struct event_header) + ring_count(&output));
+            event_send(FILE_L1, &flush, EVENT_ADDR_BROADCAST, EVENT_WMFLUSH, ring_count(&output));
             ring_reset(&output);
 
         }

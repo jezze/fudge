@@ -10,7 +10,7 @@ static struct widget_textbox content;
 static struct widget_text status;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-struct {struct event_header header; char data[FUDGE_BSIZE];} message;
+struct event flush;
 static struct ring output;
 static char inputdata1[FUDGE_BSIZE];
 static struct ring input1;
@@ -108,9 +108,10 @@ static void movedown(void)
 
 }
 
-static void onwmkeypress(struct event_header *header, struct event_wmkeypress *wmkeypress)
+static void onwmkeypress(struct event_header *header, void *data)
 {
 
+    struct event_wmkeypress *wmkeypress = data;
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -171,14 +172,16 @@ static void onwmkeypress(struct event_header *header, struct event_wmkeypress *w
 
 }
 
-static void onwmkeyrelease(struct event_header *header, struct event_wmkeyrelease *wmkeyrelease)
+static void onwmkeyrelease(struct event_header *header, void *data)
 {
+
+    struct event_wmkeyrelease *wmkeyrelease = data;
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
 }
 
-static void onwmexit(struct event_header *header)
+static void onwmexit(struct event_header *header, void *data)
 {
 
     quit = 1;
@@ -221,8 +224,10 @@ static void readfile(void)
 
 }
 
-static void onwmresize(struct event_header *header, struct event_wmresize *wmresize)
+static void onwmresize(struct event_header *header, void *data)
 {
+
+    struct event_wmresize *wmresize = data;
 
     box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h - (wmresize->lineheight + 2 * wmresize->padding));
     box_resize(&content.size, wmresize->padding);
@@ -238,7 +243,7 @@ static void onwmresize(struct event_header *header, struct event_wmresize *wmres
 
 }
 
-static void onwmshow(struct event_header *header)
+static void onwmshow(struct event_header *header, void *data)
 {
 
     updatecontent(header);
@@ -246,7 +251,7 @@ static void onwmshow(struct event_header *header)
 
 }
 
-static void onwmhide(struct event_header *header)
+static void onwmhide(struct event_header *header, void *data)
 {
 
     removecontent(header);
@@ -257,7 +262,7 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, message.data);
+    ring_init(&output, FUDGE_BSIZE, flush.data);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     widget_inittextbox(&content);
@@ -278,38 +283,38 @@ void main(void)
 
         struct event event;
 
-        event_read(&event, FILE_L0);
+        event_read(FILE_L0, &event);
 
         switch (event.header.type)
         {
 
         case EVENT_WMKEYPRESS:
-            onwmkeypress(&event.header, (struct event_wmkeypress *)event.data);
+            onwmkeypress(&event.header, event.data);
 
             break;
 
         case EVENT_WMKEYRELEASE:
-            onwmkeyrelease(&event.header, (struct event_wmkeyrelease *)event.data);
+            onwmkeyrelease(&event.header, event.data);
 
             break;
 
         case EVENT_WMEXIT:
-            onwmexit(&event.header);
+            onwmexit(&event.header, event.data);
 
             break;
 
         case EVENT_WMRESIZE:
-            onwmresize(&event.header, (struct event_wmresize *)event.data);
+            onwmresize(&event.header, event.data);
 
             break;
 
         case EVENT_WMSHOW:
-            onwmshow(&event.header);
+            onwmshow(&event.header, event.data);
 
             break;
 
         case EVENT_WMHIDE:
-            onwmhide(&event.header);
+            onwmhide(&event.header, event.data);
 
             break;
 
@@ -318,7 +323,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_send(FILE_L1, EVENT_ADDR_BROADCAST, EVENT_WMFLUSH, &message, sizeof (struct event_header) + ring_count(&output));
+            event_send(FILE_L1, &flush, EVENT_ADDR_BROADCAST, EVENT_WMFLUSH, ring_count(&output));
             ring_reset(&output);
 
         }
