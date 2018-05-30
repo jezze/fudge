@@ -12,7 +12,7 @@ static void setpart0(void)
         return;
 
     file_open(FILE_L0);
-    file_write(FILE_L0, &settings, sizeof (struct ctrl_partsettings));
+    file_writeall(FILE_L0, &settings, sizeof (struct ctrl_partsettings));
     file_close(FILE_L0);
 
 
@@ -29,7 +29,7 @@ static void setpart1(void)
         return;
 
     file_open(FILE_L0);
-    file_write(FILE_L0, &settings, sizeof (struct ctrl_partsettings));
+    file_writeall(FILE_L0, &settings, sizeof (struct ctrl_partsettings));
     file_close(FILE_L0);
 
 }

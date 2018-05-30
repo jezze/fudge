@@ -10,7 +10,7 @@ void main(void)
         return;
 
     file_open(FILE_L0);
-    file_read(FILE_L0, &entry.haddress, 6);
+    file_readall(FILE_L0, &entry.haddress, 6);
     file_close(FILE_L0);
 
     if (!file_walk(FILE_L0, "/system/ethernet/ipv4/arptable"))
@@ -22,7 +22,7 @@ void main(void)
     entry.paddress[3] = entry.haddress[4];
 
     file_open(FILE_L0);
-    file_write(FILE_L0, &entry, sizeof (struct ipv4_arpentry));
+    file_writeall(FILE_L0, &entry, sizeof (struct ipv4_arpentry));
     file_close(FILE_L0);
 
 }
