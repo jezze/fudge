@@ -77,7 +77,7 @@ static void walkmountchild(struct service_descriptor *descriptor)
 
 }
 
-void kernel_walk(struct service_descriptor *descriptor, char *path, unsigned int length)
+unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsigned int length)
 {
 
     unsigned int offset = 0;
@@ -111,6 +111,8 @@ void kernel_walk(struct service_descriptor *descriptor, char *path, unsigned int
         offset += cl + 1;
 
     }
+
+    return offset;
 
 }
 

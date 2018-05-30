@@ -31,9 +31,7 @@ static unsigned int walk(struct task *task, void *stack)
     descriptor->protocol = pdescriptor->protocol;
     descriptor->id = pdescriptor->id;
 
-    kernel_walk(descriptor, args->path, args->length);
-
-    return 1;
+    return kernel_walk(descriptor, args->path, args->length);
 
 }
 
