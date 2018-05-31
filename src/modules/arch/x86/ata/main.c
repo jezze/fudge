@@ -26,7 +26,18 @@ static void handleirq(unsigned int irq)
 static unsigned int blockinterface_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    ide_rpio28(blockinterface.id, 0, count, offset);
+    if (offset > 0)
+        return 0;
+
+    count = task_read(state->task, buffer, count);
+
+    if (!count)
+    {
+
+        ide_rpio28(blockinterface.id, 0, 512, 0);
+        kernel_blocktask(state->task);
+
+    }
 
     return 0;
 
