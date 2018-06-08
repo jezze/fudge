@@ -28,7 +28,7 @@
 
 static struct base_driver driver;
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
 }

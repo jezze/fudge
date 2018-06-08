@@ -121,10 +121,10 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface);
+    video_initinterface(&videointerface, id);
 
 }
 
@@ -150,7 +150,7 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    video_registerinterface(&videointerface, id);
+    video_registerinterface(&videointerface);
     pic_setroutine(pci_getirq(id), handleirq);
 
 }

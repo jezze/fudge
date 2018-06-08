@@ -11,6 +11,6 @@ struct console_interface
 };
 
 void console_notify(struct console_interface *interface, void *buffer, unsigned int count);
-void console_registerinterface(struct console_interface *interface, unsigned int id);
+void console_registerinterface(struct console_interface *interface);
 void console_unregisterinterface(struct console_interface *interface);
-void console_initinterface(struct console_interface *interface);
+void console_initinterface(struct console_interface *interface, unsigned int id);

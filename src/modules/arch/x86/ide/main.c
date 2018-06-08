@@ -236,7 +236,7 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
     base_initbus(&bus, IDE_BUS, "ide", bus_setup, bus_next);

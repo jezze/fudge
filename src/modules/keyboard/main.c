@@ -47,15 +47,13 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 
 }
 
-void keyboard_registerinterface(struct keyboard_interface *interface, unsigned int id)
+void keyboard_registerinterface(struct keyboard_interface *interface)
 {
 
     resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->data);
     system_addchild(&interface->root, &interface->event);
     system_addchild(&root, &interface->root);
-
-    interface->id = id;
 
 }
 
@@ -69,13 +67,15 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 
 }
 
-void keyboard_initinterface(struct keyboard_interface *interface)
+void keyboard_initinterface(struct keyboard_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
     system_initnode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event");
+
+    interface->id = id;
 
 }
 

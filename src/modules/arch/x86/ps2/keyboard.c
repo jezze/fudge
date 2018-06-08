@@ -28,10 +28,10 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
-    keyboard_initinterface(&keyboardinterface);
+    keyboard_initinterface(&keyboardinterface, id);
 
 }
 
@@ -57,7 +57,7 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    keyboard_registerinterface(&keyboardinterface, id);
+    keyboard_registerinterface(&keyboardinterface);
     pic_setroutine(ps2_getirq(id), handleirq);
 
 }

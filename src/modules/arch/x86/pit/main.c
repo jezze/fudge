@@ -60,13 +60,13 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
     jiffies = 0;
     divisor = FREQUENCY / 60;
 
-    timer_initinterface(&timerinterface);
+    timer_initinterface(&timerinterface, id);
 
 }
 
@@ -91,7 +91,7 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    timer_registerinterface(&timerinterface, id);
+    timer_registerinterface(&timerinterface);
     pic_setroutine(platform_getirq(id), handleirq);
 
 }

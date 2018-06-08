@@ -43,10 +43,10 @@ static unsigned int blockinterface_readdata(struct system_node *self, struct sys
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface);
+    block_initinterface(&blockinterface, id);
 
     blockinterface.data.operations.read = blockinterface_readdata;
 
@@ -67,7 +67,7 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    block_registerinterface(&blockinterface, id);
+    block_registerinterface(&blockinterface);
     pic_setroutine(ide_getirq(id), handleirq);
 
 }

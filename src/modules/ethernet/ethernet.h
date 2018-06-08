@@ -45,9 +45,9 @@ struct ethernet_protocol
 void *ethernet_writehead(void *buffer, unsigned int type, unsigned char *sha, unsigned char *tha);
 void ethernet_send(void *buffer, unsigned int count);
 void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigned int count);
-void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id);
+void ethernet_registerinterface(struct ethernet_interface *interface);
 void ethernet_registerprotocol(struct ethernet_protocol *protocol);
 void ethernet_unregisterinterface(struct ethernet_interface *interface);
 void ethernet_unregisterprotocol(struct ethernet_protocol *protocol);
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (*matchaddress)(void *buffer, unsigned int count), unsigned int (*send)(void *buffer, unsigned int count));
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, unsigned int (*matchaddress)(void *buffer, unsigned int count), unsigned int (*send)(void *buffer, unsigned int count));
 void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsigned int type, void (*notify)(struct ethernet_header *header, void *buffer, unsigned int count));

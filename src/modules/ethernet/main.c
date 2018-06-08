@@ -73,7 +73,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
 }
 
-void ethernet_registerinterface(struct ethernet_interface *interface, unsigned int id)
+void ethernet_registerinterface(struct ethernet_interface *interface)
 {
 
     resource_register(&interface->resource);
@@ -81,8 +81,6 @@ void ethernet_registerinterface(struct ethernet_interface *interface, unsigned i
     system_addchild(&interface->root, &interface->data);
     system_addchild(&interface->root, &interface->addr);
     system_addchild(&root, &interface->root);
-
-    interface->id = id;
 
 }
 
@@ -115,7 +113,7 @@ void ethernet_unregisterprotocol(struct ethernet_protocol *protocol)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (*matchaddress)(void *buffer, unsigned int count), unsigned int (*send)(void *buffer, unsigned int count))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, unsigned int (*matchaddress)(void *buffer, unsigned int count), unsigned int (*send)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
@@ -124,6 +122,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int (
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
     system_initnode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr");
 
+    interface->id = id;
     interface->matchaddress = matchaddress;
     interface->send = send;
 

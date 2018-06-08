@@ -77,10 +77,10 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
-    mouse_initinterface(&mouseinterface);
+    mouse_initinterface(&mouseinterface, id);
 
 }
 
@@ -106,7 +106,7 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    mouse_registerinterface(&mouseinterface, id);
+    mouse_registerinterface(&mouseinterface);
     pic_setroutine(ps2_getirq(id), handleirq);
 
 }

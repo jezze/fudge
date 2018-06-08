@@ -149,10 +149,10 @@ static unsigned int consoleinterface_writeodata(struct system_node *self, struct
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
-    console_initinterface(&consoleinterface);
+    console_initinterface(&consoleinterface, id);
 
     consoleinterface.ctrl.operations.read = consoleinterface_readctrl;
     consoleinterface.odata.operations.write = consoleinterface_writeodata;
@@ -185,7 +185,7 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    console_registerinterface(&consoleinterface, id);
+    console_registerinterface(&consoleinterface);
     pic_setroutine(platform_getirq(id), handleirq);
 
 }

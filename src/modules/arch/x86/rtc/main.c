@@ -58,10 +58,10 @@ static unsigned int clockinterface_readctrl(struct system_node *self, struct sys
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
-    clock_initinterface(&clockinterface);
+    clock_initinterface(&clockinterface, id);
 
     clockinterface.ctrl.operations.read = clockinterface_readctrl;
 
@@ -84,7 +84,7 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    clock_registerinterface(&clockinterface, id);
+    clock_registerinterface(&clockinterface);
     pic_setroutine(platform_getirq(id), handleirq);
 
 }

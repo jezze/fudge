@@ -5,14 +5,12 @@
 
 static struct system_node root;
 
-void clock_registerinterface(struct clock_interface *interface, unsigned int id)
+void clock_registerinterface(struct clock_interface *interface)
 {
 
     resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&root, &interface->root);
-
-    interface->id = id;
 
 }
 
@@ -25,12 +23,14 @@ void clock_unregisterinterface(struct clock_interface *interface)
 
 }
 
-void clock_initinterface(struct clock_interface *interface)
+void clock_initinterface(struct clock_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
+
+    interface->id = id;
 
 }
 

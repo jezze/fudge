@@ -12,7 +12,7 @@ void console_notify(struct console_interface *interface, void *buffer, unsigned 
 
 }
 
-void console_registerinterface(struct console_interface *interface, unsigned int id)
+void console_registerinterface(struct console_interface *interface)
 {
 
     resource_register(&interface->resource);
@@ -20,8 +20,6 @@ void console_registerinterface(struct console_interface *interface, unsigned int
     system_addchild(&interface->root, &interface->idata);
     system_addchild(&interface->root, &interface->odata);
     system_addchild(&root, &interface->root);
-
-    interface->id = id;
 
 }
 
@@ -36,7 +34,7 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface)
+void console_initinterface(struct console_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
@@ -44,6 +42,8 @@ void console_initinterface(struct console_interface *interface)
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->idata, SYSTEM_NODETYPE_MAILBOX, "idata");
     system_initnode(&interface->odata, SYSTEM_NODETYPE_NORMAL, "odata");
+
+    interface->id = id;
 
 }
 

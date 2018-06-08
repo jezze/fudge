@@ -12,14 +12,12 @@ void block_notify(struct block_interface *interface, void *buffer, unsigned int 
 
 }
 
-void block_registerinterface(struct block_interface *interface, unsigned int id)
+void block_registerinterface(struct block_interface *interface)
 {
 
     resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->data);
     system_addchild(&root, &interface->root);
-
-    interface->id = id;
 
 }
 
@@ -32,12 +30,14 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface)
+void block_initinterface(struct block_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
+
+    interface->id = id;
 
 }
 

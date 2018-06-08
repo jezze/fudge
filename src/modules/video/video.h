@@ -13,6 +13,6 @@ struct video_interface
 };
 
 void video_notifymode(struct video_interface *interface, unsigned int w, unsigned int h, unsigned int bpp);
-void video_registerinterface(struct video_interface *interface, unsigned int id);
+void video_registerinterface(struct video_interface *interface);
 void video_unregisterinterface(struct video_interface *interface);
-void video_initinterface(struct video_interface *interface);
+void video_initinterface(struct video_interface *interface, unsigned int id);

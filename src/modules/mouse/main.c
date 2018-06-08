@@ -64,15 +64,13 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
 
 }
 
-void mouse_registerinterface(struct mouse_interface *interface, unsigned int id)
+void mouse_registerinterface(struct mouse_interface *interface)
 {
 
     resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->data);
     system_addchild(&interface->root, &interface->event);
     system_addchild(&root, &interface->root);
-
-    interface->id = id;
 
 }
 
@@ -86,13 +84,15 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 
 }
 
-void mouse_initinterface(struct mouse_interface *interface)
+void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
     system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
     system_initnode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event");
+
+    interface->id = id;
 
 }
 

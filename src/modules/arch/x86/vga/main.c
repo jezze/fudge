@@ -212,11 +212,11 @@ static unsigned int videointerface_writecolormap(struct system_node *self, struc
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
-    console_initinterface(&consoleinterface);
-    video_initinterface(&videointerface);
+    console_initinterface(&consoleinterface, id);
+    video_initinterface(&videointerface, id);
     ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
     clear(0);
 
@@ -246,8 +246,8 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    console_registerinterface(&consoleinterface, id);
-    video_registerinterface(&videointerface, id);
+    console_registerinterface(&consoleinterface);
+    video_registerinterface(&videointerface);
 
 }
 

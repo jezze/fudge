@@ -308,10 +308,10 @@ static unsigned int ethernetinterface_readaddr(struct system_node *self, struct 
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, ethernetinterface_matchaddress, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_matchaddress, ethernetinterface_send);
 
     ethernetinterface.addr.operations.read = ethernetinterface_readaddr;
 
@@ -343,7 +343,7 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    ethernet_registerinterface(&ethernetinterface, id);
+    ethernet_registerinterface(&ethernetinterface);
     pic_setroutine(pci_getirq(id), handleirq);
 
 }

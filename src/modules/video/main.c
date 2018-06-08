@@ -24,7 +24,7 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
 
 }
 
-void video_registerinterface(struct video_interface *interface, unsigned int id)
+void video_registerinterface(struct video_interface *interface)
 {
 
     resource_register(&interface->resource);
@@ -33,8 +33,6 @@ void video_registerinterface(struct video_interface *interface, unsigned int id)
     system_addchild(&interface->root, &interface->colormap);
     system_addchild(&interface->root, &interface->event);
     system_addchild(&root, &interface->root);
-
-    interface->id = id;
 
 }
 
@@ -50,7 +48,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface)
+void video_initinterface(struct video_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
@@ -59,6 +57,8 @@ void video_initinterface(struct video_interface *interface)
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
     system_initnode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event");
+
+    interface->id = id;
 
 }
 

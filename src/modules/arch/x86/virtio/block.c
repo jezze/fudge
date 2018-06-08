@@ -129,10 +129,10 @@ static void setrx(void)
 
 }
 
-static void driver_init(void)
+static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface);
+    block_initinterface(&blockinterface, id);
 
 }
 
@@ -184,7 +184,7 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    block_registerinterface(&blockinterface, id);
+    block_registerinterface(&blockinterface);
     pic_setroutine(pci_getirq(id), handleirq);
 
 }
