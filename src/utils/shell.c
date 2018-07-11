@@ -48,8 +48,8 @@ static void interpretslang(unsigned int count, char *command)
     file_walkfrom(FILE_LC, FILE_LA, "odata");
     file_walkfrom(FILE_LD, FILE_LB, "idata");
     file_walkfrom(FILE_CO, FILE_LB, "odata");
-    file_open(FILE_LC);
     call_spawn();
+    file_open(FILE_LC);
     file_writeall(FILE_LC, command, count);
     file_close(FILE_LC);
     file_open(FILE_LD);

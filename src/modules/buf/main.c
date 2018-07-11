@@ -34,6 +34,11 @@ static struct system_node *idata_open(struct system_node *self, struct service_s
 
     list_add(&idata.states, &state->item);
 
+    if (!odata.states.count)
+        kernel_blocktask(state->task);
+
+    unblock(&odata.states);
+
     return self;
 
 }
@@ -56,10 +61,11 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
     count = ring_read(&ring, buffer, count);
 
     spinlock_release(&datalock);
-    unblock(&odata.states);
 
     if (!count && odata.states.count)
         kernel_blocktask(state->task);
+
+    unblock(&odata.states);
 
     return count;
 
@@ -69,6 +75,11 @@ static struct system_node *odata_open(struct system_node *self, struct service_s
 {
 
     list_add(&odata.states, &state->item);
+
+    if (!idata.states.count)
+        kernel_blocktask(state->task);
+
+    unblock(&idata.states);
 
     return self;
 
@@ -92,10 +103,11 @@ static unsigned int odata_write(struct system_node *self, struct system_node *cu
     count = ring_write(&ring, buffer, count);
 
     spinlock_release(&datalock);
-    unblock(&idata.states);
 
-    if (!count)
+    if (!count && idata.states.count)
         kernel_blocktask(state->task);
+
+    unblock(&idata.states);
 
     return count;
 

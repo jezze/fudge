@@ -5,8 +5,8 @@
 void event_read(unsigned int descriptor, struct event *event)
 {
 
-    file_readall(descriptor, &event->header, sizeof (struct event_header));
-    file_readall(descriptor, event->data, event->header.length - sizeof (struct event_header));
+    while (file_readall(descriptor, &event->header, sizeof (struct event_header)) != sizeof (struct event_header));
+    while (file_readall(descriptor, event->data, event->header.length - sizeof (struct event_header)) != event->header.length - sizeof (struct event_header));
 
 }
 
