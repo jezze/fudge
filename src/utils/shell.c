@@ -3,13 +3,15 @@
 
 static unsigned int quit;
 
-static void interpretbuiltin(unsigned int count, char *command)
+static unsigned int interpretbuiltin(unsigned int count, char *command)
 {
 
     if (memory_match(command, "exit", 4))
     {
 
         quit = 1;
+
+        return 1;
 
     }
 
@@ -26,7 +28,11 @@ static void interpretbuiltin(unsigned int count, char *command)
 
         }
 
+        return 1;
+
     }
+
+    return 0;
 
 }
 
@@ -70,8 +76,8 @@ static void interpret(struct ring *ring)
     if (count < 2)
         return;
 
-    interpretbuiltin(count, command);
-    interpretslang(count, command);
+    if (!interpretbuiltin(count, command))
+        interpretslang(count, command);
 
 }
 

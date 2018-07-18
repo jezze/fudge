@@ -337,22 +337,15 @@ void main(void)
         return;
 
     file_open(FILE_PI);
-    file_open(FILE_PO);
 
     while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    if (stack.head)
-        return;
-
+    file_close(FILE_PI);
+    file_open(FILE_PO);
     translate(&postfix, &infix, &stack);
-
-    if (stack.head)
-        return;
-
     parse(&postfix, &stack);
     file_close(FILE_PO);
-    file_close(FILE_PI);
 
 }
 
