@@ -45,9 +45,7 @@ static void removecontent(struct event_header *header)
 static void removerows(unsigned int count)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
+    while (count--)
     {
 
         ring_skip(&text, ring_find(&text, '\n') + 1);
