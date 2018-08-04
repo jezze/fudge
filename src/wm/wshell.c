@@ -75,8 +75,8 @@ static void copybuffer(void *buffer, unsigned int count)
 
             totalrows++;
 
-            if (totalrows > visiblerows)
-                removerows(totalrows - visiblerows);
+            if (totalrows >= visiblerows)
+                removerows(totalrows - visiblerows + 1);
 
         }
 
@@ -314,10 +314,10 @@ static void onwmresize(struct event_header *header, void *data)
     box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
     box_resize(&content.size, wmresize->padding);
 
-    visiblerows = (content.size.h / wmresize->lineheight) - 1;
+    visiblerows = content.size.h / wmresize->lineheight;
 
-    if (totalrows > visiblerows)
-        removerows(totalrows - visiblerows);
+    if (totalrows >= visiblerows)
+        removerows(totalrows - visiblerows + 1);
 
 }
 

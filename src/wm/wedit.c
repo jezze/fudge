@@ -16,8 +16,6 @@ static char inputdata1[FUDGE_BSIZE];
 static struct ring input1;
 static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
-static unsigned int totalrows;
-static unsigned int visiblerows;
 
 static void updatecontent(struct event_header *header)
 {
@@ -188,15 +186,14 @@ static void onwmexit(struct event_header *header, void *data)
 
 }
 
-static void readfile(void)
+static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 {
 
     char buffer[FUDGE_BSIZE];
+    unsigned int rows = 0;
     unsigned int count;
 
-    file_open(FILE_PI);
-
-    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(descriptor, buffer, FUDGE_BSIZE)))
     {
 
         unsigned int i;
@@ -209,10 +206,10 @@ static void readfile(void)
             if (buffer[i] == '\n')
             {
 
-                totalrows++;
+                rows++;
 
-                if (totalrows > visiblerows)
-                    return;
+                if (rows >= visiblerows)
+                    return rows;
 
             }
 
@@ -220,7 +217,7 @@ static void readfile(void)
 
     }
 
-    file_close(FILE_PI);
+    return rows;
 
 }
 
@@ -229,17 +226,15 @@ static void onwmresize(struct event_header *header, void *data)
 
     struct event_wmresize *wmresize = data;
 
+    ring_reset(&input1);
+    ring_reset(&input2);
     box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h - (wmresize->lineheight + 2 * wmresize->padding));
     box_resize(&content.size, wmresize->padding);
     box_setsize(&status.size, wmresize->x, wmresize->y + wmresize->h - (wmresize->lineheight + 2 * wmresize->padding), wmresize->w, (wmresize->lineheight + 2 * wmresize->padding));
     box_resize(&status.size, wmresize->padding);
-
-    visiblerows = (content.size.h / wmresize->lineheight) - 1;
-    totalrows = 0;
-
-    ring_reset(&input1);
-    ring_reset(&input2);
-    readfile();
+    file_open(FILE_PI);
+    readfile(FILE_PI, content.size.h / wmresize->lineheight);
+    file_close(FILE_PI);
 
 }
 
