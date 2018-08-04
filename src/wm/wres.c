@@ -7,7 +7,7 @@
 #include "render.h"
 
 static unsigned int quit;
-struct event flush;
+static struct event flush;
 static struct ring output;
 
 static void onwmmousepress(struct event_header *header, void *data)

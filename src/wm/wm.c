@@ -33,7 +33,7 @@ static struct view
 
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-struct event flush;
+static struct event flush;
 static struct ring output;
 static struct box size;
 static struct box body;

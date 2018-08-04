@@ -9,7 +9,7 @@
 static struct widget_textbox content;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-struct event flush;
+static struct event flush;
 static struct ring output;
 static char inputdata1[FUDGE_BSIZE >> 5];
 static struct ring input1;
