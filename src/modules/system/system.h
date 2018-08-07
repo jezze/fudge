@@ -38,6 +38,7 @@ struct system_node
 
 void system_addchild(struct system_node *group, struct system_node *node);
 void system_removechild(struct system_node *group, struct system_node *node);
+void system_movechild(struct system_node *group, struct system_node *node);
 void system_registernode(struct system_node *node);
 void system_unregisternode(struct system_node *node);
 void system_initbackend(void);

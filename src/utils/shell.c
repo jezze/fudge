@@ -44,12 +44,14 @@ static void interpretslang(unsigned int count, char *command)
     if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
-    if (!file_walk(FILE_LA, "/system/buf:2"))
+    if (!file_walk(FILE_LA, "/system/pipe/clone"))
         return;
 
-    if (!file_walk(FILE_LB, "/system/buf:3"))
+    if (!file_walk(FILE_LB, "/system/pipe/clone"))
         return;
 
+    file_open(FILE_LA);
+    file_open(FILE_LB);
     file_walkfrom(FILE_CI, FILE_LA, "idata");
     file_walkfrom(FILE_LC, FILE_LA, "odata");
     file_walkfrom(FILE_LD, FILE_LB, "idata");
@@ -64,6 +66,8 @@ static void interpretslang(unsigned int count, char *command)
         file_writeall(FILE_PO, buffer, count);
 
     file_close(FILE_LD);
+    file_close(FILE_LB);
+    file_close(FILE_LA);
 
 }
 

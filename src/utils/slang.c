@@ -283,13 +283,15 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            if (!file_walk(FILE_LA, "/system/buf:4"))
+            if (!file_walk(FILE_LA, "/system/pipe/clone"))
                 return;
 
+            file_open(FILE_LA);
             file_walkfrom(FILE_CO, FILE_LA, "odata");
             call_spawn();
             file_walkfrom(FILE_CI, FILE_LA, "idata");
             file_duplicate(FILE_CO, FILE_PO);
+            file_close(FILE_LA);
 
             break;
 

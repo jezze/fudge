@@ -11,9 +11,9 @@ static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static struct event flush;
 static struct ring output;
-static char inputdata1[FUDGE_BSIZE >> 5];
+static char inputdata1[FUDGE_BSIZE];
 static struct ring input1;
-static char inputdata2[FUDGE_BSIZE >> 5];
+static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
@@ -141,12 +141,14 @@ static void interpretslang(unsigned int count, char *command)
     if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
-    if (!file_walk(FILE_LA, "/system/buf:2"))
+    if (!file_walk(FILE_LA, "/system/pipe/clone"))
         return;
 
-    if (!file_walk(FILE_LB, "/system/buf:3"))
+    if (!file_walk(FILE_LB, "/system/pipe/clone"))
         return;
 
+    file_open(FILE_LA);
+    file_open(FILE_LB);
     file_walkfrom(FILE_CI, FILE_LA, "idata");
     file_walkfrom(FILE_LC, FILE_LA, "odata");
     file_walkfrom(FILE_LD, FILE_LB, "idata");
@@ -161,14 +163,16 @@ static void interpretslang(unsigned int count, char *command)
         copybuffer(buffer, count);
 
     file_close(FILE_LD);
+    file_close(FILE_LB);
+    file_close(FILE_LA);
 
 }
 
 static void interpret(struct ring *ring)
 {
 
-    char command[FUDGE_BSIZE >> 5];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE >> 5);
+    char command[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
 
     if (count < 2)
         return;
@@ -337,8 +341,8 @@ void main(void)
 {
 
     ring_init(&output, FUDGE_BSIZE, flush.data);
-    ring_init(&input1, FUDGE_BSIZE >> 5, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE >> 5, inputdata2);
+    ring_init(&input1, FUDGE_BSIZE, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE, inputdata2);
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     copybuffer("$ ", 2);

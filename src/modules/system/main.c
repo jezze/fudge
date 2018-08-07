@@ -151,6 +151,15 @@ void system_removechild(struct system_node *group, struct system_node *node)
 
 }
 
+void system_movechild(struct system_node *group, struct system_node *node)
+{
+
+    list_move(&group->children, &node->item);
+
+    node->parent = group;
+
+}
+
 void system_initnode(struct system_node *node, unsigned int type, char *name)
 {
 

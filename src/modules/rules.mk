@@ -2,7 +2,6 @@ include $(DIR_SRC)/modules/arp/rules.mk
 include $(DIR_SRC)/modules/audio/rules.mk
 include $(DIR_SRC)/modules/base/rules.mk
 include $(DIR_SRC)/modules/block/rules.mk
-include $(DIR_SRC)/modules/buf/rules.mk
 include $(DIR_SRC)/modules/clock/rules.mk
 include $(DIR_SRC)/modules/con/rules.mk
 include $(DIR_SRC)/modules/console/rules.mk
@@ -18,6 +17,7 @@ include $(DIR_SRC)/modules/mouse/rules.mk
 include $(DIR_SRC)/modules/mtwist/rules.mk
 include $(DIR_SRC)/modules/null/rules.mk
 include $(DIR_SRC)/modules/part/rules.mk
+include $(DIR_SRC)/modules/pipe/rules.mk
 include $(DIR_SRC)/modules/system/rules.mk
 include $(DIR_SRC)/modules/tcp/rules.mk
 include $(DIR_SRC)/modules/timer/rules.mk
