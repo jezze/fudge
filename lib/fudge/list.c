@@ -71,13 +71,11 @@ void list_remove(struct list *list, struct list_item *item)
 
 }
 
-void list_move(struct list *list, struct list_item *item)
+void list_move(struct list *to, struct list *from, struct list_item *item)
 {
 
-    if (item->list)
-        list_remove(item->list, item);
-
-    list_add(list, item);
+    list_remove(from, item);
+    list_add(to, item);
 
 }
 

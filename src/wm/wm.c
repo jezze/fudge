@@ -280,7 +280,7 @@ static void onkeypress(struct event_header *header, void *data)
         if (currentview->currentremote && keymod & KEYMOD_SHIFT)
         {
 
-            list_move(&nextview->remotes, &currentview->currentremote->item);
+            list_move(&nextview->remotes, &currentview->remotes, &currentview->currentremote->item);
 
             currentview->currentremote = (currentview->remotes.tail) ? currentview->remotes.tail->data : 0;
 
@@ -328,7 +328,7 @@ static void onkeypress(struct event_header *header, void *data)
         if (!currentview->currentremote)
             break;
 
-        list_move(&currentview->remotes, &currentview->currentremote->item);
+        list_move(&currentview->remotes, &currentview->remotes, &currentview->currentremote->item);
         arrangeview(currentview);
         showremotes(header, &currentview->remotes);
 
@@ -578,7 +578,7 @@ static void onwmmap(struct event_header *header, void *data)
     currentview->currentremote = remotelist.head->data;
     currentview->currentremote->source = header->source;
 
-    list_move(&currentview->remotes, &currentview->currentremote->item);
+    list_move(&currentview->remotes, currentview->currentremote->item.list, &currentview->currentremote->item);
     activateremote(currentview->currentremote);
     arrangeview(currentview);
     showremotes(header, &currentview->remotes);
@@ -606,7 +606,7 @@ static void onwmunmap(struct event_header *header, void *data)
                 continue;
 
             removeremote(header, remote);
-            list_move(&remotelist, &remote->item);
+            list_move(&remotelist, remote->item.list, &remote->item);
 
             view->currentremote = (view->remotes.tail) ? view->remotes.tail->data : 0;
 

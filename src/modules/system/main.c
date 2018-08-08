@@ -151,12 +151,12 @@ void system_removechild(struct system_node *group, struct system_node *node)
 
 }
 
-void system_movechild(struct system_node *group, struct system_node *node)
+void system_movechild(struct system_node *to, struct system_node *from, struct system_node *node)
 {
 
-    list_move(&group->children, &node->item);
+    list_move(&to->children, &from->children, &node->item);
 
-    node->parent = group;
+    node->parent = to;
 
 }
 

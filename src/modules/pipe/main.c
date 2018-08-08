@@ -40,14 +40,14 @@ void pipe_unblock(struct list *states)
 void pipe_use(struct pipe *pipe, struct service_state *state)
 {
 
-    system_movechild(&used, &pipe->root);
+    system_movechild(&used, &free, &pipe->root);
 
 }
 
 void pipe_free(struct pipe *pipe, struct service_state *state)
 {
 
-    system_movechild(&free, &pipe->root);
+    system_movechild(&free, &used, &pipe->root);
 
 }
 
