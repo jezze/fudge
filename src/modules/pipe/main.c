@@ -40,7 +40,8 @@ void pipe_unblock(struct list *states)
 void pipe_use(struct pipe *pipe)
 {
 
-    system_movechild(&used, &free, &pipe->root);
+    ring_reset(&pipe->ring);
+    system_addchild(&used, &pipe->root);
 
 }
 
