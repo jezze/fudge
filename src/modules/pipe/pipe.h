@@ -10,8 +10,8 @@ struct pipe
 
 };
 
-void pipe_use(struct pipe *pipe, struct service_state *state);
-void pipe_free(struct pipe *pipe, struct service_state *state);
+void pipe_use(struct pipe *pipe);
+void pipe_free(struct pipe *pipe);
 void pipe_unblock(struct list *states);
 void pipe_init(struct pipe *pipe);
 void pipe_register(struct pipe *pipe);

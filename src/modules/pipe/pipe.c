@@ -9,7 +9,7 @@ static struct system_node *pipe_open(struct system_node *self, struct service_st
 {
 
     list_add(&self->states, &state->item);
-    pipe_use(&pipe, state);
+    pipe_use(&pipe);
 
     return self;
 
@@ -18,12 +18,20 @@ static struct system_node *pipe_open(struct system_node *self, struct service_st
 static struct system_node *pipe_close(struct system_node *self, struct service_state *state)
 {
 
-    list_remove(&self->states, &state->item);
-
     if (pipe.idata.states.count || pipe.odata.states.count)
+    {
+
         kernel_blocktask(state->task);
+
+    }
+
     else
-        pipe_free(&pipe, state);
+    {
+
+        list_remove(&self->states, &state->item);
+        pipe_free(&pipe);
+
+    }
 
     return self;
 
