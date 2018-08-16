@@ -5,24 +5,24 @@
 
 static struct pipe pipe;
 
-static void block(struct list *states, struct service_state *state)
+static void blockifused(struct list *states, struct service_state *state)
 {
 
     spinlock_acquire(&states->spinlock);
 
-    if (!states->count)
+    if (states->count)
         kernel_blocktask(state->task);
 
     spinlock_release(&states->spinlock);
 
 }
 
-static void block2(struct list *states, struct service_state *state)
+static void blockifnotused(struct list *states, struct service_state *state)
 {
 
     spinlock_acquire(&states->spinlock);
 
-    if (states->count)
+    if (!states->count)
         kernel_blocktask(state->task);
 
     spinlock_release(&states->spinlock);
@@ -85,7 +85,7 @@ static struct system_node *idata_open(struct system_node *self, struct service_s
 {
 
     list_add(&pipe.idata.states, &state->item);
-    block(&pipe.odata.states, state);
+    blockifnotused(&pipe.odata.states, state);
     unblock(&pipe.odata.states);
 
     return self;
@@ -113,7 +113,7 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
     spinlock_release(&pipe.datalock);
 
     if (!count)
-        block2(&pipe.odata.states, state);
+        blockifused(&pipe.odata.states, state);
 
     unblock(&pipe.odata.states);
 
@@ -125,7 +125,7 @@ static struct system_node *odata_open(struct system_node *self, struct service_s
 {
 
     list_add(&pipe.odata.states, &state->item);
-    block(&pipe.idata.states, state);
+    blockifnotused(&pipe.idata.states, state);
     unblock(&pipe.idata.states);
 
     return self;
@@ -153,7 +153,7 @@ static unsigned int odata_write(struct system_node *self, struct system_node *cu
     spinlock_release(&pipe.datalock);
 
     if (!count)
-        block2(&pipe.idata.states, state);
+        blockifused(&pipe.idata.states, state);
 
     unblock(&pipe.idata.states);
 
