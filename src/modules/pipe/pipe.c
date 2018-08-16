@@ -121,24 +121,6 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
 
 }
 
-static unsigned int idata_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    spinlock_acquire(&pipe.datalock);
-
-    count = ring_write(&pipe.ring, buffer, count);
-
-    spinlock_release(&pipe.datalock);
-
-    if (!count)
-        blockifused(&pipe.odata.states, state);
-
-    unblock(&pipe.odata.states);
-
-    return count;
-
-}
-
 static struct system_node *odata_open(struct system_node *self, struct service_state *state)
 {
 
@@ -158,24 +140,6 @@ static struct system_node *odata_close(struct system_node *self, struct service_
     unblock(&pipe.root.states);
 
     return self;
-
-}
-
-static unsigned int odata_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    spinlock_acquire(&pipe.datalock);
-
-    count = ring_read(&pipe.ring, buffer, count);
-
-    spinlock_release(&pipe.datalock);
-
-    if (!count)
-        blockifused(&pipe.idata.states, state);
-
-    unblock(&pipe.idata.states);
-
-    return count;
 
 }
 
@@ -207,10 +171,8 @@ void module_init(void)
     pipe.idata.operations.open = idata_open;
     pipe.idata.operations.close = idata_close;
     pipe.idata.operations.read = idata_read;
-    pipe.idata.operations.write = idata_write;
     pipe.odata.operations.open = odata_open;
     pipe.odata.operations.close = odata_close;
-    pipe.odata.operations.read = odata_read;
     pipe.odata.operations.write = odata_write;
 
 }
