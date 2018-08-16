@@ -17,26 +17,6 @@ static struct system_node *clone_open(struct system_node *self, struct service_s
 
 }
 
-void pipe_unblock(struct list *states)
-{
-
-    struct list_item *current;
-
-    spinlock_acquire(&states->spinlock);
-
-    for (current = states->head; current; current = current->next)
-    {
-
-        struct service_state *state = current->data;
-
-        kernel_unblocktask(state->task);
-
-    }
-
-    spinlock_release(&states->spinlock);
-
-}
-
 void pipe_use(struct pipe *pipe)
 {
 

@@ -12,7 +12,6 @@ struct pipe
 
 void pipe_use(struct pipe *pipe);
 void pipe_free(struct pipe *pipe);
-void pipe_unblock(struct list *states);
 void pipe_init(struct pipe *pipe);
 void pipe_register(struct pipe *pipe);
 void pipe_unregister(struct pipe *pipe);
