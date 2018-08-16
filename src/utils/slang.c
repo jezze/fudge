@@ -344,10 +344,27 @@ void main(void)
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
     file_close(FILE_PI);
-    file_open(FILE_PO);
+
     translate(&postfix, &infix, &stack);
+
+    if (!file_walk(FILE_LA, "/system/pipe/clone"))
+        return;
+
+    file_open(FILE_LA);
+    file_walkfrom(FILE_CO, FILE_LA, "odata");
+    file_walkfrom(FILE_PI, FILE_LA, "idata");
+
     parse(&postfix, &stack);
+
+    file_open(FILE_PO);
+    file_open(FILE_PI);
+
+    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
+        file_writeall(FILE_PO, buffer, count);;
+
+    file_close(FILE_PI);
     file_close(FILE_PO);
+    file_close(FILE_LA);
 
 }
 
