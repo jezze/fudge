@@ -19,4 +19,4 @@ void kernel_copydescriptors(struct task *source, struct task *target);
 void kernel_multicast(struct list *states, void *buffer, unsigned int count);
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp);
 void kernel_setupinit(struct task *task);
-void kernel_setup(void);
+void kernel_setup(char *buffer);

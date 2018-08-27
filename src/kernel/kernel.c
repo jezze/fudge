@@ -312,7 +312,7 @@ void kernel_setupinit(struct task *task)
 
 }
 
-void kernel_setup(void)
+void kernel_setup(char *buffer)
 {
 
     unsigned int i;
@@ -323,7 +323,7 @@ void kernel_setup(void)
         struct task *task = &tasks[i];
         unsigned int j;
 
-        task_init(task, i);
+        task_init(task, i, buffer + i * TASK_MAILBOXSIZE);
         kernel_freetask(task);
 
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
