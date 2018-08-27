@@ -207,7 +207,7 @@ void kernel_schedule(struct core *core)
 
     struct list_item *current;
 
-    if (core->task)
+    if (core->task && list_ispicked(&core->task->item))
         list_add(&core->tasks, &core->task->item);
 
     while ((current = list_pickhead(&usedtasks)))

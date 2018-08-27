@@ -84,7 +84,9 @@ static struct system_node *pipe_close(struct system_node *self, struct service_s
 static struct system_node *idata_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&pipe.idata.states, &state->item);
+    if (list_ispicked(&state->item))
+        list_add(&pipe.idata.states, &state->item);
+
     blockifnotused(&pipe.odata.states, state);
     unblock(&pipe.odata.states);
 
@@ -124,7 +126,9 @@ static unsigned int idata_read(struct system_node *self, struct system_node *cur
 static struct system_node *odata_open(struct system_node *self, struct service_state *state)
 {
 
-    list_add(&pipe.odata.states, &state->item);
+    if (list_ispicked(&state->item))
+        list_add(&pipe.odata.states, &state->item);
+
     blockifnotused(&pipe.idata.states, state);
     unblock(&pipe.idata.states);
 
