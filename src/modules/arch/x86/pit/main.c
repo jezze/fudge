@@ -41,12 +41,17 @@ void pit_wait(unsigned int ms)
 
     unsigned short x = 1193 * ms;
 
-    io_outb(0x43, 0x30);
-    io_outb(0x40, x >> 8);
-    io_outb(0x40, x);
-    io_outb(0x43, 0xE2);
+    io_outb(io + REGISTERCOMMAND, COMMANDCHANNEL0 | COMMANDBOTH | COMMANDMODE0);
+    io_outb(io + REGISTERCHANNEL0, x >> 8);
+    io_outb(io + REGISTERCHANNEL0, x);
+    io_outb(io + REGISTERCOMMAND, 0xE2);
 
-    while (!(io_inb(0x40) & (1 << 7)));
+    while (!(io_inb(io + REGISTERCHANNEL0) & (1 << 7)));
+
+    /* Return old values */
+    io_outb(io + REGISTERCOMMAND, COMMANDCHANNEL0 | COMMANDBOTH | COMMANDMODE3);
+    io_outb(io + REGISTERCHANNEL0, divisor);
+    io_outb(io + REGISTERCHANNEL0, divisor >> 8);
 
 }
 
@@ -55,8 +60,15 @@ static void handleirq(unsigned int irq)
 
     jiffies++;
 
-    timer_notify(&timerinterface, &jiffies, 4);
-    timer_notifytick(&timerinterface, jiffies);
+    if (jiffies >= 60)
+    {
+
+        timer_notify(&timerinterface, &jiffies, 4);
+        timer_notifytick(&timerinterface, jiffies);
+
+        jiffies = 0;
+
+    }
 
 }
 
