@@ -37,17 +37,19 @@ deps: $(DEP)
 $(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@echo BUILDROOT $@
 	@mkdir -p $@
-	@mkdir -p $@/lib
-	@cp $(LIB) $@/lib
 	@mkdir -p $@/bin
 	@cp $(BIN) $@/bin
 	@cp $(KBIN) $@/bin
+	@mkdir -p $@/config
+	@cp config/* $@/config
+	@mkdir -p $@/data
+	@cp data/* $@/data
+	@mkdir -p $@/home
+	@mkdir -p $@/lib
+	@cp $(LIB) $@/lib
 	@mkdir -p $@/mod
 	@cp $(KMAP) $@/mod
 	@cp $(KMOD) $@/mod
-	@mkdir -p $@/config
-	@cp config/* $@/config
-	@mkdir -p $@/home
 	@mkdir -p $@/mount
 	@mkdir -p $@/mount/0
 	@mkdir -p $@/mount/1
@@ -57,8 +59,7 @@ $(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@mkdir -p $@/mount/5
 	@mkdir -p $@/mount/6
 	@mkdir -p $@/mount/7
-	@mkdir -p $@/data
-	@cp data/* $@/data
+	@mkdir -p $@/proc
 	@mkdir -p $@/system
 
 $(KERNEL): $(DIR_SRC)/kernel/$(KERNEL)

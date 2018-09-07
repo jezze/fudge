@@ -1,58 +1,12 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/system/system.h>
-
-static struct system_node root;
-static struct system_node nodes[512];
-
-static void findall()
-{
-
-    struct resource *current = 0;
-    unsigned int n = 0;
-
-    while ((current = resource_foreachtype(current, RESOURCE_SERVICEBACKEND)))
-    {
-
-        system_initnode(&nodes[n], SYSTEM_NODETYPE_MULTIGROUP, "backend");
-        system_addchild(&root, &nodes[n]);
-
-        n++;
-
-    }
-
-    while ((current = resource_foreachtype(current, RESOURCE_SERVICEPROTOCOL)))
-    {
-
-        system_initnode(&nodes[n], SYSTEM_NODETYPE_MULTIGROUP, "protocol");
-        system_addchild(&root, &nodes[n]);
-
-        n++;
-
-    }
-
-}
+#include "internals.h"
 
 void module_init(void)
 {
 
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "internals");
-
-    findall();
-
-}
-
-void module_register(void)
-{
-
-    system_registernode(&root);
-
-}
-
-void module_unregister(void)
-{
-
-    system_unregisternode(&root);
+    internals_initbackend();
+    internals_initprotocol();
 
 }
 
