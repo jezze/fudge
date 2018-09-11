@@ -43,35 +43,18 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 static void interpretslang(unsigned int count, char *command)
 {
 
-    char buffer[FUDGE_BSIZE];
+    struct event pipe;
+    unsigned int id;
 
-    if (!file_walk(FILE_CP, "/bin/slang"))
+    memory_copy(pipe.data, command, count);
+
+    if (!file_walk(FILE_CP, "/bin/slang2"))
         return;
 
-    if (!file_walk(FILE_LA, "/system/pipe/clone"))
-        return;
+    id = call_spawn();
 
-    if (!file_walk(FILE_LB, "/system/pipe/clone"))
-        return;
-
-    file_open(FILE_LA);
-    file_open(FILE_LB);
-    file_walkfrom(FILE_CI, FILE_LA, "idata");
-    file_walkfrom(FILE_LC, FILE_LA, "odata");
-    file_walkfrom(FILE_LD, FILE_LB, "idata");
-    file_walkfrom(FILE_CO, FILE_LB, "odata");
-    call_spawn();
-    file_open(FILE_LC);
-    file_writeall(FILE_LC, command, count);
-    file_close(FILE_LC);
-    file_open(FILE_LD);
-
-    while ((count = file_read(FILE_LD, buffer, FUDGE_BSIZE)))
-        file_writeall(FILE_PO, buffer, count);
-
-    file_close(FILE_LD);
-    file_close(FILE_LB);
-    file_close(FILE_LA);
+    event_send(FILE_L1, &pipe, id, EVENT_DATA, count);
+    event_sendexit(FILE_L1, id);
 
 }
 
@@ -150,11 +133,15 @@ void main(void)
     if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    if (!file_walk(FILE_L1, "/system/console/event"))
+    if (!file_walk(FILE_L1, "/system/wm/event"))
+        return;
+
+    if (!file_walk(FILE_L2, "/system/console/event"))
         return;
 
     file_open(FILE_L0);
     file_open(FILE_L1);
+    file_open(FILE_L2);
     file_writeall(FILE_PO, "$ ", 2);
 
     while (!quit)
@@ -181,6 +168,7 @@ void main(void)
 
     }
 
+    file_close(FILE_L2);
     file_close(FILE_L1);
     file_close(FILE_L0);
 

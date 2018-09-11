@@ -1,6 +1,9 @@
 #define EVENTS                          21
 #define EVENT_ADDR_BROADCAST            0
 #define EVENT_EXIT                      0x01
+#define EVENT_REIN                      0x02
+#define EVENT_REOUT                     0x03
+#define EVENT_DATA                      0x04
 
 struct event_header
 {
