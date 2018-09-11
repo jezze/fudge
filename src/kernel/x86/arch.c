@@ -64,7 +64,7 @@ static unsigned int spawn(struct task *task, void *stack)
         memory_copy(gettaskdirectory(next->id), getkerneldirectory(), sizeof (struct mmu_directory));
         kernel_usetask(next);
 
-        return 1;
+        return next->id;
 
     }
 
@@ -84,7 +84,7 @@ static unsigned int despawn(struct task *task, void *stack)
 
     kernel_freetask(task);
 
-    return 1;
+    return 0;
 
 }
 
