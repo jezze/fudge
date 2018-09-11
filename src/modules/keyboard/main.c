@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <event/base.h>
+#include <event/device.h>
 #include <modules/system/system.h>
 #include <modules/event/event.h>
 #include "keyboard.h"
