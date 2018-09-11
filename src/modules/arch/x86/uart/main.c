@@ -122,6 +122,7 @@ static void handleirq(unsigned int irq)
     unsigned char data = uart_get();
 
     console_notify(&consoleinterface, &data, 1);
+    console_notifydata(&consoleinterface, data);
 
 }
 
