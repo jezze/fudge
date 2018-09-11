@@ -4,7 +4,7 @@ struct console_interface
     struct resource resource;
     struct system_node root;
     struct system_node ctrl;
-    struct system_node idata;
+    struct system_node data;
     struct system_node odata;
     struct system_node event;
     unsigned int id;

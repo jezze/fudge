@@ -1,7 +1,11 @@
 #include <abi.h>
 #include <fudge.h>
+#include <event/base.h>
+#include <event/device.h>
 
 static unsigned int quit;
+static unsigned char inputbuffer[FUDGE_BSIZE];
+static struct ring input;
 
 static unsigned int interpretbuiltin(unsigned int count, char *command)
 {
@@ -85,28 +89,25 @@ static void interpret(struct ring *ring)
 
 }
 
-static void complete(struct ring *ring)
+static void onconsoledata(struct event_header *header, void *data)
 {
 
-}
+    struct event_consoledata *consoledata = data;
 
-static void handle(struct ring *ring, unsigned char c)
-{
-
-    switch (c)
+    switch (consoledata->data)
     {
 
     case '\0':
         break;
 
     case '\t':
-        complete(ring);
+        /* Call complete */
 
         break;
 
     case '\b':
     case 0x7F:
-        if (!ring_skipreverse(ring, 1))
+        if (!ring_skipreverse(&input, 1))
             break;
 
         file_writeall(FILE_PO, "\b \b", 3);
@@ -114,19 +115,19 @@ static void handle(struct ring *ring, unsigned char c)
         break;
 
     case '\r':
-        c = '\n';
+        consoledata->data = '\n';
 
     case '\n':
-        file_writeall(FILE_PO, &c, 1);
-        ring_write(ring, &c, 1);
-        interpret(ring);
+        file_writeall(FILE_PO, &consoledata->data, 1);
+        ring_write(&input, &consoledata->data, 1);
+        interpret(&input);
         file_writeall(FILE_PO, "$ ", 2);
 
         break;
 
     default:
-        ring_write(ring, &c, 1);
-        file_writeall(FILE_PO, &c, 1);
+        ring_write(&input, &consoledata->data, 1);
+        file_writeall(FILE_PO, &consoledata->data, 1);
 
         break;
 
@@ -137,28 +138,39 @@ static void handle(struct ring *ring, unsigned char c)
 void main(void)
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count;
-    unsigned char inputbuffer[FUDGE_BSIZE];
-    struct ring input;
-
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
-    file_open(FILE_PI);
-    file_open(FILE_PO);
+
+    if (!file_walk(FILE_L0, "/system/event"))
+        return;
+
+    if (!file_walk(FILE_L1, "/system/console/event"))
+        return;
+
+    file_open(FILE_L0);
+    file_open(FILE_L1);
     file_writeall(FILE_PO, "$ ", 2);
 
-    while (!quit && (count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
+    while (!quit)
     {
 
-        unsigned int i;
+        struct event event;
 
-        for (i = 0; i < count; i++)
-            handle(&input, buffer[i]);
+        event_read(FILE_L0, &event);
+
+        switch (event.header.type)
+        {
+
+        case EVENT_CONSOLEDATA:
+            onconsoledata(&event.header, event.data);
+
+            break;
+
+        }
 
     }
 
-    file_close(FILE_PO);
-    file_close(FILE_PI);
+    file_close(FILE_L1);
+    file_close(FILE_L0);
 
 }
 
