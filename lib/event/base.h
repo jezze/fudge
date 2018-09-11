@@ -1,5 +1,6 @@
 #define EVENTS                          21
 #define EVENT_ADDR_BROADCAST            0
+#define EVENT_EXIT                      0x01
 
 struct event_header
 {
@@ -21,3 +22,4 @@ struct event
 
 void event_read(unsigned int descriptor, struct event *event);
 void event_send(unsigned int descriptor, struct event *event, unsigned int destination, unsigned int type, unsigned int length);
+void event_sendexit(unsigned int descriptor, unsigned int destination);

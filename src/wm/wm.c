@@ -243,6 +243,33 @@ static void arrangeview(struct view *view)
 
 }
 
+static void onexit(struct event_header *header, void *data)
+{
+
+    struct list_item *current;
+
+    for (current = viewlist.head; current; current = current->next)
+    {
+
+        struct view *view = current->data;
+        struct list_item *current2;
+
+        for (current2 = view->remotes.head; current; current = current->next)
+        {
+
+            struct remote *remote = current2->data;
+
+            event_sendwmhide(FILE_L1, remote->source);
+            event_sendexit(FILE_L1, remote->source);
+
+        }
+
+    }
+
+    quit = 1;
+
+}
+
 static void onkeypress(struct event_header *header, void *data)
 {
 
@@ -310,7 +337,7 @@ static void onkeypress(struct event_header *header, void *data)
             break;
 
         event_sendwmhide(FILE_L1, currentview->currentremote->source);
-        event_sendwmexit(FILE_L1, currentview->currentremote->source);
+        event_sendexit(FILE_L1, currentview->currentremote->source);
 
         break;
 
@@ -400,7 +427,7 @@ static void onkeypress(struct event_header *header, void *data)
             break;
 
         event_sendwmhide(FILE_L1, header->destination);
-        event_sendwmexit(FILE_L1, header->destination);
+        event_sendexit(FILE_L1, header->destination);
 
         break;
 
@@ -583,7 +610,6 @@ static void onwmmap(struct event_header *header, void *data)
     activateremote(currentview->currentremote);
     arrangeview(currentview);
     showremotes(header, &currentview->remotes);
-    event_sendwminit(FILE_L1, header->source);
 
 }
 
@@ -622,33 +648,6 @@ static void onwmunmap(struct event_header *header, void *data)
         }
 
     }
-
-}
-
-static void onwmexit(struct event_header *header, void *data)
-{
-
-    struct list_item *current;
-
-    for (current = viewlist.head; current; current = current->next)
-    {
-
-        struct view *view = current->data;
-        struct list_item *current2;
-
-        for (current2 = view->remotes.head; current; current = current->next)
-        {
-
-            struct remote *remote = current2->data;
-
-            event_sendwmhide(FILE_L1, remote->source);
-            event_sendwmexit(FILE_L1, remote->source);
-
-        }
-
-    }
-
-    quit = 1;
 
 }
 
@@ -815,6 +814,11 @@ void main(void)
         switch (event.header.type)
         {
 
+        case EVENT_EXIT:
+            onexit(&event.header, event.data);
+
+            break;
+
         case EVENT_KEYPRESS:
             onkeypress(&event.header, event.data);
 
@@ -852,11 +856,6 @@ void main(void)
 
         case EVENT_WMUNMAP:
             onwmunmap(&event.header, event.data);
-
-            break;
-
-        case EVENT_WMEXIT:
-            onwmexit(&event.header, event.data);
 
             break;
 

@@ -21,24 +21,6 @@ void event_sendwmunmap(unsigned int descriptor, unsigned int destination)
 
 }
 
-void event_sendwminit(unsigned int descriptor, unsigned int destination)
-{
-
-    struct event event;
-
-    event_send(descriptor, &event, destination, EVENT_WMINIT, 0);
-
-}
-
-void event_sendwmexit(unsigned int descriptor, unsigned int destination)
-{
-
-    struct event event;
-
-    event_send(descriptor, &event, destination, EVENT_WMEXIT, 0);
-
-}
-
 void event_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 

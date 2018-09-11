@@ -89,6 +89,13 @@ static void interpret(struct ring *ring)
 
 }
 
+static void onexit(struct event_header *header, void *data)
+{
+
+    quit = 1;
+
+}
+
 static void onconsoledata(struct event_header *header, void *data)
 {
 
@@ -159,6 +166,11 @@ void main(void)
 
         switch (event.header.type)
         {
+
+        case EVENT_EXIT:
+            onexit(&event.header, event.data);
+
+            break;
 
         case EVENT_CONSOLEDATA:
             onconsoledata(&event.header, event.data);

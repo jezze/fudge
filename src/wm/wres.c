@@ -10,6 +10,13 @@ static unsigned int quit;
 static struct event flush;
 static struct ring output;
 
+static void onexit(struct event_header *header, void *data)
+{
+
+    quit = 1;
+
+}
+
 static void onwmmousepress(struct event_header *header, void *data)
 {
 
@@ -27,13 +34,6 @@ static void onwmmousepress(struct event_header *header, void *data)
         break;
 
     }
-
-}
-
-static void onwmexit(struct event_header *header, void *data)
-{
-
-    quit = 1;
 
 }
 
@@ -65,13 +65,13 @@ void main(void)
         switch (event.header.type)
         {
 
-        case EVENT_WMMOUSEPRESS:
-            onwmmousepress(&event.header, event.data);
+        case EVENT_EXIT:
+            onexit(&event.header, event.data);
 
             break;
 
-        case EVENT_WMEXIT:
-            onwmexit(&event.header, event.data);
+        case EVENT_WMMOUSEPRESS:
+            onwmmousepress(&event.header, event.data);
 
             break;
 

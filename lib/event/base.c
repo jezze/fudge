@@ -21,3 +21,12 @@ void event_send(unsigned int descriptor, struct event *event, unsigned int desti
 
 }
 
+void event_sendexit(unsigned int descriptor, unsigned int destination)
+{
+
+    struct event event;
+
+    event_send(descriptor, &event, destination, EVENT_EXIT, 0);
+
+}
+

@@ -1,11 +1,9 @@
 #define EVENT_WMMAP                     0x80
 #define EVENT_WMUNMAP                   0x81
-#define EVENT_WMINIT                    0x82
-#define EVENT_WMEXIT                    0x83
-#define EVENT_WMRESIZE                  0x84
-#define EVENT_WMSHOW                    0x85
-#define EVENT_WMHIDE                    0x86
-#define EVENT_WMFLUSH                   0x87
+#define EVENT_WMRESIZE                  0x82
+#define EVENT_WMSHOW                    0x83
+#define EVENT_WMHIDE                    0x84
+#define EVENT_WMFLUSH                   0x85
 #define EVENT_WMKEYPRESS                0x90
 #define EVENT_WMKEYRELEASE              0x91
 #define EVENT_WMMOUSEMOVE               0x92
@@ -62,8 +60,6 @@ struct event_wmmousemove
 
 void event_sendwmmap(unsigned int descriptor, unsigned int destination);
 void event_sendwmunmap(unsigned int descriptor, unsigned int destination);
-void event_sendwminit(unsigned int descriptor, unsigned int destination);
-void event_sendwmexit(unsigned int descriptor, unsigned int destination);
 void event_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
 void event_sendwmshow(unsigned int descriptor, unsigned int destination);
 void event_sendwmhide(unsigned int descriptor, unsigned int destination);

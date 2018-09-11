@@ -200,6 +200,13 @@ static void moveright(unsigned int steps)
 
 }
 
+static void onexit(struct event_header *header, void *data)
+{
+
+    quit = 1;
+
+}
+
 static void onwmkeypress(struct event_header *header, void *data)
 {
 
@@ -301,13 +308,6 @@ static void onwmkeyrelease(struct event_header *header, void *data)
 
 }
 
-static void onwmexit(struct event_header *header, void *data)
-{
-
-    quit = 1;
-
-}
-
 static void onwmresize(struct event_header *header, void *data)
 {
 
@@ -367,6 +367,11 @@ void main(void)
         switch (event.header.type)
         {
 
+        case EVENT_EXIT:
+            onexit(&event.header, event.data);
+
+            break;
+
         case EVENT_WMKEYPRESS:
             onwmkeypress(&event.header, event.data);
 
@@ -374,11 +379,6 @@ void main(void)
 
         case EVENT_WMKEYRELEASE:
             onwmkeyrelease(&event.header, event.data);
-
-            break;
-
-        case EVENT_WMEXIT:
-            onwmexit(&event.header, event.data);
 
             break;
 
