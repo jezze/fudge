@@ -10,7 +10,7 @@ static struct widget_textbox content;
 static struct widget_text status;
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static struct event flush;
+static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static char inputdata1[FUDGE_BSIZE];
 static struct ring input1;
@@ -257,7 +257,7 @@ static void onwmhide(struct event_header *header, void *data)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, flush.data);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     widget_inittextbox(&content);
@@ -318,7 +318,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_send(FILE_L1, &flush, EVENT_ADDR_BROADCAST, EVENT_WMFLUSH, ring_count(&output));
+            event_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
             ring_reset(&output);
 
         }

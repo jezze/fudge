@@ -56,12 +56,12 @@ void event_sendwmhide(unsigned int descriptor, unsigned int destination)
 
 }
 
-void event_sendwmflush(unsigned int descriptor, unsigned int destination)
+void event_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned int count, void *buffer)
 {
 
     struct event event;
 
-    event_send(descriptor, &event, destination, EVENT_WMFLUSH, 0);
+    event_send(descriptor, &event, destination, EVENT_WMFLUSH, memory_write(event.data, FUDGE_BSIZE, buffer, count, 0));
 
 }
 

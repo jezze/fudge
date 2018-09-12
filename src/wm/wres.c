@@ -7,7 +7,7 @@
 #include "render.h"
 
 static unsigned int quit;
-static struct event flush;
+static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 
 static void onexit(struct event_header *header, void *data)
@@ -40,7 +40,7 @@ static void onwmmousepress(struct event_header *header, void *data)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, flush.data);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;
@@ -80,7 +80,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_send(FILE_L1, &flush, EVENT_ADDR_BROADCAST, EVENT_WMFLUSH, ring_count(&output));
+            event_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
             ring_reset(&output);
 
         }

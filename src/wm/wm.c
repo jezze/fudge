@@ -34,7 +34,7 @@ static struct view
 
 static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
-static struct event flush;
+static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static struct box size;
 static struct box body;
@@ -764,7 +764,7 @@ static void setupremotes(void)
 void main(void)
 {
 
-    ring_init(&output, FUDGE_BSIZE, flush.data);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     setupviews();
@@ -884,7 +884,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_send(FILE_L1, &flush, EVENT_ADDR_BROADCAST, EVENT_WMFLUSH, ring_count(&output));
+            event_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
             ring_reset(&output);
 
         }
