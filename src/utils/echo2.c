@@ -50,11 +50,7 @@ void main(void)
     if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    if (!file_walk(FILE_L1, "/system/wm/event"))
-        return;
-
     file_open(FILE_L0);
-    file_open(FILE_L1);
 
     while (!quit)
     {
@@ -86,7 +82,6 @@ void main(void)
 
     }
 
-    file_close(FILE_L1);
     file_close(FILE_L0);
 
 }
