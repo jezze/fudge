@@ -23,5 +23,4 @@ include $(DIR_SRC)/modules/tcp/rules.mk
 include $(DIR_SRC)/modules/timer/rules.mk
 include $(DIR_SRC)/modules/udp/rules.mk
 include $(DIR_SRC)/modules/video/rules.mk
-include $(DIR_SRC)/modules/wm/rules.mk
 include $(DIR_SRC)/modules/arch/$(ARCH)/rules.mk

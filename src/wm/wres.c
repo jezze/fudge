@@ -13,14 +13,14 @@ static struct ring output;
 static void oninit(struct event_header *header, void *data)
 {
 
-    event_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
+    event_sendwmmap(FILE_L0, EVENT_ADDR_BROADCAST);
 
 }
 
 static void onkill(struct event_header *header, void *data)
 {
 
-    event_sendwmunmap(FILE_L1, EVENT_ADDR_BROADCAST);
+    event_sendwmunmap(FILE_L0, EVENT_ADDR_BROADCAST);
 
     quit = 1;
 
@@ -36,7 +36,7 @@ static void onwmmousepress(struct event_header *header, void *data)
 
     case 0x01:
         render_init();
-        render_setvideo(FILE_L6, 1920, 1080, 4);
+        render_setvideo(FILE_L1, 1920, 1080, 4);
 
         quit = 1;
 
@@ -54,14 +54,10 @@ void main(void)
     if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    if (!file_walk(FILE_L1, "/system/wm/event"))
-        return;
-
-    if (!file_walk(FILE_L6, "/system/video/if:0/ctrl"))
+    if (!file_walk(FILE_L1, "/system/video/if:0/ctrl"))
         return;
 
     file_open(FILE_L0);
-    file_open(FILE_L1);
 
     while (!quit)
     {
@@ -93,14 +89,13 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
+            event_sendwmflush(FILE_L0, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
             ring_reset(&output);
 
         }
 
     }
 
-    file_close(FILE_L1);
     file_close(FILE_L0);
 
 }

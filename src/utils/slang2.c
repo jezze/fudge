@@ -307,7 +307,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             id = call_spawn();
 
-            event_sendinit(FILE_L1, id);
+            event_sendinit(FILE_L0, id);
 
             if (crein)
             {
@@ -315,7 +315,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
                 struct event redirect;
 
                 memory_copy(redirect.data, rein, crein);
-                event_send(FILE_L1, &redirect, id, EVENT_REIN, crein);
+                event_send(FILE_L0, &redirect, id, EVENT_REIN, crein);
 
             }
 
@@ -325,11 +325,11 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
                 struct event redirect;
 
                 memory_copy(redirect.data, reout, creout);
-                event_send(FILE_L1, &redirect, id, EVENT_REOUT, creout);
+                event_send(FILE_L0, &redirect, id, EVENT_REOUT, creout);
 
             }
 
-            event_sendexit(FILE_L1, id);
+            event_sendexit(FILE_L0, id);
 
             break;
 
@@ -344,7 +344,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             id = call_spawn();
 
-            event_sendinit(FILE_L1, id);
+            event_sendinit(FILE_L0, id);
 
             if (crein)
             {
@@ -352,7 +352,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
                 struct event redirect;
 
                 memory_copy(redirect.data, rein, crein);
-                event_send(FILE_L1, &redirect, id, EVENT_REIN, crein);
+                event_send(FILE_L0, &redirect, id, EVENT_REIN, crein);
 
             }
 
@@ -362,11 +362,11 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
                 struct event redirect;
 
                 memory_copy(redirect.data, reout, creout);
-                event_send(FILE_L1, &redirect, id, EVENT_REOUT, creout);
+                event_send(FILE_L0, &redirect, id, EVENT_REOUT, creout);
 
             }
 
-            event_sendexit(FILE_L1, id);
+            event_sendexit(FILE_L0, id);
 
             break;
 
@@ -436,11 +436,7 @@ void main(void)
     if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    if (!file_walk(FILE_L1, "/system/wm/event"))
-        return;
-
     file_open(FILE_L0);
-    file_open(FILE_L1);
 
     while (!quit)
     {
@@ -477,7 +473,6 @@ void main(void)
 
     }
 
-    file_close(FILE_L1);
     file_close(FILE_L0);
 
 }

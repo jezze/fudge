@@ -140,7 +140,7 @@ static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, 
 {
 
     box_setsize(&remote->window.size, x, y, w, h);
-    event_sendwmresize(FILE_L1, remote->source, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+    event_sendwmresize(FILE_L0, remote->source, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
 
 }
 
@@ -154,7 +154,7 @@ static void showremotes(struct event_header *header, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        event_sendwmshow(FILE_L1, remote->source);
+        event_sendwmshow(FILE_L0, remote->source);
         updateremote(header, remote);
 
     }
@@ -171,7 +171,7 @@ static void hideremotes(struct event_header *header, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        event_sendwmhide(FILE_L1, remote->source);
+        event_sendwmhide(FILE_L0, remote->source);
         removeremote(header, remote);
 
     }
@@ -259,8 +259,8 @@ static void onkill(struct event_header *header, void *data)
 
             struct remote *remote = current2->data;
 
-            event_sendwmhide(FILE_L1, remote->source);
-            event_sendkill(FILE_L1, remote->source);
+            event_sendwmhide(FILE_L0, remote->source);
+            event_sendkill(FILE_L0, remote->source);
 
         }
 
@@ -284,7 +284,7 @@ static void onkeypress(struct event_header *header, void *data)
     {
 
         if (currentview->currentremote)
-            event_sendwmkeypress(FILE_L1, currentview->currentremote->source, keypress->scancode);
+            event_sendwmkeypress(FILE_L0, currentview->currentremote->source, keypress->scancode);
 
         return;
 
@@ -337,8 +337,8 @@ static void onkeypress(struct event_header *header, void *data)
         if (!currentview->currentremote)
             break;
 
-        event_sendwmhide(FILE_L1, currentview->currentremote->source);
-        event_sendkill(FILE_L1, currentview->currentremote->source);
+        event_sendwmhide(FILE_L0, currentview->currentremote->source);
+        event_sendkill(FILE_L0, currentview->currentremote->source);
 
         break;
 
@@ -351,8 +351,8 @@ static void onkeypress(struct event_header *header, void *data)
 
         id = call_spawn();
 
-        event_sendinit(FILE_L1, id);
-        event_sendexit(FILE_L1, id);
+        event_sendinit(FILE_L0, id);
+        event_sendexit(FILE_L0, id);
 
         break;
 
@@ -430,8 +430,8 @@ static void onkeypress(struct event_header *header, void *data)
         if (!(keymod & KEYMOD_SHIFT))
             break;
 
-        event_sendwmhide(FILE_L1, header->destination);
-        event_sendkill(FILE_L1, header->destination);
+        event_sendwmhide(FILE_L0, header->destination);
+        event_sendkill(FILE_L0, header->destination);
 
         break;
 
@@ -450,7 +450,7 @@ static void onkeyrelease(struct event_header *header, void *data)
     {
 
         if (currentview->currentremote)
-            event_sendwmkeyrelease(FILE_L1, currentview->currentremote->source, keyrelease->scancode);
+            event_sendwmkeyrelease(FILE_L0, currentview->currentremote->source, keyrelease->scancode);
 
         return;
 
@@ -475,7 +475,7 @@ static void onmousemove(struct event_header *header, void *data)
     updatemouse(header);
 
     if (currentview->currentremote)
-        event_sendwmmousemove(FILE_L1, currentview->currentremote->source, mouse.size.x, mouse.size.y);
+        event_sendwmmousemove(FILE_L0, currentview->currentremote->source, mouse.size.x, mouse.size.y);
 
 }
 
@@ -538,7 +538,7 @@ static void onmousepress(struct event_header *header, void *data)
     }
 
     if (currentview->currentremote)
-        event_sendwmmousepress(FILE_L1, currentview->currentremote->source, mousepress->button);
+        event_sendwmmousepress(FILE_L0, currentview->currentremote->source, mousepress->button);
 
 }
 
@@ -548,7 +548,7 @@ static void onmouserelease(struct event_header *header, void *data)
     struct event_mouserelease *mouserelease = data;
 
     if (currentview->currentremote)
-        event_sendwmmouserelease(FILE_L1, currentview->currentremote->source, mouserelease->button);
+        event_sendwmmouserelease(FILE_L0, currentview->currentremote->source, mouserelease->button);
 
 }
 
@@ -596,8 +596,8 @@ static void onvideomode(struct event_header *header, void *data)
 
     }
 
-    event_sendwmresize(FILE_L1, header->destination, 0, 0, videomode->w, videomode->h, padding, lineheight);
-    event_sendwmshow(FILE_L1, header->destination);
+    event_sendwmresize(FILE_L0, header->destination, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    event_sendwmshow(FILE_L0, header->destination);
 
 }
 
@@ -721,7 +721,7 @@ static void onwmflush(struct event_header *header, void *data)
 {
 
     render_begin(data, header->length - sizeof (struct event_header));
-    render_update(FILE_L5, size.w, size.h);
+    render_update(FILE_L4, size.w, size.h);
     render_complete();
 
 }
@@ -778,35 +778,31 @@ void main(void)
     if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    if (!file_walk(FILE_L1, "/system/wm/event"))
+    if (!file_walk(FILE_L1, "/system/keyboard/event"))
         return;
 
-    if (!file_walk(FILE_L2, "/system/keyboard/event"))
+    if (!file_walk(FILE_L2, "/system/mouse/event"))
         return;
 
-    if (!file_walk(FILE_L3, "/system/mouse/event"))
+    if (!file_walk(FILE_L3, "/system/video/if:0/event"))
         return;
 
-    if (!file_walk(FILE_L4, "/system/video/if:0/event"))
+    if (!file_walk(FILE_L4, "/system/video/if:0/data"))
         return;
 
-    if (!file_walk(FILE_L5, "/system/video/if:0/data"))
+    if (!file_walk(FILE_L5, "/system/video/if:0/ctrl"))
         return;
 
-    if (!file_walk(FILE_L6, "/system/video/if:0/ctrl"))
-        return;
-
-    if (!file_walk(FILE_L7, "/system/video/if:0/colormap"))
+    if (!file_walk(FILE_L6, "/system/video/if:0/colormap"))
         return;
 
     file_open(FILE_L0);
     file_open(FILE_L1);
     file_open(FILE_L2);
     file_open(FILE_L3);
-    file_open(FILE_L4);
     render_init();
-    render_setvideo(FILE_L6, 1024, 768, 4);
-    render_setcolormap(FILE_L7);
+    render_setvideo(FILE_L5, 1024, 768, 4);
+    render_setcolormap(FILE_L6);
 
     while (!quit)
     {
@@ -888,14 +884,13 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_sendwmflush(FILE_L1, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
+            event_sendwmflush(FILE_L0, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
             ring_reset(&output);
 
         }
 
     }
 
-    file_close(FILE_L4);
     file_close(FILE_L3);
     file_close(FILE_L2);
     file_close(FILE_L1);

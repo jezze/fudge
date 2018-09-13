@@ -53,9 +53,9 @@ static void interpretslang(unsigned int count, char *command)
 
     id = call_spawn();
 
-    event_sendinit(FILE_L1, id);
-    event_send(FILE_L1, &pipe, id, EVENT_DATA, count);
-    event_sendexit(FILE_L1, id);
+    event_sendinit(FILE_L0, id);
+    event_send(FILE_L0, &pipe, id, EVENT_DATA, count);
+    event_sendexit(FILE_L0, id);
 
 }
 
@@ -140,15 +140,11 @@ void main(void)
     if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    if (!file_walk(FILE_L1, "/system/wm/event"))
-        return;
-
-    if (!file_walk(FILE_L2, "/system/console/event"))
+    if (!file_walk(FILE_L1, "/system/console/event"))
         return;
 
     file_open(FILE_L0);
     file_open(FILE_L1);
-    file_open(FILE_L2);
 
     while (!quit)
     {
@@ -179,7 +175,6 @@ void main(void)
 
     }
 
-    file_close(FILE_L2);
     file_close(FILE_L1);
     file_close(FILE_L0);
 
