@@ -414,18 +414,13 @@ static void onrein(struct event_header *header, void *data)
     file_open(FILE_PI);
 
     while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
-    {
-
         tokenizebuffer(&infix, &stringtable, count, buffer);
-        translate(&postfix, &infix, &stack);
-        parse(&postfix, &stack);
-
-    }
 
     file_close(FILE_PI);
+    translate(&postfix, &infix, &stack);
+    parse(&postfix, &stack);
 
 }
-
 
 void main(void)
 {
