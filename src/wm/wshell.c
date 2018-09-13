@@ -136,13 +136,29 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 static void interpretslang(unsigned int count, char *command)
 {
 
-    char buffer[FUDGE_BSIZE];
-    struct event pipe;
     unsigned int id;
 
-    memory_copy(pipe.data, command, count);
-
     if (!file_walk(FILE_CP, "/bin/slang2"))
+        return;
+
+    id = call_spawn();
+
+    event_sendinit(FILE_L0, id);
+    event_senddata(FILE_L0, id, count, command);
+    event_sendexit(FILE_L0, id);
+
+}
+
+static void interpret(struct ring *ring)
+{
+
+    char buffer[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
+
+    if (count < 2)
+        return;
+
+    if (interpretbuiltin(count, buffer))
         return;
 
     if (!file_walk(FILE_LA, "/system/pipe/clone"))
@@ -151,13 +167,7 @@ static void interpretslang(unsigned int count, char *command)
     file_open(FILE_LA);
     file_walkfrom(FILE_CO, FILE_LA, "odata");
     file_walkfrom(FILE_LB, FILE_LA, "idata");
-
-    id = call_spawn();
-
-    event_sendinit(FILE_L0, id);
-    event_send(FILE_L0, &pipe, id, EVENT_DATA, count);
-    event_sendexit(FILE_L0, id);
-
+    interpretslang(count, buffer);
     file_open(FILE_LB);
 
     while ((count = file_read(FILE_LB, buffer, FUDGE_BSIZE)))
@@ -165,20 +175,6 @@ static void interpretslang(unsigned int count, char *command)
 
     file_close(FILE_LB);
     file_close(FILE_LA);
-
-}
-
-static void interpret(struct ring *ring)
-{
-
-    char command[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
-
-    if (count < 2)
-        return;
-
-    if (!interpretbuiltin(count, command))
-        interpretslang(count, command);
 
 }
 

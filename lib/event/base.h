@@ -30,3 +30,4 @@ void event_send(unsigned int descriptor, struct event *event, unsigned int desti
 void event_sendinit(unsigned int descriptor, unsigned int destination);
 void event_sendexit(unsigned int descriptor, unsigned int destination);
 void event_sendkill(unsigned int descriptor, unsigned int destination);
+void event_senddata(unsigned int descriptor, unsigned int destination, unsigned int count, void *buffer);

@@ -48,3 +48,12 @@ void event_sendkill(unsigned int descriptor, unsigned int destination)
 
 }
 
+void event_senddata(unsigned int descriptor, unsigned int destination, unsigned int count, void *buffer)
+{
+
+    struct event event;
+
+    event_send(descriptor, &event, destination, EVENT_DATA, memory_read(event.data, FUDGE_BSIZE, buffer, count, 0));
+
+}
+

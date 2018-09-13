@@ -43,10 +43,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 static void interpretslang(unsigned int count, char *command)
 {
 
-    struct event pipe;
     unsigned int id;
-
-    memory_copy(pipe.data, command, count);
 
     if (!file_walk(FILE_CP, "/bin/slang2"))
         return;
@@ -54,7 +51,7 @@ static void interpretslang(unsigned int count, char *command)
     id = call_spawn();
 
     event_sendinit(FILE_L0, id);
-    event_send(FILE_L0, &pipe, id, EVENT_DATA, count);
+    event_senddata(FILE_L0, id, count, command);
     event_sendexit(FILE_L0, id);
 
 }
@@ -62,14 +59,16 @@ static void interpretslang(unsigned int count, char *command)
 static void interpret(struct ring *ring)
 {
 
-    char command[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
+    char buffer[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
 
     if (count < 2)
         return;
 
-    if (!interpretbuiltin(count, command))
-        interpretslang(count, command);
+    if (interpretbuiltin(count, buffer))
+        return;
+
+    interpretslang(count, buffer);
 
 }
 
