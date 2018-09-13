@@ -286,19 +286,6 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
-    $(DIR_LIB)/common/common.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/ls2 \
-
-O:=\
-    $(DIR_SRC)/utils/ls2.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/common/common.a \
 
