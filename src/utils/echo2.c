@@ -19,9 +19,6 @@ static void onrein(struct event_header *header, void *data)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    if (!file_walk(FILE_PI, data))
-        return;
-
     file_open(FILE_PI);
 
     while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))

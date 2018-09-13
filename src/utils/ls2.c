@@ -9,9 +9,6 @@ static void onrein(struct event_header *header, void *data)
 
     struct record record;
 
-    if (!file_walk(FILE_PI, data))
-        return;
-
     file_open(FILE_PO);
     file_open(FILE_PI);
     file_writeall(FILE_PO, "..\n", 3);
