@@ -109,8 +109,6 @@ static void movedown(void)
 static void onrein(struct event_header *header, void *data)
 {
 
-    file_walk(FILE_PI, data);
-
 }
 
 static void oninit(struct event_header *header, void *data)

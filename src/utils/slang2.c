@@ -307,10 +307,24 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             event_sendinit(FILE_L0, id);
 
             if (rei)
-                event_send(FILE_L0, &redirect, id, EVENT_REIN, 0);
+            {
+
+                char num = rei - 1;
+
+                memory_copy(redirect.data, &num, 1);
+                event_send(FILE_L0, &redirect, id, EVENT_REIN, 1);
+
+            }
 
             if (reo)
-                event_send(FILE_L0, &redirect, id, EVENT_REOUT, 0);
+            {
+
+                char num = reo - 1;
+
+                memory_copy(redirect.data, &num, 1);
+                event_send(FILE_L0, &redirect, id, EVENT_REOUT, 1);
+
+            }
 
             event_sendexit(FILE_L0, id);
 
@@ -330,10 +344,24 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             event_sendinit(FILE_L0, id);
 
             if (rei)
-                event_send(FILE_L0, &redirect, id, EVENT_REIN, 0);
+            {
+
+                char num = rei - 1;
+
+                memory_copy(redirect.data, &num, 1);
+                event_send(FILE_L0, &redirect, id, EVENT_REIN, 1);
+
+            }
 
             if (reo)
-                event_send(FILE_L0, &redirect, id, EVENT_REOUT, 0);
+            {
+
+                char num = reo - 1;
+
+                memory_copy(redirect.data, &num, 1);
+                event_send(FILE_L0, &redirect, id, EVENT_REOUT, 1);
+
+            }
 
             event_sendexit(FILE_L0, id);
 
@@ -374,15 +402,16 @@ static void ondata(struct event_header *header, void *data)
 static void onrein(struct event_header *header, void *data)
 {
 
+    char num = *(char *)data;
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(FILE_PI);
+    file_open(FILE_PI + num);
 
-    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(FILE_PI + num, buffer, FUDGE_BSIZE)))
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    file_close(FILE_PI);
+    file_close(FILE_PI + num);
     translate(&postfix, &infix, &stack);
     parse(&postfix, &stack);
 
