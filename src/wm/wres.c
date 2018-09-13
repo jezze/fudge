@@ -13,6 +13,7 @@ static struct ring output;
 static void oninit(struct event_header *header, void *data)
 {
 
+    ring_init(&output, FUDGE_BSIZE, outputdata);
     event_sendwmmap(FILE_L0, EVENT_ADDR_BROADCAST);
 
 }
@@ -48,8 +49,6 @@ static void onwmmousepress(struct event_header *header, void *data)
 
 void main(void)
 {
-
-    ring_init(&output, FUDGE_BSIZE, outputdata);
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;

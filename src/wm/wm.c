@@ -243,6 +243,60 @@ static void arrangeview(struct view *view)
 
 }
 
+static void setupviews(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < VIEWS; i++)
+    {
+
+        struct view *view = &views[i];
+
+        list_inititem(&view->item, view);
+        widget_initpanel(&view->panel, 0);
+        list_add(&viewlist, &view->item);
+
+        view->numberstring = '1' + i;
+        view->panel.length = 1;
+
+    }
+
+}
+
+static void setupremotes(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < REMOTES; i++)
+    {
+
+        struct remote *remote = &remotes[i];
+
+        list_inititem(&remote->item, remote);
+        widget_initwindow(&remote->window, 0);
+        list_add(&remotelist, &remote->item);
+
+    }
+
+}
+
+static void oninit(struct event_header *header, void *data)
+{
+
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    widget_initfill(&background, 2);
+    widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
+    setupviews();
+    setupremotes();
+    activateview(currentview);
+    render_init();
+    render_setvideo(FILE_L5, 1024, 768, 4);
+    render_setcolormap(FILE_L6);
+
+}
+
 static void onkill(struct event_header *header, void *data)
 {
 
@@ -726,54 +780,8 @@ static void onwmflush(struct event_header *header, void *data)
 
 }
 
-static void setupviews(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < VIEWS; i++)
-    {
-
-        struct view *view = &views[i];
-
-        list_inititem(&view->item, view);
-        widget_initpanel(&view->panel, 0);
-        list_add(&viewlist, &view->item);
-
-        view->numberstring = '1' + i;
-        view->panel.length = 1;
-
-    }
-
-}
-
-static void setupremotes(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < REMOTES; i++)
-    {
-
-        struct remote *remote = &remotes[i];
-
-        list_inititem(&remote->item, remote);
-        widget_initwindow(&remote->window, 0);
-        list_add(&remotelist, &remote->item);
-
-    }
-
-}
-
 void main(void)
 {
-
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    widget_initfill(&background, 2);
-    widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
-    setupviews();
-    setupremotes();
-    activateview(currentview);
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;
@@ -800,9 +808,6 @@ void main(void)
     file_open(FILE_L1);
     file_open(FILE_L2);
     file_open(FILE_L3);
-    render_init();
-    render_setvideo(FILE_L5, 1024, 768, 4);
-    render_setcolormap(FILE_L6);
 
     while (!quit)
     {
@@ -813,6 +818,11 @@ void main(void)
 
         switch (event.header.type)
         {
+
+        case EVENT_INIT:
+            oninit(&event.header, event.data);
+
+            break;
 
         case EVENT_KILL:
             onkill(&event.header, event.data);

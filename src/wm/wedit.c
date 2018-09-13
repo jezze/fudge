@@ -114,6 +114,11 @@ static void onrein(struct event_header *header, void *data)
 static void oninit(struct event_header *header, void *data)
 {
 
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&input1, FUDGE_BSIZE, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE, inputdata2);
+    widget_inittextbox(&content);
+    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
     event_sendwmmap(FILE_L0, EVENT_ADDR_BROADCAST);
 
 }
@@ -270,12 +275,6 @@ static void onwmhide(struct event_header *header, void *data)
 
 void main(void)
 {
-
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    widget_inittextbox(&content);
-    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;

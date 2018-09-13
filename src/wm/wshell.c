@@ -137,32 +137,32 @@ static void interpretslang(unsigned int count, char *command)
 {
 
     char buffer[FUDGE_BSIZE];
+    struct event pipe;
+    unsigned int id;
 
-    if (!file_walk(FILE_CP, "/bin/slang"))
+    memory_copy(pipe.data, command, count);
+
+    if (!file_walk(FILE_CP, "/bin/slang2"))
         return;
 
     if (!file_walk(FILE_LA, "/system/pipe/clone"))
         return;
 
-    if (!file_walk(FILE_LB, "/system/pipe/clone"))
-        return;
-
     file_open(FILE_LA);
-    file_open(FILE_LB);
-    file_walkfrom(FILE_CI, FILE_LA, "idata");
-    file_walkfrom(FILE_LC, FILE_LA, "odata");
-    file_walkfrom(FILE_LD, FILE_LB, "idata");
-    file_walkfrom(FILE_CO, FILE_LB, "odata");
-    call_spawn();
-    file_open(FILE_LC);
-    file_writeall(FILE_LC, command, count);
-    file_close(FILE_LC);
-    file_open(FILE_LD);
+    file_walkfrom(FILE_CO, FILE_LA, "odata");
+    file_walkfrom(FILE_LB, FILE_LA, "idata");
 
-    while ((count = file_read(FILE_LD, buffer, FUDGE_BSIZE)))
+    id = call_spawn();
+
+    event_sendinit(FILE_L0, id);
+    event_send(FILE_L0, &pipe, id, EVENT_DATA, count);
+    event_sendexit(FILE_L0, id);
+
+    file_open(FILE_LB);
+
+    while ((count = file_read(FILE_LB, buffer, FUDGE_BSIZE)))
         copybuffer(buffer, count);
 
-    file_close(FILE_LD);
     file_close(FILE_LB);
     file_close(FILE_LA);
 
@@ -203,6 +203,12 @@ static void moveright(unsigned int steps)
 static void oninit(struct event_header *header, void *data)
 {
 
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&input1, FUDGE_BSIZE, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE, inputdata2);
+    ring_init(&text, FUDGE_BSIZE, textdata);
+    widget_inittextbox(&content);
+    copybuffer("$ ", 2);
     event_sendwmmap(FILE_L0, EVENT_ADDR_BROADCAST);
 
 }
@@ -348,13 +354,6 @@ static void onwmhide(struct event_header *header, void *data)
 
 void main(void)
 {
-
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    ring_init(&text, FUDGE_BSIZE, textdata);
-    widget_inittextbox(&content);
-    copybuffer("$ ", 2);
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;
