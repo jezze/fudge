@@ -4,28 +4,36 @@
 
 static unsigned int quit;
 
-static void onrein(struct event_header *header, void *data)
+static void ondata(struct event_header *header, void *data)
 {
 
-    if (!file_walk(FILE_PI, data))
-        return;
+    file_open(FILE_PO);
+    file_writeall(FILE_PO, data, header->length - sizeof (struct event_header));
+    file_close(FILE_PO);
 
 }
 
-static void oninit(struct event_header *header, void *data)
+static void onrein(struct event_header *header, void *data)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(FILE_PO);
+    if (!file_walk(FILE_PI, data))
+        return;
+
     file_open(FILE_PI);
 
     while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
+    {
+
+        file_open(FILE_PO);
         file_writeall(FILE_PO, buffer, count);
+        file_close(FILE_PO);
+
+    }
 
     file_close(FILE_PI);
-    file_close(FILE_PO);
 
 }
 
@@ -58,11 +66,6 @@ void main(void)
         switch (event.header.type)
         {
 
-        case EVENT_INIT:
-            oninit(&event.header, event.data);
-
-            break;
-
         case EVENT_EXIT:
             onexit(&event.header, event.data);
 
@@ -70,6 +73,11 @@ void main(void)
 
         case EVENT_REIN:
             onrein(&event.header, event.data);
+
+            break;
+
+        case EVENT_DATA:
+            ondata(&event.header, event.data);
 
             break;
 

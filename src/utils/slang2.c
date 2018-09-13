@@ -307,6 +307,8 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             id = call_spawn();
 
+            event_sendinit(FILE_L1, id);
+
             if (crein)
             {
 
@@ -327,7 +329,6 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             }
 
-            event_sendinit(FILE_L1, id);
             event_sendexit(FILE_L1, id);
 
             break;
@@ -343,6 +344,8 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             id = call_spawn();
 
+            event_sendinit(FILE_L1, id);
+
             if (crein)
             {
 
@@ -363,7 +366,6 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             }
 
-            event_sendinit(FILE_L1, id);
             event_sendexit(FILE_L1, id);
 
             break;
@@ -399,6 +401,31 @@ static void ondata(struct event_header *header, void *data)
     parse(&postfix, &stack);
 
 }
+
+static void onrein(struct event_header *header, void *data)
+{
+
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
+
+    if (!file_walk(FILE_PI, data))
+        return;
+
+    file_open(FILE_PI);
+
+    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
+    {
+
+        tokenizebuffer(&infix, &stringtable, count, buffer);
+        translate(&postfix, &infix, &stack);
+        parse(&postfix, &stack);
+
+    }
+
+    file_close(FILE_PI);
+
+}
+
 
 void main(void)
 {
@@ -437,6 +464,11 @@ void main(void)
 
         case EVENT_DATA:
             ondata(&event.header, event.data);
+
+            break;
+
+        case EVENT_REIN:
+            onrein(&event.header, event.data);
 
             break;
 

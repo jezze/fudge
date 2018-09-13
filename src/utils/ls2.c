@@ -7,10 +7,26 @@ static unsigned int quit;
 static void onrein(struct event_header *header, void *data)
 {
 
+    struct record record;
+
     if (!file_walk(FILE_PI, data))
         return;
 
-    file_duplicate(FILE_PW, FILE_PI);
+    file_open(FILE_PO);
+    file_open(FILE_PI);
+    file_writeall(FILE_PO, "..\n", 3);
+
+    while (file_readall(FILE_PI, &record, sizeof (struct record)))
+    {
+
+        file_writeall(FILE_PO, record.name, record.length);
+        file_writeall(FILE_PO, "\n", 1);
+        file_step(FILE_PI);
+
+    }
+
+    file_close(FILE_PI);
+    file_close(FILE_PO);
 
 }
 
