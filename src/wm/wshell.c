@@ -200,7 +200,7 @@ static void moveright(unsigned int steps)
 
 }
 
-static void onexit(struct event_header *header, void *data)
+static void onkill(struct event_header *header, void *data)
 {
 
     quit = 1;
@@ -367,8 +367,8 @@ void main(void)
         switch (event.header.type)
         {
 
-        case EVENT_EXIT:
-            onexit(&event.header, event.data);
+        case EVENT_KILL:
+            onkill(&event.header, event.data);
 
             break;
 

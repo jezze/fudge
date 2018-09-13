@@ -243,7 +243,7 @@ static void arrangeview(struct view *view)
 
 }
 
-static void onexit(struct event_header *header, void *data)
+static void onkill(struct event_header *header, void *data)
 {
 
     struct list_item *current;
@@ -260,7 +260,7 @@ static void onexit(struct event_header *header, void *data)
             struct remote *remote = current2->data;
 
             event_sendwmhide(FILE_L1, remote->source);
-            event_sendexit(FILE_L1, remote->source);
+            event_sendkill(FILE_L1, remote->source);
 
         }
 
@@ -337,7 +337,7 @@ static void onkeypress(struct event_header *header, void *data)
             break;
 
         event_sendwmhide(FILE_L1, currentview->currentremote->source);
-        event_sendexit(FILE_L1, currentview->currentremote->source);
+        event_sendkill(FILE_L1, currentview->currentremote->source);
 
         break;
 
@@ -427,7 +427,7 @@ static void onkeypress(struct event_header *header, void *data)
             break;
 
         event_sendwmhide(FILE_L1, header->destination);
-        event_sendexit(FILE_L1, header->destination);
+        event_sendkill(FILE_L1, header->destination);
 
         break;
 
@@ -814,8 +814,8 @@ void main(void)
         switch (event.header.type)
         {
 
-        case EVENT_EXIT:
-            onexit(&event.header, event.data);
+        case EVENT_KILL:
+            onkill(&event.header, event.data);
 
             break;
 

@@ -37,7 +37,7 @@ static void onrein(struct event_header *header, void *data)
 
 }
 
-static void onexit(struct event_header *header, void *data)
+static void onkill(struct event_header *header, void *data)
 {
 
     quit = 1;
@@ -67,7 +67,8 @@ void main(void)
         {
 
         case EVENT_EXIT:
-            onexit(&event.header, event.data);
+        case EVENT_KILL:
+            onkill(&event.header, event.data);
 
             break;
 

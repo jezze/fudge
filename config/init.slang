@@ -2,7 +2,7 @@ slang < /config/base.slang
 slang < /config/arch.slang
 initfs
 ipsetup
-slang < /config/console.slang
+init2
 slang < /config/wm.slang
 elfload < /mod/acpi.ko
 elfload < /mod/apic.ko

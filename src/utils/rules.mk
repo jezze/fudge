@@ -210,6 +210,20 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/utils/init2 \
+
+O:=\
+    $(DIR_SRC)/utils/init2.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/event/event.a \
+    $(DIR_LIB)/common/common.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/initmod \
 
 O:=\

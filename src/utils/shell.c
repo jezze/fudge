@@ -76,9 +76,12 @@ static void interpret(struct ring *ring)
 static void oninit(struct event_header *header, void *data)
 {
 
+    ring_init(&input, FUDGE_BSIZE, inputbuffer);
+    file_writeall(FILE_PO, "$ ", 2);
+
 }
 
-static void onexit(struct event_header *header, void *data)
+static void onkill(struct event_header *header, void *data)
 {
 
     quit = 1;
@@ -147,10 +150,6 @@ void main(void)
     file_open(FILE_L1);
     file_open(FILE_L2);
 
-    /* MOVE TO ONINIT */
-    ring_init(&input, FUDGE_BSIZE, inputbuffer);
-    file_writeall(FILE_PO, "$ ", 2);
-
     while (!quit)
     {
 
@@ -166,8 +165,8 @@ void main(void)
 
             break;
 
-        case EVENT_EXIT:
-            onexit(&event.header, event.data);
+        case EVENT_KILL:
+            onkill(&event.header, event.data);
 
             break;
 
