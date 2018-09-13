@@ -26,6 +26,14 @@ struct tokenlist
 
 };
 
+static char stringdata[FUDGE_BSIZE];
+static struct ring stringtable;
+static struct token infixdata[1024];
+static struct token postfixdata[1024];
+static struct token stackdata[8];
+static struct tokenlist infix;
+static struct tokenlist postfix;
+static struct tokenlist stack;
 static unsigned int quit;
 
 static void tokenlist_init(struct tokenlist *list, unsigned int size, struct token *table)
@@ -239,7 +247,12 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 {
 
+    unsigned int id = 0;
     unsigned int i;
+    char *rein = 0;
+    unsigned int crein = 0;
+    char *reout = 0;
+    unsigned int creout = 0;
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -264,6 +277,9 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!file_walk(FILE_CI, t->str))
                 return;
 
+            rein = t->str;
+            crein = ascii_length(t->str) + 1;
+
             break;
 
         case TOKENOUT:
@@ -274,6 +290,9 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
             if (!file_walk(FILE_CO, t->str))
                 return;
+
+            reout = t->str;
+            creout = ascii_length(t->str) + 1;
 
             break;
 
@@ -286,7 +305,30 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!(file_walkfrom(FILE_CP, FILE_L5, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            call_spawn();
+            id = call_spawn();
+
+            if (crein)
+            {
+
+                struct event redirect;
+
+                memory_copy(redirect.data, rein, crein);
+                event_send(FILE_L1, &redirect, id, EVENT_REIN, crein);
+
+            }
+
+            if (creout)
+            {
+
+                struct event redirect;
+
+                memory_copy(redirect.data, reout, creout);
+                event_send(FILE_L1, &redirect, id, EVENT_REOUT, creout);
+
+            }
+
+            event_sendinit(FILE_L1, id);
+            event_sendexit(FILE_L1, id);
 
             break;
 
@@ -299,13 +341,46 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!(file_walkfrom(FILE_CP, FILE_L5, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            call_spawn();
+            id = call_spawn();
+
+            if (crein)
+            {
+
+                struct event redirect;
+
+                memory_copy(redirect.data, rein, crein);
+                event_send(FILE_L1, &redirect, id, EVENT_REIN, crein);
+
+            }
+
+            if (creout)
+            {
+
+                struct event redirect;
+
+                memory_copy(redirect.data, reout, creout);
+                event_send(FILE_L1, &redirect, id, EVENT_REOUT, creout);
+
+            }
+
+            event_sendinit(FILE_L1, id);
+            event_sendexit(FILE_L1, id);
 
             break;
 
         }
 
     }
+
+}
+
+static void oninit(struct event_header *header, void *data)
+{
+
+    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
+    tokenlist_init(&infix, 1024, infixdata);
+    tokenlist_init(&postfix, 1024, postfixdata);
+    tokenlist_init(&stack, 8, stackdata);
 
 }
 
@@ -319,19 +394,6 @@ static void onexit(struct event_header *header, void *data)
 static void ondata(struct event_header *header, void *data)
 {
 
-    char stringdata[FUDGE_BSIZE];
-    struct ring stringtable;
-    struct token infixdata[1024];
-    struct token postfixdata[1024];
-    struct token stackdata[8];
-    struct tokenlist infix;
-    struct tokenlist postfix;
-    struct tokenlist stack;
-
-    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
-    tokenlist_init(&infix, 1024, infixdata);
-    tokenlist_init(&postfix, 1024, postfixdata);
-    tokenlist_init(&stack, 8, stackdata);
     tokenizebuffer(&infix, &stringtable, header->length - sizeof (struct event_header), data);
     translate(&postfix, &infix, &stack);
     parse(&postfix, &stack);
@@ -362,6 +424,11 @@ void main(void)
 
         switch (event.header.type)
         {
+
+        case EVENT_INIT:
+            oninit(&event.header, event.data);
+
+            break;
 
         case EVENT_EXIT:
             onexit(&event.header, event.data);

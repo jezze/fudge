@@ -53,6 +53,7 @@ static void interpretslang(unsigned int count, char *command)
 
     id = call_spawn();
 
+    event_sendinit(FILE_L1, id);
     event_send(FILE_L1, &pipe, id, EVENT_DATA, count);
     event_sendexit(FILE_L1, id);
 
@@ -69,6 +70,11 @@ static void interpret(struct ring *ring)
 
     if (!interpretbuiltin(count, command))
         interpretslang(count, command);
+
+}
+
+static void oninit(struct event_header *header, void *data)
+{
 
 }
 
@@ -128,8 +134,6 @@ static void onconsoledata(struct event_header *header, void *data)
 void main(void)
 {
 
-    ring_init(&input, FUDGE_BSIZE, inputbuffer);
-
     if (!file_walk(FILE_L0, "/system/event"))
         return;
 
@@ -142,6 +146,9 @@ void main(void)
     file_open(FILE_L0);
     file_open(FILE_L1);
     file_open(FILE_L2);
+
+    /* MOVE TO ONINIT */
+    ring_init(&input, FUDGE_BSIZE, inputbuffer);
     file_writeall(FILE_PO, "$ ", 2);
 
     while (!quit)
@@ -153,6 +160,11 @@ void main(void)
 
         switch (event.header.type)
         {
+
+        case EVENT_INIT:
+            oninit(&event.header, event.data);
+
+            break;
 
         case EVENT_EXIT:
             onexit(&event.header, event.data);
