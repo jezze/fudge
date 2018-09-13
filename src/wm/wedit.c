@@ -106,8 +106,24 @@ static void movedown(void)
 
 }
 
+static void onrein(struct event_header *header, void *data)
+{
+
+    file_walk(FILE_PI, data);
+
+}
+
+static void oninit(struct event_header *header, void *data)
+{
+
+    event_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
+
+}
+
 static void onkill(struct event_header *header, void *data)
 {
+
+    event_sendwmunmap(FILE_L1, EVENT_ADDR_BROADCAST);
 
     quit = 1;
 
@@ -271,7 +287,6 @@ void main(void)
 
     file_open(FILE_L0);
     file_open(FILE_L1);
-    event_sendwmmap(FILE_L1, EVENT_ADDR_BROADCAST);
 
     while (!quit)
     {
@@ -283,8 +298,18 @@ void main(void)
         switch (event.header.type)
         {
 
+        case EVENT_INIT:
+            oninit(&event.header, event.data);
+
+            break;
+
         case EVENT_KILL:
             onkill(&event.header, event.data);
+
+            break;
+
+        case EVENT_REIN:
+            onrein(&event.header, event.data);
 
             break;
 
@@ -325,7 +350,6 @@ void main(void)
 
     }
 
-    event_sendwmunmap(FILE_L1, EVENT_ADDR_BROADCAST);
     file_close(FILE_L1);
     file_close(FILE_L0);
 

@@ -16,10 +16,12 @@ void main(void)
 
     id = call_spawn();
 
+    file_open(FILE_L1);
     event_sendinit(FILE_L1, id);
     memory_copy(redirect.data, "/config/init2.slang", 20);
     event_send(FILE_L1, &redirect, id, EVENT_REIN, 20);
     event_sendexit(FILE_L1, id);
+    file_close(FILE_L1);
 
 }
 
