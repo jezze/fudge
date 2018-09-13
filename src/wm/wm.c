@@ -276,6 +276,7 @@ static void onkeypress(struct event_header *header, void *data)
     struct event_keypress *keypress = data;
     struct view *nextview;
     struct remote *nextremote;
+    unsigned int id;
 
     keymod = keymap_modkey(keypress->scancode, keymod);
 
@@ -348,7 +349,10 @@ static void onkeypress(struct event_header *header, void *data)
         if (!file_walk(FILE_CP, "/bin/wshell"))
             break;
 
-        call_spawn();
+        id = call_spawn();
+
+        event_sendinit(FILE_L1, id);
+        event_sendexit(FILE_L1, id);
 
         break;
 
