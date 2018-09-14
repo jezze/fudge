@@ -16,22 +16,18 @@ static void ondata(struct event_header *header, void *data)
 static void onrein(struct event_header *header, void *data)
 {
 
-    char num = *(char *)data;
+    char descriptor = FILE_PI + *(char *)data;
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(FILE_PI + num);
+    file_open(descriptor);
+    file_open(FILE_PO);
 
-    while ((count = file_read(FILE_PI + num, buffer, FUDGE_BSIZE)))
-    {
-
-        file_open(FILE_PO);
+    while ((count = file_read(descriptor, buffer, FUDGE_BSIZE)))
         file_writeall(FILE_PO, buffer, count);
-        file_close(FILE_PO);
 
-    }
-
-    file_close(FILE_PI + num);
+    file_close(FILE_PO);
+    file_close(descriptor);
 
 }
 

@@ -402,16 +402,16 @@ static void ondata(struct event_header *header, void *data)
 static void onrein(struct event_header *header, void *data)
 {
 
-    char num = *(char *)data;
+    char descriptor = FILE_PI + *(char *)data;
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(FILE_PI + num);
+    file_open(descriptor);
 
-    while ((count = file_read(FILE_PI + num, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(descriptor, buffer, FUDGE_BSIZE)))
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    file_close(FILE_PI + num);
+    file_close(descriptor);
     translate(&postfix, &infix, &stack);
     parse(&postfix, &stack);
 
