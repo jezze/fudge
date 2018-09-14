@@ -20,7 +20,7 @@ void main(void)
 
     file_open(FILE_L0);
     event_sendinit(FILE_L0, id);
-    event_sendrein(FILE_L0, id, 0);
+    event_sendrein(FILE_L0, id, FILE_PI);
     event_sendexit(FILE_L0, id);
     file_close(FILE_L0);
 

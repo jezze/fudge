@@ -7,24 +7,24 @@ static unsigned int quit;
 static void onrein(struct event_header *header, void *data)
 {
 
-    char descriptor = FILE_PI + *(char *)data;
+    struct event_rein *rein = data;
     struct record record;
 
-    file_open(descriptor);
+    file_open(rein->num);
     file_open(FILE_PO);
     file_writeall(FILE_PO, "..\n", 3);
 
-    while (file_readall(descriptor, &record, sizeof (struct record)))
+    while (file_readall(rein->num, &record, sizeof (struct record)))
     {
 
         file_writeall(FILE_PO, record.name, record.length);
         file_writeall(FILE_PO, "\n", 1);
-        file_step(descriptor);
+        file_step(rein->num);
 
     }
 
     file_close(FILE_PO);
-    file_close(descriptor);
+    file_close(rein->num);
 
 }
 

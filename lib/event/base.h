@@ -25,6 +25,20 @@ struct event
 
 };
 
+struct event_rein
+{
+
+    unsigned char num;
+
+};
+
+struct event_reout
+{
+
+    unsigned char num;
+
+};
+
 void event_read(unsigned int descriptor, struct event *event);
 void event_send(unsigned int descriptor, struct event *event, unsigned int destination, unsigned int type, unsigned int length);
 void event_sendinit(unsigned int descriptor, unsigned int destination);

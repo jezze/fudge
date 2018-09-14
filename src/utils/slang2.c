@@ -306,10 +306,10 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             event_sendinit(FILE_L0, id);
 
             if (rei)
-                event_sendrein(FILE_L0, id, rei - 1);
+                event_sendrein(FILE_L0, id, FILE_PI + rei - 1);
 
             if (reo)
-                event_sendreout(FILE_L0, id, reo - 1);
+                event_sendreout(FILE_L0, id, FILE_PO + reo - 1);
 
             event_sendexit(FILE_L0, id);
 
@@ -329,10 +329,10 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             event_sendinit(FILE_L0, id);
 
             if (rei)
-                event_sendrein(FILE_L0, id, rei - 1);
+                event_sendrein(FILE_L0, id, FILE_PI + rei - 1);
 
             if (reo)
-                event_sendreout(FILE_L0, id, reo - 1);
+                event_sendreout(FILE_L0, id, FILE_PO + reo - 1);
 
             event_sendexit(FILE_L0, id);
 
@@ -376,16 +376,16 @@ static void ondata(struct event_header *header, void *data)
 static void onrein(struct event_header *header, void *data)
 {
 
-    char descriptor = FILE_PI + *(char *)data;
+    struct event_rein *rein = data;
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(descriptor);
+    file_open(rein->num);
 
-    while ((count = file_read(descriptor, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(rein->num, buffer, FUDGE_BSIZE)))
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    file_close(descriptor);
+    file_close(rein->num);
     translate(&postfix, &infix, &stack);
     parse(&postfix, &stack);
 

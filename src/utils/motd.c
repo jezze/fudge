@@ -19,7 +19,7 @@ void main(void)
     id = call_spawn();
 
     event_sendinit(FILE_L0, id);
-    event_sendrein(FILE_L0, id, 0);
+    event_sendrein(FILE_L0, id, FILE_PI);
     event_sendexit(FILE_L0, id);
 
 }

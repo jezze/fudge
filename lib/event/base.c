@@ -52,10 +52,11 @@ void event_sendrein(unsigned int descriptor, unsigned int destination, unsigned 
 {
 
     struct event event;
+    struct event_rein *rein = (struct event_rein *)event.data;
 
-    event.data[0] = num;
+    rein->num = num;
 
-    event_send(descriptor, &event, destination, EVENT_REIN, 1);
+    event_send(descriptor, &event, destination, EVENT_REIN, sizeof (struct event_rein));
 
 }
 
@@ -63,10 +64,11 @@ void event_sendreout(unsigned int descriptor, unsigned int destination, unsigned
 {
 
     struct event event;
+    struct event_reout *reout = (struct event_reout *)event.data;
 
-    event.data[0] = num;
+    reout->num = num;
 
-    event_send(descriptor, &event, destination, EVENT_REOUT, 1);
+    event_send(descriptor, &event, destination, EVENT_REOUT, sizeof (struct event_reout));
 
 }
 
