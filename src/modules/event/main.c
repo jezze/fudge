@@ -68,7 +68,8 @@ static unsigned int root_write(struct system_node *self, struct system_node *cur
     if (header->length != count)
         return 0;
 
-    header->source = state->task->id;
+    if (!header->source)
+        header->source = state->task->id;
 
     if (header->destination)
         return event_unicast(&self->states, header);
