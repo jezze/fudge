@@ -10,15 +10,6 @@ static struct ring input;
 static unsigned int interpretbuiltin(unsigned int count, char *command)
 {
 
-    if (memory_match(command, "exit", 4))
-    {
-
-        quit = 1;
-
-        return 1;
-
-    }
-
     if (memory_match(command, "cd ", 3))
     {
 
