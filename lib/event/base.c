@@ -48,6 +48,28 @@ void event_sendkill(unsigned int descriptor, unsigned int destination)
 
 }
 
+void event_sendrein(unsigned int descriptor, unsigned int destination, unsigned char num)
+{
+
+    struct event event;
+
+    event.data[0] = num;
+
+    event_send(descriptor, &event, destination, EVENT_REIN, 1);
+
+}
+
+void event_sendreout(unsigned int descriptor, unsigned int destination, unsigned char num)
+{
+
+    struct event event;
+
+    event.data[0] = num;
+
+    event_send(descriptor, &event, destination, EVENT_REOUT, 1);
+
+}
+
 void event_senddata(unsigned int descriptor, unsigned int destination, unsigned int count, void *buffer)
 {
 

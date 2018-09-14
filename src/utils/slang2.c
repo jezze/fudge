@@ -247,10 +247,9 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 {
 
-    struct event redirect;
-    unsigned int id;
     unsigned int rei = 0;
     unsigned int reo = 0;
+    unsigned int id;
     unsigned int i;
 
     for (i = 0; i < postfix->head; i++)
@@ -307,24 +306,10 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             event_sendinit(FILE_L0, id);
 
             if (rei)
-            {
-
-                char num = rei - 1;
-
-                memory_copy(redirect.data, &num, 1);
-                event_send(FILE_L0, &redirect, id, EVENT_REIN, 1);
-
-            }
+                event_sendrein(FILE_L0, id, rei - 1);
 
             if (reo)
-            {
-
-                char num = reo - 1;
-
-                memory_copy(redirect.data, &num, 1);
-                event_send(FILE_L0, &redirect, id, EVENT_REOUT, 1);
-
-            }
+                event_sendreout(FILE_L0, id, reo - 1);
 
             event_sendexit(FILE_L0, id);
 
@@ -344,24 +329,10 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             event_sendinit(FILE_L0, id);
 
             if (rei)
-            {
-
-                char num = rei - 1;
-
-                memory_copy(redirect.data, &num, 1);
-                event_send(FILE_L0, &redirect, id, EVENT_REIN, 1);
-
-            }
+                event_sendrein(FILE_L0, id, rei - 1);
 
             if (reo)
-            {
-
-                char num = reo - 1;
-
-                memory_copy(redirect.data, &num, 1);
-                event_send(FILE_L0, &redirect, id, EVENT_REOUT, 1);
-
-            }
+                event_sendreout(FILE_L0, id, reo - 1);
 
             event_sendexit(FILE_L0, id);
 

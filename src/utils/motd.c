@@ -5,11 +5,7 @@
 void main(void)
 {
 
-    struct event redirect;
     unsigned int id;
-    char num = 0;
-
-    memory_copy(redirect.data, &num, 1);
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;
@@ -23,7 +19,7 @@ void main(void)
     id = call_spawn();
 
     event_sendinit(FILE_L0, id);
-    event_send(FILE_L0, &redirect, id, EVENT_REIN, 1);
+    event_sendrein(FILE_L0, id, 0);
     event_sendexit(FILE_L0, id);
 
 }
