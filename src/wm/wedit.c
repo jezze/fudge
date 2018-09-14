@@ -106,11 +106,6 @@ static void movedown(void)
 
 }
 
-static void onrein(struct event_header *header, void *data)
-{
-
-}
-
 static void oninit(struct event_header *header, void *data)
 {
 
@@ -129,6 +124,11 @@ static void onkill(struct event_header *header, void *data)
     event_sendwmunmap(FILE_L0, EVENT_ADDR_BROADCAST);
 
     quit = 1;
+
+}
+
+static void onrein(struct event_header *header, void *data)
+{
 
 }
 

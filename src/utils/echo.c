@@ -4,6 +4,13 @@
 
 static unsigned int quit;
 
+static void onkill(struct event_header *header, void *data)
+{
+
+    quit = 1;
+
+}
+
 static void ondata(struct event_header *header, void *data)
 {
 
@@ -31,13 +38,6 @@ static void onrein(struct event_header *header, void *data)
 
 }
 
-static void onkill(struct event_header *header, void *data)
-{
-
-    quit = 1;
-
-}
-
 void main(void)
 {
 
@@ -62,13 +62,13 @@ void main(void)
 
             break;
 
-        case EVENT_REIN:
-            onrein(&event.header, event.data);
+        case EVENT_DATA:
+            ondata(&event.header, event.data);
 
             break;
 
-        case EVENT_DATA:
-            ondata(&event.header, event.data);
+        case EVENT_REIN:
+            onrein(&event.header, event.data);
 
             break;
 
