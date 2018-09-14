@@ -298,7 +298,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!(file_walkfrom(FILE_CP, FILE_L5, t->str) || file_walk(FILE_CP, t->str)))
+            if (!(file_walkfrom(FILE_CP, FILE_L1, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
             id = call_spawn();
@@ -321,7 +321,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!(file_walkfrom(FILE_CP, FILE_L5, t->str) || file_walk(FILE_CP, t->str)))
+            if (!(file_walkfrom(FILE_CP, FILE_L1, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
             id = call_spawn();
@@ -346,6 +346,9 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
 static void oninit(struct event_header *header, void *data)
 {
+
+    if (!file_walk(FILE_L1, "/bin"))
+        return;
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
@@ -390,9 +393,6 @@ static void onrein(struct event_header *header, void *data)
 
 void main(void)
 {
-
-    if (!file_walk(FILE_L5, "/bin"))
-        return;
 
     if (!file_walk(FILE_L0, "/system/event"))
         return;
