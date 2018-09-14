@@ -34,12 +34,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 static void interpretslang(unsigned int count, char *command)
 {
 
-    unsigned int id;
-
-    if (!file_walk(FILE_CP, "/bin/slang2"))
-        return;
-
-    id = call_spawn();
+    unsigned int id = call_spawn();
 
     event_sendinit(FILE_L0, id);
     event_senddata(FILE_L0, id, count, command);
@@ -62,6 +57,9 @@ static void interpret(struct ring *ring)
 
 static void oninit(struct event_header *header, void *data)
 {
+
+    if (!file_walk(FILE_CP, "/bin/slang2"))
+        return;
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
     file_writeall(FILE_PO, "$ ", 2);
