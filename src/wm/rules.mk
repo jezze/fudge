@@ -6,8 +6,8 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/event/event.a \
+    $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/keymap/keymap.a \
     $(DIR_LIB)/math/math.a \
     $(DIR_LIB)/widget/widget.a \
@@ -23,8 +23,8 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/event/event.a \
+    $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/math/math.a \
     $(DIR_LIB)/format/format.a \
     $(DIR_LIB)/widget/widget.a \
@@ -40,8 +40,8 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/event/event.a \
+    $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/keymap/keymap.a \
     $(DIR_LIB)/math/math.a \
     $(DIR_LIB)/format/format.a \
@@ -57,8 +57,8 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/event/event.a \
+    $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/keymap/keymap.a \
     $(DIR_LIB)/math/math.a \
     $(DIR_LIB)/widget/widget.a \
