@@ -53,9 +53,6 @@ static void interpret(struct ring *ring)
     char buffer[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
 
-    if (count < 2)
-        return;
-
     if (interpretbuiltin(count, buffer))
         return;
 
