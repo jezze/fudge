@@ -14,27 +14,23 @@ static void onkill(struct event_header *header, void *data)
 static void ondata(struct event_header *header, void *data)
 {
 
-    file_open(FILE_PO);
-    file_writeall(FILE_PO, data, header->length - sizeof (struct event_header));
-    file_close(FILE_PO);
+    event_senddata(FILE_L0, header->destination, header->source, header->length - sizeof (struct event_header), data);
 
 }
 
-static void onrein(struct event_header *header, void *data)
+static void onfile(struct event_header *header, void *data)
 {
 
-    struct event_rein *rein = data;
+    struct event_file *file = data;
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(rein->num);
-    file_open(FILE_PO);
+    file_open(file->num);
 
-    while ((count = file_read(rein->num, buffer, FUDGE_BSIZE)))
-        file_writeall(FILE_PO, buffer, count);
+    while ((count = file_read(file->num, buffer, FUDGE_BSIZE)))
+        event_senddata(FILE_L0, header->destination, header->source, count, buffer);
 
-    file_close(FILE_PO);
-    file_close(rein->num);
+    file_close(file->num);
 
 }
 
@@ -67,8 +63,8 @@ void main(void)
 
             break;
 
-        case EVENT_REIN:
-            onrein(&event.header, event.data);
+        case EVENT_FILE:
+            onfile(&event.header, event.data);
 
             break;
 

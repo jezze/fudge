@@ -129,9 +129,9 @@ static void interpretslang(unsigned int count, char *command)
 
     unsigned int id = call_spawn();
 
-    event_sendinit(FILE_L0, id);
-    event_senddata(FILE_L0, id, count, command);
-    event_sendexit(FILE_L0, id);
+    event_sendinit(FILE_L0, EVENT_ADDR_SELF, id);
+    event_senddata(FILE_L0, EVENT_ADDR_SELF, id, count, command);
+    event_sendexit(FILE_L0, EVENT_ADDR_SELF, id);
 
 }
 
@@ -144,20 +144,7 @@ static void interpret(struct ring *ring)
     if (interpretbuiltin(count, buffer))
         return;
 
-    if (!file_walk(FILE_LA, "/system/pipe/clone"))
-        return;
-
-    file_open(FILE_LA);
-    file_walkfrom(FILE_CO, FILE_LA, "odata");
-    file_walkfrom(FILE_LB, FILE_LA, "idata");
     interpretslang(count, buffer);
-    file_open(FILE_LB);
-
-    while ((count = file_read(FILE_LB, buffer, FUDGE_BSIZE)))
-        copybuffer(buffer, count);
-
-    file_close(FILE_LB);
-    file_close(FILE_LA);
 
 }
 
@@ -182,7 +169,7 @@ static void moveright(unsigned int steps)
 static void oninit(struct event_header *header, void *data)
 {
 
-    if (!file_walk(FILE_CP, "/bin/slang2"))
+    if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -191,16 +178,24 @@ static void oninit(struct event_header *header, void *data)
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     copybuffer("$ ", 2);
-    event_sendwmmap(FILE_L0, EVENT_ADDR_BROADCAST);
+    event_sendwmmap(FILE_L0, header->destination, EVENT_ADDR_BROADCAST);
 
 }
 
 static void onkill(struct event_header *header, void *data)
 {
 
-    event_sendwmunmap(FILE_L0, EVENT_ADDR_BROADCAST);
+    event_sendwmunmap(FILE_L0, header->destination, EVENT_ADDR_BROADCAST);
 
     quit = 1;
+
+}
+
+static void ondata(struct event_header *header, void *data)
+{
+
+    copybuffer(data, header->length - sizeof (struct event_header));
+    updatecontent(header);
 
 }
 
@@ -362,6 +357,11 @@ void main(void)
 
             break;
 
+        case EVENT_DATA:
+            ondata(&event.header, event.data);
+
+            break;
+
         case EVENT_WMKEYPRESS:
             onwmkeypress(&event.header, event.data);
 
@@ -392,7 +392,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_sendwmflush(FILE_L0, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
+            event_sendwmflush(FILE_L0, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
             ring_reset(&output);
 
         }

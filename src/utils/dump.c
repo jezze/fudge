@@ -4,57 +4,43 @@
 
 static unsigned int quit;
 
-static void ondata(struct event_header *header, void *data)
+static void reply(struct event_header *header, unsigned int count, char *buffer)
 {
 
-    unsigned char *buffer = data;
     unsigned int i;
 
-    file_open(FILE_PO);
-
-    for (i = 0; i < header->length - sizeof (struct event_header); i++)
+    for (i = 0; i < count; i++)
     {
 
         unsigned char num[FUDGE_NSIZE];
 
-        file_writeall(FILE_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, buffer[i], 16, 2, 0));
-        file_writeall(FILE_PO, "  ", 2);
+        event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, buffer[i], 16, 2, 0), num);
+        event_senddata(FILE_L0, header->destination, header->source, 2, "  ");
 
     }
-
-    file_close(FILE_PO);
 
 }
 
-static void onrein(struct event_header *header, void *data)
+static void ondata(struct event_header *header, void *data)
 {
 
-    struct event_rein *rein = data;
+    reply(header, header->length - sizeof (struct event_header), data);
+
+}
+
+static void onfile(struct event_header *header, void *data)
+{
+
+    struct event_file *file = data;
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(rein->num);
-    file_open(FILE_PO);
+    file_open(file->num);
 
-    while ((count = file_read(rein->num, buffer, FUDGE_BSIZE)))
-    {
+    while ((count = file_read(file->num, buffer, FUDGE_BSIZE)))
+        reply(header, count, data);
 
-        unsigned int i;
-
-        for (i = 0; i < count; i++)
-        {
-
-            unsigned char num[FUDGE_NSIZE];
-
-            file_writeall(FILE_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, buffer[i], 16, 2, 0));
-            file_writeall(FILE_PO, "  ", 2);
-
-        }
-
-    }
-
-    file_close(FILE_PO);
-    file_close(rein->num);
+    file_close(file->num);
 
 }
 
@@ -89,13 +75,13 @@ void main(void)
 
             break;
 
-        case EVENT_REIN:
-            onrein(&event.header, event.data);
+        case EVENT_DATA:
+            ondata(&event.header, event.data);
 
             break;
 
-        case EVENT_DATA:
-            ondata(&event.header, event.data);
+        case EVENT_FILE:
+            onfile(&event.header, event.data);
 
             break;
 

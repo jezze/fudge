@@ -9,20 +9,18 @@ static void oninit(struct event_header *header, void *data)
 
     struct record record;
 
+    event_senddata(FILE_L0, header->destination, header->source, 3, "..\n");
     file_open(FILE_PW);
-    file_open(FILE_PO);
-    file_writeall(FILE_PO, "..\n", 3);
 
     while (file_readall(FILE_PW, &record, sizeof (struct record)))
     {
 
-        file_writeall(FILE_PO, record.name, record.length);
-        file_writeall(FILE_PO, "\n", 1);
+        event_senddata(FILE_L0, header->destination, header->source, record.length, record.name);
+        event_senddata(FILE_L0, header->destination, header->source, 1, "\n");
         file_step(FILE_PW);
 
     }
 
-    file_close(FILE_PO);
     file_close(FILE_PW);
 
 }
@@ -34,27 +32,25 @@ static void onkill(struct event_header *header, void *data)
 
 }
 
-static void onrein(struct event_header *header, void *data)
+static void onfile(struct event_header *header, void *data)
 {
 
-    struct event_rein *rein = data;
+    struct event_file *file = data;
     struct record record;
 
-    file_open(rein->num);
-    file_open(FILE_PO);
-    file_writeall(FILE_PO, "..\n", 3);
+    event_senddata(FILE_L0, header->destination, header->source, 3, "..\n");
+    file_open(file->num);
 
-    while (file_readall(rein->num, &record, sizeof (struct record)))
+    while (file_readall(file->num, &record, sizeof (struct record)))
     {
 
-        file_writeall(FILE_PO, record.name, record.length);
-        file_writeall(FILE_PO, "\n", 1);
-        file_step(rein->num);
+        event_senddata(FILE_L0, header->destination, header->source, record.length, record.name);
+        event_senddata(FILE_L0, header->destination, header->source, 1, "\n");
+        file_step(file->num);
 
     }
 
-    file_close(FILE_PO);
-    file_close(rein->num);
+    file_close(file->num);
 
 }
 
@@ -87,8 +83,8 @@ void main(void)
 
             break;
 
-        case EVENT_REIN:
-            onrein(&event.header, event.data);
+        case EVENT_FILE:
+            onfile(&event.header, event.data);
 
             break;
 

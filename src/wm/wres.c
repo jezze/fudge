@@ -14,14 +14,14 @@ static void oninit(struct event_header *header, void *data)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
-    event_sendwmmap(FILE_L0, EVENT_ADDR_BROADCAST);
+    event_sendwmmap(FILE_L0, header->destination, EVENT_ADDR_BROADCAST);
 
 }
 
 static void onkill(struct event_header *header, void *data)
 {
 
-    event_sendwmunmap(FILE_L0, EVENT_ADDR_BROADCAST);
+    event_sendwmunmap(FILE_L0, header->destination, EVENT_ADDR_BROADCAST);
 
     quit = 1;
 
@@ -88,7 +88,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_sendwmflush(FILE_L0, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
+            event_sendwmflush(FILE_L0, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
             ring_reset(&output);
 
         }

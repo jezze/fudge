@@ -22,7 +22,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
     struct {struct event_header header; struct event_consoledata consoledata;} message;
 
     message.header.type = EVENT_CONSOLEDATA;
-    message.header.source = EVENT_ADDR_BROADCAST;
+    message.header.source = EVENT_ADDR_SELF;
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.header.length = sizeof (message);
     message.consoledata.data = data;

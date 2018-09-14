@@ -1,5 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
+#include <event/base.h>
 
 #define TOKENSKIP                       1
 #define TOKENEND                        2
@@ -24,6 +25,16 @@ struct tokenlist
     struct token *table;
 
 };
+
+static char stringdata[FUDGE_BSIZE];
+static struct ring stringtable;
+static struct token infixdata[1024];
+static struct token postfixdata[1024];
+static struct token stackdata[8];
+static struct tokenlist infix;
+static struct tokenlist postfix;
+static struct tokenlist stack;
+static unsigned int quit;
 
 static void tokenlist_init(struct tokenlist *list, unsigned int size, struct token *table)
 {
@@ -233,9 +244,11 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void parse(struct tokenlist *postfix, struct tokenlist *stack)
+static void parse(struct event_header *header, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
+    unsigned int rei = 0;
+    unsigned int id;
     unsigned int i;
 
     for (i = 0; i < postfix->head; i++)
@@ -261,6 +274,8 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!file_walk(FILE_CI, t->str))
                 return;
 
+            rei = 1;
+
             break;
 
         case TOKENOUT:
@@ -280,18 +295,19 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
+            if (!(file_walkfrom(FILE_CP, FILE_L1, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            if (!file_walk(FILE_LA, "/system/pipe/clone"))
-                return;
+            id = call_spawn();
 
-            file_open(FILE_LA);
-            file_walkfrom(FILE_CO, FILE_LA, "odata");
-            call_spawn();
-            file_walkfrom(FILE_CI, FILE_LA, "idata");
-            file_duplicate(FILE_CO, FILE_PO);
-            file_close(FILE_LA);
+            event_sendinit(FILE_L0, header->source, id);
+
+            if (rei)
+                event_sendfile(FILE_L0, header->source, id, FILE_PI + rei - 1);
+
+            event_sendexit(FILE_L0, header->source, id);
+
+            rei = 0;
 
             break;
 
@@ -301,12 +317,19 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!t)
                 return;
 
-            if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
+            if (!(file_walkfrom(FILE_CP, FILE_L1, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            call_spawn();
-            file_duplicate(FILE_CI, FILE_PI);
-            file_duplicate(FILE_CO, FILE_PO);
+            id = call_spawn();
+
+            event_sendinit(FILE_L0, header->source, id);
+
+            if (rei)
+                event_sendfile(FILE_L0, header->source, id, FILE_PI + rei - 1);
+
+            event_sendexit(FILE_L0, header->source, id);
+
+            rei = 0;
 
             break;
 
@@ -316,55 +339,97 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 
 }
 
-void main(void)
+static void oninit(struct event_header *header, void *data)
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int count;
-    char stringdata[FUDGE_BSIZE];
-    struct ring stringtable;
-    struct token infixdata[1024];
-    struct token postfixdata[1024];
-    struct token stackdata[8];
-    struct tokenlist infix;
-    struct tokenlist postfix;
-    struct tokenlist stack;
+    if (!file_walk(FILE_L1, "/bin"))
+        return;
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
 
-    if (!file_walk(FILE_L0, "/bin"))
-        return;
+}
 
-    file_open(FILE_PI);
+static void onkill(struct event_header *header, void *data)
+{
 
-    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
+    quit = 1;
+
+}
+
+static void ondata(struct event_header *header, void *data)
+{
+
+    tokenizebuffer(&infix, &stringtable, header->length - sizeof (struct event_header), data);
+    translate(&postfix, &infix, &stack);
+    parse(header, &postfix, &stack);
+
+}
+
+static void onfile(struct event_header *header, void *data)
+{
+
+    struct event_file *file = data;
+    char buffer[FUDGE_BSIZE];
+    unsigned int count;
+
+    file_open(file->num);
+
+    while ((count = file_read(file->num, buffer, FUDGE_BSIZE)))
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    file_close(FILE_PI);
-
+    file_close(file->num);
     translate(&postfix, &infix, &stack);
+    parse(header, &postfix, &stack);
 
-    if (!file_walk(FILE_LA, "/system/pipe/clone"))
+}
+
+void main(void)
+{
+
+    if (!file_walk(FILE_L0, "/system/event"))
         return;
 
-    file_open(FILE_LA);
-    file_walkfrom(FILE_CO, FILE_LA, "odata");
-    file_walkfrom(FILE_PI, FILE_LA, "idata");
+    file_open(FILE_L0);
 
-    parse(&postfix, &stack);
+    while (!quit)
+    {
 
-    file_open(FILE_PO);
-    file_open(FILE_PI);
+        struct event event;
 
-    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
-        file_writeall(FILE_PO, buffer, count);
+        event_read(FILE_L0, &event);
 
-    file_close(FILE_PI);
-    file_close(FILE_PO);
-    file_close(FILE_LA);
+        switch (event.header.type)
+        {
+
+        case EVENT_INIT:
+            oninit(&event.header, event.data);
+
+            break;
+
+        case EVENT_EXIT:
+        case EVENT_KILL:
+            onkill(&event.header, event.data);
+
+            break;
+
+        case EVENT_DATA:
+            ondata(&event.header, event.data);
+
+            break;
+
+        case EVENT_FILE:
+            onfile(&event.header, event.data);
+
+            break;
+
+        }
+
+    }
+
+    file_close(FILE_L0);
 
 }
 

@@ -3,25 +3,25 @@
 #include "base.h"
 #include "wm.h"
 
-void event_sendwmmap(unsigned int descriptor, unsigned int destination)
+void event_sendwmmap(unsigned int descriptor, unsigned int source, unsigned int destination)
 {
 
     struct event event;
 
-    event_send(descriptor, &event, destination, EVENT_WMMAP, 0);
+    event_send(descriptor, &event, EVENT_WMMAP, source, destination, 0);
 
 }
 
-void event_sendwmunmap(unsigned int descriptor, unsigned int destination)
+void event_sendwmunmap(unsigned int descriptor, unsigned int source, unsigned int destination)
 {
 
     struct event event;
 
-    event_send(descriptor, &event, destination, EVENT_WMUNMAP, 0);
+    event_send(descriptor, &event, EVENT_WMUNMAP, source, destination, 0);
 
 }
 
-void event_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
+void event_sendwmresize(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 
     struct event event;
@@ -34,38 +34,38 @@ void event_sendwmresize(unsigned int descriptor, unsigned int destination, unsig
     wmresize->padding = padding;
     wmresize->lineheight = lineheight;
 
-    event_send(descriptor, &event, destination, EVENT_WMRESIZE, sizeof (struct event_wmresize));
+    event_send(descriptor, &event, EVENT_WMRESIZE, source, destination, sizeof (struct event_wmresize));
 
 }
 
-void event_sendwmshow(unsigned int descriptor, unsigned int destination)
+void event_sendwmshow(unsigned int descriptor, unsigned int source, unsigned int destination)
 {
 
     struct event event;
 
-    event_send(descriptor, &event, destination, EVENT_WMSHOW, 0);
+    event_send(descriptor, &event, EVENT_WMSHOW, source, destination, 0);
 
 }
 
-void event_sendwmhide(unsigned int descriptor, unsigned int destination)
+void event_sendwmhide(unsigned int descriptor, unsigned int source, unsigned int destination)
 {
 
     struct event event;
 
-    event_send(descriptor, &event, destination, EVENT_WMHIDE, 0);
+    event_send(descriptor, &event, EVENT_WMHIDE, source, destination, 0);
 
 }
 
-void event_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned int count, void *buffer)
+void event_sendwmflush(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer)
 {
 
     struct event event;
 
-    event_send(descriptor, &event, destination, EVENT_WMFLUSH, memory_write(event.data, FUDGE_BSIZE, buffer, count, 0));
+    event_send(descriptor, &event, EVENT_WMFLUSH, source, destination, memory_write(event.data, FUDGE_BSIZE, buffer, count, 0));
 
 }
 
-void event_sendwmkeypress(unsigned int descriptor, unsigned int destination, unsigned char scancode)
+void event_sendwmkeypress(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char scancode)
 {
 
     struct event event;
@@ -73,11 +73,11 @@ void event_sendwmkeypress(unsigned int descriptor, unsigned int destination, uns
 
     wmkeypress->scancode = scancode;
 
-    event_send(descriptor, &event, destination, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress));
+    event_send(descriptor, &event, EVENT_WMKEYPRESS, source, destination, sizeof (struct event_wmkeypress));
 
 }
 
-void event_sendwmkeyrelease(unsigned int descriptor, unsigned int destination, unsigned char scancode)
+void event_sendwmkeyrelease(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char scancode)
 {
 
     struct event event;
@@ -85,11 +85,11 @@ void event_sendwmkeyrelease(unsigned int descriptor, unsigned int destination, u
 
     wmkeyrelease->scancode = scancode;
 
-    event_send(descriptor, &event, destination, EVENT_WMKEYRELEASE, sizeof (struct event_wmkeyrelease));
+    event_send(descriptor, &event, EVENT_WMKEYRELEASE, source, destination, sizeof (struct event_wmkeyrelease));
 
 }
 
-void event_sendwmmousemove(unsigned int descriptor, unsigned int destination, char relx, char rely)
+void event_sendwmmousemove(unsigned int descriptor, unsigned int source, unsigned int destination, char relx, char rely)
 {
 
     struct event event;
@@ -98,11 +98,11 @@ void event_sendwmmousemove(unsigned int descriptor, unsigned int destination, ch
     wmmousemove->relx = relx;
     wmmousemove->rely = rely;
 
-    event_send(descriptor, &event, destination, EVENT_WMMOUSEMOVE, sizeof (struct event_wmmousemove));
+    event_send(descriptor, &event, EVENT_WMMOUSEMOVE, source, destination, sizeof (struct event_wmmousemove));
 
 }
 
-void event_sendwmmousepress(unsigned int descriptor, unsigned int destination, unsigned int button)
+void event_sendwmmousepress(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int button)
 {
 
     struct event event;
@@ -110,11 +110,11 @@ void event_sendwmmousepress(unsigned int descriptor, unsigned int destination, u
 
     wmmousepress->button = button;
 
-    event_send(descriptor, &event, destination, EVENT_WMMOUSEPRESS, sizeof (struct event_wmmousepress));
+    event_send(descriptor, &event, EVENT_WMMOUSEPRESS, source, destination, sizeof (struct event_wmmousepress));
 
 }
 
-void event_sendwmmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button)
+void event_sendwmmouserelease(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int button)
 {
 
     struct event event;
@@ -122,7 +122,7 @@ void event_sendwmmouserelease(unsigned int descriptor, unsigned int destination,
 
     wmmouserelease->button = button;
 
-    event_send(descriptor, &event, destination, EVENT_WMMOUSERELEASE, sizeof (struct event_wmmouserelease));
+    event_send(descriptor, &event, EVENT_WMMOUSERELEASE, source, destination, sizeof (struct event_wmmouserelease));
 
 }
 

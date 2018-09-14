@@ -58,14 +58,14 @@ struct event_wmmousemove
 
 };
 
-void event_sendwmmap(unsigned int descriptor, unsigned int destination);
-void event_sendwmunmap(unsigned int descriptor, unsigned int destination);
-void event_sendwmresize(unsigned int descriptor, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
-void event_sendwmshow(unsigned int descriptor, unsigned int destination);
-void event_sendwmhide(unsigned int descriptor, unsigned int destination);
-void event_sendwmflush(unsigned int descriptor, unsigned int destination, unsigned int count, void *buffer);
-void event_sendwmkeypress(unsigned int descriptor, unsigned int destination, unsigned char scancode);
-void event_sendwmkeyrelease(unsigned int descriptor, unsigned int destination, unsigned char scancode);
-void event_sendwmmousemove(unsigned int descriptor, unsigned int destination, char relx, char rely);
-void event_sendwmmousepress(unsigned int descriptor, unsigned int destination, unsigned int button);
-void event_sendwmmouserelease(unsigned int descriptor, unsigned int destination, unsigned int button);
+void event_sendwmmap(unsigned int descriptor, unsigned int source, unsigned int destination);
+void event_sendwmunmap(unsigned int descriptor, unsigned int source, unsigned int destination);
+void event_sendwmresize(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
+void event_sendwmshow(unsigned int descriptor, unsigned int source, unsigned int destination);
+void event_sendwmhide(unsigned int descriptor, unsigned int source, unsigned int destination);
+void event_sendwmflush(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer);
+void event_sendwmkeypress(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char scancode);
+void event_sendwmkeyrelease(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char scancode);
+void event_sendwmmousemove(unsigned int descriptor, unsigned int source, unsigned int destination, char relx, char rely);
+void event_sendwmmousepress(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int button);
+void event_sendwmmouserelease(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int button);

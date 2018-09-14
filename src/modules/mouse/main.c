@@ -22,7 +22,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     struct {struct event_header header; struct event_mousemove mousemove;} message;
 
     message.header.type = EVENT_MOUSEMOVE;
-    message.header.source = EVENT_ADDR_BROADCAST;
+    message.header.source = EVENT_ADDR_SELF;
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.header.length = sizeof (message);
     message.mousemove.relx = relx;
@@ -39,7 +39,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     struct {struct event_header header; struct event_mousepress mousepress;} message;
 
     message.header.type = EVENT_MOUSEPRESS;
-    message.header.source = EVENT_ADDR_BROADCAST;
+    message.header.source = EVENT_ADDR_SELF;
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.header.length = sizeof (message);
     message.mousepress.button = button;
@@ -55,7 +55,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     struct {struct event_header header; struct event_mouserelease mouserelease;} message;
 
     message.header.type = EVENT_MOUSERELEASE;
-    message.header.source = EVENT_ADDR_BROADCAST;
+    message.header.source = EVENT_ADDR_SELF;
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.header.length = sizeof (message);
     message.mouserelease.button = button;

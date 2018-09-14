@@ -21,7 +21,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
     struct {struct event_header header; struct event_timertick timertick;} message;
 
     message.header.type = EVENT_TIMERTICK;
-    message.header.source = EVENT_ADDR_BROADCAST;
+    message.header.source = EVENT_ADDR_SELF;
     message.header.destination = EVENT_ADDR_BROADCAST;
     message.header.length = sizeof (message);
     message.timertick.counter = counter;
