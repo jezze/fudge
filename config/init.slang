@@ -1,6 +1,6 @@
 slang < /config/base.slang
 slang < /config/arch.slang
-ipsetup
+initnet
 slang < /config/console.slang
 slang < /config/wm.slang
 elfload < /mod/acpi.ko

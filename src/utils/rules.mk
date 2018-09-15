@@ -96,10 +96,10 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/ipsetup \
+    $(DIR_SRC)/utils/initnet \
 
 O:=\
-    $(DIR_SRC)/utils/ipsetup.o \
+    $(DIR_SRC)/utils/initnet.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
