@@ -300,6 +300,9 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
             id = call_spawn();
 
+            if (!id)
+                return;
+
             event_sendinit(FILE_L0, header->source, id);
 
             if (rei)
@@ -321,6 +324,9 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
                 return;
 
             id = call_spawn();
+
+            if (!id)
+                return;
 
             event_sendinit(FILE_L0, header->source, id);
 

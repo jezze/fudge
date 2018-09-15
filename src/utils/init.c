@@ -7,51 +7,26 @@ void main(void)
 
     unsigned int id;
 
-    if (!file_walk(FILE_CW, "/home"))
-        return;
-
-    if (!file_walk(FILE_CP, "/bin/elfload"))
-        return;
-
-    if (!file_walk(FILE_CI, "/mod/base.ko"))
-        return;
-
-    id = call_spawn();
-
-    if (!file_walk(FILE_CI, "/mod/system.ko"))
-        return;
-
-    id = call_spawn();
-
-    if (!file_walk(FILE_CI, "/mod/internals.ko"))
-        return;
-
-    id = call_spawn();
-
-    if (!file_walk(FILE_CI, "/mod/event.ko"))
-        return;
-
-    id = call_spawn();
-
-
-
-    if (!file_walk(FILE_CP, "/bin/initfs"))
-        return;
-
-    id = call_spawn();
-
-
-
-    if (!file_walk(FILE_L0, "/system/event"))
-        return;
-
-
-
+    file_walk(FILE_CW, "/home");
+    file_walk(FILE_CP, "/bin/elfload");
+    file_walk(FILE_CI, "/mod/base.ko");
+    call_spawn();
+    file_walk(FILE_CI, "/mod/system.ko");
+    call_spawn();
+    file_walk(FILE_CI, "/mod/internals.ko");
+    call_spawn();
+    file_walk(FILE_CI, "/mod/event.ko");
+    call_spawn();
+    file_walk(FILE_CP, "/bin/initfs");
+    call_spawn();
 
     if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
     if (!file_walk(FILE_CI, "/config/init.slang"))
+        return;
+
+    if (!file_walk(FILE_L0, "/system/event"))
         return;
 
     id = call_spawn();

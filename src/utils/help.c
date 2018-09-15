@@ -17,6 +17,9 @@ static void oninit(struct event_header *header, void *data)
 
     id = call_spawn();
 
+    if (!id)
+        return;
+
     file_open(FILE_L0);
     event_sendinit(FILE_L0, header->source, id);
     event_sendfile(FILE_L0, header->source, id, FILE_PI);

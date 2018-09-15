@@ -405,6 +405,9 @@ static void onkeypress(struct event_header *header, void *data)
 
         id = call_spawn();
 
+        if (!id)
+            break;
+
         event_sendinit(FILE_L0, header->destination, id);
         event_sendexit(FILE_L0, header->destination, id);
 

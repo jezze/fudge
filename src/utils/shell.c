@@ -36,6 +36,9 @@ static void interpretslang(unsigned int count, char *command)
 
     unsigned int id = call_spawn();
 
+    if (!id)
+        return;
+
     event_sendinit(FILE_L0, EVENT_ADDR_SELF, id);
     event_senddata(FILE_L0, EVENT_ADDR_SELF, id, count, command);
     event_sendexit(FILE_L0, EVENT_ADDR_SELF, id);
