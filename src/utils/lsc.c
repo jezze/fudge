@@ -4,7 +4,7 @@
 
 static unsigned int quit;
 
-static void listall(struct event_header *header, unsigned int descriptor)
+static void list(struct event_header *header, unsigned int descriptor)
 {
 
     struct record record;
@@ -32,7 +32,7 @@ static void listall(struct event_header *header, unsigned int descriptor)
 static void oninit(struct event_header *header, void *data)
 {
 
-    listall(header, FILE_PW);
+    list(header, FILE_PW);
 
 }
 
@@ -48,7 +48,7 @@ static void onfile(struct event_header *header, void *data)
 
     struct event_file *file = data;
 
-    listall(header, file->num);
+    list(header, file->num);
 
 }
 

@@ -4,7 +4,7 @@
 
 static unsigned int quit;
 
-static void reply(struct event_header *header, unsigned int count, char *buffer)
+static void dump(struct event_header *header, unsigned int count, char *buffer)
 {
 
     unsigned int i;
@@ -24,7 +24,7 @@ static void reply(struct event_header *header, unsigned int count, char *buffer)
 static void ondata(struct event_header *header, void *data)
 {
 
-    reply(header, header->length - sizeof (struct event_header), data);
+    dump(header, header->length - sizeof (struct event_header), data);
 
 }
 
@@ -38,7 +38,7 @@ static void onfile(struct event_header *header, void *data)
     file_open(file->num);
 
     while ((count = file_read(file->num, buffer, FUDGE_BSIZE)))
-        reply(header, count, data);
+        dump(header, count, data);
 
     file_close(file->num);
 
