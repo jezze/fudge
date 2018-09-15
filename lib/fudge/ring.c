@@ -136,6 +136,16 @@ unsigned int ring_readreverse(struct ring *ring, void *buffer, unsigned int coun
 
 }
 
+unsigned int ring_readallreverse(struct ring *ring, void *buffer, unsigned int count)
+{
+
+    if (count > ring_avail(ring))
+        return 0;
+
+    return ring_readreverse(ring, buffer, count);
+
+}
+
 unsigned int ring_write(struct ring *ring, void *buffer, unsigned int count)
 {
 
