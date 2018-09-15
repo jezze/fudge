@@ -69,19 +69,6 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/initfs \
-
-O:=\
-    $(DIR_SRC)/utils/initfs.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
     $(DIR_SRC)/utils/init \
 
 O:=\
@@ -91,6 +78,19 @@ L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/initfs \
+
+O:=\
+    $(DIR_SRC)/utils/initfs.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/bin.mk
@@ -109,10 +109,10 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/lsc \
+    $(DIR_SRC)/utils/ls \
 
 O:=\
-    $(DIR_SRC)/utils/lsc.o \
+    $(DIR_SRC)/utils/ls.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
@@ -123,10 +123,10 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/ls \
+    $(DIR_SRC)/utils/lsc \
 
 O:=\
-    $(DIR_SRC)/utils/ls.o \
+    $(DIR_SRC)/utils/lsc.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
