@@ -1,35 +1,116 @@
 #include <abi.h>
 #include <fudge.h>
+#include <event/base.h>
 
-void main(void)
+static unsigned int quit;
+
+static void oninit(struct event_header *header, void *data)
 {
 
     struct record record;
     char num[FUDGE_NSIZE];
 
-    file_open(FILE_PO);
+    event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0), num);
+    event_senddata(FILE_L0, header->destination, header->source, 1, " ");
+    event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0), num);
+    event_senddata(FILE_L0, header->destination, header->source, 1, " ");
+    event_senddata(FILE_L0, header->destination, header->source, 3, "..\n");
     file_open(FILE_PW);
-    file_writeall(FILE_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0));
-    file_writeall(FILE_PO, " ", 1);
-    file_writeall(FILE_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0));
-    file_writeall(FILE_PO, " ", 1);
-    file_writeall(FILE_PO, "..\n", 3);
 
     while (file_readall(FILE_PW, &record, sizeof (struct record)))
     {
 
-        file_writeall(FILE_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0));
-        file_writeall(FILE_PO, " ", 1);
-        file_writeall(FILE_PO, num, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0));
-        file_writeall(FILE_PO, " ", 1);
-        file_writeall(FILE_PO, record.name, record.length);
-        file_writeall(FILE_PO, "\n", 1);
+        event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
+        event_senddata(FILE_L0, header->destination, header->source, 1, " ");
+        event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
+        event_senddata(FILE_L0, header->destination, header->source, 1, " ");
+        event_senddata(FILE_L0, header->destination, header->source, record.length, record.name);
+        event_senddata(FILE_L0, header->destination, header->source, 1, "\n");
         file_step(FILE_PW);
 
     }
 
     file_close(FILE_PW);
-    file_close(FILE_PO);
+
+}
+
+static void onkill(struct event_header *header, void *data)
+{
+
+    quit = 1;
+
+}
+
+static void onfile(struct event_header *header, void *data)
+{
+
+    struct event_file *file = data;
+    struct record record;
+    char num[FUDGE_NSIZE];
+
+    event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0), num);
+    event_senddata(FILE_L0, header->destination, header->source, 1, " ");
+    event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0), num);
+    event_senddata(FILE_L0, header->destination, header->source, 1, " ");
+    event_senddata(FILE_L0, header->destination, header->source, 3, "..\n");
+    file_open(file->num);
+
+    while (file_readall(file->num, &record, sizeof (struct record)))
+    {
+
+        event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
+        event_senddata(FILE_L0, header->destination, header->source, 1, " ");
+        event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
+        event_senddata(FILE_L0, header->destination, header->source, 1, " ");
+        event_senddata(FILE_L0, header->destination, header->source, record.length, record.name);
+        event_senddata(FILE_L0, header->destination, header->source, 1, "\n");
+        file_step(file->num);
+
+    }
+
+    file_close(file->num);
+
+}
+
+void main(void)
+{
+
+    if (!file_walk(FILE_L0, "/system/event"))
+        return;
+
+    file_open(FILE_L0);
+
+    while (!quit)
+    {
+
+        struct event event;
+
+        event_read(FILE_L0, &event);
+
+        switch (event.header.type)
+        {
+
+        case EVENT_INIT:
+            oninit(&event.header, event.data);
+
+            break;
+
+        case EVENT_EXIT:
+        case EVENT_KILL:
+            onkill(&event.header, event.data);
+
+            break;
+
+        case EVENT_FILE:
+            onfile(&event.header, event.data);
+
+            break;
+
+        }
+
+    }
+
+    file_close(FILE_L0);
 
 }
 
