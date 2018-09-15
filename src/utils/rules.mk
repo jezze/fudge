@@ -1,69 +1,4 @@
 B:=\
-    $(DIR_SRC)/utils/cconv8to6 \
-
-O:=\
-    $(DIR_SRC)/utils/cconv8to6.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/complete \
-
-O:=\
-    $(DIR_SRC)/utils/complete.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/crc \
-
-O:=\
-    $(DIR_SRC)/utils/crc.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/date \
-
-O:=\
-    $(DIR_SRC)/utils/date.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/disksetup \
-
-O:=\
-    $(DIR_SRC)/utils/disksetup.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
     $(DIR_SRC)/utils/dump \
 
 O:=\
@@ -120,32 +55,6 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/fat \
-
-O:=\
-    $(DIR_SRC)/utils/fat.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/hello \
-
-O:=\
-    $(DIR_SRC)/utils/hello.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
     $(DIR_SRC)/utils/help \
 
 O:=\
@@ -187,19 +96,6 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/initmod \
-
-O:=\
-    $(DIR_SRC)/utils/initmod.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
     $(DIR_SRC)/utils/ipsetup \
 
 O:=\
@@ -209,47 +105,6 @@ L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/netcat \
-
-O:=\
-    $(DIR_SRC)/utils/netcat.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/keymapse \
-
-O:=\
-    $(DIR_SRC)/utils/keymapse.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-    $(DIR_LIB)/keymap/keymap.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/keymapus \
-
-O:=\
-    $(DIR_SRC)/utils/keymapus.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-    $(DIR_LIB)/keymap/keymap.a \
 
 include $(DIR_MK)/bin.mk
 
@@ -282,33 +137,6 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/mbr \
-
-O:=\
-    $(DIR_SRC)/utils/mbr.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/md5 \
-
-O:=\
-    $(DIR_SRC)/utils/md5.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/crypt/crypt.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
     $(DIR_SRC)/utils/motd \
 
 O:=\
@@ -323,19 +151,6 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/name \
-
-O:=\
-    $(DIR_SRC)/utils/name.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
     $(DIR_SRC)/utils/reboot \
 
 O:=\
@@ -344,20 +159,6 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/sha1 \
-
-O:=\
-    $(DIR_SRC)/utils/sha1.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/crypt/crypt.a \
     $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/bin.mk
@@ -386,45 +187,6 @@ L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/tcpdump \
-
-O:=\
-    $(DIR_SRC)/utils/tcpdump.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/timestamp \
-
-O:=\
-    $(DIR_SRC)/utils/timestamp.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/wc \
-
-O:=\
-    $(DIR_SRC)/utils/wc.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/bin.mk
