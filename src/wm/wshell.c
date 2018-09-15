@@ -124,27 +124,37 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static void interpretslang(unsigned int count, char *command)
+static unsigned int interpretslang(unsigned int count, char *command)
 {
 
     unsigned int id = call_spawn();
 
-    event_sendinit(FILE_L0, EVENT_ADDR_SELF, id);
-    event_senddata(FILE_L0, EVENT_ADDR_SELF, id, count, command);
-    event_sendexit(FILE_L0, EVENT_ADDR_SELF, id);
+    if (id)
+    {
+
+        event_sendinit(FILE_L0, EVENT_ADDR_SELF, id);
+        event_senddata(FILE_L0, EVENT_ADDR_SELF, id, count, command);
+        event_sendexit(FILE_L0, EVENT_ADDR_SELF, id);
+
+    }
+
+    return id;
 
 }
 
-static void interpret(struct ring *ring)
+static unsigned int interpret(struct ring *ring)
 {
 
     char buffer[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
 
-    if (interpretbuiltin(count, buffer))
-        return;
+    if (count < 2)
+        return 0;
 
-    interpretslang(count, buffer);
+    if (interpretbuiltin(count, buffer))
+        return 0;
+
+    return interpretslang(count, buffer);
 
 }
 
@@ -199,6 +209,14 @@ static void ondata(struct event_header *header, void *data)
 
 }
 
+static void onchild(struct event_header *header, void *data)
+{
+
+    copybuffer("$ ", 2);
+    updatecontent(header);
+
+}
+
 static void onwmkeypress(struct event_header *header, void *data)
 {
 
@@ -221,7 +239,10 @@ static void onwmkeypress(struct event_header *header, void *data)
         ring_move(&input1, &input2);
         ring_write(&input1, keycode->value, keycode->length);
         copyring(&input1);
-        interpret(&input1);
+
+        if (interpret(&input1))
+            break;
+
         copybuffer("$ ", 2);
         updatecontent(header);
 
@@ -359,6 +380,11 @@ void main(void)
 
         case EVENT_DATA:
             ondata(&event.header, event.data);
+
+            break;
+
+        case EVENT_CHILD:
+            onchild(&event.header, event.data);
 
             break;
 

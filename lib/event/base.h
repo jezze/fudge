@@ -6,6 +6,7 @@
 #define EVENT_KILL                      0x03
 #define EVENT_DATA                      0x04
 #define EVENT_FILE                      0x05
+#define EVENT_CHILD                     0x06
 
 struct event_header
 {
@@ -39,4 +40,5 @@ void event_sendexit(unsigned int descriptor, unsigned int source, unsigned int d
 void event_sendkill(unsigned int descriptor, unsigned int source, unsigned int destination);
 void event_senddata(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer);
 void event_sendfile(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char num);
+void event_sendchild(unsigned int descriptor, unsigned int source, unsigned int destination);
 void event_initheader(struct event_header *header, unsigned int type, unsigned int source, unsigned int destination, unsigned int length);

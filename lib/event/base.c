@@ -69,6 +69,15 @@ void event_sendfile(unsigned int descriptor, unsigned int source, unsigned int d
 
 }
 
+void event_sendchild(unsigned int descriptor, unsigned int source, unsigned int destination)
+{
+
+    struct event event;
+
+    event_send(descriptor, &event, EVENT_CHILD, source, destination, 0);
+
+}
+
 void event_initheader(struct event_header *header, unsigned int type, unsigned int source, unsigned int destination, unsigned int length)
 {
 

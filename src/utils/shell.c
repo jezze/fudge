@@ -31,30 +31,37 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static void interpretslang(unsigned int count, char *command)
+static unsigned int interpretslang(unsigned int count, char *command)
 {
 
     unsigned int id = call_spawn();
 
-    if (!id)
-        return;
+    if (id)
+    {
 
-    event_sendinit(FILE_L0, EVENT_ADDR_SELF, id);
-    event_senddata(FILE_L0, EVENT_ADDR_SELF, id, count, command);
-    event_sendexit(FILE_L0, EVENT_ADDR_SELF, id);
+        event_sendinit(FILE_L0, EVENT_ADDR_SELF, id);
+        event_senddata(FILE_L0, EVENT_ADDR_SELF, id, count, command);
+        event_sendexit(FILE_L0, EVENT_ADDR_SELF, id);
+
+    }
+
+    return id;
 
 }
 
-static void interpret(struct ring *ring)
+static unsigned int interpret(struct ring *ring)
 {
 
     char buffer[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
 
-    if (interpretbuiltin(count, buffer))
-        return;
+    if (count < 2)
+        return 0;
 
-    interpretslang(count, buffer);
+    if (interpretbuiltin(count, buffer))
+        return 0;
+
+    return interpretslang(count, buffer);
 
 }
 
@@ -74,6 +81,8 @@ static void oninit(struct event_header *header, void *data)
 static void onkill(struct event_header *header, void *data)
 {
 
+    event_sendchild(FILE_L0, header->destination, header->source);
+
     quit = 1;
 
 }
@@ -83,6 +92,15 @@ static void ondata(struct event_header *header, void *data)
 
     file_open(FILE_PO);
     file_writeall(FILE_PO, data, header->length - sizeof (struct event_header));
+    file_close(FILE_PO);
+
+}
+
+static void onchild(struct event_header *header, void *data)
+{
+
+    file_open(FILE_PO);
+    file_writeall(FILE_PO, "$ ", 2);
     file_close(FILE_PO);
 
 }
@@ -122,7 +140,10 @@ static void onconsoledata(struct event_header *header, void *data)
         file_writeall(FILE_PO, &consoledata->data, 1);
         file_close(FILE_PO);
         ring_write(&input, &consoledata->data, 1);
-        interpret(&input);
+
+        if (interpret(&input))
+            break;
+
         file_open(FILE_PO);
         file_writeall(FILE_PO, "$ ", 2);
         file_close(FILE_PO);
@@ -175,6 +196,11 @@ void main(void)
 
         case EVENT_DATA:
             ondata(&event.header, event.data);
+
+            break;
+
+        case EVENT_CHILD:
+            onchild(&event.header, event.data);
 
             break;
 

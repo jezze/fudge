@@ -31,6 +31,8 @@ static void oninit(struct event_header *header, void *data)
 static void onkill(struct event_header *header, void *data)
 {
 
+    event_sendchild(FILE_L0, header->destination, header->source);
+
     quit = 1;
 
 }
