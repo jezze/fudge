@@ -57,6 +57,18 @@ unsigned int event_multicast(struct list *states, struct event_header *header)
 
 }
 
+static unsigned int root_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    count = task_read(state->task, buffer, count);
+
+    if (!count)
+        kernel_blocktask(state->task);
+
+    return count;
+
+}
+
 static unsigned int root_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -78,12 +90,21 @@ static unsigned int root_write(struct system_node *self, struct system_node *cur
 
 }
 
+static unsigned int root_seek(struct system_node *self, struct service_state *state, unsigned int offset)
+{
+
+    return 0;
+
+}
+
 void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_MAILBOX, "event");
 
+    root.operations.read = root_read;
     root.operations.write = root_write;
+    root.operations.seek = root_seek;
 
 }
 

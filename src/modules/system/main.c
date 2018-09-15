@@ -20,13 +20,6 @@ static struct system_node *close(struct system_node *self, struct service_state 
 
 }
 
-static unsigned int read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return 0;
-
-}
-
 static unsigned int readgroup(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -53,15 +46,19 @@ static unsigned int readgroup(struct system_node *self, struct system_node *curr
 
 }
 
-static unsigned int readmailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    count = task_read(state->task, buffer, count);
+    switch (self->type)
+    {
 
-    if (!count)
-        kernel_blocktask(state->task);
+    case SYSTEM_NODETYPE_GROUP:
+    case SYSTEM_NODETYPE_MULTIGROUP:
+        return readgroup(self, current, state, buffer, count, offset);
 
-    return count;
+    }
+
+    return 0;
 
 }
 
@@ -72,38 +69,10 @@ static unsigned int write(struct system_node *self, struct system_node *current,
 
 }
 
-static unsigned int writegroup(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return 0;
-
-}
-
-static unsigned int writemailbox(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return 0;
-
-}
-
 static unsigned int seek(struct system_node *self, struct service_state *state, unsigned int offset)
 {
 
     return offset;
-
-}
-
-static unsigned int seekgroup(struct system_node *self, struct service_state *state, unsigned int offset)
-{
-
-    return offset;
-
-}
-
-static unsigned int seekmailbox(struct system_node *self, struct service_state *state, unsigned int offset)
-{
-
-    return 0;
 
 }
 
@@ -169,33 +138,9 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     node->name = name;
     node->operations.open = open;
     node->operations.close = close;
-
-    switch (type)
-    {
-
-    case SYSTEM_NODETYPE_MAILBOX:
-        node->operations.read = readmailbox;
-        node->operations.write = writemailbox;
-        node->operations.seek = seekmailbox;
-
-        break;
-
-    case SYSTEM_NODETYPE_GROUP:
-    case SYSTEM_NODETYPE_MULTIGROUP:
-        node->operations.read = readgroup;
-        node->operations.write = writegroup;
-        node->operations.seek = seekgroup;
-
-        break;
-
-    default:
-        node->operations.read = read;
-        node->operations.write = write;
-        node->operations.seek = seek;
-
-        break;
-
-    }
+    node->operations.read = read;
+    node->operations.write = write;
+    node->operations.seek = seek;
 
 }
 
