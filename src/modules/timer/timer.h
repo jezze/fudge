@@ -3,7 +3,7 @@ struct timer_interface
 
     struct resource resource;
     struct system_node root;
-    struct system_node sleep;
+    struct system_node data;
     struct system_node event;
     unsigned int id;
 
