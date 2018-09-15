@@ -10,6 +10,7 @@ unsigned int event_unicast(struct list *states, struct event_header *header)
 {
 
     struct list_item *current;
+    unsigned int count = 0;
 
     spinlock_acquire(&states->spinlock);
 
@@ -21,14 +22,17 @@ unsigned int event_unicast(struct list *states, struct event_header *header)
         if (header->destination != state->task->id)
             continue;
 
-        task_writeall(state->task, header, header->length);
+        count = task_writeall(state->task, header, header->length);
+
         kernel_unblocktask(state->task);
+
+        break;
 
     }
 
     spinlock_release(&states->spinlock);
 
-    return header->length;
+    return count;
 
 }
 
