@@ -4,24 +4,31 @@
 
 static unsigned int quit;
 
-static void oninit(struct event_header *header, void *data)
+static void listall(struct event_header *header, unsigned int descriptor)
 {
 
     struct record record;
 
     event_senddata(FILE_L0, header->destination, header->source, 3, "..\n");
-    file_open(FILE_PW);
+    file_open(descriptor);
 
-    while (file_readall(FILE_PW, &record, sizeof (struct record)))
+    while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
         event_senddata(FILE_L0, header->destination, header->source, record.length, record.name);
         event_senddata(FILE_L0, header->destination, header->source, 1, "\n");
-        file_step(FILE_PW);
+        file_step(descriptor);
 
     }
 
-    file_close(FILE_PW);
+    file_close(descriptor);
+
+}
+
+static void oninit(struct event_header *header, void *data)
+{
+
+    listall(header, FILE_PW);
 
 }
 
@@ -36,21 +43,8 @@ static void onfile(struct event_header *header, void *data)
 {
 
     struct event_file *file = data;
-    struct record record;
 
-    event_senddata(FILE_L0, header->destination, header->source, 3, "..\n");
-    file_open(file->num);
-
-    while (file_readall(file->num, &record, sizeof (struct record)))
-    {
-
-        event_senddata(FILE_L0, header->destination, header->source, record.length, record.name);
-        event_senddata(FILE_L0, header->destination, header->source, 1, "\n");
-        file_step(file->num);
-
-    }
-
-    file_close(file->num);
+    listall(header, file->num);
 
 }
 
