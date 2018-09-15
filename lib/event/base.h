@@ -32,8 +32,8 @@ struct event_file
 
 };
 
-void event_read(unsigned int descriptor, struct event *event);
-void event_send(unsigned int descriptor, struct event *event, unsigned int type, unsigned int source, unsigned int destination, unsigned int length);
+unsigned int event_read(unsigned int descriptor, struct event *event);
+unsigned int event_send(unsigned int descriptor, struct event *event, unsigned int type, unsigned int source, unsigned int destination, unsigned int length);
 void event_sendinit(unsigned int descriptor, unsigned int source, unsigned int destination);
 void event_sendexit(unsigned int descriptor, unsigned int source, unsigned int destination);
 void event_sendkill(unsigned int descriptor, unsigned int source, unsigned int destination);
