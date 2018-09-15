@@ -9,11 +9,7 @@ void main(void)
 
     file_walk(FILE_CW, "/home");
     file_walk(FILE_CP, "/bin/elfload");
-    file_walk(FILE_CI, "/mod/base.ko");
-    call_spawn();
     file_walk(FILE_CI, "/mod/system.ko");
-    call_spawn();
-    file_walk(FILE_CI, "/mod/internals.ko");
     call_spawn();
     file_walk(FILE_CI, "/mod/event.ko");
     call_spawn();
