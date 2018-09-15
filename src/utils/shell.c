@@ -62,7 +62,9 @@ static void oninit(struct event_header *header, void *data)
         return;
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
+    file_open(FILE_PO);
     file_writeall(FILE_PO, "$ ", 2);
+    file_close(FILE_PO);
 
 }
 
@@ -76,7 +78,9 @@ static void onkill(struct event_header *header, void *data)
 static void ondata(struct event_header *header, void *data)
 {
 
+    file_open(FILE_PO);
     file_writeall(FILE_PO, data, header->length - sizeof (struct event_header));
+    file_close(FILE_PO);
 
 }
 
@@ -101,7 +105,9 @@ static void onconsoledata(struct event_header *header, void *data)
         if (!ring_skipreverse(&input, 1))
             break;
 
+        file_open(FILE_PO);
         file_writeall(FILE_PO, "\b \b", 3);
+        file_close(FILE_PO);
 
         break;
 
@@ -109,16 +115,22 @@ static void onconsoledata(struct event_header *header, void *data)
         consoledata->data = '\n';
 
     case '\n':
+        file_open(FILE_PO);
         file_writeall(FILE_PO, &consoledata->data, 1);
+        file_close(FILE_PO);
         ring_write(&input, &consoledata->data, 1);
         interpret(&input);
+        file_open(FILE_PO);
         file_writeall(FILE_PO, "$ ", 2);
+        file_close(FILE_PO);
 
         break;
 
     default:
         ring_write(&input, &consoledata->data, 1);
+        file_open(FILE_PO);
         file_writeall(FILE_PO, &consoledata->data, 1);
+        file_close(FILE_PO);
 
         break;
 
