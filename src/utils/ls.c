@@ -9,7 +9,6 @@ static void listall(struct event_header *header, unsigned int descriptor)
 
     struct record record;
 
-    event_senddata(FILE_L0, header->destination, header->source, 3, "..\n");
     file_open(descriptor);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))

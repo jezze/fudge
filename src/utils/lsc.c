@@ -10,11 +10,6 @@ static void listall(struct event_header *header, unsigned int descriptor)
     struct record record;
     char num[FUDGE_NSIZE];
 
-    event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0), num);
-    event_senddata(FILE_L0, header->destination, header->source, 1, " ");
-    event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, 0, 16, 8, 0), num);
-    event_senddata(FILE_L0, header->destination, header->source, 1, " ");
-    event_senddata(FILE_L0, header->destination, header->source, 3, "..\n");
     file_open(descriptor);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
