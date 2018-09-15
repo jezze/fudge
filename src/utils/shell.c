@@ -144,13 +144,13 @@ static void onconsoledata(struct event_header *header, void *data)
 void main(void)
 {
 
-    if (!file_walk(FILE_L0, "/system/event"))
-        return;
+    /* Once event system is inside kernel, there is no need to use the filesystem to send events */
+    file_walk(FILE_L0, "/system/event");
+    file_open(FILE_L0);
 
     if (!file_walk(FILE_L1, "/system/console/event"))
         return;
 
-    file_open(FILE_L0);
     file_open(FILE_L1);
 
     while (!quit)
