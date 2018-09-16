@@ -28,4 +28,3 @@ void event_sendkill(unsigned int descriptor, unsigned int source, unsigned int d
 void event_senddata(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer);
 void event_sendfile(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char num);
 void event_sendchild(unsigned int descriptor, unsigned int source, unsigned int destination);
-void event_initheader(struct event_header *header, unsigned int type, unsigned int source, unsigned int destination, unsigned int length);
