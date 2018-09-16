@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include <event/device.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include "video.h"
 
 static struct system_node root;
@@ -17,7 +16,7 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
     message.videomode.bpp = bpp;
 
     event_initheader(&message.header, EVENT_VIDEOMODE, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, sizeof (struct event_videomode));
-    event_multicast(&interface->event.states, &message.header);
+    kernel_multicastevent(&interface->event.states, &message.header);
 
 }
 

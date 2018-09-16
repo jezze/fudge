@@ -252,6 +252,61 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
+unsigned int kernel_unicastevent(struct list *states, struct event_header *header)
+{
+
+    struct list_item *current;
+    unsigned int count = 0;
+
+    spinlock_acquire(&states->spinlock);
+
+    for (current = states->head; current; current = current->next)
+    {
+
+        struct service_state *state = current->data;
+
+        if (header->destination != state->task->id)
+            continue;
+
+        count = task_writeall(state->task, header, header->length);
+
+        kernel_unblocktask(state->task);
+
+        break;
+
+    }
+
+    spinlock_release(&states->spinlock);
+
+    return count;
+
+}
+
+unsigned int kernel_multicastevent(struct list *states, struct event_header *header)
+{
+
+    struct list_item *current;
+
+    spinlock_acquire(&states->spinlock);
+
+    for (current = states->head; current; current = current->next)
+    {
+
+        struct service_state *state = current->data;
+
+        header->destination = state->task->id;
+
+        task_writeall(state->task, header, header->length);
+        kernel_unblocktask(state->task);
+
+    }
+
+    spinlock_release(&states->spinlock);
+
+    return header->length;
+
+}
+
 void kernel_multicast(struct list *states, void *buffer, unsigned int count)
 {
 

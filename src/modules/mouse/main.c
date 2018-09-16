@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include <event/device.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include "mouse.h"
 
 static struct system_node root;
@@ -24,8 +23,8 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     message.mousemove.rely = rely;
 
     event_initheader(&message.header, EVENT_MOUSEMOVE, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, sizeof (struct event_mousemove));
-    event_multicast(&event.states, &message.header);
-    event_multicast(&interface->event.states, &message.header);
+    kernel_multicastevent(&event.states, &message.header);
+    kernel_multicastevent(&interface->event.states, &message.header);
 
 }
 
@@ -37,8 +36,8 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     message.mousepress.button = button;
 
     event_initheader(&message.header, EVENT_MOUSEPRESS, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, sizeof (struct event_mousepress));
-    event_multicast(&event.states, &message.header);
-    event_multicast(&interface->event.states, &message.header);
+    kernel_multicastevent(&event.states, &message.header);
+    kernel_multicastevent(&interface->event.states, &message.header);
 
 }
 
@@ -50,8 +49,8 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     message.mouserelease.button = button;
 
     event_initheader(&message.header, EVENT_MOUSERELEASE, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, sizeof (struct event_mouserelease));
-    event_multicast(&event.states, &message.header);
-    event_multicast(&interface->event.states, &message.header);
+    kernel_multicastevent(&event.states, &message.header);
+    kernel_multicastevent(&interface->event.states, &message.header);
 
 }
 

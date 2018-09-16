@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include <event/device.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include "timer.h"
 
 static struct system_node root;
@@ -22,7 +21,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
     message.timertick.counter = counter;
 
     event_initheader(&message.header, EVENT_TIMERTICK, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, sizeof (struct event_timertick));
-    event_multicast(&interface->event.states, &message.header);
+    kernel_multicastevent(&interface->event.states, &message.header);
 
 }
 

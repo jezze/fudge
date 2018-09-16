@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include <event/device.h>
 #include <modules/system/system.h>
-#include <modules/event/event.h>
 #include "keyboard.h"
 
 static struct system_node root;
@@ -23,8 +22,8 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
     message.keypress.scancode = scancode;
 
     event_initheader(&message.header, EVENT_KEYPRESS, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, sizeof (struct event_keypress));
-    event_multicast(&event.states, &message.header);
-    event_multicast(&interface->event.states, &message.header);
+    kernel_multicastevent(&event.states, &message.header);
+    kernel_multicastevent(&interface->event.states, &message.header);
 
 }
 
@@ -36,8 +35,8 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
     message.keyrelease.scancode = scancode;
 
     event_initheader(&message.header, EVENT_KEYRELEASE, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, sizeof (struct event_keyrelease));
-    event_multicast(&event.states, &message.header);
-    event_multicast(&interface->event.states, &message.header);
+    kernel_multicastevent(&event.states, &message.header);
+    kernel_multicastevent(&interface->event.states, &message.header);
 
 }
 
