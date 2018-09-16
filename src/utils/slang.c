@@ -250,6 +250,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
     unsigned int rei = 0;
     unsigned int id;
     unsigned int i;
+    unsigned int j;
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -271,10 +272,10 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!t)
                 return;
 
-            if (!file_walk(FILE_CI, t->str))
+            if (!file_walk(FILE_CI + rei, t->str))
                 return;
 
-            rei = 1;
+            rei++;
 
             break;
 
@@ -305,8 +306,8 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
             event_sendinit(FILE_L0, header->source, id);
 
-            if (rei)
-                event_sendfile(FILE_L0, header->source, id, FILE_PI + rei - 1);
+            for (j = 0; j < rei; j++)
+                event_sendfile(FILE_L0, header->source, id, FILE_PI + j);
 
             event_sendexit(FILE_L0, header->destination, id);
 
@@ -330,8 +331,8 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
             event_sendinit(FILE_L0, header->source, id);
 
-            if (rei)
-                event_sendfile(FILE_L0, header->source, id, FILE_PI + rei - 1);
+            for (j = 0; j < rei; j++)
+                event_sendfile(FILE_L0, header->source, id, FILE_PI + j);
 
             event_sendexit(FILE_L0, header->destination, id);
 
