@@ -1,22 +1,9 @@
-#define EVENTS                          21
-#define EVENT_ADDR_SELF                 0
-#define EVENT_ADDR_BROADCAST            0
 #define EVENT_INIT                      0x01
 #define EVENT_EXIT                      0x02
 #define EVENT_KILL                      0x03
 #define EVENT_DATA                      0x04
 #define EVENT_FILE                      0x05
 #define EVENT_CHILD                     0x06
-
-struct event_header
-{
-
-    unsigned int type;
-    unsigned int source;
-    unsigned int destination;
-    unsigned int length;
-
-};
 
 struct event
 {

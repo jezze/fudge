@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <event/base.h>
 #include <modules/system/system.h>
 #include "event.h"
 
