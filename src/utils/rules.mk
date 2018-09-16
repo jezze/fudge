@@ -6,7 +6,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -20,7 +19,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -34,7 +32,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/format/format.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -48,7 +45,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/format/format.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -62,7 +58,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -76,7 +71,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -90,7 +84,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/bin.mk
@@ -103,7 +96,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/bin.mk
@@ -116,7 +108,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -130,7 +121,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -144,7 +134,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -158,7 +147,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/bin.mk
@@ -171,7 +159,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -185,7 +172,6 @@ O:=\
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/common/common.a \
     $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/fudge/fudge.a \
 
