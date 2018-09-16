@@ -1,5 +1,5 @@
-#include <abi.h>
 #include <fudge.h>
+#include "file.h"
 #include "echo.h"
 
 static void interpret(unsigned int descriptor, char c, union echo_arg *a)

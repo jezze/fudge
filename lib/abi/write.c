@@ -1,6 +1,6 @@
-#include <abi.h>
 #include <fudge.h>
 #include "echo.h"
+#include "write.h"
 
 void write_keybuffer(unsigned int descriptor, char *key, void *data, unsigned int length)
 {
