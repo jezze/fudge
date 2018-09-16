@@ -14,8 +14,13 @@ static void list(struct event_header *header, unsigned int descriptor)
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
-        event_senddata(FILE_L0, header->destination, header->source, record.length, record.name);
-        event_senddata(FILE_L0, header->destination, header->source, 1, "\n");
+        char buffer[FUDGE_BSIZE];
+        unsigned int count = 0;
+
+        count += memory_write(buffer, FUDGE_BSIZE, record.name, record.length, count);
+        count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
+
+        event_senddata(FILE_L0, header->destination, header->source, count, buffer);
         file_step(descriptor);
 
     }

@@ -14,14 +14,17 @@ static void list(struct event_header *header, unsigned int descriptor)
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
-        char num[FUDGE_NSIZE];
+        char buffer[FUDGE_BSIZE];
+        unsigned int count = 0;
 
-        event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
-        event_senddata(FILE_L0, header->destination, header->source, 1, " ");
-        event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
-        event_senddata(FILE_L0, header->destination, header->source, 1, " ");
-        event_senddata(FILE_L0, header->destination, header->source, record.length, record.name);
-        event_senddata(FILE_L0, header->destination, header->source, 1, "\n");
+        count += ascii_wzerovalue(buffer, FUDGE_BSIZE, record.id, 16, 8, count);
+        count += memory_write(buffer, FUDGE_BSIZE, " ", 1, count);
+        count += ascii_wzerovalue(buffer, FUDGE_BSIZE, record.size, 16, 8, count);
+        count += memory_write(buffer, FUDGE_BSIZE, " ", 1, count);
+        count += memory_write(buffer, FUDGE_BSIZE, record.name, record.length, count);
+        count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
+
+        event_senddata(FILE_L0, header->destination, header->source, count, buffer);
         file_step(descriptor);
 
     }
