@@ -12,14 +12,11 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
 
     struct {struct event_header header; struct event_videomode videomode;} message;
 
-    message.header.type = EVENT_VIDEOMODE;
-    message.header.source = EVENT_ADDR_SELF;
-    message.header.destination = EVENT_ADDR_BROADCAST;
-    message.header.length = sizeof (message);
     message.videomode.w = w;
     message.videomode.h = h;
     message.videomode.bpp = bpp;
 
+    event_initheader(&message.header, EVENT_VIDEOMODE, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, sizeof (struct event_videomode));
     event_multicast(&interface->event.states, &message.header);
 
 }
