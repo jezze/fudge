@@ -308,7 +308,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (rei)
                 event_sendfile(FILE_L0, header->source, id, FILE_PI + rei - 1);
 
-            event_sendexit(FILE_L0, header->source, id);
+            event_sendexit(FILE_L0, header->destination, id);
 
             rei = 0;
 
@@ -333,7 +333,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (rei)
                 event_sendfile(FILE_L0, header->source, id, FILE_PI + rei - 1);
 
-            event_sendexit(FILE_L0, header->source, id);
+            event_sendexit(FILE_L0, header->destination, id);
 
             rei = 0;
 
@@ -360,6 +360,8 @@ static void oninit(struct event_header *header, void *data)
 
 static void onkill(struct event_header *header, void *data)
 {
+
+    event_sendchild(FILE_L0, header->destination, header->source);
 
     quit = 1;
 
