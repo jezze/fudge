@@ -65,7 +65,7 @@ static unsigned int interpret(struct ring *ring)
 
 }
 
-static void oninit(struct event_header *header, void *data)
+static void oninit(struct event_header *header)
 {
 
     if (!file_walk(FILE_CP, "/bin/slang"))
@@ -78,7 +78,7 @@ static void oninit(struct event_header *header, void *data)
 
 }
 
-static void onkill(struct event_header *header, void *data)
+static void onkill(struct event_header *header)
 {
 
     event_sendchild(FILE_L0, header->destination, header->source);
@@ -87,8 +87,10 @@ static void onkill(struct event_header *header, void *data)
 
 }
 
-static void ondata(struct event_header *header, void *data)
+static void ondata(struct event_header *header)
 {
+
+    void *data = event_payload(header);
 
     file_open(FILE_PO);
     file_writeall(FILE_PO, data, header->length - sizeof (struct event_header));
@@ -96,7 +98,7 @@ static void ondata(struct event_header *header, void *data)
 
 }
 
-static void onchild(struct event_header *header, void *data)
+static void onchild(struct event_header *header)
 {
 
     file_open(FILE_PO);
@@ -105,10 +107,10 @@ static void onchild(struct event_header *header, void *data)
 
 }
 
-static void onconsoledata(struct event_header *header, void *data)
+static void onconsoledata(struct event_header *header)
 {
 
-    struct event_consoledata *consoledata = data;
+    struct event_consoledata *consoledata = event_payload(header);
 
     switch (consoledata->data)
     {
@@ -184,27 +186,27 @@ void main(void)
         {
 
         case EVENT_INIT:
-            oninit(header, header + 1);
+            oninit(header);
 
             break;
 
         case EVENT_KILL:
-            onkill(header, header + 1);
+            onkill(header);
 
             break;
 
         case EVENT_DATA:
-            ondata(header, header + 1);
+            ondata(header);
 
             break;
 
         case EVENT_CHILD:
-            onchild(header, header + 1);
+            onchild(header);
 
             break;
 
         case EVENT_CONSOLEDATA:
-            onconsoledata(header, header + 1);
+            onconsoledata(header);
 
             break;
 

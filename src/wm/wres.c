@@ -10,7 +10,7 @@ static unsigned int quit;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 
-static void oninit(struct event_header *header, void *data)
+static void oninit(struct event_header *header)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -18,7 +18,7 @@ static void oninit(struct event_header *header, void *data)
 
 }
 
-static void onkill(struct event_header *header, void *data)
+static void onkill(struct event_header *header)
 {
 
     event_sendwmunmap(FILE_L0, header->destination, EVENT_ADDR_BROADCAST);
@@ -27,10 +27,10 @@ static void onkill(struct event_header *header, void *data)
 
 }
 
-static void onwmmousepress(struct event_header *header, void *data)
+static void onwmmousepress(struct event_header *header)
 {
 
-    struct event_wmmousepress *wmmousepress = data;
+    struct event_wmmousepress *wmmousepress = event_payload(header);
 
     switch (wmmousepress->button)
     {
@@ -68,17 +68,17 @@ void main(void)
         {
 
         case EVENT_INIT:
-            oninit(header, header + 1);
+            oninit(header);
 
             break;
 
         case EVENT_KILL:
-            onkill(header, header + 1);
+            onkill(header);
 
             break;
 
         case EVENT_WMMOUSEPRESS:
-            onwmmousepress(header, header + 1);
+            onwmmousepress(header);
 
             break;
 

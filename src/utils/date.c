@@ -19,7 +19,7 @@ static void date(struct event_header *header, struct ctrl_clocksettings *setting
 
 }
 
-static void onkill(struct event_header *header, void *data)
+static void onkill(struct event_header *header)
 {
 
     event_sendchild(FILE_L0, header->destination, header->source);
@@ -28,7 +28,7 @@ static void onkill(struct event_header *header, void *data)
 
 }
 
-static void oninit(struct event_header *header, void *data)
+static void oninit(struct event_header *header)
 {
 
     struct ctrl_clocksettings settings;
@@ -61,12 +61,12 @@ void main(void)
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header, header + 1);
+            onkill(header);
 
             break;
 
         case EVENT_INIT:
-            oninit(header, header + 1);
+            oninit(header);
 
             break;
 

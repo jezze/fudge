@@ -106,7 +106,7 @@ static void movedown(void)
 
 }
 
-static void oninit(struct event_header *header, void *data)
+static void oninit(struct event_header *header)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -118,7 +118,7 @@ static void oninit(struct event_header *header, void *data)
 
 }
 
-static void onkill(struct event_header *header, void *data)
+static void onkill(struct event_header *header)
 {
 
     event_sendwmunmap(FILE_L0, header->destination, EVENT_ADDR_BROADCAST);
@@ -127,15 +127,15 @@ static void onkill(struct event_header *header, void *data)
 
 }
 
-static void onfile(struct event_header *header, void *data)
+static void onfile(struct event_header *header)
 {
 
 }
 
-static void onwmkeypress(struct event_header *header, void *data)
+static void onwmkeypress(struct event_header *header)
 {
 
-    struct event_wmkeypress *wmkeypress = data;
+    struct event_wmkeypress *wmkeypress = event_payload(header);
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -196,10 +196,10 @@ static void onwmkeypress(struct event_header *header, void *data)
 
 }
 
-static void onwmkeyrelease(struct event_header *header, void *data)
+static void onwmkeyrelease(struct event_header *header)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = data;
+    struct event_wmkeyrelease *wmkeyrelease = event_payload(header);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
@@ -240,10 +240,10 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
 }
 
-static void onwmresize(struct event_header *header, void *data)
+static void onwmresize(struct event_header *header)
 {
 
-    struct event_wmresize *wmresize = data;
+    struct event_wmresize *wmresize = event_payload(header);
 
     ring_reset(&input1);
     ring_reset(&input2);
@@ -257,7 +257,7 @@ static void onwmresize(struct event_header *header, void *data)
 
 }
 
-static void onwmshow(struct event_header *header, void *data)
+static void onwmshow(struct event_header *header)
 {
 
     updatecontent(header);
@@ -265,7 +265,7 @@ static void onwmshow(struct event_header *header, void *data)
 
 }
 
-static void onwmhide(struct event_header *header, void *data)
+static void onwmhide(struct event_header *header)
 {
 
     removecontent(header);
@@ -291,42 +291,42 @@ void main(void)
         {
 
         case EVENT_INIT:
-            oninit(header, header + 1);
+            oninit(header);
 
             break;
 
         case EVENT_KILL:
-            onkill(header, header + 1);
+            onkill(header);
 
             break;
 
         case EVENT_FILE:
-            onfile(header, header + 1);
+            onfile(header);
 
             break;
 
         case EVENT_WMKEYPRESS:
-            onwmkeypress(header, header + 1);
+            onwmkeypress(header);
 
             break;
 
         case EVENT_WMKEYRELEASE:
-            onwmkeyrelease(header, header + 1);
+            onwmkeyrelease(header);
 
             break;
 
         case EVENT_WMRESIZE:
-            onwmresize(header, header + 1);
+            onwmresize(header);
 
             break;
 
         case EVENT_WMSHOW:
-            onwmshow(header, header + 1);
+            onwmshow(header);
 
             break;
 
         case EVENT_WMHIDE:
-            onwmhide(header, header + 1);
+            onwmhide(header);
 
             break;
 

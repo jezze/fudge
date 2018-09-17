@@ -2,6 +2,13 @@
 #include <fudge.h>
 #include "base.h"
 
+void *event_payload(struct event_header *header)
+{
+
+    return header + 1;
+
+}
+
 struct event_header *event_read(unsigned int descriptor, void *data)
 {
 

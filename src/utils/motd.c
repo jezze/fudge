@@ -4,7 +4,7 @@
 
 static unsigned int quit;
 
-static void oninit(struct event_header *header, void *data)
+static void oninit(struct event_header *header)
 {
 
     unsigned int id;
@@ -28,7 +28,7 @@ static void oninit(struct event_header *header, void *data)
 
 }
 
-static void onkill(struct event_header *header, void *data)
+static void onkill(struct event_header *header)
 {
 
     event_sendchild(FILE_L0, header->destination, header->source);
@@ -54,13 +54,13 @@ void main(void)
         {
 
         case EVENT_INIT:
-            oninit(header, header + 1);
+            oninit(header);
 
             break;
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header, header + 1);
+            onkill(header);
 
             break;
 

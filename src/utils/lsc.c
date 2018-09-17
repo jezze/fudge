@@ -35,14 +35,14 @@ static void list(struct event_header *header, unsigned int descriptor)
 
 }
 
-static void oninit(struct event_header *header, void *data)
+static void oninit(struct event_header *header)
 {
 
     list(header, FILE_PW);
 
 }
 
-static void onkill(struct event_header *header, void *data)
+static void onkill(struct event_header *header)
 {
 
     event_sendchild(FILE_L0, header->destination, header->source);
@@ -51,10 +51,10 @@ static void onkill(struct event_header *header, void *data)
 
 }
 
-static void onfile(struct event_header *header, void *data)
+static void onfile(struct event_header *header)
 {
 
-    struct event_file *file = data;
+    struct event_file *file = event_payload(header);
 
     list(header, file->num);
 
@@ -77,18 +77,18 @@ void main(void)
         {
 
         case EVENT_INIT:
-            oninit(header, header + 1);
+            oninit(header);
 
             break;
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header, header + 1);
+            onkill(header);
 
             break;
 
         case EVENT_FILE:
-            onfile(header, header + 1);
+            onfile(header);
 
             break;
 

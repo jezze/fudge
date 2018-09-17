@@ -282,7 +282,7 @@ static void setupremotes(void)
 
 }
 
-static void oninit(struct event_header *header, void *data)
+static void oninit(struct event_header *header)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -297,7 +297,7 @@ static void oninit(struct event_header *header, void *data)
 
 }
 
-static void onkill(struct event_header *header, void *data)
+static void onkill(struct event_header *header)
 {
 
     struct list_item *current;
@@ -324,10 +324,10 @@ static void onkill(struct event_header *header, void *data)
 
 }
 
-static void onkeypress(struct event_header *header, void *data)
+static void onkeypress(struct event_header *header)
 {
 
-    struct event_keypress *keypress = data;
+    struct event_keypress *keypress = event_payload(header);
     struct view *nextview;
     struct remote *nextremote;
     unsigned int id;
@@ -496,10 +496,10 @@ static void onkeypress(struct event_header *header, void *data)
 
 }
 
-static void onkeyrelease(struct event_header *header, void *data)
+static void onkeyrelease(struct event_header *header)
 {
 
-    struct event_keyrelease *keyrelease = data;
+    struct event_keyrelease *keyrelease = event_payload(header);
 
     keymod = keymap_modkey(keyrelease->scancode, keymod);
 
@@ -515,10 +515,10 @@ static void onkeyrelease(struct event_header *header, void *data)
 
 }
 
-static void onmousemove(struct event_header *header, void *data)
+static void onmousemove(struct event_header *header)
 {
 
-    struct event_mousemove *mousemove = data;
+    struct event_mousemove *mousemove = event_payload(header);
 
     mouse.size.x += mousemove->relx;
     mouse.size.y += mousemove->rely;
@@ -536,10 +536,10 @@ static void onmousemove(struct event_header *header, void *data)
 
 }
 
-static void onmousepress(struct event_header *header, void *data)
+static void onmousepress(struct event_header *header)
 {
 
-    struct event_mousepress *mousepress = data;
+    struct event_mousepress *mousepress = event_payload(header);
     struct list_item *current;
 
     switch (mousepress->button)
@@ -599,20 +599,20 @@ static void onmousepress(struct event_header *header, void *data)
 
 }
 
-static void onmouserelease(struct event_header *header, void *data)
+static void onmouserelease(struct event_header *header)
 {
 
-    struct event_mouserelease *mouserelease = data;
+    struct event_mouserelease *mouserelease = event_payload(header);
 
     if (currentview->currentremote)
         event_sendwmmouserelease(FILE_L0, header->destination, currentview->currentremote->source, mouserelease->button);
 
 }
 
-static void onvideomode(struct event_header *header, void *data)
+static void onvideomode(struct event_header *header)
 {
 
-    struct event_videomode *videomode = data;
+    struct event_videomode *videomode = event_payload(header);
     unsigned int factor = (videomode->h / 320);
 
     lineheight = 12 + factor * 4;
@@ -658,7 +658,7 @@ static void onvideomode(struct event_header *header, void *data)
 
 }
 
-static void onwmmap(struct event_header *header, void *data)
+static void onwmmap(struct event_header *header)
 {
 
     if (currentview->currentremote)
@@ -674,7 +674,7 @@ static void onwmmap(struct event_header *header, void *data)
 
 }
 
-static void onwmunmap(struct event_header *header, void *data)
+static void onwmunmap(struct event_header *header)
 {
 
     struct list_item *current;
@@ -712,10 +712,10 @@ static void onwmunmap(struct event_header *header, void *data)
 
 }
 
-static void onwmresize(struct event_header *header, void *data)
+static void onwmresize(struct event_header *header)
 {
 
-    struct event_wmresize *wmresize = data;
+    struct event_wmresize *wmresize = event_payload(header);
     struct list_item *current;
     unsigned int i = 0;
 
@@ -744,7 +744,7 @@ static void onwmresize(struct event_header *header, void *data)
 
 }
 
-static void onwmshow(struct event_header *header, void *data)
+static void onwmshow(struct event_header *header)
 {
 
     struct list_item *current;
@@ -759,7 +759,7 @@ static void onwmshow(struct event_header *header, void *data)
 
 }
 
-static void onwmhide(struct event_header *header, void *data)
+static void onwmhide(struct event_header *header)
 {
 
     struct list_item *current;
@@ -774,8 +774,10 @@ static void onwmhide(struct event_header *header, void *data)
 
 }
 
-static void onwmflush(struct event_header *header, void *data)
+static void onwmflush(struct event_header *header)
 {
+
+    void *data = event_payload(header);
 
     render_begin(data, header->length - sizeof (struct event_header));
     render_update(FILE_L4, size.w, size.h);
@@ -822,72 +824,72 @@ void main(void)
         {
 
         case EVENT_INIT:
-            oninit(header, header + 1);
+            oninit(header);
 
             break;
 
         case EVENT_KILL:
-            onkill(header, header + 1);
+            onkill(header);
 
             break;
 
         case EVENT_KEYPRESS:
-            onkeypress(header, header + 1);
+            onkeypress(header);
 
             break;
 
         case EVENT_KEYRELEASE:
-            onkeyrelease(header, header + 1);
+            onkeyrelease(header);
 
             break;
 
         case EVENT_MOUSEMOVE:
-            onmousemove(header, header + 1);
+            onmousemove(header);
 
             break;
 
         case EVENT_MOUSEPRESS:
-            onmousepress(header, header + 1);
+            onmousepress(header);
 
             break;
 
         case EVENT_MOUSERELEASE:
-            onmouserelease(header, header + 1);
+            onmouserelease(header);
 
             break;
 
         case EVENT_VIDEOMODE:
-            onvideomode(header, header + 1);
+            onvideomode(header);
 
             break;
 
         case EVENT_WMMAP:
-            onwmmap(header, header + 1);
+            onwmmap(header);
 
             break;
 
         case EVENT_WMUNMAP:
-            onwmunmap(header, header + 1);
+            onwmunmap(header);
 
             break;
 
         case EVENT_WMRESIZE:
-            onwmresize(header, header + 1);
+            onwmresize(header);
 
             break;
 
         case EVENT_WMSHOW:
-            onwmshow(header, header + 1);
+            onwmshow(header);
 
             break;
 
         case EVENT_WMHIDE:
-            onwmhide(header, header + 1);
+            onwmhide(header);
 
             break;
 
         case EVENT_WMFLUSH:
-            onwmflush(header, header + 1);
+            onwmflush(header);
 
             break;
 

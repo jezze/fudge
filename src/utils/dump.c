@@ -21,17 +21,19 @@ static void dump(struct event_header *header, unsigned int count, char *buffer)
 
 }
 
-static void ondata(struct event_header *header, void *data)
+static void ondata(struct event_header *header)
 {
+
+    void *data = event_payload(header);
 
     dump(header, header->length - sizeof (struct event_header), data);
 
 }
 
-static void onfile(struct event_header *header, void *data)
+static void onfile(struct event_header *header)
 {
 
-    struct event_file *file = data;
+    struct event_file *file = event_payload(header);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -44,7 +46,7 @@ static void onfile(struct event_header *header, void *data)
 
 }
 
-static void onkill(struct event_header *header, void *data)
+static void onkill(struct event_header *header)
 {
 
     event_sendchild(FILE_L0, header->destination, header->source);
@@ -71,17 +73,17 @@ void main(void)
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header, header + 1);
+            onkill(header);
 
             break;
 
         case EVENT_DATA:
-            ondata(header, header + 1);
+            ondata(header);
 
             break;
 
         case EVENT_FILE:
-            onfile(header, header + 1);
+            onfile(header);
 
             break;
 
