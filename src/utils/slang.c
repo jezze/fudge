@@ -26,6 +26,17 @@ struct tokenlist
 
 };
 
+struct task
+{
+
+    unsigned int id;
+    unsigned int ninputs;
+    unsigned int noutputs;
+
+};
+
+static struct task task[32];
+static unsigned int ntask;
 static char stringdata[FUDGE_BSIZE];
 static struct ring stringtable;
 static struct token infixdata[1024];
@@ -248,12 +259,9 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 static void parse(struct event_header *header, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
-    unsigned int ids[32];
-    unsigned int nids = 0;
-    unsigned int rei = 0;
-    unsigned int id;
     unsigned int i;
     unsigned int j;
+    unsigned int k;
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -275,10 +283,10 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!t)
                 return;
 
-            if (!file_walk(FILE_CI + rei, t->str))
+            if (!file_walk(FILE_CI + task[ntask].ninputs, t->str))
                 return;
 
-            rei++;
+            task[ntask].ninputs++;
 
             break;
 
@@ -291,6 +299,8 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!file_walk(FILE_CO, t->str))
                 return;
 
+            task[ntask].noutputs++;
+
             break;
 
         case TOKENPIPE:
@@ -302,13 +312,12 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!(file_walkfrom(FILE_CP, FILE_L1, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            id = call_spawn();
+            task[ntask].id = call_spawn();
 
-            if (!id)
+            if (!task[ntask].id)
                 return;
 
-            ids[nids] = id;
-            nids++;
+            ntask++;
 
             break;
 
@@ -321,25 +330,30 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!(file_walkfrom(FILE_CP, FILE_L1, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            id = call_spawn();
+            task[ntask].id = call_spawn();
 
-            if (!id)
+            if (!task[ntask].id)
                 return;
 
-            ids[nids] = id;
-            nids++;
+            ntask++;
 
-            for (j = 0; j < nids; j++)
-                event_sendinit(FILE_L0, header->source, ids[j]);
+            for (j = 0; j < ntask; j++)
+                event_sendinit(FILE_L0, header->source, task[j].id);
 
-            for (j = 0; j < rei; j++)
-                event_sendfile(FILE_L0, header->source, ids[0], FILE_PI + j);
+            for (j = 0; j < ntask; j++)
+            {
 
-            for (j = 0; j < nids; j++)
-                event_sendexit(FILE_L0, header->target, ids[j]);
+                for (k = 0; k < task[j].ninputs; k++)
+                    event_sendfile(FILE_L0, header->source, task[j].id, FILE_PI + k);
 
-            rei = 0;
-            nids = 0;
+                task[j].ninputs = 0;
+
+            }
+
+            for (j = 0; j < ntask; j++)
+                event_sendexit(FILE_L0, header->target, task[j].id);
+
+            ntask = 0;
 
             break;
 
