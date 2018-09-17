@@ -248,6 +248,8 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 static void parse(struct event_header *header, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
+    unsigned int ids[32];
+    unsigned int nids = 0;
     unsigned int rei = 0;
     unsigned int id;
     unsigned int i;
@@ -305,14 +307,8 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!id)
                 return;
 
-            event_sendinit(FILE_L0, header->source, id);
-
-            for (j = 0; j < rei; j++)
-                event_sendfile(FILE_L0, header->source, id, FILE_PI + j);
-
-            event_sendexit(FILE_L0, header->destination, id);
-
-            rei = 0;
+            ids[nids] = id;
+            nids++;
 
             break;
 
@@ -330,14 +326,20 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!id)
                 return;
 
-            event_sendinit(FILE_L0, header->source, id);
+            ids[nids] = id;
+            nids++;
+
+            for (j = 0; j < nids; j++)
+                event_sendinit(FILE_L0, header->source, ids[j]);
 
             for (j = 0; j < rei; j++)
-                event_sendfile(FILE_L0, header->source, id, FILE_PI + j);
+                event_sendfile(FILE_L0, header->source, ids[0], FILE_PI + j);
 
-            event_sendexit(FILE_L0, header->destination, id);
+            for (j = 0; j < nids; j++)
+                event_sendexit(FILE_L0, header->destination, ids[j]);
 
             rei = 0;
+            nids = 0;
 
             break;
 
