@@ -70,26 +70,25 @@ void main(void)
     while (!quit)
     {
 
-        struct {struct event_header header; char data[FUDGE_BSIZE];} event;
+        char data[FUDGE_BSIZE];
+        struct event_header *header = event_read(FILE_L0, data);
 
-        event_read(FILE_L0, &event.header);
-
-        switch (event.header.type)
+        switch (header->type)
         {
 
         case EVENT_INIT:
-            oninit(&event.header, event.data);
+            oninit(header, header + 1);
 
             break;
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(&event.header, event.data);
+            onkill(header, header + 1);
 
             break;
 
         case EVENT_FILE:
-            onfile(&event.header, event.data);
+            onfile(header, header + 1);
 
             break;
 

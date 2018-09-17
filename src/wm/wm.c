@@ -815,80 +815,79 @@ void main(void)
     while (!quit)
     {
 
-        struct {struct event_header header; char data[FUDGE_BSIZE];} event;
+        char data[FUDGE_BSIZE];
+        struct event_header *header = event_read(FILE_L0, data);
 
-        event_read(FILE_L0, &event.header);
-
-        switch (event.header.type)
+        switch (header->type)
         {
 
         case EVENT_INIT:
-            oninit(&event.header, event.data);
+            oninit(header, header + 1);
 
             break;
 
         case EVENT_KILL:
-            onkill(&event.header, event.data);
+            onkill(header, header + 1);
 
             break;
 
         case EVENT_KEYPRESS:
-            onkeypress(&event.header, event.data);
+            onkeypress(header, header + 1);
 
             break;
 
         case EVENT_KEYRELEASE:
-            onkeyrelease(&event.header, event.data);
+            onkeyrelease(header, header + 1);
 
             break;
 
         case EVENT_MOUSEMOVE:
-            onmousemove(&event.header, event.data);
+            onmousemove(header, header + 1);
 
             break;
 
         case EVENT_MOUSEPRESS:
-            onmousepress(&event.header, event.data);
+            onmousepress(header, header + 1);
 
             break;
 
         case EVENT_MOUSERELEASE:
-            onmouserelease(&event.header, event.data);
+            onmouserelease(header, header + 1);
 
             break;
 
         case EVENT_VIDEOMODE:
-            onvideomode(&event.header, event.data);
+            onvideomode(header, header + 1);
 
             break;
 
         case EVENT_WMMAP:
-            onwmmap(&event.header, event.data);
+            onwmmap(header, header + 1);
 
             break;
 
         case EVENT_WMUNMAP:
-            onwmunmap(&event.header, event.data);
+            onwmunmap(header, header + 1);
 
             break;
 
         case EVENT_WMRESIZE:
-            onwmresize(&event.header, event.data);
+            onwmresize(header, header + 1);
 
             break;
 
         case EVENT_WMSHOW:
-            onwmshow(&event.header, event.data);
+            onwmshow(header, header + 1);
 
             break;
 
         case EVENT_WMHIDE:
-            onwmhide(&event.header, event.data);
+            onwmhide(header, header + 1);
 
             break;
 
         case EVENT_WMFLUSH:
-            onwmflush(&event.header, event.data);
+            onwmflush(header, header + 1);
 
             break;
 

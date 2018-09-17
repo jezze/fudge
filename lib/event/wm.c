@@ -58,9 +58,9 @@ unsigned int event_sendwmhide(unsigned int descriptor, unsigned int source, unsi
 unsigned int event_sendwmflush(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer)
 {
 
-    struct {struct event_header header; char data[FUDGE_BSIZE];} message;
+    struct {struct event_header header; char data[0x800];} message;
 
-    return event_send(descriptor, &message.header, EVENT_WMFLUSH, source, destination, memory_write(message.data, FUDGE_BSIZE, buffer, count, 0));
+    return event_send(descriptor, &message.header, EVENT_WMFLUSH, source, destination, memory_write(message.data, 0x800, buffer, count, 0));
 
 }
 

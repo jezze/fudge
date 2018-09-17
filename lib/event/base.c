@@ -2,13 +2,15 @@
 #include <fudge.h>
 #include "base.h"
 
-unsigned int event_read(unsigned int descriptor, struct event_header *header)
+struct event_header *event_read(unsigned int descriptor, void *data)
 {
+
+    struct event_header *header = data;
 
     while (file_readall(descriptor, header, sizeof (struct event_header)) != sizeof (struct event_header));
     while (file_readall(descriptor, header + 1, header->length - sizeof (struct event_header)) != header->length - sizeof (struct event_header));
 
-    return header->length;
+    return header;
 
 }
 
@@ -51,9 +53,9 @@ unsigned int event_sendkill(unsigned int descriptor, unsigned int source, unsign
 unsigned int event_senddata(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer)
 {
 
-    struct {struct event_header header; char data[FUDGE_BSIZE];} message;
+    struct {struct event_header header; char data[0x800];} message;
 
-    return event_send(descriptor, &message.header, EVENT_DATA, source, destination, memory_write(message.data, FUDGE_BSIZE, buffer, count, 0));
+    return event_send(descriptor, &message.header, EVENT_DATA, source, destination, memory_write(message.data, 0x800, buffer, count, 0));
 
 }
 
