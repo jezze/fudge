@@ -5,6 +5,13 @@
 #define EVENT_FILE                      0x05
 #define EVENT_CHILD                     0x06
 
+struct event_data
+{
+
+    unsigned int count;
+
+};
+
 struct event_file
 {
 

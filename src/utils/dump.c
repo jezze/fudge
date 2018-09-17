@@ -4,9 +4,10 @@
 
 static unsigned int quit;
 
-static void dump(struct event_header *header, unsigned int count, char *buffer)
+static void dump(struct event_header *header, unsigned int count, void *buffer)
 {
 
+    char *data = buffer;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -14,7 +15,7 @@ static void dump(struct event_header *header, unsigned int count, char *buffer)
 
         unsigned char num[FUDGE_NSIZE];
 
-        event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, buffer[i], 16, 2, 0), num);
+        event_senddata(FILE_L0, header->destination, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
         event_senddata(FILE_L0, header->destination, header->source, 2, "  ");
 
     }
@@ -24,9 +25,9 @@ static void dump(struct event_header *header, unsigned int count, char *buffer)
 static void ondata(struct event_header *header)
 {
 
-    void *data = event_payload(header);
+    struct event_data *data = event_payload(header);
 
-    dump(header, header->length - sizeof (struct event_header), data);
+    dump(header, data->count, data + 1);
 
 }
 

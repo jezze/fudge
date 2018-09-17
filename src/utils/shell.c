@@ -90,10 +90,10 @@ static void onkill(struct event_header *header)
 static void ondata(struct event_header *header)
 {
 
-    void *data = event_payload(header);
+    struct event_data *data = event_payload(header);
 
     file_open(FILE_PO);
-    file_writeall(FILE_PO, data, header->length - sizeof (struct event_header));
+    file_writeall(FILE_PO, data + 1, data->count);
     file_close(FILE_PO);
 
 }

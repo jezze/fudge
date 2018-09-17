@@ -150,16 +150,17 @@ static unsigned int getidentlength(unsigned int count, char *buffer)
 
 }
 
-static void tokenizebuffer(struct tokenlist *infix, struct ring *stringtable, unsigned int count, char *buffer)
+static void tokenizebuffer(struct tokenlist *infix, struct ring *stringtable, unsigned int count, void *buffer)
 {
 
+    char *data = buffer;
     unsigned int i;
     unsigned int c;
 
     for (i = 0; i < count; i++)
     {
 
-        unsigned int token = tokenize(buffer[i]);
+        unsigned int token = tokenize(data[i]);
 
         switch (token)
         {
@@ -170,9 +171,9 @@ static void tokenizebuffer(struct tokenlist *infix, struct ring *stringtable, un
         case TOKENIDENT:
             tokenlist_add(infix, token, stringtable->buffer + ring_count(stringtable));
 
-            c = getidentlength(count - i, buffer + i);
+            c = getidentlength(count - i, data + i);
 
-            ring_write(stringtable, &buffer[i], c);
+            ring_write(stringtable, &data[i], c);
             ring_write(stringtable, "\0", 1);
 
             i += c - 1;
@@ -371,9 +372,9 @@ static void onkill(struct event_header *header)
 static void ondata(struct event_header *header)
 {
 
-    void *data = event_payload(header);
+    struct event_data *data = event_payload(header);
 
-    tokenizebuffer(&infix, &stringtable, header->length - sizeof (struct event_header), data);
+    tokenizebuffer(&infix, &stringtable, data->count, data + 1);
     translate(&postfix, &infix, &stack);
     parse(header, &postfix, &stack);
 

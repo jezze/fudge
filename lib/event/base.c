@@ -60,9 +60,11 @@ unsigned int event_sendkill(unsigned int descriptor, unsigned int source, unsign
 unsigned int event_senddata(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer)
 {
 
-    struct {struct event_header header; char data[0x800];} message;
+    struct {struct event_header header; struct event_data data; char buffer[0x800];} message;
 
-    return event_send(descriptor, &message.header, EVENT_DATA, source, destination, memory_write(message.data, 0x800, buffer, count, 0));
+    message.data.count = memory_write(message.buffer, 0x800, buffer, count, 0);
+
+    return event_send(descriptor, &message.header, EVENT_DATA, source, destination, sizeof (struct event_data) + message.data.count);
 
 }
 

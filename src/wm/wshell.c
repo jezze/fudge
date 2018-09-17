@@ -204,9 +204,9 @@ static void onkill(struct event_header *header)
 static void ondata(struct event_header *header)
 {
 
-    void *data = event_payload(header);
+    struct event_data *data = event_payload(header);
 
-    copybuffer(data, header->length - sizeof (struct event_header));
+    copybuffer(data + 1, data->count);
     updatecontent(header);
 
 }

@@ -16,9 +16,9 @@ static void onkill(struct event_header *header)
 static void ondata(struct event_header *header)
 {
 
-    void *data = event_payload(header);
+    struct event_data *data = event_payload(header);
 
-    event_senddata(FILE_L0, header->destination, header->source, header->length - sizeof (struct event_header), data);
+    event_senddata(FILE_L0, header->destination, header->source, data->count, data + 1);
 
 }
 
