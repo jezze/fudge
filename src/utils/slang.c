@@ -336,7 +336,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
                 event_sendfile(FILE_L0, header->source, ids[0], FILE_PI + j);
 
             for (j = 0; j < nids; j++)
-                event_sendexit(FILE_L0, header->destination, ids[j]);
+                event_sendexit(FILE_L0, header->target, ids[j]);
 
             rei = 0;
             nids = 0;
@@ -365,7 +365,7 @@ static void oninit(struct event_header *header)
 static void onkill(struct event_header *header)
 {
 
-    event_sendchild(FILE_L0, header->destination, header->source);
+    event_sendchild(FILE_L0, header->target, header->source);
 
     quit = 1;
 

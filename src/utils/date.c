@@ -15,14 +15,14 @@ static void date(struct event_header *header, struct ctrl_clocksettings *setting
     ascii_wzerovalue(datetime, 20, settings->hours, 10, 2, 11);
     ascii_wzerovalue(datetime, 20, settings->minutes, 10, 2, 14);
     ascii_wzerovalue(datetime, 20, settings->seconds, 10, 2, 17);
-    event_senddata(FILE_L0, header->destination, header->source, 20, datetime);
+    event_senddata(FILE_L0, header->target, header->source, 20, datetime);
 
 }
 
 static void onkill(struct event_header *header)
 {
 
-    event_sendchild(FILE_L0, header->destination, header->source);
+    event_sendchild(FILE_L0, header->target, header->source);
 
     quit = 1;
 

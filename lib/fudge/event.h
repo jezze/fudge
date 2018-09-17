@@ -6,9 +6,9 @@ struct event_header
 
     unsigned int type;
     unsigned int source;
-    unsigned int destination;
+    unsigned int target;
     unsigned int length;
 
 };
 
-void event_initheader(struct event_header *header, unsigned int type, unsigned int source, unsigned int destination, unsigned int length);
+void event_initheader(struct event_header *header, unsigned int type, unsigned int source, unsigned int target, unsigned int length);

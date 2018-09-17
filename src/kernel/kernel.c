@@ -265,7 +265,7 @@ unsigned int kernel_unicastevent(struct list *states, struct event_header *heade
 
         struct service_state *state = current->data;
 
-        if (header->destination != state->task->id)
+        if (header->target != state->task->id)
             continue;
 
         count = task_writeall(state->task, header, header->length);
@@ -294,7 +294,7 @@ unsigned int kernel_multicastevent(struct list *states, struct event_header *hea
 
         struct service_state *state = current->data;
 
-        header->destination = state->task->id;
+        header->target = state->task->id;
 
         task_writeall(state->task, header, header->length);
         kernel_unblocktask(state->task);

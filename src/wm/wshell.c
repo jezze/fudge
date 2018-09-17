@@ -26,7 +26,7 @@ static void updatecontent(struct event_header *header)
     content.length = ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&text) + ring_count(&input1);
 
-    widget_update(&output, &content, WIDGET_Z_MIDDLE, header->destination, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
+    widget_update(&output, &content, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
     ring_write(&output, &content, sizeof (struct widget_textbox));
     ring_copy(&output, &text);
     ring_copy(&output, &input1);
@@ -38,7 +38,7 @@ static void updatecontent(struct event_header *header)
 static void removecontent(struct event_header *header)
 {
 
-    widget_remove(&output, &content, WIDGET_Z_MIDDLE, header->destination);
+    widget_remove(&output, &content, WIDGET_Z_MIDDLE, header->target);
 
 }
 
@@ -188,14 +188,14 @@ static void oninit(struct event_header *header)
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     copybuffer("$ ", 2);
-    event_sendwmmap(FILE_L0, header->destination, EVENT_ADDR_BROADCAST);
+    event_sendwmmap(FILE_L0, header->target, EVENT_ADDR_BROADCAST);
 
 }
 
 static void onkill(struct event_header *header)
 {
 
-    event_sendwmunmap(FILE_L0, header->destination, EVENT_ADDR_BROADCAST);
+    event_sendwmunmap(FILE_L0, header->target, EVENT_ADDR_BROADCAST);
 
     quit = 1;
 

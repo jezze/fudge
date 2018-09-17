@@ -30,7 +30,7 @@ static unsigned int root_write(struct system_node *self, struct system_node *cur
     if (!header->source)
         header->source = state->task->id;
 
-    if (header->destination)
+    if (header->target)
         return kernel_unicastevent(&self->states, header);
     else
         return kernel_multicastevent(&self->states, header);

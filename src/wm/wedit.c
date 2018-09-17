@@ -23,7 +23,7 @@ static void updatecontent(struct event_header *header)
     content.length = ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&input1);
 
-    widget_update(&output, &content, WIDGET_Z_MIDDLE, header->destination, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
+    widget_update(&output, &content, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
     ring_write(&output, &content, sizeof (struct widget_textbox));
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
@@ -36,7 +36,7 @@ static void updatestatus(struct event_header *header)
 
     status.length = 18;
 
-    widget_update(&output, &status, WIDGET_Z_MIDDLE, header->destination, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, status.size.x, status.size.y, status.size.w, status.size.h);
+    widget_update(&output, &status, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, status.size.x, status.size.y, status.size.w, status.size.h);
     ring_write(&output, &status, sizeof (struct widget_text));
     ring_write(&output, "^S: Save, ^Q: Quit", 18);
 
@@ -45,14 +45,14 @@ static void updatestatus(struct event_header *header)
 static void removecontent(struct event_header *header)
 {
 
-    widget_remove(&output, &content, WIDGET_Z_MIDDLE, header->destination);
+    widget_remove(&output, &content, WIDGET_Z_MIDDLE, header->target);
 
 }
 
 static void removestatus(struct event_header *header)
 {
 
-    widget_remove(&output, &status, WIDGET_Z_MIDDLE, header->destination);
+    widget_remove(&output, &status, WIDGET_Z_MIDDLE, header->target);
 
 }
 
@@ -114,14 +114,14 @@ static void oninit(struct event_header *header)
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     widget_inittextbox(&content);
     widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
-    event_sendwmmap(FILE_L0, header->destination, EVENT_ADDR_BROADCAST);
+    event_sendwmmap(FILE_L0, header->target, EVENT_ADDR_BROADCAST);
 
 }
 
 static void onkill(struct event_header *header)
 {
 
-    event_sendwmunmap(FILE_L0, header->destination, EVENT_ADDR_BROADCAST);
+    event_sendwmunmap(FILE_L0, header->target, EVENT_ADDR_BROADCAST);
 
     quit = 1;
 

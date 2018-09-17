@@ -32,14 +32,14 @@ static void timestamp(struct event_header *header, struct ctrl_clocksettings *se
     count += ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10);
     count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
 
-    event_senddata(FILE_L0, header->destination, header->source, count, num);
+    event_senddata(FILE_L0, header->target, header->source, count, num);
 
 }
 
 static void onkill(struct event_header *header)
 {
 
-    event_sendchild(FILE_L0, header->destination, header->source);
+    event_sendchild(FILE_L0, header->target, header->source);
 
     quit = 1;
 
