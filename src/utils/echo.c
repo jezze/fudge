@@ -46,9 +46,9 @@ void main(void)
     while (!quit)
     {
 
-        struct event event;
+        struct {struct event_header header; char data[FUDGE_BSIZE];} event;
 
-        event_read(FILE_L0, &event);
+        event_read(FILE_L0, &event.header);
 
         switch (event.header.type)
         {

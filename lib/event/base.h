@@ -5,14 +5,6 @@
 #define EVENT_FILE                      0x05
 #define EVENT_CHILD                     0x06
 
-struct event
-{
-
-    struct event_header header;
-    char data[FUDGE_BSIZE];
-
-};
-
 struct event_file
 {
 
@@ -20,8 +12,8 @@ struct event_file
 
 };
 
-unsigned int event_read(unsigned int descriptor, struct event *event);
-unsigned int event_send(unsigned int descriptor, struct event *event, unsigned int type, unsigned int source, unsigned int destination, unsigned int length);
+unsigned int event_read(unsigned int descriptor, struct event_header *header);
+unsigned int event_send(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int source, unsigned int destination, unsigned int length);
 void event_sendinit(unsigned int descriptor, unsigned int source, unsigned int destination);
 void event_sendexit(unsigned int descriptor, unsigned int source, unsigned int destination);
 void event_sendkill(unsigned int descriptor, unsigned int source, unsigned int destination);
