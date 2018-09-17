@@ -19,6 +19,23 @@ static unsigned int isleapyear(unsigned int year)
 
 }
 
+static void timestamp(struct event_header *header, struct ctrl_clocksettings *settings)
+{
+
+    unsigned int year = settings->year - 1970;
+    unsigned int dyear = ((((365 * year) + (year / 4)) - (year / 100)) + (year / 400));
+    unsigned int dmonth = isleapyear(year) ? dotm366[settings->month - 1] : dotm365[settings->month - 1];
+    unsigned int timestamp = ((dyear + dmonth + settings->day) * 86400) + ((settings->hours * 3600) + (settings->minutes * 60) + settings->seconds);
+    unsigned int count = 0;
+    char num[FUDGE_NSIZE];
+
+    count += ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10);
+    count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
+
+    event_senddata(FILE_L0, header->destination, header->source, count, num);
+
+}
+
 static void onkill(struct event_header *header, void *data)
 {
 
@@ -32,12 +49,6 @@ static void oninit(struct event_header *header, void *data)
 {
 
     struct ctrl_clocksettings settings;
-    char num[FUDGE_NSIZE];
-    unsigned int count;
-    unsigned int timestamp;
-    unsigned int dmonth;
-    unsigned int dyear;
-    unsigned int year;
 
     if (!file_walk(FILE_L1, "/system/clock/if:0/ctrl"))
         return;
@@ -45,15 +56,7 @@ static void oninit(struct event_header *header, void *data)
     file_open(FILE_L1);
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
     file_close(FILE_L1);
-
-    year = settings.year - 1970;
-    dyear = ((((365 * year) + (year / 4)) - (year / 100)) + (year / 400));
-    dmonth = isleapyear(year) ? dotm366[settings.month - 1] : dotm365[settings.month - 1];
-    timestamp = ((dyear + dmonth + settings.day) * 86400) + ((settings.hours * 3600) + (settings.minutes * 60) + settings.seconds);
-    count = ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10);
-    count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
-
-    event_senddata(FILE_L0, header->destination, header->source, count, num);
+    timestamp(header, &settings);
 
 }
 
