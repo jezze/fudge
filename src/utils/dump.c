@@ -32,13 +32,13 @@ static void onfile(struct event_header *header, void *data)
 {
 
     struct event_file *file = data;
-    unsigned char buffer[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
     unsigned int count;
 
     file_open(file->num);
 
     while ((count = file_read(file->num, buffer, FUDGE_BSIZE)))
-        dump(header, count, data);
+        dump(header, count, buffer);
 
     file_close(file->num);
 

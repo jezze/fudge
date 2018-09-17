@@ -31,4 +31,3 @@ elfload < /mod/part.ko.0
 elfload < /mod/part.ko.1
 elfload < /mod/part.ko.2
 elfload < /mod/part.ko.3
-elfload < /mod/wm.ko
