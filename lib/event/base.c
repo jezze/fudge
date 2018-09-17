@@ -53,7 +53,7 @@ void event_senddata(unsigned int descriptor, unsigned int source, unsigned int d
 
     struct {struct event_header header; char data[FUDGE_BSIZE];} message;
 
-    event_send(descriptor, &message.header, EVENT_DATA, source, destination, memory_read(message.data, FUDGE_BSIZE, buffer, count, 0));
+    event_send(descriptor, &message.header, EVENT_DATA, source, destination, memory_write(message.data, FUDGE_BSIZE, buffer, count, 0));
 
 }
 
