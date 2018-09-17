@@ -14,9 +14,9 @@ struct event_file
 
 unsigned int event_read(unsigned int descriptor, struct event_header *header);
 unsigned int event_send(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int source, unsigned int destination, unsigned int length);
-void event_sendinit(unsigned int descriptor, unsigned int source, unsigned int destination);
-void event_sendexit(unsigned int descriptor, unsigned int source, unsigned int destination);
-void event_sendkill(unsigned int descriptor, unsigned int source, unsigned int destination);
-void event_senddata(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer);
-void event_sendfile(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char num);
-void event_sendchild(unsigned int descriptor, unsigned int source, unsigned int destination);
+unsigned int event_sendinit(unsigned int descriptor, unsigned int source, unsigned int destination);
+unsigned int event_sendexit(unsigned int descriptor, unsigned int source, unsigned int destination);
+unsigned int event_sendkill(unsigned int descriptor, unsigned int source, unsigned int destination);
+unsigned int event_senddata(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer);
+unsigned int event_sendfile(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char num);
+unsigned int event_sendchild(unsigned int descriptor, unsigned int source, unsigned int destination);

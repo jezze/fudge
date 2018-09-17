@@ -21,59 +21,59 @@ unsigned int event_send(unsigned int descriptor, struct event_header *header, un
 
 }
 
-void event_sendinit(unsigned int descriptor, unsigned int source, unsigned int destination)
+unsigned int event_sendinit(unsigned int descriptor, unsigned int source, unsigned int destination)
 {
 
     struct {struct event_header header;} message;
 
-    event_send(descriptor, &message.header, EVENT_INIT, source, destination, 0);
+    return event_send(descriptor, &message.header, EVENT_INIT, source, destination, 0);
 
 }
 
-void event_sendexit(unsigned int descriptor, unsigned int source, unsigned int destination)
+unsigned int event_sendexit(unsigned int descriptor, unsigned int source, unsigned int destination)
 {
 
     struct {struct event_header header;} message;
 
-    event_send(descriptor, &message.header, EVENT_EXIT, source, destination, 0);
+    return event_send(descriptor, &message.header, EVENT_EXIT, source, destination, 0);
 
 }
 
-void event_sendkill(unsigned int descriptor, unsigned int source, unsigned int destination)
+unsigned int event_sendkill(unsigned int descriptor, unsigned int source, unsigned int destination)
 {
 
     struct {struct event_header header;} message;
 
-    event_send(descriptor, &message.header, EVENT_KILL, source, destination, 0);
+    return event_send(descriptor, &message.header, EVENT_KILL, source, destination, 0);
 
 }
 
-void event_senddata(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer)
+unsigned int event_senddata(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned int count, void *buffer)
 {
 
     struct {struct event_header header; char data[FUDGE_BSIZE];} message;
 
-    event_send(descriptor, &message.header, EVENT_DATA, source, destination, memory_write(message.data, FUDGE_BSIZE, buffer, count, 0));
+    return event_send(descriptor, &message.header, EVENT_DATA, source, destination, memory_write(message.data, FUDGE_BSIZE, buffer, count, 0));
 
 }
 
-void event_sendfile(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char num)
+unsigned int event_sendfile(unsigned int descriptor, unsigned int source, unsigned int destination, unsigned char num)
 {
 
     struct {struct event_header header; struct event_file file;} message;
 
     message.file.num = num;
 
-    event_send(descriptor, &message.header, EVENT_FILE, source, destination, sizeof (struct event_file));
+    return event_send(descriptor, &message.header, EVENT_FILE, source, destination, sizeof (struct event_file));
 
 }
 
-void event_sendchild(unsigned int descriptor, unsigned int source, unsigned int destination)
+unsigned int event_sendchild(unsigned int descriptor, unsigned int source, unsigned int destination)
 {
 
     struct {struct event_header header;} message;
 
-    event_send(descriptor, &message.header, EVENT_CHILD, source, destination, 0);
+    return event_send(descriptor, &message.header, EVENT_CHILD, source, destination, 0);
 
 }
 
