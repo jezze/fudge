@@ -87,6 +87,19 @@ unsigned int event_adddata(void *buffer, unsigned int count, void *data)
 
 }
 
+unsigned int event_addfile(void *buffer, unsigned int num)
+{
+
+    struct event_header *header = buffer;
+    struct event_file *file = event_getdata(buffer);
+
+    header->length += sizeof (struct event_file);
+    file->num = num;
+
+    return header->length;
+
+}
+
 struct event_header *event_read(unsigned int descriptor, void *data)
 {
 
@@ -119,6 +132,19 @@ unsigned int event_replydata(unsigned int descriptor, struct event_header *heade
 
     event_addreply(data, header, type);
     event_adddata(data, count, buffer);
+
+    return file_writeall(descriptor, reply, reply->length);
+
+}
+
+unsigned int event_replyfile(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int num)
+{
+
+    char data[FUDGE_BSIZE];
+    struct event_header *reply = (struct event_header *)data;
+
+    event_addreply(data, header, type);
+    event_addfile(data, num);
 
     return file_writeall(descriptor, reply, reply->length);
 

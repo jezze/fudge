@@ -352,10 +352,18 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             for (j = 0; j < ntask; j++)
             {
 
-                /* This should be header->target */
-
                 for (k = 0; k < task[j].ninputs; k++)
-                    event_sendfile(FILE_L0, header->source, task[j].id, FILE_PI + k);
+                {
+
+                    char buffer[FUDGE_BSIZE];
+
+                    /* This should be header->target */
+                    event_addheader(buffer, EVENT_FILE, header->source, task[j].id);
+                    event_addforward(buffer, header->source);
+                    event_addfile(buffer, FILE_PI + k);
+                    event_sendbuffer(FILE_L0, buffer);
+
+                }
 
                 task[j].ninputs = 0;
 
