@@ -39,9 +39,15 @@ static unsigned int interpretslang(unsigned int count, char *command)
     if (id)
     {
 
-        event_sendinit(FILE_L0, EVENT_ADDR_SELF, id);
-        event_senddata(FILE_L0, EVENT_ADDR_SELF, id, count, command);
-        event_sendexit(FILE_L0, EVENT_ADDR_SELF, id);
+        char buffer[FUDGE_BSIZE];
+
+        event_addheader(buffer, EVENT_INIT, EVENT_ADDR_SELF, id);
+        event_sendbuffer(FILE_L0, buffer);
+        event_addheader(buffer, EVENT_DATA, EVENT_ADDR_SELF, id);
+        event_adddata(buffer, count, command);
+        event_sendbuffer(FILE_L0, buffer);
+        event_addheader(buffer, EVENT_EXIT, EVENT_ADDR_SELF, id);
+        event_sendbuffer(FILE_L0, buffer);
 
     }
 

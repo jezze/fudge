@@ -7,6 +7,7 @@ static unsigned int quit;
 static void oninit(struct event_header *header)
 {
 
+    char buffer[FUDGE_BSIZE];
     unsigned int id;
 
     if (!file_walk(FILE_CP, "/bin/echo"))
@@ -21,9 +22,15 @@ static void oninit(struct event_header *header)
         return;
 
     file_open(FILE_L0);
-    event_sendinit(FILE_L0, header->source, id);
-    event_sendfile(FILE_L0, header->source, id, FILE_PI);
-    event_sendexit(FILE_L0, header->source, id);
+    event_addheader(buffer, EVENT_INIT, header->target, id);
+    event_addforward(buffer, header->source);
+    event_sendbuffer(FILE_L0, buffer);
+    event_addheader(buffer, EVENT_FILE, header->target, id);
+    event_addforward(buffer, header->source);
+    event_addfile(buffer, FILE_PI);
+    event_sendbuffer(FILE_L0, buffer);
+    event_addheader(buffer, EVENT_EXIT, header->target, id);
+    event_sendbuffer(FILE_L0, buffer);
     file_close(FILE_L0);
 
 }

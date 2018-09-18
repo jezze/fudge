@@ -5,6 +5,7 @@
 void main(void)
 {
 
+    char buffer[FUDGE_BSIZE];
     unsigned int id;
 
     file_walk(FILE_CW, "/home");
@@ -35,9 +36,13 @@ void main(void)
     /* Once event system is inside kernel, there is no need to use the filesystem to send events */
     file_walk(FILE_L0, "/system/event");
     file_open(FILE_L0);
-    event_sendinit(FILE_L0, EVENT_ADDR_SELF, id);
-    event_sendfile(FILE_L0, EVENT_ADDR_SELF, id, FILE_PI);
-    event_sendexit(FILE_L0, EVENT_ADDR_SELF, id);
+    event_addheader(buffer, EVENT_INIT, EVENT_ADDR_SELF, id);
+    event_sendbuffer(FILE_L0, buffer);
+    event_addheader(buffer, EVENT_FILE, EVENT_ADDR_SELF, id);
+    event_addfile(buffer, FILE_PI);
+    event_sendbuffer(FILE_L0, buffer);
+    event_addheader(buffer, EVENT_EXIT, EVENT_ADDR_SELF, id);
+    event_sendbuffer(FILE_L0, buffer);
     file_close(FILE_L0);
 
 }

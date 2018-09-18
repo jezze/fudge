@@ -312,9 +312,11 @@ static void onkill(struct event_header *header)
         {
 
             struct remote *remote = current2->data;
+            char buffer[FUDGE_BSIZE];
 
             event_sendwmhide(FILE_L0, header->target, remote->source);
-            event_sendkill(FILE_L0, header->target, remote->source);
+            event_addheader(buffer, EVENT_KILL, header->target, remote->source);
+            event_sendbuffer(FILE_L0, buffer);
 
         }
 
@@ -391,8 +393,15 @@ static void onkeypress(struct event_header *header)
         if (!currentview->currentremote)
             break;
 
-        event_sendwmhide(FILE_L0, header->target, currentview->currentremote->source);
-        event_sendkill(FILE_L0, header->target, currentview->currentremote->source);
+        {
+
+            char buffer[FUDGE_BSIZE];
+
+            event_sendwmhide(FILE_L0, header->target, currentview->currentremote->source);
+            event_addheader(buffer, EVENT_KILL, header->target, currentview->currentremote->source);
+            event_sendbuffer(FILE_L0, buffer);
+
+        }
 
         break;
 
@@ -405,11 +414,17 @@ static void onkeypress(struct event_header *header)
 
         id = call_spawn();
 
-        if (!id)
-            break;
+        if (id)
+        {
 
-        event_sendinit(FILE_L0, header->target, id);
-        event_sendexit(FILE_L0, header->target, id);
+            char buffer[FUDGE_BSIZE];
+
+            event_addheader(buffer, EVENT_INIT, header->target, id);
+            event_sendbuffer(FILE_L0, buffer);
+            event_addheader(buffer, EVENT_EXIT, header->target, id);
+            event_sendbuffer(FILE_L0, buffer);
+
+        }
 
         break;
 
@@ -487,8 +502,15 @@ static void onkeypress(struct event_header *header)
         if (!(keymod & KEYMOD_SHIFT))
             break;
 
-        event_sendwmhide(FILE_L0, header->target, header->target);
-        event_sendkill(FILE_L0, header->target, header->target);
+        {
+
+            char buffer[FUDGE_BSIZE];
+
+            event_sendwmhide(FILE_L0, header->target, header->target);
+            event_addheader(buffer, EVENT_KILL, header->target, header->target);
+            event_sendbuffer(FILE_L0, buffer);
+
+        }
 
         break;
 
