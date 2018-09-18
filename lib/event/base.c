@@ -2,10 +2,19 @@
 #include <fudge.h>
 #include "base.h"
 
-void *event_payload(struct event_header *header)
+void *event_getforward(struct event_header *header)
 {
 
     return header + 1;
+
+}
+
+void *event_getdata(struct event_header *header)
+{
+
+    struct event_forward *forward = event_getforward(header);
+
+    return forward + header->forward;
 
 }
 

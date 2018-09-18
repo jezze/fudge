@@ -388,7 +388,7 @@ static void onkill(struct event_header *header)
 static void ondata(struct event_header *header)
 {
 
-    struct event_data *data = event_payload(header);
+    struct event_data *data = event_getdata(header);
 
     tokenizebuffer(&infix, &stringtable, data->count, data + 1);
     translate(&postfix, &infix, &stack);
@@ -399,7 +399,7 @@ static void ondata(struct event_header *header)
 static void onfile(struct event_header *header)
 {
 
-    struct event_file *file = event_payload(header);
+    struct event_file *file = event_getdata(header);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 

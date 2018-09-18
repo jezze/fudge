@@ -90,7 +90,7 @@ static void onkill(struct event_header *header)
 static void ondata(struct event_header *header)
 {
 
-    struct event_data *data = event_payload(header);
+    struct event_data *data = event_getdata(header);
 
     file_open(FILE_PO);
     file_writeall(FILE_PO, data + 1, data->count);
@@ -110,7 +110,7 @@ static void onchild(struct event_header *header)
 static void onconsoledata(struct event_header *header)
 {
 
-    struct event_consoledata *consoledata = event_payload(header);
+    struct event_consoledata *consoledata = event_getdata(header);
 
     switch (consoledata->data)
     {

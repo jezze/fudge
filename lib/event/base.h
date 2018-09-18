@@ -19,7 +19,8 @@ struct event_file
 
 };
 
-void *event_payload(struct event_header *header);
+void *event_getforward(struct event_header *header);
+void *event_getdata(struct event_header *header);
 struct event_header *event_read(unsigned int descriptor, void *data);
 unsigned int event_send(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int source, unsigned int target, unsigned int length);
 unsigned int event_sendinit(unsigned int descriptor, unsigned int source, unsigned int target);

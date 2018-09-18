@@ -54,7 +54,7 @@ static void onkill(struct event_header *header)
 static void onfile(struct event_header *header)
 {
 
-    struct event_file *file = event_payload(header);
+    struct event_file *file = event_getdata(header);
 
     list(header, file->num);
 

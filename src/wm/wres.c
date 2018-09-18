@@ -30,7 +30,7 @@ static void onkill(struct event_header *header)
 static void onwmmousepress(struct event_header *header)
 {
 
-    struct event_wmmousepress *wmmousepress = event_payload(header);
+    struct event_wmmousepress *wmmousepress = event_getdata(header);
 
     switch (wmmousepress->button)
     {

@@ -8,6 +8,14 @@ struct event_header
     unsigned int source;
     unsigned int target;
     unsigned int length;
+    unsigned int forward;
+
+};
+
+struct event_forward
+{
+
+    unsigned int target;
 
 };
 

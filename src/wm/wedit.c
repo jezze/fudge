@@ -135,7 +135,7 @@ static void onfile(struct event_header *header)
 static void onwmkeypress(struct event_header *header)
 {
 
-    struct event_wmkeypress *wmkeypress = event_payload(header);
+    struct event_wmkeypress *wmkeypress = event_getdata(header);
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -199,7 +199,7 @@ static void onwmkeypress(struct event_header *header)
 static void onwmkeyrelease(struct event_header *header)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = event_payload(header);
+    struct event_wmkeyrelease *wmkeyrelease = event_getdata(header);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
@@ -243,7 +243,7 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 static void onwmresize(struct event_header *header)
 {
 
-    struct event_wmresize *wmresize = event_payload(header);
+    struct event_wmresize *wmresize = event_getdata(header);
 
     ring_reset(&input1);
     ring_reset(&input2);

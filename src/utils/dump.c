@@ -25,7 +25,7 @@ static void dump(struct event_header *header, unsigned int count, void *buffer)
 static void ondata(struct event_header *header)
 {
 
-    struct event_data *data = event_payload(header);
+    struct event_data *data = event_getdata(header);
 
     dump(header, data->count, data + 1);
 
@@ -34,7 +34,7 @@ static void ondata(struct event_header *header)
 static void onfile(struct event_header *header)
 {
 
-    struct event_file *file = event_payload(header);
+    struct event_file *file = event_getdata(header);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 

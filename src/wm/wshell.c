@@ -204,7 +204,7 @@ static void onkill(struct event_header *header)
 static void ondata(struct event_header *header)
 {
 
-    struct event_data *data = event_payload(header);
+    struct event_data *data = event_getdata(header);
 
     copybuffer(data + 1, data->count);
     updatecontent(header);
@@ -222,7 +222,7 @@ static void onchild(struct event_header *header)
 static void onwmkeypress(struct event_header *header)
 {
 
-    struct event_wmkeypress *wmkeypress = event_payload(header);
+    struct event_wmkeypress *wmkeypress = event_getdata(header);
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -317,7 +317,7 @@ static void onwmkeypress(struct event_header *header)
 static void onwmkeyrelease(struct event_header *header)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = event_payload(header);
+    struct event_wmkeyrelease *wmkeyrelease = event_getdata(header);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
@@ -326,7 +326,7 @@ static void onwmkeyrelease(struct event_header *header)
 static void onwmresize(struct event_header *header)
 {
 
-    struct event_wmresize *wmresize = event_payload(header);
+    struct event_wmresize *wmresize = event_getdata(header);
 
     box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
     box_resize(&content.size, wmresize->padding);

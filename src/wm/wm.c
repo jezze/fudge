@@ -327,7 +327,7 @@ static void onkill(struct event_header *header)
 static void onkeypress(struct event_header *header)
 {
 
-    struct event_keypress *keypress = event_payload(header);
+    struct event_keypress *keypress = event_getdata(header);
     struct view *nextview;
     struct remote *nextremote;
     unsigned int id;
@@ -499,7 +499,7 @@ static void onkeypress(struct event_header *header)
 static void onkeyrelease(struct event_header *header)
 {
 
-    struct event_keyrelease *keyrelease = event_payload(header);
+    struct event_keyrelease *keyrelease = event_getdata(header);
 
     keymod = keymap_modkey(keyrelease->scancode, keymod);
 
@@ -518,7 +518,7 @@ static void onkeyrelease(struct event_header *header)
 static void onmousemove(struct event_header *header)
 {
 
-    struct event_mousemove *mousemove = event_payload(header);
+    struct event_mousemove *mousemove = event_getdata(header);
 
     mouse.size.x += mousemove->relx;
     mouse.size.y += mousemove->rely;
@@ -539,7 +539,7 @@ static void onmousemove(struct event_header *header)
 static void onmousepress(struct event_header *header)
 {
 
-    struct event_mousepress *mousepress = event_payload(header);
+    struct event_mousepress *mousepress = event_getdata(header);
     struct list_item *current;
 
     switch (mousepress->button)
@@ -602,7 +602,7 @@ static void onmousepress(struct event_header *header)
 static void onmouserelease(struct event_header *header)
 {
 
-    struct event_mouserelease *mouserelease = event_payload(header);
+    struct event_mouserelease *mouserelease = event_getdata(header);
 
     if (currentview->currentremote)
         event_sendwmmouserelease(FILE_L0, header->target, currentview->currentremote->source, mouserelease->button);
@@ -612,7 +612,7 @@ static void onmouserelease(struct event_header *header)
 static void onvideomode(struct event_header *header)
 {
 
-    struct event_videomode *videomode = event_payload(header);
+    struct event_videomode *videomode = event_getdata(header);
     unsigned int factor = (videomode->h / 320);
 
     lineheight = 12 + factor * 4;
@@ -715,7 +715,7 @@ static void onwmunmap(struct event_header *header)
 static void onwmresize(struct event_header *header)
 {
 
-    struct event_wmresize *wmresize = event_payload(header);
+    struct event_wmresize *wmresize = event_getdata(header);
     struct list_item *current;
     unsigned int i = 0;
 
@@ -777,7 +777,7 @@ static void onwmhide(struct event_header *header)
 static void onwmflush(struct event_header *header)
 {
 
-    void *data = event_payload(header);
+    void *data = event_getdata(header);
 
     render_begin(data, header->length - sizeof (struct event_header));
     render_update(FILE_L4, size.w, size.h);
