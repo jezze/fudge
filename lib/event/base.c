@@ -2,6 +2,13 @@
 #include <fudge.h>
 #include "base.h"
 
+void *event_getheader(void *buffer)
+{
+
+    return buffer;
+
+}
+
 void *event_getforward(struct event_header *header)
 {
 
@@ -13,6 +20,35 @@ void *event_getdata(struct event_header *header)
 {
 
     struct event_forward *forward = event_getforward(header);
+
+    return forward + header->forward;
+
+}
+
+void *event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target)
+{
+
+    struct event_header *header = buffer;
+
+    header->type = type;
+    header->source = source;
+    header->target = target;
+    header->length = sizeof (struct event_header);
+    header->forward = 0;
+
+    return header + 1;
+
+}
+
+void *event_addforward(void *buffer, unsigned int target)
+{
+
+    struct event_header *header = event_getheader(buffer);
+    struct event_forward *forward = event_getforward(header);
+
+    forward[header->forward].target = target;
+    header->forward++;
+    header->length += sizeof (struct event_forward);
 
     return forward + header->forward;
 

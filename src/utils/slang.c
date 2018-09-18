@@ -338,10 +338,23 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             ntask++;
 
             for (j = 0; j < ntask; j++)
-                event_sendinit(FILE_L0, header->source, task[j].id);
+            {
+
+                char buffer[FUDGE_BSIZE];
+                char *position;
+
+                /* NOTICE header->source */
+                position = event_addheader(buffer, EVENT_INIT, header->source, task[j].id);
+                position = event_addforward(buffer, header->source);
+
+                file_writeall(FILE_L0, buffer, position - buffer);
+
+            }
 
             for (j = 0; j < ntask; j++)
             {
+
+                /* NOTICE header->source */
 
                 for (k = 0; k < task[j].ninputs; k++)
                     event_sendfile(FILE_L0, header->source, task[j].id, FILE_PI + k);
@@ -351,7 +364,18 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             }
 
             for (j = 0; j < ntask; j++)
-                event_sendexit(FILE_L0, header->target, task[j].id);
+            {
+
+                char buffer[FUDGE_BSIZE];
+                char *position;
+
+                /* NOTICE header->target */
+                position = event_addheader(buffer, EVENT_EXIT, header->target, task[j].id);
+                position = event_addforward(buffer, header->target);
+
+                file_writeall(FILE_L0, buffer, position - buffer);
+
+            }
 
             ntask = 0;
 
