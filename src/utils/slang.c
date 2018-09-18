@@ -341,20 +341,18 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             {
 
                 char buffer[FUDGE_BSIZE];
-                char *position;
 
-                /* NOTICE header->source */
-                position = event_addheader(buffer, EVENT_INIT, header->source, task[j].id);
-                position = event_addforward(buffer, header->source);
-
-                file_writeall(FILE_L0, buffer, position - buffer);
+                /* This should be header->target */
+                event_addheader(buffer, EVENT_INIT, header->source, task[j].id);
+                event_addforward(buffer, header->source);
+                event_sendbuffer(FILE_L0, buffer);
 
             }
 
             for (j = 0; j < ntask; j++)
             {
 
-                /* NOTICE header->source */
+                /* This should be header->target */
 
                 for (k = 0; k < task[j].ninputs; k++)
                     event_sendfile(FILE_L0, header->source, task[j].id, FILE_PI + k);
@@ -367,13 +365,9 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             {
 
                 char buffer[FUDGE_BSIZE];
-                char *position;
 
-                /* NOTICE header->target */
-                position = event_addheader(buffer, EVENT_EXIT, header->target, task[j].id);
-                position = event_addforward(buffer, header->target);
-
-                file_writeall(FILE_L0, buffer, position - buffer);
+                event_addheader(buffer, EVENT_EXIT, header->target, task[j].id);
+                event_sendbuffer(FILE_L0, buffer);
 
             }
 
@@ -403,7 +397,7 @@ static void oninit(struct event_header *header)
 static void onkill(struct event_header *header)
 {
 
-    event_sendchild(FILE_L0, header->target, header->source);
+    event_reply(FILE_L0, header, EVENT_CHILD);
 
     quit = 1;
 

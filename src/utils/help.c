@@ -31,7 +31,7 @@ static void oninit(struct event_header *header)
 static void onkill(struct event_header *header)
 {
 
-    event_sendchild(FILE_L0, header->target, header->source);
+    event_reply(FILE_L0, header, EVENT_CHILD);
 
     quit = 1;
 

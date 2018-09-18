@@ -15,8 +15,8 @@ static void dump(struct event_header *header, unsigned int count, void *buffer)
 
         unsigned char num[FUDGE_NSIZE];
 
-        event_senddata(FILE_L0, header->target, header->source, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
-        event_senddata(FILE_L0, header->target, header->source, 2, "  ");
+        event_replydata(FILE_L0, header, EVENT_DATA, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
+        event_replydata(FILE_L0, header, EVENT_DATA, 2, "  ");
 
     }
 
@@ -50,7 +50,7 @@ static void onfile(struct event_header *header)
 static void onkill(struct event_header *header)
 {
 
-    event_sendchild(FILE_L0, header->target, header->source);
+    event_reply(FILE_L0, header, EVENT_CHILD);
 
     quit = 1;
 

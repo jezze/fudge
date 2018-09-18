@@ -20,7 +20,7 @@ static void list(struct event_header *header, unsigned int descriptor)
         count += memory_write(buffer, FUDGE_BSIZE, record.name, record.length, count);
         count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
 
-        event_senddata(FILE_L0, header->target, header->source, count, buffer);
+        event_replydata(FILE_L0, header, EVENT_DATA, count, buffer);
 
         if (!file_step(descriptor))
             break;
@@ -41,7 +41,7 @@ static void oninit(struct event_header *header)
 static void onkill(struct event_header *header)
 {
 
-    event_sendchild(FILE_L0, header->target, header->source);
+    event_reply(FILE_L0, header, EVENT_CHILD);
 
     quit = 1;
 

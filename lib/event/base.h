@@ -19,12 +19,16 @@ struct event_file
 
 };
 
-void *event_getheader(void *buffer);
-void *event_getforward(struct event_header *header);
-void *event_getdata(struct event_header *header);
-void *event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target);
-void *event_addforward(void *buffer, unsigned int target);
+void *event_getforward(void *buffer);
+void *event_getdata(void *buffer);
+unsigned int event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target);
+unsigned int event_addforward(void *buffer, unsigned int target);
+unsigned int event_addreply(void *buffer, struct event_header *header, unsigned int type);
+unsigned int event_adddata(void *buffer, unsigned int count, void *data);
 struct event_header *event_read(unsigned int descriptor, void *data);
+unsigned int event_reply(unsigned int descriptor, struct event_header *header, unsigned int type);
+unsigned int event_replydata(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int count, void *buffer);
+unsigned int event_sendbuffer(unsigned int descriptor, void *buffer);
 unsigned int event_send(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int source, unsigned int target, unsigned int length);
 unsigned int event_sendinit(unsigned int descriptor, unsigned int source, unsigned int target);
 unsigned int event_sendexit(unsigned int descriptor, unsigned int source, unsigned int target);

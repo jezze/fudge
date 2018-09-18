@@ -2,30 +2,26 @@
 #include <fudge.h>
 #include "base.h"
 
-void *event_getheader(void *buffer)
+void *event_getforward(void *buffer)
 {
 
-    return buffer;
-
-}
-
-void *event_getforward(struct event_header *header)
-{
+    struct event_header *header = buffer;
 
     return header + 1;
 
 }
 
-void *event_getdata(struct event_header *header)
+void *event_getdata(void *buffer)
 {
 
-    struct event_forward *forward = event_getforward(header);
+    struct event_header *header = buffer;
+    struct event_forward *forward = event_getforward(buffer);
 
     return forward + header->forward;
 
 }
 
-void *event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target)
+unsigned int event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target)
 {
 
     struct event_header *header = buffer;
@@ -36,21 +32,62 @@ void *event_addheader(void *buffer, unsigned int type, unsigned int source, unsi
     header->length = sizeof (struct event_header);
     header->forward = 0;
 
-    return header + 1;
-
+    return header->length;
 }
 
-void *event_addforward(void *buffer, unsigned int target)
+unsigned int event_addforward(void *buffer, unsigned int target)
 {
 
-    struct event_header *header = event_getheader(buffer);
-    struct event_forward *forward = event_getforward(header);
+    struct event_header *header = buffer;
+    struct event_forward *forward = event_getforward(buffer);
 
     forward[header->forward].target = target;
     header->forward++;
     header->length += sizeof (struct event_forward);
 
-    return forward + header->forward;
+    return header->length;
+
+}
+
+unsigned int event_addreply(void *buffer, struct event_header *header, unsigned int type)
+{
+
+    struct event_header *reply = buffer;
+    /*
+    struct event_forward *forward = event_getforward(buffer);
+    */
+
+    event_addheader(buffer, type, header->target, header->source);
+
+    /*
+    if (header->forward)
+    {
+
+        unsigned int i;
+
+        for (i = 1; i < header->forward; i++)
+            event_addforward(buffer, forward[i].target);
+
+        reply->target = forward[0].target;
+
+    }
+    */
+
+    return reply->length;
+
+}
+
+unsigned int event_adddata(void *buffer, unsigned int count, void *data)
+{
+
+    struct event_header *header = buffer;
+    struct event_data *d = event_getdata(buffer);
+
+    header->length += sizeof (struct event_data);
+    d->count = memory_write(buffer, 0x800, data, count, header->length);
+    header->length += d->count;
+
+    return header->length;
 
 }
 
@@ -63,6 +100,40 @@ struct event_header *event_read(unsigned int descriptor, void *data)
     while (file_readall(descriptor, header + 1, header->length - sizeof (struct event_header)) != header->length - sizeof (struct event_header));
 
     return header;
+
+}
+
+unsigned int event_reply(unsigned int descriptor, struct event_header *header, unsigned int type)
+{
+
+    char data[FUDGE_BSIZE];
+    struct event_header *reply = (struct event_header *)data;
+
+    event_addreply(data, header, type);
+
+    return file_writeall(descriptor, reply, reply->length);
+
+}
+
+unsigned int event_replydata(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int count, void *buffer)
+{
+
+    char data[FUDGE_BSIZE];
+    struct event_header *reply = (struct event_header *)data;
+
+    event_addreply(data, header, type);
+    event_adddata(data, count, buffer);
+
+    return file_writeall(descriptor, reply, reply->length);
+
+}
+
+unsigned int event_sendbuffer(unsigned int descriptor, void *buffer)
+{
+
+    struct event_header *message = buffer;
+
+    return file_writeall(descriptor, message, message->length);
 
 }
 
