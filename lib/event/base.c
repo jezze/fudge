@@ -62,10 +62,10 @@ unsigned int event_addreply(void *buffer, struct event_header *header, unsigned 
         struct event_forward *forward = event_getforward(header);
         unsigned int i;
 
+        reply->target = forward[0].target;
+
         for (i = 1; i < header->forward; i++)
             event_addforward(buffer, forward[i].target);
-
-        reply->target = forward[0].target;
 
     }
 
@@ -80,7 +80,7 @@ unsigned int event_adddata(void *buffer, unsigned int count, void *data)
     struct event_data *d = event_getdata(buffer);
 
     header->length += sizeof (struct event_data);
-    d->count = memory_write(buffer, 0x800, data, count, header->length);
+    d->count = memory_write(buffer, FUDGE_BSIZE, data, count, header->length);
     header->length += d->count;
 
     return header->length;
