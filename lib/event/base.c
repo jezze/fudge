@@ -53,16 +53,13 @@ unsigned int event_addreply(void *buffer, struct event_header *header, unsigned 
 {
 
     struct event_header *reply = buffer;
-    /*
-    struct event_forward *forward = event_getforward(buffer);
-    */
 
     event_addheader(buffer, type, header->target, header->source);
 
-    /*
     if (header->forward)
     {
 
+        struct event_forward *forward = event_getforward(header);
         unsigned int i;
 
         for (i = 1; i < header->forward; i++)
@@ -71,7 +68,6 @@ unsigned int event_addreply(void *buffer, struct event_header *header, unsigned 
         reply->target = forward[0].target;
 
     }
-    */
 
     return reply->length;
 
