@@ -9,7 +9,7 @@ static void onkill(struct event_header *header)
 
     char message[FUDGE_BSIZE];
 
-    event_addreply(message, header, EVENT_CHILD);
+    event_addresponse(message, header, EVENT_CHILD);
     event_sendbuffer(FILE_L0, message);
 
     quit = 1;
@@ -21,7 +21,7 @@ static void ondata(struct event_header *header)
 
     char message[FUDGE_BSIZE];
 
-    event_addreply(message, header, EVENT_DATA);
+    event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, 13, "Hello world!\n");
     event_sendbuffer(FILE_L0, message);
 

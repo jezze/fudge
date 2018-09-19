@@ -323,7 +323,7 @@ static void onkill(struct event_header *header)
 
     }
 
-    event_addreply(message, header, EVENT_CHILD);
+    event_addresponse(message, header, EVENT_CHILD);
     event_sendbuffer(FILE_L0, message);
 
     quit = 1;

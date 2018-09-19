@@ -21,7 +21,7 @@ static void list(struct event_header *header, unsigned int descriptor)
         count += memory_write(buffer, FUDGE_BSIZE, record.name, record.length, count);
         count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
 
-        event_addreply(message, header, EVENT_DATA);
+        event_addresponse(message, header, EVENT_DATA);
         event_adddata(message, count, buffer);
         event_sendbuffer(FILE_L0, message);
 
@@ -39,7 +39,7 @@ static void onkill(struct event_header *header)
 
     char message[FUDGE_BSIZE];
 
-    event_addreply(message, header, EVENT_CHILD);
+    event_addresponse(message, header, EVENT_CHILD);
     event_sendbuffer(FILE_L0, message);
 
     quit = 1;

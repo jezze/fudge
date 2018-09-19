@@ -96,7 +96,7 @@ unsigned int event_addpipe(void *buffer, struct event_header *header, unsigned i
 
 }
 
-unsigned int event_addreply(void *buffer, struct event_header *header, unsigned int type)
+unsigned int event_addresponse(void *buffer, struct event_header *header, unsigned int type)
 {
 
     struct event_header *reply = buffer;

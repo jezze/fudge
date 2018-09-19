@@ -33,7 +33,7 @@ static void timestamp(struct event_header *header, struct ctrl_clocksettings *se
     count += ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10);
     count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
 
-    event_addreply(message, header, EVENT_DATA);
+    event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, count, num);
     event_sendbuffer(FILE_L0, message);
 
@@ -44,7 +44,7 @@ static void onkill(struct event_header *header)
 
     char message[FUDGE_BSIZE];
 
-    event_addreply(message, header, EVENT_CHILD);
+    event_addresponse(message, header, EVENT_CHILD);
     event_sendbuffer(FILE_L0, message);
 
     quit = 1;

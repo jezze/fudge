@@ -16,7 +16,7 @@ static void date(struct event_header *header, struct ctrl_clocksettings *setting
     ascii_wzerovalue(datetime, 20, settings->hours, 10, 2, 11);
     ascii_wzerovalue(datetime, 20, settings->minutes, 10, 2, 14);
     ascii_wzerovalue(datetime, 20, settings->seconds, 10, 2, 17);
-    event_addreply(message, header, EVENT_DATA);
+    event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, 20, datetime);
     event_sendbuffer(FILE_L0, message);
 
@@ -27,7 +27,7 @@ static void onkill(struct event_header *header)
 
     char message[FUDGE_BSIZE];
 
-    event_addreply(message, header, EVENT_CHILD);
+    event_addresponse(message, header, EVENT_CHILD);
     event_sendbuffer(FILE_L0, message);
 
     quit = 1;

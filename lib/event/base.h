@@ -25,7 +25,7 @@ unsigned int event_addheader(void *buffer, unsigned int type, unsigned int sourc
 unsigned int event_addforward(void *buffer, unsigned int target);
 unsigned int event_addrequest(void *buffer, struct event_header *header, unsigned int type, unsigned int id);
 unsigned int event_addpipe(void *buffer, struct event_header *header, unsigned int type, unsigned int id);
-unsigned int event_addreply(void *buffer, struct event_header *header, unsigned int type);
+unsigned int event_addresponse(void *buffer, struct event_header *header, unsigned int type);
 unsigned int event_adddata(void *buffer, unsigned int count, void *data);
 unsigned int event_addfile(void *buffer, unsigned int num);
 struct event_header *event_read(unsigned int descriptor, void *data);
