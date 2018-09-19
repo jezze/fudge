@@ -33,6 +33,7 @@ unsigned int event_addheader(void *buffer, unsigned int type, unsigned int sourc
     header->forward = 0;
 
     return header->length;
+
 }
 
 unsigned int event_addforward(void *buffer, unsigned int target)
