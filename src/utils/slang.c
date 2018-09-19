@@ -364,8 +364,6 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
                 }
 
-                task[0].ninputs = 0;
-
             }
 
             if (!task[0].ninputs)
@@ -388,6 +386,15 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
                 event_addrequest(message, header, EVENT_EXIT, task[j].id);
                 event_sendbuffer(FILE_L0, message);
+
+            }
+
+            for (j = 0; j < ntask; j++)
+            {
+
+                task[j].id = 0;
+                task[j].ninputs = 0;
+                task[j].noutputs = 0;
 
             }
 
