@@ -62,10 +62,10 @@ unsigned int event_addreply(void *buffer, struct event_header *header, unsigned 
         struct event_forward *forward = event_getforward(header);
         unsigned int i;
 
-        reply->target = forward[0].target;
-
-        for (i = 1; i < header->forward; i++)
+        for (i = 0; i < header->forward - 1; i++)
             event_addforward(buffer, forward[i].target);
+
+        reply->target = forward[header->forward - 1].target;
 
     }
 
