@@ -31,43 +31,37 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static unsigned int interpretslang(unsigned int count, char *command)
+static unsigned int interpret(struct event_header *header, struct ring *ring)
 {
 
-    unsigned int id = call_spawn();
+    char command[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
+    unsigned int id;
+
+    if (count < 2)
+        return 0;
+
+    if (interpretbuiltin(count, command))
+        return 0;
+
+    id = call_spawn();
 
     if (id)
     {
 
         char buffer[FUDGE_BSIZE];
 
-        event_addheader(buffer, EVENT_INIT, EVENT_ADDR_SELF, id);
+        event_addheader(buffer, EVENT_INIT, header->target, id);
         event_sendbuffer(FILE_L0, buffer);
-        event_addheader(buffer, EVENT_DATA, EVENT_ADDR_SELF, id);
+        event_addheader(buffer, EVENT_DATA, header->target, id);
         event_adddata(buffer, count, command);
         event_sendbuffer(FILE_L0, buffer);
-        event_addheader(buffer, EVENT_EXIT, EVENT_ADDR_SELF, id);
+        event_addheader(buffer, EVENT_EXIT, header->target, id);
         event_sendbuffer(FILE_L0, buffer);
 
     }
 
     return id;
-
-}
-
-static unsigned int interpret(struct ring *ring)
-{
-
-    char buffer[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
-
-    if (count < 2)
-        return 0;
-
-    if (interpretbuiltin(count, buffer))
-        return 0;
-
-    return interpretslang(count, buffer);
 
 }
 
@@ -149,7 +143,7 @@ static void onconsoledata(struct event_header *header)
         file_close(FILE_PO);
         ring_write(&input, &consoledata->data, 1);
 
-        if (interpret(&input))
+        if (interpret(header, &input))
             break;
 
         file_open(FILE_PO);
