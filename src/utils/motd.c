@@ -4,7 +4,16 @@
 
 static unsigned int quit;
 
-static void oninit(struct event_header *header)
+static void onkill(struct event_header *header)
+{
+
+    event_reply(FILE_L0, header, EVENT_CHILD);
+
+    quit = 1;
+
+}
+
+static void ondata(struct event_header *header)
 {
 
     char buffer[FUDGE_BSIZE];
@@ -22,7 +31,7 @@ static void oninit(struct event_header *header)
         return;
 
     file_open(FILE_L0);
-    event_addpipe(buffer, header, EVENT_INIT, id);
+    event_addrequest(buffer, header, EVENT_INIT, id);
     event_sendbuffer(FILE_L0, buffer);
     event_addpipe(buffer, header, EVENT_FILE, id);
     event_addfile(buffer, FILE_PI);
@@ -30,15 +39,6 @@ static void oninit(struct event_header *header)
     event_addrequest(buffer, header, EVENT_EXIT, id);
     event_sendbuffer(FILE_L0, buffer);
     file_close(FILE_L0);
-
-}
-
-static void onkill(struct event_header *header)
-{
-
-    event_reply(FILE_L0, header, EVENT_CHILD);
-
-    quit = 1;
 
 }
 
@@ -58,14 +58,14 @@ void main(void)
         switch (header->type)
         {
 
-        case EVENT_INIT:
-            oninit(header);
-
-            break;
-
         case EVENT_EXIT:
         case EVENT_KILL:
             onkill(header);
+
+            break;
+
+        case EVENT_DATA:
+            ondata(header);
 
             break;
 

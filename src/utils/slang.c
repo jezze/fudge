@@ -342,7 +342,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
                 char buffer[FUDGE_BSIZE];
 
-                event_addpipe(buffer, header, EVENT_INIT, task[j].id);
+                event_addrequest(buffer, header, EVENT_INIT, task[j].id);
                 event_sendbuffer(FILE_L0, buffer);
 
             }
@@ -350,13 +350,22 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             for (j = 0; j < ntask; j++)
             {
 
+                char buffer[FUDGE_BSIZE];
+
                 for (k = 0; k < task[j].ninputs; k++)
                 {
 
-                    char buffer[FUDGE_BSIZE];
-
                     event_addpipe(buffer, header, EVENT_FILE, task[j].id);
                     event_addfile(buffer, FILE_PI + k);
+                    event_sendbuffer(FILE_L0, buffer);
+
+                }
+
+                if (!task[j].ninputs)
+                {
+
+                    event_addpipe(buffer, header, EVENT_DATA, task[j].id);
+                    event_adddata(buffer, 0, 0);
                     event_sendbuffer(FILE_L0, buffer);
 
                 }
@@ -411,6 +420,9 @@ static void ondata(struct event_header *header)
 {
 
     struct event_data *data = event_getdata(header);
+
+    if (!data->count)
+        return;
 
     tokenizebuffer(&infix, &stringtable, data->count, data + 1);
     translate(&postfix, &infix, &stack);

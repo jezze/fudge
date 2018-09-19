@@ -35,19 +35,19 @@ static void list(struct event_header *header, unsigned int descriptor)
 
 }
 
-static void oninit(struct event_header *header)
-{
-
-    list(header, FILE_PW);
-
-}
-
 static void onkill(struct event_header *header)
 {
 
     event_reply(FILE_L0, header, EVENT_CHILD);
 
     quit = 1;
+
+}
+
+static void ondata(struct event_header *header)
+{
+
+    list(header, FILE_PW);
 
 }
 
@@ -76,14 +76,14 @@ void main(void)
         switch (header->type)
         {
 
-        case EVENT_INIT:
-            oninit(header);
-
-            break;
-
         case EVENT_EXIT:
         case EVENT_KILL:
             onkill(header);
+
+            break;
+
+        case EVENT_DATA:
+            ondata(header);
 
             break;
 
