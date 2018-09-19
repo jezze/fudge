@@ -35,8 +35,6 @@ struct task
 
 };
 
-static struct task task[32];
-static unsigned int ntask;
 static char stringdata[FUDGE_BSIZE];
 static struct ring stringtable;
 static struct token infixdata[1024];
@@ -256,13 +254,74 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void parse(struct event_header *header, struct tokenlist *postfix, struct tokenlist *stack)
+static void run(struct event_header *header, struct task *task, unsigned int ntask)
 {
 
     char message[FUDGE_BSIZE];
-    unsigned int i;
     unsigned int j;
     unsigned int k;
+
+    for (j = 0; j < ntask; j++)
+    {
+
+        event_addrequest(message, header, EVENT_INIT, task[j].id);
+        event_sendbuffer(FILE_L0, message);
+
+    }
+
+    for (j = 0; j < ntask; j++)
+    {
+
+        for (k = 0; k < task[j].ninputs; k++)
+        {
+
+            unsigned int x;
+
+            event_addpipe(message, header, EVENT_FILE, task[j].id);
+
+            for (x = ntask; x > j + 1; x--)
+                event_addforward(message, task[x - 1].id);
+
+            event_addfile(message, FILE_PI + k);
+            event_sendbuffer(FILE_L0, message);
+
+        }
+
+    }
+
+    if (!task[0].ninputs)
+    {
+
+        unsigned int x;
+
+        event_addpipe(message, header, EVENT_DATA, task[0].id);
+
+        for (x = ntask; x > 0 + 1; x--)
+            event_addforward(message, task[x - 1].id);
+
+        event_adddata(message, 0, 0);
+        event_sendbuffer(FILE_L0, message);
+
+    }
+
+    for (j = 0; j < ntask; j++)
+    {
+
+        event_addrequest(message, header, EVENT_EXIT, task[j].id);
+        event_sendbuffer(FILE_L0, message);
+
+    }
+
+}
+
+static void parse(struct event_header *header, struct tokenlist *postfix, struct tokenlist *stack)
+{
+
+    struct task task[32];
+    unsigned int ntask = 0;
+    unsigned int i;
+
+    memory_clear(task, sizeof (struct task) * 32);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -338,66 +397,8 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
             ntask++;
 
-            for (j = 0; j < ntask; j++)
-            {
-
-                event_addrequest(message, header, EVENT_INIT, task[j].id);
-                event_sendbuffer(FILE_L0, message);
-
-            }
-
-            for (j = 0; j < ntask; j++)
-            {
-
-                for (k = 0; k < task[j].ninputs; k++)
-                {
-
-                    unsigned int x;
-
-                    event_addpipe(message, header, EVENT_FILE, task[j].id);
-
-                    for (x = ntask; x > j + 1; x--)
-                        event_addforward(message, task[x - 1].id);
-
-                    event_addfile(message, FILE_PI + k);
-                    event_sendbuffer(FILE_L0, message);
-
-                }
-
-            }
-
-            if (!task[0].ninputs)
-            {
-
-                unsigned int x;
-
-                event_addpipe(message, header, EVENT_DATA, task[0].id);
-
-                for (x = ntask; x > 0 + 1; x--)
-                    event_addforward(message, task[x - 1].id);
-
-                event_adddata(message, 0, 0);
-                event_sendbuffer(FILE_L0, message);
-
-            }
-
-            for (j = 0; j < ntask; j++)
-            {
-
-                event_addrequest(message, header, EVENT_EXIT, task[j].id);
-                event_sendbuffer(FILE_L0, message);
-
-            }
-
-            for (j = 0; j < ntask; j++)
-            {
-
-                task[j].id = 0;
-                task[j].ninputs = 0;
-                task[j].noutputs = 0;
-
-            }
-
+            run(header, task, ntask);
+            memory_clear(task, sizeof (struct task) * 32);
             ntask = 0;
 
             break;
