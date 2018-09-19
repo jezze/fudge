@@ -342,9 +342,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
                 char buffer[FUDGE_BSIZE];
 
-                /* This should be header->target */
-                event_addheader(buffer, EVENT_INIT, header->source, task[j].id);
-                event_addforward(buffer, header->source);
+                event_addpipe(buffer, header, EVENT_INIT, task[j].id);
                 event_sendbuffer(FILE_L0, buffer);
 
             }
@@ -357,9 +355,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
                     char buffer[FUDGE_BSIZE];
 
-                    /* This should be header->target */
-                    event_addheader(buffer, EVENT_FILE, header->source, task[j].id);
-                    event_addforward(buffer, header->source);
+                    event_addpipe(buffer, header, EVENT_FILE, task[j].id);
                     event_addfile(buffer, FILE_PI + k);
                     event_sendbuffer(FILE_L0, buffer);
 
@@ -374,7 +370,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
                 char buffer[FUDGE_BSIZE];
 
-                event_addheader(buffer, EVENT_EXIT, header->target, task[j].id);
+                event_addrequest(buffer, header, EVENT_EXIT, task[j].id);
                 event_sendbuffer(FILE_L0, buffer);
 
             }

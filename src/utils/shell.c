@@ -51,12 +51,12 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
 
         char buffer[FUDGE_BSIZE];
 
-        event_addheader(buffer, EVENT_INIT, header->target, id);
+        event_addrequest(buffer, header, EVENT_INIT, id);
         event_sendbuffer(FILE_L0, buffer);
-        event_addheader(buffer, EVENT_DATA, header->target, id);
+        event_addrequest(buffer, header, EVENT_DATA, id);
         event_adddata(buffer, count, command);
         event_sendbuffer(FILE_L0, buffer);
-        event_addheader(buffer, EVENT_EXIT, header->target, id);
+        event_addrequest(buffer, header, EVENT_EXIT, id);
         event_sendbuffer(FILE_L0, buffer);
 
     }

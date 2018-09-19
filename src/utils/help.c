@@ -22,14 +22,12 @@ static void oninit(struct event_header *header)
         return;
 
     file_open(FILE_L0);
-    event_addheader(buffer, EVENT_INIT, header->target, id);
-    event_addforward(buffer, header->source);
+    event_addpipe(buffer, header, EVENT_INIT, id);
     event_sendbuffer(FILE_L0, buffer);
-    event_addheader(buffer, EVENT_FILE, header->target, id);
-    event_addforward(buffer, header->source);
+    event_addpipe(buffer, header, EVENT_FILE, id);
     event_addfile(buffer, FILE_PI);
     event_sendbuffer(FILE_L0, buffer);
-    event_addheader(buffer, EVENT_EXIT, header->target, id);
+    event_addrequest(buffer, header, EVENT_EXIT, id);
     event_sendbuffer(FILE_L0, buffer);
     file_close(FILE_L0);
 

@@ -49,6 +49,52 @@ unsigned int event_addforward(void *buffer, unsigned int target)
 
 }
 
+unsigned int event_addrequest(void *buffer, struct event_header *header, unsigned int type, unsigned int id)
+{
+
+    struct event_header *reply = buffer;
+
+    event_addheader(buffer, type, header->target, id);
+
+    if (header->forward)
+    {
+
+        struct event_forward *forward = event_getforward(header);
+        unsigned int i;
+
+        for (i = 0; i < header->forward; i++)
+            event_addforward(buffer, forward[i].target);
+
+    }
+
+    event_addforward(buffer, header->target);
+
+    return reply->length;
+
+}
+
+unsigned int event_addpipe(void *buffer, struct event_header *header, unsigned int type, unsigned int id)
+{
+
+    struct event_header *reply = buffer;
+
+    event_addheader(buffer, type, header->target, id);
+
+    if (header->forward)
+    {
+
+        struct event_forward *forward = event_getforward(header);
+        unsigned int i;
+
+        for (i = 0; i < header->forward; i++)
+            event_addforward(buffer, forward[i].target);
+
+    }
+
+    return reply->length;
+
+}
+
 unsigned int event_addreply(void *buffer, struct event_header *header, unsigned int type)
 {
 
