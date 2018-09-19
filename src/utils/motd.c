@@ -19,7 +19,7 @@ static void onkill(struct event_header *header)
 static void ondata(struct event_header *header)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char message[FUDGE_BSIZE];
     unsigned int id;
 
     if (!file_walk(FILE_CP, "/bin/echo"))
@@ -34,13 +34,13 @@ static void ondata(struct event_header *header)
         return;
 
     file_open(FILE_L0);
-    event_addrequest(buffer, header, EVENT_INIT, id);
-    event_sendbuffer(FILE_L0, buffer);
-    event_addpipe(buffer, header, EVENT_FILE, id);
-    event_addfile(buffer, FILE_PI);
-    event_sendbuffer(FILE_L0, buffer);
-    event_addrequest(buffer, header, EVENT_EXIT, id);
-    event_sendbuffer(FILE_L0, buffer);
+    event_addrequest(message, header, EVENT_INIT, id);
+    event_sendbuffer(FILE_L0, message);
+    event_addpipe(message, header, EVENT_FILE, id);
+    event_addfile(message, FILE_PI);
+    event_sendbuffer(FILE_L0, message);
+    event_addrequest(message, header, EVENT_EXIT, id);
+    event_sendbuffer(FILE_L0, message);
     file_close(FILE_L0);
 
 }

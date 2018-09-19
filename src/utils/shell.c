@@ -49,15 +49,15 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
     if (id)
     {
 
-        char buffer[FUDGE_BSIZE];
+        char message[FUDGE_BSIZE];
 
-        event_addrequest(buffer, header, EVENT_INIT, id);
-        event_sendbuffer(FILE_L0, buffer);
-        event_addrequest(buffer, header, EVENT_DATA, id);
-        event_adddata(buffer, count, command);
-        event_sendbuffer(FILE_L0, buffer);
-        event_addrequest(buffer, header, EVENT_EXIT, id);
-        event_sendbuffer(FILE_L0, buffer);
+        event_addrequest(message, header, EVENT_INIT, id);
+        event_sendbuffer(FILE_L0, message);
+        event_addrequest(message, header, EVENT_DATA, id);
+        event_adddata(message, count, command);
+        event_sendbuffer(FILE_L0, message);
+        event_addrequest(message, header, EVENT_EXIT, id);
+        event_sendbuffer(FILE_L0, message);
 
     }
 

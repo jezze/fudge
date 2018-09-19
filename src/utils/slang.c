@@ -340,29 +340,29 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             for (j = 0; j < ntask; j++)
             {
 
-                char buffer[FUDGE_BSIZE];
+                char message[FUDGE_BSIZE];
 
-                event_addrequest(buffer, header, EVENT_INIT, task[j].id);
-                event_sendbuffer(FILE_L0, buffer);
+                event_addrequest(message, header, EVENT_INIT, task[j].id);
+                event_sendbuffer(FILE_L0, message);
 
             }
 
             {
 
-                char buffer[FUDGE_BSIZE];
+                char message[FUDGE_BSIZE];
 
                 for (k = 0; k < task[0].ninputs; k++)
                 {
 
                     unsigned int x;
 
-                    event_addpipe(buffer, header, EVENT_FILE, task[0].id);
+                    event_addpipe(message, header, EVENT_FILE, task[0].id);
 
                     for (x = ntask; x > 0 + 1; x--)
-                        event_addforward(buffer, task[x - 1].id);
+                        event_addforward(message, task[x - 1].id);
 
-                    event_addfile(buffer, FILE_PI + k);
-                    event_sendbuffer(FILE_L0, buffer);
+                    event_addfile(message, FILE_PI + k);
+                    event_sendbuffer(FILE_L0, message);
 
                 }
 
@@ -371,13 +371,13 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
                     unsigned int x;
 
-                    event_addpipe(buffer, header, EVENT_DATA, task[0].id);
+                    event_addpipe(message, header, EVENT_DATA, task[0].id);
 
                     for (x = ntask; x > 0 + 1; x--)
-                        event_addforward(buffer, task[x - 1].id);
+                        event_addforward(message, task[x - 1].id);
 
-                    event_adddata(buffer, 0, 0);
-                    event_sendbuffer(FILE_L0, buffer);
+                    event_adddata(message, 0, 0);
+                    event_sendbuffer(FILE_L0, message);
 
                 }
 
@@ -388,10 +388,10 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             for (j = 0; j < ntask; j++)
             {
 
-                char buffer[FUDGE_BSIZE];
+                char message[FUDGE_BSIZE];
 
-                event_addrequest(buffer, header, EVENT_EXIT, task[j].id);
-                event_sendbuffer(FILE_L0, buffer);
+                event_addrequest(message, header, EVENT_EXIT, task[j].id);
+                event_sendbuffer(FILE_L0, message);
 
             }
 
