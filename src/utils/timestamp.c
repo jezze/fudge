@@ -42,7 +42,10 @@ static void timestamp(struct event_header *header, struct ctrl_clocksettings *se
 static void onkill(struct event_header *header)
 {
 
-    event_reply(FILE_L0, header, EVENT_CHILD);
+    char message[FUDGE_BSIZE];
+
+    event_addreply(message, header, EVENT_CHILD);
+    event_sendbuffer(FILE_L0, message);
 
     quit = 1;
 

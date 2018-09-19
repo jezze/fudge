@@ -29,8 +29,5 @@ unsigned int event_addreply(void *buffer, struct event_header *header, unsigned 
 unsigned int event_adddata(void *buffer, unsigned int count, void *data);
 unsigned int event_addfile(void *buffer, unsigned int num);
 struct event_header *event_read(unsigned int descriptor, void *data);
-unsigned int event_reply(unsigned int descriptor, struct event_header *header, unsigned int type);
-unsigned int event_replydata(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int count, void *buffer);
-unsigned int event_replyfile(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int num);
 unsigned int event_sendbuffer(unsigned int descriptor, void *buffer);
 unsigned int event_send(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int source, unsigned int target, unsigned int length);
