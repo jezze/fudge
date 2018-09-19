@@ -372,7 +372,7 @@ void kernel_setup(char *buffer)
 
     unsigned int i;
 
-    for (i = 0; i < KERNEL_TASKS; i++)
+    for (i = 1; i < KERNEL_TASKS; i++)
     {
 
         struct task *task = &tasks[i];
