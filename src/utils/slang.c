@@ -347,30 +347,41 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
             }
 
-            for (j = 0; j < ntask; j++)
             {
 
                 char buffer[FUDGE_BSIZE];
 
-                for (k = 0; k < task[j].ninputs; k++)
+                for (k = 0; k < task[0].ninputs; k++)
                 {
 
-                    event_addpipe(buffer, header, EVENT_FILE, task[j].id);
+                    unsigned int x;
+
+                    event_addpipe(buffer, header, EVENT_FILE, task[0].id);
+
+                    for (x = ntask; x > 0 + 1; x--)
+                        event_addforward(buffer, task[x - 1].id);
+
                     event_addfile(buffer, FILE_PI + k);
                     event_sendbuffer(FILE_L0, buffer);
 
                 }
 
-                if (!task[j].ninputs)
+                if (!task[0].ninputs)
                 {
 
-                    event_addpipe(buffer, header, EVENT_DATA, task[j].id);
+                    unsigned int x;
+
+                    event_addpipe(buffer, header, EVENT_DATA, task[0].id);
+
+                    for (x = ntask; x > 0 + 1; x--)
+                        event_addforward(buffer, task[x - 1].id);
+
                     event_adddata(buffer, 0, 0);
                     event_sendbuffer(FILE_L0, buffer);
 
                 }
 
-                task[j].ninputs = 0;
+                task[0].ninputs = 0;
 
             }
 
