@@ -259,6 +259,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 static void parse(struct event_header *header, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
+    char message[FUDGE_BSIZE];
     unsigned int i;
     unsigned int j;
     unsigned int k;
@@ -340,43 +341,25 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             for (j = 0; j < ntask; j++)
             {
 
-                char message[FUDGE_BSIZE];
-
                 event_addrequest(message, header, EVENT_INIT, task[j].id);
                 event_sendbuffer(FILE_L0, message);
 
             }
 
+            for (j = 0; j < ntask; j++)
             {
 
-                char message[FUDGE_BSIZE];
-
-                for (k = 0; k < task[0].ninputs; k++)
+                for (k = 0; k < task[j].ninputs; k++)
                 {
 
                     unsigned int x;
 
-                    event_addpipe(message, header, EVENT_FILE, task[0].id);
+                    event_addpipe(message, header, EVENT_FILE, task[j].id);
 
-                    for (x = ntask; x > 0 + 1; x--)
+                    for (x = ntask; x > j + 1; x--)
                         event_addforward(message, task[x - 1].id);
 
                     event_addfile(message, FILE_PI + k);
-                    event_sendbuffer(FILE_L0, message);
-
-                }
-
-                if (!task[0].ninputs)
-                {
-
-                    unsigned int x;
-
-                    event_addpipe(message, header, EVENT_DATA, task[0].id);
-
-                    for (x = ntask; x > 0 + 1; x--)
-                        event_addforward(message, task[x - 1].id);
-
-                    event_adddata(message, 0, 0);
                     event_sendbuffer(FILE_L0, message);
 
                 }
@@ -385,10 +368,23 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
             }
 
-            for (j = 0; j < ntask; j++)
+            if (!task[0].ninputs)
             {
 
-                char message[FUDGE_BSIZE];
+                unsigned int x;
+
+                event_addpipe(message, header, EVENT_DATA, task[0].id);
+
+                for (x = ntask; x > 0 + 1; x--)
+                    event_addforward(message, task[x - 1].id);
+
+                event_adddata(message, 0, 0);
+                event_sendbuffer(FILE_L0, message);
+
+            }
+
+            for (j = 0; j < ntask; j++)
+            {
 
                 event_addrequest(message, header, EVENT_EXIT, task[j].id);
                 event_sendbuffer(FILE_L0, message);
