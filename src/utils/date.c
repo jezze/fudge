@@ -49,6 +49,19 @@ static void ondata(struct event_header *header)
 
 }
 
+static void onfile(struct event_header *header)
+{
+
+    struct event_file *file = event_getdata(header);
+    struct ctrl_clocksettings settings;
+
+    file_open(file->num);
+    file_readall(file->num, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(file->num);
+    date(header, &settings);
+
+}
+
 void main(void)
 {
 
@@ -73,6 +86,11 @@ void main(void)
 
         case EVENT_DATA:
             ondata(header);
+
+            break;
+
+        case EVENT_FILE:
+            onfile(header);
 
             break;
 
