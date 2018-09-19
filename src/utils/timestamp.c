@@ -27,12 +27,15 @@ static void timestamp(struct event_header *header, struct ctrl_clocksettings *se
     unsigned int dmonth = isleapyear(year) ? dotm366[settings->month - 1] : dotm365[settings->month - 1];
     unsigned int timestamp = ((dyear + dmonth + settings->day) * 86400) + ((settings->hours * 3600) + (settings->minutes * 60) + settings->seconds);
     unsigned int count = 0;
+    char message[FUDGE_BSIZE];
     char num[FUDGE_NSIZE];
 
     count += ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10);
     count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
 
-    event_replydata(FILE_L0, header, EVENT_DATA, count, num);
+    event_addreply(message, header, EVENT_DATA);
+    event_adddata(message, count, num);
+    event_sendbuffer(FILE_L0, message);
 
 }
 
@@ -45,7 +48,7 @@ static void onkill(struct event_header *header)
 
 }
 
-static void oninit(struct event_header *header)
+static void ondata(struct event_header *header)
 {
 
     struct ctrl_clocksettings settings;
@@ -82,8 +85,8 @@ void main(void)
 
             break;
 
-        case EVENT_INIT:
-            oninit(header);
+        case EVENT_DATA:
+            ondata(header);
 
             break;
 

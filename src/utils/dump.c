@@ -13,10 +13,16 @@ static void dump(struct event_header *header, unsigned int count, void *buffer)
     for (i = 0; i < count; i++)
     {
 
+        char message[FUDGE_BSIZE];
         unsigned char num[FUDGE_NSIZE];
+        unsigned int cnum = ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0);
 
-        event_replydata(FILE_L0, header, EVENT_DATA, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
-        event_replydata(FILE_L0, header, EVENT_DATA, 2, "  ");
+        event_addreply(message, header, EVENT_DATA);
+        event_adddata(message, cnum, num);
+        event_sendbuffer(FILE_L0, message);
+        event_addreply(message, header, EVENT_DATA);
+        event_adddata(message, 2, "  ");
+        event_sendbuffer(FILE_L0, message);
 
     }
 

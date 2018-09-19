@@ -14,13 +14,16 @@ static void list(struct event_header *header, unsigned int descriptor)
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
+        char message[FUDGE_BSIZE];
         char buffer[FUDGE_BSIZE];
         unsigned int count = 0;
 
         count += memory_write(buffer, FUDGE_BSIZE, record.name, record.length, count);
         count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
 
-        event_replydata(FILE_L0, header, EVENT_DATA, count, buffer);
+        event_addreply(message, header, EVENT_DATA);
+        event_adddata(message, count, buffer);
+        event_sendbuffer(FILE_L0, message);
 
         if (!file_step(descriptor))
             break;

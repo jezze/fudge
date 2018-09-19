@@ -162,11 +162,10 @@ unsigned int event_reply(unsigned int descriptor, struct event_header *header, u
 {
 
     char data[FUDGE_BSIZE];
-    struct event_header *reply = (struct event_header *)data;
 
     event_addreply(data, header, type);
 
-    return file_writeall(descriptor, reply, reply->length);
+    return event_sendbuffer(descriptor, data);
 
 }
 
@@ -174,12 +173,11 @@ unsigned int event_replydata(unsigned int descriptor, struct event_header *heade
 {
 
     char data[FUDGE_BSIZE];
-    struct event_header *reply = (struct event_header *)data;
 
     event_addreply(data, header, type);
     event_adddata(data, count, buffer);
 
-    return file_writeall(descriptor, reply, reply->length);
+    return event_sendbuffer(descriptor, data);
 
 }
 
@@ -187,12 +185,11 @@ unsigned int event_replyfile(unsigned int descriptor, struct event_header *heade
 {
 
     char data[FUDGE_BSIZE];
-    struct event_header *reply = (struct event_header *)data;
 
     event_addreply(data, header, type);
     event_addfile(data, num);
 
-    return file_writeall(descriptor, reply, reply->length);
+    return event_sendbuffer(descriptor, data);
 
 }
 

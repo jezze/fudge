@@ -17,8 +17,11 @@ static void ondata(struct event_header *header)
 {
 
     struct event_data *data = event_getdata(header);
+    char message[FUDGE_BSIZE];
 
-    event_replydata(FILE_L0, header, EVENT_DATA, data->count, data + 1);
+    event_addreply(message, header, EVENT_DATA);
+    event_adddata(message, data->count, data + 1);
+    event_sendbuffer(FILE_L0, message);
 
 }
 
@@ -26,13 +29,21 @@ static void onfile(struct event_header *header)
 {
 
     struct event_file *file = event_getdata(header);
-    unsigned char buffer[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
     unsigned int count;
 
     file_open(file->num);
 
     while ((count = file_read(file->num, buffer, FUDGE_BSIZE)))
-        event_replydata(FILE_L0, header, EVENT_DATA, count, buffer);
+    {
+
+        char message[FUDGE_BSIZE];
+
+        event_addreply(message, header, EVENT_DATA);
+        event_adddata(message, count, buffer);
+        event_sendbuffer(FILE_L0, message);
+
+    }
 
     file_close(file->num);
 

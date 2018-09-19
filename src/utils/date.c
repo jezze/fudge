@@ -7,6 +7,7 @@ static unsigned int quit;
 static void date(struct event_header *header, struct ctrl_clocksettings *settings)
 {
 
+    char message[FUDGE_BSIZE];
     char *datetime = "0000-00-00 00:00:00\n";
 
     ascii_wzerovalue(datetime, 20, settings->year, 10, 4, 0);
@@ -15,7 +16,9 @@ static void date(struct event_header *header, struct ctrl_clocksettings *setting
     ascii_wzerovalue(datetime, 20, settings->hours, 10, 2, 11);
     ascii_wzerovalue(datetime, 20, settings->minutes, 10, 2, 14);
     ascii_wzerovalue(datetime, 20, settings->seconds, 10, 2, 17);
-    event_replydata(FILE_L0, header, EVENT_DATA, 20, datetime);
+    event_addreply(message, header, EVENT_DATA);
+    event_adddata(message, 20, datetime);
+    event_sendbuffer(FILE_L0, message);
 
 }
 
@@ -28,7 +31,7 @@ static void onkill(struct event_header *header)
 
 }
 
-static void oninit(struct event_header *header)
+static void ondata(struct event_header *header)
 {
 
     struct ctrl_clocksettings settings;
@@ -65,8 +68,8 @@ void main(void)
 
             break;
 
-        case EVENT_INIT:
-            oninit(header);
+        case EVENT_DATA:
+            ondata(header);
 
             break;
 
