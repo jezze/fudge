@@ -179,6 +179,8 @@ static void moveright(unsigned int steps)
 static void oninit(struct event_header *header)
 {
 
+    char message[FUDGE_BSIZE];
+
     if (!file_walk(FILE_CP, "/bin/slang"))
         return;
 
@@ -188,14 +190,20 @@ static void oninit(struct event_header *header)
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     copybuffer("$ ", 2);
-    event_sendwmmap(FILE_L0, header->target, EVENT_ADDR_BROADCAST);
+    event_addrequest(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
+    event_sendbuffer(FILE_L0, message);
 
 }
 
 static void onkill(struct event_header *header)
 {
 
-    event_sendwmunmap(FILE_L0, header->target, EVENT_ADDR_BROADCAST);
+    char message[FUDGE_BSIZE];
+
+    event_addrequest(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
+    event_sendbuffer(FILE_L0, message);
+    event_addreply(message, header, EVENT_CHILD);
+    event_sendbuffer(FILE_L0, message);
 
     quit = 1;
 

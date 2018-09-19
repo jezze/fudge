@@ -58,8 +58,6 @@ struct event_wmmousemove
 
 };
 
-unsigned int event_sendwmmap(unsigned int descriptor, unsigned int source, unsigned int target);
-unsigned int event_sendwmunmap(unsigned int descriptor, unsigned int source, unsigned int target);
 unsigned int event_sendwmresize(unsigned int descriptor, unsigned int source, unsigned int target, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
 unsigned int event_sendwmshow(unsigned int descriptor, unsigned int source, unsigned int target);
 unsigned int event_sendwmhide(unsigned int descriptor, unsigned int source, unsigned int target);

@@ -300,6 +300,7 @@ static void oninit(struct event_header *header)
 static void onkill(struct event_header *header)
 {
 
+    char message[FUDGE_BSIZE];
     struct list_item *current;
 
     for (current = viewlist.head; current; current = current->next)
@@ -321,6 +322,9 @@ static void onkill(struct event_header *header)
         }
 
     }
+
+    event_addreply(message, header, EVENT_CHILD);
+    event_sendbuffer(FILE_L0, message);
 
     quit = 1;
 

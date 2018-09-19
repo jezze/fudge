@@ -3,24 +3,6 @@
 #include "base.h"
 #include "wm.h"
 
-unsigned int event_sendwmmap(unsigned int descriptor, unsigned int source, unsigned int target)
-{
-
-    struct {struct event_header header;} message;
-
-    return event_send(descriptor, &message.header, EVENT_WMMAP, source, target, 0);
-
-}
-
-unsigned int event_sendwmunmap(unsigned int descriptor, unsigned int source, unsigned int target)
-{
-
-    struct {struct event_header header;} message;
-
-    return event_send(descriptor, &message.header, EVENT_WMUNMAP, source, target, 0);
-
-}
-
 unsigned int event_sendwmresize(unsigned int descriptor, unsigned int source, unsigned int target, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 

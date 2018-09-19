@@ -13,15 +13,24 @@ static struct ring output;
 static void oninit(struct event_header *header)
 {
 
+    char message[FUDGE_BSIZE];
+
     ring_init(&output, FUDGE_BSIZE, outputdata);
-    event_sendwmmap(FILE_L0, header->target, EVENT_ADDR_BROADCAST);
+
+    event_addrequest(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
+    event_sendbuffer(FILE_L0, message);
 
 }
 
 static void onkill(struct event_header *header)
 {
 
-    event_sendwmunmap(FILE_L0, header->target, EVENT_ADDR_BROADCAST);
+    char message[FUDGE_BSIZE];
+
+    event_addrequest(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
+    event_sendbuffer(FILE_L0, message);
+    event_addreply(message, header, EVENT_CHILD);
+    event_sendbuffer(FILE_L0, message);
 
     quit = 1;
 
