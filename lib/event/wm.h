@@ -65,4 +65,3 @@ unsigned int event_addwmmouserelease(void *buffer, unsigned int button);
 unsigned int event_addwmmousemove(void *buffer, char relx, char rely);
 unsigned int event_addwmresize(void *buffer, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
 unsigned int event_addwmflush(void *buffer, unsigned int count, void *data);
-unsigned int event_sendwmflush(unsigned int descriptor, unsigned int source, unsigned int target, unsigned int count, void *buffer);

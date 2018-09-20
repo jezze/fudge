@@ -98,21 +98,3 @@ unsigned int event_addwmflush(void *buffer, unsigned int count, void *data)
 
 }
 
-static unsigned int send(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int source, unsigned int target, unsigned int length)
-{
-
-    event_initheader(header, type, source, target, length);
-
-    return file_writeall(descriptor, header, header->length);
-
-}
-
-unsigned int event_sendwmflush(unsigned int descriptor, unsigned int source, unsigned int target, unsigned int count, void *buffer)
-{
-
-    struct {struct event_header header; char data[0x800];} message;
-
-    return send(descriptor, &message.header, EVENT_WMFLUSH, source, target, memory_write(message.data, 0x800, buffer, count, 0));
-
-}
-
