@@ -355,10 +355,14 @@ void kernel_setupinit(struct task *task)
 
     struct service_descriptor *init = kernel_getdescriptor(task, 0x10);
     struct service_descriptor *root = kernel_getdescriptor(task, 0x11);
+    struct service_descriptor *work = kernel_getdescriptor(task, 0x12);
 
     root->backend = service_findbackend(1000);
     root->protocol = service_findprotocol(1000);
     root->id = root->protocol->root(root->backend, &root->state);
+    work->backend = root->backend;
+    work->protocol = root->protocol;
+    work->id = root->id;
     init->backend = root->backend;
     init->protocol = root->protocol;
     init->id = init->protocol->root(init->backend, &init->state);
