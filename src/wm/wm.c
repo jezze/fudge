@@ -344,7 +344,15 @@ static void onkeypress(struct event_header *header)
     {
 
         if (currentview->currentremote)
-            event_sendwmkeypress(FILE_PM, header->target, currentview->currentremote->source, keypress->scancode);
+        {
+
+            char message[FUDGE_BSIZE];
+
+            event_addrequest(message, header, EVENT_WMKEYPRESS, currentview->currentremote->source);
+            event_addwmkeypress(message, keypress->scancode);
+            event_sendbuffer(message);
+
+        }
 
         return;
 
@@ -533,7 +541,15 @@ static void onkeyrelease(struct event_header *header)
     {
 
         if (currentview->currentremote)
-            event_sendwmkeyrelease(FILE_PM, header->target, currentview->currentremote->source, keyrelease->scancode);
+        {
+
+            char message[FUDGE_BSIZE];
+
+            event_addrequest(message, header, EVENT_WMKEYRELEASE, currentview->currentremote->source);
+            event_addwmkeyrelease(message, keyrelease->scancode);
+            event_sendbuffer(message);
+
+        }
 
         return;
 
@@ -558,7 +574,15 @@ static void onmousemove(struct event_header *header)
     updatemouse(header);
 
     if (currentview->currentremote)
-        event_sendwmmousemove(FILE_PM, header->target, currentview->currentremote->source, mouse.size.x, mouse.size.y);
+    {
+
+        char message[FUDGE_BSIZE];
+
+        event_addrequest(message, header, EVENT_WMMOUSEMOVE, currentview->currentremote->source);
+        event_addwmmousemove(message, mouse.size.x, mouse.size.y);
+        event_sendbuffer(message);
+
+    }
 
 }
 
@@ -621,7 +645,15 @@ static void onmousepress(struct event_header *header)
     }
 
     if (currentview->currentremote)
-        event_sendwmmousepress(FILE_PM, header->target, currentview->currentremote->source, mousepress->button);
+    {
+
+        char message[FUDGE_BSIZE];
+
+        event_addrequest(message, header, EVENT_WMMOUSEPRESS, currentview->currentremote->source);
+        event_addwmmousepress(message, mousepress->button);
+        event_sendbuffer(message);
+
+    }
 
 }
 
@@ -631,7 +663,15 @@ static void onmouserelease(struct event_header *header)
     struct event_mouserelease *mouserelease = event_getdata(header);
 
     if (currentview->currentremote)
-        event_sendwmmouserelease(FILE_PM, header->target, currentview->currentremote->source, mouserelease->button);
+    {
+
+        char message[FUDGE_BSIZE];
+
+        event_addrequest(message, header, EVENT_WMMOUSERELEASE, currentview->currentremote->source);
+        event_addwmmouserelease(message, mouserelease->button);
+        event_sendbuffer(message);
+
+    }
 
 }
 
