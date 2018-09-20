@@ -389,7 +389,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!t)
                 return;
 
-            if (!(file_walkfrom(FILE_CP, FILE_L1, t->str) || file_walk(FILE_CP, t->str)))
+            if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
             ntask = add(task, ntask, call_spawn());
@@ -402,7 +402,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!t)
                 return;
 
-            if (!(file_walkfrom(FILE_CP, FILE_L1, t->str) || file_walk(FILE_CP, t->str)))
+            if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
             ntask = add(task, ntask, call_spawn());
@@ -422,7 +422,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 static void oninit(struct event_header *header)
 {
 
-    if (!file_walk(FILE_L1, "/bin"))
+    if (!file_walk(FILE_L0, "/bin"))
         return;
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);

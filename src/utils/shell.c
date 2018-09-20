@@ -170,10 +170,10 @@ static void onconsoledata(struct event_header *header)
 void main(void)
 {
 
-    if (!file_walk(FILE_L1, "/system/console/event"))
+    if (!file_walk(FILE_L0, "/system/console/event"))
         return;
 
-    file_open(FILE_L1);
+    file_open(FILE_L0);
     event_open();
 
     while (!quit)
@@ -215,7 +215,7 @@ void main(void)
     }
 
     event_close();
-    file_close(FILE_L1);
+    file_close(FILE_L0);
 
 }
 

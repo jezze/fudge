@@ -7,15 +7,11 @@
 #include "render.h"
 
 static unsigned int quit;
-static char outputdata[FUDGE_BSIZE];
-static struct ring output;
 
 static void oninit(struct event_header *header)
 {
 
     char message[FUDGE_BSIZE];
-
-    ring_init(&output, FUDGE_BSIZE, outputdata);
 
     event_addrequest(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
     event_sendbuffer(message);
@@ -45,10 +41,11 @@ static void onwmmousepress(struct event_header *header)
     {
 
     case 0x01:
-        render_init();
-        render_setvideo(FILE_L1, 1920, 1080, 4);
+        if (!file_walk(FILE_L0, "/system/video/if:0/ctrl"))
+            break;
 
-        quit = 1;
+        render_init();
+        render_setvideo(FILE_L0, 1920, 1080, 4);
 
         break;
 
@@ -58,9 +55,6 @@ static void onwmmousepress(struct event_header *header)
 
 void main(void)
 {
-
-    if (!file_walk(FILE_L1, "/system/video/if:0/ctrl"))
-        return;
 
     event_open();
 
@@ -87,14 +81,6 @@ void main(void)
             onwmmousepress(header);
 
             break;
-
-        }
-
-        if (ring_count(&output))
-        {
-
-            event_sendwmflush(FILE_PM, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
-            ring_reset(&output);
 
         }
 
