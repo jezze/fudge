@@ -1,7 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <event/base.h>
-#include <event/device.h>
 
 static unsigned int quit;
 static unsigned char inputbuffer[FUDGE_BSIZE];

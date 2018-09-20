@@ -1,7 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <event/base.h>
-#include <event/wm.h>
 #include <math/box.h>
 #include <widget/widget.h>
 #include "render.h"

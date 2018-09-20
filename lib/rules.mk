@@ -1,6 +1,5 @@
 include $(DIR_LIB)/abi/rules.mk
 include $(DIR_LIB)/crypt/rules.mk
-include $(DIR_LIB)/event/rules.mk
 include $(DIR_LIB)/format/rules.mk
 include $(DIR_LIB)/fudge/rules.mk
 include $(DIR_LIB)/keymap/rules.mk

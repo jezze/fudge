@@ -5,7 +5,6 @@ O:=\
     $(DIR_SRC)/utils/date.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -18,7 +17,6 @@ O:=\
     $(DIR_SRC)/utils/dump.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -31,7 +29,6 @@ O:=\
     $(DIR_SRC)/utils/echo.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -70,7 +67,6 @@ O:=\
     $(DIR_SRC)/utils/hello.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -83,7 +79,6 @@ O:=\
     $(DIR_SRC)/utils/help.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -96,7 +91,6 @@ O:=\
     $(DIR_SRC)/utils/init.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -109,7 +103,6 @@ O:=\
     $(DIR_SRC)/utils/initfs.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -122,7 +115,6 @@ O:=\
     $(DIR_SRC)/utils/initnet.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -135,7 +127,6 @@ O:=\
     $(DIR_SRC)/utils/ls.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -148,7 +139,6 @@ O:=\
     $(DIR_SRC)/utils/lsc.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -161,7 +151,6 @@ O:=\
     $(DIR_SRC)/utils/motd.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -174,7 +163,6 @@ O:=\
     $(DIR_SRC)/utils/reboot.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -187,7 +175,6 @@ O:=\
     $(DIR_SRC)/utils/shell.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -200,7 +187,6 @@ O:=\
     $(DIR_SRC)/utils/slang.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -213,7 +199,6 @@ O:=\
     $(DIR_SRC)/utils/timestamp.o \
 
 L:=\
-    $(DIR_LIB)/event/event.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 

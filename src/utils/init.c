@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <event/base.h>
 
 void main(void)
 {
