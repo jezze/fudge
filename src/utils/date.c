@@ -55,9 +55,9 @@ static void onfile(struct event_header *header)
     struct event_file *file = event_getdata(header);
     struct ctrl_clocksettings settings;
 
-    file_open(file->num);
-    file_readall(file->num, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(file->num);
+    file_open(file->descriptor);
+    file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(file->descriptor);
     date(header, &settings);
 
 }

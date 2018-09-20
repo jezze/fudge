@@ -44,12 +44,12 @@ static void onfile(struct event_header *header)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(file->num);
+    file_open(file->descriptor);
 
-    while ((count = file_read(file->num, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
         dump(header, count, buffer);
 
-    file_close(file->num);
+    file_close(file->descriptor);
 
 }
 

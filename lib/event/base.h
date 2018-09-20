@@ -15,7 +15,7 @@ struct event_data
 struct event_file
 {
 
-    unsigned char num;
+    unsigned char descriptor;
 
 };
 
@@ -27,7 +27,7 @@ unsigned int event_addrequest(void *buffer, struct event_header *header, unsigne
 unsigned int event_addpipe(void *buffer, struct event_header *header, unsigned int type, unsigned int id);
 unsigned int event_addresponse(void *buffer, struct event_header *header, unsigned int type);
 unsigned int event_adddata(void *buffer, unsigned int count, void *data);
-unsigned int event_addfile(void *buffer, unsigned int num);
+unsigned int event_addfile(void *buffer, unsigned int descriptor);
 void event_open(void);
 void event_close(void);
 struct event_header *event_read(void *data);

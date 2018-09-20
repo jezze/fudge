@@ -134,14 +134,14 @@ unsigned int event_adddata(void *buffer, unsigned int count, void *data)
 
 }
 
-unsigned int event_addfile(void *buffer, unsigned int num)
+unsigned int event_addfile(void *buffer, unsigned int descriptor)
 {
 
     struct event_header *header = buffer;
     struct event_file *file = event_getdata(buffer);
 
     header->length += sizeof (struct event_file);
-    file->num = num;
+    file->descriptor = descriptor;
 
     return header->length;
 
