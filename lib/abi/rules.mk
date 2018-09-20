@@ -3,8 +3,9 @@ L:=\
 
 O:=\
     $(DIR_LIB)/abi/echo.o \
-    $(DIR_LIB)/abi/file.o \
     $(DIR_LIB)/abi/write.o \
+    $(DIR_LIB)/abi/event.o \
+    $(DIR_LIB)/abi/file.o \
 
 include $(DIR_LIB)/abi/$(ARCH)/rules.mk
 include $(DIR_MK)/lib.mk
@@ -14,8 +15,9 @@ L:=\
 
 O:=\
     $(DIR_LIB)/abi/echo.o \
-    $(DIR_LIB)/abi/file.o \
     $(DIR_LIB)/abi/write.o \
+    $(DIR_LIB)/abi/event.o \
+    $(DIR_LIB)/abi/file.o \
 
 include $(DIR_LIB)/abi/$(ARCH)/qrules.mk
 include $(DIR_MK)/lib.mk

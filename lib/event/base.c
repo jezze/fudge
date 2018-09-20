@@ -1,4 +1,3 @@
-#include <abi.h>
 #include <fudge.h>
 #include "base.h"
 
@@ -144,42 +143,6 @@ unsigned int event_addfile(void *buffer, unsigned int descriptor)
     file->descriptor = descriptor;
 
     return header->length;
-
-}
-
-void event_open(void)
-{
-
-    file_walk(FILE_PM, "/system/event");
-    file_open(FILE_PM);
-
-}
-
-void event_close(void)
-{
-
-    file_close(FILE_PM);
-
-}
-
-struct event_header *event_read(void *data)
-{
-
-    struct event_header *header = data;
-
-    while (file_readall(FILE_PM, header, sizeof (struct event_header)) != sizeof (struct event_header));
-    while (file_readall(FILE_PM, header + 1, header->length - sizeof (struct event_header)) != header->length - sizeof (struct event_header));
-
-    return header;
-
-}
-
-unsigned int event_send(void *buffer)
-{
-
-    struct event_header *message = buffer;
-
-    return file_writeall(FILE_PM, message, message->length);
 
 }
 
