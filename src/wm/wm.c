@@ -174,6 +174,25 @@ static void hideremotes(struct event_header *header, struct list *remotes)
 
 }
 
+static void resizeremotes(struct event_header *header, struct list *remotes)
+{
+
+    struct list_item *current;
+
+    for (current = remotes->head; current; current = current->next)
+    {
+
+        struct remote *remote = current->data;
+        char message[FUDGE_BSIZE];
+
+        event_addrequest(message, header, EVENT_WMRESIZE, remote->source);
+        event_addwmresize(message, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+        event_send(message);
+
+    }
+
+}
+
 static void flipview(struct event_header *header, struct view *view)
 {
 
@@ -224,8 +243,6 @@ static void arrangetiled(struct view *view)
 static void arrangeview(struct event_header *header, struct view *view)
 {
 
-    struct list_item *current;
-
     switch (view->remotes.count)
     {
 
@@ -244,17 +261,7 @@ static void arrangeview(struct event_header *header, struct view *view)
 
     }
 
-    for (current = view->remotes.head; current; current = current->next)
-    {
-
-        struct remote *remote = current->data;
-        char message[FUDGE_BSIZE];
-
-        event_addrequest(message, header, EVENT_WMRESIZE, remote->source);
-        event_addwmresize(message, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
-        event_send(message);
-
-    }
+    resizeremotes(header, &view->remotes);
 
 }
 
