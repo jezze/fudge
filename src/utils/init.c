@@ -37,12 +37,12 @@ void main(void)
     file_walk(FILE_L0, "/system/event");
     file_open(FILE_L0);
     event_addheader(message, EVENT_INIT, EVENT_ADDR_SELF, id);
-    event_sendbuffer(FILE_L0, message);
+    event_sendbuffer(message);
     event_addheader(message, EVENT_FILE, EVENT_ADDR_SELF, id);
     event_addfile(message, FILE_PI);
-    event_sendbuffer(FILE_L0, message);
+    event_sendbuffer(message);
     event_addheader(message, EVENT_EXIT, EVENT_ADDR_SELF, id);
-    event_sendbuffer(FILE_L0, message);
+    event_sendbuffer(message);
     file_close(FILE_L0);
 
 }

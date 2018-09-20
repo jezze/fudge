@@ -147,24 +147,24 @@ unsigned int event_addfile(void *buffer, unsigned int num)
 
 }
 
-struct event_header *event_read(unsigned int descriptor, void *data)
+struct event_header *event_read(void *data)
 {
 
     struct event_header *header = data;
 
-    while (file_readall(descriptor, header, sizeof (struct event_header)) != sizeof (struct event_header));
-    while (file_readall(descriptor, header + 1, header->length - sizeof (struct event_header)) != header->length - sizeof (struct event_header));
+    while (file_readall(FILE_L0, header, sizeof (struct event_header)) != sizeof (struct event_header));
+    while (file_readall(FILE_L0, header + 1, header->length - sizeof (struct event_header)) != header->length - sizeof (struct event_header));
 
     return header;
 
 }
 
-unsigned int event_sendbuffer(unsigned int descriptor, void *buffer)
+unsigned int event_sendbuffer(void *buffer)
 {
 
     struct event_header *message = buffer;
 
-    return file_writeall(descriptor, message, message->length);
+    return file_writeall(FILE_L0, message, message->length);
 
 }
 

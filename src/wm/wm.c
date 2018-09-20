@@ -317,14 +317,14 @@ static void onkill(struct event_header *header)
 
             event_sendwmhide(FILE_L0, header->target, remote->source);
             event_addrequest(buffer, header, EVENT_KILL, remote->source);
-            event_sendbuffer(FILE_L0, buffer);
+            event_sendbuffer(buffer);
 
         }
 
     }
 
     event_addresponse(message, header, EVENT_CHILD);
-    event_sendbuffer(FILE_L0, message);
+    event_sendbuffer(message);
 
     quit = 1;
 
@@ -403,7 +403,7 @@ static void onkeypress(struct event_header *header)
 
             event_sendwmhide(FILE_L0, header->target, currentview->currentremote->source);
             event_addrequest(buffer, header, EVENT_KILL, currentview->currentremote->source);
-            event_sendbuffer(FILE_L0, buffer);
+            event_sendbuffer(buffer);
 
         }
 
@@ -424,9 +424,9 @@ static void onkeypress(struct event_header *header)
             char buffer[FUDGE_BSIZE];
 
             event_addrequest(buffer, header, EVENT_INIT, id);
-            event_sendbuffer(FILE_L0, buffer);
+            event_sendbuffer(buffer);
             event_addrequest(buffer, header, EVENT_EXIT, id);
-            event_sendbuffer(FILE_L0, buffer);
+            event_sendbuffer(buffer);
 
         }
 
@@ -512,7 +512,7 @@ static void onkeypress(struct event_header *header)
 
             event_sendwmhide(FILE_L0, header->target, header->target);
             event_addrequest(buffer, header, EVENT_KILL, header->target);
-            event_sendbuffer(FILE_L0, buffer);
+            event_sendbuffer(buffer);
 
         }
 
@@ -844,7 +844,7 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
-        struct event_header *header = event_read(FILE_L0, data);
+        struct event_header *header = event_read(data);
 
         switch (header->type)
         {

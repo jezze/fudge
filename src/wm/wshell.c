@@ -145,12 +145,12 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
         char buffer[FUDGE_BSIZE];
 
         event_addrequest(buffer, header, EVENT_INIT, id);
-        event_sendbuffer(FILE_L0, buffer);
+        event_sendbuffer(buffer);
         event_addrequest(buffer, header, EVENT_DATA, id);
         event_adddata(buffer, count, command);
-        event_sendbuffer(FILE_L0, buffer);
+        event_sendbuffer(buffer);
         event_addrequest(buffer, header, EVENT_EXIT, id);
-        event_sendbuffer(FILE_L0, buffer);
+        event_sendbuffer(buffer);
 
     }
 
@@ -191,7 +191,7 @@ static void oninit(struct event_header *header)
     widget_inittextbox(&content);
     copybuffer("$ ", 2);
     event_addrequest(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
-    event_sendbuffer(FILE_L0, message);
+    event_sendbuffer(message);
 
 }
 
@@ -201,9 +201,9 @@ static void onkill(struct event_header *header)
     char message[FUDGE_BSIZE];
 
     event_addrequest(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
-    event_sendbuffer(FILE_L0, message);
+    event_sendbuffer(message);
     event_addresponse(message, header, EVENT_CHILD);
-    event_sendbuffer(FILE_L0, message);
+    event_sendbuffer(message);
 
     quit = 1;
 
@@ -372,7 +372,7 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
-        struct event_header *header = event_read(FILE_L0, data);
+        struct event_header *header = event_read(data);
 
         switch (header->type)
         {

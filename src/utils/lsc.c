@@ -27,7 +27,7 @@ static void list(struct event_header *header, unsigned int descriptor)
 
         event_addresponse(message, header, EVENT_DATA);
         event_adddata(message, count, buffer);
-        event_sendbuffer(FILE_L0, message);
+        event_sendbuffer(message);
 
         if (!file_step(descriptor))
             break;
@@ -44,7 +44,7 @@ static void onkill(struct event_header *header)
     char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
-    event_sendbuffer(FILE_L0, message);
+    event_sendbuffer(message);
 
     quit = 1;
 
@@ -77,7 +77,7 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
-        struct event_header *header = event_read(FILE_L0, data);
+        struct event_header *header = event_read(data);
 
         switch (header->type)
         {

@@ -291,7 +291,7 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
     {
 
         event_addrequest(message, header, EVENT_INIT, task[j].id);
-        event_sendbuffer(FILE_L0, message);
+        event_sendbuffer(message);
 
     }
 
@@ -307,7 +307,7 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
                 event_addforward(message, task[x - 1].id);
 
             event_addfile(message, FILE_PI + k);
-            event_sendbuffer(FILE_L0, message);
+            event_sendbuffer(message);
 
         }
 
@@ -322,7 +322,7 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
             event_addforward(message, task[x - 1].id);
 
         event_adddata(message, 0, 0);
-        event_sendbuffer(FILE_L0, message);
+        event_sendbuffer(message);
 
     }
 
@@ -330,7 +330,7 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
     {
 
         event_addrequest(message, header, EVENT_EXIT, task[j].id);
-        event_sendbuffer(FILE_L0, message);
+        event_sendbuffer(message);
 
     }
 
@@ -438,7 +438,7 @@ static void onkill(struct event_header *header)
     char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
-    event_sendbuffer(FILE_L0, message);
+    event_sendbuffer(message);
 
     quit = 1;
 
@@ -487,7 +487,7 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
-        struct event_header *header = event_read(FILE_L0, data);
+        struct event_header *header = event_read(data);
 
         switch (header->type)
         {
