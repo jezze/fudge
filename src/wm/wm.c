@@ -136,18 +136,6 @@ static void deactivateremote(struct remote *remote)
 
 }
 
-static void resizeremote(struct event_header *header, struct remote *remote, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
-{
-
-    char message[FUDGE_BSIZE];
-
-    box_setsize(&remote->window.size, x, y, w, h);
-    event_addrequest(message, header, EVENT_WMRESIZE, remote->source);
-    event_addwmresize(message, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
-    event_send(message);
-
-}
-
 static void showremotes(struct event_header *header, struct list *remotes)
 {
 
@@ -201,26 +189,31 @@ static void flipview(struct event_header *header, struct view *view)
 
 }
 
-static void arrangesingle(struct event_header *header, struct view *view)
+static void arrangesingle(struct view *view)
 {
 
-    resizeremote(header, view->remotes.tail->data, body.x, body.y, body.w, body.h);
+    struct remote *remote = view->remotes.tail->data;
+
+    box_setsize(&remote->window.size, body.x, body.y, body.w, body.h);
 
 }
 
-static void arrangetiled(struct event_header *header, struct view *view)
+static void arrangetiled(struct view *view)
 {
 
     unsigned int y = body.y;
     unsigned int h = body.h / (view->remotes.count - 1);
     struct list_item *current;
+    struct remote *remote = view->remotes.tail->data;
 
-    resizeremote(header, view->remotes.tail->data, body.x, body.y, view->center, body.h);
+    box_setsize(&remote->window.size, body.x, body.y, view->center, body.h);
 
     for (current = view->remotes.tail->prev; current; current = current->prev)
     {
 
-        resizeremote(header, current->data, body.x + view->center, y, body.w - view->center, h);
+        struct remote *remote = current->data;
+
+        box_setsize(&remote->window.size, body.x + view->center, y, body.w - view->center, h);
 
         y += h;
 
@@ -231,6 +224,8 @@ static void arrangetiled(struct event_header *header, struct view *view)
 static void arrangeview(struct event_header *header, struct view *view)
 {
 
+    struct list_item *current;
+
     switch (view->remotes.count)
     {
 
@@ -238,14 +233,26 @@ static void arrangeview(struct event_header *header, struct view *view)
         break;
 
     case 1:
-        arrangesingle(header, view);
+        arrangesingle(view);
 
         break;
 
     default:
-        arrangetiled(header, view);
+        arrangetiled(view);
 
         break;
+
+    }
+
+    for (current = view->remotes.head; current; current = current->next)
+    {
+
+        struct remote *remote = current->data;
+        char message[FUDGE_BSIZE];
+
+        event_addrequest(message, header, EVENT_WMRESIZE, remote->source);
+        event_addwmresize(message, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+        event_send(message);
 
     }
 
@@ -523,8 +530,10 @@ static void onkeypress(struct event_header *header)
 
             char message[FUDGE_BSIZE];
 
+            /* Sending to self not allowed */
             event_addrequest(message, header, EVENT_WMHIDE, header->target);
             event_send(message);
+            /* Sending to self not allowed */
             event_addrequest(message, header, EVENT_KILL, header->target);
             event_send(message);
 
@@ -726,9 +735,11 @@ static void onvideomode(struct event_header *header)
 
     }
 
+    /* Sending to self not allowed */
     event_addrequest(message, header, EVENT_WMRESIZE, header->target);
     event_addwmresize(message, 0, 0, videomode->w, videomode->h, padding, lineheight);
     event_send(message);
+    /* Sending to self not allowed */
     event_addrequest(message, header, EVENT_WMSHOW, header->target);
     event_send(message);
 
