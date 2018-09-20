@@ -193,6 +193,25 @@ static void resizeremotes(struct event_header *header, struct list *remotes)
 
 }
 
+static void killremotes(struct event_header *header, struct list *remotes)
+{
+
+    struct list_item *current;
+
+    for (current = remotes->head; current; current = current->next)
+    {
+
+        struct remote *remote = current->data;
+        char message[FUDGE_BSIZE];
+
+        event_addrequest(message, header, EVENT_KILL, remote->source);
+        event_send(message);
+        removeremote(header, remote);
+
+    }
+
+}
+
 static void flipview(struct event_header *header, struct view *view)
 {
 
@@ -329,19 +348,9 @@ static void onkill(struct event_header *header)
     {
 
         struct view *view = current->data;
-        struct list_item *current2;
 
-        for (current2 = view->remotes.head; current; current = current->next)
-        {
-
-            struct remote *remote = current2->data;
-
-            event_addrequest(message, header, EVENT_WMHIDE, remote->source);
-            event_send(message);
-            event_addrequest(message, header, EVENT_KILL, remote->source);
-            event_send(message);
-
-        }
+        hideremotes(header, &view->remotes);
+        killremotes(header, &view->remotes);
 
     }
 
