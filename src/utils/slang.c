@@ -254,14 +254,40 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void run(struct event_header *header, struct task *task, unsigned int ntask)
+static unsigned int add(struct task *task, unsigned int count, unsigned int id)
+{
+
+    if (id)
+    {
+
+        task[count].id = id;
+
+        return count + 1;
+
+    }
+
+    return count;
+
+}
+
+static unsigned int clear(struct task *task, unsigned int count)
+{
+
+    memory_clear(task, sizeof (struct task) * count);
+
+    return 0;
+
+}
+
+static void run(struct event_header *header, struct task *task, unsigned int count)
 {
 
     char message[FUDGE_BSIZE];
     unsigned int j;
     unsigned int k;
+    unsigned int x;
 
-    for (j = 0; j < ntask; j++)
+    for (j = 0; j < count; j++)
     {
 
         event_addrequest(message, header, EVENT_INIT, task[j].id);
@@ -269,17 +295,15 @@ static void run(struct event_header *header, struct task *task, unsigned int nta
 
     }
 
-    for (j = 0; j < ntask; j++)
+    for (j = 0; j < count; j++)
     {
 
         for (k = 0; k < task[j].ninputs; k++)
         {
 
-            unsigned int x;
-
             event_addpipe(message, header, EVENT_FILE, task[j].id);
 
-            for (x = ntask; x > j + 1; x--)
+            for (x = count; x > j + 1; x--)
                 event_addforward(message, task[x - 1].id);
 
             event_addfile(message, FILE_PI + k);
@@ -292,11 +316,9 @@ static void run(struct event_header *header, struct task *task, unsigned int nta
     if (!task[0].ninputs)
     {
 
-        unsigned int x;
-
         event_addpipe(message, header, EVENT_DATA, task[0].id);
 
-        for (x = ntask; x > 0 + 1; x--)
+        for (x = count; x > 0 + 1; x--)
             event_addforward(message, task[x - 1].id);
 
         event_adddata(message, 0, 0);
@@ -304,7 +326,7 @@ static void run(struct event_header *header, struct task *task, unsigned int nta
 
     }
 
-    for (j = 0; j < ntask; j++)
+    for (j = 0; j < count; j++)
     {
 
         event_addrequest(message, header, EVENT_EXIT, task[j].id);
@@ -318,10 +340,8 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 {
 
     struct task task[32];
-    unsigned int ntask = 0;
+    unsigned int ntask = clear(task, 32);
     unsigned int i;
-
-    memory_clear(task, sizeof (struct task) * 32);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -372,12 +392,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!(file_walkfrom(FILE_CP, FILE_L1, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            task[ntask].id = call_spawn();
-
-            if (!task[ntask].id)
-                return;
-
-            ntask++;
+            ntask = add(task, ntask, call_spawn());
 
             break;
 
@@ -390,16 +405,11 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!(file_walkfrom(FILE_CP, FILE_L1, t->str) || file_walk(FILE_CP, t->str)))
                 return;
 
-            task[ntask].id = call_spawn();
-
-            if (!task[ntask].id)
-                return;
-
-            ntask++;
+            ntask = add(task, ntask, call_spawn());
 
             run(header, task, ntask);
-            memory_clear(task, sizeof (struct task) * 32);
-            ntask = 0;
+
+            ntask = clear(task, ntask);
 
             break;
 
