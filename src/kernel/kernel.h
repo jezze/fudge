@@ -1,5 +1,5 @@
 #define KERNEL_TASKS                    128
-#define KERNEL_DESCRIPTORS              32
+#define KERNEL_DESCRIPTORS              64
 #define KERNEL_MOUNTS                   32
 
 unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsigned int length);

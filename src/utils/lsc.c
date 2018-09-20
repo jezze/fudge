@@ -70,8 +70,8 @@ void main(void)
 {
 
     /* Once event system is inside kernel, there is no need to use the filesystem to send events */
-    file_walk(FILE_L0, "/system/event");
-    file_open(FILE_L0);
+    file_walk(FILE_PM, "/system/event");
+    file_open(FILE_PM);
 
     while (!quit)
     {
@@ -102,7 +102,7 @@ void main(void)
 
     }
 
-    file_close(FILE_L0);
+    file_close(FILE_PM);
 
 }
 

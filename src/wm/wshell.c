@@ -363,10 +363,10 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    if (!file_walk(FILE_L0, "/system/event"))
+    if (!file_walk(FILE_PM, "/system/event"))
         return;
 
-    file_open(FILE_L0);
+    file_open(FILE_PM);
 
     while (!quit)
     {
@@ -427,14 +427,14 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_sendwmflush(FILE_L0, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
+            event_sendwmflush(FILE_PM, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, ring_count(&output), outputdata);
             ring_reset(&output);
 
         }
 
     }
 
-    file_close(FILE_L0);
+    file_close(FILE_PM);
 
 }
 

@@ -152,8 +152,8 @@ struct event_header *event_read(void *data)
 
     struct event_header *header = data;
 
-    while (file_readall(FILE_L0, header, sizeof (struct event_header)) != sizeof (struct event_header));
-    while (file_readall(FILE_L0, header + 1, header->length - sizeof (struct event_header)) != header->length - sizeof (struct event_header));
+    while (file_readall(FILE_PM, header, sizeof (struct event_header)) != sizeof (struct event_header));
+    while (file_readall(FILE_PM, header + 1, header->length - sizeof (struct event_header)) != header->length - sizeof (struct event_header));
 
     return header;
 
@@ -164,7 +164,7 @@ unsigned int event_sendbuffer(void *buffer)
 
     struct event_header *message = buffer;
 
-    return file_writeall(FILE_L0, message, message->length);
+    return file_writeall(FILE_PM, message, message->length);
 
 }
 

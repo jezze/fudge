@@ -240,13 +240,13 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
     unsigned int i;
 
-    for (i = 0; i < 8; i++)
+    for (i = 0x00; i < 0x10; i++)
     {
 
-        copydescriptor(kernel_getdescriptor(target, i + 0), kernel_getdescriptor(source, i + 8), target);
-        copydescriptor(kernel_getdescriptor(target, i + 8), kernel_getdescriptor(source, i + 8), target);
-        copydescriptor(kernel_getdescriptor(target, i + 16), 0, target);
-        copydescriptor(kernel_getdescriptor(target, i + 24), 0, target);
+        copydescriptor(kernel_getdescriptor(target, i + 0x00), kernel_getdescriptor(source, i + 0x10), target);
+        copydescriptor(kernel_getdescriptor(target, i + 0x10), kernel_getdescriptor(source, i + 0x10), target);
+        copydescriptor(kernel_getdescriptor(target, i + 0x20), 0, target);
+        copydescriptor(kernel_getdescriptor(target, i + 0x30), 0, target);
 
     }
 
@@ -353,8 +353,8 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 void kernel_setupinit(struct task *task)
 {
 
-    struct service_descriptor *init = kernel_getdescriptor(task, 8);
-    struct service_descriptor *root = kernel_getdescriptor(task, 9);
+    struct service_descriptor *init = kernel_getdescriptor(task, 0x10);
+    struct service_descriptor *root = kernel_getdescriptor(task, 0x11);
 
     root->backend = service_findbackend(1000);
     root->protocol = service_findprotocol(1000);
