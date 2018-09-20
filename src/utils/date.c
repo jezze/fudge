@@ -4,18 +4,22 @@
 
 static unsigned int quit;
 
-static void date(struct event_header *header, struct ctrl_clocksettings *settings)
+static void date(struct event_header *header, unsigned int descriptor)
 {
 
-    char message[FUDGE_BSIZE];
+    struct ctrl_clocksettings settings;
     char *datetime = "0000-00-00 00:00:00\n";
+    char message[FUDGE_BSIZE];
 
-    ascii_wzerovalue(datetime, 20, settings->year, 10, 4, 0);
-    ascii_wzerovalue(datetime, 20, settings->month, 10, 2, 5);
-    ascii_wzerovalue(datetime, 20, settings->day, 10, 2, 8);
-    ascii_wzerovalue(datetime, 20, settings->hours, 10, 2, 11);
-    ascii_wzerovalue(datetime, 20, settings->minutes, 10, 2, 14);
-    ascii_wzerovalue(datetime, 20, settings->seconds, 10, 2, 17);
+    file_open(descriptor);
+    file_readall(descriptor, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(descriptor);
+    ascii_wzerovalue(datetime, 20, settings.year, 10, 4, 0);
+    ascii_wzerovalue(datetime, 20, settings.month, 10, 2, 5);
+    ascii_wzerovalue(datetime, 20, settings.day, 10, 2, 8);
+    ascii_wzerovalue(datetime, 20, settings.hours, 10, 2, 11);
+    ascii_wzerovalue(datetime, 20, settings.minutes, 10, 2, 14);
+    ascii_wzerovalue(datetime, 20, settings.seconds, 10, 2, 17);
     event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, 20, datetime);
     event_sendbuffer(message);
@@ -37,15 +41,10 @@ static void onkill(struct event_header *header)
 static void ondata(struct event_header *header)
 {
 
-    struct ctrl_clocksettings settings;
-
-    if (!file_walk(FILE_L1, "/system/clock/if:0/ctrl"))
+    if (!file_walk(FILE_L0, "/system/clock/if:0/ctrl"))
         return;
 
-    file_open(FILE_L1);
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(FILE_L1);
-    date(header, &settings);
+    date(header, FILE_L0);
 
 }
 
@@ -53,12 +52,8 @@ static void onfile(struct event_header *header)
 {
 
     struct event_file *file = event_getdata(header);
-    struct ctrl_clocksettings settings;
 
-    file_open(file->descriptor);
-    file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(file->descriptor);
-    date(header, &settings);
+    date(header, file->descriptor);
 
 }
 

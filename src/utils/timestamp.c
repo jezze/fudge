@@ -19,18 +19,32 @@ static unsigned int isleapyear(unsigned int year)
 
 }
 
-static void timestamp(struct event_header *header, struct ctrl_clocksettings *settings)
+static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
 {
 
     unsigned int year = settings->year - 1970;
     unsigned int dyear = ((((365 * year) + (year / 4)) - (year / 100)) + (year / 400));
     unsigned int dmonth = isleapyear(year) ? dotm366[settings->month - 1] : dotm365[settings->month - 1];
-    unsigned int timestamp = ((dyear + dmonth + settings->day) * 86400) + ((settings->hours * 3600) + (settings->minutes * 60) + settings->seconds);
-    unsigned int count = 0;
+
+    return ((dyear + dmonth + settings->day) * 86400) + ((settings->hours * 3600) + (settings->minutes * 60) + settings->seconds);
+
+}
+
+static void timestamp(struct event_header *header, unsigned int descriptor)
+{
+
+    struct ctrl_clocksettings settings;
     char message[FUDGE_BSIZE];
     char num[FUDGE_NSIZE];
+    unsigned int count;
+    unsigned int timestamp;
 
-    count += ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10);
+    file_open(descriptor);
+    file_readall(descriptor, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(descriptor);
+
+    timestamp = gettimestamp(&settings);
+    count = ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10);
     count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
 
     event_addresponse(message, header, EVENT_DATA);
@@ -54,15 +68,10 @@ static void onkill(struct event_header *header)
 static void ondata(struct event_header *header)
 {
 
-    struct ctrl_clocksettings settings;
-
-    if (!file_walk(FILE_L1, "/system/clock/if:0/ctrl"))
+    if (!file_walk(FILE_L0, "/system/clock/if:0/ctrl"))
         return;
 
-    file_open(FILE_L1);
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(FILE_L1);
-    timestamp(header, &settings);
+    timestamp(header, FILE_L0);
 
 }
 
@@ -70,12 +79,8 @@ static void onfile(struct event_header *header)
 {
 
     struct event_file *file = event_getdata(header);
-    struct ctrl_clocksettings settings;
 
-    file_open(file->descriptor);
-    file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(file->descriptor);
-    timestamp(header, &settings);
+    timestamp(header, file->descriptor);
 
 }
 
