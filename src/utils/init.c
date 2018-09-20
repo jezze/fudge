@@ -35,12 +35,12 @@ void main(void)
 
     event_open();
     event_addheader(message, EVENT_INIT, EVENT_ADDR_SELF, id);
-    event_sendbuffer(message);
+    event_send(message);
     event_addheader(message, EVENT_FILE, EVENT_ADDR_SELF, id);
     event_addfile(message, FILE_PI);
-    event_sendbuffer(message);
+    event_send(message);
     event_addheader(message, EVENT_EXIT, EVENT_ADDR_SELF, id);
-    event_sendbuffer(message);
+    event_send(message);
     event_close();
 
 }

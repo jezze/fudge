@@ -317,14 +317,14 @@ static void onkill(struct event_header *header)
 
             event_sendwmhide(FILE_PM, header->target, remote->source);
             event_addrequest(buffer, header, EVENT_KILL, remote->source);
-            event_sendbuffer(buffer);
+            event_send(buffer);
 
         }
 
     }
 
     event_addresponse(message, header, EVENT_CHILD);
-    event_sendbuffer(message);
+    event_send(message);
 
     quit = 1;
 
@@ -350,7 +350,7 @@ static void onkeypress(struct event_header *header)
 
             event_addrequest(message, header, EVENT_WMKEYPRESS, currentview->currentremote->source);
             event_addwmkeypress(message, keypress->scancode);
-            event_sendbuffer(message);
+            event_send(message);
 
         }
 
@@ -411,7 +411,7 @@ static void onkeypress(struct event_header *header)
 
             event_sendwmhide(FILE_PM, header->target, currentview->currentremote->source);
             event_addrequest(buffer, header, EVENT_KILL, currentview->currentremote->source);
-            event_sendbuffer(buffer);
+            event_send(buffer);
 
         }
 
@@ -432,9 +432,9 @@ static void onkeypress(struct event_header *header)
             char buffer[FUDGE_BSIZE];
 
             event_addrequest(buffer, header, EVENT_INIT, id);
-            event_sendbuffer(buffer);
+            event_send(buffer);
             event_addrequest(buffer, header, EVENT_EXIT, id);
-            event_sendbuffer(buffer);
+            event_send(buffer);
 
         }
 
@@ -520,7 +520,7 @@ static void onkeypress(struct event_header *header)
 
             event_sendwmhide(FILE_PM, header->target, header->target);
             event_addrequest(buffer, header, EVENT_KILL, header->target);
-            event_sendbuffer(buffer);
+            event_send(buffer);
 
         }
 
@@ -547,7 +547,7 @@ static void onkeyrelease(struct event_header *header)
 
             event_addrequest(message, header, EVENT_WMKEYRELEASE, currentview->currentremote->source);
             event_addwmkeyrelease(message, keyrelease->scancode);
-            event_sendbuffer(message);
+            event_send(message);
 
         }
 
@@ -580,7 +580,7 @@ static void onmousemove(struct event_header *header)
 
         event_addrequest(message, header, EVENT_WMMOUSEMOVE, currentview->currentremote->source);
         event_addwmmousemove(message, mouse.size.x, mouse.size.y);
-        event_sendbuffer(message);
+        event_send(message);
 
     }
 
@@ -651,7 +651,7 @@ static void onmousepress(struct event_header *header)
 
         event_addrequest(message, header, EVENT_WMMOUSEPRESS, currentview->currentremote->source);
         event_addwmmousepress(message, mousepress->button);
-        event_sendbuffer(message);
+        event_send(message);
 
     }
 
@@ -669,7 +669,7 @@ static void onmouserelease(struct event_header *header)
 
         event_addrequest(message, header, EVENT_WMMOUSERELEASE, currentview->currentremote->source);
         event_addwmmouserelease(message, mouserelease->button);
-        event_sendbuffer(message);
+        event_send(message);
 
     }
 

@@ -22,7 +22,7 @@ static void date(struct event_header *header, unsigned int descriptor)
     ascii_wzerovalue(datetime, 20, settings.seconds, 10, 2, 17);
     event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, 20, datetime);
-    event_sendbuffer(message);
+    event_send(message);
 
 }
 
@@ -32,7 +32,7 @@ static void onkill(struct event_header *header)
     char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
-    event_sendbuffer(message);
+    event_send(message);
 
     quit = 1;
 

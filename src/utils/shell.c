@@ -52,12 +52,12 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
         char message[FUDGE_BSIZE];
 
         event_addrequest(message, header, EVENT_INIT, id);
-        event_sendbuffer(message);
+        event_send(message);
         event_addrequest(message, header, EVENT_DATA, id);
         event_adddata(message, count, command);
-        event_sendbuffer(message);
+        event_send(message);
         event_addrequest(message, header, EVENT_EXIT, id);
-        event_sendbuffer(message);
+        event_send(message);
 
     }
 
@@ -84,7 +84,7 @@ static void onkill(struct event_header *header)
     char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
-    event_sendbuffer(message);
+    event_send(message);
 
     quit = 1;
 

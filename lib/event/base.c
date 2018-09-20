@@ -174,21 +174,12 @@ struct event_header *event_read(void *data)
 
 }
 
-unsigned int event_sendbuffer(void *buffer)
+unsigned int event_send(void *buffer)
 {
 
     struct event_header *message = buffer;
 
     return file_writeall(FILE_PM, message, message->length);
-
-}
-
-unsigned int event_send(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int source, unsigned int target, unsigned int length)
-{
-
-    event_initheader(header, type, source, target, length);
-
-    return file_writeall(descriptor, header, header->length);
 
 }
 

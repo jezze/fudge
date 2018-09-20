@@ -19,10 +19,10 @@ static void dump(struct event_header *header, unsigned int count, void *buffer)
 
         event_addresponse(message, header, EVENT_DATA);
         event_adddata(message, cnum, num);
-        event_sendbuffer(message);
+        event_send(message);
         event_addresponse(message, header, EVENT_DATA);
         event_adddata(message, 2, "  ");
-        event_sendbuffer(message);
+        event_send(message);
 
     }
 
@@ -59,7 +59,7 @@ static void onkill(struct event_header *header)
     char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
-    event_sendbuffer(message);
+    event_send(message);
 
     quit = 1;
 

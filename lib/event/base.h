@@ -31,5 +31,4 @@ unsigned int event_addfile(void *buffer, unsigned int descriptor);
 void event_open(void);
 void event_close(void);
 struct event_header *event_read(void *data);
-unsigned int event_sendbuffer(void *buffer);
-unsigned int event_send(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int source, unsigned int target, unsigned int length);
+unsigned int event_send(void *buffer);

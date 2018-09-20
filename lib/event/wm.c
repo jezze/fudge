@@ -69,6 +69,15 @@ unsigned int event_addwmmousemove(void *buffer, char relx, char rely)
 
 }
 
+static unsigned int send(unsigned int descriptor, struct event_header *header, unsigned int type, unsigned int source, unsigned int target, unsigned int length)
+{
+
+    event_initheader(header, type, source, target, length);
+
+    return file_writeall(descriptor, header, header->length);
+
+}
+
 unsigned int event_sendwmresize(unsigned int descriptor, unsigned int source, unsigned int target, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 
@@ -81,7 +90,7 @@ unsigned int event_sendwmresize(unsigned int descriptor, unsigned int source, un
     message.wmresize.padding = padding;
     message.wmresize.lineheight = lineheight;
 
-    return event_send(descriptor, &message.header, EVENT_WMRESIZE, source, target, sizeof (struct event_wmresize));
+    return send(descriptor, &message.header, EVENT_WMRESIZE, source, target, sizeof (struct event_wmresize));
 
 }
 
@@ -90,7 +99,7 @@ unsigned int event_sendwmshow(unsigned int descriptor, unsigned int source, unsi
 
     struct {struct event_header header;} message;
 
-    return event_send(descriptor, &message.header, EVENT_WMSHOW, source, target, 0);
+    return send(descriptor, &message.header, EVENT_WMSHOW, source, target, 0);
 
 }
 
@@ -99,7 +108,7 @@ unsigned int event_sendwmhide(unsigned int descriptor, unsigned int source, unsi
 
     struct {struct event_header header;} message;
 
-    return event_send(descriptor, &message.header, EVENT_WMHIDE, source, target, 0);
+    return send(descriptor, &message.header, EVENT_WMHIDE, source, target, 0);
 
 }
 
@@ -108,7 +117,7 @@ unsigned int event_sendwmflush(unsigned int descriptor, unsigned int source, uns
 
     struct {struct event_header header; char data[0x800];} message;
 
-    return event_send(descriptor, &message.header, EVENT_WMFLUSH, source, target, memory_write(message.data, 0x800, buffer, count, 0));
+    return send(descriptor, &message.header, EVENT_WMFLUSH, source, target, memory_write(message.data, 0x800, buffer, count, 0));
 
 }
 

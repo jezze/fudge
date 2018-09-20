@@ -117,7 +117,7 @@ static void oninit(struct event_header *header)
     widget_inittextbox(&content);
     widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
     event_addrequest(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
-    event_sendbuffer(message);
+    event_send(message);
 
 }
 
@@ -127,9 +127,9 @@ static void onkill(struct event_header *header)
     char message[FUDGE_BSIZE];
 
     event_addrequest(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
-    event_sendbuffer(message);
+    event_send(message);
     event_addresponse(message, header, EVENT_CHILD);
-    event_sendbuffer(message);
+    event_send(message);
 
     quit = 1;
 

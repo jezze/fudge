@@ -10,7 +10,7 @@ static void onkill(struct event_header *header)
     char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
-    event_sendbuffer(message);
+    event_send(message);
 
     quit = 1;
 
@@ -34,12 +34,12 @@ static void ondata(struct event_header *header)
         return;
 
     event_addrequest(message, header, EVENT_INIT, id);
-    event_sendbuffer(message);
+    event_send(message);
     event_addpipe(message, header, EVENT_FILE, id);
     event_addfile(message, FILE_PI);
-    event_sendbuffer(message);
+    event_send(message);
     event_addrequest(message, header, EVENT_EXIT, id);
-    event_sendbuffer(message);
+    event_send(message);
 
 }
 
