@@ -814,9 +814,6 @@ static void onwmflush(struct event_header *header)
 void main(void)
 {
 
-    if (!file_walk(FILE_PM, "/system/event"))
-        return;
-
     if (!file_walk(FILE_L1, "/system/keyboard/event"))
         return;
 
@@ -839,6 +836,7 @@ void main(void)
     file_open(FILE_L1);
     file_open(FILE_L2);
     file_open(FILE_L3);
+    event_open();
 
     while (!quit)
     {
@@ -931,10 +929,10 @@ void main(void)
 
     }
 
+    event_close();
     file_close(FILE_L3);
     file_close(FILE_L2);
     file_close(FILE_L1);
-    file_close(FILE_PM);
 
 }
 

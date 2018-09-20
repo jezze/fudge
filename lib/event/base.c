@@ -147,6 +147,21 @@ unsigned int event_addfile(void *buffer, unsigned int num)
 
 }
 
+void event_open(void)
+{
+
+    file_walk(FILE_PM, "/system/event");
+    file_open(FILE_PM);
+
+}
+
+void event_close(void)
+{
+
+    file_close(FILE_PM);
+
+}
+
 struct event_header *event_read(void *data)
 {
 

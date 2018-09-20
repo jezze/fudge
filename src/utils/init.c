@@ -33,9 +33,7 @@ void main(void)
 
     id = call_spawn();
 
-    /* Once event system is inside kernel, there is no need to use the filesystem to send events */
-    file_walk(FILE_PM, "/system/event");
-    file_open(FILE_PM);
+    event_open();
     event_addheader(message, EVENT_INIT, EVENT_ADDR_SELF, id);
     event_sendbuffer(message);
     event_addheader(message, EVENT_FILE, EVENT_ADDR_SELF, id);
@@ -43,7 +41,7 @@ void main(void)
     event_sendbuffer(message);
     event_addheader(message, EVENT_EXIT, EVENT_ADDR_SELF, id);
     event_sendbuffer(message);
-    file_close(FILE_PM);
+    event_close();
 
 }
 

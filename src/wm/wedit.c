@@ -284,10 +284,7 @@ static void onwmhide(struct event_header *header)
 void main(void)
 {
 
-    if (!file_walk(FILE_PM, "/system/event"))
-        return;
-
-    file_open(FILE_PM);
+    event_open();
 
     while (!quit)
     {
@@ -350,7 +347,7 @@ void main(void)
 
     }
 
-    file_close(FILE_PM);
+    event_close();
 
 }
 

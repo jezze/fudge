@@ -46,9 +46,7 @@ static void ondata(struct event_header *header)
 void main(void)
 {
 
-    /* Once event system is inside kernel, there is no need to use the filesystem to send events */
-    file_walk(FILE_PM, "/system/event");
-    file_open(FILE_PM);
+    event_open();
 
     while (!quit)
     {
@@ -74,7 +72,7 @@ void main(void)
 
     }
 
-    file_close(FILE_PM);
+    event_close();
 
 }
 
