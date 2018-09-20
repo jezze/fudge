@@ -136,11 +136,15 @@ static void deactivateremote(struct remote *remote)
 
 }
 
-static void resizeremote(struct remote *remote, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+static void resizeremote(struct event_header *header, struct remote *remote, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 
+    char message[FUDGE_BSIZE];
+
     box_setsize(&remote->window.size, x, y, w, h);
-    event_sendwmresize(FILE_PM, EVENT_ADDR_SELF, remote->source, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+    event_addrequest(message, header, EVENT_WMRESIZE, remote->source);
+    event_addwmresize(message, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+    event_send(message);
 
 }
 
@@ -153,8 +157,10 @@ static void showremotes(struct event_header *header, struct list *remotes)
     {
 
         struct remote *remote = current->data;
+        char message[FUDGE_BSIZE];
 
-        event_sendwmshow(FILE_PM, header->target, remote->source);
+        event_addrequest(message, header, EVENT_WMSHOW, remote->source);
+        event_send(message);
         updateremote(header, remote);
 
     }
@@ -170,8 +176,10 @@ static void hideremotes(struct event_header *header, struct list *remotes)
     {
 
         struct remote *remote = current->data;
+        char message[FUDGE_BSIZE];
 
-        event_sendwmhide(FILE_PM, header->target, remote->source);
+        event_addrequest(message, header, EVENT_WMHIDE, remote->source);
+        event_send(message);
         removeremote(header, remote);
 
     }
@@ -193,26 +201,26 @@ static void flipview(struct event_header *header, struct view *view)
 
 }
 
-static void arrangesingle(struct view *view)
+static void arrangesingle(struct event_header *header, struct view *view)
 {
 
-    resizeremote(view->remotes.tail->data, body.x, body.y, body.w, body.h);
+    resizeremote(header, view->remotes.tail->data, body.x, body.y, body.w, body.h);
 
 }
 
-static void arrangetiled(struct view *view)
+static void arrangetiled(struct event_header *header, struct view *view)
 {
 
     unsigned int y = body.y;
     unsigned int h = body.h / (view->remotes.count - 1);
     struct list_item *current;
 
-    resizeremote(view->remotes.tail->data, body.x, body.y, view->center, body.h);
+    resizeremote(header, view->remotes.tail->data, body.x, body.y, view->center, body.h);
 
     for (current = view->remotes.tail->prev; current; current = current->prev)
     {
 
-        resizeremote(current->data, body.x + view->center, y, body.w - view->center, h);
+        resizeremote(header, current->data, body.x + view->center, y, body.w - view->center, h);
 
         y += h;
 
@@ -220,7 +228,7 @@ static void arrangetiled(struct view *view)
 
 }
 
-static void arrangeview(struct view *view)
+static void arrangeview(struct event_header *header, struct view *view)
 {
 
     switch (view->remotes.count)
@@ -230,12 +238,12 @@ static void arrangeview(struct view *view)
         break;
 
     case 1:
-        arrangesingle(view);
+        arrangesingle(header, view);
 
         break;
 
     default:
-        arrangetiled(view);
+        arrangetiled(header, view);
 
         break;
 
@@ -313,11 +321,11 @@ static void onkill(struct event_header *header)
         {
 
             struct remote *remote = current2->data;
-            char buffer[FUDGE_BSIZE];
 
-            event_sendwmhide(FILE_PM, header->target, remote->source);
-            event_addrequest(buffer, header, EVENT_KILL, remote->source);
-            event_send(buffer);
+            event_addrequest(message, header, EVENT_WMHIDE, remote->source);
+            event_send(message);
+            event_addrequest(message, header, EVENT_KILL, remote->source);
+            event_send(message);
 
         }
 
@@ -384,8 +392,8 @@ static void onkeypress(struct event_header *header)
             if (currentview->currentremote)
                 activateremote(currentview->currentremote);
 
-            arrangeview(currentview);
-            arrangeview(nextview);
+            arrangeview(header, currentview);
+            arrangeview(header, nextview);
 
             if (nextview->currentremote)
                 deactivateremote(nextview->currentremote);
@@ -399,19 +407,18 @@ static void onkeypress(struct event_header *header)
         break;
 
     case 0x10:
-        if (!(keymod & KEYMOD_SHIFT))
-            break;
-
         if (!currentview->currentremote)
             break;
 
+        if ((keymod & KEYMOD_SHIFT))
         {
 
-            char buffer[FUDGE_BSIZE];
+            char message[FUDGE_BSIZE];
 
-            event_sendwmhide(FILE_PM, header->target, currentview->currentremote->source);
-            event_addrequest(buffer, header, EVENT_KILL, currentview->currentremote->source);
-            event_send(buffer);
+            event_addrequest(message, header, EVENT_WMHIDE, currentview->currentremote->source);
+            event_send(message);
+            event_addrequest(message, header, EVENT_KILL, currentview->currentremote->source);
+            event_send(message);
 
         }
 
@@ -429,12 +436,12 @@ static void onkeypress(struct event_header *header)
         if (id)
         {
 
-            char buffer[FUDGE_BSIZE];
+            char message[FUDGE_BSIZE];
 
-            event_addrequest(buffer, header, EVENT_INIT, id);
-            event_send(buffer);
-            event_addrequest(buffer, header, EVENT_EXIT, id);
-            event_send(buffer);
+            event_addrequest(message, header, EVENT_INIT, id);
+            event_send(message);
+            event_addrequest(message, header, EVENT_EXIT, id);
+            event_send(message);
 
         }
 
@@ -445,7 +452,7 @@ static void onkeypress(struct event_header *header)
             break;
 
         list_move(&currentview->remotes, &currentview->remotes, &currentview->currentremote->item);
-        arrangeview(currentview);
+        arrangeview(header, currentview);
         showremotes(header, &currentview->remotes);
 
         break;
@@ -456,7 +463,7 @@ static void onkeypress(struct event_header *header)
 
         currentview->center -= 4 * steplength;
 
-        arrangeview(currentview);
+        arrangeview(header, currentview);
         showremotes(header, &currentview->remotes);
 
         break;
@@ -505,22 +512,21 @@ static void onkeypress(struct event_header *header)
 
         currentview->center += 4 * steplength;
 
-        arrangeview(currentview);
+        arrangeview(header, currentview);
         showremotes(header, &currentview->remotes);
 
         break;
 
     case 0x2C:
-        if (!(keymod & KEYMOD_SHIFT))
-            break;
-
+        if ((keymod & KEYMOD_SHIFT))
         {
 
-            char buffer[FUDGE_BSIZE];
+            char message[FUDGE_BSIZE];
 
-            event_sendwmhide(FILE_PM, header->target, header->target);
-            event_addrequest(buffer, header, EVENT_KILL, header->target);
-            event_send(buffer);
+            event_addrequest(message, header, EVENT_WMHIDE, header->target);
+            event_send(message);
+            event_addrequest(message, header, EVENT_KILL, header->target);
+            event_send(message);
 
         }
 
@@ -680,6 +686,7 @@ static void onvideomode(struct event_header *header)
 
     struct event_videomode *videomode = event_getdata(header);
     unsigned int factor = (videomode->h / 320);
+    char message[FUDGE_BSIZE];
 
     lineheight = 12 + factor * 4;
     padding = 4 + factor * 2;
@@ -719,8 +726,11 @@ static void onvideomode(struct event_header *header)
 
     }
 
-    event_sendwmresize(FILE_PM, header->target, header->target, 0, 0, videomode->w, videomode->h, padding, lineheight);
-    event_sendwmshow(FILE_PM, header->target, header->target);
+    event_addrequest(message, header, EVENT_WMRESIZE, header->target);
+    event_addwmresize(message, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    event_send(message);
+    event_addrequest(message, header, EVENT_WMSHOW, header->target);
+    event_send(message);
 
 }
 
@@ -735,7 +745,7 @@ static void onwmmap(struct event_header *header)
 
     list_move(&currentview->remotes, currentview->currentremote->item.list, &currentview->currentremote->item);
     activateremote(currentview->currentremote);
-    arrangeview(currentview);
+    arrangeview(header, currentview);
     showremotes(header, &currentview->remotes);
 
 }
@@ -767,7 +777,7 @@ static void onwmunmap(struct event_header *header)
             if (view->currentremote)
                 activateremote(view->currentremote);
 
-            arrangeview(view);
+            arrangeview(header, view);
 
             if (view == currentview)
                 showremotes(header, &view->remotes);
@@ -799,7 +809,7 @@ static void onwmresize(struct event_header *header)
         view->center = 18 * steplength;
 
         box_setsize(&view->panel.size, size.x + i * size.w / viewlist.count, size.y, size.w / viewlist.count, (wmresize->lineheight + wmresize->padding * 2));
-        arrangeview(view);
+        arrangeview(header, view);
 
         i++;
 
