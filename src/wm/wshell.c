@@ -98,6 +98,52 @@ static void copyring(struct ring *ring)
 
 }
 
+static unsigned int complete(struct event_header *header, struct ring *ring)
+{
+
+    char command[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
+    unsigned int id;
+
+    if (!file_walk(FILE_CP, "/bin/complete"))
+        return 0;
+
+    id = call_spawn();
+
+    if (id)
+    {
+
+        char message[FUDGE_BSIZE];
+
+        event_addrequest(message, header, EVENT_INIT, id);
+        event_send(message);
+        event_addrequest(message, header, EVENT_DATA, id);
+        event_adddata(message, 1, count, command);
+        event_send(message);
+        event_addrequest(message, header, EVENT_EXIT, id);
+        event_send(message);
+
+    }
+
+    return id;
+
+}
+
+static void printnormal(void *buffer, unsigned int count)
+{
+
+    copybuffer(buffer, count);
+
+}
+
+static void printcomplete(void *buffer, unsigned int count)
+{
+
+    copybuffer("\n", 1);
+    copybuffer(buffer, count);
+
+}
+
 static unsigned int interpretbuiltin(unsigned int count, char *command)
 {
 
@@ -133,6 +179,9 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
         return 0;
 
     if (interpretbuiltin(count, command))
+        return 0;
+
+    if (!file_walk(FILE_CP, "/bin/slang"))
         return 0;
 
     id = call_spawn();
@@ -179,9 +228,6 @@ static void oninit(struct event_header *header)
 
     char message[FUDGE_BSIZE];
 
-    if (!file_walk(FILE_CP, "/bin/slang"))
-        return;
-
     ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
@@ -212,7 +258,21 @@ static void ondata(struct event_header *header)
 
     struct event_data *data = event_getdata(header);
 
-    copybuffer(data + 1, data->count);
+    switch (data->stream)
+    {
+
+    case 0:
+        printnormal(data + 1, data->count);
+
+        break;
+
+    case 1:
+        printcomplete(data + 1, data->count);
+
+        break;
+
+    }
+
     updatecontent(header);
 
 }
@@ -240,6 +300,13 @@ static void onwmkeypress(struct event_header *header)
     case 0x0E:
         ring_skipreverse(&input1, 1);
         updatecontent(header);
+
+        break;
+
+    case 0x0F:
+        ring_move(&input1, &input2);
+        copyring(&input1);
+        complete(header, &input1);
 
         break;
 
