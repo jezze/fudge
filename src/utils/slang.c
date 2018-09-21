@@ -453,9 +453,6 @@ static void ondata(struct event_header *header)
 
     struct event_data *data = event_getdata(header);
 
-    if (!data->count)
-        return;
-
     tokenizebuffer(&infix, &stringtable, data->count, data + 1);
     translate(&postfix, &infix, &stack);
     parse(header, &postfix, &stack);
