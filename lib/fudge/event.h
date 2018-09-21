@@ -167,7 +167,6 @@ struct event_wmmousemove
 
 void *event_getforward(void *buffer);
 void *event_getdata(void *buffer);
-void event_initheader(struct event_header *header, unsigned int type, unsigned int source, unsigned int target, unsigned int length);
 unsigned int event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target);
 unsigned int event_addforward(void *buffer, unsigned int target);
 unsigned int event_addrequest(void *buffer, struct event_header *header, unsigned int type, unsigned int id);
@@ -175,6 +174,14 @@ unsigned int event_addpipe(void *buffer, struct event_header *header, unsigned i
 unsigned int event_addresponse(void *buffer, struct event_header *header, unsigned int type);
 unsigned int event_adddata(void *buffer, unsigned int count, void *data);
 unsigned int event_addfile(void *buffer, unsigned int descriptor);
+unsigned int event_addkeypress(void *buffer, unsigned char scancode);
+unsigned int event_addkeyrelease(void *buffer, unsigned char scancode);
+unsigned int event_addmousepress(void *buffer, unsigned int button);
+unsigned int event_addmouserelease(void *buffer, unsigned int button);
+unsigned int event_addmousemove(void *buffer, char relx, char rely);
+unsigned int event_addconsoledata(void *buffer, char data);
+unsigned int event_addtimertick(void *buffer, unsigned int counter);
+unsigned int event_addvideomode(void *buffer, unsigned int w, unsigned int h, unsigned int bpp);
 unsigned int event_addwmkeypress(void *buffer, unsigned char scancode);
 unsigned int event_addwmkeyrelease(void *buffer, unsigned char scancode);
 unsigned int event_addwmmousepress(void *buffer, unsigned int button);

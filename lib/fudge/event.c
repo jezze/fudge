@@ -2,17 +2,6 @@
 #include "memory.h"
 #include "event.h"
 
-void event_initheader(struct event_header *header, unsigned int type, unsigned int source, unsigned int target, unsigned int length)
-{
-
-    header->type = type;
-    header->source = source;
-    header->target = target;
-    header->length = sizeof (struct event_header) + length;
-    header->forward = 0;
-
-}
-
 void *event_getforward(void *buffer)
 {
 
@@ -153,6 +142,113 @@ unsigned int event_addfile(void *buffer, unsigned int descriptor)
 
     header->length += sizeof (struct event_file);
     file->descriptor = descriptor;
+
+    return header->length;
+
+}
+
+unsigned int event_addkeypress(void *buffer, unsigned char scancode)
+{
+
+    struct event_header *header = buffer;
+    struct event_keypress *keypress = event_getdata(buffer);
+
+    header->length += sizeof (struct event_keypress);
+    keypress->scancode = scancode;
+
+    return header->length;
+
+}
+
+unsigned int event_addkeyrelease(void *buffer, unsigned char scancode)
+{
+
+    struct event_header *header = buffer;
+    struct event_keyrelease *keyrelease = event_getdata(buffer);
+
+    header->length += sizeof (struct event_keyrelease);
+    keyrelease->scancode = scancode;
+
+    return header->length;
+
+}
+
+unsigned int event_addmousepress(void *buffer, unsigned int button)
+{
+
+    struct event_header *header = buffer;
+    struct event_mousepress *mousepress = event_getdata(buffer);
+
+    header->length += sizeof (struct event_mousepress);
+    mousepress->button = button;
+
+    return header->length;
+
+}
+
+unsigned int event_addmouserelease(void *buffer, unsigned int button)
+{
+
+    struct event_header *header = buffer;
+    struct event_mouserelease *mouserelease = event_getdata(buffer);
+
+    header->length += sizeof (struct event_mouserelease);
+    mouserelease->button = button;
+
+    return header->length;
+
+}
+
+unsigned int event_addmousemove(void *buffer, char relx, char rely)
+{
+
+    struct event_header *header = buffer;
+    struct event_mousemove *mousemove = event_getdata(buffer);
+
+    header->length += sizeof (struct event_mousemove);
+    mousemove->relx = relx;
+    mousemove->rely = rely;
+
+    return header->length;
+
+}
+
+unsigned int event_addconsoledata(void *buffer, char data)
+{
+
+    struct event_header *header = buffer;
+    struct event_consoledata *consoledata = event_getdata(buffer);
+
+    header->length += sizeof (struct event_consoledata);
+    consoledata->data = data;
+
+    return header->length;
+
+}
+
+unsigned int event_addtimertick(void *buffer, unsigned int counter)
+{
+
+    struct event_header *header = buffer;
+    struct event_timertick *timertick = event_getdata(buffer);
+
+    header->length += sizeof (struct event_timertick);
+    timertick->counter = counter;
+
+    return header->length;
+
+}
+
+unsigned int event_addvideomode(void *buffer, unsigned int w, unsigned int h, unsigned int bpp)
+{
+
+    struct event_header *header = buffer;
+    struct event_videomode *videomode = event_getdata(buffer);
+
+    header->length += sizeof (struct event_videomode);
+    videomode->w = w;
+    videomode->h = h;
+    videomode->bpp = bpp;
 
     return header->length;
 
