@@ -6,6 +6,9 @@ static unsigned int quit;
 static void complete(struct event_header *header, unsigned int descriptor, void *name, unsigned int length)
 {
 
+    char message[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
+    unsigned int count = 0;
     struct record record;
 
     file_open(descriptor);
@@ -16,16 +19,8 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
         if (length < record.length && memory_match(record.name, name, length))
         {
 
-            char message[FUDGE_BSIZE];
-            char buffer[FUDGE_BSIZE];
-            unsigned int count = 0;
-
             count += memory_write(buffer, FUDGE_BSIZE, record.name, record.length, count);
             count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
-
-            event_addresponse(message, header, EVENT_DATA);
-            event_adddata(message, count, buffer);
-            event_send(message);
 
         }
 
@@ -35,6 +30,9 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
     }
 
     file_close(descriptor);
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, count, buffer);
+    event_send(message);
 
 }
 
