@@ -36,7 +36,7 @@ void main(void)
     event_addheader(message, EVENT_INIT, EVENT_ADDR_SELF, id);
     event_send(message);
     event_addheader(message, EVENT_FILE, EVENT_ADDR_SELF, id);
-    event_addfile(message, FILE_PI);
+    event_addfile(message, 0, FILE_PI);
     event_send(message);
     event_addheader(message, EVENT_EXIT, EVENT_ADDR_SELF, id);
     event_send(message);

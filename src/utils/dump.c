@@ -3,7 +3,7 @@
 
 static unsigned int quit;
 
-static void dump(struct event_header *header, unsigned int count, void *buffer)
+static void dump(struct event_header *header, unsigned int count, void *buffer, unsigned int stream)
 {
 
     char *data = buffer;
@@ -17,10 +17,10 @@ static void dump(struct event_header *header, unsigned int count, void *buffer)
         unsigned int cnum = ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0);
 
         event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, cnum, num);
+        event_adddata(message, stream, cnum, num);
         event_send(message);
         event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, 2, "  ");
+        event_adddata(message, stream, 2, "  ");
         event_send(message);
 
     }
@@ -32,7 +32,7 @@ static void ondata(struct event_header *header)
 
     struct event_data *data = event_getdata(header);
 
-    dump(header, data->count, data + 1);
+    dump(header, data->count, data + 1, data->stream);
 
 }
 
@@ -49,7 +49,7 @@ static void onfile(struct event_header *header)
     file_open(file->descriptor);
 
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
-        dump(header, count, buffer);
+        dump(header, count, buffer, 0);
 
     file_close(file->descriptor);
 

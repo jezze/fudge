@@ -25,7 +25,7 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
         event_addrequest(message, header, EVENT_INIT, id);
         event_send(message);
         event_addrequest(message, header, EVENT_DATA, id);
-        event_adddata(message, count, command);
+        event_adddata(message, 1, count, command);
         event_send(message);
         event_addrequest(message, header, EVENT_EXIT, id);
         event_send(message);
@@ -33,6 +33,25 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
     }
 
     return id;
+
+}
+
+static void printnormal(void *buffer, unsigned int count)
+{
+
+    file_open(FILE_PO);
+    file_writeall(FILE_PO, buffer, count);
+    file_close(FILE_PO);
+
+}
+
+static void printcomplete(void *buffer, unsigned int count)
+{
+
+    file_open(FILE_PO);
+    file_writeall(FILE_PO, "\n", 1);
+    file_writeall(FILE_PO, buffer, count);
+    file_close(FILE_PO);
 
 }
 
@@ -86,7 +105,7 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
         event_addrequest(message, header, EVENT_INIT, id);
         event_send(message);
         event_addrequest(message, header, EVENT_DATA, id);
-        event_adddata(message, count, command);
+        event_adddata(message, 0, count, command);
         event_send(message);
         event_addrequest(message, header, EVENT_EXIT, id);
         event_send(message);
@@ -124,9 +143,20 @@ static void ondata(struct event_header *header)
 
     struct event_data *data = event_getdata(header);
 
-    file_open(FILE_PO);
-    file_writeall(FILE_PO, data + 1, data->count);
-    file_close(FILE_PO);
+    switch (data->stream)
+    {
+
+    case 0:
+        printnormal(data + 1, data->count);
+
+        break;
+
+    case 1:
+        printcomplete(data + 1, data->count);
+
+        break;
+
+    }
 
 }
 

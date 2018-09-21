@@ -120,13 +120,14 @@ unsigned int event_addresponse(void *buffer, struct event_header *header, unsign
 
 }
 
-unsigned int event_adddata(void *buffer, unsigned int count, void *data)
+unsigned int event_adddata(void *buffer, unsigned int stream, unsigned int count, void *data)
 {
 
     struct event_header *header = buffer;
     struct event_data *d = event_getdata(buffer);
 
     header->length += sizeof (struct event_data);
+    d->stream = stream;
     d->count = memory_write(buffer, FUDGE_BSIZE, data, count, header->length);
     header->length += d->count;
 
@@ -134,13 +135,14 @@ unsigned int event_adddata(void *buffer, unsigned int count, void *data)
 
 }
 
-unsigned int event_addfile(void *buffer, unsigned int descriptor)
+unsigned int event_addfile(void *buffer, unsigned int stream, unsigned int descriptor)
 {
 
     struct event_header *header = buffer;
     struct event_file *file = event_getdata(buffer);
 
     header->length += sizeof (struct event_file);
+    file->stream = stream;
     file->descriptor = descriptor;
 
     return header->length;

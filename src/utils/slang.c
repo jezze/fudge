@@ -308,7 +308,7 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
                 for (x = count; x > j + 1; x--)
                     event_addforward(message, task[x - 1].id);
 
-                event_addfile(message, FILE_PI + k);
+                event_addfile(message, 0, FILE_PI + k);
                 event_send(message);
 
             }
@@ -323,7 +323,7 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
             for (x = count; x > j + 1; x--)
                 event_addforward(message, task[x - 1].id);
 
-            event_addfile(message, 0);
+            event_addfile(message, 0, 0);
             event_send(message);
 
         }

@@ -47,7 +47,7 @@ static void timestamp(struct event_header *header, unsigned int descriptor)
     count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
 
     event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, count, num);
+    event_adddata(message, 0, count, num);
     event_send(message);
 
 }

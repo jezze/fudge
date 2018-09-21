@@ -20,7 +20,7 @@ static void date(struct event_header *header, unsigned int descriptor)
     ascii_wzerovalue(datetime, 20, settings.minutes, 10, 2, 14);
     ascii_wzerovalue(datetime, 20, settings.seconds, 10, 2, 17);
     event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, 20, datetime);
+    event_adddata(message, 0, 20, datetime);
     event_send(message);
 
 }

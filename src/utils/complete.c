@@ -3,7 +3,7 @@
 
 static unsigned int quit;
 
-static void complete(struct event_header *header, unsigned int descriptor, void *name, unsigned int length)
+static void complete(struct event_header *header, unsigned int descriptor, void *name, unsigned int length, unsigned int stream)
 {
 
     char message[FUDGE_BSIZE];
@@ -31,7 +31,7 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
 
     file_close(descriptor);
     event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, count, buffer);
+    event_adddata(message, stream, count, buffer);
     event_send(message);
 
 }
@@ -53,7 +53,7 @@ static void ondata(struct event_header *header)
 
     struct event_data *data = event_getdata(header);
 
-    complete(header, FILE_PW, data + 1, data->count);
+    complete(header, FILE_PW, data + 1, data->count, data->stream);
 
 }
 

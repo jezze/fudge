@@ -25,7 +25,7 @@ static void list(struct event_header *header, unsigned int descriptor)
         count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
 
         event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, count, buffer);
+        event_adddata(message, 0, count, buffer);
         event_send(message);
 
         if (!file_step(descriptor))

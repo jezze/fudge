@@ -22,7 +22,7 @@ static void ondata(struct event_header *header)
     char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, data->count, data + 1);
+    event_adddata(message, data->stream, data->count, data + 1);
     event_send(message);
 
 }
@@ -45,7 +45,7 @@ static void onfile(struct event_header *header)
         char message[FUDGE_BSIZE];
 
         event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, count, buffer);
+        event_adddata(message, 0, count, buffer);
         event_send(message);
 
     }

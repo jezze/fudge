@@ -39,7 +39,7 @@ static void onfile(struct event_header *header)
     event_addrequest(message, header, EVENT_INIT, id);
     event_send(message);
     event_addpipe(message, header, EVENT_FILE, id);
-    event_addfile(message, FILE_PI);
+    event_addfile(message, 0, FILE_PI);
     event_send(message);
     event_addrequest(message, header, EVENT_EXIT, id);
     event_send(message);
