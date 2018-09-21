@@ -112,7 +112,7 @@ unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsi
 
     }
 
-    return offset;
+    return offset >= length;
 
 }
 
