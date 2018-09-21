@@ -9,7 +9,7 @@ static struct system_node event;
 void console_notify(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->data.states, buffer, count);
+    kernel_multicastdata(&interface->data.states, buffer, count);
 
 }
 
@@ -21,8 +21,8 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
     message.consoledata.data = data;
 
     event_initheader(&message.header, EVENT_CONSOLEDATA, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, sizeof (struct event_consoledata));
-    kernel_multicastevent(&event.states, &message.header);
-    kernel_multicastevent(&interface->event.states, &message.header);
+    kernel_multicast(&event.states, &message.header);
+    kernel_multicast(&interface->event.states, &message.header);
 
 }
 

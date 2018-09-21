@@ -69,7 +69,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
     }
 
-    kernel_multicast(&interface->data.states, buffer, count);
+    kernel_multicastdata(&interface->data.states, buffer, count);
 
 }
 

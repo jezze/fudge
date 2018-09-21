@@ -96,7 +96,7 @@ static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void
 
     }
 
-    kernel_multicast(&ethernetprotocol.data.states, buffer, count);
+    kernel_multicastdata(&ethernetprotocol.data.states, buffer, count);
 
 }
 

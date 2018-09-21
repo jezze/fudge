@@ -76,8 +76,8 @@ static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *udphe
     header.target.port[1] = udpheader->tp[1];
     header.count = count;
 
-    kernel_multicast(&con.data.states, &header, sizeof (struct ctrl_conheader));
-    kernel_multicast(&con.data.states, buffer, count);
+    kernel_multicastdata(&con.data.states, &header, sizeof (struct ctrl_conheader));
+    kernel_multicastdata(&con.data.states, buffer, count);
 
 }
 

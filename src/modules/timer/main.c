@@ -8,7 +8,7 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicast(&interface->data.states, buffer, count);
+    kernel_multicastdata(&interface->data.states, buffer, count);
 
 }
 
@@ -20,7 +20,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
     message.timertick.counter = counter;
 
     event_initheader(&message.header, EVENT_TIMERTICK, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST, sizeof (struct event_timertick));
-    kernel_multicastevent(&interface->event.states, &message.header);
+    kernel_multicast(&interface->event.states, &message.header);
 
 }
 
