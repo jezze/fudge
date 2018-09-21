@@ -297,7 +297,25 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
     for (j = 0; j < count; j++)
     {
 
-        for (k = 0; k < task[j].ninputs; k++)
+        if (task[j].ninputs)
+        {
+
+            for (k = 0; k < task[j].ninputs; k++)
+            {
+
+                event_addpipe(message, header, EVENT_FILE, task[j].id);
+
+                for (x = count; x > j + 1; x--)
+                    event_addforward(message, task[x - 1].id);
+
+                event_addfile(message, FILE_PI + k);
+                event_send(message);
+
+            }
+
+        }
+
+        else
         {
 
             event_addpipe(message, header, EVENT_FILE, task[j].id);
@@ -305,23 +323,10 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
             for (x = count; x > j + 1; x--)
                 event_addforward(message, task[x - 1].id);
 
-            event_addfile(message, FILE_PI + k);
+            event_addfile(message, 0);
             event_send(message);
 
         }
-
-    }
-
-    if (!task[0].ninputs)
-    {
-
-        event_addpipe(message, header, EVENT_FILE, task[0].id);
-
-        for (x = count; x > 0 + 1; x--)
-            event_addforward(message, task[x - 1].id);
-
-        event_addfile(message, 0);
-        event_send(message);
 
     }
 
