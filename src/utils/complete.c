@@ -16,7 +16,7 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
-        if (length < record.length && memory_match(record.name, name, length))
+        if (record.length >= length && memory_match(record.name, name, length))
         {
 
             count += memory_write(buffer, FUDGE_BSIZE, record.name, record.length, count);
