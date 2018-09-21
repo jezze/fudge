@@ -8,6 +8,8 @@ static struct ring input;
 static unsigned int complete(struct event_header *header, struct ring *ring)
 {
 
+    char command[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
     unsigned int id;
 
     if (!file_walk(FILE_CP, "/bin/complete"))
@@ -23,7 +25,7 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
         event_addrequest(message, header, EVENT_INIT, id);
         event_send(message);
         event_addrequest(message, header, EVENT_DATA, id);
-        event_adddata(message, 4, "help.txt");
+        event_adddata(message, count, command);
         event_send(message);
         event_addrequest(message, header, EVENT_EXIT, id);
         event_send(message);
