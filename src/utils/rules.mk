@@ -1,4 +1,16 @@
 B:=\
+    $(DIR_SRC)/utils/complete \
+
+O:=\
+    $(DIR_SRC)/utils/complete.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/date \
 
 O:=\

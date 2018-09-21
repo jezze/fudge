@@ -5,6 +5,35 @@ static unsigned int quit;
 static unsigned char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 
+static unsigned int complete(struct event_header *header, struct ring *ring)
+{
+
+    unsigned int id;
+
+    if (!file_walk(FILE_CP, "/bin/complete"))
+        return 0;
+
+    id = call_spawn();
+
+    if (id)
+    {
+
+        char message[FUDGE_BSIZE];
+
+        event_addrequest(message, header, EVENT_INIT, id);
+        event_send(message);
+        event_addrequest(message, header, EVENT_DATA, id);
+        event_adddata(message, 4, "help.txt");
+        event_send(message);
+        event_addrequest(message, header, EVENT_EXIT, id);
+        event_send(message);
+
+    }
+
+    return id;
+
+}
+
 static unsigned int interpretbuiltin(unsigned int count, char *command)
 {
 
@@ -42,6 +71,9 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
     if (interpretbuiltin(count, command))
         return 0;
 
+    if (!file_walk(FILE_CP, "/bin/slang"))
+        return 0;
+
     id = call_spawn();
 
     if (id)
@@ -65,9 +97,6 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
 
 static void oninit(struct event_header *header)
 {
-
-    if (!file_walk(FILE_CP, "/bin/slang"))
-        return;
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
     file_open(FILE_PO);
@@ -120,7 +149,7 @@ static void onconsoledata(struct event_header *header)
         break;
 
     case '\t':
-        /* Call complete */
+        complete(header, &input);
 
         break;
 
