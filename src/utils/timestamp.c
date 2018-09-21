@@ -64,22 +64,27 @@ static void onkill(struct event_header *header)
 
 }
 
-static void ondata(struct event_header *header)
-{
-
-    if (!file_walk(FILE_L0, "/system/clock/if:0/ctrl"))
-        return;
-
-    timestamp(header, FILE_L0);
-
-}
-
 static void onfile(struct event_header *header)
 {
 
     struct event_file *file = event_getdata(header);
 
-    timestamp(header, file->descriptor);
+    if (file->descriptor)
+    {
+
+        timestamp(header, file->descriptor);
+
+    }
+
+    else
+    {
+
+        if (!file_walk(FILE_L0, "/system/clock/if:0/ctrl"))
+            return;
+
+        timestamp(header, FILE_L0);
+
+    }
 
 }
 
@@ -100,11 +105,6 @@ void main(void)
         case EVENT_EXIT:
         case EVENT_KILL:
             onkill(header);
-
-            break;
-
-        case EVENT_DATA:
-            ondata(header);
 
             break;
 

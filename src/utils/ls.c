@@ -45,19 +45,15 @@ static void onkill(struct event_header *header)
 
 }
 
-static void ondata(struct event_header *header)
-{
-
-    list(header, FILE_PW);
-
-}
-
 static void onfile(struct event_header *header)
 {
 
     struct event_file *file = event_getdata(header);
 
-    list(header, file->descriptor);
+    if (file->descriptor)
+        list(header, file->descriptor);
+    else
+        list(header, FILE_PW);
 
 }
 
@@ -78,11 +74,6 @@ void main(void)
         case EVENT_EXIT:
         case EVENT_KILL:
             onkill(header);
-
-            break;
-
-        case EVENT_DATA:
-            ondata(header);
 
             break;
 

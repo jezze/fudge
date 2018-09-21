@@ -315,12 +315,12 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
     if (!task[0].ninputs)
     {
 
-        event_addpipe(message, header, EVENT_DATA, task[0].id);
+        event_addpipe(message, header, EVENT_FILE, task[0].id);
 
         for (x = count; x > 0 + 1; x--)
             event_addforward(message, task[x - 1].id);
 
-        event_adddata(message, 0, 0);
+        event_addfile(message, 0);
         event_send(message);
 
     }

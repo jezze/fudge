@@ -15,10 +15,14 @@ static void onkill(struct event_header *header)
 
 }
 
-static void ondata(struct event_header *header)
+static void onfile(struct event_header *header)
 {
 
+    struct event_file *file = event_getdata(header);
     char message[FUDGE_BSIZE];
+
+    if (file->descriptor)
+        return;
 
     event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, 13, "Hello world!\n");
@@ -46,8 +50,8 @@ void main(void)
 
             break;
 
-        case EVENT_DATA:
-            ondata(header);
+        case EVENT_FILE:
+            onfile(header);
 
             break;
 
