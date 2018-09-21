@@ -464,6 +464,9 @@ static void onfile(struct event_header *header)
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
+    if (!file->descriptor)
+        return;
+
     file_open(file->descriptor);
 
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
