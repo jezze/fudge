@@ -15,6 +15,18 @@ static void onkill(struct event_header *header)
 
 }
 
+static void ondata(struct event_header *header)
+{
+
+    struct event_data *data = event_getdata(header);
+    char message[FUDGE_BSIZE];
+
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, data->session, 0, 0);
+    event_send(message);
+
+}
+
 static void onfile(struct event_header *header)
 {
 
@@ -45,9 +57,6 @@ static void onfile(struct event_header *header)
     event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, file->session, 20, datetime);
     event_send(message);
-    event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, file->session, 0, 0);
-    event_send(message);
 
 }
 
@@ -68,6 +77,11 @@ void main(void)
         case EVENT_EXIT:
         case EVENT_KILL:
             onkill(header);
+
+            break;
+
+        case EVENT_DATA:
+            ondata(header);
 
             break;
 

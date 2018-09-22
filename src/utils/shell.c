@@ -27,6 +27,9 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
         event_addrequest(message, header, EVENT_DATA, id);
         event_adddata(message, 1, count, command);
         event_send(message);
+        event_addrequest(message, header, EVENT_DATA, id);
+        event_adddata(message, 1, 0, 0);
+        event_send(message);
         event_addrequest(message, header, EVENT_EXIT, id);
         event_send(message);
 
@@ -114,6 +117,9 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
         event_send(message);
         event_addrequest(message, header, EVENT_DATA, id);
         event_adddata(message, 0, count, command);
+        event_send(message);
+        event_addrequest(message, header, EVENT_DATA, id);
+        event_adddata(message, 0, 0, 0);
         event_send(message);
         event_addrequest(message, header, EVENT_EXIT, id);
         event_send(message);

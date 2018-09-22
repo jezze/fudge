@@ -34,9 +34,6 @@ static void list(struct event_header *header, unsigned int descriptor, unsigned 
     }
 
     file_close(descriptor);
-    event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, session, 0, 0);
-    event_send(message);
 
 }
 
@@ -49,6 +46,18 @@ static void onkill(struct event_header *header)
     event_send(message);
 
     quit = 1;
+
+}
+
+static void ondata(struct event_header *header)
+{
+
+    struct event_data *data = event_getdata(header);
+    char message[FUDGE_BSIZE];
+
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, data->session, 0, 0);
+    event_send(message);
 
 }
 
@@ -81,6 +90,11 @@ void main(void)
         case EVENT_EXIT:
         case EVENT_KILL:
             onkill(header);
+
+            break;
+
+        case EVENT_DATA:
+            ondata(header);
 
             break;
 
