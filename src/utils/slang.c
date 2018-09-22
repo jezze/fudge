@@ -454,21 +454,21 @@ static void ondata(struct event_header *header)
     struct event_data *data = event_getdata(header);
     char message[FUDGE_BSIZE];
 
-    if (!data->count)
+    if (data->count)
     {
 
-        event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, 0, 0, 0);
-        event_send(message);
+        tokenizebuffer(&infix, &stringtable, data->count, data + 1);
+        translate(&postfix, &infix, &stack);
+        parse(header, &postfix, &stack);
 
     }
 
     else
     {
 
-        tokenizebuffer(&infix, &stringtable, data->count, data + 1);
-        translate(&postfix, &infix, &stack);
-        parse(header, &postfix, &stack);
+        event_addresponse(message, header, EVENT_DATA);
+        event_adddata(message, 0, 0, 0);
+        event_send(message);
 
     }
 
