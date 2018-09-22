@@ -36,6 +36,13 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
 
 }
 
+static void printprompt(void)
+{
+
+    file_writeall(FILE_PO, "$ ", 2);
+
+}
+
 static void printnormal(void *buffer, unsigned int count)
 {
 
@@ -116,7 +123,7 @@ static void oninit(struct event_header *header)
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
     file_open(FILE_PO);
-    file_writeall(FILE_PO, "$ ", 2);
+    printprompt();
     file_close(FILE_PO);
 
 }
@@ -156,7 +163,7 @@ static void ondata(struct event_header *header)
     }
 
     if (!data->count)
-        file_writeall(FILE_PO, "$ ", 2);
+        printprompt();
 
     file_close(FILE_PO);
 
@@ -203,7 +210,7 @@ static void onconsoledata(struct event_header *header)
             break;
 
         file_open(FILE_PO);
-        file_writeall(FILE_PO, "$ ", 2);
+        printprompt();
         file_close(FILE_PO);
 
         break;

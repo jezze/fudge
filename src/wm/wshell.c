@@ -129,6 +129,13 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
 
 }
 
+static void printprompt(void)
+{
+
+    copybuffer("$ ", 2);
+
+}
+
 static void printnormal(void *buffer, unsigned int count)
 {
 
@@ -232,7 +239,7 @@ static void oninit(struct event_header *header)
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
-    copybuffer("$ ", 2);
+    printprompt();
     event_addrequest(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
     event_send(message);
 
@@ -273,7 +280,7 @@ static void ondata(struct event_header *header)
     }
 
     if (!data->count)
-        copybuffer("$ ", 2);
+        printprompt();
 
     updatecontent(header);
 
@@ -312,7 +319,7 @@ static void onwmkeypress(struct event_header *header)
         if (interpret(header, &input1))
             break;
 
-        copybuffer("$ ", 2);
+        printprompt();
         updatecontent(header);
 
         break;
