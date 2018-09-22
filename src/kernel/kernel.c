@@ -214,7 +214,6 @@ void kernel_schedule(struct core *core)
         coreassign(current->data);
 
     current = list_picktail(&core->tasks);
-
     core->task = (current) ? current->data : 0;
 
 }
