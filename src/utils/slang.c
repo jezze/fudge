@@ -330,6 +330,16 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
 
     }
 
+/*
+    event_addheader(message, EVENT_DATA, header->target, task[0].id);
+
+    for (x = count; x > 0 + 1; x--)
+        event_addforward(message, task[x - 1].id);
+
+    event_adddata(message, 0, 0, 0);
+    event_send(message);
+*/
+
     for (j = 0; j < count; j++)
     {
 

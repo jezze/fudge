@@ -49,9 +49,9 @@ static void printprompt(void)
 static void printnormal(void *buffer, unsigned int count)
 {
 
-    file_writeall(FILE_PO, buffer, count);
-
-    if (!count)
+    if (count)
+        file_writeall(FILE_PO, buffer, count);
+    else
         printprompt();
 
 }
@@ -59,9 +59,9 @@ static void printnormal(void *buffer, unsigned int count)
 static void printcomplete(void *buffer, unsigned int count)
 {
 
-    file_writeall(FILE_PO, buffer, count);
-
-    if (!count)
+    if (count)
+        file_writeall(FILE_PO, buffer, count);
+    else
         printprompt();
 
 }

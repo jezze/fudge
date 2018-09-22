@@ -142,9 +142,9 @@ static void printprompt(void)
 static void printnormal(void *buffer, unsigned int count)
 {
 
-    copybuffer(buffer, count);
-
-    if (!count)
+    if (count)
+        copybuffer(buffer, count);
+    else
         printprompt();
 
 }
@@ -152,9 +152,9 @@ static void printnormal(void *buffer, unsigned int count)
 static void printcomplete(void *buffer, unsigned int count)
 {
 
-    copybuffer(buffer, count);
-
-    if (!count)
+    if (count)
+        copybuffer(buffer, count);
+    else
         printprompt();
 
 }
