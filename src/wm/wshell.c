@@ -139,7 +139,6 @@ static void printnormal(void *buffer, unsigned int count)
 static void printcomplete(void *buffer, unsigned int count)
 {
 
-    copybuffer("\n", 1);
     copybuffer(buffer, count);
 
 }
@@ -273,14 +272,9 @@ static void ondata(struct event_header *header)
 
     }
 
-    updatecontent(header);
+    if (!data->count)
+        copybuffer("$ ", 2);
 
-}
-
-static void onchild(struct event_header *header)
-{
-
-    copybuffer("$ ", 2);
     updatecontent(header);
 
 }
@@ -451,11 +445,6 @@ void main(void)
 
         case EVENT_DATA:
             ondata(header);
-
-            break;
-
-        case EVENT_CHILD:
-            onchild(header);
 
             break;
 

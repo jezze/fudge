@@ -39,19 +39,14 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
 static void printnormal(void *buffer, unsigned int count)
 {
 
-    file_open(FILE_PO);
     file_writeall(FILE_PO, buffer, count);
-    file_close(FILE_PO);
 
 }
 
 static void printcomplete(void *buffer, unsigned int count)
 {
 
-    file_open(FILE_PO);
-    file_writeall(FILE_PO, "\n", 1);
     file_writeall(FILE_PO, buffer, count);
-    file_close(FILE_PO);
 
 }
 
@@ -143,6 +138,8 @@ static void ondata(struct event_header *header)
 
     struct event_data *data = event_getdata(header);
 
+    file_open(FILE_PO);
+
     switch (data->session)
     {
 
@@ -158,14 +155,11 @@ static void ondata(struct event_header *header)
 
     }
 
-}
+    if (!data->count)
+        file_writeall(FILE_PO, "$ ", 2);
 
-static void onchild(struct event_header *header)
-{
-
-    file_open(FILE_PO);
-    file_writeall(FILE_PO, "$ ", 2);
     file_close(FILE_PO);
+
 
 }
 
@@ -256,11 +250,6 @@ void main(void)
 
         case EVENT_DATA:
             ondata(header);
-
-            break;
-
-        case EVENT_CHILD:
-            onchild(header);
 
             break;
 
