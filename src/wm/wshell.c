@@ -141,12 +141,18 @@ static void printnormal(void *buffer, unsigned int count)
 
     copybuffer(buffer, count);
 
+    if (!count)
+        printprompt();
+
 }
 
 static void printcomplete(void *buffer, unsigned int count)
 {
 
     copybuffer(buffer, count);
+
+    if (!count)
+        printprompt();
 
 }
 
@@ -278,9 +284,6 @@ static void ondata(struct event_header *header)
         break;
 
     }
-
-    if (!data->count)
-        printprompt();
 
     updatecontent(header);
 
