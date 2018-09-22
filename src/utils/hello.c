@@ -25,7 +25,7 @@ static void onfile(struct event_header *header)
         return;
 
     event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, 0, 13, "Hello world!\n");
+    event_adddata(message, file->session, 13, "Hello world!\n");
     event_send(message);
 
 }

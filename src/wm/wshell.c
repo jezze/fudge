@@ -258,7 +258,7 @@ static void ondata(struct event_header *header)
 
     struct event_data *data = event_getdata(header);
 
-    switch (data->stream)
+    switch (data->session)
     {
 
     case 0:

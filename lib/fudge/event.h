@@ -47,7 +47,7 @@ struct event_forward
 struct event_data
 {
 
-    unsigned int stream;
+    unsigned int session;
     unsigned int count;
 
 };
@@ -55,7 +55,7 @@ struct event_data
 struct event_file
 {
 
-    unsigned int stream;
+    unsigned int session;
     unsigned char descriptor;
 
 };
@@ -174,8 +174,8 @@ unsigned int event_addforward(void *buffer, unsigned int target);
 unsigned int event_addrequest(void *buffer, struct event_header *header, unsigned int type, unsigned int id);
 unsigned int event_addpipe(void *buffer, struct event_header *header, unsigned int type, unsigned int id);
 unsigned int event_addresponse(void *buffer, struct event_header *header, unsigned int type);
-unsigned int event_adddata(void *buffer, unsigned int stream, unsigned int count, void *data);
-unsigned int event_addfile(void *buffer, unsigned int stream, unsigned int descriptor);
+unsigned int event_adddata(void *buffer, unsigned int session, unsigned int count, void *data);
+unsigned int event_addfile(void *buffer, unsigned int session, unsigned int descriptor);
 unsigned int event_addkeypress(void *buffer, unsigned char scancode);
 unsigned int event_addkeyrelease(void *buffer, unsigned char scancode);
 unsigned int event_addmousepress(void *buffer, unsigned int button);

@@ -29,29 +29,6 @@ static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
 
 }
 
-static void timestamp(struct event_header *header, unsigned int descriptor)
-{
-
-    struct ctrl_clocksettings settings;
-    char message[FUDGE_BSIZE];
-    char num[FUDGE_NSIZE];
-    unsigned int count;
-    unsigned int timestamp;
-
-    file_open(descriptor);
-    file_readall(descriptor, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(descriptor);
-
-    timestamp = gettimestamp(&settings);
-    count = ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10);
-    count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
-
-    event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, 0, count, num);
-    event_send(message);
-
-}
-
 static void onkill(struct event_header *header)
 {
 
@@ -68,23 +45,33 @@ static void onfile(struct event_header *header)
 {
 
     struct event_file *file = event_getdata(header);
+    struct ctrl_clocksettings settings;
+    char message[FUDGE_BSIZE];
+    char num[FUDGE_NSIZE];
+    unsigned int count;
+    unsigned int timestamp;
 
-    if (file->descriptor)
-    {
-
-        timestamp(header, file->descriptor);
-
-    }
-
-    else
+    if (!file->descriptor)
     {
 
         if (!file_walk(FILE_L0, "/system/clock/if:0/ctrl"))
             return;
 
-        timestamp(header, FILE_L0);
+        file->descriptor = FILE_L0;
 
     }
+
+    file_open(file->descriptor);
+    file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(file->descriptor);
+
+    timestamp = gettimestamp(&settings);
+    count = ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10);
+    count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
+
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, file->session, count, num);
+    event_send(message);
 
 }
 
