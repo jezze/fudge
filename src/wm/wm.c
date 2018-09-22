@@ -203,7 +203,6 @@ static void killremotes(struct event_header *header, struct list *remotes)
 
         event_addrequest(message, header, EVENT_KILL, remote->source);
         event_send(message);
-        removeremote(header, remote);
 
     }
 
