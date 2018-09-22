@@ -7,8 +7,6 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
 {
 
     char message[FUDGE_BSIZE];
-    char buffer[FUDGE_BSIZE];
-    unsigned int count = 0;
     struct record record;
 
     file_open(descriptor);
@@ -16,11 +14,18 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
+        char buffer[FUDGE_BSIZE];
+        unsigned int count = 0;
+
         if (record.length >= length && memory_match(record.name, name, length))
         {
 
             count += memory_write(buffer, FUDGE_BSIZE, record.name, record.length, count);
             count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
+
+            event_addresponse(message, header, EVENT_DATA);
+            event_adddata(message, session, count, buffer);
+            event_send(message);
 
         }
 
@@ -30,9 +35,6 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
     }
 
     file_close(descriptor);
-    event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, session, count, buffer);
-    event_send(message);
     event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, session, 0, 0);
     event_send(message);
