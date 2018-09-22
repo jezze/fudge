@@ -24,6 +24,9 @@ static void ondata(struct event_header *header)
     event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, data->session, data->count, data + 1);
     event_send(message);
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, data->session, 0, 0);
+    event_send(message);
 
 }
 
@@ -32,6 +35,7 @@ static void onfile(struct event_header *header)
 
     struct event_file *file = event_getdata(header);
     char buffer[FUDGE_BSIZE];
+    char message[FUDGE_BSIZE];
     unsigned int count;
 
     if (!file->descriptor)
@@ -51,6 +55,9 @@ static void onfile(struct event_header *header)
     }
 
     file_close(file->descriptor);
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, file->session, 0, 0);
+    event_send(message);
 
 }
 

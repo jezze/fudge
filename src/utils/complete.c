@@ -33,6 +33,9 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
     event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, session, count, buffer);
     event_send(message);
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, session, 0, 0);
+    event_send(message);
 
 }
 

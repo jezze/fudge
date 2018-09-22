@@ -6,6 +6,7 @@ static unsigned int quit;
 static void list(struct event_header *header, unsigned int descriptor, unsigned int session)
 {
 
+    char message[FUDGE_BSIZE];
     struct record record;
 
     file_open(descriptor);
@@ -13,7 +14,6 @@ static void list(struct event_header *header, unsigned int descriptor, unsigned 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
-        char message[FUDGE_BSIZE];
         char buffer[FUDGE_BSIZE];
         unsigned int count = 0;
 
@@ -30,6 +30,9 @@ static void list(struct event_header *header, unsigned int descriptor, unsigned 
     }
 
     file_close(descriptor);
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, session, 0, 0);
+    event_send(message);
 
 }
 
