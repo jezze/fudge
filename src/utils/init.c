@@ -11,13 +11,13 @@ void main(void)
 
     /* Move to base once event is merged into kernel */
     file_walk(FILE_CP, "/bin/elfload");
-    file_walk(FILE_CI, "/mod/system.ko");
+    file_walk(FILE_C0, "/mod/system.ko");
 
     id = call_spawn();
 
     /* Should move event into kernel */
     file_walk(FILE_CP, "/bin/elfload");
-    file_walk(FILE_CI, "/mod/event.ko");
+    file_walk(FILE_C0, "/mod/event.ko");
 
     id = call_spawn();
 
@@ -28,7 +28,7 @@ void main(void)
 
     /* This is what init really should do */
     file_walk(FILE_CP, "/bin/slang");
-    file_walk(FILE_CI, "/config/init.slang");
+    file_walk(FILE_C0, "/config/init.slang");
 
     id = call_spawn();
 
@@ -36,10 +36,7 @@ void main(void)
     event_addheader(message, EVENT_INIT, EVENT_ADDR_SELF, id);
     event_send(message);
     event_addheader(message, EVENT_FILE, EVENT_ADDR_SELF, id);
-    event_addfile(message, 0, FILE_PI);
-    event_send(message);
-    event_addheader(message, EVENT_DATA, EVENT_ADDR_SELF, id);
-    event_adddata(message, 0, 0, 0);
+    event_addfile(message, 0, FILE_P0);
     event_send(message);
     event_addheader(message, EVENT_EXIT, EVENT_ADDR_SELF, id);
     event_send(message);

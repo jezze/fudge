@@ -54,23 +54,8 @@ static void ondata(struct event_header *header)
 {
 
     struct event_data *data = event_getdata(header);
-    char message[FUDGE_BSIZE];
 
-    if (data->count)
-    {
-
-        complete(header, FILE_PW, data + 1, data->count, data->session);
-
-    }
-
-    else
-    {
-
-        event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, data->session, 0, 0);
-        event_send(message);
-
-    }
+    complete(header, FILE_PW, data + 1, data->count, data->session);
 
 }
 

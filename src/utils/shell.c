@@ -27,9 +27,6 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
         event_addrequest(message, header, EVENT_DATA, id);
         event_adddata(message, 1, count, command);
         event_send(message);
-        event_addrequest(message, header, EVENT_DATA, id);
-        event_adddata(message, 1, 0, 0);
-        event_send(message);
         event_addrequest(message, header, EVENT_EXIT, id);
         event_send(message);
 
@@ -42,27 +39,24 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
 static void printprompt(void)
 {
 
-    file_writeall(FILE_PO, "$ ", 2);
+    file_writeall(FILE_P0, "$ ", 2);
 
 }
 
 static void printnormal(void *buffer, unsigned int count)
 {
 
-    if (count)
-        file_writeall(FILE_PO, buffer, count);
-    else
-        printprompt();
+    file_writeall(FILE_P0, "\b\b  \b\b", 6);
+    file_writeall(FILE_P0, buffer, count);
+    printprompt();
 
 }
 
 static void printcomplete(void *buffer, unsigned int count)
 {
 
-    if (count)
-        file_writeall(FILE_PO, buffer, count);
-    else
-        printprompt();
+    file_writeall(FILE_P0, buffer, count);
+    printprompt();
 
 }
 
@@ -74,11 +68,11 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
         command[count - 1] = '\0';
 
-        if (file_walk(FILE_L8, command + 3))
+        if (file_walk(FILE_L0, command + 3))
         {
 
-            file_duplicate(FILE_PW, FILE_L8);
-            file_duplicate(FILE_CW, FILE_L8);
+            file_duplicate(FILE_PW, FILE_L0);
+            file_duplicate(FILE_CW, FILE_L0);
 
         }
 
@@ -118,9 +112,6 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
         event_addrequest(message, header, EVENT_DATA, id);
         event_adddata(message, 0, count, command);
         event_send(message);
-        event_addrequest(message, header, EVENT_DATA, id);
-        event_adddata(message, 0, 0, 0);
-        event_send(message);
         event_addrequest(message, header, EVENT_EXIT, id);
         event_send(message);
 
@@ -134,9 +125,9 @@ static void oninit(struct event_header *header)
 {
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
-    file_open(FILE_PO);
+    file_open(FILE_P0);
     printprompt();
-    file_close(FILE_PO);
+    file_close(FILE_P0);
 
 }
 
@@ -157,7 +148,7 @@ static void ondata(struct event_header *header)
 
     struct event_data *data = event_getdata(header);
 
-    file_open(FILE_PO);
+    file_open(FILE_P0);
 
     switch (data->session)
     {
@@ -174,7 +165,7 @@ static void ondata(struct event_header *header)
 
     }
 
-    file_close(FILE_PO);
+    file_close(FILE_P0);
 
 
 }
@@ -200,9 +191,9 @@ static void onconsoledata(struct event_header *header)
         if (!ring_skipreverse(&input, 1))
             break;
 
-        file_open(FILE_PO);
-        file_writeall(FILE_PO, "\b \b", 3);
-        file_close(FILE_PO);
+        file_open(FILE_P0);
+        file_writeall(FILE_P0, "\b \b", 3);
+        file_close(FILE_P0);
 
         break;
 
@@ -210,25 +201,25 @@ static void onconsoledata(struct event_header *header)
         consoledata->data = '\n';
 
     case '\n':
-        file_open(FILE_PO);
-        file_writeall(FILE_PO, &consoledata->data, 1);
-        file_close(FILE_PO);
+        file_open(FILE_P0);
+        file_writeall(FILE_P0, &consoledata->data, 1);
+        file_close(FILE_P0);
         ring_write(&input, &consoledata->data, 1);
 
         if (interpret(header, &input))
             break;
 
-        file_open(FILE_PO);
+        file_open(FILE_P0);
         printprompt();
-        file_close(FILE_PO);
+        file_close(FILE_P0);
 
         break;
 
     default:
         ring_write(&input, &consoledata->data, 1);
-        file_open(FILE_PO);
-        file_writeall(FILE_PO, &consoledata->data, 1);
-        file_close(FILE_PO);
+        file_open(FILE_P0);
+        file_writeall(FILE_P0, &consoledata->data, 1);
+        file_close(FILE_P0);
 
         break;
 
@@ -239,10 +230,10 @@ static void onconsoledata(struct event_header *header)
 void main(void)
 {
 
-    if (!file_walk(FILE_L0, "/system/console/event"))
+    if (!file_walk(FILE_G0, "/system/console/event"))
         return;
 
-    file_open(FILE_L0);
+    file_open(FILE_G0);
     event_open();
 
     while (!quit)
@@ -279,7 +270,7 @@ void main(void)
     }
 
     event_close();
-    file_close(FILE_L0);
+    file_close(FILE_G0);
 
 }
 

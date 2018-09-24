@@ -329,8 +329,16 @@ static void oninit(struct event_header *header)
     setupremotes();
     activateview(currentview);
     render_init();
-    render_setvideo(FILE_L5, 1024, 768, 4);
-    render_setcolormap(FILE_L6);
+
+    if (!file_walkfrom(FILE_L0, FILE_G2, "ctrl"))
+        return;
+
+    render_setvideo(FILE_L0, 1024, 768, 4);
+
+    if (!file_walkfrom(FILE_L0, FILE_G2, "colormap"))
+        return;
+
+    render_setcolormap(FILE_L0);
 
 }
 
@@ -718,29 +726,29 @@ static void onvideomode(struct event_header *header)
     {
 
     case 0:
-        file_walk(FILE_L9, "/data/ter-112n.pcf");
-        render_setfont(FILE_L9, lineheight, padding);
+        file_walk(FILE_L0, "/data/ter-112n.pcf");
+        render_setfont(FILE_L0, lineheight, padding);
         render_setmouse(&mouse, 16);
 
         break;
 
     case 1:
-        file_walk(FILE_L9, "/data/ter-114n.pcf");
-        render_setfont(FILE_L9, lineheight, padding);
+        file_walk(FILE_L0, "/data/ter-114n.pcf");
+        render_setfont(FILE_L0, lineheight, padding);
         render_setmouse(&mouse, 16);
 
         break;
 
     case 2:
-        file_walk(FILE_L9, "/data/ter-116n.pcf");
-        render_setfont(FILE_L9, lineheight, padding);
+        file_walk(FILE_L0, "/data/ter-116n.pcf");
+        render_setfont(FILE_L0, lineheight, padding);
         render_setmouse(&mouse, 24);
 
         break;
 
     default:
-        file_walk(FILE_L9, "/data/ter-118n.pcf");
-        render_setfont(FILE_L9, lineheight, padding);
+        file_walk(FILE_L0, "/data/ter-118n.pcf");
+        render_setfont(FILE_L0, lineheight, padding);
         render_setmouse(&mouse, 24);
 
         break;
@@ -878,8 +886,11 @@ static void onwmflush(struct event_header *header)
 
     void *data = event_getdata(header);
 
+    if (!file_walkfrom(FILE_L0, FILE_G2, "data"))
+        return;
+
     render_begin(data, header->length - sizeof (struct event_header));
-    render_update(FILE_L4, size.w, size.h);
+    render_update(FILE_L0, size.w, size.h);
     render_complete();
 
 }
@@ -887,28 +898,22 @@ static void onwmflush(struct event_header *header)
 void main(void)
 {
 
-    if (!file_walk(FILE_L1, "/system/keyboard/event"))
+    if (!file_walk(FILE_G0, "/system/keyboard/event"))
         return;
 
-    if (!file_walk(FILE_L2, "/system/mouse/event"))
+    if (!file_walk(FILE_G1, "/system/mouse/event"))
         return;
 
-    if (!file_walk(FILE_L3, "/system/video/if:0/event"))
+    if (!file_walk(FILE_G2, "/system/video/if:0"))
         return;
 
-    if (!file_walk(FILE_L4, "/system/video/if:0/data"))
-        return;
-
-    if (!file_walk(FILE_L5, "/system/video/if:0/ctrl"))
-        return;
-
-    if (!file_walk(FILE_L6, "/system/video/if:0/colormap"))
+    if (!file_walkfrom(FILE_G3, FILE_G2, "event"))
         return;
 
     file_open(FILE_PM);
-    file_open(FILE_L1);
-    file_open(FILE_L2);
-    file_open(FILE_L3);
+    file_open(FILE_G0);
+    file_open(FILE_G1);
+    file_open(FILE_G3);
     event_open();
 
     while (!quit)
@@ -1007,9 +1012,9 @@ void main(void)
     }
 
     event_close();
-    file_close(FILE_L3);
-    file_close(FILE_L2);
-    file_close(FILE_L1);
+    file_close(FILE_G3);
+    file_close(FILE_G1);
+    file_close(FILE_G0);
 
 }
 

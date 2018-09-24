@@ -120,9 +120,6 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
         event_addrequest(message, header, EVENT_DATA, id);
         event_adddata(message, 1, count, command);
         event_send(message);
-        event_addrequest(message, header, EVENT_DATA, id);
-        event_adddata(message, 1, 0, 0);
-        event_send(message);
         event_addrequest(message, header, EVENT_EXIT, id);
         event_send(message);
 
@@ -142,20 +139,16 @@ static void printprompt(void)
 static void printnormal(void *buffer, unsigned int count)
 {
 
-    if (count)
-        copybuffer(buffer, count);
-    else
-        printprompt();
+    copybuffer(buffer, count);
+    printprompt();
 
 }
 
 static void printcomplete(void *buffer, unsigned int count)
 {
 
-    if (count)
-        copybuffer(buffer, count);
-    else
-        printprompt();
+    copybuffer(buffer, count);
+    printprompt();
 
 }
 
@@ -167,11 +160,11 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
         command[count - 1] = '\0';
 
-        if (file_walk(FILE_L8, command + 3))
+        if (file_walk(FILE_L0, command + 3))
         {
 
-            file_duplicate(FILE_PW, FILE_L8);
-            file_duplicate(FILE_CW, FILE_L8);
+            file_duplicate(FILE_PW, FILE_L0);
+            file_duplicate(FILE_CW, FILE_L0);
 
         }
 
@@ -210,9 +203,6 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
         event_send(message);
         event_addrequest(message, header, EVENT_DATA, id);
         event_adddata(message, 0, count, command);
-        event_send(message);
-        event_addrequest(message, header, EVENT_DATA, id);
-        event_adddata(message, 0, 0, 0);
         event_send(message);
         event_addrequest(message, header, EVENT_EXIT, id);
         event_send(message);

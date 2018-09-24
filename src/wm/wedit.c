@@ -257,9 +257,9 @@ static void onwmresize(struct event_header *header)
     box_resize(&content.size, wmresize->padding);
     box_setsize(&status.size, wmresize->x, wmresize->y + wmresize->h - (wmresize->lineheight + 2 * wmresize->padding), wmresize->w, (wmresize->lineheight + 2 * wmresize->padding));
     box_resize(&status.size, wmresize->padding);
-    file_open(FILE_PI);
-    readfile(FILE_PI, content.size.h / wmresize->lineheight);
-    file_close(FILE_PI);
+    file_open(FILE_P0);
+    readfile(FILE_P0, content.size.h / wmresize->lineheight);
+    file_close(FILE_P0);
 
 }
 

@@ -30,7 +30,6 @@ struct task
 
     unsigned int id;
     unsigned int ninputs;
-    unsigned int noutputs;
 
 };
 
@@ -308,7 +307,7 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
                 for (x = count; x > j + 1; x--)
                     event_addforward(message, task[x - 1].id);
 
-                event_addfile(message, 0, FILE_PI + k);
+                event_addfile(message, 0, FILE_P0 + k);
                 event_send(message);
 
             }
@@ -347,6 +346,9 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
     unsigned int ntask = clear(task, 32);
     unsigned int i;
 
+    if (!file_walk(FILE_L0, "/bin"))
+        return;
+
     for (i = 0; i < postfix->head; i++)
     {
 
@@ -367,7 +369,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!t)
                 return;
 
-            if (!file_walk(FILE_CI + task[ntask].ninputs, t->str))
+            if (!file_walk(FILE_C0 + task[ntask].ninputs, t->str))
                 return;
 
             task[ntask].ninputs++;
@@ -380,10 +382,10 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
             if (!t)
                 return;
 
-            if (!file_walk(FILE_CO, t->str))
+            if (!file_walk(FILE_C0 + task[ntask].ninputs, t->str))
                 return;
 
-            task[ntask].noutputs++;
+            task[ntask].ninputs++;
 
             break;
 
@@ -426,9 +428,6 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 static void oninit(struct event_header *header)
 {
 
-    if (!file_walk(FILE_L0, "/bin"))
-        return;
-
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
@@ -454,23 +453,15 @@ static void ondata(struct event_header *header)
     struct event_data *data = event_getdata(header);
     char message[FUDGE_BSIZE];
 
-    if (data->count)
-    {
+    if (!data->count)
+        return;
 
-        tokenizebuffer(&infix, &stringtable, data->count, data + 1);
-        translate(&postfix, &infix, &stack);
-        parse(header, &postfix, &stack);
-
-    }
-
-    else
-    {
-
-        event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, 0, 0, 0);
-        event_send(message);
-
-    }
+    tokenizebuffer(&infix, &stringtable, data->count, data + 1);
+    translate(&postfix, &infix, &stack);
+    parse(header, &postfix, &stack);
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, data->session, 0, 0);
+    event_send(message);
 
 }
 
@@ -478,6 +469,7 @@ static void onfile(struct event_header *header)
 {
 
     struct event_file *file = event_getdata(header);
+    char message[FUDGE_BSIZE];
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -492,6 +484,9 @@ static void onfile(struct event_header *header)
     file_close(file->descriptor);
     translate(&postfix, &infix, &stack);
     parse(header, &postfix, &stack);
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, file->session, 0, 0);
+    event_send(message);
 
 }
 

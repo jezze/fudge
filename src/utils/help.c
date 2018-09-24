@@ -15,18 +15,6 @@ static void onkill(struct event_header *header)
 
 }
 
-static void ondata(struct event_header *header)
-{
-
-    struct event_data *data = event_getdata(header);
-    char message[FUDGE_BSIZE];
-
-    event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, data->session, 0, 0);
-    event_send(message);
-
-}
-
 static void onfile(struct event_header *header)
 {
 
@@ -40,7 +28,7 @@ static void onfile(struct event_header *header)
     if (!file_walk(FILE_CP, "/bin/echo"))
         return;
 
-    if (!file_walk(FILE_CI, "/data/help.txt"))
+    if (!file_walk(FILE_C0, "/data/help.txt"))
         return;
 
     id = call_spawn();
@@ -51,7 +39,7 @@ static void onfile(struct event_header *header)
     event_addrequest(message, header, EVENT_INIT, id);
     event_send(message);
     event_addpipe(message, header, EVENT_FILE, id);
-    event_addfile(message, file->session, FILE_PI);
+    event_addfile(message, file->session, FILE_P0);
     event_send(message);
     event_addrequest(message, header, EVENT_EXIT, id);
     event_send(message);
@@ -75,11 +63,6 @@ void main(void)
         case EVENT_EXIT:
         case EVENT_KILL:
             onkill(header);
-
-            break;
-
-        case EVENT_DATA:
-            ondata(header);
 
             break;
 
