@@ -9,6 +9,8 @@ static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
+static char promptdata[FUDGE_BSIZE];
+static struct ring prompt;
 static char inputdata1[FUDGE_BSIZE];
 static struct ring input1;
 static char inputdata2[FUDGE_BSIZE];
@@ -21,12 +23,13 @@ static unsigned int visiblerows;
 static void updatecontent(struct event_header *header)
 {
 
-    content.length = ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1;
-    content.cursor = ring_count(&text) + ring_count(&input1);
+    content.length = ring_count(&text) + ring_count(&prompt) + ring_count(&input1) + ring_count(&input2) + 1;
+    content.cursor = ring_count(&text) + ring_count(&prompt) + ring_count(&input1);
 
     widget_update(&output, &content, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
     ring_write(&output, &content, sizeof (struct widget_textbox));
     ring_copy(&output, &text);
+    ring_copy(&output, &prompt);
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
     ring_write(&output, "\n", 1);
@@ -129,18 +132,10 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
 
 }
 
-static void printprompt(void)
-{
-
-    copybuffer("$ ", 2);
-
-}
-
 static void printnormal(void *buffer, unsigned int count)
 {
 
     copybuffer(buffer, count);
-    printprompt();
 
 }
 
@@ -148,7 +143,6 @@ static void printcomplete(void *buffer, unsigned int count)
 {
 
     copybuffer(buffer, count);
-    printprompt();
 
 }
 
@@ -237,11 +231,12 @@ static void oninit(struct event_header *header)
     char message[FUDGE_BSIZE];
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&prompt, FUDGE_BSIZE, promptdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
-    printprompt();
+    ring_write(&prompt, "$ ", 2);
     event_addrequest(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
     event_send(message);
 
@@ -313,12 +308,12 @@ static void onwmkeypress(struct event_header *header)
     case 0x1C:
         ring_move(&input1, &input2);
         ring_write(&input1, keycode->value, keycode->length);
+        copyring(&prompt);
         copyring(&input1);
 
         if (interpret(header, &input1))
             break;
 
-        printprompt();
         updatecontent(header);
 
         break;
