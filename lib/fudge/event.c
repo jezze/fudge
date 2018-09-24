@@ -2,22 +2,12 @@
 #include "memory.h"
 #include "event.h"
 
-void *event_getforward(void *buffer)
+void *event_getdata(void *buffer)
 {
 
     struct event_header *header = buffer;
 
     return header + 1;
-
-}
-
-void *event_getdata(void *buffer)
-{
-
-    struct event_header *header = buffer;
-    struct event_forward *forward = event_getforward(buffer);
-
-    return forward + header->forward;
 
 }
 
@@ -30,21 +20,19 @@ unsigned int event_addheader(void *buffer, unsigned int type, unsigned int sourc
     header->source = source;
     header->target = target;
     header->length = sizeof (struct event_header);
-    header->forward = 0;
+    header->nroutes = 0;
 
     return header->length;
 
 }
 
-unsigned int event_addforward(void *buffer, unsigned int target)
+unsigned int event_addroute(void *buffer, unsigned int target)
 {
 
     struct event_header *header = buffer;
-    struct event_forward *forward = event_getforward(buffer);
 
-    forward[header->forward].target = target;
-    header->forward++;
-    header->length += sizeof (struct event_forward);
+    header->routes[header->nroutes] = target;
+    header->nroutes++;
 
     return header->length;
 
@@ -57,18 +45,17 @@ unsigned int event_addrequest(void *buffer, struct event_header *header, unsigne
 
     event_addheader(buffer, type, header->target, id);
 
-    if (header->forward)
+    if (header->nroutes)
     {
 
-        struct event_forward *forward = event_getforward(header);
         unsigned int i;
 
-        for (i = 0; i < header->forward; i++)
-            event_addforward(buffer, forward[i].target);
+        for (i = 0; i < header->nroutes; i++)
+            event_addroute(buffer, header->routes[i]);
 
     }
 
-    event_addforward(buffer, header->target);
+    event_addroute(buffer, header->target);
 
     return reply->length;
 
@@ -81,14 +68,13 @@ unsigned int event_addpipe(void *buffer, struct event_header *header, unsigned i
 
     event_addheader(buffer, type, header->target, id);
 
-    if (header->forward)
+    if (header->nroutes)
     {
 
-        struct event_forward *forward = event_getforward(header);
         unsigned int i;
 
-        for (i = 0; i < header->forward; i++)
-            event_addforward(buffer, forward[i].target);
+        for (i = 0; i < header->nroutes; i++)
+            event_addroute(buffer, header->routes[i]);
 
     }
 
@@ -103,16 +89,15 @@ unsigned int event_addresponse(void *buffer, struct event_header *header, unsign
 
     event_addheader(buffer, type, header->target, header->source);
 
-    if (header->forward)
+    if (header->nroutes)
     {
 
-        struct event_forward *forward = event_getforward(header);
         unsigned int i;
 
-        for (i = 0; i < header->forward - 1; i++)
-            event_addforward(buffer, forward[i].target);
+        for (i = 0; i < header->nroutes - 1; i++)
+            event_addroute(buffer, header->routes[i]);
 
-        reply->target = forward[header->forward - 1].target;
+        reply->target = header->routes[header->nroutes - 1];
 
     }
 

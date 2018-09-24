@@ -33,14 +33,11 @@ struct event_header
     unsigned int source;
     unsigned int target;
     unsigned int length;
-    unsigned int forward;
-
-};
-
-struct event_forward
-{
-
-    unsigned int target;
+    unsigned int nroutes;
+    unsigned int reserved0;
+    unsigned int reserved1;
+    unsigned int reserved2;
+    unsigned int routes[16];
 
 };
 
@@ -167,10 +164,9 @@ struct event_wmmousemove
 
 };
 
-void *event_getforward(void *buffer);
 void *event_getdata(void *buffer);
 unsigned int event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target);
-unsigned int event_addforward(void *buffer, unsigned int target);
+unsigned int event_addroute(void *buffer, unsigned int target);
 unsigned int event_addrequest(void *buffer, struct event_header *header, unsigned int type, unsigned int id);
 unsigned int event_addpipe(void *buffer, struct event_header *header, unsigned int type, unsigned int id);
 unsigned int event_addresponse(void *buffer, struct event_header *header, unsigned int type);
