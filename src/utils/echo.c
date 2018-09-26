@@ -40,7 +40,7 @@ static void onfile(struct event_header *header)
 
     file_open(file->descriptor);
 
-    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_data))))
     {
 
         char message[FUDGE_BSIZE];

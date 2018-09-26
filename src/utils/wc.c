@@ -2,6 +2,10 @@
 #include <fudge.h>
 
 static unsigned int quit;
+static unsigned int bytes;
+static unsigned int words;
+static unsigned int lines;
+static unsigned int whitespace = 1;
 
 static void sum(struct event_header *header, unsigned int count, void *buffer, unsigned int session)
 {
@@ -9,8 +13,6 @@ static void sum(struct event_header *header, unsigned int count, void *buffer, u
     char message[FUDGE_BSIZE];
     char num[FUDGE_NSIZE];
     char *data = buffer;
-    unsigned int bytes = 0, words = 0, lines = 0;
-    unsigned int whitespace = 1;
     unsigned int i;
 
     for (i = 0; i < count; i++)
