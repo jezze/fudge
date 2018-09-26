@@ -6,13 +6,14 @@ static unsigned int quit;
 static void list(struct event_header *header, unsigned int descriptor, unsigned int session)
 {
 
-    char message[FUDGE_BSIZE];
     struct record record;
 
     file_open(descriptor);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
+
+        char message[FUDGE_BSIZE];
 
         event_addresponse(message, header, EVENT_DATA);
         event_adddata(message, session);
