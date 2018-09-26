@@ -14,18 +14,13 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
-        char buffer[FUDGE_BSIZE];
-        unsigned int count = 0;
-
         if (record.length >= length && memory_match(record.name, name, length))
         {
 
-            count += memory_write(buffer, FUDGE_BSIZE, record.name, record.length, count);
-            count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
-
             event_addresponse(message, header, EVENT_DATA);
             event_adddata(message, session);
-            event_appenddata(message, count, buffer);
+            event_appenddata(message, record.length, record.name);
+            event_appenddata(message, 1, "\n");
             event_send(message);
 
         }
