@@ -48,8 +48,6 @@ static void onfile(struct event_header *header)
     struct ctrl_clocksettings settings;
     char message[FUDGE_BSIZE];
     char num[FUDGE_NSIZE];
-    unsigned int count;
-    unsigned int timestamp;
 
     if (!file->descriptor)
     {
@@ -64,14 +62,10 @@ static void onfile(struct event_header *header)
     file_open(file->descriptor);
     file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
     file_close(file->descriptor);
-
-    timestamp = gettimestamp(&settings);
-    count = ascii_wvalue(num, FUDGE_NSIZE, timestamp, 10);
-    count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
-
     event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, file->session);
-    event_appenddata(message, count, num);
+    event_appenddata(message, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(&settings), 10), num);
+    event_appenddata(message, 1, "\n");
     event_send(message);
 
 }
