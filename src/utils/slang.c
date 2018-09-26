@@ -460,7 +460,7 @@ static void ondata(struct event_header *header)
     translate(&postfix, &infix, &stack);
     parse(header, &postfix, &stack);
     event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, data->session, 0, 0);
+    event_adddata(message, data->session);
     event_send(message);
 
 }
@@ -485,7 +485,7 @@ static void onfile(struct event_header *header)
     translate(&postfix, &infix, &stack);
     parse(header, &postfix, &stack);
     event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, file->session, 0, 0);
+    event_adddata(message, file->session);
     event_send(message);
 
 }

@@ -2,6 +2,20 @@
 #include "memory.h"
 #include "event.h"
 
+static void *addpayload(void *buffer, unsigned int length)
+{
+
+    struct event_header *header = buffer;
+    char *start = buffer;
+
+    start += header->length;
+    header->length += length;
+    header->npayloads++;
+
+    return start;
+
+}
+
 void *event_getdata(void *buffer)
 {
 
@@ -20,6 +34,7 @@ unsigned int event_addheader(void *buffer, unsigned int type, unsigned int sourc
     header->source = source;
     header->target = target;
     header->length = sizeof (struct event_header);
+    header->npayloads = 0;
     header->nroutes = 0;
 
     return header->length;
@@ -105,16 +120,28 @@ unsigned int event_addresponse(void *buffer, struct event_header *header, unsign
 
 }
 
-unsigned int event_adddata(void *buffer, unsigned int session, unsigned int count, void *data)
+unsigned int event_adddata(void *buffer, unsigned int session)
+{
+
+    struct event_header *header = buffer;
+    struct event_data *d = addpayload(buffer, sizeof (struct event_data));
+
+    d->session = session;
+    d->count = 0;
+
+    return header->length;
+
+}
+
+unsigned int event_appenddata(void *buffer, unsigned int count, void *data)
 {
 
     struct event_header *header = buffer;
     struct event_data *d = event_getdata(buffer);
+    unsigned int c = memory_write(buffer, FUDGE_BSIZE, data, count, header->length);
 
-    header->length += sizeof (struct event_data);
-    d->session = session;
-    d->count = memory_write(buffer, FUDGE_BSIZE, data, count, header->length);
-    header->length += d->count;
+    d->count += c;
+    header->length += c;
 
     return header->length;
 
@@ -124,9 +151,8 @@ unsigned int event_addfile(void *buffer, unsigned int session, unsigned int desc
 {
 
     struct event_header *header = buffer;
-    struct event_file *file = event_getdata(buffer);
+    struct event_file *file = addpayload(buffer, sizeof (struct event_file));
 
-    header->length += sizeof (struct event_file);
     file->session = session;
     file->descriptor = descriptor;
 
@@ -138,9 +164,8 @@ unsigned int event_addkeypress(void *buffer, unsigned char scancode)
 {
 
     struct event_header *header = buffer;
-    struct event_keypress *keypress = event_getdata(buffer);
+    struct event_keypress *keypress = addpayload(buffer, sizeof (struct event_keypress));
 
-    header->length += sizeof (struct event_keypress);
     keypress->scancode = scancode;
 
     return header->length;
@@ -151,9 +176,8 @@ unsigned int event_addkeyrelease(void *buffer, unsigned char scancode)
 {
 
     struct event_header *header = buffer;
-    struct event_keyrelease *keyrelease = event_getdata(buffer);
+    struct event_keyrelease *keyrelease = addpayload(buffer, sizeof (struct event_keyrelease));
 
-    header->length += sizeof (struct event_keyrelease);
     keyrelease->scancode = scancode;
 
     return header->length;
@@ -164,9 +188,8 @@ unsigned int event_addmousepress(void *buffer, unsigned int button)
 {
 
     struct event_header *header = buffer;
-    struct event_mousepress *mousepress = event_getdata(buffer);
+    struct event_mousepress *mousepress = addpayload(buffer, sizeof (struct event_mousepress));
 
-    header->length += sizeof (struct event_mousepress);
     mousepress->button = button;
 
     return header->length;
@@ -177,9 +200,8 @@ unsigned int event_addmouserelease(void *buffer, unsigned int button)
 {
 
     struct event_header *header = buffer;
-    struct event_mouserelease *mouserelease = event_getdata(buffer);
+    struct event_mouserelease *mouserelease = addpayload(buffer, sizeof (struct event_mouserelease));
 
-    header->length += sizeof (struct event_mouserelease);
     mouserelease->button = button;
 
     return header->length;
@@ -190,9 +212,8 @@ unsigned int event_addmousemove(void *buffer, char relx, char rely)
 {
 
     struct event_header *header = buffer;
-    struct event_mousemove *mousemove = event_getdata(buffer);
+    struct event_mousemove *mousemove = addpayload(buffer, sizeof (struct event_mousemove));
 
-    header->length += sizeof (struct event_mousemove);
     mousemove->relx = relx;
     mousemove->rely = rely;
 
@@ -204,9 +225,8 @@ unsigned int event_addconsoledata(void *buffer, char data)
 {
 
     struct event_header *header = buffer;
-    struct event_consoledata *consoledata = event_getdata(buffer);
+    struct event_consoledata *consoledata = addpayload(buffer, sizeof (struct event_consoledata));
 
-    header->length += sizeof (struct event_consoledata);
     consoledata->data = data;
 
     return header->length;
@@ -217,9 +237,8 @@ unsigned int event_addtimertick(void *buffer, unsigned int counter)
 {
 
     struct event_header *header = buffer;
-    struct event_timertick *timertick = event_getdata(buffer);
+    struct event_timertick *timertick = addpayload(buffer, sizeof (struct event_timertick));
 
-    header->length += sizeof (struct event_timertick);
     timertick->counter = counter;
 
     return header->length;
@@ -230,9 +249,8 @@ unsigned int event_addvideomode(void *buffer, unsigned int w, unsigned int h, un
 {
 
     struct event_header *header = buffer;
-    struct event_videomode *videomode = event_getdata(buffer);
+    struct event_videomode *videomode = addpayload(buffer, sizeof (struct event_videomode));
 
-    header->length += sizeof (struct event_videomode);
     videomode->w = w;
     videomode->h = h;
     videomode->bpp = bpp;
@@ -245,9 +263,8 @@ unsigned int event_addwmkeypress(void *buffer, unsigned char scancode)
 {
 
     struct event_header *header = buffer;
-    struct event_wmkeypress *wmkeypress = event_getdata(buffer);
+    struct event_wmkeypress *wmkeypress = addpayload(buffer, sizeof (struct event_wmkeypress));
 
-    header->length += sizeof (struct event_wmkeypress);
     wmkeypress->scancode = scancode;
 
     return header->length;
@@ -258,9 +275,8 @@ unsigned int event_addwmkeyrelease(void *buffer, unsigned char scancode)
 {
 
     struct event_header *header = buffer;
-    struct event_wmkeyrelease *wmkeyrelease = event_getdata(buffer);
+    struct event_wmkeyrelease *wmkeyrelease = addpayload(buffer, sizeof (struct event_wmkeyrelease));
 
-    header->length += sizeof (struct event_wmkeyrelease);
     wmkeyrelease->scancode = scancode;
 
     return header->length;
@@ -271,9 +287,8 @@ unsigned int event_addwmmousepress(void *buffer, unsigned int button)
 {
 
     struct event_header *header = buffer;
-    struct event_wmmousepress *wmmousepress = event_getdata(buffer);
+    struct event_wmmousepress *wmmousepress = addpayload(buffer, sizeof (struct event_wmmousepress));
 
-    header->length += sizeof (struct event_wmmousepress);
     wmmousepress->button = button;
 
     return header->length;
@@ -284,9 +299,8 @@ unsigned int event_addwmmouserelease(void *buffer, unsigned int button)
 {
 
     struct event_header *header = buffer;
-    struct event_wmmouserelease *wmmouserelease = event_getdata(buffer);
+    struct event_wmmouserelease *wmmouserelease = addpayload(buffer, sizeof (struct event_wmmouserelease));
 
-    header->length += sizeof (struct event_wmmouserelease);
     wmmouserelease->button = button;
 
     return header->length;
@@ -297,9 +311,8 @@ unsigned int event_addwmmousemove(void *buffer, char relx, char rely)
 {
 
     struct event_header *header = buffer;
-    struct event_wmmousemove *wmmousemove = event_getdata(buffer);
+    struct event_wmmousemove *wmmousemove = addpayload(buffer, sizeof (struct event_wmmousemove));
 
-    header->length += sizeof (struct event_wmmousemove);
     wmmousemove->relx = relx;
     wmmousemove->rely = rely;
 
@@ -311,9 +324,8 @@ unsigned int event_addwmresize(void *buffer, unsigned int x, unsigned int y, uns
 {
 
     struct event_header *header = buffer;
-    struct event_wmresize *wmresize = event_getdata(buffer);
+    struct event_wmresize *wmresize = addpayload(buffer, sizeof (struct event_wmresize));
 
-    header->length += sizeof (struct event_wmresize);
     wmresize->x = x;
     wmresize->y = y;
     wmresize->w = w;

@@ -45,22 +45,13 @@ static void sum(struct event_header *header, unsigned int count, void *buffer, u
     }
 
     event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, session, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
-    event_send(message);
-    event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, session, 1, "\n");
-    event_send(message);
-    event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, session, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
-    event_send(message);
-    event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, session, 1, "\n");
-    event_send(message);
-    event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, session, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
-    event_send(message);
-    event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, session, 1, "\n");
+    event_adddata(message, session);
+    event_appenddata(message, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
+    event_appenddata(message, 1, "\n");
+    event_appenddata(message, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
+    event_appenddata(message, 1, "\n");
+    event_appenddata(message, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
+    event_appenddata(message, 1, "\n");
     event_send(message);
 
 }

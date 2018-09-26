@@ -70,7 +70,8 @@ static void onfile(struct event_header *header)
     count += memory_write(num, FUDGE_NSIZE, "\n", 1, count);
 
     event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, file->session, count, num);
+    event_adddata(message, file->session);
+    event_appenddata(message, count, num);
     event_send(message);
 
 }

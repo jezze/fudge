@@ -17,10 +17,9 @@ static void dump(struct event_header *header, unsigned int count, void *buffer, 
         unsigned int cnum = ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0);
 
         event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, session, cnum, num);
-        event_send(message);
-        event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, session, 2, "  ");
+        event_adddata(message, session);
+        event_appenddata(message, cnum, num);
+        event_appenddata(message, 2, "  ");
         event_send(message);
 
     }

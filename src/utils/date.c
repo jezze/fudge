@@ -43,7 +43,8 @@ static void onfile(struct event_header *header)
     ascii_wzerovalue(datetime, 20, settings.minutes, 10, 2, 14);
     ascii_wzerovalue(datetime, 20, settings.seconds, 10, 2, 17);
     event_addresponse(message, header, EVENT_DATA);
-    event_adddata(message, file->session, 20, datetime);
+    event_adddata(message, file->session);
+    event_appenddata(message, 20, datetime);
     event_send(message);
 
 }

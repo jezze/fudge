@@ -24,7 +24,8 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
             count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
 
             event_addresponse(message, header, EVENT_DATA);
-            event_adddata(message, session, count, buffer);
+            event_adddata(message, session);
+            event_appenddata(message, count, buffer);
             event_send(message);
 
         }
