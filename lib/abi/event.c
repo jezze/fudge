@@ -5,7 +5,6 @@
 void event_open(void)
 {
 
-    file_walk(FILE_PM, "/system/event");
     file_open(FILE_PM);
 
 }

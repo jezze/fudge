@@ -7,8 +7,6 @@ void main(void)
     char message[FUDGE_BSIZE];
     unsigned int id;
 
-    file_walk(FILE_CW, "/home");
-
     /* Move to base once event is merged into kernel */
     file_walk(FILE_CP, "/bin/elfload");
     file_walk(FILE_C0, "/mod/system.ko");
@@ -25,6 +23,10 @@ void main(void)
     file_walk(FILE_CP, "/bin/initfs");
 
     id = call_spawn();
+
+    /* Setup default descriptors */
+    file_walk(FILE_PM, "/system/event");
+    file_walk(FILE_CM, "/system/event");
 
     /* This is what init really should do */
     file_walk(FILE_CP, "/bin/slang");
