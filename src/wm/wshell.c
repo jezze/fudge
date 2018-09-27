@@ -141,7 +141,21 @@ static void printnormal(void *buffer, unsigned int count)
 static void printcomplete(void *buffer, unsigned int count)
 {
 
-    copybuffer(buffer, count);
+    if (memory_findbyte(buffer, count, '\n') < count - 1)
+    {
+
+        copyring(&prompt);
+        copybuffer("\n", 1);
+        copybuffer(buffer, count);
+
+    }
+
+    else
+    {
+
+        ring_write(&input1, buffer, count - 1);
+
+    }
 
 }
 
@@ -294,7 +308,6 @@ static void onwmkeypress(struct event_header *header, void *message)
 
     case 0x0F:
         ring_move(&input1, &input2);
-        copyring(&input1);
         complete(header, message, &input1);
 
         break;

@@ -7,8 +7,11 @@ static void complete(struct event_header *header, void *message, unsigned int de
 {
 
     struct record record;
+    unsigned int n = 0;
 
     file_open(descriptor);
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, session);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
@@ -16,11 +19,11 @@ static void complete(struct event_header *header, void *message, unsigned int de
         if (record.length >= length && memory_match(record.name, name, length))
         {
 
-            event_addresponse(message, header, EVENT_DATA);
-            event_adddata(message, session);
             event_appenddata(message, record.length, record.name);
             event_appenddata(message, 1, "\n");
-            event_send(message);
+
+            if (++n == 10)
+                break;
 
         }
 
@@ -29,6 +32,7 @@ static void complete(struct event_header *header, void *message, unsigned int de
 
     }
 
+    event_send(message);
     file_close(descriptor);
 
 }
