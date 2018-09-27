@@ -1002,7 +1002,7 @@ void main(void)
 
             char message[FUDGE_BSIZE];
 
-            event_addheader(message, EVENT_WMFLUSH, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST);
+            event_addheader(message, EVENT_WMFLUSH, header->target, EVENT_ADDR_BROADCAST);
             event_addwmflush(message, ring_count(&output), outputdata);
             event_send(message);
             ring_reset(&output);
