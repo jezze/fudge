@@ -5,7 +5,7 @@ static unsigned int quit;
 static unsigned char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 
-static unsigned int complete(struct event_header *header, struct ring *ring)
+static unsigned int complete(struct event_header *header, void *message, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -19,8 +19,6 @@ static unsigned int complete(struct event_header *header, struct ring *ring)
 
     if (id)
     {
-
-        char message[FUDGE_BSIZE];
 
         event_addrequest(message, header, EVENT_INIT, id);
         event_send(message);
@@ -85,7 +83,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static unsigned int interpret(struct event_header *header, struct ring *ring)
+static unsigned int interpret(struct event_header *header, void *message, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -106,8 +104,6 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
     if (id)
     {
 
-        char message[FUDGE_BSIZE];
-
         event_addrequest(message, header, EVENT_INIT, id);
         event_send(message);
         event_addrequest(message, header, EVENT_DATA, id);
@@ -123,7 +119,7 @@ static unsigned int interpret(struct event_header *header, struct ring *ring)
 
 }
 
-static void oninit(struct event_header *header)
+static void oninit(struct event_header *header, void *message)
 {
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
@@ -133,10 +129,8 @@ static void oninit(struct event_header *header)
 
 }
 
-static void onkill(struct event_header *header)
+static void onkill(struct event_header *header, void *message)
 {
-
-    char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
     event_send(message);
@@ -145,7 +139,7 @@ static void onkill(struct event_header *header)
 
 }
 
-static void ondata(struct event_header *header)
+static void ondata(struct event_header *header, void *message)
 {
 
     struct event_data *data = event_getdata(header);
@@ -172,7 +166,7 @@ static void ondata(struct event_header *header)
 
 }
 
-static void onconsoledata(struct event_header *header)
+static void onconsoledata(struct event_header *header, void *message)
 {
 
     struct event_consoledata *consoledata = event_getdata(header);
@@ -184,7 +178,7 @@ static void onconsoledata(struct event_header *header)
         break;
 
     case '\t':
-        complete(header, &input);
+        complete(header, message, &input);
 
         break;
 
@@ -208,7 +202,7 @@ static void onconsoledata(struct event_header *header)
         file_close(FILE_P0);
         ring_write(&input, &consoledata->data, 1);
 
-        if (interpret(header, &input))
+        if (interpret(header, message, &input))
             break;
 
         file_open(FILE_P0);
@@ -242,28 +236,29 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
+        char message[FUDGE_BSIZE];
         struct event_header *header = event_read(data);
 
         switch (header->type)
         {
 
         case EVENT_INIT:
-            oninit(header);
+            oninit(header, message);
 
             break;
 
         case EVENT_KILL:
-            onkill(header);
+            onkill(header, message);
 
             break;
 
         case EVENT_DATA:
-            ondata(header);
+            ondata(header, message);
 
             break;
 
         case EVENT_CONSOLEDATA:
-            onconsoledata(header);
+            onconsoledata(header, message);
 
             break;
 

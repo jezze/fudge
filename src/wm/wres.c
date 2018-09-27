@@ -6,20 +6,16 @@
 
 static unsigned int quit;
 
-static void oninit(struct event_header *header)
+static void oninit(struct event_header *header, void *message)
 {
-
-    char message[FUDGE_BSIZE];
 
     event_addrequest(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
     event_send(message);
 
 }
 
-static void onkill(struct event_header *header)
+static void onkill(struct event_header *header, void *message)
 {
-
-    char message[FUDGE_BSIZE];
 
     event_addrequest(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
     event_send(message);
@@ -30,7 +26,7 @@ static void onkill(struct event_header *header)
 
 }
 
-static void onwmmousepress(struct event_header *header)
+static void onwmmousepress(struct event_header *header, void *message)
 {
 
     struct event_wmmousepress *wmmousepress = event_getdata(header);
@@ -60,23 +56,24 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
+        char message[FUDGE_BSIZE];
         struct event_header *header = event_read(data);
 
         switch (header->type)
         {
 
         case EVENT_INIT:
-            oninit(header);
+            oninit(header, message);
 
             break;
 
         case EVENT_KILL:
-            onkill(header);
+            onkill(header, message);
 
             break;
 
         case EVENT_WMMOUSEPRESS:
-            onwmmousepress(header);
+            onwmmousepress(header, message);
 
             break;
 

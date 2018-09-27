@@ -133,7 +133,7 @@ static void deactivateremote(struct remote *remote)
 
 }
 
-static void showremotes(struct event_header *header, struct list *remotes)
+static void showremotes(struct event_header *header, void *message, struct list *remotes)
 {
 
     struct list_item *current;
@@ -142,7 +142,6 @@ static void showremotes(struct event_header *header, struct list *remotes)
     {
 
         struct remote *remote = current->data;
-        char message[FUDGE_BSIZE];
 
         event_addrequest(message, header, EVENT_WMSHOW, remote->source);
         event_send(message);
@@ -152,7 +151,7 @@ static void showremotes(struct event_header *header, struct list *remotes)
 
 }
 
-static void hideremotes(struct event_header *header, struct list *remotes)
+static void hideremotes(struct event_header *header, void *message, struct list *remotes)
 {
 
     struct list_item *current;
@@ -161,7 +160,6 @@ static void hideremotes(struct event_header *header, struct list *remotes)
     {
 
         struct remote *remote = current->data;
-        char message[FUDGE_BSIZE];
 
         event_addrequest(message, header, EVENT_WMHIDE, remote->source);
         event_send(message);
@@ -171,7 +169,7 @@ static void hideremotes(struct event_header *header, struct list *remotes)
 
 }
 
-static void resizeremotes(struct event_header *header, struct list *remotes)
+static void resizeremotes(struct event_header *header, void *message, struct list *remotes)
 {
 
     struct list_item *current;
@@ -180,7 +178,6 @@ static void resizeremotes(struct event_header *header, struct list *remotes)
     {
 
         struct remote *remote = current->data;
-        char message[FUDGE_BSIZE];
 
         event_addrequest(message, header, EVENT_WMRESIZE, remote->source);
         event_addwmresize(message, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
@@ -190,7 +187,7 @@ static void resizeremotes(struct event_header *header, struct list *remotes)
 
 }
 
-static void killremotes(struct event_header *header, struct list *remotes)
+static void killremotes(struct event_header *header, void *message, struct list *remotes)
 {
 
     struct list_item *current;
@@ -199,7 +196,6 @@ static void killremotes(struct event_header *header, struct list *remotes)
     {
 
         struct remote *remote = current->data;
-        char message[FUDGE_BSIZE];
 
         event_addrequest(message, header, EVENT_KILL, remote->source);
         event_send(message);
@@ -208,17 +204,17 @@ static void killremotes(struct event_header *header, struct list *remotes)
 
 }
 
-static void flipview(struct event_header *header, struct view *view)
+static void flipview(struct event_header *header, void *message, struct view *view)
 {
 
     deactivateview(currentview);
-    hideremotes(header, &currentview->remotes);
+    hideremotes(header, message, &currentview->remotes);
     updateview(header, currentview);
 
     currentview = view;
 
     activateview(currentview);
-    showremotes(header, &currentview->remotes);
+    showremotes(header, message, &currentview->remotes);
     updateview(header, currentview);
 
 }
@@ -255,7 +251,7 @@ static void arrangetiled(struct view *view)
 
 }
 
-static void arrangeview(struct event_header *header, struct view *view)
+static void arrangeview(struct event_header *header, void *message, struct view *view)
 {
 
     switch (view->remotes.count)
@@ -276,7 +272,7 @@ static void arrangeview(struct event_header *header, struct view *view)
 
     }
 
-    resizeremotes(header, &view->remotes);
+    resizeremotes(header, message, &view->remotes);
 
 }
 
@@ -319,7 +315,7 @@ static void setupremotes(void)
 
 }
 
-static void oninit(struct event_header *header)
+static void oninit(struct event_header *header, void *message)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -342,10 +338,9 @@ static void oninit(struct event_header *header)
 
 }
 
-static void onkill(struct event_header *header)
+static void onkill(struct event_header *header, void *message)
 {
 
-    char message[FUDGE_BSIZE];
     struct list_item *current;
 
     for (current = viewlist.head; current; current = current->next)
@@ -353,8 +348,8 @@ static void onkill(struct event_header *header)
 
         struct view *view = current->data;
 
-        hideremotes(header, &view->remotes);
-        killremotes(header, &view->remotes);
+        hideremotes(header, message, &view->remotes);
+        killremotes(header, message, &view->remotes);
 
     }
 
@@ -365,7 +360,7 @@ static void onkill(struct event_header *header)
 
 }
 
-static void onkeypress(struct event_header *header)
+static void onkeypress(struct event_header *header, void *message)
 {
 
     struct event_keypress *keypress = event_getdata(header);
@@ -380,8 +375,6 @@ static void onkeypress(struct event_header *header)
 
         if (currentview->currentremote)
         {
-
-            char message[FUDGE_BSIZE];
 
             event_addrequest(message, header, EVENT_WMKEYPRESS, currentview->currentremote->source);
             event_addwmkeypress(message, keypress->scancode);
@@ -419,8 +412,8 @@ static void onkeypress(struct event_header *header)
             if (currentview->currentremote)
                 activateremote(currentview->currentremote);
 
-            arrangeview(header, currentview);
-            arrangeview(header, nextview);
+            arrangeview(header, message, currentview);
+            arrangeview(header, message, nextview);
 
             if (nextview->currentremote)
                 deactivateremote(nextview->currentremote);
@@ -429,7 +422,7 @@ static void onkeypress(struct event_header *header)
 
         }
 
-        flipview(header, nextview);
+        flipview(header, message, nextview);
 
         break;
 
@@ -439,8 +432,6 @@ static void onkeypress(struct event_header *header)
 
         if ((keymod & KEYMOD_SHIFT))
         {
-
-            char message[FUDGE_BSIZE];
 
             event_addrequest(message, header, EVENT_WMHIDE, currentview->currentremote->source);
             event_send(message);
@@ -463,8 +454,6 @@ static void onkeypress(struct event_header *header)
         if (id)
         {
 
-            char message[FUDGE_BSIZE];
-
             event_addrequest(message, header, EVENT_INIT, id);
             event_send(message);
             event_addrequest(message, header, EVENT_EXIT, id);
@@ -479,8 +468,8 @@ static void onkeypress(struct event_header *header)
             break;
 
         list_move(&currentview->remotes, &currentview->remotes, &currentview->currentremote->item);
-        arrangeview(header, currentview);
-        showremotes(header, &currentview->remotes);
+        arrangeview(header, message, currentview);
+        showremotes(header, message, &currentview->remotes);
 
         break;
 
@@ -490,8 +479,8 @@ static void onkeypress(struct event_header *header)
 
         currentview->center -= 4 * steplength;
 
-        arrangeview(header, currentview);
-        showremotes(header, &currentview->remotes);
+        arrangeview(header, message, currentview);
+        showremotes(header, message, &currentview->remotes);
 
         break;
 
@@ -539,16 +528,14 @@ static void onkeypress(struct event_header *header)
 
         currentview->center += 4 * steplength;
 
-        arrangeview(header, currentview);
-        showremotes(header, &currentview->remotes);
+        arrangeview(header, message, currentview);
+        showremotes(header, message, &currentview->remotes);
 
         break;
 
     case 0x2C:
         if ((keymod & KEYMOD_SHIFT))
         {
-
-            char message[FUDGE_BSIZE];
 
             /* Sending to self not allowed */
             event_addrequest(message, header, EVENT_WMHIDE, header->target);
@@ -565,7 +552,7 @@ static void onkeypress(struct event_header *header)
 
 }
 
-static void onkeyrelease(struct event_header *header)
+static void onkeyrelease(struct event_header *header, void *message)
 {
 
     struct event_keyrelease *keyrelease = event_getdata(header);
@@ -577,8 +564,6 @@ static void onkeyrelease(struct event_header *header)
 
         if (currentview->currentremote)
         {
-
-            char message[FUDGE_BSIZE];
 
             event_addrequest(message, header, EVENT_WMKEYRELEASE, currentview->currentremote->source);
             event_addwmkeyrelease(message, keyrelease->scancode);
@@ -592,7 +577,7 @@ static void onkeyrelease(struct event_header *header)
 
 }
 
-static void onmousemove(struct event_header *header)
+static void onmousemove(struct event_header *header, void *message)
 {
 
     struct event_mousemove *mousemove = event_getdata(header);
@@ -611,8 +596,6 @@ static void onmousemove(struct event_header *header)
     if (currentview->currentremote)
     {
 
-        char message[FUDGE_BSIZE];
-
         event_addrequest(message, header, EVENT_WMMOUSEMOVE, currentview->currentremote->source);
         event_addwmmousemove(message, mouse.size.x, mouse.size.y);
         event_send(message);
@@ -621,7 +604,7 @@ static void onmousemove(struct event_header *header)
 
 }
 
-static void onmousepress(struct event_header *header)
+static void onmousepress(struct event_header *header, void *message)
 {
 
     struct event_mousepress *mousepress = event_getdata(header);
@@ -642,7 +625,7 @@ static void onmousepress(struct event_header *header)
             if (box_isinside(&view->panel.size, mouse.size.x, mouse.size.y))
             {
 
-                flipview(header, view);
+                flipview(header, message, view);
 
                 break;
 
@@ -682,8 +665,6 @@ static void onmousepress(struct event_header *header)
     if (currentview->currentremote)
     {
 
-        char message[FUDGE_BSIZE];
-
         event_addrequest(message, header, EVENT_WMMOUSEPRESS, currentview->currentremote->source);
         event_addwmmousepress(message, mousepress->button);
         event_send(message);
@@ -692,15 +673,13 @@ static void onmousepress(struct event_header *header)
 
 }
 
-static void onmouserelease(struct event_header *header)
+static void onmouserelease(struct event_header *header, void *message)
 {
 
     struct event_mouserelease *mouserelease = event_getdata(header);
 
     if (currentview->currentremote)
     {
-
-        char message[FUDGE_BSIZE];
 
         event_addrequest(message, header, EVENT_WMMOUSERELEASE, currentview->currentremote->source);
         event_addwmmouserelease(message, mouserelease->button);
@@ -710,12 +689,11 @@ static void onmouserelease(struct event_header *header)
 
 }
 
-static void onvideomode(struct event_header *header)
+static void onvideomode(struct event_header *header, void *message)
 {
 
     struct event_videomode *videomode = event_getdata(header);
     unsigned int factor = (videomode->h / 320);
-    char message[FUDGE_BSIZE];
 
     lineheight = 12 + factor * 4;
     padding = 4 + factor * 2;
@@ -765,7 +743,7 @@ static void onvideomode(struct event_header *header)
 
 }
 
-static void onwmmap(struct event_header *header)
+static void onwmmap(struct event_header *header, void *message)
 {
 
     if (currentview->currentremote)
@@ -776,12 +754,12 @@ static void onwmmap(struct event_header *header)
 
     list_move(&currentview->remotes, currentview->currentremote->item.list, &currentview->currentremote->item);
     activateremote(currentview->currentremote);
-    arrangeview(header, currentview);
-    showremotes(header, &currentview->remotes);
+    arrangeview(header, message, currentview);
+    showremotes(header, message, &currentview->remotes);
 
 }
 
-static void onwmunmap(struct event_header *header)
+static void onwmunmap(struct event_header *header, void *message)
 {
 
     struct list_item *current;
@@ -808,10 +786,10 @@ static void onwmunmap(struct event_header *header)
             if (view->currentremote)
                 activateremote(view->currentremote);
 
-            arrangeview(header, view);
+            arrangeview(header, message, view);
 
             if (view == currentview)
-                showremotes(header, &view->remotes);
+                showremotes(header, message, &view->remotes);
 
         }
 
@@ -819,7 +797,7 @@ static void onwmunmap(struct event_header *header)
 
 }
 
-static void onwmresize(struct event_header *header)
+static void onwmresize(struct event_header *header, void *message)
 {
 
     struct event_wmresize *wmresize = event_getdata(header);
@@ -840,7 +818,7 @@ static void onwmresize(struct event_header *header)
         view->center = 18 * steplength;
 
         box_setsize(&view->panel.size, size.x + i * size.w / viewlist.count, size.y, size.w / viewlist.count, (wmresize->lineheight + wmresize->padding * 2));
-        arrangeview(header, view);
+        arrangeview(header, message, view);
 
         i++;
 
@@ -851,7 +829,7 @@ static void onwmresize(struct event_header *header)
 
 }
 
-static void onwmshow(struct event_header *header)
+static void onwmshow(struct event_header *header, void *message)
 {
 
     struct list_item *current;
@@ -862,11 +840,11 @@ static void onwmshow(struct event_header *header)
     for (current = viewlist.head; current; current = current->next)
         updateview(header, current->data);
 
-    showremotes(header, &currentview->remotes);
+    showremotes(header, message, &currentview->remotes);
 
 }
 
-static void onwmhide(struct event_header *header)
+static void onwmhide(struct event_header *header, void *message)
 {
 
     struct list_item *current;
@@ -877,11 +855,11 @@ static void onwmhide(struct event_header *header)
     for (current = viewlist.head; current; current = current->next)
         removeview(header, current->data);
 
-    hideremotes(header, &currentview->remotes);
+    hideremotes(header, message, &currentview->remotes);
 
 }
 
-static void onwmflush(struct event_header *header)
+static void onwmflush(struct event_header *header, void *message)
 {
 
     void *data = event_getdata(header);
@@ -920,78 +898,79 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
+        char message[FUDGE_BSIZE];
         struct event_header *header = event_read(data);
 
         switch (header->type)
         {
 
         case EVENT_INIT:
-            oninit(header);
+            oninit(header, message);
 
             break;
 
         case EVENT_KILL:
-            onkill(header);
+            onkill(header, message);
 
             break;
 
         case EVENT_KEYPRESS:
-            onkeypress(header);
+            onkeypress(header, message);
 
             break;
 
         case EVENT_KEYRELEASE:
-            onkeyrelease(header);
+            onkeyrelease(header, message);
 
             break;
 
         case EVENT_MOUSEMOVE:
-            onmousemove(header);
+            onmousemove(header, message);
 
             break;
 
         case EVENT_MOUSEPRESS:
-            onmousepress(header);
+            onmousepress(header, message);
 
             break;
 
         case EVENT_MOUSERELEASE:
-            onmouserelease(header);
+            onmouserelease(header, message);
 
             break;
 
         case EVENT_VIDEOMODE:
-            onvideomode(header);
+            onvideomode(header, message);
 
             break;
 
         case EVENT_WMMAP:
-            onwmmap(header);
+            onwmmap(header, message);
 
             break;
 
         case EVENT_WMUNMAP:
-            onwmunmap(header);
+            onwmunmap(header, message);
 
             break;
 
         case EVENT_WMRESIZE:
-            onwmresize(header);
+            onwmresize(header, message);
 
             break;
 
         case EVENT_WMSHOW:
-            onwmshow(header);
+            onwmshow(header, message);
 
             break;
 
         case EVENT_WMHIDE:
-            onwmhide(header);
+            onwmhide(header, message);
 
             break;
 
         case EVENT_WMFLUSH:
-            onwmflush(header);
+            onwmflush(header, message);
 
             break;
 
@@ -999,8 +978,6 @@ void main(void)
 
         if (ring_count(&output))
         {
-
-            char message[FUDGE_BSIZE];
 
             event_addheader(message, EVENT_WMFLUSH, header->target, EVENT_ADDR_BROADCAST);
             event_addwmflush(message, ring_count(&output), outputdata);

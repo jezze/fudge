@@ -104,10 +104,8 @@ static void movedown(void)
 
 }
 
-static void oninit(struct event_header *header)
+static void oninit(struct event_header *header, void *message)
 {
-
-    char message[FUDGE_BSIZE];
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
@@ -119,10 +117,8 @@ static void oninit(struct event_header *header)
 
 }
 
-static void onkill(struct event_header *header)
+static void onkill(struct event_header *header, void *message)
 {
-
-    char message[FUDGE_BSIZE];
 
     event_addrequest(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
     event_send(message);
@@ -133,12 +129,12 @@ static void onkill(struct event_header *header)
 
 }
 
-static void onfile(struct event_header *header)
+static void onfile(struct event_header *header, void *message)
 {
 
 }
 
-static void onwmkeypress(struct event_header *header)
+static void onwmkeypress(struct event_header *header, void *message)
 {
 
     struct event_wmkeypress *wmkeypress = event_getdata(header);
@@ -202,7 +198,7 @@ static void onwmkeypress(struct event_header *header)
 
 }
 
-static void onwmkeyrelease(struct event_header *header)
+static void onwmkeyrelease(struct event_header *header, void *message)
 {
 
     struct event_wmkeyrelease *wmkeyrelease = event_getdata(header);
@@ -246,7 +242,7 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
 }
 
-static void onwmresize(struct event_header *header)
+static void onwmresize(struct event_header *header, void *message)
 {
 
     struct event_wmresize *wmresize = event_getdata(header);
@@ -263,7 +259,7 @@ static void onwmresize(struct event_header *header)
 
 }
 
-static void onwmshow(struct event_header *header)
+static void onwmshow(struct event_header *header, void *message)
 {
 
     updatecontent(header);
@@ -271,7 +267,7 @@ static void onwmshow(struct event_header *header)
 
 }
 
-static void onwmhide(struct event_header *header)
+static void onwmhide(struct event_header *header, void *message)
 {
 
     removecontent(header);
@@ -288,48 +284,49 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
+        char message[FUDGE_BSIZE];
         struct event_header *header = event_read(data);
 
         switch (header->type)
         {
 
         case EVENT_INIT:
-            oninit(header);
+            oninit(header, message);
 
             break;
 
         case EVENT_KILL:
-            onkill(header);
+            onkill(header, message);
 
             break;
 
         case EVENT_FILE:
-            onfile(header);
+            onfile(header, message);
 
             break;
 
         case EVENT_WMKEYPRESS:
-            onwmkeypress(header);
+            onwmkeypress(header, message);
 
             break;
 
         case EVENT_WMKEYRELEASE:
-            onwmkeyrelease(header);
+            onwmkeyrelease(header, message);
 
             break;
 
         case EVENT_WMRESIZE:
-            onwmresize(header);
+            onwmresize(header, message);
 
             break;
 
         case EVENT_WMSHOW:
-            onwmshow(header);
+            onwmshow(header, message);
 
             break;
 
         case EVENT_WMHIDE:
-            onwmhide(header);
+            onwmhide(header, message);
 
             break;
 
@@ -337,8 +334,6 @@ void main(void)
 
         if (ring_count(&output))
         {
-
-            char message[FUDGE_BSIZE];
 
             event_addheader(message, EVENT_WMFLUSH, header->target, EVENT_ADDR_BROADCAST);
             event_addwmflush(message, ring_count(&output), outputdata);

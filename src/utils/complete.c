@@ -3,10 +3,9 @@
 
 static unsigned int quit;
 
-static void complete(struct event_header *header, unsigned int descriptor, void *name, unsigned int length, unsigned int session)
+static void complete(struct event_header *header, void *message, unsigned int descriptor, void *name, unsigned int length, unsigned int session)
 {
 
-    char message[FUDGE_BSIZE];
     struct record record;
 
     file_open(descriptor);
@@ -34,10 +33,8 @@ static void complete(struct event_header *header, unsigned int descriptor, void 
 
 }
 
-static void onkill(struct event_header *header)
+static void onkill(struct event_header *header, void *message)
 {
-
-    char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
     event_send(message);
@@ -46,12 +43,12 @@ static void onkill(struct event_header *header)
 
 }
 
-static void ondata(struct event_header *header)
+static void ondata(struct event_header *header, void *message)
 {
 
     struct event_data *data = event_getdata(header);
 
-    complete(header, FILE_PW, data + 1, data->count, data->session);
+    complete(header, message, FILE_PW, data + 1, data->count, data->session);
 
 }
 
@@ -64,6 +61,7 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
+        char message[FUDGE_BSIZE];
         struct event_header *header = event_read(data);
 
         switch (header->type)
@@ -71,12 +69,12 @@ void main(void)
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header);
+            onkill(header, message);
 
             break;
 
         case EVENT_DATA:
-            ondata(header);
+            ondata(header, message);
 
             break;
 

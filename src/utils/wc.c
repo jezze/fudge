@@ -7,10 +7,9 @@ static unsigned int words;
 static unsigned int lines;
 static unsigned int whitespace = 1;
 
-static void sum(struct event_header *header, unsigned int count, void *buffer, unsigned int session)
+static void sum(struct event_header *header, void *message, unsigned int count, void *buffer, unsigned int session)
 {
 
-    char message[FUDGE_BSIZE];
     char num[FUDGE_NSIZE];
     char *data = buffer;
     unsigned int i;
@@ -58,16 +57,16 @@ static void sum(struct event_header *header, unsigned int count, void *buffer, u
 
 }
 
-static void ondata(struct event_header *header)
+static void ondata(struct event_header *header, void *message)
 {
 
     struct event_data *data = event_getdata(header);
 
-    sum(header, data->count, data + 1, data->session);
+    sum(header, message, data->count, data + 1, data->session);
 
 }
 
-static void onfile(struct event_header *header)
+static void onfile(struct event_header *header, void *message)
 {
 
     struct event_file *file = event_getdata(header);
@@ -80,16 +79,14 @@ static void onfile(struct event_header *header)
     file_open(file->descriptor);
 
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
-        sum(header, count, buffer, file->session);
+        sum(header, message, count, buffer, file->session);
 
     file_close(file->descriptor);
 
 }
 
-static void onkill(struct event_header *header)
+static void onkill(struct event_header *header, void *message)
 {
-
-    char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
     event_send(message);
@@ -107,6 +104,7 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
+        char message[FUDGE_BSIZE];
         struct event_header *header = event_read(data);
 
         switch (header->type)
@@ -114,17 +112,17 @@ void main(void)
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header);
+            onkill(header, message);
 
             break;
 
         case EVENT_DATA:
-            ondata(header);
+            ondata(header, message);
 
             break;
 
         case EVENT_FILE:
-            onfile(header);
+            onfile(header, message);
 
             break;
 

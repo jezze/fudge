@@ -3,10 +3,8 @@
 
 static unsigned int quit;
 
-static void onkill(struct event_header *header)
+static void onkill(struct event_header *header, void *message)
 {
-
-    char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
     event_send(message);
@@ -15,13 +13,12 @@ static void onkill(struct event_header *header)
 
 }
 
-static void onfile(struct event_header *header)
+static void onfile(struct event_header *header, void *message)
 {
 
     struct event_file *file = event_getdata(header);
     struct ctrl_clocksettings settings;
     char *datetime = "0000-00-00 00:00:00\n";
-    char message[FUDGE_BSIZE];
 
     if (!file->descriptor)
     {
@@ -58,6 +55,7 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
+        char message[FUDGE_BSIZE];
         struct event_header *header = event_read(data);
 
         switch (header->type)
@@ -65,12 +63,12 @@ void main(void)
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header);
+            onkill(header, message);
 
             break;
 
         case EVENT_FILE:
-            onfile(header);
+            onfile(header, message);
 
             break;
 

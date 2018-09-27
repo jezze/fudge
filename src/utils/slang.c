@@ -277,10 +277,9 @@ static unsigned int clear(struct task *task, unsigned int count)
 
 }
 
-static void run(struct event_header *header, struct task *task, unsigned int count)
+static void run(struct event_header *header, void *message, struct task *task, unsigned int count)
 {
 
-    char message[FUDGE_BSIZE];
     unsigned int j;
     unsigned int k;
     unsigned int x;
@@ -339,7 +338,7 @@ static void run(struct event_header *header, struct task *task, unsigned int cou
 
 }
 
-static void parse(struct event_header *header, struct tokenlist *postfix, struct tokenlist *stack)
+static void parse(struct event_header *header, void *message, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     struct task task[32];
@@ -413,7 +412,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
             ntask = add(task, ntask, call_spawn());
 
-            run(header, task, ntask);
+            run(header, message, task, ntask);
 
             ntask = clear(task, ntask);
 
@@ -425,7 +424,7 @@ static void parse(struct event_header *header, struct tokenlist *postfix, struct
 
 }
 
-static void oninit(struct event_header *header)
+static void oninit(struct event_header *header, void *message)
 {
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
@@ -435,10 +434,8 @@ static void oninit(struct event_header *header)
 
 }
 
-static void onkill(struct event_header *header)
+static void onkill(struct event_header *header, void *message)
 {
-
-    char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
     event_send(message);
@@ -447,29 +444,27 @@ static void onkill(struct event_header *header)
 
 }
 
-static void ondata(struct event_header *header)
+static void ondata(struct event_header *header, void *message)
 {
 
     struct event_data *data = event_getdata(header);
-    char message[FUDGE_BSIZE];
 
     if (!data->count)
         return;
 
     tokenizebuffer(&infix, &stringtable, data->count, data + 1);
     translate(&postfix, &infix, &stack);
-    parse(header, &postfix, &stack);
+    parse(header, message, &postfix, &stack);
     event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, data->session);
     event_send(message);
 
 }
 
-static void onfile(struct event_header *header)
+static void onfile(struct event_header *header, void *message)
 {
 
     struct event_file *file = event_getdata(header);
-    char message[FUDGE_BSIZE];
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -483,7 +478,7 @@ static void onfile(struct event_header *header)
 
     file_close(file->descriptor);
     translate(&postfix, &infix, &stack);
-    parse(header, &postfix, &stack);
+    parse(header, message, &postfix, &stack);
     event_addresponse(message, header, EVENT_DATA);
     event_adddata(message, file->session);
     event_send(message);
@@ -499,29 +494,30 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
+        char message[FUDGE_BSIZE];
         struct event_header *header = event_read(data);
 
         switch (header->type)
         {
 
         case EVENT_INIT:
-            oninit(header);
+            oninit(header, message);
 
             break;
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header);
+            onkill(header, message);
 
             break;
 
         case EVENT_DATA:
-            ondata(header);
+            ondata(header, message);
 
             break;
 
         case EVENT_FILE:
-            onfile(header);
+            onfile(header, message);
 
             break;
 

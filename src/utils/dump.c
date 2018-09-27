@@ -3,7 +3,7 @@
 
 static unsigned int quit;
 
-static void dump(struct event_header *header, unsigned int count, void *buffer, unsigned int session)
+static void dump(struct event_header *header, void *message, unsigned int count, void *buffer, unsigned int session)
 {
 
     char *data = buffer;
@@ -12,7 +12,6 @@ static void dump(struct event_header *header, unsigned int count, void *buffer, 
     for (i = 0; i < count; i++)
     {
 
-        char message[FUDGE_BSIZE];
         unsigned char num[FUDGE_NSIZE];
 
         event_addresponse(message, header, EVENT_DATA);
@@ -25,16 +24,16 @@ static void dump(struct event_header *header, unsigned int count, void *buffer, 
 
 }
 
-static void ondata(struct event_header *header)
+static void ondata(struct event_header *header, void *message)
 {
 
     struct event_data *data = event_getdata(header);
 
-    dump(header, data->count, data + 1, data->session);
+    dump(header, message, data->count, data + 1, data->session);
 
 }
 
-static void onfile(struct event_header *header)
+static void onfile(struct event_header *header, void *message)
 {
 
     struct event_file *file = event_getdata(header);
@@ -47,16 +46,14 @@ static void onfile(struct event_header *header)
     file_open(file->descriptor);
 
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
-        dump(header, count, buffer, file->session);
+        dump(header, message, count, buffer, file->session);
 
     file_close(file->descriptor);
 
 }
 
-static void onkill(struct event_header *header)
+static void onkill(struct event_header *header, void *message)
 {
-
-    char message[FUDGE_BSIZE];
 
     event_addresponse(message, header, EVENT_CHILD);
     event_send(message);
@@ -74,6 +71,7 @@ void main(void)
     {
 
         char data[FUDGE_BSIZE];
+        char message[FUDGE_BSIZE];
         struct event_header *header = event_read(data);
 
         switch (header->type)
@@ -81,17 +79,17 @@ void main(void)
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header);
+            onkill(header, message);
 
             break;
 
         case EVENT_DATA:
-            ondata(header);
+            ondata(header, message);
 
             break;
 
         case EVENT_FILE:
-            onfile(header);
+            onfile(header, message);
 
             break;
 
