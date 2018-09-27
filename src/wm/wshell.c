@@ -243,7 +243,7 @@ static void onkill(struct event_header *header, void *message)
 
     event_addrequest(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
     event_send(message);
-    event_addresponse(message, header, EVENT_CHILD);
+    event_addresponse(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;

@@ -31,7 +31,7 @@ static void list(struct event_header *header, void *message, unsigned int descri
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_CHILD);
+    event_addresponse(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;

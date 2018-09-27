@@ -328,13 +328,8 @@ static void run(struct event_header *header, void *message, struct task *task, u
 
     }
 
-    for (j = 0; j < count; j++)
-    {
-
-        event_addrequest(message, header, EVENT_EXIT, task[j].id);
-        event_send(message);
-
-    }
+    event_addrequest(message, header, EVENT_EXIT, task[0].id);
+    event_send(message);
 
 }
 
@@ -437,7 +432,7 @@ static void oninit(struct event_header *header, void *message)
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_CHILD);
+    event_addresponse(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;
