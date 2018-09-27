@@ -164,6 +164,7 @@ struct event_wmmousemove
 };
 
 void *event_getdata(void *buffer);
+unsigned int event_avail(void *buffer);
 unsigned int event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target);
 unsigned int event_addroute(void *buffer, unsigned int target);
 unsigned int event_addrequest(void *buffer, struct event_header *header, unsigned int type, unsigned int id);

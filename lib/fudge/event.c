@@ -25,6 +25,15 @@ void *event_getdata(void *buffer)
 
 }
 
+unsigned int event_avail(void *buffer)
+{
+
+    struct event_header *header = buffer;
+
+    return FUDGE_BSIZE - header->length;
+
+}
+
 unsigned int event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target)
 {
 

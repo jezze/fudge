@@ -7,7 +7,6 @@ static void complete(struct event_header *header, void *message, unsigned int de
 {
 
     struct record record;
-    unsigned int n = 0;
 
     file_open(descriptor);
     event_addresponse(message, header, EVENT_DATA);
@@ -19,11 +18,17 @@ static void complete(struct event_header *header, void *message, unsigned int de
         if (record.length >= length && memory_match(record.name, name, length))
         {
 
+            if (event_avail(message) < record.length + 1)
+            {
+
+                event_send(message);
+                event_addresponse(message, header, EVENT_DATA);
+                event_adddata(message, session);
+
+            }
+
             event_appenddata(message, record.length, record.name);
             event_appenddata(message, 1, "\n");
-
-            if (++n == 10)
-                break;
 
         }
 

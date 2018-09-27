@@ -9,21 +9,30 @@ static void list(struct event_header *header, void *message, unsigned int descri
     struct record record;
 
     file_open(descriptor);
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, session);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
-        event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, session);
+        if (event_avail(message) < record.length + 1)
+        {
+
+            event_send(message);
+            event_addresponse(message, header, EVENT_DATA);
+            event_adddata(message, session);
+
+        }
+
         event_appenddata(message, record.length, record.name);
         event_appenddata(message, 1, "\n");
-        event_send(message);
 
         if (!file_step(descriptor))
             break;
 
     }
 
+    event_send(message);
     file_close(descriptor);
 
 }

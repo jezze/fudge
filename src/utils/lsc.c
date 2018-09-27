@@ -9,27 +9,36 @@ static void list(struct event_header *header, void *message, unsigned int descri
     struct record record;
 
     file_open(descriptor);
+    event_addresponse(message, header, EVENT_DATA);
+    event_adddata(message, session);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
-        char num[FUDGE_BSIZE];
+        char num[FUDGE_NSIZE];
 
-        event_addresponse(message, header, EVENT_DATA);
-        event_adddata(message, session);
-        event_appenddata(message, ascii_wzerovalue(num, FUDGE_BSIZE, record.id, 16, 8, 0), num);
+        if (event_avail(message) < record.length + 3 + 16)
+        {
+
+            event_send(message);
+            event_addresponse(message, header, EVENT_DATA);
+            event_adddata(message, session);
+
+        }
+
+        event_appenddata(message, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
         event_appenddata(message, 1, " ");
-        event_appenddata(message, ascii_wzerovalue(num, FUDGE_BSIZE, record.size, 16, 8, 0), num);
+        event_appenddata(message, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
         event_appenddata(message, 1, " ");
         event_appenddata(message, record.length, record.name);
         event_appenddata(message, 1, "\n");
-        event_send(message);
 
         if (!file_step(descriptor))
             break;
 
     }
 
+    event_send(message);
     file_close(descriptor);
 
 }
