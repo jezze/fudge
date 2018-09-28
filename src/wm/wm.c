@@ -33,7 +33,7 @@ static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
-static struct box size;
+static struct box screen;
 static struct box body;
 static struct list viewlist;
 static struct list remotelist;
@@ -585,11 +585,11 @@ static void onmousemove(struct event_header *header, void *message)
     mouse.size.x += mousemove->relx;
     mouse.size.y += mousemove->rely;
 
-    if (mouse.size.x < size.x || mouse.size.x >= size.x + size.w)
-        mouse.size.x = (mousemove->relx < 0) ? size.x : size.x + size.w - 1;
+    if (mouse.size.x < screen.x || mouse.size.x >= screen.x + screen.w)
+        mouse.size.x = (mousemove->relx < 0) ? screen.x : screen.x + screen.w - 1;
 
-    if (mouse.size.y < size.y || mouse.size.y >= size.y + size.h)
-        mouse.size.y = (mousemove->rely < 0) ? size.y : size.y + size.h - 1;
+    if (mouse.size.y < screen.y || mouse.size.y >= screen.y + screen.h)
+        mouse.size.y = (mousemove->rely < 0) ? screen.y : screen.y + screen.h - 1;
 
     updatemouse(header);
 
@@ -804,11 +804,11 @@ static void onwmresize(struct event_header *header, void *message)
     struct list_item *current;
     unsigned int i = 0;
 
-    box_setsize(&size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_setsize(&body, size.x, size.y + (wmresize->lineheight + wmresize->padding * 2), size.w, size.h - (wmresize->lineheight + wmresize->padding * 2));
-    box_setsize(&background.size, size.x, size.y, size.w, size.h);
+    box_setsize(&screen, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
+    box_setsize(&body, wmresize->x, wmresize->y + (wmresize->lineheight + wmresize->padding * 2), wmresize->w, wmresize->h - (wmresize->lineheight + wmresize->padding * 2));
+    box_setsize(&background.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
 
-    steplength = body.w / 32;
+    steplength = wmresize->w / 32;
 
     for (current = viewlist.head; current; current = current->next)
     {
@@ -817,15 +817,15 @@ static void onwmresize(struct event_header *header, void *message)
 
         view->center = 18 * steplength;
 
-        box_setsize(&view->panel.size, size.x + i * size.w / viewlist.count, size.y, size.w / viewlist.count, (wmresize->lineheight + wmresize->padding * 2));
+        box_setsize(&view->panel.size, wmresize->x + i * wmresize->w / viewlist.count, wmresize->y, wmresize->w / viewlist.count, (wmresize->lineheight + wmresize->padding * 2));
         arrangeview(header, message, view);
 
         i++;
 
     }
 
-    mouse.size.x = size.x + size.w / 4;
-    mouse.size.y = size.y + size.h / 4;
+    mouse.size.x = wmresize->x + wmresize->w / 4;
+    mouse.size.y = wmresize->y + wmresize->h / 4;
 
 }
 
@@ -868,7 +868,7 @@ static void onwmflush(struct event_header *header, void *message)
         return;
 
     render_begin(data, header->length - sizeof (struct event_header));
-    render_update(FILE_L0, size.w, size.h);
+    render_update(FILE_L0, screen.w, screen.h);
     render_complete();
 
 }
