@@ -1,4 +1,3 @@
-#define EVENT_ADDR_SELF                 0
 #define EVENT_ADDR_BROADCAST            0
 #define EVENT_INIT                      0x01
 #define EVENT_EXIT                      0x02
@@ -32,8 +31,8 @@ struct event_header
     unsigned int source;
     unsigned int target;
     unsigned int length;
-    unsigned int npayloads;
     unsigned int nroutes;
+    unsigned int reserved0;
     unsigned int reserved1;
     unsigned int reserved2;
     unsigned int routes[16];
@@ -165,7 +164,7 @@ struct event_wmmousemove
 
 void *event_getdata(void *buffer);
 unsigned int event_avail(void *buffer);
-unsigned int event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target);
+unsigned int event_addheader(void *buffer, unsigned int type, unsigned int target);
 unsigned int event_addroute(void *buffer, unsigned int target);
 unsigned int event_addrequest(void *buffer, struct event_header *header, unsigned int type, unsigned int id);
 unsigned int event_addpipe(void *buffer, struct event_header *header, unsigned int type, unsigned int id);

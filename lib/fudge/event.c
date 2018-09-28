@@ -10,7 +10,6 @@ static void *addpayload(void *buffer, unsigned int length)
 
     start += header->length;
     header->length += length;
-    header->npayloads++;
 
     return start;
 
@@ -34,16 +33,15 @@ unsigned int event_avail(void *buffer)
 
 }
 
-unsigned int event_addheader(void *buffer, unsigned int type, unsigned int source, unsigned int target)
+unsigned int event_addheader(void *buffer, unsigned int type, unsigned int target)
 {
 
     struct event_header *header = buffer;
 
     header->type = type;
-    header->source = source;
+    header->source = 0;
     header->target = target;
     header->length = sizeof (struct event_header);
-    header->npayloads = 0;
     header->nroutes = 0;
 
     return header->length;
@@ -67,7 +65,7 @@ unsigned int event_addrequest(void *buffer, struct event_header *header, unsigne
 
     struct event_header *reply = buffer;
 
-    event_addheader(buffer, type, header->target, id);
+    event_addheader(buffer, type, id);
 
     if (header->nroutes)
     {
@@ -90,7 +88,7 @@ unsigned int event_addpipe(void *buffer, struct event_header *header, unsigned i
 
     struct event_header *reply = buffer;
 
-    event_addheader(buffer, type, header->target, id);
+    event_addheader(buffer, type, id);
 
     if (header->nroutes)
     {
@@ -111,7 +109,7 @@ unsigned int event_addresponse(void *buffer, struct event_header *header, unsign
 
     struct event_header *reply = buffer;
 
-    event_addheader(buffer, type, header->target, header->source);
+    event_addheader(buffer, type, header->source);
 
     if (header->nroutes)
     {

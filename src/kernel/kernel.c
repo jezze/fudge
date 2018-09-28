@@ -294,7 +294,7 @@ unsigned int kernel_multicastdata(struct list *states, void *buffer, unsigned in
 
     char message[FUDGE_BSIZE];
 
-    event_addheader(message, EVENT_DATA, EVENT_ADDR_SELF, EVENT_ADDR_BROADCAST);
+    event_addheader(message, EVENT_DATA, EVENT_ADDR_BROADCAST);
     event_adddata(message, 0);
     event_appenddata(message, count, buffer);
 
