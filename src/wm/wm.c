@@ -40,8 +40,8 @@ static struct list remotelist;
 static struct widget_fill background;
 static struct widget_mouse mouse;
 static struct view *currentview = &views[0];
-static unsigned int padding = 4;
-static unsigned int lineheight = 12;
+static unsigned int padding;
+static unsigned int lineheight;
 static unsigned int steplength;
 
 static void updateremote(struct event_header *header, struct remote *remote)
