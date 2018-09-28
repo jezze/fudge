@@ -302,7 +302,6 @@ static void onwmkeypress(struct event_header *header, void *message)
 
     case 0x0E:
         ring_skipreverse(&input1, 1);
-        updatecontent(header);
 
         break;
 
@@ -317,11 +316,7 @@ static void onwmkeypress(struct event_header *header, void *message)
         ring_write(&input1, keycode->value, keycode->length);
         copyring(&prompt);
         copyring(&input1);
-
-        if (interpret(header, message, &input1))
-            break;
-
-        updatecontent(header);
+        interpret(header, message, &input1);
 
         break;
 
@@ -331,8 +326,6 @@ static void onwmkeypress(struct event_header *header, void *message)
         else
             ring_write(&input1, keycode->value, keycode->length);
 
-        updatecontent(header);
-
         break;
 
     case 0x25:
@@ -340,8 +333,6 @@ static void onwmkeypress(struct event_header *header, void *message)
             ring_reset(&input2);
         else
             ring_write(&input1, keycode->value, keycode->length);
-
-        updatecontent(header);
 
         break;
 
@@ -351,41 +342,36 @@ static void onwmkeypress(struct event_header *header, void *message)
         else
             ring_write(&input1, keycode->value, keycode->length);
 
-        updatecontent(header);
-
         break;
 
     case 0x47:
         moveleft(ring_count(&input1));
-        updatecontent(header);
 
         break;
 
     case 0x4B:
         moveleft(1);
-        updatecontent(header);
 
         break;
 
     case 0x4D:
         moveright(1);
-        updatecontent(header);
 
         break;
 
     case 0x4F:
         moveright(ring_count(&input2));
-        updatecontent(header);
 
         break;
 
     default:
         ring_write(&input1, keycode->value, keycode->length);
-        updatecontent(header);
 
         break;
 
     }
+
+    updatecontent(header);
 
 }
 

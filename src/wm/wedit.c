@@ -148,53 +148,48 @@ static void onwmkeypress(struct event_header *header, void *message)
 
     case 0x0E:
         ring_skipreverse(&input1, 1);
-        updatecontent(header);
 
         break;
 
     case 0x47:
         moveleft(ring_findreverse(&input1, '\n'));
-        updatecontent(header);
 
         break;
 
     case 0x48:
         moveup();
-        updatecontent(header);
 
         break;
 
     case 0x4B:
         moveleft(1);
-        updatecontent(header);
 
         break;
 
     case 0x4D:
         moveright(1);
-        updatecontent(header);
 
         break;
 
     case 0x4F:
         moveright(ring_find(&input2, '\n'));
-        updatecontent(header);
 
         break;
 
     case 0x50:
         movedown();
-        updatecontent(header);
 
         break;
 
     default:
         ring_write(&input1, keycode->value, keycode->length);
-        updatecontent(header);
 
         break;
 
     }
+
+    updatecontent(header);
+    updatestatus(header);
 
 }
 
