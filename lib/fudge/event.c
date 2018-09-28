@@ -349,7 +349,7 @@ unsigned int event_addwmflush(void *buffer, unsigned int count, void *data)
 
     struct event_header *header = buffer;
 
-    header->length += memory_write(buffer, FUDGE_BSIZE, data, count, sizeof (struct event_header));
+    header->length += memory_write(buffer, FUDGE_BSIZE, data, count, header->length);
 
     return header->length;
 
