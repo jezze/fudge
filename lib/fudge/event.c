@@ -53,8 +53,7 @@ unsigned int event_addroute(void *buffer, unsigned int target)
 
     struct event_header *header = buffer;
 
-    header->routes[header->nroutes] = target;
-    header->nroutes++;
+    header->routes[header->nroutes++] = target;
 
     return header->length;
 
