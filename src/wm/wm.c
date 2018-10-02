@@ -326,12 +326,12 @@ static void oninit(struct event_header *header, void *message)
     activateview(currentview);
     render_init();
 
-    if (!file_walkfrom(FILE_L0, FILE_G2, "ctrl"))
+    if (!file_walkfrom(FILE_L0, FILE_G2, "../ctrl"))
         return;
 
     render_setvideo(FILE_L0, 1024, 768, 4);
 
-    if (!file_walkfrom(FILE_L0, FILE_G2, "colormap"))
+    if (!file_walkfrom(FILE_L0, FILE_G2, "../colormap"))
         return;
 
     render_setcolormap(FILE_L0);
@@ -864,7 +864,7 @@ static void onwmflush(struct event_header *header, void *message)
 
     void *data = event_getdata(header);
 
-    if (!file_walkfrom(FILE_L0, FILE_G2, "data"))
+    if (!file_walkfrom(FILE_L0, FILE_G2, "../data"))
         return;
 
     render_begin(data, header->length - sizeof (struct event_header));
@@ -882,16 +882,12 @@ void main(void)
     if (!file_walk(FILE_G1, "/system/mouse/event"))
         return;
 
-    if (!file_walk(FILE_G2, "/system/video/if:0"))
+    if (!file_walk(FILE_G2, "/system/video/if:0/event"))
         return;
 
-    if (!file_walkfrom(FILE_G3, FILE_G2, "event"))
-        return;
-
-    file_open(FILE_PM);
     file_open(FILE_G0);
     file_open(FILE_G1);
-    file_open(FILE_G3);
+    file_open(FILE_G2);
     event_open();
 
     while (!quit)
@@ -989,7 +985,7 @@ void main(void)
     }
 
     event_close();
-    file_close(FILE_G3);
+    file_close(FILE_G2);
     file_close(FILE_G1);
     file_close(FILE_G0);
 
