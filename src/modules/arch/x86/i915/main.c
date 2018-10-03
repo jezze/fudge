@@ -5,6 +5,7 @@
 #include <modules/video/video.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/pci/pci.h>
+#include <modules/arch/x86/pit/pit.h>
 #include "i915.h"
 
 static struct base_driver driver;
@@ -25,21 +26,6 @@ static void write(unsigned int reg, unsigned int val)
     unsigned int *value = (unsigned int *)(unsigned int)reg;
 
     *value = val;
-
-}
-
-static void wait(unsigned int num)
-{
-
-    unsigned int i = 0xcfffffff;
-    unsigned int j = 0xcfffffff;
-
-    while (j--)
-    {
-
-        while (i--);
-
-    }
 
 }
 
@@ -69,13 +55,13 @@ static void enabledpll(void)
 
         write(I915_DPLLB_CONTROL, pllb);
         read(I915_DPLLB_CONTROL);
-        wait(150);
+        pit_wait(150);
         write(I915_DPLLB_CONTROL, pllb | I915_DPLL_CONTROL_ENABLE_VCO);
         read(I915_DPLLB_CONTROL);
-        wait(150);
+        pit_wait(150);
         write(I915_DPLLB_CONTROL, pllb | I915_DPLL_CONTROL_ENABLE_VCO);
         read(I915_DPLLB_CONTROL);
-        wait(150);
+        pit_wait(150);
 
     }
 
