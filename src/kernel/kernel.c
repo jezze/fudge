@@ -335,7 +335,7 @@ void kernel_setupinit(struct task *task)
     root->id = root->protocol->root(root->backend, &root->state);
     work->backend = root->backend;
     work->protocol = root->protocol;
-    work->id = root->id;
+    work->id = work->protocol->root(work->backend, &work->state);
     init->backend = root->backend;
     init->protocol = root->protocol;
     init->id = init->protocol->root(init->backend, &init->state);
