@@ -15,13 +15,13 @@ static struct ring input1;
 static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
 
-static void updatecontent(struct event_header *header)
+static void updatecontent(struct event_header *iheader)
 {
 
     content.length = ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&input1);
 
-    widget_update(&output, &content, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
+    widget_update(&output, &content, WIDGET_Z_MIDDLE, iheader->target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
     ring_write(&output, &content, sizeof (struct widget_textbox));
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
@@ -29,28 +29,28 @@ static void updatecontent(struct event_header *header)
 
 }
 
-static void updatestatus(struct event_header *header)
+static void updatestatus(struct event_header *iheader)
 {
 
     status.length = 18;
 
-    widget_update(&output, &status, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, status.size.x, status.size.y, status.size.w, status.size.h);
+    widget_update(&output, &status, WIDGET_Z_MIDDLE, iheader->target, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, status.size.x, status.size.y, status.size.w, status.size.h);
     ring_write(&output, &status, sizeof (struct widget_text));
     ring_write(&output, "^S: Save, ^Q: Quit", 18);
 
 }
 
-static void removecontent(struct event_header *header)
+static void removecontent(struct event_header *iheader)
 {
 
-    widget_remove(&output, &content, WIDGET_Z_MIDDLE, header->target);
+    widget_remove(&output, &content, WIDGET_Z_MIDDLE, iheader->target);
 
 }
 
-static void removestatus(struct event_header *header)
+static void removestatus(struct event_header *iheader)
 {
 
-    widget_remove(&output, &status, WIDGET_Z_MIDDLE, header->target);
+    widget_remove(&output, &status, WIDGET_Z_MIDDLE, iheader->target);
 
 }
 
@@ -104,7 +104,7 @@ static void movedown(void)
 
 }
 
-static void oninit(struct event_header *header, void *message)
+static void oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -112,32 +112,32 @@ static void oninit(struct event_header *header, void *message)
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     widget_inittextbox(&content);
     widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
-    event_request(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
-    event_send(message);
+    event_request(oheader, iheader, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
+    event_send(oheader);
 
 }
 
-static void onkill(struct event_header *header, void *message)
+static void onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_request(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
-    event_send(message);
-    event_reply(message, header, EVENT_EXIT);
-    event_send(message);
+    event_request(oheader, iheader, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
+    event_send(oheader);
+    event_reply(oheader, iheader, EVENT_EXIT);
+    event_send(oheader);
 
     quit = 1;
 
 }
 
-static void onfile(struct event_header *header, void *message)
+static void onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
 }
 
-static void onwmkeypress(struct event_header *header, void *message)
+static void onwmkeypress(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_wmkeypress *wmkeypress = event_getdata(header);
+    struct event_wmkeypress *wmkeypress = event_getdata(iheader);
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -188,15 +188,15 @@ static void onwmkeypress(struct event_header *header, void *message)
 
     }
 
-    updatecontent(header);
-    updatestatus(header);
+    updatecontent(iheader);
+    updatestatus(iheader);
 
 }
 
-static void onwmkeyrelease(struct event_header *header, void *message)
+static void onwmkeyrelease(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = event_getdata(header);
+    struct event_wmkeyrelease *wmkeyrelease = event_getdata(iheader);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
@@ -237,10 +237,10 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
 }
 
-static void onwmresize(struct event_header *header, void *message)
+static void onwmresize(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_wmresize *wmresize = event_getdata(header);
+    struct event_wmresize *wmresize = event_getdata(iheader);
 
     ring_reset(&input1);
     ring_reset(&input2);
@@ -254,19 +254,19 @@ static void onwmresize(struct event_header *header, void *message)
 
 }
 
-static void onwmshow(struct event_header *header, void *message)
+static void onwmshow(struct event_header *iheader, struct event_header *oheader)
 {
 
-    updatecontent(header);
-    updatestatus(header);
+    updatecontent(iheader);
+    updatestatus(iheader);
 
 }
 
-static void onwmhide(struct event_header *header, void *message)
+static void onwmhide(struct event_header *iheader, struct event_header *oheader)
 {
 
-    removecontent(header);
-    removestatus(header);
+    removecontent(iheader);
+    removestatus(iheader);
 
 }
 
@@ -278,50 +278,51 @@ void main(void)
     while (!quit)
     {
 
-        char data[FUDGE_BSIZE];
-        char message[FUDGE_BSIZE];
-        struct event_header *header = event_read(data);
+        char ibuffer[FUDGE_BSIZE];
+        char obuffer[FUDGE_BSIZE];
+        struct event_header *iheader = event_read(ibuffer);
+        struct event_header *oheader = (struct event_header *)obuffer;
 
-        switch (header->type)
+        switch (iheader->type)
         {
 
         case EVENT_INIT:
-            oninit(header, message);
+            oninit(iheader, oheader);
 
             break;
 
         case EVENT_KILL:
-            onkill(header, message);
+            onkill(iheader, oheader);
 
             break;
 
         case EVENT_FILE:
-            onfile(header, message);
+            onfile(iheader, oheader);
 
             break;
 
         case EVENT_WMKEYPRESS:
-            onwmkeypress(header, message);
+            onwmkeypress(iheader, oheader);
 
             break;
 
         case EVENT_WMKEYRELEASE:
-            onwmkeyrelease(header, message);
+            onwmkeyrelease(iheader, oheader);
 
             break;
 
         case EVENT_WMRESIZE:
-            onwmresize(header, message);
+            onwmresize(iheader, oheader);
 
             break;
 
         case EVENT_WMSHOW:
-            onwmshow(header, message);
+            onwmshow(iheader, oheader);
 
             break;
 
         case EVENT_WMHIDE:
-            onwmhide(header, message);
+            onwmhide(iheader, oheader);
 
             break;
 
@@ -330,10 +331,9 @@ void main(void)
         if (ring_count(&output))
         {
 
-            struct event_header *flush = event_request(message, header, EVENT_WMFLUSH, EVENT_ADDR_BROADCAST);
-
-            event_addwmflush(flush, ring_count(&output), outputdata);
-            event_send(message);
+            event_request(oheader, iheader, EVENT_WMFLUSH, EVENT_ADDR_BROADCAST);
+            event_addwmflush(oheader, ring_count(&output), outputdata);
+            event_send(oheader);
             ring_reset(&output);
 
         }

@@ -6,30 +6,30 @@
 
 static unsigned int quit;
 
-static void oninit(struct event_header *header, void *message)
+static void oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_request(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
-    event_send(message);
+    event_request(oheader, iheader, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
+    event_send(oheader);
 
 }
 
-static void onkill(struct event_header *header, void *message)
+static void onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_request(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
-    event_send(message);
-    event_reply(message, header, EVENT_EXIT);
-    event_send(message);
+    event_request(oheader, iheader, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
+    event_send(oheader);
+    event_reply(oheader, iheader, EVENT_EXIT);
+    event_send(oheader);
 
     quit = 1;
 
 }
 
-static void onwmmousepress(struct event_header *header, void *message)
+static void onwmmousepress(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_wmmousepress *wmmousepress = event_getdata(header);
+    struct event_wmmousepress *wmmousepress = event_getdata(iheader);
 
     switch (wmmousepress->button)
     {
@@ -55,25 +55,26 @@ void main(void)
     while (!quit)
     {
 
-        char data[FUDGE_BSIZE];
-        char message[FUDGE_BSIZE];
-        struct event_header *header = event_read(data);
+        char ibuffer[FUDGE_BSIZE];
+        char obuffer[FUDGE_BSIZE];
+        struct event_header *iheader = event_read(ibuffer);
+        struct event_header *oheader = (struct event_header *)obuffer;
 
-        switch (header->type)
+        switch (iheader->type)
         {
 
         case EVENT_INIT:
-            oninit(header, message);
+            oninit(iheader, oheader);
 
             break;
 
         case EVENT_KILL:
-            onkill(header, message);
+            onkill(iheader, oheader);
 
             break;
 
         case EVENT_WMMOUSEPRESS:
-            onwmmousepress(header, message);
+            onwmmousepress(iheader, oheader);
 
             break;
 

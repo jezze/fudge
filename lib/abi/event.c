@@ -28,10 +28,8 @@ struct event_header *event_read(void *message)
 
 }
 
-unsigned int event_send(void *message)
+unsigned int event_send(struct event_header *header)
 {
-
-    struct event_header *header = message;
 
     return file_writeall(FILE_PM, header, header->length);
 

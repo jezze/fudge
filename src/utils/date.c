@@ -3,20 +3,20 @@
 
 static unsigned int quit;
 
-static void onkill(struct event_header *header, void *message)
+static void onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_reply(message, header, EVENT_EXIT);
-    event_send(message);
+    event_reply(oheader, iheader, EVENT_EXIT);
+    event_send(oheader);
 
     quit = 1;
 
 }
 
-static void onfile(struct event_header *header, void *message)
+static void onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(header);
+    struct event_file *file = event_getdata(iheader);
     struct ctrl_clocksettings settings;
     char *datetime = "0000-00-00 00:00:00\n";
 
@@ -39,10 +39,10 @@ static void onfile(struct event_header *header, void *message)
     ascii_wzerovalue(datetime, 20, settings.hours, 10, 2, 11);
     ascii_wzerovalue(datetime, 20, settings.minutes, 10, 2, 14);
     ascii_wzerovalue(datetime, 20, settings.seconds, 10, 2, 17);
-    event_reply(message, header, EVENT_DATA);
-    event_adddata(message, file->session);
-    event_appenddata(message, 20, datetime);
-    event_send(message);
+    event_reply(oheader, iheader, EVENT_DATA);
+    event_adddata(oheader, file->session);
+    event_appenddata(oheader, 20, datetime);
+    event_send(oheader);
 
 }
 
@@ -54,21 +54,22 @@ void main(void)
     while (!quit)
     {
 
-        char data[FUDGE_BSIZE];
-        char message[FUDGE_BSIZE];
-        struct event_header *header = event_read(data);
+        char ibuffer[FUDGE_BSIZE];
+        char obuffer[FUDGE_BSIZE];
+        struct event_header *iheader = event_read(ibuffer);
+        struct event_header *oheader = (struct event_header *)obuffer;
 
-        switch (header->type)
+        switch (iheader->type)
         {
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header, message);
+            onkill(iheader, oheader);
 
             break;
 
         case EVENT_FILE:
-            onfile(header, message);
+            onfile(iheader, oheader);
 
             break;
 

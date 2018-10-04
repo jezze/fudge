@@ -3,65 +3,65 @@
 
 static unsigned int quit;
 
-static void list(struct event_header *header, void *message, unsigned int descriptor, unsigned int session)
+static void list(struct event_header *iheader, struct event_header *oheader, unsigned int descriptor, unsigned int session)
 {
 
     struct record record;
 
     file_open(descriptor);
-    event_reply(message, header, EVENT_DATA);
-    event_adddata(message, session);
+    event_reply(oheader, iheader, EVENT_DATA);
+    event_adddata(oheader, session);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
         char num[FUDGE_NSIZE];
 
-        if (event_avail(message) < record.length + 3 + 16)
+        if (event_avail(oheader) < record.length + 3 + 16)
         {
 
-            event_send(message);
-            event_reply(message, header, EVENT_DATA);
-            event_adddata(message, session);
+            event_send(oheader);
+            event_reply(oheader, iheader, EVENT_DATA);
+            event_adddata(oheader, session);
 
         }
 
-        event_appenddata(message, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
-        event_appenddata(message, 1, " ");
-        event_appenddata(message, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
-        event_appenddata(message, 1, " ");
-        event_appenddata(message, record.length, record.name);
-        event_appenddata(message, 1, "\n");
+        event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
+        event_appenddata(oheader, 1, " ");
+        event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
+        event_appenddata(oheader, 1, " ");
+        event_appenddata(oheader, record.length, record.name);
+        event_appenddata(oheader, 1, "\n");
 
         if (!file_step(descriptor))
             break;
 
     }
 
-    event_send(message);
+    event_send(oheader);
     file_close(descriptor);
 
 }
 
-static void onkill(struct event_header *header, void *message)
+static void onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_reply(message, header, EVENT_EXIT);
-    event_send(message);
+    event_reply(oheader, iheader, EVENT_EXIT);
+    event_send(oheader);
 
     quit = 1;
 
 }
 
-static void onfile(struct event_header *header, void *message)
+static void onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(header);
+    struct event_file *file = event_getdata(iheader);
 
     if (file->descriptor)
-        list(header, message, file->descriptor, file->session);
+        list(iheader, oheader, file->descriptor, file->session);
     else
-        list(header, message, FILE_PW, file->session);
+        list(iheader, oheader, FILE_PW, file->session);
 
 }
 
@@ -73,21 +73,22 @@ void main(void)
     while (!quit)
     {
 
-        char data[FUDGE_BSIZE];
-        char message[FUDGE_BSIZE];
-        struct event_header *header = event_read(data);
+        char ibuffer[FUDGE_BSIZE];
+        char obuffer[FUDGE_BSIZE];
+        struct event_header *iheader = event_read(ibuffer);
+        struct event_header *oheader = (struct event_header *)obuffer;
 
-        switch (header->type)
+        switch (iheader->type)
         {
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header, message);
+            onkill(iheader, oheader);
 
             break;
 
         case EVENT_FILE:
-            onfile(header, message);
+            onfile(iheader, oheader);
 
             break;
 

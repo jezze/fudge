@@ -4,8 +4,8 @@
 void main(void)
 {
 
-    struct event_header *header;
-    char message[FUDGE_BSIZE];
+    char obuffer[FUDGE_BSIZE];
+    struct event_header *oheader = (struct event_header *)obuffer;
     unsigned int id;
 
     /* Move to base once event is merged into kernel */
@@ -36,19 +36,13 @@ void main(void)
     id = call_spawn();
 
     event_open();
-
-    header = event_addheader(message, EVENT_INIT, id);
-
-    event_send(message);
-
-    header = event_addheader(message, EVENT_FILE, id);
-
-    event_addfile(header, 0, FILE_P0);
-    event_send(message);
-
-    header = event_addheader(message, EVENT_EXIT, id);
-
-    event_send(message);
+    event_addheader(oheader, EVENT_INIT, id);
+    event_send(oheader);
+    event_addheader(oheader, EVENT_FILE, id);
+    event_addfile(oheader, 0, FILE_P0);
+    event_send(oheader);
+    event_addheader(oheader, EVENT_EXIT, id);
+    event_send(oheader);
     event_close();
 
 }

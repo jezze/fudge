@@ -277,7 +277,7 @@ static unsigned int clear(struct task *task, unsigned int count)
 
 }
 
-static void run(struct event_header *header, void *message, struct task *task, unsigned int count)
+static void run(struct event_header *iheader, struct event_header *oheader, struct task *task, unsigned int count)
 {
 
     unsigned int j;
@@ -287,8 +287,8 @@ static void run(struct event_header *header, void *message, struct task *task, u
     for (j = 0; j < count; j++)
     {
 
-        event_request(message, header, EVENT_INIT, task[j].id);
-        event_send(message);
+        event_request(oheader, iheader, EVENT_INIT, task[j].id);
+        event_send(oheader);
 
     }
 
@@ -301,13 +301,13 @@ static void run(struct event_header *header, void *message, struct task *task, u
             for (k = 0; k < task[j].ninputs; k++)
             {
 
-                event_forward(message, header, EVENT_FILE, task[j].id);
+                event_forward(oheader, iheader, EVENT_FILE, task[j].id);
 
                 for (x = count; x > j + 1; x--)
-                    event_addroute(message, task[x - 1].id);
+                    event_addroute(oheader, task[x - 1].id);
 
-                event_addfile(message, 0, FILE_P0 + k);
-                event_send(message);
+                event_addfile(oheader, 0, FILE_P0 + k);
+                event_send(oheader);
 
             }
 
@@ -316,24 +316,24 @@ static void run(struct event_header *header, void *message, struct task *task, u
         else
         {
 
-            event_forward(message, header, EVENT_FILE, task[j].id);
+            event_forward(oheader, iheader, EVENT_FILE, task[j].id);
 
             for (x = count; x > j + 1; x--)
-                event_addroute(message, task[x - 1].id);
+                event_addroute(oheader, task[x - 1].id);
 
-            event_addfile(message, 0, 0);
-            event_send(message);
+            event_addfile(oheader, 0, 0);
+            event_send(oheader);
 
         }
 
     }
 
-    event_request(message, header, EVENT_EXIT, task[0].id);
-    event_send(message);
+    event_request(oheader, iheader, EVENT_EXIT, task[0].id);
+    event_send(oheader);
 
 }
 
-static void parse(struct event_header *header, void *message, struct tokenlist *postfix, struct tokenlist *stack)
+static void parse(struct event_header *iheader, struct event_header *oheader, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     struct task task[32];
@@ -407,7 +407,7 @@ static void parse(struct event_header *header, void *message, struct tokenlist *
 
             ntask = add(task, ntask, call_spawn());
 
-            run(header, message, task, ntask);
+            run(iheader, oheader, task, ntask);
 
             ntask = clear(task, ntask);
 
@@ -419,7 +419,7 @@ static void parse(struct event_header *header, void *message, struct tokenlist *
 
 }
 
-static void oninit(struct event_header *header, void *message)
+static void oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
@@ -429,37 +429,37 @@ static void oninit(struct event_header *header, void *message)
 
 }
 
-static void onkill(struct event_header *header, void *message)
+static void onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_reply(message, header, EVENT_EXIT);
-    event_send(message);
+    event_reply(oheader, iheader, EVENT_EXIT);
+    event_send(oheader);
 
     quit = 1;
 
 }
 
-static void ondata(struct event_header *header, void *message)
+static void ondata(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_data *data = event_getdata(header);
+    struct event_data *data = event_getdata(iheader);
 
     if (!data->count)
         return;
 
     tokenizebuffer(&infix, &stringtable, data->count, data + 1);
     translate(&postfix, &infix, &stack);
-    parse(header, message, &postfix, &stack);
-    event_reply(message, header, EVENT_DATA);
-    event_adddata(message, data->session);
-    event_send(message);
+    parse(iheader, oheader, &postfix, &stack);
+    event_reply(oheader, iheader, EVENT_DATA);
+    event_adddata(oheader, data->session);
+    event_send(oheader);
 
 }
 
-static void onfile(struct event_header *header, void *message)
+static void onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(header);
+    struct event_file *file = event_getdata(iheader);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -473,10 +473,10 @@ static void onfile(struct event_header *header, void *message)
 
     file_close(file->descriptor);
     translate(&postfix, &infix, &stack);
-    parse(header, message, &postfix, &stack);
-    event_reply(message, header, EVENT_DATA);
-    event_adddata(message, file->session);
-    event_send(message);
+    parse(iheader, oheader, &postfix, &stack);
+    event_reply(oheader, iheader, EVENT_DATA);
+    event_adddata(oheader, file->session);
+    event_send(oheader);
 
 }
 
@@ -488,31 +488,32 @@ void main(void)
     while (!quit)
     {
 
-        char data[FUDGE_BSIZE];
-        char message[FUDGE_BSIZE];
-        struct event_header *header = event_read(data);
+        char ibuffer[FUDGE_BSIZE];
+        char obuffer[FUDGE_BSIZE];
+        struct event_header *iheader = event_read(ibuffer);
+        struct event_header *oheader = (struct event_header *)obuffer;
 
-        switch (header->type)
+        switch (iheader->type)
         {
 
         case EVENT_INIT:
-            oninit(header, message);
+            oninit(iheader, oheader);
 
             break;
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header, message);
+            onkill(iheader, oheader);
 
             break;
 
         case EVENT_DATA:
-            ondata(header, message);
+            ondata(iheader, oheader);
 
             break;
 
         case EVENT_FILE:
-            onfile(header, message);
+            onfile(iheader, oheader);
 
             break;
 

@@ -3,28 +3,28 @@
 
 static unsigned int quit;
 
-static void onkill(struct event_header *header, void *message)
+static void onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_reply(message, header, EVENT_EXIT);
-    event_send(message);
+    event_reply(oheader, iheader, EVENT_EXIT);
+    event_send(oheader);
 
     quit = 1;
 
 }
 
-static void onfile(struct event_header *header, void *message)
+static void onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(header);
+    struct event_file *file = event_getdata(iheader);
 
     if (file->descriptor)
         return;
 
-    event_reply(message, header, EVENT_DATA);
-    event_adddata(message, file->session);
-    event_appenddata(message, 13, "Hello world!\n");
-    event_send(message);
+    event_reply(oheader, iheader, EVENT_DATA);
+    event_adddata(oheader, file->session);
+    event_appenddata(oheader, 13, "Hello world!\n");
+    event_send(oheader);
 
 }
 
@@ -36,21 +36,22 @@ void main(void)
     while (!quit)
     {
 
-        char data[FUDGE_BSIZE];
-        char message[FUDGE_BSIZE];
-        struct event_header *header = event_read(data);
+        char ibuffer[FUDGE_BSIZE];
+        char obuffer[FUDGE_BSIZE];
+        struct event_header *iheader = event_read(ibuffer);
+        struct event_header *oheader = (struct event_header *)obuffer;
 
-        switch (header->type)
+        switch (iheader->type)
         {
 
         case EVENT_EXIT:
         case EVENT_KILL:
-            onkill(header, message);
+            onkill(iheader, oheader);
 
             break;
 
         case EVENT_FILE:
-            onfile(header, message);
+            onfile(iheader, oheader);
 
             break;
 

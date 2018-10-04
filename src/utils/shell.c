@@ -5,7 +5,7 @@ static unsigned int quit;
 static unsigned char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 
-static unsigned int complete(struct event_header *header, void *message, struct ring *ring)
+static unsigned int complete(struct event_header *iheader, struct event_header *oheader, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -20,14 +20,14 @@ static unsigned int complete(struct event_header *header, void *message, struct 
     if (id)
     {
 
-        event_request(message, header, EVENT_INIT, id);
-        event_send(message);
-        event_request(message, header, EVENT_DATA, id);
-        event_adddata(message, 1);
-        event_appenddata(message, count, command);
-        event_send(message);
-        event_request(message, header, EVENT_EXIT, id);
-        event_send(message);
+        event_request(oheader, iheader, EVENT_INIT, id);
+        event_send(oheader);
+        event_request(oheader, iheader, EVENT_DATA, id);
+        event_adddata(oheader, 1);
+        event_appenddata(oheader, count, command);
+        event_send(oheader);
+        event_request(oheader, iheader, EVENT_EXIT, id);
+        event_send(oheader);
 
     }
 
@@ -83,7 +83,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static unsigned int interpret(struct event_header *header, void *message, struct ring *ring)
+static unsigned int interpret(struct event_header *iheader, struct event_header *oheader, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -104,14 +104,14 @@ static unsigned int interpret(struct event_header *header, void *message, struct
     if (id)
     {
 
-        event_request(message, header, EVENT_INIT, id);
-        event_send(message);
-        event_request(message, header, EVENT_DATA, id);
-        event_adddata(message, 0);
-        event_appenddata(message, count, command);
-        event_send(message);
-        event_request(message, header, EVENT_EXIT, id);
-        event_send(message);
+        event_request(oheader, iheader, EVENT_INIT, id);
+        event_send(oheader);
+        event_request(oheader, iheader, EVENT_DATA, id);
+        event_adddata(oheader, 0);
+        event_appenddata(oheader, count, command);
+        event_send(oheader);
+        event_request(oheader, iheader, EVENT_EXIT, id);
+        event_send(oheader);
 
     }
 
@@ -119,7 +119,7 @@ static unsigned int interpret(struct event_header *header, void *message, struct
 
 }
 
-static void oninit(struct event_header *header, void *message)
+static void oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
@@ -129,20 +129,20 @@ static void oninit(struct event_header *header, void *message)
 
 }
 
-static void onkill(struct event_header *header, void *message)
+static void onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_reply(message, header, EVENT_EXIT);
-    event_send(message);
+    event_reply(oheader, iheader, EVENT_EXIT);
+    event_send(oheader);
 
     quit = 1;
 
 }
 
-static void ondata(struct event_header *header, void *message)
+static void ondata(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_data *data = event_getdata(header);
+    struct event_data *data = event_getdata(iheader);
 
     file_open(FILE_P0);
 
@@ -166,10 +166,10 @@ static void ondata(struct event_header *header, void *message)
 
 }
 
-static void onconsoledata(struct event_header *header, void *message)
+static void onconsoledata(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_consoledata *consoledata = event_getdata(header);
+    struct event_consoledata *consoledata = event_getdata(iheader);
 
     switch (consoledata->data)
     {
@@ -178,7 +178,7 @@ static void onconsoledata(struct event_header *header, void *message)
         break;
 
     case '\t':
-        complete(header, message, &input);
+        complete(iheader, oheader, &input);
 
         break;
 
@@ -202,7 +202,7 @@ static void onconsoledata(struct event_header *header, void *message)
         file_close(FILE_P0);
         ring_write(&input, &consoledata->data, 1);
 
-        if (interpret(header, message, &input))
+        if (interpret(iheader, oheader, &input))
             break;
 
         file_open(FILE_P0);
@@ -235,30 +235,31 @@ void main(void)
     while (!quit)
     {
 
-        char data[FUDGE_BSIZE];
-        char message[FUDGE_BSIZE];
-        struct event_header *header = event_read(data);
+        char ibuffer[FUDGE_BSIZE];
+        char obuffer[FUDGE_BSIZE];
+        struct event_header *iheader = event_read(ibuffer);
+        struct event_header *oheader = (struct event_header *)obuffer;
 
-        switch (header->type)
+        switch (iheader->type)
         {
 
         case EVENT_INIT:
-            oninit(header, message);
+            oninit(iheader, oheader);
 
             break;
 
         case EVENT_KILL:
-            onkill(header, message);
+            onkill(iheader, oheader);
 
             break;
 
         case EVENT_DATA:
-            ondata(header, message);
+            ondata(iheader, oheader);
 
             break;
 
         case EVENT_CONSOLEDATA:
-            onconsoledata(header, message);
+            onconsoledata(iheader, oheader);
 
             break;
 
