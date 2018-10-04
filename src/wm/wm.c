@@ -169,7 +169,7 @@ static void hideremotes(struct event_header *iheader, struct event_header *ohead
 
 }
 
-static void resizeremotes(struct event_header *iheader, struct event_header *oheader, struct list *remotes)
+static void configureremotes(struct event_header *iheader, struct event_header *oheader, struct list *remotes)
 {
 
     struct list_item *current;
@@ -179,8 +179,8 @@ static void resizeremotes(struct event_header *iheader, struct event_header *ohe
 
         struct remote *remote = current->data;
 
-        event_request(oheader, iheader, EVENT_WMRESIZE, remote->source);
-        event_addwmresize(oheader, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+        event_request(oheader, iheader, EVENT_WMCONFIGURE, remote->source);
+        event_addwmconfigure(oheader, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
         event_send(oheader);
 
     }
@@ -272,7 +272,7 @@ static void arrangeview(struct event_header *iheader, struct event_header *ohead
 
     }
 
-    resizeremotes(iheader, oheader, &view->remotes);
+    configureremotes(iheader, oheader, &view->remotes);
 
 }
 
@@ -734,8 +734,8 @@ static void onvideomode(struct event_header *iheader, struct event_header *ohead
     }
 
     /* Sending to self not allowed */
-    event_request(oheader, iheader, EVENT_WMRESIZE, iheader->target);
-    event_addwmresize(oheader, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    event_request(oheader, iheader, EVENT_WMCONFIGURE, iheader->target);
+    event_addwmconfigure(oheader, 0, 0, videomode->w, videomode->h, padding, lineheight);
     event_send(oheader);
     /* Sending to self not allowed */
     event_request(oheader, iheader, EVENT_WMSHOW, iheader->target);
@@ -797,18 +797,18 @@ static void onwmunmap(struct event_header *iheader, struct event_header *oheader
 
 }
 
-static void onwmresize(struct event_header *iheader, struct event_header *oheader)
+static void onwmconfigure(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_wmresize *wmresize = event_getdata(iheader);
+    struct event_wmconfigure *wmconfigure = event_getdata(iheader);
     struct list_item *current;
     unsigned int i = 0;
 
-    box_setsize(&screen, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_setsize(&body, wmresize->x, wmresize->y + (wmresize->lineheight + wmresize->padding * 2), wmresize->w, wmresize->h - (wmresize->lineheight + wmresize->padding * 2));
-    box_setsize(&background.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
+    box_setsize(&screen, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
+    box_setsize(&body, wmconfigure->x, wmconfigure->y + (wmconfigure->lineheight + wmconfigure->padding * 2), wmconfigure->w, wmconfigure->h - (wmconfigure->lineheight + wmconfigure->padding * 2));
+    box_setsize(&background.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
 
-    steplength = wmresize->w / 32;
+    steplength = wmconfigure->w / 32;
 
     for (current = viewlist.head; current; current = current->next)
     {
@@ -817,15 +817,15 @@ static void onwmresize(struct event_header *iheader, struct event_header *oheade
 
         view->center = 18 * steplength;
 
-        box_setsize(&view->panel.size, wmresize->x + i * wmresize->w / viewlist.count, wmresize->y, wmresize->w / viewlist.count, (wmresize->lineheight + wmresize->padding * 2));
+        box_setsize(&view->panel.size, wmconfigure->x + i * wmconfigure->w / viewlist.count, wmconfigure->y, wmconfigure->w / viewlist.count, (wmconfigure->lineheight + wmconfigure->padding * 2));
         arrangeview(iheader, oheader, view);
 
         i++;
 
     }
 
-    mouse.size.x = wmresize->x + wmresize->w / 4;
-    mouse.size.y = wmresize->y + wmresize->h / 4;
+    mouse.size.x = wmconfigure->x + wmconfigure->w / 4;
+    mouse.size.y = wmconfigure->y + wmconfigure->h / 4;
 
 }
 
@@ -951,8 +951,8 @@ void main(void)
 
             break;
 
-        case EVENT_WMRESIZE:
-            onwmresize(iheader, oheader);
+        case EVENT_WMCONFIGURE:
+            onwmconfigure(iheader, oheader);
 
             break;
 

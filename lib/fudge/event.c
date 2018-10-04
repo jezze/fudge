@@ -294,17 +294,17 @@ unsigned int event_addwmmousemove(struct event_header *header, char relx, char r
 
 }
 
-unsigned int event_addwmresize(struct event_header *header, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
+unsigned int event_addwmconfigure(struct event_header *header, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 
-    struct event_wmresize *wmresize = addpayload(header, sizeof (struct event_wmresize));
+    struct event_wmconfigure *wmconfigure = addpayload(header, sizeof (struct event_wmconfigure));
 
-    wmresize->x = x;
-    wmresize->y = y;
-    wmresize->w = w;
-    wmresize->h = h;
-    wmresize->padding = padding;
-    wmresize->lineheight = lineheight;
+    wmconfigure->x = x;
+    wmconfigure->y = y;
+    wmconfigure->w = w;
+    wmconfigure->h = h;
+    wmconfigure->padding = padding;
+    wmconfigure->lineheight = lineheight;
 
     return header->length;
 

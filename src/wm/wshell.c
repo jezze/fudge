@@ -384,15 +384,15 @@ static void onwmkeyrelease(struct event_header *iheader, struct event_header *oh
 
 }
 
-static void onwmresize(struct event_header *iheader, struct event_header *oheader)
+static void onwmconfigure(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_wmresize *wmresize = event_getdata(iheader);
+    struct event_wmconfigure *wmconfigure = event_getdata(iheader);
 
-    box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h);
-    box_resize(&content.size, wmresize->padding);
+    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
+    box_resize(&content.size, wmconfigure->padding);
 
-    visiblerows = content.size.h / wmresize->lineheight;
+    visiblerows = content.size.h / wmconfigure->lineheight;
 
     if (totalrows >= visiblerows)
         removerows(totalrows - visiblerows + 1);
@@ -454,8 +454,8 @@ void main(void)
 
             break;
 
-        case EVENT_WMRESIZE:
-            onwmresize(iheader, oheader);
+        case EVENT_WMCONFIGURE:
+            onwmconfigure(iheader, oheader);
 
             break;
 

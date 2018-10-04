@@ -237,19 +237,19 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
 }
 
-static void onwmresize(struct event_header *iheader, struct event_header *oheader)
+static void onwmconfigure(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_wmresize *wmresize = event_getdata(iheader);
+    struct event_wmconfigure *wmconfigure = event_getdata(iheader);
 
     ring_reset(&input1);
     ring_reset(&input2);
-    box_setsize(&content.size, wmresize->x, wmresize->y, wmresize->w, wmresize->h - (wmresize->lineheight + 2 * wmresize->padding));
-    box_resize(&content.size, wmresize->padding);
-    box_setsize(&status.size, wmresize->x, wmresize->y + wmresize->h - (wmresize->lineheight + 2 * wmresize->padding), wmresize->w, (wmresize->lineheight + 2 * wmresize->padding));
-    box_resize(&status.size, wmresize->padding);
+    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h - (wmconfigure->lineheight + 2 * wmconfigure->padding));
+    box_resize(&content.size, wmconfigure->padding);
+    box_setsize(&status.size, wmconfigure->x, wmconfigure->y + wmconfigure->h - (wmconfigure->lineheight + 2 * wmconfigure->padding), wmconfigure->w, (wmconfigure->lineheight + 2 * wmconfigure->padding));
+    box_resize(&status.size, wmconfigure->padding);
     file_open(FILE_P0);
-    readfile(FILE_P0, content.size.h / wmresize->lineheight);
+    readfile(FILE_P0, content.size.h / wmconfigure->lineheight);
     file_close(FILE_P0);
 
 }
@@ -311,8 +311,8 @@ void main(void)
 
             break;
 
-        case EVENT_WMRESIZE:
-            onwmresize(iheader, oheader);
+        case EVENT_WMCONFIGURE:
+            onwmconfigure(iheader, oheader);
 
             break;
 

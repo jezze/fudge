@@ -14,7 +14,7 @@
 #define EVENT_VIDEOMODE                 0x17
 #define EVENT_WMMAP                     0x80
 #define EVENT_WMUNMAP                   0x81
-#define EVENT_WMRESIZE                  0x82
+#define EVENT_WMCONFIGURE               0x82
 #define EVENT_WMSHOW                    0x83
 #define EVENT_WMHIDE                    0x84
 #define EVENT_WMFLUSH                   0x85
@@ -114,7 +114,7 @@ struct event_videomode
 
 };
 
-struct event_wmresize
+struct event_wmconfigure
 {
 
     unsigned int x;
@@ -185,5 +185,5 @@ unsigned int event_addwmkeyrelease(struct event_header *header, unsigned char sc
 unsigned int event_addwmmousepress(struct event_header *header, unsigned int button);
 unsigned int event_addwmmouserelease(struct event_header *header, unsigned int button);
 unsigned int event_addwmmousemove(struct event_header *header, char relx, char rely);
-unsigned int event_addwmresize(struct event_header *header, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
+unsigned int event_addwmconfigure(struct event_header *header, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
 unsigned int event_addwmflush(struct event_header *header, unsigned int count, void *buffer);
