@@ -164,12 +164,12 @@ struct event_wmmousemove
 
 void *event_getdata(struct event_header *header);
 unsigned int event_avail(struct event_header *header);
-struct event_header *event_addheader(void *buffer, unsigned int type, unsigned int target);
+void event_initheader(struct event_header *header, unsigned int type, unsigned int target);
 void *addpayload(struct event_header *header, unsigned int length);
-unsigned int event_addroute(void *buffer, unsigned int target);
-struct event_header *event_request(void *buffer, struct event_header *header, unsigned int type, unsigned int target);
-struct event_header *event_forward(void *buffer, struct event_header *header, unsigned int type, unsigned int target);
-struct event_header *event_reply(void *buffer, struct event_header *header, unsigned int type);
+unsigned int event_addroute(struct event_header *header, unsigned int target);
+struct event_header *event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target);
+struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target);
+struct event_header *event_reply(struct event_header *oheader, struct event_header *iheader, unsigned int type);
 unsigned int event_adddata(struct event_header *header, unsigned int session);
 unsigned int event_appenddata(struct event_header *header, unsigned int count, void *buffer);
 unsigned int event_addfile(struct event_header *header, unsigned int session, unsigned int descriptor);

@@ -16,18 +16,14 @@ unsigned int event_avail(struct event_header *header)
 
 }
 
-struct event_header *event_addheader(void *buffer, unsigned int type, unsigned int target)
+void event_initheader(struct event_header *header, unsigned int type, unsigned int target)
 {
-
-    struct event_header *header = buffer;
 
     header->type = type;
     header->source = 0;
     header->target = target;
     header->length = sizeof (struct event_header);
     header->nroutes = 0;
-
-    return header;
 
 }
 
@@ -43,10 +39,8 @@ void *addpayload(struct event_header *header, unsigned int length)
 
 }
 
-unsigned int event_addroute(void *buffer, unsigned int target)
+unsigned int event_addroute(struct event_header *header, unsigned int target)
 {
-
-    struct event_header *header = buffer;
 
     if (header->nroutes < 16)
         header->routes[header->nroutes++] = target;
@@ -55,64 +49,64 @@ unsigned int event_addroute(void *buffer, unsigned int target)
 
 }
 
-struct event_header *event_request(void *buffer, struct event_header *header, unsigned int type, unsigned int target)
+struct event_header *event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target)
 {
 
-    struct event_header *request = event_addheader(buffer, type, target);
+    event_initheader(oheader, type, target);
 
-    if (header->nroutes)
+    if (iheader->nroutes)
     {
 
         unsigned int i;
 
-        for (i = 0; i < header->nroutes; i++)
-            event_addroute(buffer, header->routes[i]);
+        for (i = 0; i < iheader->nroutes; i++)
+            event_addroute(oheader, iheader->routes[i]);
 
     }
 
-    event_addroute(buffer, header->target);
+    event_addroute(oheader, iheader->target);
 
-    return request;
+    return oheader;
 
 }
 
-struct event_header *event_forward(void *buffer, struct event_header *header, unsigned int type, unsigned int target)
+struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target)
 {
 
-    struct event_header *forward = event_addheader(buffer, type, target);
+    event_initheader(oheader, type, target);
 
-    if (header->nroutes)
+    if (iheader->nroutes)
     {
 
         unsigned int i;
 
-        for (i = 0; i < header->nroutes; i++)
-            event_addroute(buffer, header->routes[i]);
+        for (i = 0; i < iheader->nroutes; i++)
+            event_addroute(oheader, iheader->routes[i]);
 
     }
 
-    return forward;
+    return oheader;
 
 }
 
-struct event_header *event_reply(void *buffer, struct event_header *header, unsigned int type)
+struct event_header *event_reply(struct event_header *oheader, struct event_header *iheader, unsigned int type)
 {
 
-    struct event_header *reply = event_addheader(buffer, type, header->source);
+    event_initheader(oheader, type, iheader->source);
 
-    if (header->nroutes)
+    if (iheader->nroutes)
     {
 
         unsigned int i;
 
-        for (i = 0; i < header->nroutes - 1; i++)
-            event_addroute(buffer, header->routes[i]);
+        for (i = 0; i < iheader->nroutes - 1; i++)
+            event_addroute(oheader, iheader->routes[i]);
 
-        reply->target = header->routes[header->nroutes - 1];
+        oheader->target = iheader->routes[iheader->nroutes - 1];
 
     }
 
-    return reply;
+    return oheader;
 
 }
 
