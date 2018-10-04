@@ -32,7 +32,7 @@ static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;
@@ -59,7 +59,7 @@ static void onfile(struct event_header *header, void *message)
     file_open(file->descriptor);
     file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
     file_close(file->descriptor);
-    event_addresponse(message, header, EVENT_DATA);
+    event_reply(message, header, EVENT_DATA);
     event_adddata(message, file->session);
     event_appenddata(message, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(&settings), 10), num);
     event_appenddata(message, 1, "\n");

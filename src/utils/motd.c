@@ -6,7 +6,7 @@ static unsigned int quit;
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;
@@ -33,12 +33,12 @@ static void onfile(struct event_header *header, void *message)
     if (!id)
         return;
 
-    event_addrequest(message, header, EVENT_INIT, id);
+    event_request(message, header, EVENT_INIT, id);
     event_send(message);
-    event_addpipe(message, header, EVENT_FILE, id);
+    event_forward(message, header, EVENT_FILE, id);
     event_addfile(message, file->session, FILE_P0);
     event_send(message);
-    event_addrequest(message, header, EVENT_EXIT, id);
+    event_request(message, header, EVENT_EXIT, id);
     event_send(message);
 
 }

@@ -116,13 +116,13 @@ static unsigned int complete(struct event_header *header, void *message, struct 
     if (id)
     {
 
-        event_addrequest(message, header, EVENT_INIT, id);
+        event_request(message, header, EVENT_INIT, id);
         event_send(message);
-        event_addrequest(message, header, EVENT_DATA, id);
+        event_request(message, header, EVENT_DATA, id);
         event_adddata(message, 1);
         event_appenddata(message, count, command);
         event_send(message);
-        event_addrequest(message, header, EVENT_EXIT, id);
+        event_request(message, header, EVENT_EXIT, id);
         event_send(message);
 
     }
@@ -204,13 +204,13 @@ static unsigned int interpret(struct event_header *header, void *message, struct
     if (id)
     {
 
-        event_addrequest(message, header, EVENT_INIT, id);
+        event_request(message, header, EVENT_INIT, id);
         event_send(message);
-        event_addrequest(message, header, EVENT_DATA, id);
+        event_request(message, header, EVENT_DATA, id);
         event_adddata(message, 0);
         event_appenddata(message, count, command);
         event_send(message);
-        event_addrequest(message, header, EVENT_EXIT, id);
+        event_request(message, header, EVENT_EXIT, id);
         event_send(message);
 
     }
@@ -247,7 +247,7 @@ static void oninit(struct event_header *header, void *message)
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     ring_write(&prompt, "$ ", 2);
-    event_addrequest(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
+    event_request(message, header, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
     event_send(message);
 
 }
@@ -255,9 +255,9 @@ static void oninit(struct event_header *header, void *message)
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addrequest(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
+    event_request(message, header, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
     event_send(message);
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;
@@ -473,8 +473,9 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_addheader(message, EVENT_WMFLUSH, EVENT_ADDR_BROADCAST);
-            event_addwmflush(message, ring_count(&output), outputdata);
+            struct event_header *flush = event_request(message, header, EVENT_WMFLUSH, EVENT_ADDR_BROADCAST);
+
+            event_addwmflush(flush, ring_count(&output), outputdata);
             event_send(message);
             ring_reset(&output);
 

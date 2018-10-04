@@ -45,7 +45,7 @@ static void sum(struct event_header *header, void *message, unsigned int count, 
 
     }
 
-    event_addresponse(message, header, EVENT_DATA);
+    event_reply(message, header, EVENT_DATA);
     event_adddata(message, session);
     event_appenddata(message, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
     event_appenddata(message, 1, "\n");
@@ -88,7 +88,7 @@ static void onfile(struct event_header *header, void *message)
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;

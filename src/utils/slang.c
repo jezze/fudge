@@ -287,7 +287,7 @@ static void run(struct event_header *header, void *message, struct task *task, u
     for (j = 0; j < count; j++)
     {
 
-        event_addrequest(message, header, EVENT_INIT, task[j].id);
+        event_request(message, header, EVENT_INIT, task[j].id);
         event_send(message);
 
     }
@@ -301,7 +301,7 @@ static void run(struct event_header *header, void *message, struct task *task, u
             for (k = 0; k < task[j].ninputs; k++)
             {
 
-                event_addpipe(message, header, EVENT_FILE, task[j].id);
+                event_forward(message, header, EVENT_FILE, task[j].id);
 
                 for (x = count; x > j + 1; x--)
                     event_addroute(message, task[x - 1].id);
@@ -316,7 +316,7 @@ static void run(struct event_header *header, void *message, struct task *task, u
         else
         {
 
-            event_addpipe(message, header, EVENT_FILE, task[j].id);
+            event_forward(message, header, EVENT_FILE, task[j].id);
 
             for (x = count; x > j + 1; x--)
                 event_addroute(message, task[x - 1].id);
@@ -328,7 +328,7 @@ static void run(struct event_header *header, void *message, struct task *task, u
 
     }
 
-    event_addrequest(message, header, EVENT_EXIT, task[0].id);
+    event_request(message, header, EVENT_EXIT, task[0].id);
     event_send(message);
 
 }
@@ -432,7 +432,7 @@ static void oninit(struct event_header *header, void *message)
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;
@@ -450,7 +450,7 @@ static void ondata(struct event_header *header, void *message)
     tokenizebuffer(&infix, &stringtable, data->count, data + 1);
     translate(&postfix, &infix, &stack);
     parse(header, message, &postfix, &stack);
-    event_addresponse(message, header, EVENT_DATA);
+    event_reply(message, header, EVENT_DATA);
     event_adddata(message, data->session);
     event_send(message);
 
@@ -474,7 +474,7 @@ static void onfile(struct event_header *header, void *message)
     file_close(file->descriptor);
     translate(&postfix, &infix, &stack);
     parse(header, message, &postfix, &stack);
-    event_addresponse(message, header, EVENT_DATA);
+    event_reply(message, header, EVENT_DATA);
     event_adddata(message, file->session);
     event_send(message);
 

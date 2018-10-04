@@ -14,7 +14,7 @@ static void dump(struct event_header *header, void *message, unsigned int count,
 
         unsigned char num[FUDGE_NSIZE];
 
-        event_addresponse(message, header, EVENT_DATA);
+        event_reply(message, header, EVENT_DATA);
         event_adddata(message, session);
         event_appenddata(message, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
         event_appenddata(message, 2, "  ");
@@ -55,7 +55,7 @@ static void onfile(struct event_header *header, void *message)
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;

@@ -19,7 +19,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
     struct {struct event_header header; struct event_consoledata consoledata;} message;
 
     event_addheader(&message, EVENT_CONSOLEDATA, EVENT_ADDR_BROADCAST);
-    event_addconsoledata(&message, data);
+    event_addconsoledata(&message.header, data);
     kernel_multicast(&event.states, &message.header);
     kernel_multicast(&interface->event.states, &message.header);
 

@@ -6,7 +6,7 @@ static unsigned int quit;
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;
@@ -18,7 +18,7 @@ static void ondata(struct event_header *header, void *message)
 
     struct event_data *data = event_getdata(header);
 
-    event_addresponse(message, header, EVENT_DATA);
+    event_reply(message, header, EVENT_DATA);
     event_adddata(message, data->session);
     event_appenddata(message, data->count, data + 1);
     event_send(message);
@@ -40,7 +40,7 @@ static void onfile(struct event_header *header, void *message)
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_data))))
     {
 
-        event_addresponse(message, header, EVENT_DATA);
+        event_reply(message, header, EVENT_DATA);
         event_adddata(message, file->session);
         event_appenddata(message, count, buffer);
         event_send(message);

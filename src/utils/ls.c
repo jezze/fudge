@@ -9,7 +9,7 @@ static void list(struct event_header *header, void *message, unsigned int descri
     struct record record;
 
     file_open(descriptor);
-    event_addresponse(message, header, EVENT_DATA);
+    event_reply(message, header, EVENT_DATA);
     event_adddata(message, session);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
@@ -19,7 +19,7 @@ static void list(struct event_header *header, void *message, unsigned int descri
         {
 
             event_send(message);
-            event_addresponse(message, header, EVENT_DATA);
+            event_reply(message, header, EVENT_DATA);
             event_adddata(message, session);
 
         }
@@ -40,7 +40,7 @@ static void list(struct event_header *header, void *message, unsigned int descri
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;

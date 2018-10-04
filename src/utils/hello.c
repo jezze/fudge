@@ -6,7 +6,7 @@ static unsigned int quit;
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;
@@ -21,7 +21,7 @@ static void onfile(struct event_header *header, void *message)
     if (file->descriptor)
         return;
 
-    event_addresponse(message, header, EVENT_DATA);
+    event_reply(message, header, EVENT_DATA);
     event_adddata(message, file->session);
     event_appenddata(message, 13, "Hello world!\n");
     event_send(message);

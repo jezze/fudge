@@ -20,13 +20,13 @@ static unsigned int complete(struct event_header *header, void *message, struct 
     if (id)
     {
 
-        event_addrequest(message, header, EVENT_INIT, id);
+        event_request(message, header, EVENT_INIT, id);
         event_send(message);
-        event_addrequest(message, header, EVENT_DATA, id);
+        event_request(message, header, EVENT_DATA, id);
         event_adddata(message, 1);
         event_appenddata(message, count, command);
         event_send(message);
-        event_addrequest(message, header, EVENT_EXIT, id);
+        event_request(message, header, EVENT_EXIT, id);
         event_send(message);
 
     }
@@ -104,13 +104,13 @@ static unsigned int interpret(struct event_header *header, void *message, struct
     if (id)
     {
 
-        event_addrequest(message, header, EVENT_INIT, id);
+        event_request(message, header, EVENT_INIT, id);
         event_send(message);
-        event_addrequest(message, header, EVENT_DATA, id);
+        event_request(message, header, EVENT_DATA, id);
         event_adddata(message, 0);
         event_appenddata(message, count, command);
         event_send(message);
-        event_addrequest(message, header, EVENT_EXIT, id);
+        event_request(message, header, EVENT_EXIT, id);
         event_send(message);
 
     }
@@ -132,7 +132,7 @@ static void oninit(struct event_header *header, void *message)
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;

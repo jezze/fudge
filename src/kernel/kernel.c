@@ -251,10 +251,9 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_send(void *buffer)
+unsigned int kernel_send(struct event_header *header)
 {
 
-    struct event_header *header = buffer;
     struct task *task = &tasks[header->target];
     unsigned int count = task_writeall(task, header, header->length);
 
@@ -264,10 +263,9 @@ unsigned int kernel_send(void *buffer)
 
 }
 
-unsigned int kernel_multicast(struct list *states, void *buffer)
+unsigned int kernel_multicast(struct list *states, struct event_header *header)
 {
 
-    struct event_header *header = buffer;
     struct list_item *current;
 
     spinlock_acquire(&states->spinlock);
@@ -293,12 +291,12 @@ unsigned int kernel_multicastdata(struct list *states, void *buffer, unsigned in
 {
 
     char message[FUDGE_BSIZE];
+    struct event_header *header = event_addheader(message, EVENT_DATA, EVENT_ADDR_BROADCAST);
 
-    event_addheader(message, EVENT_DATA, EVENT_ADDR_BROADCAST);
-    event_adddata(message, 0);
-    event_appenddata(message, count, buffer);
+    event_adddata(header, 0);
+    event_appenddata(header, count, buffer);
 
-    return kernel_multicast(states, message);
+    return kernel_multicast(states, header);
 
 }
 

@@ -4,6 +4,7 @@
 void main(void)
 {
 
+    struct event_header *header;
     char message[FUDGE_BSIZE];
     unsigned int id;
 
@@ -35,12 +36,18 @@ void main(void)
     id = call_spawn();
 
     event_open();
-    event_addheader(message, EVENT_INIT, id);
+
+    header = event_addheader(message, EVENT_INIT, id);
+
     event_send(message);
-    event_addheader(message, EVENT_FILE, id);
-    event_addfile(message, 0, FILE_P0);
+
+    header = event_addheader(message, EVENT_FILE, id);
+
+    event_addfile(header, 0, FILE_P0);
     event_send(message);
-    event_addheader(message, EVENT_EXIT, id);
+
+    header = event_addheader(message, EVENT_EXIT, id);
+
     event_send(message);
     event_close();
 

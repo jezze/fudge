@@ -6,7 +6,7 @@ static unsigned int quit;
 static void onkill(struct event_header *header, void *message)
 {
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;
@@ -39,7 +39,7 @@ static void onfile(struct event_header *header, void *message)
     ascii_wzerovalue(datetime, 20, settings.hours, 10, 2, 11);
     ascii_wzerovalue(datetime, 20, settings.minutes, 10, 2, 14);
     ascii_wzerovalue(datetime, 20, settings.seconds, 10, 2, 17);
-    event_addresponse(message, header, EVENT_DATA);
+    event_reply(message, header, EVENT_DATA);
     event_adddata(message, file->session);
     event_appenddata(message, 20, datetime);
     event_send(message);

@@ -143,7 +143,7 @@ static void showremotes(struct event_header *header, void *message, struct list 
 
         struct remote *remote = current->data;
 
-        event_addrequest(message, header, EVENT_WMSHOW, remote->source);
+        event_request(message, header, EVENT_WMSHOW, remote->source);
         event_send(message);
         updateremote(header, remote);
 
@@ -161,7 +161,7 @@ static void hideremotes(struct event_header *header, void *message, struct list 
 
         struct remote *remote = current->data;
 
-        event_addrequest(message, header, EVENT_WMHIDE, remote->source);
+        event_request(message, header, EVENT_WMHIDE, remote->source);
         event_send(message);
         removeremote(header, remote);
 
@@ -179,7 +179,7 @@ static void resizeremotes(struct event_header *header, void *message, struct lis
 
         struct remote *remote = current->data;
 
-        event_addrequest(message, header, EVENT_WMRESIZE, remote->source);
+        event_request(message, header, EVENT_WMRESIZE, remote->source);
         event_addwmresize(message, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
         event_send(message);
 
@@ -197,7 +197,7 @@ static void killremotes(struct event_header *header, void *message, struct list 
 
         struct remote *remote = current->data;
 
-        event_addrequest(message, header, EVENT_KILL, remote->source);
+        event_request(message, header, EVENT_KILL, remote->source);
         event_send(message);
 
     }
@@ -353,7 +353,7 @@ static void onkill(struct event_header *header, void *message)
 
     }
 
-    event_addresponse(message, header, EVENT_EXIT);
+    event_reply(message, header, EVENT_EXIT);
     event_send(message);
 
     quit = 1;
@@ -376,7 +376,7 @@ static void onkeypress(struct event_header *header, void *message)
         if (currentview->currentremote)
         {
 
-            event_addrequest(message, header, EVENT_WMKEYPRESS, currentview->currentremote->source);
+            event_request(message, header, EVENT_WMKEYPRESS, currentview->currentremote->source);
             event_addwmkeypress(message, keypress->scancode);
             event_send(message);
 
@@ -433,9 +433,9 @@ static void onkeypress(struct event_header *header, void *message)
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            event_addrequest(message, header, EVENT_WMHIDE, currentview->currentremote->source);
+            event_request(message, header, EVENT_WMHIDE, currentview->currentremote->source);
             event_send(message);
-            event_addrequest(message, header, EVENT_KILL, currentview->currentremote->source);
+            event_request(message, header, EVENT_KILL, currentview->currentremote->source);
             event_send(message);
 
         }
@@ -454,9 +454,9 @@ static void onkeypress(struct event_header *header, void *message)
         if (id)
         {
 
-            event_addrequest(message, header, EVENT_INIT, id);
+            event_request(message, header, EVENT_INIT, id);
             event_send(message);
-            event_addrequest(message, header, EVENT_EXIT, id);
+            event_request(message, header, EVENT_EXIT, id);
             event_send(message);
 
         }
@@ -538,10 +538,10 @@ static void onkeypress(struct event_header *header, void *message)
         {
 
             /* Sending to self not allowed */
-            event_addrequest(message, header, EVENT_WMHIDE, header->target);
+            event_request(message, header, EVENT_WMHIDE, header->target);
             event_send(message);
             /* Sending to self not allowed */
-            event_addrequest(message, header, EVENT_KILL, header->target);
+            event_request(message, header, EVENT_KILL, header->target);
             event_send(message);
 
         }
@@ -565,7 +565,7 @@ static void onkeyrelease(struct event_header *header, void *message)
         if (currentview->currentremote)
         {
 
-            event_addrequest(message, header, EVENT_WMKEYRELEASE, currentview->currentremote->source);
+            event_request(message, header, EVENT_WMKEYRELEASE, currentview->currentremote->source);
             event_addwmkeyrelease(message, keyrelease->scancode);
             event_send(message);
 
@@ -596,7 +596,7 @@ static void onmousemove(struct event_header *header, void *message)
     if (currentview->currentremote)
     {
 
-        event_addrequest(message, header, EVENT_WMMOUSEMOVE, currentview->currentremote->source);
+        event_request(message, header, EVENT_WMMOUSEMOVE, currentview->currentremote->source);
         event_addwmmousemove(message, mouse.size.x, mouse.size.y);
         event_send(message);
 
@@ -665,7 +665,7 @@ static void onmousepress(struct event_header *header, void *message)
     if (currentview->currentremote)
     {
 
-        event_addrequest(message, header, EVENT_WMMOUSEPRESS, currentview->currentremote->source);
+        event_request(message, header, EVENT_WMMOUSEPRESS, currentview->currentremote->source);
         event_addwmmousepress(message, mousepress->button);
         event_send(message);
 
@@ -681,7 +681,7 @@ static void onmouserelease(struct event_header *header, void *message)
     if (currentview->currentremote)
     {
 
-        event_addrequest(message, header, EVENT_WMMOUSERELEASE, currentview->currentremote->source);
+        event_request(message, header, EVENT_WMMOUSERELEASE, currentview->currentremote->source);
         event_addwmmouserelease(message, mouserelease->button);
         event_send(message);
 
@@ -734,11 +734,11 @@ static void onvideomode(struct event_header *header, void *message)
     }
 
     /* Sending to self not allowed */
-    event_addrequest(message, header, EVENT_WMRESIZE, header->target);
+    event_request(message, header, EVENT_WMRESIZE, header->target);
     event_addwmresize(message, 0, 0, videomode->w, videomode->h, padding, lineheight);
     event_send(message);
     /* Sending to self not allowed */
-    event_addrequest(message, header, EVENT_WMSHOW, header->target);
+    event_request(message, header, EVENT_WMSHOW, header->target);
     event_send(message);
 
 }
@@ -975,8 +975,9 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_addheader(message, EVENT_WMFLUSH, EVENT_ADDR_BROADCAST);
-            event_addwmflush(message, ring_count(&output), outputdata);
+            struct event_header *flush = event_request(message, header, EVENT_WMFLUSH, EVENT_ADDR_BROADCAST);
+
+            event_addwmflush(flush, ring_count(&output), outputdata);
             event_send(message);
             ring_reset(&output);
 
