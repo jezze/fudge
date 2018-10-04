@@ -294,11 +294,12 @@ unsigned int event_addwmmousemove(struct event_header *header, char relx, char r
 
 }
 
-unsigned int event_addwmconfigure(struct event_header *header, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
+unsigned int event_addwmconfigure(struct event_header *header, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 
     struct event_wmconfigure *wmconfigure = addpayload(header, sizeof (struct event_wmconfigure));
 
+    wmconfigure->rendertarget = rendertarget;
     wmconfigure->x = x;
     wmconfigure->y = y;
     wmconfigure->w = w;

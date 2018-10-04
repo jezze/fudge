@@ -19,6 +19,7 @@ static char textdata[FUDGE_BSIZE];
 static struct ring text;
 static unsigned int totalrows;
 static unsigned int visiblerows;
+static unsigned int rendertarget;
 
 static void updatecontent(struct event_header *iheader)
 {
@@ -389,6 +390,8 @@ static void onwmconfigure(struct event_header *iheader, struct event_header *ohe
 
     struct event_wmconfigure *wmconfigure = event_getdata(iheader);
 
+    rendertarget = wmconfigure->rendertarget;
+
     box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
     box_resize(&content.size, wmconfigure->padding);
 
@@ -474,7 +477,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_request(oheader, iheader, EVENT_WMFLUSH, EVENT_ADDR_BROADCAST);
+            event_request(oheader, iheader, EVENT_WMFLUSH, rendertarget);
             event_addwmflush(oheader, ring_count(&output), outputdata);
             event_send(oheader);
             ring_reset(&output);

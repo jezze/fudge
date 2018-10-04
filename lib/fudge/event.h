@@ -117,6 +117,7 @@ struct event_videomode
 struct event_wmconfigure
 {
 
+    unsigned int rendertarget;
     unsigned int x;
     unsigned int y;
     unsigned int w;
@@ -185,5 +186,5 @@ unsigned int event_addwmkeyrelease(struct event_header *header, unsigned char sc
 unsigned int event_addwmmousepress(struct event_header *header, unsigned int button);
 unsigned int event_addwmmouserelease(struct event_header *header, unsigned int button);
 unsigned int event_addwmmousemove(struct event_header *header, char relx, char rely);
-unsigned int event_addwmconfigure(struct event_header *header, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
+unsigned int event_addwmconfigure(struct event_header *header, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
 unsigned int event_addwmflush(struct event_header *header, unsigned int count, void *buffer);

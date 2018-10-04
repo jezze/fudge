@@ -43,6 +43,7 @@ static struct view *currentview = &views[0];
 static unsigned int padding;
 static unsigned int lineheight;
 static unsigned int steplength;
+static unsigned int rendertarget;
 
 static void updateremote(struct event_header *iheader, struct remote *remote)
 {
@@ -180,7 +181,7 @@ static void configureremotes(struct event_header *iheader, struct event_header *
         struct remote *remote = current->data;
 
         event_request(oheader, iheader, EVENT_WMCONFIGURE, remote->source);
-        event_addwmconfigure(oheader, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+        event_addwmconfigure(oheader, iheader->target, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
         event_send(oheader);
 
     }
@@ -735,7 +736,7 @@ static void onvideomode(struct event_header *iheader, struct event_header *ohead
 
     /* Sending to self not allowed */
     event_request(oheader, iheader, EVENT_WMCONFIGURE, iheader->target);
-    event_addwmconfigure(oheader, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    event_addwmconfigure(oheader, iheader->target, 0, 0, videomode->w, videomode->h, padding, lineheight);
     event_send(oheader);
     /* Sending to self not allowed */
     event_request(oheader, iheader, EVENT_WMSHOW, iheader->target);
@@ -803,6 +804,8 @@ static void onwmconfigure(struct event_header *iheader, struct event_header *ohe
     struct event_wmconfigure *wmconfigure = event_getdata(iheader);
     struct list_item *current;
     unsigned int i = 0;
+
+    rendertarget = wmconfigure->rendertarget;
 
     box_setsize(&screen, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
     box_setsize(&body, wmconfigure->x, wmconfigure->y + (wmconfigure->lineheight + wmconfigure->padding * 2), wmconfigure->w, wmconfigure->h - (wmconfigure->lineheight + wmconfigure->padding * 2));
@@ -976,7 +979,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_request(oheader, iheader, EVENT_WMFLUSH, EVENT_ADDR_BROADCAST);
+            event_request(oheader, iheader, EVENT_WMFLUSH, rendertarget);
             event_addwmflush(oheader, ring_count(&output), outputdata);
             event_send(oheader);
             ring_reset(&output);
