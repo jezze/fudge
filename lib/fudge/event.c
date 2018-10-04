@@ -2,6 +2,18 @@
 #include "memory.h"
 #include "event.h"
 
+static void *addpayload(struct event_header *header, unsigned int length)
+{
+
+    char *start = (char *)header;
+
+    start += header->length;
+    header->length += length;
+
+    return start;
+
+}
+
 void *event_getdata(struct event_header *header)
 {
 
@@ -24,28 +36,6 @@ void event_initheader(struct event_header *header, unsigned int type, unsigned i
     header->target = target;
     header->length = sizeof (struct event_header);
     header->nroutes = 0;
-
-}
-
-void *addpayload(struct event_header *header, unsigned int length)
-{
-
-    char *start = (char *)header;
-
-    start += header->length;
-    header->length += length;
-
-    return start;
-
-}
-
-unsigned int event_addroute(struct event_header *header, unsigned int target)
-{
-
-    if (header->nroutes < 16)
-        header->routes[header->nroutes++] = target;
-
-    return header->nroutes;
 
 }
 
@@ -107,6 +97,16 @@ struct event_header *event_reply(struct event_header *oheader, struct event_head
     }
 
     return oheader;
+
+}
+
+unsigned int event_addroute(struct event_header *header, unsigned int target)
+{
+
+    if (header->nroutes < 16)
+        header->routes[header->nroutes++] = target;
+
+    return header->nroutes;
 
 }
 
