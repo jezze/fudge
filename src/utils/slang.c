@@ -329,6 +329,10 @@ static void run(struct event_header *iheader, struct event_header *oheader, stru
     }
 
     event_request(oheader, iheader, EVENT_EXIT, task[0].id);
+
+    for (x = count; x > 1; x--)
+        event_addroute(oheader, task[x - 1].id);
+
     event_send(oheader);
 
 }
