@@ -38,10 +38,9 @@ struct font
 };
 
 static unsigned int currentbpp;
-static void (*drawables[7])(void *data, unsigned int line);
-static void (*paint)(unsigned int color, unsigned int offset, unsigned int count);
+static void (*drawables[7])(void *canvas, void *data, unsigned int line);
+static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
-static unsigned char drawdata[0x2000];
 static unsigned char layerdata0[0x1000];
 static unsigned char layerdata1[0x8000];
 static unsigned char layerdata2[0x1000];
@@ -198,27 +197,31 @@ static unsigned short getfontindex(unsigned short c)
 
 }
 
-static void paint8(unsigned int color, unsigned int offset, unsigned int count)
+static void paint8(void *canvas, unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned char *buffer = drawdata + offset;
+    unsigned char *buffer = canvas;
+
+    buffer += offset;
 
     while (count--)
         *buffer++ = color;
 
 }
 
-static void paint32(unsigned int color, unsigned int offset, unsigned int count)
+static void paint32(void *canvas, unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned int *buffer = (unsigned int *)drawdata + offset;
+    unsigned int *buffer = canvas;
+
+    buffer += offset;
 
     while (count--)
         *buffer++ = colormap32[color];
 
 }
 
-static void paintbuffer(unsigned char *buffer, unsigned int x, unsigned int w, unsigned char transparent)
+static void paintbuffer(void *canvas, unsigned char *buffer, unsigned int x, unsigned int w, unsigned char transparent)
 {
 
     unsigned int i;
@@ -227,13 +230,13 @@ static void paintbuffer(unsigned char *buffer, unsigned int x, unsigned int w, u
     {
 
         if (buffer[i] != transparent)
-            paint(buffer[i], x + i, 1);
+            paint(canvas, buffer[i], x + i, 1);
 
     }
 
 }
 
-static void paintcharline(unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
+static void paintcharline(void *canvas, unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
 {
 
     unsigned int i;
@@ -242,13 +245,13 @@ static void paintcharline(unsigned int x, unsigned int w, unsigned char color, u
     {
 
         if (data[(i >> 3)] & (0x80 >> (i % 8)))
-            paint(color, x + i, 1);
+            paint(canvas, color, x + i, 1);
 
     }
 
 }
 
-static void paintcharlineinverted(unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
+static void paintcharlineinverted(void *canvas, unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
 {
 
     unsigned int i;
@@ -257,13 +260,13 @@ static void paintcharlineinverted(unsigned int x, unsigned int w, unsigned char 
     {
 
         if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
-            paint(color, x + i, 1);
+            paint(canvas, color, x + i, 1);
 
     }
 
 }
 
-static void painttext(unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row)
+static void painttext(void *canvas, unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row)
 {
 
     unsigned int i;
@@ -284,7 +287,7 @@ static void painttext(unsigned char *string, unsigned int length, unsigned int x
 
             unsigned int offset = pcf_getbitmapoffset(font.data, index) + row * font.bitmapalign;
 
-            paintcharline(x, metricsdata.width, color, font.bitmapdata + offset);
+            paintcharline(canvas, x, metricsdata.width, color, font.bitmapdata + offset);
 
         }
 
@@ -294,7 +297,7 @@ static void painttext(unsigned char *string, unsigned int length, unsigned int x
 
 }
 
-static void painttextinput(unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row, unsigned int cursor)
+static void painttextbox(void *canvas, unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row, unsigned int cursor)
 {
 
     unsigned int i;
@@ -316,9 +319,9 @@ static void painttextinput(unsigned char *string, unsigned int length, unsigned 
             unsigned int offset = pcf_getbitmapoffset(font.data, index) + row * font.bitmapalign;
 
             if (i == cursor)
-                paintcharlineinverted(x, metricsdata.width, color, font.bitmapdata + offset);
+                paintcharlineinverted(canvas, x, metricsdata.width, color, font.bitmapdata + offset);
             else
-                paintcharline(x, metricsdata.width, color, font.bitmapdata + offset);
+                paintcharline(canvas, x, metricsdata.width, color, font.bitmapdata + offset);
 
         }
 
@@ -328,7 +331,7 @@ static void painttextinput(unsigned char *string, unsigned int length, unsigned 
 
 }
 
-static void paintframe(unsigned int framecolor, struct box *size, unsigned int line)
+static void paintframe(void *canvas, unsigned int framecolor, struct box *size, unsigned int line)
 {
 
     if (line > size->h / 2)
@@ -338,22 +341,22 @@ static void paintframe(unsigned int framecolor, struct box *size, unsigned int l
     {
 
     case 0:
-        paint(COLOR_DARK, size->x, size->w);
+        paint(canvas, COLOR_DARK, size->x, size->w);
 
         break;
 
     case 1:
-        paint(COLOR_DARK, size->x + 0, 1);
-        paint(COLOR_DARK, size->x + size->w - 1, 1);
-        paint(framecolor, size->x + 1, size->w - 2);
+        paint(canvas, COLOR_DARK, size->x + 0, 1);
+        paint(canvas, COLOR_DARK, size->x + size->w - 1, 1);
+        paint(canvas, framecolor, size->x + 1, size->w - 2);
 
         break;
 
     default:
-        paint(COLOR_DARK, size->x + 0, 1);
-        paint(COLOR_DARK, size->x + size->w - 1, 1);
-        paint(framecolor, size->x + 1, 1);
-        paint(framecolor, size->x + size->w - 2, 1);
+        paint(canvas, COLOR_DARK, size->x + 0, 1);
+        paint(canvas, COLOR_DARK, size->x + size->w - 1, 1);
+        paint(canvas, framecolor, size->x + 1, 1);
+        paint(canvas, framecolor, size->x + size->w - 2, 1);
 
         break;
 
@@ -361,31 +364,31 @@ static void paintframe(unsigned int framecolor, struct box *size, unsigned int l
 
 }
 
-static void rendernull(void *data, unsigned int line)
+static void rendernull(void *canvas, void *data, unsigned int line)
 {
 
 }
 
-static void renderfill(void *data, unsigned int line)
+static void renderfill(void *canvas, void *data, unsigned int line)
 {
 
     struct widget_fill *fill = data;
 
-    paint(fill->color, fill->size.x, fill->size.w);
+    paint(canvas, fill->color, fill->size.x, fill->size.w);
 
 }
 
-static void rendermouse(void *data, unsigned int line)
+static void rendermouse(void *canvas, void *data, unsigned int line)
 {
 
     struct widget_mouse *mouse = data;
     unsigned char *mousedata = (mouse->size.h == 16) ? mousedata16 : mousedata24;
 
-    paintbuffer(mousedata + line * mouse->size.w, mouse->size.x, mouse->size.w, 0xFF);
+    paintbuffer(canvas, mousedata + line * mouse->size.w, mouse->size.x, mouse->size.w, 0xFF);
 
 }
 
-static void renderpanel(void *data, unsigned int line)
+static void renderpanel(void *canvas, void *data, unsigned int line)
 {
 
     struct widget_panel *panel = data;
@@ -397,15 +400,15 @@ static void renderpanel(void *data, unsigned int line)
 
     box_setsize(&textbox, panel->size.x, panel->size.y, panel->size.w, panel->size.h);
     box_resize(&textbox, font.padding);
-    paint(backgroundcolor, panel->size.x, panel->size.w);
-    paintframe(framecolor, &panel->size, line);
+    paint(canvas, backgroundcolor, panel->size.x, panel->size.w);
+    paintframe(canvas, framecolor, &panel->size, line);
 
     if (line >= font.padding && ((line - font.padding) / font.lineheight == 0))
-        painttext(string, panel->length, textbox.x, textbox.x + textbox.w, stringcolor, (line - font.padding) % font.lineheight);
+        painttext(canvas, string, panel->length, textbox.x, textbox.x + textbox.w, stringcolor, (line - font.padding) % font.lineheight);
 
 }
 
-static void rendertext(void *data, unsigned int line)
+static void rendertext(void *canvas, void *data, unsigned int line)
 {
 
     struct widget_text *text = data;
@@ -421,11 +424,11 @@ static void rendertext(void *data, unsigned int line)
     rowstart = findrowstart(string, text->length, rowindex);
     rowcount = findrowcount(string, text->length, rowstart);
 
-    painttext(string + rowstart, rowcount - rowstart, text->size.x, text->size.x + text->size.w, textcolor[text->type], line % font.lineheight);
+    painttext(canvas, string + rowstart, rowcount - rowstart, text->size.x, text->size.x + text->size.w, textcolor[text->type], line % font.lineheight);
 
 }
 
-static void rendertextbox(void *data, unsigned int line)
+static void rendertextbox(void *canvas, void *data, unsigned int line)
 {
 
     struct widget_textbox *textbox = data;
@@ -441,17 +444,17 @@ static void rendertextbox(void *data, unsigned int line)
     rowstart = findrowstart(string, textbox->length, rowindex);
     rowcount = findrowcount(string, textbox->length, rowstart);
 
-    painttextinput(string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
+    painttextbox(canvas, string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
 
 }
 
-static void renderwindow(void *data, unsigned int line)
+static void renderwindow(void *canvas, void *data, unsigned int line)
 {
 
     struct widget_window *window = data;
     unsigned int framecolor = window->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
 
-    paintframe(framecolor, &window->size, line);
+    paintframe(canvas, framecolor, &window->size, line);
 
 }
 
@@ -524,7 +527,7 @@ static unsigned int testline(unsigned int line)
 
 }
 
-static void renderline(unsigned int line)
+static void renderline(void *canvas, unsigned int line)
 {
 
     unsigned int i;
@@ -538,7 +541,7 @@ static void renderline(unsigned int line)
         {
 
             if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &current->size))
-                drawables[current->type](current + 1, line - current->size.y);
+                drawables[current->type](canvas, current + 1, line - current->size.y);
 
         }
 
@@ -549,6 +552,8 @@ static void renderline(unsigned int line)
 void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
 {
 
+    unsigned int linesize = w * currentbpp;
+    unsigned char canvas[0x2000];
     unsigned int line;
 
     file_open(descriptor);
@@ -559,8 +564,8 @@ void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
         if (testline(line))
         {
 
-            renderline(line);
-            file_seekwriteall(descriptor, drawdata, w * currentbpp, w * line * currentbpp);
+            renderline(canvas, line);
+            file_seekwriteall(descriptor, canvas, linesize, line * linesize);
 
         }
 
