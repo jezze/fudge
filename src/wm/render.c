@@ -41,6 +41,7 @@ static unsigned int currentbpp;
 static void (*drawables[7])(void *canvas, void *data, unsigned int line);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
+static unsigned char canvasdata[0x8000];
 static unsigned char layerdata0[0x1000];
 static unsigned char layerdata1[0x8000];
 static unsigned char layerdata2[0x1000];
@@ -458,12 +459,16 @@ static void renderwindow(void *canvas, void *data, unsigned int line)
 
 }
 
-static struct widget *nextwidget(struct layer *layer, struct widget *widget)
+static struct widget *nextwidget(struct layer *layer, void *current)
 {
 
-    widget = (widget) ? (struct widget *)(((unsigned char *)widget) + widget->count) : (struct widget *)layer->data;
+    unsigned char *position = current;
+    struct widget *widget = current;
 
-    return ((unsigned int)widget < (unsigned int)layer->data + layer->count) ? widget : 0;
+    current = (current) ? position + widget->count : layer->data;
+    position = current;
+
+    return (position < layer->data + layer->count) ? current : 0;
 
 }
 
@@ -489,14 +494,14 @@ static void addwidget(struct layer *layer, struct widget *widget)
 
 }
 
-static void removewidget(struct layer *layer, struct widget *widget)
+static void removedata(struct layer *layer, void *data, unsigned int count)
 {
 
-    unsigned int length = widget->count;
+    unsigned char *position = data;
 
-    memory_copy(widget, (unsigned char *)widget + length, layer->count - ((unsigned char *)widget - layer->data) - length);
+    memory_copy(position, position + count, layer->count - (position - layer->data) - count);
 
-    layer->count -= length;
+    layer->count -= count;
 
 }
 
@@ -557,7 +562,6 @@ void render_flush(unsigned int descriptor, unsigned int w, unsigned int h)
 {
 
     unsigned int linesize = w * currentbpp;
-    unsigned char canvas[0x2000];
     unsigned int line;
 
     file_open(descriptor);
@@ -568,8 +572,8 @@ void render_flush(unsigned int descriptor, unsigned int w, unsigned int h)
         if (testline(line))
         {
 
-            renderline(canvas, line);
-            file_seekwriteall(descriptor, canvas, linesize, line * linesize);
+            renderline(canvasdata, line);
+            file_seekwriteall(descriptor, canvasdata, linesize, line * linesize);
 
         }
 
@@ -628,7 +632,7 @@ void render_complete(void)
         {
 
             if (current->damage == WIDGET_DAMAGE_REMOVE)
-                removewidget(&layers[i], current);
+                removedata(&layers[i], current, current->count);
             else
                 current->damage = WIDGET_DAMAGE_NONE;
 
