@@ -562,6 +562,9 @@ void render_flush(unsigned int descriptor, unsigned int w, unsigned int h)
 {
 
     unsigned int linesize = w * currentbpp;
+    unsigned int chunksize = 0x8000 / linesize;
+    unsigned int chunk = 0;
+    unsigned int chunkstart = 0;
     unsigned int line;
 
     file_open(descriptor);
@@ -572,8 +575,24 @@ void render_flush(unsigned int descriptor, unsigned int w, unsigned int h)
         if (testline(line))
         {
 
-            renderline(canvasdata, line);
-            file_seekwriteall(descriptor, canvasdata, linesize, line * linesize);
+            renderline(canvasdata + chunk * linesize, line);
+
+            if (!chunk)
+                chunkstart = line;
+
+            chunk++;
+
+            if (chunk < chunksize && line < h - 1)
+                continue;
+
+        }
+
+        if (chunk)
+        {
+
+            file_seekwriteall(descriptor, canvasdata, linesize * chunk, chunkstart * linesize);
+
+            chunk = 0;
 
         }
 
