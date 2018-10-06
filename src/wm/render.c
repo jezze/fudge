@@ -41,7 +41,7 @@ static unsigned int currentbpp;
 static void (*drawables[7])(void *canvas, void *data, unsigned int line);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
-static unsigned char canvasdata[0x8000];
+static unsigned char canvasdata[0x10000];
 static unsigned char layerdata0[0x1000];
 static unsigned char layerdata1[0x8000];
 static unsigned char layerdata2[0x1000];
@@ -562,7 +562,7 @@ void render_flush(unsigned int descriptor, unsigned int w, unsigned int h)
 {
 
     unsigned int linesize = w * currentbpp;
-    unsigned int chunksize = 0x8000 / linesize;
+    unsigned int chunksize = 0x10000 / linesize;
     unsigned int chunk = 0;
     unsigned int chunkstart = 0;
     unsigned int line;
