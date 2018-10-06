@@ -339,6 +339,14 @@ static void oninit(struct event_header *iheader, struct event_header *oheader)
 
 }
 
+static void onexit(struct event_header *iheader, struct event_header *oheader)
+{
+
+    event_reply(oheader, iheader, EVENT_EXIT);
+    event_send(oheader);
+
+}
+
 static void onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -353,9 +361,6 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
         killremotes(iheader, oheader, &view->remotes);
 
     }
-
-    event_reply(oheader, iheader, EVENT_EXIT);
-    event_send(oheader);
 
     quit = 1;
 
@@ -906,6 +911,11 @@ void main(void)
 
         case EVENT_INIT:
             oninit(iheader, oheader);
+
+            break;
+
+        case EVENT_EXIT:
+            onexit(iheader, oheader);
 
             break;
 
