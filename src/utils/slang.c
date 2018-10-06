@@ -301,7 +301,7 @@ static void run(struct event_header *iheader, struct event_header *oheader, stru
             for (k = 0; k < task[j].ninputs; k++)
             {
 
-                event_forward(oheader, iheader, EVENT_FILE, task[j].id);
+                event_forward(oheader, iheader, EVENT_DATAFILE, task[j].id);
 
                 for (x = count; x > j + 1; x--)
                     event_addroute(oheader, task[x - 1].id);
@@ -316,7 +316,7 @@ static void run(struct event_header *iheader, struct event_header *oheader, stru
         else
         {
 
-            event_forward(oheader, iheader, EVENT_FILE, task[j].id);
+            event_forward(oheader, iheader, EVENT_DATAFILE, task[j].id);
 
             for (x = count; x > j + 1; x--)
                 event_addroute(oheader, task[x - 1].id);
@@ -328,7 +328,7 @@ static void run(struct event_header *iheader, struct event_header *oheader, stru
 
     }
 
-    event_request(oheader, iheader, EVENT_EXIT, task[0].id);
+    event_request(oheader, iheader, EVENT_DATASTOP, task[0].id);
 
     for (x = count; x > 1; x--)
         event_addroute(oheader, task[x - 1].id);
@@ -433,10 +433,10 @@ static void oninit(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void onexit(struct event_header *iheader, struct event_header *oheader)
+static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_reply(oheader, iheader, EVENT_EXIT);
+    event_reply(oheader, iheader, EVENT_DATASTOP);
     event_send(oheader);
 
     quit = 1;
@@ -467,7 +467,7 @@ static void ondata(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void onfile(struct event_header *iheader, struct event_header *oheader)
+static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_file *file = event_getdata(iheader);
@@ -512,8 +512,8 @@ void main(void)
 
             break;
 
-        case EVENT_EXIT:
-            onexit(iheader, oheader);
+        case EVENT_DATASTOP:
+            ondatastop(iheader, oheader);
 
             break;
 
@@ -527,8 +527,8 @@ void main(void)
 
             break;
 
-        case EVENT_FILE:
-            onfile(iheader, oheader);
+        case EVENT_DATAFILE:
+            ondatafile(iheader, oheader);
 
             break;
 

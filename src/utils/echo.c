@@ -3,10 +3,10 @@
 
 static unsigned int quit;
 
-static void onexit(struct event_header *iheader, struct event_header *oheader)
+static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_reply(oheader, iheader, EVENT_EXIT);
+    event_reply(oheader, iheader, EVENT_DATASTOP);
     event_send(oheader);
 
     quit = 1;
@@ -32,7 +32,7 @@ static void ondata(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void onfile(struct event_header *iheader, struct event_header *oheader)
+static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_file *file = event_getdata(iheader);
@@ -74,8 +74,8 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_EXIT:
-            onexit(iheader, oheader);
+        case EVENT_DATASTOP:
+            ondatastop(iheader, oheader);
 
             break;
 
@@ -89,8 +89,8 @@ void main(void)
 
             break;
 
-        case EVENT_FILE:
-            onfile(iheader, oheader);
+        case EVENT_DATAFILE:
+            ondatafile(iheader, oheader);
 
             break;
 

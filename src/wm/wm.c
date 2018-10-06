@@ -339,10 +339,10 @@ static void oninit(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void onexit(struct event_header *iheader, struct event_header *oheader)
+static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_reply(oheader, iheader, EVENT_EXIT);
+    event_reply(oheader, iheader, EVENT_DATASTOP);
     event_send(oheader);
 
 }
@@ -462,7 +462,7 @@ static void onkeypress(struct event_header *iheader, struct event_header *oheade
 
             event_request(oheader, iheader, EVENT_INIT, id);
             event_send(oheader);
-            event_request(oheader, iheader, EVENT_EXIT, id);
+            event_request(oheader, iheader, EVENT_DATASTOP, id);
             event_send(oheader);
 
         }
@@ -914,8 +914,8 @@ void main(void)
 
             break;
 
-        case EVENT_EXIT:
-            onexit(iheader, oheader);
+        case EVENT_DATASTOP:
+            ondatastop(iheader, oheader);
 
             break;
 

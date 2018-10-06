@@ -1,9 +1,9 @@
 #define EVENT_ADDR_BROADCAST            0
 #define EVENT_INIT                      0x01
-#define EVENT_EXIT                      0x02
-#define EVENT_KILL                      0x03
-#define EVENT_DATA                      0x04
-#define EVENT_FILE                      0x05
+#define EVENT_KILL                      0x02
+#define EVENT_DATA                      0x03
+#define EVENT_DATAFILE                  0x04
+#define EVENT_DATASTOP                  0x05
 #define EVENT_KEYPRESS                  0x10
 #define EVENT_KEYRELEASE                0x11
 #define EVENT_MOUSEMOVE                 0x12

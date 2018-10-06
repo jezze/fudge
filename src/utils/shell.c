@@ -26,7 +26,7 @@ static unsigned int complete(struct event_header *iheader, struct event_header *
         event_adddata(oheader, 1);
         event_appenddata(oheader, count, command);
         event_send(oheader);
-        event_request(oheader, iheader, EVENT_EXIT, id);
+        event_request(oheader, iheader, EVENT_DATASTOP, id);
         event_send(oheader);
 
     }
@@ -110,7 +110,7 @@ static unsigned int interpret(struct event_header *iheader, struct event_header 
         event_adddata(oheader, 0);
         event_appenddata(oheader, count, command);
         event_send(oheader);
-        event_request(oheader, iheader, EVENT_EXIT, id);
+        event_request(oheader, iheader, EVENT_DATASTOP, id);
         event_send(oheader);
 
     }
@@ -127,10 +127,10 @@ static void oninit(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void onexit(struct event_header *iheader, struct event_header *oheader)
+static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_reply(oheader, iheader, EVENT_EXIT);
+    event_reply(oheader, iheader, EVENT_DATASTOP);
     event_send(oheader);
 
 }
@@ -242,8 +242,8 @@ void main(void)
 
             break;
 
-        case EVENT_EXIT:
-            onexit(iheader, oheader);
+        case EVENT_DATASTOP:
+            ondatastop(iheader, oheader);
 
             break;
 
