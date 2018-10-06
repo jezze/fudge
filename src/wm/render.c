@@ -458,7 +458,7 @@ static void renderwindow(void *canvas, void *data, unsigned int line)
 
 }
 
-static struct widget *nextwidget(struct widget *widget, struct layer *layer)
+static struct widget *nextwidget(struct layer *layer, struct widget *widget)
 {
 
     widget = (widget) ? (struct widget *)(((unsigned char *)widget) + widget->count) : (struct widget *)layer->data;
@@ -467,25 +467,29 @@ static struct widget *nextwidget(struct widget *widget, struct layer *layer)
 
 }
 
-static void insertwidget(struct widget *widget, struct layer *layer)
+static void markwidgets(struct layer *layer, unsigned int source, unsigned int id, unsigned int damage)
 {
 
     struct widget *current = 0;
 
-    while ((current = nextwidget(current, layer)))
+    while ((current = nextwidget(layer, current)))
     {
 
-        if (current->source == widget->source && current->id == widget->id)
-            current->damage = WIDGET_DAMAGE_REMOVE;
+        if (current->source == source && current->id == id)
+            current->damage = damage;
 
     }
 
-    if (widget->damage == WIDGET_DAMAGE_UPDATE)
-        layer->count += memory_write(layer->data, layer->total, widget, widget->count, layer->count);
+}
+
+static void addwidget(struct layer *layer, struct widget *widget)
+{
+
+    layer->count += memory_write(layer->data, layer->total, widget, widget->count, layer->count);
 
 }
 
-static void removewidget(struct widget *widget, struct layer *layer)
+static void removewidget(struct layer *layer, struct widget *widget)
 {
 
     unsigned int length = widget->count;
@@ -513,7 +517,7 @@ static unsigned int testline(unsigned int line)
 
         struct widget *current = 0;
 
-        while ((current = nextwidget(current, &layers[i])))
+        while ((current = nextwidget(&layers[i], current)))
         {
 
             if (current->damage != WIDGET_DAMAGE_NONE && isoverlap(line, &current->size))
@@ -537,7 +541,7 @@ static void renderline(void *canvas, unsigned int line)
 
         struct widget *current = 0;
 
-        while ((current = nextwidget(current, &layers[i])))
+        while ((current = nextwidget(&layers[i], current)))
         {
 
             if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &current->size))
@@ -549,7 +553,7 @@ static void renderline(void *canvas, unsigned int line)
 
 }
 
-void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
+void render_flush(unsigned int descriptor, unsigned int w, unsigned int h)
 {
 
     unsigned int linesize = w * currentbpp;
@@ -575,18 +579,38 @@ void render_update(unsigned int descriptor, unsigned int w, unsigned int h)
 
 }
 
-void render_begin(void *buffer, unsigned int count)
+void render_write(void *buffer, unsigned int count)
 {
 
     struct widget *current = 0;
-    struct layer insert;
+    struct layer source;
 
-    insert.data = buffer;
-    insert.count = count;
-    insert.total = count;
+    source.data = buffer;
+    source.count = count;
+    source.total = count;
 
-    while ((current = nextwidget(current, &insert)))
-        insertwidget(current, &layers[current->z]);
+    while ((current = nextwidget(&source, current)))
+    {
+
+        struct layer *target = &layers[current->z];
+
+        switch (current->damage)
+        {
+
+        case WIDGET_DAMAGE_REMOVE:
+            markwidgets(target, current->source, current->id, WIDGET_DAMAGE_REMOVE);
+
+            break;
+
+        case WIDGET_DAMAGE_REPLACE:
+            markwidgets(target, current->source, current->id, WIDGET_DAMAGE_REMOVE);
+            addwidget(target, current);
+
+            break;
+
+        }
+
+    }
 
 }
 
@@ -600,11 +624,11 @@ void render_complete(void)
 
         struct widget *current = 0;
 
-        while ((current = nextwidget(current, &layers[i])))
+        while ((current = nextwidget(&layers[i], current)))
         {
 
             if (current->damage == WIDGET_DAMAGE_REMOVE)
-                removewidget(current, &layers[i]);
+                removewidget(&layers[i], current);
             else
                 current->damage = WIDGET_DAMAGE_NONE;
 

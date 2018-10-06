@@ -51,7 +51,7 @@ void widget_update(struct ring *ring, void *item, unsigned int z, unsigned int s
     widget.id = (unsigned int)item;
     widget.type = type;
     widget.z = z;
-    widget.damage = WIDGET_DAMAGE_UPDATE;
+    widget.damage = WIDGET_DAMAGE_REPLACE;
     widget.source = source;
     widget.count = sizeof (struct widget) + count;
     widget.size.x = x;

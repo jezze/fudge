@@ -1,5 +1,5 @@
-void render_update(unsigned int descriptor, unsigned int w, unsigned int h);
-void render_begin(void *buffer, unsigned int count);
+void render_flush(unsigned int descriptor, unsigned int w, unsigned int h);
+void render_write(void *buffer, unsigned int count);
 void render_complete(void);
 void render_setvideo(unsigned int descriptor, unsigned int w, unsigned int h, unsigned int bpp);
 void render_setpaint(unsigned int bpp);

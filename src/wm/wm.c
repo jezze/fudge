@@ -870,8 +870,8 @@ static void onwmflush(struct event_header *iheader, struct event_header *oheader
     if (!file_walkfrom(FILE_L0, FILE_G2, "../data"))
         return;
 
-    render_begin(data, iheader->length - sizeof (struct event_header));
-    render_update(FILE_L0, screen.w, screen.h);
+    render_write(data, iheader->length - sizeof (struct event_header));
+    render_flush(FILE_L0, screen.w, screen.h);
     render_complete();
 
 }

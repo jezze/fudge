@@ -6,7 +6,7 @@
 #define WIDGET_TYPE_PANEL               5
 #define WIDGET_TYPE_MOUSE               6
 #define WIDGET_DAMAGE_NONE              0
-#define WIDGET_DAMAGE_UPDATE            1
+#define WIDGET_DAMAGE_REPLACE           1
 #define WIDGET_DAMAGE_REMOVE            2
 #define WIDGET_MOUSETYPE_DEFAULT        0
 #define WIDGET_TEXTTYPE_NORMAL          0
