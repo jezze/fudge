@@ -267,7 +267,7 @@ static void paintcharlineinverted(void *canvas, unsigned int x, unsigned int w, 
 
 }
 
-static void painttext(void *canvas, unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row)
+static void painttext(void *canvas, unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row, unsigned int cursor)
 {
 
     unsigned int i;
@@ -276,6 +276,7 @@ static void painttext(void *canvas, unsigned char *string, unsigned int length, 
     {
 
         unsigned short index = getfontindex(string[i]);
+        unsigned int offset = pcf_getbitmapoffset(font.data, index);
         struct pcf_metricsdata metricsdata;
 
         pcf_readmetricsdata(font.data, index, &metricsdata);
@@ -285,44 +286,11 @@ static void painttext(void *canvas, unsigned char *string, unsigned int length, 
 
         if (row < metricsdata.ascent + metricsdata.descent)
         {
-
-            unsigned int offset = pcf_getbitmapoffset(font.data, index) + row * font.bitmapalign;
-
-            paintcharline(canvas, x, metricsdata.width, color, font.bitmapdata + offset);
-
-        }
-
-        x += metricsdata.width;
-
-    }
-
-}
-
-static void painttextbox(void *canvas, unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row, unsigned int cursor)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        unsigned short index = getfontindex(string[i]);
-        struct pcf_metricsdata metricsdata;
-
-        pcf_readmetricsdata(font.data, index, &metricsdata);
-
-        if (x + metricsdata.width > w)
-            return;
-
-        if (row < metricsdata.ascent + metricsdata.descent)
-        {
-
-            unsigned int offset = pcf_getbitmapoffset(font.data, index) + row * font.bitmapalign;
 
             if (i == cursor)
-                paintcharlineinverted(canvas, x, metricsdata.width, color, font.bitmapdata + offset);
+                paintcharlineinverted(canvas, x, metricsdata.width, color, font.bitmapdata + offset + row * font.bitmapalign);
             else
-                paintcharline(canvas, x, metricsdata.width, color, font.bitmapdata + offset);
+                paintcharline(canvas, x, metricsdata.width, color, font.bitmapdata + offset + row * font.bitmapalign);
 
         }
 
@@ -405,7 +373,7 @@ static void renderpanel(void *canvas, void *data, unsigned int line)
     paintframe(canvas, framecolor, &panel->size, line);
 
     if (line >= font.padding && ((line - font.padding) / font.lineheight == 0))
-        painttext(canvas, string, panel->length, textbox.x, textbox.x + textbox.w, stringcolor, (line - font.padding) % font.lineheight);
+        painttext(canvas, string, panel->length, textbox.x, textbox.x + textbox.w, stringcolor, (line - font.padding) % font.lineheight, panel->length);
 
 }
 
@@ -425,7 +393,7 @@ static void rendertext(void *canvas, void *data, unsigned int line)
     rowstart = findrowstart(string, text->length, rowindex);
     rowcount = findrowcount(string, text->length, rowstart);
 
-    painttext(canvas, string + rowstart, rowcount - rowstart, text->size.x, text->size.x + text->size.w, textcolor[text->type], line % font.lineheight);
+    painttext(canvas, string + rowstart, rowcount - rowstart, text->size.x, text->size.x + text->size.w, textcolor[text->type], line % font.lineheight, rowcount - rowstart);
 
 }
 
@@ -445,7 +413,7 @@ static void rendertextbox(void *canvas, void *data, unsigned int line)
     rowstart = findrowstart(string, textbox->length, rowindex);
     rowcount = findrowcount(string, textbox->length, rowstart);
 
-    painttextbox(canvas, string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
+    painttext(canvas, string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
 
 }
 
