@@ -38,15 +38,15 @@ static unsigned int complete(struct event_header *iheader, struct event_header *
 static void printprompt(void)
 {
 
-    file_writeall(FILE_P0, "$ ", 2);
+    file_writeall(FILE_G1, "$ ", 2);
 
 }
 
 static void printnormal(void *buffer, unsigned int count)
 {
 
-    file_writeall(FILE_P0, "\b\b  \b\b", 6);
-    file_writeall(FILE_P0, buffer, count);
+    file_writeall(FILE_G1, "\b\b  \b\b", 6);
+    file_writeall(FILE_G1, buffer, count);
     printprompt();
 
 }
@@ -54,7 +54,7 @@ static void printnormal(void *buffer, unsigned int count)
 static void printcomplete(void *buffer, unsigned int count)
 {
 
-    file_writeall(FILE_P0, buffer, count);
+    file_writeall(FILE_G1, buffer, count);
     printprompt();
 
 }
@@ -123,9 +123,7 @@ static void oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
-    file_open(FILE_P0);
     printprompt();
-    file_close(FILE_P0);
 
 }
 
@@ -144,8 +142,6 @@ static void ondata(struct event_header *iheader, struct event_header *oheader)
 
     struct event_data *data = event_getdata(iheader);
 
-    file_open(FILE_P0);
-
     switch (data->session)
     {
 
@@ -160,9 +156,6 @@ static void ondata(struct event_header *iheader, struct event_header *oheader)
         break;
 
     }
-
-    file_close(FILE_P0);
-
 
 }
 
@@ -187,9 +180,7 @@ static void onconsoledata(struct event_header *iheader, struct event_header *ohe
         if (!ring_skipreverse(&input, 1))
             break;
 
-        file_open(FILE_P0);
-        file_writeall(FILE_P0, "\b \b", 3);
-        file_close(FILE_P0);
+        file_writeall(FILE_G1, "\b \b", 3);
 
         break;
 
@@ -197,25 +188,19 @@ static void onconsoledata(struct event_header *iheader, struct event_header *ohe
         consoledata->data = '\n';
 
     case '\n':
-        file_open(FILE_P0);
-        file_writeall(FILE_P0, &consoledata->data, 1);
-        file_close(FILE_P0);
+        file_writeall(FILE_G1, &consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
 
         if (interpret(iheader, oheader, &input))
             break;
 
-        file_open(FILE_P0);
         printprompt();
-        file_close(FILE_P0);
 
         break;
 
     default:
         ring_write(&input, &consoledata->data, 1);
-        file_open(FILE_P0);
-        file_writeall(FILE_P0, &consoledata->data, 1);
-        file_close(FILE_P0);
+        file_writeall(FILE_G1, &consoledata->data, 1);
 
         break;
 
@@ -226,10 +211,14 @@ static void onconsoledata(struct event_header *iheader, struct event_header *ohe
 void main(void)
 {
 
-    if (!file_walk(FILE_G0, "/system/console/event"))
+    if (!file_walkfrom(FILE_G0, FILE_P0, "event"))
+        return;
+
+    if (!file_walkfrom(FILE_G1, FILE_P0, "odata"))
         return;
 
     file_open(FILE_G0);
+    file_open(FILE_G1);
     event_open();
 
     while (!quit)
@@ -268,6 +257,7 @@ void main(void)
     }
 
     event_close();
+    file_close(FILE_G1);
     file_close(FILE_G0);
 
 }
