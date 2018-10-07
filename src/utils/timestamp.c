@@ -49,25 +49,25 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_datafile *datafile = event_getdata(iheader);
     struct ctrl_clocksettings settings;
     char num[FUDGE_NSIZE];
 
-    if (!file->descriptor)
+    if (!datafile->descriptor)
     {
 
         if (!file_walk(FILE_L0, "/system/clock/if:0/ctrl"))
             return;
 
-        file->descriptor = FILE_L0;
+        datafile->descriptor = FILE_L0;
 
     }
 
-    file_open(file->descriptor);
-    file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(file->descriptor);
-    event_reply(oheader, iheader, EVENT_DATA);
-    event_adddata(oheader, file->session);
+    file_open(datafile->descriptor);
+    file_readall(datafile->descriptor, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(datafile->descriptor);
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, datafile->session);
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(&settings), 10), num);
     event_appenddata(oheader, 1, "\n");
     event_send(oheader);

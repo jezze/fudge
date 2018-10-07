@@ -9,8 +9,8 @@ static void list(struct event_header *iheader, struct event_header *oheader, uns
     struct record record;
 
     file_open(descriptor);
-    event_reply(oheader, iheader, EVENT_DATA);
-    event_adddata(oheader, session);
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, session);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
@@ -21,8 +21,8 @@ static void list(struct event_header *iheader, struct event_header *oheader, uns
         {
 
             event_send(oheader);
-            event_reply(oheader, iheader, EVENT_DATA);
-            event_adddata(oheader, session);
+            event_reply(oheader, iheader, EVENT_DATAPIPE);
+            event_adddatapipe(oheader, session);
 
         }
 
@@ -63,12 +63,12 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_datafile *datafile = event_getdata(iheader);
 
-    if (file->descriptor)
-        list(iheader, oheader, file->descriptor, file->session);
+    if (datafile->descriptor)
+        list(iheader, oheader, datafile->descriptor, datafile->session);
     else
-        list(iheader, oheader, FILE_PW, file->session);
+        list(iheader, oheader, FILE_PW, datafile->session);
 
 }
 

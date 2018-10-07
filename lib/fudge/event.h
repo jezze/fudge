@@ -1,7 +1,7 @@
 #define EVENT_ADDR_BROADCAST            0
 #define EVENT_INIT                      0x01
 #define EVENT_KILL                      0x02
-#define EVENT_DATA                      0x03
+#define EVENT_DATAPIPE                  0x03
 #define EVENT_DATAFILE                  0x04
 #define EVENT_DATASTOP                  0x05
 #define EVENT_KEYPRESS                  0x10
@@ -39,7 +39,7 @@ struct event_header
 
 };
 
-struct event_data
+struct event_datapipe
 {
 
     unsigned int session;
@@ -47,7 +47,7 @@ struct event_data
 
 };
 
-struct event_file
+struct event_datafile
 {
 
     unsigned int session;
@@ -170,9 +170,9 @@ struct event_header *event_request(struct event_header *oheader, struct event_he
 struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target);
 struct event_header *event_reply(struct event_header *oheader, struct event_header *iheader, unsigned int type);
 unsigned int event_addroute(struct event_header *header, unsigned int target);
-unsigned int event_adddata(struct event_header *header, unsigned int session);
+unsigned int event_adddatapipe(struct event_header *header, unsigned int session);
 unsigned int event_appenddata(struct event_header *header, unsigned int count, void *buffer);
-unsigned int event_addfile(struct event_header *header, unsigned int session, unsigned int descriptor);
+unsigned int event_adddatafile(struct event_header *header, unsigned int session, unsigned int descriptor);
 unsigned int event_addkeypress(struct event_header *header, unsigned char scancode);
 unsigned int event_addkeyrelease(struct event_header *header, unsigned char scancode);
 unsigned int event_addmousepress(struct event_header *header, unsigned int button);

@@ -45,8 +45,8 @@ static void sum(struct event_header *iheader, struct event_header *oheader, unsi
 
     }
 
-    event_reply(oheader, iheader, EVENT_DATA);
-    event_adddata(oheader, session);
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, session);
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
     event_appenddata(oheader, 1, "\n");
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
@@ -57,31 +57,31 @@ static void sum(struct event_header *iheader, struct event_header *oheader, unsi
 
 }
 
-static void ondata(struct event_header *iheader, struct event_header *oheader)
+static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_datapipe *datapipe = event_getdata(iheader);
 
-    sum(iheader, oheader, data->count, data + 1, data->session);
+    sum(iheader, oheader, datapipe->count, datapipe + 1, datapipe->session);
 
 }
 
 static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_datafile *datafile = event_getdata(iheader);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    if (!file->descriptor)
+    if (!datafile->descriptor)
         return;
 
-    file_open(file->descriptor);
+    file_open(datafile->descriptor);
 
-    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
-        sum(iheader, oheader, count, buffer, file->session);
+    while ((count = file_read(datafile->descriptor, buffer, FUDGE_BSIZE)))
+        sum(iheader, oheader, count, buffer, datafile->session);
 
-    file_close(file->descriptor);
+    file_close(datafile->descriptor);
 
 }
 
@@ -128,8 +128,8 @@ void main(void)
 
             break;
 
-        case EVENT_DATA:
-            ondata(iheader, oheader);
+        case EVENT_DATAPIPE:
+            ondatapipe(iheader, oheader);
 
             break;
 

@@ -306,7 +306,7 @@ static void run(struct event_header *iheader, struct event_header *oheader, stru
                 for (x = count; x > j + 1; x--)
                     event_addroute(oheader, task[x - 1].id);
 
-                event_addfile(oheader, 0, FILE_P0 + k);
+                event_adddatafile(oheader, 0, FILE_P0 + k);
                 event_send(oheader);
 
             }
@@ -321,7 +321,7 @@ static void run(struct event_header *iheader, struct event_header *oheader, stru
             for (x = count; x > j + 1; x--)
                 event_addroute(oheader, task[x - 1].id);
 
-            event_addfile(oheader, 0, 0);
+            event_adddatafile(oheader, 0, 0);
             event_send(oheader);
 
         }
@@ -450,19 +450,19 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void ondata(struct event_header *iheader, struct event_header *oheader)
+static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_datapipe *datapipe = event_getdata(iheader);
 
-    if (!data->count)
+    if (!datapipe->count)
         return;
 
-    tokenizebuffer(&infix, &stringtable, data->count, data + 1);
+    tokenizebuffer(&infix, &stringtable, datapipe->count, datapipe + 1);
     translate(&postfix, &infix, &stack);
     parse(iheader, oheader, &postfix, &stack);
-    event_reply(oheader, iheader, EVENT_DATA);
-    event_adddata(oheader, data->session);
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, datapipe->session);
     event_send(oheader);
 
 }
@@ -470,23 +470,23 @@ static void ondata(struct event_header *iheader, struct event_header *oheader)
 static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_datafile *datafile = event_getdata(iheader);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    if (!file->descriptor)
+    if (!datafile->descriptor)
         return;
 
-    file_open(file->descriptor);
+    file_open(datafile->descriptor);
 
-    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(datafile->descriptor, buffer, FUDGE_BSIZE)))
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    file_close(file->descriptor);
+    file_close(datafile->descriptor);
     translate(&postfix, &infix, &stack);
     parse(iheader, oheader, &postfix, &stack);
-    event_reply(oheader, iheader, EVENT_DATA);
-    event_adddata(oheader, file->session);
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, datafile->session);
     event_send(oheader);
 
 }
@@ -522,8 +522,8 @@ void main(void)
 
             break;
 
-        case EVENT_DATA:
-            ondata(iheader, oheader);
+        case EVENT_DATAPIPE:
+            ondatapipe(iheader, oheader);
 
             break;
 

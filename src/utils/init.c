@@ -39,7 +39,7 @@ void main(void)
     event_initheader(oheader, EVENT_INIT, id);
     event_send(oheader);
     event_initheader(oheader, EVENT_DATAFILE, id);
-    event_addfile(oheader, 0, FILE_P0);
+    event_adddatafile(oheader, 0, FILE_P0);
     event_send(oheader);
     event_initheader(oheader, EVENT_DATASTOP, id);
     event_send(oheader);

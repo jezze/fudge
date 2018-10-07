@@ -23,10 +23,10 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_datafile *datafile = event_getdata(iheader);
     unsigned int id;
 
-    if (file->descriptor)
+    if (datafile->descriptor)
         return;
 
     if (!file_walk(FILE_CP, "/bin/echo"))
@@ -43,7 +43,7 @@ static void ondatafile(struct event_header *iheader, struct event_header *oheade
     event_request(oheader, iheader, EVENT_INIT, id);
     event_send(oheader);
     event_forward(oheader, iheader, EVENT_DATAFILE, id);
-    event_addfile(oheader, file->session, FILE_P0);
+    event_adddatafile(oheader, datafile->session, FILE_P0);
     event_send(oheader);
     event_request(oheader, iheader, EVENT_DATASTOP, id);
     event_send(oheader);

@@ -23,13 +23,13 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_datafile *datafile = event_getdata(iheader);
 
-    if (file->descriptor)
+    if (datafile->descriptor)
         return;
 
-    event_reply(oheader, iheader, EVENT_DATA);
-    event_adddata(oheader, file->session);
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, datafile->session);
     event_appenddata(oheader, 13, "Hello world!\n");
     event_send(oheader);
 

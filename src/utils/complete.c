@@ -9,8 +9,8 @@ static void complete(struct event_header *iheader, struct event_header *oheader,
     struct record record;
 
     file_open(descriptor);
-    event_reply(oheader, iheader, EVENT_DATA);
-    event_adddata(oheader, session);
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, session);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
@@ -22,8 +22,8 @@ static void complete(struct event_header *iheader, struct event_header *oheader,
             {
 
                 event_send(oheader);
-                event_reply(oheader, iheader, EVENT_DATA);
-                event_adddata(oheader, session);
+                event_reply(oheader, iheader, EVENT_DATAPIPE);
+                event_adddatapipe(oheader, session);
 
             }
 
@@ -59,12 +59,12 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void ondata(struct event_header *iheader, struct event_header *oheader)
+static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_datapipe *datapipe = event_getdata(iheader);
 
-    complete(iheader, oheader, FILE_PW, data + 1, data->count, data->session);
+    complete(iheader, oheader, FILE_PW, datapipe + 1, datapipe->count, datapipe->session);
 
 }
 
@@ -94,8 +94,8 @@ void main(void)
 
             break;
 
-        case EVENT_DATA:
-            ondata(iheader, oheader);
+        case EVENT_DATAPIPE:
+            ondatapipe(iheader, oheader);
 
             break;
 

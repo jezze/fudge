@@ -110,13 +110,13 @@ unsigned int event_addroute(struct event_header *header, unsigned int target)
 
 }
 
-unsigned int event_adddata(struct event_header *header, unsigned int session)
+unsigned int event_adddatapipe(struct event_header *header, unsigned int session)
 {
 
-    struct event_data *data = addpayload(header, sizeof (struct event_data));
+    struct event_datapipe *datapipe = addpayload(header, sizeof (struct event_datapipe));
 
-    data->session = session;
-    data->count = 0;
+    datapipe->session = session;
+    datapipe->count = 0;
 
     return header->length;
 
@@ -125,23 +125,23 @@ unsigned int event_adddata(struct event_header *header, unsigned int session)
 unsigned int event_appenddata(struct event_header *header, unsigned int count, void *buffer)
 {
 
-    struct event_data *data = event_getdata(header);
+    struct event_datapipe *datapipe = event_getdata(header);
     unsigned int c = memory_write(header, FUDGE_BSIZE, buffer, count, header->length);
 
-    data->count += c;
+    datapipe->count += c;
     header->length += c;
 
     return header->length;
 
 }
 
-unsigned int event_addfile(struct event_header *header, unsigned int session, unsigned int descriptor)
+unsigned int event_adddatafile(struct event_header *header, unsigned int session, unsigned int descriptor)
 {
 
-    struct event_file *file = addpayload(header, sizeof (struct event_file));
+    struct event_datafile *datafile = addpayload(header, sizeof (struct event_datafile));
 
-    file->session = session;
-    file->descriptor = descriptor;
+    datafile->session = session;
+    datafile->descriptor = descriptor;
 
     return header->length;
 

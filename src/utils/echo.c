@@ -20,14 +20,14 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void ondata(struct event_header *iheader, struct event_header *oheader)
+static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_datapipe *datapipe = event_getdata(iheader);
 
-    event_reply(oheader, iheader, EVENT_DATA);
-    event_adddata(oheader, data->session);
-    event_appenddata(oheader, data->count, data + 1);
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, datapipe->session);
+    event_appenddata(oheader, datapipe->count, datapipe + 1);
     event_send(oheader);
 
 }
@@ -35,26 +35,26 @@ static void ondata(struct event_header *iheader, struct event_header *oheader)
 static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_datafile *datafile = event_getdata(iheader);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    if (!file->descriptor)
+    if (!datafile->descriptor)
         return;
 
-    file_open(file->descriptor);
+    file_open(datafile->descriptor);
 
-    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_data))))
+    while ((count = file_read(datafile->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_datapipe))))
     {
 
-        event_reply(oheader, iheader, EVENT_DATA);
-        event_adddata(oheader, file->session);
+        event_reply(oheader, iheader, EVENT_DATAPIPE);
+        event_adddatapipe(oheader, datafile->session);
         event_appenddata(oheader, count, buffer);
         event_send(oheader);
 
     }
 
-    file_close(file->descriptor);
+    file_close(datafile->descriptor);
 
 }
 
@@ -84,8 +84,8 @@ void main(void)
 
             break;
 
-        case EVENT_DATA:
-            ondata(iheader, oheader);
+        case EVENT_DATAPIPE:
+            ondatapipe(iheader, oheader);
 
             break;
 

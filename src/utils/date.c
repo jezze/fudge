@@ -23,31 +23,31 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_datafile *datafile = event_getdata(iheader);
     struct ctrl_clocksettings settings;
     char *datetime = "0000-00-00 00:00:00\n";
 
-    if (!file->descriptor)
+    if (!datafile->descriptor)
     {
 
         if (!file_walk(FILE_L0, "/system/clock/if:0/ctrl"))
             return;
 
-        file->descriptor = FILE_L0;
+        datafile->descriptor = FILE_L0;
 
     }
 
-    file_open(file->descriptor);
-    file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(file->descriptor);
+    file_open(datafile->descriptor);
+    file_readall(datafile->descriptor, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(datafile->descriptor);
     ascii_wzerovalue(datetime, 20, settings.year, 10, 4, 0);
     ascii_wzerovalue(datetime, 20, settings.month, 10, 2, 5);
     ascii_wzerovalue(datetime, 20, settings.day, 10, 2, 8);
     ascii_wzerovalue(datetime, 20, settings.hours, 10, 2, 11);
     ascii_wzerovalue(datetime, 20, settings.minutes, 10, 2, 14);
     ascii_wzerovalue(datetime, 20, settings.seconds, 10, 2, 17);
-    event_reply(oheader, iheader, EVENT_DATA);
-    event_adddata(oheader, file->session);
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, datafile->session);
     event_appenddata(oheader, 20, datetime);
     event_send(oheader);
 

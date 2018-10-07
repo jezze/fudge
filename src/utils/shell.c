@@ -22,8 +22,8 @@ static unsigned int complete(struct event_header *iheader, struct event_header *
 
         event_request(oheader, iheader, EVENT_INIT, id);
         event_send(oheader);
-        event_request(oheader, iheader, EVENT_DATA, id);
-        event_adddata(oheader, 1);
+        event_request(oheader, iheader, EVENT_DATAPIPE, id);
+        event_adddatapipe(oheader, 1);
         event_appenddata(oheader, count, command);
         event_send(oheader);
         event_request(oheader, iheader, EVENT_DATASTOP, id);
@@ -106,8 +106,8 @@ static unsigned int interpret(struct event_header *iheader, struct event_header 
 
         event_request(oheader, iheader, EVENT_INIT, id);
         event_send(oheader);
-        event_request(oheader, iheader, EVENT_DATA, id);
-        event_adddata(oheader, 0);
+        event_request(oheader, iheader, EVENT_DATAPIPE, id);
+        event_adddatapipe(oheader, 0);
         event_appenddata(oheader, count, command);
         event_send(oheader);
         event_request(oheader, iheader, EVENT_DATASTOP, id);
@@ -142,21 +142,21 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void ondata(struct event_header *iheader, struct event_header *oheader)
+static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_datapipe *datapipe = event_getdata(iheader);
 
-    switch (data->session)
+    switch (datapipe->session)
     {
 
     case 0:
-        printnormal(data + 1, data->count);
+        printnormal(datapipe + 1, datapipe->count);
 
         break;
 
     case 1:
-        printcomplete(data + 1, data->count);
+        printcomplete(datapipe + 1, datapipe->count);
 
         break;
 
@@ -252,8 +252,8 @@ void main(void)
 
             break;
 
-        case EVENT_DATA:
-            ondata(iheader, oheader);
+        case EVENT_DATAPIPE:
+            ondatapipe(iheader, oheader);
 
             break;
 
