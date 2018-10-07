@@ -6,14 +6,6 @@
 
 static unsigned int quit;
 
-static void oninit(struct event_header *iheader, struct event_header *oheader)
-{
-
-    event_request(oheader, iheader, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
-    event_send(oheader);
-
-}
-
 static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -21,6 +13,14 @@ static void ondatastop(struct event_header *iheader, struct event_header *oheade
 
     event_reply(oheader, iheader, EVENT_DATASTOP);
     event_adddatastop(oheader, datastop->session);
+    event_send(oheader);
+
+}
+
+static void oninit(struct event_header *iheader, struct event_header *oheader)
+{
+
+    event_request(oheader, iheader, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
     event_send(oheader);
 
 }
@@ -72,13 +72,13 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_INIT:
-            oninit(iheader, oheader);
+        case EVENT_DATASTOP:
+            ondatastop(iheader, oheader);
 
             break;
 
-        case EVENT_DATASTOP:
-            ondatastop(iheader, oheader);
+        case EVENT_INIT:
+            oninit(iheader, oheader);
 
             break;
 

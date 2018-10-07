@@ -121,54 +121,6 @@ static unsigned int interpret(struct event_header *iheader, struct event_header 
 
 }
 
-static void oninit(struct event_header *iheader, struct event_header *oheader)
-{
-
-    ring_init(&input, FUDGE_BSIZE, inputbuffer);
-    printprompt();
-
-}
-
-static void ondatastop(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datastop *datastop = event_getdata(iheader);
-
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
-    event_send(oheader);
-
-}
-
-static void onkill(struct event_header *iheader, struct event_header *oheader)
-{
-
-    quit = 1;
-
-}
-
-static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datapipe *datapipe = event_getdata(iheader);
-
-    switch (datapipe->session)
-    {
-
-    case 0:
-        printnormal(datapipe + 1, datapipe->count);
-
-        break;
-
-    case 1:
-        printcomplete(datapipe + 1, datapipe->count);
-
-        break;
-
-    }
-
-}
-
 static void onconsoledata(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -218,6 +170,54 @@ static void onconsoledata(struct event_header *iheader, struct event_header *ohe
 
 }
 
+static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datapipe *datapipe = event_getdata(iheader);
+
+    switch (datapipe->session)
+    {
+
+    case 0:
+        printnormal(datapipe + 1, datapipe->count);
+
+        break;
+
+    case 1:
+        printcomplete(datapipe + 1, datapipe->count);
+
+        break;
+
+    }
+
+}
+
+static void ondatastop(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datastop *datastop = event_getdata(iheader);
+
+    event_reply(oheader, iheader, EVENT_DATASTOP);
+    event_adddatastop(oheader, datastop->session);
+    event_send(oheader);
+
+}
+
+static void oninit(struct event_header *iheader, struct event_header *oheader)
+{
+
+    ring_init(&input, FUDGE_BSIZE, inputbuffer);
+    printprompt();
+
+}
+
+static void onkill(struct event_header *iheader, struct event_header *oheader)
+{
+
+    quit = 1;
+
+}
+
 void main(void)
 {
 
@@ -242,18 +242,8 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_INIT:
-            oninit(iheader, oheader);
-
-            break;
-
-        case EVENT_DATASTOP:
-            ondatastop(iheader, oheader);
-
-            break;
-
-        case EVENT_KILL:
-            onkill(iheader, oheader);
+        case EVENT_CONSOLEDATA:
+            onconsoledata(iheader, oheader);
 
             break;
 
@@ -262,8 +252,18 @@ void main(void)
 
             break;
 
-        case EVENT_CONSOLEDATA:
-            onconsoledata(iheader, oheader);
+        case EVENT_DATASTOP:
+            ondatastop(iheader, oheader);
+
+            break;
+
+        case EVENT_INIT:
+            oninit(iheader, oheader);
+
+            break;
+
+        case EVENT_KILL:
+            onkill(iheader, oheader);
 
             break;
 

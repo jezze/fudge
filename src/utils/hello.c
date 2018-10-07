@@ -3,6 +3,21 @@
 
 static unsigned int quit;
 
+static void ondatafile(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datafile *datafile = event_getdata(iheader);
+
+    if (datafile->descriptor)
+        return;
+
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, datafile->session);
+    event_appenddata(oheader, 13, "Hello world!\n");
+    event_send(oheader);
+
+}
+
 static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -23,21 +38,6 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void ondatafile(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datafile *datafile = event_getdata(iheader);
-
-    if (datafile->descriptor)
-        return;
-
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datafile->session);
-    event_appenddata(oheader, 13, "Hello world!\n");
-    event_send(oheader);
-
-}
-
 void main(void)
 {
 
@@ -54,6 +54,11 @@ void main(void)
         switch (iheader->type)
         {
 
+        case EVENT_DATAFILE:
+            ondatafile(iheader, oheader);
+
+            break;
+
         case EVENT_DATASTOP:
             ondatastop(iheader, oheader);
 
@@ -61,11 +66,6 @@ void main(void)
 
         case EVENT_KILL:
             onkill(iheader, oheader);
-
-            break;
-
-        case EVENT_DATAFILE:
-            ondatafile(iheader, oheader);
 
             break;
 

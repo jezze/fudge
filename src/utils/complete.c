@@ -42,6 +42,15 @@ static void complete(struct event_header *iheader, struct event_header *oheader,
 
 }
 
+static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datapipe *datapipe = event_getdata(iheader);
+
+    complete(iheader, oheader, FILE_PW, datapipe + 1, datapipe->count, datapipe->session);
+
+}
+
 static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -62,15 +71,6 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datapipe *datapipe = event_getdata(iheader);
-
-    complete(iheader, oheader, FILE_PW, datapipe + 1, datapipe->count, datapipe->session);
-
-}
-
 void main(void)
 {
 
@@ -87,6 +87,11 @@ void main(void)
         switch (iheader->type)
         {
 
+        case EVENT_DATAPIPE:
+            ondatapipe(iheader, oheader);
+
+            break;
+
         case EVENT_DATASTOP:
             ondatastop(iheader, oheader);
 
@@ -94,11 +99,6 @@ void main(void)
 
         case EVENT_KILL:
             onkill(iheader, oheader);
-
-            break;
-
-        case EVENT_DATAPIPE:
-            ondatapipe(iheader, oheader);
 
             break;
 

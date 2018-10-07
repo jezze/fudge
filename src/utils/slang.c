@@ -424,53 +424,6 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
 
 }
 
-static void oninit(struct event_header *iheader, struct event_header *oheader)
-{
-
-    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
-    tokenlist_init(&infix, 1024, infixdata);
-    tokenlist_init(&postfix, 1024, postfixdata);
-    tokenlist_init(&stack, 8, stackdata);
-
-}
-
-static void ondatastop(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datastop *datastop = event_getdata(iheader);
-
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
-    event_send(oheader);
-
-    quit = 1;
-
-}
-
-static void onkill(struct event_header *iheader, struct event_header *oheader)
-{
-
-    quit = 1;
-
-}
-
-static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datapipe *datapipe = event_getdata(iheader);
-
-    if (!datapipe->count)
-        return;
-
-    tokenizebuffer(&infix, &stringtable, datapipe->count, datapipe + 1);
-    translate(&postfix, &infix, &stack);
-    parse(iheader, oheader, &postfix, &stack);
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datapipe->session);
-    event_send(oheader);
-
-}
-
 static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -495,6 +448,53 @@ static void ondatafile(struct event_header *iheader, struct event_header *oheade
 
 }
 
+static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datapipe *datapipe = event_getdata(iheader);
+
+    if (!datapipe->count)
+        return;
+
+    tokenizebuffer(&infix, &stringtable, datapipe->count, datapipe + 1);
+    translate(&postfix, &infix, &stack);
+    parse(iheader, oheader, &postfix, &stack);
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, datapipe->session);
+    event_send(oheader);
+
+}
+
+static void ondatastop(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datastop *datastop = event_getdata(iheader);
+
+    event_reply(oheader, iheader, EVENT_DATASTOP);
+    event_adddatastop(oheader, datastop->session);
+    event_send(oheader);
+
+    quit = 1;
+
+}
+
+static void oninit(struct event_header *iheader, struct event_header *oheader)
+{
+
+    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
+    tokenlist_init(&infix, 1024, infixdata);
+    tokenlist_init(&postfix, 1024, postfixdata);
+    tokenlist_init(&stack, 8, stackdata);
+
+}
+
+static void onkill(struct event_header *iheader, struct event_header *oheader)
+{
+
+    quit = 1;
+
+}
+
 void main(void)
 {
 
@@ -511,18 +511,8 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_INIT:
-            oninit(iheader, oheader);
-
-            break;
-
-        case EVENT_DATASTOP:
-            ondatastop(iheader, oheader);
-
-            break;
-
-        case EVENT_KILL:
-            onkill(iheader, oheader);
+        case EVENT_DATAFILE:
+            ondatafile(iheader, oheader);
 
             break;
 
@@ -531,8 +521,18 @@ void main(void)
 
             break;
 
-        case EVENT_DATAFILE:
-            ondatafile(iheader, oheader);
+        case EVENT_DATASTOP:
+            ondatastop(iheader, oheader);
+
+            break;
+
+        case EVENT_INIT:
+            oninit(iheader, oheader);
+
+            break;
+
+        case EVENT_KILL:
+            onkill(iheader, oheader);
 
             break;
 

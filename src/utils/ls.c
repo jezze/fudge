@@ -37,6 +37,18 @@ static void list(struct event_header *iheader, struct event_header *oheader, uns
 
 }
 
+static void ondatafile(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datafile *datafile = event_getdata(iheader);
+
+    if (datafile->descriptor)
+        list(iheader, oheader, datafile->descriptor, datafile->session);
+    else
+        list(iheader, oheader, FILE_PW, datafile->session);
+
+}
+
 static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -57,18 +69,6 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void ondatafile(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datafile *datafile = event_getdata(iheader);
-
-    if (datafile->descriptor)
-        list(iheader, oheader, datafile->descriptor, datafile->session);
-    else
-        list(iheader, oheader, FILE_PW, datafile->session);
-
-}
-
 void main(void)
 {
 
@@ -85,6 +85,11 @@ void main(void)
         switch (iheader->type)
         {
 
+        case EVENT_DATAFILE:
+            ondatafile(iheader, oheader);
+
+            break;
+
         case EVENT_DATASTOP:
             ondatastop(iheader, oheader);
 
@@ -92,11 +97,6 @@ void main(void)
 
         case EVENT_KILL:
             onkill(iheader, oheader);
-
-            break;
-
-        case EVENT_DATAFILE:
-            ondatafile(iheader, oheader);
 
             break;
 

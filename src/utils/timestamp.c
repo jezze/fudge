@@ -29,26 +29,6 @@ static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
 
 }
 
-static void ondatastop(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datastop *datastop = event_getdata(iheader);
-
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
-    event_send(oheader);
-
-    quit = 1;
-
-}
-
-static void onkill(struct event_header *iheader, struct event_header *oheader)
-{
-
-    quit = 1;
-
-}
-
 static void ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -77,6 +57,26 @@ static void ondatafile(struct event_header *iheader, struct event_header *oheade
 
 }
 
+static void ondatastop(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datastop *datastop = event_getdata(iheader);
+
+    event_reply(oheader, iheader, EVENT_DATASTOP);
+    event_adddatastop(oheader, datastop->session);
+    event_send(oheader);
+
+    quit = 1;
+
+}
+
+static void onkill(struct event_header *iheader, struct event_header *oheader)
+{
+
+    quit = 1;
+
+}
+
 void main(void)
 {
 
@@ -93,6 +93,11 @@ void main(void)
         switch (iheader->type)
         {
 
+        case EVENT_DATAFILE:
+            ondatafile(iheader, oheader);
+
+            break;
+
         case EVENT_DATASTOP:
             ondatastop(iheader, oheader);
 
@@ -100,11 +105,6 @@ void main(void)
 
         case EVENT_KILL:
             onkill(iheader, oheader);
-
-            break;
-
-        case EVENT_DATAFILE:
-            ondatafile(iheader, oheader);
 
             break;
 

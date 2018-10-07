@@ -105,16 +105,43 @@ static void movedown(void)
 
 }
 
-static void oninit(struct event_header *iheader, struct event_header *oheader)
+static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 {
 
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    widget_inittextbox(&content);
-    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
-    event_request(oheader, iheader, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
-    event_send(oheader);
+    char buffer[FUDGE_BSIZE];
+    unsigned int rows = 0;
+    unsigned int count;
+
+    while ((count = file_read(descriptor, buffer, FUDGE_BSIZE)))
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < count; i++)
+        {
+
+            ring_write(&input2, &buffer[i], 1);
+
+            if (buffer[i] == '\n')
+            {
+
+                rows++;
+
+                if (rows >= visiblerows)
+                    return rows;
+
+            }
+
+        }
+
+    }
+
+    return rows;
+
+}
+
+static void ondatafile(struct event_header *iheader, struct event_header *oheader)
+{
 
 }
 
@@ -129,6 +156,19 @@ static void ondatastop(struct event_header *iheader, struct event_header *oheade
 
 }
 
+static void oninit(struct event_header *iheader, struct event_header *oheader)
+{
+
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&input1, FUDGE_BSIZE, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE, inputdata2);
+    widget_inittextbox(&content);
+    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
+    event_request(oheader, iheader, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
+    event_send(oheader);
+
+}
+
 static void onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -139,8 +179,22 @@ static void onkill(struct event_header *iheader, struct event_header *oheader)
 
 }
 
-static void ondatafile(struct event_header *iheader, struct event_header *oheader)
+static void onwmconfigure(struct event_header *iheader, struct event_header *oheader)
 {
+
+    struct event_wmconfigure *wmconfigure = event_getdata(iheader);
+
+    rendertarget = wmconfigure->rendertarget;
+
+    ring_reset(&input1);
+    ring_reset(&input2);
+    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h - (wmconfigure->lineheight + 2 * wmconfigure->padding));
+    box_resize(&content.size, wmconfigure->padding);
+    box_setsize(&status.size, wmconfigure->x, wmconfigure->y + wmconfigure->h - (wmconfigure->lineheight + 2 * wmconfigure->padding), wmconfigure->w, (wmconfigure->lineheight + 2 * wmconfigure->padding));
+    box_resize(&status.size, wmconfigure->padding);
+    file_open(FILE_P0);
+    readfile(FILE_P0, content.size.h / wmconfigure->lineheight);
+    file_close(FILE_P0);
 
 }
 
@@ -212,60 +266,6 @@ static void onwmkeyrelease(struct event_header *iheader, struct event_header *oh
 
 }
 
-static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
-{
-
-    char buffer[FUDGE_BSIZE];
-    unsigned int rows = 0;
-    unsigned int count;
-
-    while ((count = file_read(descriptor, buffer, FUDGE_BSIZE)))
-    {
-
-        unsigned int i;
-
-        for (i = 0; i < count; i++)
-        {
-
-            ring_write(&input2, &buffer[i], 1);
-
-            if (buffer[i] == '\n')
-            {
-
-                rows++;
-
-                if (rows >= visiblerows)
-                    return rows;
-
-            }
-
-        }
-
-    }
-
-    return rows;
-
-}
-
-static void onwmconfigure(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_wmconfigure *wmconfigure = event_getdata(iheader);
-
-    rendertarget = wmconfigure->rendertarget;
-
-    ring_reset(&input1);
-    ring_reset(&input2);
-    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h - (wmconfigure->lineheight + 2 * wmconfigure->padding));
-    box_resize(&content.size, wmconfigure->padding);
-    box_setsize(&status.size, wmconfigure->x, wmconfigure->y + wmconfigure->h - (wmconfigure->lineheight + 2 * wmconfigure->padding), wmconfigure->w, (wmconfigure->lineheight + 2 * wmconfigure->padding));
-    box_resize(&status.size, wmconfigure->padding);
-    file_open(FILE_P0);
-    readfile(FILE_P0, content.size.h / wmconfigure->lineheight);
-    file_close(FILE_P0);
-
-}
-
 static void onwmshow(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -298,8 +298,8 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_INIT:
-            oninit(iheader, oheader);
+        case EVENT_DATAFILE:
+            ondatafile(iheader, oheader);
 
             break;
 
@@ -308,13 +308,18 @@ void main(void)
 
             break;
 
+        case EVENT_INIT:
+            oninit(iheader, oheader);
+
+            break;
+
         case EVENT_KILL:
             onkill(iheader, oheader);
 
             break;
 
-        case EVENT_DATAFILE:
-            ondatafile(iheader, oheader);
+        case EVENT_WMCONFIGURE:
+            onwmconfigure(iheader, oheader);
 
             break;
 
@@ -325,11 +330,6 @@ void main(void)
 
         case EVENT_WMKEYRELEASE:
             onwmkeyrelease(iheader, oheader);
-
-            break;
-
-        case EVENT_WMCONFIGURE:
-            onwmconfigure(iheader, oheader);
 
             break;
 

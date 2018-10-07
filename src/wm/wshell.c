@@ -240,42 +240,6 @@ static void moveright(unsigned int steps)
 
 }
 
-static void oninit(struct event_header *iheader, struct event_header *oheader)
-{
-
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&prompt, FUDGE_BSIZE, promptdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    ring_init(&text, FUDGE_BSIZE, textdata);
-    widget_inittextbox(&content);
-    ring_write(&prompt, "$ ", 2);
-    event_request(oheader, iheader, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
-    event_send(oheader);
-
-}
-
-static void ondatastop(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datastop *datastop = event_getdata(iheader);
-
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
-    event_send(oheader);
-
-}
-
-static void onkill(struct event_header *iheader, struct event_header *oheader)
-{
-
-    event_request(oheader, iheader, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
-    event_send(oheader);
-
-    quit = 1;
-
-}
-
 static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -297,6 +261,59 @@ static void ondatapipe(struct event_header *iheader, struct event_header *oheade
     }
 
     updatecontent(iheader);
+
+}
+
+static void ondatastop(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datastop *datastop = event_getdata(iheader);
+
+    event_reply(oheader, iheader, EVENT_DATASTOP);
+    event_adddatastop(oheader, datastop->session);
+    event_send(oheader);
+
+}
+
+static void oninit(struct event_header *iheader, struct event_header *oheader)
+{
+
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&prompt, FUDGE_BSIZE, promptdata);
+    ring_init(&input1, FUDGE_BSIZE, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE, inputdata2);
+    ring_init(&text, FUDGE_BSIZE, textdata);
+    widget_inittextbox(&content);
+    ring_write(&prompt, "$ ", 2);
+    event_request(oheader, iheader, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
+    event_send(oheader);
+
+}
+
+static void onkill(struct event_header *iheader, struct event_header *oheader)
+{
+
+    event_request(oheader, iheader, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
+    event_send(oheader);
+
+    quit = 1;
+
+}
+
+static void onwmconfigure(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_wmconfigure *wmconfigure = event_getdata(iheader);
+
+    rendertarget = wmconfigure->rendertarget;
+
+    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
+    box_resize(&content.size, wmconfigure->padding);
+
+    visiblerows = content.size.h / wmconfigure->lineheight;
+
+    if (totalrows >= visiblerows)
+        removerows(totalrows - visiblerows + 1);
 
 }
 
@@ -396,23 +413,6 @@ static void onwmkeyrelease(struct event_header *iheader, struct event_header *oh
 
 }
 
-static void onwmconfigure(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_wmconfigure *wmconfigure = event_getdata(iheader);
-
-    rendertarget = wmconfigure->rendertarget;
-
-    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
-    box_resize(&content.size, wmconfigure->padding);
-
-    visiblerows = content.size.h / wmconfigure->lineheight;
-
-    if (totalrows >= visiblerows)
-        removerows(totalrows - visiblerows + 1);
-
-}
-
 static void onwmshow(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -443,8 +443,8 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_INIT:
-            oninit(iheader, oheader);
+        case EVENT_DATAPIPE:
+            ondatapipe(iheader, oheader);
 
             break;
 
@@ -453,13 +453,18 @@ void main(void)
 
             break;
 
+        case EVENT_INIT:
+            oninit(iheader, oheader);
+
+            break;
+
         case EVENT_KILL:
             onkill(iheader, oheader);
 
             break;
 
-        case EVENT_DATAPIPE:
-            ondatapipe(iheader, oheader);
+        case EVENT_WMCONFIGURE:
+            onwmconfigure(iheader, oheader);
 
             break;
 
@@ -470,11 +475,6 @@ void main(void)
 
         case EVENT_WMKEYRELEASE:
             onwmkeyrelease(iheader, oheader);
-
-            break;
-
-        case EVENT_WMCONFIGURE:
-            onwmconfigure(iheader, oheader);
 
             break;
 

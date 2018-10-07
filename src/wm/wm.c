@@ -316,6 +316,17 @@ static void setupremotes(void)
 
 }
 
+static void ondatastop(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datastop *datastop = event_getdata(iheader);
+
+    event_reply(oheader, iheader, EVENT_DATASTOP);
+    event_adddatastop(oheader, datastop->session);
+    event_send(oheader);
+
+}
+
 static void oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -336,17 +347,6 @@ static void oninit(struct event_header *iheader, struct event_header *oheader)
         return;
 
     render_setcolormap(FILE_L0);
-
-}
-
-static void ondatastop(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datastop *datastop = event_getdata(iheader);
-
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
-    event_send(oheader);
 
 }
 
@@ -753,6 +753,40 @@ static void onvideomode(struct event_header *iheader, struct event_header *ohead
 
 }
 
+static void onwmconfigure(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_wmconfigure *wmconfigure = event_getdata(iheader);
+    struct list_item *current;
+    unsigned int i = 0;
+
+    rendertarget = wmconfigure->rendertarget;
+
+    box_setsize(&screen, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
+    box_setsize(&body, wmconfigure->x, wmconfigure->y + (wmconfigure->lineheight + wmconfigure->padding * 2), wmconfigure->w, wmconfigure->h - (wmconfigure->lineheight + wmconfigure->padding * 2));
+    box_setsize(&background.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
+
+    steplength = wmconfigure->w / 32;
+
+    for (current = viewlist.head; current; current = current->next)
+    {
+
+        struct view *view = current->data;
+
+        view->center = 18 * steplength;
+
+        box_setsize(&view->panel.size, wmconfigure->x + i * wmconfigure->w / viewlist.count, wmconfigure->y, wmconfigure->w / viewlist.count, (wmconfigure->lineheight + wmconfigure->padding * 2));
+        arrangeview(iheader, oheader, view);
+
+        i++;
+
+    }
+
+    mouse.size.x = wmconfigure->x + wmconfigure->w / 4;
+    mouse.size.y = wmconfigure->y + wmconfigure->h / 4;
+
+}
+
 static void onwmmap(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -804,40 +838,6 @@ static void onwmunmap(struct event_header *iheader, struct event_header *oheader
         }
 
     }
-
-}
-
-static void onwmconfigure(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_wmconfigure *wmconfigure = event_getdata(iheader);
-    struct list_item *current;
-    unsigned int i = 0;
-
-    rendertarget = wmconfigure->rendertarget;
-
-    box_setsize(&screen, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
-    box_setsize(&body, wmconfigure->x, wmconfigure->y + (wmconfigure->lineheight + wmconfigure->padding * 2), wmconfigure->w, wmconfigure->h - (wmconfigure->lineheight + wmconfigure->padding * 2));
-    box_setsize(&background.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
-
-    steplength = wmconfigure->w / 32;
-
-    for (current = viewlist.head; current; current = current->next)
-    {
-
-        struct view *view = current->data;
-
-        view->center = 18 * steplength;
-
-        box_setsize(&view->panel.size, wmconfigure->x + i * wmconfigure->w / viewlist.count, wmconfigure->y, wmconfigure->w / viewlist.count, (wmconfigure->lineheight + wmconfigure->padding * 2));
-        arrangeview(iheader, oheader, view);
-
-        i++;
-
-    }
-
-    mouse.size.x = wmconfigure->x + wmconfigure->w / 4;
-    mouse.size.y = wmconfigure->y + wmconfigure->h / 4;
 
 }
 
@@ -913,13 +913,13 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_INIT:
-            oninit(iheader, oheader);
+        case EVENT_DATASTOP:
+            ondatastop(iheader, oheader);
 
             break;
 
-        case EVENT_DATASTOP:
-            ondatastop(iheader, oheader);
+        case EVENT_INIT:
+            oninit(iheader, oheader);
 
             break;
 
@@ -958,6 +958,11 @@ void main(void)
 
             break;
 
+        case EVENT_WMCONFIGURE:
+            onwmconfigure(iheader, oheader);
+
+            break;
+
         case EVENT_WMMAP:
             onwmmap(iheader, oheader);
 
@@ -965,11 +970,6 @@ void main(void)
 
         case EVENT_WMUNMAP:
             onwmunmap(iheader, oheader);
-
-            break;
-
-        case EVENT_WMCONFIGURE:
-            onwmconfigure(iheader, oheader);
 
             break;
 
