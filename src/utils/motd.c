@@ -6,7 +6,10 @@ static unsigned int quit;
 static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
+    struct event_datastop *datastop = event_getdata(iheader);
+
     event_reply(oheader, iheader, EVENT_DATASTOP);
+    event_adddatastop(oheader, datastop->session);
     event_send(oheader);
 
     quit = 1;
@@ -46,6 +49,7 @@ static void ondatafile(struct event_header *iheader, struct event_header *oheade
     event_adddatafile(oheader, datafile->session, FILE_P0);
     event_send(oheader);
     event_request(oheader, iheader, EVENT_DATASTOP, id);
+    event_adddatastop(oheader, datafile->session);
     event_send(oheader);
 
 }

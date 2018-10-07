@@ -121,7 +121,10 @@ static void oninit(struct event_header *iheader, struct event_header *oheader)
 static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
+    struct event_datastop *datastop = event_getdata(iheader);
+
     event_reply(oheader, iheader, EVENT_DATASTOP);
+    event_adddatastop(oheader, datastop->session);
     event_send(oheader);
 
 }

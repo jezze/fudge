@@ -124,6 +124,7 @@ static unsigned int complete(struct event_header *iheader, struct event_header *
         event_appenddata(oheader, count, command);
         event_send(oheader);
         event_request(oheader, iheader, EVENT_DATASTOP, id);
+        event_adddatastop(oheader, 1);
         event_send(oheader);
 
     }
@@ -212,6 +213,7 @@ static unsigned int interpret(struct event_header *iheader, struct event_header 
         event_appenddata(oheader, count, command);
         event_send(oheader);
         event_request(oheader, iheader, EVENT_DATASTOP, id);
+        event_adddatastop(oheader, 0);
         event_send(oheader);
 
     }
@@ -256,7 +258,10 @@ static void oninit(struct event_header *iheader, struct event_header *oheader)
 static void ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
+    struct event_datastop *datastop = event_getdata(iheader);
+
     event_reply(oheader, iheader, EVENT_DATASTOP);
+    event_adddatastop(oheader, datastop->session);
     event_send(oheader);
 
 }

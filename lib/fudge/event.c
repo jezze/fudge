@@ -147,6 +147,17 @@ unsigned int event_adddatafile(struct event_header *header, unsigned int session
 
 }
 
+unsigned int event_adddatastop(struct event_header *header, unsigned int session)
+{
+
+    struct event_datastop *datastop = addpayload(header, sizeof (struct event_datastop));
+
+    datastop->session = session;
+
+    return header->length;
+
+}
+
 unsigned int event_addkeypress(struct event_header *header, unsigned char scancode)
 {
 
