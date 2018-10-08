@@ -110,10 +110,7 @@ static void onconsoledata(struct event_header *iheader, struct event_header *ohe
     case '\n':
         file_writeall(FILE_G1, &consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
-
-        if (interpret(iheader, oheader, &input))
-            break;
-
+        interpret(iheader, oheader, &input);
         printprompt();
 
         break;
