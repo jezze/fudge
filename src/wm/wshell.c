@@ -102,34 +102,21 @@ static void copyring(struct ring *ring)
 
 }
 
-static unsigned int complete(struct event_header *iheader, struct event_header *oheader, struct ring *ring)
+static void moveleft(unsigned int steps)
 {
 
-    char command[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
-    unsigned int id;
+    char buffer[FUDGE_BSIZE];
 
-    if (!file_walk(FILE_CP, "/bin/complete"))
-        return 0;
+    ring_writereverse(&input2, buffer, ring_readreverse(&input1, buffer, steps));
 
-    id = call_spawn();
+}
 
-    if (id)
-    {
+static void moveright(unsigned int steps)
+{
 
-        event_request(oheader, iheader, EVENT_INIT, id);
-        event_send(oheader);
-        event_request(oheader, iheader, EVENT_DATAPIPE, id);
-        event_adddatapipe(oheader, 1);
-        event_appenddata(oheader, count, command);
-        event_send(oheader);
-        event_request(oheader, iheader, EVENT_DATASTOP, id);
-        event_adddatastop(oheader, 1);
-        event_send(oheader);
+    char buffer[FUDGE_BSIZE];
 
-    }
-
-    return id;
+    ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
 
 }
 
@@ -190,7 +177,6 @@ static unsigned int interpret(struct event_header *iheader, struct event_header 
 
     char command[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
-    unsigned int id;
 
     if (count < 2)
         return 0;
@@ -198,45 +184,17 @@ static unsigned int interpret(struct event_header *iheader, struct event_header 
     if (interpretbuiltin(count, command))
         return 0;
 
-    if (!file_walk(FILE_CP, "/bin/slang"))
-        return 0;
-
-    id = call_spawn();
-
-    if (id)
-    {
-
-        event_request(oheader, iheader, EVENT_INIT, id);
-        event_send(oheader);
-        event_request(oheader, iheader, EVENT_DATAPIPE, id);
-        event_adddatapipe(oheader, 0);
-        event_appenddata(oheader, count, command);
-        event_send(oheader);
-        event_request(oheader, iheader, EVENT_DATASTOP, id);
-        event_adddatastop(oheader, 0);
-        event_send(oheader);
-
-    }
-
-    return id;
+    return job_runcmd(iheader, oheader, "/bin/slang2", command, count, 2);
 
 }
 
-static void moveleft(unsigned int steps)
+static unsigned int complete(struct event_header *iheader, struct event_header *oheader, struct ring *ring)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char command[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
 
-    ring_writereverse(&input2, buffer, ring_readreverse(&input1, buffer, steps));
-
-}
-
-static void moveright(unsigned int steps)
-{
-
-    char buffer[FUDGE_BSIZE];
-
-    ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
+    return job_runcmd(iheader, oheader, "/bin/complete", command, count, 1);
 
 }
 
@@ -258,20 +216,14 @@ static void ondatapipe(struct event_header *iheader, struct event_header *oheade
 
         break;
 
+    case 2:
+        job_run(iheader, oheader, datapipe + 1, datapipe->count);
+
+        break;
+
     }
 
     updatecontent(iheader);
-
-}
-
-static void ondatastop(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_datastop *datastop = event_getdata(iheader);
-
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
-    event_send(oheader);
 
 }
 
@@ -445,11 +397,6 @@ void main(void)
 
         case EVENT_DATAPIPE:
             ondatapipe(iheader, oheader);
-
-            break;
-
-        case EVENT_DATASTOP:
-            ondatastop(iheader, oheader);
 
             break;
 

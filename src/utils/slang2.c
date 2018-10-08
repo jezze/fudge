@@ -25,14 +25,6 @@ struct tokenlist
 
 };
 
-struct task
-{
-
-    unsigned int id;
-    unsigned int ninputs;
-
-};
-
 static char stringdata[FUDGE_BSIZE];
 static struct ring stringtable;
 static struct token infixdata[1024];
@@ -252,101 +244,13 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static unsigned int add(struct task *task, unsigned int count, unsigned int id)
+static void parse(struct event_header *iheader, struct event_header *oheader, struct tokenlist *postfix, struct tokenlist *stack, unsigned int session)
 {
 
-    if (id)
-    {
-
-        task[count].id = id;
-
-        return count + 1;
-
-    }
-
-    return count;
-
-}
-
-static unsigned int clear(struct task *task, unsigned int count)
-{
-
-    memory_clear(task, sizeof (struct task) * count);
-
-    return 0;
-
-}
-
-static void runx(struct event_header *iheader, struct event_header *oheader, struct task *task, unsigned int count)
-{
-
-    unsigned int j;
-    unsigned int k;
-    unsigned int x;
-
-    for (j = 0; j < count; j++)
-    {
-
-        event_request(oheader, iheader, EVENT_INIT, task[j].id);
-        event_send(oheader);
-
-    }
-
-    for (j = 0; j < count; j++)
-    {
-
-        if (task[j].ninputs)
-        {
-
-            for (k = 0; k < task[j].ninputs; k++)
-            {
-
-                event_forward(oheader, iheader, EVENT_DATAFILE, task[j].id);
-
-                for (x = count; x > j + 1; x--)
-                    event_addroute(oheader, task[x - 1].id);
-
-                event_adddatafile(oheader, 0, FILE_P0 + k);
-                event_send(oheader);
-
-            }
-
-        }
-
-        else
-        {
-
-            event_forward(oheader, iheader, EVENT_DATAFILE, task[j].id);
-
-            for (x = count; x > j + 1; x--)
-                event_addroute(oheader, task[x - 1].id);
-
-            event_adddatafile(oheader, 0, 0);
-            event_send(oheader);
-
-        }
-
-    }
-
-    event_request(oheader, iheader, EVENT_DATASTOP, task[0].id);
-
-    for (x = count; x > 1; x--)
-        event_addroute(oheader, task[x - 1].id);
-
-    event_adddatastop(oheader, 0);
-    event_send(oheader);
-
-}
-
-static void parse(struct event_header *iheader, struct event_header *oheader, struct tokenlist *postfix, struct tokenlist *stack)
-{
-
-    struct task task[32];
-    unsigned int ntask = clear(task, 32);
     unsigned int i;
 
-    if (!file_walk(FILE_L0, "/bin"))
-        return;
+    event_reply(oheader, iheader, EVENT_DATAPIPE);
+    event_adddatapipe(oheader, session);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -368,10 +272,8 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            if (!file_walk(FILE_C0 + task[ntask].ninputs, t->str))
-                return;
-
-            task[ntask].ninputs++;
+            event_appenddata(oheader, 1, "I");
+            event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -381,10 +283,8 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            if (!file_walk(FILE_C0 + task[ntask].ninputs, t->str))
-                return;
-
-            task[ntask].ninputs++;
+            event_appenddata(oheader, 1, "O");
+            event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -394,10 +294,8 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
-                return;
-
-            ntask = add(task, ntask, call_spawn());
+            event_appenddata(oheader, 1, "P");
+            event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -407,14 +305,11 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            if (!(file_walkfrom(FILE_CP, FILE_L0, t->str) || file_walk(FILE_CP, t->str)))
-                return;
-
-            ntask = add(task, ntask, call_spawn());
-
-            runx(iheader, oheader, task, ntask);
-
-            ntask = clear(task, ntask);
+            event_appenddata(oheader, 1, "E");
+            event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
+            event_send(oheader);
+            event_reply(oheader, iheader, EVENT_DATAPIPE);
+            event_adddatapipe(oheader, session);
 
             break;
 
@@ -441,7 +336,7 @@ static void ondatafile(struct event_header *iheader, struct event_header *oheade
 
     file_close(datafile->descriptor);
     translate(&postfix, &infix, &stack);
-    parse(iheader, oheader, &postfix, &stack);
+    parse(iheader, oheader, &postfix, &stack, datafile->session);
     event_reply(oheader, iheader, EVENT_DATAPIPE);
     event_adddatapipe(oheader, datafile->session);
     event_send(oheader);
@@ -458,7 +353,7 @@ static void ondatapipe(struct event_header *iheader, struct event_header *oheade
 
     tokenizebuffer(&infix, &stringtable, datapipe->count, datapipe + 1);
     translate(&postfix, &infix, &stack);
-    parse(iheader, oheader, &postfix, &stack);
+    parse(iheader, oheader, &postfix, &stack, datapipe->session);
     event_reply(oheader, iheader, EVENT_DATAPIPE);
     event_adddatapipe(oheader, datapipe->session);
     event_send(oheader);
