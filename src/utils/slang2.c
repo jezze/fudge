@@ -337,9 +337,6 @@ static void ondatafile(struct event_header *iheader, struct event_header *oheade
     file_close(datafile->descriptor);
     translate(&postfix, &infix, &stack);
     parse(iheader, oheader, &postfix, &stack, datafile->session);
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datafile->session);
-    event_send(oheader);
 
 }
 
@@ -354,9 +351,6 @@ static void ondatapipe(struct event_header *iheader, struct event_header *oheade
     tokenizebuffer(&infix, &stringtable, datapipe->count, datapipe + 1);
     translate(&postfix, &infix, &stack);
     parse(iheader, oheader, &postfix, &stack, datapipe->session);
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datapipe->session);
-    event_send(oheader);
 
 }
 
