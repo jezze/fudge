@@ -23,12 +23,12 @@ static void ondatafile(struct event_header *iheader, struct event_header *oheade
     if (!id)
         return;
 
-    event_request(oheader, iheader, EVENT_INIT, id);
+    event_forward(oheader, iheader, EVENT_INIT, id);
     event_send(oheader);
     event_forward(oheader, iheader, EVENT_DATAFILE, id);
     event_adddatafile(oheader, datafile->session, FILE_P0);
     event_send(oheader);
-    event_request(oheader, iheader, EVENT_DATASTOP, id);
+    event_forward(oheader, iheader, EVENT_DATASTOP, id);
     event_adddatastop(oheader, datafile->session);
     event_send(oheader);
 
