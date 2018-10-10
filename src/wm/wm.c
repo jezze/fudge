@@ -697,7 +697,7 @@ static void onvideomode(struct event_header *iheader, struct event_header *ohead
     lineheight = 12 + factor * 4;
     padding = 4 + factor * 2;
 
-    render_setpaint(videomode->bpp);
+    render_setdraw(videomode->w, videomode->h, videomode->bpp);
 
     switch (factor)
     {
@@ -869,7 +869,7 @@ static void onwmflush(struct event_header *iheader, struct event_header *oheader
         return;
 
     render_write(data, iheader->length - sizeof (struct event_header));
-    render_flush(FILE_L0, screen.w, screen.h);
+    render_flush(FILE_L0);
     render_complete();
 
 }

@@ -37,6 +37,8 @@ struct font
 
 };
 
+static unsigned int currentw;
+static unsigned int currenth;
 static unsigned int currentbpp;
 static void (*drawables[7])(void *canvas, void *data, unsigned int line);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
@@ -203,6 +205,9 @@ static void paint8(void *canvas, unsigned int color, unsigned int offset, unsign
 
     unsigned char *buffer = canvas;
 
+    if (offset + count > currentw)
+        return;
+
     buffer += offset;
 
     while (count--)
@@ -214,6 +219,9 @@ static void paint32(void *canvas, unsigned int color, unsigned int offset, unsig
 {
 
     unsigned int *buffer = canvas;
+
+    if (offset + count > currentw)
+        return;
 
     buffer += offset;
 
@@ -526,10 +534,10 @@ static void renderline(void *canvas, unsigned int line)
 
 }
 
-void render_flush(unsigned int descriptor, unsigned int w, unsigned int h)
+void render_flush(unsigned int descriptor)
 {
 
-    unsigned int linesize = w * currentbpp;
+    unsigned int linesize = currentw * currentbpp;
     unsigned int chunksize = 0x10000 / linesize;
     unsigned int chunk = 0;
     unsigned int chunkstart = 0;
@@ -537,7 +545,7 @@ void render_flush(unsigned int descriptor, unsigned int w, unsigned int h)
 
     file_open(descriptor);
 
-    for (line = 0; line < h; line++)
+    for (line = 0; line < currenth; line++)
     {
 
         if (testline(line))
@@ -550,7 +558,7 @@ void render_flush(unsigned int descriptor, unsigned int w, unsigned int h)
 
             chunk++;
 
-            if (chunk < chunksize && line < h - 1)
+            if (chunk < chunksize && line < currenth - 1)
                 continue;
 
         }
@@ -641,8 +649,11 @@ void render_setvideo(unsigned int descriptor, unsigned int w, unsigned int h, un
 
 }
 
-void render_setpaint(unsigned int bpp)
+void render_setdraw(unsigned int w, unsigned int h, unsigned int bpp)
 {
+
+    currentw = w;
+    currenth = h;
 
     switch (bpp)
     {
