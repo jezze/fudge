@@ -27,8 +27,7 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
     ascii_wzerovalue(datetime, 20, settings.hours, 10, 2, 11);
     ascii_wzerovalue(datetime, 20, settings.minutes, 10, 2, 14);
     ascii_wzerovalue(datetime, 20, settings.seconds, 10, 2, 17);
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datafile->session);
+    event_replydatapipe(oheader, iheader, datafile->session);
     event_appenddata(oheader, 20, datetime);
     event_send(oheader);
 
@@ -41,8 +40,7 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
 
     struct event_datastop *datastop = event_getdata(iheader);
 
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
+    event_replydatastop(oheader, iheader, datastop->session);
     event_send(oheader);
 
     return 1;

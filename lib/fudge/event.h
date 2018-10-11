@@ -178,9 +178,16 @@ struct event_header *event_forward(struct event_header *oheader, struct event_he
 struct event_header *event_reply(struct event_header *oheader, struct event_header *iheader, unsigned int type);
 unsigned int event_addroute(struct event_header *header, unsigned int target);
 unsigned int event_adddatapipe(struct event_header *header, unsigned int session);
+struct event_header *event_requestdatapipe(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target);
+struct event_header *event_replydatapipe(struct event_header *oheader, struct event_header *iheader, unsigned int session);
 unsigned int event_appenddata(struct event_header *header, unsigned int count, void *buffer);
 unsigned int event_adddatafile(struct event_header *header, unsigned int session, unsigned int descriptor);
+struct event_header *event_requestdatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor);
+struct event_header *event_forwarddatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor);
 unsigned int event_adddatastop(struct event_header *header, unsigned int session);
+struct event_header *event_requestdatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target);
+struct event_header *event_forwarddatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target);
+struct event_header *event_replydatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session);
 unsigned int event_addkeypress(struct event_header *header, unsigned char scancode);
 unsigned int event_addkeyrelease(struct event_header *header, unsigned char scancode);
 unsigned int event_addmousepress(struct event_header *header, unsigned int button);

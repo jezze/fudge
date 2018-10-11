@@ -248,8 +248,7 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
 
     unsigned int i;
 
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, session);
+    event_replydatapipe(oheader, iheader, session);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -307,8 +306,7 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             event_appenddata(oheader, 1, "E");
             event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
             event_send(oheader);
-            event_reply(oheader, iheader, EVENT_DATAPIPE);
-            event_adddatapipe(oheader, session);
+            event_replydatapipe(oheader, iheader, session);
 
             break;
 
@@ -362,8 +360,7 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
 
     struct event_datastop *datastop = event_getdata(iheader);
 
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
+    event_replydatastop(oheader, iheader, datastop->session);
     event_send(oheader);
 
     return 1;

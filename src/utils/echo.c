@@ -16,8 +16,7 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
     while ((count = file_read(datafile->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_datapipe))))
     {
 
-        event_reply(oheader, iheader, EVENT_DATAPIPE);
-        event_adddatapipe(oheader, datafile->session);
+        event_replydatapipe(oheader, iheader, datafile->session);
         event_appenddata(oheader, count, buffer);
         event_send(oheader);
 
@@ -34,8 +33,7 @@ static unsigned int ondatapipe(struct event_header *iheader, struct event_header
 
     struct event_datapipe *datapipe = event_getdata(iheader);
 
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datapipe->session);
+    event_replydatapipe(oheader, iheader, datapipe->session);
     event_appenddata(oheader, datapipe->count, datapipe + 1);
     event_send(oheader);
 
@@ -48,8 +46,7 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
 
     struct event_datastop *datastop = event_getdata(iheader);
 
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
+    event_replydatastop(oheader, iheader, datastop->session);
     event_send(oheader);
 
     return 1;

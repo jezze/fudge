@@ -7,8 +7,7 @@ static void complete(struct event_header *iheader, struct event_header *oheader,
     struct record record;
 
     file_open(descriptor);
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, session);
+    event_replydatapipe(oheader, iheader, session);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
@@ -20,8 +19,7 @@ static void complete(struct event_header *iheader, struct event_header *oheader,
             {
 
                 event_send(oheader);
-                event_reply(oheader, iheader, EVENT_DATAPIPE);
-                event_adddatapipe(oheader, session);
+                event_replydatapipe(oheader, iheader, session);
 
             }
 
@@ -56,8 +54,7 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
 
     struct event_datastop *datastop = event_getdata(iheader);
 
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
+    event_replydatastop(oheader, iheader, datastop->session);
     event_send(oheader);
 
     return 1;

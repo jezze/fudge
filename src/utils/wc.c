@@ -83,8 +83,7 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
     struct event_datastop *datastop = event_getdata(iheader);
     char num[FUDGE_NSIZE];
 
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datastop->session);
+    event_replydatapipe(oheader, iheader, datastop->session);
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
     event_appenddata(oheader, 1, "\n");
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
@@ -92,8 +91,7 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
     event_appenddata(oheader, 1, "\n");
     event_send(oheader);
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
+    event_replydatastop(oheader, iheader, datastop->session);
     event_send(oheader);
 
     return 1;

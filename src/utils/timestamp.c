@@ -48,8 +48,7 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
     file_open(datafile->descriptor);
     file_readall(datafile->descriptor, &settings, sizeof (struct ctrl_clocksettings));
     file_close(datafile->descriptor);
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datafile->session);
+    event_replydatapipe(oheader, iheader, datafile->session);
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(&settings), 10), num);
     event_appenddata(oheader, 1, "\n");
     event_send(oheader);
@@ -63,8 +62,7 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
 
     struct event_datastop *datastop = event_getdata(iheader);
 
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
+    event_replydatastop(oheader, iheader, datastop->session);
     event_send(oheader);
 
     return 1;

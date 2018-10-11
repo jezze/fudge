@@ -12,8 +12,7 @@ static void dump(struct event_header *iheader, struct event_header *oheader, uns
 
         unsigned char num[FUDGE_NSIZE];
 
-        event_reply(oheader, iheader, EVENT_DATAPIPE);
-        event_adddatapipe(oheader, session);
+        event_replydatapipe(oheader, iheader, session);
         event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
         event_appenddata(oheader, 2, "  ");
         event_send(oheader);
@@ -59,8 +58,7 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
 
     struct event_datastop *datastop = event_getdata(iheader);
 
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
+    event_replydatastop(oheader, iheader, datastop->session);
     event_send(oheader);
 
     return 1;

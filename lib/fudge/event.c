@@ -122,6 +122,28 @@ unsigned int event_adddatapipe(struct event_header *header, unsigned int session
 
 }
 
+struct event_header *event_requestdatapipe(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target)
+{
+
+    struct event_header *header = event_request(oheader, iheader, EVENT_DATAPIPE, target);
+
+    event_adddatapipe(oheader, session);
+
+    return header;
+
+}
+
+struct event_header *event_replydatapipe(struct event_header *oheader, struct event_header *iheader, unsigned int session)
+{
+
+    struct event_header *header = event_reply(oheader, iheader, EVENT_DATAPIPE);
+
+    event_adddatapipe(oheader, session);
+
+    return header;
+
+}
+
 unsigned int event_appenddata(struct event_header *header, unsigned int count, void *buffer)
 {
 
@@ -147,6 +169,28 @@ unsigned int event_adddatafile(struct event_header *header, unsigned int session
 
 }
 
+struct event_header *event_requestdatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor)
+{
+
+    struct event_header *header = event_request(oheader, iheader, EVENT_DATAFILE, target);
+
+    event_adddatafile(oheader, session, descriptor);
+
+    return header;
+
+}
+
+struct event_header *event_forwarddatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor)
+{
+
+    struct event_header *header = event_forward(oheader, iheader, EVENT_DATAFILE, target);
+
+    event_adddatafile(oheader, session, descriptor);
+
+    return header;
+
+}
+
 unsigned int event_adddatastop(struct event_header *header, unsigned int session)
 {
 
@@ -155,6 +199,39 @@ unsigned int event_adddatastop(struct event_header *header, unsigned int session
     datastop->session = session;
 
     return header->length;
+
+}
+
+struct event_header *event_requestdatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target)
+{
+
+    struct event_header *header = event_request(oheader, iheader, EVENT_DATASTOP, target);
+
+    event_adddatastop(oheader, session);
+
+    return header;
+
+}
+
+struct event_header *event_forwarddatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target)
+{
+
+    struct event_header *header = event_forward(oheader, iheader, EVENT_DATASTOP, target);
+
+    event_adddatastop(oheader, session);
+
+    return header;
+
+}
+
+struct event_header *event_replydatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session)
+{
+
+    struct event_header *header = event_reply(oheader, iheader, EVENT_DATASTOP);
+
+    event_adddatastop(oheader, session);
+
+    return header;
 
 }
 

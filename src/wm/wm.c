@@ -455,8 +455,7 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
 
             event_request(oheader, iheader, EVENT_INIT, id);
             event_send(oheader);
-            event_request(oheader, iheader, EVENT_DATASTOP, id);
-            event_adddatastop(oheader, 0);
+            event_requestdatastop(oheader, iheader, 0, id);
             event_send(oheader);
 
         }

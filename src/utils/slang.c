@@ -300,12 +300,11 @@ static void runx(struct event_header *iheader, struct event_header *oheader, str
             for (k = 0; k < task[j].ninputs; k++)
             {
 
-                event_forward(oheader, iheader, EVENT_DATAFILE, task[j].id);
+                event_forwarddatafile(oheader, iheader, 0, task[j].id, FILE_P0 + k);
 
                 for (x = count; x > j + 1; x--)
                     event_addroute(oheader, task[x - 1].id);
 
-                event_adddatafile(oheader, 0, FILE_P0 + k);
                 event_send(oheader);
 
             }
@@ -315,24 +314,22 @@ static void runx(struct event_header *iheader, struct event_header *oheader, str
         else
         {
 
-            event_forward(oheader, iheader, EVENT_DATAFILE, task[j].id);
+            event_forwarddatafile(oheader, iheader, 0, task[j].id, 0);
 
             for (x = count; x > j + 1; x--)
                 event_addroute(oheader, task[x - 1].id);
 
-            event_adddatafile(oheader, 0, 0);
             event_send(oheader);
 
         }
 
     }
 
-    event_request(oheader, iheader, EVENT_DATASTOP, task[0].id);
+    event_requestdatastop(oheader, iheader, 0, task[0].id);
 
     for (x = count; x > 1; x--)
         event_addroute(oheader, task[x - 1].id);
 
-    event_adddatastop(oheader, 0);
     event_send(oheader);
 
 }
@@ -441,8 +438,7 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
     file_close(datafile->descriptor);
     translate(&postfix, &infix, &stack);
     parse(iheader, oheader, &postfix, &stack);
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datafile->session);
+    event_replydatapipe(oheader, iheader, datafile->session);
     event_send(oheader);
 
     return 0;
@@ -460,8 +456,7 @@ static unsigned int ondatapipe(struct event_header *iheader, struct event_header
     tokenizebuffer(&infix, &stringtable, datapipe->count, datapipe + 1);
     translate(&postfix, &infix, &stack);
     parse(iheader, oheader, &postfix, &stack);
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datapipe->session);
+    event_replydatapipe(oheader, iheader, datapipe->session);
     event_send(oheader);
 
     return 0;
@@ -473,8 +468,7 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
 
     struct event_datastop *datastop = event_getdata(iheader);
 
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
+    event_replydatastop(oheader, iheader, datastop->session);
     event_send(oheader);
 
     return 1;

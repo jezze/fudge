@@ -9,8 +9,7 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
     if (datafile->descriptor)
         return 0;
 
-    event_reply(oheader, iheader, EVENT_DATAPIPE);
-    event_adddatapipe(oheader, datafile->session);
+    event_replydatapipe(oheader, iheader, datafile->session);
     event_appenddata(oheader, 13, "Hello world!\n");
     event_send(oheader);
 
@@ -23,8 +22,7 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
 
     struct event_datastop *datastop = event_getdata(iheader);
 
-    event_reply(oheader, iheader, EVENT_DATASTOP);
-    event_adddatastop(oheader, datastop->session);
+    event_replydatastop(oheader, iheader, datastop->session);
     event_send(oheader);
 
     return 1;
