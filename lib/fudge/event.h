@@ -17,7 +17,6 @@
 #define EVENT_WMCONFIGURE               0x82
 #define EVENT_WMSHOW                    0x83
 #define EVENT_WMHIDE                    0x84
-#define EVENT_WMFLUSH                   0x85
 #define EVENT_WMKEYPRESS                0x90
 #define EVENT_WMKEYRELEASE              0x91
 #define EVENT_WMMOUSEMOVE               0x92
@@ -191,7 +190,6 @@ unsigned int event_addwmmousepress(struct event_header *header, unsigned int but
 unsigned int event_addwmmouserelease(struct event_header *header, unsigned int button);
 unsigned int event_addwmmousemove(struct event_header *header, char relx, char rely);
 unsigned int event_addwmconfigure(struct event_header *header, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
-unsigned int event_addwmflush(struct event_header *header, unsigned int count, void *buffer);
 unsigned int event_appenddata(struct event_header *header, unsigned int count, void *buffer);
 struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target);
 struct event_header *event_forwarddatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor);

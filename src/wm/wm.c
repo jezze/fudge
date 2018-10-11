@@ -315,6 +315,22 @@ static void setupremotes(void)
 
 }
 
+static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datapipe *datapipe = event_getdata(iheader);
+
+    if (!file_walkfrom(FILE_L0, FILE_G2, "../data"))
+        return 0;
+
+    render_write(datapipe + 1, datapipe->count);
+    render_flush(FILE_L0);
+    render_complete();
+
+    return 0;
+
+}
+
 static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -882,22 +898,6 @@ static unsigned int onwmhide(struct event_header *iheader, struct event_header *
 
 }
 
-static unsigned int onwmflush(struct event_header *iheader, struct event_header *oheader)
-{
-
-    void *data = event_getdata(iheader);
-
-    if (!file_walkfrom(FILE_L0, FILE_G2, "../data"))
-        return 0;
-
-    render_write(data, iheader->length - sizeof (struct event_header));
-    render_flush(FILE_L0);
-    render_complete();
-
-    return 0;
-
-}
-
 void main(void)
 {
 
@@ -927,6 +927,11 @@ void main(void)
 
         switch (iheader->type)
         {
+
+        case EVENT_DATAPIPE:
+            status = ondatapipe(iheader, oheader);
+
+            break;
 
         case EVENT_INIT:
             status = oninit(iheader, oheader);
@@ -993,18 +998,13 @@ void main(void)
 
             break;
 
-        case EVENT_WMFLUSH:
-            status = onwmflush(iheader, oheader);
-
-            break;
-
         }
 
         if (ring_count(&output))
         {
 
-            event_request(oheader, iheader, EVENT_WMFLUSH, rendertarget);
-            event_addwmflush(oheader, ring_count(&output), outputdata);
+            event_requestdatapipe(oheader, iheader, 0, rendertarget);
+            event_appenddata(oheader, ring_count(&output), outputdata);
             event_send(oheader);
             ring_reset(&output);
 

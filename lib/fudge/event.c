@@ -248,15 +248,6 @@ unsigned int event_addwmconfigure(struct event_header *header, unsigned int rend
 
 }
 
-unsigned int event_addwmflush(struct event_header *header, unsigned int count, void *buffer)
-{
-
-    header->length += memory_write(header, FUDGE_BSIZE, buffer, count, header->length);
-
-    return header->length;
-
-}
-
 unsigned int event_appenddata(struct event_header *header, unsigned int count, void *buffer)
 {
 

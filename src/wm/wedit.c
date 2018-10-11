@@ -347,8 +347,8 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_request(oheader, iheader, EVENT_WMFLUSH, rendertarget);
-            event_addwmflush(oheader, ring_count(&output), outputdata);
+            event_requestdatapipe(oheader, iheader, 0, rendertarget);
+            event_appenddata(oheader, ring_count(&output), outputdata);
             event_send(oheader);
             ring_reset(&output);
 
