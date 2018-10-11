@@ -270,21 +270,44 @@ unsigned int event_appenddata(struct event_header *header, unsigned int count, v
 
 }
 
-struct event_header *event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target)
+struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target)
 {
+
+    unsigned int i;
 
     event_initheader(oheader, type, target);
 
-    if (iheader->nroutes)
-    {
+    for (i = 0; i < iheader->nroutes; i++)
+        event_addroute(oheader, iheader->routes[i]);
 
-        unsigned int i;
+    return oheader;
 
-        for (i = 0; i < iheader->nroutes; i++)
-            event_addroute(oheader, iheader->routes[i]);
+}
 
-    }
+struct event_header *event_forwarddatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor)
+{
 
+    event_forward(oheader, iheader, EVENT_DATAFILE, target);
+    event_adddatafile(oheader, session, descriptor);
+
+    return oheader;
+
+}
+
+struct event_header *event_forwarddatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target)
+{
+
+    event_forward(oheader, iheader, EVENT_DATASTOP, target);
+    event_adddatastop(oheader, session);
+
+    return oheader;
+
+}
+
+struct event_header *event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target)
+{
+
+    event_forward(oheader, iheader, type, target);
     event_addroute(oheader, iheader->target);
 
     return oheader;
@@ -321,59 +344,16 @@ struct event_header *event_requestdatastop(struct event_header *oheader, struct 
 
 }
 
-struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target)
-{
-
-    event_initheader(oheader, type, target);
-
-    if (iheader->nroutes)
-    {
-
-        unsigned int i;
-
-        for (i = 0; i < iheader->nroutes; i++)
-            event_addroute(oheader, iheader->routes[i]);
-
-    }
-
-    return oheader;
-
-}
-
-struct event_header *event_forwarddatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor)
-{
-
-    event_forward(oheader, iheader, EVENT_DATAFILE, target);
-    event_adddatafile(oheader, session, descriptor);
-
-    return oheader;
-
-}
-
-struct event_header *event_forwarddatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target)
-{
-
-    event_forward(oheader, iheader, EVENT_DATASTOP, target);
-    event_adddatastop(oheader, session);
-
-    return oheader;
-
-}
-
 struct event_header *event_reply(struct event_header *oheader, struct event_header *iheader, unsigned int type)
 {
 
-    event_initheader(oheader, type, iheader->source);
+    event_forward(oheader, iheader, type, iheader->source);
 
-    if (iheader->nroutes)
+    if (oheader->nroutes)
     {
 
-        unsigned int i;
-
-        for (i = 0; i < iheader->nroutes - 1; i++)
-            event_addroute(oheader, iheader->routes[i]);
-
-        oheader->target = iheader->routes[iheader->nroutes - 1];
+        oheader->nroutes--;
+        oheader->target = oheader->routes[oheader->nroutes];
 
     }
 

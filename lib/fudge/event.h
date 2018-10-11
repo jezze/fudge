@@ -193,13 +193,13 @@ unsigned int event_addwmmousemove(struct event_header *header, char relx, char r
 unsigned int event_addwmconfigure(struct event_header *header, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
 unsigned int event_addwmflush(struct event_header *header, unsigned int count, void *buffer);
 unsigned int event_appenddata(struct event_header *header, unsigned int count, void *buffer);
+struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target);
+struct event_header *event_forwarddatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor);
+struct event_header *event_forwarddatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target);
 struct event_header *event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target);
 struct event_header *event_requestdatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor);
 struct event_header *event_requestdatapipe(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target);
 struct event_header *event_requestdatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target);
-struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target);
-struct event_header *event_forwarddatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor);
-struct event_header *event_forwarddatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target);
 struct event_header *event_reply(struct event_header *oheader, struct event_header *iheader, unsigned int type);
 struct event_header *event_replydatapipe(struct event_header *oheader, struct event_header *iheader, unsigned int session);
 struct event_header *event_replydatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session);
