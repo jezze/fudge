@@ -33,7 +33,6 @@ static struct token stackdata[8];
 static struct tokenlist infix;
 static struct tokenlist postfix;
 static struct tokenlist stack;
-static unsigned int quit;
 
 static void tokenlist_init(struct tokenlist *list, unsigned int size, struct token *table)
 {
@@ -319,7 +318,7 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
 
 }
 
-static void ondatafile(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_datafile *datafile = event_getdata(iheader);
@@ -327,7 +326,7 @@ static void ondatafile(struct event_header *iheader, struct event_header *oheade
     unsigned int count;
 
     if (!datafile->descriptor)
-        return;
+        return 0;
 
     file_open(datafile->descriptor);
 
@@ -338,23 +337,27 @@ static void ondatafile(struct event_header *iheader, struct event_header *oheade
     translate(&postfix, &infix, &stack);
     parse(iheader, oheader, &postfix, &stack, datafile->session);
 
+    return 0;
+
 }
 
-static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_datapipe *datapipe = event_getdata(iheader);
 
     if (!datapipe->count)
-        return;
+        return 0;
 
     tokenizebuffer(&infix, &stringtable, datapipe->count, datapipe + 1);
     translate(&postfix, &infix, &stack);
     parse(iheader, oheader, &postfix, &stack, datapipe->session);
 
+    return 0;
+
 }
 
-static void ondatastop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_datastop *datastop = event_getdata(iheader);
@@ -363,11 +366,11 @@ static void ondatastop(struct event_header *iheader, struct event_header *oheade
     event_adddatastop(oheader, datastop->session);
     event_send(oheader);
 
-    quit = 1;
+    return 1;
 
 }
 
-static void oninit(struct event_header *iheader, struct event_header *oheader)
+static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
@@ -375,21 +378,25 @@ static void oninit(struct event_header *iheader, struct event_header *oheader)
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
 
+    return 0;
+
 }
 
-static void onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    quit = 1;
+    return 1;
 
 }
 
 void main(void)
 {
 
+    unsigned int status = 0;
+
     event_open();
 
-    while (!quit)
+    while (!status)
     {
 
         char ibuffer[FUDGE_BSIZE];
@@ -401,27 +408,27 @@ void main(void)
         {
 
         case EVENT_DATAFILE:
-            ondatafile(iheader, oheader);
+            status = ondatafile(iheader, oheader);
 
             break;
 
         case EVENT_DATAPIPE:
-            ondatapipe(iheader, oheader);
+            status = ondatapipe(iheader, oheader);
 
             break;
 
         case EVENT_DATASTOP:
-            ondatastop(iheader, oheader);
+            status = ondatastop(iheader, oheader);
 
             break;
 
         case EVENT_INIT:
-            oninit(iheader, oheader);
+            status = oninit(iheader, oheader);
 
             break;
 
         case EVENT_KILL:
-            onkill(iheader, oheader);
+            status = onkill(iheader, oheader);
 
             break;
 

@@ -1,8 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
 
-static unsigned int quit;
-
 static void complete(struct event_header *iheader, struct event_header *oheader, unsigned int descriptor, void *name, unsigned int length, unsigned int session)
 {
 
@@ -42,16 +40,18 @@ static void complete(struct event_header *iheader, struct event_header *oheader,
 
 }
 
-static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_datapipe *datapipe = event_getdata(iheader);
 
     complete(iheader, oheader, FILE_PW, datapipe + 1, datapipe->count, datapipe->session);
 
+    return 0;
+
 }
 
-static void ondatastop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_datastop *datastop = event_getdata(iheader);
@@ -60,23 +60,25 @@ static void ondatastop(struct event_header *iheader, struct event_header *oheade
     event_adddatastop(oheader, datastop->session);
     event_send(oheader);
 
-    quit = 1;
+    return 1;
 
 }
 
-static void onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    quit = 1;
+    return 1;
 
 }
 
 void main(void)
 {
 
+    unsigned int status = 0;
+
     event_open();
 
-    while (!quit)
+    while (!status)
     {
 
         char ibuffer[FUDGE_BSIZE];
@@ -88,17 +90,17 @@ void main(void)
         {
 
         case EVENT_DATAPIPE:
-            ondatapipe(iheader, oheader);
+            status = ondatapipe(iheader, oheader);
 
             break;
 
         case EVENT_DATASTOP:
-            ondatastop(iheader, oheader);
+            status = ondatastop(iheader, oheader);
 
             break;
 
         case EVENT_KILL:
-            onkill(iheader, oheader);
+            status = onkill(iheader, oheader);
 
             break;
 

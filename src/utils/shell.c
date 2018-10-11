@@ -1,7 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
 
-static unsigned int quit;
 static unsigned char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 
@@ -79,7 +78,7 @@ static unsigned int complete(struct event_header *iheader, struct event_header *
 
 }
 
-static void onconsoledata(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onconsoledata(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_consoledata *consoledata = event_getdata(iheader);
@@ -123,9 +122,11 @@ static void onconsoledata(struct event_header *iheader, struct event_header *ohe
 
     }
 
+    return 0;
+
 }
 
-static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_datapipe *datapipe = event_getdata(iheader);
@@ -150,25 +151,31 @@ static void ondatapipe(struct event_header *iheader, struct event_header *oheade
 
     }
 
+    return 0;
+
 }
 
-static void oninit(struct event_header *iheader, struct event_header *oheader)
+static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
     printprompt();
 
+    return 0;
+
 }
 
-static void onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    quit = 1;
+    return 1;
 
 }
 
 void main(void)
 {
+
+    unsigned int status = 0;
 
     if (!file_walkfrom(FILE_G0, FILE_P0, "event"))
         return;
@@ -180,7 +187,7 @@ void main(void)
     file_open(FILE_G1);
     event_open();
 
-    while (!quit)
+    while (!status)
     {
 
         char ibuffer[FUDGE_BSIZE];
@@ -192,22 +199,22 @@ void main(void)
         {
 
         case EVENT_CONSOLEDATA:
-            onconsoledata(iheader, oheader);
+            status = onconsoledata(iheader, oheader);
 
             break;
 
         case EVENT_DATAPIPE:
-            ondatapipe(iheader, oheader);
+            status = ondatapipe(iheader, oheader);
 
             break;
 
         case EVENT_INIT:
-            oninit(iheader, oheader);
+            status = oninit(iheader, oheader);
 
             break;
 
         case EVENT_KILL:
-            onkill(iheader, oheader);
+            status = onkill(iheader, oheader);
 
             break;
 

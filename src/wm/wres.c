@@ -4,27 +4,27 @@
 #include <widget/widget.h>
 #include "render.h"
 
-static unsigned int quit;
-
-static void oninit(struct event_header *iheader, struct event_header *oheader)
+static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
     event_request(oheader, iheader, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
     event_send(oheader);
 
+    return 0;
+
 }
 
-static void onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
     event_request(oheader, iheader, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
     event_send(oheader);
 
-    quit = 1;
+    return 1;
 
 }
 
-static void onwmmousepress(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmmousepress(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_wmmousepress *wmmousepress = event_getdata(iheader);
@@ -43,14 +43,18 @@ static void onwmmousepress(struct event_header *iheader, struct event_header *oh
 
     }
 
+    return 0;
+
 }
 
 void main(void)
 {
 
+    unsigned int status = 0;
+
     event_open();
 
-    while (!quit)
+    while (!status)
     {
 
         char ibuffer[FUDGE_BSIZE];
@@ -62,17 +66,17 @@ void main(void)
         {
 
         case EVENT_INIT:
-            oninit(iheader, oheader);
+            status = oninit(iheader, oheader);
 
             break;
 
         case EVENT_KILL:
-            onkill(iheader, oheader);
+            status = onkill(iheader, oheader);
 
             break;
 
         case EVENT_WMMOUSEPRESS:
-            onwmmousepress(iheader, oheader);
+            status = onwmmousepress(iheader, oheader);
 
             break;
 

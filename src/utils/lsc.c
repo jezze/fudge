@@ -1,8 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
 
-static unsigned int quit;
-
 static void list(struct event_header *iheader, struct event_header *oheader, unsigned int descriptor, unsigned int session)
 {
 
@@ -43,7 +41,7 @@ static void list(struct event_header *iheader, struct event_header *oheader, uns
 
 }
 
-static void ondatafile(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondatafile(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_datafile *datafile = event_getdata(iheader);
@@ -53,9 +51,11 @@ static void ondatafile(struct event_header *iheader, struct event_header *oheade
     else
         list(iheader, oheader, FILE_PW, datafile->session);
 
+    return 0;
+
 }
 
-static void ondatastop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondatastop(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_datastop *datastop = event_getdata(iheader);
@@ -64,23 +64,25 @@ static void ondatastop(struct event_header *iheader, struct event_header *oheade
     event_adddatastop(oheader, datastop->session);
     event_send(oheader);
 
-    quit = 1;
+    return 1;
 
 }
 
-static void onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    quit = 1;
+    return 1;
 
 }
 
 void main(void)
 {
 
+    unsigned int status = 0;
+
     event_open();
 
-    while (!quit)
+    while (!status)
     {
 
         char ibuffer[FUDGE_BSIZE];
@@ -92,17 +94,17 @@ void main(void)
         {
 
         case EVENT_DATAFILE:
-            ondatafile(iheader, oheader);
+            status = ondatafile(iheader, oheader);
 
             break;
 
         case EVENT_DATASTOP:
-            ondatastop(iheader, oheader);
+            status = ondatastop(iheader, oheader);
 
             break;
 
         case EVENT_KILL:
-            onkill(iheader, oheader);
+            status = onkill(iheader, oheader);
 
             break;
 

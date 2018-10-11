@@ -5,7 +5,6 @@
 #include <widget/widget.h>
 
 static struct widget_textbox content;
-static unsigned int quit;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
@@ -198,7 +197,7 @@ static unsigned int complete(struct event_header *iheader, struct event_header *
 
 }
 
-static void ondatapipe(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_datapipe *datapipe = event_getdata(iheader);
@@ -225,9 +224,11 @@ static void ondatapipe(struct event_header *iheader, struct event_header *oheade
 
     updatecontent(iheader);
 
+    return 0;
+
 }
 
-static void oninit(struct event_header *iheader, struct event_header *oheader)
+static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -240,19 +241,21 @@ static void oninit(struct event_header *iheader, struct event_header *oheader)
     event_request(oheader, iheader, EVENT_WMMAP, EVENT_ADDR_BROADCAST);
     event_send(oheader);
 
+    return 0;
+
 }
 
-static void onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
     event_request(oheader, iheader, EVENT_WMUNMAP, EVENT_ADDR_BROADCAST);
     event_send(oheader);
 
-    quit = 1;
+    return 1;
 
 }
 
-static void onwmconfigure(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmconfigure(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_wmconfigure *wmconfigure = event_getdata(iheader);
@@ -267,9 +270,11 @@ static void onwmconfigure(struct event_header *iheader, struct event_header *ohe
     if (totalrows >= visiblerows)
         removerows(totalrows - visiblerows + 1);
 
+    return 0;
+
 }
 
-static void onwmkeypress(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmkeypress(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_wmkeypress *wmkeypress = event_getdata(iheader);
@@ -354,37 +359,47 @@ static void onwmkeypress(struct event_header *iheader, struct event_header *ohea
 
     updatecontent(iheader);
 
+    return 0;
+
 }
 
-static void onwmkeyrelease(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmkeyrelease(struct event_header *iheader, struct event_header *oheader)
 {
 
     struct event_wmkeyrelease *wmkeyrelease = event_getdata(iheader);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
+    return 0;
+
 }
 
-static void onwmshow(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmshow(struct event_header *iheader, struct event_header *oheader)
 {
 
     updatecontent(iheader);
 
+    return 0;
+
 }
 
-static void onwmhide(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmhide(struct event_header *iheader, struct event_header *oheader)
 {
 
     removecontent(iheader);
+
+    return 0;
 
 }
 
 void main(void)
 {
 
+    unsigned int status = 0;
+
     event_open();
 
-    while (!quit)
+    while (!status)
     {
 
         char ibuffer[FUDGE_BSIZE];
@@ -396,42 +411,42 @@ void main(void)
         {
 
         case EVENT_DATAPIPE:
-            ondatapipe(iheader, oheader);
+            status = ondatapipe(iheader, oheader);
 
             break;
 
         case EVENT_INIT:
-            oninit(iheader, oheader);
+            status = oninit(iheader, oheader);
 
             break;
 
         case EVENT_KILL:
-            onkill(iheader, oheader);
+            status = onkill(iheader, oheader);
 
             break;
 
         case EVENT_WMCONFIGURE:
-            onwmconfigure(iheader, oheader);
+            status = onwmconfigure(iheader, oheader);
 
             break;
 
         case EVENT_WMKEYPRESS:
-            onwmkeypress(iheader, oheader);
+            status = onwmkeypress(iheader, oheader);
 
             break;
 
         case EVENT_WMKEYRELEASE:
-            onwmkeyrelease(iheader, oheader);
+            status = onwmkeyrelease(iheader, oheader);
 
             break;
 
         case EVENT_WMSHOW:
-            onwmshow(iheader, oheader);
+            status = onwmshow(iheader, oheader);
 
             break;
 
         case EVENT_WMHIDE:
-            onwmhide(iheader, oheader);
+            status = onwmhide(iheader, oheader);
 
             break;
 
