@@ -2,14 +2,7 @@
 #include "call.h"
 #include "file.h"
 #include "event.h"
-
-struct job
-{
-
-    unsigned int id;
-    unsigned int ninputs;
-
-};
+#include "job.h"
 
 static unsigned int addjob(struct job *job, unsigned int count, unsigned int id)
 {

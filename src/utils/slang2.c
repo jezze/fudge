@@ -305,14 +305,14 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
 
             event_appenddata(oheader, 1, "E");
             event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
-            event_send(oheader);
-            event_replydatapipe(oheader, iheader, session);
 
             break;
 
         }
 
     }
+
+    event_send(oheader);
 
 }
 
