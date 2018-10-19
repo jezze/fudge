@@ -729,30 +729,45 @@ static unsigned int onvideomode(struct event_header *iheader, struct event_heade
     {
 
     case 0:
+    case 1:
+        mouse.size.w = 12;
+        mouse.size.h = 16;
+
+        break;
+
+    case 2:
+    default:
+        mouse.size.w = 18;
+        mouse.size.h = 24;
+
+        break;
+
+    }
+
+    switch (factor)
+    {
+
+    case 0:
         file_walk(FILE_L0, "/data/ter-112n.pcf");
         render_setfont(FILE_L0, lineheight, padding);
-        render_setmouse(&mouse, 16);
 
         break;
 
     case 1:
         file_walk(FILE_L0, "/data/ter-114n.pcf");
         render_setfont(FILE_L0, lineheight, padding);
-        render_setmouse(&mouse, 16);
 
         break;
 
     case 2:
         file_walk(FILE_L0, "/data/ter-116n.pcf");
         render_setfont(FILE_L0, lineheight, padding);
-        render_setmouse(&mouse, 24);
 
         break;
 
     default:
         file_walk(FILE_L0, "/data/ter-118n.pcf");
         render_setfont(FILE_L0, lineheight, padding);
-        render_setmouse(&mouse, 24);
 
         break;
 

@@ -654,6 +654,7 @@ void render_setdraw(unsigned int w, unsigned int h, unsigned int bpp)
 
     currentw = w;
     currenth = h;
+    currentbpp = bpp;
 
     switch (bpp)
     {
@@ -670,8 +671,6 @@ void render_setdraw(unsigned int w, unsigned int h, unsigned int bpp)
 
     }
 
-    currentbpp = bpp;
-
 }
 
 void render_setcolormap(unsigned int descriptor)
@@ -680,28 +679,6 @@ void render_setcolormap(unsigned int descriptor)
     file_open(descriptor);
     file_writeall(descriptor, colormap8, 3 * 11);
     file_close(descriptor);
-
-}
-
-void render_setmouse(struct widget_mouse *mouse, unsigned int size)
-{
-
-    switch (size)
-    {
-
-    case 16:
-        mouse->size.w = 12;
-        mouse->size.h = 16;
-
-        break;
-
-    case 24:
-        mouse->size.w = 18;
-        mouse->size.h = 24;
-
-        break;
-
-    }
 
 }
 
