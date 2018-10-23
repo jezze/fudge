@@ -147,6 +147,33 @@ static void printcomplete(void *buffer, unsigned int count)
 
 }
 
+static unsigned int runcmd(struct event_header *iheader, struct event_header *oheader, char *command, char *data, unsigned int count, unsigned int session)
+{
+
+    unsigned int id;
+
+    if (!file_walk(FILE_CP, command))
+        return 0;
+
+    id = call_spawn();
+
+    if (id)
+    {
+
+        event_requestinit(oheader, iheader, id);
+        event_send(oheader);
+        event_requestdatapipe(oheader, iheader, id, session);
+        event_appenddata(oheader, count, data);
+        event_send(oheader);
+        event_requestdatastop(oheader, iheader, id, session);
+        event_send(oheader);
+
+    }
+
+    return id;
+
+}
+
 static unsigned int interpretbuiltin(unsigned int count, char *command)
 {
 
@@ -183,7 +210,7 @@ static unsigned int interpret(struct event_header *iheader, struct event_header 
     if (interpretbuiltin(count, command))
         return 0;
 
-    return job_runcmd(iheader, oheader, "/bin/slang2", command, count, 2);
+    return runcmd(iheader, oheader, "/bin/slang2", command, count, 2);
 
 }
 
@@ -193,7 +220,7 @@ static unsigned int complete(struct event_header *iheader, struct event_header *
     char command[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
 
-    return job_runcmd(iheader, oheader, "/bin/complete", command, count, 1);
+    return runcmd(iheader, oheader, "/bin/complete", command, count, 1);
 
 }
 

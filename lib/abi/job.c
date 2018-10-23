@@ -87,33 +87,6 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
 
 }
 
-unsigned int job_runcmd(struct event_header *iheader, struct event_header *oheader, char *command, char *data, unsigned int count, unsigned int session)
-{
-
-    unsigned int id;
-
-    if (!file_walk(FILE_CP, command))
-        return 0;
-
-    id = call_spawn();
-
-    if (id)
-    {
-
-        event_requestinit(oheader, iheader, id);
-        event_send(oheader);
-        event_requestdatapipe(oheader, iheader, id, session);
-        event_appenddata(oheader, count, data);
-        event_send(oheader);
-        event_requestdatastop(oheader, iheader, id, session);
-        event_send(oheader);
-
-    }
-
-    return id;
-
-}
-
 void job_run(struct event_header *iheader, struct event_header *oheader, void *buffer, unsigned int count)
 {
 
