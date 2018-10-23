@@ -17,8 +17,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 
     struct {struct event_header header; struct event_timertick timertick;} message;
 
-    event_initheader(&message.header, EVENT_TIMERTICK, EVENT_ADDR_BROADCAST);
-    event_addtimertick(&message.header, counter);
+    event_createtimertick(&message.header, EVENT_ADDR_BROADCAST, counter);
     kernel_multicast(&interface->event.states, &message.header);
 
 }

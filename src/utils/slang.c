@@ -303,7 +303,7 @@ static void runx(struct event_header *iheader, struct event_header *oheader, str
                 event_forwarddatafile(oheader, iheader, 0, task[j].id, FILE_P0 + k);
 
                 for (x = count; x > j + 1; x--)
-                    event_addroute(oheader, task[x - 1].id);
+                    event_route(oheader, task[x - 1].id);
 
                 event_send(oheader);
 
@@ -317,7 +317,7 @@ static void runx(struct event_header *iheader, struct event_header *oheader, str
             event_forwarddatafile(oheader, iheader, 0, task[j].id, 0);
 
             for (x = count; x > j + 1; x--)
-                event_addroute(oheader, task[x - 1].id);
+                event_route(oheader, task[x - 1].id);
 
             event_send(oheader);
 
@@ -328,7 +328,7 @@ static void runx(struct event_header *iheader, struct event_header *oheader, str
     event_requestdatastop(oheader, iheader, 0, task[0].id);
 
     for (x = count; x > 1; x--)
-        event_addroute(oheader, task[x - 1].id);
+        event_route(oheader, task[x - 1].id);
 
     event_send(oheader);
 

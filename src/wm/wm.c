@@ -179,8 +179,7 @@ static void configureremotes(struct event_header *iheader, struct event_header *
 
         struct remote *remote = current->data;
 
-        event_request(oheader, iheader, EVENT_WMCONFIGURE, remote->source);
-        event_addwmconfigure(oheader, iheader->target, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+        event_requestwmconfigure(oheader, iheader, remote->source, iheader->target, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
         event_send(oheader);
 
     }
@@ -391,8 +390,7 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
         if (currentview->currentremote)
         {
 
-            event_request(oheader, iheader, EVENT_WMKEYPRESS, currentview->currentremote->source);
-            event_addwmkeypress(oheader, keypress->scancode);
+            event_requestwmkeypress(oheader, iheader, currentview->currentremote->source, keypress->scancode);
             event_send(oheader);
 
         }
@@ -582,8 +580,7 @@ static unsigned int onkeyrelease(struct event_header *iheader, struct event_head
         if (currentview->currentremote)
         {
 
-            event_request(oheader, iheader, EVENT_WMKEYRELEASE, currentview->currentremote->source);
-            event_addwmkeyrelease(oheader, keyrelease->scancode);
+            event_requestwmkeyrelease(oheader, iheader, currentview->currentremote->source, keyrelease->scancode);
             event_send(oheader);
 
         }
@@ -615,8 +612,7 @@ static unsigned int onmousemove(struct event_header *iheader, struct event_heade
     if (currentview->currentremote)
     {
 
-        event_request(oheader, iheader, EVENT_WMMOUSEMOVE, currentview->currentremote->source);
-        event_addwmmousemove(oheader, mouse.size.x, mouse.size.y);
+        event_requestwmmousemove(oheader, iheader, currentview->currentremote->source, mouse.size.x, mouse.size.y);
         event_send(oheader);
 
     }
@@ -686,8 +682,7 @@ static unsigned int onmousepress(struct event_header *iheader, struct event_head
     if (currentview->currentremote)
     {
 
-        event_request(oheader, iheader, EVENT_WMMOUSEPRESS, currentview->currentremote->source);
-        event_addwmmousepress(oheader, mousepress->button);
+        event_requestwmmousepress(oheader, iheader, currentview->currentremote->source, mousepress->button);
         event_send(oheader);
 
     }
@@ -704,8 +699,7 @@ static unsigned int onmouserelease(struct event_header *iheader, struct event_he
     if (currentview->currentremote)
     {
 
-        event_request(oheader, iheader, EVENT_WMMOUSERELEASE, currentview->currentremote->source);
-        event_addwmmouserelease(oheader, mouserelease->button);
+        event_requestwmmouserelease(oheader, iheader, currentview->currentremote->source, mouserelease->button);
         event_send(oheader);
 
     }
@@ -774,8 +768,7 @@ static unsigned int onvideomode(struct event_header *iheader, struct event_heade
     }
 
     /* Sending to self not allowed */
-    event_request(oheader, iheader, EVENT_WMCONFIGURE, iheader->target);
-    event_addwmconfigure(oheader, iheader->target, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    event_requestwmconfigure(oheader, iheader, iheader->target, iheader->target, 0, 0, videomode->w, videomode->h, padding, lineheight);
     event_send(oheader);
     /* Sending to self not allowed */
     event_request(oheader, iheader, EVENT_WMSHOW, iheader->target);

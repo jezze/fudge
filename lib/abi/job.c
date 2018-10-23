@@ -56,7 +56,7 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
                 event_requestdatafile(oheader, iheader, session, job[j].id, FILE_P0 + k);
 
                 for (x = count; x > j + 1; x--)
-                    event_addroute(oheader, job[x - 1].id);
+                    event_route(oheader, job[x - 1].id);
 
                 event_send(oheader);
 
@@ -70,7 +70,7 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
             event_requestdatafile(oheader, iheader, session, job[j].id, 0);
 
             for (x = count; x > j + 1; x--)
-                event_addroute(oheader, job[x - 1].id);
+                event_route(oheader, job[x - 1].id);
 
             event_send(oheader);
 
@@ -81,7 +81,7 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
     event_requestdatastop(oheader, iheader, session, job[0].id);
 
     for (x = count; x > 1; x--)
-        event_addroute(oheader, job[x - 1].id);
+        event_route(oheader, job[x - 1].id);
 
     event_send(oheader);
 
