@@ -23,9 +23,9 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
 
     event_forwardinit(oheader, iheader, id);
     event_send(oheader);
-    event_forwarddatafile(oheader, iheader, datafile->session, id, FILE_P0);
+    event_forwarddatafile(oheader, iheader, id, datafile->session, FILE_P0);
     event_send(oheader);
-    event_forwarddatastop(oheader, iheader, datafile->session, id);
+    event_forwarddatastop(oheader, iheader, id, datafile->session);
     event_send(oheader);
 
     return 0;

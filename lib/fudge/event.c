@@ -280,7 +280,7 @@ struct event_header *event_createconsoledata(struct event_header *oheader, unsig
 
 }
 
-struct event_header *event_createdatafile(struct event_header *oheader, unsigned int session, unsigned int target, unsigned int descriptor)
+struct event_header *event_createdatafile(struct event_header *oheader, unsigned int target, unsigned int session, unsigned int descriptor)
 {
 
     event_create(oheader, EVENT_DATAFILE, target);
@@ -290,7 +290,7 @@ struct event_header *event_createdatafile(struct event_header *oheader, unsigned
 
 }
 
-struct event_header *event_createdatapipe(struct event_header *oheader, unsigned int session, unsigned int target)
+struct event_header *event_createdatapipe(struct event_header *oheader, unsigned int target, unsigned int session)
 {
 
     event_create(oheader, EVENT_DATAPIPE, target);
@@ -300,7 +300,7 @@ struct event_header *event_createdatapipe(struct event_header *oheader, unsigned
 
 }
 
-struct event_header *event_createdatastop(struct event_header *oheader, unsigned int session, unsigned int target)
+struct event_header *event_createdatastop(struct event_header *oheader, unsigned int target, unsigned int session)
 {
 
     event_create(oheader, EVENT_DATASTOP, target);
@@ -403,7 +403,7 @@ struct event_header *event_forward(struct event_header *oheader, struct event_he
 
 }
 
-struct event_header *event_forwarddatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor)
+struct event_header *event_forwarddatafile(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned int descriptor)
 {
 
     event_forward(oheader, iheader, EVENT_DATAFILE, target);
@@ -413,7 +413,7 @@ struct event_header *event_forwarddatafile(struct event_header *oheader, struct 
 
 }
 
-struct event_header *event_forwarddatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target)
+struct event_header *event_forwarddatastop(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
 {
 
     event_forward(oheader, iheader, EVENT_DATASTOP, target);
@@ -442,7 +442,7 @@ struct event_header *event_request(struct event_header *oheader, struct event_he
 
 }
 
-struct event_header *event_requestdatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor)
+struct event_header *event_requestdatafile(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned int descriptor)
 {
 
     event_request(oheader, iheader, EVENT_DATAFILE, target);
@@ -452,7 +452,7 @@ struct event_header *event_requestdatafile(struct event_header *oheader, struct 
 
 }
 
-struct event_header *event_requestdatapipe(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target)
+struct event_header *event_requestdatapipe(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
 {
 
     event_request(oheader, iheader, EVENT_DATAPIPE, target);
@@ -462,7 +462,7 @@ struct event_header *event_requestdatapipe(struct event_header *oheader, struct 
 
 }
 
-struct event_header *event_requestdatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target)
+struct event_header *event_requestdatastop(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
 {
 
     event_request(oheader, iheader, EVENT_DATASTOP, target);

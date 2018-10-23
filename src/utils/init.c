@@ -41,9 +41,9 @@ void main(void)
     event_open();
     event_createinit(oheader, id);
     event_send(oheader);
-    event_createdatafile(oheader, 0, id, FILE_P0);
+    event_createdatafile(oheader, id, 0, FILE_P0);
     event_send(oheader);
-    event_createdatastop(oheader, 0, id);
+    event_createdatastop(oheader, id, 0);
     event_send(oheader);
     event_close();
 

@@ -469,7 +469,7 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
 
             event_requestinit(oheader, iheader, id);
             event_send(oheader);
-            event_requestdatastop(oheader, iheader, 0, id);
+            event_requestdatastop(oheader, iheader, id, 0);
             event_send(oheader);
 
         }
@@ -1011,7 +1011,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_requestdatapipe(oheader, iheader, 0, rendertarget);
+            event_requestdatapipe(oheader, iheader, rendertarget, 0);
             event_appenddata(oheader, ring_count(&output), outputdata);
             event_send(oheader);
             ring_reset(&output);

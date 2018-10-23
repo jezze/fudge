@@ -53,7 +53,7 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
             for (k = 0; k < job[j].ninputs; k++)
             {
 
-                event_requestdatafile(oheader, iheader, session, job[j].id, FILE_P0 + k);
+                event_requestdatafile(oheader, iheader, job[j].id, session, FILE_P0 + k);
 
                 for (x = count; x > j + 1; x--)
                     event_route(oheader, job[x - 1].id);
@@ -67,7 +67,7 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
         else
         {
 
-            event_requestdatafile(oheader, iheader, session, job[j].id, 0);
+            event_requestdatafile(oheader, iheader, job[j].id, session, 0);
 
             for (x = count; x > j + 1; x--)
                 event_route(oheader, job[x - 1].id);
@@ -78,7 +78,7 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
 
     }
 
-    event_requestdatastop(oheader, iheader, session, job[0].id);
+    event_requestdatastop(oheader, iheader, job[0].id, session);
 
     for (x = count; x > 1; x--)
         event_route(oheader, job[x - 1].id);
@@ -102,10 +102,10 @@ unsigned int job_runcmd(struct event_header *iheader, struct event_header *ohead
 
         event_requestinit(oheader, iheader, id);
         event_send(oheader);
-        event_requestdatapipe(oheader, iheader, session, id);
+        event_requestdatapipe(oheader, iheader, id, session);
         event_appenddata(oheader, count, data);
         event_send(oheader);
-        event_requestdatastop(oheader, iheader, session, id);
+        event_requestdatastop(oheader, iheader, id, session);
         event_send(oheader);
 
     }

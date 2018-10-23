@@ -455,7 +455,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_requestdatapipe(oheader, iheader, 0, rendertarget);
+            event_requestdatapipe(oheader, iheader, rendertarget, 0);
             event_appenddata(oheader, ring_count(&output), outputdata);
             event_send(oheader);
             ring_reset(&output);
