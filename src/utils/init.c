@@ -24,27 +24,68 @@ static void loadevent(void)
 
 }
 
-void main(void)
+static void loadscript(void)
 {
 
+    unsigned int id;
     char obuffer[FUDGE_BSIZE];
     struct event_header *oheader = (struct event_header *)obuffer;
-    unsigned int id;
 
-    loadsystem();
-    loadevent();
-    file_walk(FILE_CP, "/bin/slang");
+    file_walk(FILE_CP, "/bin/slang2");
     file_walk(FILE_C0, "/config/init.slang");
 
     id = call_spawn();
 
-    event_open();
     event_createinit(oheader, id);
     event_send(oheader);
     event_createdatafile(oheader, id, 0, FILE_P0);
     event_send(oheader);
     event_createdatastop(oheader, id, 0);
     event_send(oheader);
+
+}
+
+static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datapipe *datapipe = event_getdata(iheader);
+
+    job_run(iheader, oheader, datapipe + 1, datapipe->count);
+
+    return 0;
+
+}
+
+void main(void)
+{
+
+    unsigned int status = 0;
+
+    loadsystem();
+    loadevent();
+    event_open();
+    loadscript();
+
+    while (!status)
+    {
+
+        char ibuffer[FUDGE_BSIZE];
+        char obuffer[FUDGE_BSIZE];
+        struct event_header *iheader = event_read(ibuffer);
+        struct event_header *oheader = (struct event_header *)obuffer;
+
+        switch (iheader->type)
+        {
+
+        case EVENT_DATAPIPE:
+            status = ondatapipe(iheader, oheader);
+
+            break;
+
+        }
+
+    }
+
     event_close();
 
 }
