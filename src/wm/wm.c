@@ -143,7 +143,7 @@ static void showremotes(struct event_header *iheader, struct event_header *ohead
 
         struct remote *remote = current->data;
 
-        event_request(oheader, iheader, EVENT_WMSHOW, remote->source);
+        event_requestwmshow(oheader, iheader, remote->source);
         event_send(oheader);
         updateremote(iheader, remote);
 
@@ -161,7 +161,7 @@ static void hideremotes(struct event_header *iheader, struct event_header *ohead
 
         struct remote *remote = current->data;
 
-        event_request(oheader, iheader, EVENT_WMHIDE, remote->source);
+        event_requestwmhide(oheader, iheader, remote->source);
         event_send(oheader);
         removeremote(iheader, remote);
 
@@ -196,7 +196,7 @@ static void killremotes(struct event_header *iheader, struct event_header *ohead
 
         struct remote *remote = current->data;
 
-        event_request(oheader, iheader, EVENT_KILL, remote->source);
+        event_requestkill(oheader, iheader, remote->source);
         event_send(oheader);
 
     }
@@ -446,9 +446,9 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            event_request(oheader, iheader, EVENT_WMHIDE, currentview->currentremote->source);
+            event_requestwmhide(oheader, iheader, currentview->currentremote->source);
             event_send(oheader);
-            event_request(oheader, iheader, EVENT_KILL, currentview->currentremote->source);
+            event_requestkill(oheader, iheader, currentview->currentremote->source);
             event_send(oheader);
 
         }
@@ -467,7 +467,7 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
         if (id)
         {
 
-            event_request(oheader, iheader, EVENT_INIT, id);
+            event_requestinit(oheader, iheader, id);
             event_send(oheader);
             event_requestdatastop(oheader, iheader, 0, id);
             event_send(oheader);
@@ -551,10 +551,10 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
         {
 
             /* Sending to self not allowed */
-            event_request(oheader, iheader, EVENT_WMHIDE, iheader->target);
+            event_requestwmhide(oheader, iheader, iheader->target);
             event_send(oheader);
             /* Sending to self not allowed */
-            event_request(oheader, iheader, EVENT_KILL, iheader->target);
+            event_requestkill(oheader, iheader, iheader->target);
             event_send(oheader);
 
         }
@@ -771,7 +771,7 @@ static unsigned int onvideomode(struct event_header *iheader, struct event_heade
     event_requestwmconfigure(oheader, iheader, iheader->target, iheader->target, 0, 0, videomode->w, videomode->h, padding, lineheight);
     event_send(oheader);
     /* Sending to self not allowed */
-    event_request(oheader, iheader, EVENT_WMSHOW, iheader->target);
+    event_requestwmshow(oheader, iheader, iheader->target);
     event_send(oheader);
 
     return 0;

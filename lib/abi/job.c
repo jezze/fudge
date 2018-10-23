@@ -39,7 +39,7 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
     for (j = 0; j < count; j++)
     {
 
-        event_request(oheader, iheader, EVENT_INIT, job[j].id);
+        event_requestinit(oheader, iheader, job[j].id);
         event_send(oheader);
 
     }
@@ -100,7 +100,7 @@ unsigned int job_runcmd(struct event_header *iheader, struct event_header *ohead
     if (id)
     {
 
-        event_request(oheader, iheader, EVENT_INIT, id);
+        event_requestinit(oheader, iheader, id);
         event_send(oheader);
         event_requestdatapipe(oheader, iheader, session, id);
         event_appenddata(oheader, count, data);

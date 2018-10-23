@@ -39,7 +39,7 @@ void main(void)
     id = call_spawn();
 
     event_open();
-    event_create(oheader, EVENT_INIT, id);
+    event_createinit(oheader, id);
     event_send(oheader);
     event_createdatafile(oheader, 0, id, FILE_P0);
     event_send(oheader);

@@ -178,6 +178,7 @@ struct event_header *event_createconsoledata(struct event_header *oheader, unsig
 struct event_header *event_createdatafile(struct event_header *oheader, unsigned int session, unsigned int target, unsigned int descriptor);
 struct event_header *event_createdatapipe(struct event_header *oheader, unsigned int session, unsigned int target);
 struct event_header *event_createdatastop(struct event_header *oheader, unsigned int session, unsigned int target);
+struct event_header *event_createinit(struct event_header *oheader, unsigned int target);
 struct event_header *event_createkeypress(struct event_header *oheader, unsigned int target, unsigned char scancode);
 struct event_header *event_createkeyrelease(struct event_header *oheader, unsigned int target, unsigned char scancode);
 struct event_header *event_createmousepress(struct event_header *oheader, unsigned int target, unsigned int button);
@@ -188,10 +189,17 @@ struct event_header *event_createvideomode(struct event_header *oheader, unsigne
 struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target);
 struct event_header *event_forwarddatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor);
 struct event_header *event_forwarddatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target);
+struct event_header *event_forwardinit(struct event_header *oheader, struct event_header *iheader, unsigned int target);
 struct event_header *event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target);
 struct event_header *event_requestdatafile(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target, unsigned int descriptor);
 struct event_header *event_requestdatapipe(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target);
 struct event_header *event_requestdatastop(struct event_header *oheader, struct event_header *iheader, unsigned int session, unsigned int target);
+struct event_header *event_requestinit(struct event_header *oheader, struct event_header *iheader, unsigned int target);
+struct event_header *event_requestkill(struct event_header *oheader, struct event_header *iheader, unsigned int target);
+struct event_header *event_requestwmshow(struct event_header *oheader, struct event_header *iheader, unsigned int target);
+struct event_header *event_requestwmhide(struct event_header *oheader, struct event_header *iheader, unsigned int target);
+struct event_header *event_requestwmmap(struct event_header *oheader, struct event_header *iheader, unsigned int target);
+struct event_header *event_requestwmunmap(struct event_header *oheader, struct event_header *iheader, unsigned int target);
 struct event_header *event_requestwmkeypress(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned char scancode);
 struct event_header *event_requestwmkeyrelease(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned char scancode);
 struct event_header *event_requestwmmousepress(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int button);

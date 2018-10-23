@@ -310,6 +310,15 @@ struct event_header *event_createdatastop(struct event_header *oheader, unsigned
 
 }
 
+struct event_header *event_createinit(struct event_header *oheader, unsigned int target)
+{
+
+    event_create(oheader, EVENT_INIT, target);
+
+    return oheader;
+
+}
+
 struct event_header *event_createkeypress(struct event_header *oheader, unsigned int target, unsigned char scancode)
 {
 
@@ -414,6 +423,15 @@ struct event_header *event_forwarddatastop(struct event_header *oheader, struct 
 
 }
 
+struct event_header *event_forwardinit(struct event_header *oheader, struct event_header *iheader, unsigned int target)
+{
+
+    event_forward(oheader, iheader, EVENT_INIT, target);
+
+    return oheader;
+
+}
+
 struct event_header *event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target)
 {
 
@@ -449,6 +467,60 @@ struct event_header *event_requestdatastop(struct event_header *oheader, struct 
 
     event_request(oheader, iheader, EVENT_DATASTOP, target);
     adddatastop(oheader, session);
+
+    return oheader;
+
+}
+
+struct event_header *event_requestinit(struct event_header *oheader, struct event_header *iheader, unsigned int target)
+{
+
+    event_request(oheader, iheader, EVENT_INIT, target);
+
+    return oheader;
+
+}
+
+struct event_header *event_requestkill(struct event_header *oheader, struct event_header *iheader, unsigned int target)
+{
+
+    event_request(oheader, iheader, EVENT_KILL, target);
+
+    return oheader;
+
+}
+
+struct event_header *event_requestwmshow(struct event_header *oheader, struct event_header *iheader, unsigned int target)
+{
+
+    event_request(oheader, iheader, EVENT_WMSHOW, target);
+
+    return oheader;
+
+}
+
+struct event_header *event_requestwmhide(struct event_header *oheader, struct event_header *iheader, unsigned int target)
+{
+
+    event_request(oheader, iheader, EVENT_WMHIDE, target);
+
+    return oheader;
+
+}
+
+struct event_header *event_requestwmmap(struct event_header *oheader, struct event_header *iheader, unsigned int target)
+{
+
+    event_request(oheader, iheader, EVENT_WMMAP, target);
+
+    return oheader;
+
+}
+
+struct event_header *event_requestwmunmap(struct event_header *oheader, struct event_header *iheader, unsigned int target)
+{
+
+    event_request(oheader, iheader, EVENT_WMUNMAP, target);
 
     return oheader;
 

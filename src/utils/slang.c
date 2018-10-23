@@ -286,7 +286,7 @@ static void runx(struct event_header *iheader, struct event_header *oheader, str
     for (j = 0; j < count; j++)
     {
 
-        event_request(oheader, iheader, EVENT_INIT, task[j].id);
+        event_requestinit(oheader, iheader, task[j].id);
         event_send(oheader);
 
     }

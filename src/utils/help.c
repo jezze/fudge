@@ -21,7 +21,7 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
     if (!id)
         return 0;
 
-    event_forward(oheader, iheader, EVENT_INIT, id);
+    event_forwardinit(oheader, iheader, id);
     event_send(oheader);
     event_forwarddatafile(oheader, iheader, datafile->session, id, FILE_P0);
     event_send(oheader);
