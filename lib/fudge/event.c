@@ -2,17 +2,6 @@
 #include "memory.h"
 #include "event.h"
 
-static void initheader(struct event_header *header, unsigned int type, unsigned int target)
-{
-
-    header->type = type;
-    header->source = 0;
-    header->target = target;
-    header->length = sizeof (struct event_header);
-    header->nroutes = 0;
-
-}
-
 static void *addpayload(struct event_header *header, unsigned int length)
 {
 
@@ -264,7 +253,11 @@ unsigned int event_appenddata(struct event_header *header, unsigned int count, v
 struct event_header *event_create(struct event_header *oheader, unsigned int type, unsigned int target)
 {
 
-    initheader(oheader, type, target);
+    oheader->type = type;
+    oheader->source = 0;
+    oheader->target = target;
+    oheader->length = sizeof (struct event_header);
+    oheader->nroutes = 0;
 
     return oheader;
 
