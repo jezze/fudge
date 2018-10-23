@@ -109,18 +109,6 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/initfs \
-
-O:=\
-    $(DIR_SRC)/utils/initfs.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
     $(DIR_SRC)/utils/initnet \
 
 O:=\

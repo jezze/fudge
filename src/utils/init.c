@@ -1,6 +1,29 @@
 #include <abi.h>
 #include <fudge.h>
 
+static void loadsystem(void)
+{
+
+    file_walk(FILE_CP, "/bin/elfload");
+    file_walk(FILE_C0, "/mod/system.ko");
+    call_spawn();
+    file_walk(FILE_L0, "/system");
+    call_auth(FILE_L1, 2000, 2000);
+    call_mount(FILE_L0, FILE_L1);
+
+}
+
+static void loadevent(void)
+{
+
+    file_walk(FILE_CP, "/bin/elfload");
+    file_walk(FILE_C0, "/mod/event.ko");
+    call_spawn();
+    file_walk(FILE_PM, "/system/event");
+    file_walk(FILE_CM, "/system/event");
+
+}
+
 void main(void)
 {
 
@@ -8,28 +31,8 @@ void main(void)
     struct event_header *oheader = (struct event_header *)obuffer;
     unsigned int id;
 
-    /* Move to base once event is merged into kernel */
-    file_walk(FILE_CP, "/bin/elfload");
-    file_walk(FILE_C0, "/mod/system.ko");
-
-    id = call_spawn();
-
-    /* Should move event into kernel */
-    file_walk(FILE_CP, "/bin/elfload");
-    file_walk(FILE_C0, "/mod/event.ko");
-
-    id = call_spawn();
-
-    /* Move to after base and arch once event is merged into kernel */
-    file_walk(FILE_CP, "/bin/initfs");
-
-    id = call_spawn();
-
-    /* Setup default descriptors */
-    file_walk(FILE_PM, "/system/event");
-    file_walk(FILE_CM, "/system/event");
-
-    /* This is what init really should do */
+    loadsystem();
+    loadevent();
     file_walk(FILE_CP, "/bin/slang");
     file_walk(FILE_C0, "/config/init.slang");
 
