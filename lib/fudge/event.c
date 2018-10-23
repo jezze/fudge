@@ -592,12 +592,7 @@ struct event_header *event_reply(struct event_header *oheader, struct event_head
     event_forward(oheader, iheader, type, iheader->source);
 
     if (oheader->nroutes)
-    {
-
-        oheader->nroutes--;
-        oheader->target = oheader->routes[oheader->nroutes];
-
-    }
+        oheader->target = oheader->routes[--oheader->nroutes];
 
     return oheader;
 
