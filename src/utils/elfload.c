@@ -28,7 +28,10 @@ static unsigned int findvalue(unsigned int descriptor, struct elf_header *header
         if (!file_seekreadall(descriptor, &symbol, symbolheader->esize, symbolheader->offset + i * symbolheader->esize))
             return 0;
 
-        if (strings[symbol.name + count] != '\0' || !memory_match(symbolname, &strings[symbol.name], count))
+        if (strings[symbol.name + count] != '\0')
+            continue;
+
+        if (!memory_match(symbolname, &strings[symbol.name], count))
             continue;
 
         if (header->type == ELF_TYPE_RELOCATABLE)
@@ -104,34 +107,29 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
     unsigned int address = 0;
     char module[32];
 
-    if (!file_walk(FILE_L0, "/mod"))
-        return 0;
-
+    offset += memory_write(module, 32, "/mod/", 5, offset);
     offset += memory_write(module, 32, symbolname, memory_findbyte(symbolname, count, '_'), offset);
     offset += memory_write(module, 32, ".ko", 4, offset);
 
-    if (file_walkfrom(FILE_L1, FILE_L0, module))
+    if (!address && file_walk(FILE_L0, module))
     {
 
-        file_open(FILE_L1);
+        file_open(FILE_L0);
 
-        address = findsymbol(FILE_L1, count, symbolname);
+        address = findsymbol(FILE_L0, count, symbolname);
 
-        file_close(FILE_L1);
+        file_close(FILE_L0);
 
     }
 
-    if (!address)
+    if (!address && file_walk(FILE_L0, "/bin/fudge"))
     {
 
-        if (!file_walk(FILE_L2, "/bin/fudge"))
-            return 0;
+        file_open(FILE_L0);
 
-        file_open(FILE_L2);
+        address = findsymbol(FILE_L0, count, symbolname);
 
-        address = findsymbol(FILE_L2, count, symbolname);
-
-        file_close(FILE_L2);
+        file_close(FILE_L0);
 
     }
 
@@ -149,7 +147,6 @@ static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionhe
 
         unsigned char index;
         unsigned int address;
-        unsigned int value;
         struct elf_relocation relocation;
         struct elf_symbol symbol;
 
@@ -166,16 +163,20 @@ static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionhe
 
         address = findmodulesymbol(ascii_length(strings + symbol.name), strings + symbol.name);
 
-        if (!address)
-            return 0;
+        if (address)
+        {
 
-        if (!file_seekreadall(descriptor, &value, 4, offset + relocation.offset))
-            return 0;
+            unsigned int value;
 
-        value += address;
+            if (!file_seekreadall(descriptor, &value, 4, offset + relocation.offset))
+                return 0;
 
-        if (!file_seekwriteall(descriptor, &value, 4, offset + relocation.offset))
-            return 0;
+            value += address;
+
+            if (!file_seekwriteall(descriptor, &value, 4, offset + relocation.offset))
+                return 0;
+
+        }
 
     }
 
