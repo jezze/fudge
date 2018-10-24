@@ -208,7 +208,7 @@ static unsigned int interpret(struct event_header *iheader, struct event_header 
     if (interpretbuiltin(count, command))
         return 0;
 
-    return runcmd(iheader, oheader, "/bin/slang2", command, count, 2);
+    return runcmd(iheader, oheader, "/bin/slang", command, count, 2);
 
 }
 

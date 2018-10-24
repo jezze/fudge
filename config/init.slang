@@ -1,8 +1,9 @@
-slang < /config/base.slang
-slang < /config/arch.slang
 initnet
-slang < /config/console.slang
-slang < /config/wm.slang
+shell < /system/console/if:0
+wm
+wshell
+wshell
+wedit < /data/wm-man.txt
 elfload < /mod/acpi.ko
 elfload < /mod/apic.ko
 elfload < /mod/ioapic.ko

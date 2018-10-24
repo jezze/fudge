@@ -31,7 +31,31 @@ static void loadscript(void)
     char obuffer[FUDGE_BSIZE];
     struct event_header *oheader = (struct event_header *)obuffer;
 
-    file_walk(FILE_CP, "/bin/slang2");
+    file_walk(FILE_CP, "/bin/slang");
+    file_walk(FILE_C0, "/config/base.slang");
+
+    id = call_spawn();
+
+    event_createinit(oheader, id);
+    event_send(oheader);
+    event_createdatafile(oheader, id, 0, FILE_P0);
+    event_send(oheader);
+    event_createdatastop(oheader, id, 0);
+    event_send(oheader);
+
+    file_walk(FILE_CP, "/bin/slang");
+    file_walk(FILE_C0, "/config/arch.slang");
+
+    id = call_spawn();
+
+    event_createinit(oheader, id);
+    event_send(oheader);
+    event_createdatafile(oheader, id, 0, FILE_P0);
+    event_send(oheader);
+    event_createdatastop(oheader, id, 0);
+    event_send(oheader);
+
+    file_walk(FILE_CP, "/bin/slang");
     file_walk(FILE_C0, "/config/init.slang");
 
     id = call_spawn();
