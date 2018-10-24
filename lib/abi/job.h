@@ -3,6 +3,8 @@ struct job
 
     unsigned int id;
     unsigned int ninputs;
+    unsigned int ndatas;
+    void *data[32];
 
 };
 

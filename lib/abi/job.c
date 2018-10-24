@@ -64,6 +64,24 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
 
         }
 
+        else if (job[j].ndatas)
+        {
+
+            for (k = 0; k < job[j].ndatas; k++)
+            {
+
+                event_requestdatapipe(oheader, iheader, job[j].id, session);
+
+                for (x = count; x > j + 1; x--)
+                    event_route(oheader, job[x - 1].id);
+
+                event_appenddata(oheader, ascii_length(job[j].data[k]), job[j].data[k]);
+                event_send(oheader);
+
+            }
+
+        }
+
         else
         {
 
@@ -117,6 +135,12 @@ void job_run(struct event_header *iheader, struct event_header *oheader, void *b
                 return;
 
             job[njobs].ninputs++;
+
+            break;
+
+        case 'D':
+            job[njobs].data[job[njobs].ndatas] = command + 2;
+            job[njobs].ndatas++;
 
             break;
 

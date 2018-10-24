@@ -6,7 +6,8 @@
 #define TOKENIDENT                      3
 #define TOKENIN                         4
 #define TOKENOUT                        5
-#define TOKENPIPE                       6
+#define TOKENDATA                       6
+#define TOKENPIPE                       7
 
 struct token
 {
@@ -87,6 +88,7 @@ static unsigned int precedence(struct token *token)
 
     case TOKENIN:
     case TOKENOUT:
+    case TOKENDATA:
         return 3;
 
     }
@@ -110,6 +112,9 @@ static unsigned int tokenize(char c)
 
     case '>':
         return TOKENOUT;
+
+    case '!':
+        return TOKENDATA;
 
     case '|':
         return TOKENPIPE;
@@ -277,6 +282,17 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
                 return;
 
             event_appenddata(oheader, 2, "O");
+            event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
+
+            break;
+
+        case TOKENDATA:
+            t = tokenlist_pop(stack);
+
+            if (!t)
+                return;
+
+            event_appenddata(oheader, 2, "D");
             event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
 
             break;
