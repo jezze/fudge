@@ -1,21 +1,21 @@
 #include <abi.h>
 #include <fudge.h>
 
-static unsigned int readheader(unsigned int id, struct elf_header *header)
+static unsigned int readheader(unsigned int descriptor, struct elf_header *header)
 {
 
-    return file_seekreadall(id, header, ELF_HEADER_SIZE, 0);
+    return file_seekreadall(descriptor, header, ELF_HEADER_SIZE, 0);
 
 }
 
-static unsigned int readsectionheader(unsigned int id, struct elf_header *header, unsigned int index, struct elf_sectionheader *sectionheader)
+static unsigned int readsectionheader(unsigned int descriptor, struct elf_header *header, unsigned int index, struct elf_sectionheader *sectionheader)
 {
 
-    return file_seekreadall(id, sectionheader, header->shsize, header->shoffset + index * header->shsize);
+    return file_seekreadall(descriptor, sectionheader, header->shsize, header->shoffset + index * header->shsize);
 
 }
 
-static unsigned int findvalue(unsigned int id, struct elf_header *header, struct elf_sectionheader *symbolheader, char *strings, unsigned int count, char *symbolname)
+static unsigned int findvalue(unsigned int descriptor, struct elf_header *header, struct elf_sectionheader *symbolheader, char *strings, unsigned int count, char *symbolname)
 {
 
     unsigned int i;
@@ -25,7 +25,7 @@ static unsigned int findvalue(unsigned int id, struct elf_header *header, struct
 
         struct elf_symbol symbol;
 
-        if (!file_seekreadall(id, &symbol, symbolheader->esize, symbolheader->offset + i * symbolheader->esize))
+        if (!file_seekreadall(descriptor, &symbol, symbolheader->esize, symbolheader->offset + i * symbolheader->esize))
             return 0;
 
         if (strings[symbol.name + count] != '\0' || !memory_match(symbolname, &strings[symbol.name], count))
@@ -36,7 +36,7 @@ static unsigned int findvalue(unsigned int id, struct elf_header *header, struct
 
             struct elf_sectionheader referenceheader;
 
-            if (!readsectionheader(id, header, symbol.shindex, &referenceheader))
+            if (!readsectionheader(descriptor, header, symbol.shindex, &referenceheader))
                 return 0;
 
             return referenceheader.address + referenceheader.offset + symbol.value;
@@ -51,13 +51,13 @@ static unsigned int findvalue(unsigned int id, struct elf_header *header, struct
 
 }
 
-static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbolname)
+static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char *symbolname)
 {
 
     struct elf_header header;
     unsigned int i;
 
-    if (!readheader(id, &header))
+    if (!readheader(descriptor, &header))
         return 0;
 
     if (!elf_validate(&header))
@@ -71,22 +71,22 @@ static unsigned int findsymbol(unsigned int id, unsigned int count, char *symbol
         char strings[FUDGE_BSIZE * 4];
         unsigned int value;
 
-        if (!readsectionheader(id, &header, i, &symbolheader))
+        if (!readsectionheader(descriptor, &header, i, &symbolheader))
             return 0;
 
         if (symbolheader.type != ELF_SECTION_TYPE_SYMTAB)
             continue;
 
-        if (!readsectionheader(id, &header, symbolheader.link, &stringheader))
+        if (!readsectionheader(descriptor, &header, symbolheader.link, &stringheader))
             return 0;
 
         if (stringheader.size > FUDGE_BSIZE * 4)
             return 0;
 
-        if (!file_seekreadall(id, strings, stringheader.size, stringheader.offset))
+        if (!file_seekreadall(descriptor, strings, stringheader.size, stringheader.offset))
             return 0;
 
-        value = findvalue(id, &header, &symbolheader, strings, count, symbolname);
+        value = findvalue(descriptor, &header, &symbolheader, strings, count, symbolname);
 
         if (value)
             return value;
@@ -121,11 +121,21 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 
     }
 
+    if (!address)
+    {
+
+        if (!file_walk(FILE_L0, "/bin/fudge"))
+            return 0;
+
+        address = findsymbol(FILE_L0, count, symbolname);
+
+    }
+
     return address;
 
 }
 
-static unsigned int resolvesymbols(unsigned int id, struct elf_sectionheader *relocationheader, struct elf_sectionheader *symbolheader, char *strings, unsigned int offset)
+static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionheader *relocationheader, struct elf_sectionheader *symbolheader, char *strings, unsigned int offset)
 {
 
     unsigned int i;
@@ -136,38 +146,31 @@ static unsigned int resolvesymbols(unsigned int id, struct elf_sectionheader *re
         unsigned char index;
         unsigned int address;
         unsigned int value;
-        char *symbolname;
-        unsigned int count;
         struct elf_relocation relocation;
         struct elf_symbol symbol;
 
-        if (!file_seekreadall(id, &relocation, relocationheader->esize, relocationheader->offset + i * relocationheader->esize))
+        if (!file_seekreadall(descriptor, &relocation, relocationheader->esize, relocationheader->offset + i * relocationheader->esize))
             return 0;
 
         index = relocation.info >> 8;
 
-        if (!file_seekreadall(id, &symbol, symbolheader->esize, symbolheader->offset + index * symbolheader->esize))
+        if (!file_seekreadall(descriptor, &symbol, symbolheader->esize, symbolheader->offset + index * symbolheader->esize))
             return 0;
 
         if (symbol.shindex)
             continue;
 
-        symbolname = strings + symbol.name;
-        count = ascii_length(symbolname);
-        address = findmodulesymbol(count, symbolname);
-
-        if (!address)
-            address = findsymbol(FILE_G0, count, symbolname);
+        address = findmodulesymbol(ascii_length(strings + symbol.name), strings + symbol.name);
 
         if (!address)
             return 0;
 
-        if (!file_seekreadall(id, &value, 4, offset + relocation.offset))
+        if (!file_seekreadall(descriptor, &value, 4, offset + relocation.offset))
             return 0;
 
         value += address;
 
-        if (!file_seekwriteall(id, &value, 4, offset + relocation.offset))
+        if (!file_seekwriteall(descriptor, &value, 4, offset + relocation.offset))
             return 0;
 
     }
@@ -176,13 +179,13 @@ static unsigned int resolvesymbols(unsigned int id, struct elf_sectionheader *re
 
 }
 
-static unsigned int resolve(unsigned int id)
+static unsigned int resolve(unsigned int descriptor)
 {
 
     struct elf_header header;
     unsigned int i;
 
-    if (!readheader(id, &header))
+    if (!readheader(descriptor, &header))
         return 0;
 
     if (!elf_validate(&header))
@@ -197,28 +200,28 @@ static unsigned int resolve(unsigned int id)
         struct elf_sectionheader stringheader;
         char strings[FUDGE_BSIZE];
 
-        if (!readsectionheader(id, &header, i, &relocationheader))
+        if (!readsectionheader(descriptor, &header, i, &relocationheader))
             return 0;
 
         if (relocationheader.type != ELF_SECTION_TYPE_REL)
             continue;
 
-        if (!readsectionheader(id, &header, relocationheader.info, &dataheader))
+        if (!readsectionheader(descriptor, &header, relocationheader.info, &dataheader))
             return 0;
 
-        if (!readsectionheader(id, &header, relocationheader.link, &symbolheader))
+        if (!readsectionheader(descriptor, &header, relocationheader.link, &symbolheader))
             return 0;
 
-        if (!readsectionheader(id, &header, symbolheader.link, &stringheader))
+        if (!readsectionheader(descriptor, &header, symbolheader.link, &stringheader))
             return 0;
 
         if (stringheader.size > FUDGE_BSIZE)
             return 0;
 
-        if (!file_seekreadall(id, strings, stringheader.size, stringheader.offset))
+        if (!file_seekreadall(descriptor, strings, stringheader.size, stringheader.offset))
             return 0;
 
-        if (!resolvesymbols(id, &relocationheader, &symbolheader, strings, dataheader.offset))
+        if (!resolvesymbols(descriptor, &relocationheader, &symbolheader, strings, dataheader.offset))
             return 0;
 
     }
@@ -230,16 +233,11 @@ static unsigned int resolve(unsigned int id)
 void main(void)
 {
 
-    if (!file_walk(FILE_G0, "/bin/fudge"))
-        return;
-
     file_open(FILE_P0);
-    file_open(FILE_G0);
 
     if (resolve(FILE_P0))
         call_load(FILE_P0);
 
-    file_close(FILE_G0);
     file_close(FILE_P0);
 
 }
