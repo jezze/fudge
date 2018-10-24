@@ -7,18 +7,11 @@ static void loadsystem(void)
     file_walk2(FILE_CP, "/bin/elfload");
     file_walk2(FILE_C0, "/mod/system.ko");
     call_spawn();
+    file_walk2(FILE_C0, "/mod/event.ko");
+    call_spawn();
     file_walk2(FILE_L0, "/system");
     call_auth(FILE_L1, 2000, 2000);
     call_mount(FILE_L0, FILE_L1);
-
-}
-
-static void loadevent(void)
-{
-
-    file_walk2(FILE_CP, "/bin/elfload");
-    file_walk2(FILE_C0, "/mod/event.ko");
-    call_spawn();
     file_walk2(FILE_PM, "/system/event");
     file_walk2(FILE_CM, "/system/event");
 
@@ -33,6 +26,8 @@ static void loadscript(void)
 
     file_walk2(FILE_CP, "/bin/slang");
     file_walk2(FILE_C0, "/config/base.slang");
+    file_walk2(FILE_C1, "/config/arch.slang");
+    file_walk2(FILE_C2, "/config/init.slang");
 
     id = call_spawn();
 
@@ -40,29 +35,9 @@ static void loadscript(void)
     event_send(oheader);
     event_createdatafile(oheader, id, 0, FILE_P0);
     event_send(oheader);
-    event_createdatastop(oheader, id, 0);
+    event_createdatafile(oheader, id, 0, FILE_P1);
     event_send(oheader);
-
-    file_walk2(FILE_CP, "/bin/slang");
-    file_walk2(FILE_C0, "/config/arch.slang");
-
-    id = call_spawn();
-
-    event_createinit(oheader, id);
-    event_send(oheader);
-    event_createdatafile(oheader, id, 0, FILE_P0);
-    event_send(oheader);
-    event_createdatastop(oheader, id, 0);
-    event_send(oheader);
-
-    file_walk2(FILE_CP, "/bin/slang");
-    file_walk2(FILE_C0, "/config/init.slang");
-
-    id = call_spawn();
-
-    event_createinit(oheader, id);
-    event_send(oheader);
-    event_createdatafile(oheader, id, 0, FILE_P0);
+    event_createdatafile(oheader, id, 0, FILE_P2);
     event_send(oheader);
     event_createdatastop(oheader, id, 0);
     event_send(oheader);
@@ -86,7 +61,6 @@ void main(void)
     unsigned int status = 0;
 
     loadsystem();
-    loadevent();
     event_open();
     loadscript();
 

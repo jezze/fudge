@@ -326,6 +326,10 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
     if (!datafile->descriptor)
         return 0;
 
+    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
+    tokenlist_init(&infix, 1024, infixdata);
+    tokenlist_init(&postfix, 1024, postfixdata);
+    tokenlist_init(&stack, 8, stackdata);
     file_open(datafile->descriptor);
 
     while ((count = file_read(datafile->descriptor, buffer, FUDGE_BSIZE)))
@@ -347,6 +351,10 @@ static unsigned int ondatapipe(struct event_header *iheader, struct event_header
     if (!datapipe->count)
         return 0;
 
+    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
+    tokenlist_init(&infix, 1024, infixdata);
+    tokenlist_init(&postfix, 1024, postfixdata);
+    tokenlist_init(&stack, 8, stackdata);
     tokenizebuffer(&infix, &stringtable, datapipe->count, datapipe + 1);
     translate(&postfix, &infix, &stack);
     parse(iheader, oheader, &postfix, &stack, datapipe->session);
@@ -364,18 +372,6 @@ static unsigned int ondatastop(struct event_header *iheader, struct event_header
     event_send(oheader);
 
     return 1;
-
-}
-
-static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
-{
-
-    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
-    tokenlist_init(&infix, 1024, infixdata);
-    tokenlist_init(&postfix, 1024, postfixdata);
-    tokenlist_init(&stack, 8, stackdata);
-
-    return 0;
 
 }
 
@@ -416,11 +412,6 @@ void main(void)
 
         case EVENT_DATASTOP:
             status = ondatastop(iheader, oheader);
-
-            break;
-
-        case EVENT_INIT:
-            status = oninit(iheader, oheader);
 
             break;
 
