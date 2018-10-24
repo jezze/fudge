@@ -1,4 +1,4 @@
-#include <fudge/ascii.h>
+#include "ascii.h"
 #include "regexp.h"
 
 #define MAX (~(unsigned int)0)

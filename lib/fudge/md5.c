@@ -1,4 +1,4 @@
-#include <fudge.h>
+#include "memory.h"
 #include "md5.h"
 
 #define F(x, y, z)                      (z ^ (x & (y ^ z)))

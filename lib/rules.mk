@@ -1,10 +1,4 @@
 include $(DIR_LIB)/abi/rules.mk
-include $(DIR_LIB)/crypt/rules.mk
-include $(DIR_LIB)/format/rules.mk
 include $(DIR_LIB)/fudge/rules.mk
-include $(DIR_LIB)/keymap/rules.mk
-include $(DIR_LIB)/math/rules.mk
 include $(DIR_LIB)/mboot/rules.mk
-include $(DIR_LIB)/regexp/rules.mk
-include $(DIR_LIB)/utf8/rules.mk
 include $(DIR_LIB)/widget/rules.mk

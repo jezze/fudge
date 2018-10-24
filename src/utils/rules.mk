@@ -53,7 +53,6 @@ O:=\
     $(DIR_SRC)/utils/elfload.o \
 
 L:=\
-    $(DIR_LIB)/format/format.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
@@ -66,7 +65,6 @@ O:=\
     $(DIR_SRC)/utils/elfunload.o \
 
 L:=\
-    $(DIR_LIB)/format/format.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 

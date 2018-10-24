@@ -1,7 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <keymap/keymap.h>
-#include <math/box.h>
 #include <widget/widget.h>
 
 static struct widget_textbox content;

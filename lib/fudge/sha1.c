@@ -1,5 +1,5 @@
-#include <fudge.h>
-#include "sha.h"
+#include "memory.h"
+#include "sha1.h"
 
 #define F0(b, c, d)                     (d ^ (b & (c ^ d)))
 #define F1(b, c, d)                     (b ^ c ^ d)

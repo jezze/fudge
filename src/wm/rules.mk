@@ -5,8 +5,6 @@ O:=\
     $(DIR_SRC)/wm/wedit.o \
 
 L:=\
-    $(DIR_LIB)/keymap/keymap.a \
-    $(DIR_LIB)/math/math.a \
     $(DIR_LIB)/widget/widget.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
@@ -21,8 +19,6 @@ O:=\
     $(DIR_SRC)/wm/render.o \
 
 L:=\
-    $(DIR_LIB)/math/math.a \
-    $(DIR_LIB)/format/format.a \
     $(DIR_LIB)/widget/widget.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
@@ -37,9 +33,6 @@ O:=\
     $(DIR_SRC)/wm/render.o \
 
 L:=\
-    $(DIR_LIB)/keymap/keymap.a \
-    $(DIR_LIB)/math/math.a \
-    $(DIR_LIB)/format/format.a \
     $(DIR_LIB)/widget/widget.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
@@ -53,8 +46,6 @@ O:=\
     $(DIR_SRC)/wm/wshell.o \
 
 L:=\
-    $(DIR_LIB)/keymap/keymap.a \
-    $(DIR_LIB)/math/math.a \
     $(DIR_LIB)/widget/widget.a \
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
