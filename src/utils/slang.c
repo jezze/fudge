@@ -57,12 +57,7 @@ static void tokenlist_push(struct tokenlist *list, struct token *token)
 static struct token *tokenlist_pop(struct tokenlist *list)
 {
 
-    if (!list->head)
-        return 0;
-
-    list->head--;
-
-    return &list->table[list->head];
+    return (list->head) ? &list->table[--list->head] : 0;
 
 }
 
