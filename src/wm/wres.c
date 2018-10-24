@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 #include <widget/widget.h>
-#include "render.h"
+#include <widget/render.h>
 
 static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
 {

@@ -16,7 +16,6 @@ B:=\
 
 O:=\
     $(DIR_SRC)/wm/wres.o \
-    $(DIR_SRC)/wm/render.o \
 
 L:=\
     $(DIR_LIB)/widget/widget.a \
@@ -30,7 +29,6 @@ B:=\
 
 O:=\
     $(DIR_SRC)/wm/wm.o \
-    $(DIR_SRC)/wm/render.o \
 
 L:=\
     $(DIR_LIB)/widget/widget.a \
