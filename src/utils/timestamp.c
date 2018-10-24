@@ -38,7 +38,7 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
     if (!datafile->descriptor)
     {
 
-        if (!file_walk(FILE_L0, "/system/clock/if:0/ctrl"))
+        if (!file_walk2(FILE_L0, "/system/clock/if:0/ctrl"))
             return 0;
 
         datafile->descriptor = FILE_L0;

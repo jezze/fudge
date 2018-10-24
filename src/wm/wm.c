@@ -317,7 +317,7 @@ static unsigned int ondatapipe(struct event_header *iheader, struct event_header
 
     struct event_datapipe *datapipe = event_getdata(iheader);
 
-    if (!file_walkfrom(FILE_L0, FILE_G2, "../data"))
+    if (!file_walk(FILE_L0, FILE_G2, "../data"))
         return 0;
 
     render_write(datapipe + 1, datapipe->count);
@@ -339,12 +339,12 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
     activateview(currentview);
     render_init();
 
-    if (!file_walkfrom(FILE_L0, FILE_G2, "../ctrl"))
+    if (!file_walk(FILE_L0, FILE_G2, "../ctrl"))
         return 1;
 
     render_setvideo(FILE_L0, 1024, 768, 4);
 
-    if (!file_walkfrom(FILE_L0, FILE_G2, "../colormap"))
+    if (!file_walk(FILE_L0, FILE_G2, "../colormap"))
         return 1;
 
     render_setcolormap(FILE_L0);
@@ -457,7 +457,7 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
         if (!(keymod & KEYMOD_SHIFT))
             break;
 
-        if (!file_walk(FILE_CP, "/bin/wshell"))
+        if (!file_walk2(FILE_CP, "/bin/wshell"))
             break;
 
         id = call_spawn();
@@ -740,25 +740,25 @@ static unsigned int onvideomode(struct event_header *iheader, struct event_heade
     {
 
     case 0:
-        file_walk(FILE_L0, "/data/ter-112n.pcf");
+        file_walk2(FILE_L0, "/data/ter-112n.pcf");
         render_setfont(FILE_L0, lineheight, padding);
 
         break;
 
     case 1:
-        file_walk(FILE_L0, "/data/ter-114n.pcf");
+        file_walk2(FILE_L0, "/data/ter-114n.pcf");
         render_setfont(FILE_L0, lineheight, padding);
 
         break;
 
     case 2:
-        file_walk(FILE_L0, "/data/ter-116n.pcf");
+        file_walk2(FILE_L0, "/data/ter-116n.pcf");
         render_setfont(FILE_L0, lineheight, padding);
 
         break;
 
     default:
-        file_walk(FILE_L0, "/data/ter-118n.pcf");
+        file_walk2(FILE_L0, "/data/ter-118n.pcf");
         render_setfont(FILE_L0, lineheight, padding);
 
         break;
@@ -909,13 +909,13 @@ void main(void)
 
     unsigned int status = 0;
 
-    if (!file_walk(FILE_G0, "/system/keyboard/event"))
+    if (!file_walk2(FILE_G0, "/system/keyboard/event"))
         return;
 
-    if (!file_walk(FILE_G1, "/system/mouse/event"))
+    if (!file_walk2(FILE_G1, "/system/mouse/event"))
         return;
 
-    if (!file_walk(FILE_G2, "/system/video/if:0/event"))
+    if (!file_walk2(FILE_G2, "/system/video/if:0/event"))
         return;
 
     file_open(FILE_G0);

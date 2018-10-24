@@ -2,20 +2,20 @@
 #include "call.h"
 #include "file.h"
 
-unsigned int file_walk(unsigned int descriptor, char *path)
-{
-
-    if (path[0] == '/')
-        return file_walkfrom(descriptor, FILE_PR, path + 1);
-    else
-        return file_walkfrom(descriptor, FILE_PW, path);
-
-}
-
-unsigned int file_walkfrom(unsigned int descriptor, unsigned int pdescriptor, char *path)
+unsigned int file_walk(unsigned int descriptor, unsigned int pdescriptor, char *path)
 {
 
     return call_walk(descriptor, pdescriptor, path, ascii_length(path));
+
+}
+
+unsigned int file_walk2(unsigned int descriptor, char *path)
+{
+
+    if (path[0] == '/')
+        return file_walk(descriptor, FILE_PR, path + 1);
+    else
+        return file_walk(descriptor, FILE_PW, path);
 
 }
 

@@ -6,7 +6,7 @@ void main(void)
 
     struct ipv4_arpentry entry;
 
-    if (!file_walk(FILE_L0, "/system/ethernet/if:0/addr"))
+    if (!file_walk2(FILE_L0, "/system/ethernet/if:0/addr"))
         return;
 
     file_open(FILE_L0);
@@ -18,7 +18,7 @@ void main(void)
     entry.paddress[2] = 5;
     entry.paddress[3] = entry.haddress[4];
 
-    if (!file_walk(FILE_L0, "/system/ethernet/ipv4/arptable"))
+    if (!file_walk2(FILE_L0, "/system/ethernet/ipv4/arptable"))
         return;
 
     file_open(FILE_L0);

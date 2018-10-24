@@ -4,10 +4,10 @@
 static void loadsystem(void)
 {
 
-    file_walk(FILE_CP, "/bin/elfload");
-    file_walk(FILE_C0, "/mod/system.ko");
+    file_walk2(FILE_CP, "/bin/elfload");
+    file_walk2(FILE_C0, "/mod/system.ko");
     call_spawn();
-    file_walk(FILE_L0, "/system");
+    file_walk2(FILE_L0, "/system");
     call_auth(FILE_L1, 2000, 2000);
     call_mount(FILE_L0, FILE_L1);
 
@@ -16,11 +16,11 @@ static void loadsystem(void)
 static void loadevent(void)
 {
 
-    file_walk(FILE_CP, "/bin/elfload");
-    file_walk(FILE_C0, "/mod/event.ko");
+    file_walk2(FILE_CP, "/bin/elfload");
+    file_walk2(FILE_C0, "/mod/event.ko");
     call_spawn();
-    file_walk(FILE_PM, "/system/event");
-    file_walk(FILE_CM, "/system/event");
+    file_walk2(FILE_PM, "/system/event");
+    file_walk2(FILE_CM, "/system/event");
 
 }
 
@@ -31,8 +31,8 @@ static void loadscript(void)
     char obuffer[FUDGE_BSIZE];
     struct event_header *oheader = (struct event_header *)obuffer;
 
-    file_walk(FILE_CP, "/bin/slang");
-    file_walk(FILE_C0, "/config/base.slang");
+    file_walk2(FILE_CP, "/bin/slang");
+    file_walk2(FILE_C0, "/config/base.slang");
 
     id = call_spawn();
 
@@ -43,8 +43,8 @@ static void loadscript(void)
     event_createdatastop(oheader, id, 0);
     event_send(oheader);
 
-    file_walk(FILE_CP, "/bin/slang");
-    file_walk(FILE_C0, "/config/arch.slang");
+    file_walk2(FILE_CP, "/bin/slang");
+    file_walk2(FILE_C0, "/config/arch.slang");
 
     id = call_spawn();
 
@@ -55,8 +55,8 @@ static void loadscript(void)
     event_createdatastop(oheader, id, 0);
     event_send(oheader);
 
-    file_walk(FILE_CP, "/bin/slang");
-    file_walk(FILE_C0, "/config/init.slang");
+    file_walk2(FILE_CP, "/bin/slang");
+    file_walk2(FILE_C0, "/config/init.slang");
 
     id = call_spawn();
 

@@ -32,7 +32,7 @@ static unsigned int onwmmousepress(struct event_header *iheader, struct event_he
     {
 
     case 0x01:
-        if (!file_walk(FILE_L0, "/system/video/if:0/ctrl"))
+        if (!file_walk2(FILE_L0, "/system/video/if:0/ctrl"))
             break;
 
         render_init();

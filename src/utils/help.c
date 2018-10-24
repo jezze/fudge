@@ -10,10 +10,10 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
     if (datafile->descriptor)
         return 0;
 
-    if (!file_walk(FILE_CP, "/bin/echo"))
+    if (!file_walk2(FILE_CP, "/bin/echo"))
         return 0;
 
-    if (!file_walk(FILE_C0, "/data/help.txt"))
+    if (!file_walk2(FILE_C0, "/data/help.txt"))
         return 0;
 
     id = call_spawn();

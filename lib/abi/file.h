@@ -63,8 +63,8 @@
 #define FILE_GE                         0x3E
 #define FILE_GF                         0x3F
 
-unsigned int file_walk(unsigned int descriptor, char *path);
-unsigned int file_walkfrom(unsigned int descriptor, unsigned int pdescriptor, char *path);
+unsigned int file_walk(unsigned int descriptor, unsigned int pdescriptor, char *path);
+unsigned int file_walk2(unsigned int descriptor, char *path);
 unsigned int file_duplicate(unsigned int descriptor, unsigned int pdescriptor);
 unsigned int file_open(unsigned int descriptor);
 unsigned int file_close(unsigned int descriptor);

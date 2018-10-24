@@ -4,7 +4,7 @@
 void main(void)
 {
 
-    if (!file_walk(FILE_L0, "/system/reset"))
+    if (!file_walk2(FILE_L0, "/system/reset"))
         return;
 
     file_open(FILE_L0);

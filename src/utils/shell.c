@@ -33,7 +33,7 @@ static unsigned int runcmd(struct event_header *iheader, struct event_header *oh
 
     unsigned int id;
 
-    if (!file_walk(FILE_CP, command))
+    if (!file_walk2(FILE_CP, command))
         return 0;
 
     id = call_spawn();
@@ -63,7 +63,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
         command[count - 1] = '\0';
 
-        if (file_walk(FILE_L0, command + 3))
+        if (file_walk2(FILE_L0, command + 3))
         {
 
             file_duplicate(FILE_PW, FILE_L0);
@@ -204,10 +204,10 @@ void main(void)
 
     unsigned int status = 0;
 
-    if (!file_walkfrom(FILE_G0, FILE_P0, "event"))
+    if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;
 
-    if (!file_walkfrom(FILE_G1, FILE_P0, "odata"))
+    if (!file_walk(FILE_G1, FILE_P0, "odata"))
         return;
 
     file_open(FILE_G0);
