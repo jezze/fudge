@@ -124,10 +124,14 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
     if (!address)
     {
 
-        if (!file_walk(FILE_L0, "/bin/fudge"))
+        if (!file_walk(FILE_L2, "/bin/fudge"))
             return 0;
 
-        address = findsymbol(FILE_L0, count, symbolname);
+        file_open(FILE_L2);
+
+        address = findsymbol(FILE_L2, count, symbolname);
+
+        file_close(FILE_L2);
 
     }
 
