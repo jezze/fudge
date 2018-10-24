@@ -265,7 +265,7 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            event_appenddata(oheader, 1, "I");
+            event_appenddata(oheader, 2, "I");
             event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
 
             break;
@@ -276,7 +276,7 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            event_appenddata(oheader, 1, "O");
+            event_appenddata(oheader, 2, "O");
             event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
 
             break;
@@ -287,7 +287,7 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            event_appenddata(oheader, 1, "P");
+            event_appenddata(oheader, 2, "P");
             event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
 
             break;
@@ -298,7 +298,7 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            event_appenddata(oheader, 1, "E");
+            event_appenddata(oheader, 2, "E");
             event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
 
             break;

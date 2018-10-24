@@ -105,7 +105,7 @@ void job_run(struct event_header *iheader, struct event_header *oheader, void *b
         {
 
         case 'I':
-            if (!file_walk2(FILE_C0 + job[njobs].ninputs, command + 1))
+            if (!file_walk2(FILE_C0 + job[njobs].ninputs, command + 2))
                 return;
 
             job[njobs].ninputs++;
@@ -113,7 +113,7 @@ void job_run(struct event_header *iheader, struct event_header *oheader, void *b
             break;
 
         case 'O':
-            if (!file_walk2(FILE_C0 + job[njobs].ninputs, command + 1))
+            if (!file_walk2(FILE_C0 + job[njobs].ninputs, command + 2))
                 return;
 
             job[njobs].ninputs++;
@@ -121,7 +121,7 @@ void job_run(struct event_header *iheader, struct event_header *oheader, void *b
             break;
 
         case 'P':
-            if (!(file_walk(FILE_CP, FILE_L0, command + 1) || file_walk2(FILE_CP, command + 1)))
+            if (!(file_walk(FILE_CP, FILE_L0, command + 2) || file_walk2(FILE_CP, command + 2)))
                 return;
 
             njobs = addjob(job, njobs, call_spawn());
@@ -129,7 +129,7 @@ void job_run(struct event_header *iheader, struct event_header *oheader, void *b
             break;
 
         case 'E':
-            if (!(file_walk(FILE_CP, FILE_L0, command + 1) || file_walk2(FILE_CP, command + 1)))
+            if (!(file_walk(FILE_CP, FILE_L0, command + 2) || file_walk2(FILE_CP, command + 2)))
                 return;
 
             njobs = addjob(job, njobs, call_spawn());
