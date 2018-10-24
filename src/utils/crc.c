@@ -36,34 +36,131 @@ static unsigned int tab[256] = {
     0xAFB010B1, 0xAB710D06, 0xA6322BDF, 0xA2F33668, 0xBCB4666D, 0xB8757BDA, 0xB5365D03, 0xB1F740B4
 };
 
-void main(void)
+static unsigned int crc;
+static unsigned int total;
+
+static void calculate(unsigned char *buffer, unsigned int count)
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int count, total = 0;
     unsigned int i;
-    unsigned int crc = 0;
 
-    file_open(FILE_PI);
+    for (i = 0; i < count; i++)
+        crc = (crc << 8) ^ tab[(crc >> 24) ^ buffer[i]];
 
-    while ((count = file_read(FILE_PI, buffer, FUDGE_BSIZE)))
-    {
+    total += count;
 
-        for (i = 0; i < count; i++)
-            crc = (crc << 8) ^ tab[(crc >> 24) ^ buffer[i]];
+}
 
-        total += count;
+static void finalize(void)
+{
 
-    }
-
-    file_close(FILE_PI);
+    unsigned int i;
 
     for (i = total; i > 0; i >>= 8)
         crc = (crc << 8) ^ tab[(crc >> 24) ^ (i & 0xFF)];
 
-    file_open(FILE_PO);
-    file_writeall(FILE_PO, buffer, ascii_wvalue(buffer, 32, ~crc, 10));
-    file_close(FILE_PO);
+}
+
+static unsigned int ondatafile(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datafile *datafile = event_getdata(iheader);
+    unsigned char buffer[FUDGE_BSIZE];
+    unsigned int count;
+
+    if (!datafile->descriptor)
+        return 0;
+
+    file_open(datafile->descriptor);
+
+    while ((count = file_read(datafile->descriptor, buffer, FUDGE_BSIZE)))
+        calculate(buffer, count);
+
+    file_close(datafile->descriptor);
+
+    return 0;
+
+}
+
+static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datapipe *datapipe = event_getdata(iheader);
+
+    calculate((unsigned char *)(datapipe + 1), datapipe->count);
+
+    return 0;
+
+}
+
+static unsigned int ondatastop(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_datastop *datastop = event_getdata(iheader);
+    unsigned char buffer[FUDGE_BSIZE];
+
+    finalize();
+    event_replydatapipe(oheader, iheader, datastop->session);
+    event_appenddata(oheader, ascii_wvalue(buffer, 32, ~crc, 10), buffer);
+    event_appenddata(oheader, 1, "\n");
+    event_send(oheader);
+    event_replydatastop(oheader, iheader, datastop->session);
+    event_send(oheader);
+
+    return 1;
+
+}
+
+static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+{
+
+    return 1;
+
+}
+
+void main(void)
+{
+
+    unsigned int status = 0;
+
+    event_open();
+
+    while (!status)
+    {
+
+        char ibuffer[FUDGE_BSIZE];
+        char obuffer[FUDGE_BSIZE];
+        struct event_header *iheader = event_read(ibuffer);
+        struct event_header *oheader = (struct event_header *)obuffer;
+
+        switch (iheader->type)
+        {
+
+        case EVENT_DATAFILE:
+            status = ondatafile(iheader, oheader);
+
+            break;
+
+        case EVENT_DATAPIPE:
+            status = ondatapipe(iheader, oheader);
+
+            break;
+
+        case EVENT_DATASTOP:
+            status = ondatastop(iheader, oheader);
+
+            break;
+
+        case EVENT_KILL:
+            status = onkill(iheader, oheader);
+
+            break;
+
+        }
+
+    }
+
+    event_close();
 
 }
 

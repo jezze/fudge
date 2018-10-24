@@ -11,6 +11,18 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/utils/crc \
+
+O:=\
+    $(DIR_SRC)/utils/crc.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/date \
 
 O:=\
@@ -143,6 +155,18 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/utils/md5 \
+
+O:=\
+    $(DIR_SRC)/utils/md5.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/motd \
 
 O:=\
@@ -159,6 +183,18 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/reboot.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/sha1 \
+
+O:=\
+    $(DIR_SRC)/utils/sha1.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
