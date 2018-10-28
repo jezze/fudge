@@ -6,7 +6,7 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
 
     struct event_datafile *datafile = event_getdata(iheader);
     struct ctrl_clocksettings settings;
-    char *datetime = "0000-00-00 00:00:00\n";
+    char num[FUDGE_NSIZE];
 
     if (!datafile->descriptor)
     {
@@ -21,14 +21,19 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
     file_open(datafile->descriptor);
     file_readall(datafile->descriptor, &settings, sizeof (struct ctrl_clocksettings));
     file_close(datafile->descriptor);
-    ascii_wzerovalue(datetime, 20, settings.year, 10, 4, 0);
-    ascii_wzerovalue(datetime, 20, settings.month, 10, 2, 5);
-    ascii_wzerovalue(datetime, 20, settings.day, 10, 2, 8);
-    ascii_wzerovalue(datetime, 20, settings.hours, 10, 2, 11);
-    ascii_wzerovalue(datetime, 20, settings.minutes, 10, 2, 14);
-    ascii_wzerovalue(datetime, 20, settings.seconds, 10, 2, 17);
     event_replydatapipe(oheader, iheader, datafile->session);
-    event_appenddata(oheader, 20, datetime);
+    event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, settings.year, 10, 4, 0), num);
+    event_appenddata(oheader, 1, "-");
+    event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, settings.month, 10, 2, 0), num);
+    event_appenddata(oheader, 1, "-");
+    event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, settings.day, 10, 2, 0), num);
+    event_appenddata(oheader, 1, " ");
+    event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, settings.hours, 10, 2, 0), num);
+    event_appenddata(oheader, 1, ":");
+    event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, settings.minutes, 10, 2, 0), num);
+    event_appenddata(oheader, 1, ":");
+    event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, settings.seconds, 10, 2, 0), num);
+    event_appenddata(oheader, 1, "\n");
     event_send(oheader);
 
     return 0;
