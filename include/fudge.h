@@ -9,6 +9,7 @@
 #include <fudge/regexp.h>
 #include <fudge/ring.h>
 #include <fudge/event.h>
+#include <fudge/crc.h>
 #include <fudge/md5.h>
 #include <fudge/sha1.h>
 #include <fudge/elf.h>
