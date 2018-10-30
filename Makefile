@@ -1,6 +1,7 @@
 ARCH:=x86
 KERNEL:=fudge
 LOADER:=mboot
+COMPILER:=gcc
 
 RAMDISK_NAME:=$(KERNEL)
 RAMDISK_TYPE:=cpio
@@ -28,7 +29,7 @@ clean:
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
-include $(DIR_MK)/arch.$(ARCH).gcc.mk
+include $(DIR_MK)/$(ARCH)-$(COMPILER).mk
 include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk
 
