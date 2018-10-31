@@ -149,7 +149,7 @@ unsigned short ide_getirq(unsigned int id)
 
 }
 
-unsigned int ide_rblock(unsigned int id, void *buffer, unsigned int count)
+unsigned int ide_rblock(unsigned int id, void *buffer)
 {
 
     unsigned short data = getdata(id);
@@ -159,11 +159,11 @@ unsigned int ide_rblock(unsigned int id, void *buffer, unsigned int count)
     for (i = 0; i < 256; i++)
         *out++ = io_inw(data);
 
-    return 512;
+    return 1;
 
 }
 
-unsigned int ide_wblock(unsigned int id, void *buffer, unsigned int count)
+unsigned int ide_wblock(unsigned int id, void *buffer)
 {
 
     unsigned short data = getdata(id);
@@ -173,51 +173,47 @@ unsigned int ide_wblock(unsigned int id, void *buffer, unsigned int count)
     for (i = 0; i < 256; i++)
         io_outw(data, *out++);
 
-    return 512;
+    return 1;
 
 }
 
-void ide_rpio28(unsigned int id, unsigned int slave, unsigned int count, unsigned int offset)
+void ide_rpio28(unsigned int id, unsigned int slave, unsigned int count, unsigned int sector)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
-    unsigned int sector = offset / 512;
 
-    setpio28(data, control, slave, sector, count / 512, CONTROLPIO28READ);
+    setpio28(data, control, slave, sector, count, CONTROLPIO28READ);
 
 }
 
-void ide_wpio28(unsigned int id, unsigned int slave, unsigned int count, unsigned int offset)
+void ide_wpio28(unsigned int id, unsigned int slave, unsigned int count, unsigned int sector)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
-    unsigned int sector = offset / 512;
 
-    setpio28(data, control, slave, sector, count / 512, CONTROLPIO28WRITE);
+    setpio28(data, control, slave, sector, count, CONTROLPIO28WRITE);
 
 }
 
-void ide_rpio48(unsigned int id, unsigned int slave, unsigned int count, unsigned int offset)
+void ide_rpio48(unsigned int id, unsigned int slave, unsigned int count, unsigned int sector)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
-    unsigned int sector = offset / 512;
 
-    setpio48(data, control, slave, sector, 0, count / 512, CONTROLPIO48READ);
+    setpio48(data, control, slave, sector, 0, count, CONTROLPIO48READ);
 
 }
 
-void ide_wpio48(unsigned int id, unsigned int slave, unsigned int count, unsigned int offset)
+void ide_wpio48(unsigned int id, unsigned int slave, unsigned int count, unsigned int sector)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
-    unsigned int sector = offset / 512;
 
-    setpio48(data, control, slave, sector, 0, count / 512, CONTROLPIO48WRITE);
+    setpio48(data, control, slave, sector, 0, count, CONTROLPIO48WRITE);
 
 }
 

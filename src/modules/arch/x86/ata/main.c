@@ -18,7 +18,7 @@ static void handleirq(unsigned int irq)
     if (status & 1)
         return;
 
-    ide_rblock(blockinterface.id, data, 1);
+    ide_rblock(blockinterface.id, data);
     block_notify(&blockinterface, data, 512);
 
 }
@@ -26,7 +26,7 @@ static void handleirq(unsigned int irq)
 static unsigned int blockinterface_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    ide_rpio28(blockinterface.id, 0, count, offset);
+    ide_rpio28(blockinterface.id, 0, count / 512, offset / 512);
 
     return count;
 
