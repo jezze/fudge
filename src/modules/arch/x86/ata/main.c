@@ -32,12 +32,22 @@ static unsigned int blockinterface_readdata(struct system_node *self, struct sys
 
 }
 
+static unsigned int blockinterface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    ide_rpio28(blockinterface.id, 0, count / 512, offset / 512);
+
+    return count;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
     block_initinterface(&blockinterface, id);
 
     blockinterface.data.operations.read = blockinterface_readdata;
+    blockinterface.data.operations.write = blockinterface_writedata;
 
 }
 
