@@ -38,6 +38,9 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
 
     unsigned char dummy;
 
+    event_replydata(oheader, iheader, 0);
+    event_appenddata(oheader, 8, "testing\n");
+    event_send(oheader);
     file_write(FILE_G0, &dummy, 1024);
 
     return 0;
