@@ -263,7 +263,7 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     ring_write(&prompt, "$ ", 2);
-    event_requestwmmap(oheader, iheader, EVENT_ADDR_BROADCAST);
+    event_requestwmmap(oheader, iheader, EVENT_BROADCAST);
     event_send(oheader);
 
     return 0;
@@ -273,7 +273,7 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
 static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_requestwmunmap(oheader, iheader, EVENT_ADDR_BROADCAST);
+    event_requestwmunmap(oheader, iheader, EVENT_BROADCAST);
     event_send(oheader);
 
     return 1;

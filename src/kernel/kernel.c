@@ -293,7 +293,7 @@ unsigned int kernel_multicastdata(struct list *states, void *buffer, unsigned in
     char message[FUDGE_BSIZE];
     struct event_header *header = (struct event_header *)message;
 
-    event_createdata(header, EVENT_ADDR_BROADCAST, 0);
+    event_createdata(header, EVENT_BROADCAST, 0);
     event_appenddata(header, count, buffer);
 
     return kernel_multicast(states, header);
