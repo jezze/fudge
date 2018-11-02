@@ -47,8 +47,8 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
-    system_initnode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event");
+    system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
+    system_initnode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event");
 
     interface->id = id;
 

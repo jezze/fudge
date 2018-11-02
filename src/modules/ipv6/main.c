@@ -50,7 +50,7 @@ void ipv6_initprotocol(struct ipv6_protocol *protocol, char *name, unsigned char
 
     resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);
     system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    system_initnode(&protocol->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     protocol->id = id;
     protocol->notify = notify;

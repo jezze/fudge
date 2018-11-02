@@ -47,7 +47,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id)
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&interface->colormap, SYSTEM_NODETYPE_NORMAL, "colormap");
-    system_initnode(&interface->event, SYSTEM_NODETYPE_MAILBOX, "event");
+    system_initnode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event");
 
     interface->id = id;
 

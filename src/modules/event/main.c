@@ -46,7 +46,7 @@ static unsigned int root_seek(struct system_node *self, struct service_state *st
 void module_init(void)
 {
 
-    system_initnode(&root, SYSTEM_NODETYPE_MAILBOX, "event");
+    system_initnode(&root, SYSTEM_NODETYPE_NORMAL, "event");
 
     root.operations.read = root_read;
     root.operations.write = root_write;

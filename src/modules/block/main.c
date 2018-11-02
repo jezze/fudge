@@ -35,7 +35,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id)
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     interface->id = id;
 

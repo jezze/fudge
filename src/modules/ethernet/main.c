@@ -119,7 +119,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr");
 
     interface->id = id;
@@ -133,7 +133,7 @@ void ethernet_initprotocol(struct ethernet_protocol *protocol, char *name, unsig
 
     resource_init(&protocol->resource, RESOURCE_ETHERNETPROTOCOL, protocol);
     system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&protocol->data, SYSTEM_NODETYPE_MAILBOX, "data");
+    system_initnode(&protocol->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     protocol->type = type;
     protocol->notify = notify;
