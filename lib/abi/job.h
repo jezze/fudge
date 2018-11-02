@@ -8,4 +8,4 @@ struct job
 
 };
 
-void job_run(struct event_header *iheader, struct event_header *oheader, void *buffer, unsigned int count);
+void job_run(struct event_header *iheader, struct event_header *oheader, void *buffer, unsigned int count, unsigned int session);

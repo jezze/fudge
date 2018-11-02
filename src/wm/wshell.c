@@ -241,7 +241,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
         break;
 
     case 2:
-        job_run(iheader, oheader, data + 1, data->count);
+        job_run(iheader, oheader, data + 1, data->count, 0);
 
         break;
 

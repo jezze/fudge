@@ -114,7 +114,7 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
 
 }
 
-void job_run(struct event_header *iheader, struct event_header *oheader, void *buffer, unsigned int count)
+void job_run(struct event_header *iheader, struct event_header *oheader, void *buffer, unsigned int count, unsigned int session)
 {
 
     char *command = buffer;
@@ -167,7 +167,7 @@ void job_run(struct event_header *iheader, struct event_header *oheader, void *b
 
             njobs = addjob(job, njobs, call_spawn());
 
-            runjob(iheader, oheader, job, njobs, 0);
+            runjob(iheader, oheader, job, njobs, session);
 
             njobs = clearjobs(job, njobs);
 

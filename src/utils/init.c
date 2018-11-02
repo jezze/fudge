@@ -49,7 +49,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
     struct event_data *data = event_getdata(iheader);
 
-    job_run(iheader, oheader, data + 1, data->count);
+    job_run(iheader, oheader, data + 1, data->count, 0);
 
     return 0;
 
