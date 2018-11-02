@@ -100,12 +100,17 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
 
     }
 
-    event_requeststop(oheader, iheader, job[0].id, session);
+    for (j = 0; j < count; j++)
+    {
 
-    for (x = count; x > 1; x--)
-        event_route(oheader, job[x - 1].id);
+        event_requeststop(oheader, iheader, job[j].id, session);
 
-    event_send(oheader);
+        for (x = count; x > j + 1; x--)
+            event_route(oheader, job[x - 1].id);
+
+        event_send(oheader);
+
+    }
 
 }
 

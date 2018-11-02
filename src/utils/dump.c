@@ -56,11 +56,6 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_stop *stop = event_getdata(iheader);
-
-    event_replystop(oheader, iheader, stop->session);
-    event_send(oheader);
-
     return 1;
 
 }

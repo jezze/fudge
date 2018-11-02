@@ -91,8 +91,6 @@ static unsigned int onstop(struct event_header *iheader, struct event_header *oh
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
     event_appenddata(oheader, 1, "\n");
     event_send(oheader);
-    event_replystop(oheader, iheader, stop->session);
-    event_send(oheader);
 
     return 1;
 
