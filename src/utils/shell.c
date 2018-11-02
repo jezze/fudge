@@ -43,10 +43,10 @@ static unsigned int runcmd(struct event_header *iheader, struct event_header *oh
 
         event_requestinit(oheader, iheader, id);
         event_send(oheader);
-        event_requestdatapipe(oheader, iheader, id, session);
+        event_requestdata(oheader, iheader, id, session);
         event_appenddata(oheader, count, data);
         event_send(oheader);
-        event_requestdatastop(oheader, iheader, id, session);
+        event_requeststop(oheader, iheader, id, session);
         event_send(oheader);
 
     }
@@ -153,26 +153,26 @@ static unsigned int onconsoledata(struct event_header *iheader, struct event_hea
 
 }
 
-static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datapipe *datapipe = event_getdata(iheader);
+    struct event_data *data = event_getdata(iheader);
 
-    switch (datapipe->session)
+    switch (data->session)
     {
 
     case 0:
-        printnormal(datapipe + 1, datapipe->count);
+        printnormal(data + 1, data->count);
 
         break;
 
     case 1:
-        printcomplete(datapipe + 1, datapipe->count);
+        printcomplete(data + 1, data->count);
 
         break;
 
     case 2:
-        job_run(iheader, oheader, datapipe + 1, datapipe->count);
+        job_run(iheader, oheader, data + 1, data->count);
 
         break;
 
@@ -230,8 +230,8 @@ void main(void)
 
             break;
 
-        case EVENT_DATAPIPE:
-            status = ondatapipe(iheader, oheader);
+        case EVENT_DATA:
+            status = ondata(iheader, oheader);
 
             break;
 

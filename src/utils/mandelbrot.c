@@ -77,13 +77,13 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
-static unsigned int ondatastop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datastop *datastop = event_getdata(iheader);
+    struct event_stop *stop = event_getdata(iheader);
 
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    event_replydatastop(oheader, iheader, datastop->session);
+    event_replystop(oheader, iheader, stop->session);
     event_send(oheader);
 
     return 1;
@@ -133,8 +133,8 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_DATASTOP:
-            status = ondatastop(iheader, oheader);
+        case EVENT_STOP:
+            status = onstop(iheader, oheader);
 
             break;
 

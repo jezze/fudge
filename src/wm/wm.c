@@ -312,15 +312,15 @@ static void setupremotes(void)
 
 }
 
-static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datapipe *datapipe = event_getdata(iheader);
+    struct event_data *data = event_getdata(iheader);
 
     if (!file_walk(FILE_L0, FILE_G2, "../data"))
         return 0;
 
-    render_write(datapipe + 1, datapipe->count);
+    render_write(data + 1, data->count);
     render_flush(FILE_L0);
     render_complete();
 
@@ -467,7 +467,7 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
 
             event_requestinit(oheader, iheader, id);
             event_send(oheader);
-            event_requestdatastop(oheader, iheader, id, 0);
+            event_requeststop(oheader, iheader, id, 0);
             event_send(oheader);
 
         }
@@ -934,8 +934,8 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_DATAPIPE:
-            status = ondatapipe(iheader, oheader);
+        case EVENT_DATA:
+            status = ondata(iheader, oheader);
 
             break;
 
@@ -1009,7 +1009,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_requestdatapipe(oheader, iheader, rendertarget, 0);
+            event_requestdata(oheader, iheader, rendertarget, 0);
             event_appenddata(oheader, ring_count(&output), outputdata);
             event_send(oheader);
             ring_reset(&output);

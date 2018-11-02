@@ -1,52 +1,52 @@
 #include <abi.h>
 #include <fudge.h>
 
-static unsigned int ondatafile(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datafile *datafile = event_getdata(iheader);
+    struct event_file *file = event_getdata(iheader);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    if (!datafile->descriptor)
+    if (!file->descriptor)
         return 0;
 
-    file_open(datafile->descriptor);
+    file_open(file->descriptor);
 
-    while ((count = file_read(datafile->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_datapipe))))
+    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_data))))
     {
 
-        event_replydatapipe(oheader, iheader, datafile->session);
+        event_replydata(oheader, iheader, file->session);
         event_appenddata(oheader, count, buffer);
         event_send(oheader);
 
     }
 
-    file_close(datafile->descriptor);
+    file_close(file->descriptor);
 
     return 0;
 
 }
 
-static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datapipe *datapipe = event_getdata(iheader);
+    struct event_data *data = event_getdata(iheader);
 
-    event_replydatapipe(oheader, iheader, datapipe->session);
-    event_appenddata(oheader, datapipe->count, datapipe + 1);
+    event_replydata(oheader, iheader, data->session);
+    event_appenddata(oheader, data->count, data + 1);
     event_send(oheader);
 
     return 0;
 
 }
 
-static unsigned int ondatastop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datastop *datastop = event_getdata(iheader);
+    struct event_stop *stop = event_getdata(iheader);
 
-    event_replydatastop(oheader, iheader, datastop->session);
+    event_replystop(oheader, iheader, stop->session);
     event_send(oheader);
 
     return 1;
@@ -78,18 +78,18 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_DATAFILE:
-            status = ondatafile(iheader, oheader);
+        case EVENT_FILE:
+            status = onfile(iheader, oheader);
 
             break;
 
-        case EVENT_DATAPIPE:
-            status = ondatapipe(iheader, oheader);
+        case EVENT_DATA:
+            status = ondata(iheader, oheader);
 
             break;
 
-        case EVENT_DATASTOP:
-            status = ondatastop(iheader, oheader);
+        case EVENT_STOP:
+            status = onstop(iheader, oheader);
 
             break;
 

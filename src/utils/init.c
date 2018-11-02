@@ -33,23 +33,23 @@ static void loadscript(void)
 
     event_createinit(oheader, id);
     event_send(oheader);
-    event_createdatafile(oheader, id, 0, FILE_P0);
+    event_createfile(oheader, id, 0, FILE_P0);
     event_send(oheader);
-    event_createdatafile(oheader, id, 0, FILE_P1);
+    event_createfile(oheader, id, 0, FILE_P1);
     event_send(oheader);
-    event_createdatafile(oheader, id, 0, FILE_P2);
+    event_createfile(oheader, id, 0, FILE_P2);
     event_send(oheader);
-    event_createdatastop(oheader, id, 0);
+    event_createstop(oheader, id, 0);
     event_send(oheader);
 
 }
 
-static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datapipe *datapipe = event_getdata(iheader);
+    struct event_data *data = event_getdata(iheader);
 
-    job_run(iheader, oheader, datapipe + 1, datapipe->count);
+    job_run(iheader, oheader, data + 1, data->count);
 
     return 0;
 
@@ -75,8 +75,8 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_DATAPIPE:
-            status = ondatapipe(iheader, oheader);
+        case EVENT_DATA:
+            status = ondata(iheader, oheader);
 
             break;
 

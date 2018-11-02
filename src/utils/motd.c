@@ -1,13 +1,13 @@
 #include <abi.h>
 #include <fudge.h>
 
-static unsigned int ondatafile(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datafile *datafile = event_getdata(iheader);
+    struct event_file *file = event_getdata(iheader);
     unsigned int id;
 
-    if (datafile->descriptor)
+    if (file->descriptor)
         return 0;
 
     if (!file_walk2(FILE_CP, "/bin/echo"))
@@ -23,21 +23,21 @@ static unsigned int ondatafile(struct event_header *iheader, struct event_header
 
     event_forwardinit(oheader, iheader, id);
     event_send(oheader);
-    event_forwarddatafile(oheader, iheader, id, datafile->session, FILE_P0);
+    event_forwardfile(oheader, iheader, id, file->session, FILE_P0);
     event_send(oheader);
-    event_forwarddatastop(oheader, iheader, id, datafile->session);
+    event_forwardstop(oheader, iheader, id, file->session);
     event_send(oheader);
 
     return 0;
 
 }
 
-static unsigned int ondatastop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datastop *datastop = event_getdata(iheader);
+    struct event_stop *stop = event_getdata(iheader);
 
-    event_replydatastop(oheader, iheader, datastop->session);
+    event_replystop(oheader, iheader, stop->session);
     event_send(oheader);
 
     return 1;
@@ -69,13 +69,13 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_DATAFILE:
-            status = ondatafile(iheader, oheader);
+        case EVENT_FILE:
+            status = onfile(iheader, oheader);
 
             break;
 
-        case EVENT_DATASTOP:
-            status = ondatastop(iheader, oheader);
+        case EVENT_STOP:
+            status = onstop(iheader, oheader);
 
             break;
 

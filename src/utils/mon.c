@@ -22,12 +22,12 @@ static void dump(struct event_header *iheader, struct event_header *oheader, uns
 
 }
 
-static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datapipe *datapipe = event_getdata(iheader);
+    struct event_data *data = event_getdata(iheader);
 
-    dump(iheader, oheader, datapipe->count, datapipe + 1, datapipe->session);
+    dump(iheader, oheader, data->count, data + 1, data->session);
 
     return 0;
 
@@ -66,8 +66,8 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_DATAPIPE:
-            status = ondatapipe(iheader, oheader);
+        case EVENT_DATA:
+            status = ondata(iheader, oheader);
 
             break;
 

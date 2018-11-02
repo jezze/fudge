@@ -137,7 +137,7 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
 }
 
-static unsigned int ondatafile(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
     return 0;
@@ -300,8 +300,8 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_DATAFILE:
-            status = ondatafile(iheader, oheader);
+        case EVENT_FILE:
+            status = onfile(iheader, oheader);
 
             break;
 
@@ -345,7 +345,7 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_requestdatapipe(oheader, iheader, rendertarget, 0);
+            event_requestdata(oheader, iheader, rendertarget, 0);
             event_appenddata(oheader, ring_count(&output), outputdata);
             event_send(oheader);
             ring_reset(&output);

@@ -7,7 +7,7 @@ static void complete(struct event_header *iheader, struct event_header *oheader,
     struct record record;
 
     file_open(descriptor);
-    event_replydatapipe(oheader, iheader, session);
+    event_replydata(oheader, iheader, session);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
@@ -19,7 +19,7 @@ static void complete(struct event_header *iheader, struct event_header *oheader,
             {
 
                 event_send(oheader);
-                event_replydatapipe(oheader, iheader, session);
+                event_replydata(oheader, iheader, session);
 
             }
 
@@ -38,23 +38,23 @@ static void complete(struct event_header *iheader, struct event_header *oheader,
 
 }
 
-static unsigned int ondatapipe(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datapipe *datapipe = event_getdata(iheader);
+    struct event_data *data = event_getdata(iheader);
 
-    complete(iheader, oheader, FILE_PW, datapipe + 1, datapipe->count, datapipe->session);
+    complete(iheader, oheader, FILE_PW, data + 1, data->count, data->session);
 
     return 0;
 
 }
 
-static unsigned int ondatastop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_datastop *datastop = event_getdata(iheader);
+    struct event_stop *stop = event_getdata(iheader);
 
-    event_replydatastop(oheader, iheader, datastop->session);
+    event_replystop(oheader, iheader, stop->session);
     event_send(oheader);
 
     return 1;
@@ -86,13 +86,13 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_DATAPIPE:
-            status = ondatapipe(iheader, oheader);
+        case EVENT_DATA:
+            status = ondata(iheader, oheader);
 
             break;
 
-        case EVENT_DATASTOP:
-            status = ondatastop(iheader, oheader);
+        case EVENT_STOP:
+            status = onstop(iheader, oheader);
 
             break;
 
