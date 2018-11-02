@@ -1,9 +1,6 @@
 #include <abi.h>
 #include <fudge.h>
 
-static char arne[512];
-static unsigned int block = 0;
-
 static void dump(struct event_header *iheader, struct event_header *oheader, unsigned int count, void *buffer, unsigned int session)
 {
 
@@ -32,22 +29,7 @@ static unsigned int ondatapipe(struct event_header *iheader, struct event_header
 
     dump(iheader, oheader, datapipe->count, datapipe + 1, datapipe->session);
 
-    if (block < 1)
-    {
-
-        file_read(FILE_G3, arne, 512);
-        block++;
-
-        return 0;
-
-    }
-
-    else
-    {
-
-        return 1;
-
-    }
+    return 0;
 
 }
 
@@ -62,6 +44,7 @@ void main(void)
 {
 
     unsigned int status = 0;
+    unsigned char dummy;
 
     file_walk2(FILE_G3, "/system/block/if:0/data");
     file_walk2(FILE_G4, "/system/console/if:0/odata");
@@ -70,7 +53,7 @@ void main(void)
     file_open(FILE_G4);
     event_open();
 
-    file_read(FILE_G3, arne, 512);
+    file_read(FILE_G3, &dummy, 1024);
 
     while (!status)
     {
