@@ -6,7 +6,7 @@
 static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_requestwmmap(oheader, iheader, EVENT_BROADCAST);
+    event_requestwmmap(oheader, iheader, EVENT_BROADCAST, 0);
     event_send(oheader);
 
     return 0;
@@ -16,7 +16,7 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
 static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_requestwmunmap(oheader, iheader, EVENT_BROADCAST);
+    event_requestwmunmap(oheader, iheader, EVENT_BROADCAST, 0);
     event_send(oheader);
 
     return 1;

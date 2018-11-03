@@ -158,7 +158,7 @@ static unsigned int runcmd(struct event_header *iheader, struct event_header *oh
     if (id)
     {
 
-        event_requestinit(oheader, iheader, id);
+        event_requestinit(oheader, iheader, id, session);
         event_send(oheader);
         event_requestdata(oheader, iheader, id, session);
         event_appenddata(oheader, count, data);
@@ -227,7 +227,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
     struct event_data *data = event_getdata(iheader);
 
-    switch (data->session)
+    switch (iheader->session)
     {
 
     case 0:
@@ -263,7 +263,7 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     ring_write(&prompt, "$ ", 2);
-    event_requestwmmap(oheader, iheader, EVENT_BROADCAST);
+    event_requestwmmap(oheader, iheader, EVENT_BROADCAST, 0);
     event_send(oheader);
 
     return 0;
@@ -273,7 +273,7 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
 static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
 {
 
-    event_requestwmunmap(oheader, iheader, EVENT_BROADCAST);
+    event_requestwmunmap(oheader, iheader, EVENT_BROADCAST, 0);
     event_send(oheader);
 
     return 1;

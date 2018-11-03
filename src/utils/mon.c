@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 
-static void dump(struct event_header *iheader, struct event_header *oheader, unsigned int count, void *buffer, unsigned int session)
+static void dump(struct event_header *iheader, struct event_header *oheader, unsigned int count, void *buffer)
 {
 
     char *data = buffer;
@@ -27,7 +27,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
     struct event_data *data = event_getdata(iheader);
 
-    dump(iheader, oheader, data->count, data + 1, data->session);
+    dump(iheader, oheader, data->count, data + 1);
 
     return 0;
 
@@ -38,7 +38,7 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
 
     unsigned char dummy;
 
-    event_replydata(oheader, iheader, 0);
+    event_replydata(oheader, iheader);
     event_appenddata(oheader, 8, "testing\n");
     event_send(oheader);
     file_write(FILE_G0, &dummy, 1024);

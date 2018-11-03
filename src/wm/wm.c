@@ -141,7 +141,7 @@ static void showremotes(struct event_header *iheader, struct event_header *ohead
 
         struct remote *remote = current->data;
 
-        event_requestwmshow(oheader, iheader, remote->source);
+        event_requestwmshow(oheader, iheader, remote->source, 0);
         event_send(oheader);
         updateremote(iheader, remote);
 
@@ -159,7 +159,7 @@ static void hideremotes(struct event_header *iheader, struct event_header *ohead
 
         struct remote *remote = current->data;
 
-        event_requestwmhide(oheader, iheader, remote->source);
+        event_requestwmhide(oheader, iheader, remote->source, 0);
         event_send(oheader);
         removeremote(iheader, remote);
 
@@ -177,7 +177,7 @@ static void configureremotes(struct event_header *iheader, struct event_header *
 
         struct remote *remote = current->data;
 
-        event_requestwmconfigure(oheader, iheader, remote->source, iheader->target, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+        event_requestwmconfigure(oheader, iheader, remote->source, 0, iheader->target, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
         event_send(oheader);
 
     }
@@ -194,7 +194,7 @@ static void killremotes(struct event_header *iheader, struct event_header *ohead
 
         struct remote *remote = current->data;
 
-        event_requestkill(oheader, iheader, remote->source);
+        event_requestkill(oheader, iheader, remote->source, 0);
         event_send(oheader);
 
     }
@@ -388,7 +388,7 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
         if (currentview->currentremote)
         {
 
-            event_requestwmkeypress(oheader, iheader, currentview->currentremote->source, keypress->scancode);
+            event_requestwmkeypress(oheader, iheader, currentview->currentremote->source, 0, keypress->scancode);
             event_send(oheader);
 
         }
@@ -444,9 +444,9 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            event_requestwmhide(oheader, iheader, currentview->currentremote->source);
+            event_requestwmhide(oheader, iheader, currentview->currentremote->source, 0);
             event_send(oheader);
-            event_requestkill(oheader, iheader, currentview->currentremote->source);
+            event_requestkill(oheader, iheader, currentview->currentremote->source, 0);
             event_send(oheader);
 
         }
@@ -465,7 +465,7 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
         if (id)
         {
 
-            event_requestinit(oheader, iheader, id);
+            event_requestinit(oheader, iheader, id, 0);
             event_send(oheader);
             event_requeststop(oheader, iheader, id, 0);
             event_send(oheader);
@@ -549,10 +549,10 @@ static unsigned int onkeypress(struct event_header *iheader, struct event_header
         {
 
             /* Sending to self not allowed */
-            event_requestwmhide(oheader, iheader, iheader->target);
+            event_requestwmhide(oheader, iheader, iheader->target, 0);
             event_send(oheader);
             /* Sending to self not allowed */
-            event_requestkill(oheader, iheader, iheader->target);
+            event_requestkill(oheader, iheader, iheader->target, 0);
             event_send(oheader);
 
         }
@@ -578,7 +578,7 @@ static unsigned int onkeyrelease(struct event_header *iheader, struct event_head
         if (currentview->currentremote)
         {
 
-            event_requestwmkeyrelease(oheader, iheader, currentview->currentremote->source, keyrelease->scancode);
+            event_requestwmkeyrelease(oheader, iheader, currentview->currentremote->source, 0, keyrelease->scancode);
             event_send(oheader);
 
         }
@@ -610,7 +610,7 @@ static unsigned int onmousemove(struct event_header *iheader, struct event_heade
     if (currentview->currentremote)
     {
 
-        event_requestwmmousemove(oheader, iheader, currentview->currentremote->source, mouse.size.x, mouse.size.y);
+        event_requestwmmousemove(oheader, iheader, currentview->currentremote->source, 0, mouse.size.x, mouse.size.y);
         event_send(oheader);
 
     }
@@ -680,7 +680,7 @@ static unsigned int onmousepress(struct event_header *iheader, struct event_head
     if (currentview->currentremote)
     {
 
-        event_requestwmmousepress(oheader, iheader, currentview->currentremote->source, mousepress->button);
+        event_requestwmmousepress(oheader, iheader, currentview->currentremote->source, 0, mousepress->button);
         event_send(oheader);
 
     }
@@ -697,7 +697,7 @@ static unsigned int onmouserelease(struct event_header *iheader, struct event_he
     if (currentview->currentremote)
     {
 
-        event_requestwmmouserelease(oheader, iheader, currentview->currentremote->source, mouserelease->button);
+        event_requestwmmouserelease(oheader, iheader, currentview->currentremote->source, 0, mouserelease->button);
         event_send(oheader);
 
     }
@@ -766,10 +766,10 @@ static unsigned int onvideomode(struct event_header *iheader, struct event_heade
     }
 
     /* Sending to self not allowed */
-    event_requestwmconfigure(oheader, iheader, iheader->target, iheader->target, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    event_requestwmconfigure(oheader, iheader, iheader->target, 0, iheader->target, 0, 0, videomode->w, videomode->h, padding, lineheight);
     event_send(oheader);
     /* Sending to self not allowed */
-    event_requestwmshow(oheader, iheader, iheader->target);
+    event_requestwmshow(oheader, iheader, iheader->target, 0);
     event_send(oheader);
 
     return 0;

@@ -9,7 +9,7 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
     if (file->descriptor)
         return 0;
 
-    event_replydata(oheader, iheader, file->session);
+    event_replydata(oheader, iheader);
     event_appenddata(oheader, 13, "Hello world!\n");
     event_send(oheader);
 

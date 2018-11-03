@@ -48,7 +48,7 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
     file_open(file->descriptor);
     file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
     file_close(file->descriptor);
-    event_replydata(oheader, iheader, file->session);
+    event_replydata(oheader, iheader);
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(&settings), 10), num);
     event_appenddata(oheader, 1, "\n");
     event_send(oheader);

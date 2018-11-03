@@ -31,7 +31,7 @@ static void loadscript(void)
 
     id = call_spawn();
 
-    event_createinit(oheader, id);
+    event_createinit(oheader, id, 0);
     event_send(oheader);
     event_createfile(oheader, id, 0, FILE_P0);
     event_send(oheader);

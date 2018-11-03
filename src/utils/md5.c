@@ -38,13 +38,12 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_stop *stop = event_getdata(iheader);
     unsigned char digest[16];
     char num[FUDGE_NSIZE];
     unsigned int i;
 
     md5_write(&s, digest);
-    event_replydata(oheader, iheader, stop->session);
+    event_replydata(oheader, iheader);
 
     for (i = 0; i < 16; i++)
         event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);

@@ -38,11 +38,10 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_stop *stop = event_getdata(iheader);
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int result = crc_finalize(&s);
 
-    event_replydata(oheader, iheader, stop->session);
+    event_replydata(oheader, iheader);
     event_appenddata(oheader, ascii_wvalue(buffer, 32, result, 10), buffer);
     event_appenddata(oheader, 1, "\n");
     event_send(oheader);

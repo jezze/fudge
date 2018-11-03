@@ -1,13 +1,13 @@
 #include <abi.h>
 #include <fudge.h>
 
-static void complete(struct event_header *iheader, struct event_header *oheader, unsigned int descriptor, void *name, unsigned int length, unsigned int session)
+static void complete(struct event_header *iheader, struct event_header *oheader, unsigned int descriptor, void *name, unsigned int length)
 {
 
     struct record record;
 
     file_open(descriptor);
-    event_replydata(oheader, iheader, session);
+    event_replydata(oheader, iheader);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
@@ -19,7 +19,7 @@ static void complete(struct event_header *iheader, struct event_header *oheader,
             {
 
                 event_send(oheader);
-                event_replydata(oheader, iheader, session);
+                event_replydata(oheader, iheader);
 
             }
 
@@ -43,7 +43,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
     struct event_data *data = event_getdata(iheader);
 
-    complete(iheader, oheader, FILE_PW, data + 1, data->count, data->session);
+    complete(iheader, oheader, FILE_PW, data + 1, data->count);
 
     return 0;
 

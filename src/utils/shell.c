@@ -41,7 +41,7 @@ static unsigned int runcmd(struct event_header *iheader, struct event_header *oh
     if (id)
     {
 
-        event_requestinit(oheader, iheader, id);
+        event_requestinit(oheader, iheader, id, session);
         event_send(oheader);
         event_requestdata(oheader, iheader, id, session);
         event_appenddata(oheader, count, data);
@@ -158,7 +158,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
     struct event_data *data = event_getdata(iheader);
 
-    switch (data->session)
+    switch (iheader->session)
     {
 
     case 0:

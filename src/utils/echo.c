@@ -16,7 +16,7 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_data))))
     {
 
-        event_replydata(oheader, iheader, file->session);
+        event_replydata(oheader, iheader);
         event_appenddata(oheader, count, buffer);
         event_send(oheader);
 
@@ -33,7 +33,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
     struct event_data *data = event_getdata(iheader);
 
-    event_replydata(oheader, iheader, data->session);
+    event_replydata(oheader, iheader);
     event_appenddata(oheader, data->count, data + 1);
     event_send(oheader);
 

@@ -21,11 +21,11 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
     if (!id)
         return 0;
 
-    event_forwardinit(oheader, iheader, id);
+    event_forwardinit(oheader, iheader, id, iheader->session);
     event_send(oheader);
-    event_forwardfile(oheader, iheader, id, file->session, FILE_P0);
+    event_forwardfile(oheader, iheader, id, iheader->session, FILE_P0);
     event_send(oheader);
-    event_forwardstop(oheader, iheader, id, file->session);
+    event_forwardstop(oheader, iheader, id, iheader->session);
     event_send(oheader);
 
     return 0;

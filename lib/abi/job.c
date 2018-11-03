@@ -39,7 +39,7 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
     for (j = 0; j < count; j++)
     {
 
-        event_requestinit(oheader, iheader, job[j].id);
+        event_requestinit(oheader, iheader, job[j].id, session);
 
         for (x = count; x > j + 1; x--)
             event_route(oheader, job[x - 1].id);

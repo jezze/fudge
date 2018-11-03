@@ -6,7 +6,7 @@ static unsigned int words;
 static unsigned int lines;
 static unsigned int whitespace = 1;
 
-static void sum(struct event_header *iheader, struct event_header *oheader, unsigned int count, void *buffer, unsigned int session)
+static void sum(struct event_header *iheader, struct event_header *oheader, unsigned int count, void *buffer)
 {
 
     char *data = buffer;
@@ -58,7 +58,7 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
     file_open(file->descriptor);
 
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
-        sum(iheader, oheader, count, buffer, file->session);
+        sum(iheader, oheader, count, buffer);
 
     file_close(file->descriptor);
 
@@ -71,7 +71,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
     struct event_data *data = event_getdata(iheader);
 
-    sum(iheader, oheader, data->count, data + 1, data->session);
+    sum(iheader, oheader, data->count, data + 1);
 
     return 0;
 
@@ -80,10 +80,9 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
 {
 
-    struct event_stop *stop = event_getdata(iheader);
     char num[FUDGE_NSIZE];
 
-    event_replydata(oheader, iheader, stop->session);
+    event_replydata(oheader, iheader);
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
     event_appenddata(oheader, 1, "\n");
     event_appenddata(oheader, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);

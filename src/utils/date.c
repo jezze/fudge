@@ -21,7 +21,7 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
     file_open(file->descriptor);
     file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
     file_close(file->descriptor);
-    event_replydata(oheader, iheader, file->session);
+    event_replydata(oheader, iheader);
     event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, settings.year, 10, 4, 0), num);
     event_appenddata(oheader, 1, "-");
     event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, settings.month, 10, 2, 0), num);

@@ -243,12 +243,12 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void parse(struct event_header *iheader, struct event_header *oheader, struct tokenlist *postfix, struct tokenlist *stack, unsigned int session)
+static void parse(struct event_header *iheader, struct event_header *oheader, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     unsigned int i;
 
-    event_replydata(oheader, iheader, session);
+    event_replydata(oheader, iheader);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -348,7 +348,7 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
 
     file_close(file->descriptor);
     translate(&postfix, &infix, &stack);
-    parse(iheader, oheader, &postfix, &stack, file->session);
+    parse(iheader, oheader, &postfix, &stack);
 
     return 0;
 
@@ -368,7 +368,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
     tokenlist_init(&stack, 8, stackdata);
     tokenizebuffer(&infix, &stringtable, data->count, data + 1);
     translate(&postfix, &infix, &stack);
-    parse(iheader, oheader, &postfix, &stack, data->session);
+    parse(iheader, oheader, &postfix, &stack);
 
     return 0;
 

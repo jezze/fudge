@@ -1,7 +1,7 @@
 #include <abi.h>
 #include <fudge.h>
 
-static void dump(struct event_header *iheader, struct event_header *oheader, unsigned int count, void *buffer, unsigned int session)
+static void dump(struct event_header *iheader, struct event_header *oheader, unsigned int count, void *buffer)
 {
 
     char *data = buffer;
@@ -12,7 +12,7 @@ static void dump(struct event_header *iheader, struct event_header *oheader, uns
 
         unsigned char num[FUDGE_NSIZE];
 
-        event_replydata(oheader, iheader, session);
+        event_replydata(oheader, iheader);
         event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
         event_appenddata(oheader, 2, "  ");
         event_send(oheader);
@@ -34,7 +34,7 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
     file_open(file->descriptor);
 
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
-        dump(iheader, oheader, count, buffer, file->session);
+        dump(iheader, oheader, count, buffer);
 
     file_close(file->descriptor);
 
@@ -47,7 +47,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
     struct event_data *data = event_getdata(iheader);
 
-    dump(iheader, oheader, data->count, data + 1, data->session);
+    dump(iheader, oheader, data->count, data + 1);
 
     return 0;
 
