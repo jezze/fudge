@@ -6,7 +6,7 @@ static unsigned int words;
 static unsigned int lines;
 static unsigned int whitespace = 1;
 
-static void sum(struct event_header *iheader, struct event_header *oheader, unsigned int count, void *buffer)
+static void sum(unsigned int count, void *buffer)
 {
 
     char *data = buffer;
@@ -50,7 +50,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
     struct event_data *data = event_getdata(iheader);
 
-    sum(iheader, oheader, data->count, data + 1);
+    sum(data->count, data + 1);
 
     return 0;
 
@@ -69,7 +69,7 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
     file_open(file->descriptor);
 
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
-        sum(iheader, oheader, count, buffer);
+        sum(count, buffer);
 
     file_close(file->descriptor);
 
