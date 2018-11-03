@@ -3,6 +3,17 @@
 
 static struct md5 s;
 
+static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_data *data = event_getdata(iheader);
+
+    md5_read(&s, data + 1, data->count);
+
+    return 0;
+
+}
+
 static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -19,17 +30,6 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
         md5_read(&s, buffer, count);
 
     file_close(file->descriptor);
-
-    return 0;
-
-}
-
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_data *data = event_getdata(iheader);
-
-    md5_read(&s, data + 1, data->count);
 
     return 0;
 
@@ -89,13 +89,13 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_FILE:
-            status = onfile(iheader, oheader);
+        case EVENT_DATA:
+            status = ondata(iheader, oheader);
 
             break;
 
-        case EVENT_DATA:
-            status = ondata(iheader, oheader);
+        case EVENT_FILE:
+            status = onfile(iheader, oheader);
 
             break;
 

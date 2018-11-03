@@ -327,6 +327,26 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
 
 }
 
+static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_data *data = event_getdata(iheader);
+
+    if (!data->count)
+        return 0;
+
+    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
+    tokenlist_init(&infix, 1024, infixdata);
+    tokenlist_init(&postfix, 1024, postfixdata);
+    tokenlist_init(&stack, 8, stackdata);
+    tokenizebuffer(&infix, &stringtable, data->count, data + 1);
+    translate(&postfix, &infix, &stack);
+    parse(iheader, oheader, &postfix, &stack);
+
+    return 0;
+
+}
+
 static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -347,26 +367,6 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
         tokenizebuffer(&infix, &stringtable, count, buffer);
 
     file_close(file->descriptor);
-    translate(&postfix, &infix, &stack);
-    parse(iheader, oheader, &postfix, &stack);
-
-    return 0;
-
-}
-
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_data *data = event_getdata(iheader);
-
-    if (!data->count)
-        return 0;
-
-    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
-    tokenlist_init(&infix, 1024, infixdata);
-    tokenlist_init(&postfix, 1024, postfixdata);
-    tokenlist_init(&stack, 8, stackdata);
-    tokenizebuffer(&infix, &stringtable, data->count, data + 1);
     translate(&postfix, &infix, &stack);
     parse(iheader, oheader, &postfix, &stack);
 
@@ -406,13 +406,13 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_FILE:
-            status = onfile(iheader, oheader);
+        case EVENT_DATA:
+            status = ondata(iheader, oheader);
 
             break;
 
-        case EVENT_DATA:
-            status = ondata(iheader, oheader);
+        case EVENT_FILE:
+            status = onfile(iheader, oheader);
 
             break;
 

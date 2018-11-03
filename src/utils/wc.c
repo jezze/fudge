@@ -45,6 +45,17 @@ static void sum(struct event_header *iheader, struct event_header *oheader, unsi
 
 }
 
+static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+{
+
+    struct event_data *data = event_getdata(iheader);
+
+    sum(iheader, oheader, data->count, data + 1);
+
+    return 0;
+
+}
+
 static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
 {
 
@@ -61,17 +72,6 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
         sum(iheader, oheader, count, buffer);
 
     file_close(file->descriptor);
-
-    return 0;
-
-}
-
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
-{
-
-    struct event_data *data = event_getdata(iheader);
-
-    sum(iheader, oheader, data->count, data + 1);
 
     return 0;
 
@@ -120,13 +120,13 @@ void main(void)
         switch (iheader->type)
         {
 
-        case EVENT_FILE:
-            status = onfile(iheader, oheader);
+        case EVENT_DATA:
+            status = ondata(iheader, oheader);
 
             break;
 
-        case EVENT_DATA:
-            status = ondata(iheader, oheader);
+        case EVENT_FILE:
+            status = onfile(iheader, oheader);
 
             break;
 
