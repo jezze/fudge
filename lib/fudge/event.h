@@ -177,10 +177,10 @@ struct event_header *event_createmouserelease(struct event_header *oheader, unsi
 struct event_header *event_createmousemove(struct event_header *oheader, char relx, char rely);
 struct event_header *event_createtimertick(struct event_header *oheader, unsigned int counter);
 struct event_header *event_createvideomode(struct event_header *oheader, unsigned int w, unsigned int h, unsigned int bpp);
-struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target, unsigned int session);
-struct event_header *event_forwardfile(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned int descriptor);
-struct event_header *event_forwardstop(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session);
-struct event_header *event_forwardinit(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session);
+struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target);
+struct event_header *event_forwardfile(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int descriptor);
+struct event_header *event_forwardstop(struct event_header *oheader, struct event_header *iheader, unsigned int target);
+struct event_header *event_forwardinit(struct event_header *oheader, struct event_header *iheader, unsigned int target);
 struct event_header *event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target, unsigned int session);
 struct event_header *event_requestfile(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned int descriptor);
 struct event_header *event_requestdata(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session);

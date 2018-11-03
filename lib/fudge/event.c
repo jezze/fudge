@@ -369,7 +369,49 @@ struct event_header *event_createvideomode(struct event_header *oheader, unsigne
 
 }
 
-struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target, unsigned int session)
+struct event_header *event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target)
+{
+
+    unsigned int i;
+
+    event_create(oheader, type, target, iheader->session);
+
+    for (i = 0; i < iheader->nroutes; i++)
+        event_route(oheader, iheader->routes[i]);
+
+    return oheader;
+
+}
+
+struct event_header *event_forwardfile(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int descriptor)
+{
+
+    event_forward(oheader, iheader, EVENT_FILE, target);
+    addfile(oheader, descriptor);
+
+    return oheader;
+
+}
+
+struct event_header *event_forwardstop(struct event_header *oheader, struct event_header *iheader, unsigned int target)
+{
+
+    event_forward(oheader, iheader, EVENT_STOP, target);
+
+    return oheader;
+
+}
+
+struct event_header *event_forwardinit(struct event_header *oheader, struct event_header *iheader, unsigned int target)
+{
+
+    event_forward(oheader, iheader, EVENT_INIT, target);
+
+    return oheader;
+
+}
+
+struct event_header *event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target, unsigned int session)
 {
 
     unsigned int i;
@@ -379,42 +421,6 @@ struct event_header *event_forward(struct event_header *oheader, struct event_he
     for (i = 0; i < iheader->nroutes; i++)
         event_route(oheader, iheader->routes[i]);
 
-    return oheader;
-
-}
-
-struct event_header *event_forwardfile(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned int descriptor)
-{
-
-    event_forward(oheader, iheader, EVENT_FILE, target, session);
-    addfile(oheader, descriptor);
-
-    return oheader;
-
-}
-
-struct event_header *event_forwardstop(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
-{
-
-    event_forward(oheader, iheader, EVENT_STOP, target, session);
-
-    return oheader;
-
-}
-
-struct event_header *event_forwardinit(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
-{
-
-    event_forward(oheader, iheader, EVENT_INIT, target, session);
-
-    return oheader;
-
-}
-
-struct event_header *event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target, unsigned int session)
-{
-
-    event_forward(oheader, iheader, type, target, session);
     event_route(oheader, iheader->target);
 
     return oheader;
@@ -567,7 +573,12 @@ struct event_header *event_requestwmconfigure(struct event_header *oheader, stru
 struct event_header *event_reply(struct event_header *oheader, struct event_header *iheader, unsigned int type)
 {
 
-    event_forward(oheader, iheader, type, iheader->source, iheader->session);
+    unsigned int i;
+
+    event_create(oheader, type, iheader->source, iheader->session);
+
+    for (i = 0; i < iheader->nroutes; i++)
+        event_route(oheader, iheader->routes[i]);
 
     if (oheader->nroutes)
         oheader->target = oheader->routes[--oheader->nroutes];
