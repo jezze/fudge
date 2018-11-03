@@ -38,17 +38,6 @@ unsigned int event_route(struct event_header *header, unsigned int target)
 
 }
 
-static unsigned int addconsoledata(struct event_header *header, char data)
-{
-
-    struct event_consoledata *consoledata = addpayload(header, sizeof (struct event_consoledata));
-
-    consoledata->data = data;
-
-    return header->length;
-
-}
-
 static unsigned int addfile(struct event_header *header, unsigned int descriptor)
 {
 
@@ -66,6 +55,17 @@ static unsigned int adddata(struct event_header *header)
     struct event_data *data = addpayload(header, sizeof (struct event_data));
 
     data->count = 0;
+
+    return header->length;
+
+}
+
+static unsigned int addconsoledata(struct event_header *header, char data)
+{
+
+    struct event_consoledata *consoledata = addpayload(header, sizeof (struct event_consoledata));
+
+    consoledata->data = data;
 
     return header->length;
 
@@ -251,16 +251,6 @@ struct event_header *event_create(struct event_header *oheader, unsigned int typ
 
 }
 
-struct event_header *event_createconsoledata(struct event_header *oheader, unsigned int target, char data)
-{
-
-    event_create(oheader, EVENT_CONSOLEDATA, target, 0);
-    addconsoledata(oheader, data);
-
-    return oheader;
-
-}
-
 struct event_header *event_createfile(struct event_header *oheader, unsigned int target, unsigned int session, unsigned int descriptor)
 {
 
@@ -299,70 +289,80 @@ struct event_header *event_createinit(struct event_header *oheader, unsigned int
 
 }
 
-struct event_header *event_createkeypress(struct event_header *oheader, unsigned int target, unsigned char scancode)
+struct event_header *event_createconsoledata(struct event_header *oheader, char data)
 {
 
-    event_create(oheader, EVENT_KEYPRESS, target, 0);
+    event_create(oheader, EVENT_CONSOLEDATA, EVENT_BROADCAST, 0);
+    addconsoledata(oheader, data);
+
+    return oheader;
+
+}
+
+struct event_header *event_createkeypress(struct event_header *oheader, unsigned char scancode)
+{
+
+    event_create(oheader, EVENT_KEYPRESS, EVENT_BROADCAST, 0);
     addkeypress(oheader, scancode);
 
     return oheader;
 
 }
 
-struct event_header *event_createkeyrelease(struct event_header *oheader, unsigned int target, unsigned char scancode)
+struct event_header *event_createkeyrelease(struct event_header *oheader, unsigned char scancode)
 {
 
-    event_create(oheader, EVENT_KEYRELEASE, target, 0);
+    event_create(oheader, EVENT_KEYRELEASE, EVENT_BROADCAST, 0);
     addkeyrelease(oheader, scancode);
 
     return oheader;
 
 }
 
-struct event_header *event_createmousepress(struct event_header *oheader, unsigned int target, unsigned int button)
+struct event_header *event_createmousepress(struct event_header *oheader, unsigned int button)
 {
 
-    event_create(oheader, EVENT_MOUSEPRESS, target, 0);
+    event_create(oheader, EVENT_MOUSEPRESS, EVENT_BROADCAST, 0);
     addmousepress(oheader, button);
 
     return oheader;
 
 }
 
-struct event_header *event_createmouserelease(struct event_header *oheader, unsigned int target, unsigned int button)
+struct event_header *event_createmouserelease(struct event_header *oheader, unsigned int button)
 {
 
-    event_create(oheader, EVENT_MOUSERELEASE, target, 0);
+    event_create(oheader, EVENT_MOUSERELEASE, EVENT_BROADCAST, 0);
     addmouserelease(oheader, button);
 
     return oheader;
 
 }
 
-struct event_header *event_createmousemove(struct event_header *oheader, unsigned int target, char relx, char rely)
+struct event_header *event_createmousemove(struct event_header *oheader, char relx, char rely)
 {
 
-    event_create(oheader, EVENT_MOUSEMOVE, target, 0);
+    event_create(oheader, EVENT_MOUSEMOVE, EVENT_BROADCAST, 0);
     addmousemove(oheader, relx, rely);
 
     return oheader;
 
 }
 
-struct event_header *event_createtimertick(struct event_header *oheader, unsigned int target, unsigned int counter)
+struct event_header *event_createtimertick(struct event_header *oheader, unsigned int counter)
 {
 
-    event_create(oheader, EVENT_TIMERTICK, target, 0);
+    event_create(oheader, EVENT_TIMERTICK, EVENT_BROADCAST, 0);
     addtimertick(oheader, counter);
 
     return oheader;
 
 }
 
-struct event_header *event_createvideomode(struct event_header *oheader, unsigned int target, unsigned int w, unsigned int h, unsigned int bpp)
+struct event_header *event_createvideomode(struct event_header *oheader, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
-    event_create(oheader, EVENT_VIDEOMODE, target, 0);
+    event_create(oheader, EVENT_VIDEOMODE, EVENT_BROADCAST, 0);
     addvideomode(oheader, w, h, bpp);
 
     return oheader;
