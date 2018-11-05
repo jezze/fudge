@@ -21,8 +21,8 @@ struct event_header *event_read(void *message)
 
     struct event_header *header = message;
 
-    while (file_readall(FILE_PM, header, sizeof (struct event_header)) != sizeof (struct event_header));
-    while (file_readall(FILE_PM, header + 1, header->length - sizeof (struct event_header)) != header->length - sizeof (struct event_header));
+    file_readall(FILE_PM, header, sizeof (struct event_header));
+    file_readall(FILE_PM, header + 1, header->length - sizeof (struct event_header));
 
     return header;
 
