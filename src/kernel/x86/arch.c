@@ -335,7 +335,6 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
     struct core *core = kernel_getcore();
 
-    core->task->thread.rewind = 7;
     general.eax.value = abi_call(general.eax.value, core->task, interrupt.esp.reference);
 
     return arch_resume(&general, &interrupt);

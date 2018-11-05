@@ -195,8 +195,6 @@ static void unblocktask(struct task *task)
     list_remove(&blockedtasks, &task->item);
 
     task->thread.status = TASK_STATUS_NORMAL;
-    task->thread.ip -= task->thread.rewind;
-    task->thread.rewind = 0;
 
     list_add(&usedtasks, &task->item);
 
