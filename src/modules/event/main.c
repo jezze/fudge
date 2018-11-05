@@ -7,7 +7,7 @@ static struct system_node root;
 static unsigned int root_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    count = task_read(state->task, buffer, count);
+    count = task_readall(state->task, buffer, count);
 
     if (!count)
         kernel_blocktask(state->task);

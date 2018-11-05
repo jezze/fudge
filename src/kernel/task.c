@@ -3,12 +3,12 @@
 #include "binary.h"
 #include "task.h"
 
-unsigned int task_read(struct task *task, void *buffer, unsigned int count)
+unsigned int task_readall(struct task *task, void *buffer, unsigned int count)
 {
 
     spinlock_acquire(&task->mailbox.spinlock);
 
-    count = ring_read(&task->mailbox.ring, buffer, count);
+    count = ring_readall(&task->mailbox.ring, buffer, count);
 
     spinlock_release(&task->mailbox.spinlock);
 

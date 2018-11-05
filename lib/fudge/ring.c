@@ -106,7 +106,7 @@ unsigned int ring_read(struct ring *ring, void *buffer, unsigned int count)
 unsigned int ring_readall(struct ring *ring, void *buffer, unsigned int count)
 {
 
-    if (count > ring_avail(ring))
+    if (count > ring_count(ring))
         return 0;
 
     return ring_read(ring, buffer, count);

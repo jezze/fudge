@@ -33,7 +33,7 @@ struct task
 
 };
 
-unsigned int task_read(struct task *task, void *buffer, unsigned int count);
+unsigned int task_readall(struct task *task, void *buffer, unsigned int count);
 unsigned int task_writeall(struct task *task, void *buffer, unsigned int count);
 void task_initthread(struct task_thread *thread);
 void task_initmailbox(struct task_mailbox *mailbox, char *buffer);
