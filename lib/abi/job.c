@@ -4,63 +4,63 @@
 #include "event.h"
 #include "job.h"
 
-static unsigned int addjob(struct job *job, unsigned int count, unsigned int id)
+static unsigned int addjob(struct job *jobs, unsigned int njobs, unsigned int id)
 {
 
     if (id)
     {
 
-        job[count].id = id;
+        jobs[njobs].id = id;
 
-        return count + 1;
+        return njobs + 1;
 
     }
 
-    return count;
+    return njobs;
 
 }
 
-static unsigned int clearjobs(struct job *job, unsigned int count)
+static unsigned int clearjobs(struct job *jobs, unsigned int njobs)
 {
 
-    memory_clear(job, sizeof (struct job) * count);
+    memory_clear(jobs, sizeof (struct job) * njobs);
 
     return 0;
 
 }
 
-static void runjob(struct event_header *iheader, struct event_header *oheader, struct job *job, unsigned int count, unsigned int session)
+static void runjob(struct event_header *iheader, struct event_header *oheader, struct job *jobs, unsigned int njobs, unsigned int session)
 {
 
     unsigned int j;
     unsigned int k;
     unsigned int x;
 
-    for (j = 0; j < count; j++)
+    for (j = 0; j < njobs; j++)
     {
 
-        event_requestinit(oheader, iheader, job[j].id, session);
+        event_requestinit(oheader, iheader, jobs[j].id, session);
 
-        for (x = count; x > j + 1; x--)
-            event_route(oheader, job[x - 1].id);
+        for (x = njobs; x > j + 1; x--)
+            event_route(oheader, jobs[x - 1].id);
 
         event_send(oheader);
 
     }
 
-    for (j = 0; j < count; j++)
+    for (j = 0; j < njobs; j++)
     {
 
-        if (job[j].ninputs)
+        if (jobs[j].ninputs)
         {
 
-            for (k = 0; k < job[j].ninputs; k++)
+            for (k = 0; k < jobs[j].ninputs; k++)
             {
 
-                event_requestfile(oheader, iheader, job[j].id, session, FILE_P0 + k);
+                event_requestfile(oheader, iheader, jobs[j].id, session, FILE_P0 + k);
 
-                for (x = count; x > j + 1; x--)
-                    event_route(oheader, job[x - 1].id);
+                for (x = njobs; x > j + 1; x--)
+                    event_route(oheader, jobs[x - 1].id);
 
                 event_send(oheader);
 
@@ -68,18 +68,18 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
 
         }
 
-        else if (job[j].ndatas)
+        else if (jobs[j].ndatas)
         {
 
-            for (k = 0; k < job[j].ndatas; k++)
+            for (k = 0; k < jobs[j].ndatas; k++)
             {
 
-                event_requestdata(oheader, iheader, job[j].id, session);
+                event_requestdata(oheader, iheader, jobs[j].id, session);
 
-                for (x = count; x > j + 1; x--)
-                    event_route(oheader, job[x - 1].id);
+                for (x = njobs; x > j + 1; x--)
+                    event_route(oheader, jobs[x - 1].id);
 
-                event_appenddata(oheader, ascii_length(job[j].data[k]), job[j].data[k]);
+                event_appenddata(oheader, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
                 event_send(oheader);
 
             }
@@ -89,10 +89,10 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
         else
         {
 
-            event_requestfile(oheader, iheader, job[j].id, session, 0);
+            event_requestfile(oheader, iheader, jobs[j].id, session, 0);
 
-            for (x = count; x > j + 1; x--)
-                event_route(oheader, job[x - 1].id);
+            for (x = njobs; x > j + 1; x--)
+                event_route(oheader, jobs[x - 1].id);
 
             event_send(oheader);
 
@@ -100,13 +100,13 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
 
     }
 
-    for (j = 0; j < count; j++)
+    for (j = 0; j < njobs; j++)
     {
 
-        event_requeststop(oheader, iheader, job[j].id, session);
+        event_requeststop(oheader, iheader, jobs[j].id, session);
 
-        for (x = count; x > j + 1; x--)
-            event_route(oheader, job[x - 1].id);
+        for (x = njobs; x > j + 1; x--)
+            event_route(oheader, jobs[x - 1].id);
 
         event_send(oheader);
 
@@ -114,13 +114,12 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
 
 }
 
-void job_run(struct event_header *iheader, struct event_header *oheader, void *buffer, unsigned int count, unsigned int session)
+void job_interpret(struct job *jobs, unsigned int njobs, struct event_header *iheader, struct event_header *oheader, void *buffer, unsigned int count, unsigned int session)
 {
 
+    unsigned int cjobs = clearjobs(jobs, njobs);
     char *command = buffer;
     char *end = command + count;
-    struct job job[32];
-    unsigned int njobs = clearjobs(job, 32);
 
     if (!file_walk2(FILE_L0, "/bin"))
         return;
@@ -132,24 +131,24 @@ void job_run(struct event_header *iheader, struct event_header *oheader, void *b
         {
 
         case 'I':
-            if (!file_walk2(FILE_C0 + job[njobs].ninputs, command + 2))
+            if (!file_walk2(FILE_C0 + jobs[cjobs].ninputs, command + 2))
                 return;
 
-            job[njobs].ninputs++;
+            jobs[cjobs].ninputs++;
 
             break;
 
         case 'O':
-            if (!file_walk2(FILE_C0 + job[njobs].ninputs, command + 2))
+            if (!file_walk2(FILE_C0 + jobs[cjobs].ninputs, command + 2))
                 return;
 
-            job[njobs].ninputs++;
+            jobs[cjobs].ninputs++;
 
             break;
 
         case 'D':
-            job[njobs].data[job[njobs].ndatas] = command + 2;
-            job[njobs].ndatas++;
+            jobs[cjobs].data[jobs[cjobs].ndatas] = command + 2;
+            jobs[cjobs].ndatas++;
 
             break;
 
@@ -157,7 +156,7 @@ void job_run(struct event_header *iheader, struct event_header *oheader, void *b
             if (!(file_walk(FILE_CP, FILE_L0, command + 2) || file_walk2(FILE_CP, command + 2)))
                 return;
 
-            njobs = addjob(job, njobs, call_spawn());
+            cjobs = addjob(jobs, cjobs, call_spawn());
 
             break;
 
@@ -165,11 +164,11 @@ void job_run(struct event_header *iheader, struct event_header *oheader, void *b
             if (!(file_walk(FILE_CP, FILE_L0, command + 2) || file_walk2(FILE_CP, command + 2)))
                 return;
 
-            njobs = addjob(job, njobs, call_spawn());
+            cjobs = addjob(jobs, cjobs, call_spawn());
 
-            runjob(iheader, oheader, job, njobs, session);
+            runjob(iheader, oheader, jobs, cjobs, session);
 
-            njobs = clearjobs(job, njobs);
+            cjobs = clearjobs(jobs, cjobs);
 
             break;
 

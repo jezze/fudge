@@ -48,8 +48,9 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 {
 
     struct event_data *data = event_getdata(iheader);
+    struct job jobs[32];
 
-    job_run(iheader, oheader, data + 1, data->count, 0);
+    job_interpret(jobs, 32, iheader, oheader, data + 1, data->count, 0);
 
     return 0;
 
