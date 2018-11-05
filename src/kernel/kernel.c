@@ -177,7 +177,7 @@ void kernel_freemount(struct service_mount *mount)
 
 }
 
-void kernel_blocktask(struct task *task)
+static void blocktask(struct task *task)
 {
 
     task->thread.status = TASK_STATUS_BLOCKED;
@@ -186,7 +186,7 @@ void kernel_blocktask(struct task *task)
 
 }
 
-void kernel_unblocktask(struct task *task)
+static void unblocktask(struct task *task)
 {
 
     if (task->thread.status != TASK_STATUS_BLOCKED)
@@ -259,7 +259,7 @@ unsigned int kernel_pick(unsigned int id, void *buffer, unsigned int count)
     count = task_readall(task, buffer, count);
 
     if (!count)
-        kernel_blocktask(task);
+        blocktask(task);
 
     return count;
 
@@ -273,7 +273,7 @@ unsigned int kernel_place(unsigned int id, void *buffer, unsigned int count)
     count = task_writeall(task, buffer, count);
 
     if (count)
-        kernel_unblocktask(task);
+        unblocktask(task);
 
     return count;
 
