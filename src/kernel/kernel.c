@@ -251,21 +251,38 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_send(struct event_header *header)
+unsigned int kernel_receive(unsigned int id, void *buffer, unsigned int count)
 {
 
-    struct task *task = &tasks[header->target];
-    unsigned int count = task_writeall(task, header, header->length);
+    struct task *task = &tasks[id];
 
-    kernel_unblocktask(task);
+    count = task_readall(task, buffer, count);
+
+    if (!count)
+        kernel_blocktask(task);
 
     return count;
 
 }
 
-unsigned int kernel_multicast(struct list *states, struct event_header *header)
+unsigned int kernel_send(unsigned int id, void *buffer, unsigned int count)
 {
 
+    struct task *task = &tasks[id];
+
+    count = task_writeall(task, buffer, count);
+
+    if (count)
+        kernel_unblocktask(task);
+
+    return count;
+
+}
+
+unsigned int kernel_multicast(struct list *states, void *buffer, unsigned int count)
+{
+
+    struct event_header *header = buffer;
     struct list_item *current;
 
     spinlock_acquire(&states->spinlock);
@@ -277,13 +294,13 @@ unsigned int kernel_multicast(struct list *states, struct event_header *header)
 
         header->target = state->task->id;
 
-        kernel_send(header);
+        kernel_send(state->task->id, buffer, count);
 
     }
 
     spinlock_release(&states->spinlock);
 
-    return header->length;
+    return count;
 
 }
 
@@ -296,7 +313,7 @@ unsigned int kernel_multicastdata(struct list *states, void *buffer, unsigned in
     event_createdata(header, EVENT_BROADCAST, 0);
     event_appenddata(header, count, buffer);
 
-    return kernel_multicast(states, header);
+    return kernel_multicast(states, header, header->length);
 
 }
 
