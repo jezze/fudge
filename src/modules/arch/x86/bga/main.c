@@ -83,6 +83,20 @@ static unsigned int videointerface_writedata(struct system_node *self, struct sy
 
 }
 
+static unsigned int videointerface_readcolormap(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return 0;
+
+}
+
+static unsigned int videointerface_writecolormap(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return count;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
@@ -92,6 +106,8 @@ static void driver_init(unsigned int id)
     videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;
     videointerface.data.operations.write = videointerface_writedata;
+    videointerface.colormap.operations.read = videointerface_readcolormap;
+    videointerface.colormap.operations.write = videointerface_writecolormap;
 
 }
 
