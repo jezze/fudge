@@ -59,9 +59,8 @@ unsigned int file_readall(unsigned int descriptor, void *buffer, unsigned int co
 
     unsigned char *b = buffer;
     unsigned int c;
-    unsigned int n;
 
-    for (c = 0; (n = call_read(descriptor, b + c, count - c)); c += n);
+    for (c = 0; c < count; c += call_read(descriptor, b + c, count - c));
 
     return c;
 
@@ -79,9 +78,8 @@ unsigned int file_writeall(unsigned int descriptor, void *buffer, unsigned int c
 
     unsigned char *b = buffer;
     unsigned int c;
-    unsigned int n;
 
-    for (c = 0; (n = call_write(descriptor, b + c, count - c)); c += n);
+    for (c = 0; c < count; c += call_write(descriptor, b + c, count - c));
 
     return c;
 
