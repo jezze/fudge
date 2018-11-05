@@ -251,7 +251,7 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_receive(unsigned int id, void *buffer, unsigned int count)
+unsigned int kernel_pick(unsigned int id, void *buffer, unsigned int count)
 {
 
     struct task *task = &tasks[id];
@@ -265,7 +265,7 @@ unsigned int kernel_receive(unsigned int id, void *buffer, unsigned int count)
 
 }
 
-unsigned int kernel_send(unsigned int id, void *buffer, unsigned int count)
+unsigned int kernel_place(unsigned int id, void *buffer, unsigned int count)
 {
 
     struct task *task = &tasks[id];
@@ -294,7 +294,7 @@ unsigned int kernel_multicast(struct list *states, void *buffer, unsigned int co
 
         header->target = state->task->id;
 
-        kernel_send(state->task->id, buffer, count);
+        kernel_place(state->task->id, buffer, count);
 
     }
 

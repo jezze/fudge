@@ -7,7 +7,7 @@ static struct system_node root;
 static unsigned int root_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return kernel_receive(state->task->id, buffer, count);
+    return kernel_pick(state->task->id, buffer, count);
 
 }
 
@@ -25,7 +25,7 @@ static unsigned int root_write(struct system_node *self, struct system_node *cur
     header->source = state->task->id;
 
     if (header->target)
-        return kernel_send(header->target, header, header->length);
+        return kernel_place(header->target, header, header->length);
     else
         return kernel_multicast(&self->states, header, header->length);
 
