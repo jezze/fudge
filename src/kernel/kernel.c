@@ -290,9 +290,9 @@ unsigned int kernel_multicast(struct list *states, void *buffer, unsigned int co
 
         struct service_state *state = current->data;
 
-        header->target = state->task->id;
+        header->target = state->id;
 
-        kernel_place(state->task->id, buffer, count);
+        kernel_place(state->id, buffer, count);
 
     }
 
@@ -377,7 +377,7 @@ void kernel_setup(char *buffer)
 
             struct service_descriptor *descriptor = &descriptors[i * KERNEL_DESCRIPTORS + j];
 
-            service_initdescriptor(descriptor, task);
+            service_initdescriptor(descriptor, task->id);
 
         }
 

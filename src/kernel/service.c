@@ -1,7 +1,5 @@
 #include <fudge.h>
 #include "resource.h"
-#include "binary.h"
-#include "task.h"
 #include "service.h"
 
 struct service_backend *service_findbackend(unsigned int id)
@@ -42,12 +40,12 @@ struct service_protocol *service_findprotocol(unsigned int id)
 
 }
 
-void service_initstate(struct service_state *state, struct task *task)
+void service_initstate(struct service_state *state, unsigned int id)
 {
 
     list_inititem(&state->item, state);
 
-    state->task = task;
+    state->id = id;
 
 }
 
@@ -85,10 +83,10 @@ void service_initprotocol(struct service_protocol *protocol, unsigned int id, un
 
 }
 
-void service_initdescriptor(struct service_descriptor *descriptor, struct task *task)
+void service_initdescriptor(struct service_descriptor *descriptor, unsigned int id)
 {
 
-    service_initstate(&descriptor->state, task);
+    service_initstate(&descriptor->state, id);
 
 }
 
