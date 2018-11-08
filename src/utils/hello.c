@@ -1,24 +1,12 @@
 #include <abi.h>
 #include <fudge.h>
 
-static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
 {
-
-    struct event_file *file = event_getdata(iheader);
-
-    if (file->descriptor)
-        return 0;
 
     event_replydata(oheader, iheader);
     event_appenddata(oheader, 13, "Hello world!\n");
     event_send(oheader);
-
-    return 0;
-
-}
-
-static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
-{
 
     return 1;
 
@@ -48,11 +36,6 @@ void main(void)
 
         switch (iheader->type)
         {
-
-        case EVENT_FILE:
-            status = onfile(iheader, oheader);
-
-            break;
 
         case EVENT_STOP:
             status = onstop(iheader, oheader);
