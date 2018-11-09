@@ -60,6 +60,7 @@ static unsigned int hook_match(unsigned int port)
 static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *udpheader, void *buffer, unsigned int count)
 {
 
+/*
     struct ctrl_conheader header;
 
     header.sender.address[0] = ipv4header->sip[0];
@@ -75,9 +76,7 @@ static void hook_notify(struct ipv4_header *ipv4header, struct udp_header *udphe
     header.target.port[0] = udpheader->tp[0];
     header.target.port[1] = udpheader->tp[1];
     header.count = count;
-
-    kernel_multicastdata(&con.data.states, &header, sizeof (struct ctrl_conheader));
-    kernel_multicastdata(&con.data.states, buffer, count);
+*/
 
 }
 

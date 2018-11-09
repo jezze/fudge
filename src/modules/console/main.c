@@ -9,14 +9,18 @@ static struct system_node event;
 void console_notify(struct console_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicastdata(&interface->data.states, buffer, count);
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+
+    event_createdata(&message.header, EVENT_BROADCAST, 0);
+    event_appenddata(&message.header, count, buffer);
+    kernel_multicast(&interface->data.states, &message.header, message.header.length);
 
 }
 
 void console_notifydata(struct console_interface *interface, unsigned char data)
 {
 
-    struct {struct event_header header; struct event_consoledata consoledata;} message;
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
 
     event_createconsoledata(&message.header, data);
     kernel_multicast(&event.states, &message.header, message.header.length);

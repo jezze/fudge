@@ -12,6 +12,7 @@ static struct list hooks;
 static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned int count)
 {
 
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
     struct tcp_header *header = buffer;
     unsigned int port = (header->tp[0] << 8) | header->tp[1];
     unsigned int length = ((ipv4header->length[0] << 8) | ipv4header->length[1]) - (sizeof (struct ipv4_header) + sizeof (struct tcp_header));
@@ -27,14 +28,20 @@ static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, un
 
     }
 
-    kernel_multicastdata(&ipv4protocol.data.states, buffer, count);
+    event_createdata(&message.header, EVENT_BROADCAST, 0);
+    event_appenddata(&message.header, count, buffer);
+    kernel_multicast(&ipv4protocol.data.states, &message.header, message.header.length);
 
 }
 
 static void ipv6protocol_notify(struct ipv6_header *ipv6header, void *buffer, unsigned int count)
 {
 
-    kernel_multicastdata(&ipv6protocol.data.states, buffer, count);
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+
+    event_createdata(&message.header, EVENT_BROADCAST, 0);
+    event_appenddata(&message.header, count, buffer);
+    kernel_multicast(&ipv6protocol.data.states, &message.header, message.header.length);
 
 }
 

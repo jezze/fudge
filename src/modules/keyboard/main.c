@@ -9,14 +9,18 @@ static struct system_node event;
 void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicastdata(&interface->data.states, buffer, count);
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+
+    event_createdata(&message.header, EVENT_BROADCAST, 0);
+    event_appenddata(&message.header, count, buffer);
+    kernel_multicast(&interface->data.states, &message.header, message.header.length);
 
 }
 
 void keyboard_notifypress(struct keyboard_interface *interface, unsigned char scancode)
 {
 
-    struct {struct event_header header; struct event_keypress keypress;} message;
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
 
     event_createkeypress(&message.header, scancode);
     kernel_multicast(&event.states, &message.header, message.header.length);
@@ -27,7 +31,7 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
 void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char scancode)
 {
 
-    struct {struct event_header header; struct event_keyrelease keyrelease;} message;
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
 
     event_createkeyrelease(&message.header, scancode);
     kernel_multicast(&event.states, &message.header, message.header.length);

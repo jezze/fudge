@@ -55,6 +55,7 @@ void ethernet_send(void *buffer, unsigned int count)
 void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
     struct ethernet_header *header = buffer;
     unsigned int type = (header->type[0] << 8) | header->type[1];
     struct resource *current = 0;
@@ -69,7 +70,9 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
     }
 
-    kernel_multicastdata(&interface->data.states, buffer, count);
+    event_createdata(&message.header, EVENT_BROADCAST, 0);
+    event_appenddata(&message.header, count, buffer);
+    kernel_multicast(&interface->data.states, &message.header, message.header.length);
 
 }
 

@@ -9,6 +9,7 @@ static struct ethernet_protocol ethernetprotocol;
 static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
     struct ipv6_header *header = buffer;
     unsigned int length = (header->length[0] << 8) | header->length[1];
     struct resource *current = 0;
@@ -23,7 +24,9 @@ static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void
 
     }
 
-    kernel_multicastdata(&ethernetprotocol.data.states, buffer, count);
+    event_createdata(&message.header, EVENT_BROADCAST, 0);
+    event_appenddata(&message.header, count, buffer);
+    kernel_multicast(&ethernetprotocol.data.states, &message.header, message.header.length);
 
 }
 

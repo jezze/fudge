@@ -9,14 +9,18 @@ static struct system_node event;
 void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_multicastdata(&interface->data.states, buffer, count);
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+
+    event_createdata(&message.header, EVENT_BROADCAST, 0);
+    event_appenddata(&message.header, count, buffer);
+    kernel_multicast(&interface->data.states, &message.header, message.header.length);
 
 }
 
 void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
 {
 
-    struct {struct event_header header; struct event_mousemove mousemove;} message;
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
 
     event_createmousemove(&message.header, relx, rely);
     kernel_multicast(&event.states, &message.header, message.header.length);
@@ -27,7 +31,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
 void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
 {
 
-    struct {struct event_header header; struct event_mousepress mousepress;} message;
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
 
     event_createmousepress(&message.header, button);
     kernel_multicast(&event.states, &message.header, message.header.length);
@@ -38,7 +42,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
 void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
 {
 
-    struct {struct event_header header; struct event_mouserelease mouserelease;} message;
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
 
     event_createmouserelease(&message.header, button);
     kernel_multicast(&event.states, &message.header, message.header.length);

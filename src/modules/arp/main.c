@@ -53,6 +53,7 @@ static struct arp_hook *findhook(unsigned int htype, unsigned char hlength, unsi
 static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
+    union {struct event_header header; char message[FUDGE_BSIZE];} message;
     struct arp_header *header = buffer;
     unsigned char *data = (unsigned char *)(header + 1);
     unsigned int htype = (header->htype[0] << 8) | header->htype[1];
@@ -96,7 +97,9 @@ static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void
 
     }
 
-    kernel_multicastdata(&ethernetprotocol.data.states, buffer, count);
+    event_createdata(&message.header, EVENT_BROADCAST, 0);
+    event_appenddata(&message.header, count, buffer);
+    kernel_multicast(&ethernetprotocol.data.states, &message.header, message.header.length);
 
 }
 

@@ -302,19 +302,6 @@ unsigned int kernel_multicast(struct list *states, void *buffer, unsigned int co
 
 }
 
-unsigned int kernel_multicastdata(struct list *states, void *buffer, unsigned int count)
-{
-
-    char message[FUDGE_BSIZE];
-    struct event_header *header = (struct event_header *)message;
-
-    event_createdata(header, EVENT_BROADCAST, 0);
-    event_appenddata(header, count, buffer);
-
-    return kernel_multicast(states, header, header->length);
-
-}
-
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
