@@ -58,6 +58,9 @@ void main(void)
 {
 
     unsigned int status = 0;
+    char ibuffer[FUDGE_BSIZE];
+    char obuffer[FUDGE_BSIZE];
+    struct event_header *oheader = event_init(ibuffer, obuffer);
 
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;
@@ -72,10 +75,7 @@ void main(void)
     while (!status)
     {
 
-        char ibuffer[FUDGE_BSIZE];
-        char obuffer[FUDGE_BSIZE];
         struct event_header *iheader = event_read(ibuffer);
-        struct event_header *oheader = (struct event_header *)obuffer;
 
         switch (iheader->type)
         {

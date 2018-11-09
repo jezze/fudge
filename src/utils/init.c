@@ -22,7 +22,7 @@ static void loadscript(void)
 
     unsigned int id;
     char obuffer[FUDGE_BSIZE];
-    struct event_header *oheader = (struct event_header *)obuffer;
+    struct event_header *oheader = event_init(0, obuffer);
 
     file_walk2(FILE_CP, "/bin/slang");
     file_walk2(FILE_C0, "/config/base.slang");
@@ -60,6 +60,9 @@ void main(void)
 {
 
     unsigned int status = 0;
+    char ibuffer[FUDGE_BSIZE];
+    char obuffer[FUDGE_BSIZE];
+    struct event_header *oheader = event_init(ibuffer, obuffer);
 
     loadsystem();
     event_open();
@@ -68,10 +71,7 @@ void main(void)
     while (!status)
     {
 
-        char ibuffer[FUDGE_BSIZE];
-        char obuffer[FUDGE_BSIZE];
         struct event_header *iheader = event_read(ibuffer);
-        struct event_header *oheader = (struct event_header *)obuffer;
 
         switch (iheader->type)
         {

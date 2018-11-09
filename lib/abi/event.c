@@ -16,15 +16,22 @@ void event_close(void)
 
 }
 
-struct event_header *event_read(void *message)
+struct event_header *event_read(void *ibuffer)
 {
 
-    struct event_header *header = message;
+    struct event_header *header = ibuffer;
 
     file_readall(FILE_PM, header, sizeof (struct event_header));
     file_readall(FILE_PM, header + 1, header->length - sizeof (struct event_header));
 
     return header;
+
+}
+
+struct event_header *event_init(void *ibuffer, void *obuffer)
+{
+
+    return obuffer;
 
 }
 
