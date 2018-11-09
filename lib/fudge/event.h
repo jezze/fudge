@@ -42,7 +42,7 @@ union event_message
 {
 
     struct event_header header;
-    char message[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
 
 };
 
