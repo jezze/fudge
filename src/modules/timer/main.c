@@ -8,7 +8,7 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
-    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+    union event_message message;
 
     event_createdata(&message.header, EVENT_BROADCAST, 0);
     event_appenddata(&message.header, count, buffer);
@@ -19,7 +19,7 @@ void timer_notify(struct timer_interface *interface, void *buffer, unsigned int 
 void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 {
 
-    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+    union event_message message;
 
     event_createtimertick(&message.header, counter);
     kernel_multicast(&interface->event.states, &message.header, message.header.length);

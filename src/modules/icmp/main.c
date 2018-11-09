@@ -33,7 +33,7 @@ static void *icmp_writehead(void *buffer, unsigned char type, unsigned char code
 static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned int count)
 {
 
-    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+    union event_message message;
     struct icmp_header *header = buffer;
 
     switch (header->type)
@@ -60,7 +60,7 @@ static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, un
 static void ipv6protocol_notify(struct ipv6_header *ipv6header, void *buffer, unsigned int count)
 {
 
-    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+    union event_message message;
 
     event_createdata(&message.header, EVENT_BROADCAST, 0);
     event_appenddata(&message.header, count, buffer);

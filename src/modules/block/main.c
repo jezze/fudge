@@ -8,7 +8,7 @@ static struct system_node root;
 void block_notify(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+    union event_message message;
 
     event_createdata(&message.header, EVENT_BROADCAST, 0);
     event_appenddata(&message.header, count, buffer);

@@ -110,7 +110,7 @@ void ipv4_send(void *buffer, unsigned int count)
 static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
-    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+    union event_message message;
     struct ipv4_header *header = buffer;
     unsigned int length = (header->length[0] << 8) | header->length[1];
     struct resource *current = 0;

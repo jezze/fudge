@@ -38,6 +38,14 @@ struct event_header
 
 };
 
+union event_message
+{
+
+    struct event_header header;
+    char message[FUDGE_BSIZE];
+
+};
+
 struct event_data
 {
 

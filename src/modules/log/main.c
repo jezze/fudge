@@ -12,7 +12,7 @@ static struct system_node info;
 static void write(struct list *states, unsigned int level, char *string, char *file, unsigned int line)
 {
 
-    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+    union event_message message;
     char num[FUDGE_NSIZE];
 
     event_createdata(&message.header, EVENT_BROADCAST, 0);

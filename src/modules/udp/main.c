@@ -12,7 +12,7 @@ static struct list hooks;
 static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned int count)
 {
 
-    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+    union event_message message;
     struct udp_header *header = buffer;
     unsigned int port = (header->tp[0] << 8) | header->tp[1];
     unsigned int length = (header->length[0] << 8) | header->length[1];
@@ -37,7 +37,7 @@ static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, un
 static void ipv6protocol_notify(struct ipv6_header *ipv6header, void *buffer, unsigned int count)
 {
 
-    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+    union event_message message;
 
     event_createdata(&message.header, EVENT_BROADCAST, 0);
     event_appenddata(&message.header, count, buffer);

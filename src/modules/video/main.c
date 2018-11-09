@@ -8,7 +8,7 @@ static struct system_node root;
 void video_notifymode(struct video_interface *interface, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
-    union {struct event_header header; char message[FUDGE_BSIZE];} message;
+    union event_message message;
 
     event_createvideomode(&message.header, w, h, bpp);
     kernel_multicast(&interface->event.states, &message.header, message.header.length);
