@@ -1,5 +1,5 @@
-#include <abi.h>
 #include <fudge.h>
+#include <abi.h>
 #include "widget.h"
 
 #define COLOR_DARK                      0x00

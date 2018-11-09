@@ -1,5 +1,5 @@
-#include <abi.h>
 #include <fudge.h>
+#include <abi.h>
 
 static struct sha1 s;
 

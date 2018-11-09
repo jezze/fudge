@@ -1,5 +1,5 @@
-#include <abi.h>
 #include <fudge.h>
+#include <abi.h>
 
 static unsigned char inputbuffer[FUDGE_BSIZE];
 static struct ring input;

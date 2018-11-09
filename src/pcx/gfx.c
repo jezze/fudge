@@ -1,5 +1,5 @@
-#include <abi.h>
 #include <fudge.h>
+#include <abi.h>
 #include "gfx.h"
 
 static void fillrectangle(struct gfx_surface *self)
