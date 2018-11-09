@@ -25,9 +25,9 @@ static unsigned int root_write(struct system_node *self, struct system_node *cur
     header->source = state->id;
 
     if (header->target)
-        return kernel_place(header->target, header, header->length);
+        return kernel_place(header->target, buffer, count);
     else
-        return kernel_multicast(&self->states, header, header->length);
+        return kernel_multicast(&self->states, buffer, count);
 
 }
 
