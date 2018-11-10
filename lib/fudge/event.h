@@ -32,8 +32,6 @@ struct event_header
     unsigned int session;
     unsigned int length;
     unsigned int nroutes;
-    unsigned int reserved0;
-    unsigned int reserved1;
     unsigned int routes[16];
 
 };
