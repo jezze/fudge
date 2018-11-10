@@ -50,7 +50,7 @@ static unsigned int onstop(union event_message *imessage, union event_message *o
         event_appenddata(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
 
     event_appenddata(omessage, 1, "\n");
-    event_send2(omessage);
+    event_send(omessage);
 
     return 1;
 

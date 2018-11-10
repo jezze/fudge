@@ -159,13 +159,13 @@ static unsigned int runcmd(union event_message *imessage, union event_message *o
     {
 
         event_request(omessage, imessage, EVENT_INIT, id, session);
-        event_send2(omessage);
+        event_send(omessage);
         event_request(omessage, imessage, EVENT_DATA, id, session);
         event_adddata(omessage);
         event_appenddata(omessage, count, data);
-        event_send2(omessage);
+        event_send(omessage);
         event_request(omessage, imessage, EVENT_STOP, id, session);
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 
@@ -266,7 +266,7 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
     widget_inittextbox(&content);
     ring_write(&prompt, "$ ", 2);
     event_request(omessage, imessage, EVENT_WMMAP, EVENT_BROADCAST, 0);
-    event_send2(omessage);
+    event_send(omessage);
 
     return 0;
 
@@ -276,7 +276,7 @@ static unsigned int onkill(union event_message *imessage, union event_message *o
 {
 
     event_request(omessage, imessage, EVENT_WMUNMAP, EVENT_BROADCAST, 0);
-    event_send2(omessage);
+    event_send(omessage);
 
     return 1;
 
@@ -484,7 +484,7 @@ void main(void)
             event_request(&omessage, &imessage, EVENT_DATA, rendertarget, 0);
             event_adddata(&omessage);
             event_appenddata(&omessage, ring_count(&output), outputdata);
-            event_send2(&omessage);
+            event_send(&omessage);
             ring_reset(&output);
 
         }

@@ -7,7 +7,7 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
 {
 
     event_request(omessage, imessage, EVENT_WMMAP, EVENT_BROADCAST, 0);
-    event_send2(omessage);
+    event_send(omessage);
 
     return 0;
 
@@ -17,7 +17,7 @@ static unsigned int onkill(union event_message *imessage, union event_message *o
 {
 
     event_request(omessage, imessage, EVENT_WMUNMAP, EVENT_BROADCAST, 0);
-    event_send2(omessage);
+    event_send(omessage);
 
     return 1;
 

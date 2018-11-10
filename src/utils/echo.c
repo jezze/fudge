@@ -9,7 +9,7 @@ static unsigned int ondata(union event_message *imessage, union event_message *o
     event_reply(omessage, imessage, EVENT_DATA);
     event_adddata(omessage);
     event_appenddata(omessage, data->count, data + 1);
-    event_send2(omessage);
+    event_send(omessage);
 
     return 0;
 
@@ -33,7 +33,7 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
         event_reply(omessage, imessage, EVENT_DATA);
         event_adddata(omessage);
         event_appenddata(omessage, count, buffer);
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 

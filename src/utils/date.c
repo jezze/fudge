@@ -35,7 +35,7 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
     event_appenddata(omessage, 1, ":");
     event_appenddata(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, settings.seconds, 10, 2, 0), num);
     event_appenddata(omessage, 1, "\n");
-    event_send2(omessage);
+    event_send(omessage);
 
     return 0;
 

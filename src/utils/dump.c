@@ -16,7 +16,7 @@ static void dump(union event_message *imessage, union event_message *omessage, u
         event_adddata(omessage);
         event_appenddata(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
         event_appenddata(omessage, 2, "  ");
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 

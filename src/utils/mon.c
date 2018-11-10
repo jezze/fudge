@@ -41,7 +41,7 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
     event_reply(omessage, imessage, EVENT_DATA);
     event_adddata(omessage);
     event_appenddata(omessage, 8, "testing\n");
-    event_send2(omessage);
+    event_send(omessage);
     file_write(FILE_G0, &dummy, 1024);
 
     return 0;

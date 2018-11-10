@@ -142,7 +142,7 @@ static void showremotes(union event_message *imessage, union event_message *omes
         struct remote *remote = current->data;
 
         event_request(omessage, imessage, EVENT_WMSHOW, remote->source, 0);
-        event_send2(omessage);
+        event_send(omessage);
         updateremote(imessage, remote);
 
     }
@@ -160,7 +160,7 @@ static void hideremotes(union event_message *imessage, union event_message *omes
         struct remote *remote = current->data;
 
         event_request(omessage, imessage, EVENT_WMHIDE, remote->source, 0);
-        event_send2(omessage);
+        event_send(omessage);
         removeremote(imessage, remote);
 
     }
@@ -179,7 +179,7 @@ static void configureremotes(union event_message *imessage, union event_message 
 
         event_request(omessage, imessage, EVENT_WMCONFIGURE, remote->source, 0);
         event_addwmconfigure(omessage, imessage->header.target, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 
@@ -196,7 +196,7 @@ static void killremotes(union event_message *imessage, union event_message *omes
         struct remote *remote = current->data;
 
         event_request(omessage, imessage, EVENT_KILL, remote->source, 0);
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 
@@ -391,7 +391,7 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
 
             event_request(omessage, imessage, EVENT_WMKEYPRESS, currentview->currentremote->source, 0);
             event_addwmkeypress(omessage, keypress->scancode);
-            event_send2(omessage);
+            event_send(omessage);
 
         }
 
@@ -447,9 +447,9 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
         {
 
             event_request(omessage, imessage, EVENT_WMHIDE, currentview->currentremote->source, 0);
-            event_send2(omessage);
+            event_send(omessage);
             event_request(omessage, imessage, EVENT_KILL, currentview->currentremote->source, 0);
-            event_send2(omessage);
+            event_send(omessage);
 
         }
 
@@ -468,9 +468,9 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
         {
 
             event_request(omessage, imessage, EVENT_INIT, id, 0);
-            event_send2(omessage);
+            event_send(omessage);
             event_request(omessage, imessage, EVENT_STOP, id, 0);
-            event_send2(omessage);
+            event_send(omessage);
 
         }
 
@@ -552,10 +552,10 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
 
             /* Sending to self not allowed */
             event_request(omessage, imessage, EVENT_WMHIDE, imessage->header.target, 0);
-            event_send2(omessage);
+            event_send(omessage);
             /* Sending to self not allowed */
             event_request(omessage, imessage, EVENT_KILL, imessage->header.target, 0);
-            event_send2(omessage);
+            event_send(omessage);
 
         }
 
@@ -582,7 +582,7 @@ static unsigned int onkeyrelease(union event_message *imessage, union event_mess
 
             event_request(omessage, imessage, EVENT_WMKEYRELEASE, currentview->currentremote->source, 0);
             event_addwmkeyrelease(omessage, keyrelease->scancode);
-            event_send2(omessage);
+            event_send(omessage);
 
         }
 
@@ -615,7 +615,7 @@ static unsigned int onmousemove(union event_message *imessage, union event_messa
 
         event_request(omessage, imessage, EVENT_WMMOUSEMOVE, currentview->currentremote->source, 0);
         event_addwmmousemove(omessage, mouse.size.x, mouse.size.y);
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 
@@ -686,7 +686,7 @@ static unsigned int onmousepress(union event_message *imessage, union event_mess
 
         event_request(omessage, imessage, EVENT_WMMOUSEPRESS, currentview->currentremote->source, 0);
         event_addwmmousepress(omessage, mousepress->button);
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 
@@ -704,7 +704,7 @@ static unsigned int onmouserelease(union event_message *imessage, union event_me
 
         event_request(omessage, imessage, EVENT_WMMOUSERELEASE, currentview->currentremote->source, 0);
         event_addwmmouserelease(omessage, mouserelease->button);
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 
@@ -774,10 +774,10 @@ static unsigned int onvideomode(union event_message *imessage, union event_messa
     /* Sending to self not allowed */
     event_request(omessage, imessage, EVENT_WMCONFIGURE, imessage->header.target, 0);
     event_addwmconfigure(omessage, imessage->header.target, 0, 0, videomode->w, videomode->h, padding, lineheight);
-    event_send2(omessage);
+    event_send(omessage);
     /* Sending to self not allowed */
     event_request(omessage, imessage, EVENT_WMSHOW, imessage->header.target, 0);
-    event_send2(omessage);
+    event_send(omessage);
 
     return 0;
 
@@ -1018,7 +1018,7 @@ void main(void)
             event_request(&omessage, &imessage, EVENT_DATA, rendertarget, 0);
             event_adddata(&omessage);
             event_appenddata(&omessage, ring_count(&output), outputdata);
-            event_send2(&omessage);
+            event_send(&omessage);
             ring_reset(&output);
 
         }

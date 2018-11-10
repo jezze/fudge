@@ -2,15 +2,14 @@
 #include "memory.h"
 #include "event.h"
 
-static void *addpayload(struct event_header *header, unsigned int length)
+static void *addpayload(union event_message *message, unsigned int length)
 {
 
-    char *start = (char *)header;
+    char *address = message->buffer + message->header.length;
 
-    start += header->length;
-    header->length += length;
+    message->header.length += length;
 
-    return start;
+    return address;
 
 }
 
@@ -41,7 +40,7 @@ unsigned int event_route(union event_message *message, unsigned int target)
 unsigned int event_addfile(union event_message *message, unsigned int descriptor)
 {
 
-    struct event_file *file = addpayload(&message->header, sizeof (struct event_file));
+    struct event_file *file = addpayload(message, sizeof (struct event_file));
 
     file->descriptor = descriptor;
 
@@ -52,7 +51,7 @@ unsigned int event_addfile(union event_message *message, unsigned int descriptor
 unsigned int event_adddata(union event_message *message)
 {
 
-    struct event_data *data = addpayload(&message->header, sizeof (struct event_data));
+    struct event_data *data = addpayload(message, sizeof (struct event_data));
 
     data->count = 0;
 
@@ -63,7 +62,7 @@ unsigned int event_adddata(union event_message *message)
 unsigned int event_addconsoledata(union event_message *message, char data)
 {
 
-    struct event_consoledata *consoledata = addpayload(&message->header, sizeof (struct event_consoledata));
+    struct event_consoledata *consoledata = addpayload(message, sizeof (struct event_consoledata));
 
     consoledata->data = data;
 
@@ -74,7 +73,7 @@ unsigned int event_addconsoledata(union event_message *message, char data)
 unsigned int event_addkeypress(union event_message *message, unsigned char scancode)
 {
 
-    struct event_keypress *keypress = addpayload(&message->header, sizeof (struct event_keypress));
+    struct event_keypress *keypress = addpayload(message, sizeof (struct event_keypress));
 
     keypress->scancode = scancode;
 
@@ -85,7 +84,7 @@ unsigned int event_addkeypress(union event_message *message, unsigned char scanc
 unsigned int event_addkeyrelease(union event_message *message, unsigned char scancode)
 {
 
-    struct event_keyrelease *keyrelease = addpayload(&message->header, sizeof (struct event_keyrelease));
+    struct event_keyrelease *keyrelease = addpayload(message, sizeof (struct event_keyrelease));
 
     keyrelease->scancode = scancode;
 
@@ -96,7 +95,7 @@ unsigned int event_addkeyrelease(union event_message *message, unsigned char sca
 unsigned int event_addmousepress(union event_message *message, unsigned int button)
 {
 
-    struct event_mousepress *mousepress = addpayload(&message->header, sizeof (struct event_mousepress));
+    struct event_mousepress *mousepress = addpayload(message, sizeof (struct event_mousepress));
 
     mousepress->button = button;
 
@@ -107,7 +106,7 @@ unsigned int event_addmousepress(union event_message *message, unsigned int butt
 unsigned int event_addmouserelease(union event_message *message, unsigned int button)
 {
 
-    struct event_mouserelease *mouserelease = addpayload(&message->header, sizeof (struct event_mouserelease));
+    struct event_mouserelease *mouserelease = addpayload(message, sizeof (struct event_mouserelease));
 
     mouserelease->button = button;
 
@@ -118,7 +117,7 @@ unsigned int event_addmouserelease(union event_message *message, unsigned int bu
 unsigned int event_addmousemove(union event_message *message, char relx, char rely)
 {
 
-    struct event_mousemove *mousemove = addpayload(&message->header, sizeof (struct event_mousemove));
+    struct event_mousemove *mousemove = addpayload(message, sizeof (struct event_mousemove));
 
     mousemove->relx = relx;
     mousemove->rely = rely;
@@ -130,7 +129,7 @@ unsigned int event_addmousemove(union event_message *message, char relx, char re
 unsigned int event_addtimertick(union event_message *message, unsigned int counter)
 {
 
-    struct event_timertick *timertick = addpayload(&message->header, sizeof (struct event_timertick));
+    struct event_timertick *timertick = addpayload(message, sizeof (struct event_timertick));
 
     timertick->counter = counter;
 
@@ -141,7 +140,7 @@ unsigned int event_addtimertick(union event_message *message, unsigned int count
 unsigned int event_addvideomode(union event_message *message, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
-    struct event_videomode *videomode = addpayload(&message->header, sizeof (struct event_videomode));
+    struct event_videomode *videomode = addpayload(message, sizeof (struct event_videomode));
 
     videomode->w = w;
     videomode->h = h;
@@ -154,7 +153,7 @@ unsigned int event_addvideomode(union event_message *message, unsigned int w, un
 unsigned int event_addwmconfigure(union event_message *message, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 
-    struct event_wmconfigure *wmconfigure = addpayload(&message->header, sizeof (struct event_wmconfigure));
+    struct event_wmconfigure *wmconfigure = addpayload(message, sizeof (struct event_wmconfigure));
 
     wmconfigure->rendertarget = rendertarget;
     wmconfigure->x = x;
@@ -171,7 +170,7 @@ unsigned int event_addwmconfigure(union event_message *message, unsigned int ren
 unsigned int event_addwmkeypress(union event_message *message, unsigned char scancode)
 {
 
-    struct event_wmkeypress *wmkeypress = addpayload(&message->header, sizeof (struct event_wmkeypress));
+    struct event_wmkeypress *wmkeypress = addpayload(message, sizeof (struct event_wmkeypress));
 
     wmkeypress->scancode = scancode;
 
@@ -182,7 +181,7 @@ unsigned int event_addwmkeypress(union event_message *message, unsigned char sca
 unsigned int event_addwmkeyrelease(union event_message *message, unsigned char scancode)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = addpayload(&message->header, sizeof (struct event_wmkeyrelease));
+    struct event_wmkeyrelease *wmkeyrelease = addpayload(message, sizeof (struct event_wmkeyrelease));
 
     wmkeyrelease->scancode = scancode;
 
@@ -193,7 +192,7 @@ unsigned int event_addwmkeyrelease(union event_message *message, unsigned char s
 unsigned int event_addwmmousepress(union event_message *message, unsigned int button)
 {
 
-    struct event_wmmousepress *wmmousepress = addpayload(&message->header, sizeof (struct event_wmmousepress));
+    struct event_wmmousepress *wmmousepress = addpayload(message, sizeof (struct event_wmmousepress));
 
     wmmousepress->button = button;
 
@@ -204,7 +203,7 @@ unsigned int event_addwmmousepress(union event_message *message, unsigned int bu
 unsigned int event_addwmmouserelease(union event_message *message, unsigned int button)
 {
 
-    struct event_wmmouserelease *wmmouserelease = addpayload(&message->header, sizeof (struct event_wmmouserelease));
+    struct event_wmmouserelease *wmmouserelease = addpayload(message, sizeof (struct event_wmmouserelease));
 
     wmmouserelease->button = button;
 
@@ -215,7 +214,7 @@ unsigned int event_addwmmouserelease(union event_message *message, unsigned int 
 unsigned int event_addwmmousemove(union event_message *message, char relx, char rely)
 {
 
-    struct event_wmmousemove *wmmousemove = addpayload(&message->header, sizeof (struct event_wmmousemove));
+    struct event_wmmousemove *wmmousemove = addpayload(message, sizeof (struct event_wmmousemove));
 
     wmmousemove->relx = relx;
     wmmousemove->rely = rely;

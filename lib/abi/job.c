@@ -44,7 +44,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
         for (x = njobs; x > j + 1; x--)
             event_route(omessage, jobs[x - 1].id);
 
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 
@@ -63,7 +63,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
                     event_route(omessage, jobs[x - 1].id);
 
                 event_addfile(omessage, FILE_P0 + k);
-                event_send2(omessage);
+                event_send(omessage);
 
             }
 
@@ -82,7 +82,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
 
                 event_adddata(omessage);
                 event_appenddata(omessage, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
-                event_send2(omessage);
+                event_send(omessage);
 
             }
 
@@ -97,7 +97,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
                 event_route(omessage, jobs[x - 1].id);
 
             event_addfile(omessage, 0);
-            event_send2(omessage);
+            event_send(omessage);
 
         }
 
@@ -111,7 +111,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
         for (x = njobs; x > j + 1; x--)
             event_route(omessage, jobs[x - 1].id);
 
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 

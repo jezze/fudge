@@ -24,14 +24,7 @@ void event_read(union event_message *message)
 
 }
 
-unsigned int event_send(struct event_header *header)
-{
-
-    return file_writeall(FILE_PM, header, header->length);
-
-}
-
-unsigned int event_send2(union event_message *message)
+unsigned int event_send(union event_message *message)
 {
 
     return file_writeall(FILE_PM, message, message->header.length);

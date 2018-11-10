@@ -18,12 +18,12 @@ static unsigned int onstop(union event_message *imessage, union event_message *o
         return 0;
 
     event_forward(omessage, imessage, EVENT_INIT, id);
-    event_send2(omessage);
+    event_send(omessage);
     event_forward(omessage, imessage, EVENT_FILE, id);
     event_addfile(omessage, FILE_P0);
-    event_send2(omessage);
+    event_send(omessage);
     event_forward(omessage, imessage, EVENT_STOP, id);
-    event_send2(omessage);
+    event_send(omessage);
 
     return 1;
 

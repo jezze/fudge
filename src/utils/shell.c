@@ -42,13 +42,13 @@ static unsigned int runcmd(union event_message *imessage, union event_message *o
     {
 
         event_request(omessage, imessage, EVENT_INIT, id, session);
-        event_send2(omessage);
+        event_send(omessage);
         event_request(omessage, imessage, EVENT_DATA, id, session);
         event_adddata(omessage);
         event_appenddata(omessage, count, data);
-        event_send2(omessage);
+        event_send(omessage);
         event_request(omessage, imessage, EVENT_STOP, id, session);
-        event_send2(omessage);
+        event_send(omessage);
 
     }
 

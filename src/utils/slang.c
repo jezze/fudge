@@ -324,7 +324,7 @@ static void parse(union event_message *imessage, union event_message *omessage, 
 
     }
 
-    event_send2(omessage);
+    event_send(omessage);
 
 }
 
