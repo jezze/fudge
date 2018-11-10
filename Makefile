@@ -2,16 +2,12 @@ ARCH:=x86
 KERNEL:=fudge
 LOADER:=mboot
 TARGET:=i386-unknown-elf
-
 RAMDISK_TYPE:=cpio
 RAMDISK:=$(KERNEL).$(RAMDISK_TYPE)
-
 IMAGE_TYPE:=img
 IMAGE=$(KERNEL).$(IMAGE_TYPE)
-
 ISO_TYPE:=iso
 ISO=$(KERNEL).$(ISO_TYPE)
-
 DIR_BUILD:=build
 DIR_INCLUDE:=include
 DIR_ISO:=iso
