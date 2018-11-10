@@ -16,7 +16,8 @@ struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int 
 void kernel_copydescriptors(struct task *source, struct task *target);
 unsigned int kernel_pick(unsigned int id, void *buffer, unsigned int count);
 unsigned int kernel_place(unsigned int id, void *buffer, unsigned int count);
-unsigned int kernel_multicast(struct list *states, void *buffer, unsigned int count);
+unsigned int kernel_multicast(struct list *states, union event_message *message);
+unsigned int kernel_send(unsigned int source, unsigned int target, struct list *states, union event_message *message);
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp);
 void kernel_setupinit(struct task *task);
 void kernel_setup(char *buffer);

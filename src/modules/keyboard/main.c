@@ -13,7 +13,7 @@ void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigne
 
     event_createdata(&message.header, EVENT_BROADCAST, 0);
     event_appenddata(&message.header, count, buffer);
-    kernel_multicast(&interface->data.states, &message.header, message.header.length);
+    kernel_multicast(&interface->data.states, &message);
 
 }
 
@@ -23,8 +23,8 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
     union event_message message;
 
     event_createkeypress(&message.header, scancode);
-    kernel_multicast(&event.states, &message.header, message.header.length);
-    kernel_multicast(&interface->event.states, &message.header, message.header.length);
+    kernel_multicast(&event.states, &message);
+    kernel_multicast(&interface->event.states, &message);
 
 }
 
@@ -34,8 +34,8 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
     union event_message message;
 
     event_createkeyrelease(&message.header, scancode);
-    kernel_multicast(&event.states, &message.header, message.header.length);
-    kernel_multicast(&interface->event.states, &message.header, message.header.length);
+    kernel_multicast(&event.states, &message);
+    kernel_multicast(&interface->event.states, &message);
 
 }
 

@@ -12,7 +12,7 @@ void block_notify(struct block_interface *interface, void *buffer, unsigned int 
 
     event_createdata(&message.header, EVENT_BROADCAST, 0);
     event_appenddata(&message.header, count, buffer);
-    kernel_multicast(&interface->data.states, &message.header, message.header.length);
+    kernel_multicast(&interface->data.states, &message);
 
 }
 

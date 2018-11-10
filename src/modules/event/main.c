@@ -14,20 +14,15 @@ static unsigned int root_read(struct system_node *self, struct system_node *curr
 static unsigned int root_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct event_header *header = buffer;
+    union event_message *message = buffer;
 
     if (count < sizeof (struct event_header))
         return 0;
 
-    if (header->length != count)
+    if (message->header.length != count)
         return 0;
 
-    header->source = state->id;
-
-    if (header->target)
-        return kernel_place(header->target, buffer, count);
-    else
-        return kernel_multicast(&self->states, buffer, count);
+    return kernel_send(state->id, message->header.target, &self->states, message);
 
 }
 
