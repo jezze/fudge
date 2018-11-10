@@ -31,3 +31,10 @@ unsigned int event_send(struct event_header *header)
 
 }
 
+unsigned int event_send2(union event_message *message)
+{
+
+    return file_writeall(FILE_PM, message, message->header.length);
+
+}
+

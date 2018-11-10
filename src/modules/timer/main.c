@@ -10,8 +10,9 @@ void timer_notify(struct timer_interface *interface, void *buffer, unsigned int 
 
     union event_message message;
 
-    event_createdata(&message.header, EVENT_BROADCAST, 0);
-    event_appenddata(&message.header, count, buffer);
+    event_create(&message, EVENT_DATA, EVENT_BROADCAST, 0);
+    event_adddata(&message);
+    event_appenddata(&message, count, buffer);
     kernel_multicast(&interface->data.states, &message);
 
 }
@@ -21,7 +22,8 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 
     union event_message message;
 
-    event_createtimertick(&message.header, counter);
+    event_create(&message, EVENT_TIMERTICK, EVENT_BROADCAST, 0);
+    event_addtimertick(&message, counter);
     kernel_multicast(&interface->event.states, &message);
 
 }

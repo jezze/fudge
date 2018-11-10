@@ -243,12 +243,13 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void parse(struct event_header *iheader, struct event_header *oheader, struct tokenlist *postfix, struct tokenlist *stack)
+static void parse(union event_message *imessage, union event_message *omessage, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     unsigned int i;
 
-    event_replydata(oheader, iheader);
+    event_reply(omessage, imessage, EVENT_DATA);
+    event_adddata(omessage);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -270,8 +271,8 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            event_appenddata(oheader, 2, "I");
-            event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
+            event_appenddata(omessage, 2, "I");
+            event_appenddata(omessage, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -281,8 +282,8 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            event_appenddata(oheader, 2, "O");
-            event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
+            event_appenddata(omessage, 2, "O");
+            event_appenddata(omessage, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -292,8 +293,8 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            event_appenddata(oheader, 2, "D");
-            event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
+            event_appenddata(omessage, 2, "D");
+            event_appenddata(omessage, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -303,8 +304,8 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            event_appenddata(oheader, 2, "P");
-            event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
+            event_appenddata(omessage, 2, "P");
+            event_appenddata(omessage, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -314,8 +315,8 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
             if (!t)
                 return;
 
-            event_appenddata(oheader, 2, "E");
-            event_appenddata(oheader, ascii_length(t->str) + 1, t->str);
+            event_appenddata(omessage, 2, "E");
+            event_appenddata(omessage, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -323,14 +324,14 @@ static void parse(struct event_header *iheader, struct event_header *oheader, st
 
     }
 
-    event_send(oheader);
+    event_send2(omessage);
 
 }
 
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_data *data = event_getdata(imessage);
 
     if (!data->count)
         return 0;
@@ -341,16 +342,16 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
     tokenlist_init(&stack, 8, stackdata);
     tokenizebuffer(&infix, &stringtable, data->count, data + 1);
     translate(&postfix, &infix, &stack);
-    parse(iheader, oheader, &postfix, &stack);
+    parse(imessage, omessage, &postfix, &stack);
 
     return 0;
 
 }
 
-static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onfile(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_file *file = event_getdata(imessage);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -368,20 +369,20 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
 
     file_close(file->descriptor);
     translate(&postfix, &infix, &stack);
-    parse(iheader, oheader, &postfix, &stack);
+    parse(imessage, omessage, &postfix, &stack);
 
     return 0;
 
 }
 
-static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
@@ -406,22 +407,22 @@ void main(void)
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage.header, &omessage.header);
+            status = ondata(&imessage, &omessage);
 
             break;
 
         case EVENT_FILE:
-            status = onfile(&imessage.header, &omessage.header);
+            status = onfile(&imessage, &omessage);
 
             break;
 
         case EVENT_STOP:
-            status = onstop(&imessage.header, &omessage.header);
+            status = onstop(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 

@@ -3,10 +3,10 @@
 
 static struct crc s;
 
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_data *data = event_getdata(imessage);
 
     crc_read(&s, data + 1, data->count);
 
@@ -14,10 +14,10 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
 }
 
-static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onfile(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_file *file = event_getdata(imessage);
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -35,22 +35,23 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
 
 }
 
-static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(union event_message *imessage, union event_message *omessage)
 {
 
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int result = crc_finalize(&s);
 
-    event_replydata(oheader, iheader);
-    event_appenddata(oheader, ascii_wvalue(buffer, 32, result, 10), buffer);
-    event_appenddata(oheader, 1, "\n");
-    event_send(oheader);
+    event_reply(omessage, imessage, EVENT_DATA);
+    event_adddata(omessage);
+    event_appenddata(omessage, ascii_wvalue(buffer, 32, result, 10), buffer);
+    event_appenddata(omessage, 1, "\n");
+    event_send2(omessage);
 
     return 1;
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
@@ -75,22 +76,22 @@ void main(void)
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage.header, &omessage.header);
+            status = ondata(&imessage, &omessage);
 
             break;
 
         case EVENT_FILE:
-            status = onfile(&imessage.header, &omessage.header);
+            status = onfile(&imessage, &omessage);
 
             break;
 
         case EVENT_STOP:
-            status = onstop(&imessage.header, &omessage.header);
+            status = onstop(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 

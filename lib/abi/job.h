@@ -8,4 +8,4 @@ struct job
 
 };
 
-void job_interpret(struct job *jobs, unsigned int njobs, struct event_header *iheader, struct event_header *oheader, void *buffer, unsigned int count, unsigned int session);
+void job_interpret(struct job *jobs, unsigned int njobs, union event_message *imessage, union event_message *omessage, void *buffer, unsigned int count, unsigned int session);

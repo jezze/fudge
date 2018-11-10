@@ -1,18 +1,19 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(union event_message *imessage, union event_message *omessage)
 {
 
-    event_replydata(oheader, iheader);
-    event_appenddata(oheader, 13, "Hello world!\n");
-    event_send(oheader);
+    event_reply(omessage, imessage, EVENT_DATA);
+    event_adddata(omessage);
+    event_appenddata(omessage, 13, "Hello world!\n");
+    event_send2(omessage);
 
     return 1;
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
@@ -37,12 +38,12 @@ void main(void)
         {
 
         case EVENT_STOP:
-            status = onstop(&imessage.header, &omessage.header);
+            status = onstop(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 

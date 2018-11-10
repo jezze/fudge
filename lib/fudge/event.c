@@ -14,147 +14,147 @@ static void *addpayload(struct event_header *header, unsigned int length)
 
 }
 
-void *event_getdata(struct event_header *header)
+void *event_getdata(union event_message *message)
 {
 
-    return header + 1;
+    return &message->header + 1;
 
 }
 
-unsigned int event_avail(struct event_header *header)
+unsigned int event_avail(union event_message *message)
 {
 
-    return FUDGE_BSIZE - header->length;
+    return FUDGE_BSIZE - message->header.length;
 
 }
 
-unsigned int event_route(struct event_header *header, unsigned int target)
+unsigned int event_route(union event_message *message, unsigned int target)
 {
 
-    if (header->nroutes < 16)
-        header->routes[header->nroutes++] = target;
+    if (message->header.nroutes < 16)
+        message->header.routes[message->header.nroutes++] = target;
 
-    return header->nroutes;
+    return message->header.nroutes;
 
 }
 
-static unsigned int addfile(struct event_header *header, unsigned int descriptor)
+unsigned int event_addfile(union event_message *message, unsigned int descriptor)
 {
 
-    struct event_file *file = addpayload(header, sizeof (struct event_file));
+    struct event_file *file = addpayload(&message->header, sizeof (struct event_file));
 
     file->descriptor = descriptor;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int adddata(struct event_header *header)
+unsigned int event_adddata(union event_message *message)
 {
 
-    struct event_data *data = addpayload(header, sizeof (struct event_data));
+    struct event_data *data = addpayload(&message->header, sizeof (struct event_data));
 
     data->count = 0;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addconsoledata(struct event_header *header, char data)
+unsigned int event_addconsoledata(union event_message *message, char data)
 {
 
-    struct event_consoledata *consoledata = addpayload(header, sizeof (struct event_consoledata));
+    struct event_consoledata *consoledata = addpayload(&message->header, sizeof (struct event_consoledata));
 
     consoledata->data = data;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addkeypress(struct event_header *header, unsigned char scancode)
+unsigned int event_addkeypress(union event_message *message, unsigned char scancode)
 {
 
-    struct event_keypress *keypress = addpayload(header, sizeof (struct event_keypress));
+    struct event_keypress *keypress = addpayload(&message->header, sizeof (struct event_keypress));
 
     keypress->scancode = scancode;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addkeyrelease(struct event_header *header, unsigned char scancode)
+unsigned int event_addkeyrelease(union event_message *message, unsigned char scancode)
 {
 
-    struct event_keyrelease *keyrelease = addpayload(header, sizeof (struct event_keyrelease));
+    struct event_keyrelease *keyrelease = addpayload(&message->header, sizeof (struct event_keyrelease));
 
     keyrelease->scancode = scancode;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addmousepress(struct event_header *header, unsigned int button)
+unsigned int event_addmousepress(union event_message *message, unsigned int button)
 {
 
-    struct event_mousepress *mousepress = addpayload(header, sizeof (struct event_mousepress));
+    struct event_mousepress *mousepress = addpayload(&message->header, sizeof (struct event_mousepress));
 
     mousepress->button = button;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addmouserelease(struct event_header *header, unsigned int button)
+unsigned int event_addmouserelease(union event_message *message, unsigned int button)
 {
 
-    struct event_mouserelease *mouserelease = addpayload(header, sizeof (struct event_mouserelease));
+    struct event_mouserelease *mouserelease = addpayload(&message->header, sizeof (struct event_mouserelease));
 
     mouserelease->button = button;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addmousemove(struct event_header *header, char relx, char rely)
+unsigned int event_addmousemove(union event_message *message, char relx, char rely)
 {
 
-    struct event_mousemove *mousemove = addpayload(header, sizeof (struct event_mousemove));
+    struct event_mousemove *mousemove = addpayload(&message->header, sizeof (struct event_mousemove));
 
     mousemove->relx = relx;
     mousemove->rely = rely;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addtimertick(struct event_header *header, unsigned int counter)
+unsigned int event_addtimertick(union event_message *message, unsigned int counter)
 {
 
-    struct event_timertick *timertick = addpayload(header, sizeof (struct event_timertick));
+    struct event_timertick *timertick = addpayload(&message->header, sizeof (struct event_timertick));
 
     timertick->counter = counter;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addvideomode(struct event_header *header, unsigned int w, unsigned int h, unsigned int bpp)
+unsigned int event_addvideomode(union event_message *message, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
-    struct event_videomode *videomode = addpayload(header, sizeof (struct event_videomode));
+    struct event_videomode *videomode = addpayload(&message->header, sizeof (struct event_videomode));
 
     videomode->w = w;
     videomode->h = h;
     videomode->bpp = bpp;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addwmconfigure(struct event_header *header, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
+unsigned int event_addwmconfigure(union event_message *message, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 
-    struct event_wmconfigure *wmconfigure = addpayload(header, sizeof (struct event_wmconfigure));
+    struct event_wmconfigure *wmconfigure = addpayload(&message->header, sizeof (struct event_wmconfigure));
 
     wmconfigure->rendertarget = rendertarget;
     wmconfigure->x = x;
@@ -164,373 +164,129 @@ static unsigned int addwmconfigure(struct event_header *header, unsigned int ren
     wmconfigure->padding = padding;
     wmconfigure->lineheight = lineheight;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addwmkeypress(struct event_header *header, unsigned char scancode)
+unsigned int event_addwmkeypress(union event_message *message, unsigned char scancode)
 {
 
-    struct event_wmkeypress *wmkeypress = addpayload(header, sizeof (struct event_wmkeypress));
+    struct event_wmkeypress *wmkeypress = addpayload(&message->header, sizeof (struct event_wmkeypress));
 
     wmkeypress->scancode = scancode;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addwmkeyrelease(struct event_header *header, unsigned char scancode)
+unsigned int event_addwmkeyrelease(union event_message *message, unsigned char scancode)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = addpayload(header, sizeof (struct event_wmkeyrelease));
+    struct event_wmkeyrelease *wmkeyrelease = addpayload(&message->header, sizeof (struct event_wmkeyrelease));
 
     wmkeyrelease->scancode = scancode;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addwmmousepress(struct event_header *header, unsigned int button)
+unsigned int event_addwmmousepress(union event_message *message, unsigned int button)
 {
 
-    struct event_wmmousepress *wmmousepress = addpayload(header, sizeof (struct event_wmmousepress));
+    struct event_wmmousepress *wmmousepress = addpayload(&message->header, sizeof (struct event_wmmousepress));
 
     wmmousepress->button = button;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addwmmouserelease(struct event_header *header, unsigned int button)
+unsigned int event_addwmmouserelease(union event_message *message, unsigned int button)
 {
 
-    struct event_wmmouserelease *wmmouserelease = addpayload(header, sizeof (struct event_wmmouserelease));
+    struct event_wmmouserelease *wmmouserelease = addpayload(&message->header, sizeof (struct event_wmmouserelease));
 
     wmmouserelease->button = button;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-static unsigned int addwmmousemove(struct event_header *header, char relx, char rely)
+unsigned int event_addwmmousemove(union event_message *message, char relx, char rely)
 {
 
-    struct event_wmmousemove *wmmousemove = addpayload(header, sizeof (struct event_wmmousemove));
+    struct event_wmmousemove *wmmousemove = addpayload(&message->header, sizeof (struct event_wmmousemove));
 
     wmmousemove->relx = relx;
     wmmousemove->rely = rely;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-unsigned int event_appenddata(struct event_header *header, unsigned int count, void *buffer)
+unsigned int event_appenddata(union event_message *message, unsigned int count, void *buffer)
 {
 
-    struct event_data *data = event_getdata(header);
-    unsigned int c = memory_write(header, FUDGE_BSIZE, buffer, count, header->length);
+    struct event_data *data = event_getdata(message);
+    unsigned int c = memory_write(message, FUDGE_BSIZE, buffer, count, message->header.length);
 
     data->count += c;
-    header->length += c;
+    message->header.length += c;
 
-    return header->length;
+    return message->header.length;
 
 }
 
-void event_create(struct event_header *oheader, unsigned int type, unsigned int target, unsigned int session)
+void event_create(union event_message *message, unsigned int type, unsigned int target, unsigned int session)
 {
 
-    oheader->type = type;
-    oheader->source = 0;
-    oheader->target = target;
-    oheader->session = session;
-    oheader->length = sizeof (struct event_header);
-    oheader->nroutes = 0;
+    message->header.type = type;
+    message->header.source = 0;
+    message->header.target = target;
+    message->header.session = session;
+    message->header.length = sizeof (struct event_header);
+    message->header.nroutes = 0;
 
 }
 
-void event_createfile(struct event_header *oheader, unsigned int target, unsigned int session, unsigned int descriptor)
-{
-
-    event_create(oheader, EVENT_FILE, target, session);
-    addfile(oheader, descriptor);
-
-}
-
-void event_createdata(struct event_header *oheader, unsigned int target, unsigned int session)
-{
-
-    event_create(oheader, EVENT_DATA, target, session);
-    adddata(oheader);
-
-}
-
-void event_createstop(struct event_header *oheader, unsigned int target, unsigned int session)
-{
-
-    event_create(oheader, EVENT_STOP, target, session);
-
-}
-
-void event_createinit(struct event_header *oheader, unsigned int target, unsigned int session)
-{
-
-    event_create(oheader, EVENT_INIT, target, session);
-
-}
-
-void event_createconsoledata(struct event_header *oheader, char data)
-{
-
-    event_create(oheader, EVENT_CONSOLEDATA, EVENT_BROADCAST, 0);
-    addconsoledata(oheader, data);
-
-}
-
-void event_createkeypress(struct event_header *oheader, unsigned char scancode)
-{
-
-    event_create(oheader, EVENT_KEYPRESS, EVENT_BROADCAST, 0);
-    addkeypress(oheader, scancode);
-
-}
-
-void event_createkeyrelease(struct event_header *oheader, unsigned char scancode)
-{
-
-    event_create(oheader, EVENT_KEYRELEASE, EVENT_BROADCAST, 0);
-    addkeyrelease(oheader, scancode);
-
-}
-
-void event_createmousepress(struct event_header *oheader, unsigned int button)
-{
-
-    event_create(oheader, EVENT_MOUSEPRESS, EVENT_BROADCAST, 0);
-    addmousepress(oheader, button);
-
-}
-
-void event_createmouserelease(struct event_header *oheader, unsigned int button)
-{
-
-    event_create(oheader, EVENT_MOUSERELEASE, EVENT_BROADCAST, 0);
-    addmouserelease(oheader, button);
-
-}
-
-void event_createmousemove(struct event_header *oheader, char relx, char rely)
-{
-
-    event_create(oheader, EVENT_MOUSEMOVE, EVENT_BROADCAST, 0);
-    addmousemove(oheader, relx, rely);
-
-}
-
-void event_createtimertick(struct event_header *oheader, unsigned int counter)
-{
-
-    event_create(oheader, EVENT_TIMERTICK, EVENT_BROADCAST, 0);
-    addtimertick(oheader, counter);
-
-}
-
-void event_createvideomode(struct event_header *oheader, unsigned int w, unsigned int h, unsigned int bpp)
-{
-
-    event_create(oheader, EVENT_VIDEOMODE, EVENT_BROADCAST, 0);
-    addvideomode(oheader, w, h, bpp);
-
-}
-
-void event_forward(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target)
+void event_forward(union event_message *omessage, union event_message *imessage, unsigned int type, unsigned int target)
 {
 
     unsigned int i;
 
-    event_create(oheader, type, target, iheader->session);
+    event_create(omessage, type, target, imessage->header.session);
 
-    for (i = 0; i < iheader->nroutes; i++)
-        event_route(oheader, iheader->routes[i]);
-
-}
-
-void event_forwardfile(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int descriptor)
-{
-
-    event_forward(oheader, iheader, EVENT_FILE, target);
-    addfile(oheader, descriptor);
+    for (i = 0; i < imessage->header.nroutes; i++)
+        event_route(omessage, imessage->header.routes[i]);
 
 }
 
-void event_forwardstop(struct event_header *oheader, struct event_header *iheader, unsigned int target)
-{
-
-    event_forward(oheader, iheader, EVENT_STOP, target);
-
-}
-
-void event_forwardinit(struct event_header *oheader, struct event_header *iheader, unsigned int target)
-{
-
-    event_forward(oheader, iheader, EVENT_INIT, target);
-
-}
-
-void event_request(struct event_header *oheader, struct event_header *iheader, unsigned int type, unsigned int target, unsigned int session)
+void event_request(union event_message *omessage, union event_message *imessage, unsigned int type, unsigned int target, unsigned int session)
 {
 
     unsigned int i;
 
-    event_create(oheader, type, target, session);
+    event_create(omessage, type, target, session);
 
-    for (i = 0; i < iheader->nroutes; i++)
-        event_route(oheader, iheader->routes[i]);
+    for (i = 0; i < imessage->header.nroutes; i++)
+        event_route(omessage, imessage->header.routes[i]);
 
-    event_route(oheader, iheader->target);
-
-}
-
-void event_requestfile(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned int descriptor)
-{
-
-    event_request(oheader, iheader, EVENT_FILE, target, session);
-    addfile(oheader, descriptor);
+    event_route(omessage, imessage->header.target);
 
 }
 
-void event_requestdata(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
-{
-
-    event_request(oheader, iheader, EVENT_DATA, target, session);
-    adddata(oheader);
-
-}
-
-void event_requeststop(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
-{
-
-    event_request(oheader, iheader, EVENT_STOP, target, session);
-
-}
-
-void event_requestinit(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
-{
-
-    event_request(oheader, iheader, EVENT_INIT, target, session);
-
-}
-
-void event_requestkill(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
-{
-
-    event_request(oheader, iheader, EVENT_KILL, target, session);
-
-}
-
-void event_requestwmshow(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
-{
-
-    event_request(oheader, iheader, EVENT_WMSHOW, target, session);
-
-}
-
-void event_requestwmhide(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
-{
-
-    event_request(oheader, iheader, EVENT_WMHIDE, target, session);
-
-}
-
-void event_requestwmmap(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
-{
-
-    event_request(oheader, iheader, EVENT_WMMAP, target, session);
-
-}
-
-void event_requestwmunmap(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session)
-{
-
-    event_request(oheader, iheader, EVENT_WMUNMAP, target, session);
-
-}
-
-void event_requestwmkeypress(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned char scancode)
-{
-
-    event_request(oheader, iheader, EVENT_WMKEYPRESS, target, session);
-    addwmkeypress(oheader, scancode);
-
-}
-
-void event_requestwmkeyrelease(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned char scancode)
-{
-
-    event_request(oheader, iheader, EVENT_WMKEYRELEASE, target, session);
-    addwmkeyrelease(oheader, scancode);
-
-}
-
-void event_requestwmmousepress(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned int button)
-{
-
-    event_request(oheader, iheader, EVENT_WMMOUSEPRESS, target, session);
-    addwmmousepress(oheader, button);
-
-}
-
-void event_requestwmmouserelease(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned int button)
-{
-
-    event_request(oheader, iheader, EVENT_WMMOUSERELEASE, target, session);
-    addwmmouserelease(oheader, button);
-
-}
-
-void event_requestwmmousemove(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, char relx, char rely)
-{
-
-    event_request(oheader, iheader, EVENT_WMMOUSEMOVE, target, session);
-    addwmmousemove(oheader, relx, rely);
-
-}
-
-void event_requestwmconfigure(struct event_header *oheader, struct event_header *iheader, unsigned int target, unsigned int session, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
-{
-
-    event_request(oheader, iheader, EVENT_WMCONFIGURE, target, session);
-    addwmconfigure(oheader, rendertarget, x, y, w, h, padding, lineheight);
-
-}
-
-void event_reply(struct event_header *oheader, struct event_header *iheader, unsigned int type)
+void event_reply(union event_message *omessage, union event_message *imessage, unsigned int type)
 {
 
     unsigned int i;
 
-    event_create(oheader, type, iheader->source, iheader->session);
+    event_create(omessage, type, imessage->header.source, imessage->header.session);
 
-    for (i = 0; i < iheader->nroutes; i++)
-        event_route(oheader, iheader->routes[i]);
+    for (i = 0; i < imessage->header.nroutes; i++)
+        event_route(omessage, imessage->header.routes[i]);
 
-    if (oheader->nroutes)
-        oheader->target = oheader->routes[--oheader->nroutes];
-
-}
-
-void event_replydata(struct event_header *oheader, struct event_header *iheader)
-{
-
-    event_reply(oheader, iheader, EVENT_DATA);
-    adddata(oheader);
-
-}
-
-void event_replystop(struct event_header *oheader, struct event_header *iheader)
-{
-
-    event_reply(oheader, iheader, EVENT_STOP);
+    if (omessage->header.nroutes)
+        omessage->header.target = omessage->header.routes[--omessage->header.nroutes];
 
 }
 

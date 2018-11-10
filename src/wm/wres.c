@@ -3,30 +3,30 @@
 #include <widget/widget.h>
 #include <widget/render.h>
 
-static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
+static unsigned int oninit(union event_message *imessage, union event_message *omessage)
 {
 
-    event_requestwmmap(oheader, iheader, EVENT_BROADCAST, 0);
-    event_send(oheader);
+    event_request(omessage, imessage, EVENT_WMMAP, EVENT_BROADCAST, 0);
+    event_send2(omessage);
 
     return 0;
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
-    event_requestwmunmap(oheader, iheader, EVENT_BROADCAST, 0);
-    event_send(oheader);
+    event_request(omessage, imessage, EVENT_WMUNMAP, EVENT_BROADCAST, 0);
+    event_send2(omessage);
 
     return 1;
 
 }
 
-static unsigned int onwmmousepress(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmmousepress(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_wmmousepress *wmmousepress = event_getdata(iheader);
+    struct event_wmmousepress *wmmousepress = event_getdata(imessage);
 
     switch (wmmousepress->button)
     {
@@ -64,17 +64,17 @@ void main(void)
         {
 
         case EVENT_INIT:
-            status = oninit(&imessage.header, &omessage.header);
+            status = oninit(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 
         case EVENT_WMMOUSEPRESS:
-            status = onwmmousepress(&imessage.header, &omessage.header);
+            status = onwmmousepress(&imessage, &omessage);
 
             break;
 

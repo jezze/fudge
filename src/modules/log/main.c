@@ -15,39 +15,40 @@ static void write(struct list *states, unsigned int level, char *string, char *f
     union event_message message;
     char num[FUDGE_NSIZE];
 
-    event_createdata(&message.header, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_DATA, EVENT_BROADCAST, 0);
+    event_adddata(&message);
 
     switch (level)
     {
 
     case DEBUG_CRITICAL:
-        event_appenddata(&message.header, 7, "[CRIT] ");
+        event_appenddata(&message, 7, "[CRIT] ");
 
         break;
 
     case DEBUG_ERROR:
-        event_appenddata(&message.header, 7, "[ERRO] ");
+        event_appenddata(&message, 7, "[ERRO] ");
 
         break;
 
     case DEBUG_WARNING:
-        event_appenddata(&message.header, 7, "[WARN] ");
+        event_appenddata(&message, 7, "[WARN] ");
 
         break;
 
     case DEBUG_INFO:
-        event_appenddata(&message.header, 7, "[INFO] ");
+        event_appenddata(&message, 7, "[INFO] ");
 
         break;
 
     }
 
-    event_appenddata(&message.header, ascii_length(string), string);
-    event_appenddata(&message.header, 2, " (");
-    event_appenddata(&message.header, ascii_length(file), file);
-    event_appenddata(&message.header, 1, ":");
-    event_appenddata(&message.header, ascii_wvalue(num, FUDGE_NSIZE, line, 10), num);
-    event_appenddata(&message.header, 2, ")\n");
+    event_appenddata(&message, ascii_length(string), string);
+    event_appenddata(&message, 2, " (");
+    event_appenddata(&message, ascii_length(file), file);
+    event_appenddata(&message, 1, ":");
+    event_appenddata(&message, ascii_wvalue(num, FUDGE_NSIZE, line, 10), num);
+    event_appenddata(&message, 2, ")\n");
     kernel_multicast(states, &message);
 
 }

@@ -1,23 +1,24 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_data *data = event_getdata(imessage);
 
-    event_replydata(oheader, iheader);
-    event_appenddata(oheader, data->count, data + 1);
-    event_send(oheader);
+    event_reply(omessage, imessage, EVENT_DATA);
+    event_adddata(omessage);
+    event_appenddata(omessage, data->count, data + 1);
+    event_send2(omessage);
 
     return 0;
 
 }
 
-static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onfile(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_file *file = event_getdata(imessage);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -26,12 +27,13 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
 
     file_open(file->descriptor);
 
-    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_data))))
+    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (union event_message) - sizeof (struct event_data))))
     {
 
-        event_replydata(oheader, iheader);
-        event_appenddata(oheader, count, buffer);
-        event_send(oheader);
+        event_reply(omessage, imessage, EVENT_DATA);
+        event_adddata(omessage);
+        event_appenddata(omessage, count, buffer);
+        event_send2(omessage);
 
     }
 
@@ -41,14 +43,14 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
 
 }
 
-static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
@@ -73,22 +75,22 @@ void main(void)
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage.header, &omessage.header);
+            status = ondata(&imessage, &omessage);
 
             break;
 
         case EVENT_FILE:
-            status = onfile(&imessage.header, &omessage.header);
+            status = onfile(&imessage, &omessage);
 
             break;
 
         case EVENT_STOP:
-            status = onstop(&imessage.header, &omessage.header);
+            status = onstop(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 

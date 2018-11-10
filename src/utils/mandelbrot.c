@@ -77,7 +77,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
-static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(union event_message *imessage, union event_message *omessage)
 {
 
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
@@ -86,7 +86,7 @@ static unsigned int onstop(struct event_header *iheader, struct event_header *oh
 
 }
 
-static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
+static unsigned int oninit(union event_message *imessage, union event_message *omessage)
 {
 
     ctrl_setvideosettings(&settings, 320, 200, 1);
@@ -104,7 +104,7 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
@@ -129,17 +129,17 @@ void main(void)
         {
 
         case EVENT_STOP:
-            status = onstop(&imessage.header, &omessage.header);
+            status = onstop(&imessage, &omessage);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(&imessage.header, &omessage.header);
+            status = oninit(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 

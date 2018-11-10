@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void dump(struct event_header *iheader, struct event_header *oheader, unsigned int count, void *buffer)
+static void dump(union event_message *imessage, union event_message *omessage, unsigned int count, void *buffer)
 {
 
     char *data = buffer;
@@ -12,30 +12,31 @@ static void dump(struct event_header *iheader, struct event_header *oheader, uns
 
         unsigned char num[FUDGE_NSIZE];
 
-        event_replydata(oheader, iheader);
-        event_appenddata(oheader, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
-        event_appenddata(oheader, 2, "  ");
-        event_send(oheader);
+        event_reply(omessage, imessage, EVENT_DATA);
+        event_adddata(omessage);
+        event_appenddata(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
+        event_appenddata(omessage, 2, "  ");
+        event_send2(omessage);
 
     }
 
 }
 
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_data *data = event_getdata(imessage);
 
-    dump(iheader, oheader, data->count, data + 1);
+    dump(imessage, omessage, data->count, data + 1);
 
     return 0;
 
 }
 
-static unsigned int onfile(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onfile(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_file *file = event_getdata(iheader);
+    struct event_file *file = event_getdata(imessage);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -45,7 +46,7 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
     file_open(file->descriptor);
 
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
-        dump(iheader, oheader, count, buffer);
+        dump(imessage, omessage, count, buffer);
 
     file_close(file->descriptor);
 
@@ -53,14 +54,14 @@ static unsigned int onfile(struct event_header *iheader, struct event_header *oh
 
 }
 
-static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
@@ -85,22 +86,22 @@ void main(void)
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage.header, &omessage.header);
+            status = ondata(&imessage, &omessage);
 
             break;
 
         case EVENT_FILE:
-            status = onfile(&imessage.header, &omessage.header);
+            status = onfile(&imessage, &omessage);
 
             break;
 
         case EVENT_STOP:
-            status = onstop(&imessage.header, &omessage.header);
+            status = onstop(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 

@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int onstop(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onstop(union event_message *imessage, union event_message *omessage)
 {
 
     unsigned int id;
@@ -17,18 +17,19 @@ static unsigned int onstop(struct event_header *iheader, struct event_header *oh
     if (!id)
         return 0;
 
-    event_forwardinit(oheader, iheader, id);
-    event_send(oheader);
-    event_forwardfile(oheader, iheader, id, FILE_P0);
-    event_send(oheader);
-    event_forwardstop(oheader, iheader, id);
-    event_send(oheader);
+    event_forward(omessage, imessage, EVENT_INIT, id);
+    event_send2(omessage);
+    event_forward(omessage, imessage, EVENT_FILE, id);
+    event_addfile(omessage, FILE_P0);
+    event_send2(omessage);
+    event_forward(omessage, imessage, EVENT_STOP, id);
+    event_send2(omessage);
 
     return 1;
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
@@ -53,12 +54,12 @@ void main(void)
         {
 
         case EVENT_STOP:
-            status = onstop(&imessage.header, &omessage.header);
+            status = onstop(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 

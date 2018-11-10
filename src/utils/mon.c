@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void dump(struct event_header *iheader, struct event_header *oheader, unsigned int count, void *buffer)
+static void dump(union event_message *imessage, union event_message *omessage, unsigned int count, void *buffer)
 {
 
     char *data = buffer;
@@ -22,32 +22,33 @@ static void dump(struct event_header *iheader, struct event_header *oheader, uns
 
 }
 
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_data *data = event_getdata(imessage);
 
-    dump(iheader, oheader, data->count, data + 1);
+    dump(imessage, omessage, data->count, data + 1);
 
     return 0;
 
 }
 
-static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
+static unsigned int oninit(union event_message *imessage, union event_message *omessage)
 {
 
     unsigned char dummy;
 
-    event_replydata(oheader, iheader);
-    event_appenddata(oheader, 8, "testing\n");
-    event_send(oheader);
+    event_reply(omessage, imessage, EVENT_DATA);
+    event_adddata(omessage);
+    event_appenddata(omessage, 8, "testing\n");
+    event_send2(omessage);
     file_write(FILE_G0, &dummy, 1024);
 
     return 0;
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
@@ -80,17 +81,17 @@ void main(void)
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage.header, &omessage.header);
+            status = ondata(&imessage, &omessage);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(&imessage.header, &omessage.header);
+            status = oninit(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 

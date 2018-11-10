@@ -29,7 +29,7 @@ static unsigned int clearjobs(struct job *jobs, unsigned int njobs)
 
 }
 
-static void runjob(struct event_header *iheader, struct event_header *oheader, struct job *jobs, unsigned int njobs, unsigned int session)
+static void runjob(union event_message *imessage, union event_message *omessage, struct job *jobs, unsigned int njobs, unsigned int session)
 {
 
     unsigned int j;
@@ -39,12 +39,12 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
     for (j = 0; j < njobs; j++)
     {
 
-        event_requestinit(oheader, iheader, jobs[j].id, session);
+        event_request(omessage, imessage, EVENT_INIT, jobs[j].id, session);
 
         for (x = njobs; x > j + 1; x--)
-            event_route(oheader, jobs[x - 1].id);
+            event_route(omessage, jobs[x - 1].id);
 
-        event_send(oheader);
+        event_send2(omessage);
 
     }
 
@@ -57,12 +57,13 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
             for (k = 0; k < jobs[j].ninputs; k++)
             {
 
-                event_requestfile(oheader, iheader, jobs[j].id, session, FILE_P0 + k);
+                event_request(omessage, imessage, EVENT_FILE, jobs[j].id, session);
 
                 for (x = njobs; x > j + 1; x--)
-                    event_route(oheader, jobs[x - 1].id);
+                    event_route(omessage, jobs[x - 1].id);
 
-                event_send(oheader);
+                event_addfile(omessage, FILE_P0 + k);
+                event_send2(omessage);
 
             }
 
@@ -74,13 +75,14 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
             for (k = 0; k < jobs[j].ndatas; k++)
             {
 
-                event_requestdata(oheader, iheader, jobs[j].id, session);
+                event_request(omessage, imessage, EVENT_DATA, jobs[j].id, session);
 
                 for (x = njobs; x > j + 1; x--)
-                    event_route(oheader, jobs[x - 1].id);
+                    event_route(omessage, jobs[x - 1].id);
 
-                event_appenddata(oheader, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
-                event_send(oheader);
+                event_adddata(omessage);
+                event_appenddata(omessage, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
+                event_send2(omessage);
 
             }
 
@@ -89,12 +91,13 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
         else
         {
 
-            event_requestfile(oheader, iheader, jobs[j].id, session, 0);
+            event_request(omessage, imessage, EVENT_FILE, jobs[j].id, session);
 
             for (x = njobs; x > j + 1; x--)
-                event_route(oheader, jobs[x - 1].id);
+                event_route(omessage, jobs[x - 1].id);
 
-            event_send(oheader);
+            event_addfile(omessage, 0);
+            event_send2(omessage);
 
         }
 
@@ -103,18 +106,18 @@ static void runjob(struct event_header *iheader, struct event_header *oheader, s
     for (j = 0; j < njobs; j++)
     {
 
-        event_requeststop(oheader, iheader, jobs[j].id, session);
+        event_request(omessage, imessage, EVENT_STOP, jobs[j].id, session);
 
         for (x = njobs; x > j + 1; x--)
-            event_route(oheader, jobs[x - 1].id);
+            event_route(omessage, jobs[x - 1].id);
 
-        event_send(oheader);
+        event_send2(omessage);
 
     }
 
 }
 
-void job_interpret(struct job *jobs, unsigned int njobs, struct event_header *iheader, struct event_header *oheader, void *buffer, unsigned int count, unsigned int session)
+void job_interpret(struct job *jobs, unsigned int njobs, union event_message *imessage, union event_message *omessage, void *buffer, unsigned int count, unsigned int session)
 {
 
     unsigned int cjobs = clearjobs(jobs, njobs);
@@ -166,7 +169,7 @@ void job_interpret(struct job *jobs, unsigned int njobs, struct event_header *ih
 
             cjobs = addjob(jobs, cjobs, call_spawn());
 
-            runjob(iheader, oheader, jobs, cjobs, session);
+            runjob(imessage, omessage, jobs, cjobs, session);
 
             cjobs = clearjobs(jobs, cjobs);
 

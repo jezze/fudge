@@ -20,7 +20,7 @@ static void loadsystem(void)
 static void loadscript(void)
 {
 
-    union event_message omessage;
+    union event_message message;
     unsigned int id;
 
     file_walk2(FILE_CP, "/bin/slang");
@@ -30,26 +30,29 @@ static void loadscript(void)
 
     id = call_spawn();
 
-    event_createinit(&omessage.header, id, 0);
-    event_send(&omessage.header);
-    event_createfile(&omessage.header, id, 0, FILE_P0);
-    event_send(&omessage.header);
-    event_createfile(&omessage.header, id, 0, FILE_P1);
-    event_send(&omessage.header);
-    event_createfile(&omessage.header, id, 0, FILE_P2);
-    event_send(&omessage.header);
-    event_createstop(&omessage.header, id, 0);
-    event_send(&omessage.header);
+    event_create(&message, EVENT_INIT, id, 0);
+    event_send2(&message);
+    event_create(&message, EVENT_FILE, id, 0);
+    event_addfile(&message, FILE_P0);
+    event_send2(&message);
+    event_create(&message, EVENT_FILE, id, 0);
+    event_addfile(&message, FILE_P1);
+    event_send2(&message);
+    event_create(&message, EVENT_FILE, id, 0);
+    event_addfile(&message, FILE_P2);
+    event_send2(&message);
+    event_create(&message, EVENT_STOP, id, 0);
+    event_send2(&message);
 
 }
 
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_data *data = event_getdata(imessage);
     struct job jobs[32];
 
-    job_interpret(jobs, 32, iheader, oheader, data + 1, data->count, 0);
+    job_interpret(jobs, 32, imessage, omessage, data + 1, data->count, 0);
 
     return 0;
 
@@ -75,7 +78,7 @@ void main(void)
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage.header, &omessage.header);
+            status = ondata(&imessage, &omessage);
 
             break;
 

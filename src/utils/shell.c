@@ -28,7 +28,7 @@ static void printcomplete(void *buffer, unsigned int count)
 
 }
 
-static unsigned int runcmd(struct event_header *iheader, struct event_header *oheader, char *command, char *data, unsigned int count, unsigned int session)
+static unsigned int runcmd(union event_message *imessage, union event_message *omessage, char *command, char *data, unsigned int count, unsigned int session)
 {
 
     unsigned int id;
@@ -41,13 +41,14 @@ static unsigned int runcmd(struct event_header *iheader, struct event_header *oh
     if (id)
     {
 
-        event_requestinit(oheader, iheader, id, session);
-        event_send(oheader);
-        event_requestdata(oheader, iheader, id, session);
-        event_appenddata(oheader, count, data);
-        event_send(oheader);
-        event_requeststop(oheader, iheader, id, session);
-        event_send(oheader);
+        event_request(omessage, imessage, EVENT_INIT, id, session);
+        event_send2(omessage);
+        event_request(omessage, imessage, EVENT_DATA, id, session);
+        event_adddata(omessage);
+        event_appenddata(omessage, count, data);
+        event_send2(omessage);
+        event_request(omessage, imessage, EVENT_STOP, id, session);
+        event_send2(omessage);
 
     }
 
@@ -79,7 +80,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static unsigned int interpret(struct event_header *iheader, struct event_header *oheader, struct ring *ring)
+static unsigned int interpret(union event_message *imessage, union event_message *omessage, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -91,24 +92,24 @@ static unsigned int interpret(struct event_header *iheader, struct event_header 
     if (interpretbuiltin(count, command))
         return 0;
 
-    return runcmd(iheader, oheader, "/bin/slang", command, count, 2);
+    return runcmd(imessage, omessage, "/bin/slang", command, count, 2);
 
 }
 
-static unsigned int complete(struct event_header *iheader, struct event_header *oheader, struct ring *ring)
+static unsigned int complete(union event_message *imessage, union event_message *omessage, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
 
-    return runcmd(iheader, oheader, "/bin/complete", command, count, 1);
+    return runcmd(imessage, omessage, "/bin/complete", command, count, 1);
 
 }
 
-static unsigned int onconsoledata(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onconsoledata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_consoledata *consoledata = event_getdata(iheader);
+    struct event_consoledata *consoledata = event_getdata(imessage);
 
     switch (consoledata->data)
     {
@@ -117,7 +118,7 @@ static unsigned int onconsoledata(struct event_header *iheader, struct event_hea
         break;
 
     case '\t':
-        complete(iheader, oheader, &input);
+        complete(imessage, omessage, &input);
 
         break;
 
@@ -136,7 +137,7 @@ static unsigned int onconsoledata(struct event_header *iheader, struct event_hea
     case '\n':
         file_writeall(FILE_G1, &consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
-        interpret(iheader, oheader, &input);
+        interpret(imessage, omessage, &input);
         printprompt();
 
         break;
@@ -153,13 +154,13 @@ static unsigned int onconsoledata(struct event_header *iheader, struct event_hea
 
 }
 
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_data *data = event_getdata(imessage);
     struct job jobs[32];
 
-    switch (iheader->session)
+    switch (imessage->header.session)
     {
 
     case 0:
@@ -173,7 +174,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
         break;
 
     case 2:
-        job_interpret(jobs, 32, iheader, oheader, data + 1, data->count, 0);
+        job_interpret(jobs, 32, imessage, omessage, data + 1, data->count, 0);
 
         break;
 
@@ -183,7 +184,7 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
 
 }
 
-static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
+static unsigned int oninit(union event_message *imessage, union event_message *omessage)
 {
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
@@ -193,7 +194,7 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
     return 1;
@@ -226,22 +227,22 @@ void main(void)
         {
 
         case EVENT_CONSOLEDATA:
-            status = onconsoledata(&imessage.header, &omessage.header);
+            status = onconsoledata(&imessage, &omessage);
 
             break;
 
         case EVENT_DATA:
-            status = ondata(&imessage.header, &omessage.header);
+            status = ondata(&imessage, &omessage);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(&imessage.header, &omessage.header);
+            status = oninit(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 

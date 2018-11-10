@@ -18,13 +18,13 @@ static unsigned int totalrows;
 static unsigned int visiblerows;
 static unsigned int rendertarget;
 
-static void updatecontent(struct event_header *iheader)
+static void updatecontent(union event_message *imessage)
 {
 
     content.length = ring_count(&text) + ring_count(&prompt) + ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&text) + ring_count(&prompt) + ring_count(&input1);
 
-    widget_update(&output, &content, WIDGET_Z_MIDDLE, iheader->target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
+    widget_update(&output, &content, WIDGET_Z_MIDDLE, imessage->header.target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
     ring_write(&output, &content, sizeof (struct widget_textbox));
     ring_copy(&output, &text);
     ring_copy(&output, &prompt);
@@ -34,10 +34,10 @@ static void updatecontent(struct event_header *iheader)
 
 }
 
-static void removecontent(struct event_header *iheader)
+static void removecontent(union event_message *imessage)
 {
 
-    widget_remove(&output, &content, WIDGET_Z_MIDDLE, iheader->target);
+    widget_remove(&output, &content, WIDGET_Z_MIDDLE, imessage->header.target);
 
 }
 
@@ -145,7 +145,7 @@ static void printcomplete(void *buffer, unsigned int count)
 
 }
 
-static unsigned int runcmd(struct event_header *iheader, struct event_header *oheader, char *command, char *data, unsigned int count, unsigned int session)
+static unsigned int runcmd(union event_message *imessage, union event_message *omessage, char *command, char *data, unsigned int count, unsigned int session)
 {
 
     unsigned int id;
@@ -158,13 +158,14 @@ static unsigned int runcmd(struct event_header *iheader, struct event_header *oh
     if (id)
     {
 
-        event_requestinit(oheader, iheader, id, session);
-        event_send(oheader);
-        event_requestdata(oheader, iheader, id, session);
-        event_appenddata(oheader, count, data);
-        event_send(oheader);
-        event_requeststop(oheader, iheader, id, session);
-        event_send(oheader);
+        event_request(omessage, imessage, EVENT_INIT, id, session);
+        event_send2(omessage);
+        event_request(omessage, imessage, EVENT_DATA, id, session);
+        event_adddata(omessage);
+        event_appenddata(omessage, count, data);
+        event_send2(omessage);
+        event_request(omessage, imessage, EVENT_STOP, id, session);
+        event_send2(omessage);
 
     }
 
@@ -196,7 +197,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static unsigned int interpret(struct event_header *iheader, struct event_header *oheader, struct ring *ring)
+static unsigned int interpret(union event_message *imessage, union event_message *omessage, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -208,27 +209,27 @@ static unsigned int interpret(struct event_header *iheader, struct event_header 
     if (interpretbuiltin(count, command))
         return 0;
 
-    return runcmd(iheader, oheader, "/bin/slang", command, count, 2);
+    return runcmd(imessage, omessage, "/bin/slang", command, count, 2);
 
 }
 
-static unsigned int complete(struct event_header *iheader, struct event_header *oheader, struct ring *ring)
+static unsigned int complete(union event_message *imessage, union event_message *omessage, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
 
-    return runcmd(iheader, oheader, "/bin/complete", command, count, 1);
+    return runcmd(imessage, omessage, "/bin/complete", command, count, 1);
 
 }
 
-static unsigned int ondata(struct event_header *iheader, struct event_header *oheader)
+static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(iheader);
+    struct event_data *data = event_getdata(imessage);
     struct job jobs[32];
 
-    switch (iheader->session)
+    switch (imessage->header.session)
     {
 
     case 0:
@@ -242,19 +243,19 @@ static unsigned int ondata(struct event_header *iheader, struct event_header *oh
         break;
 
     case 2:
-        job_interpret(jobs, 32, iheader, oheader, data + 1, data->count, 0);
+        job_interpret(jobs, 32, imessage, omessage, data + 1, data->count, 0);
 
         break;
 
     }
 
-    updatecontent(iheader);
+    updatecontent(imessage);
 
     return 0;
 
 }
 
-static unsigned int oninit(struct event_header *iheader, struct event_header *oheader)
+static unsigned int oninit(union event_message *imessage, union event_message *omessage)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -264,27 +265,27 @@ static unsigned int oninit(struct event_header *iheader, struct event_header *oh
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     ring_write(&prompt, "$ ", 2);
-    event_requestwmmap(oheader, iheader, EVENT_BROADCAST, 0);
-    event_send(oheader);
+    event_request(omessage, imessage, EVENT_WMMAP, EVENT_BROADCAST, 0);
+    event_send2(omessage);
 
     return 0;
 
 }
 
-static unsigned int onkill(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
-    event_requestwmunmap(oheader, iheader, EVENT_BROADCAST, 0);
-    event_send(oheader);
+    event_request(omessage, imessage, EVENT_WMUNMAP, EVENT_BROADCAST, 0);
+    event_send2(omessage);
 
     return 1;
 
 }
 
-static unsigned int onwmconfigure(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmconfigure(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_wmconfigure *wmconfigure = event_getdata(iheader);
+    struct event_wmconfigure *wmconfigure = event_getdata(imessage);
 
     rendertarget = wmconfigure->rendertarget;
 
@@ -300,10 +301,10 @@ static unsigned int onwmconfigure(struct event_header *iheader, struct event_hea
 
 }
 
-static unsigned int onwmkeypress(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmkeypress(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_wmkeypress *wmkeypress = event_getdata(iheader);
+    struct event_wmkeypress *wmkeypress = event_getdata(imessage);
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -319,7 +320,7 @@ static unsigned int onwmkeypress(struct event_header *iheader, struct event_head
 
     case 0x0F:
         ring_move(&input1, &input2);
-        complete(iheader, oheader, &input1);
+        complete(imessage, omessage, &input1);
 
         break;
 
@@ -328,7 +329,7 @@ static unsigned int onwmkeypress(struct event_header *iheader, struct event_head
         ring_write(&input1, keycode->value, keycode->length);
         copyring(&prompt);
         copyring(&input1);
-        interpret(iheader, oheader, &input1);
+        interpret(imessage, omessage, &input1);
 
         break;
 
@@ -383,16 +384,16 @@ static unsigned int onwmkeypress(struct event_header *iheader, struct event_head
 
     }
 
-    updatecontent(iheader);
+    updatecontent(imessage);
 
     return 0;
 
 }
 
-static unsigned int onwmkeyrelease(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmkeyrelease(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = event_getdata(iheader);
+    struct event_wmkeyrelease *wmkeyrelease = event_getdata(imessage);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
@@ -400,19 +401,19 @@ static unsigned int onwmkeyrelease(struct event_header *iheader, struct event_he
 
 }
 
-static unsigned int onwmshow(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmshow(union event_message *imessage, union event_message *omessage)
 {
 
-    updatecontent(iheader);
+    updatecontent(imessage);
 
     return 0;
 
 }
 
-static unsigned int onwmhide(struct event_header *iheader, struct event_header *oheader)
+static unsigned int onwmhide(union event_message *imessage, union event_message *omessage)
 {
 
-    removecontent(iheader);
+    removecontent(imessage);
 
     return 0;
 
@@ -436,42 +437,42 @@ void main(void)
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage.header, &omessage.header);
+            status = ondata(&imessage, &omessage);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(&imessage.header, &omessage.header);
+            status = oninit(&imessage, &omessage);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage.header, &omessage.header);
+            status = onkill(&imessage, &omessage);
 
             break;
 
         case EVENT_WMCONFIGURE:
-            status = onwmconfigure(&imessage.header, &omessage.header);
+            status = onwmconfigure(&imessage, &omessage);
 
             break;
 
         case EVENT_WMKEYPRESS:
-            status = onwmkeypress(&imessage.header, &omessage.header);
+            status = onwmkeypress(&imessage, &omessage);
 
             break;
 
         case EVENT_WMKEYRELEASE:
-            status = onwmkeyrelease(&imessage.header, &omessage.header);
+            status = onwmkeyrelease(&imessage, &omessage);
 
             break;
 
         case EVENT_WMSHOW:
-            status = onwmshow(&imessage.header, &omessage.header);
+            status = onwmshow(&imessage, &omessage);
 
             break;
 
         case EVENT_WMHIDE:
-            status = onwmhide(&imessage.header, &omessage.header);
+            status = onwmhide(&imessage, &omessage);
 
             break;
 
@@ -480,9 +481,10 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_requestdata(&omessage.header, &imessage.header, rendertarget, 0);
-            event_appenddata(&omessage.header, ring_count(&output), outputdata);
-            event_send(&omessage.header);
+            event_request(&omessage, &imessage, EVENT_DATA, rendertarget, 0);
+            event_adddata(&omessage);
+            event_appenddata(&omessage, ring_count(&output), outputdata);
+            event_send2(&omessage);
             ring_reset(&output);
 
         }
