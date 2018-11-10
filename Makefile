@@ -3,16 +3,18 @@ KERNEL:=fudge
 LOADER:=mboot
 TARGET:=i386-unknown-elf
 
-RAMDISK_NAME:=$(KERNEL)
 RAMDISK_TYPE:=cpio
-RAMDISK:=$(RAMDISK_NAME).$(RAMDISK_TYPE)
+RAMDISK:=$(KERNEL).$(RAMDISK_TYPE)
 
-IMAGE_NAME:=$(KERNEL)
 IMAGE_TYPE:=img
-IMAGE=$(IMAGE_NAME).$(IMAGE_TYPE)
+IMAGE=$(KERNEL).$(IMAGE_TYPE)
+
+ISO_TYPE:=iso
+ISO=$(KERNEL).$(ISO_TYPE)
 
 DIR_BUILD:=build
 DIR_INCLUDE:=include
+DIR_ISO:=iso
 DIR_MK:=mk
 DIR_LIB:=lib
 DIR_SRC:=src
@@ -25,7 +27,7 @@ DIR_INSTALL:=/boot
 all: $(KERNEL) $(RAMDISK)
 
 clean:
-	@rm -rf $(DIR_BUILD) $(KERNEL) $(RAMDISK) $(IMAGE) $(OBJ) $(DEP) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
+	@rm -rf $(DIR_BUILD) $(DIR_ISO) $(KERNEL) $(RAMDISK) $(IMAGE) $(ISO) $(OBJ) $(DEP) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
@@ -63,23 +65,35 @@ $(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@mkdir -p $@/proc
 	@mkdir -p $@/system
 
+$(DIR_ISO): $(KERNEL) $(RAMDISK)
+	@echo ISO $@
+	@mkdir -p $@
+	@mkdir -p $@/boot
+	@cp $(KERNEL) $@/boot
+	@cp $(RAMDISK) $@/boot
+	@mkdir -p $@/boot/grub
+	@cp grub.cfg $@/boot/grub
+
 $(KERNEL): $(DIR_SRC)/kernel/$(KERNEL)
 	@echo KERNEL $@
 	@cp $^ $@
 
-$(RAMDISK_NAME).tar: $(DIR_BUILD)
+$(KERNEL).tar: $(DIR_BUILD)
 	@echo RAMDISK $@
 	@tar -cf $@ $^
 
-$(RAMDISK_NAME).cpio: $(DIR_BUILD)
+$(KERNEL).cpio: $(DIR_BUILD)
 	@echo RAMDISK $@
 	@find $^ -depth | cpio -o > $@
 
-$(IMAGE_NAME).img: $(KERNEL) $(RAMDISK)
+$(KERNEL).img: $(KERNEL) $(RAMDISK)
 	@echo IMAGE $@
 	@dd if=/dev/zero of=$@ count=65536
 	@dd if=$(KERNEL) of=$@ conv=notrunc
 	@dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
+
+$(KERNEL).iso: $(DIR_ISO)
+	@grub-mkrescue -o fudge.iso iso/
 
 $(DIR_SNAPSHOT): $(KERNEL) $(RAMDISK)
 	@echo SNAPSHOT fudge-`git describe --always`.tar.gz
