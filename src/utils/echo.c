@@ -27,7 +27,7 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
 
     file_open(file->descriptor);
 
-    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (union event_message) - sizeof (struct event_data))))
+    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_data))))
     {
 
         event_reply(omessage, imessage, EVENT_DATA);
