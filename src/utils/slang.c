@@ -330,14 +330,14 @@ static void parse(union event_message *imessage, union event_message *omessage, 
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    if (!imessage->header.plength)
+    if (!event_getdatasize(imessage))
         return 0;
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
-    tokenizebuffer(&infix, &stringtable, imessage->header.plength, event_getdata(imessage));
+    tokenizebuffer(&infix, &stringtable, event_getdatasize(imessage), event_getdata(imessage));
     translate(&postfix, &infix, &stack);
     parse(imessage, omessage, &postfix, &stack);
 

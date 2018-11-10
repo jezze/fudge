@@ -48,7 +48,7 @@ static void sum(unsigned int count, void *buffer)
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    sum(imessage->header.plength, event_getdata(imessage));
+    sum(event_getdatasize(imessage), event_getdata(imessage));
 
     return 0;
 

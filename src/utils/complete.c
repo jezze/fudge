@@ -41,7 +41,7 @@ static void complete(union event_message *imessage, union event_message *omessag
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    complete(imessage, omessage, FILE_PW, event_getdata(imessage), imessage->header.plength);
+    complete(imessage, omessage, FILE_PW, event_getdata(imessage), event_getdatasize(imessage));
 
     return 0;
 

@@ -51,7 +51,7 @@ static unsigned int ondata(union event_message *imessage, union event_message *o
 
     struct job jobs[32];
 
-    job_interpret(jobs, 32, imessage, omessage, event_getdata(imessage), imessage->header.plength, 0);
+    job_interpret(jobs, 32, imessage, omessage, event_getdata(imessage), event_getdatasize(imessage), 0);
 
     return 0;
 

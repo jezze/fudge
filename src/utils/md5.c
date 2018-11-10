@@ -6,7 +6,7 @@ static struct md5 s;
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    md5_read(&s, event_getdata(imessage), imessage->header.plength);
+    md5_read(&s, event_getdata(imessage), event_getdatasize(imessage));
 
     return 0;
 

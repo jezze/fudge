@@ -6,7 +6,7 @@ static struct sha1 s;
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    sha1_read(&s, event_getdata(imessage), imessage->header.plength);
+    sha1_read(&s, event_getdata(imessage), event_getdatasize(imessage));
 
     return 0;
 

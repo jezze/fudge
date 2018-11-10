@@ -8,7 +8,6 @@ static void *addpayload(union event_message *message, unsigned int length)
     char *address = message->buffer + message->header.length;
 
     message->header.length += length;
-    message->header.plength += length;
 
     return address;
 
@@ -18,6 +17,13 @@ void *event_getdata(union event_message *message)
 {
 
     return &message->header + 1;
+
+}
+
+unsigned int event_getdatasize(union event_message *message)
+{
+
+    return message->header.length - sizeof (struct event_header);
 
 }
 
@@ -216,12 +222,7 @@ unsigned int event_addwmmousemove(union event_message *message, char relx, char 
 unsigned int event_append(union event_message *message, unsigned int count, void *buffer)
 {
 
-    unsigned int c = memory_write(message, FUDGE_BSIZE, buffer, count, message->header.length);
-
-    message->header.length += c;
-    message->header.plength += c;
-
-    return message->header.length;
+    return message->header.length += memory_write(message, FUDGE_BSIZE, buffer, count, message->header.length);
 
 }
 
@@ -233,7 +234,6 @@ void event_create(union event_message *message, unsigned int type, unsigned int 
     message->header.target = target;
     message->header.session = session;
     message->header.length = sizeof (struct event_header);
-    message->header.plength = 0;
     message->header.nroutes = 0;
 
 }

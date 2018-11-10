@@ -319,7 +319,7 @@ static unsigned int ondata(union event_message *imessage, union event_message *o
     if (!file_walk(FILE_L0, FILE_G2, "../data"))
         return 0;
 
-    render_write(event_getdata(imessage), imessage->header.plength);
+    render_write(event_getdata(imessage), event_getdatasize(imessage));
     render_flush(FILE_L0);
     render_complete();
 

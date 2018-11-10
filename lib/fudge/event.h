@@ -31,9 +31,9 @@ struct event_header
     unsigned int target;
     unsigned int session;
     unsigned int length;
-    unsigned int plength;
     unsigned int nroutes;
-    unsigned int reserved;
+    unsigned int reserved0;
+    unsigned int reserved1;
     unsigned int routes[16];
 
 };
@@ -162,6 +162,7 @@ struct event_wmmousemove
 };
 
 void *event_getdata(union event_message *message);
+unsigned int event_getdatasize(union event_message *message);
 unsigned int event_avail(union event_message *message);
 unsigned int event_route(union event_message *message, unsigned int target);
 unsigned int event_addfile(union event_message *message, unsigned int descriptor);

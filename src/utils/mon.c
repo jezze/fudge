@@ -25,7 +25,7 @@ static void dump(union event_message *imessage, union event_message *omessage, u
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    dump(imessage, omessage, imessage->header.plength, event_getdata(imessage));
+    dump(imessage, omessage, event_getdatasize(imessage), event_getdata(imessage));
 
     return 0;
 
