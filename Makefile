@@ -93,7 +93,7 @@ $(KERNEL).img: $(KERNEL) $(RAMDISK)
 	@dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
 
 $(KERNEL).iso: $(DIR_ISO)
-	@grub-mkrescue -o fudge.iso iso/
+	@grub-mkrescue -o $@ $^
 
 $(DIR_SNAPSHOT): $(KERNEL) $(RAMDISK)
 	@echo SNAPSHOT fudge-`git describe --always`.tar.gz
