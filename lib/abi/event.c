@@ -16,11 +16,13 @@ void event_close(void)
 
 }
 
-void event_read(union event_message *message)
+unsigned int event_read(union event_message *message)
 {
 
     file_readall(FILE_PM, &message->header, sizeof (struct event_header));
     file_readall(FILE_PM, &message->header + 1, message->header.length - sizeof (struct event_header));
+
+    return message->header.type;
 
 }
 

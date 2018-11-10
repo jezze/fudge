@@ -79,9 +79,7 @@ void main(void)
     while (!status)
     {
 
-        event_read(&imessage);
-
-        switch (imessage.header.type)
+        switch (event_read(&imessage))
         {
 
         case EVENT_FILE:
