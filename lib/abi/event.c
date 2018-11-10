@@ -16,7 +16,7 @@ void event_close(void)
 
 }
 
-unsigned int event_read(union event_message *message)
+unsigned int event_pick(union event_message *message)
 {
 
     file_readall(FILE_PM, &message->header, sizeof (struct event_header));

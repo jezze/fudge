@@ -31,7 +31,7 @@ void main(void)
     while (!status)
     {
 
-        switch (event_read(&imessage))
+        switch (event_pick(&imessage))
         {
 
         case EVENT_STOP:
