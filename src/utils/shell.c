@@ -204,9 +204,8 @@ void main(void)
 {
 
     unsigned int status = 0;
-    char ibuffer[FUDGE_BSIZE];
-    char obuffer[FUDGE_BSIZE];
-    struct event_header *oheader = event_init(ibuffer, obuffer);
+    union event_message imessage;
+    union event_message omessage;
 
     if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;
@@ -221,28 +220,28 @@ void main(void)
     while (!status)
     {
 
-        struct event_header *iheader = event_read(ibuffer);
+        event_read(&imessage);
 
-        switch (iheader->type)
+        switch (imessage.header.type)
         {
 
         case EVENT_CONSOLEDATA:
-            status = onconsoledata(iheader, oheader);
+            status = onconsoledata(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_DATA:
-            status = ondata(iheader, oheader);
+            status = ondata(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(iheader, oheader);
+            status = oninit(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(iheader, oheader);
+            status = onkill(&imessage.header, &omessage.header);
 
             break;
 

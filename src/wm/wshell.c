@@ -422,57 +422,56 @@ void main(void)
 {
 
     unsigned int status = 0;
-    char ibuffer[FUDGE_BSIZE];
-    char obuffer[FUDGE_BSIZE];
-    struct event_header *oheader = event_init(ibuffer, obuffer);
+    union event_message imessage;
+    union event_message omessage;
 
     event_open();
 
     while (!status)
     {
 
-        struct event_header *iheader = event_read(ibuffer);
+        event_read(&imessage);
 
-        switch (iheader->type)
+        switch (imessage.header.type)
         {
 
         case EVENT_DATA:
-            status = ondata(iheader, oheader);
+            status = ondata(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(iheader, oheader);
+            status = oninit(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(iheader, oheader);
+            status = onkill(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_WMCONFIGURE:
-            status = onwmconfigure(iheader, oheader);
+            status = onwmconfigure(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_WMKEYPRESS:
-            status = onwmkeypress(iheader, oheader);
+            status = onwmkeypress(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_WMKEYRELEASE:
-            status = onwmkeyrelease(iheader, oheader);
+            status = onwmkeyrelease(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_WMSHOW:
-            status = onwmshow(iheader, oheader);
+            status = onwmshow(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_WMHIDE:
-            status = onwmhide(iheader, oheader);
+            status = onwmhide(&imessage.header, &omessage.header);
 
             break;
 
@@ -481,9 +480,9 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_requestdata(oheader, iheader, rendertarget, 0);
-            event_appenddata(oheader, ring_count(&output), outputdata);
-            event_send(oheader);
+            event_requestdata(&omessage.header, &imessage.header, rendertarget, 0);
+            event_appenddata(&omessage.header, ring_count(&output), outputdata);
+            event_send(&omessage.header);
             ring_reset(&output);
 
         }

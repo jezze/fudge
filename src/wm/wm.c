@@ -908,9 +908,8 @@ void main(void)
 {
 
     unsigned int status = 0;
-    char ibuffer[FUDGE_BSIZE];
-    char obuffer[FUDGE_BSIZE];
-    struct event_header *oheader = event_init(ibuffer, obuffer);
+    union event_message imessage;
+    union event_message omessage;
 
     if (!file_walk2(FILE_G0, "/system/keyboard/event"))
         return;
@@ -929,78 +928,78 @@ void main(void)
     while (!status)
     {
 
-        struct event_header *iheader = event_read(ibuffer);
+        event_read(&imessage);
 
-        switch (iheader->type)
+        switch (imessage.header.type)
         {
 
         case EVENT_DATA:
-            status = ondata(iheader, oheader);
+            status = ondata(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(iheader, oheader);
+            status = oninit(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(iheader, oheader);
+            status = onkill(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_KEYPRESS:
-            status = onkeypress(iheader, oheader);
+            status = onkeypress(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_KEYRELEASE:
-            status = onkeyrelease(iheader, oheader);
+            status = onkeyrelease(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_MOUSEMOVE:
-            status = onmousemove(iheader, oheader);
+            status = onmousemove(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_MOUSEPRESS:
-            status = onmousepress(iheader, oheader);
+            status = onmousepress(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_MOUSERELEASE:
-            status = onmouserelease(iheader, oheader);
+            status = onmouserelease(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_VIDEOMODE:
-            status = onvideomode(iheader, oheader);
+            status = onvideomode(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_WMCONFIGURE:
-            status = onwmconfigure(iheader, oheader);
+            status = onwmconfigure(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_WMMAP:
-            status = onwmmap(iheader, oheader);
+            status = onwmmap(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_WMUNMAP:
-            status = onwmunmap(iheader, oheader);
+            status = onwmunmap(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_WMSHOW:
-            status = onwmshow(iheader, oheader);
+            status = onwmshow(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_WMHIDE:
-            status = onwmhide(iheader, oheader);
+            status = onwmhide(&imessage.header, &omessage.header);
 
             break;
 
@@ -1009,9 +1008,9 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_requestdata(oheader, iheader, rendertarget, 0);
-            event_appenddata(oheader, ring_count(&output), outputdata);
-            event_send(oheader);
+            event_requestdata(&omessage.header, &imessage.header, rendertarget, 0);
+            event_appenddata(&omessage.header, ring_count(&output), outputdata);
+            event_send(&omessage.header);
             ring_reset(&output);
 
         }

@@ -58,32 +58,31 @@ void main(void)
 {
 
     unsigned int status = 0;
-    char ibuffer[FUDGE_BSIZE];
-    char obuffer[FUDGE_BSIZE];
-    struct event_header *oheader = event_init(ibuffer, obuffer);
+    union event_message imessage;
+    union event_message omessage;
 
     event_open();
 
     while (!status)
     {
 
-        struct event_header *iheader = event_read(ibuffer);
+        event_read(&imessage);
 
-        switch (iheader->type)
+        switch (imessage.header.type)
         {
 
         case EVENT_FILE:
-            status = onfile(iheader, oheader);
+            status = onfile(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_STOP:
-            status = onstop(iheader, oheader);
+            status = onstop(&imessage.header, &omessage.header);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(iheader, oheader);
+            status = onkill(&imessage.header, &omessage.header);
 
             break;
 

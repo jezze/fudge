@@ -1,5 +1,4 @@
 void event_open(void);
 void event_close(void);
-struct event_header *event_read(void *ibuffer);
-struct event_header *event_init(void *ibuffer, void *obuffer);
+void event_read(union event_message *message);
 unsigned int event_send(struct event_header *header);

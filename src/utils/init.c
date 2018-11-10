@@ -20,9 +20,8 @@ static void loadsystem(void)
 static void loadscript(void)
 {
 
+    union event_message omessage;
     unsigned int id;
-    char obuffer[FUDGE_BSIZE];
-    struct event_header *oheader = event_init(0, obuffer);
 
     file_walk2(FILE_CP, "/bin/slang");
     file_walk2(FILE_C0, "/config/base.slang");
@@ -31,16 +30,16 @@ static void loadscript(void)
 
     id = call_spawn();
 
-    event_createinit(oheader, id, 0);
-    event_send(oheader);
-    event_createfile(oheader, id, 0, FILE_P0);
-    event_send(oheader);
-    event_createfile(oheader, id, 0, FILE_P1);
-    event_send(oheader);
-    event_createfile(oheader, id, 0, FILE_P2);
-    event_send(oheader);
-    event_createstop(oheader, id, 0);
-    event_send(oheader);
+    event_createinit(&omessage.header, id, 0);
+    event_send(&omessage.header);
+    event_createfile(&omessage.header, id, 0, FILE_P0);
+    event_send(&omessage.header);
+    event_createfile(&omessage.header, id, 0, FILE_P1);
+    event_send(&omessage.header);
+    event_createfile(&omessage.header, id, 0, FILE_P2);
+    event_send(&omessage.header);
+    event_createstop(&omessage.header, id, 0);
+    event_send(&omessage.header);
 
 }
 
@@ -60,9 +59,8 @@ void main(void)
 {
 
     unsigned int status = 0;
-    char ibuffer[FUDGE_BSIZE];
-    char obuffer[FUDGE_BSIZE];
-    struct event_header *oheader = event_init(ibuffer, obuffer);
+    union event_message imessage;
+    union event_message omessage;
 
     loadsystem();
     event_open();
@@ -71,13 +69,13 @@ void main(void)
     while (!status)
     {
 
-        struct event_header *iheader = event_read(ibuffer);
+        event_read(&imessage);
 
-        switch (iheader->type)
+        switch (imessage.header.type)
         {
 
         case EVENT_DATA:
-            status = ondata(iheader, oheader);
+            status = ondata(&imessage.header, &omessage.header);
 
             break;
 
