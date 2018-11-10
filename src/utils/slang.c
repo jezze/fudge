@@ -249,7 +249,6 @@ static void parse(union event_message *imessage, union event_message *omessage, 
     unsigned int i;
 
     event_reply(omessage, imessage, EVENT_DATA);
-    event_adddata(omessage);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -271,8 +270,8 @@ static void parse(union event_message *imessage, union event_message *omessage, 
             if (!t)
                 return;
 
-            event_appenddata(omessage, 2, "I");
-            event_appenddata(omessage, ascii_length(t->str) + 1, t->str);
+            event_append(omessage, 2, "I");
+            event_append(omessage, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -282,8 +281,8 @@ static void parse(union event_message *imessage, union event_message *omessage, 
             if (!t)
                 return;
 
-            event_appenddata(omessage, 2, "O");
-            event_appenddata(omessage, ascii_length(t->str) + 1, t->str);
+            event_append(omessage, 2, "O");
+            event_append(omessage, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -293,8 +292,8 @@ static void parse(union event_message *imessage, union event_message *omessage, 
             if (!t)
                 return;
 
-            event_appenddata(omessage, 2, "D");
-            event_appenddata(omessage, ascii_length(t->str) + 1, t->str);
+            event_append(omessage, 2, "D");
+            event_append(omessage, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -304,8 +303,8 @@ static void parse(union event_message *imessage, union event_message *omessage, 
             if (!t)
                 return;
 
-            event_appenddata(omessage, 2, "P");
-            event_appenddata(omessage, ascii_length(t->str) + 1, t->str);
+            event_append(omessage, 2, "P");
+            event_append(omessage, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -315,8 +314,8 @@ static void parse(union event_message *imessage, union event_message *omessage, 
             if (!t)
                 return;
 
-            event_appenddata(omessage, 2, "E");
-            event_appenddata(omessage, ascii_length(t->str) + 1, t->str);
+            event_append(omessage, 2, "E");
+            event_append(omessage, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -331,16 +330,14 @@ static void parse(union event_message *imessage, union event_message *omessage, 
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(imessage);
-
-    if (!data->count)
+    if (!imessage->header.plength)
         return 0;
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
-    tokenizebuffer(&infix, &stringtable, data->count, data + 1);
+    tokenizebuffer(&infix, &stringtable, imessage->header.plength, event_getdata(imessage));
     translate(&postfix, &infix, &stack);
     parse(imessage, omessage, &postfix, &stack);
 

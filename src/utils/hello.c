@@ -5,8 +5,7 @@ static unsigned int onstop(union event_message *imessage, union event_message *o
 {
 
     event_reply(omessage, imessage, EVENT_DATA);
-    event_adddata(omessage);
-    event_appenddata(omessage, 13, "Hello world!\n");
+    event_append(omessage, 13, "Hello world!\n");
     event_send(omessage);
 
     return 1;

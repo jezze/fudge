@@ -25,9 +25,7 @@ static void dump(union event_message *imessage, union event_message *omessage, u
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(imessage);
-
-    dump(imessage, omessage, data->count, data + 1);
+    dump(imessage, omessage, imessage->header.plength, event_getdata(imessage));
 
     return 0;
 
@@ -39,8 +37,7 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
     unsigned char dummy;
 
     event_reply(omessage, imessage, EVENT_DATA);
-    event_adddata(omessage);
-    event_appenddata(omessage, 8, "testing\n");
+    event_append(omessage, 8, "testing\n");
     event_send(omessage);
     file_write(FILE_G0, &dummy, 1024);
 

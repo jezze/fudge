@@ -13,9 +13,8 @@ static void dump(union event_message *imessage, union event_message *omessage, u
         unsigned char num[FUDGE_NSIZE];
 
         event_reply(omessage, imessage, EVENT_DATA);
-        event_adddata(omessage);
-        event_appenddata(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
-        event_appenddata(omessage, 2, "  ");
+        event_append(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
+        event_append(omessage, 2, "  ");
         event_send(omessage);
 
     }
@@ -25,9 +24,7 @@ static void dump(union event_message *imessage, union event_message *omessage, u
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(imessage);
-
-    dump(imessage, omessage, data->count, data + 1);
+    dump(imessage, omessage, imessage->header.plength, event_getdata(imessage));
 
     return 0;
 

@@ -49,10 +49,9 @@ static void loadscript(void)
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(imessage);
     struct job jobs[32];
 
-    job_interpret(jobs, 32, imessage, omessage, data + 1, data->count, 0);
+    job_interpret(jobs, 32, imessage, omessage, event_getdata(imessage), imessage->header.plength, 0);
 
     return 0;
 

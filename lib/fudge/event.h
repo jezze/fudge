@@ -31,9 +31,9 @@ struct event_header
     unsigned int target;
     unsigned int session;
     unsigned int length;
+    unsigned int plength;
     unsigned int nroutes;
-    unsigned int reserved0;
-    unsigned int reserved1;
+    unsigned int reserved;
     unsigned int routes[16];
 
 };
@@ -43,13 +43,6 @@ union event_message
 
     struct event_header header;
     char buffer[FUDGE_BSIZE];
-
-};
-
-struct event_data
-{
-
-    unsigned int count;
 
 };
 
@@ -172,7 +165,6 @@ void *event_getdata(union event_message *message);
 unsigned int event_avail(union event_message *message);
 unsigned int event_route(union event_message *message, unsigned int target);
 unsigned int event_addfile(union event_message *message, unsigned int descriptor);
-unsigned int event_adddata(union event_message *message);
 unsigned int event_addconsoledata(union event_message *message, char data);
 unsigned int event_addkeypress(union event_message *message, unsigned char scancode);
 unsigned int event_addkeyrelease(union event_message *message, unsigned char scancode);
@@ -187,7 +179,7 @@ unsigned int event_addwmkeyrelease(union event_message *message, unsigned char s
 unsigned int event_addwmmousepress(union event_message *message, unsigned int button);
 unsigned int event_addwmmouserelease(union event_message *message, unsigned int button);
 unsigned int event_addwmmousemove(union event_message *message, char relx, char rely);
-unsigned int event_appenddata(union event_message *message, unsigned int count, void *buffer);
+unsigned int event_append(union event_message *message, unsigned int count, void *buffer);
 void event_create(union event_message *message, unsigned int type, unsigned int target, unsigned int session);
 void event_forward(union event_message *omessage, union event_message *imessage, unsigned int type, unsigned int target);
 void event_request(union event_message *omessage, union event_message *imessage, unsigned int type, unsigned int target, unsigned int session);

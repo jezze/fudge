@@ -8,7 +8,6 @@ static void complete(union event_message *imessage, union event_message *omessag
 
     file_open(descriptor);
     event_reply(omessage, imessage, EVENT_DATA);
-    event_adddata(omessage);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
@@ -21,12 +20,11 @@ static void complete(union event_message *imessage, union event_message *omessag
 
                 event_send(omessage);
                 event_reply(omessage, imessage, EVENT_DATA);
-                event_adddata(omessage);
 
             }
 
-            event_appenddata(omessage, record.length, record.name);
-            event_appenddata(omessage, 1, "\n");
+            event_append(omessage, record.length, record.name);
+            event_append(omessage, 1, "\n");
 
         }
 
@@ -43,9 +41,7 @@ static void complete(union event_message *imessage, union event_message *omessag
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(imessage);
-
-    complete(imessage, omessage, FILE_PW, data + 1, data->count);
+    complete(imessage, omessage, FILE_PW, event_getdata(imessage), imessage->header.plength);
 
     return 0;
 

@@ -49,9 +49,8 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
     file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
     file_close(file->descriptor);
     event_reply(omessage, imessage, EVENT_DATA);
-    event_adddata(omessage);
-    event_appenddata(omessage, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(&settings), 10), num);
-    event_appenddata(omessage, 1, "\n");
+    event_append(omessage, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(&settings), 10), num);
+    event_append(omessage, 1, "\n");
     event_send(omessage);
 
     return 0;

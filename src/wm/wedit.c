@@ -345,8 +345,7 @@ void main(void)
         {
 
             event_request(&omessage, &imessage, EVENT_DATA, rendertarget, 0);
-            event_adddata(&omessage);
-            event_appenddata(&omessage, ring_count(&output), outputdata);
+            event_append(&omessage, ring_count(&output), outputdata);
             event_send(&omessage);
             ring_reset(&output);
 

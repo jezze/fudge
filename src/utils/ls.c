@@ -8,7 +8,6 @@ static void list(union event_message *imessage, union event_message *omessage, u
 
     file_open(descriptor);
     event_reply(omessage, imessage, EVENT_DATA);
-    event_adddata(omessage);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
@@ -18,12 +17,11 @@ static void list(union event_message *imessage, union event_message *omessage, u
 
             event_send(omessage);
             event_reply(omessage, imessage, EVENT_DATA);
-            event_adddata(omessage);
 
         }
 
-        event_appenddata(omessage, record.length, record.name);
-        event_appenddata(omessage, 1, "\n");
+        event_append(omessage, record.length, record.name);
+        event_append(omessage, 1, "\n");
 
         if (!file_step(descriptor))
             break;

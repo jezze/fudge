@@ -316,12 +316,10 @@ static void setupremotes(void)
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(imessage);
-
     if (!file_walk(FILE_L0, FILE_G2, "../data"))
         return 0;
 
-    render_write(data + 1, data->count);
+    render_write(event_getdata(imessage), imessage->header.plength);
     render_flush(FILE_L0);
     render_complete();
 
@@ -1016,8 +1014,7 @@ void main(void)
         {
 
             event_request(&omessage, &imessage, EVENT_DATA, rendertarget, 0);
-            event_adddata(&omessage);
-            event_appenddata(&omessage, ring_count(&output), outputdata);
+            event_append(&omessage, ring_count(&output), outputdata);
             event_send(&omessage);
             ring_reset(&output);
 

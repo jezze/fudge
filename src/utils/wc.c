@@ -48,9 +48,7 @@ static void sum(unsigned int count, void *buffer)
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(imessage);
-
-    sum(data->count, data + 1);
+    sum(imessage->header.plength, event_getdata(imessage));
 
     return 0;
 
@@ -83,13 +81,12 @@ static unsigned int onstop(union event_message *imessage, union event_message *o
     char num[FUDGE_NSIZE];
 
     event_reply(omessage, imessage, EVENT_DATA);
-    event_adddata(omessage);
-    event_appenddata(omessage, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
-    event_appenddata(omessage, 1, "\n");
-    event_appenddata(omessage, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
-    event_appenddata(omessage, 1, "\n");
-    event_appenddata(omessage, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
-    event_appenddata(omessage, 1, "\n");
+    event_append(omessage, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
+    event_append(omessage, 1, "\n");
+    event_append(omessage, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
+    event_append(omessage, 1, "\n");
+    event_append(omessage, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
+    event_append(omessage, 1, "\n");
     event_send(omessage);
 
     return 1;

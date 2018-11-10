@@ -6,9 +6,7 @@ static struct md5 s;
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(imessage);
-
-    md5_read(&s, data + 1, data->count);
+    md5_read(&s, event_getdata(imessage), imessage->header.plength);
 
     return 0;
 
@@ -44,12 +42,11 @@ static unsigned int onstop(union event_message *imessage, union event_message *o
 
     md5_write(&s, digest);
     event_reply(omessage, imessage, EVENT_DATA);
-    event_adddata(omessage);
 
     for (i = 0; i < 16; i++)
-        event_appenddata(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
+        event_append(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
 
-    event_appenddata(omessage, 1, "\n");
+    event_append(omessage, 1, "\n");
     event_send(omessage);
 
     return 1;

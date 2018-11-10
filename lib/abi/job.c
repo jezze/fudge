@@ -80,8 +80,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
                 for (x = njobs; x > j + 1; x--)
                     event_route(omessage, jobs[x - 1].id);
 
-                event_adddata(omessage);
-                event_appenddata(omessage, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
+                event_append(omessage, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
                 event_send(omessage);
 
             }

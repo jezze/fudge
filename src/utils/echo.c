@@ -4,11 +4,8 @@
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(imessage);
-
     event_reply(omessage, imessage, EVENT_DATA);
-    event_adddata(omessage);
-    event_appenddata(omessage, data->count, data + 1);
+    event_append(omessage, imessage->header.plength, event_getdata(imessage));
     event_send(omessage);
 
     return 0;
@@ -27,12 +24,11 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
 
     file_open(file->descriptor);
 
-    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header) - sizeof (struct event_data))))
+    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header))))
     {
 
         event_reply(omessage, imessage, EVENT_DATA);
-        event_adddata(omessage);
-        event_appenddata(omessage, count, buffer);
+        event_append(omessage, count, buffer);
         event_send(omessage);
 
     }

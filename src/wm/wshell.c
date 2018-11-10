@@ -161,8 +161,7 @@ static unsigned int runcmd(union event_message *imessage, union event_message *o
         event_request(omessage, imessage, EVENT_INIT, id, session);
         event_send(omessage);
         event_request(omessage, imessage, EVENT_DATA, id, session);
-        event_adddata(omessage);
-        event_appenddata(omessage, count, data);
+        event_append(omessage, count, data);
         event_send(omessage);
         event_request(omessage, imessage, EVENT_STOP, id, session);
         event_send(omessage);
@@ -226,24 +225,23 @@ static unsigned int complete(union event_message *imessage, union event_message 
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    struct event_data *data = event_getdata(imessage);
     struct job jobs[32];
 
     switch (imessage->header.session)
     {
 
     case 0:
-        printnormal(data + 1, data->count);
+        printnormal(event_getdata(imessage), imessage->header.plength);
 
         break;
 
     case 1:
-        printcomplete(data + 1, data->count);
+        printcomplete(event_getdata(imessage), imessage->header.plength);
 
         break;
 
     case 2:
-        job_interpret(jobs, 32, imessage, omessage, data + 1, data->count, 0);
+        job_interpret(jobs, 32, imessage, omessage, event_getdata(imessage), imessage->header.plength, 0);
 
         break;
 
@@ -482,8 +480,7 @@ void main(void)
         {
 
             event_request(&omessage, &imessage, EVENT_DATA, rendertarget, 0);
-            event_adddata(&omessage);
-            event_appenddata(&omessage, ring_count(&output), outputdata);
+            event_append(&omessage, ring_count(&output), outputdata);
             event_send(&omessage);
             ring_reset(&output);
 
