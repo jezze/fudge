@@ -1,31 +1,12 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void dump(union event_message *imessage, union event_message *omessage, unsigned int count, void *buffer)
-{
-
-    char *data = buffer;
-    unsigned int i;
-
-    file_write(FILE_G1, "block:\n", 7);
-
-    for (i = 0; i < count; i++)
-    {
-
-        char num[FUDGE_NSIZE];
-
-        file_write(FILE_G1, num, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0));
-
-    }
-
-    file_write(FILE_G1, "\n", 1);
-
-}
-
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    dump(imessage, omessage, event_getdatasize(imessage), event_getdata(imessage));
+    event_reply(omessage, imessage, EVENT_DATA);
+    event_append(omessage, 6, "block\n");
+    event_send(omessage);
 
     return 0;
 
@@ -59,11 +40,7 @@ void main(void)
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;
 
-    if (!file_walk2(FILE_G1, "/system/console/if:0/odata"))
-        return;
-
     file_open(FILE_G0);
-    file_open(FILE_G1);
     event_open();
 
     while (!status)
@@ -92,7 +69,6 @@ void main(void)
     }
 
     event_close();
-    file_close(FILE_G1);
     file_close(FILE_G0);
 
 }
