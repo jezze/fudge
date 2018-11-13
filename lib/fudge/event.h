@@ -12,6 +12,7 @@
 #define EVENT_CONSOLEDATA               0x15
 #define EVENT_TIMERTICK                 0x16
 #define EVENT_VIDEOMODE                 0x17
+#define EVENT_BLOCKREQUEST              0x18
 #define EVENT_WMMAP                     0x80
 #define EVENT_WMUNMAP                   0x81
 #define EVENT_WMCONFIGURE               0x82
@@ -110,6 +111,14 @@ struct event_videomode
 
 };
 
+struct event_blockrequest
+{
+
+    unsigned int offset;
+    unsigned int count;
+
+};
+
 struct event_wmconfigure
 {
 
@@ -172,6 +181,7 @@ unsigned int event_addmouserelease(union event_message *message, unsigned int bu
 unsigned int event_addmousemove(union event_message *message, char relx, char rely);
 unsigned int event_addtimertick(union event_message *message, unsigned int counter);
 unsigned int event_addvideomode(union event_message *message, unsigned int w, unsigned int h, unsigned int bpp);
+unsigned int event_addblockrequest(union event_message *message, unsigned int offset, unsigned int count);
 unsigned int event_addwmconfigure(union event_message *message, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
 unsigned int event_addwmkeypress(union event_message *message, unsigned char scancode);
 unsigned int event_addwmkeyrelease(union event_message *message, unsigned char scancode);

@@ -146,6 +146,18 @@ unsigned int event_addvideomode(union event_message *message, unsigned int w, un
 
 }
 
+unsigned int event_addblockrequest(union event_message *message, unsigned int offset, unsigned int count)
+{
+
+    struct event_blockrequest *blockrequest = addpayload(message, sizeof (struct event_blockrequest));
+
+    blockrequest->offset = offset;
+    blockrequest->count = count;
+
+    return message->header.length;
+
+}
+
 unsigned int event_addwmconfigure(union event_message *message, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 

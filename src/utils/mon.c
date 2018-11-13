@@ -34,12 +34,9 @@ static unsigned int ondata(union event_message *imessage, union event_message *o
 static unsigned int oninit(union event_message *imessage, union event_message *omessage)
 {
 
-    unsigned char dummy;
-
-    event_reply(omessage, imessage, EVENT_DATA);
-    event_append(omessage, 8, "testing\n");
-    event_send(omessage);
-    file_write(FILE_G0, &dummy, 1024);
+    event_create(omessage, EVENT_BLOCKREQUEST, EVENT_BROADCAST, 0);
+    event_addblockrequest(omessage, 0, 512 * 3);
+    file_writeall(FILE_G0, omessage, omessage->header.length);
 
     return 0;
 
