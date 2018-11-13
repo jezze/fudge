@@ -8,6 +8,7 @@
 
 static struct base_driver driver;
 static struct block_interface blockinterface;
+static union event_message reply;
 
 static void handleirq(unsigned int irq)
 {
@@ -19,7 +20,9 @@ static void handleirq(unsigned int irq)
         return;
 
     ide_rblock(blockinterface.id, data);
-    block_notify(&blockinterface, data, 512);
+    event_append(&reply, 512, data);
+    kernel_place(reply.header.target, &reply, reply.header.length);
+    event_reset(&reply);
 
 }
 
@@ -29,6 +32,7 @@ static unsigned int blockinterface_writedata(struct system_node *self, struct sy
     union event_message *message = buffer;
     struct event_blockrequest *blockrequest = event_getdata(message);
 
+    event_reply(&reply, message, EVENT_DATA);
     ide_rpio28(blockinterface.id, 0, blockrequest->count / 512, blockrequest->offset / 512);
 
     return count;

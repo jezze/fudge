@@ -238,6 +238,13 @@ unsigned int event_append(union event_message *message, unsigned int count, void
 
 }
 
+void event_reset(union event_message *message)
+{
+
+    message->header.length = sizeof (struct event_header);
+
+}
+
 void event_create(union event_message *message, unsigned int type, unsigned int source, unsigned int target, unsigned int session)
 {
 
