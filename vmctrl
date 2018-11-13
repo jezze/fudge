@@ -7,8 +7,7 @@ cmd_run() {
     echo "Use ctrl+] to kill node$id"
 
     stty intr ^]
-#    qemu-system-x86_64 -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio -serial stdio -display none -device virtio-net-pci,netdev=eth0,mac=52:54:00:00:0$id:01 -netdev tap,id=eth0,ifname=node$id-eth0,script=no,downscript=no
-    qemu-system-x86_64 -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio -serial stdio -display none -net nic,model=virtio,macaddr=52:54:00:00:0$id:01 -net tap,ifname=node$id-eth0,script=no,downscript=no
+    qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio -vga std -serial stdio -net nic,model=virtio,macaddr=52:54:00:00:0$id:01 -net tap,ifname=node$id-eth0,script=no,downscript=no
     stty $sttybak
 }
 
