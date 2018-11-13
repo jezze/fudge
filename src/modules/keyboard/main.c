@@ -11,7 +11,7 @@ void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigne
 
     union event_message message;
 
-    event_create(&message, EVENT_DATA, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_DATA, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_append(&message, count, buffer);
     kernel_multicast(&interface->data.states, &message);
 
@@ -22,7 +22,7 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
 
     union event_message message;
 
-    event_create(&message, EVENT_KEYPRESS, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_KEYPRESS, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_addkeypress(&message, scancode);
     kernel_multicast(&event.states, &message);
     kernel_multicast(&interface->event.states, &message);
@@ -34,7 +34,7 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 
     union event_message message;
 
-    event_create(&message, EVENT_KEYRELEASE, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_KEYRELEASE, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_addkeyrelease(&message, scancode);
     kernel_multicast(&event.states, &message);
     kernel_multicast(&interface->event.states, &message);

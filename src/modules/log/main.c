@@ -15,7 +15,7 @@ static void write(struct list *states, unsigned int level, char *string, char *f
     union event_message message;
     char num[FUDGE_NSIZE];
 
-    event_create(&message, EVENT_DATA, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_DATA, EVENT_BROADCAST, EVENT_BROADCAST, 0);
 
     switch (level)
     {

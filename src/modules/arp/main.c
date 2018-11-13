@@ -97,7 +97,7 @@ static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void
 
     }
 
-    event_create(&message, EVENT_DATA, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_DATA, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_append(&message, count, buffer);
     kernel_multicast(&ethernetprotocol.data.states, &message);
 

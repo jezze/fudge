@@ -189,7 +189,7 @@ unsigned int event_addwmmousepress(union event_message *message, unsigned int bu
 unsigned int event_addwmmouserelease(union event_message *message, unsigned int button);
 unsigned int event_addwmmousemove(union event_message *message, char relx, char rely);
 unsigned int event_append(union event_message *message, unsigned int count, void *buffer);
-void event_create(union event_message *message, unsigned int type, unsigned int target, unsigned int session);
+void event_create(union event_message *message, unsigned int type, unsigned int source, unsigned int target, unsigned int session);
 void event_forward(union event_message *omessage, union event_message *imessage, unsigned int type, unsigned int target);
 void event_request(union event_message *omessage, union event_message *imessage, unsigned int type, unsigned int target, unsigned int session);
 void event_reply(union event_message *omessage, union event_message *imessage, unsigned int type);

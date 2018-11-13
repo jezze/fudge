@@ -30,18 +30,18 @@ static void loadscript(void)
 
     id = call_spawn();
 
-    event_create(&message, EVENT_INIT, id, 0);
+    event_create(&message, EVENT_INIT, 0, id, 0);
     event_send(&message);
-    event_create(&message, EVENT_FILE, id, 0);
+    event_create(&message, EVENT_FILE, 0, id, 0);
     event_addfile(&message, FILE_P0);
     event_send(&message);
-    event_create(&message, EVENT_FILE, id, 0);
+    event_create(&message, EVENT_FILE, 0, id, 0);
     event_addfile(&message, FILE_P1);
     event_send(&message);
-    event_create(&message, EVENT_FILE, id, 0);
+    event_create(&message, EVENT_FILE, 0, id, 0);
     event_addfile(&message, FILE_P2);
     event_send(&message);
-    event_create(&message, EVENT_STOP, id, 0);
+    event_create(&message, EVENT_STOP, 0, id, 0);
     event_send(&message);
 
 }

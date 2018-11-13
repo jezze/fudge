@@ -34,7 +34,7 @@ static unsigned int ondata(union event_message *imessage, union event_message *o
 static unsigned int oninit(union event_message *imessage, union event_message *omessage)
 {
 
-    event_create(omessage, EVENT_BLOCKREQUEST, EVENT_BROADCAST, 0);
+    event_request(omessage, imessage, EVENT_BLOCKREQUEST, EVENT_BROADCAST, 0);
     event_addblockrequest(omessage, 0, 512 * 3);
     file_writeall(FILE_G0, omessage, omessage->header.length);
 

@@ -11,7 +11,7 @@ void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int 
 
     union event_message message;
 
-    event_create(&message, EVENT_DATA, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_DATA, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_append(&message, count, buffer);
     kernel_multicast(&interface->data.states, &message);
 
@@ -22,7 +22,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
 
     union event_message message;
 
-    event_create(&message, EVENT_MOUSEMOVE, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_MOUSEMOVE, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_addmousemove(&message, relx, rely);
     kernel_multicast(&event.states, &message);
     kernel_multicast(&interface->event.states, &message);
@@ -34,7 +34,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
 
     union event_message message;
 
-    event_create(&message, EVENT_MOUSEPRESS, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_MOUSEPRESS, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_addmousepress(&message, button);
     kernel_multicast(&event.states, &message);
     kernel_multicast(&interface->event.states, &message);
@@ -46,7 +46,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
 
     union event_message message;
 
-    event_create(&message, EVENT_MOUSERELEASE, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_MOUSERELEASE, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_addmouserelease(&message, button);
     kernel_multicast(&event.states, &message);
     kernel_multicast(&interface->event.states, &message);

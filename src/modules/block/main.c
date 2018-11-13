@@ -10,7 +10,7 @@ void block_notify(struct block_interface *interface, void *buffer, unsigned int 
 
     union event_message message;
 
-    event_create(&message, EVENT_DATA, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_DATA, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_append(&message, count, buffer);
     kernel_multicast(&interface->data.states, &message);
 

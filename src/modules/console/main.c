@@ -11,7 +11,7 @@ void console_notify(struct console_interface *interface, void *buffer, unsigned 
 
     union event_message message;
 
-    event_create(&message, EVENT_DATA, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_DATA, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_append(&message, count, buffer);
     kernel_multicast(&interface->data.states, &message);
 
@@ -22,7 +22,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     union event_message message;
 
-    event_create(&message, EVENT_CONSOLEDATA, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_CONSOLEDATA, EVENT_BROADCAST, EVENT_BROADCAST, 0);
     event_addconsoledata(&message, data);
     kernel_multicast(&event.states, &message);
     kernel_multicast(&interface->event.states, &message);

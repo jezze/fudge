@@ -238,11 +238,11 @@ unsigned int event_append(union event_message *message, unsigned int count, void
 
 }
 
-void event_create(union event_message *message, unsigned int type, unsigned int target, unsigned int session)
+void event_create(union event_message *message, unsigned int type, unsigned int source, unsigned int target, unsigned int session)
 {
 
     message->header.type = type;
-    message->header.source = 0;
+    message->header.source = source;
     message->header.target = target;
     message->header.session = session;
     message->header.length = sizeof (struct event_header);
@@ -255,7 +255,7 @@ void event_forward(union event_message *omessage, union event_message *imessage,
 
     unsigned int i;
 
-    event_create(omessage, type, target, imessage->header.session);
+    event_create(omessage, type, imessage->header.target, target, imessage->header.session);
 
     for (i = 0; i < imessage->header.nroutes; i++)
         event_route(omessage, imessage->header.routes[i]);
@@ -267,7 +267,7 @@ void event_request(union event_message *omessage, union event_message *imessage,
 
     unsigned int i;
 
-    event_create(omessage, type, target, session);
+    event_create(omessage, type, imessage->header.target, target, session);
 
     for (i = 0; i < imessage->header.nroutes; i++)
         event_route(omessage, imessage->header.routes[i]);
@@ -281,7 +281,7 @@ void event_reply(union event_message *omessage, union event_message *imessage, u
 
     unsigned int i;
 
-    event_create(omessage, type, imessage->header.source, imessage->header.session);
+    event_create(omessage, type, imessage->header.target, imessage->header.source, imessage->header.session);
 
     for (i = 0; i < imessage->header.nroutes; i++)
         event_route(omessage, imessage->header.routes[i]);
