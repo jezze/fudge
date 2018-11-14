@@ -40,7 +40,6 @@ static struct view *currentview = &views[0];
 static unsigned int padding;
 static unsigned int lineheight;
 static unsigned int steplength;
-static unsigned int rendertarget;
 
 static void updateremote(union event_message *imessage, struct remote *remote)
 {
@@ -178,7 +177,7 @@ static void configureremotes(union event_message *imessage, union event_message 
         struct remote *remote = current->data;
 
         event_request(omessage, imessage, EVENT_WMCONFIGURE, 0);
-        event_addwmconfigure(omessage, imessage->header.target, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+        event_addwmconfigure(omessage, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
         event_place(remote->source, omessage);
 
     }
@@ -771,7 +770,7 @@ static unsigned int onvideomode(union event_message *imessage, union event_messa
 
     /* Sending to self not allowed */
     event_request(omessage, imessage, EVENT_WMCONFIGURE, 0);
-    event_addwmconfigure(omessage, imessage->header.target, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    event_addwmconfigure(omessage, 0, 0, videomode->w, videomode->h, padding, lineheight);
     event_place(imessage->header.target, omessage);
     /* Sending to self not allowed */
     event_request(omessage, imessage, EVENT_WMSHOW, 0);
@@ -787,8 +786,6 @@ static unsigned int onwmconfigure(union event_message *imessage, union event_mes
     struct event_wmconfigure *wmconfigure = event_getdata(imessage);
     struct list_item *current;
     unsigned int i = 0;
-
-    rendertarget = wmconfigure->rendertarget;
 
     box_setsize(&screen, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
     box_setsize(&body, wmconfigure->x, wmconfigure->y + (wmconfigure->lineheight + wmconfigure->padding * 2), wmconfigure->w, wmconfigure->h - (wmconfigure->lineheight + wmconfigure->padding * 2));
@@ -1016,7 +1013,7 @@ void main(void)
 
             event_request(&omessage, &imessage, EVENT_DATA, 0);
             event_append(&omessage, ring_count(&output), outputdata);
-            event_place(rendertarget, &omessage);
+            file_writeall(FILE_G0, &omessage, omessage.header.length);
             ring_reset(&output);
 
         }

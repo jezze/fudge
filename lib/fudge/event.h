@@ -122,7 +122,6 @@ struct event_blockrequest
 struct event_wmconfigure
 {
 
-    unsigned int rendertarget;
     unsigned int x;
     unsigned int y;
     unsigned int w;
@@ -182,7 +181,7 @@ unsigned int event_addmousemove(union event_message *message, char relx, char re
 unsigned int event_addtimertick(union event_message *message, unsigned int counter);
 unsigned int event_addvideomode(union event_message *message, unsigned int w, unsigned int h, unsigned int bpp);
 unsigned int event_addblockrequest(union event_message *message, unsigned int offset, unsigned int count);
-unsigned int event_addwmconfigure(union event_message *message, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
+unsigned int event_addwmconfigure(union event_message *message, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
 unsigned int event_addwmkeypress(union event_message *message, unsigned char scancode);
 unsigned int event_addwmkeyrelease(union event_message *message, unsigned char scancode);
 unsigned int event_addwmmousepress(union event_message *message, unsigned int button);

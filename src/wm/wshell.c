@@ -16,7 +16,6 @@ static char textdata[FUDGE_BSIZE];
 static struct ring text;
 static unsigned int totalrows;
 static unsigned int visiblerows;
-static unsigned int rendertarget;
 
 static void updatecontent(union event_message *imessage)
 {
@@ -285,8 +284,6 @@ static unsigned int onwmconfigure(union event_message *imessage, union event_mes
 
     struct event_wmconfigure *wmconfigure = event_getdata(imessage);
 
-    rendertarget = wmconfigure->rendertarget;
-
     box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
     box_resize(&content.size, wmconfigure->padding);
 
@@ -480,7 +477,7 @@ void main(void)
 
             event_request(&omessage, &imessage, EVENT_DATA, 0);
             event_append(&omessage, ring_count(&output), outputdata);
-            event_place(rendertarget, &omessage);
+            file_writeall(FILE_G0, &omessage, omessage.header.length);
             ring_reset(&output);
 
         }

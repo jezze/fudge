@@ -158,12 +158,11 @@ unsigned int event_addblockrequest(union event_message *message, unsigned int of
 
 }
 
-unsigned int event_addwmconfigure(union event_message *message, unsigned int rendertarget, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
+unsigned int event_addwmconfigure(union event_message *message, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 
     struct event_wmconfigure *wmconfigure = addpayload(message, sizeof (struct event_wmconfigure));
 
-    wmconfigure->rendertarget = rendertarget;
     wmconfigure->x = x;
     wmconfigure->y = y;
     wmconfigure->w = w;
