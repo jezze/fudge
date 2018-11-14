@@ -302,10 +302,14 @@ static unsigned int pick(struct task *task, void *stack)
     struct {void *caller; void *buffer; unsigned int count;} *args = stack;
     unsigned int count;
 
-    count = task_readall(task, args->buffer, args->count);
+    spinlock_acquire(&task->mailbox.spinlock);
+
+    count = ring_readall(&task->mailbox.ring, args->buffer, args->count);
 
     if (!count)
         kernel_blocktask(task);
+
+    spinlock_release(&task->mailbox.spinlock);
 
     return count;
 

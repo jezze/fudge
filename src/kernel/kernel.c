@@ -254,10 +254,14 @@ unsigned int kernel_place(unsigned int id, void *buffer, unsigned int count)
 
     struct task *task = &tasks[id];
 
-    count = task_writeall(task, buffer, count);
+    spinlock_acquire(&task->mailbox.spinlock);
+
+    count = ring_writeall(&task->mailbox.ring, buffer, count);
 
     if (count)
         kernel_unblocktask(task);
+
+    spinlock_release(&task->mailbox.spinlock);
 
     return count;
 
