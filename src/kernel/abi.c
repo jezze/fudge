@@ -300,8 +300,14 @@ static unsigned int pick(struct task *task, void *stack)
 {
 
     struct {void *caller; void *buffer; unsigned int count;} *args = stack;
+    unsigned int count;
 
-    return kernel_pick(task->id, args->buffer, args->count);
+    count = task_readall(task, args->buffer, args->count);
+
+    if (!count)
+        kernel_blocktask(task);
+
+    return count;
 
 }
 
