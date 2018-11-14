@@ -2,6 +2,7 @@ elfload < /mod/base.ko
 elfload < /mod/null.ko
 elfload < /mod/mtwist.ko
 elfload < /mod/log.ko
+elfload < /mod/event.ko
 elfload < /mod/block.ko
 elfload < /mod/clock.ko
 elfload < /mod/console.ko

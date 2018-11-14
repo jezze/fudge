@@ -47,7 +47,7 @@ static unsigned int onstop(union event_message *imessage, union event_message *o
         event_append(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
 
     event_append(omessage, 1, "\n");
-    event_send(omessage);
+    event_place(omessage->header.target, omessage);
 
     return 1;
 

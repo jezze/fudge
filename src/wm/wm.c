@@ -141,8 +141,8 @@ static void showremotes(union event_message *imessage, union event_message *omes
 
         struct remote *remote = current->data;
 
-        event_request(omessage, imessage, EVENT_WMSHOW, remote->source, 0);
-        event_send(omessage);
+        event_request(omessage, imessage, EVENT_WMSHOW, 0);
+        event_place(remote->source, omessage);
         updateremote(imessage, remote);
 
     }
@@ -159,8 +159,8 @@ static void hideremotes(union event_message *imessage, union event_message *omes
 
         struct remote *remote = current->data;
 
-        event_request(omessage, imessage, EVENT_WMHIDE, remote->source, 0);
-        event_send(omessage);
+        event_request(omessage, imessage, EVENT_WMHIDE, 0);
+        event_place(remote->source, omessage);
         removeremote(imessage, remote);
 
     }
@@ -177,9 +177,9 @@ static void configureremotes(union event_message *imessage, union event_message 
 
         struct remote *remote = current->data;
 
-        event_request(omessage, imessage, EVENT_WMCONFIGURE, remote->source, 0);
+        event_request(omessage, imessage, EVENT_WMCONFIGURE, 0);
         event_addwmconfigure(omessage, imessage->header.target, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
-        event_send(omessage);
+        event_place(remote->source, omessage);
 
     }
 
@@ -195,8 +195,8 @@ static void killremotes(union event_message *imessage, union event_message *omes
 
         struct remote *remote = current->data;
 
-        event_request(omessage, imessage, EVENT_KILL, remote->source, 0);
-        event_send(omessage);
+        event_request(omessage, imessage, EVENT_KILL, 0);
+        event_place(remote->source, omessage);
 
     }
 
@@ -316,7 +316,7 @@ static void setupremotes(void)
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    if (!file_walk(FILE_L0, FILE_G2, "../data"))
+    if (!file_walk(FILE_L0, FILE_G3, "../data"))
         return 0;
 
     render_write(event_getdata(imessage), event_getdatasize(imessage));
@@ -338,12 +338,12 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
     activateview(currentview);
     render_init();
 
-    if (!file_walk(FILE_L0, FILE_G2, "../ctrl"))
+    if (!file_walk(FILE_L0, FILE_G3, "../ctrl"))
         return 1;
 
     render_setvideo(FILE_L0, 1024, 768, 4);
 
-    if (!file_walk(FILE_L0, FILE_G2, "../colormap"))
+    if (!file_walk(FILE_L0, FILE_G3, "../colormap"))
         return 1;
 
     render_setcolormap(FILE_L0);
@@ -387,9 +387,9 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
         if (currentview->currentremote)
         {
 
-            event_request(omessage, imessage, EVENT_WMKEYPRESS, currentview->currentremote->source, 0);
+            event_request(omessage, imessage, EVENT_WMKEYPRESS, 0);
             event_addwmkeypress(omessage, keypress->scancode);
-            event_send(omessage);
+            event_place(currentview->currentremote->source, omessage);
 
         }
 
@@ -444,10 +444,10 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            event_request(omessage, imessage, EVENT_WMHIDE, currentview->currentremote->source, 0);
-            event_send(omessage);
-            event_request(omessage, imessage, EVENT_KILL, currentview->currentremote->source, 0);
-            event_send(omessage);
+            event_request(omessage, imessage, EVENT_WMHIDE, 0);
+            event_place(currentview->currentremote->source, omessage);
+            event_request(omessage, imessage, EVENT_KILL, 0);
+            event_place(currentview->currentremote->source, omessage);
 
         }
 
@@ -465,10 +465,10 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
         if (id)
         {
 
-            event_request(omessage, imessage, EVENT_INIT, id, 0);
-            event_send(omessage);
-            event_request(omessage, imessage, EVENT_STOP, id, 0);
-            event_send(omessage);
+            event_request(omessage, imessage, EVENT_INIT, 0);
+            event_place(id, omessage);
+            event_request(omessage, imessage, EVENT_STOP, 0);
+            event_place(id, omessage);
 
         }
 
@@ -549,11 +549,11 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
         {
 
             /* Sending to self not allowed */
-            event_request(omessage, imessage, EVENT_WMHIDE, imessage->header.target, 0);
-            event_send(omessage);
+            event_request(omessage, imessage, EVENT_WMHIDE, 0);
+            event_place(imessage->header.target, omessage);
             /* Sending to self not allowed */
-            event_request(omessage, imessage, EVENT_KILL, imessage->header.target, 0);
-            event_send(omessage);
+            event_request(omessage, imessage, EVENT_KILL, 0);
+            event_place(imessage->header.target, omessage);
 
         }
 
@@ -578,9 +578,9 @@ static unsigned int onkeyrelease(union event_message *imessage, union event_mess
         if (currentview->currentremote)
         {
 
-            event_request(omessage, imessage, EVENT_WMKEYRELEASE, currentview->currentremote->source, 0);
+            event_request(omessage, imessage, EVENT_WMKEYRELEASE, 0);
             event_addwmkeyrelease(omessage, keyrelease->scancode);
-            event_send(omessage);
+            event_place(currentview->currentremote->source, omessage);
 
         }
 
@@ -611,9 +611,9 @@ static unsigned int onmousemove(union event_message *imessage, union event_messa
     if (currentview->currentremote)
     {
 
-        event_request(omessage, imessage, EVENT_WMMOUSEMOVE, currentview->currentremote->source, 0);
+        event_request(omessage, imessage, EVENT_WMMOUSEMOVE, 0);
         event_addwmmousemove(omessage, mouse.size.x, mouse.size.y);
-        event_send(omessage);
+        event_place(currentview->currentremote->source, omessage);
 
     }
 
@@ -682,9 +682,9 @@ static unsigned int onmousepress(union event_message *imessage, union event_mess
     if (currentview->currentremote)
     {
 
-        event_request(omessage, imessage, EVENT_WMMOUSEPRESS, currentview->currentremote->source, 0);
+        event_request(omessage, imessage, EVENT_WMMOUSEPRESS, 0);
         event_addwmmousepress(omessage, mousepress->button);
-        event_send(omessage);
+        event_place(currentview->currentremote->source, omessage);
 
     }
 
@@ -700,9 +700,9 @@ static unsigned int onmouserelease(union event_message *imessage, union event_me
     if (currentview->currentremote)
     {
 
-        event_request(omessage, imessage, EVENT_WMMOUSERELEASE, currentview->currentremote->source, 0);
+        event_request(omessage, imessage, EVENT_WMMOUSERELEASE, 0);
         event_addwmmouserelease(omessage, mouserelease->button);
-        event_send(omessage);
+        event_place(currentview->currentremote->source, omessage);
 
     }
 
@@ -770,12 +770,12 @@ static unsigned int onvideomode(union event_message *imessage, union event_messa
     }
 
     /* Sending to self not allowed */
-    event_request(omessage, imessage, EVENT_WMCONFIGURE, imessage->header.target, 0);
+    event_request(omessage, imessage, EVENT_WMCONFIGURE, 0);
     event_addwmconfigure(omessage, imessage->header.target, 0, 0, videomode->w, videomode->h, padding, lineheight);
-    event_send(omessage);
+    event_place(imessage->header.target, omessage);
     /* Sending to self not allowed */
-    event_request(omessage, imessage, EVENT_WMSHOW, imessage->header.target, 0);
-    event_send(omessage);
+    event_request(omessage, imessage, EVENT_WMSHOW, 0);
+    event_place(imessage->header.target, omessage);
 
     return 0;
 
@@ -916,19 +916,22 @@ void main(void)
     union event_message imessage;
     union event_message omessage;
 
-    if (!file_walk2(FILE_G0, "/system/keyboard/event"))
+    if (!file_walk2(FILE_G0, "/system/event"))
         return;
 
-    if (!file_walk2(FILE_G1, "/system/mouse/event"))
+    if (!file_walk2(FILE_G1, "/system/keyboard/event"))
         return;
 
-    if (!file_walk2(FILE_G2, "/system/video/if:0/event"))
+    if (!file_walk2(FILE_G2, "/system/mouse/event"))
+        return;
+
+    if (!file_walk2(FILE_G3, "/system/video/if:0/event"))
         return;
 
     file_open(FILE_G0);
     file_open(FILE_G1);
     file_open(FILE_G2);
-    event_open();
+    file_open(FILE_G3);
 
     while (!status)
     {
@@ -1011,16 +1014,16 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_request(&omessage, &imessage, EVENT_DATA, rendertarget, 0);
+            event_request(&omessage, &imessage, EVENT_DATA, 0);
             event_append(&omessage, ring_count(&output), outputdata);
-            event_send(&omessage);
+            event_place(rendertarget, &omessage);
             ring_reset(&output);
 
         }
 
     }
 
-    event_close();
+    file_close(FILE_G3);
     file_close(FILE_G2);
     file_close(FILE_G1);
     file_close(FILE_G0);

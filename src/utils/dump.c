@@ -15,7 +15,7 @@ static void dump(union event_message *imessage, union event_message *omessage, u
         event_reply(omessage, imessage, EVENT_DATA);
         event_append(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
         event_append(omessage, 2, "  ");
-        event_send(omessage);
+        event_place(omessage->header.target, omessage);
 
     }
 

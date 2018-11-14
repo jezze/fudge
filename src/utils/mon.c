@@ -6,7 +6,7 @@ static unsigned int ondata(union event_message *imessage, union event_message *o
 
     event_reply(omessage, imessage, EVENT_DATA);
     event_append(omessage, 6, "block\n");
-    event_send(omessage);
+    event_place(omessage->header.target, omessage);
 
     return 0;
 
@@ -15,7 +15,7 @@ static unsigned int ondata(union event_message *imessage, union event_message *o
 static unsigned int oninit(union event_message *imessage, union event_message *omessage)
 {
 
-    event_request(omessage, imessage, EVENT_BLOCKREQUEST, EVENT_BROADCAST, 0);
+    event_request(omessage, imessage, EVENT_BLOCKREQUEST, 0);
     event_addblockrequest(omessage, 0, 512 * 3);
     file_writeall(FILE_G0, omessage, omessage->header.length);
 

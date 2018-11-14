@@ -323,7 +323,7 @@ static void parse(union event_message *imessage, union event_message *omessage, 
 
     }
 
-    event_send(omessage);
+    event_place(omessage->header.target, omessage);
 
 }
 

@@ -15,7 +15,7 @@ static unsigned int root_write(struct system_node *self, struct system_node *cur
     if (message->header.length != count)
         return 0;
 
-    return kernel_send(state->id, message->header.target, &self->states, message);
+    return kernel_multicast(state->id, &self->states, message);
 
 }
 

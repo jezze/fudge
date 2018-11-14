@@ -70,9 +70,9 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
     }
 
-    event_create(&message, EVENT_DATA, EVENT_BROADCAST, EVENT_BROADCAST, 0);
+    event_create(&message, EVENT_DATA);
     event_append(&message, count, buffer);
-    kernel_multicast(&interface->data.states, &message);
+    kernel_multicast(EVENT_BROADCAST, &interface->data.states, &message);
 
 }
 

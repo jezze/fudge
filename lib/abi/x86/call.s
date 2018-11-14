@@ -18,6 +18,7 @@
 .set CALL_INDEX_SPAWN,                  0x0E
 .set CALL_INDEX_DESPAWN,                0x0F
 .set CALL_INDEX_PICK,                   0x10
+.set CALL_INDEX_PLACE,                  0x11
 
 .section .text
 
@@ -78,6 +79,12 @@ call_open:
 .global call_pick
 call_pick:
     movl $CALL_INDEX_PICK, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_place
+call_place:
+    movl $CALL_INDEX_PLACE, %eax
     int $CALL_INTERRUPT
     ret
 

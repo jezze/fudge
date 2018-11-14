@@ -267,7 +267,7 @@ unsigned int kernel_place(unsigned int id, void *buffer, unsigned int count)
 
 }
 
-unsigned int kernel_multicast(struct list *states, union event_message *message)
+unsigned int kernel_multicast(unsigned int id, struct list *states, union event_message *message)
 {
 
     struct list_item *current;
@@ -279,6 +279,7 @@ unsigned int kernel_multicast(struct list *states, union event_message *message)
 
         struct service_state *state = current->data;
 
+        message->header.source = id;
         message->header.target = state->id;
 
         kernel_place(state->id, message, message->header.length);
@@ -288,19 +289,6 @@ unsigned int kernel_multicast(struct list *states, union event_message *message)
     spinlock_release(&states->spinlock);
 
     return message->header.length;
-
-}
-
-unsigned int kernel_send(unsigned int source, unsigned int target, struct list *states, union event_message *message)
-{
-
-    message->header.source = source;
-    message->header.target = target;
-
-    if (target)
-        return kernel_place(target, message, message->header.length);
-    else
-        return kernel_multicast(states, message);
 
 }
 

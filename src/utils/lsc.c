@@ -17,7 +17,7 @@ static void list(union event_message *imessage, union event_message *omessage, u
         if (event_avail(omessage) < record.length + 3 + 16)
         {
 
-            event_send(omessage);
+            event_place(omessage->header.target, omessage);
             event_reply(omessage, imessage, EVENT_DATA);
 
         }
@@ -34,7 +34,7 @@ static void list(union event_message *imessage, union event_message *omessage, u
 
     }
 
-    event_send(omessage);
+    event_place(omessage->header.target, omessage);
     file_close(descriptor);
 
 }

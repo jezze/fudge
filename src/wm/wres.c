@@ -6,8 +6,8 @@
 static unsigned int oninit(union event_message *imessage, union event_message *omessage)
 {
 
-    event_request(omessage, imessage, EVENT_WMMAP, EVENT_BROADCAST, 0);
-    event_send(omessage);
+    event_request(omessage, imessage, EVENT_WMMAP, 0);
+    file_writeall(FILE_G0, omessage, omessage->header.length);
 
     return 0;
 
@@ -16,8 +16,8 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
 static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
-    event_request(omessage, imessage, EVENT_WMUNMAP, EVENT_BROADCAST, 0);
-    event_send(omessage);
+    event_request(omessage, imessage, EVENT_WMUNMAP, 0);
+    file_writeall(FILE_G0, omessage, omessage->header.length);
 
     return 1;
 
@@ -53,7 +53,8 @@ void main(void)
     union event_message imessage;
     union event_message omessage;
 
-    event_open();
+    if (!file_walk2(FILE_G0, "/system/event"))
+        return;
 
     while (!status)
     {
@@ -79,8 +80,6 @@ void main(void)
         }
 
     }
-
-    event_close();
 
 }
 

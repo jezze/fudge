@@ -245,36 +245,40 @@ void event_reset(union event_message *message)
 
 }
 
-void event_create(union event_message *message, unsigned int type, unsigned int source, unsigned int target, unsigned int session)
+void event_create(union event_message *message, unsigned int type)
 {
 
     message->header.type = type;
-    message->header.source = source;
-    message->header.target = target;
-    message->header.session = session;
+    message->header.source = 0;
+    message->header.target = 0;
+    message->header.session = 0;
     message->header.length = sizeof (struct event_header);
     message->header.nroutes = 0;
 
 }
 
-void event_forward(union event_message *omessage, union event_message *imessage, unsigned int type, unsigned int target)
+void event_forward(union event_message *omessage, union event_message *imessage, unsigned int type)
 {
 
     unsigned int i;
 
-    event_create(omessage, type, imessage->header.target, target, imessage->header.session);
+    event_create(omessage, type);
+
+    omessage->header.session = imessage->header.session;
 
     for (i = 0; i < imessage->header.nroutes; i++)
         event_route(omessage, imessage->header.routes[i]);
 
 }
 
-void event_request(union event_message *omessage, union event_message *imessage, unsigned int type, unsigned int target, unsigned int session)
+void event_request(union event_message *omessage, union event_message *imessage, unsigned int type, unsigned int session)
 {
 
     unsigned int i;
 
-    event_create(omessage, type, imessage->header.target, target, session);
+    event_create(omessage, type);
+
+    omessage->header.session = session;
 
     for (i = 0; i < imessage->header.nroutes; i++)
         event_route(omessage, imessage->header.routes[i]);
@@ -288,7 +292,11 @@ void event_reply(union event_message *omessage, union event_message *imessage, u
 
     unsigned int i;
 
-    event_create(omessage, type, imessage->header.target, imessage->header.source, imessage->header.session);
+    event_create(omessage, type);
+
+    omessage->header.session = imessage->header.session;
+    omessage->header.source = imessage->header.target;
+    omessage->header.target = imessage->header.source;
 
     for (i = 0; i < imessage->header.nroutes; i++)
         event_route(omessage, imessage->header.routes[i]);

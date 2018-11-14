@@ -315,6 +315,19 @@ static unsigned int pick(struct task *task, void *stack)
 
 }
 
+static unsigned int place(struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int id; void *buffer; unsigned int count;} *args = stack;
+    union event_message *message = args->buffer;
+
+    message->header.source = task->id;
+    message->header.target = args->id;
+
+    return kernel_place(args->id, args->buffer, args->count);
+
+}
+
 unsigned int abi_call(unsigned int index, struct task *task, void *stack)
 {
 
@@ -342,6 +355,7 @@ void abi_setup(unsigned int (*spawn)(struct task *task, void *stack), unsigned i
     calls[0x0E] = spawn;
     calls[0x0F] = despawn;
     calls[0x10] = pick;
+    calls[0x11] = place;
 
 }
 

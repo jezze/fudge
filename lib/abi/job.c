@@ -39,12 +39,12 @@ static void runjob(union event_message *imessage, union event_message *omessage,
     for (j = 0; j < njobs; j++)
     {
 
-        event_request(omessage, imessage, EVENT_INIT, jobs[j].id, session);
+        event_request(omessage, imessage, EVENT_INIT, session);
 
         for (x = njobs; x > j + 1; x--)
             event_route(omessage, jobs[x - 1].id);
 
-        event_send(omessage);
+        event_place(jobs[j].id, omessage);
 
     }
 
@@ -57,13 +57,13 @@ static void runjob(union event_message *imessage, union event_message *omessage,
             for (k = 0; k < jobs[j].ninputs; k++)
             {
 
-                event_request(omessage, imessage, EVENT_FILE, jobs[j].id, session);
+                event_request(omessage, imessage, EVENT_FILE, session);
 
                 for (x = njobs; x > j + 1; x--)
                     event_route(omessage, jobs[x - 1].id);
 
                 event_addfile(omessage, FILE_P0 + k);
-                event_send(omessage);
+                event_place(jobs[j].id, omessage);
 
             }
 
@@ -75,13 +75,13 @@ static void runjob(union event_message *imessage, union event_message *omessage,
             for (k = 0; k < jobs[j].ndatas; k++)
             {
 
-                event_request(omessage, imessage, EVENT_DATA, jobs[j].id, session);
+                event_request(omessage, imessage, EVENT_DATA, session);
 
                 for (x = njobs; x > j + 1; x--)
                     event_route(omessage, jobs[x - 1].id);
 
                 event_append(omessage, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
-                event_send(omessage);
+                event_place(jobs[j].id, omessage);
 
             }
 
@@ -90,13 +90,13 @@ static void runjob(union event_message *imessage, union event_message *omessage,
         else
         {
 
-            event_request(omessage, imessage, EVENT_FILE, jobs[j].id, session);
+            event_request(omessage, imessage, EVENT_FILE, session);
 
             for (x = njobs; x > j + 1; x--)
                 event_route(omessage, jobs[x - 1].id);
 
             event_addfile(omessage, 0);
-            event_send(omessage);
+            event_place(jobs[j].id, omessage);
 
         }
 
@@ -105,12 +105,12 @@ static void runjob(union event_message *imessage, union event_message *omessage,
     for (j = 0; j < njobs; j++)
     {
 
-        event_request(omessage, imessage, EVENT_STOP, jobs[j].id, session);
+        event_request(omessage, imessage, EVENT_STOP, session);
 
         for (x = njobs; x > j + 1; x--)
             event_route(omessage, jobs[x - 1].id);
 
-        event_send(omessage);
+        event_place(jobs[j].id, omessage);
 
     }
 

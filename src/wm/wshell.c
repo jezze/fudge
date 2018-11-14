@@ -158,13 +158,13 @@ static unsigned int runcmd(union event_message *imessage, union event_message *o
     if (id)
     {
 
-        event_request(omessage, imessage, EVENT_INIT, id, session);
-        event_send(omessage);
-        event_request(omessage, imessage, EVENT_DATA, id, session);
+        event_request(omessage, imessage, EVENT_INIT, session);
+        event_place(id, omessage);
+        event_request(omessage, imessage, EVENT_DATA, session);
         event_append(omessage, count, data);
-        event_send(omessage);
-        event_request(omessage, imessage, EVENT_STOP, id, session);
-        event_send(omessage);
+        event_place(id, omessage);
+        event_request(omessage, imessage, EVENT_STOP, session);
+        event_place(id, omessage);
 
     }
 
@@ -263,8 +263,8 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     ring_write(&prompt, "$ ", 2);
-    event_request(omessage, imessage, EVENT_WMMAP, EVENT_BROADCAST, 0);
-    event_send(omessage);
+    event_request(omessage, imessage, EVENT_WMMAP, 0);
+    file_writeall(FILE_G0, omessage, omessage->header.length);
 
     return 0;
 
@@ -273,8 +273,8 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
 static unsigned int onkill(union event_message *imessage, union event_message *omessage)
 {
 
-    event_request(omessage, imessage, EVENT_WMUNMAP, EVENT_BROADCAST, 0);
-    event_send(omessage);
+    event_request(omessage, imessage, EVENT_WMUNMAP, 0);
+    file_writeall(FILE_G0, omessage, omessage->header.length);
 
     return 1;
 
@@ -424,7 +424,8 @@ void main(void)
     union event_message imessage;
     union event_message omessage;
 
-    event_open();
+    if (!file_walk2(FILE_G0, "/system/event"))
+        return;
 
     while (!status)
     {
@@ -477,16 +478,14 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_request(&omessage, &imessage, EVENT_DATA, rendertarget, 0);
+            event_request(&omessage, &imessage, EVENT_DATA, 0);
             event_append(&omessage, ring_count(&output), outputdata);
-            event_send(&omessage);
+            event_place(rendertarget, &omessage);
             ring_reset(&output);
 
         }
 
     }
-
-    event_close();
 
 }
 
