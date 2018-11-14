@@ -1,8 +1,11 @@
 elfload < /mod/io.ko
 elfload < /mod/cpuid.ko
 elfload < /mod/msr.ko
+elfload < /mod/acpi.ko
 elfload < /mod/syse.ko
 elfload < /mod/pic.ko
+elfload < /mod/apic.ko
+elfload < /mod/ioapic.ko
 elfload < /mod/platform.ko
 elfload < /mod/pci.ko
 elfload < /mod/ps2.ko
