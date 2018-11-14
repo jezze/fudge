@@ -16,7 +16,7 @@ static void list(union event_message *imessage, union event_message *omessage, u
         {
 
             event_place(omessage->header.target, omessage);
-            event_reply(omessage, imessage, EVENT_DATA);
+            event_reset(omessage);
 
         }
 
