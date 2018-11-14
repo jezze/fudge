@@ -41,7 +41,6 @@ void main(void)
         return;
 
     file_open(FILE_G0);
-    event_open();
 
     while (!status)
     {
@@ -68,7 +67,6 @@ void main(void)
 
     }
 
-    event_close();
     file_close(FILE_G0);
 
 }

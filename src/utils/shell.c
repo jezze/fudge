@@ -214,7 +214,6 @@ void main(void)
 
     file_open(FILE_G0);
     file_open(FILE_G1);
-    event_open();
 
     while (!status)
     {
@@ -246,7 +245,6 @@ void main(void)
 
     }
 
-    event_close();
     file_close(FILE_G1);
     file_close(FILE_G0);
 

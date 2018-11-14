@@ -62,8 +62,6 @@ void main(void)
     union event_message imessage;
     union event_message omessage;
 
-    event_open();
-
     while (!status)
     {
 
@@ -93,8 +91,6 @@ void main(void)
         }
 
     }
-
-    event_close();
 
 }
 

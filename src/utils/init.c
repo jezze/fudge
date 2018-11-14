@@ -65,7 +65,6 @@ void main(void)
     union event_message omessage;
 
     loadsystem();
-    event_open();
     loadscript();
 
     while (!status)
@@ -82,8 +81,6 @@ void main(void)
         }
 
     }
-
-    event_close();
 
 }
 
