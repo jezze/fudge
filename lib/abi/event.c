@@ -17,9 +17,7 @@ unsigned int event_pick(union event_message *message)
 unsigned int event_place(unsigned int id, union event_message *message)
 {
 
-    while (!call_place(id, message, message->header.length));
-
-    return message->header.length;
+    return call_place(id, message, message->header.length);
 
 }
 
