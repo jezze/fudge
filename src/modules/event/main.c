@@ -4,13 +4,6 @@
 
 static struct system_node root;
 
-static unsigned int root_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return kernel_pick(state->id, buffer, count);
-
-}
-
 static unsigned int root_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -38,7 +31,6 @@ void module_init(void)
 
     system_initnode(&root, SYSTEM_NODETYPE_NORMAL, "event");
 
-    root.operations.read = root_read;
     root.operations.write = root_write;
     root.operations.seek = root_seek;
 

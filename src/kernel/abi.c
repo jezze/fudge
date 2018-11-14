@@ -6,7 +6,7 @@
 #include "service.h"
 #include "kernel.h"
 
-#define CALLS                           16
+#define CALLS                           32
 
 static unsigned int (*calls[CALLS])(struct task *task, void *stack);
 
@@ -296,6 +296,15 @@ static unsigned int unload(struct task *task, void *stack)
 
 }
 
+static unsigned int pick(struct task *task, void *stack)
+{
+
+    struct {void *caller; void *buffer; unsigned int count;} *args = stack;
+
+    return kernel_pick(task->id, args->buffer, args->count);
+
+}
+
 unsigned int abi_call(unsigned int index, struct task *task, void *stack)
 {
 
@@ -322,6 +331,7 @@ void abi_setup(unsigned int (*spawn)(struct task *task, void *stack), unsigned i
     calls[0x0D] = unload;
     calls[0x0E] = spawn;
     calls[0x0F] = despawn;
+    calls[0x10] = pick;
 
 }
 

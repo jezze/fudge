@@ -7,6 +7,7 @@ unsigned int call_despawn(void);
 unsigned int call_load(unsigned int descriptor);
 unsigned int call_mount(unsigned int pdescriptor, unsigned int cdescriptor);
 unsigned int call_open(unsigned int descriptor);
+unsigned int call_pick(void *buffer, unsigned int count);
 unsigned int call_read(unsigned int descriptor, void *buffer, unsigned int count);
 unsigned int call_seek(unsigned int descriptor, unsigned int offset);
 unsigned int call_spawn(void);

@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include "call.h"
 #include "file.h"
 #include "event.h"
 
@@ -19,8 +20,10 @@ void event_close(void)
 unsigned int event_pick(union event_message *message)
 {
 
-    file_readall(FILE_PM, &message->header, sizeof (struct event_header));
-    file_readall(FILE_PM, &message->header + 1, message->header.length - sizeof (struct event_header));
+    while (!call_pick(&message->header, sizeof (struct event_header)));
+
+    if (message->header.length > sizeof (struct event_header))
+        while (!call_pick(&message->header + 1, message->header.length - sizeof (struct event_header)));
 
     return message->header.type;
 
