@@ -1,7 +1,7 @@
 #define FILE_PP                         0x00
 #define FILE_PR                         0x01
 #define FILE_PW                         0x02
-#define FILE_PM                         0x03
+#define FILE_PX                         0x03
 #define FILE_P0                         0x04
 #define FILE_P1                         0x05
 #define FILE_P2                         0x06
@@ -17,7 +17,7 @@
 #define FILE_CP                         0x10
 #define FILE_CR                         0x11
 #define FILE_CW                         0x12
-#define FILE_CM                         0x13
+#define FILE_CX                         0x13
 #define FILE_C0                         0x14
 #define FILE_C1                         0x15
 #define FILE_C2                         0x16
