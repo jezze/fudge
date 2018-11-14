@@ -1,4 +1,5 @@
 elfload < /mod/base.ko
+elfload < /mod/system.ko
 elfload < /mod/null.ko
 elfload < /mod/mtwist.ko
 elfload < /mod/log.ko

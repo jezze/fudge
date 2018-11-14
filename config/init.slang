@@ -1,3 +1,4 @@
+initmnt
 initnet
 shell < /system/console/if:0
 wm
