@@ -24,6 +24,14 @@
 #define EVENT_WMMOUSEPRESS              0x93
 #define EVENT_WMMOUSERELEASE            0x94
 
+struct event_route
+{
+
+    unsigned int target;
+    unsigned int session;
+
+};
+
 struct event_header
 {
 
@@ -33,7 +41,7 @@ struct event_header
     unsigned int session;
     unsigned int length;
     unsigned int nroutes;
-    unsigned int routes[16];
+    struct event_route routes[16];
 
 };
 
@@ -170,7 +178,7 @@ struct event_wmmousemove
 void *event_getdata(union event_message *message);
 unsigned int event_getdatasize(union event_message *message);
 unsigned int event_avail(union event_message *message);
-unsigned int event_route(union event_message *message, unsigned int target);
+unsigned int event_addroute(union event_message *message, unsigned int target, unsigned int session);
 unsigned int event_addfile(union event_message *message, unsigned int descriptor);
 unsigned int event_addconsoledata(union event_message *message, char data);
 unsigned int event_addkeypress(union event_message *message, unsigned char scancode);

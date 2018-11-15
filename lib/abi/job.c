@@ -42,7 +42,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
         event_request(omessage, imessage, EVENT_INIT, session);
 
         for (x = njobs; x > j + 1; x--)
-            event_route(omessage, jobs[x - 1].id);
+            event_addroute(omessage, jobs[x - 1].id, session);
 
         event_place(jobs[j].id, omessage);
 
@@ -60,7 +60,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
                 event_request(omessage, imessage, EVENT_FILE, session);
 
                 for (x = njobs; x > j + 1; x--)
-                    event_route(omessage, jobs[x - 1].id);
+                    event_addroute(omessage, jobs[x - 1].id, session);
 
                 event_addfile(omessage, FILE_P0 + k);
                 event_place(jobs[j].id, omessage);
@@ -78,7 +78,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
                 event_request(omessage, imessage, EVENT_DATA, session);
 
                 for (x = njobs; x > j + 1; x--)
-                    event_route(omessage, jobs[x - 1].id);
+                    event_addroute(omessage, jobs[x - 1].id, session);
 
                 event_append(omessage, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
                 event_place(jobs[j].id, omessage);
@@ -93,7 +93,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
             event_request(omessage, imessage, EVENT_FILE, session);
 
             for (x = njobs; x > j + 1; x--)
-                event_route(omessage, jobs[x - 1].id);
+                event_addroute(omessage, jobs[x - 1].id, session);
 
             event_addfile(omessage, 0);
             event_place(jobs[j].id, omessage);
@@ -108,7 +108,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
         event_request(omessage, imessage, EVENT_STOP, session);
 
         for (x = njobs; x > j + 1; x--)
-            event_route(omessage, jobs[x - 1].id);
+            event_addroute(omessage, jobs[x - 1].id, session);
 
         event_place(jobs[j].id, omessage);
 

@@ -34,11 +34,17 @@ unsigned int event_avail(union event_message *message)
 
 }
 
-unsigned int event_route(union event_message *message, unsigned int target)
+unsigned int event_addroute(union event_message *message, unsigned int target, unsigned int session)
 {
 
     if (message->header.nroutes < 16)
-        message->header.routes[message->header.nroutes++] = target;
+    {
+
+        message->header.routes[message->header.nroutes].target = target;
+        message->header.routes[message->header.nroutes].session = session;
+        message->header.nroutes++;
+
+    }
 
     return message->header.nroutes;
 
@@ -266,7 +272,7 @@ void event_forward(union event_message *omessage, union event_message *imessage,
     omessage->header.session = imessage->header.session;
 
     for (i = 0; i < imessage->header.nroutes; i++)
-        event_route(omessage, imessage->header.routes[i]);
+        event_addroute(omessage, imessage->header.routes[i].target, imessage->header.routes[i].session);
 
 }
 
@@ -280,9 +286,9 @@ void event_request(union event_message *omessage, union event_message *imessage,
     omessage->header.session = session;
 
     for (i = 0; i < imessage->header.nroutes; i++)
-        event_route(omessage, imessage->header.routes[i]);
+        event_addroute(omessage, imessage->header.routes[i].target, imessage->header.routes[i].session);
 
-    event_route(omessage, imessage->header.target);
+    event_addroute(omessage, imessage->header.target, session);
 
 }
 
@@ -294,14 +300,19 @@ void event_reply(union event_message *omessage, union event_message *imessage, u
     event_create(omessage, type);
 
     omessage->header.session = imessage->header.session;
-    omessage->header.source = imessage->header.target;
     omessage->header.target = imessage->header.source;
 
     for (i = 0; i < imessage->header.nroutes; i++)
-        event_route(omessage, imessage->header.routes[i]);
+        event_addroute(omessage, imessage->header.routes[i].target, imessage->header.routes[i].session);
 
     if (omessage->header.nroutes)
-        omessage->header.target = omessage->header.routes[--omessage->header.nroutes];
+    {
+
+        omessage->header.nroutes--;
+        omessage->header.target = omessage->header.routes[omessage->header.nroutes].target;
+        omessage->header.session = omessage->header.routes[omessage->header.nroutes].session;
+
+    }
 
 }
 
