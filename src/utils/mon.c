@@ -1,12 +1,29 @@
 #include <fudge.h>
 #include <abi.h>
 
+static void dump(union event_message *imessage, union event_message *omessage, unsigned int count, void *buffer)
+{
+
+    char *data = buffer;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned char num[FUDGE_NSIZE];
+
+        event_reply(omessage, imessage, EVENT_DATA);
+        event_append(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
+        event_place(omessage->header.target, omessage);
+
+    }
+
+}
+
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    event_reply(omessage, imessage, EVENT_DATA);
-    event_append(omessage, 6, "block\n");
-    event_place(omessage->header.target, omessage);
+    dump(imessage, omessage, event_getdatasize(imessage), event_getdata(imessage));
 
     return 0;
 
