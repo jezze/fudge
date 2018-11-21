@@ -16,7 +16,8 @@
 #define RESOURCE_KEYBOARDINTERFACE      48
 #define RESOURCE_MOUSEINTERFACE         49
 #define RESOURCE_BLOCKINTERFACE         50
-#define RESOURCE_CONSOLEINTERFACE       51
+#define RESOURCE_BLOCKPROTOCOL          51
+#define RESOURCE_CONSOLEINTERFACE       52
 #define RESOURCE_DEBUGLOG               60
 #define RESOURCE_CON                    61
 #define RESOURCE_PART                   62
