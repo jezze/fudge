@@ -315,7 +315,7 @@ static void setupremotes(void)
 static unsigned int ondata(union event_message *imessage, union event_message *omessage)
 {
 
-    if (!file_walk(FILE_L0, FILE_G3, "../data"))
+    if (!file_walk(FILE_L0, FILE_G4, "../data"))
         return 0;
 
     render_write(event_getdata(imessage), event_getdatasize(imessage));
@@ -337,12 +337,12 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
     activateview(currentview);
     render_init();
 
-    if (!file_walk(FILE_L0, FILE_G3, "../ctrl"))
+    if (!file_walk(FILE_L0, FILE_G4, "../ctrl"))
         return 1;
 
     render_setvideo(FILE_L0, 1024, 768, 4);
 
-    if (!file_walk(FILE_L0, FILE_G3, "../colormap"))
+    if (!file_walk(FILE_L0, FILE_G4, "../colormap"))
         return 1;
 
     render_setcolormap(FILE_L0);
@@ -913,22 +913,26 @@ void main(void)
     union event_message imessage;
     union event_message omessage;
 
-    if (!file_walk2(FILE_G0, "/system/event"))
+    if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
-    if (!file_walk2(FILE_G1, "/system/keyboard/event"))
+    if (!file_walk2(FILE_G1, "/system/event"))
         return;
 
-    if (!file_walk2(FILE_G2, "/system/mouse/event"))
+    if (!file_walk2(FILE_G2, "/system/keyboard/event"))
         return;
 
-    if (!file_walk2(FILE_G3, "/system/video/if:0/event"))
+    if (!file_walk2(FILE_G3, "/system/mouse/event"))
+        return;
+
+    if (!file_walk2(FILE_G4, "/system/video/if:0/event"))
         return;
 
     file_open(FILE_G0);
     file_open(FILE_G1);
     file_open(FILE_G2);
     file_open(FILE_G3);
+    file_open(FILE_G4);
 
     while (!status)
     {
@@ -1020,6 +1024,7 @@ void main(void)
 
     }
 
+    file_close(FILE_G4);
     file_close(FILE_G3);
     file_close(FILE_G2);
     file_close(FILE_G1);

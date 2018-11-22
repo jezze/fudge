@@ -421,8 +421,10 @@ void main(void)
     union event_message imessage;
     union event_message omessage;
 
-    if (!file_walk2(FILE_G0, "/system/event"))
+    if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
+
+    file_open(FILE_G0);
 
     while (!status)
     {
@@ -483,6 +485,8 @@ void main(void)
         }
 
     }
+
+    file_close(FILE_G0);
 
 }
 
