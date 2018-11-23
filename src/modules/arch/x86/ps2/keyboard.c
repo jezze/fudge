@@ -19,6 +19,15 @@ static void handleirq(unsigned int irq)
 
     data = ps2_getdata();
 
+    if (data == 0x00)
+        return;
+
+    if (data == 0xFE)
+        return;
+
+    if (data == 0xFF)
+        return;
+
     keyboard_notify(&keyboardinterface, &data, 1);
 
     if (data & 0x80)

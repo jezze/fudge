@@ -155,14 +155,17 @@ unsigned int ps2_checkdata(unsigned int id)
 
     unsigned char control = io_inb(REGISTERCONTROL);
 
-    if (!(control & 0x01))
+    if ((control & STATUSTIMEOUT))
+        return 0;
+
+    if ((control & STATUSPARITY))
         return 0;
 
     switch (id)
     {
 
         case PS2_KEYBOARD:
-            return !(control & 0x20);
+            return (control & 0x01);
 
         case PS2_MOUSE:
             return (control & 0x20);

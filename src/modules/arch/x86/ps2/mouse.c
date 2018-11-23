@@ -28,19 +28,36 @@ static void handleirq(unsigned int irq)
     {
 
     case 0:
+        if (data == 0x00)
+            return;
+
+        if (data == 0xFE)
+            return;
+
+        if (data == 0xFF)
+            return;
+
         state = data;
         sequence = 1;
 
         break;
 
     case 1:
-        relx = data - ((state << 4) & 0x100);
+        if (state & (1 << 6))
+            relx = 0;
+        else
+            relx = data;
+
         sequence = 2;
 
         break;
 
     case 2:
-        rely = data - ((state << 3) & 0x100);
+        if (state & (1 << 7))
+            rely = 0;
+        else
+            rely = data;
+
         sequence = 0;
 
         break;
