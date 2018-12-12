@@ -51,7 +51,7 @@ static void runjob(union event_message *imessage, union event_message *omessage,
     for (j = 0; j < njobs; j++)
     {
 
-        if (jobs[j].ninputs)
+        if (jobs[j].ninputs || jobs[j].ndatas)
         {
 
             for (k = 0; k < jobs[j].ninputs; k++)
@@ -66,11 +66,6 @@ static void runjob(union event_message *imessage, union event_message *omessage,
                 event_place(jobs[j].id, omessage);
 
             }
-
-        }
-
-        else if (jobs[j].ndatas)
-        {
 
             for (k = 0; k < jobs[j].ndatas; k++)
             {
