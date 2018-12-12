@@ -352,9 +352,6 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    if (!file->descriptor)
-        return 0;
-
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);

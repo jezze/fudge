@@ -37,9 +37,6 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    if (!file->descriptor)
-        return 0;
-
     file_open(file->descriptor);
 
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))

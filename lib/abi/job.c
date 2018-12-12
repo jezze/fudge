@@ -90,12 +90,11 @@ static void runjob(union event_message *imessage, union event_message *omessage,
         else
         {
 
-            event_request(omessage, imessage, EVENT_FILE, session);
+            event_request(omessage, imessage, EVENT_EMPTY, session);
 
             for (x = njobs; x > j + 1; x--)
                 event_addroute(omessage, jobs[x - 1].id, session);
 
-            event_addfile(omessage, 0);
             event_place(jobs[j].id, omessage);
 
         }

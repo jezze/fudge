@@ -33,15 +33,21 @@ static void list(union event_message *imessage, union event_message *omessage, u
 
 }
 
+static unsigned int onempty(union event_message *imessage, union event_message *omessage)
+{
+
+    list(imessage, omessage, FILE_PW);
+
+    return 0;
+
+}
+
 static unsigned int onfile(union event_message *imessage, union event_message *omessage)
 {
 
     struct event_file *file = event_getdata(imessage);
 
-    if (file->descriptor)
-        list(imessage, omessage, file->descriptor);
-    else
-        list(imessage, omessage, FILE_PW);
+    list(imessage, omessage, file->descriptor);
 
     return 0;
 
@@ -73,6 +79,11 @@ void main(void)
 
         switch (event_pick(&imessage))
         {
+
+        case EVENT_EMPTY:
+            status = onempty(&imessage, &omessage);
+
+            break;
 
         case EVENT_FILE:
             status = onfile(&imessage, &omessage);

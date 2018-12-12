@@ -6,9 +6,6 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
 
     struct event_file *file = event_getdata(imessage);
 
-    if (!file->descriptor)
-        return 0;
-
     file_open(file->descriptor);
     call_unload(file->descriptor);
     file_close(file->descriptor);

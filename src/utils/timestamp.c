@@ -28,30 +28,45 @@ static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
 
 }
 
+static void replytimestamp(union event_message *imessage, union event_message *omessage, struct ctrl_clocksettings *settings)
+{
+
+    char num[FUDGE_NSIZE];
+
+    event_reply(omessage, imessage, EVENT_DATA);
+    event_append(omessage, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(settings), 10), num);
+    event_append(omessage, 1, "\n");
+    event_place(omessage->header.target, omessage);
+
+}
+
+static unsigned int onempty(union event_message *imessage, union event_message *omessage)
+{
+
+    struct ctrl_clocksettings settings;
+
+    if (!file_walk2(FILE_L0, "/system/clock/if:0/ctrl"))
+        return 0;
+
+    file_open(FILE_L0);
+    file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(FILE_L0);
+    replytimestamp(imessage, omessage, &settings);
+
+    return 0;
+
+}
+
 static unsigned int onfile(union event_message *imessage, union event_message *omessage)
 {
 
     struct event_file *file = event_getdata(imessage);
     struct ctrl_clocksettings settings;
-    char num[FUDGE_NSIZE];
-
-    if (!file->descriptor)
-    {
-
-        if (!file_walk2(FILE_L0, "/system/clock/if:0/ctrl"))
-            return 0;
-
-        file->descriptor = FILE_L0;
-
-    }
 
     file_open(file->descriptor);
     file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
     file_close(file->descriptor);
-    event_reply(omessage, imessage, EVENT_DATA);
-    event_append(omessage, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(&settings), 10), num);
-    event_append(omessage, 1, "\n");
-    event_place(omessage->header.target, omessage);
+    replytimestamp(imessage, omessage, &settings);
 
     return 0;
 
@@ -83,6 +98,11 @@ void main(void)
 
         switch (event_pick(&imessage))
         {
+
+        case EVENT_EMPTY:
+            status = onempty(&imessage, &omessage);
+
+            break;
 
         case EVENT_FILE:
             status = onfile(&imessage, &omessage);
