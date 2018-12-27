@@ -243,12 +243,12 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void parse(union event_message *imessage, union event_message *omessage, struct tokenlist *postfix, struct tokenlist *stack)
+static void parse(struct event_channel *channel, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     unsigned int i;
 
-    event_reply(omessage, imessage, EVENT_DATA);
+    event_reply(channel, EVENT_DATA);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -270,8 +270,8 @@ static void parse(union event_message *imessage, union event_message *omessage, 
             if (!t)
                 return;
 
-            event_append(omessage, 2, "I");
-            event_append(omessage, ascii_length(t->str) + 1, t->str);
+            event_append(&channel->o, 2, "I");
+            event_append(&channel->o, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -281,8 +281,8 @@ static void parse(union event_message *imessage, union event_message *omessage, 
             if (!t)
                 return;
 
-            event_append(omessage, 2, "O");
-            event_append(omessage, ascii_length(t->str) + 1, t->str);
+            event_append(&channel->o, 2, "O");
+            event_append(&channel->o, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -292,8 +292,8 @@ static void parse(union event_message *imessage, union event_message *omessage, 
             if (!t)
                 return;
 
-            event_append(omessage, 2, "D");
-            event_append(omessage, ascii_length(t->str) + 1, t->str);
+            event_append(&channel->o, 2, "D");
+            event_append(&channel->o, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -303,8 +303,8 @@ static void parse(union event_message *imessage, union event_message *omessage, 
             if (!t)
                 return;
 
-            event_append(omessage, 2, "P");
-            event_append(omessage, ascii_length(t->str) + 1, t->str);
+            event_append(&channel->o, 2, "P");
+            event_append(&channel->o, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -314,8 +314,8 @@ static void parse(union event_message *imessage, union event_message *omessage, 
             if (!t)
                 return;
 
-            event_append(omessage, 2, "E");
-            event_append(omessage, ascii_length(t->str) + 1, t->str);
+            event_append(&channel->o, 2, "E");
+            event_append(&channel->o, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -323,32 +323,32 @@ static void parse(union event_message *imessage, union event_message *omessage, 
 
     }
 
-    event_place(omessage->header.target, omessage);
+    event_place(channel->o.header.target, &channel->o);
 
 }
 
-static unsigned int ondata(union event_message *imessage, union event_message *omessage)
+static unsigned int ondata(struct event_channel *channel)
 {
 
-    if (!event_getdatasize(imessage))
+    if (!event_getdatasize(&channel->i))
         return 0;
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
-    tokenizebuffer(&infix, &stringtable, event_getdatasize(imessage), event_getdata(imessage));
+    tokenizebuffer(&infix, &stringtable, event_getdatasize(&channel->i), event_getdata(&channel->i));
     translate(&postfix, &infix, &stack);
-    parse(imessage, omessage, &postfix, &stack);
+    parse(channel, &postfix, &stack);
 
     return 0;
 
 }
 
-static unsigned int onfile(union event_message *imessage, union event_message *omessage)
+static unsigned int onfile(struct event_channel *channel)
 {
 
-    struct event_file *file = event_getdata(imessage);
+    struct event_file *file = event_getdata(&channel->i);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -363,20 +363,20 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
 
     file_close(file->descriptor);
     translate(&postfix, &infix, &stack);
-    parse(imessage, omessage, &postfix, &stack);
+    parse(channel, &postfix, &stack);
 
     return 0;
 
 }
 
-static unsigned int onstop(union event_message *imessage, union event_message *omessage)
+static unsigned int onstop(struct event_channel *channel)
 {
 
     return 1;
 
 }
 
-static unsigned int onkill(union event_message *imessage, union event_message *omessage)
+static unsigned int onkill(struct event_channel *channel)
 {
 
     return 1;
@@ -387,32 +387,31 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage, &omessage);
+            status = ondata(&channel);
 
             break;
 
         case EVENT_FILE:
-            status = onfile(&imessage, &omessage);
+            status = onfile(&channel);
 
             break;
 
         case EVENT_STOP:
-            status = onstop(&imessage, &omessage);
+            status = onstop(&channel);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage, &omessage);
+            status = onkill(&channel);
 
             break;
 

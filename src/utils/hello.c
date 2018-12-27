@@ -1,18 +1,18 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int onstop(union event_message *imessage, union event_message *omessage)
+static unsigned int onstop(struct event_channel *channel)
 {
 
-    event_reply(omessage, imessage, EVENT_DATA);
-    event_append(omessage, 13, "Hello world!\n");
-    event_place(omessage->header.target, omessage);
+    event_reply(channel, EVENT_DATA);
+    event_append(&channel->o, 13, "Hello world!\n");
+    event_place(channel->o.header.target, &channel->o);
 
     return 1;
 
 }
 
-static unsigned int onkill(union event_message *imessage, union event_message *omessage)
+static unsigned int onkill(struct event_channel *channel)
 {
 
     return 1;
@@ -23,22 +23,21 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_STOP:
-            status = onstop(&imessage, &omessage);
+            status = onstop(&channel);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage, &omessage);
+            status = onkill(&channel);
 
             break;
 

@@ -136,14 +136,14 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
 }
 
-static unsigned int onfile(union event_message *imessage, union event_message *omessage)
+static unsigned int onfile(struct event_channel *channel)
 {
 
     return 0;
 
 }
 
-static unsigned int oninit(union event_message *imessage, union event_message *omessage)
+static unsigned int oninit(struct event_channel *channel)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -151,27 +151,27 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     widget_inittextbox(&content);
     widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
-    event_request(omessage, imessage, EVENT_WMMAP, 0);
-    file_writeall(FILE_G0, omessage, omessage->header.length);
+    event_request(channel, EVENT_WMMAP, 0);
+    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
     return 0;
 
 }
 
-static unsigned int onkill(union event_message *imessage, union event_message *omessage)
+static unsigned int onkill(struct event_channel *channel)
 {
 
-    event_request(omessage, imessage, EVENT_WMUNMAP, 0);
-    file_writeall(FILE_G0, omessage, omessage->header.length);
+    event_request(channel, EVENT_WMUNMAP, 0);
+    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
     return 1;
 
 }
 
-static unsigned int onwmconfigure(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmconfigure(struct event_channel *channel)
 {
 
-    struct event_wmconfigure *wmconfigure = event_getdata(imessage);
+    struct event_wmconfigure *wmconfigure = event_getdata(&channel->i);
 
     ring_reset(&input1);
     ring_reset(&input2);
@@ -187,10 +187,10 @@ static unsigned int onwmconfigure(union event_message *imessage, union event_mes
 
 }
 
-static unsigned int onwmkeypress(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmkeypress(struct event_channel *channel)
 {
 
-    struct event_wmkeypress *wmkeypress = event_getdata(imessage);
+    struct event_wmkeypress *wmkeypress = event_getdata(&channel->i);
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -241,17 +241,17 @@ static unsigned int onwmkeypress(union event_message *imessage, union event_mess
 
     }
 
-    updatecontent(imessage);
-    updatestatus(imessage);
+    updatecontent(&channel->i);
+    updatestatus(&channel->i);
 
     return 0;
 
 }
 
-static unsigned int onwmkeyrelease(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmkeyrelease(struct event_channel *channel)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = event_getdata(imessage);
+    struct event_wmkeyrelease *wmkeyrelease = event_getdata(&channel->i);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
@@ -259,21 +259,21 @@ static unsigned int onwmkeyrelease(union event_message *imessage, union event_me
 
 }
 
-static unsigned int onwmshow(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmshow(struct event_channel *channel)
 {
 
-    updatecontent(imessage);
-    updatestatus(imessage);
+    updatecontent(&channel->i);
+    updatestatus(&channel->i);
 
     return 0;
 
 }
 
-static unsigned int onwmhide(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmhide(struct event_channel *channel)
 {
 
-    removecontent(imessage);
-    removestatus(imessage);
+    removecontent(&channel->i);
+    removestatus(&channel->i);
 
     return 0;
 
@@ -283,8 +283,7 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
@@ -294,46 +293,46 @@ void main(void)
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_FILE:
-            status = onfile(&imessage, &omessage);
+            status = onfile(&channel);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(&imessage, &omessage);
+            status = oninit(&channel);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage, &omessage);
+            status = onkill(&channel);
 
             break;
 
         case EVENT_WMCONFIGURE:
-            status = onwmconfigure(&imessage, &omessage);
+            status = onwmconfigure(&channel);
 
             break;
 
         case EVENT_WMKEYPRESS:
-            status = onwmkeypress(&imessage, &omessage);
+            status = onwmkeypress(&channel);
 
             break;
 
         case EVENT_WMKEYRELEASE:
-            status = onwmkeyrelease(&imessage, &omessage);
+            status = onwmkeyrelease(&channel);
 
             break;
 
         case EVENT_WMSHOW:
-            status = onwmshow(&imessage, &omessage);
+            status = onwmshow(&channel);
 
             break;
 
         case EVENT_WMHIDE:
-            status = onwmhide(&imessage, &omessage);
+            status = onwmhide(&channel);
 
             break;
 
@@ -342,9 +341,9 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_request(&omessage, &imessage, EVENT_DATA, 0);
-            event_append(&omessage, ring_count(&output), outputdata);
-            file_writeall(FILE_G0, &omessage, omessage.header.length);
+            event_request(&channel, EVENT_DATA, 0);
+            event_append(&channel.o, ring_count(&output), outputdata);
+            file_writeall(FILE_G0, &channel.o, channel.o.header.length);
             ring_reset(&output);
 
         }

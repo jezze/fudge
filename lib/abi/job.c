@@ -29,7 +29,7 @@ static unsigned int clearjobs(struct job *jobs, unsigned int njobs)
 
 }
 
-static void runjob(union event_message *imessage, union event_message *omessage, struct job *jobs, unsigned int njobs, unsigned int session)
+static void runjob(struct event_channel *channel, struct job *jobs, unsigned int njobs, unsigned int session)
 {
 
     unsigned int j;
@@ -39,12 +39,12 @@ static void runjob(union event_message *imessage, union event_message *omessage,
     for (j = 0; j < njobs; j++)
     {
 
-        event_request(omessage, imessage, EVENT_INIT, session);
+        event_request(channel, EVENT_INIT, session);
 
         for (x = njobs; x > j + 1; x--)
-            event_addroute(omessage, jobs[x - 1].id, session);
+            event_addroute(&channel->o, jobs[x - 1].id, session);
 
-        event_place(jobs[j].id, omessage);
+        event_place(jobs[j].id, &channel->o);
 
     }
 
@@ -57,26 +57,26 @@ static void runjob(union event_message *imessage, union event_message *omessage,
             for (k = 0; k < jobs[j].ninputs; k++)
             {
 
-                event_request(omessage, imessage, EVENT_FILE, session);
+                event_request(channel, EVENT_FILE, session);
 
                 for (x = njobs; x > j + 1; x--)
-                    event_addroute(omessage, jobs[x - 1].id, session);
+                    event_addroute(&channel->o, jobs[x - 1].id, session);
 
-                event_addfile(omessage, FILE_P0 + k);
-                event_place(jobs[j].id, omessage);
+                event_addfile(&channel->o, FILE_P0 + k);
+                event_place(jobs[j].id, &channel->o);
 
             }
 
             for (k = 0; k < jobs[j].ndatas; k++)
             {
 
-                event_request(omessage, imessage, EVENT_DATA, session);
+                event_request(channel, EVENT_DATA, session);
 
                 for (x = njobs; x > j + 1; x--)
-                    event_addroute(omessage, jobs[x - 1].id, session);
+                    event_addroute(&channel->o, jobs[x - 1].id, session);
 
-                event_append(omessage, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
-                event_place(jobs[j].id, omessage);
+                event_append(&channel->o, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
+                event_place(jobs[j].id, &channel->o);
 
             }
 
@@ -85,12 +85,12 @@ static void runjob(union event_message *imessage, union event_message *omessage,
         else
         {
 
-            event_request(omessage, imessage, EVENT_EMPTY, session);
+            event_request(channel, EVENT_EMPTY, session);
 
             for (x = njobs; x > j + 1; x--)
-                event_addroute(omessage, jobs[x - 1].id, session);
+                event_addroute(&channel->o, jobs[x - 1].id, session);
 
-            event_place(jobs[j].id, omessage);
+            event_place(jobs[j].id, &channel->o);
 
         }
 
@@ -99,18 +99,18 @@ static void runjob(union event_message *imessage, union event_message *omessage,
     for (j = 0; j < njobs; j++)
     {
 
-        event_request(omessage, imessage, EVENT_STOP, session);
+        event_request(channel, EVENT_STOP, session);
 
         for (x = njobs; x > j + 1; x--)
-            event_addroute(omessage, jobs[x - 1].id, session);
+            event_addroute(&channel->o, jobs[x - 1].id, session);
 
-        event_place(jobs[j].id, omessage);
+        event_place(jobs[j].id, &channel->o);
 
     }
 
 }
 
-void job_interpret(struct job *jobs, unsigned int njobs, union event_message *imessage, union event_message *omessage, void *buffer, unsigned int count, unsigned int session)
+void job_interpret(struct job *jobs, unsigned int njobs, struct event_channel *channel, void *buffer, unsigned int count, unsigned int session)
 {
 
     unsigned int cjobs = clearjobs(jobs, njobs);
@@ -162,7 +162,7 @@ void job_interpret(struct job *jobs, unsigned int njobs, union event_message *im
 
             cjobs = addjob(jobs, cjobs, call_spawn());
 
-            runjob(imessage, omessage, jobs, cjobs, session);
+            runjob(channel, jobs, cjobs, session);
 
             cjobs = clearjobs(jobs, cjobs);
 

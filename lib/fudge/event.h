@@ -54,6 +54,14 @@ union event_message
 
 };
 
+struct event_channel
+{
+
+    union event_message i;
+    union event_message o;
+
+};
+
 struct event_file
 {
 
@@ -199,6 +207,6 @@ unsigned int event_addwmmousemove(union event_message *message, char relx, char 
 unsigned int event_append(union event_message *message, unsigned int count, void *buffer);
 void event_reset(union event_message *message);
 void event_create(union event_message *message, unsigned int type);
-void event_forward(union event_message *omessage, union event_message *imessage, unsigned int type);
-void event_request(union event_message *omessage, union event_message *imessage, unsigned int type, unsigned int session);
-void event_reply(union event_message *omessage, union event_message *imessage, unsigned int type);
+void event_forward(struct event_channel *channel, unsigned int type);
+void event_request(struct event_channel *channel, unsigned int type, unsigned int session);
+void event_reply(struct event_channel *channel, unsigned int type);

@@ -235,10 +235,10 @@ static unsigned int resolve(unsigned int descriptor)
 
 }
 
-static unsigned int onfile(union event_message *imessage, union event_message *omessage)
+static unsigned int onfile(struct event_channel *channel)
 {
 
-    struct event_file *file = event_getdata(imessage);
+    struct event_file *file = event_getdata(&channel->i);
 
     file_open(file->descriptor);
 
@@ -251,14 +251,14 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
 
 }
 
-static unsigned int onstop(union event_message *imessage, union event_message *omessage)
+static unsigned int onstop(struct event_channel *channel)
 {
 
     return 1;
 
 }
 
-static unsigned int onkill(union event_message *imessage, union event_message *omessage)
+static unsigned int onkill(struct event_channel *channel)
 {
 
     return 1;
@@ -269,27 +269,26 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_FILE:
-            status = onfile(&imessage, &omessage);
+            status = onfile(&channel);
 
             break;
 
         case EVENT_STOP:
-            status = onstop(&imessage, &omessage);
+            status = onstop(&channel);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage, &omessage);
+            status = onkill(&channel);
 
             break;
 

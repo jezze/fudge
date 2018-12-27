@@ -130,7 +130,7 @@ static void deactivateremote(struct remote *remote)
 
 }
 
-static void showremotes(union event_message *imessage, union event_message *omessage, struct list *remotes)
+static void showremotes(struct event_channel *channel, struct list *remotes)
 {
 
     struct list_item *current;
@@ -140,15 +140,15 @@ static void showremotes(union event_message *imessage, union event_message *omes
 
         struct remote *remote = current->data;
 
-        event_request(omessage, imessage, EVENT_WMSHOW, 0);
-        event_place(remote->source, omessage);
-        updateremote(imessage, remote);
+        event_request(channel, EVENT_WMSHOW, 0);
+        event_place(remote->source, &channel->o);
+        updateremote(&channel->i, remote);
 
     }
 
 }
 
-static void hideremotes(union event_message *imessage, union event_message *omessage, struct list *remotes)
+static void hideremotes(struct event_channel *channel, struct list *remotes)
 {
 
     struct list_item *current;
@@ -158,15 +158,15 @@ static void hideremotes(union event_message *imessage, union event_message *omes
 
         struct remote *remote = current->data;
 
-        event_request(omessage, imessage, EVENT_WMHIDE, 0);
-        event_place(remote->source, omessage);
-        removeremote(imessage, remote);
+        event_request(channel, EVENT_WMHIDE, 0);
+        event_place(remote->source, &channel->o);
+        removeremote(&channel->i, remote);
 
     }
 
 }
 
-static void configureremotes(union event_message *imessage, union event_message *omessage, struct list *remotes)
+static void configureremotes(struct event_channel *channel, struct list *remotes)
 {
 
     struct list_item *current;
@@ -176,15 +176,15 @@ static void configureremotes(union event_message *imessage, union event_message 
 
         struct remote *remote = current->data;
 
-        event_request(omessage, imessage, EVENT_WMCONFIGURE, 0);
-        event_addwmconfigure(omessage, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
-        event_place(remote->source, omessage);
+        event_request(channel, EVENT_WMCONFIGURE, 0);
+        event_addwmconfigure(&channel->o, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
+        event_place(remote->source, &channel->o);
 
     }
 
 }
 
-static void killremotes(union event_message *imessage, union event_message *omessage, struct list *remotes)
+static void killremotes(struct event_channel *channel, struct list *remotes)
 {
 
     struct list_item *current;
@@ -194,25 +194,25 @@ static void killremotes(union event_message *imessage, union event_message *omes
 
         struct remote *remote = current->data;
 
-        event_request(omessage, imessage, EVENT_KILL, 0);
-        event_place(remote->source, omessage);
+        event_request(channel, EVENT_KILL, 0);
+        event_place(remote->source, &channel->o);
 
     }
 
 }
 
-static void flipview(union event_message *imessage, union event_message *omessage, struct view *view)
+static void flipview(struct event_channel *channel, struct view *view)
 {
 
     deactivateview(currentview);
-    hideremotes(imessage, omessage, &currentview->remotes);
-    updateview(imessage, currentview);
+    hideremotes(channel, &currentview->remotes);
+    updateview(&channel->i, currentview);
 
     currentview = view;
 
     activateview(currentview);
-    showremotes(imessage, omessage, &currentview->remotes);
-    updateview(imessage, currentview);
+    showremotes(channel, &currentview->remotes);
+    updateview(&channel->i, currentview);
 
 }
 
@@ -248,7 +248,7 @@ static void arrangetiled(struct view *view)
 
 }
 
-static void arrangeview(union event_message *imessage, union event_message *omessage, struct view *view)
+static void arrangeview(struct event_channel *channel, struct view *view)
 {
 
     switch (view->remotes.count)
@@ -269,7 +269,7 @@ static void arrangeview(union event_message *imessage, union event_message *omes
 
     }
 
-    configureremotes(imessage, omessage, &view->remotes);
+    configureremotes(channel, &view->remotes);
 
 }
 
@@ -312,13 +312,13 @@ static void setupremotes(void)
 
 }
 
-static unsigned int ondata(union event_message *imessage, union event_message *omessage)
+static unsigned int ondata(struct event_channel *channel)
 {
 
     if (!file_walk(FILE_L0, FILE_G4, "../data"))
         return 0;
 
-    render_write(event_getdata(imessage), event_getdatasize(imessage));
+    render_write(event_getdata(&channel->i), event_getdatasize(&channel->i));
     render_flush(FILE_L0);
     render_complete();
 
@@ -326,7 +326,7 @@ static unsigned int ondata(union event_message *imessage, union event_message *o
 
 }
 
-static unsigned int oninit(union event_message *imessage, union event_message *omessage)
+static unsigned int oninit(struct event_channel *channel)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -351,7 +351,7 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
 
 }
 
-static unsigned int onkill(union event_message *imessage, union event_message *omessage)
+static unsigned int onkill(struct event_channel *channel)
 {
 
     struct list_item *current;
@@ -361,8 +361,8 @@ static unsigned int onkill(union event_message *imessage, union event_message *o
 
         struct view *view = current->data;
 
-        hideremotes(imessage, omessage, &view->remotes);
-        killremotes(imessage, omessage, &view->remotes);
+        hideremotes(channel, &view->remotes);
+        killremotes(channel, &view->remotes);
 
     }
 
@@ -370,10 +370,10 @@ static unsigned int onkill(union event_message *imessage, union event_message *o
 
 }
 
-static unsigned int onkeypress(union event_message *imessage, union event_message *omessage)
+static unsigned int onkeypress(struct event_channel *channel)
 {
 
-    struct event_keypress *keypress = event_getdata(imessage);
+    struct event_keypress *keypress = event_getdata(&channel->i);
     struct view *nextview;
     struct remote *nextremote;
     unsigned int id;
@@ -386,9 +386,9 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
         if (currentview->currentremote)
         {
 
-            event_request(omessage, imessage, EVENT_WMKEYPRESS, 0);
-            event_addwmkeypress(omessage, keypress->scancode);
-            event_place(currentview->currentremote->source, omessage);
+            event_request(channel, EVENT_WMKEYPRESS, 0);
+            event_addwmkeypress(&channel->o, keypress->scancode);
+            event_place(currentview->currentremote->source, &channel->o);
 
         }
 
@@ -422,8 +422,8 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
             if (currentview->currentremote)
                 activateremote(currentview->currentremote);
 
-            arrangeview(imessage, omessage, currentview);
-            arrangeview(imessage, omessage, nextview);
+            arrangeview(channel, currentview);
+            arrangeview(channel, nextview);
 
             if (nextview->currentremote)
                 deactivateremote(nextview->currentremote);
@@ -432,7 +432,7 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
 
         }
 
-        flipview(imessage, omessage, nextview);
+        flipview(channel, nextview);
 
         break;
 
@@ -443,10 +443,10 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            event_request(omessage, imessage, EVENT_WMHIDE, 0);
-            event_place(currentview->currentremote->source, omessage);
-            event_request(omessage, imessage, EVENT_KILL, 0);
-            event_place(currentview->currentremote->source, omessage);
+            event_request(channel, EVENT_WMHIDE, 0);
+            event_place(currentview->currentremote->source, &channel->o);
+            event_request(channel, EVENT_KILL, 0);
+            event_place(currentview->currentremote->source, &channel->o);
 
         }
 
@@ -464,10 +464,10 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
         if (id)
         {
 
-            event_request(omessage, imessage, EVENT_INIT, 0);
-            event_place(id, omessage);
-            event_request(omessage, imessage, EVENT_STOP, 0);
-            event_place(id, omessage);
+            event_request(channel, EVENT_INIT, 0);
+            event_place(id, &channel->o);
+            event_request(channel, EVENT_STOP, 0);
+            event_place(id, &channel->o);
 
         }
 
@@ -478,8 +478,8 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
             break;
 
         list_move(&currentview->remotes, &currentview->remotes, &currentview->currentremote->item);
-        arrangeview(imessage, omessage, currentview);
-        showremotes(imessage, omessage, &currentview->remotes);
+        arrangeview(channel, currentview);
+        showremotes(channel, &currentview->remotes);
 
         break;
 
@@ -489,8 +489,8 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
 
         currentview->center -= 4 * steplength;
 
-        arrangeview(imessage, omessage, currentview);
-        showremotes(imessage, omessage, &currentview->remotes);
+        arrangeview(channel, currentview);
+        showremotes(channel, &currentview->remotes);
 
         break;
 
@@ -504,12 +504,12 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
             break;
 
         deactivateremote(currentview->currentremote);
-        updateremote(imessage, currentview->currentremote);
+        updateremote(&channel->i, currentview->currentremote);
 
         currentview->currentremote = nextremote;
 
         activateremote(currentview->currentremote);
-        updateremote(imessage, currentview->currentremote);
+        updateremote(&channel->i, currentview->currentremote);
 
         break;
 
@@ -523,12 +523,12 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
             break;
 
         deactivateremote(currentview->currentremote);
-        updateremote(imessage, currentview->currentremote);
+        updateremote(&channel->i, currentview->currentremote);
 
         currentview->currentremote = nextremote;
 
         activateremote(currentview->currentremote);
-        updateremote(imessage, currentview->currentremote);
+        updateremote(&channel->i, currentview->currentremote);
 
         break;
 
@@ -538,8 +538,8 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
 
         currentview->center += 4 * steplength;
 
-        arrangeview(imessage, omessage, currentview);
-        showremotes(imessage, omessage, &currentview->remotes);
+        arrangeview(channel, currentview);
+        showremotes(channel, &currentview->remotes);
 
         break;
 
@@ -548,11 +548,11 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
         {
 
             /* Sending to self not allowed */
-            event_request(omessage, imessage, EVENT_WMHIDE, 0);
-            event_place(imessage->header.target, omessage);
+            event_request(channel, EVENT_WMHIDE, 0);
+            event_place(channel->i.header.target, &channel->o);
             /* Sending to self not allowed */
-            event_request(omessage, imessage, EVENT_KILL, 0);
-            event_place(imessage->header.target, omessage);
+            event_request(channel, EVENT_KILL, 0);
+            event_place(channel->i.header.target, &channel->o);
 
         }
 
@@ -564,10 +564,10 @@ static unsigned int onkeypress(union event_message *imessage, union event_messag
 
 }
 
-static unsigned int onkeyrelease(union event_message *imessage, union event_message *omessage)
+static unsigned int onkeyrelease(struct event_channel *channel)
 {
 
-    struct event_keyrelease *keyrelease = event_getdata(imessage);
+    struct event_keyrelease *keyrelease = event_getdata(&channel->i);
 
     keymod = keymap_modkey(keyrelease->scancode, keymod);
 
@@ -577,9 +577,9 @@ static unsigned int onkeyrelease(union event_message *imessage, union event_mess
         if (currentview->currentremote)
         {
 
-            event_request(omessage, imessage, EVENT_WMKEYRELEASE, 0);
-            event_addwmkeyrelease(omessage, keyrelease->scancode);
-            event_place(currentview->currentremote->source, omessage);
+            event_request(channel, EVENT_WMKEYRELEASE, 0);
+            event_addwmkeyrelease(&channel->o, keyrelease->scancode);
+            event_place(currentview->currentremote->source, &channel->o);
 
         }
 
@@ -591,10 +591,10 @@ static unsigned int onkeyrelease(union event_message *imessage, union event_mess
 
 }
 
-static unsigned int onmousemove(union event_message *imessage, union event_message *omessage)
+static unsigned int onmousemove(struct event_channel *channel)
 {
 
-    struct event_mousemove *mousemove = event_getdata(imessage);
+    struct event_mousemove *mousemove = event_getdata(&channel->i);
 
     mouse.size.x += mousemove->relx;
     mouse.size.y += mousemove->rely;
@@ -605,14 +605,14 @@ static unsigned int onmousemove(union event_message *imessage, union event_messa
     if (mouse.size.y < screen.y || mouse.size.y >= screen.y + screen.h)
         mouse.size.y = (mousemove->rely < 0) ? screen.y : screen.y + screen.h - 1;
 
-    updatemouse(imessage);
+    updatemouse(&channel->i);
 
     if (currentview->currentremote)
     {
 
-        event_request(omessage, imessage, EVENT_WMMOUSEMOVE, 0);
-        event_addwmmousemove(omessage, mouse.size.x, mouse.size.y);
-        event_place(currentview->currentremote->source, omessage);
+        event_request(channel, EVENT_WMMOUSEMOVE, 0);
+        event_addwmmousemove(&channel->o, mouse.size.x, mouse.size.y);
+        event_place(currentview->currentremote->source, &channel->o);
 
     }
 
@@ -620,10 +620,10 @@ static unsigned int onmousemove(union event_message *imessage, union event_messa
 
 }
 
-static unsigned int onmousepress(union event_message *imessage, union event_message *omessage)
+static unsigned int onmousepress(struct event_channel *channel)
 {
 
-    struct event_mousepress *mousepress = event_getdata(imessage);
+    struct event_mousepress *mousepress = event_getdata(&channel->i);
     struct list_item *current;
 
     switch (mousepress->button)
@@ -641,7 +641,7 @@ static unsigned int onmousepress(union event_message *imessage, union event_mess
             if (box_isinside(&view->panel.size, mouse.size.x, mouse.size.y))
             {
 
-                flipview(imessage, omessage, view);
+                flipview(channel, view);
 
                 break;
 
@@ -661,12 +661,12 @@ static unsigned int onmousepress(union event_message *imessage, union event_mess
             {
 
                 deactivateremote(currentview->currentremote);
-                updateremote(imessage, currentview->currentremote);
+                updateremote(&channel->i, currentview->currentremote);
 
                 currentview->currentremote = remote;
 
                 activateremote(currentview->currentremote);
-                updateremote(imessage, currentview->currentremote);
+                updateremote(&channel->i, currentview->currentremote);
 
                 break;
 
@@ -681,9 +681,9 @@ static unsigned int onmousepress(union event_message *imessage, union event_mess
     if (currentview->currentremote)
     {
 
-        event_request(omessage, imessage, EVENT_WMMOUSEPRESS, 0);
-        event_addwmmousepress(omessage, mousepress->button);
-        event_place(currentview->currentremote->source, omessage);
+        event_request(channel, EVENT_WMMOUSEPRESS, 0);
+        event_addwmmousepress(&channel->o, mousepress->button);
+        event_place(currentview->currentremote->source, &channel->o);
 
     }
 
@@ -691,17 +691,17 @@ static unsigned int onmousepress(union event_message *imessage, union event_mess
 
 }
 
-static unsigned int onmouserelease(union event_message *imessage, union event_message *omessage)
+static unsigned int onmouserelease(struct event_channel *channel)
 {
 
-    struct event_mouserelease *mouserelease = event_getdata(imessage);
+    struct event_mouserelease *mouserelease = event_getdata(&channel->i);
 
     if (currentview->currentremote)
     {
 
-        event_request(omessage, imessage, EVENT_WMMOUSERELEASE, 0);
-        event_addwmmouserelease(omessage, mouserelease->button);
-        event_place(currentview->currentremote->source, omessage);
+        event_request(channel, EVENT_WMMOUSERELEASE, 0);
+        event_addwmmouserelease(&channel->o, mouserelease->button);
+        event_place(currentview->currentremote->source, &channel->o);
 
     }
 
@@ -709,10 +709,10 @@ static unsigned int onmouserelease(union event_message *imessage, union event_me
 
 }
 
-static unsigned int onvideomode(union event_message *imessage, union event_message *omessage)
+static unsigned int onvideomode(struct event_channel *channel)
 {
 
-    struct event_videomode *videomode = event_getdata(imessage);
+    struct event_videomode *videomode = event_getdata(&channel->i);
     unsigned int factor = (videomode->h / 320);
 
     lineheight = 12 + factor * 4;
@@ -769,21 +769,21 @@ static unsigned int onvideomode(union event_message *imessage, union event_messa
     }
 
     /* Sending to self not allowed */
-    event_request(omessage, imessage, EVENT_WMCONFIGURE, 0);
-    event_addwmconfigure(omessage, 0, 0, videomode->w, videomode->h, padding, lineheight);
-    event_place(imessage->header.target, omessage);
+    event_request(channel, EVENT_WMCONFIGURE, 0);
+    event_addwmconfigure(&channel->o, 0, 0, videomode->w, videomode->h, padding, lineheight);
+    event_place(channel->i.header.target, &channel->o);
     /* Sending to self not allowed */
-    event_request(omessage, imessage, EVENT_WMSHOW, 0);
-    event_place(imessage->header.target, omessage);
+    event_request(channel, EVENT_WMSHOW, 0);
+    event_place(channel->i.header.target, &channel->o);
 
     return 0;
 
 }
 
-static unsigned int onwmconfigure(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmconfigure(struct event_channel *channel)
 {
 
-    struct event_wmconfigure *wmconfigure = event_getdata(imessage);
+    struct event_wmconfigure *wmconfigure = event_getdata(&channel->i);
     struct list_item *current;
     unsigned int i = 0;
 
@@ -801,7 +801,7 @@ static unsigned int onwmconfigure(union event_message *imessage, union event_mes
         view->center = 18 * steplength;
 
         box_setsize(&view->panel.size, wmconfigure->x + i * wmconfigure->w / viewlist.count, wmconfigure->y, wmconfigure->w / viewlist.count, (wmconfigure->lineheight + wmconfigure->padding * 2));
-        arrangeview(imessage, omessage, view);
+        arrangeview(channel, view);
 
         i++;
 
@@ -814,25 +814,25 @@ static unsigned int onwmconfigure(union event_message *imessage, union event_mes
 
 }
 
-static unsigned int onwmmap(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmmap(struct event_channel *channel)
 {
 
     if (currentview->currentremote)
         deactivateremote(currentview->currentremote);
 
     currentview->currentremote = remotelist.head->data;
-    currentview->currentremote->source = imessage->header.source;
+    currentview->currentremote->source = channel->i.header.source;
 
     list_move(&currentview->remotes, currentview->currentremote->item.list, &currentview->currentremote->item);
     activateremote(currentview->currentremote);
-    arrangeview(imessage, omessage, currentview);
-    showremotes(imessage, omessage, &currentview->remotes);
+    arrangeview(channel, currentview);
+    showremotes(channel, &currentview->remotes);
 
     return 0;
 
 }
 
-static unsigned int onwmunmap(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmunmap(struct event_channel *channel)
 {
 
     struct list_item *current;
@@ -848,10 +848,10 @@ static unsigned int onwmunmap(union event_message *imessage, union event_message
 
             struct remote *remote = current2->data;
 
-            if (imessage->header.source != remote->source)
+            if (channel->i.header.source != remote->source)
                 continue;
 
-            removeremote(imessage, remote);
+            removeremote(&channel->i, remote);
             list_move(&remotelist, remote->item.list, &remote->item);
 
             view->currentremote = (view->remotes.tail) ? view->remotes.tail->data : 0;
@@ -859,10 +859,10 @@ static unsigned int onwmunmap(union event_message *imessage, union event_message
             if (view->currentremote)
                 activateremote(view->currentremote);
 
-            arrangeview(imessage, omessage, view);
+            arrangeview(channel, view);
 
             if (view == currentview)
-                showremotes(imessage, omessage, &view->remotes);
+                showremotes(channel, &view->remotes);
 
         }
 
@@ -872,35 +872,35 @@ static unsigned int onwmunmap(union event_message *imessage, union event_message
 
 }
 
-static unsigned int onwmshow(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmshow(struct event_channel *channel)
 {
 
     struct list_item *current;
 
-    updatebackground(imessage);
-    updatemouse(imessage);
+    updatebackground(&channel->i);
+    updatemouse(&channel->i);
 
     for (current = viewlist.head; current; current = current->next)
-        updateview(imessage, current->data);
+        updateview(&channel->i, current->data);
 
-    showremotes(imessage, omessage, &currentview->remotes);
+    showremotes(channel, &currentview->remotes);
 
     return 0;
 
 }
 
-static unsigned int onwmhide(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmhide(struct event_channel *channel)
 {
 
     struct list_item *current;
 
-    removebackground(imessage);
-    removemouse(imessage);
+    removebackground(&channel->i);
+    removemouse(&channel->i);
 
     for (current = viewlist.head; current; current = current->next)
-        removeview(imessage, current->data);
+        removeview(&channel->i, current->data);
 
-    hideremotes(imessage, omessage, &currentview->remotes);
+    hideremotes(channel, &currentview->remotes);
 
     return 0;
 
@@ -910,8 +910,7 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
@@ -937,76 +936,76 @@ void main(void)
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage, &omessage);
+            status = ondata(&channel);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(&imessage, &omessage);
+            status = oninit(&channel);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage, &omessage);
+            status = onkill(&channel);
 
             break;
 
         case EVENT_KEYPRESS:
-            status = onkeypress(&imessage, &omessage);
+            status = onkeypress(&channel);
 
             break;
 
         case EVENT_KEYRELEASE:
-            status = onkeyrelease(&imessage, &omessage);
+            status = onkeyrelease(&channel);
 
             break;
 
         case EVENT_MOUSEMOVE:
-            status = onmousemove(&imessage, &omessage);
+            status = onmousemove(&channel);
 
             break;
 
         case EVENT_MOUSEPRESS:
-            status = onmousepress(&imessage, &omessage);
+            status = onmousepress(&channel);
 
             break;
 
         case EVENT_MOUSERELEASE:
-            status = onmouserelease(&imessage, &omessage);
+            status = onmouserelease(&channel);
 
             break;
 
         case EVENT_VIDEOMODE:
-            status = onvideomode(&imessage, &omessage);
+            status = onvideomode(&channel);
 
             break;
 
         case EVENT_WMCONFIGURE:
-            status = onwmconfigure(&imessage, &omessage);
+            status = onwmconfigure(&channel);
 
             break;
 
         case EVENT_WMMAP:
-            status = onwmmap(&imessage, &omessage);
+            status = onwmmap(&channel);
 
             break;
 
         case EVENT_WMUNMAP:
-            status = onwmunmap(&imessage, &omessage);
+            status = onwmunmap(&channel);
 
             break;
 
         case EVENT_WMSHOW:
-            status = onwmshow(&imessage, &omessage);
+            status = onwmshow(&channel);
 
             break;
 
         case EVENT_WMHIDE:
-            status = onwmhide(&imessage, &omessage);
+            status = onwmhide(&channel);
 
             break;
 
@@ -1015,9 +1014,9 @@ void main(void)
         if (ring_count(&output))
         {
 
-            event_request(&omessage, &imessage, EVENT_DATA, 0);
-            event_append(&omessage, ring_count(&output), outputdata);
-            file_writeall(FILE_G0, &omessage, omessage.header.length);
+            event_request(&channel, EVENT_DATA, 0);
+            event_append(&channel.o, ring_count(&output), outputdata);
+            file_writeall(FILE_G0, &channel.o, channel.o.header.length);
             ring_reset(&output);
 
         }

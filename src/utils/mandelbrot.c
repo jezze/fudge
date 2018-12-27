@@ -77,7 +77,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
-static unsigned int onstop(union event_message *imessage, union event_message *omessage)
+static unsigned int onstop(struct event_channel *channel)
 {
 
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
@@ -86,7 +86,7 @@ static unsigned int onstop(union event_message *imessage, union event_message *o
 
 }
 
-static unsigned int oninit(union event_message *imessage, union event_message *omessage)
+static unsigned int oninit(struct event_channel *channel)
 {
 
     ctrl_setvideosettings(&settings, 320, 200, 1);
@@ -104,7 +104,7 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
 
 }
 
-static unsigned int onkill(union event_message *imessage, union event_message *omessage)
+static unsigned int onkill(struct event_channel *channel)
 {
 
     return 1;
@@ -115,27 +115,26 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_STOP:
-            status = onstop(&imessage, &omessage);
+            status = onstop(&channel);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(&imessage, &omessage);
+            status = oninit(&channel);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage, &omessage);
+            status = onkill(&channel);
 
             break;
 

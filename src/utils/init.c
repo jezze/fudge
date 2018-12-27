@@ -30,12 +30,12 @@ static void loadscript(void)
 
 }
 
-static unsigned int ondata(union event_message *imessage, union event_message *omessage)
+static unsigned int ondata(struct event_channel *channel)
 {
 
     struct job jobs[32];
 
-    job_interpret(jobs, 32, imessage, omessage, event_getdata(imessage), event_getdatasize(imessage), 0);
+    job_interpret(jobs, 32, channel, event_getdata(&channel->i), event_getdatasize(&channel->i), 0);
 
     return 0;
 
@@ -45,19 +45,18 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     loadscript();
 
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage, &omessage);
+            status = ondata(&channel);
 
             break;
 

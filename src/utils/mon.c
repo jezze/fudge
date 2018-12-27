@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void dump(union event_message *imessage, union event_message *omessage, unsigned int count, void *buffer)
+static void dump(struct event_channel *channel, unsigned int count, void *buffer)
 {
 
     char *data = buffer;
@@ -12,35 +12,35 @@ static void dump(union event_message *imessage, union event_message *omessage, u
 
         unsigned char num[FUDGE_NSIZE];
 
-        event_reply(omessage, imessage, EVENT_DATA);
-        event_append(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
-        event_place(omessage->header.target, omessage);
+        event_reply(channel, EVENT_DATA);
+        event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
+        event_place(channel->o.header.target, &channel->o);
 
     }
 
 }
 
-static unsigned int ondata(union event_message *imessage, union event_message *omessage)
+static unsigned int ondata(struct event_channel *channel)
 {
 
-    dump(imessage, omessage, event_getdatasize(imessage), event_getdata(imessage));
+    dump(channel, event_getdatasize(&channel->i), event_getdata(&channel->i));
 
     return 0;
 
 }
 
-static unsigned int oninit(union event_message *imessage, union event_message *omessage)
+static unsigned int oninit(struct event_channel *channel)
 {
 
-    event_request(omessage, imessage, EVENT_BLOCKREQUEST, 0);
-    event_addblockrequest(omessage, 0, 512 * 3);
-    file_writeall(FILE_G0, omessage, omessage->header.length);
+    event_request(channel, EVENT_BLOCKREQUEST, 0);
+    event_addblockrequest(&channel->o, 0, 512 * 3);
+    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
     return 0;
 
 }
 
-static unsigned int onkill(union event_message *imessage, union event_message *omessage)
+static unsigned int onkill(struct event_channel *channel)
 {
 
     return 1;
@@ -51,8 +51,7 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;
@@ -62,21 +61,21 @@ void main(void)
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage, &omessage);
+            status = ondata(&channel);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(&imessage, &omessage);
+            status = oninit(&channel);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage, &omessage);
+            status = onkill(&channel);
 
             break;
 

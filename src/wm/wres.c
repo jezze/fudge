@@ -3,30 +3,30 @@
 #include <widget/widget.h>
 #include <widget/render.h>
 
-static unsigned int oninit(union event_message *imessage, union event_message *omessage)
+static unsigned int oninit(struct event_channel *channel)
 {
 
-    event_request(omessage, imessage, EVENT_WMMAP, 0);
-    file_writeall(FILE_G0, omessage, omessage->header.length);
+    event_request(channel, EVENT_WMMAP, 0);
+    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
     return 0;
 
 }
 
-static unsigned int onkill(union event_message *imessage, union event_message *omessage)
+static unsigned int onkill(struct event_channel *channel)
 {
 
-    event_request(omessage, imessage, EVENT_WMUNMAP, 0);
-    file_writeall(FILE_G0, omessage, omessage->header.length);
+    event_request(channel, EVENT_WMUNMAP, 0);
+    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
     return 1;
 
 }
 
-static unsigned int onwmmousepress(union event_message *imessage, union event_message *omessage)
+static unsigned int onwmmousepress(struct event_channel *channel)
 {
 
-    struct event_wmmousepress *wmmousepress = event_getdata(imessage);
+    struct event_wmmousepress *wmmousepress = event_getdata(&channel->i);
 
     switch (wmmousepress->button)
     {
@@ -50,8 +50,7 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
@@ -61,21 +60,21 @@ void main(void)
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_INIT:
-            status = oninit(&imessage, &omessage);
+            status = oninit(&channel);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage, &omessage);
+            status = onkill(&channel);
 
             break;
 
         case EVENT_WMMOUSEPRESS:
-            status = onwmmousepress(&imessage, &omessage);
+            status = onwmmousepress(&channel);
 
             break;
 

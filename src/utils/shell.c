@@ -28,7 +28,7 @@ static void printcomplete(void *buffer, unsigned int count)
 
 }
 
-static unsigned int runcmd(union event_message *imessage, union event_message *omessage, char *command, char *data, unsigned int count, unsigned int session)
+static unsigned int runcmd(struct event_channel *channel, char *command, char *data, unsigned int count, unsigned int session)
 {
 
     unsigned int id;
@@ -41,13 +41,13 @@ static unsigned int runcmd(union event_message *imessage, union event_message *o
     if (id)
     {
 
-        event_request(omessage, imessage, EVENT_INIT, session);
-        event_place(id, omessage);
-        event_request(omessage, imessage, EVENT_DATA, session);
-        event_append(omessage, count, data);
-        event_place(id, omessage);
-        event_request(omessage, imessage, EVENT_STOP, session);
-        event_place(id, omessage);
+        event_request(channel, EVENT_INIT, session);
+        event_place(id, &channel->o);
+        event_request(channel, EVENT_DATA, session);
+        event_append(&channel->o, count, data);
+        event_place(id, &channel->o);
+        event_request(channel, EVENT_STOP, session);
+        event_place(id, &channel->o);
 
     }
 
@@ -79,7 +79,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static unsigned int interpret(union event_message *imessage, union event_message *omessage, struct ring *ring)
+static unsigned int interpret(struct event_channel *channel, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -91,24 +91,24 @@ static unsigned int interpret(union event_message *imessage, union event_message
     if (interpretbuiltin(count, command))
         return 0;
 
-    return runcmd(imessage, omessage, "/bin/slang", command, count, 2);
+    return runcmd(channel, "/bin/slang", command, count, 2);
 
 }
 
-static unsigned int complete(union event_message *imessage, union event_message *omessage, struct ring *ring)
+static unsigned int complete(struct event_channel *channel, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
 
-    return runcmd(imessage, omessage, "/bin/complete", command, count, 1);
+    return runcmd(channel, "/bin/complete", command, count, 1);
 
 }
 
-static unsigned int onconsoledata(union event_message *imessage, union event_message *omessage)
+static unsigned int onconsoledata(struct event_channel *channel)
 {
 
-    struct event_consoledata *consoledata = event_getdata(imessage);
+    struct event_consoledata *consoledata = event_getdata(&channel->i);
 
     switch (consoledata->data)
     {
@@ -117,7 +117,7 @@ static unsigned int onconsoledata(union event_message *imessage, union event_mes
         break;
 
     case '\t':
-        complete(imessage, omessage, &input);
+        complete(channel, &input);
 
         break;
 
@@ -136,7 +136,7 @@ static unsigned int onconsoledata(union event_message *imessage, union event_mes
     case '\n':
         file_writeall(FILE_G1, &consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
-        interpret(imessage, omessage, &input);
+        interpret(channel, &input);
         printprompt();
 
         break;
@@ -153,26 +153,26 @@ static unsigned int onconsoledata(union event_message *imessage, union event_mes
 
 }
 
-static unsigned int ondata(union event_message *imessage, union event_message *omessage)
+static unsigned int ondata(struct event_channel *channel)
 {
 
     struct job jobs[32];
 
-    switch (imessage->header.session)
+    switch (channel->i.header.session)
     {
 
     case 0:
-        printnormal(event_getdata(imessage), event_getdatasize(imessage));
+        printnormal(event_getdata(&channel->i), event_getdatasize(&channel->i));
 
         break;
 
     case 1:
-        printcomplete(event_getdata(imessage), event_getdatasize(imessage));
+        printcomplete(event_getdata(&channel->i), event_getdatasize(&channel->i));
 
         break;
 
     case 2:
-        job_interpret(jobs, 32, imessage, omessage, event_getdata(imessage), event_getdatasize(imessage), 0);
+        job_interpret(jobs, 32, channel, event_getdata(&channel->i), event_getdatasize(&channel->i), 0);
 
         break;
 
@@ -182,7 +182,7 @@ static unsigned int ondata(union event_message *imessage, union event_message *o
 
 }
 
-static unsigned int oninit(union event_message *imessage, union event_message *omessage)
+static unsigned int oninit(struct event_channel *channel)
 {
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
@@ -192,7 +192,7 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
 
 }
 
-static unsigned int onkill(union event_message *imessage, union event_message *omessage)
+static unsigned int onkill(struct event_channel *channel)
 {
 
     return 1;
@@ -203,8 +203,7 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;
@@ -218,26 +217,26 @@ void main(void)
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_CONSOLEDATA:
-            status = onconsoledata(&imessage, &omessage);
+            status = onconsoledata(&channel);
 
             break;
 
         case EVENT_DATA:
-            status = ondata(&imessage, &omessage);
+            status = ondata(&channel);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(&imessage, &omessage);
+            status = oninit(&channel);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage, &omessage);
+            status = onkill(&channel);
 
             break;
 

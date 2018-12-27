@@ -3,19 +3,19 @@
 
 static struct sha1 s;
 
-static unsigned int ondata(union event_message *imessage, union event_message *omessage)
+static unsigned int ondata(struct event_channel *channel)
 {
 
-    sha1_read(&s, event_getdata(imessage), event_getdatasize(imessage));
+    sha1_read(&s, event_getdata(&channel->i), event_getdatasize(&channel->i));
 
     return 0;
 
 }
 
-static unsigned int onfile(union event_message *imessage, union event_message *omessage)
+static unsigned int onfile(struct event_channel *channel)
 {
 
-    struct event_file *file = event_getdata(imessage);
+    struct event_file *file = event_getdata(&channel->i);
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -30,7 +30,7 @@ static unsigned int onfile(union event_message *imessage, union event_message *o
 
 }
 
-static unsigned int onstop(union event_message *imessage, union event_message *omessage)
+static unsigned int onstop(struct event_channel *channel)
 {
 
     unsigned char digest[20];
@@ -38,19 +38,19 @@ static unsigned int onstop(union event_message *imessage, union event_message *o
     unsigned int i;
 
     sha1_write(&s, digest);
-    event_reply(omessage, imessage, EVENT_DATA);
+    event_reply(channel, EVENT_DATA);
 
     for (i = 0; i < 20; i++)
-        event_append(omessage, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
+        event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
 
-    event_append(omessage, 1, "\n");
-    event_place(omessage->header.target, omessage);
+    event_append(&channel->o, 1, "\n");
+    event_place(channel->o.header.target, &channel->o);
 
     return 1;
 
 }
 
-static unsigned int oninit(union event_message *imessage, union event_message *omessage)
+static unsigned int oninit(struct event_channel *channel)
 {
 
     sha1_init(&s);
@@ -59,7 +59,7 @@ static unsigned int oninit(union event_message *imessage, union event_message *o
 
 }
 
-static unsigned int onkill(union event_message *imessage, union event_message *omessage)
+static unsigned int onkill(struct event_channel *channel)
 {
 
     return 1;
@@ -70,37 +70,36 @@ void main(void)
 {
 
     unsigned int status = 0;
-    union event_message imessage;
-    union event_message omessage;
+    struct event_channel channel;
 
     while (!status)
     {
 
-        switch (event_pick(&imessage))
+        switch (event_pick(&channel))
         {
 
         case EVENT_DATA:
-            status = ondata(&imessage, &omessage);
+            status = ondata(&channel);
 
             break;
 
         case EVENT_FILE:
-            status = onfile(&imessage, &omessage);
+            status = onfile(&channel);
 
             break;
 
         case EVENT_STOP:
-            status = onstop(&imessage, &omessage);
+            status = onstop(&channel);
 
             break;
 
         case EVENT_INIT:
-            status = oninit(&imessage, &omessage);
+            status = oninit(&channel);
 
             break;
 
         case EVENT_KILL:
-            status = onkill(&imessage, &omessage);
+            status = onkill(&channel);
 
             break;
 

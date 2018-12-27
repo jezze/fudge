@@ -2,15 +2,15 @@
 #include "call.h"
 #include "event.h"
 
-unsigned int event_pick(union event_message *message)
+unsigned int event_pick(struct event_channel *channel)
 {
 
-    while (!call_pick(&message->header, sizeof (struct event_header)));
+    while (!call_pick(&channel->i.header, sizeof (struct event_header)));
 
-    if (message->header.length > sizeof (struct event_header))
-        while (!call_pick(&message->header + 1, message->header.length - sizeof (struct event_header)));
+    if (channel->i.header.length > sizeof (struct event_header))
+        while (!call_pick(&channel->i.header + 1, channel->i.header.length - sizeof (struct event_header)));
 
-    return message->header.type;
+    return channel->i.header.type;
 
 }
 
