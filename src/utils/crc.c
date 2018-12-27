@@ -6,7 +6,7 @@ static struct crc s;
 static unsigned int ondata(struct event_channel *channel)
 {
 
-    crc_read(&s, event_getdata(&channel->i), event_getdatasize(&channel->i));
+    crc_read(&s, event_getdata(channel), event_getdatasize(channel));
 
     return 0;
 
@@ -15,7 +15,7 @@ static unsigned int ondata(struct event_channel *channel)
 static unsigned int onfile(struct event_channel *channel)
 {
 
-    struct event_file *file = event_getdata(&channel->i);
+    struct event_file *file = event_getdata(channel);
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int count;
 

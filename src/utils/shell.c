@@ -108,7 +108,7 @@ static unsigned int complete(struct event_channel *channel, struct ring *ring)
 static unsigned int onconsoledata(struct event_channel *channel)
 {
 
-    struct event_consoledata *consoledata = event_getdata(&channel->i);
+    struct event_consoledata *consoledata = event_getdata(channel);
 
     switch (consoledata->data)
     {
@@ -162,17 +162,17 @@ static unsigned int ondata(struct event_channel *channel)
     {
 
     case 0:
-        printnormal(event_getdata(&channel->i), event_getdatasize(&channel->i));
+        printnormal(event_getdata(channel), event_getdatasize(channel));
 
         break;
 
     case 1:
-        printcomplete(event_getdata(&channel->i), event_getdatasize(&channel->i));
+        printcomplete(event_getdata(channel), event_getdatasize(channel));
 
         break;
 
     case 2:
-        job_interpret(jobs, 32, channel, event_getdata(&channel->i), event_getdatasize(&channel->i), 0);
+        job_interpret(jobs, 32, channel, event_getdata(channel), event_getdatasize(channel), 0);
 
         break;
 

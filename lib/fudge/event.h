@@ -184,8 +184,8 @@ struct event_wmmousemove
 
 };
 
-void *event_getdata(union event_message *message);
-unsigned int event_getdatasize(union event_message *message);
+void *event_getdata(struct event_channel *channel);
+unsigned int event_getdatasize(struct event_channel *channel);
 unsigned int event_avail(union event_message *message);
 unsigned int event_addroute(union event_message *message, unsigned int target, unsigned int session);
 unsigned int event_addfile(union event_message *message, unsigned int descriptor);

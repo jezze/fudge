@@ -35,7 +35,7 @@ static unsigned int ondata(struct event_channel *channel)
 
     struct job jobs[32];
 
-    job_interpret(jobs, 32, channel, event_getdata(&channel->i), event_getdatasize(&channel->i), 0);
+    job_interpret(jobs, 32, channel, event_getdata(channel), event_getdatasize(channel), 0);
 
     return 0;
 

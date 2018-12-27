@@ -26,7 +26,7 @@ static unsigned int onkill(struct event_channel *channel)
 static unsigned int onwmmousepress(struct event_channel *channel)
 {
 
-    struct event_wmmousepress *wmmousepress = event_getdata(&channel->i);
+    struct event_wmmousepress *wmmousepress = event_getdata(channel);
 
     switch (wmmousepress->button)
     {

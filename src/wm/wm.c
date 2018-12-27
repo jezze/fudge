@@ -318,7 +318,7 @@ static unsigned int ondata(struct event_channel *channel)
     if (!file_walk(FILE_L0, FILE_G4, "../data"))
         return 0;
 
-    render_write(event_getdata(&channel->i), event_getdatasize(&channel->i));
+    render_write(event_getdata(channel), event_getdatasize(channel));
     render_flush(FILE_L0);
     render_complete();
 
@@ -373,7 +373,7 @@ static unsigned int onkill(struct event_channel *channel)
 static unsigned int onkeypress(struct event_channel *channel)
 {
 
-    struct event_keypress *keypress = event_getdata(&channel->i);
+    struct event_keypress *keypress = event_getdata(channel);
     struct view *nextview;
     struct remote *nextremote;
     unsigned int id;
@@ -567,7 +567,7 @@ static unsigned int onkeypress(struct event_channel *channel)
 static unsigned int onkeyrelease(struct event_channel *channel)
 {
 
-    struct event_keyrelease *keyrelease = event_getdata(&channel->i);
+    struct event_keyrelease *keyrelease = event_getdata(channel);
 
     keymod = keymap_modkey(keyrelease->scancode, keymod);
 
@@ -594,7 +594,7 @@ static unsigned int onkeyrelease(struct event_channel *channel)
 static unsigned int onmousemove(struct event_channel *channel)
 {
 
-    struct event_mousemove *mousemove = event_getdata(&channel->i);
+    struct event_mousemove *mousemove = event_getdata(channel);
 
     mouse.size.x += mousemove->relx;
     mouse.size.y += mousemove->rely;
@@ -623,7 +623,7 @@ static unsigned int onmousemove(struct event_channel *channel)
 static unsigned int onmousepress(struct event_channel *channel)
 {
 
-    struct event_mousepress *mousepress = event_getdata(&channel->i);
+    struct event_mousepress *mousepress = event_getdata(channel);
     struct list_item *current;
 
     switch (mousepress->button)
@@ -694,7 +694,7 @@ static unsigned int onmousepress(struct event_channel *channel)
 static unsigned int onmouserelease(struct event_channel *channel)
 {
 
-    struct event_mouserelease *mouserelease = event_getdata(&channel->i);
+    struct event_mouserelease *mouserelease = event_getdata(channel);
 
     if (currentview->currentremote)
     {
@@ -712,7 +712,7 @@ static unsigned int onmouserelease(struct event_channel *channel)
 static unsigned int onvideomode(struct event_channel *channel)
 {
 
-    struct event_videomode *videomode = event_getdata(&channel->i);
+    struct event_videomode *videomode = event_getdata(channel);
     unsigned int factor = (videomode->h / 320);
 
     lineheight = 12 + factor * 4;
@@ -783,7 +783,7 @@ static unsigned int onvideomode(struct event_channel *channel)
 static unsigned int onwmconfigure(struct event_channel *channel)
 {
 
-    struct event_wmconfigure *wmconfigure = event_getdata(&channel->i);
+    struct event_wmconfigure *wmconfigure = event_getdata(channel);
     struct list_item *current;
     unsigned int i = 0;
 

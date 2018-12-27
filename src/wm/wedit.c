@@ -171,7 +171,7 @@ static unsigned int onkill(struct event_channel *channel)
 static unsigned int onwmconfigure(struct event_channel *channel)
 {
 
-    struct event_wmconfigure *wmconfigure = event_getdata(&channel->i);
+    struct event_wmconfigure *wmconfigure = event_getdata(channel);
 
     ring_reset(&input1);
     ring_reset(&input2);
@@ -190,7 +190,7 @@ static unsigned int onwmconfigure(struct event_channel *channel)
 static unsigned int onwmkeypress(struct event_channel *channel)
 {
 
-    struct event_wmkeypress *wmkeypress = event_getdata(&channel->i);
+    struct event_wmkeypress *wmkeypress = event_getdata(channel);
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -251,7 +251,7 @@ static unsigned int onwmkeypress(struct event_channel *channel)
 static unsigned int onwmkeyrelease(struct event_channel *channel)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = event_getdata(&channel->i);
+    struct event_wmkeyrelease *wmkeyrelease = event_getdata(channel);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 

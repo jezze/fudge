@@ -23,7 +23,7 @@ static void dump(struct event_channel *channel, unsigned int count, void *buffer
 static unsigned int ondata(struct event_channel *channel)
 {
 
-    dump(channel, event_getdatasize(&channel->i), event_getdata(&channel->i));
+    dump(channel, event_getdatasize(channel), event_getdata(channel));
 
     return 0;
 

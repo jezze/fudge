@@ -33,7 +33,7 @@ static unsigned int blockinterface_writedata(struct system_node *self, struct sy
 
     memory_copy(&reply.i.header, buffer, count);
 
-    blockrequest = event_getdata(&reply.i);
+    blockrequest = event_getdata(&reply);
 
     event_reply(&reply, EVENT_DATA);
     ide_rpio28(blockinterface.id, 0, blockrequest->count / 512, blockrequest->offset / 512);

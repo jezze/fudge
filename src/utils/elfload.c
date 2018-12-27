@@ -238,7 +238,7 @@ static unsigned int resolve(unsigned int descriptor)
 static unsigned int onfile(struct event_channel *channel)
 {
 
-    struct event_file *file = event_getdata(&channel->i);
+    struct event_file *file = event_getdata(channel);
 
     file_open(file->descriptor);
 

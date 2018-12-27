@@ -230,17 +230,17 @@ static unsigned int ondata(struct event_channel *channel)
     {
 
     case 0:
-        printnormal(event_getdata(&channel->i), event_getdatasize(&channel->i));
+        printnormal(event_getdata(channel), event_getdatasize(channel));
 
         break;
 
     case 1:
-        printcomplete(event_getdata(&channel->i), event_getdatasize(&channel->i));
+        printcomplete(event_getdata(channel), event_getdatasize(channel));
 
         break;
 
     case 2:
-        job_interpret(jobs, 32, channel, event_getdata(&channel->i), event_getdatasize(&channel->i), 0);
+        job_interpret(jobs, 32, channel, event_getdata(channel), event_getdatasize(channel), 0);
 
         break;
 
@@ -282,7 +282,7 @@ static unsigned int onkill(struct event_channel *channel)
 static unsigned int onwmconfigure(struct event_channel *channel)
 {
 
-    struct event_wmconfigure *wmconfigure = event_getdata(&channel->i);
+    struct event_wmconfigure *wmconfigure = event_getdata(channel);
 
     box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
     box_resize(&content.size, wmconfigure->padding);
@@ -299,7 +299,7 @@ static unsigned int onwmconfigure(struct event_channel *channel)
 static unsigned int onwmkeypress(struct event_channel *channel)
 {
 
-    struct event_wmkeypress *wmkeypress = event_getdata(&channel->i);
+    struct event_wmkeypress *wmkeypress = event_getdata(channel);
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -388,7 +388,7 @@ static unsigned int onwmkeypress(struct event_channel *channel)
 static unsigned int onwmkeyrelease(struct event_channel *channel)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = event_getdata(&channel->i);
+    struct event_wmkeyrelease *wmkeyrelease = event_getdata(channel);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 

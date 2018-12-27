@@ -330,14 +330,14 @@ static void parse(struct event_channel *channel, struct tokenlist *postfix, stru
 static unsigned int ondata(struct event_channel *channel)
 {
 
-    if (!event_getdatasize(&channel->i))
+    if (!event_getdatasize(channel))
         return 0;
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
-    tokenizebuffer(&infix, &stringtable, event_getdatasize(&channel->i), event_getdata(&channel->i));
+    tokenizebuffer(&infix, &stringtable, event_getdatasize(channel), event_getdata(channel));
     translate(&postfix, &infix, &stack);
     parse(channel, &postfix, &stack);
 
@@ -348,7 +348,7 @@ static unsigned int ondata(struct event_channel *channel)
 static unsigned int onfile(struct event_channel *channel)
 {
 
-    struct event_file *file = event_getdata(&channel->i);
+    struct event_file *file = event_getdata(channel);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 

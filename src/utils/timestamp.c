@@ -60,7 +60,7 @@ static unsigned int onempty(struct event_channel *channel)
 static unsigned int onfile(struct event_channel *channel)
 {
 
-    struct event_file *file = event_getdata(&channel->i);
+    struct event_file *file = event_getdata(channel);
     struct ctrl_clocksettings settings;
 
     file_open(file->descriptor);

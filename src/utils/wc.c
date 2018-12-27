@@ -48,7 +48,7 @@ static void sum(unsigned int count, void *buffer)
 static unsigned int ondata(struct event_channel *channel)
 {
 
-    sum(event_getdatasize(&channel->i), event_getdata(&channel->i));
+    sum(event_getdatasize(channel), event_getdata(channel));
 
     return 0;
 
@@ -57,7 +57,7 @@ static unsigned int ondata(struct event_channel *channel)
 static unsigned int onfile(struct event_channel *channel)
 {
 
-    struct event_file *file = event_getdata(&channel->i);
+    struct event_file *file = event_getdata(channel);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
