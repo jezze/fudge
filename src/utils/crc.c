@@ -39,7 +39,7 @@ static unsigned int onstop(struct event_channel *channel)
     event_reply(channel, EVENT_DATA);
     event_append(&channel->o, ascii_wvalue(buffer, 32, result, 10), buffer);
     event_append(&channel->o, 1, "\n");
-    event_place(channel->o.header.target, &channel->o);
+    event_place(channel->o.header.target, channel);
 
     return 1;
 

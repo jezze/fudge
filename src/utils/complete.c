@@ -18,7 +18,7 @@ static void complete(struct event_channel *channel, unsigned int descriptor, voi
             if (event_avail(&channel->o) < record.length + 1)
             {
 
-                event_place(channel->o.header.target, &channel->o);
+                event_place(channel->o.header.target, channel);
                 event_reply(channel, EVENT_DATA);
 
             }
@@ -33,7 +33,7 @@ static void complete(struct event_channel *channel, unsigned int descriptor, voi
 
     }
 
-    event_place(channel->o.header.target, &channel->o);
+    event_place(channel->o.header.target, channel);
     file_close(descriptor);
 
 }

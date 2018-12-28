@@ -19,7 +19,7 @@ static void replydate(struct event_channel *channel, struct ctrl_clocksettings *
     event_append(&channel->o, 1, ":");
     event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, settings->seconds, 10, 2, 0), num);
     event_append(&channel->o, 1, "\n");
-    event_place(channel->o.header.target, &channel->o);
+    event_place(channel->o.header.target, channel);
 
 }
 

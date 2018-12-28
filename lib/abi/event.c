@@ -14,12 +14,12 @@ unsigned int event_pick(struct event_channel *channel)
 
 }
 
-unsigned int event_place(unsigned int id, union event_message *message)
+unsigned int event_place(unsigned int id, struct event_channel *channel)
 {
 
-    while (!call_place(id, message, message->header.length));
+    while (!call_place(id, &channel->o, channel->o.header.length));
 
-    return message->header.type;
+    return channel->o.header.type;
 
 }
 

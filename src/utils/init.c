@@ -1,10 +1,9 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void loadscript(void)
+static void loadscript(struct event_channel *channel)
 {
 
-    union event_message message;
     unsigned int id;
 
     file_walk2(FILE_CP, "/bin/slang");
@@ -14,19 +13,19 @@ static void loadscript(void)
 
     id = call_spawn();
 
-    event_create(&message, EVENT_INIT);
-    event_place(id, &message);
-    event_create(&message, EVENT_FILE);
-    event_addfile(&message, FILE_P0);
-    event_place(id, &message);
-    event_create(&message, EVENT_FILE);
-    event_addfile(&message, FILE_P1);
-    event_place(id, &message);
-    event_create(&message, EVENT_FILE);
-    event_addfile(&message, FILE_P2);
-    event_place(id, &message);
-    event_create(&message, EVENT_STOP);
-    event_place(id, &message);
+    event_create(&channel->o, EVENT_INIT);
+    event_place(id, channel);
+    event_create(&channel->o, EVENT_FILE);
+    event_addfile(&channel->o, FILE_P0);
+    event_place(id, channel);
+    event_create(&channel->o, EVENT_FILE);
+    event_addfile(&channel->o, FILE_P1);
+    event_place(id, channel);
+    event_create(&channel->o, EVENT_FILE);
+    event_addfile(&channel->o, FILE_P2);
+    event_place(id, channel);
+    event_create(&channel->o, EVENT_STOP);
+    event_place(id, channel);
 
 }
 
@@ -47,7 +46,7 @@ void main(void)
     unsigned int status = 0;
     struct event_channel channel;
 
-    loadscript();
+    loadscript(&channel);
 
     while (!status)
     {
