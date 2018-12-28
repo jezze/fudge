@@ -148,6 +148,8 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = (unsigned int)cpu_halt;
         interrupt->esp.value = core->sp;
 
+        mmu_setdirectory(getkerneldirectory());
+
     }
 
 }
