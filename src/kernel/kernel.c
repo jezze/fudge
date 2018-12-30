@@ -296,7 +296,7 @@ unsigned int kernel_multicast(unsigned int id, struct list *states, union event_
 unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
-    struct service_descriptor *descriptor = kernel_getdescriptor(task, 0);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, 0x02);
 
     task->node.address = descriptor->protocol->map(descriptor->backend, &descriptor->state, descriptor->id);
 
@@ -318,9 +318,9 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 void kernel_setupinit(struct task *task)
 {
 
-    struct service_descriptor *init = kernel_getdescriptor(task, 0x10);
-    struct service_descriptor *root = kernel_getdescriptor(task, 0x11);
-    struct service_descriptor *work = kernel_getdescriptor(task, 0x12);
+    struct service_descriptor *root = kernel_getdescriptor(task, 0x10);
+    struct service_descriptor *work = kernel_getdescriptor(task, 0x11);
+    struct service_descriptor *init = kernel_getdescriptor(task, 0x12);
 
     root->backend = service_findbackend(1000);
     root->protocol = service_findprotocol(1000);
