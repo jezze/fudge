@@ -324,7 +324,7 @@ static unsigned int place(struct task *task, void *stack)
     message->header.source = task->id;
     message->header.target = args->id;
 
-    return kernel_place(args->id, args->buffer, args->count);
+    return kernel_place(args->id, message);
 
 }
 
