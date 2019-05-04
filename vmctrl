@@ -1,13 +1,19 @@
 #!/bin/bash
 
 cmd_run() {
-    id=$1
     sttybak=$(stty -g)
+    devices="-vga std -serial stdio"
+    devices="$devices -device virtio-net-pci,netdev=eth0,bus=pci.0,addr=0x4,mac=52:50:00:00:0$1:01 -netdev tap,id=eth0,ifname=node$1-eth0,script=no,downscript=no"
 
-    echo "Use ctrl+] to kill node$id"
+    if test -f "disks/node$1-sda.qcow2"
+    then
+        devices="$devices -drive file=disks/node$1-sda.qcow2,format=qcow2,if=ide,index=0"
+    fi
+
+    echo "Use ctrl+] to kill node$1"
 
     stty intr ^]
-    qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio -vga std -serial stdio -net nic,model=virtio,macaddr=52:54:00:00:0$id:01 -net tap,ifname=node$id-eth0,script=no,downscript=no
+    qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio $devices
     stty $sttybak
 }
 
@@ -21,19 +27,18 @@ cmd_nat() {
 cmd_connect() {
     net="eth0"
     bridge="bridge-$net"
-    interfaces=$(ls -1 /sys/class/net | grep node.*-$net)
     address="10.0.5.80/24"
 
     if ! test -e /sys/class/net/$bridge
     then
-        brctl addbr $bridge
+        ip link add $bridge type bridge
         ip link set $bridge up
         ip addr add $address dev $bridge
     fi
 
-    for interface in $interfaces
+    for interface in $(ls -1 /sys/class/net | grep node.*-$net)
     do
-        brctl addif $bridge $interface
+        ip link set $interface master $bridge
         ip link set $interface up
     done
 }
@@ -41,21 +46,27 @@ cmd_connect() {
 cmd_disconnect() {
     net="eth0"
     bridge="bridge-$net"
-    interfaces=$(ls -1 /sys/class/net | grep node.*-$net)
     address="10.0.5.80/24"
 
-    for interface in $interfaces
+    for interface in $(ls -1 /sys/class/net | grep node.*-$net)
     do
         ip link set $interface down
-        brctl delif $bridge $interface
+        ip link set $interface nomaster
     done
 
     if test -e /sys/class/net/$bridge
     then
         ip addr del $address dev $bridge
         ip link set $bridge down
-        brctl delbr $bridge
+        ip link del $bridge type bridge
     fi
+}
+
+cmd_mkdisk() {
+    mkdir -p disks
+    echo -n "Creating sda disk... "
+    qemu-img create -q -f qcow2 disks/node$1-sda.qcow2 5G
+    echo "done"
 }
 
 cmd_help() {
@@ -64,6 +75,7 @@ cmd_help() {
     echo "    nat <iface>"
     echo "    connect"
     echo "    disconnect"
+    echo "    mkdisk <id>"
 }
 
 case "$1" in
@@ -78,6 +90,9 @@ connect)
     ;;
 disconnect)
     cmd_disconnect
+    ;;
+mkdisk)
+    cmd_mkdisk $2
     ;;
 *)
     cmd_help
