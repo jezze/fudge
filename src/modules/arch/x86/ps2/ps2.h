@@ -13,4 +13,6 @@ void ps2_reset(unsigned int id);
 void ps2_identify(unsigned int id);
 void ps2_enablescanning(unsigned int id);
 void ps2_disablescanning(unsigned int id);
+void ps2_enabletranslation(unsigned int id);
+void ps2_disabletranslation(unsigned int id);
 void ps2_default(unsigned int id);

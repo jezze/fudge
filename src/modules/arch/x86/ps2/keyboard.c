@@ -59,6 +59,7 @@ static void driver_reset(unsigned int id)
     ps2_default(id);
     ps2_enable(id);
     ps2_enablescanning(id);
+    ps2_enabletranslation(id);
     ps2_enableinterrupt(id);
 
 }

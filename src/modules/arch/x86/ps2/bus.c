@@ -40,7 +40,7 @@
 #define CONFIGFLAG_SYSTEM               (1 << 2)
 #define CONFIGFLAG_DEV1CLOCK            (1 << 4)
 #define CONFIGFLAG_DEV2CLOCK            (1 << 5)
-#define CONFIGFLAG_DEV2TRANS            (1 << 6)
+#define CONFIGFLAG_DEV1TRANS            (1 << 6)
 #define CTESTOK                         0x55
 #define CTESTERROR                      0xFC
 #define PTESTOK                         0x00
@@ -57,6 +57,7 @@ struct device
     unsigned char disable;
     unsigned char enable;
     unsigned char interrupt;
+    unsigned char translation;
     unsigned char test;
 
 };
@@ -66,8 +67,8 @@ static struct system_node reset;
 
 static struct device devices[] = {
     {0},
-    {0, IRQKEYBOARD, COMMANDDEV1DISABLE, COMMANDDEV1ENABLE, CONFIGFLAG_DEV1INT, COMMANDDEV1TEST},
-    {0, IRQMOUSE, COMMANDDEV2DISABLE, COMMANDDEV2ENABLE, CONFIGFLAG_DEV2INT, COMMANDDEV2TEST}
+    {0, IRQKEYBOARD, COMMANDDEV1DISABLE, COMMANDDEV1ENABLE, CONFIGFLAG_DEV1INT, CONFIGFLAG_DEV1TRANS, COMMANDDEV1TEST},
+    {0, IRQMOUSE, COMMANDDEV2DISABLE, COMMANDDEV2ENABLE, CONFIGFLAG_DEV2INT, 0, COMMANDDEV2TEST}
 };
 
 static void flushdata(void)
@@ -218,6 +219,20 @@ void ps2_disableinterrupt(unsigned int id)
 {
 
     wconfig(rconfig() & ~devices[id].interrupt);
+
+}
+
+void ps2_enabletranslation(unsigned int id)
+{
+
+    wconfig(rconfig() | devices[id].translation);
+
+}
+
+void ps2_disabletranslation(unsigned int id)
+{
+
+    wconfig(rconfig() & ~devices[id].translation);
 
 }
 
