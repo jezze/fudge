@@ -48,13 +48,6 @@ static unsigned int onfile(struct event_channel *channel)
 
 }
 
-static unsigned int onstop(struct event_channel *channel)
-{
-
-    return 1;
-
-}
-
 void main(void)
 {
 
@@ -63,7 +56,6 @@ void main(void)
     event_initsignals();
     event_setsignal(EVENT_DATA, ondata);
     event_setsignal(EVENT_FILE, onfile);
-    event_setsignal(EVENT_STOP, onstop);
 
     while (event_listen(&channel));
 

@@ -6,14 +6,14 @@
 
 static unsigned int (*signals[EVENTS])(struct event_channel *channel);
 
-static unsigned int nosignal(struct event_channel *channel)
+static unsigned int ignore(struct event_channel *channel)
 {
 
     return 0;
 
 }
 
-static unsigned int onkill(struct event_channel *channel)
+static unsigned int abort(struct event_channel *channel)
 {
 
     return 1;
@@ -63,9 +63,10 @@ void event_initsignals(void)
     unsigned int i;
 
     for (i = 0; i < EVENTS; i++)
-        event_setsignal(i, nosignal);
+        event_setsignal(i, ignore);
 
-    event_setsignal(EVENT_KILL, onkill);
+    event_setsignal(EVENT_KILL, abort);
+    event_setsignal(EVENT_STOP, abort);
 
 }
 

@@ -370,6 +370,13 @@ static unsigned int onkill(struct event_channel *channel)
 
 }
 
+static unsigned int onstop(struct event_channel *channel)
+{
+
+    return 0;
+
+}
+
 static unsigned int onkeypress(struct event_channel *channel)
 {
 
@@ -915,6 +922,7 @@ void main(void)
     event_setsignal(EVENT_DATA, ondata);
     event_setsignal(EVENT_INIT, oninit);
     event_setsignal(EVENT_KILL, onkill);
+    event_setsignal(EVENT_STOP, onstop);
     event_setsignal(EVENT_KEYPRESS, onkeypress);
     event_setsignal(EVENT_KEYRELEASE, onkeyrelease);
     event_setsignal(EVENT_MOUSEMOVE, onmousemove);

@@ -279,6 +279,13 @@ static unsigned int onkill(struct event_channel *channel)
 
 }
 
+static unsigned int onstop(struct event_channel *channel)
+{
+
+    return 0;
+
+}
+
 static unsigned int onwmconfigure(struct event_channel *channel)
 {
 
@@ -423,6 +430,7 @@ void main(void)
     event_setsignal(EVENT_DATA, ondata);
     event_setsignal(EVENT_INIT, oninit);
     event_setsignal(EVENT_KILL, onkill);
+    event_setsignal(EVENT_STOP, onstop);
     event_setsignal(EVENT_WMCONFIGURE, onwmconfigure);
     event_setsignal(EVENT_WMKEYPRESS, onwmkeypress);
     event_setsignal(EVENT_WMKEYRELEASE, onwmkeyrelease);

@@ -192,6 +192,13 @@ static unsigned int oninit(struct event_channel *channel)
 
 }
 
+static unsigned int onstop(struct event_channel *channel)
+{
+
+    return 0;
+
+}
+
 void main(void)
 {
 
@@ -201,6 +208,7 @@ void main(void)
     event_setsignal(EVENT_CONSOLEDATA, onconsoledata);
     event_setsignal(EVENT_DATA, ondata);
     event_setsignal(EVENT_INIT, oninit);
+    event_setsignal(EVENT_STOP, onstop);
 
     if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;
