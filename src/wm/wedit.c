@@ -283,31 +283,25 @@ static unsigned int onwmhide(struct event_channel *channel)
 void main(void)
 {
 
-    unsigned int status = 0;
     struct event_channel channel;
 
     event_initsignals(signals);
-
-    signals[EVENT_FILE] = onfile;
-    signals[EVENT_INIT] = oninit;
-    signals[EVENT_KILL] = onkill;
-    signals[EVENT_WMCONFIGURE] = onwmconfigure;
-    signals[EVENT_WMKEYPRESS] = onwmkeypress;
-    signals[EVENT_WMKEYRELEASE] = onwmkeyrelease;
-    signals[EVENT_WMSHOW] = onwmshow;
-    signals[EVENT_WMHIDE] = onwmhide;
+    event_setsignal(signals, EVENT_FILE, onfile);
+    event_setsignal(signals, EVENT_INIT, oninit);
+    event_setsignal(signals, EVENT_KILL, onkill);
+    event_setsignal(signals, EVENT_WMCONFIGURE, onwmconfigure);
+    event_setsignal(signals, EVENT_WMKEYPRESS, onwmkeypress);
+    event_setsignal(signals, EVENT_WMKEYRELEASE, onwmkeyrelease);
+    event_setsignal(signals, EVENT_WMSHOW, onwmshow);
+    event_setsignal(signals, EVENT_WMHIDE, onwmhide);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
     file_open(FILE_G0);
 
-    while (!status)
+    while (event_listen(signals, &channel))
     {
-
-        unsigned int type = event_pick(&channel);
-
-        status = signals[type](&channel);
 
         if (ring_count(&output))
         {

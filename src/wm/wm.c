@@ -910,26 +910,23 @@ static unsigned int onwmhide(struct event_channel *channel)
 void main(void)
 {
 
-    unsigned int status = 0;
     struct event_channel channel;
 
     event_initsignals(signals);
-
-    signals[EVENT_DATA] = ondata;
-    signals[EVENT_INIT] = oninit;
-    signals[EVENT_KILL] = onkill;
-    signals[EVENT_WMCONFIGURE] = onwmconfigure;
-    signals[EVENT_KEYPRESS] = onkeypress;
-    signals[EVENT_KEYRELEASE] = onkeyrelease;
-    signals[EVENT_MOUSEMOVE] = onmousemove;
-    signals[EVENT_MOUSEPRESS] = onmousepress;
-    signals[EVENT_MOUSERELEASE] = onmouserelease;
-    signals[EVENT_VIDEOMODE] = onvideomode;
-    signals[EVENT_WMCONFIGURE] = onwmconfigure;
-    signals[EVENT_WMMAP] = onwmmap;
-    signals[EVENT_WMUNMAP] = onwmunmap;
-    signals[EVENT_WMSHOW] = onwmshow;
-    signals[EVENT_WMHIDE] = onwmhide;
+    event_setsignal(signals, EVENT_DATA, ondata);
+    event_setsignal(signals, EVENT_INIT, oninit);
+    event_setsignal(signals, EVENT_KILL, onkill);
+    event_setsignal(signals, EVENT_KEYPRESS, onkeypress);
+    event_setsignal(signals, EVENT_KEYRELEASE, onkeyrelease);
+    event_setsignal(signals, EVENT_MOUSEMOVE, onmousemove);
+    event_setsignal(signals, EVENT_MOUSEPRESS, onmousepress);
+    event_setsignal(signals, EVENT_MOUSERELEASE, onmouserelease);
+    event_setsignal(signals, EVENT_VIDEOMODE, onvideomode);
+    event_setsignal(signals, EVENT_WMCONFIGURE, onwmconfigure);
+    event_setsignal(signals, EVENT_WMMAP, onwmmap);
+    event_setsignal(signals, EVENT_WMUNMAP, onwmunmap);
+    event_setsignal(signals, EVENT_WMSHOW, onwmshow);
+    event_setsignal(signals, EVENT_WMHIDE, onwmhide);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
@@ -952,12 +949,8 @@ void main(void)
     file_open(FILE_G3);
     file_open(FILE_G4);
 
-    while (!status)
+    while (event_listen(signals, &channel))
     {
-
-        unsigned int type = event_pick(&channel);
-
-        status = signals[type](&channel);
 
         if (ring_count(&output))
         {

@@ -196,14 +196,12 @@ static unsigned int oninit(struct event_channel *channel)
 void main(void)
 {
 
-    unsigned int status = 0;
     struct event_channel channel;
 
     event_initsignals(signals);
-
-    signals[EVENT_CONSOLEDATA] = onconsoledata;
-    signals[EVENT_DATA] = ondata;
-    signals[EVENT_INIT] = oninit;
+    event_setsignal(signals, EVENT_CONSOLEDATA, onconsoledata);
+    event_setsignal(signals, EVENT_DATA, ondata);
+    event_setsignal(signals, EVENT_INIT, oninit);
 
     if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;
@@ -214,14 +212,7 @@ void main(void)
     file_open(FILE_G0);
     file_open(FILE_G1);
 
-    while (!status)
-    {
-
-        unsigned int type = event_pick(&channel);
-
-        status = signals[type](&channel);
-
-    }
+    while (event_listen(signals, &channel));
 
     file_close(FILE_G1);
     file_close(FILE_G0);

@@ -34,21 +34,12 @@ static unsigned int onstop(struct event_channel *channel)
 void main(void)
 {
 
-    unsigned int status = 0;
     struct event_channel channel;
 
     event_initsignals(signals);
+    event_setsignal(signals, EVENT_STOP, onstop);
 
-    signals[EVENT_STOP] = onstop;
-
-    while (!status)
-    {
-
-        unsigned int type = event_pick(&channel);
-
-        status = signals[type](&channel);
-
-    }
+    while (event_listen(signals, &channel));
 
 }
 

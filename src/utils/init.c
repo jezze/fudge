@@ -45,22 +45,13 @@ static unsigned int ondata(struct event_channel *channel)
 void main(void)
 {
 
-    unsigned int status = 0;
     struct event_channel channel;
 
     loadscript(&channel);
     event_initsignals(signals);
+    event_setsignal(signals, EVENT_DATA, ondata);
 
-    signals[EVENT_DATA] = ondata;
-
-    while (!status)
-    {
-
-        unsigned int type = event_pick(&channel);
-
-        status = signals[type](&channel);
-
-    }
+    while (event_listen(signals, &channel));
 
 }
 

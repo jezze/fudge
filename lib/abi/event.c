@@ -37,15 +37,31 @@ unsigned int event_place(unsigned int id, struct event_channel *channel)
 
 }
 
+unsigned int event_listen(unsigned int (*signals[EVENTS])(struct event_channel *channel), struct event_channel *channel)
+{
+
+    unsigned int type = event_pick(channel);
+
+    return !signals[type](channel);
+
+}
+
+void event_setsignal(unsigned int (*signals[EVENTS])(struct event_channel *channel), unsigned int type, unsigned int (*callback)(struct event_channel *channel))
+{
+
+    signals[type] = callback;
+
+}
+
 void event_initsignals(unsigned int (*signals[EVENTS])(struct event_channel *channel))
 {
 
     unsigned int i;
 
     for (i = 0; i < EVENTS; i++)
-        signals[i] = nosignal;
+        event_setsignal(signals, i, nosignal);
 
-    signals[EVENT_KILL] = onkill;
+    event_setsignal(signals, EVENT_KILL, onkill);
 
 }
 
