@@ -26,6 +26,7 @@ struct tokenlist
 
 };
 
+static unsigned int (*signals[EVENTS])(struct event_channel *channel);
 static char stringdata[FUDGE_BSIZE];
 static struct ring stringtable;
 static struct token infixdata[1024];
@@ -376,46 +377,24 @@ static unsigned int onstop(struct event_channel *channel)
 
 }
 
-static unsigned int onkill(struct event_channel *channel)
-{
-
-    return 1;
-
-}
-
 void main(void)
 {
 
     unsigned int status = 0;
     struct event_channel channel;
 
+    event_initsignals(signals);
+
+    signals[EVENT_DATA] = ondata;
+    signals[EVENT_FILE] = onfile;
+    signals[EVENT_STOP] = onstop;
+
     while (!status)
     {
 
-        switch (event_pick(&channel))
-        {
+        unsigned int type = event_pick(&channel);
 
-        case EVENT_DATA:
-            status = ondata(&channel);
-
-            break;
-
-        case EVENT_FILE:
-            status = onfile(&channel);
-
-            break;
-
-        case EVENT_STOP:
-            status = onstop(&channel);
-
-            break;
-
-        case EVENT_KILL:
-            status = onkill(&channel);
-
-            break;
-
-        }
+        status = signals[type](&channel);
 
     }
 

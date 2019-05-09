@@ -3,6 +3,8 @@
 #include <widget/widget.h>
 #include <widget/render.h>
 
+static unsigned int (*signals[EVENTS])(struct event_channel *channel);
+
 static unsigned int oninit(struct event_channel *channel)
 {
 
@@ -52,6 +54,12 @@ void main(void)
     unsigned int status = 0;
     struct event_channel channel;
 
+    event_initsignals(signals);
+
+    signals[EVENT_INIT] = oninit;
+    signals[EVENT_KILL] = onkill;
+    signals[EVENT_WMMOUSEPRESS] = onwmmousepress;
+
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
@@ -60,25 +68,9 @@ void main(void)
     while (!status)
     {
 
-        switch (event_pick(&channel))
-        {
+        unsigned int type = event_pick(&channel);
 
-        case EVENT_INIT:
-            status = oninit(&channel);
-
-            break;
-
-        case EVENT_KILL:
-            status = onkill(&channel);
-
-            break;
-
-        case EVENT_WMMOUSEPRESS:
-            status = onwmmousepress(&channel);
-
-            break;
-
-        }
+        status = signals[type](&channel);
 
     }
 

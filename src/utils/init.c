@@ -1,6 +1,8 @@
 #include <fudge.h>
 #include <abi.h>
 
+static unsigned int (*signals[EVENTS])(struct event_channel *channel);
+
 static void loadscript(struct event_channel *channel)
 {
 
@@ -47,19 +49,16 @@ void main(void)
     struct event_channel channel;
 
     loadscript(&channel);
+    event_initsignals(signals);
+
+    signals[EVENT_DATA] = ondata;
 
     while (!status)
     {
 
-        switch (event_pick(&channel))
-        {
+        unsigned int type = event_pick(&channel);
 
-        case EVENT_DATA:
-            status = ondata(&channel);
-
-            break;
-
-        }
+        status = signals[type](&channel);
 
     }
 

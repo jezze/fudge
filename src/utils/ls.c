@@ -1,6 +1,8 @@
 #include <fudge.h>
 #include <abi.h>
 
+static unsigned int (*signals[EVENTS])(struct event_channel *channel);
+
 static void list(struct event_channel *channel, unsigned int descriptor)
 {
 
@@ -60,46 +62,24 @@ static unsigned int onstop(struct event_channel *channel)
 
 }
 
-static unsigned int onkill(struct event_channel *channel)
-{
-
-    return 1;
-
-}
-
 void main(void)
 {
 
     unsigned int status = 0;
     struct event_channel channel;
 
+    event_initsignals(signals);
+
+    signals[EVENT_EMPTY] = onempty;
+    signals[EVENT_FILE] = onfile;
+    signals[EVENT_STOP] = onstop;
+
     while (!status)
     {
 
-        switch (event_pick(&channel))
-        {
+        unsigned int type = event_pick(&channel);
 
-        case EVENT_EMPTY:
-            status = onempty(&channel);
-
-            break;
-
-        case EVENT_FILE:
-            status = onfile(&channel);
-
-            break;
-
-        case EVENT_STOP:
-            status = onstop(&channel);
-
-            break;
-
-        case EVENT_KILL:
-            status = onkill(&channel);
-
-            break;
-
-        }
+        status = signals[type](&channel);
 
     }
 

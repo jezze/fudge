@@ -27,6 +27,7 @@ static struct view
 
 } views[VIEWS];
 
+static unsigned int (*signals[EVENTS])(struct event_channel *channel);
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
@@ -912,6 +913,24 @@ void main(void)
     unsigned int status = 0;
     struct event_channel channel;
 
+    event_initsignals(signals);
+
+    signals[EVENT_DATA] = ondata;
+    signals[EVENT_INIT] = oninit;
+    signals[EVENT_KILL] = onkill;
+    signals[EVENT_WMCONFIGURE] = onwmconfigure;
+    signals[EVENT_KEYPRESS] = onkeypress;
+    signals[EVENT_KEYRELEASE] = onkeyrelease;
+    signals[EVENT_MOUSEMOVE] = onmousemove;
+    signals[EVENT_MOUSEPRESS] = onmousepress;
+    signals[EVENT_MOUSERELEASE] = onmouserelease;
+    signals[EVENT_VIDEOMODE] = onvideomode;
+    signals[EVENT_WMCONFIGURE] = onwmconfigure;
+    signals[EVENT_WMMAP] = onwmmap;
+    signals[EVENT_WMUNMAP] = onwmunmap;
+    signals[EVENT_WMSHOW] = onwmshow;
+    signals[EVENT_WMHIDE] = onwmhide;
+
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
@@ -936,80 +955,9 @@ void main(void)
     while (!status)
     {
 
-        switch (event_pick(&channel))
-        {
+        unsigned int type = event_pick(&channel);
 
-        case EVENT_DATA:
-            status = ondata(&channel);
-
-            break;
-
-        case EVENT_INIT:
-            status = oninit(&channel);
-
-            break;
-
-        case EVENT_KILL:
-            status = onkill(&channel);
-
-            break;
-
-        case EVENT_KEYPRESS:
-            status = onkeypress(&channel);
-
-            break;
-
-        case EVENT_KEYRELEASE:
-            status = onkeyrelease(&channel);
-
-            break;
-
-        case EVENT_MOUSEMOVE:
-            status = onmousemove(&channel);
-
-            break;
-
-        case EVENT_MOUSEPRESS:
-            status = onmousepress(&channel);
-
-            break;
-
-        case EVENT_MOUSERELEASE:
-            status = onmouserelease(&channel);
-
-            break;
-
-        case EVENT_VIDEOMODE:
-            status = onvideomode(&channel);
-
-            break;
-
-        case EVENT_WMCONFIGURE:
-            status = onwmconfigure(&channel);
-
-            break;
-
-        case EVENT_WMMAP:
-            status = onwmmap(&channel);
-
-            break;
-
-        case EVENT_WMUNMAP:
-            status = onwmunmap(&channel);
-
-            break;
-
-        case EVENT_WMSHOW:
-            status = onwmshow(&channel);
-
-            break;
-
-        case EVENT_WMHIDE:
-            status = onwmhide(&channel);
-
-            break;
-
-        }
+        status = signals[type](&channel);
 
         if (ring_count(&output))
         {

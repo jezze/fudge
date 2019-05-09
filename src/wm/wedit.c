@@ -2,6 +2,7 @@
 #include <abi.h>
 #include <widget/widget.h>
 
+static unsigned int (*signals[EVENTS])(struct event_channel *channel);
 static struct widget_textbox content;
 static struct widget_text status;
 static unsigned int keymod = KEYMOD_NONE;
@@ -285,6 +286,17 @@ void main(void)
     unsigned int status = 0;
     struct event_channel channel;
 
+    event_initsignals(signals);
+
+    signals[EVENT_FILE] = onfile;
+    signals[EVENT_INIT] = oninit;
+    signals[EVENT_KILL] = onkill;
+    signals[EVENT_WMCONFIGURE] = onwmconfigure;
+    signals[EVENT_WMKEYPRESS] = onwmkeypress;
+    signals[EVENT_WMKEYRELEASE] = onwmkeyrelease;
+    signals[EVENT_WMSHOW] = onwmshow;
+    signals[EVENT_WMHIDE] = onwmhide;
+
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
@@ -293,50 +305,9 @@ void main(void)
     while (!status)
     {
 
-        switch (event_pick(&channel))
-        {
+        unsigned int type = event_pick(&channel);
 
-        case EVENT_FILE:
-            status = onfile(&channel);
-
-            break;
-
-        case EVENT_INIT:
-            status = oninit(&channel);
-
-            break;
-
-        case EVENT_KILL:
-            status = onkill(&channel);
-
-            break;
-
-        case EVENT_WMCONFIGURE:
-            status = onwmconfigure(&channel);
-
-            break;
-
-        case EVENT_WMKEYPRESS:
-            status = onwmkeypress(&channel);
-
-            break;
-
-        case EVENT_WMKEYRELEASE:
-            status = onwmkeyrelease(&channel);
-
-            break;
-
-        case EVENT_WMSHOW:
-            status = onwmshow(&channel);
-
-            break;
-
-        case EVENT_WMHIDE:
-            status = onwmhide(&channel);
-
-            break;
-
-        }
+        status = signals[type](&channel);
 
         if (ring_count(&output))
         {

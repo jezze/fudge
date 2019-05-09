@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
+static unsigned int (*signals[EVENTS])(struct event_channel *channel);
 static unsigned char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 
@@ -192,18 +193,17 @@ static unsigned int oninit(struct event_channel *channel)
 
 }
 
-static unsigned int onkill(struct event_channel *channel)
-{
-
-    return 1;
-
-}
-
 void main(void)
 {
 
     unsigned int status = 0;
     struct event_channel channel;
+
+    event_initsignals(signals);
+
+    signals[EVENT_CONSOLEDATA] = onconsoledata;
+    signals[EVENT_DATA] = ondata;
+    signals[EVENT_INIT] = oninit;
 
     if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;
@@ -217,30 +217,9 @@ void main(void)
     while (!status)
     {
 
-        switch (event_pick(&channel))
-        {
+        unsigned int type = event_pick(&channel);
 
-        case EVENT_CONSOLEDATA:
-            status = onconsoledata(&channel);
-
-            break;
-
-        case EVENT_DATA:
-            status = ondata(&channel);
-
-            break;
-
-        case EVENT_INIT:
-            status = oninit(&channel);
-
-            break;
-
-        case EVENT_KILL:
-            status = onkill(&channel);
-
-            break;
-
-        }
+        status = signals[type](&channel);
 
     }
 

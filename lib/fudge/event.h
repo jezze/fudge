@@ -1,4 +1,5 @@
 #define EVENT_BROADCAST                 0
+#define EVENTS                          64
 #define EVENT_INIT                      0x01
 #define EVENT_KILL                      0x02
 #define EVENT_EMPTY                     0x03
@@ -14,16 +15,16 @@
 #define EVENT_TIMERTICK                 0x16
 #define EVENT_VIDEOMODE                 0x17
 #define EVENT_BLOCKREQUEST              0x18
-#define EVENT_WMMAP                     0x80
-#define EVENT_WMUNMAP                   0x81
-#define EVENT_WMCONFIGURE               0x82
-#define EVENT_WMSHOW                    0x83
-#define EVENT_WMHIDE                    0x84
-#define EVENT_WMKEYPRESS                0x90
-#define EVENT_WMKEYRELEASE              0x91
-#define EVENT_WMMOUSEMOVE               0x92
-#define EVENT_WMMOUSEPRESS              0x93
-#define EVENT_WMMOUSERELEASE            0x94
+#define EVENT_WMMAP                     0x20
+#define EVENT_WMUNMAP                   0x21
+#define EVENT_WMCONFIGURE               0x22
+#define EVENT_WMSHOW                    0x23
+#define EVENT_WMHIDE                    0x24
+#define EVENT_WMKEYPRESS                0x28
+#define EVENT_WMKEYRELEASE              0x29
+#define EVENT_WMMOUSEMOVE               0x2A
+#define EVENT_WMMOUSEPRESS              0x2B
+#define EVENT_WMMOUSERELEASE            0x2C
 
 struct event_route
 {
@@ -210,3 +211,4 @@ void event_create(union event_message *message, unsigned int type);
 void event_forward(struct event_channel *channel, unsigned int type);
 void event_request(struct event_channel *channel, unsigned int type, unsigned int session);
 void event_reply(struct event_channel *channel, unsigned int type);
+void event_initsignals(unsigned int (*signals[EVENTS])(struct event_channel *channel));
