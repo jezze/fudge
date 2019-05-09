@@ -50,12 +50,10 @@ static unsigned int ondata(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
-
     event_initsignals();
     event_setsignal(EVENT_DATA, ondata);
 
-    while (event_listen(&channel));
+    while (event_listen());
 
 }
 

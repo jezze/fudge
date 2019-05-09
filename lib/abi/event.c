@@ -20,18 +20,6 @@ static unsigned int abort(struct event_channel *channel)
 
 }
 
-unsigned int event_pick(struct event_channel *channel)
-{
-
-    while (!call_pick(&channel->i.header, sizeof (struct event_header)));
-
-    if (channel->i.header.length > sizeof (struct event_header))
-        while (!call_pick(&channel->i.header + 1, channel->i.header.length - sizeof (struct event_header)));
-
-    return channel->i.header.type;
-
-}
-
 unsigned int event_place(unsigned int id, struct event_channel *channel)
 {
 
@@ -41,12 +29,17 @@ unsigned int event_place(unsigned int id, struct event_channel *channel)
 
 }
 
-unsigned int event_listen(struct event_channel *channel)
+unsigned int event_listen(void)
 {
 
-    unsigned int type = event_pick(channel);
+    struct event_channel channel;
 
-    return !signals[type](channel);
+    while (!call_pick(&channel.i.header, sizeof (struct event_header)));
+
+    if (channel.i.header.length > sizeof (struct event_header))
+        while (!call_pick(&channel.i.header + 1, channel.i.header.length - sizeof (struct event_header)));
+
+    return !signals[channel.i.header.type](&channel);
 
 }
 

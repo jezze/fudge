@@ -50,8 +50,6 @@ static unsigned int onstop(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
-
     event_initsignals();
     event_setsignal(EVENT_DATA, ondata);
     event_setsignal(EVENT_INIT, oninit);
@@ -62,7 +60,7 @@ void main(void)
 
     file_open(FILE_G0);
 
-    while (event_listen(&channel));
+    while (event_listen());
 
     file_close(FILE_G0);
 

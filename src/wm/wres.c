@@ -56,8 +56,6 @@ static unsigned int onwmmousepress(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
-
     event_initsignals();
     event_setsignal(EVENT_INIT, oninit);
     event_setsignal(EVENT_KILL, onkill);
@@ -69,7 +67,7 @@ void main(void)
 
     file_open(FILE_G0);
 
-    while (event_listen(&channel));
+    while (event_listen());
 
     file_close(FILE_G0);
 

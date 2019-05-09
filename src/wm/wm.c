@@ -916,8 +916,6 @@ static unsigned int onwmhide(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
-
     event_initsignals();
     event_setsignal(EVENT_DATA, ondata);
     event_setsignal(EVENT_INIT, oninit);
@@ -956,11 +954,13 @@ void main(void)
     file_open(FILE_G3);
     file_open(FILE_G4);
 
-    while (event_listen(&channel))
+    while (event_listen())
     {
 
         if (ring_count(&output))
         {
+
+            struct event_channel channel;
 
             event_request(&channel, EVENT_DATA, 0);
             event_append(&channel.o, ring_count(&output), outputdata);

@@ -202,8 +202,6 @@ static unsigned int onstop(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
-
     event_initsignals();
     event_setsignal(EVENT_CONSOLEDATA, onconsoledata);
     event_setsignal(EVENT_DATA, ondata);
@@ -219,7 +217,7 @@ void main(void)
     file_open(FILE_G0);
     file_open(FILE_G1);
 
-    while (event_listen(&channel));
+    while (event_listen());
 
     file_close(FILE_G1);
     file_close(FILE_G0);
