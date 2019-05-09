@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int (*signals[EVENTS])(struct event_channel *channel);
 static unsigned char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 
@@ -198,10 +197,10 @@ void main(void)
 
     struct event_channel channel;
 
-    event_initsignals(signals);
-    event_setsignal(signals, EVENT_CONSOLEDATA, onconsoledata);
-    event_setsignal(signals, EVENT_DATA, ondata);
-    event_setsignal(signals, EVENT_INIT, oninit);
+    event_initsignals();
+    event_setsignal(EVENT_CONSOLEDATA, onconsoledata);
+    event_setsignal(EVENT_DATA, ondata);
+    event_setsignal(EVENT_INIT, oninit);
 
     if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;
@@ -212,7 +211,7 @@ void main(void)
     file_open(FILE_G0);
     file_open(FILE_G1);
 
-    while (event_listen(signals, &channel));
+    while (event_listen(&channel));
 
     file_close(FILE_G1);
     file_close(FILE_G0);

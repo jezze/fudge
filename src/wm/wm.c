@@ -27,7 +27,6 @@ static struct view
 
 } views[VIEWS];
 
-static unsigned int (*signals[EVENTS])(struct event_channel *channel);
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
@@ -912,21 +911,21 @@ void main(void)
 
     struct event_channel channel;
 
-    event_initsignals(signals);
-    event_setsignal(signals, EVENT_DATA, ondata);
-    event_setsignal(signals, EVENT_INIT, oninit);
-    event_setsignal(signals, EVENT_KILL, onkill);
-    event_setsignal(signals, EVENT_KEYPRESS, onkeypress);
-    event_setsignal(signals, EVENT_KEYRELEASE, onkeyrelease);
-    event_setsignal(signals, EVENT_MOUSEMOVE, onmousemove);
-    event_setsignal(signals, EVENT_MOUSEPRESS, onmousepress);
-    event_setsignal(signals, EVENT_MOUSERELEASE, onmouserelease);
-    event_setsignal(signals, EVENT_VIDEOMODE, onvideomode);
-    event_setsignal(signals, EVENT_WMCONFIGURE, onwmconfigure);
-    event_setsignal(signals, EVENT_WMMAP, onwmmap);
-    event_setsignal(signals, EVENT_WMUNMAP, onwmunmap);
-    event_setsignal(signals, EVENT_WMSHOW, onwmshow);
-    event_setsignal(signals, EVENT_WMHIDE, onwmhide);
+    event_initsignals();
+    event_setsignal(EVENT_DATA, ondata);
+    event_setsignal(EVENT_INIT, oninit);
+    event_setsignal(EVENT_KILL, onkill);
+    event_setsignal(EVENT_KEYPRESS, onkeypress);
+    event_setsignal(EVENT_KEYRELEASE, onkeyrelease);
+    event_setsignal(EVENT_MOUSEMOVE, onmousemove);
+    event_setsignal(EVENT_MOUSEPRESS, onmousepress);
+    event_setsignal(EVENT_MOUSERELEASE, onmouserelease);
+    event_setsignal(EVENT_VIDEOMODE, onvideomode);
+    event_setsignal(EVENT_WMCONFIGURE, onwmconfigure);
+    event_setsignal(EVENT_WMMAP, onwmmap);
+    event_setsignal(EVENT_WMUNMAP, onwmunmap);
+    event_setsignal(EVENT_WMSHOW, onwmshow);
+    event_setsignal(EVENT_WMHIDE, onwmhide);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
@@ -949,7 +948,7 @@ void main(void)
     file_open(FILE_G3);
     file_open(FILE_G4);
 
-    while (event_listen(signals, &channel))
+    while (event_listen(&channel))
     {
 
         if (ring_count(&output))

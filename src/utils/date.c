@@ -1,8 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int (*signals[EVENTS])(struct event_channel *channel);
-
 static void replydate(struct event_channel *channel, struct ctrl_clocksettings *settings)
 {
 
@@ -69,12 +67,12 @@ void main(void)
 
     struct event_channel channel;
 
-    event_initsignals(signals);
-    event_setsignal(signals, EVENT_EMPTY, onempty);
-    event_setsignal(signals, EVENT_FILE, onfile);
-    event_setsignal(signals, EVENT_STOP, onstop);
+    event_initsignals();
+    event_setsignal(EVENT_EMPTY, onempty);
+    event_setsignal(EVENT_FILE, onfile);
+    event_setsignal(EVENT_STOP, onstop);
 
-    while (event_listen(signals, &channel));
+    while (event_listen(&channel));
 
 }
 

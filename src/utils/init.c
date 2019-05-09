@@ -1,8 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int (*signals[EVENTS])(struct event_channel *channel);
-
 static void loadscript(struct event_channel *channel)
 {
 
@@ -48,10 +46,10 @@ void main(void)
     struct event_channel channel;
 
     loadscript(&channel);
-    event_initsignals(signals);
-    event_setsignal(signals, EVENT_DATA, ondata);
+    event_initsignals();
+    event_setsignal(EVENT_DATA, ondata);
 
-    while (event_listen(signals, &channel));
+    while (event_listen(&channel));
 
 }
 

@@ -6,7 +6,6 @@
 #define fpabs(_a)                       ((_a < 0) ? -_a : _a)
 #define mulfp(_a)                       (((_a) * (_a)) >> fpshift)
 
-static unsigned int (*signals[EVENTS])(struct event_channel *channel);
 static struct ctrl_videosettings settings;
 
 static void setup(struct ctrl_videosettings *settings)
@@ -110,11 +109,11 @@ void main(void)
 
     struct event_channel channel;
 
-    event_initsignals(signals);
-    event_setsignal(signals, EVENT_STOP, onstop);
-    event_setsignal(signals, EVENT_INIT, oninit);
+    event_initsignals();
+    event_setsignal(EVENT_STOP, onstop);
+    event_setsignal(EVENT_INIT, oninit);
 
-    while (event_listen(signals, &channel));
+    while (event_listen(&channel));
 
 }
 

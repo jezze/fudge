@@ -3,8 +3,6 @@
 #include <widget/widget.h>
 #include <widget/render.h>
 
-static unsigned int (*signals[EVENTS])(struct event_channel *channel);
-
 static unsigned int oninit(struct event_channel *channel)
 {
 
@@ -53,17 +51,17 @@ void main(void)
 
     struct event_channel channel;
 
-    event_initsignals(signals);
-    event_setsignal(signals, EVENT_INIT, oninit);
-    event_setsignal(signals, EVENT_KILL, onkill);
-    event_setsignal(signals, EVENT_WMMOUSEPRESS, onwmmousepress);
+    event_initsignals();
+    event_setsignal(EVENT_INIT, oninit);
+    event_setsignal(EVENT_KILL, onkill);
+    event_setsignal(EVENT_WMMOUSEPRESS, onwmmousepress);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
     file_open(FILE_G0);
 
-    while (event_listen(signals, &channel));
+    while (event_listen(&channel));
 
     file_close(FILE_G0);
 

@@ -2,7 +2,6 @@
 #include <abi.h>
 #include <widget/widget.h>
 
-static unsigned int (*signals[EVENTS])(struct event_channel *channel);
 static struct widget_textbox content;
 static struct widget_text status;
 static unsigned int keymod = KEYMOD_NONE;
@@ -285,22 +284,22 @@ void main(void)
 
     struct event_channel channel;
 
-    event_initsignals(signals);
-    event_setsignal(signals, EVENT_FILE, onfile);
-    event_setsignal(signals, EVENT_INIT, oninit);
-    event_setsignal(signals, EVENT_KILL, onkill);
-    event_setsignal(signals, EVENT_WMCONFIGURE, onwmconfigure);
-    event_setsignal(signals, EVENT_WMKEYPRESS, onwmkeypress);
-    event_setsignal(signals, EVENT_WMKEYRELEASE, onwmkeyrelease);
-    event_setsignal(signals, EVENT_WMSHOW, onwmshow);
-    event_setsignal(signals, EVENT_WMHIDE, onwmhide);
+    event_initsignals();
+    event_setsignal(EVENT_FILE, onfile);
+    event_setsignal(EVENT_INIT, oninit);
+    event_setsignal(EVENT_KILL, onkill);
+    event_setsignal(EVENT_WMCONFIGURE, onwmconfigure);
+    event_setsignal(EVENT_WMKEYPRESS, onwmkeypress);
+    event_setsignal(EVENT_WMKEYRELEASE, onwmkeyrelease);
+    event_setsignal(EVENT_WMSHOW, onwmshow);
+    event_setsignal(EVENT_WMHIDE, onwmhide);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
     file_open(FILE_G0);
 
-    while (event_listen(signals, &channel))
+    while (event_listen(&channel))
     {
 
         if (ring_count(&output))

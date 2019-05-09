@@ -1,8 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int (*signals[EVENTS])(struct event_channel *channel);
-
 static void dump(struct event_channel *channel, unsigned int count, void *buffer)
 {
 
@@ -62,12 +60,12 @@ void main(void)
 
     struct event_channel channel;
 
-    event_initsignals(signals);
-    event_setsignal(signals, EVENT_DATA, ondata);
-    event_setsignal(signals, EVENT_FILE, onfile);
-    event_setsignal(signals, EVENT_STOP, onstop);
+    event_initsignals();
+    event_setsignal(EVENT_DATA, ondata);
+    event_setsignal(EVENT_FILE, onfile);
+    event_setsignal(EVENT_STOP, onstop);
 
-    while (event_listen(signals, &channel));
+    while (event_listen(&channel));
 
 }
 

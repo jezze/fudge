@@ -2,6 +2,10 @@
 #include "call.h"
 #include "event.h"
 
+#define EVENTS                          64
+
+static unsigned int (*signals[EVENTS])(struct event_channel *channel);
+
 static unsigned int nosignal(struct event_channel *channel)
 {
 
@@ -37,7 +41,7 @@ unsigned int event_place(unsigned int id, struct event_channel *channel)
 
 }
 
-unsigned int event_listen(unsigned int (*signals[EVENTS])(struct event_channel *channel), struct event_channel *channel)
+unsigned int event_listen(struct event_channel *channel)
 {
 
     unsigned int type = event_pick(channel);
@@ -46,22 +50,22 @@ unsigned int event_listen(unsigned int (*signals[EVENTS])(struct event_channel *
 
 }
 
-void event_setsignal(unsigned int (*signals[EVENTS])(struct event_channel *channel), unsigned int type, unsigned int (*callback)(struct event_channel *channel))
+void event_setsignal(unsigned int type, unsigned int (*callback)(struct event_channel *channel))
 {
 
     signals[type] = callback;
 
 }
 
-void event_initsignals(unsigned int (*signals[EVENTS])(struct event_channel *channel))
+void event_initsignals(void)
 {
 
     unsigned int i;
 
     for (i = 0; i < EVENTS; i++)
-        event_setsignal(signals, i, nosignal);
+        event_setsignal(i, nosignal);
 
-    event_setsignal(signals, EVENT_KILL, onkill);
+    event_setsignal(EVENT_KILL, onkill);
 
 }
 

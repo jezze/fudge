@@ -26,7 +26,6 @@ struct tokenlist
 
 };
 
-static unsigned int (*signals[EVENTS])(struct event_channel *channel);
 static char stringdata[FUDGE_BSIZE];
 static struct ring stringtable;
 static struct token infixdata[1024];
@@ -382,12 +381,12 @@ void main(void)
 
     struct event_channel channel;
 
-    event_initsignals(signals);
-    event_setsignal(signals, EVENT_DATA, ondata);
-    event_setsignal(signals, EVENT_FILE, onfile);
-    event_setsignal(signals, EVENT_STOP, onstop);
+    event_initsignals();
+    event_setsignal(EVENT_DATA, ondata);
+    event_setsignal(EVENT_FILE, onfile);
+    event_setsignal(EVENT_STOP, onstop);
 
-    while (event_listen(signals, &channel));
+    while (event_listen(&channel));
 
 }
 
