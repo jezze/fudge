@@ -2,20 +2,6 @@
 #include "memory.h"
 #include "event.h"
 
-static unsigned int nosignal(struct event_channel *channel)
-{
-
-    return 0;
-
-}
-
-static unsigned int onkill(struct event_channel *channel)
-{
-
-    return 1;
-
-}
-
 static void *addpayload(union event_message *message, unsigned int length)
 {
 
@@ -327,18 +313,6 @@ void event_reply(struct event_channel *channel, unsigned int type)
         channel->o.header.session = channel->o.header.routes[channel->o.header.nroutes].session;
 
     }
-
-}
-
-void event_initsignals(unsigned int (*signals[EVENTS])(struct event_channel *channel))
-{
-
-    unsigned int i;
-
-    for (i = 0; i < EVENTS; i++)
-        signals[i] = nosignal;
-
-    signals[EVENT_KILL] = onkill;
 
 }
 

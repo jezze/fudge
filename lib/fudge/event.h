@@ -1,5 +1,4 @@
 #define EVENT_BROADCAST                 0
-#define EVENTS                          64
 #define EVENT_INIT                      0x01
 #define EVENT_KILL                      0x02
 #define EVENT_EMPTY                     0x03
@@ -211,4 +210,3 @@ void event_create(union event_message *message, unsigned int type);
 void event_forward(struct event_channel *channel, unsigned int type);
 void event_request(struct event_channel *channel, unsigned int type, unsigned int session);
 void event_reply(struct event_channel *channel, unsigned int type);
-void event_initsignals(unsigned int (*signals[EVENTS])(struct event_channel *channel));
