@@ -104,12 +104,17 @@ static unsigned int oninit(struct event_channel *channel)
 
 }
 
-void main(void)
+void init(void)
 {
 
     event_initsignals();
     event_setsignal(EVENT_STOP, onstop);
     event_setsignal(EVENT_INIT, oninit);
+
+}
+
+void main(void)
+{
 
     while (event_listen());
 

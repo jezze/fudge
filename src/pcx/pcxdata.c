@@ -5,6 +5,13 @@
 
 static struct pcx_surface pcx;
 
+void init(void)
+{
+
+    event_initsignals();
+
+}
+
 void main(void)
 {
 

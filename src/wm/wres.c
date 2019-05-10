@@ -53,7 +53,7 @@ static unsigned int onwmmousepress(struct event_channel *channel)
 
 }
 
-void main(void)
+void init(void)
 {
 
     event_initsignals();
@@ -61,6 +61,11 @@ void main(void)
     event_setsignal(EVENT_KILL, onkill);
     event_setsignal(EVENT_STOP, onstop);
     event_setsignal(EVENT_WMMOUSEPRESS, onwmmousepress);
+
+}
+
+void main(void)
+{
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;

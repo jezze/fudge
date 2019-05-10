@@ -45,13 +45,18 @@ static unsigned int onstop(struct event_channel *channel)
 
 }
 
-void main(void)
+void init(void)
 {
 
     event_initsignals();
     event_setsignal(EVENT_DATA, ondata);
     event_setsignal(EVENT_FILE, onfile);
     event_setsignal(EVENT_STOP, onstop);
+
+}
+
+void main(void)
+{
 
     while (event_listen());
 

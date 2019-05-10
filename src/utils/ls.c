@@ -53,12 +53,17 @@ static unsigned int onfile(struct event_channel *channel)
 
 }
 
-void main(void)
+void init(void)
 {
 
     event_initsignals();
     event_setsignal(EVENT_EMPTY, onempty);
     event_setsignal(EVENT_FILE, onfile);
+
+}
+
+void main(void)
+{
 
     while (event_listen());
 

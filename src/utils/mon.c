@@ -47,13 +47,18 @@ static unsigned int onstop(struct event_channel *channel)
 
 }
 
-void main(void)
+void init(void)
 {
 
     event_initsignals();
     event_setsignal(EVENT_DATA, ondata);
     event_setsignal(EVENT_INIT, oninit);
     event_setsignal(EVENT_STOP, onstop);
+
+}
+
+void main(void)
+{
 
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;

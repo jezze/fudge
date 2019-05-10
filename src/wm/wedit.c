@@ -286,7 +286,7 @@ static unsigned int onwmhide(struct event_channel *channel)
 
 }
 
-void main(void)
+void init(void)
 {
 
     event_initsignals();
@@ -299,6 +299,11 @@ void main(void)
     event_setsignal(EVENT_WMKEYRELEASE, onwmkeyrelease);
     event_setsignal(EVENT_WMSHOW, onwmshow);
     event_setsignal(EVENT_WMHIDE, onwmhide);
+
+}
+
+void main(void)
+{
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;

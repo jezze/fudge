@@ -47,11 +47,16 @@ static unsigned int ondata(struct event_channel *channel)
 
 }
 
-void main(void)
+void init(void)
 {
 
     event_initsignals();
     event_setsignal(EVENT_DATA, ondata);
+
+}
+
+void main(void)
+{
 
     while (event_listen());
 
