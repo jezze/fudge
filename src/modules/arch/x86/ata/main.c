@@ -21,7 +21,7 @@ static void handleirq(unsigned int irq)
 
     ide_rblock(blockinterface.id, data);
     event_append(&reply.o, 512, data);
-    kernel_place(reply.o.header.target, &reply.o);
+    kernel_place(0, reply.o.header.target, &reply.o);
     event_reset(&reply.o);
 
 }

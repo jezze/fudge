@@ -249,11 +249,14 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_place(unsigned int id, union event_message *message)
+unsigned int kernel_place(unsigned int source, unsigned int target, union event_message *message)
 {
 
-    struct task *task = &tasks[id];
+    struct task *task = &tasks[target];
     unsigned int count;
+
+    message->header.source = source;
+    message->header.target = target;
 
     spinlock_acquire(&task->mailbox.spinlock);
 
@@ -268,7 +271,7 @@ unsigned int kernel_place(unsigned int id, union event_message *message)
 
 }
 
-unsigned int kernel_multicast(unsigned int id, struct list *states, union event_message *message)
+unsigned int kernel_multicast(unsigned int source, struct list *states, union event_message *message)
 {
 
     struct list_item *current;
@@ -280,10 +283,7 @@ unsigned int kernel_multicast(unsigned int id, struct list *states, union event_
 
         struct service_state *state = current->data;
 
-        message->header.source = id;
-        message->header.target = state->id;
-
-        kernel_place(state->id, message);
+        kernel_place(source, state->id, message);
 
     }
 
