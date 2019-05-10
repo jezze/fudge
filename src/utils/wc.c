@@ -84,7 +84,7 @@ static unsigned int onstop(struct event_channel *channel)
     event_append(&channel->o, 1, "\n");
     event_append(&channel->o, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
     event_append(&channel->o, 1, "\n");
-    event_place(channel->o.header.target, channel);
+    event_place(channel->o.header.target, &channel->o);
 
     return 1;
 

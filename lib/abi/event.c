@@ -20,12 +20,12 @@ static unsigned int abort(struct event_channel *channel)
 
 }
 
-unsigned int event_place(unsigned int id, struct event_channel *channel)
+unsigned int event_place(unsigned int id, union event_message *message)
 {
 
-    while (!call_place(id, &channel->o, channel->o.header.length));
+    while (!call_place(id, message, message->header.length));
 
-    return channel->o.header.type;
+    return message->header.type;
 
 }
 

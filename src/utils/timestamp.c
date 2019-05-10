@@ -36,7 +36,7 @@ static void replytimestamp(struct event_channel *channel, struct ctrl_clocksetti
     event_reply(channel, EVENT_DATA);
     event_append(&channel->o, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(settings), 10), num);
     event_append(&channel->o, 1, "\n");
-    event_place(channel->o.header.target, channel);
+    event_place(channel->o.header.target, &channel->o);
 
 }
 

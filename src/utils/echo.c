@@ -6,7 +6,7 @@ static unsigned int ondata(struct event_channel *channel)
 
     event_reply(channel, EVENT_DATA);
     event_append(&channel->o, event_getdatasize(channel), event_getdata(channel));
-    event_place(channel->o.header.target, channel);
+    event_place(channel->o.header.target, &channel->o);
 
     return 0;
 
@@ -26,7 +26,7 @@ static unsigned int onfile(struct event_channel *channel)
 
         event_reply(channel, EVENT_DATA);
         event_append(&channel->o, count, buffer);
-        event_place(channel->o.header.target, channel);
+        event_place(channel->o.header.target, &channel->o);
 
     }
 

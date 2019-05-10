@@ -311,12 +311,12 @@ void main(void)
         if (ring_count(&output))
         {
 
-            struct event_channel channel;
+            union event_message message;
 
-            event_request(&channel, EVENT_DATA, 0);
-            event_append(&channel.o, ring_count(&output), outputdata);
-            file_writeall(FILE_G0, &channel.o, channel.o.header.length);
+            event_create(&message, EVENT_DATA);
+            event_append(&message, ring_count(&output), outputdata);
             ring_reset(&output);
+            file_writeall(FILE_G0, &message, message.header.length);
 
         }
 

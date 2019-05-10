@@ -18,12 +18,12 @@ static unsigned int onstop(struct event_channel *channel)
         return 0;
 
     event_forward(channel, EVENT_INIT);
-    event_place(id, channel);
+    event_place(id, &channel->o);
     event_forward(channel, EVENT_FILE);
     event_addfile(&channel->o, FILE_P0);
-    event_place(id, channel);
+    event_place(id, &channel->o);
     event_forward(channel, EVENT_STOP);
-    event_place(id, channel);
+    event_place(id, &channel->o);
 
     return 1;
 
