@@ -554,12 +554,10 @@ static unsigned int onkeypress(struct event_channel *channel)
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            /* Sending to self not allowed */
             event_request(channel, EVENT_WMHIDE, 0);
-            event_place(channel->i.header.target, &channel->o);
-            /* Sending to self not allowed */
+            event_place(0, &channel->o);
             event_request(channel, EVENT_KILL, 0);
-            event_place(channel->i.header.target, &channel->o);
+            event_place(0, &channel->o);
 
         }
 
@@ -775,13 +773,11 @@ static unsigned int onvideomode(struct event_channel *channel)
 
     }
 
-    /* Sending to self not allowed */
     event_request(channel, EVENT_WMCONFIGURE, 0);
     event_addwmconfigure(&channel->o, 0, 0, videomode->w, videomode->h, padding, lineheight);
-    event_place(channel->i.header.target, &channel->o);
-    /* Sending to self not allowed */
+    event_place(0, &channel->o);
     event_request(channel, EVENT_WMSHOW, 0);
-    event_place(channel->i.header.target, &channel->o);
+    event_place(0, &channel->o);
 
     return 0;
 
