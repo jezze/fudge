@@ -1,5 +1,6 @@
 #define EVENT_BROADCAST                 0
 #define EVENTS                          64
+#define EVENT_ANY                       0x00
 #define EVENT_INIT                      0x01
 #define EVENT_KILL                      0x02
 #define EVENT_EMPTY                     0x03

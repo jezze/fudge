@@ -25,7 +25,7 @@ unsigned int event_place(unsigned int id, union event_message *message)
 
 }
 
-unsigned int event_listen(struct event_channel *channel)
+static unsigned int readmsg(struct event_channel *channel)
 {
 
     while (!call_pick(&channel->i.header, sizeof (struct event_header)));
@@ -33,13 +33,25 @@ unsigned int event_listen(struct event_channel *channel)
     if (channel->i.header.length > sizeof (struct event_header))
         while (!call_pick(&channel->i.header + 1, channel->i.header.length - sizeof (struct event_header)));
 
-    if (channel->signals[channel->i.header.type])
+    return channel->i.header.type;
+
+}
+
+unsigned int event_listen(struct event_channel *channel)
+{
+
+    for (;;)
     {
 
-        if (channel->signals[channel->i.header.type](channel))
+        unsigned int type = readmsg(channel);
+
+        if (!channel->signals[type])
+            break;
+
+        if (channel->signals[type](channel))
             call_despawn();
 
-        return channel->i.header.type;
+        channel->signals[0](channel);
 
     }
 

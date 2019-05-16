@@ -286,12 +286,32 @@ static unsigned int onwmhide(struct event_channel *channel)
 
 }
 
+static unsigned int onany(struct event_channel *channel)
+{
+
+    if (ring_count(&output))
+    {
+
+        union event_message message;
+
+        event_create(&message, EVENT_DATA);
+        event_append(&message, ring_count(&output), outputdata);
+        ring_reset(&output);
+        file_writeall(FILE_G0, &message, message.header.length);
+
+    }
+
+    return 0;
+
+}
+
 void main(void)
 {
 
     struct event_channel channel;
 
     event_initsignals(&channel);
+    event_setsignal(&channel, EVENT_ANY, onany);
     event_setsignal(&channel, EVENT_FILE, onfile);
     event_setsignal(&channel, EVENT_INIT, oninit);
     event_setsignal(&channel, EVENT_KILL, onkill);
@@ -307,22 +327,7 @@ void main(void)
 
     file_open(FILE_G0);
 
-    while (event_listen(&channel))
-    {
-
-        if (ring_count(&output))
-        {
-
-            union event_message message;
-
-            event_create(&message, EVENT_DATA);
-            event_append(&message, ring_count(&output), outputdata);
-            ring_reset(&output);
-            file_writeall(FILE_G0, &message, message.header.length);
-
-        }
-
-    }
+    while (event_listen(&channel));
 
     file_close(FILE_G0);
 
