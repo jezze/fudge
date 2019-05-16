@@ -14,15 +14,6 @@ static void abort(struct event_channel *channel)
 
 }
 
-unsigned int event_place(unsigned int id, union event_message *message)
-{
-
-    while (!call_place(id, message, message->header.length));
-
-    return message->header.type;
-
-}
-
 static unsigned int readmsg(struct event_channel *channel)
 {
 
@@ -32,6 +23,29 @@ static unsigned int readmsg(struct event_channel *channel)
         while (!call_pick(&channel->i.header + 1, channel->i.header.length - sizeof (struct event_header)));
 
     return channel->i.header.type;
+
+}
+
+void *event_getdata(struct event_channel *channel)
+{
+
+    return &channel->i.header + 1;
+
+}
+
+unsigned int event_getdatasize(struct event_channel *channel)
+{
+
+    return channel->i.header.length - sizeof (struct event_header);
+
+}
+
+unsigned int event_place(unsigned int id, union event_message *message)
+{
+
+    while (!call_place(id, message, message->header.length));
+
+    return message->header.type;
 
 }
 

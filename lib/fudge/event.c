@@ -13,20 +13,6 @@ static void *addpayload(union event_message *message, unsigned int length)
 
 }
 
-void *event_getdata(struct event_channel *channel)
-{
-
-    return &channel->i.header + 1;
-
-}
-
-unsigned int event_getdatasize(struct event_channel *channel)
-{
-
-    return channel->i.header.length - sizeof (struct event_header);
-
-}
-
 unsigned int event_avail(union event_message *message)
 {
 

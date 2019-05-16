@@ -55,16 +55,6 @@ union event_message
 
 };
 
-struct event_channel
-{
-
-    unsigned int state;
-    void (*signals[EVENTS])(struct event_channel *channel);
-    union event_message i;
-    union event_message o;
-
-};
-
 struct event_file
 {
 
@@ -187,8 +177,6 @@ struct event_wmmousemove
 
 };
 
-void *event_getdata(struct event_channel *channel);
-unsigned int event_getdatasize(struct event_channel *channel);
 unsigned int event_avail(union event_message *message);
 unsigned int event_addroute(union event_message *message, unsigned int target, unsigned int session);
 unsigned int event_addfile(union event_message *message, unsigned int descriptor);
