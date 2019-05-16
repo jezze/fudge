@@ -68,6 +68,13 @@ static void runjob(struct event_channel *channel, struct job *jobs, unsigned int
 
             }
 
+            event_request(channel, EVENT_STOP, session);
+
+            for (x = njobs; x > j + 1; x--)
+                event_addroute(&channel->o, jobs[x - 1].id, session);
+
+            event_place(jobs[j].id, &channel->o);
+
         }
 
         else
@@ -79,20 +86,14 @@ static void runjob(struct event_channel *channel, struct job *jobs, unsigned int
                 event_addroute(&channel->o, jobs[x - 1].id, session);
 
             event_place(jobs[j].id, &channel->o);
+            event_request(channel, EVENT_STOP, session);
+
+            for (x = njobs; x > j + 1; x--)
+                event_addroute(&channel->o, jobs[x - 1].id, session);
+
+            event_place(jobs[j].id, &channel->o);
 
         }
-
-    }
-
-    for (j = 0; j < njobs; j++)
-    {
-
-        event_request(channel, EVENT_STOP, session);
-
-        for (x = njobs; x > j + 1; x--)
-            event_addroute(&channel->o, jobs[x - 1].id, session);
-
-        event_place(jobs[j].id, &channel->o);
 
     }
 
