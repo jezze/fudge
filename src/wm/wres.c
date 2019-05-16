@@ -3,22 +3,6 @@
 #include <widget/widget.h>
 #include <widget/render.h>
 
-static void oninit(struct event_channel *channel)
-{
-
-    event_request(channel, EVENT_WMMAP, 0);
-    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
-
-}
-
-static void onkill(struct event_channel *channel)
-{
-
-    event_request(channel, EVENT_WMUNMAP, 0);
-    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
-
-}
-
 static void onstop(struct event_channel *channel)
 {
 
@@ -51,8 +35,6 @@ void main(void)
     struct event_channel channel;
 
     event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_INIT, oninit);
-    event_setsignal(&channel, EVENT_KILL, onkill);
     event_setsignal(&channel, EVENT_STOP, onstop);
     event_setsignal(&channel, EVENT_WMMOUSEPRESS, onwmmousepress);
 
@@ -60,7 +42,11 @@ void main(void)
         return;
 
     file_open(FILE_G0);
+    event_request(&channel, EVENT_WMMAP, 0);
+    file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     event_listen(&channel);
+    event_request(&channel, EVENT_WMUNMAP, 0);
+    file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     file_close(FILE_G0);
 
 }

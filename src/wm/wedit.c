@@ -136,32 +136,6 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
 }
 
-static void onfile(struct event_channel *channel)
-{
-
-}
-
-static void oninit(struct event_channel *channel)
-{
-
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    widget_inittextbox(&content);
-    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
-    event_request(channel, EVENT_WMMAP, 0);
-    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
-
-}
-
-static void onkill(struct event_channel *channel)
-{
-
-    event_request(channel, EVENT_WMUNMAP, 0);
-    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
-
-}
-
 static void onstop(struct event_channel *channel)
 {
 
@@ -292,9 +266,6 @@ void main(void)
 
     event_initsignals(&channel);
     event_setsignal(&channel, EVENT_ANY, onany);
-    event_setsignal(&channel, EVENT_FILE, onfile);
-    event_setsignal(&channel, EVENT_INIT, oninit);
-    event_setsignal(&channel, EVENT_KILL, onkill);
     event_setsignal(&channel, EVENT_STOP, onstop);
     event_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     event_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
@@ -306,7 +277,16 @@ void main(void)
         return;
 
     file_open(FILE_G0);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&input1, FUDGE_BSIZE, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE, inputdata2);
+    widget_inittextbox(&content);
+    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
+    event_request(&channel, EVENT_WMMAP, 0);
+    file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     event_listen(&channel);
+    event_request(&channel, EVENT_WMUNMAP, 0);
+    file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     file_close(FILE_G0);
 
 }

@@ -157,8 +157,6 @@ static unsigned int runcmd(struct event_channel *channel, char *command, char *d
     if (id)
     {
 
-        event_request(channel, EVENT_INIT, session);
-        event_place(id, &channel->o);
         event_request(channel, EVENT_DATA, session);
         event_append(&channel->o, count, data);
         event_place(id, &channel->o);
@@ -247,29 +245,6 @@ static void ondata(struct event_channel *channel)
     }
 
     updatecontent(&channel->i);
-
-}
-
-static void oninit(struct event_channel *channel)
-{
-
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&prompt, FUDGE_BSIZE, promptdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    ring_init(&text, FUDGE_BSIZE, textdata);
-    widget_inittextbox(&content);
-    ring_write(&prompt, "$ ", 2);
-    event_request(channel, EVENT_WMMAP, 0);
-    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
-
-}
-
-static void onkill(struct event_channel *channel)
-{
-
-    event_request(channel, EVENT_WMUNMAP, 0);
-    file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
 }
 
@@ -428,8 +403,6 @@ void main(void)
     event_initsignals(&channel);
     event_setsignal(&channel, EVENT_ANY, onany);
     event_setsignal(&channel, EVENT_DATA, ondata);
-    event_setsignal(&channel, EVENT_INIT, oninit);
-    event_setsignal(&channel, EVENT_KILL, onkill);
     event_setsignal(&channel, EVENT_STOP, onstop);
     event_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     event_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
@@ -441,7 +414,18 @@ void main(void)
         return;
 
     file_open(FILE_G0);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&prompt, FUDGE_BSIZE, promptdata);
+    ring_init(&input1, FUDGE_BSIZE, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE, inputdata2);
+    ring_init(&text, FUDGE_BSIZE, textdata);
+    widget_inittextbox(&content);
+    ring_write(&prompt, "$ ", 2);
+    event_request(&channel, EVENT_WMMAP, 0);
+    file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     event_listen(&channel);
+    event_request(&channel, EVENT_WMUNMAP, 0);
+    file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     file_close(FILE_G0);
 
 }

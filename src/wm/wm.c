@@ -324,46 +324,6 @@ static void ondata(struct event_channel *channel)
 
 }
 
-static void oninit(struct event_channel *channel)
-{
-
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    widget_initfill(&background, 2);
-    widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
-    setupviews();
-    setupremotes();
-    activateview(currentview);
-    render_init();
-
-    if (!file_walk(FILE_L0, FILE_G4, "../ctrl"))
-        return;
-
-    render_setvideo(FILE_L0, 1024, 768, 4);
-
-    if (!file_walk(FILE_L0, FILE_G4, "../colormap"))
-        return;
-
-    render_setcolormap(FILE_L0);
-
-}
-
-static void onkill(struct event_channel *channel)
-{
-
-    struct list_item *current;
-
-    for (current = viewlist.head; current; current = current->next)
-    {
-
-        struct view *view = current->data;
-
-        hideremotes(channel, &view->remotes);
-        killremotes(channel, &view->remotes);
-
-    }
-
-}
-
 static void onstop(struct event_channel *channel)
 {
 
@@ -463,8 +423,6 @@ static void onkeypress(struct event_channel *channel)
         if (id)
         {
 
-            event_request(channel, EVENT_INIT, 0);
-            event_place(id, &channel->o);
             event_request(channel, EVENT_STOP, 0);
             event_place(id, &channel->o);
 
@@ -900,12 +858,11 @@ void main(void)
 {
 
     struct event_channel channel;
+    struct list_item *current;
 
     event_initsignals(&channel);
     event_setsignal(&channel, EVENT_ANY, onany);
     event_setsignal(&channel, EVENT_DATA, ondata);
-    event_setsignal(&channel, EVENT_INIT, oninit);
-    event_setsignal(&channel, EVENT_KILL, onkill);
     event_setsignal(&channel, EVENT_STOP, onstop);
     event_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
     event_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
@@ -939,7 +896,35 @@ void main(void)
     file_open(FILE_G2);
     file_open(FILE_G3);
     file_open(FILE_G4);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    widget_initfill(&background, 2);
+    widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
+    setupviews();
+    setupremotes();
+    activateview(currentview);
+    render_init();
+
+    if (!file_walk(FILE_L0, FILE_G4, "../ctrl"))
+        return;
+
+    render_setvideo(FILE_L0, 1024, 768, 4);
+
+    if (!file_walk(FILE_L0, FILE_G4, "../colormap"))
+        return;
+
+    render_setcolormap(FILE_L0);
     event_listen(&channel);
+
+    for (current = viewlist.head; current; current = current->next)
+    {
+
+        struct view *view = current->data;
+
+        hideremotes(&channel, &view->remotes);
+        killremotes(&channel, &view->remotes);
+
+    }
+
     file_close(FILE_G4);
     file_close(FILE_G3);
     file_close(FILE_G2);

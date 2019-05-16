@@ -39,18 +39,6 @@ static void runjob(struct event_channel *channel, struct job *jobs, unsigned int
     for (j = 0; j < njobs; j++)
     {
 
-        event_request(channel, EVENT_INIT, session);
-
-        for (x = njobs; x > j + 1; x--)
-            event_addroute(&channel->o, jobs[x - 1].id, session);
-
-        event_place(jobs[j].id, &channel->o);
-
-    }
-
-    for (j = 0; j < njobs; j++)
-    {
-
         if (jobs[j].ninputs || jobs[j].ndatas)
         {
 

@@ -20,8 +20,6 @@ void main(void)
     if (!id)
         return;
 
-    event_forward(&channel, EVENT_INIT);
-    event_place(id, &channel.o);
     event_forward(&channel, EVENT_FILE);
     event_addfile(&channel.o, FILE_P0);
     event_place(id, &channel.o);

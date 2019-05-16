@@ -36,8 +36,6 @@ void main(void)
     if (!id)
         return;
 
-    event_create(&channel.o, EVENT_INIT);
-    event_place(id, &channel.o);
     event_create(&channel.o, EVENT_FILE);
     event_addfile(&channel.o, FILE_P0);
     event_place(id, &channel.o);
