@@ -7,6 +7,13 @@ static void ignore(struct event_channel *channel)
 
 }
 
+static void abort(struct event_channel *channel)
+{
+
+    channel->state = 0;
+
+}
+
 unsigned int event_place(unsigned int id, union event_message *message)
 {
 
@@ -31,7 +38,7 @@ static unsigned int readmsg(struct event_channel *channel)
 unsigned int event_listen(struct event_channel *channel)
 {
 
-    for (;;)
+    while (channel->state)
     {
 
         unsigned int type = readmsg(channel);
@@ -43,6 +50,8 @@ unsigned int event_listen(struct event_channel *channel)
         channel->signals[EVENT_ANY](channel);
 
     }
+
+    return 0;
 
 }
 
@@ -65,11 +74,13 @@ void event_initsignals(struct event_channel *channel)
 
     unsigned int i;
 
+    channel->state = 1;
+
     for (i = 0; i < EVENTS; i++)
         event_setsignal(channel, i, ignore);
 
-    event_setsignal(channel, EVENT_KILL, 0);
-    event_setsignal(channel, EVENT_STOP, 0);
+    event_setsignal(channel, EVENT_KILL, abort);
+    event_setsignal(channel, EVENT_STOP, abort);
 
 }
 
