@@ -424,23 +424,23 @@ static unsigned int onwmhide(struct event_channel *channel)
 void init(void)
 {
 
-    event_initsignals();
-    event_setsignal(EVENT_DATA, ondata);
-    event_setsignal(EVENT_INIT, oninit);
-    event_setsignal(EVENT_KILL, onkill);
-    event_setsignal(EVENT_STOP, onstop);
-    event_setsignal(EVENT_WMCONFIGURE, onwmconfigure);
-    event_setsignal(EVENT_WMKEYPRESS, onwmkeypress);
-    event_setsignal(EVENT_WMKEYRELEASE, onwmkeyrelease);
-    event_setsignal(EVENT_WMSHOW, onwmshow);
-    event_setsignal(EVENT_WMHIDE, onwmhide);
-
 }
 
 void main(void)
 {
 
     struct event_channel channel;
+
+    event_initsignals(&channel);
+    event_setsignal(&channel, EVENT_DATA, ondata);
+    event_setsignal(&channel, EVENT_INIT, oninit);
+    event_setsignal(&channel, EVENT_KILL, onkill);
+    event_setsignal(&channel, EVENT_STOP, onstop);
+    event_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
+    event_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
+    event_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
+    event_setsignal(&channel, EVENT_WMSHOW, onwmshow);
+    event_setsignal(&channel, EVENT_WMHIDE, onwmhide);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;

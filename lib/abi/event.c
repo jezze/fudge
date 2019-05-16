@@ -2,10 +2,6 @@
 #include "call.h"
 #include "event.h"
 
-#define EVENTS                          64
-
-static unsigned int (*signals[EVENTS])(struct event_channel *channel);
-
 static unsigned int ignore(struct event_channel *channel)
 {
 
@@ -37,10 +33,10 @@ unsigned int event_listen(struct event_channel *channel)
     if (channel->i.header.length > sizeof (struct event_header))
         while (!call_pick(&channel->i.header + 1, channel->i.header.length - sizeof (struct event_header)));
 
-    if (signals[channel->i.header.type])
+    if (channel->signals[channel->i.header.type])
     {
 
-        if (signals[channel->i.header.type](channel))
+        if (channel->signals[channel->i.header.type](channel))
             call_despawn();
 
         return channel->i.header.type;
@@ -51,30 +47,30 @@ unsigned int event_listen(struct event_channel *channel)
 
 }
 
-void event_setsignal(unsigned int type, unsigned int (*callback)(struct event_channel *channel))
+void event_setsignal(struct event_channel *channel, unsigned int type, unsigned int (*callback)(struct event_channel *channel))
 {
 
-    signals[type] = callback;
+    channel->signals[type] = callback;
 
 }
 
-void event_clearsignal(unsigned int type)
+void event_clearsignal(struct event_channel *channel, unsigned int type)
 {
 
-    signals[type] = 0;
+    channel->signals[type] = 0;
 
 }
 
-void event_initsignals(void)
+void event_initsignals(struct event_channel *channel)
 {
 
     unsigned int i;
 
     for (i = 0; i < EVENTS; i++)
-        event_setsignal(i, ignore);
+        event_setsignal(channel, i, ignore);
 
-    event_setsignal(EVENT_KILL, abort);
-    event_setsignal(EVENT_STOP, abort);
+    event_setsignal(channel, EVENT_KILL, abort);
+    event_setsignal(channel, EVENT_STOP, abort);
 
 }
 

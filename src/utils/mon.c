@@ -25,7 +25,7 @@ static unsigned int oninit(struct event_channel *channel)
 
     event_request(channel, EVENT_BLOCKREQUEST, 0);
     event_addblockrequest(&channel->o, 0, 512 * 3);
-    event_clearsignal(EVENT_DATA);
+    event_clearsignal(channel, EVENT_DATA);
     file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
     while (event_listen(channel));
@@ -46,16 +46,16 @@ static unsigned int onstop(struct event_channel *channel)
 void init(void)
 {
 
-    event_initsignals();
-    event_setsignal(EVENT_INIT, oninit);
-    event_setsignal(EVENT_STOP, onstop);
-
 }
 
 void main(void)
 {
 
     struct event_channel channel;
+
+    event_initsignals(&channel);
+    event_setsignal(&channel, EVENT_INIT, oninit);
+    event_setsignal(&channel, EVENT_STOP, onstop);
 
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;

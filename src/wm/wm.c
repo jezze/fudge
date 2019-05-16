@@ -912,29 +912,29 @@ static unsigned int onwmhide(struct event_channel *channel)
 void init(void)
 {
 
-    event_initsignals();
-    event_setsignal(EVENT_DATA, ondata);
-    event_setsignal(EVENT_INIT, oninit);
-    event_setsignal(EVENT_KILL, onkill);
-    event_setsignal(EVENT_STOP, onstop);
-    event_setsignal(EVENT_KEYPRESS, onkeypress);
-    event_setsignal(EVENT_KEYRELEASE, onkeyrelease);
-    event_setsignal(EVENT_MOUSEMOVE, onmousemove);
-    event_setsignal(EVENT_MOUSEPRESS, onmousepress);
-    event_setsignal(EVENT_MOUSERELEASE, onmouserelease);
-    event_setsignal(EVENT_VIDEOMODE, onvideomode);
-    event_setsignal(EVENT_WMCONFIGURE, onwmconfigure);
-    event_setsignal(EVENT_WMMAP, onwmmap);
-    event_setsignal(EVENT_WMUNMAP, onwmunmap);
-    event_setsignal(EVENT_WMSHOW, onwmshow);
-    event_setsignal(EVENT_WMHIDE, onwmhide);
-
 }
 
 void main(void)
 {
 
     struct event_channel channel;
+
+    event_initsignals(&channel);
+    event_setsignal(&channel, EVENT_DATA, ondata);
+    event_setsignal(&channel, EVENT_INIT, oninit);
+    event_setsignal(&channel, EVENT_KILL, onkill);
+    event_setsignal(&channel, EVENT_STOP, onstop);
+    event_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
+    event_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
+    event_setsignal(&channel, EVENT_MOUSEMOVE, onmousemove);
+    event_setsignal(&channel, EVENT_MOUSEPRESS, onmousepress);
+    event_setsignal(&channel, EVENT_MOUSERELEASE, onmouserelease);
+    event_setsignal(&channel, EVENT_VIDEOMODE, onvideomode);
+    event_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
+    event_setsignal(&channel, EVENT_WMMAP, onwmmap);
+    event_setsignal(&channel, EVENT_WMUNMAP, onwmunmap);
+    event_setsignal(&channel, EVENT_WMSHOW, onwmshow);
+    event_setsignal(&channel, EVENT_WMHIDE, onwmhide);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;

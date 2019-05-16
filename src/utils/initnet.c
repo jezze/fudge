@@ -4,8 +4,6 @@
 void init(void)
 {
 
-    event_initsignals();
-
 }
 
 void main(void)
