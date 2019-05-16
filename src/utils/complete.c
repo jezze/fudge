@@ -38,12 +38,10 @@ static void complete(struct event_channel *channel, unsigned int descriptor, voi
 
 }
 
-static unsigned int ondata(struct event_channel *channel)
+static void ondata(struct event_channel *channel)
 {
 
     complete(channel, FILE_PW, event_getdata(channel), event_getdatasize(channel));
-
-    return 0;
 
 }
 

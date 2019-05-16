@@ -105,7 +105,7 @@ static unsigned int complete(struct event_channel *channel, struct ring *ring)
 
 }
 
-static unsigned int onconsoledata(struct event_channel *channel)
+static void onconsoledata(struct event_channel *channel)
 {
 
     struct event_consoledata *consoledata = event_getdata(channel);
@@ -149,11 +149,9 @@ static unsigned int onconsoledata(struct event_channel *channel)
 
     }
 
-    return 0;
-
 }
 
-static unsigned int ondata(struct event_channel *channel)
+static void ondata(struct event_channel *channel)
 {
 
     struct job jobs[32];
@@ -178,24 +176,18 @@ static unsigned int ondata(struct event_channel *channel)
 
     }
 
-    return 0;
-
 }
 
-static unsigned int oninit(struct event_channel *channel)
+static void oninit(struct event_channel *channel)
 {
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
     printprompt();
 
-    return 0;
-
 }
 
-static unsigned int onstop(struct event_channel *channel)
+static void onstop(struct event_channel *channel)
 {
-
-    return 0;
 
 }
 

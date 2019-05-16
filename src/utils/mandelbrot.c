@@ -77,16 +77,14 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
-static unsigned int onstop(struct event_channel *channel)
+static void onstop(struct event_channel *channel)
 {
 
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
 
-    return 1;
-
 }
 
-static unsigned int oninit(struct event_channel *channel)
+static void oninit(struct event_channel *channel)
 {
 
     ctrl_setvideosettings(&settings, 320, 200, 1);
@@ -99,8 +97,6 @@ static unsigned int oninit(struct event_channel *channel)
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
     file_close(FILE_L1);
     setup(&settings);
-
-    return 0;
 
 }
 

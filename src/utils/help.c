@@ -1,21 +1,21 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int onstop(struct event_channel *channel)
+static void onstop(struct event_channel *channel)
 {
 
     unsigned int id;
 
     if (!file_walk2(FILE_CP, "/bin/echo"))
-        return 0;
+        return;
 
     if (!file_walk2(FILE_C0, "/data/help.txt"))
-        return 0;
+        return;
 
     id = call_spawn();
 
     if (!id)
-        return 0;
+        return;
 
     event_forward(channel, EVENT_INIT);
     event_place(id, &channel->o);
@@ -24,8 +24,6 @@ static unsigned int onstop(struct event_channel *channel)
     event_place(id, &channel->o);
     event_forward(channel, EVENT_STOP);
     event_place(id, &channel->o);
-
-    return 1;
 
 }
 

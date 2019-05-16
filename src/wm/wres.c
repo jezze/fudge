@@ -3,34 +3,28 @@
 #include <widget/widget.h>
 #include <widget/render.h>
 
-static unsigned int oninit(struct event_channel *channel)
+static void oninit(struct event_channel *channel)
 {
 
     event_request(channel, EVENT_WMMAP, 0);
     file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
-    return 0;
-
 }
 
-static unsigned int onkill(struct event_channel *channel)
+static void onkill(struct event_channel *channel)
 {
 
     event_request(channel, EVENT_WMUNMAP, 0);
     file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
-    return 1;
-
 }
 
-static unsigned int onstop(struct event_channel *channel)
+static void onstop(struct event_channel *channel)
 {
 
-    return 0;
-
 }
 
-static unsigned int onwmmousepress(struct event_channel *channel)
+static void onwmmousepress(struct event_channel *channel)
 {
 
     struct event_wmmousepress *wmmousepress = event_getdata(channel);
@@ -48,8 +42,6 @@ static unsigned int onwmmousepress(struct event_channel *channel)
         break;
 
     }
-
-    return 0;
 
 }
 

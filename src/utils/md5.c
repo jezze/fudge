@@ -3,16 +3,14 @@
 
 static struct md5 s;
 
-static unsigned int ondata(struct event_channel *channel)
+static void ondata(struct event_channel *channel)
 {
 
     md5_read(&s, event_getdata(channel), event_getdatasize(channel));
 
-    return 0;
-
 }
 
-static unsigned int onfile(struct event_channel *channel)
+static void onfile(struct event_channel *channel)
 {
 
     struct event_file *file = event_getdata(channel);
@@ -26,11 +24,9 @@ static unsigned int onfile(struct event_channel *channel)
 
     file_close(file->descriptor);
 
-    return 0;
-
 }
 
-static unsigned int onstop(struct event_channel *channel)
+static void onstop(struct event_channel *channel)
 {
 
     unsigned char digest[16];
@@ -46,16 +42,12 @@ static unsigned int onstop(struct event_channel *channel)
     event_append(&channel->o, 1, "\n");
     event_place(channel->o.header.target, &channel->o);
 
-    return 1;
-
 }
 
-static unsigned int oninit(struct event_channel *channel)
+static void oninit(struct event_channel *channel)
 {
 
     md5_init(&s);
-
-    return 0;
 
 }
 

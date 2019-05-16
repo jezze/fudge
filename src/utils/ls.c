@@ -33,23 +33,19 @@ static void list(struct event_channel *channel, unsigned int descriptor)
 
 }
 
-static unsigned int onempty(struct event_channel *channel)
+static void onempty(struct event_channel *channel)
 {
 
     list(channel, FILE_PW);
 
-    return 0;
-
 }
 
-static unsigned int onfile(struct event_channel *channel)
+static void onfile(struct event_channel *channel)
 {
 
     struct event_file *file = event_getdata(channel);
 
     list(channel, file->descriptor);
-
-    return 0;
 
 }
 

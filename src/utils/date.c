@@ -23,24 +23,22 @@ static void replydate(struct event_channel *channel, struct ctrl_clocksettings *
 
 }
 
-static unsigned int onempty(struct event_channel *channel)
+static void onempty(struct event_channel *channel)
 {
 
     struct ctrl_clocksettings settings;
 
     if (!file_walk2(FILE_L0, "/system/clock/if:0/ctrl"))
-        return 0;
+        return;
 
     file_open(FILE_L0);
     file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
     file_close(FILE_L0);
     replydate(channel, &settings);
 
-    return 0;
-
 }
 
-static unsigned int onfile(struct event_channel *channel)
+static void onfile(struct event_channel *channel)
 {
 
     struct event_file *file = event_getdata(channel);
@@ -50,8 +48,6 @@ static unsigned int onfile(struct event_channel *channel)
     file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
     file_close(file->descriptor);
     replydate(channel, &settings);
-
-    return 0;
 
 }
 

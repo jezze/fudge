@@ -312,21 +312,19 @@ static void setupremotes(void)
 
 }
 
-static unsigned int ondata(struct event_channel *channel)
+static void ondata(struct event_channel *channel)
 {
 
     if (!file_walk(FILE_L0, FILE_G4, "../data"))
-        return 0;
+        return;
 
     render_write(event_getdata(channel), event_getdatasize(channel));
     render_flush(FILE_L0);
     render_complete();
 
-    return 0;
-
 }
 
-static unsigned int oninit(struct event_channel *channel)
+static void oninit(struct event_channel *channel)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -338,20 +336,18 @@ static unsigned int oninit(struct event_channel *channel)
     render_init();
 
     if (!file_walk(FILE_L0, FILE_G4, "../ctrl"))
-        return 1;
+        return;
 
     render_setvideo(FILE_L0, 1024, 768, 4);
 
     if (!file_walk(FILE_L0, FILE_G4, "../colormap"))
-        return 1;
+        return;
 
     render_setcolormap(FILE_L0);
 
-    return 0;
-
 }
 
-static unsigned int onkill(struct event_channel *channel)
+static void onkill(struct event_channel *channel)
 {
 
     struct list_item *current;
@@ -366,18 +362,14 @@ static unsigned int onkill(struct event_channel *channel)
 
     }
 
-    return 1;
-
 }
 
-static unsigned int onstop(struct event_channel *channel)
+static void onstop(struct event_channel *channel)
 {
 
-    return 0;
-
 }
 
-static unsigned int onkeypress(struct event_channel *channel)
+static void onkeypress(struct event_channel *channel)
 {
 
     struct event_keypress *keypress = event_getdata(channel);
@@ -399,7 +391,7 @@ static unsigned int onkeypress(struct event_channel *channel)
 
         }
 
-        return 0;
+        return;
 
     }
 
@@ -565,11 +557,9 @@ static unsigned int onkeypress(struct event_channel *channel)
 
     }
 
-    return 0;
-
 }
 
-static unsigned int onkeyrelease(struct event_channel *channel)
+static void onkeyrelease(struct event_channel *channel)
 {
 
     struct event_keyrelease *keyrelease = event_getdata(channel);
@@ -588,15 +578,13 @@ static unsigned int onkeyrelease(struct event_channel *channel)
 
         }
 
-        return 0;
+        return;
 
     }
 
-    return 0;
-
 }
 
-static unsigned int onmousemove(struct event_channel *channel)
+static void onmousemove(struct event_channel *channel)
 {
 
     struct event_mousemove *mousemove = event_getdata(channel);
@@ -621,11 +609,9 @@ static unsigned int onmousemove(struct event_channel *channel)
 
     }
 
-    return 0;
-
 }
 
-static unsigned int onmousepress(struct event_channel *channel)
+static void onmousepress(struct event_channel *channel)
 {
 
     struct event_mousepress *mousepress = event_getdata(channel);
@@ -692,11 +678,9 @@ static unsigned int onmousepress(struct event_channel *channel)
 
     }
 
-    return 0;
-
 }
 
-static unsigned int onmouserelease(struct event_channel *channel)
+static void onmouserelease(struct event_channel *channel)
 {
 
     struct event_mouserelease *mouserelease = event_getdata(channel);
@@ -710,11 +694,9 @@ static unsigned int onmouserelease(struct event_channel *channel)
 
     }
 
-    return 0;
-
 }
 
-static unsigned int onvideomode(struct event_channel *channel)
+static void onvideomode(struct event_channel *channel)
 {
 
     struct event_videomode *videomode = event_getdata(channel);
@@ -779,11 +761,9 @@ static unsigned int onvideomode(struct event_channel *channel)
     event_request(channel, EVENT_WMSHOW, 0);
     event_place(0, &channel->o);
 
-    return 0;
-
 }
 
-static unsigned int onwmconfigure(struct event_channel *channel)
+static void onwmconfigure(struct event_channel *channel)
 {
 
     struct event_wmconfigure *wmconfigure = event_getdata(channel);
@@ -813,11 +793,9 @@ static unsigned int onwmconfigure(struct event_channel *channel)
     mouse.size.x = wmconfigure->x + wmconfigure->w / 4;
     mouse.size.y = wmconfigure->y + wmconfigure->h / 4;
 
-    return 0;
-
 }
 
-static unsigned int onwmmap(struct event_channel *channel)
+static void onwmmap(struct event_channel *channel)
 {
 
     if (currentview->currentremote)
@@ -831,11 +809,9 @@ static unsigned int onwmmap(struct event_channel *channel)
     arrangeview(channel, currentview);
     showremotes(channel, &currentview->remotes);
 
-    return 0;
-
 }
 
-static unsigned int onwmunmap(struct event_channel *channel)
+static void onwmunmap(struct event_channel *channel)
 {
 
     struct list_item *current;
@@ -871,11 +847,9 @@ static unsigned int onwmunmap(struct event_channel *channel)
 
     }
 
-    return 0;
-
 }
 
-static unsigned int onwmshow(struct event_channel *channel)
+static void onwmshow(struct event_channel *channel)
 {
 
     struct list_item *current;
@@ -888,11 +862,9 @@ static unsigned int onwmshow(struct event_channel *channel)
 
     showremotes(channel, &currentview->remotes);
 
-    return 0;
-
 }
 
-static unsigned int onwmhide(struct event_channel *channel)
+static void onwmhide(struct event_channel *channel)
 {
 
     struct list_item *current;
@@ -905,11 +877,9 @@ static unsigned int onwmhide(struct event_channel *channel)
 
     hideremotes(channel, &currentview->remotes);
 
-    return 0;
-
 }
 
-static unsigned int onany(struct event_channel *channel)
+static void onany(struct event_channel *channel)
 {
 
     if (ring_count(&output))
@@ -923,8 +893,6 @@ static unsigned int onany(struct event_channel *channel)
         file_writeall(FILE_G0, &message, message.header.length);
 
     }
-
-    return 0;
 
 }
 

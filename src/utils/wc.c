@@ -45,16 +45,14 @@ static void sum(unsigned int count, void *buffer)
 
 }
 
-static unsigned int ondata(struct event_channel *channel)
+static void ondata(struct event_channel *channel)
 {
 
     sum(event_getdatasize(channel), event_getdata(channel));
 
-    return 0;
-
 }
 
-static unsigned int onfile(struct event_channel *channel)
+static void onfile(struct event_channel *channel)
 {
 
     struct event_file *file = event_getdata(channel);
@@ -68,11 +66,9 @@ static unsigned int onfile(struct event_channel *channel)
 
     file_close(file->descriptor);
 
-    return 0;
-
 }
 
-static unsigned int onstop(struct event_channel *channel)
+static void onstop(struct event_channel *channel)
 {
 
     char num[FUDGE_NSIZE];
@@ -85,8 +81,6 @@ static unsigned int onstop(struct event_channel *channel)
     event_append(&channel->o, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
     event_append(&channel->o, 1, "\n");
     event_place(channel->o.header.target, &channel->o);
-
-    return 1;
 
 }
 

@@ -136,14 +136,12 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
 }
 
-static unsigned int onfile(struct event_channel *channel)
+static void onfile(struct event_channel *channel)
 {
-
-    return 0;
 
 }
 
-static unsigned int oninit(struct event_channel *channel)
+static void oninit(struct event_channel *channel)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -154,28 +152,22 @@ static unsigned int oninit(struct event_channel *channel)
     event_request(channel, EVENT_WMMAP, 0);
     file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
-    return 0;
-
 }
 
-static unsigned int onkill(struct event_channel *channel)
+static void onkill(struct event_channel *channel)
 {
 
     event_request(channel, EVENT_WMUNMAP, 0);
     file_writeall(FILE_G0, &channel->o, channel->o.header.length);
 
-    return 1;
-
 }
 
-static unsigned int onstop(struct event_channel *channel)
+static void onstop(struct event_channel *channel)
 {
 
-    return 0;
-
 }
 
-static unsigned int onwmconfigure(struct event_channel *channel)
+static void onwmconfigure(struct event_channel *channel)
 {
 
     struct event_wmconfigure *wmconfigure = event_getdata(channel);
@@ -190,11 +182,9 @@ static unsigned int onwmconfigure(struct event_channel *channel)
     readfile(FILE_P0, content.size.h / wmconfigure->lineheight);
     file_close(FILE_P0);
 
-    return 0;
-
 }
 
-static unsigned int onwmkeypress(struct event_channel *channel)
+static void onwmkeypress(struct event_channel *channel)
 {
 
     struct event_wmkeypress *wmkeypress = event_getdata(channel);
@@ -251,42 +241,34 @@ static unsigned int onwmkeypress(struct event_channel *channel)
     updatecontent(&channel->i);
     updatestatus(&channel->i);
 
-    return 0;
-
 }
 
-static unsigned int onwmkeyrelease(struct event_channel *channel)
+static void onwmkeyrelease(struct event_channel *channel)
 {
 
     struct event_wmkeyrelease *wmkeyrelease = event_getdata(channel);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
-    return 0;
-
 }
 
-static unsigned int onwmshow(struct event_channel *channel)
+static void onwmshow(struct event_channel *channel)
 {
 
     updatecontent(&channel->i);
     updatestatus(&channel->i);
 
-    return 0;
-
 }
 
-static unsigned int onwmhide(struct event_channel *channel)
+static void onwmhide(struct event_channel *channel)
 {
 
     removecontent(&channel->i);
     removestatus(&channel->i);
 
-    return 0;
-
 }
 
-static unsigned int onany(struct event_channel *channel)
+static void onany(struct event_channel *channel)
 {
 
     if (ring_count(&output))
@@ -300,8 +282,6 @@ static unsigned int onany(struct event_channel *channel)
         file_writeall(FILE_G0, &message, message.header.length);
 
     }
-
-    return 0;
 
 }
 

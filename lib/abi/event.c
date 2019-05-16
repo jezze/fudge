@@ -2,10 +2,8 @@
 #include "call.h"
 #include "event.h"
 
-static unsigned int ignore(struct event_channel *channel)
+static void ignore(struct event_channel *channel)
 {
-
-    return 0;
 
 }
 
@@ -50,7 +48,7 @@ unsigned int event_listen(struct event_channel *channel)
 
 }
 
-void event_setsignal(struct event_channel *channel, unsigned int type, unsigned int (*callback)(struct event_channel *channel))
+void event_setsignal(struct event_channel *channel, unsigned int type, void (*callback)(struct event_channel *channel))
 {
 
     channel->signals[type] = callback;

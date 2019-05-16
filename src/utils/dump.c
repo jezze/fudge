@@ -21,16 +21,14 @@ static void dump(struct event_channel *channel, unsigned int count, void *buffer
 
 }
 
-static unsigned int ondata(struct event_channel *channel)
+static void ondata(struct event_channel *channel)
 {
 
     dump(channel, event_getdatasize(channel), event_getdata(channel));
 
-    return 0;
-
 }
 
-static unsigned int onfile(struct event_channel *channel)
+static void onfile(struct event_channel *channel)
 {
 
     struct event_file *file = event_getdata(channel);
@@ -43,8 +41,6 @@ static unsigned int onfile(struct event_channel *channel)
         dump(channel, count, buffer);
 
     file_close(file->descriptor);
-
-    return 0;
 
 }
 

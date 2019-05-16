@@ -20,7 +20,7 @@ static void dump(struct event_channel *channel, unsigned int count, void *buffer
 
 }
 
-static unsigned int oninit(struct event_channel *channel)
+static void oninit(struct event_channel *channel)
 {
 
     event_request(channel, EVENT_BLOCKREQUEST, 0);
@@ -30,14 +30,10 @@ static unsigned int oninit(struct event_channel *channel)
     event_listen(channel);
     dump(channel, event_getdatasize(channel), event_getdata(channel));
 
-    return 0;
-
 }
 
-static unsigned int onstop(struct event_channel *channel)
+static void onstop(struct event_channel *channel)
 {
-
-    return 0;
 
 }
 

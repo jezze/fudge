@@ -1,14 +1,12 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int ondata(struct event_channel *channel)
+static void ondata(struct event_channel *channel)
 {
 
     struct job jobs[32];
 
     job_interpret(jobs, 32, channel, event_getdata(channel), event_getdatasize(channel), 0);
-
-    return 0;
 
 }
 

@@ -59,7 +59,7 @@ union event_message
 struct event_channel
 {
 
-    unsigned int (*signals[EVENTS])(struct event_channel *channel);
+    void (*signals[EVENTS])(struct event_channel *channel);
     union event_message i;
     union event_message o;
 
