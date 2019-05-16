@@ -971,9 +971,7 @@ void main(void)
     file_open(FILE_G2);
     file_open(FILE_G3);
     file_open(FILE_G4);
-
-    while (event_listen(&channel));
-
+    event_listen(&channel);
     file_close(FILE_G4);
     file_close(FILE_G3);
     file_close(FILE_G2);

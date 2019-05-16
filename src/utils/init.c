@@ -51,8 +51,7 @@ void main(void)
     event_place(id, &channel.o);
     event_create(&channel.o, EVENT_STOP);
     event_place(id, &channel.o);
-
-    while (event_listen(&channel));
+    event_listen(&channel);
 
 }
 

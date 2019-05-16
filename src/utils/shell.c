@@ -218,9 +218,7 @@ void main(void)
 
     file_open(FILE_G0);
     file_open(FILE_G1);
-
-    while (event_listen(&channel));
-
+    event_listen(&channel);
     file_close(FILE_G1);
     file_close(FILE_G0);
 

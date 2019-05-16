@@ -25,11 +25,9 @@ static unsigned int oninit(struct event_channel *channel)
 
     event_request(channel, EVENT_BLOCKREQUEST, 0);
     event_addblockrequest(&channel->o, 0, 512 * 3);
-    event_clearsignal(channel, EVENT_DATA);
     file_writeall(FILE_G0, &channel->o, channel->o.header.length);
-
-    while (event_listen(channel));
-
+    event_clearsignal(channel, EVENT_DATA);
+    event_listen(channel);
     dump(channel, event_getdatasize(channel), event_getdata(channel));
 
     return 0;
@@ -56,9 +54,7 @@ void main(void)
         return;
 
     file_open(FILE_G0);
-
-    while (event_listen(&channel));
-
+    event_listen(&channel);
     file_close(FILE_G0);
 
 }

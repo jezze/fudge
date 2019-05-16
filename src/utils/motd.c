@@ -36,8 +36,7 @@ void main(void)
 
     event_initsignals(&channel);
     event_setsignal(&channel, EVENT_STOP, onstop);
-
-    while (event_listen(&channel));
+    event_listen(&channel);
 
 }
 

@@ -461,9 +461,7 @@ void main(void)
         return;
 
     file_open(FILE_G0);
-
-    while (event_listen(&channel));
-
+    event_listen(&channel);
     file_close(FILE_G0);
 
 }

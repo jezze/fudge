@@ -54,8 +54,7 @@ void main(void)
     event_setsignal(&channel, EVENT_DATA, ondata);
     event_setsignal(&channel, EVENT_FILE, onfile);
     event_setsignal(&channel, EVENT_STOP, onstop);
-
-    while (event_listen(&channel));
+    event_listen(&channel);
 
 }
 

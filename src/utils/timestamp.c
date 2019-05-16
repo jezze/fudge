@@ -80,8 +80,7 @@ void main(void)
     event_initsignals(&channel);
     event_setsignal(&channel, EVENT_EMPTY, onempty);
     event_setsignal(&channel, EVENT_FILE, onfile);
-
-    while (event_listen(&channel));
+    event_listen(&channel);
 
 }
 
