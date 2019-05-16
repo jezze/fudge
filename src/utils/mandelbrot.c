@@ -77,16 +77,12 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
-static void onstop(struct event_channel *channel)
+void main(void)
 {
 
-    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+    struct event_channel channel;
 
-}
-
-static void oninit(struct event_channel *channel)
-{
-
+    event_initsignals(&channel);
     ctrl_setvideosettings(&settings, 320, 200, 1);
     file_walk2(FILE_L0, "/system/video/if:0");
     file_walk(FILE_L1, FILE_L0, "ctrl");
@@ -97,18 +93,8 @@ static void oninit(struct event_channel *channel)
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
     file_close(FILE_L1);
     setup(&settings);
-
-}
-
-void main(void)
-{
-
-    struct event_channel channel;
-
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_STOP, onstop);
-    event_setsignal(&channel, EVENT_INIT, oninit);
     event_listen(&channel);
+    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
 
 }
 

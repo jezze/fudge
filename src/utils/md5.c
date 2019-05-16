@@ -26,42 +26,27 @@ static void onfile(struct event_channel *channel)
 
 }
 
-static void onstop(struct event_channel *channel)
-{
-
-    unsigned char digest[16];
-    char num[FUDGE_NSIZE];
-    unsigned int i;
-
-    md5_write(&s, digest);
-    event_reply(channel, EVENT_DATA);
-
-    for (i = 0; i < 16; i++)
-        event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
-
-    event_append(&channel->o, 1, "\n");
-    event_place(channel->o.header.target, &channel->o);
-
-}
-
-static void oninit(struct event_channel *channel)
-{
-
-    md5_init(&s);
-
-}
-
 void main(void)
 {
 
     struct event_channel channel;
+    unsigned char digest[16];
+    char num[FUDGE_NSIZE];
+    unsigned int i;
 
     event_initsignals(&channel);
     event_setsignal(&channel, EVENT_DATA, ondata);
     event_setsignal(&channel, EVENT_FILE, onfile);
-    event_setsignal(&channel, EVENT_STOP, onstop);
-    event_setsignal(&channel, EVENT_INIT, oninit);
+    md5_init(&s);
     event_listen(&channel);
+    md5_write(&s, digest);
+    event_reply(&channel, EVENT_DATA);
+
+    for (i = 0; i < 16; i++)
+        event_append(&channel.o, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
+
+    event_append(&channel.o, 1, "\n");
+    event_place(channel.o.header.target, &channel.o);
 
 }
 

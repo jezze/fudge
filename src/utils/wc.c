@@ -68,32 +68,24 @@ static void onfile(struct event_channel *channel)
 
 }
 
-static void onstop(struct event_channel *channel)
-{
-
-    char num[FUDGE_NSIZE];
-
-    event_reply(channel, EVENT_DATA);
-    event_append(&channel->o, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
-    event_append(&channel->o, 1, "\n");
-    event_append(&channel->o, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
-    event_append(&channel->o, 1, "\n");
-    event_append(&channel->o, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
-    event_append(&channel->o, 1, "\n");
-    event_place(channel->o.header.target, &channel->o);
-
-}
-
 void main(void)
 {
 
     struct event_channel channel;
+    char num[FUDGE_NSIZE];
 
     event_initsignals(&channel);
     event_setsignal(&channel, EVENT_DATA, ondata);
     event_setsignal(&channel, EVENT_FILE, onfile);
-    event_setsignal(&channel, EVENT_STOP, onstop);
     event_listen(&channel);
+    event_reply(&channel, EVENT_DATA);
+    event_append(&channel.o, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
+    event_append(&channel.o, 1, "\n");
+    event_append(&channel.o, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
+    event_append(&channel.o, 1, "\n");
+    event_append(&channel.o, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
+    event_append(&channel.o, 1, "\n");
+    event_place(channel.o.header.target, &channel.o);
 
 }
 

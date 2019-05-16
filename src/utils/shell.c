@@ -178,14 +178,6 @@ static void ondata(struct event_channel *channel)
 
 }
 
-static void oninit(struct event_channel *channel)
-{
-
-    ring_init(&input, FUDGE_BSIZE, inputbuffer);
-    printprompt();
-
-}
-
 static void onstop(struct event_channel *channel)
 {
 
@@ -199,7 +191,6 @@ void main(void)
     event_initsignals(&channel);
     event_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
     event_setsignal(&channel, EVENT_DATA, ondata);
-    event_setsignal(&channel, EVENT_INIT, oninit);
     event_setsignal(&channel, EVENT_STOP, onstop);
 
     if (!file_walk(FILE_G0, FILE_P0, "event"))
@@ -210,6 +201,8 @@ void main(void)
 
     file_open(FILE_G0);
     file_open(FILE_G1);
+    ring_init(&input, FUDGE_BSIZE, inputbuffer);
+    printprompt();
     event_listen(&channel);
     file_close(FILE_G1);
     file_close(FILE_G0);
