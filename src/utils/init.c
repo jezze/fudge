@@ -52,9 +52,11 @@ void init(void)
 void main(void)
 {
 
+    struct event_channel channel;
+
     loadscript();
 
-    while (event_listen());
+    while (event_listen(&channel));
 
 }
 

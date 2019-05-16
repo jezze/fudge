@@ -213,6 +213,8 @@ void init(void)
 void main(void)
 {
 
+    struct event_channel channel;
+
     if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;
 
@@ -222,7 +224,7 @@ void main(void)
     file_open(FILE_G0);
     file_open(FILE_G1);
 
-    while (event_listen());
+    while (event_listen(&channel));
 
     file_close(FILE_G1);
     file_close(FILE_G0);

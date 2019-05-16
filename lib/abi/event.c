@@ -29,23 +29,21 @@ unsigned int event_place(unsigned int id, union event_message *message)
 
 }
 
-unsigned int event_listen(void)
+unsigned int event_listen(struct event_channel *channel)
 {
 
-    struct event_channel channel;
+    while (!call_pick(&channel->i.header, sizeof (struct event_header)));
 
-    while (!call_pick(&channel.i.header, sizeof (struct event_header)));
+    if (channel->i.header.length > sizeof (struct event_header))
+        while (!call_pick(&channel->i.header + 1, channel->i.header.length - sizeof (struct event_header)));
 
-    if (channel.i.header.length > sizeof (struct event_header))
-        while (!call_pick(&channel.i.header + 1, channel.i.header.length - sizeof (struct event_header)));
-
-    if (signals[channel.i.header.type])
+    if (signals[channel->i.header.type])
     {
 
-        if (signals[channel.i.header.type](&channel))
+        if (signals[channel->i.header.type](channel))
             call_despawn();
 
-        return channel.i.header.type;
+        return channel->i.header.type;
 
     }
 

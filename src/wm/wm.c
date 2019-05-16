@@ -934,6 +934,8 @@ void init(void)
 void main(void)
 {
 
+    struct event_channel channel;
+
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
@@ -955,7 +957,7 @@ void main(void)
     file_open(FILE_G3);
     file_open(FILE_G4);
 
-    while (event_listen())
+    while (event_listen(&channel))
     {
 
         if (ring_count(&output))

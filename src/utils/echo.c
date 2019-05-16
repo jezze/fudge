@@ -48,7 +48,9 @@ void init(void)
 void main(void)
 {
 
-    while (event_listen());
+    struct event_channel channel;
+
+    while (event_listen(&channel));
 
 }
 

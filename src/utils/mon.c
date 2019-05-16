@@ -60,12 +60,14 @@ void init(void)
 void main(void)
 {
 
+    struct event_channel channel;
+
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;
 
     file_open(FILE_G0);
 
-    while (event_listen());
+    while (event_listen(&channel));
 
     file_close(FILE_G0);
 
