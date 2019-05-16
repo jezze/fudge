@@ -20,21 +20,17 @@ static void dump(struct event_channel *channel, unsigned int count, void *buffer
 
 }
 
-static unsigned int ondata(struct event_channel *channel)
-{
-
-    dump(channel, event_getdatasize(channel), event_getdata(channel));
-
-    return 0;
-
-}
-
 static unsigned int oninit(struct event_channel *channel)
 {
 
     event_request(channel, EVENT_BLOCKREQUEST, 0);
     event_addblockrequest(&channel->o, 0, 512 * 3);
+    event_clearsignal(EVENT_DATA);
     file_writeall(FILE_G0, &channel->o, channel->o.header.length);
+
+    while (event_listen(channel));
+
+    dump(channel, event_getdatasize(channel), event_getdata(channel));
 
     return 0;
 
@@ -51,7 +47,6 @@ void init(void)
 {
 
     event_initsignals();
-    event_setsignal(EVENT_DATA, ondata);
     event_setsignal(EVENT_INIT, oninit);
     event_setsignal(EVENT_STOP, onstop);
 
