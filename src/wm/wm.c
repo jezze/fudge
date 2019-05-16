@@ -312,6 +312,23 @@ static void setupremotes(void)
 
 }
 
+static void setupvideo(void)
+{
+
+    render_init();
+
+    if (!file_walk(FILE_L0, FILE_G4, "../ctrl"))
+        return;
+
+    render_setvideo(FILE_L0, 1024, 768, 4);
+
+    if (!file_walk(FILE_L0, FILE_G4, "../colormap"))
+        return;
+
+    render_setcolormap(FILE_L0);
+
+}
+
 static void ondata(struct event_channel *channel)
 {
 
@@ -899,20 +916,10 @@ void main(void)
     ring_init(&output, FUDGE_BSIZE, outputdata);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
+    setupvideo();
     setupviews();
     setupremotes();
     activateview(currentview);
-    render_init();
-
-    if (!file_walk(FILE_L0, FILE_G4, "../ctrl"))
-        return;
-
-    render_setvideo(FILE_L0, 1024, 768, 4);
-
-    if (!file_walk(FILE_L0, FILE_G4, "../colormap"))
-        return;
-
-    render_setcolormap(FILE_L0);
     event_listen(&channel);
 
     for (current = viewlist.head; current; current = current->next)
