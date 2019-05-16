@@ -37,14 +37,12 @@ unsigned int event_listen(struct event_channel *channel)
         unsigned int type = readmsg(channel);
 
         if (!channel->signals[type])
-            break;
+            return type;
 
         channel->signals[type](channel);
         channel->signals[EVENT_ANY](channel);
 
     }
-
-    return 0;
 
 }
 
