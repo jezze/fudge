@@ -20,6 +20,7 @@ static void handleirq(unsigned int irq)
         return;
 
     ide_rblock(blockinterface.id, data);
+    event_create(&reply.o, EVENT_DATA);
     event_append(&reply.o, 512, data);
     kernel_place(0, reply.o.header.target, &reply.o);
     event_reset(&reply.o);
@@ -35,7 +36,6 @@ static unsigned int blockinterface_writedata(struct system_node *self, struct sy
 
     blockrequest = event_getdata(&reply);
 
-    event_reply(&reply, EVENT_DATA);
     ide_rpio28(blockinterface.id, 0, blockrequest->count / 512, blockrequest->offset / 512);
 
     return count;

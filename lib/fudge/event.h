@@ -210,6 +210,3 @@ unsigned int event_addwmmousemove(union event_message *message, char relx, char 
 unsigned int event_append(union event_message *message, unsigned int count, void *buffer);
 void event_reset(union event_message *message);
 void event_create(union event_message *message, unsigned int type);
-void event_forward(struct event_channel *channel, unsigned int type);
-void event_request(struct event_channel *channel, unsigned int type, unsigned int session);
-void event_reply(struct event_channel *channel, unsigned int type);
