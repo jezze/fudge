@@ -9,13 +9,6 @@ static unsigned int ignore(struct event_channel *channel)
 
 }
 
-static unsigned int abort(struct event_channel *channel)
-{
-
-    return 1;
-
-}
-
 unsigned int event_place(unsigned int id, union event_message *message)
 {
 
@@ -48,9 +41,7 @@ unsigned int event_listen(struct event_channel *channel)
         if (!channel->signals[type])
             break;
 
-        if (channel->signals[type](channel))
-            call_despawn();
-
+        channel->signals[type](channel);
         channel->signals[0](channel);
 
     }
@@ -81,8 +72,8 @@ void event_initsignals(struct event_channel *channel)
     for (i = 0; i < EVENTS; i++)
         event_setsignal(channel, i, ignore);
 
-    event_setsignal(channel, EVENT_KILL, abort);
-    event_setsignal(channel, EVENT_STOP, abort);
+    event_setsignal(channel, EVENT_KILL, 0);
+    event_setsignal(channel, EVENT_STOP, 0);
 
 }
 
