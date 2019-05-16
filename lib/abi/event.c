@@ -40,7 +40,7 @@ unsigned int event_listen(struct event_channel *channel)
             break;
 
         channel->signals[type](channel);
-        channel->signals[0](channel);
+        channel->signals[EVENT_ANY](channel);
 
     }
 
