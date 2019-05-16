@@ -59,11 +59,6 @@ static unsigned int oninit(struct event_channel *channel)
 
 }
 
-void init(void)
-{
-
-}
-
 void main(void)
 {
 

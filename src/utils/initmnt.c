@@ -1,11 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-void init(void)
-{
-
-}
-
 void main(void)
 {
 

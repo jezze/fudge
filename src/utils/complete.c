@@ -47,11 +47,6 @@ static unsigned int ondata(struct event_channel *channel)
 
 }
 
-void init(void)
-{
-
-}
-
 void main(void)
 {
 

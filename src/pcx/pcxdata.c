@@ -5,11 +5,6 @@
 
 static struct pcx_surface pcx;
 
-void init(void)
-{
-
-}
-
 void main(void)
 {
 

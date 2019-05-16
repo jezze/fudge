@@ -909,11 +909,6 @@ static unsigned int onwmhide(struct event_channel *channel)
 
 }
 
-void init(void)
-{
-
-}
-
 void main(void)
 {
 
