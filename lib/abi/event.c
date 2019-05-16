@@ -39,7 +39,17 @@ unsigned int event_listen(void)
     if (channel.i.header.length > sizeof (struct event_header))
         while (!call_pick(&channel.i.header + 1, channel.i.header.length - sizeof (struct event_header)));
 
-    return !signals[channel.i.header.type](&channel);
+    if (signals[channel.i.header.type])
+    {
+
+        if (signals[channel.i.header.type](&channel))
+            call_despawn();
+
+        return channel.i.header.type;
+
+    }
+
+    return 0;
 
 }
 
@@ -47,6 +57,13 @@ void event_setsignal(unsigned int type, unsigned int (*callback)(struct event_ch
 {
 
     signals[type] = callback;
+
+}
+
+void event_clearsignal(unsigned int type)
+{
+
+    signals[type] = 0;
 
 }
 
