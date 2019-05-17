@@ -20,6 +20,7 @@ void main(void)
     if (!id)
         return;
 
+    channel_listen(&channel);
     channel_forward(&channel, EVENT_FILE);
     event_addfile(&channel.o, FILE_P0);
     channel_place(id, &channel.o);
