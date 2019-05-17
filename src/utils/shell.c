@@ -28,7 +28,7 @@ static void printcomplete(void *buffer, unsigned int count)
 
 }
 
-static unsigned int runcmd(struct event_channel *channel, char *command, char *data, unsigned int count, unsigned int session)
+static unsigned int runcmd(struct channel *channel, char *command, char *data, unsigned int count, unsigned int session)
 {
 
     unsigned int id;
@@ -41,11 +41,11 @@ static unsigned int runcmd(struct event_channel *channel, char *command, char *d
     if (id)
     {
 
-        event_request(channel, EVENT_DATA, session);
+        channel_request(channel, EVENT_DATA, session);
         event_append(&channel->o, count, data);
-        event_place(id, &channel->o);
-        event_request(channel, EVENT_STOP, session);
-        event_place(id, &channel->o);
+        channel_place(id, &channel->o);
+        channel_request(channel, EVENT_STOP, session);
+        channel_place(id, &channel->o);
 
     }
 
@@ -77,7 +77,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static unsigned int interpret(struct event_channel *channel, struct ring *ring)
+static unsigned int interpret(struct channel *channel, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -93,7 +93,7 @@ static unsigned int interpret(struct event_channel *channel, struct ring *ring)
 
 }
 
-static unsigned int complete(struct event_channel *channel, struct ring *ring)
+static unsigned int complete(struct channel *channel, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -103,10 +103,10 @@ static unsigned int complete(struct event_channel *channel, struct ring *ring)
 
 }
 
-static void onconsoledata(struct event_channel *channel)
+static void onconsoledata(struct channel *channel)
 {
 
-    struct event_consoledata *consoledata = event_getdata(channel);
+    struct event_consoledata *consoledata = channel_getdata(channel);
 
     switch (consoledata->data)
     {
@@ -149,7 +149,7 @@ static void onconsoledata(struct event_channel *channel)
 
 }
 
-static void ondata(struct event_channel *channel)
+static void ondata(struct channel *channel)
 {
 
     struct job jobs[32];
@@ -158,17 +158,17 @@ static void ondata(struct event_channel *channel)
     {
 
     case 0:
-        printnormal(event_getdata(channel), event_getdatasize(channel));
+        printnormal(channel_getdata(channel), channel_getdatasize(channel));
 
         break;
 
     case 1:
-        printcomplete(event_getdata(channel), event_getdatasize(channel));
+        printcomplete(channel_getdata(channel), channel_getdatasize(channel));
 
         break;
 
     case 2:
-        job_interpret(jobs, 32, channel, event_getdata(channel), event_getdatasize(channel), 0);
+        job_interpret(jobs, 32, channel, channel_getdata(channel), channel_getdatasize(channel), 0);
 
         break;
 
@@ -176,7 +176,7 @@ static void ondata(struct event_channel *channel)
 
 }
 
-static void onstop(struct event_channel *channel)
+static void onstop(struct channel *channel)
 {
 
 }
@@ -184,12 +184,12 @@ static void onstop(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
 
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
-    event_setsignal(&channel, EVENT_DATA, ondata);
-    event_setsignal(&channel, EVENT_STOP, onstop);
+    channel_initsignals(&channel);
+    channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_STOP, onstop);
 
     if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;
@@ -201,7 +201,7 @@ void main(void)
     file_open(FILE_G1);
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
     printprompt();
-    event_listen(&channel);
+    channel_listen(&channel);
     file_close(FILE_G1);
     file_close(FILE_G0);
 

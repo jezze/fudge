@@ -1,23 +1,23 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void ondata(struct event_channel *channel)
+static void ondata(struct channel *channel)
 {
 
     struct job jobs[32];
 
-    job_interpret(jobs, 32, channel, event_getdata(channel), event_getdatasize(channel), 0);
+    job_interpret(jobs, 32, channel, channel_getdata(channel), channel_getdatasize(channel), 0);
 
 }
 
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
     unsigned int id;
 
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_DATA, ondata);
+    channel_initsignals(&channel);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
 
     if (!file_walk2(FILE_CP, "/bin/slang"))
         return;
@@ -38,16 +38,16 @@ void main(void)
 
     event_create(&channel.o, EVENT_FILE);
     event_addfile(&channel.o, FILE_P0);
-    event_place(id, &channel.o);
+    channel_place(id, &channel.o);
     event_create(&channel.o, EVENT_FILE);
     event_addfile(&channel.o, FILE_P1);
-    event_place(id, &channel.o);
+    channel_place(id, &channel.o);
     event_create(&channel.o, EVENT_FILE);
     event_addfile(&channel.o, FILE_P2);
-    event_place(id, &channel.o);
+    channel_place(id, &channel.o);
     event_create(&channel.o, EVENT_STOP);
-    event_place(id, &channel.o);
-    event_listen(&channel);
+    channel_place(id, &channel.o);
+    channel_listen(&channel);
 
 }
 

@@ -2,9 +2,9 @@ L:=\
     $(DIR_LIB)/abi/abi.a \
 
 O:=\
+    $(DIR_LIB)/abi/channel.o \
     $(DIR_LIB)/abi/echo.o \
     $(DIR_LIB)/abi/write.o \
-    $(DIR_LIB)/abi/event.o \
     $(DIR_LIB)/abi/file.o \
     $(DIR_LIB)/abi/job.o \
 
@@ -15,9 +15,9 @@ L:=\
     $(DIR_LIB)/abi/qabi.a \
 
 O:=\
+    $(DIR_LIB)/abi/channel.o \
     $(DIR_LIB)/abi/echo.o \
     $(DIR_LIB)/abi/write.o \
-    $(DIR_LIB)/abi/event.o \
     $(DIR_LIB)/abi/file.o \
     $(DIR_LIB)/abi/job.o \
 

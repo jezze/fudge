@@ -1,19 +1,19 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void ondata(struct event_channel *channel)
+static void ondata(struct channel *channel)
 {
 
-    event_reply(channel, EVENT_DATA);
-    event_append(&channel->o, event_getdatasize(channel), event_getdata(channel));
-    event_place(channel->o.header.target, &channel->o);
+    channel_reply(channel, EVENT_DATA);
+    event_append(&channel->o, channel_getdatasize(channel), channel_getdata(channel));
+    channel_place(channel->o.header.target, &channel->o);
 
 }
 
-static void onfile(struct event_channel *channel)
+static void onfile(struct channel *channel)
 {
 
-    struct event_file *file = event_getdata(channel);
+    struct event_file *file = channel_getdata(channel);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -22,9 +22,9 @@ static void onfile(struct event_channel *channel)
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header))))
     {
 
-        event_reply(channel, EVENT_DATA);
+        channel_reply(channel, EVENT_DATA);
         event_append(&channel->o, count, buffer);
-        event_place(channel->o.header.target, &channel->o);
+        channel_place(channel->o.header.target, &channel->o);
 
     }
 
@@ -35,12 +35,12 @@ static void onfile(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
 
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_DATA, ondata);
-    event_setsignal(&channel, EVENT_FILE, onfile);
-    event_listen(&channel);
+    channel_initsignals(&channel);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_FILE, onfile);
+    channel_listen(&channel);
 
 }
 

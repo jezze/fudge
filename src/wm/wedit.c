@@ -136,15 +136,15 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
 }
 
-static void onstop(struct event_channel *channel)
+static void onstop(struct channel *channel)
 {
 
 }
 
-static void onwmconfigure(struct event_channel *channel)
+static void onwmconfigure(struct channel *channel)
 {
 
-    struct event_wmconfigure *wmconfigure = event_getdata(channel);
+    struct event_wmconfigure *wmconfigure = channel_getdata(channel);
 
     ring_reset(&input1);
     ring_reset(&input2);
@@ -158,10 +158,10 @@ static void onwmconfigure(struct event_channel *channel)
 
 }
 
-static void onwmkeypress(struct event_channel *channel)
+static void onwmkeypress(struct channel *channel)
 {
 
-    struct event_wmkeypress *wmkeypress = event_getdata(channel);
+    struct event_wmkeypress *wmkeypress = channel_getdata(channel);
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -217,16 +217,16 @@ static void onwmkeypress(struct event_channel *channel)
 
 }
 
-static void onwmkeyrelease(struct event_channel *channel)
+static void onwmkeyrelease(struct channel *channel)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = event_getdata(channel);
+    struct event_wmkeyrelease *wmkeyrelease = channel_getdata(channel);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
 }
 
-static void onwmshow(struct event_channel *channel)
+static void onwmshow(struct channel *channel)
 {
 
     updatecontent(&channel->i);
@@ -234,7 +234,7 @@ static void onwmshow(struct event_channel *channel)
 
 }
 
-static void onwmhide(struct event_channel *channel)
+static void onwmhide(struct channel *channel)
 {
 
     removecontent(&channel->i);
@@ -242,7 +242,7 @@ static void onwmhide(struct event_channel *channel)
 
 }
 
-static void onany(struct event_channel *channel)
+static void onany(struct channel *channel)
 {
 
     if (ring_count(&output))
@@ -262,16 +262,16 @@ static void onany(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
 
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_ANY, onany);
-    event_setsignal(&channel, EVENT_STOP, onstop);
-    event_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
-    event_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
-    event_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
-    event_setsignal(&channel, EVENT_WMSHOW, onwmshow);
-    event_setsignal(&channel, EVENT_WMHIDE, onwmhide);
+    channel_initsignals(&channel);
+    channel_setsignal(&channel, EVENT_ANY, onany);
+    channel_setsignal(&channel, EVENT_STOP, onstop);
+    channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
+    channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
+    channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
+    channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
+    channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
@@ -282,10 +282,10 @@ void main(void)
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     widget_inittextbox(&content);
     widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
-    event_request(&channel, EVENT_WMMAP, 0);
+    channel_request(&channel, EVENT_WMMAP, 0);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
-    event_listen(&channel);
-    event_request(&channel, EVENT_WMUNMAP, 0);
+    channel_listen(&channel);
+    channel_request(&channel, EVENT_WMUNMAP, 0);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     file_close(FILE_G0);
 

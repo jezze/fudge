@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "call.h"
+#include "channel.h"
 #include "file.h"
-#include "event.h"
 #include "job.h"
 
 static unsigned int addjob(struct job *jobs, unsigned int njobs, unsigned int id)
@@ -29,7 +29,7 @@ static unsigned int clearjobs(struct job *jobs, unsigned int njobs)
 
 }
 
-static void runjob(struct event_channel *channel, struct job *jobs, unsigned int njobs, unsigned int session)
+static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs, unsigned int session)
 {
 
     unsigned int j;
@@ -45,26 +45,26 @@ static void runjob(struct event_channel *channel, struct job *jobs, unsigned int
             for (k = 0; k < jobs[j].ninputs; k++)
             {
 
-                event_request(channel, EVENT_FILE, session);
+                channel_request(channel, EVENT_FILE, session);
 
                 for (x = njobs; x > j + 1; x--)
                     event_addroute(&channel->o, jobs[x - 1].id, session);
 
                 event_addfile(&channel->o, FILE_P0 + k);
-                event_place(jobs[j].id, &channel->o);
+                channel_place(jobs[j].id, &channel->o);
 
             }
 
             for (k = 0; k < jobs[j].ndatas; k++)
             {
 
-                event_request(channel, EVENT_DATA, session);
+                channel_request(channel, EVENT_DATA, session);
 
                 for (x = njobs; x > j + 1; x--)
                     event_addroute(&channel->o, jobs[x - 1].id, session);
 
                 event_append(&channel->o, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
-                event_place(jobs[j].id, &channel->o);
+                channel_place(jobs[j].id, &channel->o);
 
             }
 
@@ -73,27 +73,27 @@ static void runjob(struct event_channel *channel, struct job *jobs, unsigned int
         else
         {
 
-            event_request(channel, EVENT_EMPTY, session);
+            channel_request(channel, EVENT_EMPTY, session);
 
             for (x = njobs; x > j + 1; x--)
                 event_addroute(&channel->o, jobs[x - 1].id, session);
 
-            event_place(jobs[j].id, &channel->o);
+            channel_place(jobs[j].id, &channel->o);
 
         }
 
-        event_request(channel, EVENT_STOP, session);
+        channel_request(channel, EVENT_STOP, session);
 
         for (x = njobs; x > j + 1; x--)
             event_addroute(&channel->o, jobs[x - 1].id, session);
 
-        event_place(jobs[j].id, &channel->o);
+        channel_place(jobs[j].id, &channel->o);
 
     }
 
 }
 
-void job_interpret(struct job *jobs, unsigned int njobs, struct event_channel *channel, void *buffer, unsigned int count, unsigned int session)
+void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel, void *buffer, unsigned int count, unsigned int session)
 {
 
     unsigned int cjobs = clearjobs(jobs, njobs);

@@ -1,20 +1,20 @@
 #include <fudge.h>
 #include "call.h"
-#include "event.h"
+#include "channel.h"
 
-static void ignore(struct event_channel *channel)
+static void ignore(struct channel *channel)
 {
 
 }
 
-static void abort(struct event_channel *channel)
+static void abort(struct channel *channel)
 {
 
     channel->state = 0;
 
 }
 
-static unsigned int readmsg(struct event_channel *channel)
+static unsigned int readmsg(struct channel *channel)
 {
 
     while (!call_pick(&channel->i.header, sizeof (struct event_header)));
@@ -26,21 +26,21 @@ static unsigned int readmsg(struct event_channel *channel)
 
 }
 
-void *event_getdata(struct event_channel *channel)
+void *channel_getdata(struct channel *channel)
 {
 
     return &channel->i.header + 1;
 
 }
 
-unsigned int event_getdatasize(struct event_channel *channel)
+unsigned int channel_getdatasize(struct channel *channel)
 {
 
     return channel->i.header.length - sizeof (struct event_header);
 
 }
 
-unsigned int event_place(unsigned int id, union event_message *message)
+unsigned int channel_place(unsigned int id, union event_message *message)
 {
 
     while (!call_place(id, message, message->header.length));
@@ -49,7 +49,7 @@ unsigned int event_place(unsigned int id, union event_message *message)
 
 }
 
-unsigned int event_listen(struct event_channel *channel)
+unsigned int channel_listen(struct channel *channel)
 {
 
     while (channel->state)
@@ -69,21 +69,21 @@ unsigned int event_listen(struct event_channel *channel)
 
 }
 
-void event_setsignal(struct event_channel *channel, unsigned int type, void (*callback)(struct event_channel *channel))
+void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel))
 {
 
     channel->signals[type] = callback;
 
 }
 
-void event_clearsignal(struct event_channel *channel, unsigned int type)
+void channel_clearsignal(struct channel *channel, unsigned int type)
 {
 
     channel->signals[type] = 0;
 
 }
 
-void event_initsignals(struct event_channel *channel)
+void channel_initsignals(struct channel *channel)
 {
 
     unsigned int i;
@@ -91,14 +91,14 @@ void event_initsignals(struct event_channel *channel)
     channel->state = 1;
 
     for (i = 0; i < EVENTS; i++)
-        event_setsignal(channel, i, ignore);
+        channel_setsignal(channel, i, ignore);
 
-    event_setsignal(channel, EVENT_KILL, abort);
-    event_setsignal(channel, EVENT_STOP, abort);
+    channel_setsignal(channel, EVENT_KILL, abort);
+    channel_setsignal(channel, EVENT_STOP, abort);
 
 }
 
-void event_forward(struct event_channel *channel, unsigned int type)
+void channel_forward(struct channel *channel, unsigned int type)
 {
 
     unsigned int i;
@@ -112,7 +112,7 @@ void event_forward(struct event_channel *channel, unsigned int type)
 
 }
 
-void event_request(struct event_channel *channel, unsigned int type, unsigned int session)
+void channel_request(struct channel *channel, unsigned int type, unsigned int session)
 {
 
     unsigned int i;
@@ -128,7 +128,7 @@ void event_request(struct event_channel *channel, unsigned int type, unsigned in
 
 }
 
-void event_reply(struct event_channel *channel, unsigned int type)
+void channel_reply(struct channel *channel, unsigned int type)
 {
 
     unsigned int i;

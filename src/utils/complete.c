@@ -1,13 +1,13 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void complete(struct event_channel *channel, unsigned int descriptor, void *name, unsigned int length)
+static void complete(struct channel *channel, unsigned int descriptor, void *name, unsigned int length)
 {
 
     struct record record;
 
     file_open(descriptor);
-    event_reply(channel, EVENT_DATA);
+    channel_reply(channel, EVENT_DATA);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
@@ -18,8 +18,8 @@ static void complete(struct event_channel *channel, unsigned int descriptor, voi
             if (event_avail(&channel->o) < record.length + 1)
             {
 
-                event_place(channel->o.header.target, &channel->o);
-                event_reply(channel, EVENT_DATA);
+                channel_place(channel->o.header.target, &channel->o);
+                channel_reply(channel, EVENT_DATA);
 
             }
 
@@ -33,26 +33,26 @@ static void complete(struct event_channel *channel, unsigned int descriptor, voi
 
     }
 
-    event_place(channel->o.header.target, &channel->o);
+    channel_place(channel->o.header.target, &channel->o);
     file_close(descriptor);
 
 }
 
-static void ondata(struct event_channel *channel)
+static void ondata(struct channel *channel)
 {
 
-    complete(channel, FILE_PW, event_getdata(channel), event_getdatasize(channel));
+    complete(channel, FILE_PW, channel_getdata(channel), channel_getdatasize(channel));
 
 }
 
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
 
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_DATA, ondata);
-    event_listen(&channel);
+    channel_initsignals(&channel);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_listen(&channel);
 
 }
 

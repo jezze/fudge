@@ -45,17 +45,17 @@ static void sum(unsigned int count, void *buffer)
 
 }
 
-static void ondata(struct event_channel *channel)
+static void ondata(struct channel *channel)
 {
 
-    sum(event_getdatasize(channel), event_getdata(channel));
+    sum(channel_getdatasize(channel), channel_getdata(channel));
 
 }
 
-static void onfile(struct event_channel *channel)
+static void onfile(struct channel *channel)
 {
 
-    struct event_file *file = event_getdata(channel);
+    struct event_file *file = channel_getdata(channel);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -71,21 +71,21 @@ static void onfile(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
     char num[FUDGE_NSIZE];
 
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_DATA, ondata);
-    event_setsignal(&channel, EVENT_FILE, onfile);
-    event_listen(&channel);
-    event_reply(&channel, EVENT_DATA);
+    channel_initsignals(&channel);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_FILE, onfile);
+    channel_listen(&channel);
+    channel_reply(&channel, EVENT_DATA);
     event_append(&channel.o, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
     event_append(&channel.o, 1, "\n");
     event_append(&channel.o, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
     event_append(&channel.o, 1, "\n");
     event_append(&channel.o, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
     event_append(&channel.o, 1, "\n");
-    event_place(channel.o.header.target, &channel.o);
+    channel_place(channel.o.header.target, &channel.o);
 
 }
 

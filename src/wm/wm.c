@@ -130,7 +130,7 @@ static void deactivateremote(struct remote *remote)
 
 }
 
-static void showremotes(struct event_channel *channel, struct list *remotes)
+static void showremotes(struct channel *channel, struct list *remotes)
 {
 
     struct list_item *current;
@@ -140,15 +140,15 @@ static void showremotes(struct event_channel *channel, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        event_request(channel, EVENT_WMSHOW, 0);
-        event_place(remote->source, &channel->o);
+        channel_request(channel, EVENT_WMSHOW, 0);
+        channel_place(remote->source, &channel->o);
         updateremote(&channel->i, remote);
 
     }
 
 }
 
-static void hideremotes(struct event_channel *channel, struct list *remotes)
+static void hideremotes(struct channel *channel, struct list *remotes)
 {
 
     struct list_item *current;
@@ -158,15 +158,15 @@ static void hideremotes(struct event_channel *channel, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        event_request(channel, EVENT_WMHIDE, 0);
-        event_place(remote->source, &channel->o);
+        channel_request(channel, EVENT_WMHIDE, 0);
+        channel_place(remote->source, &channel->o);
         removeremote(&channel->i, remote);
 
     }
 
 }
 
-static void configureremotes(struct event_channel *channel, struct list *remotes)
+static void configureremotes(struct channel *channel, struct list *remotes)
 {
 
     struct list_item *current;
@@ -176,15 +176,15 @@ static void configureremotes(struct event_channel *channel, struct list *remotes
 
         struct remote *remote = current->data;
 
-        event_request(channel, EVENT_WMCONFIGURE, 0);
+        channel_request(channel, EVENT_WMCONFIGURE, 0);
         event_addwmconfigure(&channel->o, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
-        event_place(remote->source, &channel->o);
+        channel_place(remote->source, &channel->o);
 
     }
 
 }
 
-static void killremotes(struct event_channel *channel, struct list *remotes)
+static void killremotes(struct channel *channel, struct list *remotes)
 {
 
     struct list_item *current;
@@ -194,14 +194,14 @@ static void killremotes(struct event_channel *channel, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        event_request(channel, EVENT_KILL, 0);
-        event_place(remote->source, &channel->o);
+        channel_request(channel, EVENT_KILL, 0);
+        channel_place(remote->source, &channel->o);
 
     }
 
 }
 
-static void flipview(struct event_channel *channel, struct view *view)
+static void flipview(struct channel *channel, struct view *view)
 {
 
     deactivateview(currentview);
@@ -248,7 +248,7 @@ static void arrangetiled(struct view *view)
 
 }
 
-static void arrangeview(struct event_channel *channel, struct view *view)
+static void arrangeview(struct channel *channel, struct view *view)
 {
 
     switch (view->remotes.count)
@@ -329,27 +329,27 @@ static void setupvideo(void)
 
 }
 
-static void ondata(struct event_channel *channel)
+static void ondata(struct channel *channel)
 {
 
     if (!file_walk(FILE_L0, FILE_G4, "../data"))
         return;
 
-    render_write(event_getdata(channel), event_getdatasize(channel));
+    render_write(channel_getdata(channel), channel_getdatasize(channel));
     render_flush(FILE_L0);
     render_complete();
 
 }
 
-static void onstop(struct event_channel *channel)
+static void onstop(struct channel *channel)
 {
 
 }
 
-static void onkeypress(struct event_channel *channel)
+static void onkeypress(struct channel *channel)
 {
 
-    struct event_keypress *keypress = event_getdata(channel);
+    struct event_keypress *keypress = channel_getdata(channel);
     struct view *nextview;
     struct remote *nextremote;
     unsigned int id;
@@ -362,9 +362,9 @@ static void onkeypress(struct event_channel *channel)
         if (currentview->currentremote)
         {
 
-            event_request(channel, EVENT_WMKEYPRESS, 0);
+            channel_request(channel, EVENT_WMKEYPRESS, 0);
             event_addwmkeypress(&channel->o, keypress->scancode);
-            event_place(currentview->currentremote->source, &channel->o);
+            channel_place(currentview->currentremote->source, &channel->o);
 
         }
 
@@ -419,10 +419,10 @@ static void onkeypress(struct event_channel *channel)
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            event_request(channel, EVENT_WMHIDE, 0);
-            event_place(currentview->currentremote->source, &channel->o);
-            event_request(channel, EVENT_KILL, 0);
-            event_place(currentview->currentremote->source, &channel->o);
+            channel_request(channel, EVENT_WMHIDE, 0);
+            channel_place(currentview->currentremote->source, &channel->o);
+            channel_request(channel, EVENT_KILL, 0);
+            channel_place(currentview->currentremote->source, &channel->o);
 
         }
 
@@ -440,8 +440,8 @@ static void onkeypress(struct event_channel *channel)
         if (id)
         {
 
-            event_request(channel, EVENT_STOP, 0);
-            event_place(id, &channel->o);
+            channel_request(channel, EVENT_STOP, 0);
+            channel_place(id, &channel->o);
 
         }
 
@@ -521,10 +521,10 @@ static void onkeypress(struct event_channel *channel)
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            event_request(channel, EVENT_WMHIDE, 0);
-            event_place(0, &channel->o);
-            event_request(channel, EVENT_KILL, 0);
-            event_place(0, &channel->o);
+            channel_request(channel, EVENT_WMHIDE, 0);
+            channel_place(0, &channel->o);
+            channel_request(channel, EVENT_KILL, 0);
+            channel_place(0, &channel->o);
 
         }
 
@@ -534,10 +534,10 @@ static void onkeypress(struct event_channel *channel)
 
 }
 
-static void onkeyrelease(struct event_channel *channel)
+static void onkeyrelease(struct channel *channel)
 {
 
-    struct event_keyrelease *keyrelease = event_getdata(channel);
+    struct event_keyrelease *keyrelease = channel_getdata(channel);
 
     keymod = keymap_modkey(keyrelease->scancode, keymod);
 
@@ -547,9 +547,9 @@ static void onkeyrelease(struct event_channel *channel)
         if (currentview->currentremote)
         {
 
-            event_request(channel, EVENT_WMKEYRELEASE, 0);
+            channel_request(channel, EVENT_WMKEYRELEASE, 0);
             event_addwmkeyrelease(&channel->o, keyrelease->scancode);
-            event_place(currentview->currentremote->source, &channel->o);
+            channel_place(currentview->currentremote->source, &channel->o);
 
         }
 
@@ -559,10 +559,10 @@ static void onkeyrelease(struct event_channel *channel)
 
 }
 
-static void onmousemove(struct event_channel *channel)
+static void onmousemove(struct channel *channel)
 {
 
-    struct event_mousemove *mousemove = event_getdata(channel);
+    struct event_mousemove *mousemove = channel_getdata(channel);
 
     mouse.size.x += mousemove->relx;
     mouse.size.y += mousemove->rely;
@@ -578,18 +578,18 @@ static void onmousemove(struct event_channel *channel)
     if (currentview->currentremote)
     {
 
-        event_request(channel, EVENT_WMMOUSEMOVE, 0);
+        channel_request(channel, EVENT_WMMOUSEMOVE, 0);
         event_addwmmousemove(&channel->o, mouse.size.x, mouse.size.y);
-        event_place(currentview->currentremote->source, &channel->o);
+        channel_place(currentview->currentremote->source, &channel->o);
 
     }
 
 }
 
-static void onmousepress(struct event_channel *channel)
+static void onmousepress(struct channel *channel)
 {
 
-    struct event_mousepress *mousepress = event_getdata(channel);
+    struct event_mousepress *mousepress = channel_getdata(channel);
     struct list_item *current;
 
     switch (mousepress->button)
@@ -647,34 +647,34 @@ static void onmousepress(struct event_channel *channel)
     if (currentview->currentremote)
     {
 
-        event_request(channel, EVENT_WMMOUSEPRESS, 0);
+        channel_request(channel, EVENT_WMMOUSEPRESS, 0);
         event_addwmmousepress(&channel->o, mousepress->button);
-        event_place(currentview->currentremote->source, &channel->o);
+        channel_place(currentview->currentremote->source, &channel->o);
 
     }
 
 }
 
-static void onmouserelease(struct event_channel *channel)
+static void onmouserelease(struct channel *channel)
 {
 
-    struct event_mouserelease *mouserelease = event_getdata(channel);
+    struct event_mouserelease *mouserelease = channel_getdata(channel);
 
     if (currentview->currentremote)
     {
 
-        event_request(channel, EVENT_WMMOUSERELEASE, 0);
+        channel_request(channel, EVENT_WMMOUSERELEASE, 0);
         event_addwmmouserelease(&channel->o, mouserelease->button);
-        event_place(currentview->currentremote->source, &channel->o);
+        channel_place(currentview->currentremote->source, &channel->o);
 
     }
 
 }
 
-static void onvideomode(struct event_channel *channel)
+static void onvideomode(struct channel *channel)
 {
 
-    struct event_videomode *videomode = event_getdata(channel);
+    struct event_videomode *videomode = channel_getdata(channel);
     unsigned int factor = (videomode->h / 320);
 
     lineheight = 12 + factor * 4;
@@ -730,18 +730,18 @@ static void onvideomode(struct event_channel *channel)
 
     }
 
-    event_request(channel, EVENT_WMCONFIGURE, 0);
+    channel_request(channel, EVENT_WMCONFIGURE, 0);
     event_addwmconfigure(&channel->o, 0, 0, videomode->w, videomode->h, padding, lineheight);
-    event_place(0, &channel->o);
-    event_request(channel, EVENT_WMSHOW, 0);
-    event_place(0, &channel->o);
+    channel_place(0, &channel->o);
+    channel_request(channel, EVENT_WMSHOW, 0);
+    channel_place(0, &channel->o);
 
 }
 
-static void onwmconfigure(struct event_channel *channel)
+static void onwmconfigure(struct channel *channel)
 {
 
-    struct event_wmconfigure *wmconfigure = event_getdata(channel);
+    struct event_wmconfigure *wmconfigure = channel_getdata(channel);
     struct list_item *current;
     unsigned int i = 0;
 
@@ -770,7 +770,7 @@ static void onwmconfigure(struct event_channel *channel)
 
 }
 
-static void onwmmap(struct event_channel *channel)
+static void onwmmap(struct channel *channel)
 {
 
     if (currentview->currentremote)
@@ -786,7 +786,7 @@ static void onwmmap(struct event_channel *channel)
 
 }
 
-static void onwmunmap(struct event_channel *channel)
+static void onwmunmap(struct channel *channel)
 {
 
     struct list_item *current;
@@ -824,7 +824,7 @@ static void onwmunmap(struct event_channel *channel)
 
 }
 
-static void onwmshow(struct event_channel *channel)
+static void onwmshow(struct channel *channel)
 {
 
     struct list_item *current;
@@ -839,7 +839,7 @@ static void onwmshow(struct event_channel *channel)
 
 }
 
-static void onwmhide(struct event_channel *channel)
+static void onwmhide(struct channel *channel)
 {
 
     struct list_item *current;
@@ -854,7 +854,7 @@ static void onwmhide(struct event_channel *channel)
 
 }
 
-static void onany(struct event_channel *channel)
+static void onany(struct channel *channel)
 {
 
     if (ring_count(&output))
@@ -874,24 +874,24 @@ static void onany(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
     struct list_item *current;
 
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_ANY, onany);
-    event_setsignal(&channel, EVENT_DATA, ondata);
-    event_setsignal(&channel, EVENT_STOP, onstop);
-    event_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
-    event_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
-    event_setsignal(&channel, EVENT_MOUSEMOVE, onmousemove);
-    event_setsignal(&channel, EVENT_MOUSEPRESS, onmousepress);
-    event_setsignal(&channel, EVENT_MOUSERELEASE, onmouserelease);
-    event_setsignal(&channel, EVENT_VIDEOMODE, onvideomode);
-    event_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
-    event_setsignal(&channel, EVENT_WMMAP, onwmmap);
-    event_setsignal(&channel, EVENT_WMUNMAP, onwmunmap);
-    event_setsignal(&channel, EVENT_WMSHOW, onwmshow);
-    event_setsignal(&channel, EVENT_WMHIDE, onwmhide);
+    channel_initsignals(&channel);
+    channel_setsignal(&channel, EVENT_ANY, onany);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_STOP, onstop);
+    channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
+    channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
+    channel_setsignal(&channel, EVENT_MOUSEMOVE, onmousemove);
+    channel_setsignal(&channel, EVENT_MOUSEPRESS, onmousepress);
+    channel_setsignal(&channel, EVENT_MOUSERELEASE, onmouserelease);
+    channel_setsignal(&channel, EVENT_VIDEOMODE, onvideomode);
+    channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
+    channel_setsignal(&channel, EVENT_WMMAP, onwmmap);
+    channel_setsignal(&channel, EVENT_WMUNMAP, onwmunmap);
+    channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
+    channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
@@ -920,7 +920,7 @@ void main(void)
     setupviews();
     setupremotes();
     activateview(currentview);
-    event_listen(&channel);
+    channel_listen(&channel);
 
     for (current = viewlist.head; current; current = current->next)
     {

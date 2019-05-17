@@ -3,15 +3,15 @@
 #include <widget/widget.h>
 #include <widget/render.h>
 
-static void onstop(struct event_channel *channel)
+static void onstop(struct channel *channel)
 {
 
 }
 
-static void onwmmousepress(struct event_channel *channel)
+static void onwmmousepress(struct channel *channel)
 {
 
-    struct event_wmmousepress *wmmousepress = event_getdata(channel);
+    struct event_wmmousepress *wmmousepress = channel_getdata(channel);
 
     switch (wmmousepress->button)
     {
@@ -32,20 +32,20 @@ static void onwmmousepress(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
 
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_STOP, onstop);
-    event_setsignal(&channel, EVENT_WMMOUSEPRESS, onwmmousepress);
+    channel_initsignals(&channel);
+    channel_setsignal(&channel, EVENT_STOP, onstop);
+    channel_setsignal(&channel, EVENT_WMMOUSEPRESS, onwmmousepress);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
     file_open(FILE_G0);
-    event_request(&channel, EVENT_WMMAP, 0);
+    channel_request(&channel, EVENT_WMMAP, 0);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
-    event_listen(&channel);
-    event_request(&channel, EVENT_WMUNMAP, 0);
+    channel_listen(&channel);
+    channel_request(&channel, EVENT_WMUNMAP, 0);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     file_close(FILE_G0);
 

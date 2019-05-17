@@ -144,7 +144,7 @@ static void printcomplete(void *buffer, unsigned int count)
 
 }
 
-static unsigned int runcmd(struct event_channel *channel, char *command, char *data, unsigned int count, unsigned int session)
+static unsigned int runcmd(struct channel *channel, char *command, char *data, unsigned int count, unsigned int session)
 {
 
     unsigned int id;
@@ -157,11 +157,11 @@ static unsigned int runcmd(struct event_channel *channel, char *command, char *d
     if (id)
     {
 
-        event_request(channel, EVENT_DATA, session);
+        channel_request(channel, EVENT_DATA, session);
         event_append(&channel->o, count, data);
-        event_place(id, &channel->o);
-        event_request(channel, EVENT_STOP, session);
-        event_place(id, &channel->o);
+        channel_place(id, &channel->o);
+        channel_request(channel, EVENT_STOP, session);
+        channel_place(id, &channel->o);
 
     }
 
@@ -193,7 +193,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static unsigned int interpret(struct event_channel *channel, struct ring *ring)
+static unsigned int interpret(struct channel *channel, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -209,7 +209,7 @@ static unsigned int interpret(struct event_channel *channel, struct ring *ring)
 
 }
 
-static unsigned int complete(struct event_channel *channel, struct ring *ring)
+static unsigned int complete(struct channel *channel, struct ring *ring)
 {
 
     char command[FUDGE_BSIZE];
@@ -219,7 +219,7 @@ static unsigned int complete(struct event_channel *channel, struct ring *ring)
 
 }
 
-static void ondata(struct event_channel *channel)
+static void ondata(struct channel *channel)
 {
 
     struct job jobs[32];
@@ -228,17 +228,17 @@ static void ondata(struct event_channel *channel)
     {
 
     case 0:
-        printnormal(event_getdata(channel), event_getdatasize(channel));
+        printnormal(channel_getdata(channel), channel_getdatasize(channel));
 
         break;
 
     case 1:
-        printcomplete(event_getdata(channel), event_getdatasize(channel));
+        printcomplete(channel_getdata(channel), channel_getdatasize(channel));
 
         break;
 
     case 2:
-        job_interpret(jobs, 32, channel, event_getdata(channel), event_getdatasize(channel), 0);
+        job_interpret(jobs, 32, channel, channel_getdata(channel), channel_getdatasize(channel), 0);
 
         break;
 
@@ -248,15 +248,15 @@ static void ondata(struct event_channel *channel)
 
 }
 
-static void onstop(struct event_channel *channel)
+static void onstop(struct channel *channel)
 {
 
 }
 
-static void onwmconfigure(struct event_channel *channel)
+static void onwmconfigure(struct channel *channel)
 {
 
-    struct event_wmconfigure *wmconfigure = event_getdata(channel);
+    struct event_wmconfigure *wmconfigure = channel_getdata(channel);
 
     box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
     box_resize(&content.size, wmconfigure->padding);
@@ -268,10 +268,10 @@ static void onwmconfigure(struct event_channel *channel)
 
 }
 
-static void onwmkeypress(struct event_channel *channel)
+static void onwmkeypress(struct channel *channel)
 {
 
-    struct event_wmkeypress *wmkeypress = event_getdata(channel);
+    struct event_wmkeypress *wmkeypress = channel_getdata(channel);
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -355,30 +355,30 @@ static void onwmkeypress(struct event_channel *channel)
 
 }
 
-static void onwmkeyrelease(struct event_channel *channel)
+static void onwmkeyrelease(struct channel *channel)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = event_getdata(channel);
+    struct event_wmkeyrelease *wmkeyrelease = channel_getdata(channel);
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
 }
 
-static void onwmshow(struct event_channel *channel)
+static void onwmshow(struct channel *channel)
 {
 
     updatecontent(&channel->i);
 
 }
 
-static void onwmhide(struct event_channel *channel)
+static void onwmhide(struct channel *channel)
 {
 
     removecontent(&channel->i);
 
 }
 
-static void onany(struct event_channel *channel)
+static void onany(struct channel *channel)
 {
 
     if (ring_count(&output))
@@ -398,17 +398,17 @@ static void onany(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
 
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_ANY, onany);
-    event_setsignal(&channel, EVENT_DATA, ondata);
-    event_setsignal(&channel, EVENT_STOP, onstop);
-    event_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
-    event_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
-    event_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
-    event_setsignal(&channel, EVENT_WMSHOW, onwmshow);
-    event_setsignal(&channel, EVENT_WMHIDE, onwmhide);
+    channel_initsignals(&channel);
+    channel_setsignal(&channel, EVENT_ANY, onany);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_STOP, onstop);
+    channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
+    channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
+    channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
+    channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
+    channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
@@ -421,10 +421,10 @@ void main(void)
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     ring_write(&prompt, "$ ", 2);
-    event_request(&channel, EVENT_WMMAP, 0);
+    channel_request(&channel, EVENT_WMMAP, 0);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
-    event_listen(&channel);
-    event_request(&channel, EVENT_WMUNMAP, 0);
+    channel_listen(&channel);
+    channel_request(&channel, EVENT_WMUNMAP, 0);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     file_close(FILE_G0);
 

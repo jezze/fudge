@@ -4,13 +4,13 @@
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
 
-    event_initsignals(&channel);
-    event_listen(&channel);
-    event_reply(&channel, EVENT_DATA);
+    channel_initsignals(&channel);
+    channel_listen(&channel);
+    channel_reply(&channel, EVENT_DATA);
     event_append(&channel.o, 13, "Hello world!\n");
-    event_place(channel.o.header.target, &channel.o);
+    channel_place(channel.o.header.target, &channel.o);
 
 }
 

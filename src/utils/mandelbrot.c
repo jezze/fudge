@@ -80,9 +80,9 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
 
-    event_initsignals(&channel);
+    channel_initsignals(&channel);
     ctrl_setvideosettings(&settings, 320, 200, 1);
     file_walk2(FILE_L0, "/system/video/if:0");
     file_walk(FILE_L1, FILE_L0, "ctrl");
@@ -93,7 +93,7 @@ void main(void)
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
     file_close(FILE_L1);
     setup(&settings);
-    event_listen(&channel);
+    channel_listen(&channel);
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
 
 }

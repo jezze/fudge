@@ -243,12 +243,12 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void parse(struct event_channel *channel, struct tokenlist *postfix, struct tokenlist *stack)
+static void parse(struct channel *channel, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     unsigned int i;
 
-    event_reply(channel, EVENT_DATA);
+    channel_reply(channel, EVENT_DATA);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -323,30 +323,30 @@ static void parse(struct event_channel *channel, struct tokenlist *postfix, stru
 
     }
 
-    event_place(channel->o.header.target, &channel->o);
+    channel_place(channel->o.header.target, &channel->o);
 
 }
 
-static void ondata(struct event_channel *channel)
+static void ondata(struct channel *channel)
 {
 
-    if (!event_getdatasize(channel))
+    if (!channel_getdatasize(channel))
         return;
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
-    tokenizebuffer(&infix, &stringtable, event_getdatasize(channel), event_getdata(channel));
+    tokenizebuffer(&infix, &stringtable, channel_getdatasize(channel), channel_getdata(channel));
     translate(&postfix, &infix, &stack);
     parse(channel, &postfix, &stack);
 
 }
 
-static void onfile(struct event_channel *channel)
+static void onfile(struct channel *channel)
 {
 
-    struct event_file *file = event_getdata(channel);
+    struct event_file *file = channel_getdata(channel);
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
@@ -368,12 +368,12 @@ static void onfile(struct event_channel *channel)
 void main(void)
 {
 
-    struct event_channel channel;
+    struct channel channel;
 
-    event_initsignals(&channel);
-    event_setsignal(&channel, EVENT_DATA, ondata);
-    event_setsignal(&channel, EVENT_FILE, onfile);
-    event_listen(&channel);
+    channel_initsignals(&channel);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_FILE, onfile);
+    channel_listen(&channel);
 
 }
 
