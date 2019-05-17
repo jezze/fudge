@@ -7,7 +7,7 @@ void main(void)
     struct channel channel;
     unsigned int id;
 
-    channel_initsignals(&channel);
+    channel_init(&channel);
 
     if (!file_walk2(FILE_CP, "/bin/echo"))
         return;

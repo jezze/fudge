@@ -33,7 +33,7 @@ void main(void)
     unsigned char buffer[FUDGE_BSIZE];
     unsigned int result;
 
-    channel_initsignals(&channel);
+    channel_init(&channel);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_listen(&channel);

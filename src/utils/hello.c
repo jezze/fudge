@@ -6,7 +6,7 @@ void main(void)
 
     struct channel channel;
 
-    channel_initsignals(&channel);
+    channel_init(&channel);
     channel_listen(&channel);
     channel_reply(&channel, EVENT_DATA);
     event_append(&channel.o, 13, "Hello world!\n");

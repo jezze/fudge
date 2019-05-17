@@ -34,7 +34,7 @@ void main(void)
     char num[FUDGE_NSIZE];
     unsigned int i;
 
-    channel_initsignals(&channel);
+    channel_init(&channel);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     sha1_init(&s);

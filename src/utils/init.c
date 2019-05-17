@@ -16,7 +16,7 @@ void main(void)
     struct channel channel;
     unsigned int id;
 
-    channel_initsignals(&channel);
+    channel_init(&channel);
     channel_setsignal(&channel, EVENT_DATA, ondata);
 
     if (!file_walk2(FILE_CP, "/bin/slang"))

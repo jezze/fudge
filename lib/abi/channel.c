@@ -83,21 +83,6 @@ void channel_clearsignal(struct channel *channel, unsigned int type)
 
 }
 
-void channel_initsignals(struct channel *channel)
-{
-
-    unsigned int i;
-
-    channel->state = 1;
-
-    for (i = 0; i < EVENTS; i++)
-        channel_setsignal(channel, i, ignore);
-
-    channel_setsignal(channel, EVENT_KILL, abort);
-    channel_setsignal(channel, EVENT_STOP, abort);
-
-}
-
 void channel_forward(struct channel *channel, unsigned int type)
 {
 
@@ -149,6 +134,21 @@ void channel_reply(struct channel *channel, unsigned int type)
         channel->o.header.session = channel->o.header.routes[channel->o.header.nroutes].session;
 
     }
+
+}
+
+void channel_init(struct channel *channel)
+{
+
+    unsigned int i;
+
+    channel->state = 1;
+
+    for (i = 0; i < EVENTS; i++)
+        channel_setsignal(channel, i, ignore);
+
+    channel_setsignal(channel, EVENT_KILL, abort);
+    channel_setsignal(channel, EVENT_STOP, abort);
 
 }
 

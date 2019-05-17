@@ -254,7 +254,7 @@ void main(void)
 
     struct channel channel;
 
-    channel_initsignals(&channel);
+    channel_init(&channel);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_listen(&channel);
 

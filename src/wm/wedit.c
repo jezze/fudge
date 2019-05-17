@@ -264,7 +264,7 @@ void main(void)
 
     struct channel channel;
 
-    channel_initsignals(&channel);
+    channel_init(&channel);
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_STOP, onstop);
     channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
