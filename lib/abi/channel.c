@@ -14,18 +14,6 @@ static void abort(struct channel *channel)
 
 }
 
-static unsigned int readmsg(struct channel *channel)
-{
-
-    while (!call_pick(&channel->i.header, sizeof (struct event_header)));
-
-    if (channel->i.header.length > sizeof (struct event_header))
-        while (!call_pick(&channel->i.header + 1, channel->i.header.length - sizeof (struct event_header)));
-
-    return channel->i.header.type;
-
-}
-
 void *channel_getdata(struct channel *channel)
 {
 
@@ -40,6 +28,21 @@ unsigned int channel_getdatasize(struct channel *channel)
 
 }
 
+unsigned int channel_pick(struct channel *channel)
+{
+
+    if (!channel->state)
+        return 0;
+
+    while (!call_pick(&channel->i.header, sizeof (struct event_header)));
+
+    if (channel->i.header.length > sizeof (struct event_header))
+        while (!call_pick(&channel->i.header + 1, channel->i.header.length - sizeof (struct event_header)));
+
+    return channel->i.header.type;
+
+}
+
 unsigned int channel_place(unsigned int id, union event_message *message)
 {
 
@@ -49,21 +52,21 @@ unsigned int channel_place(unsigned int id, union event_message *message)
 
 }
 
+void channel_dispatch(struct channel *channel, unsigned int type)
+{
+
+    channel->signals[type](channel);
+    channel->signals[EVENT_ANY](channel);
+
+}
+
 unsigned int channel_listen(struct channel *channel)
 {
 
-    while (channel->state)
-    {
+    unsigned int type;
 
-        unsigned int type = readmsg(channel);
-
-        if (!channel->signals[type])
-            return type;
-
-        channel->signals[type](channel);
-        channel->signals[EVENT_ANY](channel);
-
-    }
+    while ((type = channel_pick(channel)))
+        channel_dispatch(channel, type);
 
     return 0;
 
@@ -73,13 +76,6 @@ void channel_setsignal(struct channel *channel, unsigned int type, void (*callba
 {
 
     channel->signals[type] = callback;
-
-}
-
-void channel_clearsignal(struct channel *channel, unsigned int type)
-{
-
-    channel->signals[type] = 0;
 
 }
 

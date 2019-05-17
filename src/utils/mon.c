@@ -32,7 +32,6 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_STOP, onstop);
-    channel_clearsignal(&channel, EVENT_DATA);
 
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;
