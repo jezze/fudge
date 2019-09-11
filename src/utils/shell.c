@@ -103,10 +103,10 @@ static unsigned int complete(struct channel *channel, struct ring *ring)
 
 }
 
-static void onconsoledata(struct channel *channel)
+static void onconsoledata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_consoledata *consoledata = channel_getdata(channel);
+    struct event_consoledata *consoledata = mdata;
 
     switch (consoledata->data)
     {
@@ -149,7 +149,7 @@ static void onconsoledata(struct channel *channel)
 
 }
 
-static void ondata(struct channel *channel)
+static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     struct job jobs[32];
@@ -158,17 +158,17 @@ static void ondata(struct channel *channel)
     {
 
     case 0:
-        printnormal(channel_getdata(channel), channel_getdatasize(channel));
+        printnormal(mdata, msize);
 
         break;
 
     case 1:
-        printcomplete(channel_getdata(channel), channel_getdatasize(channel));
+        printcomplete(mdata, msize);
 
         break;
 
     case 2:
-        job_interpret(jobs, 32, channel, channel_getdata(channel), channel_getdatasize(channel), 0);
+        job_interpret(jobs, 32, channel, mdata, msize, 0);
 
         break;
 
@@ -176,7 +176,7 @@ static void ondata(struct channel *channel)
 
 }
 
-static void onstop(struct channel *channel)
+static void onstop(struct channel *channel, void *mdata, unsigned int msize)
 {
 
 }

@@ -219,7 +219,7 @@ static unsigned int complete(struct channel *channel, struct ring *ring)
 
 }
 
-static void ondata(struct channel *channel)
+static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     struct job jobs[32];
@@ -228,17 +228,17 @@ static void ondata(struct channel *channel)
     {
 
     case 0:
-        printnormal(channel_getdata(channel), channel_getdatasize(channel));
+        printnormal(mdata, msize);
 
         break;
 
     case 1:
-        printcomplete(channel_getdata(channel), channel_getdatasize(channel));
+        printcomplete(mdata, msize);
 
         break;
 
     case 2:
-        job_interpret(jobs, 32, channel, channel_getdata(channel), channel_getdatasize(channel), 0);
+        job_interpret(jobs, 32, channel, mdata, msize, 0);
 
         break;
 
@@ -248,15 +248,15 @@ static void ondata(struct channel *channel)
 
 }
 
-static void onstop(struct channel *channel)
+static void onstop(struct channel *channel, void *mdata, unsigned int msize)
 {
 
 }
 
-static void onwmconfigure(struct channel *channel)
+static void onwmconfigure(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_wmconfigure *wmconfigure = channel_getdata(channel);
+    struct event_wmconfigure *wmconfigure = mdata;
 
     box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
     box_resize(&content.size, wmconfigure->padding);
@@ -268,10 +268,10 @@ static void onwmconfigure(struct channel *channel)
 
 }
 
-static void onwmkeypress(struct channel *channel)
+static void onwmkeypress(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_wmkeypress *wmkeypress = channel_getdata(channel);
+    struct event_wmkeypress *wmkeypress = mdata;
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -355,30 +355,30 @@ static void onwmkeypress(struct channel *channel)
 
 }
 
-static void onwmkeyrelease(struct channel *channel)
+static void onwmkeyrelease(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = channel_getdata(channel);
+    struct event_wmkeyrelease *wmkeyrelease = mdata;
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
 }
 
-static void onwmshow(struct channel *channel)
+static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     updatecontent(&channel->i);
 
 }
 
-static void onwmhide(struct channel *channel)
+static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     removecontent(&channel->i);
 
 }
 
-static void onany(struct channel *channel)
+static void onany(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     if (ring_count(&output))

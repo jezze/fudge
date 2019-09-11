@@ -136,15 +136,15 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
 }
 
-static void onstop(struct channel *channel)
+static void onstop(struct channel *channel, void *mdata, unsigned int msize)
 {
 
 }
 
-static void onwmconfigure(struct channel *channel)
+static void onwmconfigure(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_wmconfigure *wmconfigure = channel_getdata(channel);
+    struct event_wmconfigure *wmconfigure = mdata;
 
     ring_reset(&input1);
     ring_reset(&input2);
@@ -158,10 +158,10 @@ static void onwmconfigure(struct channel *channel)
 
 }
 
-static void onwmkeypress(struct channel *channel)
+static void onwmkeypress(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_wmkeypress *wmkeypress = channel_getdata(channel);
+    struct event_wmkeypress *wmkeypress = mdata;
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
 
@@ -217,16 +217,16 @@ static void onwmkeypress(struct channel *channel)
 
 }
 
-static void onwmkeyrelease(struct channel *channel)
+static void onwmkeyrelease(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = channel_getdata(channel);
+    struct event_wmkeyrelease *wmkeyrelease = mdata;
 
     keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
 }
 
-static void onwmshow(struct channel *channel)
+static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     updatecontent(&channel->i);
@@ -234,7 +234,7 @@ static void onwmshow(struct channel *channel)
 
 }
 
-static void onwmhide(struct channel *channel)
+static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     removecontent(&channel->i);
@@ -242,7 +242,7 @@ static void onwmhide(struct channel *channel)
 
 }
 
-static void onany(struct channel *channel)
+static void onany(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     if (ring_count(&output))

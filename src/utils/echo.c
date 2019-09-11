@@ -1,19 +1,19 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void ondata(struct channel *channel)
+static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     channel_reply(channel, EVENT_DATA);
-    event_append(&channel->o, channel_getdatasize(channel), channel_getdata(channel));
+    event_append(&channel->o, msize, mdata);
     channel_place(channel->o.header.target, &channel->o);
 
 }
 
-static void onfile(struct channel *channel)
+static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_file *file = channel_getdata(channel);
+    struct event_file *file = mdata;
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 

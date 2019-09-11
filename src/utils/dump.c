@@ -21,17 +21,17 @@ static void dump(struct channel *channel, unsigned int count, void *buffer)
 
 }
 
-static void ondata(struct channel *channel)
+static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    dump(channel, channel_getdatasize(channel), channel_getdata(channel));
+    dump(channel, msize, mdata);
 
 }
 
-static void onfile(struct channel *channel)
+static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_file *file = channel_getdata(channel);
+    struct event_file *file = mdata;
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 

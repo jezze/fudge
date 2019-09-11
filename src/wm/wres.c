@@ -3,15 +3,15 @@
 #include <widget/widget.h>
 #include <widget/render.h>
 
-static void onstop(struct channel *channel)
+static void onstop(struct channel *channel, void *mdata, unsigned int msize)
 {
 
 }
 
-static void onwmmousepress(struct channel *channel)
+static void onwmmousepress(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_wmmousepress *wmmousepress = channel_getdata(channel);
+    struct event_wmmousepress *wmmousepress = mdata;
 
     switch (wmmousepress->button)
     {

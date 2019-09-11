@@ -1,12 +1,12 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void ondata(struct channel *channel)
+static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     struct job jobs[32];
 
-    job_interpret(jobs, 32, channel, channel_getdata(channel), channel_getdatasize(channel), 0);
+    job_interpret(jobs, 32, channel, mdata, msize, 0);
 
 }
 

@@ -40,7 +40,7 @@ static void replytimestamp(struct channel *channel, struct ctrl_clocksettings *s
 
 }
 
-static void onempty(struct channel *channel)
+static void onempty(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     struct ctrl_clocksettings settings;
@@ -55,10 +55,10 @@ static void onempty(struct channel *channel)
 
 }
 
-static void onfile(struct channel *channel)
+static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_file *file = channel_getdata(channel);
+    struct event_file *file = mdata;
     struct ctrl_clocksettings settings;
 
     file_open(file->descriptor);

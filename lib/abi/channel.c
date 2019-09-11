@@ -2,29 +2,15 @@
 #include "call.h"
 #include "channel.h"
 
-static void ignore(struct channel *channel)
+static void ignore(struct channel *channel, void *mdata, unsigned int msize)
 {
 
 }
 
-static void abort(struct channel *channel)
+static void abort(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     channel->state = 0;
-
-}
-
-void *channel_getdata(struct channel *channel)
-{
-
-    return &channel->i.header + 1;
-
-}
-
-unsigned int channel_getdatasize(struct channel *channel)
-{
-
-    return channel->i.header.length - sizeof (struct event_header);
 
 }
 
@@ -55,8 +41,11 @@ unsigned int channel_place(unsigned int id, union event_message *message)
 void channel_dispatch(struct channel *channel, unsigned int type)
 {
 
-    channel->signals[type](channel);
-    channel->signals[EVENT_ANY](channel);
+    unsigned int msize = channel->i.header.length - sizeof (struct event_header);
+    void *mdata = &channel->i.header + 1;
+
+    channel->signals[type](channel, mdata, msize);
+    channel->signals[EVENT_ANY](channel, mdata, msize);
 
 }
 
@@ -72,7 +61,7 @@ unsigned int channel_listen(struct channel *channel)
 
 }
 
-void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel))
+void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, void *mdata, unsigned int msize))
 {
 
     channel->signals[type] = callback;

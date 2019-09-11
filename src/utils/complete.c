@@ -38,10 +38,10 @@ static void complete(struct channel *channel, unsigned int descriptor, void *nam
 
 }
 
-static void ondata(struct channel *channel)
+static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    complete(channel, FILE_PW, channel_getdata(channel), channel_getdatasize(channel));
+    complete(channel, FILE_PW, mdata, msize);
 
 }
 

@@ -327,26 +327,26 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
 
 }
 
-static void ondata(struct channel *channel)
+static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    if (!channel_getdatasize(channel))
+    if (!msize)
         return;
 
     ring_init(&stringtable, FUDGE_BSIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
-    tokenizebuffer(&infix, &stringtable, channel_getdatasize(channel), channel_getdata(channel));
+    tokenizebuffer(&infix, &stringtable, msize, mdata);
     translate(&postfix, &infix, &stack);
     parse(channel, &postfix, &stack);
 
 }
 
-static void onfile(struct channel *channel)
+static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_file *file = channel_getdata(channel);
+    struct event_file *file = mdata;
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 

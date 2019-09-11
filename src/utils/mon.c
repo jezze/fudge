@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
+/*
 static void dump(struct channel *channel, unsigned int count, void *buffer)
 {
 
@@ -19,8 +20,9 @@ static void dump(struct channel *channel, unsigned int count, void *buffer)
     }
 
 }
+*/
 
-static void onstop(struct channel *channel)
+static void onstop(struct channel *channel, void *mdata, unsigned int msize)
 {
 
 }
@@ -41,7 +43,11 @@ void main(void)
     event_addblockrequest(&channel.o, 0, 512 * 3);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     channel_listen(&channel);
+
+    /*
     dump(&channel, channel_getdatasize(&channel), channel_getdata(&channel));
+    */
+
     file_close(FILE_G0);
 
 }
