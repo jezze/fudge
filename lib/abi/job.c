@@ -97,42 +97,44 @@ void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel
 {
 
     unsigned int cjobs = clearjobs(jobs, njobs);
-    char *command = buffer;
-    char *end = command + count;
+    char *start = buffer;
+    char *end = start + count;
 
     if (!file_walk2(FILE_L0, "/bin"))
         return;
 
-    for (command = buffer; command < end; command += ascii_length(command) + 1)
+    while (start < end)
     {
 
-        switch (command[0])
+        struct job *job = &jobs[cjobs];
+
+        switch (start[0])
         {
 
         case 'I':
-            if (!file_walk2(FILE_C0 + jobs[cjobs].ninputs, command + 2))
+            if (!file_walk2(FILE_C0 + job->ninputs, start + 2))
                 return;
 
-            jobs[cjobs].ninputs++;
+            job->ninputs++;
 
             break;
 
         case 'O':
-            if (!file_walk2(FILE_C0 + jobs[cjobs].ninputs, command + 2))
+            if (!file_walk2(FILE_C0 + job->ninputs, start + 2))
                 return;
 
-            jobs[cjobs].ninputs++;
+            job->ninputs++;
 
             break;
 
         case 'D':
-            jobs[cjobs].data[jobs[cjobs].ndatas] = command + 2;
-            jobs[cjobs].ndatas++;
+            job->data[job->ndatas] = start + 2;
+            job->ndatas++;
 
             break;
 
         case 'P':
-            if (!(file_walk(FILE_CP, FILE_L0, command + 2) || file_walk2(FILE_CP, command + 2)))
+            if (!(file_walk(FILE_CP, FILE_L0, start + 2) || file_walk2(FILE_CP, start + 2)))
                 return;
 
             cjobs = addjob(jobs, cjobs, call_spawn());
@@ -140,7 +142,7 @@ void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel
             break;
 
         case 'E':
-            if (!(file_walk(FILE_CP, FILE_L0, command + 2) || file_walk2(FILE_CP, command + 2)))
+            if (!(file_walk(FILE_CP, FILE_L0, start + 2) || file_walk2(FILE_CP, start + 2)))
                 return;
 
             cjobs = addjob(jobs, cjobs, call_spawn());
@@ -152,6 +154,8 @@ void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel
             break;
 
         }
+
+        start += ascii_length(start) + 1;
 
     }
 
