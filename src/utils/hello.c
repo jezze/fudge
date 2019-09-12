@@ -9,8 +9,8 @@ void main(void)
     channel_init(&channel);
     channel_listen(&channel);
     channel_reply(&channel, EVENT_DATA);
-    event_append(&channel.o.header, 13, "Hello world!\n");
-    channel_place(channel.o.header.target, &channel.o.header);
+    channel_append(&channel, 13, "Hello world!\n");
+    channel_place(&channel, channel.o.header.target);
 
 }
 

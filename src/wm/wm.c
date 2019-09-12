@@ -141,7 +141,7 @@ static void showremotes(struct channel *channel, struct list *remotes)
         struct remote *remote = current->data;
 
         channel_request(channel, EVENT_WMSHOW, 0);
-        channel_place(remote->source, &channel->o.header);
+        channel_place(channel, remote->source);
         updateremote(&channel->i.header, remote);
 
     }
@@ -159,7 +159,7 @@ static void hideremotes(struct channel *channel, struct list *remotes)
         struct remote *remote = current->data;
 
         channel_request(channel, EVENT_WMHIDE, 0);
-        channel_place(remote->source, &channel->o.header);
+        channel_place(channel, remote->source);
         removeremote(&channel->i.header, remote);
 
     }
@@ -175,10 +175,18 @@ static void configureremotes(struct channel *channel, struct list *remotes)
     {
 
         struct remote *remote = current->data;
+        struct event_wmconfigure wmconfigure;
+
+        wmconfigure.x = remote->window.size.x + 2;
+        wmconfigure.y = remote->window.size.y + 2;
+        wmconfigure.w = remote->window.size.w - 4;
+        wmconfigure.h = remote->window.size.h - 4;
+        wmconfigure.padding = padding;
+        wmconfigure.lineheight = lineheight;
 
         channel_request(channel, EVENT_WMCONFIGURE, 0);
-        event_addwmconfigure(&channel->o.header, remote->window.size.x + 2, remote->window.size.y + 2, remote->window.size.w - 4, remote->window.size.h - 4, padding, lineheight);
-        channel_place(remote->source, &channel->o.header);
+        channel_append(channel, sizeof (struct event_wmconfigure), &wmconfigure);
+        channel_place(channel, remote->source);
 
     }
 
@@ -195,7 +203,7 @@ static void killremotes(struct channel *channel, struct list *remotes)
         struct remote *remote = current->data;
 
         channel_request(channel, EVENT_KILL, 0);
-        channel_place(remote->source, &channel->o.header);
+        channel_place(channel, remote->source);
 
     }
 
@@ -362,9 +370,13 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
         if (currentview->currentremote)
         {
 
+            struct event_wmkeypress wmkeypress;
+
+            wmkeypress.scancode = keypress->scancode;
+
             channel_request(channel, EVENT_WMKEYPRESS, 0);
-            event_addwmkeypress(&channel->o.header, keypress->scancode);
-            channel_place(currentview->currentremote->source, &channel->o.header);
+            channel_append(channel, sizeof (struct event_wmkeypress), &wmkeypress);
+            channel_place(channel, currentview->currentremote->source);
 
         }
 
@@ -420,9 +432,9 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
         {
 
             channel_request(channel, EVENT_WMHIDE, 0);
-            channel_place(currentview->currentremote->source, &channel->o.header);
+            channel_place(channel, currentview->currentremote->source);
             channel_request(channel, EVENT_KILL, 0);
-            channel_place(currentview->currentremote->source, &channel->o.header);
+            channel_place(channel, currentview->currentremote->source);
 
         }
 
@@ -441,7 +453,7 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
         {
 
             channel_request(channel, EVENT_STOP, 0);
-            channel_place(id, &channel->o.header);
+            channel_place(channel, id);
 
         }
 
@@ -522,9 +534,9 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
         {
 
             channel_request(channel, EVENT_WMHIDE, 0);
-            channel_place(0, &channel->o.header);
+            channel_place(channel, 0);
             channel_request(channel, EVENT_KILL, 0);
-            channel_place(0, &channel->o.header);
+            channel_place(channel, 0);
 
         }
 
@@ -547,9 +559,13 @@ static void onkeyrelease(struct channel *channel, void *mdata, unsigned int msiz
         if (currentview->currentremote)
         {
 
+            struct event_wmkeyrelease wmkeyrelease;
+
+            wmkeyrelease.scancode = keyrelease->scancode;
+
             channel_request(channel, EVENT_WMKEYRELEASE, 0);
-            event_addwmkeyrelease(&channel->o.header, keyrelease->scancode);
-            channel_place(currentview->currentremote->source, &channel->o.header);
+            channel_append(channel, sizeof (struct event_wmkeyrelease), &wmkeyrelease);
+            channel_place(channel, currentview->currentremote->source);
 
         }
 
@@ -578,9 +594,14 @@ static void onmousemove(struct channel *channel, void *mdata, unsigned int msize
     if (currentview->currentremote)
     {
 
+        struct event_wmmousemove wmmousemove;
+
+        wmmousemove.relx = mousemove->relx;
+        wmmousemove.rely = mousemove->rely;
+
         channel_request(channel, EVENT_WMMOUSEMOVE, 0);
-        event_addwmmousemove(&channel->o.header, mouse.size.x, mouse.size.y);
-        channel_place(currentview->currentremote->source, &channel->o.header);
+        channel_append(channel, sizeof (struct event_wmmousemove), &wmmousemove);
+        channel_place(channel, currentview->currentremote->source);
 
     }
 
@@ -647,9 +668,13 @@ static void onmousepress(struct channel *channel, void *mdata, unsigned int msiz
     if (currentview->currentremote)
     {
 
+        struct event_wmmousepress wmmousepress;
+
+        wmmousepress.button = mousepress->button;
+
         channel_request(channel, EVENT_WMMOUSEPRESS, 0);
-        event_addwmmousepress(&channel->o.header, mousepress->button);
-        channel_place(currentview->currentremote->source, &channel->o.header);
+        channel_append(channel, sizeof (struct event_wmmousepress), &wmmousepress);
+        channel_place(channel, currentview->currentremote->source);
 
     }
 
@@ -663,9 +688,13 @@ static void onmouserelease(struct channel *channel, void *mdata, unsigned int ms
     if (currentview->currentremote)
     {
 
+        struct event_wmmouserelease wmmouserelease;
+
+        wmmouserelease.button = mouserelease->button;
+
         channel_request(channel, EVENT_WMMOUSERELEASE, 0);
-        event_addwmmouserelease(&channel->o.header, mouserelease->button);
-        channel_place(currentview->currentremote->source, &channel->o.header);
+        channel_append(channel, sizeof (struct event_wmmouserelease), &wmmouserelease);
+        channel_place(channel, currentview->currentremote->source);
 
     }
 
@@ -676,6 +705,7 @@ static void onvideomode(struct channel *channel, void *mdata, unsigned int msize
 
     struct event_videomode *videomode = mdata;
     unsigned int factor = (videomode->h / 320);
+    struct event_wmconfigure wmconfigure;
 
     lineheight = 12 + factor * 4;
     padding = 4 + factor * 2;
@@ -730,11 +760,18 @@ static void onvideomode(struct channel *channel, void *mdata, unsigned int msize
 
     }
 
+    wmconfigure.x = 0;
+    wmconfigure.y = 0;
+    wmconfigure.w = videomode->w;
+    wmconfigure.h = videomode->h;
+    wmconfigure.padding = padding;
+    wmconfigure.lineheight = lineheight;
+
     channel_request(channel, EVENT_WMCONFIGURE, 0);
-    event_addwmconfigure(&channel->o.header, 0, 0, videomode->w, videomode->h, padding, lineheight);
-    channel_place(0, &channel->o.header);
+    channel_append(channel, sizeof (struct event_wmconfigure), &wmconfigure);
+    channel_place(channel, 0);
     channel_request(channel, EVENT_WMSHOW, 0);
-    channel_place(0, &channel->o.header);
+    channel_place(channel, 0);
 
 }
 
@@ -860,10 +897,10 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
     if (ring_count(&output))
     {
 
-        union event_message message;
+        struct {struct event_header header; char data[FUDGE_BSIZE];} message;
 
-        event_create(&message.header, EVENT_DATA);
-        event_append(&message.header, ring_count(&output), outputdata);
+        event_create(&message.header, EVENT_DATA, ring_count(&output));
+        memory_write(message.data, FUDGE_BSIZE, outputdata, ring_count(&output), 0);
         ring_reset(&output);
         file_writeall(FILE_G0, &message, message.header.length);
 

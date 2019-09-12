@@ -17,7 +17,7 @@ static unsigned int multicast(struct service_state *source, struct list *targets
 
         struct service_state *target = current->data;
 
-        kernel_place(source->id, target->id, header);
+        kernel_place(source->id, target->id, header, header + 1);
 
     }
 
@@ -37,15 +37,15 @@ static unsigned int eventnode_seek(struct system_node *self, struct service_stat
 static unsigned int multicastnode_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    union event_message *message = buffer;
+    struct event_header *header = buffer;
 
     if (count < sizeof (struct event_header))
         return 0;
 
-    if (message->header.length != count)
+    if (header->length != count)
         return 0;
 
-    return multicast(state, &eventnode.states, &message->header);
+    return multicast(state, &eventnode.states, header);
 
 }
 

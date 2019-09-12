@@ -14,6 +14,7 @@ void main(void)
 {
 
     struct channel channel;
+    struct {struct event_header header; struct event_file file;} message;
     unsigned int id;
 
     channel_init(&channel);
@@ -36,17 +37,21 @@ void main(void)
     if (!id)
         return;
 
-    event_create(&channel.o.header, EVENT_FILE);
-    event_addfile(&channel.o.header, FILE_P0);
-    channel_place(id, &channel.o.header);
-    event_create(&channel.o.header, EVENT_FILE);
-    event_addfile(&channel.o.header, FILE_P1);
-    channel_place(id, &channel.o.header);
-    event_create(&channel.o.header, EVENT_FILE);
-    event_addfile(&channel.o.header, FILE_P2);
-    channel_place(id, &channel.o.header);
-    event_create(&channel.o.header, EVENT_STOP);
-    channel_place(id, &channel.o.header);
+    event_create(&message.header, EVENT_FILE, sizeof (struct event_file));
+
+    message.file.descriptor = FILE_P0;
+
+    call_place(id, &message, message.header.length);
+
+    message.file.descriptor = FILE_P1;
+
+    call_place(id, &message, message.header.length);
+
+    message.file.descriptor = FILE_P2;
+
+    call_place(id, &message, message.header.length);
+    event_create(&message.header, EVENT_STOP, 0);
+    call_place(id, &message, message.header.length);
     channel_listen(&channel);
 
 }

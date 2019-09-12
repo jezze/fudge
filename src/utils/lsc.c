@@ -7,34 +7,26 @@ static void list(struct channel *channel, unsigned int descriptor)
     struct record record;
 
     file_open(descriptor);
-    channel_reply(channel, EVENT_DATA);
 
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
         char num[FUDGE_NSIZE];
 
-        if (event_avail(&channel->o.header) < record.length + 3 + 16)
-        {
-
-            channel_place(channel->o.header.target, &channel->o.header);
-            event_reset(&channel->o.header);
-
-        }
-
-        event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
-        event_append(&channel->o.header, 1, " ");
-        event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
-        event_append(&channel->o.header, 1, " ");
-        event_append(&channel->o.header, record.length, record.name);
-        event_append(&channel->o.header, 1, "\n");
+        channel_reply(channel, EVENT_DATA);
+        channel_append(channel, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
+        channel_append(channel, 1, " ");
+        channel_append(channel, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
+        channel_append(channel, 1, " ");
+        channel_append(channel, record.length, record.name);
+        channel_append(channel, 1, "\n");
+        channel_place(channel, channel->o.header.target);
 
         if (!file_step(descriptor))
             break;
 
     }
 
-    channel_place(channel->o.header.target, &channel->o.header);
     file_close(descriptor);
 
 }

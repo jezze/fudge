@@ -110,7 +110,6 @@ void ipv4_send(void *buffer, unsigned int count)
 static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
-    union event_message message;
     struct ipv4_header *header = buffer;
     unsigned int length = (header->length[0] << 8) | header->length[1];
     struct resource *current = 0;
@@ -125,9 +124,7 @@ static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void
 
     }
 
-    event_create(&message.header, EVENT_DATA);
-    event_append(&message.header, count, buffer);
-    kernel_multicast(&ethernetprotocol.data.states, &message.header);
+    kernel_notify(&ethernetprotocol.data.states, EVENT_DATA, buffer, count);
 
 }
 

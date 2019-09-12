@@ -31,6 +31,10 @@ void main(void)
 {
 
     struct channel channel;
+    struct event_blockrequest blockrequest;
+
+    blockrequest.offset = 0;
+    blockrequest.count = 512 * 3;
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_STOP, onstop);
@@ -40,7 +44,7 @@ void main(void)
 
     file_open(FILE_G0);
     channel_request(&channel, EVENT_BLOCKREQUEST, 0);
-    event_addblockrequest(&channel.o.header, 0, 512 * 3);
+    channel_append(&channel, sizeof (struct event_blockrequest), &blockrequest);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     channel_listen(&channel);
 

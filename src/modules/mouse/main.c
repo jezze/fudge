@@ -9,51 +9,44 @@ static struct system_node event;
 void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int count)
 {
 
-    union event_message message;
-
-    event_create(&message.header, EVENT_DATA);
-    event_append(&message.header, count, buffer);
-    kernel_multicast(&interface->data.states, &message.header);
+    kernel_notify(&interface->data.states, EVENT_DATA, buffer, count);
 
 }
 
 void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
 {
 
-    struct {struct event_header header; struct event_mousemove mousemove;} message;
+    struct event_mousemove mousemove;
 
-    message.mousemove.relx = relx;
-    message.mousemove.rely = rely;
+    mousemove.relx = relx;
+    mousemove.rely = rely;
 
-    event_create2(&message.header, EVENT_MOUSEMOVE, sizeof (struct event_mousemove));
-    kernel_multicast(&event.states, &message.header);
-    kernel_multicast(&interface->event.states, &message.header);
+    kernel_notify(&event.states, EVENT_MOUSEMOVE, &mousemove, sizeof (struct event_mousemove));
+    kernel_notify(&interface->event.states, EVENT_MOUSEMOVE, &mousemove, sizeof (struct event_mousemove));
 
 }
 
 void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
 {
 
-    struct {struct event_header header; struct event_mousepress mousepress;} message;
+    struct event_mousepress mousepress;
 
-    message.mousepress.button = button;
+    mousepress.button = button;
 
-    event_create2(&message.header, EVENT_MOUSEPRESS, sizeof (struct event_mousepress));
-    kernel_multicast(&event.states, &message.header);
-    kernel_multicast(&interface->event.states, &message.header);
+    kernel_notify(&event.states, EVENT_MOUSEPRESS, &mousepress, sizeof (struct event_mousepress));
+    kernel_notify(&interface->event.states, EVENT_MOUSEPRESS, &mousepress, sizeof (struct event_mousepress));
 
 }
 
 void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
 {
 
-    struct {struct event_header header; struct event_mouserelease mouserelease;} message;
+    struct event_mouserelease mouserelease;
 
-    message.mouserelease.button = button;
+    mouserelease.button = button;
 
-    event_create2(&message.header, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease));
-    kernel_multicast(&event.states, &message.header);
-    kernel_multicast(&interface->event.states, &message.header);
+    kernel_notify(&event.states, EVENT_MOUSERELEASE, &mouserelease, sizeof (struct event_mouserelease));
+    kernel_notify(&interface->event.states, EVENT_MOUSERELEASE, &mouserelease, sizeof (struct event_mouserelease));
 
 }
 

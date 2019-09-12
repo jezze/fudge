@@ -270,8 +270,8 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            event_append(&channel->o.header, 2, "I");
-            event_append(&channel->o.header, ascii_length(t->str) + 1, t->str);
+            channel_append(channel, 2, "I");
+            channel_append(channel, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -281,8 +281,8 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            event_append(&channel->o.header, 2, "O");
-            event_append(&channel->o.header, ascii_length(t->str) + 1, t->str);
+            channel_append(channel, 2, "O");
+            channel_append(channel, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -292,8 +292,8 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            event_append(&channel->o.header, 2, "D");
-            event_append(&channel->o.header, ascii_length(t->str) + 1, t->str);
+            channel_append(channel, 2, "D");
+            channel_append(channel, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -303,8 +303,8 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            event_append(&channel->o.header, 2, "P");
-            event_append(&channel->o.header, ascii_length(t->str) + 1, t->str);
+            channel_append(channel, 2, "P");
+            channel_append(channel, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -314,8 +314,8 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            event_append(&channel->o.header, 2, "E");
-            event_append(&channel->o.header, ascii_length(t->str) + 1, t->str);
+            channel_append(channel, 2, "E");
+            channel_append(channel, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -323,7 +323,7 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
 
     }
 
-    channel_place(channel->o.header.target, &channel->o.header);
+    channel_place(channel, channel->o.header.target);
 
 }
 

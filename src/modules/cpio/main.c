@@ -8,11 +8,7 @@ static struct block_protocol blockprotocol;
 static void blockprotocol_notify(void *buffer, unsigned int count)
 {
 
-    union event_message message;
-
-    event_create(&message.header, EVENT_DATA);
-    event_append(&message.header, count, buffer);
-    kernel_multicast(&blockprotocol.data.states, &message.header);
+    kernel_notify(&blockprotocol.data.states, EVENT_DATA, buffer, count);
 
 }
 

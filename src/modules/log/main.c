@@ -12,43 +12,44 @@ static struct system_node info;
 static void write(struct list *states, unsigned int level, char *string, char *file, unsigned int line)
 {
 
-    union event_message message;
+    char buffer[FUDGE_BSIZE];
     char num[FUDGE_NSIZE];
-
-    event_create(&message.header, EVENT_DATA);
+    unsigned int count = 0;
 
     switch (level)
     {
 
     case DEBUG_CRITICAL:
-        event_append(&message.header, 7, "[CRIT] ");
+        count += memory_write(buffer, FUDGE_BSIZE, "[CRIT] ", 7, count);
 
         break;
 
     case DEBUG_ERROR:
-        event_append(&message.header, 7, "[ERRO] ");
+        count += memory_write(buffer, FUDGE_BSIZE, "[ERRO] ", 7, count);
 
         break;
 
     case DEBUG_WARNING:
-        event_append(&message.header, 7, "[WARN] ");
+        count += memory_write(buffer, FUDGE_BSIZE, "[WARN] ", 7, count);
 
         break;
 
     case DEBUG_INFO:
-        event_append(&message.header, 7, "[INFO] ");
+        count += memory_write(buffer, FUDGE_BSIZE, "[INFO] ", 7, count);
 
         break;
 
     }
 
-    event_append(&message.header, ascii_length(string), string);
-    event_append(&message.header, 2, " (");
-    event_append(&message.header, ascii_length(file), file);
-    event_append(&message.header, 1, ":");
-    event_append(&message.header, ascii_wvalue(num, FUDGE_NSIZE, line, 10), num);
-    event_append(&message.header, 2, ")\n");
-    kernel_multicast(states, &message.header);
+
+    count += memory_write(buffer, FUDGE_BSIZE, string, ascii_length(string), count);
+    count += memory_write(buffer, FUDGE_BSIZE, " (", 2, count);
+    count += memory_write(buffer, FUDGE_BSIZE, file, ascii_length(file), count);
+    count += memory_write(buffer, FUDGE_BSIZE, ":", 1, count);
+    count += memory_write(buffer, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10), count);
+    count += memory_write(buffer, FUDGE_BSIZE, ")\n", 2, count);
+
+    kernel_notify(states, EVENT_DATA, buffer, count);
 
 }
 

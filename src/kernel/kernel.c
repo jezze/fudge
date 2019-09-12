@@ -177,29 +177,6 @@ void kernel_freemount(struct service_mount *mount)
 
 }
 
-void kernel_blocktask(struct task *task)
-{
-
-    task->thread.status = TASK_STATUS_BLOCKED;
-
-    list_add(&blockedtasks, &task->item);
-
-}
-
-void kernel_unblocktask(struct task *task)
-{
-
-    if (task->thread.status != TASK_STATUS_BLOCKED)
-        return;
-
-    list_remove(&blockedtasks, &task->item);
-
-    task->thread.status = TASK_STATUS_NORMAL;
-
-    list_add(&usedtasks, &task->item);
-
-}
-
 void kernel_schedule(struct core *core)
 {
 
@@ -249,21 +226,21 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int target, struct event_header *header)
+unsigned int kernel_pick(struct task *task, void *buffer, unsigned int count)
 {
-
-    struct task *task = &tasks[target];
-    unsigned int count;
-
-    header->source = source;
-    header->target = target;
 
     spinlock_acquire(&task->mailbox.spinlock);
 
-    count = ring_writeall(&task->mailbox.ring, header, header->length);
+    count = ring_readall(&task->mailbox.ring, buffer, count);
 
-    if (count)
-        kernel_unblocktask(task);
+    if (!count)
+    {
+
+        task->thread.status = TASK_STATUS_BLOCKED;
+
+        list_add(&blockedtasks, &task->item);
+
+    }
 
     spinlock_release(&task->mailbox.spinlock);
 
@@ -271,11 +248,48 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct event
 
 }
 
-unsigned int kernel_multicast(struct list *states, struct event_header *header)
+unsigned int kernel_place(unsigned int source, unsigned int target, struct event_header *header, void *data)
+{
+
+    struct task *task = &tasks[target];
+
+    header->source = source;
+    header->target = target;
+
+    spinlock_acquire(&task->mailbox.spinlock);
+
+    if (ring_avail(&task->mailbox.ring) > header->length)
+    {
+
+        ring_writeall(&task->mailbox.ring, header, sizeof (struct event_header));
+        ring_writeall(&task->mailbox.ring, data, header->length - sizeof (struct event_header));
+
+    }
+
+    if (task->thread.status == TASK_STATUS_BLOCKED)
+    {
+
+        list_remove(&blockedtasks, &task->item);
+
+        task->thread.status = TASK_STATUS_NORMAL;
+
+        list_add(&usedtasks, &task->item);
+
+    }
+
+    spinlock_release(&task->mailbox.spinlock);
+
+    return header->length;
+
+}
+
+void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigned int count)
 {
 
     struct list_item *current;
+    struct event_header header;
 
+    event_create(&header, type, count);
     spinlock_acquire(&states->spinlock);
 
     for (current = states->head; current; current = current->next)
@@ -283,13 +297,11 @@ unsigned int kernel_multicast(struct list *states, struct event_header *header)
 
         struct service_state *state = current->data;
 
-        kernel_place(0, state->id, header);
+        kernel_place(0, state->id, &header, buffer);
 
     }
 
     spinlock_release(&states->spinlock);
-
-    return header->length;
 
 }
 

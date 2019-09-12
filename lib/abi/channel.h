@@ -1,19 +1,28 @@
+union channel_message
+{
+
+    struct event_header header;
+    char buffer[FUDGE_BSIZE];
+
+};
+
 struct channel
 {
 
     unsigned int state;
     void (*signals[EVENTS])(struct channel *channel, void *mdata, unsigned int msize);
-    union event_message i;
-    union event_message o;
+    union channel_message i;
+    union channel_message o;
 
 };
 
 unsigned int channel_pick(struct channel *channel);
-unsigned int channel_place(unsigned int id, struct event_header *header);
+unsigned int channel_place(struct channel *channel, unsigned int id);
 void channel_dispatch(struct channel *channel, unsigned int type);
 unsigned int channel_listen(struct channel *channel);
 void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, void *mdata, unsigned int msize));
 void channel_forward(struct channel *channel, unsigned int type);
 void channel_request(struct channel *channel, unsigned int type, unsigned int session);
 void channel_reply(struct channel *channel, unsigned int type);
+void channel_append(struct channel *channel, unsigned int count, void *buffer);
 void channel_init(struct channel *channel);

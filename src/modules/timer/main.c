@@ -8,23 +8,18 @@ static struct system_node root;
 void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
 {
 
-    union event_message message;
-
-    event_create(&message.header, EVENT_DATA);
-    event_append(&message.header, count, buffer);
-    kernel_multicast(&interface->data.states, &message.header);
+    kernel_notify(&interface->data.states, EVENT_DATA, buffer, count);
 
 }
 
 void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 {
 
-    struct {struct event_header header; struct event_timertick timertick;} message;
+    struct event_timertick timertick;
 
-    message.timertick.counter = counter;
+    timertick.counter = counter;
 
-    event_create2(&message.header, EVENT_TIMERTICK, sizeof (struct event_timertick));
-    kernel_multicast(&interface->event.states, &message.header);
+    kernel_notify(&interface->event.states, EVENT_TIMERTICK, &timertick, sizeof (struct event_timertick));
 
 }
 

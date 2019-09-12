@@ -55,7 +55,6 @@ void ethernet_send(void *buffer, unsigned int count)
 void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    union event_message message;
     struct ethernet_header *header = buffer;
     unsigned int type = (header->type[0] << 8) | header->type[1];
     struct resource *current = 0;
@@ -70,9 +69,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
     }
 
-    event_create(&message.header, EVENT_DATA);
-    event_append(&message.header, count, buffer);
-    kernel_multicast(&interface->data.states, &message.header);
+    kernel_notify(&interface->data.states, EVENT_DATA, buffer, count);
 
 }
 

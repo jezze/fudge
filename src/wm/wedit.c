@@ -248,10 +248,10 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
     if (ring_count(&output))
     {
 
-        union event_message message;
+        struct {struct event_header header; char data[FUDGE_BSIZE];} message;
 
-        event_create(&message.header, EVENT_DATA);
-        event_append(&message.header, ring_count(&output), outputdata);
+        event_create(&message.header, EVENT_DATA, ring_count(&output));
+        memory_write(message.data, FUDGE_BSIZE, outputdata, ring_count(&output), 0);
         ring_reset(&output);
         file_writeall(FILE_G0, &message, message.header.length);
 

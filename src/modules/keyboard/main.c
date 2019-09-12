@@ -9,37 +9,31 @@ static struct system_node event;
 void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigned int count)
 {
 
-    union event_message message;
-
-    event_create(&message.header, EVENT_DATA);
-    event_append(&message.header, count, buffer);
-    kernel_multicast(&interface->data.states, &message.header);
+    kernel_notify(&interface->data.states, EVENT_DATA, buffer, count);
 
 }
 
 void keyboard_notifypress(struct keyboard_interface *interface, unsigned char scancode)
 {
 
-    struct {struct event_header header; struct event_keypress keypress;} message;
+    struct event_keypress keypress;
 
-    message.keypress.scancode = scancode;
+    keypress.scancode = scancode;
 
-    event_create2(&message.header, EVENT_KEYPRESS, sizeof (struct event_keypress));
-    kernel_multicast(&event.states, &message.header);
-    kernel_multicast(&interface->event.states, &message.header);
+    kernel_notify(&event.states, EVENT_KEYPRESS, &keypress, sizeof (struct event_keypress));
+    kernel_notify(&interface->event.states, EVENT_KEYPRESS, &keypress, sizeof (struct event_keypress));
 
 }
 
 void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char scancode)
 {
 
-    struct {struct event_header header; struct event_keyrelease keyrelease;} message;
+    struct event_keyrelease keyrelease;
 
-    message.keyrelease.scancode = scancode;
+    keyrelease.scancode = scancode;
 
-    event_create2(&message.header, EVENT_KEYRELEASE, sizeof (struct event_keyrelease));
-    kernel_multicast(&event.states, &message.header);
-    kernel_multicast(&interface->event.states, &message.header);
+    kernel_notify(&event.states, EVENT_KEYRELEASE, &keyrelease, sizeof (struct event_keyrelease));
+    kernel_notify(&interface->event.states, EVENT_KEYRELEASE, &keyrelease, sizeof (struct event_keyrelease));
 
 }
 

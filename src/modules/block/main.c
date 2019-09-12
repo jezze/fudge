@@ -8,7 +8,6 @@ static struct system_node root;
 void block_notify(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    union event_message message;
     struct resource *current = 0;
 
     while ((current = resource_foreachtype(current, RESOURCE_BLOCKPROTOCOL)))
@@ -20,9 +19,7 @@ void block_notify(struct block_interface *interface, void *buffer, unsigned int 
 
     }
 
-    event_create(&message.header, EVENT_DATA);
-    event_append(&message.header, count, buffer);
-    kernel_multicast(&interface->data.states, &message.header);
+    kernel_notify(&interface->data.states, EVENT_DATA, buffer, count);
 
 }
 

@@ -300,18 +300,8 @@ static unsigned int pick(struct task *task, void *stack)
 {
 
     struct {void *caller; void *buffer; unsigned int count;} *args = stack;
-    unsigned int count;
 
-    spinlock_acquire(&task->mailbox.spinlock);
-
-    count = ring_readall(&task->mailbox.ring, args->buffer, args->count);
-
-    if (!count)
-        kernel_blocktask(task);
-
-    spinlock_release(&task->mailbox.spinlock);
-
-    return count;
+    return kernel_pick(task, args->buffer, args->count);
 
 }
 
@@ -319,8 +309,9 @@ static unsigned int place(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int id; void *buffer; unsigned int count;} *args = stack;
+    struct event_header *header = args->buffer;
 
-    return kernel_place(task->id, (args->id) ? args->id : task->id, args->buffer);
+    return kernel_place(task->id, (args->id) ? args->id : task->id, header, header + 1);
 
 }
 

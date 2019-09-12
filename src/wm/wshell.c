@@ -158,10 +158,10 @@ static unsigned int runcmd(struct channel *channel, char *command, char *data, u
     {
 
         channel_request(channel, EVENT_DATA, session);
-        event_append(&channel->o.header, count, data);
-        channel_place(id, &channel->o.header);
+        channel_append(channel, count, data);
+        channel_place(channel, id);
         channel_request(channel, EVENT_STOP, session);
-        channel_place(id, &channel->o.header);
+        channel_place(channel, id);
 
     }
 
@@ -384,10 +384,10 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
     if (ring_count(&output))
     {
 
-        union event_message message;
+        struct {struct event_header header; char data[FUDGE_BSIZE];} message;
 
-        event_create(&message.header, EVENT_DATA);
-        event_append(&message.header, ring_count(&output), outputdata);
+        event_create(&message.header, EVENT_DATA, ring_count(&output));
+        memory_write(message.data, FUDGE_BSIZE, outputdata, ring_count(&output), 0);
         ring_reset(&output);
         file_writeall(FILE_G0, &message, message.header.length);
 

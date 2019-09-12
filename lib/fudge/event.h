@@ -46,14 +46,6 @@ struct event_header
 
 };
 
-union event_message
-{
-
-    struct event_header header;
-    char buffer[FUDGE_BSIZE];
-
-};
-
 struct event_file
 {
 
@@ -176,17 +168,5 @@ struct event_wmmousemove
 
 };
 
-unsigned int event_avail(struct event_header *header);
 unsigned int event_addroute(struct event_header *header, unsigned int target, unsigned int session);
-unsigned int event_addfile(struct event_header *header, unsigned int descriptor);
-unsigned int event_addblockrequest(struct event_header *header, unsigned int offset, unsigned int count);
-unsigned int event_addwmconfigure(struct event_header *header, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight);
-unsigned int event_addwmkeypress(struct event_header *header, unsigned char scancode);
-unsigned int event_addwmkeyrelease(struct event_header *header, unsigned char scancode);
-unsigned int event_addwmmousepress(struct event_header *header, unsigned int button);
-unsigned int event_addwmmouserelease(struct event_header *header, unsigned int button);
-unsigned int event_addwmmousemove(struct event_header *header, char relx, char rely);
-unsigned int event_append(struct event_header *header, unsigned int count, void *buffer);
-void event_reset(struct event_header *header);
-void event_create(struct event_header *header, unsigned int type);
-void event_create2(struct event_header *header, unsigned int type, unsigned int length);
+void event_create(struct event_header *header, unsigned int type, unsigned int length);

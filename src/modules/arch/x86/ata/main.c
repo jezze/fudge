@@ -14,18 +14,11 @@ static void handleirq(unsigned int irq)
 
     unsigned char status = ide_getstatus(blockinterface.id);
     unsigned char data[512];
-    union event_message message;
 
     if (status & 1)
         return;
 
     ide_rblock(blockinterface.id, data);
-    event_create(&message.header, EVENT_DATA);
-    event_append(&message.header, 512, data);
-    /*
-    kernel_place(0, 0, &message);
-    */
-    event_reset(&message.header);
 
 }
 
