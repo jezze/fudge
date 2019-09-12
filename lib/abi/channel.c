@@ -120,6 +120,7 @@ void channel_init(struct channel *channel)
     for (i = 0; i < EVENTS; i++)
         channel_setsignal(channel, i, ignore);
 
+    event_create(&channel->i, 0, 0);
     channel_setsignal(channel, EVENT_KILL, abort);
     channel_setsignal(channel, EVENT_STOP, abort);
 
