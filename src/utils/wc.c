@@ -73,19 +73,22 @@ void main(void)
 
     struct channel channel;
     char num[FUDGE_NSIZE];
+    unsigned int id;
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_listen(&channel);
-    channel_reply(&channel, EVENT_DATA);
+
+    id = channel_reply(&channel, EVENT_DATA);
+
     channel_append(&channel, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
     channel_append(&channel, 1, "\n");
     channel_append(&channel, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
     channel_append(&channel, 1, "\n");
     channel_append(&channel, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
     channel_append(&channel, 1, "\n");
-    channel_place(&channel, channel.o.header.target);
+    channel_place(&channel, id);
 
 }
 

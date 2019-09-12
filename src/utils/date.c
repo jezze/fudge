@@ -4,9 +4,9 @@
 static void replydate(struct channel *channel, struct ctrl_clocksettings *settings)
 {
 
+    unsigned int id = channel_reply(channel, EVENT_DATA);
     char num[FUDGE_NSIZE];
 
-    channel_reply(channel, EVENT_DATA);
     channel_append(channel, ascii_wzerovalue(num, FUDGE_NSIZE, settings->year, 10, 4, 0), num);
     channel_append(channel, 1, "-");
     channel_append(channel, ascii_wzerovalue(num, FUDGE_NSIZE, settings->month, 10, 2, 0), num);
@@ -19,7 +19,7 @@ static void replydate(struct channel *channel, struct ctrl_clocksettings *settin
     channel_append(channel, 1, ":");
     channel_append(channel, ascii_wzerovalue(num, FUDGE_NSIZE, settings->seconds, 10, 2, 0), num);
     channel_append(channel, 1, "\n");
-    channel_place(channel, channel->o.header.target);
+    channel_place(channel, id);
 
 }
 

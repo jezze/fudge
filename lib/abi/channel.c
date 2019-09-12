@@ -90,7 +90,7 @@ void channel_request(struct channel *channel, unsigned int type, unsigned int se
 
 }
 
-void channel_reply(struct channel *channel, unsigned int type)
+unsigned int channel_reply(struct channel *channel, unsigned int type)
 {
 
     unsigned int i;
@@ -111,6 +111,8 @@ void channel_reply(struct channel *channel, unsigned int type)
         channel->o.header.session = channel->o.header.routes[channel->o.header.nroutes].session;
 
     }
+
+    return channel->o.header.target;
 
 }
 

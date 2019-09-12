@@ -32,6 +32,7 @@ void main(void)
     struct channel channel;
     unsigned char digest[16];
     char num[FUDGE_NSIZE];
+    unsigned int id;
     unsigned int i;
 
     channel_init(&channel);
@@ -40,13 +41,14 @@ void main(void)
     md5_init(&s);
     channel_listen(&channel);
     md5_write(&s, digest);
-    channel_reply(&channel, EVENT_DATA);
+
+    id = channel_reply(&channel, EVENT_DATA);
 
     for (i = 0; i < 16; i++)
         channel_append(&channel, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
 
     channel_append(&channel, 1, "\n");
-    channel_place(&channel, channel.o.header.target);
+    channel_place(&channel, id);
 
 }
 

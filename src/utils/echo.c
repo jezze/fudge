@@ -4,9 +4,10 @@
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    channel_reply(channel, EVENT_DATA);
+    unsigned int id = channel_reply(channel, EVENT_DATA);
+
     channel_append(channel, msize, mdata);
-    channel_place(channel, channel->o.header.target);
+    channel_place(channel, id);
 
 }
 
@@ -22,9 +23,10 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
     while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header))))
     {
 
-        channel_reply(channel, EVENT_DATA);
+        unsigned int id = channel_reply(channel, EVENT_DATA);
+
         channel_append(channel, count, buffer);
-        channel_place(channel, channel->o.header.target);
+        channel_place(channel, id);
 
     }
 

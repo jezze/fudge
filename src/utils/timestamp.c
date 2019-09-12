@@ -32,11 +32,11 @@ static void replytimestamp(struct channel *channel, struct ctrl_clocksettings *s
 {
 
     char num[FUDGE_NSIZE];
+    unsigned int id = channel_reply(channel, EVENT_DATA);
 
-    channel_reply(channel, EVENT_DATA);
     channel_append(channel, ascii_wvalue(num, FUDGE_NSIZE, gettimestamp(settings), 10), num);
     channel_append(channel, 1, "\n");
-    channel_place(channel, channel->o.header.target);
+    channel_place(channel, id);
 
 }
 

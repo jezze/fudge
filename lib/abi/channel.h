@@ -23,6 +23,6 @@ unsigned int channel_listen(struct channel *channel);
 void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, void *mdata, unsigned int msize));
 void channel_forward(struct channel *channel, unsigned int type);
 void channel_request(struct channel *channel, unsigned int type, unsigned int session);
-void channel_reply(struct channel *channel, unsigned int type);
+unsigned int channel_reply(struct channel *channel, unsigned int type);
 void channel_append(struct channel *channel, unsigned int count, void *buffer);
 void channel_init(struct channel *channel);

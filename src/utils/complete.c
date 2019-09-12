@@ -14,10 +14,11 @@ static void complete(struct channel *channel, unsigned int descriptor, void *nam
         if (record.length >= length && memory_match(record.name, name, length))
         {
 
-            channel_reply(channel, EVENT_DATA);
+            unsigned int id = channel_reply(channel, EVENT_DATA);
+
             channel_append(channel, record.length, record.name);
             channel_append(channel, 1, "\n");
-            channel_place(channel, channel->o.header.target);
+            channel_place(channel, id);
 
         }
 
