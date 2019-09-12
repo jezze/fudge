@@ -17,13 +17,13 @@ static struct ring text;
 static unsigned int totalrows;
 static unsigned int visiblerows;
 
-static void updatecontent(union event_message *imessage)
+static void updatecontent(struct event_header *header)
 {
 
     content.length = ring_count(&text) + ring_count(&prompt) + ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&text) + ring_count(&prompt) + ring_count(&input1);
 
-    widget_update(&output, &content, WIDGET_Z_MIDDLE, imessage->header.target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
+    widget_update(&output, &content, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
     ring_write(&output, &content, sizeof (struct widget_textbox));
     ring_copy(&output, &text);
     ring_copy(&output, &prompt);
@@ -33,10 +33,10 @@ static void updatecontent(union event_message *imessage)
 
 }
 
-static void removecontent(union event_message *imessage)
+static void removecontent(struct event_header *header)
 {
 
-    widget_remove(&output, &content, WIDGET_Z_MIDDLE, imessage->header.target);
+    widget_remove(&output, &content, WIDGET_Z_MIDDLE, header->target);
 
 }
 
@@ -244,7 +244,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
     }
 
-    updatecontent(&channel->i);
+    updatecontent(&channel->i.header);
 
 }
 
@@ -351,7 +351,7 @@ static void onwmkeypress(struct channel *channel, void *mdata, unsigned int msiz
 
     }
 
-    updatecontent(&channel->i);
+    updatecontent(&channel->i.header);
 
 }
 
@@ -367,14 +367,14 @@ static void onwmkeyrelease(struct channel *channel, void *mdata, unsigned int ms
 static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    updatecontent(&channel->i);
+    updatecontent(&channel->i.header);
 
 }
 
 static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    removecontent(&channel->i);
+    removecontent(&channel->i.header);
 
 }
 
