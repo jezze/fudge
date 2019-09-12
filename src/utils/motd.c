@@ -22,7 +22,7 @@ void main(void)
 
     channel_listen(&channel);
     channel_forward(&channel, EVENT_FILE);
-    event_addfile(&channel.o, FILE_P0);
+    event_addfile(&channel.o.header, FILE_P0);
     channel_place(id, &channel.o.header);
     channel_forward(&channel, EVENT_STOP);
     channel_place(id, &channel.o.header);

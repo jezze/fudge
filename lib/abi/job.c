@@ -50,7 +50,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
                 for (x = njobs; x > j + 1; x--)
                     event_addroute(&channel->o.header, jobs[x - 1].id, session);
 
-                event_addfile(&channel->o, FILE_P0 + k);
+                event_addfile(&channel->o.header, FILE_P0 + k);
                 channel_place(jobs[j].id, &channel->o.header);
 
             }

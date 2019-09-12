@@ -40,7 +40,7 @@ void main(void)
 
     file_open(FILE_G0);
     channel_request(&channel, EVENT_BLOCKREQUEST, 0);
-    event_addblockrequest(&channel.o, 0, 512 * 3);
+    event_addblockrequest(&channel.o.header, 0, 512 * 3);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     channel_listen(&channel);
 

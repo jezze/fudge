@@ -37,13 +37,13 @@ void main(void)
         return;
 
     event_create(&channel.o.header, EVENT_FILE);
-    event_addfile(&channel.o, FILE_P0);
+    event_addfile(&channel.o.header, FILE_P0);
     channel_place(id, &channel.o.header);
     event_create(&channel.o.header, EVENT_FILE);
-    event_addfile(&channel.o, FILE_P1);
+    event_addfile(&channel.o.header, FILE_P1);
     channel_place(id, &channel.o.header);
     event_create(&channel.o.header, EVENT_FILE);
-    event_addfile(&channel.o, FILE_P2);
+    event_addfile(&channel.o.header, FILE_P2);
     channel_place(id, &channel.o.header);
     event_create(&channel.o.header, EVENT_STOP);
     channel_place(id, &channel.o.header);

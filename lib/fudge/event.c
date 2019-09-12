@@ -34,33 +34,33 @@ unsigned int event_addroute(struct event_header *header, unsigned int target, un
 
 }
 
-unsigned int event_addfile(union event_message *message, unsigned int descriptor)
+unsigned int event_addfile(struct event_header *header, unsigned int descriptor)
 {
 
-    struct event_file *file = addpayload(&message->header, sizeof (struct event_file));
+    struct event_file *file = addpayload(header, sizeof (struct event_file));
 
     file->descriptor = descriptor;
 
-    return message->header.length;
+    return header->length;
 
 }
 
-unsigned int event_addblockrequest(union event_message *message, unsigned int offset, unsigned int count)
+unsigned int event_addblockrequest(struct event_header *header, unsigned int offset, unsigned int count)
 {
 
-    struct event_blockrequest *blockrequest = addpayload(&message->header, sizeof (struct event_blockrequest));
+    struct event_blockrequest *blockrequest = addpayload(header, sizeof (struct event_blockrequest));
 
     blockrequest->offset = offset;
     blockrequest->count = count;
 
-    return message->header.length;
+    return header->length;
 
 }
 
-unsigned int event_addwmconfigure(union event_message *message, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
+unsigned int event_addwmconfigure(struct event_header *header, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int padding, unsigned int lineheight)
 {
 
-    struct event_wmconfigure *wmconfigure = addpayload(&message->header, sizeof (struct event_wmconfigure));
+    struct event_wmconfigure *wmconfigure = addpayload(header, sizeof (struct event_wmconfigure));
 
     wmconfigure->x = x;
     wmconfigure->y = y;
@@ -69,63 +69,63 @@ unsigned int event_addwmconfigure(union event_message *message, unsigned int x, 
     wmconfigure->padding = padding;
     wmconfigure->lineheight = lineheight;
 
-    return message->header.length;
+    return header->length;
 
 }
 
-unsigned int event_addwmkeypress(union event_message *message, unsigned char scancode)
+unsigned int event_addwmkeypress(struct event_header *header, unsigned char scancode)
 {
 
-    struct event_wmkeypress *wmkeypress = addpayload(&message->header, sizeof (struct event_wmkeypress));
+    struct event_wmkeypress *wmkeypress = addpayload(header, sizeof (struct event_wmkeypress));
 
     wmkeypress->scancode = scancode;
 
-    return message->header.length;
+    return header->length;
 
 }
 
-unsigned int event_addwmkeyrelease(union event_message *message, unsigned char scancode)
+unsigned int event_addwmkeyrelease(struct event_header *header, unsigned char scancode)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = addpayload(&message->header, sizeof (struct event_wmkeyrelease));
+    struct event_wmkeyrelease *wmkeyrelease = addpayload(header, sizeof (struct event_wmkeyrelease));
 
     wmkeyrelease->scancode = scancode;
 
-    return message->header.length;
+    return header->length;
 
 }
 
-unsigned int event_addwmmousepress(union event_message *message, unsigned int button)
+unsigned int event_addwmmousepress(struct event_header *header, unsigned int button)
 {
 
-    struct event_wmmousepress *wmmousepress = addpayload(&message->header, sizeof (struct event_wmmousepress));
+    struct event_wmmousepress *wmmousepress = addpayload(header, sizeof (struct event_wmmousepress));
 
     wmmousepress->button = button;
 
-    return message->header.length;
+    return header->length;
 
 }
 
-unsigned int event_addwmmouserelease(union event_message *message, unsigned int button)
+unsigned int event_addwmmouserelease(struct event_header *header, unsigned int button)
 {
 
-    struct event_wmmouserelease *wmmouserelease = addpayload(&message->header, sizeof (struct event_wmmouserelease));
+    struct event_wmmouserelease *wmmouserelease = addpayload(header, sizeof (struct event_wmmouserelease));
 
     wmmouserelease->button = button;
 
-    return message->header.length;
+    return header->length;
 
 }
 
-unsigned int event_addwmmousemove(union event_message *message, char relx, char rely)
+unsigned int event_addwmmousemove(struct event_header *header, char relx, char rely)
 {
 
-    struct event_wmmousemove *wmmousemove = addpayload(&message->header, sizeof (struct event_wmmousemove));
+    struct event_wmmousemove *wmmousemove = addpayload(header, sizeof (struct event_wmmousemove));
 
     wmmousemove->relx = relx;
     wmmousemove->rely = rely;
 
-    return message->header.length;
+    return header->length;
 
 }
 
