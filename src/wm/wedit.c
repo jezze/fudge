@@ -282,10 +282,10 @@ void main(void)
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     widget_inittextbox(&content);
     widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
-    channel_request(&channel, EVENT_WMMAP, 0);
+    channel_request(&channel, EVENT_WMMAP);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     channel_listen(&channel);
-    channel_request(&channel, EVENT_WMUNMAP, 0);
+    channel_request(&channel, EVENT_WMUNMAP);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     file_close(FILE_G0);
 

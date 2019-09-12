@@ -157,10 +157,10 @@ static unsigned int runcmd(struct channel *channel, char *command, char *data, u
     if (id)
     {
 
-        channel_request(channel, EVENT_DATA, session);
+        channel_request2(channel, EVENT_DATA, session);
         channel_append(channel, count, data);
         channel_place(channel, id);
-        channel_request(channel, EVENT_STOP, session);
+        channel_request2(channel, EVENT_STOP, session);
         channel_place(channel, id);
 
     }
@@ -421,10 +421,10 @@ void main(void)
     ring_init(&text, FUDGE_BSIZE, textdata);
     widget_inittextbox(&content);
     ring_write(&prompt, "$ ", 2);
-    channel_request(&channel, EVENT_WMMAP, 0);
+    channel_request(&channel, EVENT_WMMAP);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     channel_listen(&channel);
-    channel_request(&channel, EVENT_WMUNMAP, 0);
+    channel_request(&channel, EVENT_WMUNMAP);
     file_writeall(FILE_G0, &channel.o, channel.o.header.length);
     file_close(FILE_G0);
 

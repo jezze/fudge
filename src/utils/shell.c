@@ -41,10 +41,10 @@ static unsigned int runcmd(struct channel *channel, char *command, char *data, u
     if (id)
     {
 
-        channel_request(channel, EVENT_DATA, session);
+        channel_request2(channel, EVENT_DATA, session);
         channel_append(channel, count, data);
         channel_place(channel, id);
-        channel_request(channel, EVENT_STOP, session);
+        channel_request2(channel, EVENT_STOP, session);
         channel_place(channel, id);
 
     }

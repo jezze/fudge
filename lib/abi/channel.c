@@ -43,13 +43,11 @@ void channel_dispatch(struct channel *channel, unsigned int type)
 
 }
 
-unsigned int channel_listen(struct channel *channel)
+void channel_listen(struct channel *channel)
 {
 
     while (channel->state)
         channel_dispatch(channel, channel_pick(channel));
-
-    return 0;
 
 }
 
@@ -74,17 +72,20 @@ void channel_forward(struct channel *channel, unsigned int type)
 
 }
 
-void channel_request(struct channel *channel, unsigned int type, unsigned int session)
+void channel_request(struct channel *channel, unsigned int type)
 {
 
-    unsigned int i;
+    channel_forward(channel, type);
+    event_addroute(&channel->o.header, channel->i.header.target, 0);
 
-    event_create(&channel->o.header, type, 0);
+}
+
+void channel_request2(struct channel *channel, unsigned int type, unsigned int session)
+{
+
+    channel_forward(channel, type);
 
     channel->o.header.session = session;
-
-    for (i = 0; i < channel->i.header.nroutes; i++)
-        event_addroute(&channel->o.header, channel->i.header.routes[i].target, channel->i.header.routes[i].session);
 
     event_addroute(&channel->o.header, channel->i.header.target, session);
 
@@ -93,26 +94,19 @@ void channel_request(struct channel *channel, unsigned int type, unsigned int se
 unsigned int channel_reply(struct channel *channel, unsigned int type)
 {
 
-    unsigned int i;
-
-    event_create(&channel->o.header, type, 0);
-
-    channel->o.header.session = channel->i.header.session;
-    channel->o.header.target = channel->i.header.source;
-
-    for (i = 0; i < channel->i.header.nroutes; i++)
-        event_addroute(&channel->o.header, channel->i.header.routes[i].target, channel->i.header.routes[i].session);
+    channel_forward(channel, type);
 
     if (channel->o.header.nroutes)
     {
 
         channel->o.header.nroutes--;
-        channel->o.header.target = channel->o.header.routes[channel->o.header.nroutes].target;
         channel->o.header.session = channel->o.header.routes[channel->o.header.nroutes].session;
+
+        return channel->o.header.routes[channel->o.header.nroutes].target;
 
     }
 
-    return channel->o.header.target;
+    return channel->i.header.source;
 
 }
 
