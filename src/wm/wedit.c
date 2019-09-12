@@ -12,13 +12,13 @@ static struct ring input1;
 static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
 
-static void updatecontent(struct event_header *header)
+static void updatecontent(unsigned int target)
 {
 
     content.length = ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&input1);
 
-    widget_update(&output, &content, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
+    widget_update(&output, &content, WIDGET_Z_MIDDLE, target, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
     ring_write(&output, &content, sizeof (struct widget_textbox));
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
@@ -26,28 +26,28 @@ static void updatecontent(struct event_header *header)
 
 }
 
-static void updatestatus(struct event_header *header)
+static void updatestatus(unsigned int target)
 {
 
     status.length = 18;
 
-    widget_update(&output, &status, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, status.size.x, status.size.y, status.size.w, status.size.h);
+    widget_update(&output, &status, WIDGET_Z_MIDDLE, target, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, status.size.x, status.size.y, status.size.w, status.size.h);
     ring_write(&output, &status, sizeof (struct widget_text));
     ring_write(&output, "^S: Save, ^Q: Quit", 18);
 
 }
 
-static void removecontent(struct event_header *header)
+static void removecontent(unsigned int target)
 {
 
-    widget_remove(&output, &content, WIDGET_Z_MIDDLE, header->target);
+    widget_remove(&output, &content, WIDGET_Z_MIDDLE, target);
 
 }
 
-static void removestatus(struct event_header *header)
+static void removestatus(unsigned int target)
 {
 
-    widget_remove(&output, &status, WIDGET_Z_MIDDLE, header->target);
+    widget_remove(&output, &status, WIDGET_Z_MIDDLE, target);
 
 }
 
@@ -207,8 +207,8 @@ static void onwmkeypress(struct channel *channel, void *mdata, unsigned int msiz
 
     }
 
-    updatecontent(&channel->i);
-    updatestatus(&channel->i);
+    updatecontent(channel->i.target);
+    updatestatus(channel->i.target);
 
 }
 
@@ -224,16 +224,16 @@ static void onwmkeyrelease(struct channel *channel, void *mdata, unsigned int ms
 static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    updatecontent(&channel->i);
-    updatestatus(&channel->i);
+    updatecontent(channel->i.target);
+    updatestatus(channel->i.target);
 
 }
 
 static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    removecontent(&channel->i);
-    removestatus(&channel->i);
+    removecontent(channel->i.target);
+    removestatus(channel->i.target);
 
 }
 

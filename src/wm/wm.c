@@ -41,64 +41,64 @@ static unsigned int padding;
 static unsigned int lineheight;
 static unsigned int steplength;
 
-static void updateremote(struct event_header *header, struct remote *remote)
+static void updateremote(unsigned int target, struct remote *remote)
 {
 
-    widget_update(&output, &remote->window, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_WINDOW, sizeof (struct widget_window), remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+    widget_update(&output, &remote->window, WIDGET_Z_MIDDLE, target, WIDGET_TYPE_WINDOW, sizeof (struct widget_window), remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
     ring_write(&output, &remote->window, sizeof (struct widget_window));
 
 }
 
-static void updateview(struct event_header *header, struct view *view)
+static void updateview(unsigned int target, struct view *view)
 {
 
-    widget_update(&output, &view->panel, WIDGET_Z_MIDDLE, header->target, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length, view->panel.size.x, view->panel.size.y, view->panel.size.w, view->panel.size.h);
+    widget_update(&output, &view->panel, WIDGET_Z_MIDDLE, target, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length, view->panel.size.x, view->panel.size.y, view->panel.size.w, view->panel.size.h);
     ring_write(&output, &view->panel, sizeof (struct widget_panel));
     ring_write(&output, &view->numberstring, view->panel.length);
 
 }
 
-static void updatemouse(struct event_header *header)
+static void updatemouse(unsigned int target)
 {
 
-    widget_update(&output, &mouse, WIDGET_Z_TOP, header->target, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse), mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
+    widget_update(&output, &mouse, WIDGET_Z_TOP, target, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse), mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
     ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
 }
 
-static void updatebackground(struct event_header *header)
+static void updatebackground(unsigned int target)
 {
 
-    widget_update(&output, &background, WIDGET_Z_BOTTOM, header->target, WIDGET_TYPE_FILL, sizeof (struct widget_fill), background.size.x, background.size.y, background.size.w, background.size.h);
+    widget_update(&output, &background, WIDGET_Z_BOTTOM, target, WIDGET_TYPE_FILL, sizeof (struct widget_fill), background.size.x, background.size.y, background.size.w, background.size.h);
     ring_write(&output, &background, sizeof (struct widget_fill));
 
 }
 
-static void removeremote(struct event_header *header, struct remote *remote)
+static void removeremote(unsigned int target, struct remote *remote)
 {
 
-    widget_remove(&output, &remote->window, WIDGET_Z_MIDDLE, header->target);
+    widget_remove(&output, &remote->window, WIDGET_Z_MIDDLE, target);
 
 }
 
-static void removeview(struct event_header *header, struct view *view)
+static void removeview(unsigned int target, struct view *view)
 {
 
-    widget_remove(&output, &view->panel, WIDGET_Z_MIDDLE, header->target);
+    widget_remove(&output, &view->panel, WIDGET_Z_MIDDLE, target);
 
 }
 
-static void removemouse(struct event_header *header)
+static void removemouse(unsigned int target)
 {
 
-    widget_remove(&output, &mouse, WIDGET_Z_TOP, header->target);
+    widget_remove(&output, &mouse, WIDGET_Z_TOP, target);
 
 }
 
-static void removebackground(struct event_header *header)
+static void removebackground(unsigned int target)
 {
 
-    widget_remove(&output, &background, WIDGET_Z_BOTTOM, header->target);
+    widget_remove(&output, &background, WIDGET_Z_BOTTOM, target);
 
 }
 
@@ -142,7 +142,7 @@ static void showremotes(struct channel *channel, struct list *remotes)
 
         channel_request(channel, EVENT_WMSHOW);
         channel_place(channel, remote->source);
-        updateremote(&channel->i, remote);
+        updateremote(channel->i.target, remote);
 
     }
 
@@ -160,7 +160,7 @@ static void hideremotes(struct channel *channel, struct list *remotes)
 
         channel_request(channel, EVENT_WMHIDE);
         channel_place(channel, remote->source);
-        removeremote(&channel->i, remote);
+        removeremote(channel->i.target, remote);
 
     }
 
@@ -214,13 +214,13 @@ static void flipview(struct channel *channel, struct view *view)
 
     deactivateview(currentview);
     hideremotes(channel, &currentview->remotes);
-    updateview(&channel->i, currentview);
+    updateview(channel->i.target, currentview);
 
     currentview = view;
 
     activateview(currentview);
     showremotes(channel, &currentview->remotes);
-    updateview(&channel->i, currentview);
+    updateview(channel->i.target, currentview);
 
 }
 
@@ -485,12 +485,12 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
             break;
 
         deactivateremote(currentview->currentremote);
-        updateremote(&channel->i, currentview->currentremote);
+        updateremote(channel->i.target, currentview->currentremote);
 
         currentview->currentremote = nextremote;
 
         activateremote(currentview->currentremote);
-        updateremote(&channel->i, currentview->currentremote);
+        updateremote(channel->i.target, currentview->currentremote);
 
         break;
 
@@ -504,12 +504,12 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
             break;
 
         deactivateremote(currentview->currentremote);
-        updateremote(&channel->i, currentview->currentremote);
+        updateremote(channel->i.target, currentview->currentremote);
 
         currentview->currentremote = nextremote;
 
         activateremote(currentview->currentremote);
-        updateremote(&channel->i, currentview->currentremote);
+        updateremote(channel->i.target, currentview->currentremote);
 
         break;
 
@@ -584,7 +584,7 @@ static void onmousemove(struct channel *channel, void *mdata, unsigned int msize
     if (mouse.size.y < screen.y || mouse.size.y >= screen.y + screen.h)
         mouse.size.y = (mousemove->rely < 0) ? screen.y : screen.y + screen.h - 1;
 
-    updatemouse(&channel->i);
+    updatemouse(channel->i.target);
 
     if (currentview->currentremote)
     {
@@ -643,12 +643,12 @@ static void onmousepress(struct channel *channel, void *mdata, unsigned int msiz
             {
 
                 deactivateremote(currentview->currentremote);
-                updateremote(&channel->i, currentview->currentremote);
+                updateremote(channel->i.target, currentview->currentremote);
 
                 currentview->currentremote = remote;
 
                 activateremote(currentview->currentremote);
-                updateremote(&channel->i, currentview->currentremote);
+                updateremote(channel->i.target, currentview->currentremote);
 
                 break;
 
@@ -837,7 +837,7 @@ static void onwmunmap(struct channel *channel, void *mdata, unsigned int msize)
             if (channel->i.source != remote->source)
                 continue;
 
-            removeremote(&channel->i, remote);
+            removeremote(channel->i.target, remote);
             list_move(&remotelist, remote->item.list, &remote->item);
 
             view->currentremote = (view->remotes.tail) ? view->remotes.tail->data : 0;
@@ -861,11 +861,11 @@ static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
 
     struct list_item *current;
 
-    updatebackground(&channel->i);
-    updatemouse(&channel->i);
+    updatebackground(channel->i.target);
+    updatemouse(channel->i.target);
 
     for (current = viewlist.head; current; current = current->next)
-        updateview(&channel->i, current->data);
+        updateview(channel->i.target, current->data);
 
     showremotes(channel, &currentview->remotes);
 
@@ -876,11 +876,11 @@ static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 
     struct list_item *current;
 
-    removebackground(&channel->i);
-    removemouse(&channel->i);
+    removebackground(channel->i.target);
+    removemouse(channel->i.target);
 
     for (current = viewlist.head; current; current = current->next)
-        removeview(&channel->i, current->data);
+        removeview(channel->i.target, current->data);
 
     hideremotes(channel, &currentview->remotes);
 
