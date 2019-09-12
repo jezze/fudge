@@ -17,7 +17,7 @@ static void abort(struct channel *channel, void *mdata, unsigned int msize)
 void channel_place(struct channel *channel, unsigned int id)
 {
 
-    while (!call_place(id, &channel->o.header, &channel->o.header + 1));
+    while (!call_place(id, &channel->o, channel->data));
 
 }
 
@@ -56,12 +56,12 @@ void channel_forward(struct channel *channel, unsigned int type)
 
     unsigned int i;
 
-    event_create(&channel->o.header, type, 0);
+    event_create(&channel->o, type, 0);
 
-    channel->o.header.session = channel->i.session;
+    channel->o.session = channel->i.session;
 
     for (i = 0; i < channel->i.nroutes; i++)
-        event_addroute(&channel->o.header, channel->i.routes[i].target, channel->i.routes[i].session);
+        event_addroute(&channel->o, channel->i.routes[i].target, channel->i.routes[i].session);
 
 }
 
@@ -69,7 +69,7 @@ void channel_request(struct channel *channel, unsigned int type)
 {
 
     channel_forward(channel, type);
-    event_addroute(&channel->o.header, channel->i.target, 0);
+    event_addroute(&channel->o, channel->i.target, 0);
 
 }
 
@@ -78,9 +78,9 @@ void channel_request2(struct channel *channel, unsigned int type, unsigned int s
 
     channel_forward(channel, type);
 
-    channel->o.header.session = session;
+    channel->o.session = session;
 
-    event_addroute(&channel->o.header, channel->i.target, session);
+    event_addroute(&channel->o, channel->i.target, session);
 
 }
 
@@ -89,13 +89,13 @@ unsigned int channel_reply(struct channel *channel, unsigned int type)
 
     channel_forward(channel, type);
 
-    if (channel->o.header.nroutes)
+    if (channel->o.nroutes)
     {
 
-        channel->o.header.nroutes--;
-        channel->o.header.session = channel->o.header.routes[channel->o.header.nroutes].session;
+        channel->o.nroutes--;
+        channel->o.session = channel->o.routes[channel->o.nroutes].session;
 
-        return channel->o.header.routes[channel->o.header.nroutes].target;
+        return channel->o.routes[channel->o.nroutes].target;
 
     }
 
@@ -106,7 +106,7 @@ unsigned int channel_reply(struct channel *channel, unsigned int type)
 void channel_append(struct channel *channel, unsigned int count, void *buffer)
 {
 
-    channel->o.header.length += memory_write(&channel->o.header, FUDGE_BSIZE, buffer, count, channel->o.header.length);
+    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, buffer, count, channel->o.length - sizeof (struct event_header));
 
 }
 

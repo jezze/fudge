@@ -283,10 +283,10 @@ void main(void)
     widget_inittextbox(&content);
     widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
     channel_request(&channel, EVENT_WMMAP);
-    file_writeall(FILE_G0, &channel.o, channel.o.header.length);
+    file_writeall(FILE_G0, &channel.o, channel.o.length);
     channel_listen(&channel);
     channel_request(&channel, EVENT_WMUNMAP);
-    file_writeall(FILE_G0, &channel.o, channel.o.header.length);
+    file_writeall(FILE_G0, &channel.o, channel.o.length);
     file_close(FILE_G0);
 
 }

@@ -40,22 +40,22 @@ void main(void)
 
     file.descriptor = FILE_P0;
 
-    event_create(&channel.o.header, EVENT_FILE, 0);
+    event_create(&channel.o, EVENT_FILE, 0);
     channel_append(&channel, sizeof (struct event_file), &file);
     channel_place(&channel, id);
 
     file.descriptor = FILE_P1;
 
-    event_create(&channel.o.header, EVENT_FILE, 0);
+    event_create(&channel.o, EVENT_FILE, 0);
     channel_append(&channel, sizeof (struct event_file), &file);
     channel_place(&channel, id);
 
     file.descriptor = FILE_P2;
 
-    event_create(&channel.o.header, EVENT_FILE, 0);
+    event_create(&channel.o, EVENT_FILE, 0);
     channel_append(&channel, sizeof (struct event_file), &file);
     channel_place(&channel, id);
-    event_create(&channel.o.header, EVENT_STOP, 0);
+    event_create(&channel.o, EVENT_STOP, 0);
     channel_place(&channel, id);
     channel_listen(&channel);
 

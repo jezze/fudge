@@ -1,18 +1,11 @@
-union channel_message
-{
-
-    struct event_header header;
-    char buffer[FUDGE_BSIZE];
-
-};
-
 struct channel
 {
 
     unsigned int state;
     void (*signals[EVENTS])(struct channel *channel, void *mdata, unsigned int msize);
     struct event_header i;
-    union channel_message o;
+    struct event_header o;
+    char data[FUDGE_BSIZE];
 
 };
 
