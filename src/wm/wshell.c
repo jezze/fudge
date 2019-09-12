@@ -224,7 +224,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
     struct job jobs[32];
 
-    switch (channel->i.header.session)
+    switch (channel->i.session)
     {
 
     case 0:
@@ -244,7 +244,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
     }
 
-    updatecontent(&channel->i.header);
+    updatecontent(&channel->i);
 
 }
 
@@ -351,7 +351,7 @@ static void onwmkeypress(struct channel *channel, void *mdata, unsigned int msiz
 
     }
 
-    updatecontent(&channel->i.header);
+    updatecontent(&channel->i);
 
 }
 
@@ -367,14 +367,14 @@ static void onwmkeyrelease(struct channel *channel, void *mdata, unsigned int ms
 static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    updatecontent(&channel->i.header);
+    updatecontent(&channel->i);
 
 }
 
 static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    removecontent(&channel->i.header);
+    removecontent(&channel->i);
 
 }
 

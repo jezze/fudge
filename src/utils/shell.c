@@ -154,7 +154,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
     struct job jobs[32];
 
-    switch (channel->i.header.session)
+    switch (channel->i.session)
     {
 
     case 0:

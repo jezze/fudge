@@ -308,10 +308,9 @@ static unsigned int pick(struct task *task, void *stack)
 static unsigned int place(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int id; void *buffer; unsigned int count;} *args = stack;
-    struct event_header *header = args->buffer;
+    struct {void *caller; unsigned int id; struct event_header *header; void *data;} *args = stack;
 
-    return kernel_place(task->id, (args->id) ? args->id : task->id, header, header + 1);
+    return kernel_place(task->id, (args->id) ? args->id : task->id, args->header, args->data);
 
 }
 

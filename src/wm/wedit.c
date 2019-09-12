@@ -212,8 +212,8 @@ static void onwmkeypress(struct channel *channel, void *mdata, unsigned int msiz
 
     }
 
-    updatecontent(&channel->i.header);
-    updatestatus(&channel->i.header);
+    updatecontent(&channel->i);
+    updatestatus(&channel->i);
 
 }
 
@@ -229,16 +229,16 @@ static void onwmkeyrelease(struct channel *channel, void *mdata, unsigned int ms
 static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    updatecontent(&channel->i.header);
-    updatestatus(&channel->i.header);
+    updatecontent(&channel->i);
+    updatestatus(&channel->i);
 
 }
 
 static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    removecontent(&channel->i.header);
-    removestatus(&channel->i.header);
+    removecontent(&channel->i);
+    removestatus(&channel->i);
 
 }
 

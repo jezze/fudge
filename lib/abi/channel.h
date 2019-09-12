@@ -11,14 +11,12 @@ struct channel
 
     unsigned int state;
     void (*signals[EVENTS])(struct channel *channel, void *mdata, unsigned int msize);
-    union channel_message i;
+    struct event_header i;
     union channel_message o;
 
 };
 
-unsigned int channel_pick(struct channel *channel);
-unsigned int channel_place(struct channel *channel, unsigned int id);
-void channel_dispatch(struct channel *channel, unsigned int type);
+void channel_place(struct channel *channel, unsigned int id);
 void channel_listen(struct channel *channel);
 void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, void *mdata, unsigned int msize));
 void channel_forward(struct channel *channel, unsigned int type);

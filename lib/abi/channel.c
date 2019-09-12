@@ -14,32 +14,10 @@ static void abort(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-unsigned int channel_pick(struct channel *channel)
+void channel_place(struct channel *channel, unsigned int id)
 {
 
-    while (!call_pick(&channel->i.header, sizeof (struct event_header)));
-
-    if (channel->i.header.length > sizeof (struct event_header))
-        while (!call_pick(&channel->i.header + 1, channel->i.header.length - sizeof (struct event_header)));
-
-    return channel->i.header.type;
-
-}
-
-unsigned int channel_place(struct channel *channel, unsigned int id)
-{
-
-    while (!call_place(id, &channel->o.header, channel->o.header.length));
-
-    return channel->o.header.type;
-
-}
-
-void channel_dispatch(struct channel *channel, unsigned int type)
-{
-
-    channel->signals[type](channel, &channel->i.header + 1, channel->i.header.length - sizeof (struct event_header));
-    channel->signals[EVENT_ANY](channel, &channel->i.header + 1, channel->i.header.length - sizeof (struct event_header));
+    while (!call_place(id, &channel->o.header, &channel->o.header + 1));
 
 }
 
@@ -47,7 +25,22 @@ void channel_listen(struct channel *channel)
 {
 
     while (channel->state)
-        channel_dispatch(channel, channel_pick(channel));
+    {
+
+        char data[FUDGE_BSIZE];
+        unsigned int size;
+
+        while (!call_pick(&channel->i, sizeof (struct event_header)));
+
+        size = channel->i.length - sizeof (struct event_header);
+
+        if (size)
+            while (!call_pick(data, size));
+
+        channel->signals[channel->i.type](channel, data, size);
+        channel->signals[EVENT_ANY](channel, data, size);
+
+    }
 
 }
 
@@ -65,10 +58,10 @@ void channel_forward(struct channel *channel, unsigned int type)
 
     event_create(&channel->o.header, type, 0);
 
-    channel->o.header.session = channel->i.header.session;
+    channel->o.header.session = channel->i.session;
 
-    for (i = 0; i < channel->i.header.nroutes; i++)
-        event_addroute(&channel->o.header, channel->i.header.routes[i].target, channel->i.header.routes[i].session);
+    for (i = 0; i < channel->i.nroutes; i++)
+        event_addroute(&channel->o.header, channel->i.routes[i].target, channel->i.routes[i].session);
 
 }
 
@@ -76,7 +69,7 @@ void channel_request(struct channel *channel, unsigned int type)
 {
 
     channel_forward(channel, type);
-    event_addroute(&channel->o.header, channel->i.header.target, 0);
+    event_addroute(&channel->o.header, channel->i.target, 0);
 
 }
 
@@ -87,7 +80,7 @@ void channel_request2(struct channel *channel, unsigned int type, unsigned int s
 
     channel->o.header.session = session;
 
-    event_addroute(&channel->o.header, channel->i.header.target, session);
+    event_addroute(&channel->o.header, channel->i.target, session);
 
 }
 
@@ -106,7 +99,7 @@ unsigned int channel_reply(struct channel *channel, unsigned int type)
 
     }
 
-    return channel->i.header.source;
+    return channel->i.source;
 
 }
 

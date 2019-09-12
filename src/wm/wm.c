@@ -142,7 +142,7 @@ static void showremotes(struct channel *channel, struct list *remotes)
 
         channel_request(channel, EVENT_WMSHOW);
         channel_place(channel, remote->source);
-        updateremote(&channel->i.header, remote);
+        updateremote(&channel->i, remote);
 
     }
 
@@ -160,7 +160,7 @@ static void hideremotes(struct channel *channel, struct list *remotes)
 
         channel_request(channel, EVENT_WMHIDE);
         channel_place(channel, remote->source);
-        removeremote(&channel->i.header, remote);
+        removeremote(&channel->i, remote);
 
     }
 
@@ -214,13 +214,13 @@ static void flipview(struct channel *channel, struct view *view)
 
     deactivateview(currentview);
     hideremotes(channel, &currentview->remotes);
-    updateview(&channel->i.header, currentview);
+    updateview(&channel->i, currentview);
 
     currentview = view;
 
     activateview(currentview);
     showremotes(channel, &currentview->remotes);
-    updateview(&channel->i.header, currentview);
+    updateview(&channel->i, currentview);
 
 }
 
@@ -490,12 +490,12 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
             break;
 
         deactivateremote(currentview->currentremote);
-        updateremote(&channel->i.header, currentview->currentremote);
+        updateremote(&channel->i, currentview->currentremote);
 
         currentview->currentremote = nextremote;
 
         activateremote(currentview->currentremote);
-        updateremote(&channel->i.header, currentview->currentremote);
+        updateremote(&channel->i, currentview->currentremote);
 
         break;
 
@@ -509,12 +509,12 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
             break;
 
         deactivateremote(currentview->currentremote);
-        updateremote(&channel->i.header, currentview->currentremote);
+        updateremote(&channel->i, currentview->currentremote);
 
         currentview->currentremote = nextremote;
 
         activateremote(currentview->currentremote);
-        updateremote(&channel->i.header, currentview->currentremote);
+        updateremote(&channel->i, currentview->currentremote);
 
         break;
 
@@ -589,7 +589,7 @@ static void onmousemove(struct channel *channel, void *mdata, unsigned int msize
     if (mouse.size.y < screen.y || mouse.size.y >= screen.y + screen.h)
         mouse.size.y = (mousemove->rely < 0) ? screen.y : screen.y + screen.h - 1;
 
-    updatemouse(&channel->i.header);
+    updatemouse(&channel->i);
 
     if (currentview->currentremote)
     {
@@ -648,12 +648,12 @@ static void onmousepress(struct channel *channel, void *mdata, unsigned int msiz
             {
 
                 deactivateremote(currentview->currentremote);
-                updateremote(&channel->i.header, currentview->currentremote);
+                updateremote(&channel->i, currentview->currentremote);
 
                 currentview->currentremote = remote;
 
                 activateremote(currentview->currentremote);
-                updateremote(&channel->i.header, currentview->currentremote);
+                updateremote(&channel->i, currentview->currentremote);
 
                 break;
 
@@ -814,7 +814,7 @@ static void onwmmap(struct channel *channel, void *mdata, unsigned int msize)
         deactivateremote(currentview->currentremote);
 
     currentview->currentremote = remotelist.head->data;
-    currentview->currentremote->source = channel->i.header.source;
+    currentview->currentremote->source = channel->i.source;
 
     list_move(&currentview->remotes, currentview->currentremote->item.list, &currentview->currentremote->item);
     activateremote(currentview->currentremote);
@@ -839,10 +839,10 @@ static void onwmunmap(struct channel *channel, void *mdata, unsigned int msize)
 
             struct remote *remote = current2->data;
 
-            if (channel->i.header.source != remote->source)
+            if (channel->i.source != remote->source)
                 continue;
 
-            removeremote(&channel->i.header, remote);
+            removeremote(&channel->i, remote);
             list_move(&remotelist, remote->item.list, &remote->item);
 
             view->currentremote = (view->remotes.tail) ? view->remotes.tail->data : 0;
@@ -866,11 +866,11 @@ static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
 
     struct list_item *current;
 
-    updatebackground(&channel->i.header);
-    updatemouse(&channel->i.header);
+    updatebackground(&channel->i);
+    updatemouse(&channel->i);
 
     for (current = viewlist.head; current; current = current->next)
-        updateview(&channel->i.header, current->data);
+        updateview(&channel->i, current->data);
 
     showremotes(channel, &currentview->remotes);
 
@@ -881,11 +881,11 @@ static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 
     struct list_item *current;
 
-    removebackground(&channel->i.header);
-    removemouse(&channel->i.header);
+    removebackground(&channel->i);
+    removemouse(&channel->i);
 
     for (current = viewlist.head; current; current = current->next)
-        removeview(&channel->i.header, current->data);
+        removeview(&channel->i, current->data);
 
     hideremotes(channel, &currentview->remotes);
 
