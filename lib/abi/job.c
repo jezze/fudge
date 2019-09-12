@@ -51,7 +51,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
                     event_addroute(&channel->o.header, jobs[x - 1].id, session);
 
                 event_addfile(&channel->o, FILE_P0 + k);
-                channel_place(jobs[j].id, &channel->o);
+                channel_place(jobs[j].id, &channel->o.header);
 
             }
 
@@ -64,7 +64,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
                     event_addroute(&channel->o.header, jobs[x - 1].id, session);
 
                 event_append(&channel->o.header, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
-                channel_place(jobs[j].id, &channel->o);
+                channel_place(jobs[j].id, &channel->o.header);
 
             }
 
@@ -78,7 +78,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
             for (x = njobs; x > j + 1; x--)
                 event_addroute(&channel->o.header, jobs[x - 1].id, session);
 
-            channel_place(jobs[j].id, &channel->o);
+            channel_place(jobs[j].id, &channel->o.header);
 
         }
 
@@ -87,7 +87,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
         for (x = njobs; x > j + 1; x--)
             event_addroute(&channel->o.header, jobs[x - 1].id, session);
 
-        channel_place(jobs[j].id, &channel->o);
+        channel_place(jobs[j].id, &channel->o.header);
 
     }
 

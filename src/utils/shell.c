@@ -43,9 +43,9 @@ static unsigned int runcmd(struct channel *channel, char *command, char *data, u
 
         channel_request(channel, EVENT_DATA, session);
         event_append(&channel->o.header, count, data);
-        channel_place(id, &channel->o);
+        channel_place(id, &channel->o.header);
         channel_request(channel, EVENT_STOP, session);
-        channel_place(id, &channel->o);
+        channel_place(id, &channel->o.header);
 
     }
 

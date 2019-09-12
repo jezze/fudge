@@ -9,7 +9,7 @@ struct channel
 };
 
 unsigned int channel_pick(struct channel *channel);
-unsigned int channel_place(unsigned int id, union event_message *message);
+unsigned int channel_place(unsigned int id, struct event_header *header);
 void channel_dispatch(struct channel *channel, unsigned int type);
 unsigned int channel_listen(struct channel *channel);
 void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, void *mdata, unsigned int msize));

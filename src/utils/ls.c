@@ -15,7 +15,7 @@ static void list(struct channel *channel, unsigned int descriptor)
         if (event_avail(&channel->o.header) < record.length + 1)
         {
 
-            channel_place(channel->o.header.target, &channel->o);
+            channel_place(channel->o.header.target, &channel->o.header);
             event_reset(&channel->o.header);
 
         }
@@ -28,7 +28,7 @@ static void list(struct channel *channel, unsigned int descriptor)
 
     }
 
-    channel_place(channel->o.header.target, &channel->o);
+    channel_place(channel->o.header.target, &channel->o.header);
     file_close(descriptor);
 
 }

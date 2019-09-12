@@ -323,7 +323,7 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
 
     }
 
-    channel_place(channel->o.header.target, &channel->o);
+    channel_place(channel->o.header.target, &channel->o.header);
 
 }
 

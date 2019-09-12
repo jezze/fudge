@@ -85,7 +85,7 @@ void main(void)
     event_append(&channel.o.header, 1, "\n");
     event_append(&channel.o.header, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
     event_append(&channel.o.header, 1, "\n");
-    channel_place(channel.o.header.target, &channel.o);
+    channel_place(channel.o.header.target, &channel.o.header);
 
 }
 

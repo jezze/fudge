@@ -39,7 +39,7 @@ void main(void)
     channel_reply(&channel, EVENT_DATA);
     event_append(&channel.o.header, ascii_wvalue(buffer, 32, crc_finalize(&s), 10), buffer);
     event_append(&channel.o.header, 1, "\n");
-    channel_place(channel.o.header.target, &channel.o);
+    channel_place(channel.o.header.target, &channel.o.header);
 
 }
 

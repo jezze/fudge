@@ -38,15 +38,15 @@ void main(void)
 
     event_create(&channel.o.header, EVENT_FILE);
     event_addfile(&channel.o, FILE_P0);
-    channel_place(id, &channel.o);
+    channel_place(id, &channel.o.header);
     event_create(&channel.o.header, EVENT_FILE);
     event_addfile(&channel.o, FILE_P1);
-    channel_place(id, &channel.o);
+    channel_place(id, &channel.o.header);
     event_create(&channel.o.header, EVENT_FILE);
     event_addfile(&channel.o, FILE_P2);
-    channel_place(id, &channel.o);
+    channel_place(id, &channel.o.header);
     event_create(&channel.o.header, EVENT_STOP);
-    channel_place(id, &channel.o);
+    channel_place(id, &channel.o.header);
     channel_listen(&channel);
 
 }

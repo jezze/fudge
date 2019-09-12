@@ -46,7 +46,7 @@ void main(void)
         event_append(&channel.o.header, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
 
     event_append(&channel.o.header, 1, "\n");
-    channel_place(channel.o.header.target, &channel.o);
+    channel_place(channel.o.header.target, &channel.o.header);
 
 }
 

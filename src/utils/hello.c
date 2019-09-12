@@ -10,7 +10,7 @@ void main(void)
     channel_listen(&channel);
     channel_reply(&channel, EVENT_DATA);
     event_append(&channel.o.header, 13, "Hello world!\n");
-    channel_place(channel.o.header.target, &channel.o);
+    channel_place(channel.o.header.target, &channel.o.header);
 
 }
 
