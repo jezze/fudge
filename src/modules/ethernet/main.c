@@ -72,7 +72,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
     event_create(&message.header, EVENT_DATA);
     event_append(&message.header, count, buffer);
-    kernel_multicast(EVENT_BROADCAST, &interface->data.states, &message.header);
+    kernel_multicast(&interface->data.states, &message.header);
 
 }
 

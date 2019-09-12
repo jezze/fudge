@@ -48,7 +48,7 @@ static void write(struct list *states, unsigned int level, char *string, char *f
     event_append(&message.header, 1, ":");
     event_append(&message.header, ascii_wvalue(num, FUDGE_NSIZE, line, 10), num);
     event_append(&message.header, 2, ")\n");
-    kernel_multicast(EVENT_BROADCAST, states, &message.header);
+    kernel_multicast(states, &message.header);
 
 }
 

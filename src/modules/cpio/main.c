@@ -12,7 +12,7 @@ static void blockprotocol_notify(void *buffer, unsigned int count)
 
     event_create(&message.header, EVENT_DATA);
     event_append(&message.header, count, buffer);
-    kernel_multicast(EVENT_BROADCAST, &blockprotocol.data.states, &message.header);
+    kernel_multicast(&blockprotocol.data.states, &message.header);
 
 }
 

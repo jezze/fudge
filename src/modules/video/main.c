@@ -15,7 +15,7 @@ void video_notifymode(struct video_interface *interface, unsigned int w, unsigne
     message.videomode.bpp = bpp;
 
     event_create2(&message.header, EVENT_VIDEOMODE, sizeof (struct event_videomode));
-    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message.header);
+    kernel_multicast(&interface->event.states, &message.header);
 
 }
 

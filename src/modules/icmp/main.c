@@ -53,7 +53,7 @@ static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, un
 
     event_create(&message.header, EVENT_DATA);
     event_append(&message.header, count, buffer);
-    kernel_multicast(EVENT_BROADCAST, &ipv4protocol.data.states, &message.header);
+    kernel_multicast(&ipv4protocol.data.states, &message.header);
 
 }
 
@@ -64,7 +64,7 @@ static void ipv6protocol_notify(struct ipv6_header *ipv6header, void *buffer, un
 
     event_create(&message.header, EVENT_DATA);
     event_append(&message.header, count, buffer);
-    kernel_multicast(EVENT_BROADCAST, &ipv6protocol.data.states, &message.header);
+    kernel_multicast(&ipv6protocol.data.states, &message.header);
 
 }
 

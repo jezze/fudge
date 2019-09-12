@@ -13,7 +13,7 @@ void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int 
 
     event_create(&message.header, EVENT_DATA);
     event_append(&message.header, count, buffer);
-    kernel_multicast(EVENT_BROADCAST, &interface->data.states, &message.header);
+    kernel_multicast(&interface->data.states, &message.header);
 
 }
 
@@ -26,8 +26,8 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     message.mousemove.rely = rely;
 
     event_create2(&message.header, EVENT_MOUSEMOVE, sizeof (struct event_mousemove));
-    kernel_multicast(EVENT_BROADCAST, &event.states, &message.header);
-    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message.header);
+    kernel_multicast(&event.states, &message.header);
+    kernel_multicast(&interface->event.states, &message.header);
 
 }
 
@@ -39,8 +39,8 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     message.mousepress.button = button;
 
     event_create2(&message.header, EVENT_MOUSEPRESS, sizeof (struct event_mousepress));
-    kernel_multicast(EVENT_BROADCAST, &event.states, &message.header);
-    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message.header);
+    kernel_multicast(&event.states, &message.header);
+    kernel_multicast(&interface->event.states, &message.header);
 
 }
 
@@ -52,8 +52,8 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     message.mouserelease.button = button;
 
     event_create2(&message.header, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease));
-    kernel_multicast(EVENT_BROADCAST, &event.states, &message.header);
-    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message.header);
+    kernel_multicast(&event.states, &message.header);
+    kernel_multicast(&interface->event.states, &message.header);
 
 }
 

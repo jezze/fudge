@@ -12,7 +12,7 @@ void timer_notify(struct timer_interface *interface, void *buffer, unsigned int 
 
     event_create(&message.header, EVENT_DATA);
     event_append(&message.header, count, buffer);
-    kernel_multicast(EVENT_BROADCAST, &interface->data.states, &message.header);
+    kernel_multicast(&interface->data.states, &message.header);
 
 }
 
@@ -24,7 +24,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
     message.timertick.counter = counter;
 
     event_create2(&message.header, EVENT_TIMERTICK, sizeof (struct event_timertick));
-    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message.header);
+    kernel_multicast(&interface->event.states, &message.header);
 
 }
 

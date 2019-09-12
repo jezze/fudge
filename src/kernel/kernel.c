@@ -271,7 +271,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct event
 
 }
 
-unsigned int kernel_multicast(unsigned int source, struct list *states, struct event_header *header)
+unsigned int kernel_multicast(struct list *states, struct event_header *header)
 {
 
     struct list_item *current;
@@ -283,7 +283,7 @@ unsigned int kernel_multicast(unsigned int source, struct list *states, struct e
 
         struct service_state *state = current->data;
 
-        kernel_place(source, state->id, header);
+        kernel_place(0, state->id, header);
 
     }
 
