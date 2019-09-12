@@ -5,23 +5,23 @@
 static struct system_node eventnode;
 static struct system_node multicastnode;
 
-static unsigned int multicast(unsigned int source, struct list *states, struct event_header *header)
+static unsigned int multicast(struct service_state *source, struct list *targets, struct event_header *header)
 {
 
     struct list_item *current;
 
-    spinlock_acquire(&states->spinlock);
+    spinlock_acquire(&targets->spinlock);
 
-    for (current = states->head; current; current = current->next)
+    for (current = targets->head; current; current = current->next)
     {
 
-        struct service_state *state = current->data;
+        struct service_state *target = current->data;
 
-        kernel_place(source, state->id, header);
+        kernel_place(source->id, target->id, header);
 
     }
 
-    spinlock_release(&states->spinlock);
+    spinlock_release(&targets->spinlock);
 
     return header->length;
 
@@ -45,7 +45,7 @@ static unsigned int multicastnode_write(struct system_node *self, struct system_
     if (message->header.length != count)
         return 0;
 
-    return multicast(state->id, &eventnode.states, &message->header);
+    return multicast(state, &eventnode.states, &message->header);
 
 }
 
