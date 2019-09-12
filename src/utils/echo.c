@@ -20,7 +20,7 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
     file_open(file->descriptor);
 
-    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE - sizeof (struct event_header))))
+    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
     {
 
         unsigned int id = channel_reply(channel, EVENT_DATA);
