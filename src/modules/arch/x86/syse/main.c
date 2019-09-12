@@ -16,7 +16,10 @@ void syse_resume(struct cpu_general *general)
     core->task->thread.ip = general->edx.value;
     core->task->thread.sp = general->ecx.value;
 
-    kernel_schedule(core);
+    core_unschedule(core);
+    kernel_assign();
+
+    core->task = core_picktask(core);
 
     if (core->task)
     {

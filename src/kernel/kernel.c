@@ -177,19 +177,13 @@ void kernel_freemount(struct service_mount *mount)
 
 }
 
-void kernel_schedule(struct core *core)
+void kernel_assign(void)
 {
 
     struct list_item *current;
 
-    if (core->task && list_ispicked(&core->task->item))
-        list_add(&core->tasks, &core->task->item);
-
     while ((current = list_pickhead(&usedtasks)))
         coreassign(current->data);
-
-    current = list_picktail(&core->tasks);
-    core->task = (current) ? current->data : 0;
 
 }
 
@@ -273,7 +267,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct event
 
         task->thread.status = TASK_STATUS_NORMAL;
 
-        list_add(&usedtasks, &task->item);
+        kernel_usetask(task);
 
     }
 
@@ -286,8 +280,8 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct event
 void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigned int count)
 {
 
-    struct list_item *current;
     struct event_header header;
+    struct list_item *current;
 
     event_create(&header, type, count);
     spinlock_acquire(&states->spinlock);

@@ -124,7 +124,10 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
     }
 
-    kernel_schedule(core);
+    core_unschedule(core);
+    kernel_assign();
+
+    core->task = core_picktask(core);
 
     if (core->task)
     {

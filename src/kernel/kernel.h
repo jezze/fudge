@@ -11,7 +11,7 @@ void kernel_usetask(struct task *task);
 void kernel_usemount(struct service_mount *mount);
 void kernel_freetask(struct task *task);
 void kernel_freemount(struct service_mount *mount);
-void kernel_schedule(struct core *core);
+void kernel_assign(void);
 struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor);
 void kernel_copydescriptors(struct task *source, struct task *target);
 unsigned int kernel_pick(struct task *task, void *buffer, unsigned int count);

@@ -1,6 +1,25 @@
 #include <fudge.h>
 #include "resource.h"
+#include "binary.h"
+#include "task.h"
 #include "core.h"
+
+struct task *core_picktask(struct core *core)
+{
+
+    struct list_item *current = list_picktail(&core->tasks);
+
+    return (current) ? current->data : 0;
+
+}
+
+void core_unschedule(struct core *core)
+{
+
+    if (core->task && list_ispicked(&core->task->item))
+        list_add(&core->tasks, &core->task->item);
+
+}
 
 void core_init(struct core *core, unsigned int id, unsigned int sp, struct task *task)
 {
