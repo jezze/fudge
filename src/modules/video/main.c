@@ -8,11 +8,14 @@ static struct system_node root;
 void video_notifymode(struct video_interface *interface, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
-    union event_message message;
+    struct {struct event_header header; struct event_videomode videomode;} message;
 
-    event_create(&message, EVENT_VIDEOMODE);
-    event_addvideomode(&message, w, h, bpp);
-    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message);
+    message.videomode.w = w;
+    message.videomode.h = h;
+    message.videomode.bpp = bpp;
+
+    event_create2(&message.header, EVENT_VIDEOMODE, sizeof (struct event_videomode));
+    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message.header);
 
 }
 

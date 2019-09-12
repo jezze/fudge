@@ -13,26 +13,26 @@ static void *addpayload(union event_message *message, unsigned int length)
 
 }
 
-unsigned int event_avail(union event_message *message)
+unsigned int event_avail(struct event_header *header)
 {
 
-    return FUDGE_BSIZE - message->header.length;
+    return FUDGE_BSIZE - header->length;
 
 }
 
-unsigned int event_addroute(union event_message *message, unsigned int target, unsigned int session)
+unsigned int event_addroute(struct event_header *header, unsigned int target, unsigned int session)
 {
 
-    if (message->header.nroutes < 16)
+    if (header->nroutes < 16)
     {
 
-        message->header.routes[message->header.nroutes].target = target;
-        message->header.routes[message->header.nroutes].session = session;
-        message->header.nroutes++;
+        header->routes[header->nroutes].target = target;
+        header->routes[header->nroutes].session = session;
+        header->nroutes++;
 
     }
 
-    return message->header.nroutes;
+    return header->nroutes;
 
 }
 
@@ -42,97 +42,6 @@ unsigned int event_addfile(union event_message *message, unsigned int descriptor
     struct event_file *file = addpayload(message, sizeof (struct event_file));
 
     file->descriptor = descriptor;
-
-    return message->header.length;
-
-}
-
-unsigned int event_addconsoledata(union event_message *message, char data)
-{
-
-    struct event_consoledata *consoledata = addpayload(message, sizeof (struct event_consoledata));
-
-    consoledata->data = data;
-
-    return message->header.length;
-
-}
-
-unsigned int event_addkeypress(union event_message *message, unsigned char scancode)
-{
-
-    struct event_keypress *keypress = addpayload(message, sizeof (struct event_keypress));
-
-    keypress->scancode = scancode;
-
-    return message->header.length;
-
-}
-
-unsigned int event_addkeyrelease(union event_message *message, unsigned char scancode)
-{
-
-    struct event_keyrelease *keyrelease = addpayload(message, sizeof (struct event_keyrelease));
-
-    keyrelease->scancode = scancode;
-
-    return message->header.length;
-
-}
-
-unsigned int event_addmousepress(union event_message *message, unsigned int button)
-{
-
-    struct event_mousepress *mousepress = addpayload(message, sizeof (struct event_mousepress));
-
-    mousepress->button = button;
-
-    return message->header.length;
-
-}
-
-unsigned int event_addmouserelease(union event_message *message, unsigned int button)
-{
-
-    struct event_mouserelease *mouserelease = addpayload(message, sizeof (struct event_mouserelease));
-
-    mouserelease->button = button;
-
-    return message->header.length;
-
-}
-
-unsigned int event_addmousemove(union event_message *message, char relx, char rely)
-{
-
-    struct event_mousemove *mousemove = addpayload(message, sizeof (struct event_mousemove));
-
-    mousemove->relx = relx;
-    mousemove->rely = rely;
-
-    return message->header.length;
-
-}
-
-unsigned int event_addtimertick(union event_message *message, unsigned int counter)
-{
-
-    struct event_timertick *timertick = addpayload(message, sizeof (struct event_timertick));
-
-    timertick->counter = counter;
-
-    return message->header.length;
-
-}
-
-unsigned int event_addvideomode(union event_message *message, unsigned int w, unsigned int h, unsigned int bpp)
-{
-
-    struct event_videomode *videomode = addpayload(message, sizeof (struct event_videomode));
-
-    videomode->w = w;
-    videomode->h = h;
-    videomode->bpp = bpp;
 
     return message->header.length;
 
@@ -222,29 +131,41 @@ unsigned int event_addwmmousemove(union event_message *message, char relx, char 
 
 }
 
-unsigned int event_append(union event_message *message, unsigned int count, void *buffer)
+unsigned int event_append(struct event_header *header, unsigned int count, void *buffer)
 {
 
-    return message->header.length += memory_write(message, FUDGE_BSIZE, buffer, count, message->header.length);
+    return header->length += memory_write(header, FUDGE_BSIZE, buffer, count, header->length);
 
 }
 
-void event_reset(union event_message *message)
+void event_reset(struct event_header *header)
 {
 
-    message->header.length = sizeof (struct event_header);
+    header->length = sizeof (struct event_header);
 
 }
 
-void event_create(union event_message *message, unsigned int type)
+void event_create(struct event_header *header, unsigned int type)
 {
 
-    message->header.type = type;
-    message->header.source = 0;
-    message->header.target = 0;
-    message->header.session = 0;
-    message->header.length = sizeof (struct event_header);
-    message->header.nroutes = 0;
+    header->type = type;
+    header->source = 0;
+    header->target = 0;
+    header->session = 0;
+    header->length = sizeof (struct event_header);
+    header->nroutes = 0;
+
+}
+
+void event_create2(struct event_header *header, unsigned int type, unsigned int length)
+{
+
+    header->type = type;
+    header->source = 0;
+    header->target = 0;
+    header->session = 0;
+    header->length = sizeof (struct event_header) + length;
+    header->nroutes = 0;
 
 }
 

@@ -73,12 +73,12 @@ void channel_forward(struct channel *channel, unsigned int type)
 
     unsigned int i;
 
-    event_create(&channel->o, type);
+    event_create(&channel->o.header, type);
 
     channel->o.header.session = channel->i.header.session;
 
     for (i = 0; i < channel->i.header.nroutes; i++)
-        event_addroute(&channel->o, channel->i.header.routes[i].target, channel->i.header.routes[i].session);
+        event_addroute(&channel->o.header, channel->i.header.routes[i].target, channel->i.header.routes[i].session);
 
 }
 
@@ -87,14 +87,14 @@ void channel_request(struct channel *channel, unsigned int type, unsigned int se
 
     unsigned int i;
 
-    event_create(&channel->o, type);
+    event_create(&channel->o.header, type);
 
     channel->o.header.session = session;
 
     for (i = 0; i < channel->i.header.nroutes; i++)
-        event_addroute(&channel->o, channel->i.header.routes[i].target, channel->i.header.routes[i].session);
+        event_addroute(&channel->o.header, channel->i.header.routes[i].target, channel->i.header.routes[i].session);
 
-    event_addroute(&channel->o, channel->i.header.target, session);
+    event_addroute(&channel->o.header, channel->i.header.target, session);
 
 }
 
@@ -103,13 +103,13 @@ void channel_reply(struct channel *channel, unsigned int type)
 
     unsigned int i;
 
-    event_create(&channel->o, type);
+    event_create(&channel->o.header, type);
 
     channel->o.header.session = channel->i.header.session;
     channel->o.header.target = channel->i.header.source;
 
     for (i = 0; i < channel->i.header.nroutes; i++)
-        event_addroute(&channel->o, channel->i.header.routes[i].target, channel->i.header.routes[i].session);
+        event_addroute(&channel->o.header, channel->i.header.routes[i].target, channel->i.header.routes[i].session);
 
     if (channel->o.header.nroutes)
     {

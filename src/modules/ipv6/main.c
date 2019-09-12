@@ -24,9 +24,9 @@ static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void
 
     }
 
-    event_create(&message, EVENT_DATA);
-    event_append(&message, count, buffer);
-    kernel_multicast(EVENT_BROADCAST, &ethernetprotocol.data.states, &message);
+    event_create(&message.header, EVENT_DATA);
+    event_append(&message.header, count, buffer);
+    kernel_multicast(EVENT_BROADCAST, &ethernetprotocol.data.states, &message.header);
 
 }
 

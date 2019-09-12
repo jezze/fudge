@@ -20,12 +20,12 @@ static void handleirq(unsigned int irq)
         return;
 
     ide_rblock(blockinterface.id, data);
-    event_create(&message, EVENT_DATA);
-    event_append(&message, 512, data);
+    event_create(&message.header, EVENT_DATA);
+    event_append(&message.header, 512, data);
     /*
     kernel_place(0, 0, &message);
     */
-    event_reset(&message);
+    event_reset(&message.header);
 
 }
 

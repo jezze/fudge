@@ -158,7 +158,7 @@ static unsigned int runcmd(struct channel *channel, char *command, char *data, u
     {
 
         channel_request(channel, EVENT_DATA, session);
-        event_append(&channel->o, count, data);
+        event_append(&channel->o.header, count, data);
         channel_place(id, &channel->o);
         channel_request(channel, EVENT_STOP, session);
         channel_place(id, &channel->o);
@@ -386,8 +386,8 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
 
         union event_message message;
 
-        event_create(&message, EVENT_DATA);
-        event_append(&message, ring_count(&output), outputdata);
+        event_create(&message.header, EVENT_DATA);
+        event_append(&message.header, ring_count(&output), outputdata);
         ring_reset(&output);
         file_writeall(FILE_G0, &message, message.header.length);
 

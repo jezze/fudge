@@ -319,9 +319,8 @@ static unsigned int place(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int id; void *buffer; unsigned int count;} *args = stack;
-    union event_message *message = args->buffer;
 
-    return kernel_place(task->id, (args->id) ? args->id : task->id, message);
+    return kernel_place(task->id, (args->id) ? args->id : task->id, args->buffer);
 
 }
 

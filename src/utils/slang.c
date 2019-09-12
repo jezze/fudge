@@ -270,8 +270,8 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            event_append(&channel->o, 2, "I");
-            event_append(&channel->o, ascii_length(t->str) + 1, t->str);
+            event_append(&channel->o.header, 2, "I");
+            event_append(&channel->o.header, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -281,8 +281,8 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            event_append(&channel->o, 2, "O");
-            event_append(&channel->o, ascii_length(t->str) + 1, t->str);
+            event_append(&channel->o.header, 2, "O");
+            event_append(&channel->o.header, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -292,8 +292,8 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            event_append(&channel->o, 2, "D");
-            event_append(&channel->o, ascii_length(t->str) + 1, t->str);
+            event_append(&channel->o.header, 2, "D");
+            event_append(&channel->o.header, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -303,8 +303,8 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            event_append(&channel->o, 2, "P");
-            event_append(&channel->o, ascii_length(t->str) + 1, t->str);
+            event_append(&channel->o.header, 2, "P");
+            event_append(&channel->o.header, ascii_length(t->str) + 1, t->str);
 
             break;
 
@@ -314,8 +314,8 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            event_append(&channel->o, 2, "E");
-            event_append(&channel->o, ascii_length(t->str) + 1, t->str);
+            event_append(&channel->o.header, 2, "E");
+            event_append(&channel->o.header, ascii_length(t->str) + 1, t->str);
 
             break;
 

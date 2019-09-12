@@ -23,7 +23,7 @@ static unsigned int multicastnode_write(struct system_node *self, struct system_
     if (message->header.length != count)
         return 0;
 
-    return kernel_multicast(state->id, &eventnode.states, message);
+    return kernel_multicast(state->id, &eventnode.states, &message->header);
 
 }
 

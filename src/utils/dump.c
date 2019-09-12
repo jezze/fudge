@@ -13,8 +13,8 @@ static void dump(struct channel *channel, unsigned int count, void *buffer)
         unsigned char num[FUDGE_NSIZE];
 
         channel_reply(channel, EVENT_DATA);
-        event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
-        event_append(&channel->o, 2, "  ");
+        event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
+        event_append(&channel->o.header, 2, "  ");
         channel_place(channel->o.header.target, &channel->o);
 
     }

@@ -11,33 +11,35 @@ void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigne
 
     union event_message message;
 
-    event_create(&message, EVENT_DATA);
-    event_append(&message, count, buffer);
-    kernel_multicast(EVENT_BROADCAST, &interface->data.states, &message);
+    event_create(&message.header, EVENT_DATA);
+    event_append(&message.header, count, buffer);
+    kernel_multicast(EVENT_BROADCAST, &interface->data.states, &message.header);
 
 }
 
 void keyboard_notifypress(struct keyboard_interface *interface, unsigned char scancode)
 {
 
-    union event_message message;
+    struct {struct event_header header; struct event_keypress keypress;} message;
 
-    event_create(&message, EVENT_KEYPRESS);
-    event_addkeypress(&message, scancode);
-    kernel_multicast(EVENT_BROADCAST, &event.states, &message);
-    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message);
+    message.keypress.scancode = scancode;
+
+    event_create2(&message.header, EVENT_KEYPRESS, sizeof (struct event_keypress));
+    kernel_multicast(EVENT_BROADCAST, &event.states, &message.header);
+    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message.header);
 
 }
 
 void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char scancode)
 {
 
-    union event_message message;
+    struct {struct event_header header; struct event_keyrelease keyrelease;} message;
 
-    event_create(&message, EVENT_KEYRELEASE);
-    event_addkeyrelease(&message, scancode);
-    kernel_multicast(EVENT_BROADCAST, &event.states, &message);
-    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message);
+    message.keyrelease.scancode = scancode;
+
+    event_create2(&message.header, EVENT_KEYRELEASE, sizeof (struct event_keyrelease));
+    kernel_multicast(EVENT_BROADCAST, &event.states, &message.header);
+    kernel_multicast(EVENT_BROADCAST, &interface->event.states, &message.header);
 
 }
 

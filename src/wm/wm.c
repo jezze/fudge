@@ -862,8 +862,8 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
 
         union event_message message;
 
-        event_create(&message, EVENT_DATA);
-        event_append(&message, ring_count(&output), outputdata);
+        event_create(&message.header, EVENT_DATA);
+        event_append(&message.header, ring_count(&output), outputdata);
         ring_reset(&output);
         file_writeall(FILE_G0, &message, message.header.length);
 

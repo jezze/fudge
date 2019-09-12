@@ -79,12 +79,12 @@ void main(void)
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_listen(&channel);
     channel_reply(&channel, EVENT_DATA);
-    event_append(&channel.o, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
-    event_append(&channel.o, 1, "\n");
-    event_append(&channel.o, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
-    event_append(&channel.o, 1, "\n");
-    event_append(&channel.o, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
-    event_append(&channel.o, 1, "\n");
+    event_append(&channel.o.header, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
+    event_append(&channel.o.header, 1, "\n");
+    event_append(&channel.o.header, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
+    event_append(&channel.o.header, 1, "\n");
+    event_append(&channel.o.header, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
+    event_append(&channel.o.header, 1, "\n");
     channel_place(channel.o.header.target, &channel.o);
 
 }

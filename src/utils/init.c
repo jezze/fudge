@@ -36,16 +36,16 @@ void main(void)
     if (!id)
         return;
 
-    event_create(&channel.o, EVENT_FILE);
+    event_create(&channel.o.header, EVENT_FILE);
     event_addfile(&channel.o, FILE_P0);
     channel_place(id, &channel.o);
-    event_create(&channel.o, EVENT_FILE);
+    event_create(&channel.o.header, EVENT_FILE);
     event_addfile(&channel.o, FILE_P1);
     channel_place(id, &channel.o);
-    event_create(&channel.o, EVENT_FILE);
+    event_create(&channel.o.header, EVENT_FILE);
     event_addfile(&channel.o, FILE_P2);
     channel_place(id, &channel.o);
-    event_create(&channel.o, EVENT_STOP);
+    event_create(&channel.o.header, EVENT_STOP);
     channel_place(id, &channel.o);
     channel_listen(&channel);
 

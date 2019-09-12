@@ -7,18 +7,18 @@ static void replydate(struct channel *channel, struct ctrl_clocksettings *settin
     char num[FUDGE_NSIZE];
 
     channel_reply(channel, EVENT_DATA);
-    event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, settings->year, 10, 4, 0), num);
-    event_append(&channel->o, 1, "-");
-    event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, settings->month, 10, 2, 0), num);
-    event_append(&channel->o, 1, "-");
-    event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, settings->day, 10, 2, 0), num);
-    event_append(&channel->o, 1, " ");
-    event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, settings->hours, 10, 2, 0), num);
-    event_append(&channel->o, 1, ":");
-    event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, settings->minutes, 10, 2, 0), num);
-    event_append(&channel->o, 1, ":");
-    event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, settings->seconds, 10, 2, 0), num);
-    event_append(&channel->o, 1, "\n");
+    event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, settings->year, 10, 4, 0), num);
+    event_append(&channel->o.header, 1, "-");
+    event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, settings->month, 10, 2, 0), num);
+    event_append(&channel->o.header, 1, "-");
+    event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, settings->day, 10, 2, 0), num);
+    event_append(&channel->o.header, 1, " ");
+    event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, settings->hours, 10, 2, 0), num);
+    event_append(&channel->o.header, 1, ":");
+    event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, settings->minutes, 10, 2, 0), num);
+    event_append(&channel->o.header, 1, ":");
+    event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, settings->seconds, 10, 2, 0), num);
+    event_append(&channel->o.header, 1, "\n");
     channel_place(channel->o.header.target, &channel->o);
 
 }

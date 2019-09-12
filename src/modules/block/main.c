@@ -20,9 +20,9 @@ void block_notify(struct block_interface *interface, void *buffer, unsigned int 
 
     }
 
-    event_create(&message, EVENT_DATA);
-    event_append(&message, count, buffer);
-    kernel_multicast(EVENT_BROADCAST, &interface->data.states, &message);
+    event_create(&message.header, EVENT_DATA);
+    event_append(&message.header, count, buffer);
+    kernel_multicast(EVENT_BROADCAST, &interface->data.states, &message.header);
 
 }
 

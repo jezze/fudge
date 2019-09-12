@@ -14,20 +14,20 @@ static void list(struct channel *channel, unsigned int descriptor)
 
         char num[FUDGE_NSIZE];
 
-        if (event_avail(&channel->o) < record.length + 3 + 16)
+        if (event_avail(&channel->o.header) < record.length + 3 + 16)
         {
 
             channel_place(channel->o.header.target, &channel->o);
-            event_reset(&channel->o);
+            event_reset(&channel->o.header);
 
         }
 
-        event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
-        event_append(&channel->o, 1, " ");
-        event_append(&channel->o, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
-        event_append(&channel->o, 1, " ");
-        event_append(&channel->o, record.length, record.name);
-        event_append(&channel->o, 1, "\n");
+        event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
+        event_append(&channel->o.header, 1, " ");
+        event_append(&channel->o.header, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
+        event_append(&channel->o.header, 1, " ");
+        event_append(&channel->o.header, record.length, record.name);
+        event_append(&channel->o.header, 1, "\n");
 
         if (!file_step(descriptor))
             break;

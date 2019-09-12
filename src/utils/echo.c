@@ -5,7 +5,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     channel_reply(channel, EVENT_DATA);
-    event_append(&channel->o, msize, mdata);
+    event_append(&channel->o.header, msize, mdata);
     channel_place(channel->o.header.target, &channel->o);
 
 }
@@ -23,7 +23,7 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
     {
 
         channel_reply(channel, EVENT_DATA);
-        event_append(&channel->o, count, buffer);
+        event_append(&channel->o.header, count, buffer);
         channel_place(channel->o.header.target, &channel->o);
 
     }

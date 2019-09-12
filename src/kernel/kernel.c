@@ -249,18 +249,18 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int target, union event_message *message)
+unsigned int kernel_place(unsigned int source, unsigned int target, struct event_header *header)
 {
 
     struct task *task = &tasks[target];
     unsigned int count;
 
-    message->header.source = source;
-    message->header.target = target;
+    header->source = source;
+    header->target = target;
 
     spinlock_acquire(&task->mailbox.spinlock);
 
-    count = ring_writeall(&task->mailbox.ring, message, message->header.length);
+    count = ring_writeall(&task->mailbox.ring, header, header->length);
 
     if (count)
         kernel_unblocktask(task);
@@ -271,7 +271,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, union event_
 
 }
 
-unsigned int kernel_multicast(unsigned int source, struct list *states, union event_message *message)
+unsigned int kernel_multicast(unsigned int source, struct list *states, struct event_header *header)
 {
 
     struct list_item *current;
@@ -283,13 +283,13 @@ unsigned int kernel_multicast(unsigned int source, struct list *states, union ev
 
         struct service_state *state = current->data;
 
-        kernel_place(source, state->id, message);
+        kernel_place(source, state->id, header);
 
     }
 
     spinlock_release(&states->spinlock);
 
-    return message->header.length;
+    return header->length;
 
 }
 
