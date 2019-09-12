@@ -246,8 +246,8 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 static void parse(struct channel *channel, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
-    unsigned int i;
     unsigned int id = channel_reply(channel, EVENT_DATA);
+    unsigned int i;
 
     for (i = 0; i < postfix->head; i++)
     {
