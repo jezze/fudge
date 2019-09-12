@@ -44,6 +44,13 @@ void channel_listen(struct channel *channel)
 
 }
 
+void channel_nosignal(struct channel *channel, unsigned int type)
+{
+
+    channel->signals[type] = ignore;
+
+}
+
 void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, void *mdata, unsigned int msize))
 {
 
@@ -118,7 +125,7 @@ void channel_init(struct channel *channel)
     channel->state = 1;
 
     for (i = 0; i < EVENTS; i++)
-        channel_setsignal(channel, i, ignore);
+        channel_nosignal(channel, i);
 
     channel_setsignal(channel, EVENT_KILL, abort);
     channel_setsignal(channel, EVENT_STOP, abort);

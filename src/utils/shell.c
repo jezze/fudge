@@ -176,20 +176,15 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onstop(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-}
-
 void main(void)
 {
 
     struct channel channel;
 
     channel_init(&channel);
+    channel_nosignal(&channel, EVENT_STOP);
     channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_STOP, onstop);
 
     if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;

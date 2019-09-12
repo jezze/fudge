@@ -248,11 +248,6 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onstop(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-}
-
 static void onwmconfigure(struct channel *channel, void *mdata, unsigned int msize)
 {
 
@@ -401,9 +396,9 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
+    channel_nosignal(&channel, EVENT_STOP);
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_STOP, onstop);
     channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);

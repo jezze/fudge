@@ -349,11 +349,6 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onstop(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-}
-
 static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
 {
 
@@ -915,9 +910,9 @@ void main(void)
     struct list_item *current;
 
     channel_init(&channel);
+    channel_nosignal(&channel, EVENT_STOP);
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_STOP, onstop);
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
     channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
     channel_setsignal(&channel, EVENT_MOUSEMOVE, onmousemove);

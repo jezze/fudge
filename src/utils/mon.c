@@ -22,11 +22,6 @@ static void dump(struct channel *channel, unsigned int count, void *buffer)
 }
 */
 
-static void onstop(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-}
-
 void main(void)
 {
 
@@ -37,7 +32,7 @@ void main(void)
     blockrequest.count = 512 * 3;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_STOP, onstop);
+    channel_nosignal(&channel, EVENT_STOP);
 
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;

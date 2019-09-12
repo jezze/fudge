@@ -3,11 +3,6 @@
 #include <widget/widget.h>
 #include <widget/render.h>
 
-static void onstop(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-}
-
 static void onwmmousepress(struct channel *channel, void *mdata, unsigned int msize)
 {
 
@@ -35,7 +30,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_STOP, onstop);
+    channel_nosignal(&channel, EVENT_STOP);
     channel_setsignal(&channel, EVENT_WMMOUSEPRESS, onwmmousepress);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
