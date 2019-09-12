@@ -37,7 +37,6 @@ void main(void)
     if (!id)
         return;
 
-
     file.descriptor = FILE_P0;
 
     channel_forward(&channel, EVENT_FILE);
