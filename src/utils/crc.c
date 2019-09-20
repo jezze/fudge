@@ -26,23 +26,29 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
+static void onstop(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    unsigned int id = channel_reply(channel, EVENT_DATA);
+    unsigned char buffer[FUDGE_BSIZE];
+
+    channel_append(channel, ascii_wvalue(buffer, 32, crc_finalize(&s), 10), buffer);
+    channel_append(channel, 1, "\n");
+    channel_place(channel, id);
+    channel_exit(channel);
+
+}
+
 void main(void)
 {
 
     struct channel channel;
-    unsigned char buffer[FUDGE_BSIZE];
-    unsigned int id;
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
+    channel_setsignal(&channel, EVENT_STOP, onstop);
     channel_listen(&channel);
-
-    id = channel_reply(&channel, EVENT_DATA);
-
-    channel_append(&channel, ascii_wvalue(buffer, 32, crc_finalize(&s), 10), buffer);
-    channel_append(&channel, 1, "\n");
-    channel_place(&channel, id);
 
 }
 

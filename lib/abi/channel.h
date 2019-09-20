@@ -19,3 +19,4 @@ void channel_request2(struct channel *channel, unsigned int type, unsigned int s
 unsigned int channel_reply(struct channel *channel, unsigned int type);
 void channel_append(struct channel *channel, unsigned int count, void *buffer);
 void channel_init(struct channel *channel);
+void channel_exit(struct channel *channel);

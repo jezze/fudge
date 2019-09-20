@@ -10,7 +10,7 @@ static void ignore(struct channel *channel, void *mdata, unsigned int msize)
 static void abort(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    channel->state = 0;
+    channel_exit(channel);
 
 }
 
@@ -131,6 +131,13 @@ void channel_init(struct channel *channel)
     channel_setsignal(channel, EVENT_STOP, abort);
     event_create(&channel->i, 0, 0);
     event_create(&channel->o, 0, 0);
+
+}
+
+void channel_exit(struct channel *channel)
+{
+
+    channel->state = 0;
 
 }
 

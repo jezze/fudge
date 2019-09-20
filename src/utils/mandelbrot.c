@@ -77,12 +77,21 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
+static void onstop(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+    channel_exit(channel);
+
+}
+
 void main(void)
 {
 
     struct channel channel;
 
     channel_init(&channel);
+    channel_setsignal(&channel, EVENT_STOP, onstop);
     ctrl_setvideosettings(&settings, 320, 200, 1);
     file_walk2(FILE_L0, "/system/video/if:0");
     file_walk(FILE_L1, FILE_L0, "ctrl");
@@ -94,7 +103,6 @@ void main(void)
     file_close(FILE_L1);
     setup(&settings);
     channel_listen(&channel);
-    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
 
 }
 

@@ -1,14 +1,11 @@
 #include <fudge.h>
 #include <abi.h>
 
-void main(void)
+static void onstop(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct channel channel;
     struct event_file file;
     unsigned int id;
-
-    channel_init(&channel);
 
     file.descriptor = FILE_P0;
 
@@ -23,12 +20,23 @@ void main(void)
     if (!id)
         return;
 
+    channel_forward(channel, EVENT_FILE);
+    channel_append(channel, sizeof (struct event_file), &file);
+    channel_place(channel, id);
+    channel_forward(channel, EVENT_STOP);
+    channel_place(channel, id);
+    channel_exit(channel);
+
+}
+
+void main(void)
+{
+
+    struct channel channel;
+
+    channel_init(&channel);
+    channel_setsignal(&channel, EVENT_STOP, onstop);
     channel_listen(&channel);
-    channel_forward(&channel, EVENT_FILE);
-    channel_append(&channel, sizeof (struct event_file), &file);
-    channel_place(&channel, id);
-    channel_forward(&channel, EVENT_STOP);
-    channel_place(&channel, id);
 
 }
 
