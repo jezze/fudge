@@ -14,16 +14,17 @@
 #define EVENT_TIMERTICK                 0x16
 #define EVENT_VIDEOMODE                 0x17
 #define EVENT_BLOCKREQUEST              0x18
-#define EVENT_WMMAP                     0x20
-#define EVENT_WMUNMAP                   0x21
-#define EVENT_WMCONFIGURE               0x22
-#define EVENT_WMSHOW                    0x23
-#define EVENT_WMHIDE                    0x24
-#define EVENT_WMKEYPRESS                0x28
-#define EVENT_WMKEYRELEASE              0x29
-#define EVENT_WMMOUSEMOVE               0x2A
-#define EVENT_WMMOUSEPRESS              0x2B
-#define EVENT_WMMOUSERELEASE            0x2C
+#define EVENT_WMCLOSE                   0x20
+#define EVENT_WMMAP                     0x21
+#define EVENT_WMUNMAP                   0x22
+#define EVENT_WMCONFIGURE               0x23
+#define EVENT_WMSHOW                    0x24
+#define EVENT_WMHIDE                    0x25
+#define EVENT_WMKEYPRESS                0x26
+#define EVENT_WMKEYRELEASE              0x27
+#define EVENT_WMMOUSEMOVE               0x28
+#define EVENT_WMMOUSEPRESS              0x29
+#define EVENT_WMMOUSERELEASE            0x2A
 
 struct event_route
 {

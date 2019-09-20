@@ -192,7 +192,7 @@ static void configureremotes(struct channel *channel, struct list *remotes)
 
 }
 
-static void killremotes(struct channel *channel, struct list *remotes)
+static void closeremotes(struct channel *channel, struct list *remotes)
 {
 
     struct list_item *current;
@@ -202,7 +202,7 @@ static void killremotes(struct channel *channel, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        channel_request(channel, EVENT_KILL);
+        channel_request(channel, EVENT_WMCLOSE);
         channel_place(channel, remote->source);
 
     }
@@ -428,7 +428,7 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
 
             channel_request(channel, EVENT_WMHIDE);
             channel_place(channel, currentview->currentremote->source);
-            channel_request(channel, EVENT_KILL);
+            channel_request(channel, EVENT_WMCLOSE);
             channel_place(channel, currentview->currentremote->source);
 
         }
@@ -530,7 +530,7 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
 
             channel_request(channel, EVENT_WMHIDE);
             channel_place(channel, 0);
-            channel_request(channel, EVENT_KILL);
+            channel_request(channel, EVENT_WMCLOSE);
             channel_place(channel, 0);
 
         }
@@ -960,7 +960,7 @@ void main(void)
         struct view *view = current->data;
 
         hideremotes(&channel, &view->remotes);
-        killremotes(&channel, &view->remotes);
+        closeremotes(&channel, &view->remotes);
 
     }
 

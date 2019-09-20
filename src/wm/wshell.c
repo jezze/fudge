@@ -373,6 +373,15 @@ static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
+static void onwmclose(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    channel_request(channel, EVENT_WMUNMAP);
+    channel_exit(channel);
+    file_writeall(FILE_G0, &channel->o, channel->o.length);
+
+}
+
 static void onany(struct channel *channel, void *mdata, unsigned int msize)
 {
 
@@ -404,6 +413,7 @@ void main(void)
     channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
     channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
+    channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
@@ -419,8 +429,6 @@ void main(void)
     channel_request(&channel, EVENT_WMMAP);
     file_writeall(FILE_G0, &channel.o, channel.o.length);
     channel_listen(&channel);
-    channel_request(&channel, EVENT_WMUNMAP);
-    file_writeall(FILE_G0, &channel.o, channel.o.length);
     file_close(FILE_G0);
 
 }
