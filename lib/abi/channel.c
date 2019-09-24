@@ -128,7 +128,7 @@ void channel_init(struct channel *channel)
         channel_nosignal(channel, i);
 
     channel_setsignal(channel, EVENT_KILL, abort);
-    channel_setsignal(channel, EVENT_STOP, abort);
+    channel_setsignal(channel, EVENT_CLOSE, abort);
     event_create(&channel->i, 0, 0);
     event_create(&channel->o, 0, 0);
 

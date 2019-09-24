@@ -39,7 +39,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_nosignal(&channel, EVENT_STOP);
+    channel_nosignal(&channel, EVENT_CLOSE);
     channel_setsignal(&channel, EVENT_WMMOUSEPRESS, onwmmousepress);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
 

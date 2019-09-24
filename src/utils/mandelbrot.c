@@ -77,7 +77,23 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
-static void onstop(struct channel *channel, void *mdata, unsigned int msize)
+static void onopen(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    ctrl_setvideosettings(&settings, 320, 200, 1);
+    file_walk2(FILE_L0, "/system/video/if:0");
+    file_walk(FILE_L1, FILE_L0, "ctrl");
+    file_open(FILE_L1);
+    file_writeall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
+    file_close(FILE_L1);
+    file_open(FILE_L1);
+    file_readall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
+    file_close(FILE_L1);
+    setup(&settings);
+
+}
+
+static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
@@ -91,17 +107,8 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_STOP, onstop);
-    ctrl_setvideosettings(&settings, 320, 200, 1);
-    file_walk2(FILE_L0, "/system/video/if:0");
-    file_walk(FILE_L1, FILE_L0, "ctrl");
-    file_open(FILE_L1);
-    file_writeall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
-    file_close(FILE_L1);
-    file_open(FILE_L1);
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
-    file_close(FILE_L1);
-    setup(&settings);
+    channel_setsignal(&channel, EVENT_OPEN, onopen);
+    channel_setsignal(&channel, EVENT_CLOSE, onclose);
     channel_listen(&channel);
 
 }

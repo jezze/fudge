@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onstop(struct channel *channel, void *mdata, unsigned int msize)
+static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     struct event_file file;
@@ -20,10 +20,12 @@ static void onstop(struct channel *channel, void *mdata, unsigned int msize)
     if (!id)
         return;
 
+    channel_forward(channel, EVENT_OPEN);
+    channel_place(channel, id);
     channel_forward(channel, EVENT_FILE);
     channel_append(channel, sizeof (struct event_file), &file);
     channel_place(channel, id);
-    channel_forward(channel, EVENT_STOP);
+    channel_forward(channel, EVENT_CLOSE);
     channel_place(channel, id);
     channel_exit(channel);
 
@@ -35,7 +37,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_STOP, onstop);
+    channel_setsignal(&channel, EVENT_CLOSE, onclose);
     channel_listen(&channel);
 
 }

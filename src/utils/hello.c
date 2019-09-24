@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onstop(struct channel *channel, void *mdata, unsigned int msize)
+static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     unsigned int id = channel_reply(channel, EVENT_DATA);
@@ -18,7 +18,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_STOP, onstop);
+    channel_setsignal(&channel, EVENT_CLOSE, onclose);
     channel_listen(&channel);
 
 }

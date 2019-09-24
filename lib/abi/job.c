@@ -39,6 +39,13 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
     for (j = 0; j < njobs; j++)
     {
 
+        channel_request2(channel, EVENT_OPEN, session);
+
+        for (x = njobs; x > j + 1; x--)
+            event_addroute(&channel->o, jobs[x - 1].id, session);
+
+        channel_place(channel, jobs[j].id);
+
         if (jobs[j].ninputs || jobs[j].ndatas)
         {
 
@@ -86,7 +93,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
 
         }
 
-        channel_request2(channel, EVENT_STOP, session);
+        channel_request2(channel, EVENT_CLOSE, session);
 
         for (x = njobs; x > j + 1; x--)
             event_addroute(&channel->o, jobs[x - 1].id, session);

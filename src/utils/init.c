@@ -37,6 +37,9 @@ void main(void)
     if (!id)
         return;
 
+    channel_forward(&channel, EVENT_OPEN);
+    channel_place(&channel, id);
+
     file.descriptor = FILE_P0;
 
     channel_forward(&channel, EVENT_FILE);
@@ -54,7 +57,7 @@ void main(void)
     channel_forward(&channel, EVENT_FILE);
     channel_append(&channel, sizeof (struct event_file), &file);
     channel_place(&channel, id);
-    channel_forward(&channel, EVENT_STOP);
+    channel_forward(&channel, EVENT_CLOSE);
     channel_place(&channel, id);
     channel_listen(&channel);
 

@@ -32,7 +32,7 @@ void main(void)
     blockrequest.count = 512 * 3;
 
     channel_init(&channel);
-    channel_nosignal(&channel, EVENT_STOP);
+    channel_nosignal(&channel, EVENT_CLOSE);
 
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;

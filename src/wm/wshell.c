@@ -160,7 +160,7 @@ static unsigned int runcmd(struct channel *channel, char *command, char *data, u
         channel_request2(channel, EVENT_DATA, session);
         channel_append(channel, count, data);
         channel_place(channel, id);
-        channel_request2(channel, EVENT_STOP, session);
+        channel_request2(channel, EVENT_CLOSE, session);
         channel_place(channel, id);
 
     }
@@ -405,7 +405,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_nosignal(&channel, EVENT_STOP);
+    channel_nosignal(&channel, EVENT_CLOSE);
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);

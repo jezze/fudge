@@ -447,7 +447,7 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
         if (id)
         {
 
-            channel_request(channel, EVENT_STOP);
+            channel_request(channel, EVENT_CLOSE);
             channel_place(channel, id);
 
         }
@@ -910,7 +910,7 @@ void main(void)
     struct list_item *current;
 
     channel_init(&channel);
-    channel_nosignal(&channel, EVENT_STOP);
+    channel_nosignal(&channel, EVENT_CLOSE);
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);

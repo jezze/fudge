@@ -269,7 +269,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_nosignal(&channel, EVENT_STOP);
+    channel_nosignal(&channel, EVENT_CLOSE);
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);

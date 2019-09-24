@@ -26,7 +26,7 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onstop(struct channel *channel, void *mdata, unsigned int msize)
+static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     unsigned int id = channel_reply(channel, EVENT_DATA);
@@ -47,7 +47,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
-    channel_setsignal(&channel, EVENT_STOP, onstop);
+    channel_setsignal(&channel, EVENT_CLOSE, onclose);
     channel_listen(&channel);
 
 }
