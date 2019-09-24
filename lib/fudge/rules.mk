@@ -3,7 +3,6 @@ L:=\
 
 O:=\
     $(DIR_LIB)/fudge/ascii.o \
-    $(DIR_LIB)/fudge/box.o \
     $(DIR_LIB)/fudge/cpio.o \
     $(DIR_LIB)/fudge/crc.o \
     $(DIR_LIB)/fudge/ctrl.o \

@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
-#include <widget/widget.h>
-#include <widget/render.h>
+#include <widget.h>
 
 #define REMOTES                         64
 #define VIEWS                           8

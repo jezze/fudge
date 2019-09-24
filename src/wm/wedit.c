@@ -1,6 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
-#include <widget/widget.h>
+#include <widget.h>
 
 static struct widget_textbox content;
 static struct widget_text status;

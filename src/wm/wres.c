@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
-#include <widget/widget.h>
-#include <widget/render.h>
+#include <widget.h>
 
 static void onwmmousepress(struct channel *channel, void *mdata, unsigned int msize)
 {

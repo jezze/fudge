@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include "box.h"
 #include "widget.h"
 
 void widget_initfill(struct widget_fill *fill, unsigned int color)
