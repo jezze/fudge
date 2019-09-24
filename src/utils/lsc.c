@@ -11,12 +11,11 @@ static void list(struct channel *channel, unsigned int descriptor)
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
-        char num[FUDGE_NSIZE];
         unsigned int id = channel_reply(channel, EVENT_DATA);
 
-        channel_append(channel, ascii_wzerovalue(num, FUDGE_NSIZE, record.id, 16, 8, 0), num);
+        channel_appendvaluepadded(channel, record.id, 16, 8);
         channel_append(channel, 1, " ");
-        channel_append(channel, ascii_wzerovalue(num, FUDGE_NSIZE, record.size, 16, 8, 0), num);
+        channel_appendvaluepadded(channel, record.size, 16, 8);
         channel_append(channel, 1, " ");
         channel_append(channel, record.length, record.name);
         channel_append(channel, 1, "\n");
