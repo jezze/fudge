@@ -50,12 +50,11 @@ unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base)
 
 }
 
-unsigned int ascii_wvalue(void *out, unsigned int count, unsigned int value, unsigned int base)
+unsigned int ascii_wvalue(char *out, unsigned int count, unsigned int value, unsigned int base)
 {
 
     unsigned int current = value / base;
     unsigned int i = 0;
-    unsigned char *o = out;
 
     if (!count)
         return 0;
@@ -63,7 +62,7 @@ unsigned int ascii_wvalue(void *out, unsigned int count, unsigned int value, uns
     if (current)
         i = ascii_wvalue(out, count - 1, current, base);
 
-    o[i] = "0123456789abcdef"[value % base];
+    out[i] = "0123456789abcdef"[value % base];
 
     return ++i;
 
