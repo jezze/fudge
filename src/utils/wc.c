@@ -74,11 +74,11 @@ static void onclose(struct channel *channel, void *mdata, unsigned int msize)
     unsigned int id = channel_reply(channel, EVENT_DATA);
     char num[FUDGE_NSIZE];
 
-    channel_append(channel, ascii_wvalue(num, FUDGE_BSIZE, lines, 10), num);
+    channel_append(channel, ascii_wvalue(num, FUDGE_NSIZE, lines, 10), num);
     channel_append(channel, 1, "\n");
-    channel_append(channel, ascii_wvalue(num, FUDGE_BSIZE, words, 10), num);
+    channel_append(channel, ascii_wvalue(num, FUDGE_NSIZE, words, 10), num);
     channel_append(channel, 1, "\n");
-    channel_append(channel, ascii_wvalue(num, FUDGE_BSIZE, bytes, 10), num);
+    channel_append(channel, ascii_wvalue(num, FUDGE_NSIZE, bytes, 10), num);
     channel_append(channel, 1, "\n");
     channel_place(channel, id);
     channel_exit(channel);
