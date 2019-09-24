@@ -69,19 +69,6 @@ unsigned int ascii_wvalue(void *out, unsigned int count, unsigned int value, uns
 
 }
 
-unsigned int ascii_wvaluepadded(void *out, unsigned int count, unsigned int value, unsigned int base, unsigned int padding)
-{
-
-    char num[FUDGE_NSIZE];
-    unsigned int bcount = ascii_wvalue(num, FUDGE_NSIZE, value, base);
-
-    memory_write(out, count, "00000000000000000000000000000000", padding, 0);
-    memory_write(out, count, num, bcount, padding - bcount);
-
-    return padding;
-
-}
-
 unsigned int ascii_dname(char *out, unsigned int ocount, char *in, unsigned int icount, char c)
 {
 

@@ -131,7 +131,10 @@ void channel_appendvaluepadded(struct channel *channel, int value, int base, int
 {
 
     char num[FUDGE_NSIZE];
-    unsigned int count = ascii_wvaluepadded(num, FUDGE_NSIZE, value, base, padding);
+    unsigned int count = ascii_wvalue(num, FUDGE_NSIZE, value, base);
+
+    if (padding > count)
+        channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, "00000000000000000000000000000000", padding - count, channel->o.length - sizeof (struct event_header));
 
     channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, num, count, channel->o.length - sizeof (struct event_header));
 
