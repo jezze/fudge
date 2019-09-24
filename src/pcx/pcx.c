@@ -6,7 +6,7 @@
 static unsigned int size(unsigned int id)
 {
 
-    unsigned char buffer[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
     unsigned int count = 0;
 
     while ((count += file_read(id, buffer, FUDGE_BSIZE)));
@@ -19,7 +19,7 @@ static unsigned int surface_read(struct gfx_surface *self, void *buffer, unsigne
 {
 
     struct pcx_surface *surface = (struct pcx_surface *)self;
-    unsigned char raw[FUDGE_BSIZE];
+    char raw[FUDGE_BSIZE];
     unsigned int width = surface->header.xend - surface->header.xstart + 1;
     unsigned int rindex = 0;
     unsigned int oindex = 0;

@@ -14,7 +14,7 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     struct event_file *file = mdata;
-    unsigned char buffer[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
     unsigned int count;
 
     file_open(file->descriptor);

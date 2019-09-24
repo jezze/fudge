@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned char inputbuffer[FUDGE_BSIZE];
+static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 
 static void printprompt(void)

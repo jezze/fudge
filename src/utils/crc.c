@@ -14,7 +14,7 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     struct event_file *file = mdata;
-    unsigned char buffer[FUDGE_BSIZE];
+    char buffer[FUDGE_BSIZE];
     unsigned int count;
 
     file_open(file->descriptor);
@@ -30,9 +30,9 @@ static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     unsigned int id = channel_reply(channel, EVENT_DATA);
-    unsigned char buffer[FUDGE_BSIZE];
+    char num[FUDGE_NSIZE];
 
-    channel_append(channel, ascii_wvalue(buffer, 32, crc_finalize(&s), 10), buffer);
+    channel_append(channel, ascii_wvalue(num, FUDGE_NSIZE, crc_finalize(&s), 10), num);
     channel_append(channel, 1, "\n");
     channel_place(channel, id);
     channel_exit(channel);

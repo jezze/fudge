@@ -10,8 +10,8 @@ static void dump(struct channel *channel, unsigned int count, void *buffer)
     for (i = 0; i < count; i++)
     {
 
-        unsigned char num[FUDGE_NSIZE];
         unsigned int id = channel_reply(channel, EVENT_DATA);
+        char num[FUDGE_NSIZE];
 
         channel_append(channel, ascii_wzerovalue(num, FUDGE_NSIZE, data[i], 16, 2, 0), num);
         channel_append(channel, 2, "  ");

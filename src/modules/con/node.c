@@ -38,8 +38,8 @@ static unsigned int con_writedata(struct system_node *self, struct system_node *
 {
 
     struct ctrl_conheader *header = buffer;
-    unsigned char response[FUDGE_BSIZE];
-    unsigned char *c = response;
+    char response[FUDGE_BSIZE];
+    char *c = response;
 
     c = udp_writehead(c, header->sender.address, header->sender.port, header->target.address, header->target.port, header->count);
     c = writedata(c, header + 1, header->count);
