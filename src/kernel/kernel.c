@@ -267,7 +267,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct event
 
         task->thread.status = TASK_STATUS_NORMAL;
 
-        kernel_usetask(task);
+        list_add(&usedtasks, &task->item);
 
     }
 
