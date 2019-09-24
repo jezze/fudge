@@ -36,14 +36,12 @@ static void onopen(struct channel *channel, void *mdata, unsigned int msize)
 static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
+    unsigned int id = channel_reply(channel, EVENT_DATA);
     unsigned char digest[16];
     char num[FUDGE_NSIZE];
-    unsigned int id;
     unsigned int i;
 
     md5_write(&s, digest);
-
-    id = channel_reply(channel, EVENT_DATA);
 
     for (i = 0; i < 16; i++)
         channel_append(channel, ascii_wzerovalue(num, FUDGE_NSIZE, digest[i], 16, 2, 0), num);
