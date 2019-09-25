@@ -220,9 +220,10 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_pick(struct task *task, struct event_header *header, void *data)
+unsigned int kernel_pick(unsigned int source, struct event_header *header, void *data)
 {
 
+    struct task *task = &tasks[source];
     unsigned int count;
 
     spinlock_acquire(&task->mailbox.spinlock);

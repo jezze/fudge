@@ -301,7 +301,7 @@ static unsigned int pick(struct task *task, void *stack)
 
     struct {void *caller; struct event_header *header; void *data;} *args = stack;
 
-    return kernel_pick(task, args->header, args->data);
+    return kernel_pick(task->id, args->header, args->data);
 
 }
 
