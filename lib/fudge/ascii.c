@@ -50,7 +50,7 @@ unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base)
 
 }
 
-unsigned int ascii_wvalue(char *out, unsigned int count, int value, unsigned int base)
+unsigned int ascii_wvalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding)
 {
 
     char *current = out;
@@ -66,7 +66,7 @@ unsigned int ascii_wvalue(char *out, unsigned int count, int value, unsigned int
         num /= b;
         *current++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + (tmp - num * b)];
 
-        if (!num)
+        if (!num && i >= padding)
             break;
 
     }

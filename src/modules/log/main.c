@@ -46,7 +46,7 @@ static void write(struct list *states, unsigned int level, char *string, char *f
     count += memory_write(buffer, FUDGE_BSIZE, " (", 2, count);
     count += memory_write(buffer, FUDGE_BSIZE, file, ascii_length(file), count);
     count += memory_write(buffer, FUDGE_BSIZE, ":", 1, count);
-    count += memory_write(buffer, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10), count);
+    count += memory_write(buffer, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0), count);
     count += memory_write(buffer, FUDGE_BSIZE, ")\n", 2, count);
 
     kernel_notify(states, EVENT_DATA, buffer, count);

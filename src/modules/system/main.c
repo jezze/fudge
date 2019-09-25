@@ -38,7 +38,7 @@ static unsigned int readgroup(struct system_node *self, struct system_node *curr
         char num[FUDGE_NSIZE];
 
         record.length += memory_write(record.name, RECORD_NAMESIZE, ":", 1, record.length);
-        record.length += memory_write(record.name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, current->index, 10), record.length);
+        record.length += memory_write(record.name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, current->index, 10, 0), record.length);
 
     }
 
