@@ -14,6 +14,20 @@ static void abort(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
+void channel_pick(struct channel *channel, void *data)
+{
+
+    unsigned int size;
+
+    while (!call_pick(&channel->i, sizeof (struct event_header)));
+
+    size = channel->i.length - sizeof (struct event_header);
+
+    if (size)
+        while (!call_pick(data, size));
+
+}
+
 void channel_place(struct channel *channel, unsigned int id)
 {
 
@@ -28,17 +42,10 @@ void channel_listen(struct channel *channel)
     {
 
         char data[FUDGE_BSIZE];
-        unsigned int size;
 
-        while (!call_pick(&channel->i, sizeof (struct event_header)));
-
-        size = channel->i.length - sizeof (struct event_header);
-
-        if (size)
-            while (!call_pick(data, size));
-
-        channel->signals[channel->i.type](channel, data, size);
-        channel->signals[EVENT_ANY](channel, data, size);
+        channel_pick(channel, data);
+        channel->signals[channel->i.type](channel, data, channel->i.length - sizeof (struct event_header));
+        channel->signals[EVENT_ANY](channel, data, channel->i.length - sizeof (struct event_header));
 
     }
 
