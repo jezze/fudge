@@ -17,14 +17,7 @@ static void abort(struct channel *channel, void *mdata, unsigned int msize)
 void channel_pick(struct channel *channel, void *data)
 {
 
-    unsigned int size;
-
-    while (!call_pick(&channel->i, sizeof (struct event_header)));
-
-    size = channel->i.length - sizeof (struct event_header);
-
-    if (size)
-        while (!call_pick(data, size));
+    while (!call_pick(&channel->i, data));
 
 }
 

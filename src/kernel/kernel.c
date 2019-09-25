@@ -220,12 +220,17 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_pick(struct task *task, void *buffer, unsigned int count)
+unsigned int kernel_pick(struct task *task, struct event_header *header, void *data)
 {
+
+    unsigned int count;
 
     spinlock_acquire(&task->mailbox.spinlock);
 
-    count = ring_readall(&task->mailbox.ring, buffer, count);
+    count = ring_readall(&task->mailbox.ring, header, sizeof (struct event_header));
+
+    if (count)
+        count += ring_readall(&task->mailbox.ring, data, header->length - sizeof (struct event_header));
 
     if (!count)
     {
@@ -260,7 +265,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct event
 
     }
 
-    if (task->thread.status == TASK_STATUS_BLOCKED)
+    if (ring_count(&task->mailbox.ring) && task->thread.status == TASK_STATUS_BLOCKED)
     {
 
         list_remove(&blockedtasks, &task->item);

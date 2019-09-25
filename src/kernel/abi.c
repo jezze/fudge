@@ -299,9 +299,9 @@ static unsigned int unload(struct task *task, void *stack)
 static unsigned int pick(struct task *task, void *stack)
 {
 
-    struct {void *caller; void *buffer; unsigned int count;} *args = stack;
+    struct {void *caller; struct event_header *header; void *data;} *args = stack;
 
-    return kernel_pick(task, args->buffer, args->count);
+    return kernel_pick(task, args->header, args->data);
 
 }
 
