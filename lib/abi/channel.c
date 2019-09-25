@@ -124,7 +124,7 @@ void channel_appendstring(struct channel *channel, char *string)
 
 }
 
-void channel_appendvalue(struct channel *channel, int value, int base)
+void channel_appendvalue(struct channel *channel, int value, unsigned int base)
 {
 
     char num[FUDGE_NSIZE];
@@ -134,7 +134,7 @@ void channel_appendvalue(struct channel *channel, int value, int base)
 
 }
 
-void channel_appendvaluepadded(struct channel *channel, int value, int base, int padding)
+void channel_appendvaluepadded(struct channel *channel, int value, unsigned int base, unsigned int padding)
 {
 
     char num[FUDGE_NSIZE];
