@@ -446,6 +446,8 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
         if (id)
         {
 
+            channel_request(channel, EVENT_OPEN);
+            channel_place(channel, id);
             channel_request(channel, EVENT_CLOSE);
             channel_place(channel, id);
 

@@ -41,6 +41,8 @@ static unsigned int runcmd(struct channel *channel, char *command, char *data, u
     if (id)
     {
 
+        channel_request2(channel, EVENT_OPEN, session);
+        channel_place(channel, id);
         channel_request2(channel, EVENT_DATA, session);
         channel_append(channel, count, data);
         channel_place(channel, id);
