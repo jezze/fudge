@@ -17,7 +17,7 @@ static void complete(struct channel *channel, unsigned int descriptor, void *nam
             unsigned int id = channel_reply(channel, EVENT_DATA);
 
             channel_append(channel, record.length, record.name);
-            channel_append(channel, 1, "\n");
+            channel_appendstring(channel, "\n");
             channel_place(channel, id);
 
         }

@@ -34,7 +34,7 @@ static void replytimestamp(struct channel *channel, struct ctrl_clocksettings *s
     unsigned int id = channel_reply(channel, EVENT_DATA);
 
     channel_appendvalue(channel, gettimestamp(settings), 10);
-    channel_append(channel, 1, "\n");
+    channel_appendstring(channel, "\n");
     channel_place(channel, id);
 
 }

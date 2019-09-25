@@ -32,7 +32,7 @@ static void onclose(struct channel *channel, void *mdata, unsigned int msize)
     unsigned int id = channel_reply(channel, EVENT_DATA);
 
     channel_appendvalue(channel, crc_finalize(&s), 10);
-    channel_append(channel, 1, "\n");
+    channel_appendstring(channel, "\n");
     channel_place(channel, id);
     channel_exit(channel);
 

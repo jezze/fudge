@@ -117,6 +117,13 @@ void channel_append(struct channel *channel, unsigned int count, void *buffer)
 
 }
 
+void channel_appendstring(struct channel *channel, char *string)
+{
+
+    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, string, ascii_length(string), channel->o.length - sizeof (struct event_header));
+
+}
+
 void channel_appendvalue(struct channel *channel, int value, int base)
 {
 

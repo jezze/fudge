@@ -45,7 +45,7 @@ static void onclose(struct channel *channel, void *mdata, unsigned int msize)
     for (i = 0; i < 20; i++)
         channel_appendvaluepadded(channel, digest[i], 16, 2);
 
-    channel_append(channel, 1, "\n");
+    channel_appendstring(channel, "\n");
     channel_place(channel, id);
     channel_exit(channel);
 

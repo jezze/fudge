@@ -50,21 +50,49 @@ unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base)
 
 }
 
-unsigned int ascii_wvalue(char *out, unsigned int count, unsigned int value, unsigned int base)
+unsigned int ascii_wvalue(char *out, unsigned int count, int value, unsigned int base)
 {
 
-    unsigned int current = value / base;
-    unsigned int i = 0;
+    char *current = out;
+    int b = base;
+    int num = value;
+    int tmp = value;
+    unsigned int i;
 
-    if (!count)
-        return 0;
+    for (i = 1; i < count; i++)
+    {
 
-    if (current)
-        i = ascii_wvalue(out, count - 1, current, base);
+        tmp = num;
+        num /= b;
+        *current++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + (tmp - num * b)];
 
-    out[i] = "0123456789abcdef"[value % base];
+        if (!num)
+            break;
 
-    return ++i;
+    }
+
+    if (tmp < 0)
+    {
+
+        *current++ = '-';
+
+        i++;
+
+    }
+
+    current--;
+
+    while (out < current)
+    {
+
+        char c = *current;
+
+        *current-- = *out;
+        *out++ = c;
+
+    }
+
+    return i;
 
 }
 

@@ -13,7 +13,7 @@ static void dump(struct channel *channel, unsigned int count, void *buffer)
         unsigned int id = channel_reply(channel, EVENT_DATA);
 
         channel_appendvaluepadded(channel, data[i], 16, 2);
-        channel_append(channel, 2, "  ");
+        channel_appendstring(channel, "  ");
         channel_place(channel, id);
 
     }

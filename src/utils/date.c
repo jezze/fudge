@@ -7,17 +7,17 @@ static void replydate(struct channel *channel, struct ctrl_clocksettings *settin
     unsigned int id = channel_reply(channel, EVENT_DATA);
 
     channel_appendvaluepadded(channel, settings->year, 10, 4);
-    channel_append(channel, 1, "-");
+    channel_appendstring(channel, "-");
     channel_appendvaluepadded(channel, settings->month, 10, 2);
-    channel_append(channel, 1, "-");
+    channel_appendstring(channel, "-");
     channel_appendvaluepadded(channel, settings->day, 10, 2);
-    channel_append(channel, 1, " ");
+    channel_appendstring(channel, " ");
     channel_appendvaluepadded(channel, settings->hours, 10, 2);
-    channel_append(channel, 1, ":");
+    channel_appendstring(channel, ":");
     channel_appendvaluepadded(channel, settings->minutes, 10, 2);
-    channel_append(channel, 1, ":");
+    channel_appendstring(channel, ":");
     channel_appendvaluepadded(channel, settings->seconds, 10, 2);
-    channel_append(channel, 1, "\n");
+    channel_appendstring(channel, "\n");
     channel_place(channel, id);
 
 }

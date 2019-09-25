@@ -18,6 +18,7 @@ void channel_request(struct channel *channel, unsigned int type);
 void channel_request2(struct channel *channel, unsigned int type, unsigned int session);
 unsigned int channel_reply(struct channel *channel, unsigned int type);
 void channel_append(struct channel *channel, unsigned int count, void *buffer);
+void channel_appendstring(struct channel *channel, char *string);
 void channel_appendvalue(struct channel *channel, int value, int base);
 void channel_appendvaluepadded(struct channel *channel, int value, int base, int padding);
 void channel_init(struct channel *channel);
