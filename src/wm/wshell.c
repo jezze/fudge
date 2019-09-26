@@ -378,9 +378,10 @@ static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 static void onwmclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_WMUNMAP);
+    unsigned int id = channel_reply(channel, EVENT_WMUNMAP);
+
+    channel_place(channel, id);
     channel_exit(channel);
-    file_writeall(FILE_G0, &channel->o, channel->o.length);
 
 }
 
