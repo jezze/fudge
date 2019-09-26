@@ -27,27 +27,6 @@
 #define EVENT_WMMOUSEPRESS              0x29
 #define EVENT_WMMOUSERELEASE            0x2A
 
-struct event_route
-{
-
-    unsigned int target;
-    unsigned int session;
-
-};
-
-struct event_header
-{
-
-    unsigned int type;
-    unsigned int source;
-    unsigned int target;
-    unsigned int session;
-    unsigned int length;
-    unsigned int nroutes;
-    struct event_route routes[16];
-
-};
-
 struct event_file
 {
 
@@ -169,6 +148,3 @@ struct event_wmmousemove
     char rely;
 
 };
-
-unsigned int event_addroute(struct event_header *header, unsigned int target, unsigned int session);
-void event_create(struct event_header *header, unsigned int type, unsigned int length);

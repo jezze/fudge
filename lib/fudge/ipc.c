@@ -1,8 +1,6 @@
-#include "define.h"
-#include "memory.h"
-#include "event.h"
+#include "ipc.h"
 
-unsigned int event_addroute(struct event_header *header, unsigned int target, unsigned int session)
+unsigned int ipc_addroute(struct ipc_header *header, unsigned int target, unsigned int session)
 {
 
     if (header->nroutes < 16)
@@ -18,14 +16,14 @@ unsigned int event_addroute(struct event_header *header, unsigned int target, un
 
 }
 
-void event_create(struct event_header *header, unsigned int type, unsigned int length)
+void ipc_create(struct ipc_header *header, unsigned int type, unsigned int length)
 {
 
     header->type = type;
     header->source = 0;
     header->target = 0;
     header->session = 0;
-    header->length = sizeof (struct event_header) + length;
+    header->length = sizeof (struct ipc_header) + length;
     header->nroutes = 0;
 
 }

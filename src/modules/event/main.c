@@ -5,7 +5,7 @@
 static struct system_node eventnode;
 static struct system_node multicastnode;
 
-static unsigned int multicast(struct service_state *source, struct list *targets, struct event_header *header)
+static unsigned int multicast(struct service_state *source, struct list *targets, struct ipc_header *header)
 {
 
     struct list_item *current;
@@ -37,9 +37,9 @@ static unsigned int eventnode_seek(struct system_node *self, struct service_stat
 static unsigned int multicastnode_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct event_header *header = buffer;
+    struct ipc_header *header = buffer;
 
-    if (count < sizeof (struct event_header))
+    if (count < sizeof (struct ipc_header))
         return 0;
 
     if (header->length != count)

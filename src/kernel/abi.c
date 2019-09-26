@@ -299,7 +299,7 @@ static unsigned int unload(struct task *task, void *stack)
 static unsigned int pick(struct task *task, void *stack)
 {
 
-    struct {void *caller; struct event_header *header; void *data;} *args = stack;
+    struct {void *caller; struct ipc_header *header; void *data;} *args = stack;
 
     return kernel_pick(task->id, args->header, args->data);
 
@@ -308,7 +308,7 @@ static unsigned int pick(struct task *task, void *stack)
 static unsigned int place(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int id; struct event_header *header; void *data;} *args = stack;
+    struct {void *caller; unsigned int id; struct ipc_header *header; void *data;} *args = stack;
 
     return kernel_place(task->id, (args->id) ? args->id : task->id, args->header, args->data);
 

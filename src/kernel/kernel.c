@@ -256,7 +256,7 @@ void kernel_reset(unsigned int id)
 
 }
 
-unsigned int kernel_pick(unsigned int id, struct event_header *header, void *data)
+unsigned int kernel_pick(unsigned int id, struct ipc_header *header, void *data)
 {
 
     struct task *task = &tasks[id];
@@ -278,7 +278,7 @@ unsigned int kernel_pick(unsigned int id, struct event_header *header, void *dat
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int target, struct event_header *header, void *data)
+unsigned int kernel_place(unsigned int source, unsigned int target, struct ipc_header *header, void *data)
 {
 
     struct task *task = &tasks[target];
@@ -308,10 +308,10 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct event
 void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigned int count)
 {
 
-    struct event_header header;
+    struct ipc_header header;
     struct list_item *current;
 
-    event_create(&header, type, count);
+    ipc_create(&header, type, count);
     spinlock_acquire(&states->spinlock);
 
     for (current = states->head; current; current = current->next)

@@ -39,8 +39,8 @@ void channel_listen(struct channel *channel)
         if (channel_pick(channel, data))
         {
 
-            channel->signals[channel->i.type](channel, data, channel->i.length - sizeof (struct event_header));
-            channel->signals[EVENT_ANY](channel, data, channel->i.length - sizeof (struct event_header));
+            channel->signals[channel->i.type](channel, data, channel->i.length - sizeof (struct ipc_header));
+            channel->signals[EVENT_ANY](channel, data, channel->i.length - sizeof (struct ipc_header));
 
         }
 
@@ -67,12 +67,12 @@ void channel_forward(struct channel *channel, unsigned int type)
 
     unsigned int i;
 
-    event_create(&channel->o, type, 0);
+    ipc_create(&channel->o, type, 0);
 
     channel->o.session = channel->i.session;
 
     for (i = 0; i < channel->i.nroutes; i++)
-        event_addroute(&channel->o, channel->i.routes[i].target, channel->i.routes[i].session);
+        ipc_addroute(&channel->o, channel->i.routes[i].target, channel->i.routes[i].session);
 
 }
 
@@ -80,7 +80,7 @@ void channel_request(struct channel *channel, unsigned int type)
 {
 
     channel_forward(channel, type);
-    event_addroute(&channel->o, channel->i.target, 0);
+    ipc_addroute(&channel->o, channel->i.target, 0);
 
 }
 
@@ -91,7 +91,7 @@ void channel_request2(struct channel *channel, unsigned int type, unsigned int s
 
     channel->o.session = session;
 
-    event_addroute(&channel->o, channel->i.target, session);
+    ipc_addroute(&channel->o, channel->i.target, session);
 
 }
 
@@ -117,14 +117,14 @@ unsigned int channel_reply(struct channel *channel, unsigned int type)
 void channel_append(struct channel *channel, unsigned int count, void *buffer)
 {
 
-    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, buffer, count, channel->o.length - sizeof (struct event_header));
+    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, buffer, count, channel->o.length - sizeof (struct ipc_header));
 
 }
 
 void channel_appendstring(struct channel *channel, char *string)
 {
 
-    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, string, ascii_length(string), channel->o.length - sizeof (struct event_header));
+    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, string, ascii_length(string), channel->o.length - sizeof (struct ipc_header));
 
 }
 
@@ -134,7 +134,7 @@ void channel_appendvalue(struct channel *channel, int value, unsigned int base)
     char num[FUDGE_NSIZE];
     unsigned int count = ascii_wvalue(num, FUDGE_NSIZE, value, base, 0);
 
-    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, num, count, channel->o.length - sizeof (struct event_header));
+    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, num, count, channel->o.length - sizeof (struct ipc_header));
 
 }
 
@@ -144,7 +144,7 @@ void channel_appendvaluepadded(struct channel *channel, int value, unsigned int 
     char num[FUDGE_NSIZE];
     unsigned int count = ascii_wvalue(num, FUDGE_NSIZE, value, base, padding);
 
-    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, num, count, channel->o.length - sizeof (struct event_header));
+    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, num, count, channel->o.length - sizeof (struct ipc_header));
 
 }
 
@@ -160,8 +160,8 @@ void channel_init(struct channel *channel)
 
     channel_setsignal(channel, EVENT_KILL, abort);
     channel_setsignal(channel, EVENT_CLOSE, abort);
-    event_create(&channel->i, 0, 0);
-    event_create(&channel->o, 0, 0);
+    ipc_create(&channel->i, 0, 0);
+    ipc_create(&channel->o, 0, 0);
 
 }
 

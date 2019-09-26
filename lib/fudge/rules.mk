@@ -7,7 +7,7 @@ O:=\
     $(DIR_LIB)/fudge/crc.o \
     $(DIR_LIB)/fudge/ctrl.o \
     $(DIR_LIB)/fudge/elf.o \
-    $(DIR_LIB)/fudge/event.o \
+    $(DIR_LIB)/fudge/ipc.o \
     $(DIR_LIB)/fudge/keymap.o \
     $(DIR_LIB)/fudge/list.o \
     $(DIR_LIB)/fudge/md5.o \

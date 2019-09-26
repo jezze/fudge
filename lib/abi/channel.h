@@ -3,8 +3,8 @@ struct channel
 
     unsigned int state;
     void (*signals[EVENTS])(struct channel *channel, void *mdata, unsigned int msize);
-    struct event_header i;
-    struct event_header o;
+    struct ipc_header i;
+    struct ipc_header o;
     char data[FUDGE_BSIZE];
 
 };
