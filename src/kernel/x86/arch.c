@@ -63,9 +63,7 @@ static unsigned int spawn(struct task *task, void *stack)
 
         memory_copy(gettaskdirectory(next->id), getkerneldirectory(), sizeof (struct mmu_directory));
         kernel_usetask(next);
-        spinlock_acquire(&next->mailbox.spinlock);
-        ring_reset(&next->mailbox.ring);
-        spinlock_release(&next->mailbox.spinlock);
+        kernel_reset(next);
 
         return next->id;
 

@@ -9,8 +9,8 @@ struct channel
 
 };
 
-void channel_pick(struct channel *channel, void *data);
-void channel_place(struct channel *channel, unsigned int id);
+unsigned int channel_pick(struct channel *channel, void *data);
+unsigned int channel_place(struct channel *channel, unsigned int id);
 void channel_listen(struct channel *channel);
 void channel_nosignal(struct channel *channel, unsigned int type);
 void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, void *mdata, unsigned int msize));

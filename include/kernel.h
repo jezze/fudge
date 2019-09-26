@@ -1,6 +1,7 @@
 #include <kernel/resource.h>
 #include <kernel/debug.h>
 #include <kernel/binary.h>
+#include <kernel/mailbox.h>
 #include <kernel/task.h>
 #include <kernel/core.h>
 #include <kernel/service.h>

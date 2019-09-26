@@ -1,12 +1,14 @@
 #include <fudge.h>
 #include "resource.h"
 #include "binary.h"
+#include "mailbox.h"
 #include "task.h"
 #include "core.h"
 #include "service.h"
 #include "kernel.h"
 
 static struct task tasks[KERNEL_TASKS];
+static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct service_descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct service_mount mounts[KERNEL_MOUNTS];
 static struct list usedtasks;
@@ -224,14 +226,10 @@ unsigned int kernel_pick(unsigned int source, struct event_header *header, void 
 {
 
     struct task *task = &tasks[source];
+    struct mailbox *mailbox = &mailboxes[source];
     unsigned int count;
 
-    spinlock_acquire(&task->mailbox.spinlock);
-
-    count = ring_readall(&task->mailbox.ring, header, sizeof (struct event_header));
-
-    if (count)
-        count += ring_readall(&task->mailbox.ring, data, header->length - sizeof (struct event_header));
+    count = mailbox_pick(mailbox, header, data);
 
     if (!count)
     {
@@ -242,8 +240,6 @@ unsigned int kernel_pick(unsigned int source, struct event_header *header, void 
 
     }
 
-    spinlock_release(&task->mailbox.spinlock);
-
     return count;
 
 }
@@ -252,21 +248,15 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct event
 {
 
     struct task *task = &tasks[target];
+    struct mailbox *mailbox = &mailboxes[target];
+    unsigned int count;
 
     header->source = source;
     header->target = target;
 
-    spinlock_acquire(&task->mailbox.spinlock);
+    count = mailbox_place(mailbox, header, data);
 
-    if (ring_avail(&task->mailbox.ring) > header->length)
-    {
-
-        ring_writeall(&task->mailbox.ring, header, sizeof (struct event_header));
-        ring_writeall(&task->mailbox.ring, data, header->length - sizeof (struct event_header));
-
-    }
-
-    if (ring_count(&task->mailbox.ring) && task->thread.status == TASK_STATUS_BLOCKED)
+    if (count && task->thread.status == TASK_STATUS_BLOCKED)
     {
 
         list_remove(&blockedtasks, &task->item);
@@ -277,9 +267,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct event
 
     }
 
-    spinlock_release(&task->mailbox.spinlock);
-
-    return header->length;
+    return count;
 
 }
 
@@ -327,6 +315,17 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
 }
 
+void kernel_reset(struct task *task)
+{
+
+    struct mailbox *mailbox = &mailboxes[task->id];
+
+    spinlock_acquire(&mailbox->spinlock);
+    ring_reset(&mailbox->ring);
+    spinlock_release(&mailbox->spinlock);
+
+}
+
 void kernel_setupinit(struct task *task)
 {
 
@@ -359,7 +358,7 @@ void kernel_setup(char *buffer)
         struct task *task = &tasks[i];
         unsigned int j;
 
-        task_init(task, i, buffer + i * TASK_MAILBOXSIZE);
+        task_init(task, i);
         kernel_freetask(task);
 
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
@@ -370,6 +369,15 @@ void kernel_setup(char *buffer)
             service_initdescriptor(descriptor, task->id);
 
         }
+
+    }
+
+    for (i = 0; i < KERNEL_MAILBOXES; i++)
+    {
+
+        struct mailbox *mailbox = &mailboxes[i];
+
+        mailbox_init(mailbox, KERNEL_MAILBOXSIZE, buffer + i * KERNEL_MAILBOXSIZE);
 
     }
 
