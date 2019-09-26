@@ -37,15 +37,7 @@ static unsigned int eventnode_seek(struct system_node *self, struct service_stat
 static unsigned int multicastnode_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct ipc_header *header = buffer;
-
-    if (count < sizeof (struct ipc_header))
-        return 0;
-
-    if (header->length != count)
-        return 0;
-
-    return multicast(state, &eventnode.states, header);
+    return multicast(state, &eventnode.states, buffer);
 
 }
 
