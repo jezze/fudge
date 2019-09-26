@@ -16,6 +16,8 @@ static struct list freetasks;
 static struct list blockedtasks;
 static struct list usedmounts;
 static struct list freemounts;
+static struct list usedmailboxes;
+static struct list freemailboxes;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct task *task);
 
@@ -151,6 +153,15 @@ struct service_mount *kernel_pickmount(void)
 
 }
 
+struct mailbox *kernel_pickmailbox(void)
+{
+
+    struct list_item *current = list_picktail(&freemailboxes);
+
+    return (current) ? current->data : 0;
+
+}
+
 void kernel_usetask(struct task *task)
 {
 
@@ -165,6 +176,13 @@ void kernel_usemount(struct service_mount *mount)
 
 }
 
+void kernel_usemailbox(struct mailbox *mailbox)
+{
+
+    list_add(&usedmailboxes, &mailbox->item);
+
+}
+
 void kernel_freetask(struct task *task)
 {
 
@@ -176,6 +194,13 @@ void kernel_freemount(struct service_mount *mount)
 {
 
     list_add(&freemounts, &mount->item);
+
+}
+
+void kernel_freemailbox(struct mailbox *mailbox)
+{
+
+    list_add(&freemailboxes, &mailbox->item);
 
 }
 
@@ -376,6 +401,7 @@ void kernel_setup(char *buffer)
         struct mailbox *mailbox = &mailboxes[i];
 
         mailbox_init(mailbox, KERNEL_MAILBOXSIZE, buffer + i * KERNEL_MAILBOXSIZE);
+        kernel_freemailbox(mailbox);
 
     }
 

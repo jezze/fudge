@@ -3,6 +3,7 @@ struct mailbox
 
     struct ring ring;
     struct spinlock spinlock;
+    struct list_item item;
 
 };
 

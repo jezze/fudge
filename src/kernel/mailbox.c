@@ -55,6 +55,7 @@ void mailbox_reset(struct mailbox *mailbox)
 void mailbox_init(struct mailbox *mailbox, unsigned int count, char *buffer)
 {
 
+    list_inititem(&mailbox->item, mailbox);
     ring_init(&mailbox->ring, count, buffer);
 
 }
