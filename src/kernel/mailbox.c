@@ -43,6 +43,15 @@ unsigned int mailbox_place(struct mailbox *mailbox, struct event_header *header,
 
 }
 
+void mailbox_reset(struct mailbox *mailbox)
+{
+
+    spinlock_acquire(&mailbox->spinlock);
+    ring_reset(&mailbox->ring);
+    spinlock_release(&mailbox->spinlock);
+
+}
+
 void mailbox_init(struct mailbox *mailbox, unsigned int count, char *buffer)
 {
 

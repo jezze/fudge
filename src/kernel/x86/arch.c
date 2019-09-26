@@ -63,7 +63,7 @@ static unsigned int spawn(struct task *task, void *stack)
 
         memory_copy(gettaskdirectory(next->id), getkerneldirectory(), sizeof (struct mmu_directory));
         kernel_usetask(next);
-        kernel_reset(next);
+        kernel_reset(next->id);
 
         return next->id;
 

@@ -222,11 +222,20 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 
 }
 
-unsigned int kernel_pick(unsigned int source, struct event_header *header, void *data)
+void kernel_reset(unsigned int id)
 {
 
-    struct task *task = &tasks[source];
-    struct mailbox *mailbox = &mailboxes[source];
+    struct mailbox *mailbox = &mailboxes[id];
+
+    mailbox_reset(mailbox);
+
+}
+
+unsigned int kernel_pick(unsigned int id, struct event_header *header, void *data)
+{
+
+    struct task *task = &tasks[id];
+    struct mailbox *mailbox = &mailboxes[id];
     unsigned int count;
 
     count = mailbox_pick(mailbox, header, data);
@@ -312,17 +321,6 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
     task->thread.sp = sp;
 
     return 1;
-
-}
-
-void kernel_reset(struct task *task)
-{
-
-    struct mailbox *mailbox = &mailboxes[task->id];
-
-    spinlock_acquire(&mailbox->spinlock);
-    ring_reset(&mailbox->ring);
-    spinlock_release(&mailbox->spinlock);
 
 }
 
