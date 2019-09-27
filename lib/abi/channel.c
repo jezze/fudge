@@ -132,9 +132,8 @@ void channel_appendvalue(struct channel *channel, int value, unsigned int base)
 {
 
     char num[FUDGE_NSIZE];
-    unsigned int count = ascii_wvalue(num, FUDGE_NSIZE, value, base, 0);
 
-    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, num, count, channel->o.length - sizeof (struct ipc_header));
+    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, value, base, 0), channel->o.length - sizeof (struct ipc_header));
 
 }
 
@@ -142,9 +141,8 @@ void channel_appendvaluepadded(struct channel *channel, int value, unsigned int 
 {
 
     char num[FUDGE_NSIZE];
-    unsigned int count = ascii_wvalue(num, FUDGE_NSIZE, value, base, padding);
 
-    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, num, count, channel->o.length - sizeof (struct ipc_header));
+    channel->o.length += memory_write(&channel->data, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), channel->o.length - sizeof (struct ipc_header));
 
 }
 

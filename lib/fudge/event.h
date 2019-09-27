@@ -96,7 +96,7 @@ struct event_videomode
 struct event_blockrequest
 {
 
-    unsigned int offset;
+    unsigned int sector;
     unsigned int count;
 
 };
