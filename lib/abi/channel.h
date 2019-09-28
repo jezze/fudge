@@ -4,8 +4,7 @@ struct channel
     unsigned int state;
     void (*signals[EVENTS])(struct channel *channel, void *mdata, unsigned int msize);
     struct ipc_header i;
-    struct ipc_header o;
-    char data[FUDGE_BSIZE];
+    struct {struct ipc_header header; char data[FUDGE_BSIZE];} message;
 
 };
 

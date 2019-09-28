@@ -42,7 +42,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
         channel_request2(channel, EVENT_OPEN, session);
 
         for (x = njobs; x > j + 1; x--)
-            ipc_addroute(&channel->o, jobs[x - 1].id, session);
+            ipc_addroute(&channel->message.header, jobs[x - 1].id, session);
 
         channel_place(channel, jobs[j].id);
 
@@ -59,7 +59,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
                 channel_request2(channel, EVENT_FILE, session);
 
                 for (x = njobs; x > j + 1; x--)
-                    ipc_addroute(&channel->o, jobs[x - 1].id, session);
+                    ipc_addroute(&channel->message.header, jobs[x - 1].id, session);
 
                 channel_append(channel, sizeof (struct event_file), &file);
                 channel_place(channel, jobs[j].id);
@@ -72,7 +72,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
                 channel_request2(channel, EVENT_DATA, session);
 
                 for (x = njobs; x > j + 1; x--)
-                    ipc_addroute(&channel->o, jobs[x - 1].id, session);
+                    ipc_addroute(&channel->message.header, jobs[x - 1].id, session);
 
                 channel_append(channel, ascii_length(jobs[j].data[k]), jobs[j].data[k]);
                 channel_place(channel, jobs[j].id);
@@ -87,7 +87,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
             channel_request2(channel, EVENT_EMPTY, session);
 
             for (x = njobs; x > j + 1; x--)
-                ipc_addroute(&channel->o, jobs[x - 1].id, session);
+                ipc_addroute(&channel->message.header, jobs[x - 1].id, session);
 
             channel_place(channel, jobs[j].id);
 
@@ -96,7 +96,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
         channel_request2(channel, EVENT_CLOSE, session);
 
         for (x = njobs; x > j + 1; x--)
-            ipc_addroute(&channel->o, jobs[x - 1].id, session);
+            ipc_addroute(&channel->message.header, jobs[x - 1].id, session);
 
         channel_place(channel, jobs[j].id);
 
