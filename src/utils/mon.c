@@ -18,12 +18,12 @@ static void sendrequest(struct channel *channel, unsigned int sector, unsigned i
 
     struct request *request = &requests[0];
 
-    ipc_create(&request->header, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
-
     request->blockrequest.sector = sector;
     request->blockrequest.count = count;
 
-    file_writeall(FILE_G0, &request->header, request->header.length);
+    channel_request(channel, EVENT_BLOCKREQUEST);
+    channel_append(channel, sizeof (struct event_blockrequest), &request->blockrequest);
+    channel_write(channel, FILE_G0);
 
 }
 
