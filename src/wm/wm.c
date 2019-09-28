@@ -324,12 +324,12 @@ static void setupvideo(void)
 
     render_init();
 
-    if (!file_walk(FILE_L0, FILE_G4, "../ctrl"))
+    if (!file_walk(FILE_L0, FILE_P0, "ctrl"))
         return;
 
     render_setvideo(FILE_L0, 1024, 768, 4);
 
-    if (!file_walk(FILE_L0, FILE_G4, "../colormap"))
+    if (!file_walk(FILE_L0, FILE_P0, "colormap"))
         return;
 
     render_setcolormap(FILE_L0);
@@ -339,7 +339,7 @@ static void setupvideo(void)
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk(FILE_L0, FILE_G4, "../data"))
+    if (!file_walk(FILE_L0, FILE_P0, "data"))
         return;
 
     render_write(mdata, msize);
@@ -936,7 +936,7 @@ void main(void)
     if (!file_walk2(FILE_G3, "/system/mouse/event"))
         return;
 
-    if (!file_walk2(FILE_G4, "/system/video/if:0/event"))
+    if (!file_walk(FILE_G4, FILE_P0, "event"))
         return;
 
     file_open(FILE_G0);
