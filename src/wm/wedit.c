@@ -253,12 +253,10 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
     if (ring_count(&output))
     {
 
-        struct {struct ipc_header header; char data[FUDGE_BSIZE];} message;
-
-        ipc_create(&message.header, EVENT_DATA, ring_count(&output));
-        memory_write(message.data, FUDGE_BSIZE, outputdata, ring_count(&output), 0);
+        channel_request(channel, EVENT_DATA);
+        channel_append(channel, ring_count(&output), outputdata);
+        channel_write(channel, FILE_G0);
         ring_reset(&output);
-        file_writeall(FILE_G0, &message, message.header.length);
 
     }
 
@@ -289,7 +287,7 @@ void main(void)
     widget_inittextbox(&content);
     widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
     channel_request(&channel, EVENT_WMMAP);
-    file_writeall(FILE_G0, &channel.o, channel.o.length);
+    channel_write(&channel, FILE_G0);
     channel_listen(&channel);
     file_close(FILE_G0);
 

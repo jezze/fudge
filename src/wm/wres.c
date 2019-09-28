@@ -48,7 +48,7 @@ void main(void)
 
     file_open(FILE_G0);
     channel_request(&channel, EVENT_WMMAP);
-    file_writeall(FILE_G0, &channel.o, channel.o.length);
+    channel_write(&channel, FILE_G0);
     channel_listen(&channel);
     file_close(FILE_G0);
 

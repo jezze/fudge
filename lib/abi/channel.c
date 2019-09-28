@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include "call.h"
+#include "file.h"
 #include "channel.h"
 
 static void ignore(struct channel *channel, void *mdata, unsigned int msize)
@@ -25,6 +26,13 @@ unsigned int channel_place(struct channel *channel, unsigned int id)
 {
 
     return call_place(id, &channel->o, channel->data);
+
+}
+
+unsigned int channel_write(struct channel *channel, unsigned int descriptor)
+{
+
+    return file_writeall(descriptor, &channel->o, channel->o.length);
 
 }
 
