@@ -542,8 +542,6 @@ void render_flush(unsigned int descriptor)
     unsigned int chunkstart = 0;
     unsigned int line;
 
-    file_open(descriptor);
-
     for (line = 0; line < currenth; line++)
     {
 
@@ -572,8 +570,6 @@ void render_flush(unsigned int descriptor)
         }
 
     }
-
-    file_close(descriptor);
 
 }
 
