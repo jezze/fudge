@@ -339,11 +339,8 @@ static void setupvideo(void)
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk(FILE_L0, FILE_P0, "data"))
-        return;
-
     render_write(mdata, msize);
-    render_flush(FILE_L0);
+    render_flush(FILE_G5);
     render_complete();
 
 }
@@ -939,11 +936,15 @@ void main(void)
     if (!file_walk(FILE_G4, FILE_P0, "event"))
         return;
 
+    if (!file_walk(FILE_G5, FILE_P0, "data"))
+        return;
+
     file_open(FILE_G0);
     file_open(FILE_G1);
     file_open(FILE_G2);
     file_open(FILE_G3);
     file_open(FILE_G4);
+    file_open(FILE_G5);
     ring_init(&output, FUDGE_BSIZE, outputdata);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
@@ -963,6 +964,7 @@ void main(void)
 
     }
 
+    file_close(FILE_G5);
     file_close(FILE_G4);
     file_close(FILE_G3);
     file_close(FILE_G2);
