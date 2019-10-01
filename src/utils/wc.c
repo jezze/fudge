@@ -73,11 +73,11 @@ static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 
     unsigned int id = channel_reply(channel, EVENT_DATA);
 
-    channel_appendvalue(channel, lines, 10);
+    channel_appendvalue(channel, lines, 10, 0);
     channel_appendstring(channel, "\n");
-    channel_appendvalue(channel, words, 10);
+    channel_appendvalue(channel, words, 10, 0);
     channel_appendstring(channel, "\n");
-    channel_appendvalue(channel, bytes, 10);
+    channel_appendvalue(channel, bytes, 10, 0);
     channel_appendstring(channel, "\n");
     channel_place(channel, id);
     channel_exit(channel);

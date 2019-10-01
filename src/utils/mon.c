@@ -62,46 +62,6 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-/*
-static void ondata(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    struct request *request = &requests[0];
-    unsigned short *data = mdata;
-    unsigned int i;
-
-    memory_copy(&channel->i, &request->origin, sizeof (struct ipc_header));
-
-    for (i = 0; i < 64; i += 8)
-    {
-
-        unsigned int id = channel_reply(channel, EVENT_DATA);
-
-        channel_appendvaluepadded(channel, i * 2, 16, 8);
-        channel_appendstring(channel, " ");
-        channel_appendvaluepadded(channel, data[i + 0], 16, 4);
-        channel_appendstring(channel, " ");
-        channel_appendvaluepadded(channel, data[i + 1], 16, 4);
-        channel_appendstring(channel, " ");
-        channel_appendvaluepadded(channel, data[i + 2], 16, 4);
-        channel_appendstring(channel, " ");
-        channel_appendvaluepadded(channel, data[i + 3], 16, 4);
-        channel_appendstring(channel, " ");
-        channel_appendvaluepadded(channel, data[i + 4], 16, 4);
-        channel_appendstring(channel, " ");
-        channel_appendvaluepadded(channel, data[i + 5], 16, 4);
-        channel_appendstring(channel, " ");
-        channel_appendvaluepadded(channel, data[i + 6], 16, 4);
-        channel_appendstring(channel, " ");
-        channel_appendvaluepadded(channel, data[i + 7], 16, 4);
-        channel_appendstring(channel, "\n");
-        channel_place(channel, id);
-
-    }
-
-}
-*/
-
 static void onopen(struct channel *channel, void *mdata, unsigned int msize)
 {
 

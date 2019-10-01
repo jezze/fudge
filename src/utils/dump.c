@@ -4,19 +4,69 @@
 static void dump(struct channel *channel, unsigned int count, void *buffer)
 {
 
-    char *data = buffer;
+    unsigned int id = channel_reply(channel, EVENT_DATA);
+    unsigned char *data = buffer;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < count; i += 16)
     {
 
-        unsigned int id = channel_reply(channel, EVENT_DATA);
+        unsigned int j;
 
-        channel_appendvaluepadded(channel, data[i], 16, 2);
+        channel_appendvalue(channel, i, 16, 8);
         channel_appendstring(channel, "  ");
-        channel_place(channel, id);
+
+        for (j = i; j < i + 16; j++)
+        {
+
+            if (j < count)
+            {
+
+                channel_appendvalue(channel, data[j], 16, 2);
+                channel_appendstring(channel, " ");
+
+            }
+
+            else
+            {
+
+                channel_appendstring(channel, "   ");
+
+            }
+
+        }
+
+        channel_appendstring(channel, " |");
+
+        for (j = i; j < i + 16; j++)
+        {
+
+            if (j < count)
+            {
+
+                char c = data[j];
+
+                if (!(c >= 0x20 && c <= 0x7e))
+                    c = ' ';
+
+                channel_append(channel, 1, &c);
+
+            }
+
+            else
+            {
+
+                channel_appendstring(channel, " ");
+
+            }
+
+        }
+
+        channel_appendstring(channel, "|\n");
 
     }
+
+    channel_place(channel, id);
 
 }
 

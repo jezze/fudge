@@ -43,7 +43,7 @@ static void onclose(struct channel *channel, void *mdata, unsigned int msize)
     md5_write(&s, digest);
 
     for (i = 0; i < 16; i++)
-        channel_appendvaluepadded(channel, digest[i], 16, 2);
+        channel_appendvalue(channel, digest[i], 16, 2);
 
     channel_appendstring(channel, "\n");
     channel_place(channel, id);
