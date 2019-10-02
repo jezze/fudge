@@ -8,13 +8,6 @@ static void ignore(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void abort(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    channel_exit(channel);
-
-}
-
 unsigned int channel_pick(struct channel *channel, void *data)
 {
 
@@ -53,13 +46,6 @@ void channel_listen(struct channel *channel)
         }
 
     }
-
-}
-
-void channel_nosignal(struct channel *channel, unsigned int type)
-{
-
-    channel->signals[type] = ignore;
 
 }
 
@@ -153,10 +139,8 @@ void channel_init(struct channel *channel)
     channel->state = 1;
 
     for (i = 0; i < EVENTS; i++)
-        channel_nosignal(channel, i);
+        channel_setsignal(channel, i, ignore);
 
-    channel_setsignal(channel, EVENT_KILL, abort);
-    channel_setsignal(channel, EVENT_CLOSE, abort);
     ipc_create(&channel->i, 0, 0);
     ipc_create(&channel->message.header, 0, 0);
 
@@ -164,6 +148,10 @@ void channel_init(struct channel *channel)
 
 void channel_exit(struct channel *channel)
 {
+
+    unsigned int id = channel_reply(channel, EVENT_CLOSE);
+
+    channel_place(channel, id);
 
     channel->state = 0;
 

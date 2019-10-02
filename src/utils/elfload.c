@@ -235,6 +235,13 @@ static unsigned int resolve(unsigned int descriptor)
 
 }
 
+static void onclose(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    channel_exit(channel);
+
+}
+
 static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
@@ -255,6 +262,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
+    channel_setsignal(&channel, EVENT_CLOSE, onclose);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_listen(&channel);
 

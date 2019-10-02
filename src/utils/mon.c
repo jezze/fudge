@@ -40,7 +40,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
         unsigned int id = channel_reply(channel, EVENT_DATA);
 
-        channel_append(channel, header->namesize, header + 1);
+        channel_append(channel, header->namesize - 1, header + 1);
         channel_appendstring(channel, "\n");
         channel_place(channel, id);
 
@@ -83,7 +83,6 @@ void main(void)
     file_open(FILE_G0);
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_OPEN, onopen);
-    channel_nosignal(&channel, EVENT_CLOSE);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_listen(&channel);
     file_close(FILE_G0);

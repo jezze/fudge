@@ -184,7 +184,6 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_nosignal(&channel, EVENT_CLOSE);
     channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setsignal(&channel, EVENT_DATA, ondata);
 

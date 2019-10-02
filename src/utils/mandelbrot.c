@@ -77,6 +77,14 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
+static void onclose(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+    channel_exit(channel);
+
+}
+
 static void onopen(struct channel *channel, void *mdata, unsigned int msize)
 {
 
@@ -93,22 +101,14 @@ static void onopen(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onclose(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    channel_exit(channel);
-
-}
-
 void main(void)
 {
 
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_OPEN, onopen);
     channel_setsignal(&channel, EVENT_CLOSE, onclose);
+    channel_setsignal(&channel, EVENT_OPEN, onopen);
     channel_listen(&channel);
 
 }

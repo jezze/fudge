@@ -4,6 +4,13 @@
 static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
+    channel_exit(channel);
+
+}
+
+static void onopen(struct channel *channel, void *mdata, unsigned int msize)
+{
+
     struct event_file file;
     unsigned int id;
 
@@ -27,7 +34,6 @@ static void onclose(struct channel *channel, void *mdata, unsigned int msize)
     channel_place(channel, id);
     channel_forward(channel, EVENT_CLOSE);
     channel_place(channel, id);
-    channel_exit(channel);
 
 }
 
@@ -38,6 +44,7 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_CLOSE, onclose);
+    channel_setsignal(&channel, EVENT_OPEN, onopen);
     channel_listen(&channel);
 
 }

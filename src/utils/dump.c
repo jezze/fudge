@@ -70,6 +70,13 @@ static void dump(struct channel *channel, unsigned int count, void *buffer)
 
 }
 
+static void onclose(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    channel_exit(channel);
+
+}
+
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
@@ -99,6 +106,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
+    channel_setsignal(&channel, EVENT_CLOSE, onclose);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_listen(&channel);

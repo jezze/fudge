@@ -1,11 +1,10 @@
 #define EVENTS                          64
 #define EVENT_ANY                       0x00
-#define EVENT_KILL                      0x01
-#define EVENT_EMPTY                     0x02
-#define EVENT_DATA                      0x03
-#define EVENT_FILE                      0x04
-#define EVENT_OPEN                      0x05
-#define EVENT_CLOSE                     0x06
+#define EVENT_OPEN                      0x01
+#define EVENT_CLOSE                     0x02
+#define EVENT_EMPTY                     0x03
+#define EVENT_DATA                      0x04
+#define EVENT_FILE                      0x05
 #define EVENT_KEYPRESS                  0x10
 #define EVENT_KEYRELEASE                0x11
 #define EVENT_MOUSEMOVE                 0x12

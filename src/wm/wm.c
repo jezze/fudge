@@ -906,7 +906,6 @@ void main(void)
     struct list_item *current;
 
     channel_init(&channel);
-    channel_nosignal(&channel, EVENT_CLOSE);
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
