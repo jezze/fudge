@@ -400,6 +400,14 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
+static void onopen(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    channel_request(channel, EVENT_WMMAP);
+    channel_write(channel, FILE_G0);
+
+}
+
 void main(void)
 {
 
@@ -408,6 +416,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_OPEN, onopen);
     channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
@@ -415,19 +424,18 @@ void main(void)
     channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
 
-    if (!file_walk2(FILE_G0, "/system/multicast"))
-        return;
-
-    file_open(FILE_G0);
     ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&prompt, FUDGE_BSIZE, promptdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     ring_init(&text, FUDGE_BSIZE, textdata);
-    widget_inittextbox(&content);
     ring_write(&prompt, "$ ", 2);
-    channel_request(&channel, EVENT_WMMAP);
-    channel_write(&channel, FILE_G0);
+    widget_inittextbox(&content);
+
+    if (!file_walk2(FILE_G0, "/system/multicast"))
+        return;
+
+    file_open(FILE_G0);
     channel_listen(&channel);
     file_close(FILE_G0);
 
