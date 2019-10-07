@@ -18,7 +18,7 @@ static void updatecontent(void)
     content.length = ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&input1);
 
-    widget_update(&output, &content, WIDGET_Z_MIDDLE, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, content.size.x, content.size.y, content.size.w, content.size.h);
+    widget_update(&output, &content, WIDGET_Z_MIDDLE, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, &content.size);
     ring_write(&output, &content, sizeof (struct widget_textbox));
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
@@ -31,7 +31,7 @@ static void updatestatus(void)
 
     status.length = 18;
 
-    widget_update(&output, &status, WIDGET_Z_MIDDLE, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, status.size.x, status.size.y, status.size.w, status.size.h);
+    widget_update(&output, &status, WIDGET_Z_MIDDLE, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, &status.size);
     ring_write(&output, &status, sizeof (struct widget_text));
     ring_write(&output, "^S: Save, ^Q: Quit", 18);
 

@@ -43,7 +43,7 @@ static unsigned int steplength;
 static void updateremote(struct remote *remote)
 {
 
-    widget_update(&output, &remote->window, WIDGET_Z_MIDDLE, WIDGET_TYPE_WINDOW, sizeof (struct widget_window), remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h);
+    widget_update(&output, &remote->window, WIDGET_Z_MIDDLE, WIDGET_TYPE_WINDOW, sizeof (struct widget_window), &remote->window.size);
     ring_write(&output, &remote->window, sizeof (struct widget_window));
 
 }
@@ -51,7 +51,7 @@ static void updateremote(struct remote *remote)
 static void updateview(struct view *view)
 {
 
-    widget_update(&output, &view->panel, WIDGET_Z_MIDDLE, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length, view->panel.size.x, view->panel.size.y, view->panel.size.w, view->panel.size.h);
+    widget_update(&output, &view->panel, WIDGET_Z_MIDDLE, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length, &view->panel.size);
     ring_write(&output, &view->panel, sizeof (struct widget_panel));
     ring_write(&output, &view->numberstring, view->panel.length);
 
@@ -60,7 +60,7 @@ static void updateview(struct view *view)
 static void updatemouse(void)
 {
 
-    widget_update(&output, &mouse, WIDGET_Z_TOP, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse), mouse.size.x, mouse.size.y, mouse.size.w, mouse.size.h);
+    widget_update(&output, &mouse, WIDGET_Z_TOP, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse), &mouse.size);
     ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
 }
@@ -68,7 +68,7 @@ static void updatemouse(void)
 static void updatebackground(void)
 {
 
-    widget_update(&output, &background, WIDGET_Z_BOTTOM, WIDGET_TYPE_FILL, sizeof (struct widget_fill), background.size.x, background.size.y, background.size.w, background.size.h);
+    widget_update(&output, &background, WIDGET_Z_BOTTOM, WIDGET_TYPE_FILL, sizeof (struct widget_fill), &background.size);
     ring_write(&output, &background, sizeof (struct widget_fill));
 
 }

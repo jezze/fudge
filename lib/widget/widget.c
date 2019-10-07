@@ -43,7 +43,7 @@ void widget_initwindow(struct widget_window *window, unsigned int active)
 
 }
 
-void widget_update(struct ring *ring, void *item, unsigned int z, unsigned int type, unsigned int count, unsigned int x, unsigned int y, unsigned int w, unsigned int h)
+void widget_update(struct ring *ring, void *item, unsigned int z, unsigned int type, unsigned int count, struct box *box)
 {
 
     struct widget widget;
@@ -53,10 +53,10 @@ void widget_update(struct ring *ring, void *item, unsigned int z, unsigned int t
     widget.z = z;
     widget.damage = WIDGET_DAMAGE_REPLACE;
     widget.count = sizeof (struct widget) + count;
-    widget.size.x = x;
-    widget.size.y = y;
-    widget.size.w = w;
-    widget.size.h = h;
+    widget.size.x = box->x;
+    widget.size.y = box->y;
+    widget.size.w = box->w;
+    widget.size.h = box->h;
 
     ring_write(ring, &widget, sizeof (struct widget));
 
