@@ -573,20 +573,22 @@ void render_flush(unsigned int descriptor)
 
 }
 
-void render_write(void *buffer, unsigned int count)
+void render_write(unsigned int source, void *buffer, unsigned int count)
 {
 
     struct widget *current = 0;
-    struct layer source;
+    struct layer layer;
 
-    source.data = buffer;
-    source.count = count;
-    source.total = count;
+    layer.data = buffer;
+    layer.count = count;
+    layer.total = count;
 
-    while ((current = nextwidget(&source, current)))
+    while ((current = nextwidget(&layer, current)))
     {
 
         struct layer *target = &layers[current->z];
+
+        current->source = source;
 
         switch (current->damage)
         {
