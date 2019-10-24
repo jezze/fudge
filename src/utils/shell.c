@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
+static unsigned int keymod = KEYMOD_NONE;
 static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 static unsigned int idcomplete;
@@ -9,7 +10,7 @@ static unsigned int idslang;
 static void printprompt(void)
 {
 
-    file_writeall(FILE_G1, "$ ", 2);
+    file_writeall(FILE_P1, "$ ", 2);
 
 }
 
@@ -104,7 +105,7 @@ static void onconsoledata(struct channel *channel, void *mdata, unsigned int msi
         if (!ring_skipreverse(&input, 1))
             break;
 
-        file_writeall(FILE_G1, "\b \b", 3);
+        file_writeall(FILE_P1, "\b \b", 3);
 
         break;
 
@@ -112,7 +113,7 @@ static void onconsoledata(struct channel *channel, void *mdata, unsigned int msi
         consoledata->data = '\n';
 
     case '\n':
-        file_writeall(FILE_G1, &consoledata->data, 1);
+        file_writeall(FILE_P1, &consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
         interpret(channel, &input);
         printprompt();
@@ -121,7 +122,7 @@ static void onconsoledata(struct channel *channel, void *mdata, unsigned int msi
 
     default:
         ring_write(&input, &consoledata->data, 1);
-        file_writeall(FILE_G1, &consoledata->data, 1);
+        file_writeall(FILE_P1, &consoledata->data, 1);
 
         break;
 
@@ -135,7 +136,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
     if (channel->i.source == idcomplete)
     {
 
-        file_writeall(FILE_G1, mdata, msize);
+        file_writeall(FILE_P1, mdata, msize);
         printprompt();
 
     }
@@ -152,11 +153,63 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
     else
     {
 
-        file_writeall(FILE_G1, "\b\b  \b\b", 6);
-        file_writeall(FILE_G1, mdata, msize);
+        file_writeall(FILE_P1, "\b\b  \b\b", 6);
+        file_writeall(FILE_P1, mdata, msize);
         printprompt();
 
     }
+
+}
+
+static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    struct event_keypress *keypress = mdata;
+    struct keymap *keymap = keymap_load(KEYMAP_US);
+    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
+
+    keymod = keymap_modkey(keypress->scancode, keymod);
+
+    switch (keypress->scancode)
+    {
+
+    case 0x0E:
+        if (!ring_skipreverse(&input, 1))
+            break;
+
+        file_writeall(FILE_P1, "\b \b", 3);
+
+        break;
+
+    case 0x0F:
+        complete(channel, &input);
+
+        break;
+
+    case 0x1C:
+        file_writeall(FILE_P1, keycode->value, keycode->length);
+        ring_write(&input, keycode->value, keycode->length);
+        interpret(channel, &input);
+        printprompt();
+
+        break;
+
+    default:
+        ring_write(&input, keycode->value, keycode->length);
+        file_writeall(FILE_P1, keycode->value, keycode->length);
+
+        break;
+
+    }
+
+}
+
+static void onkeyrelease(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    struct event_keyrelease *keyrelease = mdata;
+
+    keymod = keymap_modkey(keyrelease->scancode, keymod);
 
 }
 
@@ -168,13 +221,9 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
+    channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
-
-    if (!file_walk(FILE_G0, FILE_P0, "event"))
-        return;
-
-    if (!file_walk(FILE_G1, FILE_P0, "odata"))
-        return;
 
     if (!file_walk2(FILE_CP, "/bin/complete"))
         return;
@@ -188,12 +237,12 @@ void main(void)
 
     startchild(&channel, idcomplete);
     startchild(&channel, idslang);
-    file_open(FILE_G0);
-    file_open(FILE_G1);
+    file_open(FILE_P0);
+    file_open(FILE_P1);
     printprompt();
     channel_listen(&channel);
-    file_close(FILE_G1);
-    file_close(FILE_G0);
+    file_close(FILE_P1);
+    file_close(FILE_P0);
     stopchild(&channel, idcomplete);
     stopchild(&channel, idslang);
 
