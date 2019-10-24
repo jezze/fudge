@@ -29,17 +29,17 @@ static unsigned int clearjobs(struct job *jobs, unsigned int njobs)
 
 }
 
-static void copyroutes(struct channel *channel, struct job *jobs, unsigned int njobs, unsigned int session, unsigned int j)
+static void copyroutes(struct channel *channel, struct job *jobs, unsigned int njobs, unsigned int j)
 {
 
     unsigned int i;
 
     for (i = njobs; i > j + 1; i--)
-        ipc_addroute(&channel->message.header, jobs[i - 1].id, session);
+        ipc_addroute(&channel->message.header, jobs[i - 1].id);
 
 }
 
-static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs, unsigned int session)
+static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs)
 {
 
     unsigned int i;
@@ -49,8 +49,8 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
 
         struct job *job = &jobs[i];
 
-        channel_request2(channel, EVENT_OPEN, session);
-        copyroutes(channel, jobs, njobs, session, i);
+        channel_request(channel, EVENT_OPEN);
+        copyroutes(channel, jobs, njobs, i);
         channel_place(channel, job->id);
 
         if (job->ninputs || job->ndatas)
@@ -65,8 +65,8 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
 
                 file.descriptor = FILE_P0 + k;
 
-                channel_request2(channel, EVENT_FILE, session);
-                copyroutes(channel, jobs, njobs, session, i);
+                channel_request(channel, EVENT_FILE);
+                copyroutes(channel, jobs, njobs, i);
                 channel_append(channel, sizeof (struct event_file), &file);
                 channel_place(channel, job->id);
 
@@ -75,8 +75,8 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
             for (k = 0; k < job->ndatas; k++)
             {
 
-                channel_request2(channel, EVENT_DATA, session);
-                copyroutes(channel, jobs, njobs, session, i);
+                channel_request(channel, EVENT_DATA);
+                copyroutes(channel, jobs, njobs, i);
                 channel_append(channel, ascii_length(job->data[k]), job->data[k]);
                 channel_place(channel, job->id);
 
@@ -87,8 +87,8 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
         else
         {
 
-            channel_request2(channel, EVENT_EMPTY, session);
-            copyroutes(channel, jobs, njobs, session, i);
+            channel_request(channel, EVENT_EMPTY);
+            copyroutes(channel, jobs, njobs, i);
             channel_place(channel, job->id);
 
         }
@@ -100,15 +100,15 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
 
         struct job *job = &jobs[0];
 
-        channel_request2(channel, EVENT_CLOSE, session);
-        copyroutes(channel, jobs, njobs, session, 0);
+        channel_request(channel, EVENT_CLOSE);
+        copyroutes(channel, jobs, njobs, 0);
         channel_place(channel, job->id);
 
     }
 
 }
 
-void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel, void *buffer, unsigned int count, unsigned int session)
+void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel, void *buffer, unsigned int count)
 {
 
     unsigned int cjobs = clearjobs(jobs, njobs);
@@ -162,7 +162,7 @@ void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel
 
             cjobs = addjob(jobs, cjobs, call_spawn());
 
-            runjob(channel, jobs, cjobs, session);
+            runjob(channel, jobs, cjobs);
 
             cjobs = clearjobs(jobs, cjobs);
 

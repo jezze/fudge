@@ -284,7 +284,6 @@ void main(void)
     channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
-
     ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);

@@ -3,6 +3,8 @@
 
 static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
+static unsigned int idcomplete;
+static unsigned int idslang;
 
 static void printprompt(void)
 {
@@ -11,59 +13,31 @@ static void printprompt(void)
 
 }
 
-static void printnormal(void *buffer, unsigned int count)
+static void startchild(struct channel *channel, unsigned int id)
 {
 
-    file_writeall(FILE_G1, "\b\b  \b\b", 6);
-    file_writeall(FILE_G1, buffer, count);
-    printprompt();
+    channel_request(channel, EVENT_OPEN);
+    channel_place(channel, id);
 
 }
 
-static void printcomplete(void *buffer, unsigned int count)
+static void stopchild(struct channel *channel, unsigned int id)
 {
 
-    file_writeall(FILE_G1, buffer, count);
-    printprompt();
+    channel_request(channel, EVENT_CLOSE);
+    channel_place(channel, id);
 
 }
 
-static unsigned int runcmd(struct channel *channel, char *command, char *data, unsigned int count, unsigned int session)
+static unsigned int interpretbuiltin(unsigned int count, char *data)
 {
 
-    unsigned int id;
-
-    if (!file_walk2(FILE_CP, command))
-        return 0;
-
-    id = call_spawn();
-
-    if (id)
+    if (memory_match(data, "cd ", 3))
     {
 
-        channel_request2(channel, EVENT_OPEN, session);
-        channel_place(channel, id);
-        channel_request2(channel, EVENT_DATA, session);
-        channel_append(channel, count, data);
-        channel_place(channel, id);
-        channel_request2(channel, EVENT_CLOSE, session);
-        channel_place(channel, id);
+        data[count - 1] = '\0';
 
-    }
-
-    return id;
-
-}
-
-static unsigned int interpretbuiltin(unsigned int count, char *command)
-{
-
-    if (memory_match(command, "cd ", 3))
-    {
-
-        command[count - 1] = '\0';
-
-        if (file_walk2(FILE_L0, command + 3))
+        if (file_walk2(FILE_L0, data + 3))
         {
 
             file_duplicate(FILE_PW, FILE_L0);
@@ -79,29 +53,33 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static unsigned int interpret(struct channel *channel, struct ring *ring)
+static void interpret(struct channel *channel, struct ring *ring)
 {
 
-    char command[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
+    char data[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
 
     if (count < 2)
-        return 0;
+        return;
 
-    if (interpretbuiltin(count, command))
-        return 0;
+    if (interpretbuiltin(count, data))
+        return;
 
-    return runcmd(channel, "/bin/slang", command, count, 2);
+    channel_request(channel, EVENT_DATA);
+    channel_append(channel, count, data);
+    channel_place(channel, idslang);
 
 }
 
-static unsigned int complete(struct channel *channel, struct ring *ring)
+static void complete(struct channel *channel, struct ring *ring)
 {
 
-    char command[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
+    char data[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
 
-    return runcmd(channel, "/bin/complete", command, count, 1);
+    channel_request(channel, EVENT_DATA);
+    channel_append(channel, count, data);
+    channel_place(channel, idcomplete);
 
 }
 
@@ -154,25 +132,29 @@ static void onconsoledata(struct channel *channel, void *mdata, unsigned int msi
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct job jobs[32];
-
-    switch (channel->i.session)
+    if (channel->i.source == idcomplete)
     {
 
-    case 0:
-        printnormal(mdata, msize);
+        file_writeall(FILE_G1, mdata, msize);
+        printprompt();
 
-        break;
+    }
 
-    case 1:
-        printcomplete(mdata, msize);
+    else if (channel->i.source == idslang)
+    {
 
-        break;
+        struct job jobs[32];
 
-    case 2:
-        job_interpret(jobs, 32, channel, mdata, msize, 0);
+        job_interpret(jobs, 32, channel, mdata, msize);
 
-        break;
+    }
+
+    else
+    {
+
+        file_writeall(FILE_G1, "\b\b  \b\b", 6);
+        file_writeall(FILE_G1, mdata, msize);
+        printprompt();
 
     }
 
@@ -186,6 +168,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setsignal(&channel, EVENT_DATA, ondata);
+    ring_init(&input, FUDGE_BSIZE, inputbuffer);
 
     if (!file_walk(FILE_G0, FILE_P0, "event"))
         return;
@@ -193,13 +176,26 @@ void main(void)
     if (!file_walk(FILE_G1, FILE_P0, "odata"))
         return;
 
+    if (!file_walk2(FILE_CP, "/bin/complete"))
+        return;
+
+    idcomplete = call_spawn();
+
+    if (!file_walk2(FILE_CP, "/bin/slang"))
+        return;
+
+    idslang = call_spawn();
+
+    startchild(&channel, idcomplete);
+    startchild(&channel, idslang);
     file_open(FILE_G0);
     file_open(FILE_G1);
-    ring_init(&input, FUDGE_BSIZE, inputbuffer);
     printprompt();
     channel_listen(&channel);
     file_close(FILE_G1);
     file_close(FILE_G0);
+    stopchild(&channel, idcomplete);
+    stopchild(&channel, idslang);
 
 }
 

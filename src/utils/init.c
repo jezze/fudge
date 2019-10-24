@@ -6,7 +6,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
     struct job jobs[32];
 
-    job_interpret(jobs, 32, channel, mdata, msize, 0);
+    job_interpret(jobs, 32, channel, mdata, msize);
 
 }
 

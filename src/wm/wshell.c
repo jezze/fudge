@@ -16,6 +16,8 @@ static char textdata[FUDGE_BSIZE];
 static struct ring text;
 static unsigned int totalrows;
 static unsigned int visiblerows;
+static unsigned int idcomplete;
+static unsigned int idslang;
 
 static void updatecontent(void)
 {
@@ -116,70 +118,31 @@ static void moveright(unsigned int steps)
 
 }
 
-static void printnormal(void *buffer, unsigned int count)
+static void startchild(struct channel *channel, unsigned int id)
 {
 
-    copybuffer(buffer, count);
+    channel_request(channel, EVENT_OPEN);
+    channel_place(channel, id);
 
 }
 
-static void printcomplete(void *buffer, unsigned int count)
+static void stopchild(struct channel *channel, unsigned int id)
 {
 
-    if (memory_findbyte(buffer, count, '\n') < count - 1)
-    {
-
-        copyring(&prompt);
-        copybuffer("\n", 1);
-        copybuffer(buffer, count);
-
-    }
-
-    else
-    {
-
-        ring_write(&input1, buffer, count - 1);
-
-    }
+    channel_request(channel, EVENT_CLOSE);
+    channel_place(channel, id);
 
 }
 
-static unsigned int runcmd(struct channel *channel, char *command, char *data, unsigned int count, unsigned int session)
+static unsigned int interpretbuiltin(unsigned int count, char *data)
 {
 
-    unsigned int id;
-
-    if (!file_walk2(FILE_CP, command))
-        return 0;
-
-    id = call_spawn();
-
-    if (id)
+    if (memory_match(data, "cd ", 3))
     {
 
-        channel_request2(channel, EVENT_OPEN, session);
-        channel_place(channel, id);
-        channel_request2(channel, EVENT_DATA, session);
-        channel_append(channel, count, data);
-        channel_place(channel, id);
-        channel_request2(channel, EVENT_CLOSE, session);
-        channel_place(channel, id);
+        data[count - 1] = '\0';
 
-    }
-
-    return id;
-
-}
-
-static unsigned int interpretbuiltin(unsigned int count, char *command)
-{
-
-    if (memory_match(command, "cd ", 3))
-    {
-
-        command[count - 1] = '\0';
-
-        if (file_walk2(FILE_L0, command + 3))
+        if (file_walk2(FILE_L0, data + 3))
         {
 
             file_duplicate(FILE_PW, FILE_L0);
@@ -195,54 +158,73 @@ static unsigned int interpretbuiltin(unsigned int count, char *command)
 
 }
 
-static unsigned int interpret(struct channel *channel, struct ring *ring)
+static void interpret(struct channel *channel, struct ring *ring)
 {
 
-    char command[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
+    char data[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
 
     if (count < 2)
-        return 0;
+        return;
 
-    if (interpretbuiltin(count, command))
-        return 0;
+    if (interpretbuiltin(count, data))
+        return;
 
-    return runcmd(channel, "/bin/slang", command, count, 2);
+    channel_request(channel, EVENT_DATA);
+    channel_append(channel, count, data);
+    channel_place(channel, idslang);
 
 }
 
-static unsigned int complete(struct channel *channel, struct ring *ring)
+static void complete(struct channel *channel, struct ring *ring)
 {
 
-    char command[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, command, FUDGE_BSIZE);
+    char data[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
 
-    return runcmd(channel, "/bin/complete", command, count, 1);
+    channel_request(channel, EVENT_DATA);
+    channel_append(channel, count, data);
+    channel_place(channel, idcomplete);
 
 }
 
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct job jobs[32];
-
-    switch (channel->i.session)
+    if (channel->i.source == idcomplete)
     {
 
-    case 0:
-        printnormal(mdata, msize);
+        if (memory_findbyte(mdata, msize, '\n') < msize - 1)
+        {
 
-        break;
+            copyring(&prompt);
+            copybuffer("\n", 1);
+            copybuffer(mdata, msize);
 
-    case 1:
-        printcomplete(mdata, msize);
+        }
 
-        break;
+        else
+        {
 
-    case 2:
-        job_interpret(jobs, 32, channel, mdata, msize, 0);
+            ring_write(&input1, mdata, msize - 1);
 
-        break;
+        }
+
+    }
+
+    else if (channel->i.source == idslang)
+    {
+
+        struct job jobs[32];
+
+        job_interpret(jobs, 32, channel, mdata, msize);
+
+    }
+
+    else
+    {
+
+        copybuffer(mdata, msize);
 
     }
 
@@ -423,7 +405,6 @@ void main(void)
     channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
-
     ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&prompt, FUDGE_BSIZE, promptdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
@@ -435,9 +416,23 @@ void main(void)
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
+    if (!file_walk2(FILE_CP, "/bin/complete"))
+        return;
+
+    idcomplete = call_spawn();
+
+    if (!file_walk2(FILE_CP, "/bin/slang"))
+        return;
+
+    idslang = call_spawn();
+
+    startchild(&channel, idcomplete);
+    startchild(&channel, idslang);
     file_open(FILE_G0);
     channel_listen(&channel);
     file_close(FILE_G0);
+    stopchild(&channel, idcomplete);
+    stopchild(&channel, idslang);
 
 }
 

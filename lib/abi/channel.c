@@ -63,10 +63,8 @@ void channel_forward(struct channel *channel, unsigned int type)
 
     ipc_create(&channel->message.header, type, 0);
 
-    channel->message.header.session = channel->i.session;
-
     for (i = 0; i < channel->i.nroutes; i++)
-        ipc_addroute(&channel->message.header, channel->i.routes[i].target, channel->i.routes[i].session);
+        ipc_addroute(&channel->message.header, channel->i.routes[i]);
 
 }
 
@@ -74,18 +72,7 @@ void channel_request(struct channel *channel, unsigned int type)
 {
 
     channel_forward(channel, type);
-    ipc_addroute(&channel->message.header, channel->i.target, 0);
-
-}
-
-void channel_request2(struct channel *channel, unsigned int type, unsigned int session)
-{
-
-    channel_forward(channel, type);
-
-    channel->message.header.session = session;
-
-    ipc_addroute(&channel->message.header, channel->i.target, session);
+    ipc_addroute(&channel->message.header, channel->i.target);
 
 }
 
@@ -98,9 +85,8 @@ unsigned int channel_reply(struct channel *channel, unsigned int type)
     {
 
         channel->message.header.nroutes--;
-        channel->message.header.session = channel->message.header.routes[channel->message.header.nroutes].session;
 
-        return channel->message.header.routes[channel->message.header.nroutes].target;
+        return channel->message.header.routes[channel->message.header.nroutes];
 
     }
 

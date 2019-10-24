@@ -919,6 +919,9 @@ void main(void)
     channel_setsignal(&channel, EVENT_WMUNMAP, onwmunmap);
     channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    widget_initfill(&background, 2);
+    widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
@@ -944,9 +947,6 @@ void main(void)
     file_open(FILE_G3);
     file_open(FILE_G4);
     file_open(FILE_G5);
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    widget_initfill(&background, 2);
-    widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     setupvideo();
     setupviews();
     setupremotes();
