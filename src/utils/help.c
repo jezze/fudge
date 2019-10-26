@@ -4,14 +4,6 @@
 static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel);
-
-}
-
-void main(void)
-{
-
-    struct channel channel;
     struct event_file file;
     unsigned int id;
 
@@ -28,13 +20,22 @@ void main(void)
 
     file.descriptor = FILE_P0;
 
+    channel_forward(channel, EVENT_FILE);
+    channel_append(channel, sizeof (struct event_file), &file);
+    channel_place(channel, id);
+    channel_forward(channel, EVENT_DONE);
+    channel_place(channel, id);
+    channel_close(channel);
+
+}
+
+void main(void)
+{
+
+    struct channel channel;
+
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DONE, ondone);
-    channel_forward(&channel, EVENT_FILE);
-    channel_append(&channel, sizeof (struct event_file), &file);
-    channel_place(&channel, id);
-    channel_forward(&channel, EVENT_DONE);
-    channel_place(&channel, id);
     channel_listen(&channel);
 
 }
