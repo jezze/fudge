@@ -152,7 +152,7 @@ void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel
             if (!(file_walk(FILE_CP, FILE_L0, start + 2) || file_walk2(FILE_CP, start + 2)))
                 return;
 
-            cjobs = addjob(jobs, cjobs, call_spawn());
+            cjobs = addjob(jobs, cjobs, call_spawn(FILE_CP));
 
             break;
 
@@ -160,7 +160,7 @@ void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel
             if (!(file_walk(FILE_CP, FILE_L0, start + 2) || file_walk2(FILE_CP, start + 2)))
                 return;
 
-            cjobs = addjob(jobs, cjobs, call_spawn());
+            cjobs = addjob(jobs, cjobs, call_spawn(FILE_CP));
 
             runjob(channel, jobs, cjobs);
 

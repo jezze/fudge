@@ -419,12 +419,12 @@ void main(void)
     if (!file_walk2(FILE_CP, "/bin/complete"))
         return;
 
-    idcomplete = call_spawn();
+    idcomplete = call_spawn(FILE_CP);
 
     if (!file_walk2(FILE_CP, "/bin/slang"))
         return;
 
-    idslang = call_spawn();
+    idslang = call_spawn(FILE_CP);
 
     startchild(&channel, idcomplete);
     startchild(&channel, idslang);

@@ -438,7 +438,7 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
         if (!file_walk2(FILE_CP, "/bin/wshell"))
             break;
 
-        id = call_spawn();
+        id = call_spawn(FILE_CP);
 
         if (id)
         {

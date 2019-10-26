@@ -32,7 +32,7 @@ void main(void)
     if (!file_walk2(FILE_C2, "/config/init.slang"))
         return;
 
-    id = call_spawn();
+    id = call_spawn(FILE_CP);
 
     if (!id)
         return;
