@@ -108,6 +108,8 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
     unsigned int rows = 0;
     unsigned int count;
 
+    call_seek(descriptor, 0);
+
     while ((count = file_read(descriptor, buffer, FUDGE_BSIZE)))
     {
 
