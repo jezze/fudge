@@ -147,9 +147,7 @@ static void onwmconfigure(struct channel *channel, void *mdata, unsigned int msi
     box_resize(&content.size, wmconfigure->padding);
     box_setsize(&status.size, wmconfigure->x, wmconfigure->y + wmconfigure->h - (wmconfigure->lineheight + 2 * wmconfigure->padding), wmconfigure->w, (wmconfigure->lineheight + 2 * wmconfigure->padding));
     box_resize(&status.size, wmconfigure->padding);
-    file_open(FILE_P0);
     readfile(FILE_P0, content.size.h / wmconfigure->lineheight);
-    file_close(FILE_P0);
 
 }
 
@@ -284,11 +282,13 @@ void main(void)
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
+    file_open(FILE_P0);
     file_open(FILE_G0);
     channel_request(&channel, EVENT_WMMAP);
     channel_write(&channel, FILE_G0);
     channel_listen(&channel);
     file_close(FILE_G0);
+    file_close(FILE_P0);
 
 }
 
