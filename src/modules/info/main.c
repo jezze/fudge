@@ -18,7 +18,7 @@ static unsigned int cores_read(struct system_node *self, struct system_node *cur
     {
 
         struct core *core = resource->data;
-        struct list_item *item = 0;
+        struct list_item *item;
         char num[FUDGE_NSIZE];
 
         c += memory_write(data, FUDGE_BSIZE, "core ", 5, c);
