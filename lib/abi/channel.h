@@ -1,7 +1,7 @@
 struct channel
 {
 
-    unsigned int state;
+    unsigned int poll;
     void (*signals[EVENTS])(struct channel *channel, void *mdata, unsigned int msize);
     struct ipc_header i;
     struct {struct ipc_header header; char data[FUDGE_BSIZE];} message;

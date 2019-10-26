@@ -27,7 +27,7 @@ unsigned int channel_write(struct channel *channel, unsigned int descriptor)
 void channel_listen(struct channel *channel)
 {
 
-    while (channel->state)
+    while (channel->poll)
     {
 
         char data[FUDGE_BSIZE];
@@ -54,7 +54,7 @@ void channel_close(struct channel *channel)
 
     channel_place(channel, id);
 
-    channel->state = 0;
+    channel->poll = 0;
 
 }
 
@@ -131,7 +131,7 @@ void channel_init(struct channel *channel)
 
     unsigned int i;
 
-    channel->state = 1;
+    channel->poll = 1;
 
     for (i = 0; i < EVENTS; i++)
         channel_setsignal(channel, i, 0);
