@@ -144,7 +144,14 @@ static unsigned int consoleinterface_writetransmit(struct system_node *self, str
     unsigned int i;
 
     for (i = 0; i < count; i++)
+    {
+
+        if (b[i] == '\n')
+            uart_put('\r');
+
         uart_put(b[i]);
+
+    }
 
     return count;
 
