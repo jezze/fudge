@@ -31,7 +31,7 @@ void console_registerinterface(struct console_interface *interface)
     resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->ctrl);
     system_addchild(&interface->root, &interface->data);
-    system_addchild(&interface->root, &interface->odata);
+    system_addchild(&interface->root, &interface->transmit);
     system_addchild(&interface->root, &interface->event);
     system_addchild(&root, &interface->root);
 
@@ -43,7 +43,7 @@ void console_unregisterinterface(struct console_interface *interface)
     resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->ctrl);
     system_removechild(&interface->root, &interface->data);
-    system_removechild(&interface->root, &interface->odata);
+    system_removechild(&interface->root, &interface->transmit);
     system_removechild(&interface->root, &interface->event);
     system_removechild(&root, &interface->root);
 
@@ -56,7 +56,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id)
     system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
-    system_initnode(&interface->odata, SYSTEM_NODETYPE_NORMAL, "odata");
+    system_initnode(&interface->transmit, SYSTEM_NODETYPE_NORMAL, "transmit");
     system_initnode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event");
 
     interface->id = id;

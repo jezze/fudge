@@ -52,7 +52,7 @@ static unsigned int consoleinterface_readctrl(struct system_node *self, struct s
 
 }
 
-static unsigned int consoleinterface_writeodata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_writetransmit(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int total = videointerface.settings.w * videointerface.settings.h;
@@ -221,7 +221,7 @@ static void driver_init(unsigned int id)
     clear(0);
 
     consoleinterface.ctrl.operations.read = consoleinterface_readctrl;
-    consoleinterface.odata.operations.write = consoleinterface_writeodata;
+    consoleinterface.transmit.operations.write = consoleinterface_writetransmit;
     videointerface.ctrl.operations.read = videointerface_readctrl;
     videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;

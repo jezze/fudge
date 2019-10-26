@@ -137,7 +137,7 @@ static unsigned int consoleinterface_readctrl(struct system_node *self, struct s
 
 }
 
-static unsigned int consoleinterface_writeodata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_writetransmit(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;
@@ -156,7 +156,7 @@ static void driver_init(unsigned int id)
     console_initinterface(&consoleinterface, id);
 
     consoleinterface.ctrl.operations.read = consoleinterface_readctrl;
-    consoleinterface.odata.operations.write = consoleinterface_writeodata;
+    consoleinterface.transmit.operations.write = consoleinterface_writetransmit;
 
 }
 
