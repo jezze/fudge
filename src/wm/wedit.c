@@ -262,14 +262,6 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onopen(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    channel_request(channel, EVENT_WMMAP);
-    channel_write(channel, FILE_G0);
-
-}
-
 void main(void)
 {
 
@@ -277,7 +269,6 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_ANY, onany);
-    channel_setsignal(&channel, EVENT_OPEN, onopen);
     channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
@@ -294,6 +285,8 @@ void main(void)
         return;
 
     file_open(FILE_G0);
+    channel_request(&channel, EVENT_WMMAP);
+    channel_write(&channel, FILE_G0);
     channel_listen(&channel);
     file_close(FILE_G0);
 

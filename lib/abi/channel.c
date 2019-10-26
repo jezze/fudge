@@ -52,7 +52,7 @@ void channel_listen(struct channel *channel)
 void channel_close(struct channel *channel)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_CLOSE);
+    unsigned int id = channel_reply(channel, EVENT_DONE);
 
     channel_place(channel, id);
 

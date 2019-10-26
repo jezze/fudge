@@ -49,10 +49,6 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
 
         struct job *job = &jobs[i];
 
-        channel_request(channel, EVENT_OPEN);
-        copyroutes(channel, jobs, njobs, i);
-        channel_place(channel, job->id);
-
         if (job->ninputs || job->ndatas)
         {
 
@@ -100,7 +96,7 @@ static void runjob(struct channel *channel, struct job *jobs, unsigned int njobs
 
         struct job *job = &jobs[0];
 
-        channel_request(channel, EVENT_CLOSE);
+        channel_request(channel, EVENT_DONE);
         copyroutes(channel, jobs, njobs, 0);
         channel_place(channel, job->id);
 

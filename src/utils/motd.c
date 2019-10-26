@@ -1,20 +1,19 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onclose(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     channel_close(channel);
 
 }
 
-static void onopen(struct channel *channel, void *mdata, unsigned int msize)
+void main(void)
 {
 
+    struct channel channel;
     struct event_file file;
     unsigned int id;
-
-    file.descriptor = FILE_P0;
 
     if (!file_walk2(FILE_CP, "/bin/echo"))
         return;
@@ -27,24 +26,15 @@ static void onopen(struct channel *channel, void *mdata, unsigned int msize)
     if (!id)
         return;
 
-    channel_forward(channel, EVENT_OPEN);
-    channel_place(channel, id);
-    channel_forward(channel, EVENT_FILE);
-    channel_append(channel, sizeof (struct event_file), &file);
-    channel_place(channel, id);
-    channel_forward(channel, EVENT_CLOSE);
-    channel_place(channel, id);
-
-}
-
-void main(void)
-{
-
-    struct channel channel;
+    file.descriptor = FILE_P0;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_CLOSE, onclose);
-    channel_setsignal(&channel, EVENT_OPEN, onopen);
+    channel_setsignal(&channel, EVENT_DONE, ondone);
+    channel_forward(&channel, EVENT_FILE);
+    channel_append(&channel, sizeof (struct event_file), &file);
+    channel_place(&channel, id);
+    channel_forward(&channel, EVENT_DONE);
+    channel_place(&channel, id);
     channel_listen(&channel);
 
 }

@@ -26,7 +26,7 @@ static void list(struct channel *channel, unsigned int descriptor)
 
 }
 
-static void onclose(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     channel_close(channel);
@@ -55,7 +55,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_CLOSE, onclose);
+    channel_setsignal(&channel, EVENT_DONE, ondone);
     channel_setsignal(&channel, EVENT_EMPTY, onempty);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_listen(&channel);

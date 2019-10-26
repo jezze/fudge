@@ -118,22 +118,6 @@ static void moveright(unsigned int steps)
 
 }
 
-static void startchild(struct channel *channel, unsigned int id)
-{
-
-    channel_request(channel, EVENT_OPEN);
-    channel_place(channel, id);
-
-}
-
-static void stopchild(struct channel *channel, unsigned int id)
-{
-
-    channel_request(channel, EVENT_CLOSE);
-    channel_place(channel, id);
-
-}
-
 static unsigned int interpretbuiltin(unsigned int count, char *data)
 {
 
@@ -382,14 +366,6 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onopen(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    channel_request(channel, EVENT_WMMAP);
-    channel_write(channel, FILE_G0);
-
-}
-
 void main(void)
 {
 
@@ -398,7 +374,6 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_OPEN, onopen);
     channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
@@ -426,13 +401,14 @@ void main(void)
 
     idslang = call_spawn(FILE_CP);
 
-    startchild(&channel, idcomplete);
-    startchild(&channel, idslang);
     file_open(FILE_G0);
+    channel_request(&channel, EVENT_WMMAP);
+    channel_write(&channel, FILE_G0);
     channel_listen(&channel);
+    channel_request(&channel, EVENT_DONE);
+    channel_place(&channel, idcomplete);
+    channel_place(&channel, idslang);
     file_close(FILE_G0);
-    stopchild(&channel, idcomplete);
-    stopchild(&channel, idslang);
 
 }
 

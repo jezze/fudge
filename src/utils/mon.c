@@ -62,7 +62,8 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onopen(struct channel *channel, void *mdata, unsigned int msize)
+/*
+static void onwalkrequest(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     struct request *request = &requests[0];
@@ -71,6 +72,7 @@ static void onopen(struct channel *channel, void *mdata, unsigned int msize)
     sendrequest(channel, 0, 1);
 
 }
+*/
 
 void main(void)
 {
@@ -82,7 +84,6 @@ void main(void)
 
     file_open(FILE_G0);
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_OPEN, onopen);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_listen(&channel);
     file_close(FILE_G0);

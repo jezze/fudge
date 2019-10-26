@@ -14,22 +14,6 @@ static void printprompt(void)
 
 }
 
-static void startchild(struct channel *channel, unsigned int id)
-{
-
-    channel_request(channel, EVENT_OPEN);
-    channel_place(channel, id);
-
-}
-
-static void stopchild(struct channel *channel, unsigned int id)
-{
-
-    channel_request(channel, EVENT_CLOSE);
-    channel_place(channel, id);
-
-}
-
 static unsigned int interpretbuiltin(unsigned int count, char *data)
 {
 
@@ -235,16 +219,15 @@ void main(void)
 
     idslang = call_spawn(FILE_CP);
 
-    startchild(&channel, idcomplete);
-    startchild(&channel, idslang);
     file_open(FILE_P0);
     file_open(FILE_P1);
     printprompt();
     channel_listen(&channel);
+    channel_request(&channel, EVENT_DONE);
+    channel_place(&channel, idcomplete);
+    channel_place(&channel, idslang);
     file_close(FILE_P1);
     file_close(FILE_P0);
-    stopchild(&channel, idcomplete);
-    stopchild(&channel, idslang);
 
 }
 

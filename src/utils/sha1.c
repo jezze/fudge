@@ -3,7 +3,7 @@
 
 static struct sha1 s;
 
-static void onclose(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     unsigned int id = channel_reply(channel, EVENT_DATA);
@@ -44,23 +44,16 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onopen(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    sha1_init(&s);
-
-}
-
 void main(void)
 {
 
     struct channel channel;
 
+    sha1_init(&s);
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_CLOSE, onclose);
+    channel_setsignal(&channel, EVENT_DONE, ondone);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
-    channel_setsignal(&channel, EVENT_OPEN, onopen);
     channel_listen(&channel);
 
 }
