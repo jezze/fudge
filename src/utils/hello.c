@@ -14,7 +14,7 @@ static void onopen(struct channel *channel, void *mdata, unsigned int msize)
 static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    channel_exit(channel);
+    channel_close(channel);
 
 }
 

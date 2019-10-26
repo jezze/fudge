@@ -363,7 +363,7 @@ static void onwmclose(struct channel *channel, void *mdata, unsigned int msize)
     unsigned int id = channel_reply(channel, EVENT_WMUNMAP);
 
     channel_place(channel, id);
-    channel_exit(channel);
+    channel_close(channel);
 
 }
 

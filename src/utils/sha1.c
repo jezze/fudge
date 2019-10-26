@@ -17,7 +17,7 @@ static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 
     channel_appendstring(channel, "\n");
     channel_place(channel, id);
-    channel_exit(channel);
+    channel_close(channel);
 
 }
 

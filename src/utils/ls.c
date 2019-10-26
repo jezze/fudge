@@ -29,7 +29,7 @@ static void list(struct channel *channel, unsigned int descriptor)
 static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    channel_exit(channel);
+    channel_close(channel);
 
 }
 

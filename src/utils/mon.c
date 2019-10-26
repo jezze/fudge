@@ -54,7 +54,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
         else
         {
 
-            channel_exit(channel);
+            channel_close(channel);
 
         }
 

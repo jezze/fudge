@@ -25,7 +25,7 @@ static void replydate(struct channel *channel, struct ctrl_clocksettings *settin
 static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    channel_exit(channel);
+    channel_close(channel);
 
 }
 

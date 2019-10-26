@@ -73,7 +73,7 @@ static void dump(struct channel *channel, unsigned int count, void *buffer)
 static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    channel_exit(channel);
+    channel_close(channel);
 
 }
 

@@ -81,7 +81,7 @@ static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    channel_exit(channel);
+    channel_close(channel);
 
 }
 

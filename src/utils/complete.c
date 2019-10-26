@@ -34,7 +34,7 @@ static void complete(struct channel *channel, unsigned int descriptor, void *nam
 static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    channel_exit(channel);
+    channel_close(channel);
 
 }
 

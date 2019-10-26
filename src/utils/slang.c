@@ -329,7 +329,7 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
 static void onclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    channel_exit(channel);
+    channel_close(channel);
 
 }
 
