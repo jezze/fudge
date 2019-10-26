@@ -380,6 +380,7 @@ void kernel_setup(char *buffer)
         unsigned int j;
 
         task_init(task, i);
+        resource_register(&task->resource);
         kernel_freetask(task);
 
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
@@ -399,6 +400,7 @@ void kernel_setup(char *buffer)
         struct mailbox *mailbox = &mailboxes[i];
 
         mailbox_init(mailbox, KERNEL_MAILBOXSIZE, buffer + i * KERNEL_MAILBOXSIZE);
+        resource_register(&mailbox->resource);
         kernel_freemailbox(mailbox);
 
     }

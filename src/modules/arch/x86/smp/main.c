@@ -18,8 +18,6 @@
 
 static struct arch_tss tss[256];
 static struct core cores[256];
-static struct system_node root;
-static struct system_node cpus;
 static struct list corelist;
 
 static void detect(struct acpi_madt *madt)
@@ -82,6 +80,7 @@ void smp_setupbp(unsigned int stack, struct task *task, struct list *tasks)
     struct list_item *current;
 
     core_init(&cores[id], id, stack, task);
+    resource_register(&cores[id].resource);
     arch_configuretss(&tss[id], cores[id].id, cores[id].sp);
     apic_setup_bp();
     list_add(&corelist, &cores[id].item);
@@ -97,21 +96,13 @@ void smp_setupap(unsigned int stack)
     unsigned int id = apic_getid();
 
     core_init(&cores[id], id, stack, 0);
+    resource_register(&cores[id].resource);
     arch_configuretss(&tss[id], cores[id].id, cores[id].sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
     apic_setup_ap();
     list_add(&corelist, &cores[id].item);
     arch_leave(&cores[id]);
-
-}
-
-static unsigned int cpus_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    char num[FUDGE_NSIZE];
-
-    return memory_read(buffer, count, num, ascii_wvalue(num, FUDGE_NSIZE, corelist.count, 10, 0), offset);
 
 }
 
@@ -123,10 +114,6 @@ void module_init(void)
 
     smp_setupbp(core->sp, core->task, &core->tasks);
     kernel_setcallback(coreget, coreassign);
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "smp");
-    system_initnode(&cpus, SYSTEM_NODETYPE_NORMAL, "cpus");
-
-    cpus.operations.read = cpus_read;
 
     if (!madt)
         return;
@@ -135,22 +122,6 @@ void module_init(void)
     memory_copy((void *)INIT32ADDRESS, (void *)(unsigned int)smp_begin32, (unsigned int)smp_end32 - (unsigned int)smp_begin32);
     smp_prep(ARCH_KERNELSTACKADDRESS + 2 * ARCH_KERNELSTACKSIZE);
     detect(madt);
-
-}
-
-void module_register(void)
-{
-
-    system_registernode(&root);
-    system_addchild(&root, &cpus);
-
-}
-
-void module_unregister(void)
-{
-
-    system_unregisternode(&root);
-    system_removechild(&root, &cpus);
 
 }
 
