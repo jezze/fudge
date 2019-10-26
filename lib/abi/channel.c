@@ -27,6 +27,8 @@ unsigned int channel_write(struct channel *channel, unsigned int descriptor)
 void channel_listen(struct channel *channel)
 {
 
+    channel->poll = 1;
+
     while (channel->poll)
     {
 
@@ -130,8 +132,6 @@ void channel_init(struct channel *channel)
 {
 
     unsigned int i;
-
-    channel->poll = 1;
 
     for (i = 0; i < EVENTS; i++)
         channel_setsignal(channel, i, 0);
