@@ -350,9 +350,9 @@ unsigned int kernel_setupbinary(struct task *task, struct service_descriptor *de
 void kernel_setupinit(struct task *task)
 {
 
-    struct service_descriptor *root = kernel_getdescriptor(task, 0x10);
-    struct service_descriptor *work = kernel_getdescriptor(task, 0x11);
-    struct service_descriptor *init = kernel_getdescriptor(task, 0x12);
+    struct service_descriptor *init = kernel_getdescriptor(task, 0x10);
+    struct service_descriptor *root = kernel_getdescriptor(task, 0x11);
+    struct service_descriptor *work = kernel_getdescriptor(task, 0x12);
 
     root->backend = service_findbackend(1000);
     root->protocol = service_findprotocol(1000);

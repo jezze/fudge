@@ -398,7 +398,7 @@ static void setuptask()
 {
 
     struct task *task = kernel_picktask();
-    struct service_descriptor *descriptor = kernel_getdescriptor(task, 0x02);
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, 0x10);
 
     kernel_setupinit(task);
     kernel_copydescriptors(task, task);
