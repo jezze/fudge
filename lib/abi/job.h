@@ -8,6 +8,14 @@ struct job
 
 };
 
+struct job_status
+{
+
+    char *start;
+    char *end;
+
+};
+
 struct job_proc
 {
 
@@ -21,5 +29,5 @@ struct job_proc
 };
 
 void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel, void *buffer, unsigned int count);
-unsigned int job_parse(struct job_proc *procs, void *buffer, unsigned int count);
+unsigned int job_parse(struct job_status *status, struct job_proc *procs, unsigned int n);
 void job_run(struct channel *channel, struct job_proc *procs, unsigned int n);

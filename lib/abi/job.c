@@ -172,56 +172,58 @@ void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel
 
 }
 
-unsigned int job_parse(struct job_proc *procs, void *buffer, unsigned int count)
+unsigned int job_parse(struct job_status *status, struct job_proc *procs, unsigned int n)
 {
 
     unsigned int nprocs = 0;
-    char *start = buffer;
-    char *end = start + count;
 
-    while (start < end)
+    memory_clear(procs, sizeof (struct job_proc) * n);
+
+    while (status->start < status->end)
     {
 
         struct job_proc *p = &procs[nprocs];
 
-        switch (start[0])
+        switch (status->start[0])
         {
 
         case 'I':
-            p->files[p->nfiles] = start + 2;
+            p->files[p->nfiles] = status->start + 2;
             p->nfiles++;
 
             break;
 
         case 'O':
-            p->files[p->nfiles] = start + 2;
+            p->files[p->nfiles] = status->start + 2;
             p->nfiles++;
 
             break;
 
         case 'D':
-            p->inputs[p->ninputs] = start + 2;
+            p->inputs[p->ninputs] = status->start + 2;
             p->ninputs++;
 
             break;
 
         case 'P':
-            p->path = start + 2;
+            p->path = status->start + 2;
 
             nprocs++;
 
             break;
 
         case 'E':
-            p->path = start + 2;
+            p->path = status->start + 2;
 
             nprocs++;
 
-            break;
+            status->start += ascii_length(status->start) + 1;
+
+            return nprocs;
 
         }
 
-        start += ascii_length(start) + 1;
+        status->start += ascii_length(status->start) + 1;
 
     }
 

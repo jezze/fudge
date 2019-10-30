@@ -199,14 +199,20 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
     else if (channel->i.source == idslang)
     {
 
+        struct job_status status;
         struct job_proc procs[32];
-        unsigned int nprocs;
 
-        memory_clear(procs, sizeof (struct job_proc) * 32);
+        status.start = mdata;
+        status.end = status.start + msize;
 
-        nprocs = job_parse(procs, mdata, msize);
+        while (status.start < status.end)
+        {
 
-        job_run(channel, procs, nprocs);
+            unsigned int nprocs = job_parse(&status, procs, 32);
+
+            job_run(channel, procs, nprocs);
+
+        }
 
     }
 
