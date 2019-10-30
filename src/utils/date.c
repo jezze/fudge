@@ -47,12 +47,14 @@ static void onempty(struct channel *channel, void *mdata, unsigned int msize)
 static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_file *file = mdata;
     struct ctrl_clocksettings settings;
 
-    file_open(file->descriptor);
-    file_readall(file->descriptor, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(file->descriptor);
+    if (!file_walk2(FILE_L0, mdata))
+        return;
+
+    file_open(FILE_L0);
+    file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(FILE_L0);
     replydate(channel, &settings);
 
 }

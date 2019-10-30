@@ -14,7 +14,6 @@ void main(void)
 {
 
     struct channel channel;
-    struct event_file file;
     unsigned int id;
 
     channel_init(&channel);
@@ -23,36 +22,19 @@ void main(void)
     if (!file_walk2(FILE_CP, "/bin/slang"))
         return;
 
-    if (!file_walk2(FILE_C0, "/config/base.slang"))
-        return;
-
-    if (!file_walk2(FILE_C1, "/config/arch.slang"))
-        return;
-
-    if (!file_walk2(FILE_C2, "/config/init.slang"))
-        return;
-
     id = call_spawn(FILE_CP);
 
     if (!id)
         return;
 
-    file.descriptor = FILE_P0;
-
     channel_forward(&channel, EVENT_FILE);
-    channel_append(&channel, sizeof (struct event_file), &file);
+    channel_append(&channel, 19, "/config/base.slang");
     channel_place(&channel, id);
-
-    file.descriptor = FILE_P1;
-
     channel_forward(&channel, EVENT_FILE);
-    channel_append(&channel, sizeof (struct event_file), &file);
+    channel_append(&channel, 19, "/config/arch.slang");
     channel_place(&channel, id);
-
-    file.descriptor = FILE_P2;
-
     channel_forward(&channel, EVENT_FILE);
-    channel_append(&channel, sizeof (struct event_file), &file);
+    channel_append(&channel, 19, "/config/init.slang");
     channel_place(&channel, id);
     channel_forward(&channel, EVENT_DONE);
     channel_place(&channel, id);

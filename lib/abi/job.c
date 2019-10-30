@@ -172,3 +172,145 @@ void job_interpret(struct job *jobs, unsigned int njobs, struct channel *channel
 
 }
 
+unsigned int job_parse(struct job_proc *procs, void *buffer, unsigned int count)
+{
+
+    unsigned int nprocs = 0;
+    char *start = buffer;
+    char *end = start + count;
+
+    while (start < end)
+    {
+
+        struct job_proc *p = &procs[nprocs];
+
+        switch (start[0])
+        {
+
+        case 'I':
+            p->files[p->nfiles] = start + 2;
+            p->nfiles++;
+
+            break;
+
+        case 'O':
+            p->files[p->nfiles] = start + 2;
+            p->nfiles++;
+
+            break;
+
+        case 'D':
+            p->inputs[p->ninputs] = start + 2;
+            p->ninputs++;
+
+            break;
+
+        case 'P':
+            p->path = start + 2;
+
+            nprocs++;
+
+            break;
+
+        case 'E':
+            p->path = start + 2;
+
+            nprocs++;
+
+            break;
+
+        }
+
+        start += ascii_length(start) + 1;
+
+    }
+
+    return nprocs;
+
+}
+
+static void copyroutes2(struct channel *channel, struct job_proc *procs, unsigned int njobs, unsigned int j)
+{
+
+    unsigned int i;
+
+    for (i = njobs; i > j + 1; i--)
+        ipc_addroute(&channel->message.header, procs[i - 1].id);
+
+}
+
+void job_run(struct channel *channel, struct job_proc *procs, unsigned int n)
+{
+
+    unsigned int i;
+
+    if (!file_walk2(FILE_L0, "/bin"))
+        return;
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job_proc *p = &procs[i];
+
+        if (!(file_walk(FILE_CP, FILE_L0, p->path) || file_walk2(FILE_CP, p->path)))
+            continue;
+
+        p->id = call_spawn(FILE_CP);
+
+    }
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job_proc *p = &procs[i];
+
+        if (p->nfiles || p->ninputs)
+        {
+
+            unsigned int k;
+
+            for (k = 0; k < p->nfiles; k++)
+            {
+
+                channel_request(channel, EVENT_FILE);
+                copyroutes2(channel, procs, n, i);
+                channel_append(channel, ascii_length(p->files[k]) + 1, p->files[k]);
+                channel_place(channel, p->id);
+
+            }
+
+            for (k = 0; k < p->ninputs; k++)
+            {
+
+                channel_request(channel, EVENT_DATA);
+                copyroutes2(channel, procs, n, i);
+                channel_append(channel, ascii_length(p->inputs[k]), p->inputs[k]);
+                channel_place(channel, p->id);
+
+            }
+
+        }
+
+        else
+        {
+
+            channel_request(channel, EVENT_EMPTY);
+            copyroutes2(channel, procs, n, i);
+            channel_place(channel, p->id);
+
+        }
+
+    }
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job_proc *p = &procs[i];
+
+        channel_request(channel, EVENT_DONE);
+        channel_place(channel, p->id);
+
+    }
+
+}
+

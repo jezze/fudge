@@ -21,13 +21,15 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_file *file = mdata;
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(file->descriptor);
+    if (!file_walk2(FILE_L0, mdata))
+        return;
 
-    while ((count = file_read(file->descriptor, buffer, FUDGE_BSIZE)))
+    file_open(FILE_L0);
+
+    while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE)))
     {
 
         unsigned int id = channel_reply(channel, EVENT_DATA);
@@ -37,7 +39,7 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
     }
 
-    file_close(file->descriptor);
+    file_close(FILE_L0);
 
 }
 

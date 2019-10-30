@@ -47,9 +47,10 @@ static void onempty(struct channel *channel, void *mdata, unsigned int msize)
 static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_file *file = mdata;
+    if (!file_walk2(FILE_L0, mdata))
+        return;
 
-    list(channel, file->descriptor);
+    list(channel, FILE_L0);
 
 }
 
