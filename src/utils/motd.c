@@ -4,6 +4,13 @@
 static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 {
 
+    channel_close(channel);
+
+}
+
+static void onempty(struct channel *channel, void *mdata, unsigned int msize)
+{
+
     unsigned int id;
 
     if (!file_walk2(FILE_CP, "/bin/echo"))
@@ -19,7 +26,6 @@ static void ondone(struct channel *channel, void *mdata, unsigned int msize)
     channel_place(channel, id);
     channel_forward(channel, EVENT_DONE);
     channel_place(channel, id);
-    channel_close(channel);
 
 }
 
@@ -30,6 +36,7 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DONE, ondone);
+    channel_setsignal(&channel, EVENT_EMPTY, onempty);
     channel_listen(&channel);
 
 }
