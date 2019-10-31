@@ -304,12 +304,13 @@ void job_run(struct channel *channel, struct job_proc *procs, unsigned int n)
 
     }
 
-    for (i = 0; i < n; i++)
+    if (n)
     {
 
-        struct job_proc *p = &procs[i];
+        struct job_proc *p = &procs[0];
 
         channel_request(channel, EVENT_DONE);
+        copyroutes2(channel, procs, n, 0);
         channel_place(channel, p->id);
 
     }
