@@ -11,11 +11,12 @@ static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct event_file *file = mdata;
+    if (!file_walk2(FILE_G0, mdata))
+        return;
 
-    file_open(file->descriptor);
-    call_unload(file->descriptor);
-    file_close(file->descriptor);
+    file_open(FILE_G0);
+    call_unload(FILE_G0);
+    file_close(FILE_G0);
 
 }
 

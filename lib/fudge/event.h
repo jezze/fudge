@@ -25,13 +25,6 @@
 #define EVENT_WMMOUSEPRESS              0x29
 #define EVENT_WMMOUSERELEASE            0x2A
 
-struct event_file
-{
-
-    unsigned char descriptor;
-
-};
-
 struct event_keypress
 {
 
