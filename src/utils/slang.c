@@ -313,8 +313,9 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
             if (!t)
                 return;
 
-            channel_append(channel, 2, "E");
+            channel_append(channel, 2, "P");
             channel_append(channel, ascii_length(t->str) + 1, t->str);
+            channel_append(channel, 2, "E");
 
             break;
 

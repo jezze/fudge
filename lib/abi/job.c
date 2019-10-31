@@ -45,10 +45,6 @@ unsigned int job_parse(struct job_status *status, struct job_proc *procs, unsign
             break;
 
         case 'E':
-            p->path = status->start + 2;
-
-            nprocs++;
-
             status->start += ascii_length(status->start) + 1;
 
             return nprocs;
