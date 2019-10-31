@@ -324,12 +324,12 @@ static void setupvideo(void)
 
     render_init();
 
-    if (!file_walk(FILE_L0, FILE_P0, "ctrl"))
+    if (!file_walk(FILE_L0, FILE_G6, "ctrl"))
         return;
 
     render_setvideo(FILE_L0, 1024, 768, 4);
 
-    if (!file_walk(FILE_L0, FILE_P0, "colormap"))
+    if (!file_walk(FILE_L0, FILE_G6, "colormap"))
         return;
 
     render_setcolormap(FILE_L0);
@@ -342,6 +342,27 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
     render_write(channel->i.source, mdata, msize);
     render_flush(FILE_G5);
     render_complete();
+
+}
+
+static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    if (!file_walk2(FILE_G6, mdata))
+        return;
+
+    if (!file_walk(FILE_G4, FILE_G6, "event"))
+        return;
+
+    if (!file_walk(FILE_G5, FILE_G6, "data"))
+        return;
+
+    file_open(FILE_G4);
+    file_open(FILE_G5);
+    setupvideo();
+    setupviews();
+    setupremotes();
+    activateview(currentview);
 
 }
 
@@ -906,6 +927,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
     channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
     channel_setsignal(&channel, EVENT_MOUSEMOVE, onmousemove);
@@ -933,22 +955,10 @@ void main(void)
     if (!file_walk2(FILE_G3, "/system/mouse/event"))
         return;
 
-    if (!file_walk(FILE_G4, FILE_P0, "event"))
-        return;
-
-    if (!file_walk(FILE_G5, FILE_P0, "data"))
-        return;
-
     file_open(FILE_G0);
     file_open(FILE_G1);
     file_open(FILE_G2);
     file_open(FILE_G3);
-    file_open(FILE_G4);
-    file_open(FILE_G5);
-    setupvideo();
-    setupviews();
-    setupremotes();
-    activateview(currentview);
     channel_listen(&channel);
 
     for (current = viewlist.head; current; current = current->next)
@@ -961,8 +971,6 @@ void main(void)
 
     }
 
-    file_close(FILE_G5);
-    file_close(FILE_G4);
     file_close(FILE_G3);
     file_close(FILE_G2);
     file_close(FILE_G1);

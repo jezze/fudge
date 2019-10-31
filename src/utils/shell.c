@@ -10,7 +10,7 @@ static unsigned int idslang;
 static void printprompt(void)
 {
 
-    file_writeall(FILE_P1, "$ ", 2);
+    file_writeall(FILE_G1, "$ ", 2);
 
 }
 
@@ -89,7 +89,7 @@ static void onconsoledata(struct channel *channel, void *mdata, unsigned int msi
         if (!ring_skipreverse(&input, 1))
             break;
 
-        file_writeall(FILE_P1, "\b \b", 3);
+        file_writeall(FILE_G1, "\b \b", 3);
 
         break;
 
@@ -97,7 +97,7 @@ static void onconsoledata(struct channel *channel, void *mdata, unsigned int msi
         consoledata->data = '\n';
 
     case '\n':
-        file_writeall(FILE_P1, &consoledata->data, 1);
+        file_writeall(FILE_G1, &consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
         interpret(channel, &input);
         printprompt();
@@ -106,7 +106,7 @@ static void onconsoledata(struct channel *channel, void *mdata, unsigned int msi
 
     default:
         ring_write(&input, &consoledata->data, 1);
-        file_writeall(FILE_P1, &consoledata->data, 1);
+        file_writeall(FILE_G1, &consoledata->data, 1);
 
         break;
 
@@ -120,7 +120,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
     if (channel->i.source == idcomplete)
     {
 
-        file_writeall(FILE_P1, mdata, msize);
+        file_writeall(FILE_G1, mdata, msize);
         printprompt();
 
     }
@@ -148,11 +148,25 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
     else
     {
 
-        file_writeall(FILE_P1, "\b\b  \b\b", 6);
-        file_writeall(FILE_P1, mdata, msize);
+        file_writeall(FILE_G1, "\b\b  \b\b", 6);
+        file_writeall(FILE_G1, mdata, msize);
         printprompt();
 
     }
+
+}
+
+static unsigned int desc = FILE_G0;
+
+static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    if (!file_walk2(desc, mdata))
+        return;
+
+    file_open(desc);
+
+    desc++;
 
 }
 
@@ -172,7 +186,7 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
         if (!ring_skipreverse(&input, 1))
             break;
 
-        file_writeall(FILE_P1, "\b \b", 3);
+        file_writeall(FILE_G1, "\b \b", 3);
 
         break;
 
@@ -182,7 +196,7 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
         break;
 
     case 0x1C:
-        file_writeall(FILE_P1, keycode->value, keycode->length);
+        file_writeall(FILE_G1, keycode->value, keycode->length);
         ring_write(&input, keycode->value, keycode->length);
         interpret(channel, &input);
         printprompt();
@@ -191,7 +205,7 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
 
     default:
         ring_write(&input, keycode->value, keycode->length);
-        file_writeall(FILE_P1, keycode->value, keycode->length);
+        file_writeall(FILE_G1, keycode->value, keycode->length);
 
         break;
 
@@ -216,6 +230,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
     channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
@@ -230,15 +245,10 @@ void main(void)
 
     idslang = call_spawn(FILE_CP);
 
-    file_open(FILE_P0);
-    file_open(FILE_P1);
-    printprompt();
     channel_listen(&channel);
     channel_request(&channel, EVENT_DONE);
     channel_place(&channel, idcomplete);
     channel_place(&channel, idslang);
-    file_close(FILE_P1);
-    file_close(FILE_P0);
 
 }
 

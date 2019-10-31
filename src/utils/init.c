@@ -4,9 +4,20 @@
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct job jobs[32];
+    struct job_status status;
+    struct job_proc procs[32];
 
-    job_interpret(jobs, 32, channel, mdata, msize);
+    status.start = mdata;
+    status.end = status.start + msize;
+
+    while (status.start < status.end)
+    {
+
+        unsigned int nprocs = job_parse(&status, procs, 32);
+
+        job_run(channel, procs, nprocs);
+
+    }
 
 }
 

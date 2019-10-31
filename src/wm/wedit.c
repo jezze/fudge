@@ -101,16 +101,16 @@ static void movedown(void)
 
 }
 
-static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
+static unsigned int readfile(unsigned int visiblerows)
 {
 
     char buffer[FUDGE_BSIZE];
     unsigned int rows = 0;
     unsigned int count;
 
-    call_seek(descriptor, 0);
+    file_open(FILE_G1);
 
-    while ((count = file_read(descriptor, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(FILE_G1, buffer, FUDGE_BSIZE)))
     {
 
         unsigned int i;
@@ -134,7 +134,17 @@ static unsigned int readfile(unsigned int descriptor, unsigned int visiblerows)
 
     }
 
+    file_close(FILE_G1);
+
     return rows;
+
+}
+
+static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    if (!file_walk2(FILE_G1, mdata))
+        return;
 
 }
 
@@ -149,7 +159,7 @@ static void onwmconfigure(struct channel *channel, void *mdata, unsigned int msi
     box_resize(&content.size, wmconfigure->padding);
     box_setsize(&status.size, wmconfigure->x, wmconfigure->y + wmconfigure->h - (wmconfigure->lineheight + 2 * wmconfigure->padding), wmconfigure->w, (wmconfigure->lineheight + 2 * wmconfigure->padding));
     box_resize(&status.size, wmconfigure->padding);
-    readfile(FILE_P0, content.size.h / wmconfigure->lineheight);
+    readfile(content.size.h / wmconfigure->lineheight);
 
 }
 
@@ -269,6 +279,7 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_ANY, onany);
+    channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
@@ -284,13 +295,11 @@ void main(void)
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
-    file_open(FILE_P0);
     file_open(FILE_G0);
     channel_request(&channel, EVENT_WMMAP);
     channel_write(&channel, FILE_G0);
     channel_listen(&channel);
     file_close(FILE_G0);
-    file_close(FILE_P0);
 
 }
 

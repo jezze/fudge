@@ -1,5 +1,5 @@
 #define KERNEL_TASKS                    128
-#define KERNEL_DESCRIPTORS              64
+#define KERNEL_DESCRIPTORS              32
 #define KERNEL_MOUNTS                   32
 #define KERNEL_MAILBOXES                128
 #define KERNEL_MAILBOXSIZE              4096
