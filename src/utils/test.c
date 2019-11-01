@@ -1,24 +1,24 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int from;
+static unsigned int idrequest;
 
 static void onempty(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    from = channel->i.source;
+    idrequest = channel->i.source;
 
 }
 
 static void ontimertick(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    if (from)
+    if (idrequest)
     {
 
         channel_request(channel, EVENT_DATA);
         channel_appendstring(channel, "HEJ!\n");
-        channel_place(channel, from);
+        channel_place(channel, idrequest);
 
     }
 
