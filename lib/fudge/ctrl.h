@@ -61,5 +61,13 @@ struct ctrl_conheader
 
 };
 
+struct ctrl_timertick
+{
+
+    unsigned int jiffies;
+    unsigned int repeat;
+
+};
+
 void ctrl_setpartsettings(struct ctrl_partsettings *settings, unsigned int interface, unsigned int start, unsigned int end);
 void ctrl_setvideosettings(struct ctrl_videosettings *settings, unsigned int w, unsigned int h, unsigned int bpp);

@@ -4,6 +4,7 @@
 #define EVENT_EMPTY                     0x02
 #define EVENT_DATA                      0x03
 #define EVENT_FILE                      0x04
+#define EVENT_CTRL                      0x05
 #define EVENT_KEYPRESS                  0x10
 #define EVENT_KEYRELEASE                0x11
 #define EVENT_MOUSEMOVE                 0x12
