@@ -1,22 +1,26 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void ontimertick(struct channel *channel, void *mdata, unsigned int msize)
+static unsigned int from;
+
+static void onempty(struct channel *channel, void *mdata, unsigned int msize)
 {
+
+    from = channel->i.source;
 
 }
 
-void setup(struct channel *channel)
+static void ontimertick(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct ctrl_timertick timertick;
+    if (from)
+    {
 
-    timertick.jiffies = 1000;
-    timertick.repeat = 1;
+        channel_request(channel, EVENT_DATA);
+        channel_appendstring(channel, "HEJ!\n");
+        channel_place(channel, from);
 
-    channel_request(channel, EVENT_CTRL);
-    channel_append(channel, sizeof (struct ctrl_timertick), &timertick);
-    channel_write(channel, FILE_G1);
+    }
 
 }
 
@@ -33,8 +37,8 @@ void main(void)
 
     file_open(FILE_G0);
     channel_init(&channel);
+    channel_setsignal(&channel, EVENT_EMPTY, onempty);
     channel_setsignal(&channel, EVENT_TIMERTICK, ontimertick);
-    setup(&channel);
     channel_listen(&channel);
     file_close(FILE_G0);
 
