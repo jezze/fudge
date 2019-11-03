@@ -1,24 +1,29 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int idrequest;
+static struct ipc_header request;
 
 static void onempty(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    idrequest = channel->i.source;
+    memory_copy(&request, &channel->i, sizeof (struct ipc_header));
 
 }
 
 static void ontimertick(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    if (idrequest)
+    if (request.type)
     {
 
-        channel_request(channel, EVENT_DATA);
+        unsigned int id;
+
+        memory_copy(&channel->i, &request, sizeof (struct ipc_header));
+
+        id = channel_reply(channel, EVENT_DATA);
+
         channel_appendstring(channel, "HEJ!\n");
-        channel_place(channel, idrequest);
+        channel_place(channel, id);
 
     }
 
