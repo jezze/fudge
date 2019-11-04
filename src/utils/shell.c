@@ -129,7 +129,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
     {
 
         struct job_status status;
-        struct job_proc procs[32];
+        struct job jobs[32];
 
         status.start = mdata;
         status.end = status.start + msize;
@@ -137,9 +137,9 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
         while (status.start < status.end)
         {
 
-            unsigned int nprocs = job_parse(&status, procs, 32);
+            unsigned int njobs = job_parse(&status, jobs, 32);
 
-            job_run(channel, procs, nprocs);
+            job_run(channel, jobs, njobs);
 
         }
 

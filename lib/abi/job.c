@@ -4,17 +4,17 @@
 #include "file.h"
 #include "job.h"
 
-unsigned int job_parse(struct job_status *status, struct job_proc *procs, unsigned int n)
+unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int n)
 {
 
-    unsigned int nprocs = 0;
+    unsigned int njobs = 0;
 
-    memory_clear(procs, sizeof (struct job_proc) * n);
+    memory_clear(jobs, sizeof (struct job) * n);
 
     while (status->start < status->end)
     {
 
-        struct job_proc *p = &procs[nprocs];
+        struct job *p = &jobs[njobs];
 
         switch (status->start[0])
         {
@@ -40,14 +40,14 @@ unsigned int job_parse(struct job_status *status, struct job_proc *procs, unsign
         case 'P':
             p->path = status->start + 2;
 
-            nprocs++;
+            njobs++;
 
             break;
 
         case 'E':
             status->start += ascii_length(status->start) + 1;
 
-            return nprocs;
+            return njobs;
 
         }
 
@@ -55,21 +55,21 @@ unsigned int job_parse(struct job_status *status, struct job_proc *procs, unsign
 
     }
 
-    return nprocs;
+    return njobs;
 
 }
 
-static void copyroutes(struct channel *channel, struct job_proc *procs, unsigned int njobs, unsigned int j)
+static void copyroutes(struct channel *channel, struct job *jobs, unsigned int njobs, unsigned int j)
 {
 
     unsigned int i;
 
     for (i = njobs; i > j + 1; i--)
-        ipc_addroute(&channel->message.header, procs[i - 1].id);
+        ipc_addroute(&channel->message.header, jobs[i - 1].id);
 
 }
 
-void job_run(struct channel *channel, struct job_proc *procs, unsigned int n)
+void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
     unsigned int i;
@@ -80,7 +80,7 @@ void job_run(struct channel *channel, struct job_proc *procs, unsigned int n)
     for (i = 0; i < n; i++)
     {
 
-        struct job_proc *p = &procs[i];
+        struct job *p = &jobs[i];
 
         if (!(file_walk(FILE_CP, FILE_L0, p->path) || file_walk2(FILE_CP, p->path)))
             continue;
@@ -92,7 +92,7 @@ void job_run(struct channel *channel, struct job_proc *procs, unsigned int n)
     for (i = 0; i < n; i++)
     {
 
-        struct job_proc *p = &procs[i];
+        struct job *p = &jobs[i];
 
         if (p->nfiles || p->ninputs)
         {
@@ -103,7 +103,7 @@ void job_run(struct channel *channel, struct job_proc *procs, unsigned int n)
             {
 
                 channel_request(channel, EVENT_FILE);
-                copyroutes(channel, procs, n, i);
+                copyroutes(channel, jobs, n, i);
                 channel_append(channel, ascii_length(p->files[k]) + 1, p->files[k]);
                 channel_place(channel, p->id);
 
@@ -113,7 +113,7 @@ void job_run(struct channel *channel, struct job_proc *procs, unsigned int n)
             {
 
                 channel_request(channel, EVENT_DATA);
-                copyroutes(channel, procs, n, i);
+                copyroutes(channel, jobs, n, i);
                 channel_append(channel, ascii_length(p->inputs[k]), p->inputs[k]);
                 channel_place(channel, p->id);
 
@@ -125,7 +125,7 @@ void job_run(struct channel *channel, struct job_proc *procs, unsigned int n)
         {
 
             channel_request(channel, EVENT_EMPTY);
-            copyroutes(channel, procs, n, i);
+            copyroutes(channel, jobs, n, i);
             channel_place(channel, p->id);
 
         }
@@ -135,10 +135,10 @@ void job_run(struct channel *channel, struct job_proc *procs, unsigned int n)
     if (n)
     {
 
-        struct job_proc *p = &procs[0];
+        struct job *p = &jobs[0];
 
         channel_request(channel, EVENT_DONE);
-        copyroutes(channel, procs, n, 0);
+        copyroutes(channel, jobs, n, 0);
         channel_place(channel, p->id);
 
     }
