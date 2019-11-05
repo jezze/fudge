@@ -339,7 +339,7 @@ static void setupvideo(void)
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    render_write(channel->i.source, mdata, msize);
+    render_write(channel->source, mdata, msize);
     render_flush(FILE_G5);
     render_complete();
 
@@ -826,7 +826,7 @@ static void onwmmap(struct channel *channel, void *mdata, unsigned int msize)
         deactivateremote(currentview->currentremote);
 
     currentview->currentremote = remotelist.head->data;
-    currentview->currentremote->source = channel->i.source;
+    currentview->currentremote->source = channel->source;
 
     list_move(&currentview->remotes, currentview->currentremote->item.list, &currentview->currentremote->item);
     activateremote(currentview->currentremote);
@@ -851,7 +851,7 @@ static void onwmunmap(struct channel *channel, void *mdata, unsigned int msize)
 
             struct remote *remote = current2->data;
 
-            if (channel->i.source != remote->source)
+            if (channel->source != remote->source)
                 continue;
 
             removeremote(remote);

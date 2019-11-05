@@ -2,13 +2,12 @@ struct channel
 {
 
     unsigned int poll;
-    struct ipc_header i;
+    unsigned int source;
     struct {struct ipc_header header; char data[FUDGE_BSIZE];} message;
     struct {void (*callback)(struct channel *channel, void *data, unsigned int size); unsigned int redirect;} signals[EVENTS];
 
 };
 
-unsigned int channel_pick(struct channel *channel, void *data);
 unsigned int channel_place(struct channel *channel, unsigned int id);
 unsigned int channel_write(struct channel *channel, unsigned int descriptor);
 void channel_listen(struct channel *channel);

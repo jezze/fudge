@@ -117,7 +117,7 @@ static void onconsoledata(struct channel *channel, void *mdata, unsigned int msi
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    if (channel->i.source == idcomplete)
+    if (channel->source == idcomplete)
     {
 
         file_writeall(FILE_G1, mdata, msize);
@@ -125,7 +125,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
     }
 
-    else if (channel->i.source == idslang)
+    else if (channel->source == idslang)
     {
 
         struct job_status status;

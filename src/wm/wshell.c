@@ -175,7 +175,7 @@ static void complete(struct channel *channel, struct ring *ring)
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    if (channel->i.source == idcomplete)
+    if (channel->source == idcomplete)
     {
 
         if (memory_findbyte(mdata, msize, '\n') < msize - 1)
@@ -196,7 +196,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
     }
 
-    else if (channel->i.source == idslang)
+    else if (channel->source == idslang)
     {
 
         struct job_status status;

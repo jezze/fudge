@@ -3,13 +3,6 @@
 #include "file.h"
 #include "channel.h"
 
-unsigned int channel_pick(struct channel *channel, void *data)
-{
-
-    return call_pick(&channel->i, data);
-
-}
-
 unsigned int channel_place(struct channel *channel, unsigned int id)
 {
 
@@ -32,16 +25,19 @@ void channel_listen(struct channel *channel)
     while (channel->poll)
     {
 
+        struct ipc_header header;
         char data[FUDGE_BSIZE];
 
-        if (channel_pick(channel, data))
+        if (call_pick(&header, data))
         {
 
-            if (channel->signals[channel->i.type].callback)
-                channel->signals[channel->i.type].callback(channel, data, channel->i.length - sizeof (struct ipc_header));
+            channel->source = header.source;
+
+            if (channel->signals[header.type].callback)
+                channel->signals[header.type].callback(channel, data, header.length - sizeof (struct ipc_header));
 
             if (channel->signals[EVENT_ANY].callback)
-                channel->signals[EVENT_ANY].callback(channel, data, channel->i.length - sizeof (struct ipc_header));
+                channel->signals[EVENT_ANY].callback(channel, data, header.length - sizeof (struct ipc_header));
 
         }
 
@@ -59,7 +55,7 @@ void channel_close(struct channel *channel)
 void channel_setredirect(struct channel *channel, unsigned int type, unsigned int id)
 {
 
-    channel->signals[type].redirect = (id == 255) ? channel->i.source : id;
+    channel->signals[type].redirect = (id == 255) ? channel->source : id;
 
 }
 
@@ -82,7 +78,7 @@ unsigned int channel_reply(struct channel *channel, unsigned int type)
 
     ipc_init(&channel->message.header, type, 0);
 
-    return (channel->signals[type].redirect) ? channel->signals[type].redirect : channel->i.source;
+    return (channel->signals[type].redirect) ? channel->signals[type].redirect : channel->source;
 
 }
 
@@ -122,7 +118,6 @@ void channel_init(struct channel *channel)
 
     }
 
-    ipc_init(&channel->i, 0, 0);
     ipc_init(&channel->message.header, 0, 0);
 
 }
