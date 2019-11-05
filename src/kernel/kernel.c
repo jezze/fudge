@@ -309,7 +309,7 @@ void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigne
     struct ipc_header header;
     struct list_item *current;
 
-    ipc_create(&header, type, count);
+    ipc_init(&header, type, count);
     spinlock_acquire(&states->spinlock);
 
     for (current = states->head; current; current = current->next)

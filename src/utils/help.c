@@ -11,6 +11,7 @@ static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 static void onempty(struct channel *channel, void *mdata, unsigned int msize)
 {
 
+    struct event_redirect redirect;
     unsigned int id;
 
     if (!file_walk2(FILE_CP, "/bin/echo"))
@@ -21,11 +22,26 @@ static void onempty(struct channel *channel, void *mdata, unsigned int msize)
     if (!id)
         return;
 
-    channel_forward(channel, EVENT_FILE);
+    redirect.id = channel->i.target;
+    redirect.type = EVENT_DATA;
+
+    channel_request(channel, EVENT_REDIRECT);
+    channel_append(channel, sizeof (struct event_redirect), &redirect);
+    channel_place(channel, id);
+    channel_request(channel, EVENT_FILE);
     channel_append(channel, 15, "/data/help.txt");
     channel_place(channel, id);
-    channel_forward(channel, EVENT_DONE);
+    channel_request(channel, EVENT_DONE);
     channel_place(channel, id);
+
+}
+
+static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    struct event_redirect *redirect = mdata;
+
+    channel_setredirect(channel, redirect->type, redirect->id);
 
 }
 
@@ -37,6 +53,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DONE, ondone);
     channel_setsignal(&channel, EVENT_EMPTY, onempty);
+    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen(&channel);
 
 }

@@ -37,11 +37,11 @@ void channel_listen(struct channel *channel)
         if (channel_pick(channel, data))
         {
 
-            if (channel->signals[channel->i.type])
-                channel->signals[channel->i.type](channel, data, channel->i.length - sizeof (struct ipc_header));
+            if (channel->signals[channel->i.type].callback)
+                channel->signals[channel->i.type].callback(channel, data, channel->i.length - sizeof (struct ipc_header));
 
-            if (channel->signals[EVENT_ANY])
-                channel->signals[EVENT_ANY](channel, data, channel->i.length - sizeof (struct ipc_header));
+            if (channel->signals[EVENT_ANY].callback)
+                channel->signals[EVENT_ANY].callback(channel, data, channel->i.length - sizeof (struct ipc_header));
 
         }
 
@@ -52,56 +52,37 @@ void channel_listen(struct channel *channel)
 void channel_close(struct channel *channel)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_DONE);
-
-    channel_place(channel, id);
-
     channel->poll = 0;
+
+}
+
+void channel_setredirect(struct channel *channel, unsigned int type, unsigned int id)
+{
+
+    channel->signals[type].redirect = id;
 
 }
 
 void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, void *mdata, unsigned int msize))
 {
 
-    channel->signals[type] = callback;
-
-}
-
-void channel_forward(struct channel *channel, unsigned int type)
-{
-
-    unsigned int i;
-
-    ipc_create(&channel->message.header, type, 0);
-
-    for (i = 0; i < channel->i.nroutes; i++)
-        ipc_addroute(&channel->message.header, channel->i.routes[i]);
+    channel->signals[type].callback = callback;
 
 }
 
 void channel_request(struct channel *channel, unsigned int type)
 {
 
-    channel_forward(channel, type);
-    ipc_addroute(&channel->message.header, channel->i.target);
+    ipc_init(&channel->message.header, type, 0);
 
 }
 
 unsigned int channel_reply(struct channel *channel, unsigned int type)
 {
 
-    channel_forward(channel, type);
+    ipc_init(&channel->message.header, type, 0);
 
-    if (channel->message.header.nroutes)
-    {
-
-        channel->message.header.nroutes--;
-
-        return channel->message.header.routes[channel->message.header.nroutes];
-
-    }
-
-    return channel->i.source;
+    return (channel->signals[type].redirect) ? channel->signals[type].redirect : channel->i.source;
 
 }
 
@@ -134,10 +115,15 @@ void channel_init(struct channel *channel)
     unsigned int i;
 
     for (i = 0; i < EVENTS; i++)
+    {
+
+        channel_setredirect(channel, i, 0);
         channel_setsignal(channel, i, 0);
 
-    ipc_create(&channel->i, 0, 0);
-    ipc_create(&channel->message.header, 0, 0);
+    }
+
+    ipc_init(&channel->i, 0, 0);
+    ipc_init(&channel->message.header, 0, 0);
 
 }
 

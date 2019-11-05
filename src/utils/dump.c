@@ -102,6 +102,15 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
+static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    struct event_redirect *redirect = mdata;
+
+    channel_setredirect(channel, redirect->type, redirect->id);
+
+}
+
 void main(void)
 {
 
@@ -111,6 +120,7 @@ void main(void)
     channel_setsignal(&channel, EVENT_DONE, ondone);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
+    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen(&channel);
 
 }

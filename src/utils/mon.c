@@ -74,6 +74,15 @@ static void onwalkrequest(struct channel *channel, void *mdata, unsigned int msi
 }
 */
 
+static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    struct event_redirect *redirect = mdata;
+
+    channel_setredirect(channel, redirect->type, redirect->id);
+
+}
+
 void main(void)
 {
 
@@ -85,6 +94,7 @@ void main(void)
     file_open(FILE_G0);
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen(&channel);
     file_close(FILE_G0);
 

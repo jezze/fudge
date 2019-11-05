@@ -1,31 +1,22 @@
 #include <fudge.h>
 #include <abi.h>
 
-static struct ipc_header request;
-
-static void onempty(struct channel *channel, void *mdata, unsigned int msize)
+static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    memory_copy(&request, &channel->i, sizeof (struct ipc_header));
+    struct event_redirect *redirect = mdata;
+
+    channel_setredirect(channel, redirect->type, redirect->id);
 
 }
 
 static void ontimertick(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    if (request.type)
-    {
+    unsigned int id = channel_reply(channel, EVENT_DATA);
 
-        unsigned int id;
-
-        memory_copy(&channel->i, &request, sizeof (struct ipc_header));
-
-        id = channel_reply(channel, EVENT_DATA);
-
-        channel_appendstring(channel, "HEJ!\n");
-        channel_place(channel, id);
-
-    }
+    channel_appendstring(channel, "HEJ!\n");
+    channel_place(channel, id);
 
 }
 
@@ -42,7 +33,7 @@ void main(void)
 
     file_open(FILE_G0);
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_EMPTY, onempty);
+    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_setsignal(&channel, EVENT_TIMERTICK, ontimertick);
     channel_listen(&channel);
     file_close(FILE_G0);

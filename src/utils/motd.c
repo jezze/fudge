@@ -21,11 +21,20 @@ static void onempty(struct channel *channel, void *mdata, unsigned int msize)
     if (!id)
         return;
 
-    channel_forward(channel, EVENT_FILE);
+    channel_request(channel, EVENT_FILE);
     channel_append(channel, 15, "/data/motd.txt");
     channel_place(channel, id);
-    channel_forward(channel, EVENT_DONE);
+    channel_request(channel, EVENT_DONE);
     channel_place(channel, id);
+
+}
+
+static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    struct event_redirect *redirect = mdata;
+
+    channel_setredirect(channel, redirect->type, redirect->id);
 
 }
 
@@ -37,6 +46,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DONE, ondone);
     channel_setsignal(&channel, EVENT_EMPTY, onempty);
+    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen(&channel);
 
 }

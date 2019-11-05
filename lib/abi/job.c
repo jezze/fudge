@@ -59,16 +59,6 @@ unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int
 
 }
 
-static void copyroutes(struct channel *channel, struct job *jobs, unsigned int njobs, unsigned int j)
-{
-
-    unsigned int i;
-
-    for (i = njobs; i > j + 1; i--)
-        ipc_addroute(&channel->message.header, jobs[i - 1].id);
-
-}
-
 void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
@@ -93,6 +83,21 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
     {
 
         struct job *p = &jobs[i];
+        struct event_redirect redirect;
+
+        redirect.id = (i < n - 1) ? jobs[i + 1].id : channel->i.target;
+        redirect.type = EVENT_DATA;
+
+        channel_request(channel, EVENT_REDIRECT);
+        channel_append(channel, sizeof (struct event_redirect), &redirect);
+        channel_place(channel, p->id);
+
+    }
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job *p = &jobs[i];
 
         if (p->nfiles || p->ninputs)
         {
@@ -103,7 +108,6 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
             {
 
                 channel_request(channel, EVENT_FILE);
-                copyroutes(channel, jobs, n, i);
                 channel_append(channel, ascii_length(p->files[k]) + 1, p->files[k]);
                 channel_place(channel, p->id);
 
@@ -113,7 +117,6 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
             {
 
                 channel_request(channel, EVENT_DATA);
-                copyroutes(channel, jobs, n, i);
                 channel_append(channel, ascii_length(p->inputs[k]), p->inputs[k]);
                 channel_place(channel, p->id);
 
@@ -125,20 +128,18 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         {
 
             channel_request(channel, EVENT_EMPTY);
-            copyroutes(channel, jobs, n, i);
             channel_place(channel, p->id);
 
         }
 
     }
 
-    if (n)
+    for (i = 0; i < n; i++)
     {
 
-        struct job *p = &jobs[0];
+        struct job *p = &jobs[i];
 
         channel_request(channel, EVENT_DONE);
-        copyroutes(channel, jobs, n, 0);
         channel_place(channel, p->id);
 
     }
