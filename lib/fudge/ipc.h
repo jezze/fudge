@@ -3,7 +3,6 @@ struct ipc_header
 
     unsigned int type;
     unsigned int source;
-    unsigned int target;
     unsigned int length;
 
 };

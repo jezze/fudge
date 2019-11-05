@@ -284,7 +284,6 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct ipc_h
     unsigned int count;
 
     header->source = source;
-    header->target = target;
 
     count = mailbox_place(mailbox, header, data);
 

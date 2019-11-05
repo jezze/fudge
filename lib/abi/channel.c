@@ -59,7 +59,7 @@ void channel_close(struct channel *channel)
 void channel_setredirect(struct channel *channel, unsigned int type, unsigned int id)
 {
 
-    channel->signals[type].redirect = id;
+    channel->signals[type].redirect = (id == 255) ? channel->i.source : id;
 
 }
 
@@ -117,8 +117,8 @@ void channel_init(struct channel *channel)
     for (i = 0; i < EVENTS; i++)
     {
 
-        channel_setredirect(channel, i, 0);
         channel_setsignal(channel, i, 0);
+        channel_setredirect(channel, i, 0);
 
     }
 

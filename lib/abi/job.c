@@ -85,7 +85,7 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         struct job *p = &jobs[i];
         struct event_redirect redirect;
 
-        redirect.id = (i < n - 1) ? jobs[i + 1].id : channel->i.target;
+        redirect.id = (i < n - 1) ? jobs[i + 1].id : 255;
         redirect.type = EVENT_DATA;
 
         channel_request(channel, EVENT_REDIRECT);
