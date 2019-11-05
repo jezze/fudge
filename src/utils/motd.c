@@ -11,6 +11,7 @@ static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 static void onempty(struct channel *channel, void *mdata, unsigned int msize)
 {
 
+    struct event_redirect redirect;
     unsigned int id;
 
     if (!file_walk2(FILE_CP, "/bin/echo"))
@@ -21,6 +22,12 @@ static void onempty(struct channel *channel, void *mdata, unsigned int msize)
     if (!id)
         return;
 
+    redirect.id = channel->signals[EVENT_DATA].redirect;
+    redirect.type = EVENT_DATA;
+
+    channel_request(channel, EVENT_REDIRECT);
+    channel_append(channel, sizeof (struct event_redirect), &redirect);
+    channel_place(channel, id);
     channel_request(channel, EVENT_FILE);
     channel_append(channel, 15, "/data/motd.txt");
     channel_place(channel, id);
