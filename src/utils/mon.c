@@ -1,39 +1,33 @@
 #include <fudge.h>
 #include <abi.h>
 
-struct request
-{
-
-    struct ipc_header origin;
-    struct ipc_header header;
-    struct event_blockrequest blockrequest;
-
-};
-
-static struct request requests[8];
 static unsigned int x;
 
 static void sendrequest(struct channel *channel, unsigned int sector, unsigned int count)
 {
 
-    struct request *request = &requests[0];
+    struct event_blockrequest blockrequest;
 
-    request->blockrequest.sector = sector;
-    request->blockrequest.count = count;
+    blockrequest.sector = sector;
+    blockrequest.count = count;
 
     channel_request(channel, EVENT_BLOCKREQUEST);
-    channel_append(channel, sizeof (struct event_blockrequest), &request->blockrequest);
+    channel_append(channel, sizeof (struct event_blockrequest), &blockrequest);
     channel_write(channel, FILE_G0);
+
+}
+
+static void ondone(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    sendrequest(channel, 0, 1);
 
 }
 
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    struct request *request = &requests[0];
     struct cpio_header *header = mdata;
-
-    memory_copy(&channel->i, &request->origin, sizeof (struct ipc_header));
 
     if (cpio_validate(header))
     {
@@ -62,18 +56,6 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-/*
-static void onwalkrequest(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    struct request *request = &requests[0];
-
-    memory_copy(&request->origin, &channel->i, sizeof (struct ipc_header));
-    sendrequest(channel, 0, 1);
-
-}
-*/
-
 static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
 {
 
@@ -93,6 +75,7 @@ void main(void)
 
     file_open(FILE_G0);
     channel_init(&channel);
+    channel_setsignal(&channel, EVENT_DONE, ondone);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen(&channel);
