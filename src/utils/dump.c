@@ -4,13 +4,13 @@
 static void dump(struct channel *channel, unsigned int count, void *buffer)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_DATA);
     unsigned char *data = buffer;
     unsigned int i;
 
     for (i = 0; i < count; i += 16)
     {
 
+        unsigned int id = channel_reply(channel, EVENT_DATA);
         unsigned int j;
 
         channel_appendvalue(channel, i, 16, 8);
@@ -63,10 +63,9 @@ static void dump(struct channel *channel, unsigned int count, void *buffer)
         }
 
         channel_appendstring(channel, "|\n");
+        channel_place(channel, id);
 
     }
-
-    channel_place(channel, id);
 
 }
 
