@@ -1,9 +1,13 @@
 #include <fudge.h>
 #include <abi.h>
 
+static unsigned int idecho;
+
 static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    channel_request(channel, EVENT_DONE);
+    channel_place(channel, idecho);
     channel_close(channel);
 
 }
@@ -11,29 +15,9 @@ static void ondone(struct channel *channel, unsigned int source, void *mdata, un
 static void onempty(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_redirect redirect;
-    unsigned int id;
-
-    if (!file_walk2(FILE_CP, "/bin/echo"))
-        return;
-
-    id = call_spawn(FILE_CP);
-
-    if (!id)
-        return;
-
-    redirect.mode = 1;
-    redirect.id = channel->signals[EVENT_DATA].redirect;
-    redirect.type = EVENT_DATA;
-
-    channel_request(channel, EVENT_REDIRECT);
-    channel_append(channel, sizeof (struct event_redirect), &redirect);
-    channel_place(channel, id);
     channel_request(channel, EVENT_FILE);
     channel_append(channel, 15, "/data/help.txt");
-    channel_place(channel, id);
-    channel_request(channel, EVENT_DONE);
-    channel_place(channel, id);
+    channel_place(channel, idecho);
 
 }
 
@@ -42,7 +26,32 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
+    if (redirect->mode == 2)
+    {
+
+        redirect->mode = 1;
+        redirect->id = source;
+
+    }
+
+    channel_request(channel, EVENT_REDIRECT);
+    channel_append(channel, sizeof (struct event_redirect), redirect);
+    channel_place(channel, idecho);
+
+}
+
+static void oninit(struct channel *channel)
+{
+
+    if (!file_walk2(FILE_CP, "/bin/echo"))
+        return;
+
+    idecho = call_spawn(FILE_CP);
+
+}
+
+static void onexit(struct channel *channel)
+{
 
 }
 
@@ -55,7 +64,7 @@ void main(void)
     channel_setsignal(&channel, EVENT_DONE, ondone);
     channel_setsignal(&channel, EVENT_EMPTY, onempty);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
-    channel_listen(&channel);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 
