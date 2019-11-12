@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void complete(struct channel *channel, unsigned int descriptor, void *name, unsigned int length, unsigned int source)
+static void complete(struct channel *channel, unsigned int source, unsigned int descriptor, void *name, unsigned int length)
 {
 
     struct record record;
@@ -40,7 +40,7 @@ static void ondone(struct channel *channel, unsigned int source, void *mdata, un
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    complete(channel, FILE_PW, mdata, msize, source);
+    complete(channel, source, FILE_PW, mdata, msize);
 
 }
 
