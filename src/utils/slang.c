@@ -4,8 +4,8 @@
 #define TOKENSKIP                       1
 #define TOKENEND                        2
 #define TOKENIDENT                      3
-#define TOKENIN                         4
-#define TOKENOUT                        5
+#define TOKENFILE                       4
+#define TOKENREDIRECT                   5
 #define TOKENDATA                       6
 #define TOKENPIPE                       7
 
@@ -86,8 +86,8 @@ static unsigned int precedence(struct token *token)
     case TOKENPIPE:
         return 2;
 
-    case TOKENIN:
-    case TOKENOUT:
+    case TOKENFILE:
+    case TOKENREDIRECT:
     case TOKENDATA:
         return 3;
 
@@ -108,10 +108,10 @@ static unsigned int tokenize(char c)
         return TOKENSKIP;
 
     case '<':
-        return TOKENIN;
+        return TOKENFILE;
 
     case '>':
-        return TOKENOUT;
+        return TOKENREDIRECT;
 
     case '!':
         return TOKENDATA;
@@ -263,24 +263,24 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
 
             break;
 
-        case TOKENIN:
+        case TOKENFILE:
             t = tokenlist_pop(stack);
 
             if (!t)
                 return;
 
-            channel_append(channel, 2, "I");
+            channel_append(channel, 2, "F");
             channel_append(channel, ascii_length(t->str) + 1, t->str);
 
             break;
 
-        case TOKENOUT:
+        case TOKENREDIRECT:
             t = tokenlist_pop(stack);
 
             if (!t)
                 return;
 
-            channel_append(channel, 2, "O");
+            channel_append(channel, 2, "R");
             channel_append(channel, ascii_length(t->str) + 1, t->str);
 
             break;

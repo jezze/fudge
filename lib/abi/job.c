@@ -19,15 +19,15 @@ unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int
         switch (status->start[0])
         {
 
-        case 'I':
+        case 'F':
             p->files[p->nfiles] = status->start + 2;
             p->nfiles++;
 
             break;
 
-        case 'O':
-            p->files[p->nfiles] = status->start + 2;
-            p->nfiles++;
+        case 'R':
+            p->redirects[p->nredirects] = status->start + 2;
+            p->nredirects++;
 
             break;
 

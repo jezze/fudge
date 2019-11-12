@@ -15,6 +15,8 @@ struct job
     unsigned int ninputs;
     char *files[32];
     unsigned int nfiles;
+    char *redirects[32];
+    unsigned int nredirects;
 
 };
 
