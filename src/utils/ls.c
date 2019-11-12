@@ -11,11 +11,10 @@ static void list(struct channel *channel, unsigned int descriptor)
     while (file_readall(descriptor, &record, sizeof (struct record)))
     {
 
-        unsigned int id = channel_reply(channel, EVENT_DATA);
-
+        channel_request(channel, EVENT_DATA);
         channel_append(channel, record.length, record.name);
         channel_appendstring(channel, "\n");
-        channel_place(channel, id);
+        channel_place(channel, channel->source);
 
         if (!file_step(descriptor))
             break;

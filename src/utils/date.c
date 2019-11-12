@@ -4,8 +4,7 @@
 static void replydate(struct channel *channel, struct ctrl_clocksettings *settings)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_DATA);
-
+    channel_request(channel, EVENT_DATA);
     channel_appendvalue(channel, settings->year, 10, 4);
     channel_appendstring(channel, "-");
     channel_appendvalue(channel, settings->month, 10, 2);
@@ -18,7 +17,7 @@ static void replydate(struct channel *channel, struct ctrl_clocksettings *settin
     channel_appendstring(channel, ":");
     channel_appendvalue(channel, settings->seconds, 10, 2);
     channel_appendstring(channel, "\n");
-    channel_place(channel, id);
+    channel_place(channel, channel->source);
 
 }
 

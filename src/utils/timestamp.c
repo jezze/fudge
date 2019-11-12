@@ -31,11 +31,10 @@ static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
 static void replytimestamp(struct channel *channel, struct ctrl_clocksettings *settings)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_DATA);
-
+    channel_request(channel, EVENT_DATA);
     channel_appendvalue(channel, gettimestamp(settings), 10, 0);
     channel_appendstring(channel, "\n");
-    channel_place(channel, id);
+    channel_place(channel, channel->source);
 
 }
 

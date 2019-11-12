@@ -6,17 +6,17 @@ static struct md5 s;
 static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_DATA);
     unsigned char digest[16];
     unsigned int i;
 
     md5_write(&s, digest);
+    channel_request(channel, EVENT_DATA);
 
     for (i = 0; i < 16; i++)
         channel_appendvalue(channel, digest[i], 16, 2);
 
     channel_appendstring(channel, "\n");
-    channel_place(channel, id);
+    channel_place(channel, channel->source);
     channel_close(channel);
 
 }

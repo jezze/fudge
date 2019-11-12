@@ -6,11 +6,10 @@ static struct crc s;
 static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_DATA);
-
+    channel_request(channel, EVENT_DATA);
     channel_appendvalue(channel, crc_finalize(&s), 10, 0);
     channel_appendstring(channel, "\n");
-    channel_place(channel, id);
+    channel_place(channel, channel->source);
     channel_close(channel);
 
 }

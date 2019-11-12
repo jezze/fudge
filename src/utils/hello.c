@@ -11,10 +11,9 @@ static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 static void onempty(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_DATA);
-
+    channel_request(channel, EVENT_DATA);
     channel_appendstring(channel, "Hello world!\n");
-    channel_place(channel, id);
+    channel_place(channel, channel->source);
 
 }
 

@@ -11,10 +11,9 @@ static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_DATA);
-
+    channel_request(channel, EVENT_DATA);
     channel_append(channel, msize, mdata);
-    channel_place(channel, id);
+    channel_place(channel, channel->source);
 
 }
 
@@ -32,10 +31,9 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
     while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE)))
     {
 
-        unsigned int id = channel_reply(channel, EVENT_DATA);
-
+        channel_request(channel, EVENT_DATA);
         channel_append(channel, count, buffer);
-        channel_place(channel, id);
+        channel_place(channel, channel->source);
 
     }
 

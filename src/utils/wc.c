@@ -48,15 +48,14 @@ static void sum(unsigned int count, void *buffer)
 static void ondone(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_DATA);
-
+    channel_request(channel, EVENT_DATA);
     channel_appendvalue(channel, lines, 10, 0);
     channel_appendstring(channel, "\n");
     channel_appendvalue(channel, words, 10, 0);
     channel_appendstring(channel, "\n");
     channel_appendvalue(channel, bytes, 10, 0);
     channel_appendstring(channel, "\n");
-    channel_place(channel, id);
+    channel_place(channel, channel->source);
     channel_close(channel);
 
 }

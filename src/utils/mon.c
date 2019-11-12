@@ -32,11 +32,10 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
     if (cpio_validate(header))
     {
 
-        unsigned int id = channel_reply(channel, EVENT_DATA);
-
+        channel_request(channel, EVENT_DATA);
         channel_append(channel, header->namesize - 1, header + 1);
         channel_appendstring(channel, "\n");
-        channel_place(channel, id);
+        channel_place(channel, channel->source);
 
         if (++x < 8)
         {

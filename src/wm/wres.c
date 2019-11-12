@@ -26,9 +26,8 @@ static void onwmmousepress(struct channel *channel, void *mdata, unsigned int ms
 static void onwmclose(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = channel_reply(channel, EVENT_WMUNMAP);
-
-    channel_place(channel, id);
+    channel_request(channel, EVENT_WMUNMAP);
+    channel_place(channel, channel->source);
     channel_close(channel);
 
 }

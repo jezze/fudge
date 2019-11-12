@@ -6,6 +6,9 @@
 unsigned int channel_place(struct channel *channel, unsigned int id)
 {
 
+    if (channel->signals[channel->message.header.type].redirect)
+        id = channel->signals[channel->message.header.type].redirect;
+
     return call_place(id, &channel->message.header, channel->message.data);
 
 }
@@ -79,15 +82,6 @@ void channel_request(struct channel *channel, unsigned int type)
 {
 
     ipc_init(&channel->message.header, type, 0);
-
-}
-
-unsigned int channel_reply(struct channel *channel, unsigned int type)
-{
-
-    ipc_init(&channel->message.header, type, 0);
-
-    return (channel->signals[type].redirect) ? channel->signals[type].redirect : channel->source;
 
 }
 
