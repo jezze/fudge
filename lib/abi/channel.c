@@ -62,10 +62,28 @@ void channel_close(struct channel *channel)
 
 }
 
-void channel_setredirect(struct channel *channel, unsigned int type, unsigned int id, unsigned int source)
+void channel_setredirect(struct channel *channel, unsigned int type, unsigned int mode, unsigned int id, unsigned int source)
 {
 
-    channel->signals[type].redirect = (id == 255) ? source : id;
+    switch (mode)
+    {
+
+    case 1:
+        channel->signals[type].redirect = id;
+
+        break;
+
+    case 2:
+        channel->signals[type].redirect = source;
+
+        break;
+
+    default:
+        channel->signals[type].redirect = 0;
+
+        break;
+
+    }
 
 }
 
@@ -115,7 +133,7 @@ void channel_init(struct channel *channel)
     {
 
         channel_setsignal(channel, i, 0);
-        channel_setredirect(channel, i, 0, 0);
+        channel_setredirect(channel, i, 0, 0, 0);
 
     }
 

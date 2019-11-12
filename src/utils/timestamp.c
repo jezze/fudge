@@ -80,7 +80,7 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->id, source);
+    channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
 
 }
 
