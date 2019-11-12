@@ -114,6 +114,13 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
 }
 
+static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    printprompt();
+
+}
+
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -255,6 +262,7 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
+    channel_setsignal(&channel, EVENT_DONE, ondone);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
