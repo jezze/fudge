@@ -45,6 +45,15 @@ void channel_listen(struct channel *channel)
 
 }
 
+void channel_listen2(struct channel *channel, void (*oninit)(struct channel *channel), void (*onexit)(struct channel *channel))
+{
+
+    oninit(channel);
+    channel_listen(channel);
+    onexit(channel);
+
+}
+
 void channel_close(struct channel *channel)
 {
 

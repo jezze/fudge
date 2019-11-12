@@ -11,6 +11,7 @@ struct channel
 unsigned int channel_place(struct channel *channel, unsigned int id);
 unsigned int channel_write(struct channel *channel, unsigned int descriptor);
 void channel_listen(struct channel *channel);
+void channel_listen2(struct channel *channel, void (*oninit)(struct channel *channel), void (*onexit)(struct channel *channel));
 void channel_close(struct channel *channel);
 void channel_setredirect(struct channel *channel, unsigned int type, unsigned int id);
 void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, void *mdata, unsigned int msize));

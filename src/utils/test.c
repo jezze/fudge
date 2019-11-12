@@ -20,10 +20,8 @@ static void ontimertick(struct channel *channel, void *mdata, unsigned int msize
 
 }
 
-void main(void)
+static void oninit(struct channel *channel)
 {
-
-    struct channel channel;
 
     if (!file_walk2(FILE_G0, "/system/timer/if:0/event"))
         return;
@@ -32,11 +30,25 @@ void main(void)
         return;
 
     file_open(FILE_G0);
+
+}
+
+static void onexit(struct channel *channel)
+{
+
+    file_close(FILE_G0);
+
+}
+
+void main(void)
+{
+
+    struct channel channel;
+
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_setsignal(&channel, EVENT_TIMERTICK, ontimertick);
-    channel_listen(&channel);
-    file_close(FILE_G0);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 

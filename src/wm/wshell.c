@@ -377,20 +377,9 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-void main(void)
+static void oninit(struct channel *channel)
 {
 
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_setsignal(&channel, EVENT_ANY, onany);
-    channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
-    channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
-    channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
-    channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
-    channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
-    channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
     ring_init(&output, FUDGE_BSIZE, outputdata);
     ring_init(&prompt, FUDGE_BSIZE, promptdata);
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
@@ -413,13 +402,36 @@ void main(void)
     idslang = call_spawn(FILE_CP);
 
     file_open(FILE_G0);
-    channel_request(&channel, EVENT_WMMAP);
-    channel_write(&channel, FILE_G0);
-    channel_listen(&channel);
-    channel_request(&channel, EVENT_DONE);
-    channel_place(&channel, idcomplete);
-    channel_place(&channel, idslang);
+    channel_request(channel, EVENT_WMMAP);
+    channel_write(channel, FILE_G0);
+
+}
+
+static void onexit(struct channel *channel)
+{
+
+    channel_request(channel, EVENT_DONE);
+    channel_place(channel, idcomplete);
+    channel_place(channel, idslang);
     file_close(FILE_G0);
+
+}
+
+void main(void)
+{
+
+    struct channel channel;
+
+    channel_init(&channel);
+    channel_setsignal(&channel, EVENT_ANY, onany);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
+    channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
+    channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
+    channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
+    channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
+    channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 

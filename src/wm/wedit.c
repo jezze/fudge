@@ -272,6 +272,31 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
+static void oninit(struct channel *channel)
+{
+
+    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&input1, FUDGE_BSIZE, inputdata1);
+    ring_init(&input2, FUDGE_BSIZE, inputdata2);
+    widget_inittextbox(&content);
+    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
+
+    if (!file_walk2(FILE_G0, "/system/multicast"))
+        return;
+
+    file_open(FILE_G0);
+    channel_request(channel, EVENT_WMMAP);
+    channel_write(channel, FILE_G0);
+
+}
+
+static void onexit(struct channel *channel)
+{
+
+    file_close(FILE_G0);
+
+}
+
 void main(void)
 {
 
@@ -286,20 +311,7 @@ void main(void)
     channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    widget_inittextbox(&content);
-    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
-
-    if (!file_walk2(FILE_G0, "/system/multicast"))
-        return;
-
-    file_open(FILE_G0);
-    channel_request(&channel, EVENT_WMMAP);
-    channel_write(&channel, FILE_G0);
-    channel_listen(&channel);
-    file_close(FILE_G0);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 

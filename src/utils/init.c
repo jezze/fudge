@@ -30,15 +30,10 @@ static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-void main(void)
+static void oninit(struct channel *channel)
 {
 
-    struct channel channel;
     unsigned int id;
-
-    channel_init(&channel);
-    channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
 
     if (!file_walk2(FILE_CP, "/bin/slang"))
         return;
@@ -48,18 +43,34 @@ void main(void)
     if (!id)
         return;
 
-    channel_request(&channel, EVENT_FILE);
-    channel_append(&channel, 19, "/config/base.slang");
-    channel_place(&channel, id);
-    channel_request(&channel, EVENT_FILE);
-    channel_append(&channel, 19, "/config/arch.slang");
-    channel_place(&channel, id);
-    channel_request(&channel, EVENT_FILE);
-    channel_append(&channel, 19, "/config/init.slang");
-    channel_place(&channel, id);
-    channel_request(&channel, EVENT_DONE);
-    channel_place(&channel, id);
-    channel_listen(&channel);
+    channel_request(channel, EVENT_FILE);
+    channel_append(channel, 19, "/config/base.slang");
+    channel_place(channel, id);
+    channel_request(channel, EVENT_FILE);
+    channel_append(channel, 19, "/config/arch.slang");
+    channel_place(channel, id);
+    channel_request(channel, EVENT_FILE);
+    channel_append(channel, 19, "/config/init.slang");
+    channel_place(channel, id);
+    channel_request(channel, EVENT_DONE);
+    channel_place(channel, id);
+
+}
+
+static void onexit(struct channel *channel)
+{
+
+}
+
+void main(void)
+{
+
+    struct channel channel;
+
+    channel_init(&channel);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 

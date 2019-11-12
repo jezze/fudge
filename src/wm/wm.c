@@ -918,27 +918,9 @@ static void onany(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-void main(void)
+static void oninit(struct channel *channel)
 {
 
-    struct channel channel;
-    struct list_item *current;
-
-    channel_init(&channel);
-    channel_setsignal(&channel, EVENT_ANY, onany);
-    channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_FILE, onfile);
-    channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
-    channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
-    channel_setsignal(&channel, EVENT_MOUSEMOVE, onmousemove);
-    channel_setsignal(&channel, EVENT_MOUSEPRESS, onmousepress);
-    channel_setsignal(&channel, EVENT_MOUSERELEASE, onmouserelease);
-    channel_setsignal(&channel, EVENT_VIDEOMODE, onvideomode);
-    channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
-    channel_setsignal(&channel, EVENT_WMMAP, onwmmap);
-    channel_setsignal(&channel, EVENT_WMUNMAP, onwmunmap);
-    channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
-    channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
     ring_init(&output, FUDGE_BSIZE, outputdata);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
@@ -959,15 +941,21 @@ void main(void)
     file_open(FILE_G1);
     file_open(FILE_G2);
     file_open(FILE_G3);
-    channel_listen(&channel);
+
+}
+
+static void onexit(struct channel *channel)
+{
+
+    struct list_item *current;
 
     for (current = viewlist.head; current; current = current->next)
     {
 
         struct view *view = current->data;
 
-        hideremotes(&channel, &view->remotes);
-        closeremotes(&channel, &view->remotes);
+        hideremotes(channel, &view->remotes);
+        closeremotes(channel, &view->remotes);
 
     }
 
@@ -975,6 +963,30 @@ void main(void)
     file_close(FILE_G2);
     file_close(FILE_G1);
     file_close(FILE_G0);
+
+}
+
+void main(void)
+{
+
+    struct channel channel;
+
+    channel_init(&channel);
+    channel_setsignal(&channel, EVENT_ANY, onany);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_FILE, onfile);
+    channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
+    channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
+    channel_setsignal(&channel, EVENT_MOUSEMOVE, onmousemove);
+    channel_setsignal(&channel, EVENT_MOUSEPRESS, onmousepress);
+    channel_setsignal(&channel, EVENT_MOUSERELEASE, onmouserelease);
+    channel_setsignal(&channel, EVENT_VIDEOMODE, onvideomode);
+    channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
+    channel_setsignal(&channel, EVENT_WMMAP, onwmmap);
+    channel_setsignal(&channel, EVENT_WMUNMAP, onwmunmap);
+    channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
+    channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 

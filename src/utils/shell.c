@@ -222,17 +222,9 @@ static void onkeyrelease(struct channel *channel, void *mdata, unsigned int msiz
 
 }
 
-void main(void)
+static void oninit(struct channel *channel)
 {
 
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
-    channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_FILE, onfile);
-    channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
-    channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
 
     if (!file_walk2(FILE_CP, "/bin/complete"))
@@ -245,10 +237,29 @@ void main(void)
 
     idslang = call_spawn(FILE_CP);
 
-    channel_listen(&channel);
-    channel_request(&channel, EVENT_DONE);
-    channel_place(&channel, idcomplete);
-    channel_place(&channel, idslang);
+}
+
+static void onexit(struct channel *channel)
+{
+
+    channel_request(channel, EVENT_DONE);
+    channel_place(channel, idcomplete);
+    channel_place(channel, idslang);
+
+}
+
+void main(void)
+{
+
+    struct channel channel;
+
+    channel_init(&channel);
+    channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
+    channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_FILE, onfile);
+    channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
+    channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 
