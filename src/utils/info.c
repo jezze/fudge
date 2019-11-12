@@ -22,6 +22,7 @@ static void onempty(struct channel *channel, unsigned int source, void *mdata, u
     if (!id)
         return;
 
+    redirect.mode = 1;
     redirect.id = channel->signals[EVENT_DATA].redirect;
     redirect.type = EVENT_DATA;
 
