@@ -34,13 +34,11 @@ void channel_listen(struct channel *channel)
         if (call_pick(&header, data))
         {
 
-            channel->source = header.source;
-
             if (channel->signals[header.type].callback)
-                channel->signals[header.type].callback(channel, data, header.length - sizeof (struct ipc_header));
+                channel->signals[header.type].callback(channel, header.source, data, header.length - sizeof (struct ipc_header));
 
             if (channel->signals[EVENT_ANY].callback)
-                channel->signals[EVENT_ANY].callback(channel, data, header.length - sizeof (struct ipc_header));
+                channel->signals[EVENT_ANY].callback(channel, header.source, data, header.length - sizeof (struct ipc_header));
 
         }
 
@@ -64,14 +62,14 @@ void channel_close(struct channel *channel)
 
 }
 
-void channel_setredirect(struct channel *channel, unsigned int type, unsigned int id)
+void channel_setredirect(struct channel *channel, unsigned int type, unsigned int id, unsigned int source)
 {
 
-    channel->signals[type].redirect = (id == 255) ? channel->source : id;
+    channel->signals[type].redirect = (id == 255) ? source : id;
 
 }
 
-void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, void *mdata, unsigned int msize))
+void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize))
 {
 
     channel->signals[type].callback = callback;
@@ -117,11 +115,9 @@ void channel_init(struct channel *channel)
     {
 
         channel_setsignal(channel, i, 0);
-        channel_setredirect(channel, i, 0);
+        channel_setredirect(channel, i, 0, 0);
 
     }
-
-    ipc_init(&channel->message.header, 0, 0);
 
 }
 

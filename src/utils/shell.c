@@ -68,7 +68,7 @@ static void complete(struct channel *channel, struct ring *ring)
 
 }
 
-static void onconsoledata(struct channel *channel, void *mdata, unsigned int msize)
+static void onconsoledata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_consoledata *consoledata = mdata;
@@ -114,10 +114,10 @@ static void onconsoledata(struct channel *channel, void *mdata, unsigned int msi
 
 }
 
-static void ondata(struct channel *channel, void *mdata, unsigned int msize)
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (channel->source == idcomplete)
+    if (source == idcomplete)
     {
 
         file_writeall(FILE_G1, mdata, msize);
@@ -125,7 +125,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
     }
 
-    else if (channel->source == idslang)
+    else if (source == idslang)
     {
 
         struct job_status status;
@@ -158,7 +158,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
 static unsigned int desc = FILE_G0;
 
-static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!file_walk2(desc, mdata))
@@ -170,7 +170,7 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
+static void onkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keypress *keypress = mdata;
@@ -213,7 +213,7 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onkeyrelease(struct channel *channel, void *mdata, unsigned int msize)
+static void onkeyrelease(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keyrelease *keyrelease = mdata;

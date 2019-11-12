@@ -336,16 +336,16 @@ static void setupvideo(void)
 
 }
 
-static void ondata(struct channel *channel, void *mdata, unsigned int msize)
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    render_write(channel->source, mdata, msize);
+    render_write(source, mdata, msize);
     render_flush(FILE_G5);
     render_complete();
 
 }
 
-static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!file_walk2(FILE_G6, mdata))
@@ -366,7 +366,7 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
+static void onkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keypress *keypress = mdata;
@@ -558,7 +558,7 @@ static void onkeypress(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onkeyrelease(struct channel *channel, void *mdata, unsigned int msize)
+static void onkeyrelease(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keyrelease *keyrelease = mdata;
@@ -587,7 +587,7 @@ static void onkeyrelease(struct channel *channel, void *mdata, unsigned int msiz
 
 }
 
-static void onmousemove(struct channel *channel, void *mdata, unsigned int msize)
+static void onmousemove(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousemove *mousemove = mdata;
@@ -619,7 +619,7 @@ static void onmousemove(struct channel *channel, void *mdata, unsigned int msize
 
 }
 
-static void onmousepress(struct channel *channel, void *mdata, unsigned int msize)
+static void onmousepress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
@@ -692,7 +692,7 @@ static void onmousepress(struct channel *channel, void *mdata, unsigned int msiz
 
 }
 
-static void onmouserelease(struct channel *channel, void *mdata, unsigned int msize)
+static void onmouserelease(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mouserelease *mouserelease = mdata;
@@ -712,7 +712,7 @@ static void onmouserelease(struct channel *channel, void *mdata, unsigned int ms
 
 }
 
-static void onvideomode(struct channel *channel, void *mdata, unsigned int msize)
+static void onvideomode(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_videomode *videomode = mdata;
@@ -787,7 +787,7 @@ static void onvideomode(struct channel *channel, void *mdata, unsigned int msize
 
 }
 
-static void onwmconfigure(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmconfigure(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmconfigure *wmconfigure = mdata;
@@ -819,14 +819,14 @@ static void onwmconfigure(struct channel *channel, void *mdata, unsigned int msi
 
 }
 
-static void onwmmap(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmmap(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (currentview->currentremote)
         deactivateremote(currentview->currentremote);
 
     currentview->currentremote = remotelist.head->data;
-    currentview->currentremote->source = channel->source;
+    currentview->currentremote->source = source;
 
     list_move(&currentview->remotes, currentview->currentremote->item.list, &currentview->currentremote->item);
     activateremote(currentview->currentremote);
@@ -835,7 +835,7 @@ static void onwmmap(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onwmunmap(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmunmap(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct list_item *current;
@@ -851,7 +851,7 @@ static void onwmunmap(struct channel *channel, void *mdata, unsigned int msize)
 
             struct remote *remote = current2->data;
 
-            if (channel->source != remote->source)
+            if (source != remote->source)
                 continue;
 
             removeremote(remote);
@@ -873,7 +873,7 @@ static void onwmunmap(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmshow(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct list_item *current;
@@ -888,7 +888,7 @@ static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmhide(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct list_item *current;
@@ -903,7 +903,7 @@ static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onany(struct channel *channel, void *mdata, unsigned int msize)
+static void onany(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (ring_count(&output))

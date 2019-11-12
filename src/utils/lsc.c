@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void list(struct channel *channel, unsigned int descriptor)
+static void list(struct channel *channel, unsigned int source, unsigned int descriptor)
 {
 
     struct record record;
@@ -18,7 +18,7 @@ static void list(struct channel *channel, unsigned int descriptor)
         channel_appendstring(channel, " ");
         channel_append(channel, record.length, record.name);
         channel_appendstring(channel, "\n");
-        channel_place(channel, channel->source);
+        channel_place(channel, source);
 
         if (!file_step(descriptor))
             break;
@@ -29,36 +29,36 @@ static void list(struct channel *channel, unsigned int descriptor)
 
 }
 
-static void ondone(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_close(channel);
 
 }
 
-static void onempty(struct channel *channel, void *mdata, unsigned int msize)
+static void onempty(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    list(channel, FILE_PW);
+    list(channel, source, FILE_PW);
 
 }
 
-static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!file_walk2(FILE_L0, mdata))
         return;
 
-    list(channel, FILE_L0);
+    list(channel, source, FILE_L0);
 
 }
 
-static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->id);
+    channel_setredirect(channel, redirect->type, redirect->id, source);
 
 }
 

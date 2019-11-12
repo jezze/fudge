@@ -140,7 +140,7 @@ static unsigned int readfile(unsigned int visiblerows)
 
 }
 
-static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!file_walk2(FILE_G1, mdata))
@@ -148,7 +148,7 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onwmconfigure(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmconfigure(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmconfigure *wmconfigure = mdata;
@@ -163,7 +163,7 @@ static void onwmconfigure(struct channel *channel, void *mdata, unsigned int msi
 
 }
 
-static void onwmkeypress(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmkeypress *wmkeypress = mdata;
@@ -222,7 +222,7 @@ static void onwmkeypress(struct channel *channel, void *mdata, unsigned int msiz
 
 }
 
-static void onwmkeyrelease(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmkeyrelease(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmkeyrelease *wmkeyrelease = mdata;
@@ -231,7 +231,7 @@ static void onwmkeyrelease(struct channel *channel, void *mdata, unsigned int ms
 
 }
 
-static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmshow(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     updatecontent();
@@ -239,7 +239,7 @@ static void onwmshow(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmhide(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     removecontent();
@@ -247,16 +247,16 @@ static void onwmhide(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onwmclose(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_request(channel, EVENT_WMUNMAP);
-    channel_place(channel, channel->source);
+    channel_place(channel, source);
     channel_close(channel);
 
 }
 
-static void onany(struct channel *channel, void *mdata, unsigned int msize)
+static void onany(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (ring_count(&output))

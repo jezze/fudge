@@ -3,7 +3,7 @@
 
 static struct sha1 s;
 
-static void ondone(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned char digest[20];
@@ -16,19 +16,19 @@ static void ondone(struct channel *channel, void *mdata, unsigned int msize)
         channel_appendvalue(channel, digest[i], 16, 2);
 
     channel_appendstring(channel, "\n");
-    channel_place(channel, channel->source);
+    channel_place(channel, source);
     channel_close(channel);
 
 }
 
-static void ondata(struct channel *channel, void *mdata, unsigned int msize)
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     sha1_read(&s, mdata, msize);
 
 }
 
-static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     char buffer[FUDGE_BSIZE];
@@ -46,12 +46,12 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->id);
+    channel_setredirect(channel, redirect->type, redirect->id, source);
 
 }
 

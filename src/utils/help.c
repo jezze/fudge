@@ -1,14 +1,14 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void ondone(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_close(channel);
 
 }
 
-static void onempty(struct channel *channel, void *mdata, unsigned int msize)
+static void onempty(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_redirect redirect;
@@ -36,12 +36,12 @@ static void onempty(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->id);
+    channel_setredirect(channel, redirect->type, redirect->id, source);
 
 }
 

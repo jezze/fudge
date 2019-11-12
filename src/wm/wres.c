@@ -2,7 +2,7 @@
 #include <abi.h>
 #include <widget.h>
 
-static void onwmmousepress(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmmousepress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmmousepress *wmmousepress = mdata;
@@ -23,11 +23,11 @@ static void onwmmousepress(struct channel *channel, void *mdata, unsigned int ms
 
 }
 
-static void onwmclose(struct channel *channel, void *mdata, unsigned int msize)
+static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_request(channel, EVENT_WMUNMAP);
-    channel_place(channel, channel->source);
+    channel_place(channel, source);
     channel_close(channel);
 
 }

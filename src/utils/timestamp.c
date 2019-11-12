@@ -28,24 +28,24 @@ static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
 
 }
 
-static void replytimestamp(struct channel *channel, struct ctrl_clocksettings *settings)
+static void replytimestamp(struct channel *channel, unsigned int source, struct ctrl_clocksettings *settings)
 {
 
     channel_request(channel, EVENT_DATA);
     channel_appendvalue(channel, gettimestamp(settings), 10, 0);
     channel_appendstring(channel, "\n");
-    channel_place(channel, channel->source);
+    channel_place(channel, source);
 
 }
 
-static void ondone(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_close(channel);
 
 }
 
-static void onempty(struct channel *channel, void *mdata, unsigned int msize)
+static void onempty(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct ctrl_clocksettings settings;
@@ -56,11 +56,11 @@ static void onempty(struct channel *channel, void *mdata, unsigned int msize)
     file_open(FILE_L0);
     file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
     file_close(FILE_L0);
-    replytimestamp(channel, &settings);
+    replytimestamp(channel, source, &settings);
 
 }
 
-static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct ctrl_clocksettings settings;
@@ -71,16 +71,16 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
     file_open(FILE_L0);
     file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
     file_close(FILE_L0);
-    replytimestamp(channel, &settings);
+    replytimestamp(channel, source, &settings);
 
 }
 
-static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->id);
+    channel_setredirect(channel, redirect->type, redirect->id, source);
 
 }
 

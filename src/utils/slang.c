@@ -243,7 +243,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void parse(struct channel *channel, struct tokenlist *postfix, struct tokenlist *stack)
+static void parse(struct channel *channel, unsigned int source, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     unsigned int i;
@@ -324,18 +324,18 @@ static void parse(struct channel *channel, struct tokenlist *postfix, struct tok
 
     }
 
-    channel_place(channel, channel->source);
+    channel_place(channel, source);
 
 }
 
-static void ondone(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_close(channel);
 
 }
 
-static void ondata(struct channel *channel, void *mdata, unsigned int msize)
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!msize)
@@ -347,11 +347,11 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
     tokenlist_init(&stack, 8, stackdata);
     tokenizebuffer(&infix, &stringtable, msize, mdata);
     translate(&postfix, &infix, &stack);
-    parse(channel, &postfix, &stack);
+    parse(channel, source, &postfix, &stack);
 
 }
 
-static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     char buffer[FUDGE_BSIZE];
@@ -371,16 +371,16 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
     file_close(FILE_L0);
     translate(&postfix, &infix, &stack);
-    parse(channel, &postfix, &stack);
+    parse(channel, source, &postfix, &stack);
 
 }
 
-static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->id);
+    channel_setredirect(channel, redirect->type, redirect->id, source);
 
 }
 

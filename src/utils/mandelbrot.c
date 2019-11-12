@@ -77,7 +77,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
-static void ondone(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);

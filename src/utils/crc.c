@@ -3,25 +3,25 @@
 
 static struct crc s;
 
-static void ondone(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_request(channel, EVENT_DATA);
     channel_appendvalue(channel, crc_finalize(&s), 10, 0);
     channel_appendstring(channel, "\n");
-    channel_place(channel, channel->source);
+    channel_place(channel, source);
     channel_close(channel);
 
 }
 
-static void ondata(struct channel *channel, void *mdata, unsigned int msize)
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     crc_read(&s, mdata, msize);
 
 }
 
-static void onfile(struct channel *channel, void *mdata, unsigned int msize)
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     char buffer[FUDGE_BSIZE];
@@ -39,12 +39,12 @@ static void onfile(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->id);
+    channel_setredirect(channel, redirect->type, redirect->id, source);
 
 }
 

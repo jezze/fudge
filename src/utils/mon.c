@@ -17,14 +17,14 @@ static void sendrequest(struct channel *channel, unsigned int sector, unsigned i
 
 }
 
-static void ondone(struct channel *channel, void *mdata, unsigned int msize)
+static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     sendrequest(channel, 0, 1);
 
 }
 
-static void ondata(struct channel *channel, void *mdata, unsigned int msize)
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct cpio_header *header = mdata;
@@ -35,7 +35,7 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
         channel_request(channel, EVENT_DATA);
         channel_append(channel, header->namesize - 1, header + 1);
         channel_appendstring(channel, "\n");
-        channel_place(channel, channel->source);
+        channel_place(channel, source);
 
         if (++x < 8)
         {
@@ -55,12 +55,12 @@ static void ondata(struct channel *channel, void *mdata, unsigned int msize)
 
 }
 
-static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->id);
+    channel_setredirect(channel, redirect->type, redirect->id, source);
 
 }
 

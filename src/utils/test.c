@@ -1,21 +1,21 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onredirect(struct channel *channel, void *mdata, unsigned int msize)
+static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->id);
+    channel_setredirect(channel, redirect->type, redirect->id, source);
 
 }
 
-static void ontimertick(struct channel *channel, void *mdata, unsigned int msize)
+static void ontimertick(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_request(channel, EVENT_DATA);
     channel_appendstring(channel, "HEJ!\n");
-    channel_place(channel, channel->source);
+    channel_place(channel, source);
 
 }
 
