@@ -310,7 +310,7 @@ static unsigned int place(struct task *task, void *stack)
 
     struct {void *caller; unsigned int id; struct ipc_header *header; void *data;} *args = stack;
 
-    return kernel_place(task->id, (args->id) ? args->id : task->id, args->header, args->data);
+    return kernel_place(task->id, args->id, args->header, args->data);
 
 }
 

@@ -546,9 +546,9 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         {
 
             channel_request(channel, EVENT_WMHIDE);
-            channel_place(channel, 0);
+            channel_write(channel, FILE_G0);
             channel_request(channel, EVENT_WMCLOSE);
-            channel_place(channel, 0);
+            channel_write(channel, FILE_G0);
 
         }
 
@@ -781,9 +781,9 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
 
     channel_request(channel, EVENT_WMCONFIGURE);
     channel_append(channel, sizeof (struct event_wmconfigure), &wmconfigure);
-    channel_place(channel, 0);
+    channel_write(channel, FILE_G0);
     channel_request(channel, EVENT_WMSHOW);
-    channel_place(channel, 0);
+    channel_write(channel, FILE_G0);
 
 }
 
