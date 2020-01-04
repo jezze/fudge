@@ -48,6 +48,33 @@ static void maptask(struct task *task, unsigned int index, unsigned int paddress
 
 }
 
+static unsigned int unloadtask(struct task *task)
+{
+
+    kernel_freetask(task);
+
+    return 0;
+
+}
+
+static unsigned int loadtask(struct task *task, unsigned int descriptor)
+{
+
+    if (kernel_setupbinary(task, descriptor, ARCH_TASKSTACKADDRESS))
+    {
+
+        memory_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
+        kernel_usetask(task);
+        kernel_reset(task->id);
+
+        return task->id;
+
+    }
+
+    return unloadtask(task);
+
+}
+
 static unsigned int spawn(struct task *task, void *stack)
 {
 
@@ -59,34 +86,14 @@ static unsigned int spawn(struct task *task, void *stack)
 
     kernel_copydescriptors(task, next);
 
-    if (kernel_setupbinary(next, args->descriptor, ARCH_TASKSTACKADDRESS))
-    {
-
-        memory_copy(gettaskdirectory(next->id), getkerneldirectory(), sizeof (struct mmu_directory));
-        kernel_usetask(next);
-        kernel_reset(next->id);
-
-        return next->id;
-
-    }
-
-    else
-    {
-
-        kernel_freetask(next);
-
-        return 0;
-
-    }
+    return loadtask(next, args->descriptor);
 
 }
 
 static unsigned int despawn(struct task *task, void *stack)
 {
 
-    kernel_freetask(task);
-
-    return 0;
+    return unloadtask(task);
 
 }
 
@@ -190,7 +197,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     DEBUG_LOG(DEBUG_INFO, "exception: divide by zero");
 
     if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
-        kernel_freetask(core->task);
+        unloadtask(core->task);
 
     return arch_resume(&general, &interrupt);
 
@@ -326,7 +333,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         else
         {
 
-            kernel_freetask(core->task);
+            unloadtask(core->task);
 
         }
 
@@ -400,9 +407,7 @@ static void setuptask()
 
     kernel_setupinit(task);
     kernel_copydescriptors(task, task);
-    kernel_setupbinary(task, 0x04, ARCH_TASKSTACKADDRESS);
-    memory_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
-    kernel_usetask(task);
+    loadtask(task, 0x04);
 
 }
 
