@@ -20,6 +20,6 @@ void kernel_reset(unsigned int id);
 unsigned int kernel_pick(unsigned int id, struct ipc_header *header, void *data);
 unsigned int kernel_place(unsigned int source, unsigned int target, struct ipc_header *header, void *data);
 void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigned int count);
-unsigned int kernel_setupbinary(struct task *task, struct service_descriptor *descriptor, unsigned int sp);
+unsigned int kernel_setupbinary(struct task *task, unsigned int descriptor, unsigned int sp);
 void kernel_setupinit(struct task *task);
 void kernel_setup(char *buffer);

@@ -324,10 +324,15 @@ void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigne
 
 }
 
-unsigned int kernel_setupbinary(struct task *task, struct service_descriptor *descriptor, unsigned int sp)
+unsigned int kernel_setupbinary(struct task *task, unsigned int descriptor, unsigned int sp)
 {
 
-    task->node.address = descriptor->protocol->map(descriptor->backend, &descriptor->state, descriptor->id);
+    struct service_descriptor *init = kernel_getdescriptor(task, descriptor);
+
+    if (!init)
+        return 0;
+
+    task->node.address = init->protocol->map(init->backend, &init->state, init->id);
 
     if (!task->node.address)
         return 0;

@@ -53,14 +53,13 @@ static unsigned int spawn(struct task *task, void *stack)
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task *next = kernel_picktask();
-    struct service_descriptor *descriptor = kernel_getdescriptor(next, args->descriptor);
 
     if (!next)
         return 0;
 
     kernel_copydescriptors(task, next);
 
-    if (kernel_setupbinary(next, descriptor, ARCH_TASKSTACKADDRESS))
+    if (kernel_setupbinary(next, args->descriptor, ARCH_TASKSTACKADDRESS))
     {
 
         memory_copy(gettaskdirectory(next->id), getkerneldirectory(), sizeof (struct mmu_directory));
@@ -398,11 +397,10 @@ static void setuptask()
 {
 
     struct task *task = kernel_picktask();
-    struct service_descriptor *descriptor = kernel_getdescriptor(task, 0x04);
 
     kernel_setupinit(task);
     kernel_copydescriptors(task, task);
-    kernel_setupbinary(task, descriptor, ARCH_TASKSTACKADDRESS);
+    kernel_setupbinary(task, 0x04, ARCH_TASKSTACKADDRESS);
     memory_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
     kernel_usetask(task);
 
