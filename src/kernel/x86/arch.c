@@ -424,7 +424,7 @@ void arch_setup(struct service_backend *backend)
     mapkernel(3, 0x00C00000, 0x00C00000, 0x00400000);
     mmu_setdirectory(getkerneldirectory());
     mmu_enable();
-    kernel_setup((char *)ARCH_MAILBOXADDRESS);
+    kernel_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
     kernel_setcallback(coreget, coreassign);
     abi_setup(spawn, despawn);
     binary_setupelf();

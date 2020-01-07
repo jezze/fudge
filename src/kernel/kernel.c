@@ -370,7 +370,7 @@ void kernel_setupinit(struct task *task)
 
 }
 
-void kernel_setup(char *buffer)
+void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 {
 
     unsigned int i;
@@ -401,7 +401,7 @@ void kernel_setup(char *buffer)
 
         struct mailbox *mailbox = &mailboxes[i];
 
-        mailbox_init(mailbox, KERNEL_MAILBOXSIZE, buffer + i * KERNEL_MAILBOXSIZE);
+        mailbox_init(mailbox, (char *)(mbaddress + i * mbsize), mbsize);
         resource_register(&mailbox->resource);
         kernel_freemailbox(mailbox);
 
