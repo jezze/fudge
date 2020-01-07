@@ -63,8 +63,7 @@ static struct core *coreget(void)
 static void coreassign(struct task *task)
 {
 
-    /* Change from picktail to pickhead for round-robin */
-    struct list_item *current = list_picktail(&corelist);
+    struct list_item *current = list_pickhead(&corelist);
     struct core *core = current->data;
 
     list_add(&core->tasks, &task->item);
