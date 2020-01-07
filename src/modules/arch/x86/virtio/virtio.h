@@ -1,14 +1,16 @@
 #define VIRTIO_PCIVENDOR                0x1AF4
 #define VIRTIO_TYPENETWORK              1
 #define VIRTIO_TYPEBLOCK                2
-#define VIRTIO_TYPETERMINAL             3
-#define VIRTIO_TYPEENTROPY              4
-#define VIRTIO_TYPEBALLOON              5
-#define VIRTIO_TYPEIOMEM                6
-#define VIRTIO_TYPERPMSG                7
+#define VIRTIO_TYPECONSOLE              3
 #define VIRTIO_TYPESCSI                 8
 #define VIRTIO_TYPE9P                   9
 #define VIRTIO_TYPEWLAN                 10
+#define VIRTIO_TYPEGPU                  16
+#define VIRTIO_TYPECLOCK                17
+#define VIRTIO_TYPEINPUT                18
+#define VIRTIO_TYPESOCKET               19
+#define VIRTIO_TYPECRYPTO               20
+
 #define VIRTIO_REGISTERDEVFEATURES      0x00
 #define VIRTIO_REGISTERGUESTFEATURES    0x04
 #define VIRTIO_REGISTERQADDRESS         0x08
