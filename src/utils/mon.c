@@ -1,15 +1,62 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int x;
+#define BLOCKSIZE 512
+#define TYPE_FIND 1
+#define TYPE_READ 2
 
-static void sendrequest(struct channel *channel, unsigned int sector, unsigned int count)
+struct request
+{
+
+    unsigned int type;
+    unsigned int offset;
+    unsigned int count;
+    unsigned int blocksector;
+    unsigned int blockoffset;
+    unsigned int blockcount;
+    unsigned int blockreads;
+    void *data;
+
+} requests[8];
+
+static char blocks[BLOCKSIZE * 4];
+static unsigned int qp;
+
+static void createrequest(struct request *request, unsigned int type, unsigned int offset, unsigned int count)
+{
+
+    request->type = type;
+    request->offset = offset;
+    request->count = count;
+    request->blocksector = offset / BLOCKSIZE;
+    request->blockoffset = offset % BLOCKSIZE;
+    request->blockcount = 2;
+    request->blockreads = 0;
+    request->data = blocks;
+
+}
+
+static void saveblock(struct request *request, void *data, unsigned int size)
+{
+
+    if (request->blockreads < request->blockcount)
+    {
+
+        unsigned int count = memory_write(request->data, BLOCKSIZE * 4, data, size, request->blockreads * BLOCKSIZE);
+
+        request->blockreads += count / BLOCKSIZE;
+
+    }
+
+}
+
+static void sendrequest(struct channel *channel, struct request *request)
 {
 
     struct event_blockrequest blockrequest;
 
-    blockrequest.sector = sector;
-    blockrequest.count = count;
+    blockrequest.sector = request->blocksector;
+    blockrequest.count = request->blockcount;
 
     channel_request(channel, EVENT_BLOCKREQUEST);
     channel_append(channel, sizeof (struct event_blockrequest), &blockrequest);
@@ -17,17 +64,10 @@ static void sendrequest(struct channel *channel, unsigned int sector, unsigned i
 
 }
 
-static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void handlefind(struct channel *channel, unsigned int source, struct request *request)
 {
 
-    sendrequest(channel, 0, 1);
-
-}
-
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct cpio_header *header = mdata;
+    struct cpio_header *header = (struct cpio_header *)((char *)request->data + request->blockoffset);
 
     if (cpio_validate(header))
     {
@@ -37,19 +77,61 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
         channel_appendstring(channel, "\n");
         channel_place(channel, source);
 
-        if (++x < 8)
-        {
+        /* request next entry */
+        createrequest(request, TYPE_FIND, cpio_next(header, request->offset), sizeof (struct cpio_header));
+        sendrequest(channel, request);
 
-            sendrequest(channel, 0, 1);
+    }
 
-        }
+    else
+    {
 
-        else
-        {
+        channel_close(channel);
 
-            channel_close(channel);
+    }
 
-        }
+}
+
+static void handleread(struct channel *channel, unsigned int source, struct request *request)
+{
+
+    channel_close(channel);
+
+}
+
+static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct request *request = &requests[qp];
+
+    /* request first entry */
+    createrequest(request, TYPE_FIND, 0, sizeof (struct cpio_header));
+    sendrequest(channel, request);
+
+}
+
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct request *request = &requests[qp];
+
+    saveblock(request, mdata, msize);
+
+    if (request->blockreads < request->blockcount)
+        return;
+
+    switch (request->type)
+    {
+
+    case TYPE_FIND:
+        handlefind(channel, source, request);
+
+        break;
+
+    case TYPE_READ:
+        handleread(channel, source, request);
+
+        break;
 
     }
 
