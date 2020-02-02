@@ -4,11 +4,15 @@
 #define BLOCKSIZE 512
 #define TYPE_FIND 1
 #define TYPE_READ 2
+#define STATUS_IDLE 0
+#define STATUS_REQUESTING 1
+#define STATUS_COMPLETE 2
 
 struct request
 {
 
     unsigned int type;
+    unsigned int status;
     unsigned int offset;
     unsigned int count;
     unsigned int blocksector;
@@ -29,12 +33,16 @@ static void request_notifydata(struct request *request, void *data, unsigned int
 
     request->blockreads += count / BLOCKSIZE;
 
+    if (request->blockreads == request->blockcount)
+        request->status = STATUS_COMPLETE;
+
 }
 
 static void request_init(struct request *request, unsigned int type, unsigned int offset, unsigned int count)
 {
 
     request->type = type;
+    request->status = STATUS_IDLE;
     request->offset = offset;
     request->count = count;
     request->blocksector = offset / BLOCKSIZE;
@@ -59,6 +67,17 @@ static void sendblockrequest(struct channel *channel, unsigned int sector, unsig
 
 }
 
+static void createrequest(struct channel *channel, struct request *request, unsigned int offset)
+{
+
+    request_init(request, TYPE_FIND, offset, sizeof (struct cpio_header) + BLOCKSIZE);
+
+    request->status = STATUS_REQUESTING;
+
+    sendblockrequest(channel, request->blocksector, request->blockcount);
+
+}
+
 static void handlefind(struct channel *channel, unsigned int source, struct request *request)
 {
 
@@ -76,8 +95,7 @@ static void handlefind(struct channel *channel, unsigned int source, struct requ
         channel_place(channel, source);
 
         /* request next entry */
-        request_init(request, TYPE_FIND, cpio_next(header, request->offset), sizeof (struct cpio_header) + BLOCKSIZE);
-        sendblockrequest(channel, request->blocksector, request->blockcount);
+        createrequest(channel, request, cpio_next(header, request->offset));
 
     }
 
@@ -102,9 +120,7 @@ static void ondone(struct channel *channel, unsigned int source, void *mdata, un
 
     struct request *request = &requests[qp];
 
-    /* request first entry */
-    request_init(request, TYPE_FIND, 0, sizeof (struct cpio_header) + BLOCKSIZE);
-    sendblockrequest(channel, request->blocksector, request->blockcount);
+    createrequest(channel, request, 0);
 
 }
 
@@ -115,7 +131,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
     request_notifydata(request, mdata, msize);
 
-    if (request->blockreads < request->blockcount)
+    if (request->status != STATUS_COMPLETE)
         return;
 
     switch (request->type)
