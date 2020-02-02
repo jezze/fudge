@@ -903,6 +903,25 @@ static void onwmhide(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
+static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct list_item *current;
+
+    for (current = viewlist.head; current; current = current->next)
+    {
+
+        struct view *view = current->data;
+
+        hideremotes(channel, &view->remotes);
+        closeremotes(channel, &view->remotes);
+
+    }
+
+    channel_close(channel);
+
+}
+
 static void onany(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -947,18 +966,6 @@ static void oninit(struct channel *channel)
 static void onexit(struct channel *channel)
 {
 
-    struct list_item *current;
-
-    for (current = viewlist.head; current; current = current->next)
-    {
-
-        struct view *view = current->data;
-
-        hideremotes(channel, &view->remotes);
-        closeremotes(channel, &view->remotes);
-
-    }
-
     file_close(FILE_G3);
     file_close(FILE_G2);
     file_close(FILE_G1);
@@ -986,6 +993,7 @@ void main(void)
     channel_setsignal(&channel, EVENT_WMUNMAP, onwmunmap);
     channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
+    channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
     channel_listen2(&channel, oninit, onexit);
 
 }
