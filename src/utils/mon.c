@@ -70,7 +70,7 @@ static void sendblockrequest(struct channel *channel, unsigned int sector, unsig
 static void createrequest(struct channel *channel, struct request *request, unsigned int offset)
 {
 
-    request_init(request, TYPE_FIND, offset, sizeof (struct cpio_header) + BLOCKSIZE);
+    request_init(request, TYPE_FIND, offset, sizeof (struct cpio_header) + 1024);
 
     request->status = STATUS_REQUESTING;
 
@@ -85,9 +85,6 @@ static void handlefind(struct channel *channel, unsigned int source, struct requ
 
     if (cpio_validate(header))
     {
-
-        /* need to check if namesize is too big, otherwise request more data */
-        /* this way we can remove the + BLOCKSIZE at the end of request_init calls */
 
         channel_request(channel, EVENT_DATA);
         channel_append(channel, header->namesize - 1, header + 1);
