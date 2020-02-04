@@ -77,7 +77,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
-static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
@@ -91,7 +91,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_DONE, ondone);
+    channel_setsignal(&channel, EVENT_MAIN, onmain);
     ctrl_setvideosettings(&settings, 320, 200, 1);
     file_walk2(FILE_L0, "/system/video/if:0");
     file_walk(FILE_L1, FILE_L0, "ctrl");

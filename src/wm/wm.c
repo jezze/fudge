@@ -464,7 +464,7 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         if (id)
         {
 
-            channel_request(channel, EVENT_DONE);
+            channel_request(channel, EVENT_MAIN);
             channel_place(channel, id);
 
         }

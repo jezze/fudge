@@ -52,7 +52,7 @@ static void oninit(struct channel *channel)
     channel_request(channel, EVENT_FILE);
     channel_append(channel, 19, "/config/init.slang");
     channel_place(channel, id);
-    channel_request(channel, EVENT_DONE);
+    channel_request(channel, EVENT_MAIN);
     channel_place(channel, id);
 
 }

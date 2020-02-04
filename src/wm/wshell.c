@@ -409,7 +409,7 @@ static void oninit(struct channel *channel)
 static void onexit(struct channel *channel)
 {
 
-    channel_request(channel, EVENT_DONE);
+    channel_request(channel, EVENT_MAIN);
     channel_place(channel, idcomplete);
     channel_place(channel, idslang);
     file_close(FILE_G0);

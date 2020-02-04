@@ -328,7 +328,7 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
 }
 
-static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_close(channel);
@@ -390,7 +390,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_DONE, ondone);
+    channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);

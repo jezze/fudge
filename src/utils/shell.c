@@ -114,7 +114,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
 }
 
-static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     printprompt();
@@ -249,7 +249,7 @@ static void oninit(struct channel *channel)
 static void onexit(struct channel *channel)
 {
 
-    channel_request(channel, EVENT_DONE);
+    channel_request(channel, EVENT_MAIN);
     channel_place(channel, idcomplete);
     channel_place(channel, idslang);
 
@@ -262,7 +262,7 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
-    channel_setsignal(&channel, EVENT_DONE, ondone);
+    channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);

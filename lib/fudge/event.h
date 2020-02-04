@@ -1,6 +1,6 @@
 #define EVENTS                          64
 #define EVENT_ANY                       0x00
-#define EVENT_DONE                      0x01
+#define EVENT_MAIN                      0x01
 #define EVENT_REDIRECT                  0x03
 #define EVENT_EMPTY                     0x04
 #define EVENT_DATA                      0x05

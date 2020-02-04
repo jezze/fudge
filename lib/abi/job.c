@@ -154,7 +154,7 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         struct job *p = &jobs[i];
 
-        channel_request(channel, EVENT_DONE);
+        channel_request(channel, EVENT_MAIN);
         channel_place(channel, p->id);
 
     }
