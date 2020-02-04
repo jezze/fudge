@@ -113,29 +113,23 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
     {
 
         struct job *p = &jobs[i];
+        unsigned int k;
 
-        if (p->nfiles || p->ninputs)
+        for (k = 0; k < p->nfiles; k++)
         {
 
-            unsigned int k;
+            channel_request(channel, EVENT_FILE);
+            channel_append(channel, ascii_length(p->files[k]) + 1, p->files[k]);
+            channel_place(channel, p->id);
 
-            for (k = 0; k < p->nfiles; k++)
-            {
+        }
 
-                channel_request(channel, EVENT_FILE);
-                channel_append(channel, ascii_length(p->files[k]) + 1, p->files[k]);
-                channel_place(channel, p->id);
+        for (k = 0; k < p->ninputs; k++)
+        {
 
-            }
-
-            for (k = 0; k < p->ninputs; k++)
-            {
-
-                channel_request(channel, EVENT_DATA);
-                channel_append(channel, ascii_length(p->inputs[k]), p->inputs[k]);
-                channel_place(channel, p->id);
-
-            }
+            channel_request(channel, EVENT_DATA);
+            channel_append(channel, ascii_length(p->inputs[k]), p->inputs[k]);
+            channel_place(channel, p->id);
 
         }
 
