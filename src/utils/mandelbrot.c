@@ -6,8 +6,6 @@
 #define fpabs(_a)                       ((_a < 0) ? -_a : _a)
 #define mulfp(_a)                       (((_a) * (_a)) >> fpshift)
 
-static struct ctrl_videosettings settings;
-
 static void setup(struct ctrl_videosettings *settings)
 {
 
@@ -80,13 +78,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    channel_close(channel);
-
-}
-
-static void oninit(struct channel *channel)
-{
+    struct ctrl_videosettings settings;
 
     ctrl_setvideosettings(&settings, 320, 200, 1);
     file_walk2(FILE_L0, "/system/video/if:0");
@@ -98,11 +90,8 @@ static void oninit(struct channel *channel)
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
     file_close(FILE_L1);
     setup(&settings);
-
-}
-
-static void onexit(struct channel *channel)
-{
+    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+    channel_close(channel);
 
 }
 
@@ -113,7 +102,7 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_listen2(&channel, oninit, onexit);
+    channel_listen(&channel);
 
 }
 
