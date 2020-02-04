@@ -35,10 +35,10 @@ void channel_listen(struct channel *channel)
         {
 
             if (channel->signals[header.type].callback)
-                channel->signals[header.type].callback(channel, header.source, data, header.length - sizeof (struct ipc_header));
+                channel->signals[header.type].callback(channel, header.source, data, ipc_datasize(&header));
 
             if (channel->signals[EVENT_ANY].callback)
-                channel->signals[EVENT_ANY].callback(channel, header.source, data, header.length - sizeof (struct ipc_header));
+                channel->signals[EVENT_ANY].callback(channel, header.source, data, ipc_datasize(&header));
 
         }
 
@@ -70,10 +70,10 @@ unsigned int channel_listenfor(struct channel *channel, unsigned int type, struc
                 return type;
 
             if (channel->signals[header->type].callback)
-                channel->signals[header->type].callback(channel, header->source, data, header->length - sizeof (struct ipc_header));
+                channel->signals[header->type].callback(channel, header->source, data, ipc_datasize(header));
 
             if (channel->signals[EVENT_ANY].callback)
-                channel->signals[EVENT_ANY].callback(channel, header->source, data, header->length - sizeof (struct ipc_header));
+                channel->signals[EVENT_ANY].callback(channel, header->source, data, ipc_datasize(header));
 
         }
 
@@ -132,14 +132,14 @@ void channel_request(struct channel *channel, unsigned int type)
 void channel_append(struct channel *channel, unsigned int count, void *buffer)
 {
 
-    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE - sizeof (struct ipc_header) - 1, buffer, count, channel->message.header.length - sizeof (struct ipc_header));
+    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE - sizeof (struct ipc_header) - 1, buffer, count, ipc_datasize(&channel->message.header));
 
 }
 
 void channel_appendstring(struct channel *channel, char *string)
 {
 
-    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE - sizeof (struct ipc_header) - 1, string, ascii_length(string), channel->message.header.length - sizeof (struct ipc_header));
+    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE - sizeof (struct ipc_header) - 1, string, ascii_length(string), ipc_datasize(&channel->message.header));
 
 }
 
@@ -148,7 +148,7 @@ void channel_appendvalue(struct channel *channel, int value, unsigned int base, 
 
     char num[FUDGE_NSIZE];
 
-    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE - sizeof (struct ipc_header) - 1, num, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), channel->message.header.length - sizeof (struct ipc_header));
+    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE - sizeof (struct ipc_header) - 1, num, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), ipc_datasize(&channel->message.header));
 
 }
 

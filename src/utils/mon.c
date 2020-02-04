@@ -78,40 +78,6 @@ static void createrequest(struct channel *channel, struct request *request, unsi
 
 }
 
-static void handlefind(struct channel *channel, unsigned int source, struct request *request)
-{
-
-    struct cpio_header *header = (struct cpio_header *)((char *)request->data + request->blockoffset);
-
-    if (cpio_validate(header))
-    {
-
-        channel_request(channel, EVENT_DATA);
-        channel_append(channel, header->namesize - 1, header + 1);
-        channel_appendstring(channel, "\n");
-        channel_place(channel, source);
-
-        /* request next entry */
-        createrequest(channel, request, cpio_next(header, request->offset));
-
-    }
-
-    else
-    {
-
-        channel_close(channel);
-
-    }
-
-}
-
-static void handleread(struct channel *channel, unsigned int source, struct request *request)
-{
-
-    channel_close(channel);
-
-}
-
 static void ondone(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -124,23 +90,32 @@ static void ondone(struct channel *channel, unsigned int source, void *mdata, un
     while (channel_listenfor(channel, EVENT_DATA, &header, data))
     {
 
-        request_notifydata(request, data, header.length - sizeof (struct ipc_header));
+        request_notifydata(request, data, ipc_datasize(&header));
 
-        if (request->status != STATUS_COMPLETE)
-            continue;
-
-        switch (request->type)
+        if (request->status == STATUS_COMPLETE)
         {
 
-        case TYPE_FIND:
-            handlefind(channel, source, request);
+            struct cpio_header *header = (struct cpio_header *)((char *)request->data + request->blockoffset);
 
-            break;
+            if (cpio_validate(header))
+            {
 
-        case TYPE_READ:
-            handleread(channel, source, request);
+                channel_request(channel, EVENT_DATA);
+                channel_append(channel, header->namesize - 1, header + 1);
+                channel_appendstring(channel, "\n");
+                channel_place(channel, source);
 
-            break;
+                /* request next entry */
+                createrequest(channel, request, cpio_next(header, request->offset));
+
+            }
+
+            else
+            {
+
+                channel_close(channel);
+
+            }
 
         }
 

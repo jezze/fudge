@@ -13,7 +13,7 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct ipc_header *header, vo
     {
 
         count += ring_readall(&mailbox->ring, header, sizeof (struct ipc_header));
-        count += ring_readall(&mailbox->ring, data, header->length - sizeof (struct ipc_header));
+        count += ring_readall(&mailbox->ring, data, ipc_datasize(header));
 
     }
 
@@ -34,7 +34,7 @@ unsigned int mailbox_place(struct mailbox *mailbox, struct ipc_header *header, v
     {
 
         count += ring_writeall(&mailbox->ring, header, sizeof (struct ipc_header));
-        count += ring_writeall(&mailbox->ring, data, header->length - sizeof (struct ipc_header));
+        count += ring_writeall(&mailbox->ring, data, ipc_datasize(header));
 
     }
 
