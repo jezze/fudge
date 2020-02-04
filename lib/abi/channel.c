@@ -31,21 +31,31 @@ void channel_dispatch(struct channel *channel, struct ipc_header *header, void *
 
 }
 
-void channel_listen(struct channel *channel)
+unsigned int channel_poll(struct channel *channel, struct ipc_header *header, void *data)
 {
-
-    channel->poll = 1;
 
     while (channel->poll)
     {
 
-        struct ipc_header header;
-        char data[FUDGE_BSIZE];
-
-        if (call_pick(&header, data))
-            channel_dispatch(channel, &header, data);
+        if (call_pick(header, data))
+            return header->type;
 
     }
+
+    return 0;
+
+}
+
+void channel_listen(struct channel *channel)
+{
+
+    struct ipc_header header;
+    char data[FUDGE_BSIZE];
+
+    channel->poll = 1;
+
+    while (channel_poll(channel, &header, data))
+        channel_dispatch(channel, &header, data);
 
 }
 
@@ -55,30 +65,6 @@ void channel_listen2(struct channel *channel, void (*oninit)(struct channel *cha
     oninit(channel);
     channel_listen(channel);
     onexit(channel);
-
-}
-
-unsigned int channel_listenfor(struct channel *channel, unsigned int type, struct ipc_header *header, void *data)
-{
-
-    channel->poll = 1;
-
-    while (channel->poll)
-    {
-
-        if (call_pick(header, data))
-        {
-
-            if (header->type == type)
-                return type;
-            else
-                channel_dispatch(channel, header, data);
-
-        }
-
-    }
-
-    return 0;
 
 }
 

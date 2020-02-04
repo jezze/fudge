@@ -87,35 +87,48 @@ static void ondone(struct channel *channel, unsigned int source, void *mdata, un
 
     createrequest(channel, request, 0);
 
-    while (channel_listenfor(channel, EVENT_DATA, &header, data))
+    while (channel_poll(channel, &header, data))
     {
 
-        request_notifydata(request, data, ipc_datasize(&header));
-
-        if (request->status == STATUS_COMPLETE)
+        switch (header.type)
         {
 
-            struct cpio_header *header = (struct cpio_header *)((char *)request->data + request->blockoffset);
+        case EVENT_DATA:
+            request_notifydata(request, data, ipc_datasize(&header));
 
-            if (cpio_validate(header))
+            if (request->status == STATUS_COMPLETE)
             {
 
-                channel_request(channel, EVENT_DATA);
-                channel_append(channel, header->namesize - 1, header + 1);
-                channel_appendstring(channel, "\n");
-                channel_place(channel, source);
+                struct cpio_header *header = (struct cpio_header *)((char *)request->data + request->blockoffset);
 
-                /* request next entry */
-                createrequest(channel, request, cpio_next(header, request->offset));
+                if (cpio_validate(header))
+                {
+
+                    channel_request(channel, EVENT_DATA);
+                    channel_append(channel, header->namesize - 1, header + 1);
+                    channel_appendstring(channel, "\n");
+                    channel_place(channel, source);
+
+                    /* request next entry */
+                    createrequest(channel, request, cpio_next(header, request->offset));
+
+                }
+
+                else
+                {
+
+                    channel_close(channel);
+
+                }
 
             }
 
-            else
-            {
+            break;
 
-                channel_close(channel);
+        default:
+            channel_dispatch(channel, &header, data);
 
-            }
+            break;
 
         }
 
