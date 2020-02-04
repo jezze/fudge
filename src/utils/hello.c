@@ -4,16 +4,10 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel);
-
-}
-
-static void onempty(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
     channel_request(channel, EVENT_DATA);
     channel_appendstring(channel, "Hello world!\n");
     channel_place(channel, source);
+    channel_close(channel);
 
 }
 
@@ -33,7 +27,6 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_EMPTY, onempty);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen(&channel);
 

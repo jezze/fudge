@@ -6,18 +6,12 @@ static unsigned int idecho;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_MAIN);
-    channel_place(channel, idecho);
-    channel_close(channel);
-
-}
-
-static void onempty(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
     channel_request(channel, EVENT_FILE);
     channel_append(channel, 15, "/data/motd.txt");
     channel_place(channel, idecho);
+    channel_request(channel, EVENT_MAIN);
+    channel_place(channel, idecho);
+    channel_close(channel);
 
 }
 
@@ -62,7 +56,6 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_EMPTY, onempty);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen2(&channel, oninit, onexit);
 

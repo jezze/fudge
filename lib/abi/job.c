@@ -139,14 +139,6 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         }
 
-        else
-        {
-
-            channel_request(channel, EVENT_EMPTY);
-            channel_place(channel, p->id);
-
-        }
-
     }
 
     for (i = 0; i < n; i++)

@@ -24,37 +24,20 @@ static void replydate(struct channel *channel, unsigned int source, struct ctrl_
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel);
-
-}
-
-static void onempty(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
     struct ctrl_clocksettings settings;
-
-    if (!file_walk2(FILE_L0, "/system/clock/if:0/ctrl"))
-        return;
 
     file_open(FILE_L0);
     file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
     file_close(FILE_L0);
     replydate(channel, source, &settings);
+    channel_close(channel);
 
 }
 
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct ctrl_clocksettings settings;
-
-    if (!file_walk2(FILE_L0, mdata))
-        return;
-
-    file_open(FILE_L0);
-    file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(FILE_L0);
-    replydate(channel, source, &settings);
+    file_walk2(FILE_L0, mdata);
 
 }
 
@@ -67,6 +50,18 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
 }
 
+static void oninit(struct channel *channel)
+{
+
+    file_walk2(FILE_L0, "/system/clock/if:0/ctrl");
+
+}
+
+static void onexit(struct channel *channel)
+{
+
+}
+
 void main(void)
 {
 
@@ -74,10 +69,9 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_EMPTY, onempty);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
-    channel_listen(&channel);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 

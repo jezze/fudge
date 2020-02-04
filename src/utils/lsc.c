@@ -32,24 +32,15 @@ static void list(struct channel *channel, unsigned int source, unsigned int desc
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    list(channel, source, FILE_L0);
     channel_close(channel);
-
-}
-
-static void onempty(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    list(channel, source, FILE_PW);
 
 }
 
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, mdata))
-        return;
-
-    list(channel, source, FILE_L0);
+    file_walk2(FILE_L0, mdata);
 
 }
 
@@ -62,6 +53,18 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
 }
 
+static void oninit(struct channel *channel)
+{
+
+    file_duplicate(FILE_L0, FILE_PW);
+
+}
+
+static void onexit(struct channel *channel)
+{
+
+}
+
 void main(void)
 {
 
@@ -69,10 +72,9 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_EMPTY, onempty);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
-    channel_listen(&channel);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 
