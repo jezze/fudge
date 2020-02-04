@@ -2,17 +2,12 @@
 #include <abi.h>
 
 #define BLOCKSIZE 512
-#define TYPE_FIND 1
-#define TYPE_READ 2
-#define STATUS_IDLE 0
 #define STATUS_REQUESTING 1
 #define STATUS_COMPLETE 2
 
 struct request
 {
 
-    unsigned int type;
-    unsigned int status;
     unsigned int offset;
     unsigned int count;
     unsigned int blocksector;
@@ -26,7 +21,7 @@ struct request
 static char blocks[BLOCKSIZE * 4];
 static unsigned int qp;
 
-static void request_notifydata(struct request *request, void *data, unsigned int size)
+static unsigned int request_notifydata(struct request *request, void *data, unsigned int size)
 {
 
     unsigned int count = memory_write(request->data, BLOCKSIZE * 4, data, size, request->blockreads * BLOCKSIZE);
@@ -34,15 +29,15 @@ static void request_notifydata(struct request *request, void *data, unsigned int
     request->blockreads += count / BLOCKSIZE;
 
     if (request->blockreads == request->blockcount)
-        request->status = STATUS_COMPLETE;
+        return STATUS_COMPLETE;
+    else
+        return STATUS_REQUESTING;
 
 }
 
-static void request_init(struct request *request, unsigned int type, unsigned int offset, unsigned int count)
+static void request_init(struct request *request, unsigned int offset, unsigned int count)
 {
 
-    request->type = type;
-    request->status = STATUS_IDLE;
     request->offset = offset;
     request->count = count;
     request->blocksector = offset / BLOCKSIZE;
@@ -70,10 +65,7 @@ static void sendblockrequest(struct channel *channel, unsigned int sector, unsig
 static void createrequest(struct channel *channel, struct request *request, unsigned int offset)
 {
 
-    request_init(request, TYPE_FIND, offset, sizeof (struct cpio_header) + 1024);
-
-    request->status = STATUS_REQUESTING;
-
+    request_init(request, offset, sizeof (struct cpio_header) + 1024);
     sendblockrequest(channel, request->blocksector, request->blockcount);
 
 }
@@ -84,6 +76,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct request *request = &requests[qp];
     struct ipc_header header;
     char data[FUDGE_BSIZE];
+    unsigned int status;
 
     createrequest(channel, request, 0);
 
@@ -94,9 +87,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
         case EVENT_DATA:
-            request_notifydata(request, data, ipc_datasize(&header));
+            status = request_notifydata(request, data, ipc_datasize(&header));
 
-            if (request->status == STATUS_COMPLETE)
+            if (status == STATUS_COMPLETE)
             {
 
                 struct cpio_header *header = (struct cpio_header *)((char *)request->data + request->blockoffset);
