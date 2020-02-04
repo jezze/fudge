@@ -1,14 +1,14 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void list(struct channel *channel, unsigned int source, unsigned int descriptor)
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct record record;
 
-    file_open(descriptor);
+    file_open(FILE_L0);
 
-    while (file_readall(descriptor, &record, sizeof (struct record)))
+    while (file_readall(FILE_L0, &record, sizeof (struct record)))
     {
 
         channel_request(channel, EVENT_DATA);
@@ -20,19 +20,12 @@ static void list(struct channel *channel, unsigned int source, unsigned int desc
         channel_appendstring(channel, "\n");
         channel_place(channel, source);
 
-        if (!file_step(descriptor))
+        if (!file_step(FILE_L0))
             break;
 
     }
 
-    file_close(descriptor);
-
-}
-
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    list(channel, source, FILE_L0);
+    file_close(FILE_L0);
     channel_close(channel);
 
 }

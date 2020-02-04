@@ -28,16 +28,6 @@ static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
 
 }
 
-static void replytimestamp(struct channel *channel, unsigned int source, struct ctrl_clocksettings *settings)
-{
-
-    channel_request(channel, EVENT_DATA);
-    channel_appendvalue(channel, gettimestamp(settings), 10, 0);
-    channel_appendstring(channel, "\n");
-    channel_place(channel, source);
-
-}
-
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -46,7 +36,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     file_open(FILE_L0);
     file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
     file_close(FILE_L0);
-    replytimestamp(channel, source, &settings);
+    channel_request(channel, EVENT_DATA);
+    channel_appendvalue(channel, gettimestamp(&settings), 10, 0);
+    channel_appendstring(channel, "\n");
+    channel_place(channel, source);
     channel_close(channel);
 
 }
