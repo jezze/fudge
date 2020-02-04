@@ -85,13 +85,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-void main(void)
+static void oninit(struct channel *channel)
 {
 
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_setsignal(&channel, EVENT_MAIN, onmain);
     ctrl_setvideosettings(&settings, 320, 200, 1);
     file_walk2(FILE_L0, "/system/video/if:0");
     file_walk(FILE_L1, FILE_L0, "ctrl");
@@ -102,7 +98,22 @@ void main(void)
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
     file_close(FILE_L1);
     setup(&settings);
-    channel_listen(&channel);
+
+}
+
+static void onexit(struct channel *channel)
+{
+
+}
+
+void main(void)
+{
+
+    struct channel channel;
+
+    channel_init(&channel);
+    channel_setsignal(&channel, EVENT_MAIN, onmain);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 
