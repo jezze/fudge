@@ -20,6 +20,17 @@ unsigned int channel_write(struct channel *channel, unsigned int descriptor)
 
 }
 
+void channel_dispatch(struct channel *channel, struct ipc_header *header, void *data)
+{
+
+    if (channel->signals[header->type].callback)
+        channel->signals[header->type].callback(channel, header->source, data, ipc_datasize(header));
+
+    if (channel->signals[EVENT_ANY].callback)
+        channel->signals[EVENT_ANY].callback(channel, header->source, data, ipc_datasize(header));
+
+}
+
 void channel_listen(struct channel *channel)
 {
 
@@ -32,15 +43,7 @@ void channel_listen(struct channel *channel)
         char data[FUDGE_BSIZE];
 
         if (call_pick(&header, data))
-        {
-
-            if (channel->signals[header.type].callback)
-                channel->signals[header.type].callback(channel, header.source, data, ipc_datasize(&header));
-
-            if (channel->signals[EVENT_ANY].callback)
-                channel->signals[EVENT_ANY].callback(channel, header.source, data, ipc_datasize(&header));
-
-        }
+            channel_dispatch(channel, &header, data);
 
     }
 
@@ -68,12 +71,8 @@ unsigned int channel_listenfor(struct channel *channel, unsigned int type, struc
 
             if (header->type == type)
                 return type;
-
-            if (channel->signals[header->type].callback)
-                channel->signals[header->type].callback(channel, header->source, data, ipc_datasize(header));
-
-            if (channel->signals[EVENT_ANY].callback)
-                channel->signals[EVENT_ANY].callback(channel, header->source, data, ipc_datasize(header));
+            else
+                channel_dispatch(channel, header, data);
 
         }
 
