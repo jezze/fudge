@@ -55,6 +55,34 @@ void channel_listen2(struct channel *channel, void (*oninit)(struct channel *cha
 
 }
 
+unsigned int channel_listenfor(struct channel *channel, unsigned int type, struct ipc_header *header, void *data)
+{
+
+    channel->poll = 1;
+
+    while (channel->poll)
+    {
+
+        if (call_pick(header, data))
+        {
+
+            if (header->type == type)
+                return type;
+
+            if (channel->signals[header->type].callback)
+                channel->signals[header->type].callback(channel, header->source, data, header->length - sizeof (struct ipc_header));
+
+            if (channel->signals[EVENT_ANY].callback)
+                channel->signals[EVENT_ANY].callback(channel, header->source, data, header->length - sizeof (struct ipc_header));
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 void channel_close(struct channel *channel)
 {
 

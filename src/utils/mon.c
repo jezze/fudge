@@ -116,33 +116,33 @@ static void ondone(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     struct request *request = &requests[qp];
+    struct ipc_header header;
+    char data[FUDGE_BSIZE];
 
     createrequest(channel, request, 0);
 
-}
-
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct request *request = &requests[qp];
-
-    request_notifydata(request, mdata, msize);
-
-    if (request->status != STATUS_COMPLETE)
-        return;
-
-    switch (request->type)
+    while (channel_listenfor(channel, EVENT_DATA, &header, data))
     {
 
-    case TYPE_FIND:
-        handlefind(channel, source, request);
+        request_notifydata(request, data, header.length - sizeof (struct ipc_header));
 
-        break;
+        if (request->status != STATUS_COMPLETE)
+            continue;
 
-    case TYPE_READ:
-        handleread(channel, source, request);
+        switch (request->type)
+        {
 
-        break;
+        case TYPE_FIND:
+            handlefind(channel, source, request);
+
+            break;
+
+        case TYPE_READ:
+            handleread(channel, source, request);
+
+            break;
+
+        }
 
     }
 
@@ -181,7 +181,6 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DONE, ondone);
-    channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen2(&channel, oninit, onexit);
 
