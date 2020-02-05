@@ -6,9 +6,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     struct ctrl_clocksettings settings;
 
-    file_open(FILE_L0);
-    file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
-    file_close(FILE_L0);
+    file_open(FILE_G0);
+    file_readall(FILE_G0, &settings, sizeof (struct ctrl_clocksettings));
+    file_close(FILE_G0);
     channel_request(channel, EVENT_DATA);
     channel_appendvalue(channel, settings.year, 10, 4);
     channel_appendstring(channel, "-");
@@ -30,7 +30,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_walk2(FILE_L0, mdata);
+    file_walk2(FILE_G0, mdata);
 
 }
 
@@ -46,7 +46,7 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 static void oninit(struct channel *channel)
 {
 
-    file_walk2(FILE_L0, "/system/clock/if:0/ctrl");
+    file_walk2(FILE_G0, "/system/clock/if:0/ctrl");
 
 }
 

@@ -6,9 +6,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     struct record record;
 
-    file_open(FILE_L0);
+    file_open(FILE_G0);
 
-    while (file_readall(FILE_L0, &record, sizeof (struct record)))
+    while (file_readall(FILE_G0, &record, sizeof (struct record)))
     {
 
         channel_request(channel, EVENT_DATA);
@@ -16,12 +16,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         channel_appendstring(channel, "\n");
         channel_place(channel, source);
 
-        if (!file_step(FILE_L0))
+        if (!file_step(FILE_G0))
             break;
 
     }
 
-    file_close(FILE_L0);
+    file_close(FILE_G0);
     channel_close(channel);
 
 }
@@ -29,7 +29,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_walk2(FILE_L0, mdata);
+    file_walk2(FILE_G0, mdata);
 
 }
 
@@ -45,7 +45,7 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 static void oninit(struct channel *channel)
 {
 
-    file_duplicate(FILE_L0, FILE_PW);
+    file_duplicate(FILE_G0, FILE_PW);
 
 }
 
