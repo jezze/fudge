@@ -143,8 +143,7 @@ static unsigned int readfile(unsigned int visiblerows)
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G1, mdata))
-        return;
+    file_walk2(FILE_G1, mdata);
 
 }
 
@@ -271,6 +270,14 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
 
 }
 
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_request(channel, EVENT_WMMAP);
+    channel_write(channel, FILE_G0);
+
+}
+
 static void oninit(struct channel *channel)
 {
 
@@ -284,8 +291,6 @@ static void oninit(struct channel *channel)
         return;
 
     file_open(FILE_G0);
-    channel_request(channel, EVENT_WMMAP);
-    channel_write(channel, FILE_G0);
 
 }
 
@@ -303,6 +308,7 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_ANY, onany);
+    channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);

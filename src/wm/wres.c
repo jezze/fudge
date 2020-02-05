@@ -32,6 +32,14 @@ static void onwmclose(struct channel *channel, unsigned int source, void *mdata,
 
 }
 
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_request(channel, EVENT_WMMAP);
+    channel_write(channel, FILE_G0);
+
+}
+
 static void oninit(struct channel *channel)
 {
 
@@ -39,8 +47,6 @@ static void oninit(struct channel *channel)
         return;
 
     file_open(FILE_G0);
-    channel_request(channel, EVENT_WMMAP);
-    channel_write(channel, FILE_G0);
 
 }
 
@@ -57,6 +63,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
+    channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_WMMOUSEPRESS, onwmmousepress);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
     channel_listen2(&channel, oninit, onexit);
