@@ -357,7 +357,7 @@ static void setupvideo(void)
 
 }
 
-void render_drawline(void *data, unsigned int count, unsigned int offset)
+static void drawline(void *data, unsigned int count, unsigned int offset)
 {
 
     file_seekwriteall(FILE_G5, data, count, offset);
@@ -368,7 +368,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     render_write(source, mdata, msize);
-    render_flush(canvasdata, 0x10000, render_drawline);
+    render_flush(canvasdata, 0x10000, drawline);
     render_complete();
 
 }
