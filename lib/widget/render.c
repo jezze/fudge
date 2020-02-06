@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <abi.h>
 #include "box.h"
 #include "widget.h"
 
@@ -39,10 +38,10 @@ struct font
 static unsigned int currentw;
 static unsigned int currenth;
 static unsigned int currentbpp;
+static struct font font;
 static void (*drawables[7])(void *canvas, void *data, unsigned int line);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
-static unsigned char canvasdata[0x10000];
 static unsigned char layerdata0[0x1000];
 static unsigned char layerdata1[0x8000];
 static unsigned char layerdata2[0x1000];
@@ -51,8 +50,6 @@ static struct layer layers[LAYERS] = {
     {layerdata1, 0, 0x8000},
     {layerdata2, 0, 0x1000}
 };
-static unsigned char fontdata[0x8000];
-static struct font font = {fontdata, 0, 0, 0};
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -96,19 +93,6 @@ unsigned char mousedata16[] = {
     0x00, 0x08, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-};
-static unsigned char colormap8[] = {
-    0x00, 0x00, 0x00,
-    0x3F, 0x3F, 0x3F,
-    0x04, 0x02, 0x02,
-    0x06, 0x04, 0x04,
-    0x08, 0x06, 0x06,
-    0x08, 0x10, 0x18,
-    0x0C, 0x14, 0x1C,
-    0x28, 0x10, 0x18,
-    0x38, 0x20, 0x28,
-    0x1C, 0x18, 0x18,
-    0x3F, 0x3F, 0x3F
 };
 static unsigned int colormap32[] = {
     0xFF000000,
@@ -533,11 +517,11 @@ static void renderline(void *canvas, unsigned int line)
 
 }
 
-void render_flush(unsigned int descriptor)
+void render_flush(unsigned char *canvasdata, unsigned int size, void (*drawline)(void *data, unsigned int count, unsigned int offset))
 {
 
     unsigned int linesize = currentw * currentbpp;
-    unsigned int chunksize = 0x10000 / linesize;
+    unsigned int chunksize = size / linesize;
     unsigned int chunk = 0;
     unsigned int chunkstart = 0;
     unsigned int line;
@@ -563,7 +547,7 @@ void render_flush(unsigned int descriptor)
         if (chunk)
         {
 
-            file_seekwriteall(descriptor, canvasdata, linesize * chunk, chunkstart * linesize);
+            drawline(canvasdata, linesize * chunk, chunkstart * linesize);
 
             chunk = 0;
 
@@ -634,18 +618,6 @@ void render_complete(void)
 
 }
 
-void render_setvideo(unsigned int descriptor, unsigned int w, unsigned int h, unsigned int bpp)
-{
-
-    struct ctrl_videosettings settings;
-
-    ctrl_setvideosettings(&settings, w, h, bpp);
-    file_open(descriptor);
-    file_writeall(descriptor, &settings, sizeof (struct ctrl_videosettings));
-    file_close(descriptor);
-
-}
-
 void render_setdraw(unsigned int w, unsigned int h, unsigned int bpp)
 {
 
@@ -670,22 +642,10 @@ void render_setdraw(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
-void render_setcolormap(unsigned int descriptor)
+void render_setfont(void *data, unsigned int lineheight, unsigned int padding)
 {
 
-    file_open(descriptor);
-    file_writeall(descriptor, colormap8, 3 * 11);
-    file_close(descriptor);
-
-}
-
-void render_setfont(unsigned int descriptor, unsigned int lineheight, unsigned int padding)
-{
-
-    file_open(descriptor);
-    file_read(descriptor, font.data, 0x8000);
-    file_close(descriptor);
-
+    font.data = data;
     font.bitmapdata = pcf_getbitmapdata(font.data);
     font.bitmapalign = pcf_getbitmapalign(font.data);
     font.lineheight = lineheight;

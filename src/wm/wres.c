@@ -11,11 +11,17 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
     {
 
     case 0x01:
-        if (!file_walk2(FILE_L0, "/system/video/if:0/ctrl"))
-            break;
+        if (file_walk2(FILE_L0, "/system/video/if:0/ctrl"))
+        {
 
-        render_init();
-        render_setvideo(FILE_L0, 1920, 1080, 4);
+            struct ctrl_videosettings settings;
+
+            ctrl_setvideosettings(&settings, 1920, 1080, 4);
+            file_open(FILE_L0);
+            file_writeall(FILE_L0, &settings, sizeof (struct ctrl_videosettings));
+            file_close(FILE_L0);
+
+        }
 
         break;
 

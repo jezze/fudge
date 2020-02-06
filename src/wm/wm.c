@@ -39,6 +39,21 @@ static struct view *currentview = &views[0];
 static unsigned int padding;
 static unsigned int lineheight;
 static unsigned int steplength;
+static unsigned char fontdata[0x8000];
+static unsigned char canvasdata[0x10000];
+static unsigned char colormap8[] = {
+    0x00, 0x00, 0x00,
+    0x3F, 0x3F, 0x3F,
+    0x04, 0x02, 0x02,
+    0x06, 0x04, 0x04,
+    0x08, 0x06, 0x06,
+    0x08, 0x10, 0x18,
+    0x0C, 0x14, 0x1C,
+    0x28, 0x10, 0x18,
+    0x38, 0x20, 0x28,
+    0x1C, 0x18, 0x18,
+    0x3F, 0x3F, 0x3F
+};
 
 static void updateremote(struct remote *remote)
 {
@@ -322,17 +337,30 @@ static void setupremotes(void)
 static void setupvideo(void)
 {
 
-    render_init();
+    struct ctrl_videosettings settings;
+
+    ctrl_setvideosettings(&settings, 1024, 768, 4);
 
     if (!file_walk(FILE_L0, FILE_G6, "ctrl"))
         return;
 
-    render_setvideo(FILE_L0, 1024, 768, 4);
+    file_open(FILE_L0);
+    file_writeall(FILE_L0, &settings, sizeof (struct ctrl_videosettings));
+    file_close(FILE_L0);
 
     if (!file_walk(FILE_L0, FILE_G6, "colormap"))
         return;
 
-    render_setcolormap(FILE_L0);
+    file_open(FILE_L0);
+    file_writeall(FILE_L0, colormap8, 3 * 11);
+    file_close(FILE_L0);
+
+}
+
+void render_drawline(void *data, unsigned int count, unsigned int offset)
+{
+
+    file_seekwriteall(FILE_G5, data, count, offset);
 
 }
 
@@ -340,7 +368,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     render_write(source, mdata, msize);
-    render_flush(FILE_G5);
+    render_flush(canvasdata, 0x10000, render_drawline);
     render_complete();
 
 }
@@ -748,29 +776,30 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
 
     case 0:
         file_walk2(FILE_L0, "/data/ter-112n.pcf");
-        render_setfont(FILE_L0, lineheight, padding);
 
         break;
 
     case 1:
         file_walk2(FILE_L0, "/data/ter-114n.pcf");
-        render_setfont(FILE_L0, lineheight, padding);
 
         break;
 
     case 2:
         file_walk2(FILE_L0, "/data/ter-116n.pcf");
-        render_setfont(FILE_L0, lineheight, padding);
 
         break;
 
     default:
         file_walk2(FILE_L0, "/data/ter-118n.pcf");
-        render_setfont(FILE_L0, lineheight, padding);
 
         break;
 
     }
+
+    file_open(FILE_L0);
+    file_read(FILE_L0, fontdata, 0x8000);
+    file_close(FILE_L0);
+    render_setfont(fontdata, lineheight, padding);
 
     wmconfigure.x = 0;
     wmconfigure.y = 0;
@@ -943,6 +972,7 @@ static void oninit(struct channel *channel)
     ring_init(&output, FUDGE_BSIZE, outputdata);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
+    render_init();
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
