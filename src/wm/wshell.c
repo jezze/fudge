@@ -355,6 +355,9 @@ static void onwmhide(struct channel *channel, unsigned int source, void *mdata, 
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    channel_request(channel, EVENT_MAIN);
+    channel_place(channel, idcomplete);
+    channel_place(channel, idslang);
     channel_request(channel, EVENT_WMUNMAP);
     channel_place(channel, source);
     channel_close(channel);
@@ -415,9 +418,6 @@ static void oninit(struct channel *channel)
 static void onexit(struct channel *channel)
 {
 
-    channel_request(channel, EVENT_MAIN);
-    channel_place(channel, idcomplete);
-    channel_place(channel, idslang);
     file_close(FILE_G0);
 
 }
