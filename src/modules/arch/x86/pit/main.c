@@ -39,16 +39,15 @@ static unsigned int jiffies;
 void pit_wait(unsigned int ms)
 {
 
-    unsigned short x = 1193 * ms;
+    unsigned short d = ms * (FREQUENCY / 1000);
 
     io_outb(io + REGISTERCOMMAND, COMMANDCHANNEL0 | COMMANDBOTH | COMMANDMODE0);
-    io_outb(io + REGISTERCHANNEL0, x >> 8);
-    io_outb(io + REGISTERCHANNEL0, x);
-    io_outb(io + REGISTERCOMMAND, 0xE2);
+    io_outb(io + REGISTERCHANNEL0, d >> 8);
+    io_outb(io + REGISTERCHANNEL0, d);
+    io_outb(io + REGISTERCOMMAND, COMMANDREADBACK | 0x22);
 
     while (!(io_inb(io + REGISTERCHANNEL0) & (1 << 7)));
 
-    /* Return old values */
     io_outb(io + REGISTERCOMMAND, COMMANDCHANNEL0 | COMMANDBOTH | COMMANDMODE3);
     io_outb(io + REGISTERCHANNEL0, divisor);
     io_outb(io + REGISTERCHANNEL0, divisor >> 8);
@@ -94,7 +93,7 @@ static void driver_reset(unsigned int id)
 
     io = platform_getbase(id);
 
-    io_outb(io + REGISTERCOMMAND, COMMANDCHANNEL0 | COMMANDBOTH | COMMANDMODE3 | COMMANDBINARY);
+    io_outb(io + REGISTERCOMMAND, COMMANDCHANNEL0 | COMMANDBOTH | COMMANDMODE3);
     io_outb(io + REGISTERCHANNEL0, divisor);
     io_outb(io + REGISTERCHANNEL0, divisor >> 8);
 
