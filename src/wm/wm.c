@@ -341,14 +341,14 @@ static void setupvideo(void)
 
     ctrl_setvideosettings(&settings, 1024, 768, 4);
 
-    if (!file_walk(FILE_L0, FILE_G6, "ctrl"))
+    if (!file_walk(FILE_L0, FILE_G4, "ctrl"))
         return;
 
     file_open(FILE_L0);
     file_writeall(FILE_L0, &settings, sizeof (struct ctrl_videosettings));
     file_close(FILE_L0);
 
-    if (!file_walk(FILE_L0, FILE_G6, "colormap"))
+    if (!file_walk(FILE_L0, FILE_G4, "colormap"))
         return;
 
     file_open(FILE_L0);
@@ -360,7 +360,7 @@ static void setupvideo(void)
 static void drawline(void *data, unsigned int count, unsigned int offset)
 {
 
-    file_seekwriteall(FILE_G5, data, count, offset);
+    file_seekwriteall(FILE_G6, data, count, offset);
 
 }
 
@@ -376,17 +376,17 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G6, mdata))
+    if (!file_walk2(FILE_G4, mdata))
         return;
 
-    if (!file_walk(FILE_G4, FILE_G6, "event"))
+    if (!file_walk(FILE_G5, FILE_G4, "event"))
         return;
 
-    if (!file_walk(FILE_G5, FILE_G6, "data"))
+    if (!file_walk(FILE_G6, FILE_G4, "data"))
         return;
 
-    file_open(FILE_G4);
     file_open(FILE_G5);
+    file_open(FILE_G6);
     setupvideo();
     setupviews();
     setupremotes();
@@ -984,6 +984,9 @@ static void oninit(struct channel *channel)
         return;
 
     if (!file_walk2(FILE_G3, "/system/mouse/event"))
+        return;
+
+    if (!file_walk2(FILE_G4, "/system/video/if:0"))
         return;
 
     file_open(FILE_G0);
