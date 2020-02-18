@@ -1,5 +1,5 @@
 M:=\
-    $(DIR_SRC)/modules/arch/x86/ata/ata.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/ata/ata.ko \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/ata/main.o \

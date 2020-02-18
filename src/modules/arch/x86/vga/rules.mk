@@ -1,5 +1,5 @@
 M:=\
-    $(DIR_SRC)/modules/arch/x86/vga/vga.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/vga/vga.ko \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/vga/main.o \

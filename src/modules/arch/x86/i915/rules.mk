@@ -1,5 +1,5 @@
 M:=\
-    $(DIR_SRC)/modules/arch/x86/i915/i915.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/i915/i915.ko \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/i915/main.o \

@@ -1,5 +1,5 @@
 M:=\
-    $(DIR_SRC)/modules/arch/x86/rtc/rtc.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/rtc/rtc.ko \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/rtc/main.o \

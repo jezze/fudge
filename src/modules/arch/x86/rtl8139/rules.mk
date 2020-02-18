@@ -1,5 +1,5 @@
 M:=\
-    $(DIR_SRC)/modules/arch/x86/rtl8139/rtl8139.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/rtl8139/rtl8139.ko \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/rtl8139/main.o \

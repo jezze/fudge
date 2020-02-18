@@ -21,17 +21,3 @@ elfload < /mod/icmp.ko
 elfload < /mod/info.ko
 elfload < /mod/udp.ko
 elfload < /mod/tcp.ko
-elfload < /mod/con.ko
-elfload < /mod/con.ko.0
-elfload < /mod/con.ko.1
-elfload < /mod/con.ko.2
-elfload < /mod/con.ko.3
-elfload < /mod/con.ko.4
-elfload < /mod/con.ko.5
-elfload < /mod/con.ko.6
-elfload < /mod/con.ko.7
-elfload < /mod/part.ko
-elfload < /mod/part.ko.0
-elfload < /mod/part.ko.1
-elfload < /mod/part.ko.2
-elfload < /mod/part.ko.3

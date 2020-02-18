@@ -1,5 +1,5 @@
 M:=\
-    $(DIR_SRC)/modules/arch/x86/bga/bga.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/bga/bga.ko \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/bga/main.o \

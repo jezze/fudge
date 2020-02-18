@@ -1,5 +1,5 @@
 M:=\
-    $(DIR_SRC)/modules/arch/x86/usb/ehci.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/usb/ehci.ko \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/usb/ehci.o \
@@ -10,7 +10,7 @@ L:=\
 include $(DIR_MK)/kmod.mk
 
 M:=\
-    $(DIR_SRC)/modules/arch/x86/usb/ohci.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/usb/ohci.ko \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/usb/ohci.o \
@@ -21,7 +21,7 @@ L:=\
 include $(DIR_MK)/kmod.mk
 
 M:=\
-    $(DIR_SRC)/modules/arch/x86/usb/uhci.ko.0 \
+    $(DIR_SRC)/modules/arch/x86/usb/uhci.ko \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/usb/uhci.o \
