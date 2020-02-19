@@ -117,14 +117,14 @@ void channel_request(struct channel *channel, unsigned int type)
 void channel_append(struct channel *channel, unsigned int count, void *buffer)
 {
 
-    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE - sizeof (struct ipc_header) - 1, buffer, count, ipc_datasize(&channel->message.header));
+    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE, buffer, count, ipc_datasize(&channel->message.header));
 
 }
 
 void channel_appendstring(struct channel *channel, char *string)
 {
 
-    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE - sizeof (struct ipc_header) - 1, string, ascii_length(string), ipc_datasize(&channel->message.header));
+    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE, string, ascii_length(string), ipc_datasize(&channel->message.header));
 
 }
 
@@ -133,7 +133,7 @@ void channel_appendvalue(struct channel *channel, int value, unsigned int base, 
 
     char num[FUDGE_NSIZE];
 
-    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE - sizeof (struct ipc_header) - 1, num, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), ipc_datasize(&channel->message.header));
+    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), ipc_datasize(&channel->message.header));
 
 }
 
