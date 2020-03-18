@@ -4,7 +4,7 @@ CC=$(TARGET)-cc -Wall -Werror -msoft-float -ffreestanding -fno-asynchronous-unwi
 NM=$(TARGET)-nm -g
 PP=$(TARGET)-cc -Wall -Werror -nostdinc -std=c89 -pedantic -E -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) -o
 DP=$(TARGET)-cc -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) -MM -MT
-LD_BIN=$(TARGET)-ld -static -nostdlib -o
+LD_BIN=$(TARGET)-ld -s -static -nostdlib -o
 LD_KBIN=$(TARGET)-ld -static -nostdlib -T$(DIR_LIB)/$(LOADER)/linker.ld -o
 LD_KMOD=$(TARGET)-ld -static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r -o
 
