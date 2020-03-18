@@ -1,7 +1,7 @@
 B:=\
     $(DIR_SRC)/kernel/$(KERNEL) \
 
-M:=\
+N:=\
     $(DIR_SRC)/kernel/$(KERNEL).map \
 
 O:=\

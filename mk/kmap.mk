@@ -1,5 +1,5 @@
-$(M): $(B)
+$(N): $(B)
 	@echo NM $@
 	@$(NM) $^ > $@
 
-KMAP:=$(KMAP) $(M)
+KMAP:=$(KMAP) $(N)
