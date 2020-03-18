@@ -46,8 +46,9 @@ $(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@mkdir -p $@/home
 	@mkdir -p $@/lib
 	@cp $(LIB) $@/lib
+	@mkdir -p $@/map
+	@cp $(KMAP) $@/map
 	@mkdir -p $@/mod
-	@cp $(KMAP) $@/mod
 	@cp $(KMOD) $@/mod
 	@mkdir -p $@/mount
 	@mkdir -p $@/mount/0
