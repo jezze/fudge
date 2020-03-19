@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/arch/x86/pit/pit.ko \
 
+N:=\
+    $(DIR_SRC)/modules/arch/x86/pit/pit.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/arch/x86/pit/main.o \
 

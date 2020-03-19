@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/console/console.ko \
 
+N:=\
+    $(DIR_SRC)/modules/console/console.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/console/main.o \
 

@@ -3,5 +3,6 @@ $(B): $(O) $(L)
 	@$(LD_KBIN) $@ $^
 
 KBIN:=$(KBIN) $(B)
+KMAP:=$(KMAP) $(N)
 OBJ:=$(OBJ) $(O)
 DEP:=$(DEP) $(O:.o=.d)

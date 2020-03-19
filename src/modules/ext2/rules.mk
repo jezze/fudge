@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/ext2/ext2.ko \
 
+N:=\
+    $(DIR_SRC)/modules/ext2/ext2.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/ext2/main.o \
     $(DIR_SRC)/modules/ext2/filesystem.o \

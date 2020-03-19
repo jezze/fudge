@@ -18,3 +18,8 @@ LD_KMOD=$(TARGET)-ld -static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r -o
 %.o: %.s
 	@echo AS $@
 	@$(AS) $@ $^
+
+%.map: %
+	@echo NM $@
+	@$(NM) $^ > $@
+

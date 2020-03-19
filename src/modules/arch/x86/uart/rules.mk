@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/arch/x86/uart/uart.ko \
 
+N:=\
+    $(DIR_SRC)/modules/arch/x86/uart/uart.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/arch/x86/uart/main.o \
 

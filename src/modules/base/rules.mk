@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/base/base.ko \
 
+N:=\
+    $(DIR_SRC)/modules/base/base.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/base/main.o \
 

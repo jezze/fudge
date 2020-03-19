@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/arp/arp.ko \
 
+N:=\
+    $(DIR_SRC)/modules/arp/arp.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/arp/main.o \
 

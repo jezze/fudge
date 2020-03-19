@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/tcp/tcp.ko \
 
+N:=\
+    $(DIR_SRC)/modules/tcp/tcp.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/tcp/main.o \
 

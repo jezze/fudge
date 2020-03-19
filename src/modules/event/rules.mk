@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/event/event.ko \
 
+N:=\
+    $(DIR_SRC)/modules/event/event.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/event/main.o \
 

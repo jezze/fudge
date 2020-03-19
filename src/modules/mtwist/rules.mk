@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/mtwist/mtwist.ko \
 
+N:=\
+    $(DIR_SRC)/modules/mtwist/mtwist.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/mtwist/main.o \
 

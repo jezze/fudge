@@ -23,4 +23,3 @@ L:=\
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
 include $(DIR_MK)/kbin.mk
-include $(DIR_MK)/kmap.mk

@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/mouse/mouse.ko \
 
+N:=\
+    $(DIR_SRC)/modules/mouse/mouse.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/mouse/main.o \
 

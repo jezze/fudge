@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/arch/x86/virtio/virtio-network.ko \
 
+N:=\
+    $(DIR_SRC)/modules/arch/x86/virtio/virtio-network.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/arch/x86/virtio/network.o \
 
@@ -11,6 +14,9 @@ include $(DIR_MK)/kmod.mk
 
 M:=\
     $(DIR_SRC)/modules/arch/x86/virtio/virtio-block.ko \
+
+N:=\
+    $(DIR_SRC)/modules/arch/x86/virtio/virtio-block.ko.map \
 
 O:=\
     $(DIR_SRC)/modules/arch/x86/virtio/block.o \

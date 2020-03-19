@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/arch/x86/vga/vga.ko \
 
+N:=\
+    $(DIR_SRC)/modules/arch/x86/vga/vga.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/arch/x86/vga/main.o \
     $(DIR_SRC)/modules/arch/x86/vga/registers.o \

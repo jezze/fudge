@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/timer/timer.ko \
 
+N:=\
+    $(DIR_SRC)/modules/timer/timer.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/timer/main.o \
 

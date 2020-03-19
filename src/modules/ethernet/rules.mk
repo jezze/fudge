@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/ethernet/ethernet.ko \
 
+N:=\
+    $(DIR_SRC)/modules/ethernet/ethernet.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/ethernet/main.o \
 

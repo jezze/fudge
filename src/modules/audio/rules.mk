@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/audio/audio.ko \
 
+N:=\
+    $(DIR_SRC)/modules/audio/audio.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/audio/main.o \
 

@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/log/log.ko \
 
+N:=\
+    $(DIR_SRC)/modules/log/log.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/log/main.o \
 

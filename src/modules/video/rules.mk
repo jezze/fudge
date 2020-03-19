@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/video/video.ko \
 
+N:=\
+    $(DIR_SRC)/modules/video/video.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/video/main.o \
 

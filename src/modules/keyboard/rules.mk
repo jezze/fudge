@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/keyboard/keyboard.ko \
 
+N:=\
+    $(DIR_SRC)/modules/keyboard/keyboard.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/keyboard/main.o \
 

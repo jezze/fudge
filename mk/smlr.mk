@@ -30,6 +30,10 @@ NASM=nasm -f elf -o
 	@echo AS $@
 	@$(AS) $@ $^
 
+%.map: %
+	@echo NM $@
+	@$(NM) $^ > $@
+
 %.o: %.asm
 	@echo NASM $@
 	@$(NASM) $@ $^

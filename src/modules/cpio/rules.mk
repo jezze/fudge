@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/cpio/cpio.ko \
 
+N:=\
+    $(DIR_SRC)/modules/cpio/cpio.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/cpio/main.o \
 

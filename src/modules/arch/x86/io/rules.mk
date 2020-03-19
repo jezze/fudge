@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/arch/x86/io/io.ko \
 
+N:=\
+    $(DIR_SRC)/modules/arch/x86/io/io.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/arch/x86/io/io.o \
 

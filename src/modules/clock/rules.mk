@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/clock/clock.ko \
 
+N:=\
+    $(DIR_SRC)/modules/clock/clock.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/clock/main.o \
 

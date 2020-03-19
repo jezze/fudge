@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/arch/x86/pci/pci.ko \
 
+N:=\
+    $(DIR_SRC)/modules/arch/x86/pci/pci.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/arch/x86/pci/main.o \
 

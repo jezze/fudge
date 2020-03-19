@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/arch/x86/rtc/rtc.ko \
 
+N:=\
+    $(DIR_SRC)/modules/arch/x86/rtc/rtc.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/arch/x86/rtc/main.o \
 

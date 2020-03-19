@@ -1,6 +1,9 @@
 M:=\
     $(DIR_SRC)/modules/ipv4/ipv4.ko \
 
+N:=\
+    $(DIR_SRC)/modules/ipv4/ipv4.ko.map \
+
 O:=\
     $(DIR_SRC)/modules/ipv4/main.o \
 
