@@ -4,6 +4,7 @@
 #define BLOCKSIZE 512
 #define STATUS_REQUESTING 1
 #define STATUS_COMPLETE 2
+#define ERROR 0xFFFFFFFF
 
 struct request
 {
@@ -70,7 +71,7 @@ static void createrequest(struct channel *channel, struct request *request, unsi
 
 }
 
-static void walk(struct channel *channel, unsigned int source, char *path)
+static unsigned int walk(struct channel *channel, unsigned int source, char *path)
 {
 
     struct request *request = &requests[qp];
@@ -98,7 +99,7 @@ static void walk(struct channel *channel, unsigned int source, char *path)
                 {
 
                     if (memory_match("TRAILER!!!", header + 1, 11))
-                        return;
+                        break;
 
                 }
 
@@ -113,7 +114,7 @@ static void walk(struct channel *channel, unsigned int source, char *path)
                         channel_appendstring(channel, "\n");
                         channel_place(channel, source);
 
-                        return;
+                        return request->offset;
 
                     }
 
@@ -129,12 +130,22 @@ static void walk(struct channel *channel, unsigned int source, char *path)
 
     }
 
+    return ERROR;
+
 }
 
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    walk(channel, source, "build/bin/hello");
+    unsigned int offset = walk(channel, source, "build/data/help.txt");
+
+    if (offset != ERROR)
+    {
+
+        /* Read some stuff */
+
+    }
+
     channel_close(channel);
 
 }
