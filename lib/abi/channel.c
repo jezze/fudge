@@ -46,6 +46,23 @@ unsigned int channel_poll(struct channel *channel, struct ipc_header *header, vo
 
 }
 
+unsigned int channel_apoll(struct channel *channel, struct ipc_header *header, void *data, unsigned int type)
+{
+
+    while (channel_poll(channel, header, data))
+    {
+
+        if (header->type == type)
+            return type;
+
+        channel_dispatch(channel, header, data);
+
+    }
+
+    return 0;
+
+}
+
 void channel_listen(struct channel *channel)
 {
 

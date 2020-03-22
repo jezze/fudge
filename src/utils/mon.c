@@ -76,52 +76,39 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct request *request = &requests[qp];
     struct ipc_header header;
     char data[FUDGE_BSIZE];
-    unsigned int status;
 
     createrequest(channel, request, 0);
 
-    while (channel_poll(channel, &header, data))
+    while (channel_apoll(channel, &header, data, EVENT_DATA))
     {
 
-        switch (header.type)
+        unsigned int status = request_notifydata(request, data, ipc_datasize(&header));
+
+        if (status == STATUS_COMPLETE)
         {
 
-        case EVENT_DATA:
-            status = request_notifydata(request, data, ipc_datasize(&header));
+            struct cpio_header *header = (struct cpio_header *)((char *)request->data + request->blockoffset);
 
-            if (status == STATUS_COMPLETE)
+            if (cpio_validate(header))
             {
 
-                struct cpio_header *header = (struct cpio_header *)((char *)request->data + request->blockoffset);
+                channel_request(channel, EVENT_DATA);
+                channel_append(channel, header->namesize - 1, header + 1);
+                channel_appendstring(channel, "\n");
+                channel_place(channel, source);
 
-                if (cpio_validate(header))
-                {
-
-                    channel_request(channel, EVENT_DATA);
-                    channel_append(channel, header->namesize - 1, header + 1);
-                    channel_appendstring(channel, "\n");
-                    channel_place(channel, source);
-
-                    /* request next entry */
-                    createrequest(channel, request, cpio_next(header, request->offset));
-
-                }
-
-                else
-                {
-
-                    channel_close(channel);
-
-                }
+                /* request next entry */
+                createrequest(channel, request, cpio_next(header, request->offset));
 
             }
 
-            break;
+            /* Remove this later */
+            else
+            {
 
-        default:
-            channel_dispatch(channel, &header, data);
+                channel_close(channel);
 
-            break;
+            }
 
         }
 
