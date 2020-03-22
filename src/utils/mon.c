@@ -73,16 +73,16 @@ static void sendblockrequest(struct channel *channel, unsigned int sector, unsig
 static unsigned int sendrequest(struct channel *channel, struct request *request, unsigned int offset, unsigned int count)
 {
 
-    struct ipc_header iheader;
+    struct ipc_header header;
     char data[FUDGE_BSIZE];
 
     request_init(request, offset, count);
     sendblockrequest(channel, request->blocksector, request->blockcount);
 
-    while (channel_apoll(channel, &iheader, data, EVENT_DATA))
+    while (channel_apoll(channel, &header, data, EVENT_DATA))
     {
 
-        unsigned int status = request_notifydata(request, data, ipc_datasize(&iheader));
+        unsigned int status = request_notifydata(request, data, ipc_datasize(&header));
 
         if (status == STATUS_COMPLETE)
             return STATUS_COMPLETE;
