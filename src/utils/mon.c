@@ -70,13 +70,13 @@ static void sendblockrequest(struct channel *channel, unsigned int sector, unsig
 
 }
 
-static unsigned int sendrequest(struct channel *channel, struct request *request, unsigned int offset)
+static unsigned int sendrequest(struct channel *channel, struct request *request, unsigned int offset, unsigned int count)
 {
 
     struct ipc_header iheader;
     char data[FUDGE_BSIZE];
 
-    request_init(request, offset, sizeof (struct cpio_header) + 1024);
+    request_init(request, offset, count);
     sendblockrequest(channel, request->blocksector, request->blockcount);
 
     while (channel_apoll(channel, &iheader, data, EVENT_DATA))
@@ -99,7 +99,7 @@ static unsigned int walk(struct channel *channel, unsigned int source, struct re
     unsigned int length = ascii_length(path) + 1;
     unsigned int offset = 0;
 
-    while (sendrequest(channel, request, offset))
+    while (sendrequest(channel, request, offset, sizeof (struct cpio_header) + 1024))
     {
 
         struct cpio_header *header = getdata(request);
@@ -140,7 +140,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (offset != ERROR)
     {
 
-        if (sendrequest(channel, request, offset) == STATUS_COMPLETE)
+        if (sendrequest(channel, request, offset, sizeof (struct cpio_header) + 1024) == STATUS_COMPLETE)
         {
 
             struct cpio_header *header = getdata(request);
