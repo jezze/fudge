@@ -36,6 +36,13 @@ static unsigned int request_notifydata(struct request *request, void *data, unsi
 
 }
 
+static void *getdata(struct request *request)
+{
+
+    return ((char *)request->data + request->blockoffset);
+
+}
+
 static void request_init(struct request *request, unsigned int offset, unsigned int count)
 {
 
@@ -63,24 +70,14 @@ static void sendblockrequest(struct channel *channel, unsigned int sector, unsig
 
 }
 
-static void createrequest(struct channel *channel, struct request *request, unsigned int offset)
+static unsigned int sendrequest(struct channel *channel, struct request *request, unsigned int offset)
 {
+
+    struct ipc_header iheader;
+    char data[FUDGE_BSIZE];
 
     request_init(request, offset, sizeof (struct cpio_header) + 1024);
     sendblockrequest(channel, request->blocksector, request->blockcount);
-
-}
-
-static unsigned int walk(struct channel *channel, unsigned int source, char *path)
-{
-
-    struct request *request = &requests[qp];
-    struct ipc_header iheader;
-    char data[FUDGE_BSIZE];
-    unsigned int offset = 0;
-    unsigned int length = ascii_length(path) + 1;
-
-    createrequest(channel, request, offset);
 
     while (channel_apoll(channel, &iheader, data, EVENT_DATA))
     {
@@ -88,45 +85,45 @@ static unsigned int walk(struct channel *channel, unsigned int source, char *pat
         unsigned int status = request_notifydata(request, data, ipc_datasize(&iheader));
 
         if (status == STATUS_COMPLETE)
+            return STATUS_COMPLETE;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int walk(struct channel *channel, unsigned int source, struct request *request, char *path)
+{
+
+    unsigned int length = ascii_length(path) + 1;
+    unsigned int offset = 0;
+
+    while (sendrequest(channel, request, offset))
+    {
+
+        struct cpio_header *header = getdata(request);
+
+        if (!cpio_validate(header))
+            break;
+
+        if (header->namesize == 11)
         {
 
-            struct cpio_header *header = (struct cpio_header *)((char *)request->data + request->blockoffset);
-
-            if (cpio_validate(header))
-            {
-
-                if (header->namesize == 11)
-                {
-
-                    if (memory_match("TRAILER!!!", header + 1, 11))
-                        break;
-
-                }
-
-                if (header->namesize == length)
-                {
-
-                    if (memory_match(path, header + 1, length))
-                    {
-
-                        channel_request(channel, EVENT_DATA);
-                        channel_append(channel, header->namesize - 1, header + 1);
-                        channel_appendstring(channel, "\n");
-                        channel_place(channel, source);
-
-                        return request->offset;
-
-                    }
-
-                }
-
-                offset = cpio_next(header, request->offset);
-
-                createrequest(channel, request, offset);
-
-            }
+            if (memory_match("TRAILER!!!", header + 1, 11))
+                break;
 
         }
+
+        if (header->namesize == length)
+        {
+
+            if (memory_match(path, header + 1, length))
+                return request->offset;
+
+        }
+
+        offset = cpio_next(header, request->offset);
 
     }
 
@@ -137,12 +134,28 @@ static unsigned int walk(struct channel *channel, unsigned int source, char *pat
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int offset = walk(channel, source, "build/data/help.txt");
+    struct request *request = &requests[qp];
+    unsigned int offset = walk(channel, source, request, "build/data/help.txt");
 
     if (offset != ERROR)
     {
 
-        /* Read some stuff */
+        if (sendrequest(channel, request, offset) == STATUS_COMPLETE)
+        {
+
+            struct cpio_header *header = getdata(request);
+
+            if (cpio_validate(header))
+            {
+
+                channel_request(channel, EVENT_DATA);
+                channel_append(channel, header->namesize - 1, header + 1);
+                channel_appendstring(channel, "\n");
+                channel_place(channel, source);
+
+            }
+
+        }
 
     }
 
