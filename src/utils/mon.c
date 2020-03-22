@@ -2,8 +2,6 @@
 #include <abi.h>
 
 #define BLOCKSIZE 512
-#define STATUS_REQUESTING 1
-#define STATUS_COMPLETE 2
 #define ERROR 0xFFFFFFFF
 
 struct request
@@ -15,33 +13,10 @@ struct request
     unsigned int blockoffset;
     unsigned int blockcount;
     unsigned int blockreads;
-    void *data;
 
 } requests[8];
 
 static char blocks[BLOCKSIZE * 4];
-static unsigned int qp;
-
-static unsigned int request_notifydata(struct request *request, void *data, unsigned int size)
-{
-
-    unsigned int count = memory_write(request->data, BLOCKSIZE * 4, data, size, request->blockreads * BLOCKSIZE);
-
-    request->blockreads += count / BLOCKSIZE;
-
-    if (request->blockreads == request->blockcount)
-        return STATUS_COMPLETE;
-    else
-        return STATUS_REQUESTING;
-
-}
-
-static void *getdata(struct request *request)
-{
-
-    return ((char *)request->data + request->blockoffset);
-
-}
 
 static void request_init(struct request *request, unsigned int offset, unsigned int count)
 {
@@ -52,44 +27,46 @@ static void request_init(struct request *request, unsigned int offset, unsigned 
     request->blockoffset = offset % BLOCKSIZE;
     request->blockcount = ((BLOCKSIZE - 1) + request->blockoffset + request->count) / BLOCKSIZE;
     request->blockreads = 0;
-    request->data = blocks;
 
 }
 
-static void sendblockrequest(struct channel *channel, unsigned int sector, unsigned int count)
+static unsigned int request_send(struct request *request, struct channel *channel, unsigned int offset, unsigned int count)
 {
 
     struct event_blockrequest blockrequest;
+    struct ipc_header header;
+    char data[FUDGE_BSIZE];
 
-    blockrequest.sector = sector;
-    blockrequest.count = count;
+    request_init(request, offset, count);
+
+    blockrequest.sector = request->blocksector;
+    blockrequest.count = request->blockcount;
 
     channel_request(channel, EVENT_BLOCKREQUEST);
     channel_append(channel, sizeof (struct event_blockrequest), &blockrequest);
     channel_write(channel, FILE_G0);
 
-}
-
-static unsigned int sendrequest(struct channel *channel, struct request *request, unsigned int offset, unsigned int count)
-{
-
-    struct ipc_header header;
-    char data[FUDGE_BSIZE];
-
-    request_init(request, offset, count);
-    sendblockrequest(channel, request->blocksector, request->blockcount);
-
     while (channel_apoll(channel, &header, data, EVENT_DATA))
     {
 
-        unsigned int status = request_notifydata(request, data, ipc_datasize(&header));
+        unsigned int size = ipc_datasize(&header);
+        unsigned int count = memory_write(blocks, BLOCKSIZE * 4, data, size, request->blockreads * BLOCKSIZE);
 
-        if (status == STATUS_COMPLETE)
-            return STATUS_COMPLETE;
+        request->blockreads += count / BLOCKSIZE;
+
+        if (request->blockreads == request->blockcount)
+            return request->blockcount;
 
     }
 
     return 0;
+
+}
+
+static void *getdata(struct request *request)
+{
+
+    return ((char *)blocks + request->blockoffset);
 
 }
 
@@ -99,7 +76,7 @@ static unsigned int walk(struct channel *channel, unsigned int source, struct re
     unsigned int length = ascii_length(path) + 1;
     unsigned int offset = 0;
 
-    while (sendrequest(channel, request, offset, sizeof (struct cpio_header) + 1024))
+    while (request_send(request, channel, offset, sizeof (struct cpio_header) + 1024))
     {
 
         struct cpio_header *header = getdata(request);
@@ -134,13 +111,13 @@ static unsigned int walk(struct channel *channel, unsigned int source, struct re
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct request *request = &requests[qp];
+    struct request *request = &requests[0];
     unsigned int offset = walk(channel, source, request, "build/data/help.txt");
 
     if (offset != ERROR)
     {
 
-        if (sendrequest(channel, request, offset, sizeof (struct cpio_header) + 1024) == STATUS_COMPLETE)
+        if (request_send(request, channel, offset, sizeof (struct cpio_header) + 1024))
         {
 
             struct cpio_header *header = getdata(request);
