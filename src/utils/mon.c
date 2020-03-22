@@ -55,7 +55,7 @@ static unsigned int request_send(struct request *request, struct channel *channe
         request->blockreads += count / BLOCKSIZE;
 
         if (request->blockreads == request->blockcount)
-            return request->blockcount;
+            return request->count;
 
     }
 
@@ -113,6 +113,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     struct request *request = &requests[0];
     unsigned int offset = walk(channel, source, request, "build/data/help.txt");
+    unsigned int count;
 
     if (offset != ERROR)
     {
@@ -125,10 +126,16 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             if (cpio_validate(header))
             {
 
-                channel_request(channel, EVENT_DATA);
-                channel_append(channel, header->namesize - 1, header + 1);
-                channel_appendstring(channel, "\n");
-                channel_place(channel, source);
+                if ((count = request_send(request, channel, offset + cpio_filedata(header), cpio_filesize(header))))
+                {
+
+                    void *data = getdata(request);
+
+                    channel_request(channel, EVENT_DATA);
+                    channel_append(channel, count, data);
+                    channel_place(channel, source);
+
+                }
 
             }
 
