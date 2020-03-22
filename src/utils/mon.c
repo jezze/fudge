@@ -70,19 +70,21 @@ static void createrequest(struct channel *channel, struct request *request, unsi
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void walk(struct channel *channel, unsigned int source, char *path)
 {
 
     struct request *request = &requests[qp];
-    struct ipc_header header;
+    struct ipc_header iheader;
     char data[FUDGE_BSIZE];
+    unsigned int offset = 0;
+    unsigned int length = ascii_length(path) + 1;
 
-    createrequest(channel, request, 0);
+    createrequest(channel, request, offset);
 
-    while (channel_apoll(channel, &header, data, EVENT_DATA))
+    while (channel_apoll(channel, &iheader, data, EVENT_DATA))
     {
 
-        unsigned int status = request_notifydata(request, data, ipc_datasize(&header));
+        unsigned int status = request_notifydata(request, data, ipc_datasize(&iheader));
 
         if (status == STATUS_COMPLETE)
         {
@@ -92,27 +94,48 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             if (cpio_validate(header))
             {
 
-                channel_request(channel, EVENT_DATA);
-                channel_append(channel, header->namesize - 1, header + 1);
-                channel_appendstring(channel, "\n");
-                channel_place(channel, source);
+                if (header->namesize == 11)
+                {
 
-                /* request next entry */
-                createrequest(channel, request, cpio_next(header, request->offset));
+                    if (memory_match("TRAILER!!!", header + 1, 11))
+                        return;
 
-            }
+                }
 
-            /* Remove this later */
-            else
-            {
+                if (header->namesize == length)
+                {
 
-                channel_close(channel);
+                    if (memory_match(path, header + 1, length))
+                    {
+
+                        channel_request(channel, EVENT_DATA);
+                        channel_append(channel, header->namesize - 1, header + 1);
+                        channel_appendstring(channel, "\n");
+                        channel_place(channel, source);
+
+                        return;
+
+                    }
+
+                }
+
+                offset = cpio_next(header, request->offset);
+
+                createrequest(channel, request, offset);
 
             }
 
         }
 
     }
+
+}
+
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    walk(channel, source, "build/bin/hello");
+    channel_close(channel);
 
 }
 
