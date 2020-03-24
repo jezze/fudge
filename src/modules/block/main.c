@@ -21,30 +21,12 @@ void block_registerinterface(struct block_interface *interface)
 
 }
 
-void block_registerprotocol(struct block_protocol *protocol)
-{
-
-    resource_register(&protocol->resource);
-    system_addchild(&protocol->root, &protocol->data);
-    system_addchild(&root, &protocol->root);
-
-}
-
 void block_unregisterinterface(struct block_interface *interface)
 {
 
     resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->data);
     system_removechild(&root, &interface->root);
-
-}
-
-void block_unregisterprotocol(struct block_protocol *protocol)
-{
-
-    resource_unregister(&protocol->resource);
-    system_removechild(&protocol->root, &protocol->data);
-    system_removechild(&root, &protocol->root);
 
 }
 
@@ -56,17 +38,6 @@ void block_initinterface(struct block_interface *interface, unsigned int id)
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     interface->id = id;
-
-}
-
-void block_initprotocol(struct block_protocol *protocol, char *name, void (*notify)(void *buffer, unsigned int count))
-{
-
-    resource_init(&protocol->resource, RESOURCE_BLOCKPROTOCOL, protocol);
-    system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&protocol->data, SYSTEM_NODETYPE_NORMAL, "data");
-
-    protocol->notify = notify;
 
 }
 
