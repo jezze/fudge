@@ -8,17 +8,6 @@ static struct system_node root;
 void block_notify(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    struct resource *current = 0;
-
-    while ((current = resource_foreachtype(current, RESOURCE_BLOCKPROTOCOL)))
-    {
-
-        struct block_protocol *protocol = current->data;
-
-        protocol->notify(buffer, count);
-
-    }
-
     kernel_notify(&interface->data.states, EVENT_DATA, buffer, count);
 
 }
