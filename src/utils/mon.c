@@ -69,7 +69,7 @@ static unsigned int request_poll(struct request *request, struct channel *channe
 
 }
 
-static unsigned int request_sendpoll(struct request *request, struct channel *channel, unsigned int source, unsigned int offset, unsigned int count)
+static unsigned int sendpoll(struct request *request, struct channel *channel, unsigned int source, unsigned int offset, unsigned int count)
 {
 
     request_init(request, source, offset, count);
@@ -92,7 +92,7 @@ static unsigned int walk(struct channel *channel, unsigned int source, struct re
     unsigned int length = ascii_length(path) + 1;
     unsigned int offset = 0;
 
-    while (request_sendpoll(request, channel, source, offset, sizeof (struct cpio_header) + 1024))
+    while (sendpoll(request, channel, source, offset, sizeof (struct cpio_header) + 1024))
     {
 
         struct cpio_header *header = getdata(request);
@@ -134,7 +134,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (offset != ERROR)
     {
 
-        if (request_sendpoll(request, channel, source, offset, sizeof (struct cpio_header) + 1024))
+        if (sendpoll(request, channel, source, offset, sizeof (struct cpio_header) + 1024))
         {
 
             struct cpio_header *header = getdata(request);
@@ -142,7 +142,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             if (cpio_validate(header))
             {
 
-                if ((count = request_sendpoll(request, channel, source, offset + cpio_filedata(header), cpio_filesize(header))))
+                if ((count = sendpoll(request, channel, source, offset + cpio_filedata(header), cpio_filesize(header))))
                 {
 
                     void *data = getdata(request);
