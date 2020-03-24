@@ -32,14 +32,10 @@ static void request_init(struct request *request, unsigned int source, unsigned 
 
 }
 
-static unsigned int request_send(struct request *request, struct channel *channel, unsigned int source, unsigned int offset, unsigned int count)
+static void request_send(struct request *request, struct channel *channel)
 {
 
     struct event_blockrequest blockrequest;
-    struct ipc_header header;
-    char data[FUDGE_BSIZE];
-
-    request_init(request, source, offset, count);
 
     blockrequest.sector = request->blocksector;
     blockrequest.count = request->blockcount;
@@ -47,6 +43,14 @@ static unsigned int request_send(struct request *request, struct channel *channe
     channel_request(channel, EVENT_BLOCKREQUEST);
     channel_append(channel, sizeof (struct event_blockrequest), &blockrequest);
     channel_write(channel, FILE_G0);
+
+}
+
+static unsigned int request_poll(struct request *request, struct channel *channel)
+{
+
+    struct ipc_header header;
+    char data[FUDGE_BSIZE];
 
     while (channel_apoll(channel, &header, data, EVENT_DATA))
     {
@@ -65,6 +69,16 @@ static unsigned int request_send(struct request *request, struct channel *channe
 
 }
 
+static unsigned int request_sendpoll(struct request *request, struct channel *channel, unsigned int source, unsigned int offset, unsigned int count)
+{
+
+    request_init(request, source, offset, count);
+    request_send(request, channel);
+
+    return request_poll(request, channel);
+
+}
+
 static void *getdata(struct request *request)
 {
 
@@ -78,7 +92,7 @@ static unsigned int walk(struct channel *channel, unsigned int source, struct re
     unsigned int length = ascii_length(path) + 1;
     unsigned int offset = 0;
 
-    while (request_send(request, channel, source, offset, sizeof (struct cpio_header) + 1024))
+    while (request_sendpoll(request, channel, source, offset, sizeof (struct cpio_header) + 1024))
     {
 
         struct cpio_header *header = getdata(request);
@@ -120,7 +134,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (offset != ERROR)
     {
 
-        if (request_send(request, channel, source, offset, sizeof (struct cpio_header) + 1024))
+        if (request_sendpoll(request, channel, source, offset, sizeof (struct cpio_header) + 1024))
         {
 
             struct cpio_header *header = getdata(request);
@@ -128,7 +142,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             if (cpio_validate(header))
             {
 
-                if ((count = request_send(request, channel, source, offset + cpio_filedata(header), cpio_filesize(header))))
+                if ((count = request_sendpoll(request, channel, source, offset + cpio_filedata(header), cpio_filesize(header))))
                 {
 
                     void *data = getdata(request);
