@@ -203,18 +203,6 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/mon \
-
-O:=\
-    $(DIR_SRC)/utils/mon.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
     $(DIR_SRC)/utils/motd \
 
 O:=\
@@ -267,18 +255,6 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/slang.o \
-
-L:=\
-    $(DIR_LIB)/abi/abi.a \
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/bin.mk
-
-B:=\
-    $(DIR_SRC)/utils/test \
-
-O:=\
-    $(DIR_SRC)/utils/test.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
