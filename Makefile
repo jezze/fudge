@@ -38,28 +38,16 @@ $(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@mkdir -p $@
 	@mkdir -p $@/bin
 	@cp $(BIN) $@/bin
-	@cp $(KBIN) $@/bin
 	@mkdir -p $@/config
 	@cp config/* $@/config
 	@mkdir -p $@/data
 	@cp data/* $@/data
-	@mkdir -p $@/home
+	@mkdir -p $@/kernel
+	@cp $(KBIN) $@/kernel
+	@cp $(KMAP) $@/kernel
+	@cp $(KMOD) $@/kernel
 	@mkdir -p $@/lib
 	@cp $(LIB) $@/lib
-	@mkdir -p $@/map
-	@cp $(KMAP) $@/map
-	@mkdir -p $@/mod
-	@cp $(KMOD) $@/mod
-	@mkdir -p $@/mount
-	@mkdir -p $@/mount/0
-	@mkdir -p $@/mount/1
-	@mkdir -p $@/mount/2
-	@mkdir -p $@/mount/3
-	@mkdir -p $@/mount/4
-	@mkdir -p $@/mount/5
-	@mkdir -p $@/mount/6
-	@mkdir -p $@/mount/7
-	@mkdir -p $@/proc
 	@mkdir -p $@/system
 
 $(DIR_ISO): $(KERNEL) $(RAMDISK)

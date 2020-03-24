@@ -107,7 +107,7 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
     unsigned int address = 0;
     char module[32];
 
-    offset += memory_write(module, 32, "/mod/", 5, offset);
+    offset += memory_write(module, 32, "/kernel/", 8, offset);
     offset += memory_write(module, 32, symbolname, memory_findbyte(symbolname, count, '_'), offset);
     offset += memory_write(module, 32, ".ko", 4, offset);
 
@@ -122,7 +122,7 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 
     }
 
-    if (!address && file_walk2(FILE_L0, "/bin/fudge"))
+    if (!address && file_walk2(FILE_L0, "/kernel/fudge"))
     {
 
         file_open(FILE_L0);

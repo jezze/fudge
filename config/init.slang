@@ -5,4 +5,4 @@ wm < /system/video/if:0
 wshell
 wshell
 wedit < /data/wm-man.txt
-elfload < /mod/smp.ko
+elfload < /kernel/smp.ko
