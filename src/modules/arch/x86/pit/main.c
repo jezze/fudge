@@ -62,7 +62,6 @@ static void handleirq(unsigned int irq)
     if (jiffies >= 60)
     {
 
-        timer_notify(&timerinterface, &jiffies, 4);
         timer_notifytick(&timerinterface, jiffies);
 
         jiffies = 0;

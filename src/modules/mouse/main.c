@@ -6,13 +6,6 @@
 static struct system_node root;
 static struct system_node event;
 
-void mouse_notify(struct mouse_interface *interface, void *buffer, unsigned int count)
-{
-
-    kernel_notify(&interface->data.states, EVENT_DATA, buffer, count);
-
-}
-
 void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
 {
 
@@ -54,7 +47,6 @@ void mouse_registerinterface(struct mouse_interface *interface)
 {
 
     resource_register(&interface->resource);
-    system_addchild(&interface->root, &interface->data);
     system_addchild(&interface->root, &interface->event);
     system_addchild(&root, &interface->root);
 
@@ -64,7 +56,6 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    system_removechild(&interface->root, &interface->data);
     system_removechild(&interface->root, &interface->event);
     system_removechild(&root, &interface->root);
 
@@ -75,7 +66,6 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event");
 
     interface->id = id;

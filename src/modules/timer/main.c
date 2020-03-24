@@ -5,13 +5,6 @@
 
 static struct system_node root;
 
-void timer_notify(struct timer_interface *interface, void *buffer, unsigned int count)
-{
-
-    kernel_notify(&interface->data.states, EVENT_DATA, buffer, count);
-
-}
-
 void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 {
 
@@ -28,7 +21,6 @@ void timer_registerinterface(struct timer_interface *interface)
 
     resource_register(&interface->resource);
     system_addchild(&interface->root, &interface->ctrl);
-    system_addchild(&interface->root, &interface->data);
     system_addchild(&interface->root, &interface->event);
     system_addchild(&root, &interface->root);
 
@@ -39,7 +31,6 @@ void timer_unregisterinterface(struct timer_interface *interface)
 
     resource_unregister(&interface->resource);
     system_removechild(&interface->root, &interface->ctrl);
-    system_removechild(&interface->root, &interface->data);
     system_removechild(&interface->root, &interface->event);
     system_removechild(&root, &interface->root);
 
@@ -51,7 +42,6 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
     system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
     system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
     system_initnode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event");
 
     interface->id = id;

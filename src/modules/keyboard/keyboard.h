@@ -3,13 +3,11 @@ struct keyboard_interface
 
     struct resource resource;
     struct system_node root;
-    struct system_node data;
     struct system_node event;
     unsigned int id;
 
 };
 
-void keyboard_notify(struct keyboard_interface *interface, void *buffer, unsigned int count);
 void keyboard_notifypress(struct keyboard_interface *interface, unsigned char scancode);
 void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char scancode);
 void keyboard_registerinterface(struct keyboard_interface *interface);

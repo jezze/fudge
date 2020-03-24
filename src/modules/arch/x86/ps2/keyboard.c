@@ -28,8 +28,6 @@ static void handleirq(unsigned int irq)
     if (data == 0xFF)
         return;
 
-    keyboard_notify(&keyboardinterface, &data, 1);
-
     if (data & 0x80)
         keyboard_notifyrelease(&keyboardinterface, data);
     else
