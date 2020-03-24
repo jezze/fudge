@@ -5,7 +5,6 @@ elfload < /mod/mtwist.ko
 elfload < /mod/log.ko
 elfload < /mod/event.ko
 elfload < /mod/block.ko
-elfload < /mod/cpio.ko
 elfload < /mod/clock.ko
 elfload < /mod/console.ko
 elfload < /mod/keyboard.ko

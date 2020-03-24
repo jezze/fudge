@@ -4,7 +4,6 @@ include $(DIR_SRC)/modules/base/rules.mk
 include $(DIR_SRC)/modules/block/rules.mk
 include $(DIR_SRC)/modules/clock/rules.mk
 include $(DIR_SRC)/modules/console/rules.mk
-include $(DIR_SRC)/modules/cpio/rules.mk
 include $(DIR_SRC)/modules/ethernet/rules.mk
 include $(DIR_SRC)/modules/event/rules.mk
 include $(DIR_SRC)/modules/icmp/rules.mk
