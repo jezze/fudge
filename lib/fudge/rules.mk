@@ -12,6 +12,7 @@ O:=\
     $(DIR_LIB)/fudge/list.o \
     $(DIR_LIB)/fudge/md5.o \
     $(DIR_LIB)/fudge/memory.o \
+    $(DIR_LIB)/fudge/mtwist.o \
     $(DIR_LIB)/fudge/pcf.o \
     $(DIR_LIB)/fudge/regexp.o \
     $(DIR_LIB)/fudge/ring.o \

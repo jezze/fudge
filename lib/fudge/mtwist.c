@@ -1,24 +1,11 @@
-#include <fudge.h>
-#include <kernel.h>
-#include <modules/system/system.h>
+#include "mtwist.h"
 
-#define MTWIST_VECTORS                  624
 #define MTWIST_SEED                     4357
 #define MTWIST_RECURRENCE               397
 #define MTWIST_COMBINE_BITS(x, y)       (((x) & 0x80000000) | ((y) & 0x7FFFFFFF))
 #define MTWIST_MATRIX_MULTIPLY(x, y)    ((x) ^ ((y) >> 1) ^ decider[(y) & 1])
 
-struct mtwist_state
-{
-
-    unsigned int vectors[MTWIST_VECTORS];
-    int current;
-
-};
-
 static unsigned int decider[2] = {0x00000000, 0x9908B0DF};
-static struct mtwist_state normal;
-static struct system_node root;
 
 static void refresh(struct mtwist_state *state)
 {
@@ -67,7 +54,7 @@ static void refresh(struct mtwist_state *state)
 
 }
 
-static void seed1(struct mtwist_state *state, unsigned int seed)
+void mtwist_seed1(struct mtwist_state *state, unsigned int seed)
 {
 
     int i;
@@ -83,8 +70,7 @@ static void seed1(struct mtwist_state *state, unsigned int seed)
 
 }
 
-/*
-static void seed2(struct mtwist_state *state, unsigned int seed)
+void mtwist_seed2(struct mtwist_state *state, unsigned int seed)
 {
 
     int i;
@@ -108,9 +94,8 @@ static void seed2(struct mtwist_state *state, unsigned int seed)
     refresh(state);
 
 }
-*/
 
-static unsigned int rand(struct mtwist_state *state)
+unsigned int mtwist_rand(struct mtwist_state *state)
 {
 
     unsigned int value = state->vectors[--state->current];
@@ -124,8 +109,7 @@ static unsigned int rand(struct mtwist_state *state)
 
 }
 
-/*
-static double mtwist_drand(struct mtwist_state *state)
+double mtwist_randd(struct mtwist_state *state)
 {
 
     double conv = 1.0;
@@ -134,41 +118,7 @@ static double mtwist_drand(struct mtwist_state *state)
     for (i = 0; i < 32; i++)
         conv /= 2.0;
 
-    return rand(state) * conv;
-
-}
-*/
-
-static unsigned int root_read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    unsigned int x = rand(&normal);
-
-    return memory_read(buffer, count, &x, 4, offset);
-
-}
-
-void module_init(void)
-{
-
-    seed1(&normal, MTWIST_SEED);
-    system_initnode(&root, SYSTEM_NODETYPE_NORMAL, "mtwist");
-
-    root.operations.read = root_read;
-
-}
-
-void module_register(void)
-{
-
-    system_registernode(&root);
-
-}
-
-void module_unregister(void)
-{
-
-    system_unregisternode(&root);
+    return mtwist_rand(state) * conv;
 
 }
 
