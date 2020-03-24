@@ -6,6 +6,7 @@
 #define RESOURCE_BINARYFORMAT           6
 #define RESOURCE_BUS                    7
 #define RESOURCE_DRIVER                 8
+#define RESOURCE_DEBUGLOG               9
 #define RESOURCE_ETHERNETINTERFACE      40
 #define RESOURCE_ETHERNETPROTOCOL       41
 #define RESOURCE_IPV4PROTOCOL           42
@@ -18,9 +19,6 @@
 #define RESOURCE_MOUSEINTERFACE         49
 #define RESOURCE_BLOCKINTERFACE         50
 #define RESOURCE_CONSOLEINTERFACE       51
-#define RESOURCE_DEBUGLOG               60
-#define RESOURCE_CON                    61
-#define RESOURCE_PART                   62
 
 struct resource
 {
