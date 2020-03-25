@@ -103,15 +103,14 @@ static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char
 static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 {
 
-    unsigned int offset = 0;
     unsigned int address = 0;
+    unsigned int offset = 0;
     char module[32];
 
-    offset += memory_write(module, 32, "/kernel/", 8, offset);
     offset += memory_write(module, 32, symbolname, memory_findbyte(symbolname, count, '_'), offset);
     offset += memory_write(module, 32, ".ko", 4, offset);
 
-    if (!address && file_walk2(FILE_L0, module))
+    if (file_walk(FILE_L0, FILE_G0, module))
     {
 
         file_open(FILE_L0);
@@ -122,14 +121,14 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 
     }
 
-    if (!address && file_walk2(FILE_L0, "/kernel/fudge"))
+    if (!address)
     {
 
-        file_open(FILE_L0);
+        file_open(FILE_G1);
 
-        address = findsymbol(FILE_L0, count, symbolname);
+        address = findsymbol(FILE_G1, count, symbolname);
 
-        file_close(FILE_L0);
+        file_close(FILE_G1);
 
     }
 
@@ -245,15 +244,15 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G0, mdata))
+    if (!file_walk2(FILE_G2, mdata))
         return;
 
-    file_open(FILE_G0);
+    file_open(FILE_G2);
 
-    if (resolve(FILE_G0))
-        call_load(FILE_G0);
+    if (resolve(FILE_G2))
+        call_load(FILE_G2);
 
-    file_close(FILE_G0);
+    file_close(FILE_G2);
 
 }
 
@@ -266,6 +265,22 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
 }
 
+static void oninit(struct channel *channel)
+{
+
+    if (!file_walk2(FILE_G0, "/kernel"))
+        return;
+
+    if (!file_walk(FILE_G1, FILE_G0, "fudge"))
+        return;
+
+}
+
+static void onexit(struct channel *channel)
+{
+
+}
+
 void main(void)
 {
 
@@ -275,7 +290,7 @@ void main(void)
     channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
-    channel_listen(&channel);
+    channel_listen2(&channel, oninit, onexit);
 
 }
 
