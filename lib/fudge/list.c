@@ -115,13 +115,6 @@ struct list_item *list_picktail(struct list *list)
 
 }
 
-unsigned int list_ispicked(struct list_item *item)
-{
-
-    return !item->list;
-
-}
-
 void list_inititem(struct list_item *item, void *data)
 {
 

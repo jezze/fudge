@@ -16,8 +16,14 @@ struct task *core_picktask(struct core *core)
 void core_unschedule(struct core *core)
 {
 
-    if (core->task && list_ispicked(&core->task->item))
+    if (core->task)
+    {
+
         list_add(&core->tasks, &core->task->item);
+
+        core->task = 0;
+
+    }
 
 }
 
