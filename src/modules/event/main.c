@@ -17,7 +17,9 @@ static unsigned int multicast(struct service_state *source, struct list *targets
 
         struct service_state *target = current->data;
 
-        kernel_place(source->id, target->id, header, data);
+        header->source = source->id;
+
+        kernel_place(target->id, header, data);
 
     }
 

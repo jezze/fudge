@@ -259,9 +259,7 @@ unsigned int kernel_pick(unsigned int id, struct ipc_header *header, void *data)
 
     struct task *task = &tasks[id];
     struct mailbox *mailbox = &mailboxes[id];
-    unsigned int count;
-
-    count = mailbox_pick(mailbox, header, data);
+    unsigned int count = mailbox_pick(mailbox, header, data);
 
     if (!count)
     {
@@ -276,16 +274,12 @@ unsigned int kernel_pick(unsigned int id, struct ipc_header *header, void *data)
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int target, struct ipc_header *header, void *data)
+unsigned int kernel_place(unsigned int id, struct ipc_header *header, void *data)
 {
 
-    struct task *task = &tasks[target];
-    struct mailbox *mailbox = &mailboxes[target];
-    unsigned int count;
-
-    header->source = source;
-
-    count = mailbox_place(mailbox, header, data);
+    struct task *task = &tasks[id];
+    struct mailbox *mailbox = &mailboxes[id];
+    unsigned int count = mailbox_place(mailbox, header, data);
 
     if (count && task->thread.status == TASK_STATUS_BLOCKED)
     {
@@ -316,7 +310,7 @@ void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigne
 
         struct service_state *state = current->data;
 
-        kernel_place(0, state->id, &header, buffer);
+        kernel_place(state->id, &header, buffer);
 
     }
 
