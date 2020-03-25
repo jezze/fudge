@@ -18,5 +18,7 @@ elfload < /kernel/uart.ko
 elfload < /kernel/vga.ko
 elfload < /kernel/rtl8139.ko
 elfload < /kernel/ide.ko
+elfload < /kernel/ahci.ko
+elfload < /kernel/nvme.ko
 elfload < /kernel/ata.ko
 elfload < /kernel/virtio-network.ko
