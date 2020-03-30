@@ -35,13 +35,6 @@ static void updatecontent(void)
 
 }
 
-static void removecontent(void)
-{
-
-    widget_remove(&output, &content, WIDGET_Z_MIDDLE);
-
-}
-
 static void removerows(unsigned int count)
 {
 
@@ -347,8 +340,6 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 
 static void onwmhide(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
-
-    removecontent();
 
 }
 

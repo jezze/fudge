@@ -446,6 +446,21 @@ static void markwidgets(struct layer *layer, unsigned int source, unsigned int i
 
 }
 
+static void markwidgetsall(struct layer *layer, unsigned int source, unsigned int damage)
+{
+
+    struct widget *current = 0;
+
+    while ((current = nextwidget(layer, current)))
+    {
+
+        if (current->source == source)
+            current->damage = damage;
+
+    }
+
+}
+
 static void addwidget(struct layer *layer, struct widget *widget)
 {
 
@@ -591,6 +606,16 @@ void render_write(unsigned int source, void *buffer, unsigned int count)
         }
 
     }
+
+}
+
+void render_remove(unsigned int source)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < LAYERS; i++)
+        markwidgetsall(&layers[i], source, WIDGET_DAMAGE_REMOVE);
 
 }
 
