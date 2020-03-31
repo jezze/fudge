@@ -723,7 +723,8 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
 
     struct event_videomode *videomode = mdata;
     unsigned int factor = (videomode->h / 320);
-    struct event_wmconfigure wmconfigure;
+    struct list_item *current;
+    unsigned int i = 0;
 
     lineheight = 12 + factor * 4;
     padding = 4 + factor * 2;
@@ -778,34 +779,11 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     file_read(FILE_L0, fontdata, 0x8000);
     file_close(FILE_L0);
     render_setfont(fontdata, lineheight, padding);
+    box_setsize(&screen, 0, 0, videomode->w, videomode->h);
+    box_setsize(&body, 0, (lineheight + padding * 2), videomode->w, videomode->h - (lineheight + padding * 2));
+    box_setsize(&background.size, 0, 0, videomode->w, videomode->h);
 
-    wmconfigure.x = 0;
-    wmconfigure.y = 0;
-    wmconfigure.w = videomode->w;
-    wmconfigure.h = videomode->h;
-    wmconfigure.padding = padding;
-    wmconfigure.lineheight = lineheight;
-
-    channel_request(channel, EVENT_WMCONFIGURE);
-    channel_append(channel, sizeof (struct event_wmconfigure), &wmconfigure);
-    channel_write(channel, FILE_G0);
-    channel_request(channel, EVENT_WMSHOW);
-    channel_write(channel, FILE_G0);
-
-}
-
-static void onwmconfigure(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_wmconfigure *wmconfigure = mdata;
-    struct list_item *current;
-    unsigned int i = 0;
-
-    box_setsize(&screen, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
-    box_setsize(&body, wmconfigure->x, wmconfigure->y + (wmconfigure->lineheight + wmconfigure->padding * 2), wmconfigure->w, wmconfigure->h - (wmconfigure->lineheight + wmconfigure->padding * 2));
-    box_setsize(&background.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
-
-    steplength = wmconfigure->w / 32;
+    steplength = videomode->w / 32;
 
     for (current = viewlist.head; current; current = current->next)
     {
@@ -814,15 +792,23 @@ static void onwmconfigure(struct channel *channel, unsigned int source, void *md
 
         view->center = 18 * steplength;
 
-        box_setsize(&view->panel.size, wmconfigure->x + i * wmconfigure->w / viewlist.count, wmconfigure->y, wmconfigure->w / viewlist.count, (wmconfigure->lineheight + wmconfigure->padding * 2));
+        box_setsize(&view->panel.size, i * videomode->w / viewlist.count, 0, videomode->w / viewlist.count, (lineheight + padding * 2));
         arrangeview(channel, view);
 
         i++;
 
     }
 
-    mouse.size.x = wmconfigure->x + wmconfigure->w / 4;
-    mouse.size.y = wmconfigure->y + wmconfigure->h / 4;
+    mouse.size.x = videomode->w / 4;
+    mouse.size.y = videomode->h / 4;
+
+    updatebackground();
+    updatemouse();
+
+    for (current = viewlist.head; current; current = current->next)
+        updateview(current->data);
+
+    showremotes(channel, &currentview->remotes);
 
 }
 
@@ -877,21 +863,6 @@ static void onwmunmap(struct channel *channel, unsigned int source, void *mdata,
         }
 
     }
-
-}
-
-static void onwmshow(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct list_item *current;
-
-    updatebackground();
-    updatemouse();
-
-    for (current = viewlist.head; current; current = current->next)
-        updateview(current->data);
-
-    showremotes(channel, &currentview->remotes);
 
 }
 
@@ -1003,10 +974,8 @@ void main(void)
     channel_setsignal(&channel, EVENT_MOUSEPRESS, onmousepress);
     channel_setsignal(&channel, EVENT_MOUSERELEASE, onmouserelease);
     channel_setsignal(&channel, EVENT_VIDEOMODE, onvideomode);
-    channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     channel_setsignal(&channel, EVENT_WMMAP, onwmmap);
     channel_setsignal(&channel, EVENT_WMUNMAP, onwmunmap);
-    channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
     channel_listen2(&channel, oninit, onexit);
 
