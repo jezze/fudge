@@ -325,22 +325,26 @@ static void setupvideo(void)
 {
 
     struct ctrl_videosettings settings;
+    unsigned char black[256];
 
     ctrl_setvideosettings(&settings, 1024, 768, 4);
+    memory_clear(black, 256);
 
     if (!file_walk(FILE_L0, FILE_G4, "ctrl"))
         return;
 
+    if (!file_walk(FILE_L1, FILE_G4, "colormap"))
+        return;
+
+    file_open(FILE_L1);
+    file_writeall(FILE_L1, black, 256);
+    file_close(FILE_L1);
     file_open(FILE_L0);
     file_writeall(FILE_L0, &settings, sizeof (struct ctrl_videosettings));
     file_close(FILE_L0);
-
-    if (!file_walk(FILE_L0, FILE_G4, "colormap"))
-        return;
-
-    file_open(FILE_L0);
-    file_writeall(FILE_L0, colormap8, 3 * 11);
-    file_close(FILE_L0);
+    file_open(FILE_L1);
+    file_writeall(FILE_L1, colormap8, 3 * 11);
+    file_close(FILE_L1);
 
 }
 
@@ -728,44 +732,30 @@ static void onmouserelease(struct channel *channel, unsigned int source, void *m
 
 }
 
-static void onvideomode(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void setmouse(unsigned int x, unsigned int y, unsigned int factor)
 {
-
-    struct event_videomode *videomode = mdata;
-    unsigned int factor = (videomode->h / 320);
-    struct list_item *current;
-    unsigned int i = 0;
-
-    lineheight = 12 + factor * 4;
-    padding = 4 + factor * 2;
-    steplength = videomode->w / 32;
-
-    box_setsize(&screen, 0, 0, videomode->w, videomode->h);
-    box_setsize(&body, 0, (lineheight + padding * 2), videomode->w, videomode->h - (lineheight + padding * 2));
-    box_setsize(&background.size, 0, 0, videomode->w, videomode->h);
-    render_setdraw(videomode->w, videomode->h, videomode->bpp);
-
-    mouse.size.x = videomode->w / 4;
-    mouse.size.y = videomode->h / 4;
 
     switch (factor)
     {
 
     case 0:
     case 1:
-        mouse.size.w = 12;
-        mouse.size.h = 16;
+        box_setsize(&mouse.size, x, y, 12, 16);
 
         break;
 
     case 2:
     default:
-        mouse.size.w = 18;
-        mouse.size.h = 24;
+        box_setsize(&mouse.size, x, y, 18, 24);
 
         break;
 
     }
+
+}
+
+static void loadfont(unsigned int factor)
+{
 
     switch (factor)
     {
@@ -795,6 +785,27 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     file_open(FILE_L0);
     file_read(FILE_L0, fontdata, 0x8000);
     file_close(FILE_L0);
+
+}
+
+static void onvideomode(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_videomode *videomode = mdata;
+    unsigned int factor = videomode->h / 320;
+    struct list_item *current;
+    unsigned int i = 0;
+
+    lineheight = 12 + factor * 4;
+    padding = 4 + factor * 2;
+    steplength = videomode->w / 32;
+
+    loadfont(factor);
+    box_setsize(&screen, 0, 0, videomode->w, videomode->h);
+    box_setsize(&body, 0, (lineheight + padding * 2), videomode->w, videomode->h - (lineheight + padding * 2));
+    box_setsize(&background.size, 0, 0, videomode->w, videomode->h);
+    setmouse(videomode->w / 4, videomode->h / 4, factor);
+    render_setdraw(videomode->w, videomode->h, videomode->bpp);
     render_setfont(fontdata, lineheight, padding);
 
     for (current = viewlist.head; current; current = current->next)
