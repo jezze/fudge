@@ -738,8 +738,15 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
 
     lineheight = 12 + factor * 4;
     padding = 4 + factor * 2;
+    steplength = videomode->w / 32;
 
+    box_setsize(&screen, 0, 0, videomode->w, videomode->h);
+    box_setsize(&body, 0, (lineheight + padding * 2), videomode->w, videomode->h - (lineheight + padding * 2));
+    box_setsize(&background.size, 0, 0, videomode->w, videomode->h);
     render_setdraw(videomode->w, videomode->h, videomode->bpp);
+
+    mouse.size.x = videomode->w / 4;
+    mouse.size.y = videomode->h / 4;
 
     switch (factor)
     {
@@ -789,11 +796,6 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     file_read(FILE_L0, fontdata, 0x8000);
     file_close(FILE_L0);
     render_setfont(fontdata, lineheight, padding);
-    box_setsize(&screen, 0, 0, videomode->w, videomode->h);
-    box_setsize(&body, 0, (lineheight + padding * 2), videomode->w, videomode->h - (lineheight + padding * 2));
-    box_setsize(&background.size, 0, 0, videomode->w, videomode->h);
-
-    steplength = videomode->w / 32;
 
     for (current = viewlist.head; current; current = current->next)
     {
@@ -808,9 +810,6 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
         i++;
 
     }
-
-    mouse.size.x = videomode->w / 4;
-    mouse.size.y = videomode->h / 4;
 
     updatebackground();
     updatemouse();
