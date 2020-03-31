@@ -891,6 +891,12 @@ static void onwmunmap(struct channel *channel, unsigned int source, void *mdata,
                 continue;
 
             removeremote(remote);
+
+            /* change this to a hide instead? */
+            render_remove(remote->source);
+            render_flush(canvasdata, 0x10000, drawline);
+            render_complete();
+
             list_move(&remotelist, remote->item.list, &remote->item);
 
             view->currentremote = (view->remotes.tail) ? view->remotes.tail->data : 0;
