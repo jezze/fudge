@@ -224,11 +224,6 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-static void onwmhide(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-}
-
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -297,7 +292,6 @@ void main(void)
     channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
     channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
-    channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
     channel_listen2(&channel, oninit, onexit);
 

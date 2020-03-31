@@ -609,7 +609,7 @@ void render_write(unsigned int source, void *buffer, unsigned int count)
 
 }
 
-void render_remove(unsigned int source)
+void render_clean(unsigned int source)
 {
 
     unsigned int i;

@@ -99,27 +99,7 @@ static void removeremote(struct remote *remote)
 {
 
     widget_remove(&output, &remote->window, WIDGET_Z_MIDDLE);
-
-}
-
-static void removeview(struct view *view)
-{
-
-    widget_remove(&output, &view->panel, WIDGET_Z_MIDDLE);
-
-}
-
-static void removemouse(void)
-{
-
-    widget_remove(&output, &mouse, WIDGET_Z_TOP);
-
-}
-
-static void removebackground(void)
-{
-
-    widget_remove(&output, &background, WIDGET_Z_BOTTOM);
+    render_clean(remote->source);
 
 }
 
@@ -183,8 +163,22 @@ static void hideremotes(struct channel *channel, struct list *remotes)
         channel_place(channel, remote->source);
         removeremote(remote);
 
-        /* change this to a hide instead? */
-        render_remove(remote->source);
+    }
+
+}
+
+static void closeremotes(struct channel *channel, struct list *remotes)
+{
+
+    struct list_item *current;
+
+    for (current = remotes->head; current; current = current->next)
+    {
+
+        struct remote *remote = current->data;
+
+        channel_request(channel, EVENT_WMCLOSE);
+        channel_place(channel, remote->source);
 
     }
 
@@ -210,23 +204,6 @@ static void configureremotes(struct channel *channel, struct list *remotes)
 
         channel_request(channel, EVENT_WMCONFIGURE);
         channel_append(channel, sizeof (struct event_wmconfigure), &wmconfigure);
-        channel_place(channel, remote->source);
-
-    }
-
-}
-
-static void closeremotes(struct channel *channel, struct list *remotes)
-{
-
-    struct list_item *current;
-
-    for (current = remotes->head; current; current = current->next)
-    {
-
-        struct remote *remote = current->data;
-
-        channel_request(channel, EVENT_WMCLOSE);
         channel_place(channel, remote->source);
 
     }
@@ -476,8 +453,6 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            channel_request(channel, EVENT_WMHIDE);
-            channel_place(channel, currentview->currentremote->source);
             channel_request(channel, EVENT_WMCLOSE);
             channel_place(channel, currentview->currentremote->source);
 
@@ -578,8 +553,6 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            channel_request(channel, EVENT_WMHIDE);
-            channel_write(channel, FILE_G0);
             channel_request(channel, EVENT_WMCLOSE);
             channel_write(channel, FILE_G0);
 
@@ -889,10 +862,6 @@ static void onwmunmap(struct channel *channel, unsigned int source, void *mdata,
                 continue;
 
             removeremote(remote);
-
-            /* change this to a hide instead? */
-            render_remove(remote->source);
-
             list_move(&remotelist, remote->item.list, &remote->item);
 
             view->currentremote = (view->remotes.tail) ? view->remotes.tail->data : 0;
@@ -923,21 +892,6 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
         updateview(current->data);
 
     showremotes(channel, &currentview->remotes);
-
-}
-
-static void onwmhide(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct list_item *current;
-
-    removebackground();
-    removemouse();
-
-    for (current = viewlist.head; current; current = current->next)
-        removeview(current->data);
-
-    hideremotes(channel, &currentview->remotes);
 
 }
 
@@ -1053,7 +1007,6 @@ void main(void)
     channel_setsignal(&channel, EVENT_WMMAP, onwmmap);
     channel_setsignal(&channel, EVENT_WMUNMAP, onwmunmap);
     channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
-    channel_setsignal(&channel, EVENT_WMHIDE, onwmhide);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
     channel_listen2(&channel, oninit, onexit);
 
