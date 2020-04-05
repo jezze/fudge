@@ -325,10 +325,10 @@ static void setupvideo(void)
 {
 
     struct ctrl_videosettings settings;
-    unsigned char black[256];
+    unsigned char black[768];
 
     ctrl_setvideosettings(&settings, 1024, 768, 4);
-    memory_clear(black, 256);
+    memory_clear(black, 768);
 
     if (!file_walk(FILE_L0, FILE_G4, "ctrl"))
         return;
@@ -337,7 +337,7 @@ static void setupvideo(void)
         return;
 
     file_open(FILE_L1);
-    file_writeall(FILE_L1, black, 256);
+    file_writeall(FILE_L1, black, 768);
     file_close(FILE_L1);
     file_open(FILE_L0);
     file_writeall(FILE_L0, &settings, sizeof (struct ctrl_videosettings));
