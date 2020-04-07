@@ -6,10 +6,17 @@
 unsigned int channel_place(struct channel *channel, unsigned int id)
 {
 
-    if (channel->signals[channel->message.header.type].redirect)
-        id = channel->signals[channel->message.header.type].redirect;
+    if (channel->message.header.type < EVENTS)
+    {
 
-    return call_place(id, &channel->message.header, channel->message.data);
+        if (channel->signals[channel->message.header.type].redirect)
+            id = channel->signals[channel->message.header.type].redirect;
+
+        return call_place(id, &channel->message.header, channel->message.data);
+
+    }
+
+    return 0;
 
 }
 
@@ -23,11 +30,16 @@ unsigned int channel_write(struct channel *channel, unsigned int descriptor)
 void channel_dispatch(struct channel *channel, struct ipc_header *header, void *data)
 {
 
-    if (channel->signals[header->type].callback)
-        channel->signals[header->type].callback(channel, header->source, data, ipc_datasize(header));
+    if (header->type < EVENTS)
+    {
 
-    if (channel->signals[EVENT_ANY].callback)
-        channel->signals[EVENT_ANY].callback(channel, header->source, data, ipc_datasize(header));
+        if (channel->signals[header->type].callback)
+            channel->signals[header->type].callback(channel, header->source, data, ipc_datasize(header));
+
+        if (channel->signals[EVENT_ANY].callback)
+            channel->signals[EVENT_ANY].callback(channel, header->source, data, ipc_datasize(header));
+
+    }
 
 }
 
