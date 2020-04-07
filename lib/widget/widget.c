@@ -61,21 +61,6 @@ void widget_update(struct ring *ring, void *item, unsigned int z, unsigned int t
 
 }
 
-void widget_updateX(struct ring *ring, void *item, unsigned int z, unsigned int type, unsigned int count)
-{
-
-    struct widget widget;
-
-    widget.id = (unsigned int)item;
-    widget.type = type;
-    widget.z = z;
-    widget.damage = WIDGET_DAMAGE_REPLACE;
-    widget.count = sizeof (struct widget) + count;
-
-    ring_write(ring, &widget, sizeof (struct widget));
-
-}
-
 void widget_remove(struct ring *ring, void *item, unsigned int z)
 {
 
