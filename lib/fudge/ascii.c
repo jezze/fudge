@@ -21,6 +21,16 @@ void ascii_copy(char *out, char *in)
 
 }
 
+unsigned int ascii_match(char *in1, char *in2)
+{
+
+    unsigned int n1 = ascii_length(in1) + 1;
+    unsigned int n2 = ascii_length(in2) + 1;
+
+    return memory_match(in1, in2, (n1 < n2) ? n1 : n2);
+
+}
+
 unsigned int ascii_toint(unsigned char c)
 {
 
