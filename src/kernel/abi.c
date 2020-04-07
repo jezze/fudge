@@ -6,7 +6,7 @@
 #include "service.h"
 #include "kernel.h"
 
-#define CALLS                           32
+#define CALLS                           18
 
 static unsigned int (*calls[CALLS])(struct task *task, void *stack);
 
@@ -319,7 +319,7 @@ static unsigned int place(struct task *task, void *stack)
 unsigned int abi_call(unsigned int index, struct task *task, void *stack)
 {
 
-    return calls[index & (CALLS - 1)](task, stack);
+    return index < CALLS ? calls[index](task, stack) : 0;
 
 }
 
