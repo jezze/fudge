@@ -940,9 +940,6 @@ static void oninit(struct channel *channel)
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     render_init();
 
-    if (!file_walk2(FILE_G0, "/system/multicast"))
-        return;
-
     if (!file_walk2(FILE_G1, "/system/event"))
         return;
 
@@ -961,7 +958,6 @@ static void oninit(struct channel *channel)
     if (!file_walk(FILE_G6, FILE_G4, "data"))
         return;
 
-    file_open(FILE_G0);
     file_open(FILE_G1);
     file_open(FILE_G2);
     file_open(FILE_G3);
@@ -974,7 +970,6 @@ static void onexit(struct channel *channel)
     file_close(FILE_G3);
     file_close(FILE_G2);
     file_close(FILE_G1);
-    file_close(FILE_G0);
 
 }
 
