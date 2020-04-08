@@ -859,7 +859,7 @@ static void onwmmap(struct channel *channel, unsigned int source, void *mdata, u
     currentview->currentremote = remotelist.head->data;
     currentview->currentremote->source = source;
 
-    list_move(&currentview->remotes, currentview->currentremote->item.list, &currentview->currentremote->item);
+    list_move(&currentview->remotes, &remotelist, &currentview->currentremote->item);
     activateremote(currentview->currentremote);
     arrangeview(channel, currentview);
     showremotes(channel, &currentview->remotes);
@@ -886,7 +886,7 @@ static void onwmunmap(struct channel *channel, unsigned int source, void *mdata,
                 continue;
 
             removeremote(remote);
-            list_move(&remotelist, remote->item.list, &remote->item);
+            list_move(&remotelist, &view->remotes, &remote->item);
 
             view->currentremote = (view->remotes.tail) ? view->remotes.tail->data : 0;
 
