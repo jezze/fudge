@@ -215,13 +215,14 @@ void kernel_assign(void)
     {
 
         struct task *task = current->data;
-        struct mailbox *mailbox = &mailboxes[task->id];
 
-        if (!ring_count(&mailbox->ring))
-            continue;
+        if (ring_count(&mailboxes[task->id].ring))
+        {
 
-        list_remove_nolock(&blockedtasks, current);
-        coreassign(task);
+            list_remove_nolock(&blockedtasks, current);
+            coreassign(task);
+
+        }
 
     }
 
