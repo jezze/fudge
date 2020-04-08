@@ -276,21 +276,17 @@ void kernel_copydescriptors(struct task *source, struct task *target)
 void kernel_reset(unsigned int id)
 {
 
-    struct mailbox *mailbox = &mailboxes[id];
-
-    mailbox_reset(mailbox);
+    mailbox_reset(&mailboxes[id]);
 
 }
 
 unsigned int kernel_pick(unsigned int id, struct ipc_header *header, void *data)
 {
 
-    struct task *task = &tasks[id];
-    struct mailbox *mailbox = &mailboxes[id];
-    unsigned int count = mailbox_pick(mailbox, header, data);
+    unsigned int count = mailbox_pick(&mailboxes[id], header, data);
 
     if (!count)
-        list_add(&blockedtasks, &task->item);
+        list_add(&blockedtasks, &tasks[id].item);
 
     return count;
 
@@ -299,9 +295,7 @@ unsigned int kernel_pick(unsigned int id, struct ipc_header *header, void *data)
 unsigned int kernel_place(unsigned int id, struct ipc_header *header, void *data)
 {
 
-    struct mailbox *mailbox = &mailboxes[id];
-
-    return mailbox_place(mailbox, header, data);
+    return mailbox_place(&mailboxes[id], header, data);
 
 }
 
