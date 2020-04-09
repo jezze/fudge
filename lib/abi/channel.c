@@ -141,7 +141,7 @@ void channel_append(struct channel *channel, unsigned int count, void *buffer)
 void channel_appendstring(struct channel *channel, char *string)
 {
 
-    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE, string, ascii_length(string), ipc_datasize(&channel->message.header));
+    channel_append(channel, ascii_length(string), string);
 
 }
 
@@ -150,7 +150,7 @@ void channel_appendvalue(struct channel *channel, int value, unsigned int base, 
 
     char num[FUDGE_NSIZE];
 
-    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), ipc_datasize(&channel->message.header));
+    channel_append(channel, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), num);
 
 }
 
