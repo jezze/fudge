@@ -143,7 +143,10 @@ struct keymap *keymap_load(unsigned int type)
 struct keycode *keymap_getkeycode(struct keymap *keymap, unsigned int scancode, unsigned int modifier)
 {
 
-    return &keymap[scancode].keycode[modifier];
+    if (modifier & KEYMOD_SHIFT)
+        return &keymap[scancode].keycode[1];
+
+    return &keymap[scancode].keycode[0];
 
 }
 
