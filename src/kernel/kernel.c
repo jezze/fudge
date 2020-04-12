@@ -281,7 +281,7 @@ unsigned int kernel_place(unsigned int id, struct ipc_header *header, void *data
     struct mailbox *mailbox = &mailboxes[id];
     unsigned int count = mailbox_place(mailbox, header, data);
 
-    if (count && task->thread.status == TASK_STATUS_BLOCKED)
+    if (task->thread.status == TASK_STATUS_BLOCKED)
     {
 
         list_remove(&blockedtasks, &task->item);
