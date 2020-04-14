@@ -25,6 +25,7 @@
 #define COMMANDDEV2WI                   0xD4
 #define COMMANDCTRLRESET                0xFE
 #define COMMANDDEVIDENTIFY              0xF2
+#define COMMANDDEVRATE                  0xF3
 #define COMMANDDEVENABLESCAN            0xF4
 #define COMMANDDEVDISABLESCAN           0xF5
 #define COMMANDDEVDEFAULT               0xF6
@@ -248,12 +249,15 @@ void ps2_reset(unsigned int id)
 
 }
 
-void ps2_identify(unsigned int id)
+unsigned char ps2_identify(unsigned int id)
 {
 
     setdevicedata(id, COMMANDDEVIDENTIFY);
-    polldata();
-    polldata();
+
+    if (polldata() != 0xFA)
+        return 0;
+
+    return polldata();
 
 }
 
@@ -278,6 +282,21 @@ void ps2_default(unsigned int id)
 
     setdevicedata(id, COMMANDDEVDEFAULT);
     polldata();
+
+}
+
+void ps2_rate(unsigned int id, unsigned char rate)
+{
+
+    setdevicedata(id, COMMANDDEVRATE);
+
+    if (polldata() != 0xFA)
+        return;
+
+    setdevicedata(id, rate);
+
+    if (polldata() != 0xFA)
+        return;
 
 }
 

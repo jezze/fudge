@@ -9,6 +9,7 @@
 static struct base_driver driver;
 static struct mouse_interface mouseinterface;
 static unsigned int sequence;
+static unsigned int type;
 static unsigned char state;
 static unsigned char oldstate;
 static char relx;
@@ -58,6 +59,11 @@ static void handleirq(unsigned int irq)
         else
             rely = data;
 
+        sequence = (type) ? 3 : 0;
+
+        break;
+
+    case 3:
         sequence = 0;
 
         break;
@@ -112,6 +118,34 @@ static void driver_reset(unsigned int id)
     ps2_disable(id);
     ps2_reset(id);
     ps2_default(id);
+
+    if (ps2_identify(id) == 0)
+    {
+
+        ps2_rate(id, 200);
+        ps2_rate(id, 100);
+        ps2_rate(id, 80);
+
+    }
+
+    if (ps2_identify(id) == 3)
+    {
+
+        type = 1;
+
+        ps2_rate(id, 200);
+        ps2_rate(id, 100);
+        ps2_rate(id, 80);
+
+    }
+
+    if (ps2_identify(id) == 4)
+    {
+
+        type = 2;
+
+    }
+
     ps2_enable(id);
     ps2_enablescanning(id);
     ps2_enableinterrupt(id);
