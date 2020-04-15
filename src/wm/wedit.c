@@ -3,7 +3,6 @@
 #include <widget.h>
 
 static struct widget_textbox content;
-static struct widget_text status;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
@@ -23,17 +22,6 @@ static void updatecontent(void)
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
     ring_write(&output, "\n", 1);
-
-}
-
-static void updatestatus(void)
-{
-
-    status.length = 18;
-
-    widget_update(&output, &status, WIDGET_Z_MIDDLE, WIDGET_TYPE_TEXT, sizeof (struct widget_text) + status.length, &status.size);
-    ring_write(&output, &status, sizeof (struct widget_text));
-    ring_write(&output, "^S: Save, ^Q: Quit", 18);
 
 }
 
@@ -109,10 +97,8 @@ static void onwmconfigure(struct channel *channel, unsigned int source, void *md
 {
 
     struct event_wmconfigure *wmconfigure = mdata;
-    unsigned int divsize = wmconfigure->h / 8;
 
-    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h - divsize);
-    box_setsize(&status.size, wmconfigure->x, wmconfigure->y + wmconfigure->h - divsize, wmconfigure->w, divsize);
+    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
 
 }
 
@@ -171,7 +157,6 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
     }
 
     updatecontent();
-    updatestatus();
 
 }
 
@@ -188,7 +173,6 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 {
 
     updatecontent();
-    updatestatus();
 
 }
 
@@ -231,7 +215,6 @@ static void oninit(struct channel *channel)
     ring_init(&input1, FUDGE_BSIZE, inputdata1);
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     widget_inittextbox(&content);
-    widget_inittext(&status, WIDGET_TEXTTYPE_HIGHLIGHT);
 
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
