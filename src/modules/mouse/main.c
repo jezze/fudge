@@ -19,6 +19,18 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
 
 }
 
+void mouse_notifyscroll(struct mouse_interface *interface, char relz)
+{
+
+    struct event_mousescroll mousescroll;
+
+    mousescroll.relz = relz;
+
+    kernel_notify(&event.states, EVENT_MOUSESCROLL, &mousescroll, sizeof (struct event_mousescroll));
+    kernel_notify(&interface->event.states, EVENT_MOUSESCROLL, &mousescroll, sizeof (struct event_mousescroll));
+
+}
+
 void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
 {
 

@@ -9,12 +9,13 @@
 #define EVENT_KEYPRESS                  0x10
 #define EVENT_KEYRELEASE                0x11
 #define EVENT_MOUSEMOVE                 0x12
-#define EVENT_MOUSEPRESS                0x13
-#define EVENT_MOUSERELEASE              0x14
-#define EVENT_CONSOLEDATA               0x15
-#define EVENT_TIMERTICK                 0x16
-#define EVENT_VIDEOMODE                 0x17
-#define EVENT_BLOCKREQUEST              0x18
+#define EVENT_MOUSESCROLL               0x13
+#define EVENT_MOUSEPRESS                0x14
+#define EVENT_MOUSERELEASE              0x15
+#define EVENT_CONSOLEDATA               0x16
+#define EVENT_TIMERTICK                 0x17
+#define EVENT_VIDEOMODE                 0x18
+#define EVENT_BLOCKREQUEST              0x19
 #define EVENT_WMCLOSE                   0x20
 #define EVENT_WMMAP                     0x21
 #define EVENT_WMUNMAP                   0x22
@@ -24,8 +25,9 @@
 #define EVENT_WMKEYPRESS                0x26
 #define EVENT_WMKEYRELEASE              0x27
 #define EVENT_WMMOUSEMOVE               0x28
-#define EVENT_WMMOUSEPRESS              0x29
-#define EVENT_WMMOUSERELEASE            0x2A
+#define EVENT_WMMOUSESCROLL             0x29
+#define EVENT_WMMOUSEPRESS              0x2A
+#define EVENT_WMMOUSERELEASE            0x2B
 
 struct event_redirect
 {
@@ -50,6 +52,21 @@ struct event_keyrelease
 
 };
 
+struct event_mousemove
+{
+
+    char relx;
+    char rely;
+
+};
+
+struct event_mousescroll
+{
+
+    char relz;
+
+};
+
 struct event_mousepress
 {
 
@@ -61,14 +78,6 @@ struct event_mouserelease
 {
 
     unsigned int button;
-
-};
-
-struct event_mousemove
-{
-
-    char relx;
-    char rely;
 
 };
 
@@ -129,6 +138,21 @@ struct event_wmkeyrelease
 
 };
 
+struct event_wmmousemove
+{
+
+    char relx;
+    char rely;
+
+};
+
+struct event_wmmousescroll
+{
+
+    char relz;
+
+};
+
 struct event_wmmousepress
 {
 
@@ -140,13 +164,5 @@ struct event_wmmouserelease
 {
 
     unsigned int button;
-
-};
-
-struct event_wmmousemove
-{
-
-    char relx;
-    char rely;
 
 };

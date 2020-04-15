@@ -14,6 +14,7 @@ static unsigned char state;
 static unsigned char oldstate;
 static char relx;
 static char rely;
+static char relz;
 
 static void handleirq(unsigned int irq)
 {
@@ -64,6 +65,21 @@ static void handleirq(unsigned int irq)
         break;
 
     case 3:
+        switch (type)
+        {
+
+        case 1:
+            relz = data;
+
+            break;
+
+        case 2:
+            relz = (data & 0x0F);
+
+            break;
+
+        }
+
         sequence = 0;
 
         break;
@@ -93,6 +109,9 @@ static void handleirq(unsigned int irq)
 
     if (relx || rely)
        mouse_notifymove(&mouseinterface, relx, -rely);
+
+    if (relz)
+        mouse_notifyscroll(&mouseinterface, relz);
 
     oldstate = state;
 

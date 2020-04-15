@@ -639,6 +639,36 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
 
 }
 
+static void onmousescroll(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_mousescroll *mousescroll = mdata;
+
+    if (currentview->currentremote)
+    {
+
+        struct event_wmmousescroll wmmousescroll;
+
+        wmmousescroll.relz = mousescroll->relz;
+
+        channel_request(channel, EVENT_WMMOUSESCROLL);
+        channel_append(channel, sizeof (struct event_wmmousescroll), &wmmousescroll);
+        channel_place(channel, currentview->currentremote->source);
+
+    }
+
+    /* REMOVE STUFF BELOW AFTER TEST */
+
+    if (mousescroll->relz < 0)
+        currentview->center -= (currentview->center > 6 * steplength) ? steplength : 0;
+    else
+        currentview->center += (currentview->center < 26 * steplength) ? steplength : 0;
+
+    arrangeview(channel, currentview);
+    showremotes(channel, &currentview->remotes);
+
+}
+
 static void onmousepress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -972,6 +1002,7 @@ void main(void)
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
     channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
     channel_setsignal(&channel, EVENT_MOUSEMOVE, onmousemove);
+    channel_setsignal(&channel, EVENT_MOUSESCROLL, onmousescroll);
     channel_setsignal(&channel, EVENT_MOUSEPRESS, onmousepress);
     channel_setsignal(&channel, EVENT_MOUSERELEASE, onmouserelease);
     channel_setsignal(&channel, EVENT_VIDEOMODE, onvideomode);
