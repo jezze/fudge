@@ -14,8 +14,6 @@ static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
-static unsigned int totalrows;
-static unsigned int visiblerows;
 static unsigned int idcomplete;
 static unsigned int idslang;
 
@@ -35,20 +33,6 @@ static void updatecontent(void)
 
 }
 
-static void removerows(unsigned int count)
-{
-
-    while (count--)
-    {
-
-        ring_skip(&text, ring_find(&text, '\n') + 1);
-
-        totalrows--;
-
-    }
-
-}
-
 static void copybuffer(void *buffer, unsigned int count)
 {
 
@@ -59,17 +43,7 @@ static void copybuffer(void *buffer, unsigned int count)
     {
 
         if (!ring_avail(&text))
-            removerows(1);
-
-        if (b[i] == '\n')
-        {
-
-            totalrows++;
-
-            if (totalrows >= visiblerows)
-                removerows(totalrows - visiblerows + 1);
-
-        }
+            ring_skip(&text, ring_find(&text, '\n') + 1);
 
         ring_write(&text, &b[i], 1);
 
@@ -226,12 +200,6 @@ static void onwmconfigure(struct channel *channel, unsigned int source, void *md
     struct event_wmconfigure *wmconfigure = mdata;
 
     box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
-    box_resize(&content.size, wmconfigure->padding);
-
-    visiblerows = content.size.h / wmconfigure->lineheight;
-
-    if (totalrows >= visiblerows)
-        removerows(totalrows - visiblerows + 1);
 
 }
 
@@ -285,7 +253,7 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
 
     case 0x26:
         if (keymod & KEYMOD_CTRL)
-            removerows(totalrows);
+            ring_reset(&text);
         else
             ring_write(&input1, keycode->value, keycode->length);
 

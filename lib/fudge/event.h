@@ -119,8 +119,6 @@ struct event_wmconfigure
     unsigned int y;
     unsigned int w;
     unsigned int h;
-    unsigned int padding;
-    unsigned int lineheight;
 
 };
 

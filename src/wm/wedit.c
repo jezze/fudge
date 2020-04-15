@@ -87,42 +87,18 @@ static void movedown(void)
 
 }
 
-static unsigned int readfile(unsigned int visiblerows)
+static void readfile()
 {
 
     char buffer[FUDGE_BSIZE];
-    unsigned int rows = 0;
     unsigned int count;
 
     file_open(FILE_G1);
 
     while ((count = file_read(FILE_G1, buffer, FUDGE_BSIZE)))
-    {
-
-        unsigned int i;
-
-        for (i = 0; i < count; i++)
-        {
-
-            ring_write(&input2, &buffer[i], 1);
-
-            if (buffer[i] == '\n')
-            {
-
-                rows++;
-
-                if (rows >= visiblerows)
-                    return rows;
-
-            }
-
-        }
-
-    }
+        ring_write(&input2, buffer, count);
 
     file_close(FILE_G1);
-
-    return rows;
 
 }
 
@@ -137,14 +113,13 @@ static void onwmconfigure(struct channel *channel, unsigned int source, void *md
 {
 
     struct event_wmconfigure *wmconfigure = mdata;
+    unsigned int divsize = wmconfigure->h / 8;
 
     ring_reset(&input1);
     ring_reset(&input2);
-    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h - (wmconfigure->lineheight + 2 * wmconfigure->padding));
-    box_resize(&content.size, wmconfigure->padding);
-    box_setsize(&status.size, wmconfigure->x, wmconfigure->y + wmconfigure->h - (wmconfigure->lineheight + 2 * wmconfigure->padding), wmconfigure->w, (wmconfigure->lineheight + 2 * wmconfigure->padding));
-    box_resize(&status.size, wmconfigure->padding);
-    readfile(content.size.h / wmconfigure->lineheight);
+    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h - divsize);
+    box_setsize(&status.size, wmconfigure->x, wmconfigure->y + wmconfigure->h - divsize, wmconfigure->w, divsize);
+    readfile();
 
 }
 

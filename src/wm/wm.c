@@ -195,12 +195,10 @@ static void configureremotes(struct channel *channel, struct list *remotes)
         struct remote *remote = current->data;
         struct event_wmconfigure wmconfigure;
 
-        wmconfigure.x = remote->window.size.x + 2;
-        wmconfigure.y = remote->window.size.y + 2;
-        wmconfigure.w = remote->window.size.w - 4;
-        wmconfigure.h = remote->window.size.h - 4;
-        wmconfigure.padding = padding;
-        wmconfigure.lineheight = lineheight;
+        wmconfigure.x = remote->window.size.x + 2 + padding;
+        wmconfigure.y = remote->window.size.y + 2 + padding;
+        wmconfigure.w = remote->window.size.w - 4 - padding * 2;
+        wmconfigure.h = remote->window.size.h - 4 - padding * 2;
 
         channel_request(channel, EVENT_WMCONFIGURE);
         channel_append(channel, sizeof (struct event_wmconfigure), &wmconfigure);
