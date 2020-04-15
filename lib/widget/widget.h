@@ -59,6 +59,7 @@ struct widget_text
     struct box size;
     unsigned int type;
     unsigned int length;
+    unsigned int offset;
 
 };
 
@@ -68,6 +69,7 @@ struct widget_textbox
     struct box size;
     unsigned int length;
     unsigned int cursor;
+    unsigned int offset;
 
 };
 

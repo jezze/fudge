@@ -125,7 +125,10 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
         break;
 
     case 0x48:
-        moveup();
+        if (keymod & KEYMOD_SHIFT)
+            content.offset--;
+        else
+            moveup();
 
         break;
 
@@ -145,7 +148,10 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
         break;
 
     case 0x50:
-        movedown();
+        if (keymod & KEYMOD_SHIFT)
+            content.offset++;
+        else
+            movedown();
 
         break;
 

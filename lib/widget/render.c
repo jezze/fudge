@@ -373,7 +373,7 @@ static void rendertext(void *canvas, void *data, unsigned int line)
 
     struct widget_text *text = data;
     unsigned char *string = (unsigned char *)(text + 1);
-    unsigned int rowindex = line / font.lineheight;
+    unsigned int rowindex = text->offset + line / font.lineheight;
     unsigned int rowtotal = findrowtotal(string, text->length);
     unsigned int rowstart;
     unsigned int rowcount;
@@ -393,7 +393,7 @@ static void rendertextbox(void *canvas, void *data, unsigned int line)
 
     struct widget_textbox *textbox = data;
     unsigned char *string = (unsigned char *)(textbox + 1);
-    unsigned int rowindex = line / font.lineheight;
+    unsigned int rowindex = textbox->offset + line / font.lineheight;
     unsigned int rowtotal = findrowtotal(string, textbox->length);
     unsigned int rowstart;
     unsigned int rowcount;
