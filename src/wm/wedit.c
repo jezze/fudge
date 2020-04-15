@@ -87,25 +87,21 @@ static void movedown(void)
 
 }
 
-static void readfile()
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     char buffer[FUDGE_BSIZE];
     unsigned int count;
 
-    file_open(FILE_G1);
+    if (!file_walk2(FILE_L0, mdata))
+        return;
 
-    while ((count = file_read(FILE_G1, buffer, FUDGE_BSIZE)))
+    file_open(FILE_L0);
+
+    while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE)))
         ring_write(&input2, buffer, count);
 
-    file_close(FILE_G1);
-
-}
-
-static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    file_walk2(FILE_G1, mdata);
+    file_close(FILE_L0);
 
 }
 
@@ -115,11 +111,8 @@ static void onwmconfigure(struct channel *channel, unsigned int source, void *md
     struct event_wmconfigure *wmconfigure = mdata;
     unsigned int divsize = wmconfigure->h / 8;
 
-    ring_reset(&input1);
-    ring_reset(&input2);
     box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h - divsize);
     box_setsize(&status.size, wmconfigure->x, wmconfigure->y + wmconfigure->h - divsize, wmconfigure->w, divsize);
-    readfile();
 
 }
 
