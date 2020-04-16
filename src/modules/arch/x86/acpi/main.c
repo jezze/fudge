@@ -10,9 +10,9 @@
 static struct acpi_rsdp *findrsdp(void)
 {
 
+    char *signature = "RSD PTR ";
     unsigned int rsdp;
     unsigned int ebda;
-    char *signature = "RSD PTR ";
 
     for (rsdp = 0x000E0000; rsdp < 0x00100000; rsdp += 0x10)
     {
@@ -40,15 +40,17 @@ static struct acpi_rsdp *findrsdp(void)
 struct acpi_sdth *acpi_findheader(char *name)
 {
 
-    unsigned int i;
     struct acpi_rsdp *rsdp = findrsdp();
-    unsigned int entries = (rsdp->rsdt->base.length - sizeof (struct acpi_sdth)) / 4;
+    struct acpi_sdth *sdth = (struct acpi_sdth *)rsdp->rsdt;
+    struct acpi_sdth *entries = (struct acpi_sdth *)(rsdp->rsdt + sizeof (struct acpi_sdth));
+    unsigned int total = (sdth->length - sizeof (struct acpi_sdth)) / 4;
+    unsigned int i;
 
-    for (i = 0; i < entries; i++)
+    for (i = 0; i < total; i++)
     {
 
-        if (memory_match(rsdp->rsdt->entries[i]->signature, name, 4))
-            return rsdp->rsdt->entries[i];
+        if (memory_match(entries[i].signature, name, 4))
+            return &entries[i];
 
     }
 
@@ -64,7 +66,7 @@ void module_init(void)
     if (!rsdp)
         return;
 
-    arch_setmap(6, (unsigned int)rsdp->rsdt, (unsigned int)rsdp->rsdt, 0x00100000);
+    arch_setmap(6, rsdp->rsdt, rsdp->rsdt, 0x00100000);
 
 }
 

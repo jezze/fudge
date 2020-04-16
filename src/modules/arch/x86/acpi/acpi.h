@@ -13,14 +13,6 @@ struct acpi_sdth
 
 };
 
-struct acpi_rsdt
-{
-
-    struct acpi_sdth base;
-    struct acpi_sdth *entries[64];
-
-};
-
 struct acpi_madt
 {
 
@@ -105,7 +97,7 @@ struct acpi_rsdp
     unsigned char checksum;
     char oem[6];
     unsigned char revision;
-    struct acpi_rsdt *rsdt;
+    unsigned int rsdt;
     unsigned int length;
     unsigned int xsdtLow;
     unsigned int xsdtHigh;
