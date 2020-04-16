@@ -184,30 +184,6 @@ static void closeremotes(struct channel *channel, struct list *remotes)
 
 }
 
-static void configureremotes(struct channel *channel, struct list *remotes)
-{
-
-    struct list_item *current;
-
-    for (current = remotes->head; current; current = current->next)
-    {
-
-        struct remote *remote = current->data;
-        struct event_wmconfigure wmconfigure;
-
-        wmconfigure.x = remote->window.size.x + 2 + padding;
-        wmconfigure.y = remote->window.size.y + 2 + padding;
-        wmconfigure.w = remote->window.size.w - 4 - padding * 2;
-        wmconfigure.h = remote->window.size.h - 4 - padding * 2;
-
-        channel_request(channel, EVENT_WMCONFIGURE);
-        channel_append(channel, sizeof (struct event_wmconfigure), &wmconfigure);
-        channel_place(channel, remote->source);
-
-    }
-
-}
-
 static void flipview(struct channel *channel, struct view *view)
 {
 
@@ -275,8 +251,6 @@ static void arrangeview(struct channel *channel, struct view *view)
         break;
 
     }
-
-    configureremotes(channel, &view->remotes);
 
 }
 
@@ -359,7 +333,13 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
         if (remote->source == source)
         {
 
+            unsigned int x = remote->window.size.x + 2 + padding;
+            unsigned int y = remote->window.size.y + 2 + padding;
+            unsigned int w = remote->window.size.w - 4 - padding * 2;
+            unsigned int h = remote->window.size.h - 4 - padding * 2;
+
             render_write(source, mdata, msize);
+            render_resize(source, x, y, w, h, padding, lineheight, steplength);
             render_flush(canvasdata, 0x10000, drawline);
             render_complete();
 
@@ -931,6 +911,7 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
     {
 
         render_write(0, outputdata, ring_count(&output));
+        render_resize(0, screen.x, screen.y, screen.w, screen.h, padding, lineheight, steplength);
         render_flush(canvasdata, 0x10000, drawline);
         render_complete();
         ring_reset(&output);

@@ -609,6 +609,59 @@ void render_write(unsigned int source, void *buffer, unsigned int count)
 
 }
 
+void render_resize(unsigned int source, int x, int y, int w, int h, unsigned int padding, unsigned int lineheight, unsigned int steplength)
+{
+
+    struct widget *current = 0;
+
+    while ((current = nextwidget(&layers[WIDGET_Z_MIDDLE], current)))
+    {
+
+        if (current->source == source)
+        {
+
+            if (current->type == WIDGET_TYPE_TEXT)
+            {
+
+                struct widget_text *text = (struct widget_text *)(current + 1);
+
+                current->size.x = x;
+                current->size.y = y;
+                current->size.w = w;
+                current->size.h = h;
+                text->size.x = x;
+                text->size.y = y;
+                text->size.w = w;
+
+                /* make dynamic */
+                text->size.h = h;
+
+            }
+
+            if (current->type == WIDGET_TYPE_TEXTBOX)
+            {
+
+                struct widget_textbox *textbox = (struct widget_textbox *)(current + 1);
+
+                current->size.x = x;
+                current->size.y = y;
+                current->size.w = w;
+                current->size.h = h;
+                textbox->size.x = x;
+                textbox->size.y = y;
+                textbox->size.w = w;
+
+                /* make dynamic */
+                textbox->size.h = h;
+
+            }
+
+        }
+
+    }
+
+}
+
 void render_clean(unsigned int source)
 {
 

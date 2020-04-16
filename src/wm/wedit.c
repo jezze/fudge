@@ -92,15 +92,6 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onwmconfigure(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_wmconfigure *wmconfigure = mdata;
-
-    box_setsize(&content.size, wmconfigure->x, wmconfigure->y, wmconfigure->w, wmconfigure->h);
-
-}
-
 static void onwmkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -231,7 +222,6 @@ void main(void)
     channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_FILE, onfile);
-    channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
