@@ -126,6 +126,9 @@ struct event_wmkeypress
 {
 
     unsigned char scancode;
+    unsigned int keymod;
+    unsigned int unicode;
+    unsigned int length;
 
 };
 
@@ -133,6 +136,9 @@ struct event_wmkeyrelease
 {
 
     unsigned char scancode;
+    unsigned int keymod;
+    unsigned int unicode;
+    unsigned int length;
 
 };
 

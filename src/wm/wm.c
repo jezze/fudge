@@ -382,6 +382,8 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
 {
 
     struct event_keypress *keypress = mdata;
+    struct keymap *keymap = keymap_load(KEYMAP_US);
+    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
     struct view *nextview;
     struct remote *nextremote;
     unsigned int id;
@@ -397,6 +399,9 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
             struct event_wmkeypress wmkeypress;
 
             wmkeypress.scancode = keypress->scancode;
+            wmkeypress.unicode = keycode->value[0];
+            wmkeypress.length = keycode->length;
+            wmkeypress.keymod = keymod;
 
             channel_request(channel, EVENT_WMKEYPRESS);
             channel_append(channel, sizeof (struct event_wmkeypress), &wmkeypress);
@@ -580,6 +585,8 @@ static void onkeyrelease(struct channel *channel, unsigned int source, void *mda
 {
 
     struct event_keyrelease *keyrelease = mdata;
+    struct keymap *keymap = keymap_load(KEYMAP_US);
+    struct keycode *keycode = keymap_getkeycode(keymap, keyrelease->scancode, keymod);
 
     keymod = keymap_modkey(keyrelease->scancode, keymod);
 
@@ -592,6 +599,9 @@ static void onkeyrelease(struct channel *channel, unsigned int source, void *mda
             struct event_wmkeyrelease wmkeyrelease;
 
             wmkeyrelease.scancode = keyrelease->scancode;
+            wmkeyrelease.unicode = keycode->value[0];
+            wmkeyrelease.length = keycode->length;
+            wmkeyrelease.keymod = keymod;
 
             channel_request(channel, EVENT_WMKEYRELEASE);
             channel_append(channel, sizeof (struct event_wmkeyrelease), &wmkeyrelease);

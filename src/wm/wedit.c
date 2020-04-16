@@ -3,7 +3,6 @@
 #include <widget.h>
 
 static struct widget_textbox content;
-static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
 static char inputdata1[FUDGE_BSIZE];
@@ -106,10 +105,6 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
 {
 
     struct event_wmkeypress *wmkeypress = mdata;
-    struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, wmkeypress->scancode, keymod);
-
-    keymod = keymap_modkey(wmkeypress->scancode, keymod);
 
     switch (wmkeypress->scancode)
     {
@@ -125,7 +120,7 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
         break;
 
     case 0x48:
-        if (keymod & KEYMOD_SHIFT)
+        if (wmkeypress->keymod & KEYMOD_SHIFT)
             content.offset--;
         else
             moveup();
@@ -148,7 +143,7 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
         break;
 
     case 0x50:
-        if (keymod & KEYMOD_SHIFT)
+        if (wmkeypress->keymod & KEYMOD_SHIFT)
             content.offset++;
         else
             movedown();
@@ -156,22 +151,13 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
         break;
 
     default:
-        ring_write(&input1, keycode->value, keycode->length);
+        ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
 
         break;
 
     }
 
     updatecontent();
-
-}
-
-static void onwmkeyrelease(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_wmkeyrelease *wmkeyrelease = mdata;
-
-    keymod = keymap_modkey(wmkeyrelease->scancode, keymod);
 
 }
 
@@ -247,7 +233,6 @@ void main(void)
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_WMCONFIGURE, onwmconfigure);
     channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
-    channel_setsignal(&channel, EVENT_WMKEYRELEASE, onwmkeyrelease);
     channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
     channel_listen2(&channel, oninit, onexit);
