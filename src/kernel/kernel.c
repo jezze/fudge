@@ -217,26 +217,28 @@ void kernel_assign(void)
         struct task *task = current->data;
         struct mailbox *mailbox = &mailboxes[task->id];
 
-        if (ring_count(&mailbox->ring))
-        {
+        if (!ring_count(&mailbox->ring))
+            continue;
 
-            list_remove_nolock(&blockedtasks, current);
-            coreassign(task);
-
-        }
+        list_remove_nolock(&blockedtasks, current);
+        coreassign(task);
 
     }
 
     spinlock_release(&blockedtasks.spinlock);
+    spinlock_acquire(&usedtasks.spinlock);
 
-    while ((current = list_pickhead(&usedtasks)))
+    for (current = usedtasks.head; current; current = current->next)
     {
 
         struct task *task = current->data;
 
+        list_remove_nolock(&usedtasks, current);
         coreassign(task);
 
     }
+
+    spinlock_release(&usedtasks.spinlock);
 
 }
 
