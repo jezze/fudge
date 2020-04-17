@@ -71,6 +71,14 @@ void list_remove(struct list *list, struct list_item *item)
 
 }
 
+void list_remove_nolock(struct list *list, struct list_item *item)
+{
+
+    if (item->list == list)
+        remove(list, item);
+
+}
+
 void list_move(struct list *to, struct list *from, struct list_item *item)
 {
 

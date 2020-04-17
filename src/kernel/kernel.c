@@ -204,10 +204,39 @@ void kernel_freemailbox(struct mailbox *mailbox)
 
 }
 
+static void wakeup(void)
+{
+
+    struct list_item *current;
+
+    spinlock_acquire(&blockedtasks.spinlock);
+
+    for (current = blockedtasks.head; current; current = current->next)
+    {
+
+        struct task *task = current->data;
+        struct mailbox *mailbox = &mailboxes[task->id];
+
+        if (ring_count(&mailbox->ring))
+        {
+
+            list_remove_nolock(&blockedtasks, &task->item);
+            list_add(&usedtasks, &task->item);
+
+        }
+
+    }
+
+    spinlock_release(&blockedtasks.spinlock);
+
+}
+
 void kernel_assign(void)
 {
 
     struct list_item *current;
+
+    wakeup();
 
     while ((current = list_pickhead(&usedtasks)))
         coreassign(current->data);
@@ -262,13 +291,7 @@ unsigned int kernel_pick(unsigned int id, struct ipc_header *header, void *data)
     unsigned int count = mailbox_pick(mailbox, header, data);
 
     if (!count)
-    {
-
-        task->thread.status = TASK_STATUS_BLOCKED;
-
         list_add(&blockedtasks, &task->item);
-
-    }
 
     return count;
 
@@ -277,22 +300,9 @@ unsigned int kernel_pick(unsigned int id, struct ipc_header *header, void *data)
 unsigned int kernel_place(unsigned int id, struct ipc_header *header, void *data)
 {
 
-    struct task *task = &tasks[id];
     struct mailbox *mailbox = &mailboxes[id];
-    unsigned int count = mailbox_place(mailbox, header, data);
 
-    if (task->thread.status == TASK_STATUS_BLOCKED)
-    {
-
-        list_remove(&blockedtasks, &task->item);
-
-        task->thread.status = TASK_STATUS_NORMAL;
-
-        list_add(&usedtasks, &task->item);
-
-    }
-
-    return count;
+    return mailbox_place(mailbox, header, data);
 
 }
 

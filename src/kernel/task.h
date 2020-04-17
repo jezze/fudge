@@ -6,7 +6,6 @@ struct task_thread
 
     unsigned int ip;
     unsigned int sp;
-    unsigned int status;
 
 };
 
