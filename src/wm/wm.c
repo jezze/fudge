@@ -55,7 +55,7 @@ static unsigned char colormap8[] = {
     0x3F, 0x3F, 0x3F
 };
 
-static void drawline(void *data, unsigned int count, unsigned int offset)
+static void draw(void *data, unsigned int count, unsigned int offset)
 {
 
     file_seekwriteall(FILE_G6, data, count, offset);
@@ -340,7 +340,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
             render_write(source, mdata, msize);
             render_resize(source, x, y, w, h, padding, lineheight, steplength);
-            render_flush(canvasdata, 0x10000, drawline);
+            render_flush(canvasdata, 0x10000, draw);
             render_complete();
 
         }
@@ -911,7 +911,7 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
 
         render_write(0, outputdata, ring_count(&output));
         render_resize(0, screen.x, screen.y, screen.w, screen.h, padding, lineheight, steplength);
-        render_flush(canvasdata, 0x10000, drawline);
+        render_flush(canvasdata, 0x10000, draw);
         render_complete();
         ring_reset(&output);
 

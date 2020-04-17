@@ -530,7 +530,7 @@ static void renderline(void *canvas, unsigned int line)
 
 }
 
-void render_flush(unsigned char *canvasdata, unsigned int size, void (*drawline)(void *data, unsigned int count, unsigned int offset))
+void render_flush(unsigned char *canvasdata, unsigned int size, void (*draw)(void *data, unsigned int count, unsigned int offset))
 {
 
     unsigned int linesize = currentw * currentbpp;
@@ -560,7 +560,7 @@ void render_flush(unsigned char *canvasdata, unsigned int size, void (*drawline)
         if (chunk)
         {
 
-            drawline(canvasdata, linesize * chunk, chunkstart * linesize);
+            draw(canvasdata, linesize * chunk, chunkstart * linesize);
 
             chunk = 0;
 
