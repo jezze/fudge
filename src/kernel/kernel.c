@@ -204,7 +204,7 @@ void kernel_freemailbox(struct mailbox *mailbox)
 
 }
 
-static void wakeup(void)
+void kernel_assign(void)
 {
 
     struct list_item *current;
@@ -220,8 +220,8 @@ static void wakeup(void)
         if (ring_count(&mailbox->ring))
         {
 
-            list_remove_nolock(&blockedtasks, &task->item);
-            list_add(&usedtasks, &task->item);
+            list_remove_nolock(&blockedtasks, current);
+            coreassign(task);
 
         }
 
@@ -229,17 +229,14 @@ static void wakeup(void)
 
     spinlock_release(&blockedtasks.spinlock);
 
-}
-
-void kernel_assign(void)
-{
-
-    struct list_item *current;
-
-    wakeup();
-
     while ((current = list_pickhead(&usedtasks)))
-        coreassign(current->data);
+    {
+
+        struct task *task = current->data;
+
+        coreassign(task);
+
+    }
 
 }
 
