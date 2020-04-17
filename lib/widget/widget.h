@@ -11,9 +11,8 @@
 #define WIDGET_MOUSETYPE_DEFAULT        0
 #define WIDGET_TEXTTYPE_NORMAL          0
 #define WIDGET_TEXTTYPE_HIGHLIGHT       1
-#define WIDGET_Z_BOTTOM                 0
-#define WIDGET_Z_MIDDLE                 1
-#define WIDGET_Z_TOP                    2
+#define WIDGET_Z_REGULAR                0
+#define WIDGET_Z_FLOAT                  1
 
 struct widget
 {
@@ -31,7 +30,6 @@ struct widget
 struct widget_fill
 {
 
-    struct box size;
     unsigned int color;
 
 };
@@ -56,7 +54,6 @@ struct widget_panel
 struct widget_text
 {
 
-    struct box size;
     unsigned int type;
     unsigned int length;
     unsigned int offset;
@@ -66,7 +63,6 @@ struct widget_text
 struct widget_textbox
 {
 
-    struct box size;
     unsigned int length;
     unsigned int cursor;
     unsigned int offset;
@@ -88,4 +84,5 @@ void widget_inittext(struct widget_text *text, unsigned int type);
 void widget_inittextbox(struct widget_textbox *textbox);
 void widget_initwindow(struct widget_window *window, unsigned int active);
 void widget_update(struct ring *ring, void *item, unsigned int z, unsigned int type, unsigned int count, struct box *size);
+void widget_updateX(struct ring *ring, void *item, unsigned int z, unsigned int type, unsigned int count);
 void widget_remove(struct ring *ring, void *item, unsigned int z);

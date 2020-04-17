@@ -16,7 +16,7 @@ static void updatecontent(void)
     content.length = ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&input1);
 
-    widget_update(&output, &content, WIDGET_Z_MIDDLE, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length, &content.size);
+    widget_updateX(&output, &content, WIDGET_Z_REGULAR, WIDGET_TYPE_TEXTBOX, sizeof (struct widget_textbox) + content.length);
     ring_write(&output, &content, sizeof (struct widget_textbox));
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);

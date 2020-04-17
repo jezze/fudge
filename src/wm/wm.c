@@ -65,7 +65,7 @@ static void drawline(void *data, unsigned int count, unsigned int offset)
 static void updateremote(struct remote *remote)
 {
 
-    widget_update(&output, &remote->window, WIDGET_Z_MIDDLE, WIDGET_TYPE_WINDOW, sizeof (struct widget_window), &remote->window.size);
+    widget_update(&output, &remote->window, WIDGET_Z_REGULAR, WIDGET_TYPE_WINDOW, sizeof (struct widget_window), &remote->window.size);
     ring_write(&output, &remote->window, sizeof (struct widget_window));
 
 }
@@ -73,7 +73,7 @@ static void updateremote(struct remote *remote)
 static void updateview(struct view *view)
 {
 
-    widget_update(&output, &view->panel, WIDGET_Z_MIDDLE, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length, &view->panel.size);
+    widget_update(&output, &view->panel, WIDGET_Z_REGULAR, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length, &view->panel.size);
     ring_write(&output, &view->panel, sizeof (struct widget_panel));
     ring_write(&output, &view->numberstring, view->panel.length);
 
@@ -82,7 +82,7 @@ static void updateview(struct view *view)
 static void updatemouse(void)
 {
 
-    widget_update(&output, &mouse, WIDGET_Z_TOP, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse), &mouse.size);
+    widget_update(&output, &mouse, WIDGET_Z_FLOAT, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse), &mouse.size);
     ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
 }
@@ -90,7 +90,7 @@ static void updatemouse(void)
 static void updatebackground(void)
 {
 
-    widget_update(&output, &background, WIDGET_Z_BOTTOM, WIDGET_TYPE_FILL, sizeof (struct widget_fill), &background.size);
+    widget_updateX(&output, &background, WIDGET_Z_REGULAR, WIDGET_TYPE_FILL, sizeof (struct widget_fill));
     ring_write(&output, &background, sizeof (struct widget_fill));
 
 }
@@ -98,7 +98,7 @@ static void updatebackground(void)
 static void removeremote(struct remote *remote)
 {
 
-    widget_remove(&output, &remote->window, WIDGET_Z_MIDDLE);
+    widget_remove(&output, &remote->window, WIDGET_Z_REGULAR);
     render_clean(remote->source);
 
 }
@@ -821,7 +821,6 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     loadfont(factor);
     box_setsize(&screen, 0, 0, videomode->w, videomode->h);
     box_setsize(&body, 0, (lineheight + padding * 2), videomode->w, videomode->h - (lineheight + padding * 2));
-    box_setsize(&background.size, 0, 0, videomode->w, videomode->h);
     setmouse(videomode->w / 4, videomode->h / 4, factor);
     render_setdraw(videomode->w, videomode->h, videomode->bpp);
     render_setfont(fontdata, lineheight, padding);

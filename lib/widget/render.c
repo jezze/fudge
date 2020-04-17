@@ -13,7 +13,7 @@
 #define COLOR_POINTERFRAME              0x08
 #define COLOR_TEXTNORMAL                0x09
 #define COLOR_TEXTLIGHT                 0x0A
-#define LAYERS                          3
+#define LAYERS                          2
 
 struct layer
 {
@@ -39,14 +39,12 @@ static unsigned int currentw;
 static unsigned int currenth;
 static unsigned int currentbpp;
 static struct font font;
-static void (*drawables[7])(void *canvas, void *data, unsigned int line);
+static void (*drawables[7])(void *canvas, struct box *box, void *data, unsigned int line);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
-static unsigned char layerdata0[0x1000];
 static unsigned char layerdata1[0x8000];
 static unsigned char layerdata2[0x1000];
 static struct layer layers[LAYERS] = {
-    {layerdata0, 0, 0x1000},
     {layerdata1, 0, 0x8000},
     {layerdata2, 0, 0x1000}
 };
@@ -324,21 +322,21 @@ static void paintframe(void *canvas, unsigned int framecolor, struct box *size, 
 
 }
 
-static void rendernull(void *canvas, void *data, unsigned int line)
+static void rendernull(void *canvas, struct box *box, void *data, unsigned int line)
 {
 
 }
 
-static void renderfill(void *canvas, void *data, unsigned int line)
+static void renderfill(void *canvas, struct box *box, void *data, unsigned int line)
 {
 
     struct widget_fill *fill = data;
 
-    paint(canvas, fill->color, fill->size.x, fill->size.w);
+    paint(canvas, fill->color, box->x, box->w);
 
 }
 
-static void rendermouse(void *canvas, void *data, unsigned int line)
+static void rendermouse(void *canvas, struct box *box, void *data, unsigned int line)
 {
 
     struct widget_mouse *mouse = data;
@@ -348,7 +346,7 @@ static void rendermouse(void *canvas, void *data, unsigned int line)
 
 }
 
-static void renderpanel(void *canvas, void *data, unsigned int line)
+static void renderpanel(void *canvas, struct box *box, void *data, unsigned int line)
 {
 
     struct widget_panel *panel = data;
@@ -368,7 +366,7 @@ static void renderpanel(void *canvas, void *data, unsigned int line)
 
 }
 
-static void rendertext(void *canvas, void *data, unsigned int line)
+static void rendertext(void *canvas, struct box *box, void *data, unsigned int line)
 {
 
     struct widget_text *text = data;
@@ -384,11 +382,11 @@ static void rendertext(void *canvas, void *data, unsigned int line)
     rowstart = findrowstart(string, text->length, rowindex);
     rowcount = findrowcount(string, text->length, rowstart);
 
-    painttext(canvas, string + rowstart, rowcount - rowstart, text->size.x, text->size.x + text->size.w, textcolor[text->type], line % font.lineheight, rowcount - rowstart);
+    painttext(canvas, string + rowstart, rowcount - rowstart, box->x, box->x + box->w, textcolor[text->type], line % font.lineheight, rowcount - rowstart);
 
 }
 
-static void rendertextbox(void *canvas, void *data, unsigned int line)
+static void rendertextbox(void *canvas, struct box *box, void *data, unsigned int line)
 {
 
     struct widget_textbox *textbox = data;
@@ -404,11 +402,11 @@ static void rendertextbox(void *canvas, void *data, unsigned int line)
     rowstart = findrowstart(string, textbox->length, rowindex);
     rowcount = findrowcount(string, textbox->length, rowstart);
 
-    painttext(canvas, string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
+    painttext(canvas, string + rowstart, rowcount - rowstart, box->x, box->x + box->w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
 
 }
 
-static void renderwindow(void *canvas, void *data, unsigned int line)
+static void renderwindow(void *canvas, struct box *box, void *data, unsigned int line)
 {
 
     struct widget_window *window = data;
@@ -524,7 +522,7 @@ static void renderline(void *canvas, unsigned int line)
         {
 
             if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &current->size))
-                drawables[current->type](canvas, current + 1, line - current->size.y);
+                drawables[current->type](canvas, &current->size, current + 1, line - current->size.y);
 
         }
 
@@ -614,45 +612,39 @@ void render_resize(unsigned int source, int x, int y, int w, int h, unsigned int
 
     struct widget *current = 0;
 
-    while ((current = nextwidget(&layers[WIDGET_Z_MIDDLE], current)))
+    while ((current = nextwidget(&layers[WIDGET_Z_REGULAR], current)))
     {
 
         if (current->source == source)
         {
 
-            if (current->type == WIDGET_TYPE_TEXT)
+            if (current->type == WIDGET_TYPE_FILL)
             {
-
-                struct widget_text *text = (struct widget_text *)(current + 1);
 
                 current->size.x = x;
                 current->size.y = y;
                 current->size.w = w;
                 current->size.h = h;
-                text->size.x = x;
-                text->size.y = y;
-                text->size.w = w;
 
-                /* make dynamic */
-                text->size.h = h;
+            }
+
+            if (current->type == WIDGET_TYPE_TEXT)
+            {
+
+                current->size.x = x;
+                current->size.y = y;
+                current->size.w = w;
+                current->size.h = h;
 
             }
 
             if (current->type == WIDGET_TYPE_TEXTBOX)
             {
 
-                struct widget_textbox *textbox = (struct widget_textbox *)(current + 1);
-
                 current->size.x = x;
                 current->size.y = y;
                 current->size.w = w;
                 current->size.h = h;
-                textbox->size.x = x;
-                textbox->size.y = y;
-                textbox->size.w = w;
-
-                /* make dynamic */
-                textbox->size.h = h;
 
             }
 
