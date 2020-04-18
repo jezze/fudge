@@ -19,15 +19,39 @@ static char relz;
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char data = ps2_getdata();
+    unsigned char data;
+    unsigned char status;
+
+    status = ps2_getstatus();
+
+    if (!(status & 0x20))
+    {
+
+        debug_log16(DEBUG_INFO, "mouse status error", status);
+
+        return;
+
+    }
+
+    data = ps2_getdata();
 
     switch (sequence)
     {
 
     case 0:
+        debug_log8(DEBUG_INFO, "mouse data0", data);
+
+        oldstate = state;
+
         /* Temp fix for unsync issue */
         if (!(data & 0x08))
+        {
+
+            debug_log8(DEBUG_INFO, "mouse incorrect data0", data);
+
             return;
+
+        }
 
         state = data;
         sequence = 1;
@@ -35,6 +59,8 @@ static void handleirq(unsigned int irq)
         break;
 
     case 1:
+        debug_log8(DEBUG_INFO, "mouse data1", data);
+
         if (state & (1 << 6))
             relx = 0;
         else
@@ -45,6 +71,8 @@ static void handleirq(unsigned int irq)
         break;
 
     case 2:
+        debug_log8(DEBUG_INFO, "mouse data2", data);
+
         if (state & (1 << 7))
             rely = 0;
         else
@@ -55,6 +83,8 @@ static void handleirq(unsigned int irq)
         break;
 
     case 3:
+        debug_log8(DEBUG_INFO, "mouse data3", data);
+
         switch (type)
         {
 
@@ -70,40 +100,35 @@ static void handleirq(unsigned int irq)
 
         }
 
+        if (!(oldstate & 1) && (state & 1))
+           mouse_notifypress(&mouseinterface, 1);
+
+        if (!(oldstate & 2) && (state & 2))
+           mouse_notifypress(&mouseinterface, 2);
+
+        if (!(oldstate & 4) && (state & 4))
+           mouse_notifypress(&mouseinterface, 3);
+
+        if ((oldstate & 1) && !(state & 1))
+           mouse_notifyrelease(&mouseinterface, 1);
+
+        if ((oldstate & 2) && !(state & 2))
+           mouse_notifyrelease(&mouseinterface, 2);
+
+        if ((oldstate & 4) && !(state & 4))
+           mouse_notifyrelease(&mouseinterface, 3);
+
+        if (relx || rely)
+           mouse_notifymove(&mouseinterface, relx, -rely);
+
+        if (relz)
+            mouse_notifyscroll(&mouseinterface, relz);
+
         sequence = 0;
 
         break;
 
     }
-
-    if (sequence)
-        return;
-
-    if (!(oldstate & 1) && (state & 1))
-       mouse_notifypress(&mouseinterface, 1);
-
-    if (!(oldstate & 2) && (state & 2))
-       mouse_notifypress(&mouseinterface, 2);
-
-    if (!(oldstate & 4) && (state & 4))
-       mouse_notifypress(&mouseinterface, 3);
-
-    if ((oldstate & 1) && !(state & 1))
-       mouse_notifyrelease(&mouseinterface, 1);
-
-    if ((oldstate & 2) && !(state & 2))
-       mouse_notifyrelease(&mouseinterface, 2);
-
-    if ((oldstate & 4) && !(state & 4))
-       mouse_notifyrelease(&mouseinterface, 3);
-
-    if (relx || rely)
-       mouse_notifymove(&mouseinterface, relx, -rely);
-
-    if (relz)
-        mouse_notifyscroll(&mouseinterface, relz);
-
-    oldstate = state;
 
 }
 

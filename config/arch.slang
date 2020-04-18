@@ -11,8 +11,6 @@ elfload < /kernel/pci.ko
 elfload < /kernel/ps2.ko
 elfload < /kernel/ps2-keyboard.ko
 elfload < /kernel/ps2-mouse.ko
-elfload < /kernel/pit.ko
-elfload < /kernel/rtc.ko
 elfload < /kernel/bga.ko
 elfload < /kernel/uart.ko
 elfload < /kernel/vga.ko

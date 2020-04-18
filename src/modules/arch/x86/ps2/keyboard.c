@@ -12,7 +12,23 @@ static struct keyboard_interface keyboardinterface;
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char data = ps2_getdata();
+    unsigned char data;
+    unsigned char status;
+
+    status = ps2_getstatus();
+
+    if ((status & 0x20))
+    {
+
+        debug_log16(DEBUG_INFO, "kbd status error", status);
+
+        return;
+
+    }
+
+    data = ps2_getdata();
+
+    debug_log8(DEBUG_INFO, "kbd data", data);
 
     if (data == 0x00)
         return;

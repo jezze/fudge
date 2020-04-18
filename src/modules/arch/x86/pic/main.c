@@ -42,6 +42,16 @@ static void setmask(unsigned short port, unsigned char mask)
 
 }
 
+static unsigned short getirqreg(unsigned char reg)
+{
+
+    io_outb(REGISTERCOMMAND0, reg);
+    io_outb(REGISTERCOMMAND1, reg);
+
+    return (io_inb(REGISTERCOMMAND1) << 8) | io_inb(REGISTERCOMMAND0);
+
+}
+
 static unsigned char getstatus(unsigned short port, unsigned char type)
 {
 
@@ -62,6 +72,20 @@ static void disableline(unsigned short port, unsigned char line)
 {
 
     io_outb(port, io_inb(port) | (1 << (line % 8)));
+
+}
+
+unsigned short pic_getirr(void)
+{
+
+    return getirqreg(COMMANDIRR);
+
+}
+
+unsigned short pic_getisr(void)
+{
+
+    return getirqreg(COMMANDISR);
 
 }
 
