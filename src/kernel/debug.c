@@ -39,6 +39,7 @@ void debug_log8(unsigned int level, char *key, char value)
     c += memory_write(string, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, value, 16, 2), c);
     c += memory_write(string, FUDGE_BSIZE, " ", 1, c);
     c += memory_write(string, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, value, 10, 0), c);
+    c += memory_write(string, FUDGE_BSIZE, "", 1, c);
 
     debug_log(level, string, 0, 0);
 
@@ -58,6 +59,7 @@ void debug_log16(unsigned int level, char *key, short value)
     c += memory_write(string, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, value, 16, 4), c);
     c += memory_write(string, FUDGE_BSIZE, " ", 1, c);
     c += memory_write(string, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, value, 10, 0), c);
+    c += memory_write(string, FUDGE_BSIZE, "", 1, c);
 
     debug_log(level, string, 0, 0);
 
@@ -77,6 +79,7 @@ void debug_log32(unsigned int level, char *key, int value)
     c += memory_write(string, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, value, 16, 8), c);
     c += memory_write(string, FUDGE_BSIZE, " ", 1, c);
     c += memory_write(string, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, value, 10, 0), c);
+    c += memory_write(string, FUDGE_BSIZE, "", 1, c);
 
     debug_log(level, string, 0, 0);
 
