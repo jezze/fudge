@@ -4,6 +4,7 @@
 
 unsigned int ps2_checkdata(unsigned int id);
 unsigned char ps2_getdata(void);
+unsigned char ps2_getstatus(void);
 unsigned short ps2_getirq(unsigned int id);
 void ps2_enable(unsigned int id);
 void ps2_disable(unsigned int id);

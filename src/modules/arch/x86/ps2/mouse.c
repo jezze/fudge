@@ -25,15 +25,8 @@ static void handleirq(unsigned int irq)
     {
 
     case 0:
-        debug_log8(DEBUG_INFO, "ps2mouse data0", data);
-
-        if (data == 0x00)
-            return;
-
-        if (data == 0xFE)
-            return;
-
-        if (data == 0xFF)
+        /* Temp fix for unsync issue */
+        if (!(data & 0x08))
             return;
 
         state = data;
@@ -42,8 +35,6 @@ static void handleirq(unsigned int irq)
         break;
 
     case 1:
-        debug_log8(DEBUG_INFO, "ps2mouse data1", data);
-
         if (state & (1 << 6))
             relx = 0;
         else
@@ -54,8 +45,6 @@ static void handleirq(unsigned int irq)
         break;
 
     case 2:
-        debug_log8(DEBUG_INFO, "ps2mouse data2", data);
-
         if (state & (1 << 7))
             rely = 0;
         else
@@ -66,8 +55,6 @@ static void handleirq(unsigned int irq)
         break;
 
     case 3:
-        debug_log8(DEBUG_INFO, "ps2mouse data3", data);
-
         switch (type)
         {
 

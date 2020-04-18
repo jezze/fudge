@@ -632,8 +632,6 @@ static void onmousescroll(struct channel *channel, unsigned int source, void *md
 
     struct event_mousescroll *mousescroll = mdata;
 
-    log(FILE_L0, "wm", "onmousescroll");
-
     if (currentview->currentremote)
     {
 
@@ -664,8 +662,6 @@ static void onmousepress(struct channel *channel, unsigned int source, void *mda
 
     struct event_mousepress *mousepress = mdata;
     struct list_item *current;
-
-    log(FILE_L0, "wm", "onmousepress");
 
     switch (mousepress->button)
     {
@@ -738,8 +734,6 @@ static void onmouserelease(struct channel *channel, unsigned int source, void *m
 {
 
     struct event_mouserelease *mouserelease = mdata;
-
-    log(FILE_L0, "wm", "onmouserelease");
 
     if (currentview->currentremote)
     {

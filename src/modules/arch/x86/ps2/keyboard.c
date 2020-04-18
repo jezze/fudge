@@ -14,12 +14,7 @@ static void handleirq(unsigned int irq)
 
     unsigned char data = ps2_getdata();
 
-    debug_log8(DEBUG_INFO, "ps2kbd data", data);
-
     if (data == 0x00)
-        return;
-
-    if (data == 0xFE)
         return;
 
     if (data == 0xFF)
