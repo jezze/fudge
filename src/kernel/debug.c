@@ -25,7 +25,7 @@ void debug_logs(unsigned int level, char *string)
 
 }
 
-void debug_log8(unsigned int level, char *key, char value)
+void debug_log8(unsigned int level, char *key, unsigned char value)
 {
 
     char num[FUDGE_NSIZE];
@@ -45,7 +45,7 @@ void debug_log8(unsigned int level, char *key, char value)
 
 }
 
-void debug_log16(unsigned int level, char *key, short value)
+void debug_log16(unsigned int level, char *key, unsigned short value)
 {
 
     char num[FUDGE_NSIZE];
@@ -65,7 +65,7 @@ void debug_log16(unsigned int level, char *key, short value)
 
 }
 
-void debug_log32(unsigned int level, char *key, int value)
+void debug_log32(unsigned int level, char *key, unsigned int value)
 {
 
     char num[FUDGE_NSIZE];

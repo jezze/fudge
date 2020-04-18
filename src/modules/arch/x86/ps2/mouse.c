@@ -21,12 +21,12 @@ static void handleirq(unsigned int irq)
 
     unsigned char data = ps2_getdata();
 
-    debug_log8(DEBUG_INFO, "ps2mouse data", data);
-
     switch (sequence)
     {
 
     case 0:
+        debug_log8(DEBUG_INFO, "ps2mouse data0", data);
+
         if (data == 0x00)
             return;
 
@@ -42,6 +42,8 @@ static void handleirq(unsigned int irq)
         break;
 
     case 1:
+        debug_log8(DEBUG_INFO, "ps2mouse data1", data);
+
         if (state & (1 << 6))
             relx = 0;
         else
@@ -52,6 +54,8 @@ static void handleirq(unsigned int irq)
         break;
 
     case 2:
+        debug_log8(DEBUG_INFO, "ps2mouse data2", data);
+
         if (state & (1 << 7))
             rely = 0;
         else
@@ -62,6 +66,8 @@ static void handleirq(unsigned int irq)
         break;
 
     case 3:
+        debug_log8(DEBUG_INFO, "ps2mouse data3", data);
+
         switch (type)
         {
 

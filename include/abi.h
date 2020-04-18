@@ -4,3 +4,4 @@
 #include <abi/echo.h>
 #include <abi/write.h>
 #include <abi/job.h>
+#include <abi/log.h>
