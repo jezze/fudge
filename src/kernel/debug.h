@@ -14,5 +14,9 @@ struct debug_interface
 };
 
 void debug_log(unsigned int level, char *string, char *file, unsigned int line);
+void debug_logs(unsigned int level, char *string);
+void debug_log8(unsigned int level, char *key, char value);
+void debug_log16(unsigned int level, char *key, short value);
+void debug_log32(unsigned int level, char *key, int value);
 void debug_assert(unsigned int level, unsigned int test, char *file, unsigned int line);
 void debug_initinterface(struct debug_interface *interface, void (*write)(unsigned int level, char *string, char *file, unsigned int line));
