@@ -4,24 +4,21 @@
 .type _get_video_mode, @function
 
 _get_video_mode:
-    push ebx
-    mov ebx, [esp + 8]
-
-#JENS: switch_to_real_mode
     pushad
+
     mov eax, 0x7000
     mov [eax], esp
+
     mov eax, cr0
     and eax, ~0x80000000
     mov cr0, eax
-    xor eax, eax
-    mov cr3, eax
+
     mov eax, 0x9000
     lgdt [eax]
     ljmp 0x8:(0x8000 + 1f - _get_video_mode)
 
 .code16
-    
+
 1:
     mov ax, 0x10
     mov ds, ax
@@ -29,12 +26,47 @@ _get_video_mode:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    #mov ax, (0x9000 + realmode_idt - realmode_gdt)
-    #lidt [eax]
+
+    #disable prot
     mov eax, cr0
-    and eax, 0x7FFFFFFe
+    and eax, 0x7FFFFFFE
     mov cr0, eax
-    ljmp 0x0:(0x8000 + 1f - _get_video_mode)
+
+
+#do jump here
+
+
+    #enable prot
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+
+    mov eax, 0x1000
+    lgdt [eax]
+    ljmp 0x8:(0x8000 + 1f - _get_video_mode)
+
+.code32
+
+1:
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
+    mov eax, cr0
+    or eax, 0x80000000
+    mov cr0, eax
+
+    mov eax, 0x7000
+    mov esp, [eax]
+
+    popad
+    ret
+
+
+    ljmp 0x8:(0x8000 + 1f - _get_video_mode)
 
 1:
     xor ax, ax
