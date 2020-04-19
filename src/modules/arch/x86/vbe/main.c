@@ -48,6 +48,7 @@ extern void _set_video_mode(int);
 void module_init(void)
 {
 
+    struct vbe_mode_info *info = (struct vbe_mode_info *)0xd000;
     int (*getmode)(int) = (int (*)(int))0x8000;
     unsigned int mode_offset;
 
@@ -57,15 +58,13 @@ void module_init(void)
     debug_logs(DEBUG_INFO, "vbe test 0");
     getmode(0);
     debug_logs(DEBUG_INFO, "vbe worked!");
+    debug_log16(DEBUG_INFO, "vbe width", info->width);
+    debug_log16(DEBUG_INFO, "vbe height", info->height);
+    debug_log8(DEBUG_INFO, "vbe bpp", info->bpp);
 
     for (mode_offset = 0; getmode(mode_offset); mode_offset += 2)
     {
 
-        struct vbe_mode_info *info = (struct vbe_mode_info *)0xd000;
-
-        debug_log16(DEBUG_INFO, "vbe width", info->width);
-        debug_log16(DEBUG_INFO, "vbe height", info->height);
-        debug_log8(DEBUG_INFO, "vbe bpp", info->bpp);
 
     }
 

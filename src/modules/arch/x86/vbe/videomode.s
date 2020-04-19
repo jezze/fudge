@@ -27,22 +27,72 @@ _get_video_mode:
     mov gs, ax
     mov ss, ax
 
-    #disable prot
+    mov ax, (0x9000 + realmode_idt - realmode_gdt)
+    lidt [eax]
+
     mov eax, cr0
     and eax, 0x7FFFFFFE
     mov cr0, eax
 
+    ljmp 0x0:(0x8000 + 1f - _get_video_mode)
 
-#do jump here
+1:
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
 
+    # real mode. do stuff here.
 
-    #enable prot
+    mov di, 0xc000
+    mov eax, 0x32454256
+    mov dword [di], eax
+    mov ax, 0x4F00
+    int 0x10
+
+    cmp ax, 0x4F    # BIOS doesn't support VBE?
+    jne .Xerror
+
+    mov bx, (0xc000 + 16) # get video_modes (.segment)
+    mov fs, [bx]
+    mov bx, (0xc000 + 14) # get video_modes (.offset)
+    mov si, [bx]
+
+    add si, 0
+
+    mov dx, fs:[si] # grab the mode
+
+    cmp dx, 0xFFFF   # end of list?
+    je .Xerror
+
+    mov ax, 0x4F01    # get VBE mode info
+    mov cx, dx
+    mov di, 0xd000
+    int 0x10
+
+    cmp ax, 0x4F
+    je .Xsuccess
+
+.Xerror:
+    xor ebx, ebx
+    jmp .Xfinish
+
+.Xsuccess:
+    mov ebx, 1
+
+.Xfinish:
+    mov eax, 0x1000
+    lgdt [eax]
+
+    mov eax, 0x2000
+    lidt [eax]
+
     mov eax, cr0
     or eax, 1
     mov cr0, eax
 
-    mov eax, 0x1000
-    lgdt [eax]
     ljmp 0x8:(0x8000 + 1f - _get_video_mode)
 
 .code32
@@ -64,6 +114,11 @@ _get_video_mode:
 
     popad
     ret
+
+
+
+
+
 
 
     ljmp 0x8:(0x8000 + 1f - _get_video_mode)
