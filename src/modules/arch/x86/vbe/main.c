@@ -74,7 +74,7 @@ static void run(void)
     debug_log32(DEBUG_INFO, "vbe framebuffer", info->framebuffer);
     debug_log8(DEBUG_INFO, "vbe memory_model", info->memory_model);
 
-    ctrl_setvideosettings(&videointerface.settings, info->width, info->height, info->bpp);
+    ctrl_setvideosettings(&videointerface.settings, info->width, info->height, info->bpp / 8);
 
     lfb = info->framebuffer;
 
