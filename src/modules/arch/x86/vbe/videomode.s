@@ -18,7 +18,7 @@ _get_video_mode:
     mov cr3, eax
     mov eax, 0x9000
     lgdt [eax]
-    ljmp 0x8:(0x8000 + 1f)
+    ljmp 0x8:(0x8000 + 1f - _get_video_mode)
 
 .code16
     
@@ -34,7 +34,7 @@ _get_video_mode:
     mov eax, cr0
     and eax, 0x7FFFFFFe
     mov cr0, eax
-    ljmp 0x0:(0x8000 + 1f)
+    ljmp 0x0:(0x8000 + 1f - _get_video_mode)
 
 1:
     xor ax, ax
@@ -79,12 +79,12 @@ _get_video_mode:
 
 .finish:
 # JENS: switch_to_protected_mode
-    mov eax, (0x1000)
+    mov eax, 0x1000
     lgdt [eax]
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-    ljmp 0x8:(0x8000 + 1f)
+    ljmp 0x8:(0x8000 + 1f - _get_video_mode)
 
 .code32
 
@@ -129,7 +129,7 @@ _set_video_mode:
     mov cr3, eax
     mov eax, 0x9000 # the gdt descriptor must be there
     lgdt [eax]
-    ljmp 0x8:(0x8000 + 1f)
+    ljmp 0x8:(0x8000 + 1f - _set_video_mode)
 
 .code16
     
@@ -145,7 +145,7 @@ _set_video_mode:
     mov eax, cr0
     and eax, 0x7FFFFFFe
     mov cr0, eax
-    ljmp 0x0:(0x8000 + 1f)
+    ljmp 0x0:(0x8000 + 1f - _set_video_mode)
 
 1:
     xor ax, ax
@@ -187,12 +187,12 @@ _set_video_mode:
 
 .finish2:
 # JENS: switch_to_protected_mode
-    mov eax, (0x1000)
+    mov eax, 0x1000
     lgdt [eax]
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-    ljmp 0x8:(0x8000 + 1f)
+    ljmp 0x8:(0x8000 + 1f - _set_video_mode)
 
 .code32
 
