@@ -2,6 +2,8 @@
 #include <kernel.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
+#include <modules/video/video.h>
+#include <modules/arch/x86/pci/pci.h>
 
 struct vbe_mode_info
 {
@@ -45,7 +47,10 @@ extern void *realmode_gdt;
 extern void _get_video_mode(int);
 extern void _set_video_mode(int);
 
-void module_init(void)
+static struct base_driver driver;
+static struct video_interface videointerface;
+
+static void run(void)
 {
 
     struct vbe_mode_info *info = (struct vbe_mode_info *)0xd000;
@@ -75,13 +80,58 @@ void module_init(void)
 
 }
 
+static void driver_init(unsigned int id)
+{
+
+    video_initinterface(&videointerface, id);
+    run();
+
+}
+
+static unsigned int driver_match(unsigned int id)
+{
+
+    return pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && pci_inb(id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_DISPLAY_VGA && pci_inb(id, PCI_CONFIG_INTERFACE) == 0x00;
+
+}
+
+static void driver_reset(unsigned int id)
+{
+
+}
+
+static void driver_attach(unsigned int id)
+{
+
+    video_registerinterface(&videointerface);
+
+}
+
+static void driver_detach(unsigned int id)
+{
+
+    video_unregisterinterface(&videointerface);
+
+}
+
+void module_init(void)
+{
+
+    base_initdriver(&driver, "vbe", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
+
+}
+
 void module_register(void)
 {
+
+    base_registerdriver(&driver, PCI_BUS);
 
 }
 
 void module_unregister(void)
 {
+
+    base_unregisterdriver(&driver, PCI_BUS);
 
 }
 
