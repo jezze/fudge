@@ -50,17 +50,22 @@ void module_init(void)
 
     struct vbe_mode_info *info = (struct vbe_mode_info *)0xd000;
     int (*getmode)(int) = (int (*)(int))0x8000;
+    int (*setmode)(int) = (int (*)(int))0x8000;
     unsigned int mode_offset;
 
     debug_logs(DEBUG_INFO, "vbe loaded");
     memory_copy((void *)0x8000, (void *)(unsigned int)_get_video_mode, 0x1000);
     memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
-    debug_logs(DEBUG_INFO, "vbe test 0");
     getmode(0);
     debug_logs(DEBUG_INFO, "vbe worked!");
     debug_log16(DEBUG_INFO, "vbe width", info->width);
     debug_log16(DEBUG_INFO, "vbe height", info->height);
     debug_log8(DEBUG_INFO, "vbe bpp", info->bpp);
+
+    memory_copy((void *)0x8000, (void *)(unsigned int)_set_video_mode, 0x1000);
+    memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
+    setmode(0);
+    debug_logs(DEBUG_INFO, "vbe worked!");
 
     for (mode_offset = 0; getmode(mode_offset); mode_offset += 2)
     {
