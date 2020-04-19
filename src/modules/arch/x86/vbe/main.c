@@ -1,5 +1,10 @@
 #include <fudge.h>
 #include <kernel.h>
+#include <kernel/x86/cpu.h>
+#include <kernel/x86/gdt.h>
+#include <kernel/x86/idt.h>
+#include <kernel/x86/tss.h>
+#include <kernel/x86/arch.h>
 #include <modules/base/base.h>
 #include <modules/system/system.h>
 #include <modules/video/video.h>
@@ -49,15 +54,14 @@ extern void _set_video_mode(int);
 
 static struct base_driver driver;
 static struct video_interface videointerface;
-static unsigned int fb;
+static unsigned int lfb;
 
 static void run(void)
 {
 
-    struct vbe_mode_info *info = (struct vbe_mode_info *)0xd000;
+    struct vbe_mode_info *info = (struct vbe_mode_info *)0xD000;
     int (*getmode)(int) = (int (*)(int))0x8000;
     int (*setmode)(int) = (int (*)(int))0x8000;
-    unsigned int mode_offset;
 
     debug_logs(DEBUG_INFO, "vbe loaded");
     memory_copy((void *)0x8000, (void *)(unsigned int)_get_video_mode, 0x1000);
@@ -70,18 +74,16 @@ static void run(void)
     debug_log8(DEBUG_INFO, "vbe framebuffer", info->framebuffer);
 
     ctrl_setvideosettings(&videointerface.settings, info->width, info->height, info->bpp);
-    fb = info->framebuffer;
+
+    lfb = info->framebuffer;
+
+    arch_setmap(4, lfb, lfb, 0x00400000);
+    arch_setmap(5, lfb + 0x00400000, lfb + 0x00400000, 0x00400000);
 
     memory_copy((void *)0x8000, (void *)(unsigned int)_set_video_mode, 0x1000);
     memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
     setmode(0);
     debug_logs(DEBUG_INFO, "vbe worked!");
-
-    for (mode_offset = 0; getmode(mode_offset); mode_offset += 2)
-    {
-
-
-    }
 
     video_notifymode(&videointerface, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
@@ -99,7 +101,7 @@ static unsigned int videointerface_writectrl(struct system_node *self, struct sy
 static unsigned int videointerface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write((void *)fb, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+    return memory_write((void *)lfb, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
 
 }
 
