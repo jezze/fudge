@@ -44,6 +44,8 @@ _get_video_mode:
     mov gs, ax
     mov ss, ax
 
+    mov sp, 0xa000
+
     # real mode. do stuff here.
 
     mov di, 0xc000
