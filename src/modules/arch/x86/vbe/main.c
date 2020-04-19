@@ -49,6 +49,7 @@ extern void _set_video_mode(int);
 
 static struct base_driver driver;
 static struct video_interface videointerface;
+static unsigned int fb;
 
 static void run(void)
 {
@@ -66,6 +67,10 @@ static void run(void)
     debug_log16(DEBUG_INFO, "vbe width", info->width);
     debug_log16(DEBUG_INFO, "vbe height", info->height);
     debug_log8(DEBUG_INFO, "vbe bpp", info->bpp);
+    debug_log8(DEBUG_INFO, "vbe framebuffer", info->framebuffer);
+
+    ctrl_setvideosettings(&videointerface.settings, info->width, info->height, info->bpp);
+    fb = info->framebuffer;
 
     memory_copy((void *)0x8000, (void *)(unsigned int)_set_video_mode, 0x1000);
     memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
@@ -78,13 +83,50 @@ static void run(void)
 
     }
 
+    video_notifymode(&videointerface, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+
+}
+
+static unsigned int videointerface_writectrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    run();
+
+    return count;
+
+}
+
+static unsigned int videointerface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return memory_write((void *)fb, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+
+}
+
+static unsigned int videointerface_readcolormap(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return 0;
+
+}
+
+static unsigned int videointerface_writecolormap(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return count;
+
 }
 
 static void driver_init(unsigned int id)
 {
 
     video_initinterface(&videointerface, id);
-    run();
+    ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
+
+    videointerface.ctrl.operations.write = videointerface_writectrl;
+    videointerface.data.operations.write = videointerface_writedata;
+    videointerface.colormap.operations.read = videointerface_readcolormap;
+    videointerface.colormap.operations.write = videointerface_writecolormap;
 
 }
 
@@ -118,6 +160,7 @@ void module_init(void)
 {
 
     base_initdriver(&driver, "vbe", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
+    run();
 
 }
 
