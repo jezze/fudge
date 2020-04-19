@@ -1,8 +1,8 @@
 .intel_syntax noprefix
 
-.globl _get_video_mode
-.type _get_video_mode, @function
+.code32
 
+.global _get_video_mode
 _get_video_mode:
     pushad
 
@@ -117,10 +117,9 @@ _get_video_mode:
     popad
     ret
 
+.code32
 
-.globl _set_video_mode
-.type _set_video_mode, @function
-
+.global _set_video_mode
 _set_video_mode:
     pushad
 
@@ -229,36 +228,33 @@ _set_video_mode:
     popad
     ret
 
-.globl realmode_gdt
+.code32
+
+.global realmode_gdt
 realmode_gdt:
+.word (3 * 8) - 1
+.long 0x9008
+.word 0
 
-# table descriptor
-.word   (3 * 8) - 1                 # GDT table limit
-.long   0x9008                        # GDT table location
-.word 0 # padding
-
-# null descriptor
-.long   0x0
-.long   0x0
+.long 0x0
+.long 0x0
                 
-# cs descriptor
-.word   0xFFFF                      # Limit 15:0
-.word   0x0                         # Base 15:0
-.byte   0x0                         # Base 23:16
-.byte   0x9A                        # Access: Present, Ring 0, Code Segment
-.byte   0x8F                        # Granularity: 1Kb, 16-bit mode
-.byte   0x00                        # Base 31:24
+.word 0xFFFF
+.word 0x0
+.byte 0x0
+.byte 0x9A
+.byte 0x8F
+.byte 0x00
 
-# ds descriptor
-.word   0xFFFF                      # Limit 15:0
-.word   0x0                         # Base 15:0
-.byte   0x0                         # Base 23:16
-.byte   0x92                        # Access: Present, Ring 0, Data Segment
-.byte   0x8F                        # Granularity: 1kB, 16-bit mode
-.byte   0x00                        # Base 31:24
+.word 0xFFFF
+.word 0x0
+.byte 0x0
+.byte 0x92
+.byte 0x8F
+.byte 0x00
 
+.global realmode_idt
 realmode_idt:
-.word   0x3FF                       # IDT Table Limit
-.long   0x0                         # IDT Table base
+.word 0x3FF
+.long 0x0
 
-.att_syntax prefix
