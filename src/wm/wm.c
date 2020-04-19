@@ -299,7 +299,7 @@ static void setupvideo(void)
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
-    ctrl_setvideosettings(&settings, 1024, 768, 4);
+    ctrl_setvideosettings(&settings, 1024, 768, 3);
     memory_clear(black, 768);
 
     if (!file_walk(FILE_L0, FILE_G4, "ctrl"))

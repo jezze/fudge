@@ -94,18 +94,32 @@ unsigned char mousedata16[] = {
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
-static unsigned int colormap32[] = {
-    0xFF000000,
-    0xFFFFFFFF,
-    0xFF181014,
-    0xFF20181C,
-    0xFF30282C,
-    0xFF105070,
-    0xFF307090,
-    0xFFB05070,
-    0xFFF898B8,
-    0xFF80787C,
-    0xFFFFFFFF
+static unsigned char colormap24[] = {
+    0x00, 0x00, 0x00,
+    0xFF, 0xFF, 0xFF,
+    0x18, 0x10, 0x14,
+    0x20, 0x18, 0x1C,
+    0x30, 0x28, 0x2C,
+    0x10, 0x50, 0x70,
+    0x30, 0x70, 0x90,
+    0xB0, 0x50, 0x70,
+    0xF8, 0x98, 0xB8,
+    0x80, 0x78, 0x7C,
+    0xFF, 0xFF, 0xFF
+};
+
+static unsigned char colormap32[] = {
+    0xFF, 0x00, 0x00, 0x00,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0x18, 0x10, 0x14,
+    0xFF, 0x20, 0x18, 0x1C,
+    0xFF, 0x30, 0x28, 0x2C,
+    0xFF, 0x10, 0x50, 0x70,
+    0xFF, 0x30, 0x70, 0x90,
+    0xFF, 0xB0, 0x50, 0x70,
+    0xFF, 0xF8, 0x98, 0xB8,
+    0xFF, 0x80, 0x78, 0x7C,
+    0xFF, 0xFF, 0xFF, 0xFF
 };
 
 static unsigned int findrowtotal(unsigned char *string, unsigned int count)
@@ -198,18 +212,50 @@ static void paint8(void *canvas, unsigned int color, unsigned int offset, unsign
 
 }
 
-static void paint32(void *canvas, unsigned int color, unsigned int offset, unsigned int count)
+static void paint24(void *canvas, unsigned int color, unsigned int offset, unsigned int count)
 {
 
-    unsigned int *buffer = canvas;
+    unsigned char *buffer = canvas;
 
     if (offset + count > currentw)
         return;
 
-    buffer += offset;
+    buffer += offset * 3;
 
     while (count--)
-        *buffer++ = colormap32[color];
+    {
+
+        unsigned int x = color * 3;
+
+        *buffer++ = colormap24[x + 2];
+        *buffer++ = colormap24[x + 1];
+        *buffer++ = colormap24[x + 0];
+
+    }
+
+}
+
+static void paint32(void *canvas, unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    unsigned char *buffer = canvas;
+
+    if (offset + count > currentw)
+        return;
+
+    buffer += offset * 4;
+
+    while (count--)
+    {
+
+        unsigned int x = color * 4;
+
+        *buffer++ = colormap32[x + 3];
+        *buffer++ = colormap32[x + 2];
+        *buffer++ = colormap32[x + 1];
+        *buffer++ = colormap32[x + 0];
+
+    }
 
 }
 
@@ -708,6 +754,11 @@ void render_setdraw(unsigned int w, unsigned int h, unsigned int bpp)
 
     case 1:
         paint = paint8;
+
+        break;
+
+    case 3:
+        paint = paint24;
 
         break;
 
