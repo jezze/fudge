@@ -71,14 +71,20 @@ static void run(void)
     debug_log16(DEBUG_INFO, "vbe width", info->width);
     debug_log16(DEBUG_INFO, "vbe height", info->height);
     debug_log8(DEBUG_INFO, "vbe bpp", info->bpp);
-    debug_log8(DEBUG_INFO, "vbe framebuffer", info->framebuffer);
+    debug_log32(DEBUG_INFO, "vbe framebuffer", info->framebuffer);
+    debug_log8(DEBUG_INFO, "vbe memory_model", info->memory_model);
 
     ctrl_setvideosettings(&videointerface.settings, info->width, info->height, info->bpp);
 
     lfb = info->framebuffer;
 
-    arch_setmap(4, lfb, lfb, 0x00400000);
-    arch_setmap(5, lfb + 0x00400000, lfb + 0x00400000, 0x00400000);
+    if (lfb)
+    {
+
+        arch_setmap(4, lfb, lfb, 0x00400000);
+        arch_setmap(5, lfb + 0x00400000, lfb + 0x00400000, 0x00400000);
+
+    }
 
     memory_copy((void *)0x8000, (void *)(unsigned int)_set_video_mode, 0x1000);
     memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
