@@ -24,5 +24,6 @@ include $(DIR_SRC)/modules/arch/x86/smp/rules.mk
 include $(DIR_SRC)/modules/arch/x86/syse/rules.mk
 include $(DIR_SRC)/modules/arch/x86/uart/rules.mk
 include $(DIR_SRC)/modules/arch/x86/usb/rules.mk
+include $(DIR_SRC)/modules/arch/x86/vbe/rules.mk
 include $(DIR_SRC)/modules/arch/x86/vga/rules.mk
 include $(DIR_SRC)/modules/arch/x86/virtio/rules.mk

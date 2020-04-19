@@ -20,7 +20,7 @@ static void handleirq(unsigned int irq)
     if ((status & 0x20))
     {
 
-        debug_log16(DEBUG_INFO, "kbd status error", status);
+        /*debug_log16(DEBUG_INFO, "kbd status error", status);*/
 
         return;
 
@@ -28,7 +28,7 @@ static void handleirq(unsigned int irq)
 
     data = ps2_getdata();
 
-    debug_log8(DEBUG_INFO, "kbd data", data);
+    /*debug_log8(DEBUG_INFO, "kbd data", data);*/
 
     if (data == 0x00)
         return;
