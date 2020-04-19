@@ -176,7 +176,7 @@ _set_video_mode:
     mov bx, (0xc000 + 14) # get video_modes (.offset)
     mov si, [bx]
 
-    add si, 0
+    add si, 0 # OFFSET
 
     mov ax, 0x4F02
     mov bx, fs:[si] # mode
