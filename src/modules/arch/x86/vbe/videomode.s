@@ -181,7 +181,7 @@ _set_video_mode:
 
     mov ax, 0x4F02
     mov bx, fs:[si] # mode
-    or bx, 0xC118   # enable LFB
+    or bx, 0x4118   # enable LFB
     mov di, 0
     int 0x10
 
