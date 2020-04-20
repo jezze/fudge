@@ -216,9 +216,6 @@ static void paint8(void *canvas, unsigned int color, unsigned int offset, unsign
 
     unsigned char *buffer = canvas;
 
-    if (offset + count > currentw)
-        return;
-
     buffer += offset;
 
     while (count--)
@@ -230,9 +227,6 @@ static void paint24(void *canvas, unsigned int color, unsigned int offset, unsig
 {
 
     unsigned char *buffer = canvas;
-
-    if (offset + count > currentw)
-        return;
 
     buffer += offset * 3;
 
@@ -255,9 +249,6 @@ static void paint32(void *canvas, unsigned int color, unsigned int offset, unsig
 
     unsigned char *buffer = canvas;
 
-    if (offset + count > currentw)
-        return;
-
     buffer += offset * 4;
 
     while (count--)
@@ -279,9 +270,6 @@ static void paint32(void *canvas, unsigned int color, unsigned int offset, unsig
 {
 
     unsigned int *buffer = canvas;
-
-    if (offset + count > currentw)
-        return;
 
     buffer += offset;
 
@@ -406,9 +394,17 @@ static void rendermouse(void *canvas, void *data, unsigned int line)
     struct widget_mouse *mouse = data;
     unsigned char *mousedata = (mouse->size.h == 16) ? mousedata16 : mousedata24;
     unsigned char *buffer = mousedata + line * mouse->size.w;
+    unsigned int w;
     unsigned int i;
 
-    for (i = 0; i < mouse->size.w; i++)
+    if (mouse->size.x + mouse->size.w < currentw)
+        w = mouse->size.w;
+    else if (mouse->size.x + mouse->size.w < currentw + mouse->size.w)
+        w = currentw - mouse->size.x;
+    else
+        w = 0;
+
+    for (i = 0; i < w; i++)
     {
 
         if (buffer[i] != 0xFF)
