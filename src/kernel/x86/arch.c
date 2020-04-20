@@ -38,6 +38,16 @@ static void mapkernel(unsigned int index, unsigned int paddress, unsigned int va
 
 }
 
+static void mapkernelshared(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+{
+
+    struct mmu_directory *directory = getkerneldirectory();
+    struct mmu_table *table = (struct mmu_table *)(directory + 1) + index;
+
+    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_CACHEDISABLE);
+
+}
+
 static void maptask(struct task *task, unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
@@ -115,6 +125,14 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 {
 
     mapkernel(index, paddress, vaddress, size);
+    mmu_setdirectory(getkerneldirectory());
+
+}
+
+void arch_setmapshared(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+{
+
+    mapkernelshared(index, paddress, vaddress, size);
     mmu_setdirectory(getkerneldirectory());
 
 }

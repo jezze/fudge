@@ -63,7 +63,7 @@ static unsigned int videointerface_writectrl(struct system_node *self, struct sy
     setreg(COMMANDYRES, videointerface.settings.h);
     setreg(COMMANDBPP, videointerface.settings.bpp * 8);
     setreg(COMMANDENABLE, 0x40 | 0x01);
-    video_notifymode(&videointerface, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, (unsigned int)lfb, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
     return count;
 
@@ -124,8 +124,8 @@ static void driver_reset(unsigned int id)
     bank = (void *)0xA0000;
     lfb = (void *)(unsigned int)(pci_ind(id, PCI_CONFIG_BAR0) & 0xFFFFFFF0);
 
-    arch_setmap(4, (unsigned int)lfb, (unsigned int)lfb, 0x00400000);
-    arch_setmap(5, (unsigned int)lfb + 0x00400000, (unsigned int)lfb + 0x00400000, 0x00400000);
+    arch_setmapshared(4, (unsigned int)lfb, (unsigned int)lfb, 0x00400000);
+    arch_setmapshared(5, (unsigned int)lfb + 0x00400000, (unsigned int)lfb + 0x00400000, 0x00400000);
 
 }
 

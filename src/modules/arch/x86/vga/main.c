@@ -140,7 +140,7 @@ static unsigned int videointerface_writectrl(struct system_node *self, struct sy
 
     }
 
-    video_notifymode(&videointerface, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, 0, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
     return count;
 

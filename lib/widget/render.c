@@ -618,6 +618,21 @@ void render_flush(unsigned char *canvasdata, unsigned int size, void (*draw)(voi
 
 }
 
+void render_flushdirect(unsigned char *canvasdata)
+{
+
+    unsigned int line;
+
+    for (line = 0; line < currenth; line++)
+    {
+
+        if (testline(line))
+            renderline(canvasdata + line * currentw * currentbpp, line);
+
+    }
+
+}
+
 void render_write(unsigned int source, void *buffer, unsigned int count)
 {
 

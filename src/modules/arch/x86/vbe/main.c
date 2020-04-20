@@ -81,8 +81,8 @@ static void run(void)
     if (lfb)
     {
 
-        arch_setmap(4, lfb, lfb, 0x00400000);
-        arch_setmap(5, lfb + 0x00400000, lfb + 0x00400000, 0x00400000);
+        arch_setmapshared(4, lfb, lfb, 0x00400000);
+        arch_setmapshared(5, lfb + 0x00400000, lfb + 0x00400000, 0x00400000);
 
     }
 
@@ -91,7 +91,7 @@ static void run(void)
     setmode(0);
     debug_logs(DEBUG_INFO, "vbe worked!");
 
-    video_notifymode(&videointerface, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, lfb, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
 }
 

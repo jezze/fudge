@@ -1,4 +1,5 @@
 void render_flush(unsigned char *canvasdata, unsigned int size, void (*draw)(void *data, unsigned int count, unsigned int offset));
+void render_flushdirect(unsigned char *canvasdata);
 void render_write(unsigned int source, void *buffer, unsigned int count);
 void render_resize(unsigned int source, int x, int y, int w, int h, unsigned int padding, unsigned int lineheight, unsigned int steplength);
 void render_clean(unsigned int source);
