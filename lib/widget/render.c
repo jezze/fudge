@@ -290,21 +290,6 @@ static void paint32(void *canvas, unsigned int color, unsigned int offset, unsig
 
 }
 
-static void paintbuffer(void *canvas, unsigned char *buffer, unsigned int x, unsigned int w, unsigned char transparent)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < w; i++)
-    {
-
-        if (buffer[i] != transparent)
-            paint(canvas, buffer[i], x + i, 1);
-
-    }
-
-}
-
 static void paintcharline(void *canvas, unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
 {
 
@@ -420,8 +405,16 @@ static void rendermouse(void *canvas, void *data, unsigned int line)
 
     struct widget_mouse *mouse = data;
     unsigned char *mousedata = (mouse->size.h == 16) ? mousedata16 : mousedata24;
+    unsigned char *buffer = mousedata + line * mouse->size.w;
+    unsigned int i;
 
-    paintbuffer(canvas, mousedata + line * mouse->size.w, mouse->size.x, mouse->size.w, 0xFF);
+    for (i = 0; i < mouse->size.w; i++)
+    {
+
+        if (buffer[i] != 0xFF)
+            paint(canvas, buffer[i], mouse->size.x + i, 1);
+
+    }
 
 }
 
