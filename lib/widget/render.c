@@ -107,7 +107,7 @@ static unsigned char colormap24[] = {
     0x80, 0x78, 0x7C,
     0xFF, 0xFF, 0xFF
 };
-
+/*
 static unsigned char colormap32[] = {
     0xFF, 0x00, 0x00, 0x00,
     0xFF, 0xFF, 0xFF, 0xFF,
@@ -120,6 +120,20 @@ static unsigned char colormap32[] = {
     0xFF, 0xF8, 0x98, 0xB8,
     0xFF, 0x80, 0x78, 0x7C,
     0xFF, 0xFF, 0xFF, 0xFF
+};
+*/
+static unsigned int colormap32[] = {
+    0xFF000000,
+    0xFFFFFFFF,
+    0xFF181014,
+    0xFF20181C,
+    0xFF30282C,
+    0xFF105070,
+    0xFF307090,
+    0xFFB05070,
+    0xFFF898B8,
+    0xFF80787C,
+    0xFFFFFFFF
 };
 
 static unsigned int findrowtotal(unsigned char *string, unsigned int count)
@@ -235,6 +249,7 @@ static void paint24(void *canvas, unsigned int color, unsigned int offset, unsig
 
 }
 
+/*
 static void paint32(void *canvas, unsigned int color, unsigned int offset, unsigned int count)
 {
 
@@ -256,6 +271,22 @@ static void paint32(void *canvas, unsigned int color, unsigned int offset, unsig
         *buffer++ = colormap32[x + 0];
 
     }
+
+}
+*/
+
+static void paint32(void *canvas, unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    unsigned int *buffer = canvas;
+
+    if (offset + count > currentw)
+        return;
+
+    buffer += offset;
+
+    while (count--)
+        *buffer++ = colormap32[color];
 
 }
 

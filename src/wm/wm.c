@@ -42,6 +42,7 @@ static unsigned int steplength;
 static unsigned char fontdata[0x8000];
 static unsigned char canvasdata[0x10000];
 static unsigned int canvasfb;
+static unsigned int w, h, bpp;
 static unsigned char colormap8[] = {
     0x00, 0x00, 0x00,
     0x3F, 0x3F, 0x3F,
@@ -59,7 +60,10 @@ static unsigned char colormap8[] = {
 static void draw(void *data, unsigned int count, unsigned int offset)
 {
 
-    file_seekwriteall(FILE_G6, data, count, offset);
+    if (canvasfb)
+        memory_write((void *)canvasfb, w * h * bpp, data, count, offset);
+    else
+        file_seekwriteall(FILE_G6, data, count, offset);
 
 }
 
@@ -300,7 +304,7 @@ static void setupvideo(void)
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
-    ctrl_setvideosettings(&settings, 1024, 768, 3);
+    ctrl_setvideosettings(&settings, 1024, 768, 4);
     memory_clear(black, 768);
 
     if (!file_walk(FILE_L0, FILE_G4, "ctrl"))
@@ -341,12 +345,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
             render_write(source, mdata, msize);
             render_resize(source, x, y, w, h, padding, lineheight, steplength);
-
-            if (canvasfb)
-                render_flushdirect((void *)canvasfb);
-            else
-                render_flush(canvasdata, 0x10000, draw);
-
+            render_flush(canvasdata, 0x10000, draw);
             render_complete();
 
         }
@@ -812,6 +811,9 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     unsigned int i = 0;
 
     canvasfb = videomode->fb;
+    w = videomode->w;
+    h = videomode->h;
+    bpp = videomode->bpp;
     lineheight = 12 + factor * 4;
     padding = 4 + factor * 2;
     steplength = videomode->w / 32;
@@ -910,12 +912,7 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
 
         render_write(0, outputdata, ring_count(&output));
         render_resize(0, screen.x, screen.y, screen.w, screen.h, padding, lineheight, steplength);
-
-        if (canvasfb)
-            render_flushdirect((void *)canvasfb);
-        else
-            render_flush(canvasdata, 0x10000, draw);
-
+        render_flush(canvasdata, 0x10000, draw);
         render_complete();
         ring_reset(&output);
 
