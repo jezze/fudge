@@ -8,6 +8,8 @@ elfload < /kernel/apic.ko
 elfload < /kernel/ioapic.ko
 elfload < /kernel/platform.ko
 elfload < /kernel/pci.ko
+elfload < /kernel/pit.ko
+elfload < /kernel/rtc.ko
 elfload < /kernel/ps2.ko
 elfload < /kernel/ps2-keyboard.ko
 elfload < /kernel/ps2-mouse.ko
