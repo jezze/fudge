@@ -321,6 +321,13 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    channel_close(channel);
+
+}
+
+static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
     channel_request(channel, EVENT_WMMAP);
     channel_write(channel, FILE_G0);
 
@@ -350,6 +357,12 @@ static void oninit(struct channel *channel)
 
     idslang = call_spawn(FILE_CP);
 
+    channel_setsignal(channel, EVENT_ANY, onany);
+    channel_setsignal(channel, EVENT_MAIN, onmain2);
+    channel_setsignal(channel, EVENT_DATA, ondata);
+    channel_setsignal(channel, EVENT_WMKEYPRESS, onwmkeypress);
+    channel_setsignal(channel, EVENT_WMSHOW, onwmshow);
+    channel_setsignal(channel, EVENT_WMCLOSE, onwmclose);
     file_open(FILE_G0);
 
 }
@@ -367,12 +380,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_WMKEYPRESS, onwmkeypress);
-    channel_setsignal(&channel, EVENT_WMSHOW, onwmshow);
-    channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
     channel_listen2(&channel, oninit, onexit);
 
 }

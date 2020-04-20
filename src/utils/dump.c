@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void dump(struct channel *channel, unsigned int source, unsigned int count, void *buffer)
+static void print(struct channel *channel, unsigned int source, unsigned int count, void *buffer)
 {
 
     unsigned char *data = buffer;
@@ -79,7 +79,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    dump(channel, source, msize, mdata);
+    print(channel, source, msize, mdata);
 
 }
 
@@ -95,7 +95,7 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
     file_open(FILE_L0);
 
     while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE)))
-        dump(channel, source, count, buffer);
+        print(channel, source, count, buffer);
 
     file_close(FILE_L0);
 

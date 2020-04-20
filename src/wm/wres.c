@@ -27,6 +27,10 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
 
     }
 
+    channel_request(channel, EVENT_WMUNMAP);
+    channel_place(channel, source);
+    channel_close(channel);
+
 }
 
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
@@ -41,6 +45,13 @@ static void onwmclose(struct channel *channel, unsigned int source, void *mdata,
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    channel_close(channel);
+
+}
+
+static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
     channel_request(channel, EVENT_WMMAP);
     channel_write(channel, FILE_G0);
 
@@ -52,6 +63,9 @@ static void oninit(struct channel *channel)
     if (!file_walk2(FILE_G0, "/system/multicast"))
         return;
 
+    channel_setsignal(channel, EVENT_MAIN, onmain2);
+    channel_setsignal(channel, EVENT_WMMOUSEPRESS, onwmmousepress);
+    channel_setsignal(channel, EVENT_WMCLOSE, onwmclose);
     file_open(FILE_G0);
 
 }
@@ -70,8 +84,6 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_WMMOUSEPRESS, onwmmousepress);
-    channel_setsignal(&channel, EVENT_WMCLOSE, onwmclose);
     channel_listen2(&channel, oninit, onexit);
 
 }

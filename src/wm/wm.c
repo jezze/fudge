@@ -355,15 +355,6 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    file_walk2(FILE_G4, mdata);
-    file_walk(FILE_G5, FILE_G4, "event");
-    file_walk(FILE_G6, FILE_G4, "data");
-
-}
-
 static void onkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -935,12 +926,37 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    channel_close(channel);
+
+}
+
+static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
     file_open(FILE_G5);
     file_open(FILE_G6);
     setupvideo();
     setupviews();
     setupremotes();
     activateview(currentview);
+
+}
+
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_setsignal(channel, EVENT_MAIN, onmain);
+
+    if (!file_walk2(FILE_G4, mdata))
+        return;
+
+    if (!file_walk(FILE_G5, FILE_G4, "event"))
+        return;
+
+    if (!file_walk(FILE_G6, FILE_G4, "data"))
+        return;
+
+    channel_setsignal(channel, EVENT_MAIN, onmain2);
 
 }
 
@@ -970,6 +986,19 @@ static void oninit(struct channel *channel)
     if (!file_walk(FILE_G6, FILE_G4, "data"))
         return;
 
+    channel_setsignal(channel, EVENT_ANY, onany);
+    channel_setsignal(channel, EVENT_MAIN, onmain2);
+    channel_setsignal(channel, EVENT_DATA, ondata);
+    channel_setsignal(channel, EVENT_FILE, onfile);
+    channel_setsignal(channel, EVENT_KEYPRESS, onkeypress);
+    channel_setsignal(channel, EVENT_KEYRELEASE, onkeyrelease);
+    channel_setsignal(channel, EVENT_MOUSEMOVE, onmousemove);
+    channel_setsignal(channel, EVENT_MOUSESCROLL, onmousescroll);
+    channel_setsignal(channel, EVENT_MOUSEPRESS, onmousepress);
+    channel_setsignal(channel, EVENT_MOUSERELEASE, onmouserelease);
+    channel_setsignal(channel, EVENT_VIDEOMODE, onvideomode);
+    channel_setsignal(channel, EVENT_WMMAP, onwmmap);
+    channel_setsignal(channel, EVENT_WMUNMAP, onwmunmap);
     file_open(FILE_G1);
     file_open(FILE_G2);
     file_open(FILE_G3);
@@ -991,19 +1020,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_ANY, onany);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_FILE, onfile);
-    channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
-    channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
-    channel_setsignal(&channel, EVENT_MOUSEMOVE, onmousemove);
-    channel_setsignal(&channel, EVENT_MOUSESCROLL, onmousescroll);
-    channel_setsignal(&channel, EVENT_MOUSEPRESS, onmousepress);
-    channel_setsignal(&channel, EVENT_MOUSERELEASE, onmouserelease);
-    channel_setsignal(&channel, EVENT_VIDEOMODE, onvideomode);
-    channel_setsignal(&channel, EVENT_WMMAP, onwmmap);
-    channel_setsignal(&channel, EVENT_WMUNMAP, onwmunmap);
     channel_listen2(&channel, oninit, onexit);
 
 }
