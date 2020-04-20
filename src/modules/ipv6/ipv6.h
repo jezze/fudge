@@ -12,7 +12,7 @@ struct ipv6_header
 
 };
 
-struct ipv6_protocol
+struct ipv6_hook
 {
 
     struct resource resource;
@@ -23,6 +23,6 @@ struct ipv6_protocol
 
 };
 
-void ipv6_registerprotocol(struct ipv6_protocol *protocol);
-void ipv6_unregisterprotocol(struct ipv6_protocol *protocol);
-void ipv6_initprotocol(struct ipv6_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ipv6_header *ipv6header, void *buffer, unsigned int count));
+void ipv6_registerhook(struct ipv6_hook *hook);
+void ipv6_unregisterhook(struct ipv6_hook *hook);
+void ipv6_inithook(struct ipv6_hook *hook, char *name, unsigned char id, void (*notify)(struct ipv6_header *ipv6header, void *buffer, unsigned int count));

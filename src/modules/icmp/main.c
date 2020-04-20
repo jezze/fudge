@@ -5,13 +5,13 @@
 #include <modules/ipv6/ipv6.h>
 #include "icmp.h"
 
-static struct ipv4_protocol ipv4protocol;
-static struct ipv6_protocol ipv6protocol;
+static struct ipv4_hook ipv4hook;
+static struct ipv6_hook ipv6hook;
 
 static void *icmp_writehead(void *buffer, unsigned char type, unsigned char code, unsigned char *sip, unsigned char *tip, unsigned int count, void *payload)
 {
 
-    struct icmp_header *header = ipv4_writehead(buffer, sip, tip, ipv4protocol.id, count);
+    struct icmp_header *header = ipv4_writehead(buffer, sip, tip, ipv4hook.id, count);
     unsigned int checksum;
 
     memory_copy(header, payload, count);
@@ -30,7 +30,7 @@ static void *icmp_writehead(void *buffer, unsigned char type, unsigned char code
 
 }
 
-static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, unsigned int count)
+static void ipv4hook_notify(struct ipv4_header *ipv4header, void *buffer, unsigned int count)
 {
 
     struct icmp_header *header = buffer;
@@ -50,38 +50,38 @@ static void ipv4protocol_notify(struct ipv4_header *ipv4header, void *buffer, un
 
     }
 
-    kernel_notify(&ipv4protocol.data.states, EVENT_DATA, buffer, count);
+    kernel_notify(&ipv4hook.data.states, EVENT_DATA, buffer, count);
 
 }
 
-static void ipv6protocol_notify(struct ipv6_header *ipv6header, void *buffer, unsigned int count)
+static void ipv6hook_notify(struct ipv6_header *ipv6header, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&ipv6protocol.data.states, EVENT_DATA, buffer, count);
+    kernel_notify(&ipv6hook.data.states, EVENT_DATA, buffer, count);
 
 }
 
 void module_init(void)
 {
 
-    ipv4_initprotocol(&ipv4protocol, "icmp", 0x01, ipv4protocol_notify);
-    ipv6_initprotocol(&ipv6protocol, "icmp", 0x01, ipv6protocol_notify);
+    ipv4_inithook(&ipv4hook, "icmp", 0x01, ipv4hook_notify);
+    ipv6_inithook(&ipv6hook, "icmp", 0x01, ipv6hook_notify);
 
 }
 
 void module_register(void)
 {
 
-    ipv4_registerprotocol(&ipv4protocol);
-    ipv6_registerprotocol(&ipv6protocol);
+    ipv4_registerhook(&ipv4hook);
+    ipv6_registerhook(&ipv6hook);
 
 }
 
 void module_unregister(void)
 {
 
-    ipv4_unregisterprotocol(&ipv4protocol);
-    ipv6_unregisterprotocol(&ipv6protocol);
+    ipv4_unregisterhook(&ipv4hook);
+    ipv6_unregisterhook(&ipv6hook);
 
 }
 

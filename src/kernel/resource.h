@@ -8,9 +8,9 @@
 #define RESOURCE_DRIVER                 8
 #define RESOURCE_DEBUGLOG               9
 #define RESOURCE_ETHERNETINTERFACE      40
-#define RESOURCE_ETHERNETPROTOCOL       41
-#define RESOURCE_IPV4PROTOCOL           42
-#define RESOURCE_IPV6PROTOCOL           43
+#define RESOURCE_ETHERNETHOOK           41
+#define RESOURCE_IPV4HOOK               42
+#define RESOURCE_IPV6HOOK               43
 #define RESOURCE_AUDIOINTERFACE         44
 #define RESOURCE_VIDEOINTERFACE         45
 #define RESOURCE_TIMERINTERFACE         46

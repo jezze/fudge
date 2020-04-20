@@ -4,13 +4,13 @@
 #include <modules/ethernet/ethernet.h>
 #include "arp.h"
 
-static struct ethernet_protocol ethernetprotocol;
+static struct ethernet_hook ethernethook;
 static struct list hooks;
 
 void *arp_writehead(void *buffer, unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength, unsigned int operation, unsigned char *sha, unsigned char *spa, unsigned char *tha, unsigned char *tpa)
 {
 
-    struct arp_header *header = ethernet_writehead(buffer, ethernetprotocol.type, sha, tha);
+    struct arp_header *header = ethernet_writehead(buffer, ethernethook.type, sha, tha);
     unsigned char *data = (unsigned char *)(header + 1);
 
     header->htype[0] = htype >> 8;
@@ -50,7 +50,7 @@ static struct arp_hook *findhook(unsigned int htype, unsigned char hlength, unsi
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
+static void ethernethook_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
     struct arp_header *header = buffer;
@@ -96,7 +96,7 @@ static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void
 
     }
 
-    kernel_notify(&ethernetprotocol.data.states, EVENT_DATA, buffer, count);
+    kernel_notify(&ethernethook.data.states, EVENT_DATA, buffer, count);
 
 }
 
@@ -128,21 +128,21 @@ void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned int htyp
 void module_init(void)
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "arp", 0x0806, ethernetprotocol_notify);
+    ethernet_inithook(&ethernethook, "arp", 0x0806, ethernethook_notify);
 
 }
 
 void module_register(void)
 {
 
-    ethernet_registerprotocol(&ethernetprotocol);
+    ethernet_registerhook(&ethernethook);
 
 }
 
 void module_unregister(void)
 {
 
-    ethernet_unregisterprotocol(&ethernetprotocol);
+    ethernet_unregisterhook(&ethernethook);
 
 }
 

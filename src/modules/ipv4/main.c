@@ -7,7 +7,7 @@
 
 #define ARPTABLESIZE                    8
 
-static struct ethernet_protocol ethernetprotocol;
+static struct ethernet_hook ethernethook;
 static struct arp_hook arphook;
 static struct ipv4_arpentry arptable[ARPTABLESIZE];
 static struct system_node arptablenode;
@@ -65,7 +65,7 @@ void *ipv4_writehead(void *buffer, unsigned char *sip, unsigned char *tip, unsig
     if (!sentry || !tentry)
         return 0;
 
-    header = ethernet_writehead(buffer, ethernetprotocol.type, sentry->haddress, tentry->haddress);
+    header = ethernet_writehead(buffer, ethernethook.type, sentry->haddress, tentry->haddress);
 
     if (!header)
         return 0;
@@ -107,24 +107,24 @@ void ipv4_send(void *buffer, unsigned int count)
 
 }
 
-static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
+static void ethernethook_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
     struct ipv4_header *header = buffer;
     unsigned int length = (header->length[0] << 8) | header->length[1];
     struct resource *current = 0;
 
-    while ((current = resource_foreachtype(current, RESOURCE_IPV4PROTOCOL)))
+    while ((current = resource_foreachtype(current, RESOURCE_IPV4HOOK)))
     {
 
-        struct ipv4_protocol *protocol = current->data;
+        struct ipv4_hook *hook = current->data;
 
-        if (protocol->id == header->protocol)
-            protocol->notify(header, header + 1, length - sizeof (struct ipv4_header));
+        if (hook->id == header->protocol)
+            hook->notify(header, header + 1, length - sizeof (struct ipv4_header));
 
     }
 
-    kernel_notify(&ethernetprotocol.data.states, EVENT_DATA, buffer, count);
+    kernel_notify(&ethernethook.data.states, EVENT_DATA, buffer, count);
 
 }
 
@@ -145,7 +145,7 @@ static unsigned int arptablenode_write(struct system_node *self, struct system_n
 static unsigned int arphook_match(unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength)
 {
 
-    return htype == 1 && hlength == ETHERNET_ADDRSIZE && ptype == ethernetprotocol.type && plength == IPV4_ADDRSIZE;
+    return htype == 1 && hlength == ETHERNET_ADDRSIZE && ptype == ethernethook.type && plength == IPV4_ADDRSIZE;
 
 }
 
@@ -176,40 +176,40 @@ static void arphook_save(void *haddress, void *paddress)
 
 }
 
-void ipv4_registerprotocol(struct ipv4_protocol *protocol)
+void ipv4_registerhook(struct ipv4_hook *hook)
 {
 
-    resource_register(&protocol->resource);
-    system_addchild(&protocol->root, &protocol->data);
-    system_addchild(&ethernetprotocol.root, &protocol->root);
+    resource_register(&hook->resource);
+    system_addchild(&hook->root, &hook->data);
+    system_addchild(&ethernethook.root, &hook->root);
 
 }
 
-void ipv4_unregisterprotocol(struct ipv4_protocol *protocol)
+void ipv4_unregisterhook(struct ipv4_hook *hook)
 {
 
-    resource_unregister(&protocol->resource);
-    system_removechild(&protocol->root, &protocol->data);
-    system_removechild(&ethernetprotocol.root, &protocol->root);
+    resource_unregister(&hook->resource);
+    system_removechild(&hook->root, &hook->data);
+    system_removechild(&ethernethook.root, &hook->root);
 
 }
 
-void ipv4_initprotocol(struct ipv4_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ipv4_header *ipv4header, void *buffer, unsigned int count))
+void ipv4_inithook(struct ipv4_hook *hook, char *name, unsigned char id, void (*notify)(struct ipv4_header *ipv4header, void *buffer, unsigned int count))
 {
 
-    resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);
-    system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&protocol->data, SYSTEM_NODETYPE_NORMAL, "data");
+    resource_init(&hook->resource, RESOURCE_IPV4HOOK, hook);
+    system_initnode(&hook->root, SYSTEM_NODETYPE_GROUP, name);
+    system_initnode(&hook->data, SYSTEM_NODETYPE_NORMAL, "data");
 
-    protocol->id = id;
-    protocol->notify = notify;
+    hook->id = id;
+    hook->notify = notify;
 
 }
 
 void module_init(void)
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "ipv4", 0x0800, ethernetprotocol_notify);
+    ethernet_inithook(&ethernethook, "ipv4", 0x0800, ethernethook_notify);
     arp_inithook(&arphook, arphook_match, arphook_lookup, arphook_save);
     system_initnode(&arptablenode, SYSTEM_NODETYPE_NORMAL, "arptable");
 
@@ -221,18 +221,18 @@ void module_init(void)
 void module_register(void)
 {
 
-    ethernet_registerprotocol(&ethernetprotocol);
+    ethernet_registerhook(&ethernethook);
     arp_registerhook(&arphook);
-    system_addchild(&ethernetprotocol.root, &arptablenode);
+    system_addchild(&ethernethook.root, &arptablenode);
 
 }
 
 void module_unregister(void)
 {
 
-    ethernet_unregisterprotocol(&ethernetprotocol);
+    ethernet_unregisterhook(&ethernethook);
     arp_unregisterhook(&arphook);
-    system_removechild(&ethernetprotocol.root, &arptablenode);
+    system_removechild(&ethernethook.root, &arptablenode);
 
 }
 

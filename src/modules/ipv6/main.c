@@ -4,77 +4,77 @@
 #include <modules/ethernet/ethernet.h>
 #include "ipv6.h"
 
-static struct ethernet_protocol ethernetprotocol;
+static struct ethernet_hook ethernethook;
 
-static void ethernetprotocol_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
+static void ethernethook_notify(struct ethernet_header *ethernetheader, void *buffer, unsigned int count)
 {
 
     struct ipv6_header *header = buffer;
     unsigned int length = (header->length[0] << 8) | header->length[1];
     struct resource *current = 0;
 
-    while ((current = resource_foreachtype(current, RESOURCE_IPV6PROTOCOL)))
+    while ((current = resource_foreachtype(current, RESOURCE_IPV6HOOK)))
     {
 
-        struct ipv6_protocol *protocol = current->data;
+        struct ipv6_hook *hook = current->data;
 
-        if (protocol->id == header->next)
-            protocol->notify(header, header + 1, length * 8);
+        if (hook->id == header->next)
+            hook->notify(header, header + 1, length * 8);
 
     }
 
-    kernel_notify(&ethernetprotocol.data.states, EVENT_DATA, buffer, count);
+    kernel_notify(&ethernethook.data.states, EVENT_DATA, buffer, count);
 
 }
 
-void ipv6_registerprotocol(struct ipv6_protocol *protocol)
+void ipv6_registerhook(struct ipv6_hook *hook)
 {
 
-    resource_register(&protocol->resource);
-    system_addchild(&protocol->root, &protocol->data);
-    system_addchild(&ethernetprotocol.root, &protocol->root);
+    resource_register(&hook->resource);
+    system_addchild(&hook->root, &hook->data);
+    system_addchild(&ethernethook.root, &hook->root);
 
 }
 
-void ipv6_unregisterprotocol(struct ipv6_protocol *protocol)
+void ipv6_unregisterhook(struct ipv6_hook *hook)
 {
 
-    resource_unregister(&protocol->resource);
-    system_removechild(&protocol->root, &protocol->data);
-    system_removechild(&ethernetprotocol.root, &protocol->root);
+    resource_unregister(&hook->resource);
+    system_removechild(&hook->root, &hook->data);
+    system_removechild(&ethernethook.root, &hook->root);
 
 }
 
-void ipv6_initprotocol(struct ipv6_protocol *protocol, char *name, unsigned char id, void (*notify)(struct ipv6_header *ipv6header, void *buffer, unsigned int count))
+void ipv6_inithook(struct ipv6_hook *hook, char *name, unsigned char id, void (*notify)(struct ipv6_header *ipv6header, void *buffer, unsigned int count))
 {
 
-    resource_init(&protocol->resource, RESOURCE_IPV4PROTOCOL, protocol);
-    system_initnode(&protocol->root, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&protocol->data, SYSTEM_NODETYPE_NORMAL, "data");
+    resource_init(&hook->resource, RESOURCE_IPV4HOOK, hook);
+    system_initnode(&hook->root, SYSTEM_NODETYPE_GROUP, name);
+    system_initnode(&hook->data, SYSTEM_NODETYPE_NORMAL, "data");
 
-    protocol->id = id;
-    protocol->notify = notify;
+    hook->id = id;
+    hook->notify = notify;
 
 }
 
 void module_init(void)
 {
 
-    ethernet_initprotocol(&ethernetprotocol, "ipv6", 0x86DD, ethernetprotocol_notify);
+    ethernet_inithook(&ethernethook, "ipv6", 0x86DD, ethernethook_notify);
 
 }
 
 void module_register(void)
 {
 
-    ethernet_registerprotocol(&ethernetprotocol);
+    ethernet_registerhook(&ethernethook);
 
 }
 
 void module_unregister(void)
 {
 
-    ethernet_unregisterprotocol(&ethernetprotocol);
+    ethernet_unregisterhook(&ethernethook);
 
 }
 
