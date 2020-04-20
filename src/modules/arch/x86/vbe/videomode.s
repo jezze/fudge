@@ -239,7 +239,7 @@ realmode_gdt:
 
 .long 0x0
 .long 0x0
-                
+
 .word 0xFFFF
 .word 0x0
 .byte 0x0
