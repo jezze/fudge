@@ -689,44 +689,42 @@ void render_resize(unsigned int source, int x, int y, int w, int h, unsigned int
     while ((current = nextwidget(&layers[WIDGET_Z_BOTTOM], current)))
     {
 
-        if (current->source == source)
+        if (current->source != source)
+            continue;
+
+        if (current->type == WIDGET_TYPE_TEXT)
         {
 
-            if (current->type == WIDGET_TYPE_TEXT)
-            {
+            struct widget_text *text = (struct widget_text *)(current + 1);
 
-                struct widget_text *text = (struct widget_text *)(current + 1);
+            current->size.x = x;
+            current->size.y = y;
+            current->size.w = w;
+            current->size.h = h;
+            text->size.x = x;
+            text->size.y = y;
+            text->size.w = w;
 
-                current->size.x = x;
-                current->size.y = y;
-                current->size.w = w;
-                current->size.h = h;
-                text->size.x = x;
-                text->size.y = y;
-                text->size.w = w;
+            /* make dynamic */
+            text->size.h = h;
 
-                /* make dynamic */
-                text->size.h = h;
+        }
 
-            }
+        if (current->type == WIDGET_TYPE_TEXTBOX)
+        {
 
-            if (current->type == WIDGET_TYPE_TEXTBOX)
-            {
+            struct widget_textbox *textbox = (struct widget_textbox *)(current + 1);
 
-                struct widget_textbox *textbox = (struct widget_textbox *)(current + 1);
+            current->size.x = x;
+            current->size.y = y;
+            current->size.w = w;
+            current->size.h = h;
+            textbox->size.x = x;
+            textbox->size.y = y;
+            textbox->size.w = w;
 
-                current->size.x = x;
-                current->size.y = y;
-                current->size.w = w;
-                current->size.h = h;
-                textbox->size.x = x;
-                textbox->size.y = y;
-                textbox->size.w = w;
-
-                /* make dynamic */
-                textbox->size.h = h;
-
-            }
+            /* make dynamic */
+            textbox->size.h = h;
 
         }
 
