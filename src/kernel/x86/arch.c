@@ -44,7 +44,7 @@ static void mapkernelshared(unsigned int index, unsigned int paddress, unsigned 
     struct mmu_directory *directory = getkerneldirectory();
     struct mmu_table *table = (struct mmu_table *)(directory + 1) + index;
 
-    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_CACHEDISABLE);
+    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_CACHEWRITE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_CACHEWRITE);
 
 }
 
@@ -333,6 +333,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 {
 
     struct core *core = kernel_getcore();
+
+    DEBUG_LOG(DEBUG_INFO, "exception: page fault");
 
     if (core->task)
     {
