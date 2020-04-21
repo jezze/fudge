@@ -91,9 +91,13 @@ void channel_listen(struct channel *channel)
 void channel_listen2(struct channel *channel, void (*oninit)(struct channel *channel), void (*onexit)(struct channel *channel))
 {
 
-    oninit(channel);
+    if (oninit)
+        oninit(channel);
+
     channel_listen(channel);
-    onexit(channel);
+
+    if (onexit)
+        onexit(channel);
 
 }
 

@@ -246,11 +246,6 @@ static void oninit(struct channel *channel)
 
 }
 
-static void onexit(struct channel *channel)
-{
-
-}
-
 void main(void)
 {
 
@@ -263,7 +258,7 @@ void main(void)
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
     channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
-    channel_listen2(&channel, oninit, onexit);
+    channel_listen2(&channel, oninit, 0);
 
 }
 
