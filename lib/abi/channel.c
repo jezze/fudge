@@ -3,6 +3,37 @@
 #include "file.h"
 #include "channel.h"
 
+static void dispatch(struct channel *channel, struct ipc_header *header, void *data)
+{
+
+    if (header->type < EVENTS)
+    {
+
+        if (channel->signals[header->type].callback)
+            channel->signals[header->type].callback(channel, header->source, data, ipc_datasize(header));
+
+        if (channel->signals[EVENT_ANY].callback)
+            channel->signals[EVENT_ANY].callback(channel, header->source, data, ipc_datasize(header));
+
+    }
+
+}
+
+static unsigned int poll(struct channel *channel, struct ipc_header *header, void *data)
+{
+
+    while (channel->poll)
+    {
+
+        if (call_pick(header, data))
+            return header->type;
+
+    }
+
+    return 0;
+
+}
+
 unsigned int channel_place(struct channel *channel, unsigned int id)
 {
 
@@ -27,47 +58,16 @@ unsigned int channel_write(struct channel *channel, unsigned int descriptor)
 
 }
 
-void channel_dispatch(struct channel *channel, struct ipc_header *header, void *data)
+unsigned int channel_poll(struct channel *channel, struct ipc_header *header, void *data, unsigned int type)
 {
 
-    if (header->type < EVENTS)
-    {
-
-        if (channel->signals[header->type].callback)
-            channel->signals[header->type].callback(channel, header->source, data, ipc_datasize(header));
-
-        if (channel->signals[EVENT_ANY].callback)
-            channel->signals[EVENT_ANY].callback(channel, header->source, data, ipc_datasize(header));
-
-    }
-
-}
-
-unsigned int channel_poll(struct channel *channel, struct ipc_header *header, void *data)
-{
-
-    while (channel->poll)
-    {
-
-        if (call_pick(header, data))
-            return header->type;
-
-    }
-
-    return 0;
-
-}
-
-unsigned int channel_apoll(struct channel *channel, struct ipc_header *header, void *data, unsigned int type)
-{
-
-    while (channel_poll(channel, header, data))
+    while (poll(channel, header, data))
     {
 
         if (header->type == type)
             return type;
 
-        channel_dispatch(channel, header, data);
+        dispatch(channel, header, data);
 
     }
 
@@ -83,8 +83,8 @@ void channel_listen(struct channel *channel)
 
     channel->poll = 1;
 
-    while (channel_poll(channel, &header, data))
-        channel_dispatch(channel, &header, data);
+    while (poll(channel, &header, data))
+        dispatch(channel, &header, data);
 
 }
 

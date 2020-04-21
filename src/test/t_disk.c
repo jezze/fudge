@@ -52,7 +52,7 @@ static unsigned int request_poll(struct request *request, struct channel *channe
     struct ipc_header header;
     char data[FUDGE_BSIZE];
 
-    while (channel_apoll(channel, &header, data, EVENT_DATA))
+    while (channel_poll(channel, &header, data, EVENT_DATA))
     {
 
         unsigned int size = ipc_datasize(&header);
