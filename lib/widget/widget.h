@@ -12,8 +12,7 @@
 #define WIDGET_TEXTTYPE_NORMAL          0
 #define WIDGET_TEXTTYPE_HIGHLIGHT       1
 #define WIDGET_Z_BOTTOM                 0
-#define WIDGET_Z_MIDDLE                 1
-#define WIDGET_Z_TOP                    2
+#define WIDGET_Z_TOP                    1
 
 struct widget
 {

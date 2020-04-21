@@ -13,7 +13,7 @@
 #define COLOR_POINTERFRAME              0x08
 #define COLOR_TEXTNORMAL                0x09
 #define COLOR_TEXTLIGHT                 0x0A
-#define LAYERS                          3
+#define LAYERS                          2
 
 struct layer
 {
@@ -42,11 +42,9 @@ static struct font font;
 static void (*drawables[7])(void *canvas, void *data, unsigned int line);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
-static unsigned char layerdata0[0x1000];
 static unsigned char layerdata1[0x8000];
 static unsigned char layerdata2[0x1000];
 static struct layer layers[LAYERS] = {
-    {layerdata0, 0, 0x1000},
     {layerdata1, 0, 0x8000},
     {layerdata2, 0, 0x1000}
 };
@@ -680,7 +678,7 @@ void render_resize(unsigned int source, int x, int y, int w, int h, unsigned int
 
     struct widget *current = 0;
 
-    while ((current = nextwidget(&layers[WIDGET_Z_MIDDLE], current)))
+    while ((current = nextwidget(&layers[WIDGET_Z_BOTTOM], current)))
     {
 
         if (current->source == source)
