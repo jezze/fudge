@@ -12,7 +12,7 @@ unsigned int channel_place(struct channel *channel, unsigned int id)
         if (channel->signals[channel->message.header.type].redirect)
             id = channel->signals[channel->message.header.type].redirect;
 
-        return call_place(id, &channel->message.header, channel->message.data);
+        return call_place(id, &channel->message.header, channel->message.data + sizeof (struct ipc_header));
 
     }
 
@@ -146,7 +146,7 @@ void channel_request(struct channel *channel, unsigned int type)
 void channel_append(struct channel *channel, unsigned int count, void *buffer)
 {
 
-    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE, buffer, count, ipc_datasize(&channel->message.header));
+    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE, buffer, count, channel->message.header.length);
 
 }
 

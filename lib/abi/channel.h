@@ -2,7 +2,7 @@ struct channel
 {
 
     unsigned int poll;
-    struct {struct ipc_header header; char data[FUDGE_BSIZE];} message;
+    union {struct ipc_header header; char data[FUDGE_BSIZE];} message;
     struct {void (*callback)(struct channel *channel, unsigned int source, void *data, unsigned int size); unsigned int redirect;} signals[EVENTS];
 
 };
