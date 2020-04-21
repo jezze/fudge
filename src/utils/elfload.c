@@ -244,15 +244,17 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G2, mdata))
-        return;
+    if (file_walk2(FILE_G2, mdata))
+    {
 
-    file_open(FILE_G2);
+        file_open(FILE_G2);
 
-    if (resolve(FILE_G2))
-        call_load(FILE_G2);
+        if (resolve(FILE_G2))
+            call_load(FILE_G2);
 
-    file_close(FILE_G2);
+        file_close(FILE_G2);
+
+    }
 
 }
 

@@ -354,24 +354,26 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int count;
+    if (file_walk2(FILE_L0, mdata))
+    {
 
-    if (!file_walk2(FILE_L0, mdata))
-        return;
+        char buffer[FUDGE_BSIZE];
+        unsigned int count;
 
-    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
-    tokenlist_init(&infix, 1024, infixdata);
-    tokenlist_init(&postfix, 1024, postfixdata);
-    tokenlist_init(&stack, 8, stackdata);
-    file_open(FILE_L0);
+        ring_init(&stringtable, FUDGE_BSIZE, stringdata);
+        tokenlist_init(&infix, 1024, infixdata);
+        tokenlist_init(&postfix, 1024, postfixdata);
+        tokenlist_init(&stack, 8, stackdata);
+        file_open(FILE_L0);
 
-    while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE)))
-        tokenizebuffer(&infix, &stringtable, count, buffer);
+        while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE)))
+            tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    file_close(FILE_L0);
-    translate(&postfix, &infix, &stack);
-    parse(channel, source, &postfix, &stack);
+        file_close(FILE_L0);
+        translate(&postfix, &infix, &stack);
+        parse(channel, source, &postfix, &stack);
+
+    }
 
 }
 

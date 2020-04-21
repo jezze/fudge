@@ -20,24 +20,26 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[FUDGE_BSIZE - sizeof (struct ipc_header) - 1];
-    unsigned int count;
-
-    if (!file_walk2(FILE_L0, mdata))
-        return;
-
-    file_open(FILE_L0);
-
-    while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE - sizeof (struct ipc_header) - 1)))
+    if (file_walk2(FILE_L0, mdata))
     {
 
-        channel_request(channel, EVENT_DATA);
-        channel_append(channel, count, buffer);
-        channel_place(channel, source);
+        char buffer[FUDGE_BSIZE - sizeof (struct ipc_header) - 1];
+        unsigned int count;
+
+        file_open(FILE_L0);
+
+        while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE - sizeof (struct ipc_header) - 1)))
+        {
+
+            channel_request(channel, EVENT_DATA);
+            channel_append(channel, count, buffer);
+            channel_place(channel, source);
+
+        }
+
+        file_close(FILE_L0);
 
     }
-
-    file_close(FILE_L0);
 
 }
 
