@@ -442,13 +442,15 @@ static void rendertext(void *canvas, void *data, unsigned int line)
     unsigned int rowstart;
     unsigned int rowcount;
 
-    if (rowindex >= rowtotal)
-        return;
+    if (rowindex < rowtotal)
+    {
 
-    rowstart = findrowstart(string, text->length, rowindex);
-    rowcount = findrowcount(string, text->length, rowstart);
+        rowstart = findrowstart(string, text->length, rowindex);
+        rowcount = findrowcount(string, text->length, rowstart);
 
-    painttext(canvas, string + rowstart, rowcount - rowstart, text->size.x, text->size.x + text->size.w, textcolor[text->type], line % font.lineheight, rowcount - rowstart);
+        painttext(canvas, string + rowstart, rowcount - rowstart, text->size.x, text->size.x + text->size.w, textcolor[text->type], line % font.lineheight, rowcount - rowstart);
+
+    }
 
 }
 
@@ -462,13 +464,15 @@ static void rendertextbox(void *canvas, void *data, unsigned int line)
     unsigned int rowstart;
     unsigned int rowcount;
 
-    if (rowindex >= rowtotal)
-        return;
+    if (rowindex < rowtotal)
+    {
 
-    rowstart = findrowstart(string, textbox->length, rowindex);
-    rowcount = findrowcount(string, textbox->length, rowstart);
+        rowstart = findrowstart(string, textbox->length, rowindex);
+        rowcount = findrowcount(string, textbox->length, rowstart);
 
-    painttext(canvas, string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
+        painttext(canvas, string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
+
+    }
 
 }
 
@@ -604,11 +608,15 @@ void render_flush(unsigned char *canvasdata, unsigned int size, void (*draw)(voi
     unsigned int chunk = 0;
     unsigned int chunkstart = 0;
     unsigned int line;
+    char lines[FUDGE_BSIZE];
+
+    for (line = 0; line < currenth; line++)
+        lines[line] = testline(line);
 
     for (line = 0; line < currenth; line++)
     {
 
-        if (testline(line))
+        if (lines[line])
         {
 
             renderline(canvasdata + chunk * linesize, line);
