@@ -42,15 +42,15 @@ struct acpi_sdth *acpi_findheader(char *name)
 
     struct acpi_rsdp *rsdp = findrsdp();
     struct acpi_sdth *sdth = (struct acpi_sdth *)rsdp->rsdt;
-    struct acpi_sdth *entries = (struct acpi_sdth *)(rsdp->rsdt + sizeof (struct acpi_sdth));
+    struct acpi_sdth **entries = (struct acpi_sdth **)(rsdp->rsdt + sizeof (struct acpi_sdth));
     unsigned int total = (sdth->length - sizeof (struct acpi_sdth)) / 4;
     unsigned int i;
 
     for (i = 0; i < total; i++)
     {
 
-        if (memory_match(entries[i].signature, name, 4))
-            return &entries[i];
+        if (memory_match(entries[i]->signature, name, 4))
+            return entries[i];
 
     }
 
