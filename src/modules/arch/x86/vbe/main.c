@@ -68,6 +68,7 @@ struct vbe_mode
 } __attribute__ ((packed));
 
 extern void *realmode_gdt;
+extern void _get_info(void);
 extern void _get_video_mode(int);
 extern void _set_video_mode(int);
 
@@ -80,17 +81,25 @@ static void run(void)
 
     struct vbe_info *info = (struct vbe_info *)0xC000;
     struct vbe_mode *mode = (struct vbe_mode *)0xD000;
+    int (*getinfo)(void) = (int (*)(void))0x8000;
     int (*getmode)(int) = (int (*)(int))0x8000;
     int (*setmode)(int) = (int (*)(int))0x8000;
 
     debug_logs(DEBUG_INFO, "vbe loaded");
-    memory_copy((void *)0x8000, (void *)(unsigned int)_get_video_mode, 0x1000);
+
+    /* Load info */
+    memory_copy((void *)0x8000, (void *)(unsigned int)_get_info, 0x1000);
     memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
-    getmode(0);
+    getinfo();
     debug_logs(DEBUG_INFO, "vbe worked!");
     debug_log16(DEBUG_INFO, "vbe version", info->version);
     debug_log16(DEBUG_INFO, "vbe video segment", info->video_modes_segment);
     debug_log16(DEBUG_INFO, "vbe video offset", info->video_modes_offset);
+
+    /* Load mode */
+    memory_copy((void *)0x8000, (void *)(unsigned int)_get_video_mode, 0x1000);
+    memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
+    getmode(0);
     debug_log16(DEBUG_INFO, "vbe width", mode->width);
     debug_log16(DEBUG_INFO, "vbe height", mode->height);
     debug_log8(DEBUG_INFO, "vbe bpp", mode->bpp);
@@ -109,6 +118,7 @@ static void run(void)
 
     }
 
+    /* Set mode */
     memory_copy((void *)0x8000, (void *)(unsigned int)_set_video_mode, 0x1000);
     memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
     setmode(0);
