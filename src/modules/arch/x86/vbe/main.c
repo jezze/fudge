@@ -10,7 +10,26 @@
 #include <modules/video/video.h>
 #include <modules/arch/x86/pci/pci.h>
 
-struct vbe_mode_info
+struct vbe_info
+{
+
+    char signature[4];
+    unsigned short version;
+    unsigned int oem;
+    unsigned int capabilities;
+    unsigned short video_modes_offset;
+    unsigned short video_modes_segment;
+    unsigned short video_memory;
+    unsigned short software_rev;
+    unsigned int vendor;
+    unsigned int product_name;
+    unsigned int product_rev;
+    char reserved[222];
+    char oem_data[256];
+
+} __attribute__ ((packed));
+
+struct vbe_mode
 {
 
     unsigned short attributes;
@@ -59,7 +78,8 @@ static unsigned int lfb;
 static void run(void)
 {
 
-    struct vbe_mode_info *info = (struct vbe_mode_info *)0xD000;
+    struct vbe_info *info = (struct vbe_info *)0xC000;
+    struct vbe_mode *mode = (struct vbe_mode *)0xD000;
     int (*getmode)(int) = (int (*)(int))0x8000;
     int (*setmode)(int) = (int (*)(int))0x8000;
 
@@ -68,15 +88,18 @@ static void run(void)
     memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
     getmode(0);
     debug_logs(DEBUG_INFO, "vbe worked!");
-    debug_log16(DEBUG_INFO, "vbe width", info->width);
-    debug_log16(DEBUG_INFO, "vbe height", info->height);
-    debug_log8(DEBUG_INFO, "vbe bpp", info->bpp);
-    debug_log32(DEBUG_INFO, "vbe framebuffer", info->framebuffer);
-    debug_log8(DEBUG_INFO, "vbe memory_model", info->memory_model);
+    debug_log16(DEBUG_INFO, "vbe version", info->version);
+    debug_log16(DEBUG_INFO, "vbe video segment", info->video_modes_segment);
+    debug_log16(DEBUG_INFO, "vbe video offset", info->video_modes_offset);
+    debug_log16(DEBUG_INFO, "vbe width", mode->width);
+    debug_log16(DEBUG_INFO, "vbe height", mode->height);
+    debug_log8(DEBUG_INFO, "vbe bpp", mode->bpp);
+    debug_log32(DEBUG_INFO, "vbe framebuffer", mode->framebuffer);
+    debug_log8(DEBUG_INFO, "vbe memory_model", mode->memory_model);
 
-    ctrl_setvideosettings(&videointerface.settings, info->width, info->height, info->bpp / 8);
+    ctrl_setvideosettings(&videointerface.settings, mode->width, mode->height, mode->bpp / 8);
 
-    lfb = info->framebuffer;
+    lfb = mode->framebuffer;
 
     if (lfb)
     {
