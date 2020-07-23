@@ -1,5 +1,3 @@
-#define MSR_LAPIC                       0x1B
-
 struct msr_data
 {
 

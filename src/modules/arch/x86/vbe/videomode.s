@@ -65,7 +65,7 @@ _get_video_mode:
     add si, 0 # OFFSET
 
     mov dx, fs:[si] # grab the mode
-    or dx, 0x0118
+    or dx, 0x017F
 
     cmp dx, 0xFFFF   # end of list?
     je .Xerror
@@ -181,7 +181,7 @@ _set_video_mode:
 
     mov ax, 0x4F02
     mov bx, fs:[si] # mode
-    or bx, 0x4118   # enable LFB
+    or bx, 0x417F   # enable LFB
     mov di, 0
     int 0x10
 

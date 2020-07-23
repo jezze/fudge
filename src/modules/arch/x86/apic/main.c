@@ -10,6 +10,8 @@
 #include <modules/arch/x86/pic/pic.h>
 #include "apic.h"
 
+#define MSRLAPIC                        0x1B
+
 #define REGISTERID                      0x0020
 #define REGISTERVERSION                 0x0030
 #define REGISTERTPR                     0x0080
@@ -183,7 +185,7 @@ void module_init(void)
     if ((data.edx & CPUID_FEATURES01_APIC))
     {
 
-        msr_get(MSR_LAPIC, &msrdata);
+        msr_get(MSRLAPIC, &msrdata);
 
         mmio = (msrdata.eax & 0xFFFFF000);
 
