@@ -4,6 +4,10 @@
 
 .intel_syntax noprefix
 
+.global _modenum
+_modenum:
+.word 0
+
 .code32
 
 .global _get_info
@@ -127,7 +131,7 @@ _get_video_mode:
     # real mode. do stuff here.
 
     mov ax, 0x4F01
-    mov cx, 0x017F
+    mov cx, _modenum
     mov di, 0xd000
     int 0x10
     cmp ax, 0x4F
@@ -207,7 +211,7 @@ _set_video_mode:
     # real mode. do stuff here.
 
     mov ax, 0x4F02
-    mov bx, 0x417F
+    mov bx, _modenum
     mov di, 0
     int 0x10
     cmp ax, 0x4F
