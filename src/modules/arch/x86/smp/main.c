@@ -10,6 +10,7 @@
 #include <modules/arch/x86/acpi/acpi.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include <modules/arch/x86/apic/apic.h>
+#include <modules/arch/x86/pat/pat.h>
 #include <modules/arch/x86/pit/pit.h>
 #include "smp.h"
 
@@ -107,6 +108,7 @@ void smp_setupap(unsigned int stack)
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();
     apic_setup_ap();
+    pat_setup();
     list_add(&corelist, &cores[id].item);
     arch_leave(&cores[id]);
 

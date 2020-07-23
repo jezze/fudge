@@ -13,6 +13,7 @@ include $(DIR_SRC)/modules/arch/x86/io/rules.mk
 include $(DIR_SRC)/modules/arch/x86/ioapic/rules.mk
 include $(DIR_SRC)/modules/arch/x86/msr/rules.mk
 include $(DIR_SRC)/modules/arch/x86/nvme/rules.mk
+include $(DIR_SRC)/modules/arch/x86/pat/rules.mk
 include $(DIR_SRC)/modules/arch/x86/pci/rules.mk
 include $(DIR_SRC)/modules/arch/x86/pic/rules.mk
 include $(DIR_SRC)/modules/arch/x86/pit/rules.mk

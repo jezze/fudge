@@ -1,6 +1,7 @@
 elfload < /kernel/io.ko
 elfload < /kernel/cpuid.ko
 elfload < /kernel/msr.ko
+elfload < /kernel/pat.ko
 elfload < /kernel/acpi.ko
 elfload < /kernel/syse.ko
 elfload < /kernel/pic.ko
