@@ -28,26 +28,6 @@ static struct mmu_directory *gettaskdirectory(unsigned int index)
 
 }
 
-static void mapkernel(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
-{
-
-    struct mmu_directory *directory = getkerneldirectory();
-    struct mmu_table *table = (struct mmu_table *)(directory + 1) + index;
-
-    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-
-}
-
-static void mapkernelshared(unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
-{
-
-    struct mmu_directory *directory = getkerneldirectory();
-    struct mmu_table *table = (struct mmu_table *)(directory + 1) + index;
-
-    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_CACHEWRITE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_CACHEWRITE);
-
-}
-
 static void maptask(struct task *task, unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
@@ -121,20 +101,6 @@ static void coreassign(struct task *task)
 
 }
 
-void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
-{
-
-    mapkernel(index, paddress, vaddress, size);
-
-}
-
-void arch_setmapshared(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
-{
-
-    mapkernelshared(index, paddress, vaddress, size);
-
-}
-
 static void schedule(struct cpu_general *general, struct cpu_interrupt *interrupt, struct core *core)
 {
 
@@ -178,6 +144,26 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         mmu_setdirectory(getkerneldirectory());
 
     }
+
+}
+
+void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+{
+
+    struct mmu_directory *directory = getkerneldirectory();
+    struct mmu_table *table = (struct mmu_table *)(directory + 1) + index;
+
+    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+
+}
+
+void arch_setmapshared(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+{
+
+    struct mmu_directory *directory = getkerneldirectory();
+    struct mmu_table *table = (struct mmu_table *)(directory + 1) + index;
+
+    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_CACHEWRITE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_CACHEWRITE);
 
 }
 
@@ -436,10 +422,10 @@ void arch_setup(struct service_backend *backend)
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, core0.id, core0.sp);
-    mapkernel(0, 0x00000000, 0x00000000, 0x00400000);
-    mapkernel(1, 0x00400000, 0x00400000, 0x00400000);
-    mapkernel(2, 0x00800000, 0x00800000, 0x00400000);
-    mapkernel(3, 0x00C00000, 0x00C00000, 0x00400000);
+    arch_setmap(0, 0x00000000, 0x00000000, 0x00400000);
+    arch_setmap(1, 0x00400000, 0x00400000, 0x00400000);
+    arch_setmap(2, 0x00800000, 0x00800000, 0x00400000);
+    arch_setmap(3, 0x00C00000, 0x00C00000, 0x00400000);
     mmu_setdirectory(getkerneldirectory());
     mmu_enable();
     kernel_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
