@@ -125,7 +125,6 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 {
 
     mapkernel(index, paddress, vaddress, size);
-    mmu_setdirectory(getkerneldirectory());
 
 }
 
@@ -133,7 +132,6 @@ void arch_setmapshared(unsigned char index, unsigned int paddress, unsigned int 
 {
 
     mapkernelshared(index, paddress, vaddress, size);
-    mmu_setdirectory(getkerneldirectory());
 
 }
 
