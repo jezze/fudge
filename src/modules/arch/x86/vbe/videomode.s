@@ -8,10 +8,8 @@
 _modenum:
 .word 0
 
-.code32
-
-.global _get_info
-_get_info:
+.global vbe_getinfo
+vbe_getinfo:
     pushad
     mov eax, VBE_STACK
     mov [eax], esp
@@ -20,26 +18,38 @@ _get_info:
     mov cr0, eax
     mov eax, VBE_GDT
     lgdt [eax]
-    ljmp 0x8:(VBE_CODE + _get_info_16 - _get_info)
+    ljmp 0x8:(VBE_CODE + vbe_getinfo_16 - vbe_begin16)
 
-_get_info_32:
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov eax, cr0
-    or eax, 0x80000000
-    mov cr0, eax
+.global vbe_getvideomode
+vbe_getvideomode:
+    pushad
     mov eax, VBE_STACK
-    mov esp, [eax]
-    popad
-    ret
+    mov [eax], esp
+    mov eax, cr0
+    and eax, ~0x80000000
+    mov cr0, eax
+    mov eax, VBE_GDT
+    lgdt [eax]
+    ljmp 0x8:(VBE_CODE + vbe_getvideomode_16 - vbe_begin16)
+
+.global vbe_setvideomode
+vbe_setvideomode:
+    pushad
+    mov eax, VBE_STACK
+    mov [eax], esp
+    mov eax, cr0
+    and eax, ~0x80000000
+    mov cr0, eax
+    mov eax, VBE_GDT
+    lgdt [eax]
+    ljmp 0x8:(VBE_CODE + vbe_setvideomode_16 - vbe_begin16)
+
+.global vbe_begin16
+vbe_begin16:
 
 .code16
 
-_get_info_16:
+vbe_getinfo_16:
     mov ax, 0x10
     mov ds, ax
     mov es, ax
@@ -51,9 +61,37 @@ _get_info_16:
     mov eax, cr0
     and eax, 0x7FFFFFFE
     mov cr0, eax
-    ljmp 0x0:(VBE_CODE + _get_info_real - _get_info)
+    ljmp 0x0:(VBE_CODE + vbe_getinfo_real - vbe_begin16)
 
-_get_info_real:
+vbe_getvideomode_16:
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    mov ax, (VBE_GDT + realmode_idt - realmode_gdt)
+    lidt [eax]
+    mov eax, cr0
+    and eax, 0x7FFFFFFE
+    mov cr0, eax
+    ljmp 0x0:(VBE_CODE + vbe_getvideomode_real - vbe_begin16)
+
+vbe_setvideomode_16:
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    mov ax, (VBE_GDT + realmode_idt - realmode_gdt)
+    lidt [eax]
+    mov eax, cr0
+    and eax, 0x7FFFFFFE
+    mov cr0, eax
+    ljmp 0x0:(VBE_CODE + vbe_setvideomode_real - vbe_begin16)
+
+vbe_getinfo_real:
     xor ax, ax
     mov ds, ax
     mov es, ax
@@ -75,54 +113,9 @@ _get_info_real:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-    ljmp 0x8:(VBE_CODE + _get_info_32 - _get_info)
+    ljmp 0x8:(VBE_CODE + vbe_final32 - vbe_begin16)
 
-.code32
-
-.global _get_video_mode
-_get_video_mode:
-    pushad
-    mov eax, VBE_STACK
-    mov [eax], esp
-    mov eax, cr0
-    and eax, ~0x80000000
-    mov cr0, eax
-    mov eax, VBE_GDT
-    lgdt [eax]
-    ljmp 0x8:(VBE_CODE + _get_video_mode_16 - _get_video_mode)
-
-_get_video_mode_32:
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov eax, cr0
-    or eax, 0x80000000
-    mov cr0, eax
-    mov eax, VBE_STACK
-    mov esp, [eax]
-    popad
-    ret
-
-.code16
-
-_get_video_mode_16:
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov ax, (VBE_GDT + realmode_idt - realmode_gdt)
-    lidt [eax]
-    mov eax, cr0
-    and eax, 0x7FFFFFFE
-    mov cr0, eax
-    ljmp 0x0:(VBE_CODE + _get_video_mode_real - _get_video_mode)
-
-_get_video_mode_real:
+vbe_getvideomode_real:
     xor ax, ax
     mov ds, ax
     mov es, ax
@@ -143,54 +136,9 @@ _get_video_mode_real:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-    ljmp 0x8:(VBE_CODE + _get_video_mode_32 - _get_video_mode)
+    ljmp 0x8:(VBE_CODE + vbe_final32 - vbe_begin16)
 
-.code32
-
-.global _set_video_mode
-_set_video_mode:
-    pushad
-    mov eax, VBE_STACK
-    mov [eax], esp
-    mov eax, cr0
-    and eax, ~0x80000000
-    mov cr0, eax
-    mov eax, VBE_GDT
-    lgdt [eax]
-    ljmp 0x8:(VBE_CODE + _set_video_mode_16 - _set_video_mode)
-
-_set_video_mode_32:
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov eax, cr0
-    or eax, 0x80000000
-    mov cr0, eax
-    mov eax, VBE_STACK
-    mov esp, [eax]
-    popad
-    ret
-
-.code16
-
-_set_video_mode_16:
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov ax, (VBE_GDT + realmode_idt - realmode_gdt)
-    lidt [eax]
-    mov eax, cr0
-    and eax, 0x7FFFFFFE
-    mov cr0, eax
-    ljmp 0x0:(VBE_CODE + _set_video_mode_real - _set_video_mode)
-
-_set_video_mode_real:
+vbe_setvideomode_real:
     xor ax, ax
     mov ds, ax
     mov es, ax
@@ -211,7 +159,27 @@ _set_video_mode_real:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-    ljmp 0x8:(VBE_CODE + _set_video_mode_32 - _set_video_mode)
+    ljmp 0x8:(VBE_CODE + vbe_final32 - vbe_begin16)
+
+.code32
+
+vbe_final32:
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    mov eax, cr0
+    or eax, 0x80000000
+    mov cr0, eax
+    mov eax, VBE_STACK
+    mov esp, [eax]
+    popad
+    ret
+
+.global vbe_end16
+vbe_end16:
 
 .code32
 
