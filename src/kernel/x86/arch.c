@@ -422,6 +422,9 @@ static void setuptask()
 void arch_setup(struct service_backend *backend)
 {
 
+    struct mmu_directory *directory = getkerneldirectory();
+
+    memory_clear(directory, sizeof (struct mmu_directory));
     core_init(&core0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE, 0);
     arch_configuregdt();
     arch_configureidt();
@@ -430,7 +433,7 @@ void arch_setup(struct service_backend *backend)
     arch_setmap(1, 0x00400000, 0x00400000, 0x00400000);
     arch_setmap(2, 0x00800000, 0x00800000, 0x00400000);
     arch_setmap(3, 0x00C00000, 0x00C00000, 0x00400000);
-    mmu_setdirectory(getkerneldirectory());
+    mmu_setdirectory(directory);
     mmu_enable();
     kernel_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
     kernel_setcallback(coreget, coreassign);

@@ -75,7 +75,7 @@ static struct base_driver driver;
 static struct video_interface videointerface;
 static unsigned int lfb;
 
-static void run(void)
+static void run(unsigned int w, unsigned int h, unsigned int bpp)
 {
 
     struct vbe_info *info = (struct vbe_info *)0xC000;
@@ -103,7 +103,7 @@ static void run(void)
 
         vbe_getvideomode();
 
-        if (mode->width == 1920 && mode->height == 1080 && mode->bpp == 32)
+        if (mode->width == w && mode->height == h && mode->bpp == bpp)
         {
 
             debug_log16(DEBUG_INFO, "vbe modenum", modenum);
@@ -146,7 +146,9 @@ static void run(void)
 static unsigned int videointerface_writectrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    run();
+    struct ctrl_videosettings *settings = buffer;
+
+    run(settings->w, settings->h, settings->bpp * 8);
 
     return count;
 
