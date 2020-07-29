@@ -323,7 +323,18 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (core->task)
     {
 
+        struct mmu_directory *kdirectory = getkerneldirectory();
+        struct mmu_directory *tdirectory = gettaskdirectory(core->task->id);
         unsigned int code = core->task->format->findbase(&core->task->node, cpu_getcr2());
+        unsigned int i;
+
+        for (i = 0; i < MMU_TABLES; i++)
+        {
+
+            if (tdirectory->tables[i] == 0 && kdirectory->tables[i] != 0)
+                tdirectory->tables[i] = kdirectory->tables[i];
+
+        }
 
         if (code)
         {
@@ -331,13 +342,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             maptask(core->task, 0, ARCH_TASKCODEADDRESS + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE);
             maptask(core->task, 1, ARCH_TASKCODEADDRESS + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKADDRESS - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE);
             core->task->format->copyprogram(&core->task->node);
-
-        }
-
-        else
-        {
-
-            unloadtask(core->task);
 
         }
 

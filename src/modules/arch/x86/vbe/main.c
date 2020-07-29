@@ -216,7 +216,6 @@ void module_init(void)
 {
 
     base_initdriver(&driver, "vbe", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
-    run();
 
 }
 
