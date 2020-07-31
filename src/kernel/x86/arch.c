@@ -424,11 +424,11 @@ void arch_setup(struct service_backend *backend)
 
     struct mmu_directory *directory = getkerneldirectory();
 
-    memory_clear(directory, sizeof (struct mmu_directory));
     core_init(&core0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE, 0);
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, core0.id, core0.sp);
+    memory_clear(directory, sizeof (struct mmu_directory));
     arch_setmap(0, 0x00000000, 0x00000000, 0x00400000);
     arch_setmap(1, 0x00400000, 0x00400000, 0x00400000);
     arch_setmap(2, 0x00800000, 0x00800000, 0x00400000);
