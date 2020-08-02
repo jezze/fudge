@@ -143,6 +143,13 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
+static unsigned int videointerface_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
+
+}
+
 static unsigned int videointerface_writectrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -181,6 +188,7 @@ static void driver_init(unsigned int id)
     video_initinterface(&videointerface, id);
     ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
 
+    videointerface.ctrl.operations.read = videointerface_readctrl;
     videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.write = videointerface_writedata;
     videointerface.colormap.operations.read = videointerface_readcolormap;
