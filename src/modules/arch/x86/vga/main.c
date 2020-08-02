@@ -23,7 +23,7 @@ static struct console_interface consoleinterface;
 static struct video_interface videointerface;
 static struct {unsigned char color; unsigned int offset;} cursor = {0x0F, 0};
 static struct vga_character *taddress = (struct vga_character *)0x000B8000;
-static void *gaddress = (void *)0x000A0000;
+static unsigned int framebuffer = 0x000A0000;
 
 static void clear(unsigned int offset)
 {
@@ -149,14 +149,14 @@ static unsigned int videointerface_writectrl(struct system_node *self, struct sy
 static unsigned int videointerface_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, gaddress, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
+    return memory_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
 
 }
 
 static unsigned int videointerface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write(gaddress, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+    return memory_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
 
 }
 

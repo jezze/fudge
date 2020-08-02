@@ -73,7 +73,7 @@ extern short modenum;
 
 static struct base_driver driver;
 static struct video_interface videointerface;
-static unsigned int lfb;
+static unsigned int framebuffer;
 
 static void run(unsigned int w, unsigned int h, unsigned int bpp)
 {
@@ -124,13 +124,13 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 
     ctrl_setvideosettings(&videointerface.settings, mode->width, mode->height, mode->bpp / 8);
 
-    lfb = mode->framebuffer;
+    framebuffer = mode->framebuffer;
 
-    if (lfb)
+    if (framebuffer)
     {
 
-        arch_setmapshared(4, lfb, lfb, 0x00400000);
-        arch_setmapshared(5, lfb + 0x00400000, lfb + 0x00400000, 0x00400000);
+        arch_setmapshared(4, framebuffer, framebuffer, 0x00400000);
+        arch_setmapshared(5, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
 
     }
 
@@ -139,7 +139,7 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 
     vbe_setvideomode();
 
-    video_notifymode(&videointerface, lfb, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
 }
 
@@ -161,10 +161,17 @@ static unsigned int videointerface_writectrl(struct system_node *self, struct sy
 
 }
 
+static unsigned int videointerface_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    return memory_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
+
+}
+
 static unsigned int videointerface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write((void *)lfb, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+    return memory_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
 
 }
 
@@ -190,6 +197,7 @@ static void driver_init(unsigned int id)
 
     videointerface.ctrl.operations.read = videointerface_readctrl;
     videointerface.ctrl.operations.write = videointerface_writectrl;
+    videointerface.data.operations.read = videointerface_readdata;
     videointerface.data.operations.write = videointerface_writedata;
     videointerface.colormap.operations.read = videointerface_readcolormap;
     videointerface.colormap.operations.write = videointerface_writecolormap;

@@ -34,8 +34,7 @@
 
 static struct base_driver driver;
 static struct video_interface videointerface;
-static void *bank;
-static void *lfb;
+static unsigned int framebuffer;
 
 static void setreg(unsigned short index, unsigned short data)
 {
@@ -63,7 +62,7 @@ static unsigned int videointerface_writectrl(struct system_node *self, struct sy
     setreg(COMMANDYRES, videointerface.settings.h);
     setreg(COMMANDBPP, videointerface.settings.bpp * 8);
     setreg(COMMANDENABLE, 0x40 | 0x01);
-    video_notifymode(&videointerface, (unsigned int)lfb, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
     return count;
 
@@ -72,14 +71,14 @@ static unsigned int videointerface_writectrl(struct system_node *self, struct sy
 static unsigned int videointerface_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, lfb, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
+    return memory_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
 
 }
 
 static unsigned int videointerface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write(lfb, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+    return memory_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
 
 }
 
@@ -121,11 +120,10 @@ static unsigned int driver_match(unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    bank = (void *)0xA0000;
-    lfb = (void *)(unsigned int)(pci_ind(id, PCI_CONFIG_BAR0) & 0xFFFFFFF0);
+    framebuffer = pci_ind(id, PCI_CONFIG_BAR0) & 0xFFFFFFF0;
 
-    arch_setmapshared(4, (unsigned int)lfb, (unsigned int)lfb, 0x00400000);
-    arch_setmapshared(5, (unsigned int)lfb + 0x00400000, (unsigned int)lfb + 0x00400000, 0x00400000);
+    arch_setmapshared(4, framebuffer, framebuffer, 0x00400000);
+    arch_setmapshared(5, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
 
 }
 
