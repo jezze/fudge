@@ -206,7 +206,7 @@ static void oninit(struct channel *channel)
     ring_init(&input2, FUDGE_BSIZE, inputdata2);
     widget_inittextbox(&content);
 
-    if (!file_walk2(FILE_G0, "/system/multicast"))
+    if (!file_walk2(FILE_G0, "/system/wclient"))
         return;
 
     channel_setsignal(channel, EVENT_ANY, onany);

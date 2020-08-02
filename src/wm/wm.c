@@ -965,7 +965,7 @@ static void oninit(struct channel *channel)
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     render_init();
 
-    if (!file_walk2(FILE_G1, "/system/event"))
+    if (!file_walk2(FILE_G1, "/system/wserver"))
         return;
 
     if (!file_walk2(FILE_G2, "/system/keyboard/event"))

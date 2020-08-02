@@ -344,7 +344,7 @@ static void oninit(struct channel *channel)
     ring_write(&prompt, "$ ", 2);
     widget_inittextbox(&content);
 
-    if (!file_walk2(FILE_G0, "/system/multicast"))
+    if (!file_walk2(FILE_G0, "/system/wclient"))
         return;
 
     if (!file_walk2(FILE_CP, "/bin/complete"))

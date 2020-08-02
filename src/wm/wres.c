@@ -60,7 +60,7 @@ static void onmain2(struct channel *channel, unsigned int source, void *mdata, u
 static void oninit(struct channel *channel)
 {
 
-    if (!file_walk2(FILE_G0, "/system/multicast"))
+    if (!file_walk2(FILE_G0, "/system/wclient"))
         return;
 
     channel_setsignal(channel, EVENT_MAIN, onmain2);
