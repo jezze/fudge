@@ -129,8 +129,8 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
     if (framebuffer)
     {
 
-        arch_setmapshared(4, framebuffer, framebuffer, 0x00400000);
-        arch_setmapshared(5, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
+        arch_setmapvideo(4, framebuffer, framebuffer, 0x00400000);
+        arch_setmapvideo(5, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
 
     }
 

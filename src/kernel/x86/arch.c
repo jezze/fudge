@@ -174,7 +174,7 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
-void arch_setmapshared(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+void arch_setmapvideo(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     struct mmu_directory *directory = getkerneldirectory();
