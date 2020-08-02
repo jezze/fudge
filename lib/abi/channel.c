@@ -161,6 +161,13 @@ void channel_appendstring(struct channel *channel, char *string)
 
 }
 
+void channel_appendstring2(struct channel *channel, char *string)
+{
+
+    channel_append(channel, ascii_length(string) + 1, string);
+
+}
+
 void channel_appendvalue(struct channel *channel, int value, unsigned int base, unsigned int padding)
 {
 

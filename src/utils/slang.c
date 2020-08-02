@@ -270,8 +270,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            channel_append(channel, 2, "F");
-            channel_append(channel, ascii_length(t->str) + 1, t->str);
+            channel_appendstring2(channel, "F");
+            channel_appendstring2(channel, t->str);
 
             break;
 
@@ -281,8 +281,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            channel_append(channel, 2, "R");
-            channel_append(channel, ascii_length(t->str) + 1, t->str);
+            channel_appendstring2(channel, "R");
+            channel_appendstring2(channel, t->str);
 
             break;
 
@@ -292,8 +292,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            channel_append(channel, 2, "D");
-            channel_append(channel, ascii_length(t->str) + 1, t->str);
+            channel_appendstring2(channel, "D");
+            channel_appendstring2(channel, t->str);
 
             break;
 
@@ -303,8 +303,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            channel_append(channel, 2, "P");
-            channel_append(channel, ascii_length(t->str) + 1, t->str);
+            channel_appendstring2(channel, "P");
+            channel_appendstring2(channel, t->str);
 
             break;
 
@@ -314,9 +314,9 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            channel_append(channel, 2, "P");
-            channel_append(channel, ascii_length(t->str) + 1, t->str);
-            channel_append(channel, 2, "E");
+            channel_appendstring2(channel, "P");
+            channel_appendstring2(channel, t->str);
+            channel_appendstring2(channel, "E");
 
             break;
 

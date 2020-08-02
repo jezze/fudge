@@ -7,7 +7,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     channel_request(channel, EVENT_FILE);
-    channel_append(channel, 15, "/data/motd.txt");
+    channel_appendstring2(channel, "/data/motd.txt");
     channel_place(channel, idecho);
     channel_request(channel, EVENT_MAIN);
     channel_place(channel, idecho);

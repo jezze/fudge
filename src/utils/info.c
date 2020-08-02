@@ -7,13 +7,13 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     channel_request(channel, EVENT_FILE);
-    channel_append(channel, 19, "/system/info/cores");
+    channel_appendstring2(channel, "/system/info/cores");
     channel_place(channel, idecho);
     channel_request(channel, EVENT_FILE);
-    channel_append(channel, 19, "/system/info/tasks");
+    channel_appendstring2(channel, "/system/info/tasks");
     channel_place(channel, idecho);
     channel_request(channel, EVENT_FILE);
-    channel_append(channel, 23, "/system/info/mailboxes");
+    channel_appendstring2(channel, "/system/info/mailboxes");
     channel_place(channel, idecho);
     channel_request(channel, EVENT_MAIN);
     channel_place(channel, idecho);

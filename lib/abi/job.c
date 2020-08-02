@@ -119,7 +119,7 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         {
 
             channel_request(channel, EVENT_FILE);
-            channel_append(channel, ascii_length(p->files[k]) + 1, p->files[k]);
+            channel_appendstring2(channel, p->files[k]);
             channel_place(channel, p->id);
 
         }
@@ -128,7 +128,7 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         {
 
             channel_request(channel, EVENT_DATA);
-            channel_append(channel, ascii_length(p->inputs[k]), p->inputs[k]);
+            channel_appendstring(channel, p->inputs[k]);
             channel_place(channel, p->id);
 
         }

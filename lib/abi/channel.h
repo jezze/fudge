@@ -18,5 +18,6 @@ void channel_setsignal(struct channel *channel, unsigned int type, void (*callba
 void channel_request(struct channel *channel, unsigned int type);
 void channel_append(struct channel *channel, unsigned int count, void *buffer);
 void channel_appendstring(struct channel *channel, char *string);
+void channel_appendstring2(struct channel *channel, char *string);
 void channel_appendvalue(struct channel *channel, int value, unsigned int base, unsigned int padding);
 void channel_init(struct channel *channel);
