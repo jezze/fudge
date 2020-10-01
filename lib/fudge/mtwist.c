@@ -109,16 +109,3 @@ unsigned int mtwist_rand(struct mtwist_state *state)
 
 }
 
-double mtwist_randd(struct mtwist_state *state)
-{
-
-    double conv = 1.0;
-    unsigned int i;
-
-    for (i = 0; i < 32; i++)
-        conv /= 2.0;
-
-    return mtwist_rand(state) * conv;
-
-}
-

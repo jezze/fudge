@@ -14,10 +14,10 @@
 struct vbe_info
 {
 
-    char signature[4];
+    unsigned int signature;
     unsigned short version;
-    unsigned int oem;
-    unsigned int capabilities;
+    unsigned short oem[2];
+    unsigned short capabilities[2];
     unsigned short video_modes_offset;
     unsigned short video_modes_segment;
     unsigned short video_memory;
@@ -28,14 +28,13 @@ struct vbe_info
     char reserved[222];
     char oem_data[256];
 
-} __attribute__ ((packed));
+};
 
 struct vbe_mode
 {
 
     unsigned short attributes;
-    unsigned char window_a;
-    unsigned char window_b;
+    unsigned short window_a;
     unsigned short granularity;
     unsigned short window_size;
     unsigned short segment_a;
@@ -66,7 +65,7 @@ struct vbe_mode
     unsigned int off_screen_mem_off;
     unsigned short off_screen_mem_size;
 
-} __attribute__ ((packed));
+};
 
 extern void *realmode_gdt;
 extern short modenum;
