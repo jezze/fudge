@@ -11,36 +11,25 @@ _modenum:
 .global vbe_getinfo
 vbe_getinfo:
     pushad
-    mov eax, VBE_STACK
-    mov [eax], esp
-    mov eax, cr0
-    and eax, ~0x80000000
-    mov cr0, eax
-    mov eax, VBE_GDT
-    lgdt [eax]
-    push 0x8
-    mov eax, (VBE_CODE + vbe_getinfo_16 - vbe_begin16)
-    push eax
-    lret
+    mov ecx, (vbe_getinfo_16 - vbe_begin16)
+    mov edx, (vbe_getinfo_real - vbe_begin16)
+    jmp switch_16
 
 .global vbe_getvideomode
 vbe_getvideomode:
     pushad
-    mov eax, VBE_STACK
-    mov [eax], esp
-    mov eax, cr0
-    and eax, ~0x80000000
-    mov cr0, eax
-    mov eax, VBE_GDT
-    lgdt [eax]
-    push 0x8
-    mov eax, (VBE_CODE + vbe_getvideomode_16 - vbe_begin16)
-    push eax
-    lret
+    mov ecx, (vbe_getvideomode_16 - vbe_begin16)
+    mov edx, (vbe_getvideomode_real - vbe_begin16)
+    jmp switch_16
 
 .global vbe_setvideomode
 vbe_setvideomode:
     pushad
+    mov ecx, (vbe_setvideomode_16 - vbe_begin16)
+    mov edx, (vbe_setvideomode_real - vbe_begin16)
+    jmp switch_16
+
+switch_16:
     mov eax, VBE_STACK
     mov [eax], esp
     mov eax, cr0
@@ -49,7 +38,8 @@ vbe_setvideomode:
     mov eax, VBE_GDT
     lgdt [eax]
     push 0x8
-    mov eax, (VBE_CODE + vbe_setvideomode_16 - vbe_begin16)
+    mov eax, VBE_CODE
+    add eax, ecx
     push eax
     lret
 
@@ -70,7 +60,11 @@ vbe_getinfo_16:
     mov eax, cr0
     and eax, 0x7FFFFFFE
     mov cr0, eax
-    ljmp 0x0:(VBE_CODE + vbe_getinfo_real - vbe_begin16)
+    push 0x0
+    mov eax, VBE_CODE
+    add eax, (vbe_getinfo_real - vbe_begin16)
+    push eax
+    lret
 
 vbe_getvideomode_16:
     mov ax, 0x10
@@ -84,7 +78,11 @@ vbe_getvideomode_16:
     mov eax, cr0
     and eax, 0x7FFFFFFE
     mov cr0, eax
-    ljmp 0x0:(VBE_CODE + vbe_getvideomode_real - vbe_begin16)
+    push 0x0
+    mov eax, VBE_CODE
+    add eax, (vbe_getvideomode_real - vbe_begin16)
+    push eax
+    lret
 
 vbe_setvideomode_16:
     mov ax, 0x10
@@ -98,7 +96,11 @@ vbe_setvideomode_16:
     mov eax, cr0
     and eax, 0x7FFFFFFE
     mov cr0, eax
-    ljmp 0x0:(VBE_CODE + vbe_setvideomode_real - vbe_begin16)
+    push 0x0
+    mov eax, VBE_CODE
+    add eax, (vbe_setvideomode_real - vbe_begin16)
+    push eax
+    lret
 
 vbe_getinfo_real:
     xor ax, ax
