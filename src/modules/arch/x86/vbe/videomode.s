@@ -98,12 +98,10 @@ vbe_getinfo_real:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    mov sp, 0xa000
+    mov sp, 0xA000
 
-    mov di, 0xc000
-    mov eax, 0x32454256
-    mov dword [di], eax
     mov ax, 0x4F00
+    mov di, 0xC000
     int 0x10
 
     mov eax, 0x1000
@@ -122,11 +120,11 @@ vbe_getvideomode_real:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    mov sp, 0xa000
+    mov sp, 0xA000
 
     mov ax, 0x4F01
     mov cx, _modenum
-    mov di, 0xd000
+    mov di, 0xD000
     int 0x10
 
     mov eax, 0x1000
@@ -145,7 +143,7 @@ vbe_setvideomode_real:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    mov sp, 0xa000
+    mov sp, 0xA000
 
     mov ax, 0x4F02
     mov bx, _modenum
