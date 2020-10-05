@@ -18,7 +18,10 @@ vbe_getinfo:
     mov cr0, eax
     mov eax, VBE_GDT
     lgdt [eax]
-    ljmp 0x8:(VBE_CODE + vbe_getinfo_16 - vbe_begin16)
+    push 0x8
+    mov eax, (VBE_CODE + vbe_getinfo_16 - vbe_begin16)
+    push eax
+    lret
 
 .global vbe_getvideomode
 vbe_getvideomode:
@@ -30,7 +33,10 @@ vbe_getvideomode:
     mov cr0, eax
     mov eax, VBE_GDT
     lgdt [eax]
-    ljmp 0x8:(VBE_CODE + vbe_getvideomode_16 - vbe_begin16)
+    push 0x8
+    mov eax, (VBE_CODE + vbe_getvideomode_16 - vbe_begin16)
+    push eax
+    lret
 
 .global vbe_setvideomode
 vbe_setvideomode:
@@ -42,7 +48,10 @@ vbe_setvideomode:
     mov cr0, eax
     mov eax, VBE_GDT
     lgdt [eax]
-    ljmp 0x8:(VBE_CODE + vbe_setvideomode_16 - vbe_begin16)
+    push 0x8
+    mov eax, (VBE_CODE + vbe_setvideomode_16 - vbe_begin16)
+    push eax
+    lret
 
 .global vbe_begin16
 vbe_begin16:
