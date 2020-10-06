@@ -11,19 +11,19 @@ _modenum:
 .global vbe_getinfo
 vbe_getinfo:
     pushad
-    mov edx, (vbe_getinfo_real - vbe_begin16)
+    mov edx, (getinfo_real - vbe_begin16)
     jmp switch_16
 
 .global vbe_getvideomode
 vbe_getvideomode:
     pushad
-    mov edx, (vbe_getvideomode_real - vbe_begin16)
+    mov edx, (getvideomode_real - vbe_begin16)
     jmp switch_16
 
 .global vbe_setvideomode
 vbe_setvideomode:
     pushad
-    mov edx, (vbe_setvideomode_real - vbe_begin16)
+    mov edx, (setvideomode_real - vbe_begin16)
     jmp switch_16
 
 switch_16:
@@ -63,7 +63,7 @@ switch_real:
     push eax
     lret
 
-vbe_getinfo_real:
+getinfo_real:
     xor ax, ax
     mov ds, ax
     mov es, ax
@@ -71,21 +71,12 @@ vbe_getinfo_real:
     mov gs, ax
     mov ss, ax
     mov sp, 0xA000
-
     mov ax, 0x4F00
     mov di, 0xC000
     int 0x10
+    jmp leave_real
 
-    mov eax, 0x1000
-    lgdt [eax]
-    mov eax, 0x2000
-    lidt [eax]
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
-    ljmp 0x8:(VBE_CODE + vbe_final32 - vbe_begin16)
-
-vbe_getvideomode_real:
+getvideomode_real:
     xor ax, ax
     mov ds, ax
     mov es, ax
@@ -93,22 +84,13 @@ vbe_getvideomode_real:
     mov gs, ax
     mov ss, ax
     mov sp, 0xA000
-
     mov ax, 0x4F01
     mov cx, _modenum
     mov di, 0xD000
     int 0x10
+    jmp leave_real
 
-    mov eax, 0x1000
-    lgdt [eax]
-    mov eax, 0x2000
-    lidt [eax]
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
-    ljmp 0x8:(VBE_CODE + vbe_final32 - vbe_begin16)
-
-vbe_setvideomode_real:
+setvideomode_real:
     xor ax, ax
     mov ds, ax
     mov es, ax
@@ -116,12 +98,13 @@ vbe_setvideomode_real:
     mov gs, ax
     mov ss, ax
     mov sp, 0xA000
-
     mov ax, 0x4F02
     mov bx, _modenum
     mov di, 0
     int 0x10
+    jmp leave_real
 
+leave_real:
     mov eax, 0x1000
     lgdt [eax]
     mov eax, 0x2000
@@ -129,11 +112,11 @@ vbe_setvideomode_real:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-    ljmp 0x8:(VBE_CODE + vbe_final32 - vbe_begin16)
+    ljmp 0x8:(VBE_CODE + switch_32 - vbe_begin16)
 
 .code32
 
-vbe_final32:
+switch_32:
     mov ax, 0x10
     mov ds, ax
     mov es, ax
