@@ -26,6 +26,12 @@ vbe_setvideomode:
     mov edx, (setvideomode_real - vbe_begin16)
     jmp switch_16
 
+.global vbe_getedid
+vbe_getedid:
+    pushad
+    mov edx, (getedid_real - vbe_begin16)
+    jmp switch_16
+
 switch_16:
     mov eax, VBE_STACK
     mov [eax], esp
@@ -72,6 +78,9 @@ getinfo_real:
     mov ss, ax
     mov sp, 0xA000
     mov ax, 0x4F00
+    xor bx, bx
+    xor cx, cx
+    xor dx, dx
     mov di, 0xC000
     int 0x10
     jmp leave_real
@@ -85,7 +94,9 @@ getvideomode_real:
     mov ss, ax
     mov sp, 0xA000
     mov ax, 0x4F01
+    xor bx, bx
     mov cx, _modenum
+    xor dx, dx
     mov di, 0xD000
     int 0x10
     jmp leave_real
@@ -100,7 +111,25 @@ setvideomode_real:
     mov sp, 0xA000
     mov ax, 0x4F02
     mov bx, _modenum
-    mov di, 0
+    xor cx, cx
+    xor dx, dx
+    xor di, di
+    int 0x10
+    jmp leave_real
+
+getedid_real:
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    mov sp, 0xA000
+    mov ax, 0x4F15
+    mov bx, 0x0001
+    xor cx, cx
+    xor dx, dx
+    mov di, 0xE000
     int 0x10
     jmp leave_real
 

@@ -86,7 +86,7 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
     memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
     memory_copy((void *)0x8000, (void *)(unsigned int)vbe_begin16, (unsigned int)vbe_end16 - (unsigned int)vbe_begin16);
 
-    /* Load info */
+    vbe_getedid();
     vbe_getinfo();
     debug_logs(DEBUG_INFO, "vbe worked!");
     debug_log16(DEBUG_INFO, "vbe version", info->version);
