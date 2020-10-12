@@ -6,17 +6,10 @@ static unsigned int idecho;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_FILE);
-    channel_appendstring2(channel, "/system/info/cores");
-    channel_place(channel, idecho);
-    channel_request(channel, EVENT_FILE);
-    channel_appendstring2(channel, "/system/info/tasks");
-    channel_place(channel, idecho);
-    channel_request(channel, EVENT_FILE);
-    channel_appendstring2(channel, "/system/info/mailboxes");
-    channel_place(channel, idecho);
-    channel_request(channel, EVENT_MAIN);
-    channel_place(channel, idecho);
+    channel_sendfile(channel, idecho, "/system/info/cores");
+    channel_sendfile(channel, idecho, "/system/info/tasks");
+    channel_sendfile(channel, idecho, "/system/info/mailboxes");
+    channel_sendmain(channel, idecho);
     channel_close(channel);
 
 }
@@ -34,9 +27,7 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
     }
 
-    channel_request(channel, EVENT_REDIRECT);
-    channel_append(channel, sizeof (struct event_redirect), redirect);
-    channel_place(channel, idecho);
+    channel_sendredirect(channel, idecho, redirect);
 
 }
 

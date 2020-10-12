@@ -103,9 +103,7 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         redirect.type = EVENT_DATA;
 
-        channel_request(channel, EVENT_REDIRECT);
-        channel_append(channel, sizeof (struct event_redirect), &redirect);
-        channel_place(channel, p->id);
+        channel_sendredirect(channel, p->id, &redirect);
 
     }
 
@@ -118,9 +116,7 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         for (k = 0; k < p->nfiles; k++)
         {
 
-            channel_request(channel, EVENT_FILE);
-            channel_appendstring2(channel, p->files[k]);
-            channel_place(channel, p->id);
+            channel_sendfile(channel, p->id, p->files[k]);
 
         }
 
@@ -140,8 +136,7 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         struct job *p = &jobs[i];
 
-        channel_request(channel, EVENT_MAIN);
-        channel_place(channel, p->id);
+        channel_sendmain(channel, p->id);
 
     }
 

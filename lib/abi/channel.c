@@ -192,3 +192,29 @@ void channel_init(struct channel *channel)
 
 }
 
+void channel_sendfile(struct channel *channel, unsigned int id, char *path)
+{
+
+    channel_request(channel, EVENT_FILE);
+    channel_appendstring2(channel, path);
+    channel_place(channel, id);
+
+}
+
+void channel_sendmain(struct channel *channel, unsigned int id)
+{
+
+    channel_request(channel, EVENT_MAIN);
+    channel_place(channel, id);
+
+}
+
+void channel_sendredirect(struct channel *channel, unsigned int id, struct event_redirect *redirect)
+{
+
+    channel_request(channel, EVENT_REDIRECT);
+    channel_append(channel, sizeof (struct event_redirect), redirect);
+    channel_place(channel, id);
+
+}
+

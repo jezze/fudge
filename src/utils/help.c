@@ -6,11 +6,8 @@ static unsigned int idecho;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_FILE);
-    channel_appendstring2(channel, "/data/help.txt");
-    channel_place(channel, idecho);
-    channel_request(channel, EVENT_MAIN);
-    channel_place(channel, idecho);
+    channel_sendfile(channel, idecho, "/data/help.txt");
+    channel_sendmain(channel, idecho);
     channel_close(channel);
 
 }
@@ -28,9 +25,7 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
     }
 
-    channel_request(channel, EVENT_REDIRECT);
-    channel_append(channel, sizeof (struct event_redirect), redirect);
-    channel_place(channel, idecho);
+    channel_sendredirect(channel, idecho, redirect);
 
 }
 

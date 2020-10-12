@@ -6,18 +6,19 @@ static void print(struct channel *channel, unsigned int source)
 
     struct record record;
 
-    channel_request(channel, EVENT_DATA);
     file_open(FILE_G0);
 
     while (file_readall(FILE_G0, &record, sizeof (struct record)))
     {
 
+        channel_request(channel, EVENT_DATA);
         channel_appendvalue(channel, record.id, 16, 8);
         channel_appendstring(channel, " ");
         channel_appendvalue(channel, record.size, 16, 8);
         channel_appendstring(channel, " ");
         channel_append(channel, record.length, record.name);
         channel_appendstring(channel, "\n");
+        channel_place(channel, source);
 
         if (!file_step(FILE_G0))
             break;
@@ -25,7 +26,6 @@ static void print(struct channel *channel, unsigned int source)
     }
 
     file_close(FILE_G0);
-    channel_place(channel, source);
 
 }
 

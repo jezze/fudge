@@ -43,17 +43,10 @@ static void oninit(struct channel *channel)
     if (!id)
         return;
 
-    channel_request(channel, EVENT_FILE);
-    channel_appendstring2(channel, "/config/base.slang");
-    channel_place(channel, id);
-    channel_request(channel, EVENT_FILE);
-    channel_appendstring2(channel, "/config/arch.slang");
-    channel_place(channel, id);
-    channel_request(channel, EVENT_FILE);
-    channel_appendstring2(channel, "/config/init.slang");
-    channel_place(channel, id);
-    channel_request(channel, EVENT_MAIN);
-    channel_place(channel, id);
+    channel_sendfile(channel, id, "/config/base.slang");
+    channel_sendfile(channel, id, "/config/arch.slang");
+    channel_sendfile(channel, id, "/config/init.slang");
+    channel_sendmain(channel, id);
 
 }
 
