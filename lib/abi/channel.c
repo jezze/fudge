@@ -34,24 +34,6 @@ static unsigned int poll(struct channel *channel, struct message_header *header,
 
 }
 
-
-static unsigned int place(struct channel *channel, unsigned int id, struct message_header *header, void *data)
-{
-
-    if (header->type < EVENTS)
-    {
-
-        if (channel->signals[header->type].redirect)
-            id = channel->signals[header->type].redirect;
-
-        return call_place(id, header, data);
-
-    }
-
-    return 0;
-
-}
-
 unsigned int channel_place3(struct channel *channel, unsigned int id, unsigned int type, unsigned int count, void *data)
 {
 
@@ -59,14 +41,24 @@ unsigned int channel_place3(struct channel *channel, unsigned int id, unsigned i
 
     message_initheader(&header, type, count);
 
-    return place(channel, id, &header, data);
+    if (type < EVENTS)
+    {
+
+        if (channel->signals[type].redirect)
+            id = channel->signals[type].redirect;
+
+        return call_place(id, &header, data);
+
+    }
+
+    return 0;
 
 }
 
 unsigned int channel_place(struct channel *channel, union message *message, unsigned int id)
 {
 
-    return place(channel, id, &message->header, message->data + sizeof (struct message_header));
+    return channel_place3(channel, id, message->header.type, message->header.length - sizeof (struct message_header), message->data + sizeof (struct message_header));
 
 }
 
