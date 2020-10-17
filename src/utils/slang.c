@@ -325,7 +325,7 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
     }
 
-    channel_place(channel, &message, source);
+    channel_placemsg(channel, &message, source);
 
 }
 

@@ -6,7 +6,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     char *data = "Hello world!\n";
 
-    channel_place3(channel, source, EVENT_DATA, ascii_length(data), data);
+    channel_place(channel, source, EVENT_DATA, ascii_length(data), data);
     channel_close(channel);
 
 }

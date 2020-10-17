@@ -6,8 +6,8 @@ struct channel
 
 };
 
-unsigned int channel_place3(struct channel *channel, unsigned int id, unsigned int type, unsigned int count, void *data);
-unsigned int channel_place(struct channel *channel, union message *message, unsigned int id);
+unsigned int channel_place(struct channel *channel, unsigned int id, unsigned int type, unsigned int count, void *data);
+unsigned int channel_placemsg(struct channel *channel, union message *message, unsigned int id);
 unsigned int channel_poll(struct channel *channel, struct message_header *header, void *data, unsigned int type);
 void channel_listen(struct channel *channel, void (*oninit)(struct channel *channel), void (*onexit)(struct channel *channel));
 void channel_close(struct channel *channel);

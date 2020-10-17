@@ -27,7 +27,7 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
 
     }
 
-    channel_place3(channel, source, EVENT_WMUNMAP, 0, 0);
+    channel_place(channel, source, EVENT_WMUNMAP, 0, 0);
     channel_close(channel);
 
 }
@@ -35,7 +35,7 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_place3(channel, source, EVENT_WMUNMAP, 0, 0);
+    channel_place(channel, source, EVENT_WMUNMAP, 0, 0);
     channel_close(channel);
 
 }

@@ -64,7 +64,7 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
         }
 
         message_appendstring(&message, "|\n");
-        channel_place(channel, &message, source);
+        channel_placemsg(channel, &message, source);
 
     }
 

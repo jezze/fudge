@@ -34,7 +34,7 @@ static unsigned int poll(struct channel *channel, struct message_header *header,
 
 }
 
-unsigned int channel_place3(struct channel *channel, unsigned int id, unsigned int type, unsigned int count, void *data)
+unsigned int channel_place(struct channel *channel, unsigned int id, unsigned int type, unsigned int count, void *data)
 {
 
     struct message_header header;
@@ -55,10 +55,10 @@ unsigned int channel_place3(struct channel *channel, unsigned int id, unsigned i
 
 }
 
-unsigned int channel_place(struct channel *channel, union message *message, unsigned int id)
+unsigned int channel_placemsg(struct channel *channel, union message *message, unsigned int id)
 {
 
-    return channel_place3(channel, id, message->header.type, message->header.length - sizeof (struct message_header), message->data + sizeof (struct message_header));
+    return channel_place(channel, id, message->header.type, message->header.length - sizeof (struct message_header), message->data + sizeof (struct message_header));
 
 }
 
@@ -161,7 +161,7 @@ void channel_sendredirect(struct channel *channel, unsigned int id, unsigned int
     redirect.mode = mode;
     redirect.id = source;
 
-    channel_place3(channel, id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+    channel_place(channel, id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
 
 }
 

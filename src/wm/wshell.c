@@ -120,7 +120,7 @@ static void interpret(struct channel *channel, struct ring *ring)
     if (interpretbuiltin(count, data))
         return;
 
-    channel_place3(channel, idslang, EVENT_DATA, count, data);
+    channel_place(channel, idslang, EVENT_DATA, count, data);
 
 }
 
@@ -130,7 +130,7 @@ static void complete(struct channel *channel, struct ring *ring)
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
 
-    channel_place3(channel, idcomplete, EVENT_DATA, count, data);
+    channel_place(channel, idcomplete, EVENT_DATA, count, data);
 
 }
 
@@ -290,9 +290,9 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_place3(channel, idcomplete, EVENT_MAIN, 0, 0);
-    channel_place3(channel, idslang, EVENT_MAIN, 0, 0);
-    channel_place3(channel, source, EVENT_WMUNMAP, 0, 0);
+    channel_place(channel, idcomplete, EVENT_MAIN, 0, 0);
+    channel_place(channel, idslang, EVENT_MAIN, 0, 0);
+    channel_place(channel, source, EVENT_WMUNMAP, 0, 0);
     channel_close(channel);
 
 }

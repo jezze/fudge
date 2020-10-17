@@ -8,8 +8,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     char *path = "/data/motd.txt";
 
-    channel_place3(channel, idecho, EVENT_FILE, ascii_length(path) + 1, path);
-    channel_place3(channel, idecho, EVENT_MAIN, 0, 0);
+    channel_place(channel, idecho, EVENT_FILE, ascii_length(path) + 1, path);
+    channel_place(channel, idecho, EVENT_MAIN, 0, 0);
     channel_close(channel);
 
 }

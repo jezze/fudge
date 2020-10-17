@@ -20,7 +20,7 @@ static void print(struct channel *channel, unsigned int source)
         message_appendstring(&message, " ");
         message_append(&message, record.length, record.name);
         message_appendstring(&message, "\n");
-        channel_place(channel, &message, source);
+        channel_placemsg(channel, &message, source);
 
         if (!file_step(FILE_G0))
             break;

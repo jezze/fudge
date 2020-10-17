@@ -17,7 +17,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         message_appendvalue(&message, digest[i], 16, 2);
 
     message_appendstring(&message, "\n");
-    channel_place(channel, &message, source);
+    channel_placemsg(channel, &message, source);
     channel_close(channel);
 
 }

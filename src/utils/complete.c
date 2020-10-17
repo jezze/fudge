@@ -19,7 +19,7 @@ static void complete(struct channel *channel, unsigned int source, unsigned int 
             message_init(&message, EVENT_DATA);
             message_append(&message, record.length, record.name);
             message_appendstring(&message, "\n");
-            channel_place(channel, &message, source);
+            channel_placemsg(channel, &message, source);
 
         }
 

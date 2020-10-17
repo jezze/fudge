@@ -4,7 +4,7 @@
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_place3(channel, source, EVENT_DATA, msize, mdata);
+    channel_place(channel, source, EVENT_DATA, msize, mdata);
 
 }
 

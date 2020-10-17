@@ -11,7 +11,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_place3(channel, source, EVENT_DATA, msize, mdata);
+    channel_place(channel, source, EVENT_DATA, msize, mdata);
 
 }
 
@@ -27,7 +27,7 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
         file_open(FILE_L0);
 
         while ((count = file_read(FILE_L0, buffer, FUDGE_MSIZE)))
-            channel_place3(channel, source, EVENT_DATA, count, buffer);
+            channel_place(channel, source, EVENT_DATA, count, buffer);
 
         file_close(FILE_L0);
 

@@ -15,7 +15,7 @@ static void ontimertick(struct channel *channel, unsigned int source, void *mdat
 
     char *data = "HEJ\n";
 
-    channel_place3(channel, source, EVENT_DATA, ascii_length(data), data);
+    channel_place(channel, source, EVENT_DATA, ascii_length(data), data);
 
 }
 

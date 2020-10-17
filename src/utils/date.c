@@ -19,7 +19,7 @@ static void print(struct channel *channel, unsigned int source, struct ctrl_cloc
     message_appendstring(&message, ":");
     message_appendvalue(&message, settings->seconds, 10, 2);
     message_appendstring(&message, "\n");
-    channel_place(channel, &message, source);
+    channel_placemsg(channel, &message, source);
 
 }
 

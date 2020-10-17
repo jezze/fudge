@@ -10,10 +10,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     char *tasks = "/system/info/tasks";
     char *mailboxes = "/system/info/mailboxes";
 
-    channel_place3(channel, idecho, EVENT_FILE, ascii_length(cores) + 1, cores);
-    channel_place3(channel, idecho, EVENT_FILE, ascii_length(tasks) + 1, tasks);
-    channel_place3(channel, idecho, EVENT_FILE, ascii_length(mailboxes) + 1, mailboxes);
-    channel_place3(channel, idecho, EVENT_MAIN, 0, 0);
+    channel_place(channel, idecho, EVENT_FILE, ascii_length(cores) + 1, cores);
+    channel_place(channel, idecho, EVENT_FILE, ascii_length(tasks) + 1, tasks);
+    channel_place(channel, idecho, EVENT_FILE, ascii_length(mailboxes) + 1, mailboxes);
+    channel_place(channel, idecho, EVENT_MAIN, 0, 0);
     channel_close(channel);
 
 }

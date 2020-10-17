@@ -98,10 +98,10 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         unsigned int k;
 
         for (k = 0; k < p->nfiles; k++)
-            channel_place3(channel, p->id, EVENT_FILE, ascii_length(p->files[k]) + 1, p->files[k]);
+            channel_place(channel, p->id, EVENT_FILE, ascii_length(p->files[k]) + 1, p->files[k]);
 
         for (k = 0; k < p->ninputs; k++)
-            channel_place3(channel, p->id, EVENT_DATA, ascii_length(p->inputs[k]), p->inputs[k]);
+            channel_place(channel, p->id, EVENT_DATA, ascii_length(p->inputs[k]), p->inputs[k]);
 
     }
 
@@ -110,7 +110,7 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         struct job *p = &jobs[i];
 
-        channel_place3(channel, p->id, EVENT_MAIN, 0, 0);
+        channel_place(channel, p->id, EVENT_MAIN, 0, 0);
 
     }
 
