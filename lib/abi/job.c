@@ -107,9 +107,11 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         for (k = 0; k < p->ninputs; k++)
         {
 
-            channel_request(channel, EVENT_DATA);
-            channel_appendstring(channel, p->inputs[k]);
-            channel_place(channel, p->id);
+            union message message;
+
+            channel_header(&message, EVENT_DATA);
+            channel_appendstring(&message, p->inputs[k]);
+            channel_place(channel, &message, p->id);
 
         }
 

@@ -13,9 +13,11 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 static void ontimertick(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_DATA);
-    channel_appendstring(channel, "HEJ!\n");
-    channel_place(channel, source);
+    union message message;
+
+    channel_header(&message, EVENT_DATA);
+    channel_appendstring(&message, "HEJ!\n");
+    channel_place(channel, &message, source);
 
 }
 

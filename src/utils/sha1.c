@@ -7,16 +7,17 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     unsigned char digest[20];
+    union message message;
     unsigned int i;
 
     sha1_write(&s, digest);
-    channel_request(channel, EVENT_DATA);
+    channel_header(&message, EVENT_DATA);
 
     for (i = 0; i < 20; i++)
-        channel_appendvalue(channel, digest[i], 16, 2);
+        channel_appendvalue(&message, digest[i], 16, 2);
 
-    channel_appendstring(channel, "\n");
-    channel_place(channel, source);
+    channel_appendstring(&message, "\n");
+    channel_place(channel, &message, source);
     channel_close(channel);
 
 }

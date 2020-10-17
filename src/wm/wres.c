@@ -6,6 +6,7 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
 {
 
     struct event_wmmousepress *wmmousepress = mdata;
+    union message message;
 
     switch (wmmousepress->button)
     {
@@ -27,8 +28,8 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
 
     }
 
-    channel_request(channel, EVENT_WMUNMAP);
-    channel_place(channel, source);
+    channel_header(&message, EVENT_WMUNMAP);
+    channel_place(channel, &message, source);
     channel_close(channel);
 
 }
@@ -36,8 +37,10 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_WMUNMAP);
-    channel_place(channel, source);
+    union message message;
+
+    channel_header(&message, EVENT_WMUNMAP);
+    channel_place(channel, &message, source);
     channel_close(channel);
 
 }
@@ -52,8 +55,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_WMMAP);
-    channel_write(channel, FILE_G0);
+    union message message;
+
+    channel_header(&message, EVENT_WMMAP);
+    channel_write(channel, &message, FILE_G0);
 
 }
 

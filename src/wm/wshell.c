@@ -290,11 +290,13 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_MAIN);
-    channel_place(channel, idcomplete);
-    channel_place(channel, idslang);
-    channel_request(channel, EVENT_WMUNMAP);
-    channel_place(channel, source);
+    union message message;
+
+    channel_header(&message, EVENT_MAIN);
+    channel_place(channel, &message, idcomplete);
+    channel_place(channel, &message, idslang);
+    channel_header(&message, EVENT_WMUNMAP);
+    channel_place(channel, &message, source);
     channel_close(channel);
 
 }
@@ -305,9 +307,11 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
     if (ring_count(&output))
     {
 
-        channel_request(channel, EVENT_DATA);
-        channel_append(channel, ring_count(&output), outputdata);
-        channel_write(channel, FILE_G0);
+        union message message;
+
+        channel_header(&message, EVENT_DATA);
+        channel_append(&message, ring_count(&output), outputdata);
+        channel_write(channel, &message, FILE_G0);
         ring_reset(&output);
 
     }
@@ -324,8 +328,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_WMMAP);
-    channel_write(channel, FILE_G0);
+    union message message;
+
+    channel_header(&message, EVENT_WMMAP);
+    channel_write(channel, &message, FILE_G0);
 
 }
 

@@ -48,14 +48,16 @@ static void sum(unsigned int count, void *buffer)
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_DATA);
-    channel_appendvalue(channel, lines, 10, 0);
-    channel_appendstring(channel, "\n");
-    channel_appendvalue(channel, words, 10, 0);
-    channel_appendstring(channel, "\n");
-    channel_appendvalue(channel, bytes, 10, 0);
-    channel_appendstring(channel, "\n");
-    channel_place(channel, source);
+    union message message;
+
+    channel_header(&message, EVENT_DATA);
+    channel_appendvalue(&message, lines, 10, 0);
+    channel_appendstring(&message, "\n");
+    channel_appendvalue(&message, words, 10, 0);
+    channel_appendstring(&message, "\n");
+    channel_appendvalue(&message, bytes, 10, 0);
+    channel_appendstring(&message, "\n");
+    channel_place(channel, &message, source);
     channel_close(channel);
 
 }

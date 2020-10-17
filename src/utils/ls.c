@@ -11,10 +11,12 @@ static void print(struct channel *channel, unsigned int source)
     while (file_readall(FILE_G0, &record, sizeof (struct record)))
     {
 
-        channel_request(channel, EVENT_DATA);
-        channel_append(channel, record.length, record.name);
-        channel_appendstring(channel, "\n");
-        channel_place(channel, source);
+        union message message;
+
+        channel_header(&message, EVENT_DATA);
+        channel_append(&message, record.length, record.name);
+        channel_appendstring(&message, "\n");
+        channel_place(channel, &message, source);
 
         if (!file_step(FILE_G0))
             break;

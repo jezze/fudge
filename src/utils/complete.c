@@ -14,10 +14,12 @@ static void complete(struct channel *channel, unsigned int source, unsigned int 
         if (record.length >= length && memory_match(record.name, name, length))
         {
 
-            channel_request(channel, EVENT_DATA);
-            channel_append(channel, record.length, record.name);
-            channel_appendstring(channel, "\n");
-            channel_place(channel, source);
+            union message message;
+
+            channel_header(&message, EVENT_DATA);
+            channel_append(&message, record.length, record.name);
+            channel_appendstring(&message, "\n");
+            channel_place(channel, &message, source);
 
         }
 

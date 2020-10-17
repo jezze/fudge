@@ -145,9 +145,10 @@ static void showremotes(struct channel *channel, struct list *remotes)
     {
 
         struct remote *remote = current->data;
+        union message message;
 
-        channel_request(channel, EVENT_WMSHOW);
-        channel_place(channel, remote->source);
+        channel_header(&message, EVENT_WMSHOW);
+        channel_place(channel, &message, remote->source);
         updateremote(remote);
 
     }
@@ -163,9 +164,10 @@ static void hideremotes(struct channel *channel, struct list *remotes)
     {
 
         struct remote *remote = current->data;
+        union message message;
 
-        channel_request(channel, EVENT_WMHIDE);
-        channel_place(channel, remote->source);
+        channel_header(&message, EVENT_WMHIDE);
+        channel_place(channel, &message, remote->source);
         removeremote(remote);
 
     }
@@ -181,9 +183,10 @@ static void closeremotes(struct channel *channel, struct list *remotes)
     {
 
         struct remote *remote = current->data;
+        union message message;
 
-        channel_request(channel, EVENT_WMCLOSE);
-        channel_place(channel, remote->source);
+        channel_header(&message, EVENT_WMCLOSE);
+        channel_place(channel, &message, remote->source);
 
     }
 
@@ -360,8 +363,9 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
     struct event_keypress *keypress = mdata;
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
-    struct view *nextview;
     struct remote *nextremote;
+    struct view *nextview;
+    union message message;
     unsigned int id;
 
     keymod = keymap_modkey(keypress->scancode, keymod);
@@ -379,9 +383,9 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
             wmkeypress.length = keycode->length;
             wmkeypress.keymod = keymod;
 
-            channel_request(channel, EVENT_WMKEYPRESS);
-            channel_append(channel, sizeof (struct event_wmkeypress), &wmkeypress);
-            channel_place(channel, currentview->currentremote->source);
+            channel_header(&message, EVENT_WMKEYPRESS);
+            channel_append(&message, sizeof (struct event_wmkeypress), &wmkeypress);
+            channel_place(channel, &message, currentview->currentremote->source);
 
         }
 
@@ -436,8 +440,8 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         if ((keymod & KEYMOD_SHIFT))
         {
 
-            channel_request(channel, EVENT_WMCLOSE);
-            channel_place(channel, currentview->currentremote->source);
+            channel_header(&message, EVENT_WMCLOSE);
+            channel_place(channel, &message, currentview->currentremote->source);
 
         }
 
@@ -455,8 +459,8 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         if (id)
         {
 
-            channel_request(channel, EVENT_MAIN);
-            channel_place(channel, id);
+            channel_header(&message, EVENT_MAIN);
+            channel_place(channel, &message, id);
 
         }
 
@@ -563,6 +567,7 @@ static void onkeyrelease(struct channel *channel, unsigned int source, void *mda
     struct event_keyrelease *keyrelease = mdata;
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, keyrelease->scancode, keymod);
+    union message message;
 
     keymod = keymap_modkey(keyrelease->scancode, keymod);
 
@@ -579,9 +584,9 @@ static void onkeyrelease(struct channel *channel, unsigned int source, void *mda
             wmkeyrelease.length = keycode->length;
             wmkeyrelease.keymod = keymod;
 
-            channel_request(channel, EVENT_WMKEYRELEASE);
-            channel_append(channel, sizeof (struct event_wmkeyrelease), &wmkeyrelease);
-            channel_place(channel, currentview->currentremote->source);
+            channel_header(&message, EVENT_WMKEYRELEASE);
+            channel_append(&message, sizeof (struct event_wmkeyrelease), &wmkeyrelease);
+            channel_place(channel, &message, currentview->currentremote->source);
 
         }
 
@@ -595,6 +600,7 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
 {
 
     struct event_mousemove *mousemove = mdata;
+    union message message;
 
     mouse.size.x += mousemove->relx;
     mouse.size.y += mousemove->rely;
@@ -615,9 +621,9 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
         wmmousemove.relx = mousemove->relx;
         wmmousemove.rely = mousemove->rely;
 
-        channel_request(channel, EVENT_WMMOUSEMOVE);
-        channel_append(channel, sizeof (struct event_wmmousemove), &wmmousemove);
-        channel_place(channel, currentview->currentremote->source);
+        channel_header(&message, EVENT_WMMOUSEMOVE);
+        channel_append(&message, sizeof (struct event_wmmousemove), &wmmousemove);
+        channel_place(channel, &message, currentview->currentremote->source);
 
     }
 
@@ -627,6 +633,7 @@ static void onmousescroll(struct channel *channel, unsigned int source, void *md
 {
 
     struct event_mousescroll *mousescroll = mdata;
+    union message message;
 
     if (currentview->currentremote)
     {
@@ -635,9 +642,9 @@ static void onmousescroll(struct channel *channel, unsigned int source, void *md
 
         wmmousescroll.relz = mousescroll->relz;
 
-        channel_request(channel, EVENT_WMMOUSESCROLL);
-        channel_append(channel, sizeof (struct event_wmmousescroll), &wmmousescroll);
-        channel_place(channel, currentview->currentremote->source);
+        channel_header(&message, EVENT_WMMOUSESCROLL);
+        channel_append(&message, sizeof (struct event_wmmousescroll), &wmmousescroll);
+        channel_place(channel, &message, currentview->currentremote->source);
 
     }
 
@@ -657,6 +664,7 @@ static void onmousepress(struct channel *channel, unsigned int source, void *mda
 {
 
     struct event_mousepress *mousepress = mdata;
+    union message message;
     struct list_item *current;
 
     switch (mousepress->button)
@@ -718,9 +726,9 @@ static void onmousepress(struct channel *channel, unsigned int source, void *mda
 
         wmmousepress.button = mousepress->button;
 
-        channel_request(channel, EVENT_WMMOUSEPRESS);
-        channel_append(channel, sizeof (struct event_wmmousepress), &wmmousepress);
-        channel_place(channel, currentview->currentremote->source);
+        channel_header(&message, EVENT_WMMOUSEPRESS);
+        channel_append(&message, sizeof (struct event_wmmousepress), &wmmousepress);
+        channel_place(channel, &message, currentview->currentremote->source);
 
     }
 
@@ -730,6 +738,7 @@ static void onmouserelease(struct channel *channel, unsigned int source, void *m
 {
 
     struct event_mouserelease *mouserelease = mdata;
+    union message message;
 
     if (currentview->currentremote)
     {
@@ -738,9 +747,9 @@ static void onmouserelease(struct channel *channel, unsigned int source, void *m
 
         wmmouserelease.button = mouserelease->button;
 
-        channel_request(channel, EVENT_WMMOUSERELEASE);
-        channel_append(channel, sizeof (struct event_wmmouserelease), &wmmouserelease);
-        channel_place(channel, currentview->currentremote->source);
+        channel_header(&message, EVENT_WMMOUSERELEASE);
+        channel_append(&message, sizeof (struct event_wmmouserelease), &wmmouserelease);
+        channel_place(channel, &message, currentview->currentremote->source);
 
     }
 

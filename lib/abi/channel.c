@@ -34,16 +34,16 @@ static unsigned int poll(struct channel *channel, struct ipc_header *header, voi
 
 }
 
-unsigned int channel_place(struct channel *channel, unsigned int id)
+unsigned int channel_place(struct channel *channel, union message *message, unsigned int id)
 {
 
-    if (channel->message.header.type < EVENTS)
+    if (message->header.type < EVENTS)
     {
 
-        if (channel->signals[channel->message.header.type].redirect)
-            id = channel->signals[channel->message.header.type].redirect;
+        if (channel->signals[message->header.type].redirect)
+            id = channel->signals[message->header.type].redirect;
 
-        return call_place(id, &channel->message.header, channel->message.data + sizeof (struct ipc_header));
+        return call_place(id, &message->header, message->data + sizeof (struct ipc_header));
 
     }
 
@@ -51,10 +51,10 @@ unsigned int channel_place(struct channel *channel, unsigned int id)
 
 }
 
-unsigned int channel_write(struct channel *channel, unsigned int descriptor)
+unsigned int channel_write(struct channel *channel, union message *message, unsigned int descriptor)
 {
 
-    return file_writeall(descriptor, &channel->message, channel->message.header.length);
+    return file_writeall(descriptor, message, message->header.length);
 
 }
 
@@ -140,40 +140,40 @@ void channel_setsignal(struct channel *channel, unsigned int type, void (*callba
 
 }
 
-void channel_request(struct channel *channel, unsigned int type)
+void channel_header(union message *message, unsigned int type)
 {
 
-    ipc_init(&channel->message.header, type, 0);
+    ipc_init(&message->header, type, 0);
 
 }
 
-void channel_append(struct channel *channel, unsigned int count, void *buffer)
+void channel_append(union message *message, unsigned int count, void *buffer)
 {
 
-    channel->message.header.length += memory_write(channel->message.data, FUDGE_BSIZE, buffer, count, channel->message.header.length);
+    message->header.length += memory_write(message->data, FUDGE_BSIZE, buffer, count, message->header.length);
 
 }
 
-void channel_appendstring(struct channel *channel, char *string)
+void channel_appendstring(union message *message, char *string)
 {
 
-    channel_append(channel, ascii_length(string), string);
+    channel_append(message, ascii_length(string), string);
 
 }
 
-void channel_appendstring2(struct channel *channel, char *string)
+void channel_appendstring2(union message *message, char *string)
 {
 
-    channel_append(channel, ascii_length(string) + 1, string);
+    channel_append(message, ascii_length(string) + 1, string);
 
 }
 
-void channel_appendvalue(struct channel *channel, int value, unsigned int base, unsigned int padding)
+void channel_appendvalue(union message *message, int value, unsigned int base, unsigned int padding)
 {
 
     char num[FUDGE_NSIZE];
 
-    channel_append(channel, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), num);
+    channel_append(message, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), num);
 
 }
 
@@ -195,26 +195,32 @@ void channel_init(struct channel *channel)
 void channel_senddata(struct channel *channel, unsigned int id, unsigned int count, void *data)
 {
 
-    channel_request(channel, EVENT_DATA);
-    channel_append(channel, count, data);
-    channel_place(channel, id);
+    union message message;
+
+    channel_header(&message, EVENT_DATA);
+    channel_append(&message, count, data);
+    channel_place(channel, &message, id);
 
 }
 
 void channel_sendfile(struct channel *channel, unsigned int id, char *path)
 {
 
-    channel_request(channel, EVENT_FILE);
-    channel_appendstring2(channel, path);
-    channel_place(channel, id);
+    union message message;
+
+    channel_header(&message, EVENT_FILE);
+    channel_appendstring2(&message, path);
+    channel_place(channel, &message, id);
 
 }
 
 void channel_sendmain(struct channel *channel, unsigned int id)
 {
 
-    channel_request(channel, EVENT_MAIN);
-    channel_place(channel, id);
+    union message message;
+
+    channel_header(&message, EVENT_MAIN);
+    channel_place(channel, &message, id);
 
 }
 
@@ -222,14 +228,15 @@ void channel_sendredirect(struct channel *channel, unsigned int id, unsigned int
 {
 
     struct event_redirect redirect;
+    union message message;
 
     redirect.type = type;
     redirect.mode = mode;
     redirect.id = source;
 
-    channel_request(channel, EVENT_REDIRECT);
-    channel_append(channel, sizeof (struct event_redirect), &redirect);
-    channel_place(channel, id);
+    channel_header(&message, EVENT_REDIRECT);
+    channel_append(&message, sizeof (struct event_redirect), &redirect);
+    channel_place(channel, &message, id);
 
 }
 

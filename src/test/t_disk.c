@@ -36,13 +36,14 @@ static void request_send(struct request *request, struct channel *channel)
 {
 
     struct event_blockrequest blockrequest;
+    union message message;
 
     blockrequest.sector = request->blocksector;
     blockrequest.count = request->blockcount;
 
-    channel_request(channel, EVENT_BLOCKREQUEST);
-    channel_append(channel, sizeof (struct event_blockrequest), &blockrequest);
-    channel_write(channel, FILE_G0);
+    channel_header(&message, EVENT_BLOCKREQUEST);
+    channel_append(&message, sizeof (struct event_blockrequest), &blockrequest);
+    channel_write(channel, &message, FILE_G0);
 
 }
 
@@ -146,10 +147,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 {
 
                     void *data = getdata(request);
+                    union message message;
 
-                    channel_request(channel, EVENT_DATA);
-                    channel_append(channel, count, data);
-                    channel_place(channel, source);
+                    channel_header(&message, EVENT_DATA);
+                    channel_append(&message, count, data);
+                    channel_place(channel, &message, source);
 
                 }
 
