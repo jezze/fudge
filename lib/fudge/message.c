@@ -3,10 +3,17 @@
 #include "ascii.h"
 #include "message.h"
 
+unsigned int message_headersize(struct message_header *header)
+{
+
+    return sizeof (struct message_header);
+
+}
+
 unsigned int message_datasize(struct message_header *header)
 {
 
-    return header->length - sizeof (struct message_header);
+    return header->length - message_headersize(header);
 
 }
 
@@ -45,7 +52,7 @@ void message_initheader(struct message_header *header, unsigned int type, unsign
 
     header->type = type;
     header->source = 0;
-    header->length = sizeof (struct message_header) + length;
+    header->length = message_headersize(header) + length;
 
 }
 

@@ -6,10 +6,19 @@ static unsigned int idecho;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_sendfile(channel, idecho, "/system/info/cores");
-    channel_sendfile(channel, idecho, "/system/info/tasks");
-    channel_sendfile(channel, idecho, "/system/info/mailboxes");
-    channel_sendmain(channel, idecho);
+    union message message;
+
+    message_init(&message, EVENT_FILE);
+    message_appendstring2(&message, "/system/info/cores");
+    channel_place(channel, &message, idecho);
+    message_init(&message, EVENT_FILE);
+    message_appendstring2(&message, "/system/info/tasks");
+    channel_place(channel, &message, idecho);
+    message_init(&message, EVENT_FILE);
+    message_appendstring2(&message, "/system/info/mailboxes");
+    channel_place(channel, &message, idecho);
+    message_init(&message, EVENT_MAIN);
+    channel_place(channel, &message, idecho);
     channel_close(channel);
 
 }

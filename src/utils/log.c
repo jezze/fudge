@@ -4,7 +4,11 @@
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_senddata(channel, source, msize, mdata);
+    union message message;
+
+    message_init(&message, EVENT_DATA);
+    message_append(&message, msize, mdata);
+    channel_place(channel, &message, source);
 
 }
 

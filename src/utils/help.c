@@ -6,8 +6,13 @@ static unsigned int idecho;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_sendfile(channel, idecho, "/data/help.txt");
-    channel_sendmain(channel, idecho);
+    union message message;
+
+    message_init(&message, EVENT_FILE);
+    message_appendstring2(&message, "/data/help.txt");
+    channel_place(channel, &message, idecho);
+    message_init(&message, EVENT_MAIN);
+    channel_place(channel, &message, idecho);
     channel_close(channel);
 
 }

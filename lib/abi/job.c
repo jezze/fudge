@@ -62,6 +62,7 @@ unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int
 void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
+    union message message;
     unsigned int i;
 
     if (!file_walk2(FILE_L0, "/bin"))
@@ -100,14 +101,14 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         for (k = 0; k < p->nfiles; k++)
         {
 
-            channel_sendfile(channel, p->id, p->files[k]);
+            message_init(&message, EVENT_FILE);
+            message_appendstring2(&message, p->files[k]);
+            channel_place(channel, &message, p->id);
 
         }
 
         for (k = 0; k < p->ninputs; k++)
         {
-
-            union message message;
 
             message_init(&message, EVENT_DATA);
             message_appendstring(&message, p->inputs[k]);
@@ -122,7 +123,8 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         struct job *p = &jobs[i];
 
-        channel_sendmain(channel, p->id);
+        message_init(&message, EVENT_MAIN);
+        channel_place(channel, &message, p->id);
 
     }
 

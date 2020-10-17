@@ -15,6 +15,7 @@ union message
 
 };
 
+unsigned int message_headersize(struct message_header *header);
 unsigned int message_datasize(struct message_header *header);
 void message_append(union message *message, unsigned int count, void *buffer);
 void message_appendstring(union message *message, char *string);

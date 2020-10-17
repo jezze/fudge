@@ -158,33 +158,6 @@ void channel_init(struct channel *channel)
 void channel_senddata(struct channel *channel, unsigned int id, unsigned int count, void *data)
 {
 
-    union message message;
-
-    message_init(&message, EVENT_DATA);
-    message_append(&message, count, data);
-    channel_place(channel, &message, id);
-
-}
-
-void channel_sendfile(struct channel *channel, unsigned int id, char *path)
-{
-
-    union message message;
-
-    message_init(&message, EVENT_FILE);
-    message_appendstring2(&message, path);
-    channel_place(channel, &message, id);
-
-}
-
-void channel_sendmain(struct channel *channel, unsigned int id)
-{
-
-    union message message;
-
-    message_init(&message, EVENT_MAIN);
-    channel_place(channel, &message, id);
-
 }
 
 void channel_sendredirect(struct channel *channel, unsigned int id, unsigned int type, unsigned int mode, unsigned int source)
