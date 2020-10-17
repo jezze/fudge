@@ -296,13 +296,13 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    union message message;
+    struct message_header header;
 
-    message_init(&message, EVENT_MAIN);
-    channel_place(channel, &message, idcomplete);
-    channel_place(channel, &message, idslang);
-    message_init(&message, EVENT_WMUNMAP);
-    channel_place(channel, &message, source);
+    message_initheader(&header, EVENT_MAIN, 0);
+    channel_place2(channel, idcomplete, &header, 0);
+    channel_place2(channel, idslang, &header, 0);
+    message_initheader(&header, EVENT_WMUNMAP, 0);
+    channel_place2(channel, source, &header, 0);
     channel_close(channel);
 
 }

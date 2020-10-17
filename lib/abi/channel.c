@@ -34,20 +34,27 @@ static unsigned int poll(struct channel *channel, struct message_header *header,
 
 }
 
-unsigned int channel_place(struct channel *channel, union message *message, unsigned int id)
+unsigned int channel_place2(struct channel *channel, unsigned int id, struct message_header *header, void *data)
 {
 
-    if (message->header.type < EVENTS)
+    if (header->type < EVENTS)
     {
 
-        if (channel->signals[message->header.type].redirect)
-            id = channel->signals[message->header.type].redirect;
+        if (channel->signals[header->type].redirect)
+            id = channel->signals[header->type].redirect;
 
-        return call_place(id, &message->header, message->data + sizeof (struct message_header));
+        return call_place(id, header, data);
 
     }
 
     return 0;
+
+}
+
+unsigned int channel_place(struct channel *channel, union message *message, unsigned int id)
+{
+
+    return channel_place2(channel, id, &message->header, message->data + sizeof (struct message_header));
 
 }
 
@@ -151,16 +158,15 @@ void channel_init(struct channel *channel)
 void channel_sendredirect(struct channel *channel, unsigned int id, unsigned int type, unsigned int mode, unsigned int source)
 {
 
+    struct message_header header;
     struct event_redirect redirect;
-    union message message;
 
     redirect.type = type;
     redirect.mode = mode;
     redirect.id = source;
 
-    message_init(&message, EVENT_REDIRECT);
-    message_append(&message, sizeof (struct event_redirect), &redirect);
-    channel_place(channel, &message, id);
+    message_initheader(&header, EVENT_REDIRECT, sizeof (struct event_redirect));
+    channel_place2(channel, id, &header, &redirect);
 
 }
 
