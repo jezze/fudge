@@ -79,26 +79,19 @@ unsigned int channel_poll(struct channel *channel, struct message_header *header
 
 }
 
-void channel_listen(struct channel *channel)
+void channel_listen(struct channel *channel, void (*oninit)(struct channel *channel), void (*onexit)(struct channel *channel))
 {
 
     struct message_header header;
     char data[FUDGE_BSIZE];
 
+    if (oninit)
+        oninit(channel);
+
     channel->poll = 1;
 
     while (poll(channel, &header, data))
         dispatch(channel, &header, data);
-
-}
-
-void channel_listen2(struct channel *channel, void (*oninit)(struct channel *channel), void (*onexit)(struct channel *channel))
-{
-
-    if (oninit)
-        oninit(channel);
-
-    channel_listen(channel);
 
     if (onexit)
         onexit(channel);

@@ -86,7 +86,7 @@ void main(void)
     channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
-    channel_listen(&channel);
+    channel_listen(&channel, 0, 0);
 
 }
 

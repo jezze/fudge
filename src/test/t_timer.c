@@ -47,7 +47,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_setsignal(&channel, EVENT_TIMERTICK, ontimertick);
-    channel_listen2(&channel, oninit, onexit);
+    channel_listen(&channel, oninit, onexit);
 
 }
 

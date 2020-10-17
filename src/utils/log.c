@@ -42,7 +42,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
-    channel_listen2(&channel, oninit, onexit);
+    channel_listen(&channel, oninit, onexit);
 
 }
 

@@ -287,7 +287,7 @@ void main(void)
     channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
-    channel_listen2(&channel, oninit, 0);
+    channel_listen(&channel, oninit, 0);
 
 }
 
