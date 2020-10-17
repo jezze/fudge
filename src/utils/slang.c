@@ -246,10 +246,9 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 static void parse(struct channel *channel, unsigned int source, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
-    union message message;
+    struct message_data message;
+    unsigned int offset = 0;
     unsigned int i;
-
-    message_init(&message, EVENT_DATA);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -271,8 +270,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            message_appendstring2(&message, "F");
-            message_appendstring2(&message, t->str);
+            offset = message_appendstring2(&message, "F", offset);
+            offset = message_appendstring2(&message, t->str, offset);
 
             break;
 
@@ -282,8 +281,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            message_appendstring2(&message, "R");
-            message_appendstring2(&message, t->str);
+            offset = message_appendstring2(&message, "R", offset);
+            offset = message_appendstring2(&message, t->str, offset);
 
             break;
 
@@ -293,8 +292,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            message_appendstring2(&message, "D");
-            message_appendstring2(&message, t->str);
+            offset = message_appendstring2(&message, "D", offset);
+            offset = message_appendstring2(&message, t->str, offset);
 
             break;
 
@@ -304,8 +303,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            message_appendstring2(&message, "P");
-            message_appendstring2(&message, t->str);
+            offset = message_appendstring2(&message, "P", offset);
+            offset = message_appendstring2(&message, t->str, offset);
 
             break;
 
@@ -315,9 +314,9 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            message_appendstring2(&message, "P");
-            message_appendstring2(&message, t->str);
-            message_appendstring2(&message, "E");
+            offset = message_appendstring2(&message, "P", offset);
+            offset = message_appendstring2(&message, t->str, offset);
+            offset = message_appendstring2(&message, "E", offset);
 
             break;
 
@@ -325,7 +324,7 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
     }
 
-    channel_placemsg(channel, &message, source);
+    channel_place(channel, source, EVENT_DATA, offset, &message);
 
 }
 

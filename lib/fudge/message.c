@@ -17,33 +17,33 @@ unsigned int message_datasize(struct message_header *header)
 
 }
 
-void message_append(union message *message, unsigned int count, void *buffer)
+unsigned int message_append(struct message_data *message, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    message->header.length += memory_write(message->data, FUDGE_BSIZE, buffer, count, message->header.length);
+    return offset += memory_write(message->data, FUDGE_MSIZE, buffer, count, offset);
 
 }
 
-void message_appendstring(union message *message, char *string)
+unsigned int message_appendstring(struct message_data *message, char *string, unsigned int offset)
 {
 
-    message_append(message, ascii_length(string), string);
+    return message_append(message, offset, ascii_length(string), string);
 
 }
 
-void message_appendstring2(union message *message, char *string)
+unsigned int message_appendstring2(struct message_data *message, char *string, unsigned int offset)
 {
 
-    message_append(message, ascii_length(string) + 1, string);
+    return message_append(message, offset, ascii_length(string) + 1, string);
 
 }
 
-void message_appendvalue(union message *message, int value, unsigned int base, unsigned int padding)
+unsigned int message_appendvalue(struct message_data *message, int value, unsigned int base, unsigned int padding, unsigned int offset)
 {
 
     char num[FUDGE_NSIZE];
 
-    message_append(message, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), num);
+    return message_append(message, offset, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), num);
 
 }
 
@@ -53,13 +53,6 @@ void message_initheader(struct message_header *header, unsigned int type, unsign
     header->type = type;
     header->source = 0;
     header->length = message_headersize(header) + length;
-
-}
-
-void message_init(union message *message, unsigned int type)
-{
-
-    message_initheader(&message->header, type, 0);
 
 }
 

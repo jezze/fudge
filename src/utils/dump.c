@@ -10,12 +10,12 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
     for (i = 0; i < count; i += 16)
     {
 
-        union message message;
+        struct message_data message;
+        unsigned int offset = 0;
         unsigned int j;
 
-        message_init(&message, EVENT_DATA);
-        message_appendvalue(&message, i, 16, 8);
-        message_appendstring(&message, "  ");
+        offset = message_appendvalue(&message, i, 16, 8, offset);
+        offset = message_appendstring(&message, "  ", offset);
 
         for (j = i; j < i + 16; j++)
         {
@@ -23,21 +23,21 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
             if (j < count)
             {
 
-                message_appendvalue(&message, data[j], 16, 2);
-                message_appendstring(&message, " ");
+                offset = message_appendvalue(&message, data[j], 16, 2, offset);
+                offset = message_appendstring(&message, " ", offset);
 
             }
 
             else
             {
 
-                message_appendstring(&message, "   ");
+                offset = message_appendstring(&message, "   ", offset);
 
             }
 
         }
 
-        message_appendstring(&message, " |");
+        offset = message_appendstring(&message, " |", offset);
 
         for (j = i; j < i + 16; j++)
         {
@@ -50,21 +50,22 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
                 if (!(c >= 0x20 && c <= 0x7e))
                     c = ' ';
 
-                message_append(&message, 1, &c);
+                offset = message_append(&message, offset, 1, &c);
 
             }
 
             else
             {
 
-                message_appendstring(&message, " ");
+                offset = message_appendstring(&message, " ", offset);
 
             }
 
         }
 
-        message_appendstring(&message, "|\n");
-        channel_placemsg(channel, &message, source);
+        offset = message_appendstring(&message, "|\n", offset);
+
+        channel_place(channel, source, EVENT_DATA, offset, &message);
 
     }
 

@@ -7,19 +7,17 @@ struct message_header
 
 };
 
-union message
+struct message_data
 {
 
-    struct message_header header;
-    char data[FUDGE_BSIZE];
+    char data[FUDGE_MSIZE];
 
 };
 
 unsigned int message_headersize(struct message_header *header);
 unsigned int message_datasize(struct message_header *header);
-void message_append(union message *message, unsigned int count, void *buffer);
-void message_appendstring(union message *message, char *string);
-void message_appendstring2(union message *message, char *string);
-void message_appendvalue(union message *message, int value, unsigned int base, unsigned int padding);
+unsigned int message_append(struct message_data *message, unsigned int offset, unsigned int count, void *buffer);
+unsigned int message_appendstring(struct message_data *message, char *string, unsigned int offset);
+unsigned int message_appendstring2(struct message_data *message, char *string, unsigned int offset);
+unsigned int message_appendvalue(struct message_data *message, int value, unsigned int base, unsigned int padding, unsigned int offset);
 void message_initheader(struct message_header *header, unsigned int type, unsigned int length);
-void message_init(union message *message, unsigned int type);

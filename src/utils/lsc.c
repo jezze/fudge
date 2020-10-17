@@ -11,16 +11,17 @@ static void print(struct channel *channel, unsigned int source)
     while (file_readall(FILE_G0, &record, sizeof (struct record)))
     {
 
-        union message message;
+        struct message_data message;
+        unsigned int offset = 0;
 
-        message_init(&message, EVENT_DATA);
-        message_appendvalue(&message, record.id, 16, 8);
-        message_appendstring(&message, " ");
-        message_appendvalue(&message, record.size, 16, 8);
-        message_appendstring(&message, " ");
-        message_append(&message, record.length, record.name);
-        message_appendstring(&message, "\n");
-        channel_placemsg(channel, &message, source);
+        offset = message_appendvalue(&message, record.id, 16, 8, offset);
+        offset = message_appendstring(&message, " ", offset);
+        offset = message_appendvalue(&message, record.size, 16, 8, offset);
+        offset = message_appendstring(&message, " ", offset);
+        offset = message_append(&message, offset, record.length, record.name);
+        offset = message_appendstring(&message, "\n", offset);
+
+        channel_place(channel, source, EVENT_DATA, offset, &message);
 
         if (!file_step(FILE_G0))
             break;

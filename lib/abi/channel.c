@@ -55,13 +55,6 @@ unsigned int channel_place(struct channel *channel, unsigned int id, unsigned in
 
 }
 
-unsigned int channel_placemsg(struct channel *channel, union message *message, unsigned int id)
-{
-
-    return channel_place(channel, id, message->header.type, message->header.length - sizeof (struct message_header), message->data + sizeof (struct message_header));
-
-}
-
 unsigned int channel_poll(struct channel *channel, struct message_header *header, void *data, unsigned int type)
 {
 

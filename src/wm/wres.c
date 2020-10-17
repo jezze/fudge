@@ -50,10 +50,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    union message message;
+    struct message_header header;
 
-    message_init(&message, EVENT_WMMAP);
-    file_writeall(FILE_G0, &message, message.header.length);
+    message_initheader(&header, EVENT_WMMAP, 0);
+    file_writeall(FILE_G0, &header, header.length);
 
 }
 

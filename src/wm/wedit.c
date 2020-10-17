@@ -173,10 +173,13 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
     if (ring_count(&output))
     {
 
-        union message message;
+        struct {struct message_header header; struct message_data message;} message;
+        unsigned int offset = 0;
 
-        message_init(&message, EVENT_DATA);
-        message_append(&message, ring_count(&output), outputdata);
+        message_initheader(&message.header, EVENT_DATA, ring_count(&output));
+
+        offset = message_append(&message.message, offset, ring_count(&output), outputdata);
+
         file_writeall(FILE_G0, &message, message.header.length);
         ring_reset(&output);
 
@@ -194,10 +197,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    union message message;
+    struct message_header header;
 
-    message_init(&message, EVENT_WMMAP);
-    file_writeall(FILE_G0, &message, message.header.length);
+    message_initheader(&header, EVENT_WMMAP, 0);
+    file_writeall(FILE_G0, &header, header.length);
 
 }
 
