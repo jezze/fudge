@@ -452,10 +452,7 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         if (!(keymod & KEYMOD_SHIFT))
             break;
 
-        if (!file_walk2(FILE_CP, "/bin/wshell"))
-            break;
-
-        id = call_spawn(FILE_CP);
+        id = file_spawn(FILE_CP, "/bin/wshell");
 
         if (id)
         {

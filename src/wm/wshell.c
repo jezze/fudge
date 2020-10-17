@@ -355,15 +355,15 @@ static void oninit(struct channel *channel)
     if (!file_walk2(FILE_G0, "/system/wclient"))
         return;
 
-    if (!file_walk2(FILE_CP, "/bin/complete"))
+    idcomplete = file_spawn(FILE_CP, "/bin/complete");
+
+    if (!idcomplete)
         return;
 
-    idcomplete = call_spawn(FILE_CP);
+    idslang = file_spawn(FILE_CP, "/bin/slang");
 
-    if (!file_walk2(FILE_CP, "/bin/slang"))
+    if (!idslang)
         return;
-
-    idslang = call_spawn(FILE_CP);
 
     channel_setsignal(channel, EVENT_ANY, onany);
     channel_setsignal(channel, EVENT_MAIN, onmain2);

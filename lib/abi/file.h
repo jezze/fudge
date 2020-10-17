@@ -12,3 +12,4 @@ unsigned int file_seekread(unsigned int descriptor, void *buffer, unsigned int c
 unsigned int file_seekreadall(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset);
 unsigned int file_seekwrite(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset);
 unsigned int file_seekwriteall(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset);
+unsigned int file_spawn(unsigned int descriptor, char *path);

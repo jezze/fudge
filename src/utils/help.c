@@ -32,10 +32,7 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 static void oninit(struct channel *channel)
 {
 
-    if (!file_walk2(FILE_CP, "/bin/echo"))
-        return;
-
-    idecho = call_spawn(FILE_CP);
+    idecho = file_spawn(FILE_CP, "/bin/echo");
 
 }
 

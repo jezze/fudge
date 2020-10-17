@@ -33,28 +33,26 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 static void oninit(struct channel *channel)
 {
 
-    union message message;
-    unsigned int id;
+    unsigned int id = file_spawn(FILE_CP, "/bin/slang");
 
-    if (!file_walk2(FILE_CP, "/bin/slang"))
-        return;
+    if (id)
+    {
 
-    id = call_spawn(FILE_CP);
+        union message message;
 
-    if (!id)
-        return;
+        message_init(&message, EVENT_FILE);
+        message_appendstring2(&message, "/config/base.slang");
+        channel_place(channel, &message, id);
+        message_init(&message, EVENT_FILE);
+        message_appendstring2(&message, "/config/arch.slang");
+        channel_place(channel, &message, id);
+        message_init(&message, EVENT_FILE);
+        message_appendstring2(&message, "/config/init.slang");
+        channel_place(channel, &message, id);
+        message_init(&message, EVENT_MAIN);
+        channel_place(channel, &message, id);
 
-    message_init(&message, EVENT_FILE);
-    message_appendstring2(&message, "/config/base.slang");
-    channel_place(channel, &message, id);
-    message_init(&message, EVENT_FILE);
-    message_appendstring2(&message, "/config/arch.slang");
-    channel_place(channel, &message, id);
-    message_init(&message, EVENT_FILE);
-    message_appendstring2(&message, "/config/init.slang");
-    channel_place(channel, &message, id);
-    message_init(&message, EVENT_MAIN);
-    channel_place(channel, &message, id);
+    }
 
 }
 
