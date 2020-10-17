@@ -20,9 +20,14 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
     struct event_redirect *redirect = mdata;
 
     if (redirect->mode == 2)
-        channel_sendredirect(channel, idecho, redirect->type, 1, source);
-    else
-        channel_sendredirect(channel, idecho, redirect->type, redirect->mode, redirect->id);
+    {
+
+        redirect->mode = 1;
+        redirect->id = source;
+
+    }
+
+    channel_place(channel, idecho, EVENT_REDIRECT, sizeof (struct event_redirect), redirect);
 
 }
 

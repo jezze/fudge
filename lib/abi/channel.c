@@ -145,16 +145,3 @@ void channel_init(struct channel *channel)
 
 }
 
-void channel_sendredirect(struct channel *channel, unsigned int id, unsigned int type, unsigned int mode, unsigned int source)
-{
-
-    struct event_redirect redirect;
-
-    redirect.type = type;
-    redirect.mode = mode;
-    redirect.id = source;
-
-    channel_place(channel, id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
-
-}
-
