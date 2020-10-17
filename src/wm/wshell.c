@@ -111,8 +111,8 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
 static void interpret(struct channel *channel, struct ring *ring)
 {
 
-    char data[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
+    char data[FUDGE_MSIZE];
+    unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
 
     if (count < 2)
         return;
@@ -127,8 +127,8 @@ static void interpret(struct channel *channel, struct ring *ring)
 static void complete(struct channel *channel, struct ring *ring)
 {
 
-    char data[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
+    char data[FUDGE_MSIZE];
+    unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
 
     channel_place3(channel, idcomplete, EVENT_DATA, count, data);
 

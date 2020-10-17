@@ -90,12 +90,12 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
     if (file_walk2(FILE_L0, mdata))
     {
 
-        char buffer[FUDGE_BSIZE - 16];
+        char buffer[FUDGE_MSIZE];
         unsigned int count;
 
         file_open(FILE_L0);
 
-        while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE - 16)))
+        while ((count = file_read(FILE_L0, buffer, FUDGE_MSIZE)))
             print(channel, source, count, buffer);
 
         file_close(FILE_L0);
