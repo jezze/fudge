@@ -4,11 +4,10 @@
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    union message message;
+    struct message_header header;
 
-    message_init(&message, EVENT_DATA);
-    message_append(&message, msize, mdata);
-    channel_place(channel, &message, source);
+    message_initheader(&header, EVENT_DATA, msize);
+    channel_place2(channel, source, &header, mdata);
 
 }
 

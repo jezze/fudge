@@ -4,11 +4,11 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    union message message;
+    struct message_header header;
+    char *data = "Hello world!\n";
 
-    message_init(&message, EVENT_DATA);
-    message_appendstring(&message, "Hello world!\n");
-    channel_place(channel, &message, source);
+    message_initheader(&header, EVENT_DATA, ascii_length(data));
+    channel_place2(channel, source, &header, data);
     channel_close(channel);
 
 }

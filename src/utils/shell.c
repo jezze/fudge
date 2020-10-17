@@ -41,8 +41,8 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
 static void interpret(struct channel *channel, struct ring *ring)
 {
 
+    struct message_header header;
     char data[FUDGE_BSIZE];
-    union message message;
     unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
 
     if (count < 2)
@@ -51,22 +51,20 @@ static void interpret(struct channel *channel, struct ring *ring)
     if (interpretbuiltin(count, data))
         return;
 
-    message_init(&message, EVENT_DATA);
-    message_append(&message, count, data);
-    channel_place(channel, &message, idslang);
+    message_initheader(&header, EVENT_DATA, count);
+    channel_place2(channel, idslang, &header, data);
 
 }
 
 static void complete(struct channel *channel, struct ring *ring)
 {
 
+    struct message_header header;
     char data[FUDGE_BSIZE];
-    union message message;
     unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
 
-    message_init(&message, EVENT_DATA);
-    message_append(&message, count, data);
-    channel_place(channel, &message, idcomplete);
+    message_initheader(&header, EVENT_DATA, count);
+    channel_place2(channel, idcomplete, &header, data);
 
 }
 
