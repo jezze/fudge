@@ -6,13 +6,13 @@ static unsigned int idecho;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    union message message;
+    struct message_header header;
+    char *path = "/data/motd.txt";
 
-    message_init(&message, EVENT_FILE);
-    message_appendstring2(&message, "/data/motd.txt");
-    channel_place(channel, &message, idecho);
-    message_init(&message, EVENT_MAIN);
-    channel_place(channel, &message, idecho);
+    message_initheader(&header, EVENT_FILE, ascii_length(path) + 1);
+    channel_place2(channel, idecho, &header, path);
+    message_initheader(&header, EVENT_MAIN, 0);
+    channel_place2(channel, idecho, &header, 0);
     channel_close(channel);
 
 }

@@ -62,7 +62,6 @@ unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int
 void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
-    union message message;
     unsigned int i;
 
     if (!file_walk2(FILE_L0, "/bin"))
@@ -101,18 +100,20 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         for (k = 0; k < p->nfiles; k++)
         {
 
-            message_init(&message, EVENT_FILE);
-            message_appendstring2(&message, p->files[k]);
-            channel_place(channel, &message, p->id);
+            struct message_header header;
+
+            message_initheader(&header, EVENT_FILE, ascii_length(p->files[k]) + 1);
+            channel_place2(channel, p->id, &header, p->files[k]);
 
         }
 
         for (k = 0; k < p->ninputs; k++)
         {
 
-            message_init(&message, EVENT_DATA);
-            message_appendstring(&message, p->inputs[k]);
-            channel_place(channel, &message, p->id);
+            struct message_header header;
+
+            message_initheader(&header, EVENT_DATA, ascii_length(p->inputs[k]));
+            channel_place2(channel, p->id, &header, p->inputs[k]);
 
         }
 
@@ -122,9 +123,10 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
     {
 
         struct job *p = &jobs[i];
+        struct message_header header;
 
-        message_init(&message, EVENT_MAIN);
-        channel_place(channel, &message, p->id);
+        message_initheader(&header, EVENT_MAIN, 0);
+        channel_place2(channel, p->id, &header, 0);
 
     }
 

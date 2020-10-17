@@ -35,14 +35,12 @@ static void request_init(struct request *request, unsigned int source, unsigned 
 static void request_send(struct request *request, struct channel *channel)
 {
 
-    struct event_blockrequest blockrequest;
-    union message message;
+    struct {struct message_header header; struct event_blockrequest blockrequest;} message;
 
-    blockrequest.sector = request->blocksector;
-    blockrequest.count = request->blockcount;
+    message.blockrequest.sector = request->blocksector;
+    message.blockrequest.count = request->blockcount;
 
-    message_init(&message, EVENT_BLOCKREQUEST);
-    message_append(&message, sizeof (struct event_blockrequest), &blockrequest);
+    message_initheader(&message.header, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
     file_writeall(FILE_G0, &message, message.header.length);
 
 }
@@ -146,12 +144,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 if ((count = sendpoll(request, channel, source, offset + cpio_filedata(header), cpio_filesize(header))))
                 {
 
-                    void *data = getdata(request);
-                    union message message;
+                    struct message_header header;
 
-                    message_init(&message, EVENT_DATA);
-                    message_append(&message, count, data);
-                    channel_place(channel, &message, source);
+                    message_initheader(&header, EVENT_DATA, count);
+                    channel_place2(channel, source, &header, getdata(request));
 
                 }
 
