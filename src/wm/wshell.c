@@ -292,10 +292,10 @@ static void onwmclose(struct channel *channel, unsigned int source, void *mdata,
 
     union message message;
 
-    channel_header(&message, EVENT_MAIN);
+    message_init(&message, EVENT_MAIN);
     channel_place(channel, &message, idcomplete);
     channel_place(channel, &message, idslang);
-    channel_header(&message, EVENT_WMUNMAP);
+    message_init(&message, EVENT_WMUNMAP);
     channel_place(channel, &message, source);
     channel_close(channel);
 
@@ -309,8 +309,8 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
 
         union message message;
 
-        channel_header(&message, EVENT_DATA);
-        channel_append(&message, ring_count(&output), outputdata);
+        message_init(&message, EVENT_DATA);
+        message_append(&message, ring_count(&output), outputdata);
         channel_write(channel, &message, FILE_G0);
         ring_reset(&output);
 
@@ -330,7 +330,7 @@ static void onmain2(struct channel *channel, unsigned int source, void *mdata, u
 
     union message message;
 
-    channel_header(&message, EVENT_WMMAP);
+    message_init(&message, EVENT_WMMAP);
     channel_write(channel, &message, FILE_G0);
 
 }

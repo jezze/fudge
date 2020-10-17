@@ -5,7 +5,7 @@
 static struct system_node wserver;
 static struct system_node wclient;
 
-static unsigned int multicast(struct service_state *source, struct list *targets, struct ipc_header *header, void *data)
+static unsigned int multicast(struct service_state *source, struct list *targets, struct message_header *header, void *data)
 {
 
     struct list_item *current;
@@ -39,7 +39,7 @@ static unsigned int wserver_seek(struct system_node *self, struct service_state 
 static unsigned int wclient_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct ipc_header *header = buffer;
+    struct message_header *header = buffer;
 
     return multicast(state, &wserver.states, header, header + 1);
 

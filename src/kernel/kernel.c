@@ -281,7 +281,7 @@ void kernel_reset(unsigned int id)
 
 }
 
-unsigned int kernel_pick(unsigned int id, struct ipc_header *header, void *data)
+unsigned int kernel_pick(unsigned int id, struct message_header *header, void *data)
 {
 
     unsigned int count = mailbox_pick(&mailboxes[id], header, data);
@@ -293,7 +293,7 @@ unsigned int kernel_pick(unsigned int id, struct ipc_header *header, void *data)
 
 }
 
-unsigned int kernel_place(unsigned int id, struct ipc_header *header, void *data)
+unsigned int kernel_place(unsigned int id, struct message_header *header, void *data)
 {
 
     return mailbox_place(&mailboxes[id], header, data);
@@ -303,10 +303,10 @@ unsigned int kernel_place(unsigned int id, struct ipc_header *header, void *data
 void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigned int count)
 {
 
-    struct ipc_header header;
+    struct message_header header;
     struct list_item *current;
 
-    ipc_init(&header, type, count);
+    message_initheader(&header, type, count);
     spinlock_acquire(&states->spinlock);
 
     for (current = states->head; current; current = current->next)

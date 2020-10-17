@@ -26,7 +26,7 @@ static void handleirq(unsigned int irq)
 static unsigned int blockinterface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct {struct ipc_header header; struct event_blockrequest blockrequest;} *message = buffer;
+    struct {struct message_header header; struct event_blockrequest blockrequest;} *message = buffer;
 
     ide_rpio28(blockinterface.id, 0, message->blockrequest.count, message->blockrequest.sector);
 

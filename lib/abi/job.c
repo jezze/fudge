@@ -109,8 +109,8 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
             union message message;
 
-            channel_header(&message, EVENT_DATA);
-            channel_appendstring(&message, p->inputs[k]);
+            message_init(&message, EVENT_DATA);
+            message_appendstring(&message, p->inputs[k]);
             channel_place(channel, &message, p->id);
 
         }

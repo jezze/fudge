@@ -28,7 +28,7 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
 
     }
 
-    channel_header(&message, EVENT_WMUNMAP);
+    message_init(&message, EVENT_WMUNMAP);
     channel_place(channel, &message, source);
     channel_close(channel);
 
@@ -39,7 +39,7 @@ static void onwmclose(struct channel *channel, unsigned int source, void *mdata,
 
     union message message;
 
-    channel_header(&message, EVENT_WMUNMAP);
+    message_init(&message, EVENT_WMUNMAP);
     channel_place(channel, &message, source);
     channel_close(channel);
 
@@ -57,7 +57,7 @@ static void onmain2(struct channel *channel, unsigned int source, void *mdata, u
 
     union message message;
 
-    channel_header(&message, EVENT_WMMAP);
+    message_init(&message, EVENT_WMMAP);
     channel_write(channel, &message, FILE_G0);
 
 }

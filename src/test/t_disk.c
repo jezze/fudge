@@ -41,8 +41,8 @@ static void request_send(struct request *request, struct channel *channel)
     blockrequest.sector = request->blocksector;
     blockrequest.count = request->blockcount;
 
-    channel_header(&message, EVENT_BLOCKREQUEST);
-    channel_append(&message, sizeof (struct event_blockrequest), &blockrequest);
+    message_init(&message, EVENT_BLOCKREQUEST);
+    message_append(&message, sizeof (struct event_blockrequest), &blockrequest);
     channel_write(channel, &message, FILE_G0);
 
 }
@@ -50,13 +50,13 @@ static void request_send(struct request *request, struct channel *channel)
 static unsigned int request_poll(struct request *request, struct channel *channel)
 {
 
-    struct ipc_header header;
+    struct message_header header;
     char data[FUDGE_BSIZE];
 
     while (channel_poll(channel, &header, data, EVENT_DATA))
     {
 
-        unsigned int size = ipc_datasize(&header);
+        unsigned int size = message_datasize(&header);
         unsigned int count = memory_write(blocks, BLOCKSIZE * 4, data, size, request->blockreads * BLOCKSIZE);
 
         request->blockreads += count / BLOCKSIZE;
@@ -149,8 +149,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                     void *data = getdata(request);
                     union message message;
 
-                    channel_header(&message, EVENT_DATA);
-                    channel_append(&message, count, data);
+                    message_init(&message, EVENT_DATA);
+                    message_append(&message, count, data);
                     channel_place(channel, &message, source);
 
                 }

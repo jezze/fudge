@@ -249,7 +249,7 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
     union message message;
     unsigned int i;
 
-    channel_header(&message, EVENT_DATA);
+    message_init(&message, EVENT_DATA);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -271,8 +271,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            channel_appendstring2(&message, "F");
-            channel_appendstring2(&message, t->str);
+            message_appendstring2(&message, "F");
+            message_appendstring2(&message, t->str);
 
             break;
 
@@ -282,8 +282,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            channel_appendstring2(&message, "R");
-            channel_appendstring2(&message, t->str);
+            message_appendstring2(&message, "R");
+            message_appendstring2(&message, t->str);
 
             break;
 
@@ -293,8 +293,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            channel_appendstring2(&message, "D");
-            channel_appendstring2(&message, t->str);
+            message_appendstring2(&message, "D");
+            message_appendstring2(&message, t->str);
 
             break;
 
@@ -304,8 +304,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            channel_appendstring2(&message, "P");
-            channel_appendstring2(&message, t->str);
+            message_appendstring2(&message, "P");
+            message_appendstring2(&message, t->str);
 
             break;
 
@@ -315,9 +315,9 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            channel_appendstring2(&message, "P");
-            channel_appendstring2(&message, t->str);
-            channel_appendstring2(&message, "E");
+            message_appendstring2(&message, "P");
+            message_appendstring2(&message, t->str);
+            message_appendstring2(&message, "E");
 
             break;
 

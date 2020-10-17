@@ -16,9 +16,9 @@ static void complete(struct channel *channel, unsigned int source, unsigned int 
 
             union message message;
 
-            channel_header(&message, EVENT_DATA);
-            channel_append(&message, record.length, record.name);
-            channel_appendstring(&message, "\n");
+            message_init(&message, EVENT_DATA);
+            message_append(&message, record.length, record.name);
+            message_appendstring(&message, "\n");
             channel_place(channel, &message, source);
 
         }

@@ -6,19 +6,19 @@ static void print(struct channel *channel, unsigned int source, struct ctrl_cloc
 
     union message message;
 
-    channel_header(&message, EVENT_DATA);
-    channel_appendvalue(&message, settings->year, 10, 4);
-    channel_appendstring(&message, "-");
-    channel_appendvalue(&message, settings->month, 10, 2);
-    channel_appendstring(&message, "-");
-    channel_appendvalue(&message, settings->day, 10, 2);
-    channel_appendstring(&message, " ");
-    channel_appendvalue(&message, settings->hours, 10, 2);
-    channel_appendstring(&message, ":");
-    channel_appendvalue(&message, settings->minutes, 10, 2);
-    channel_appendstring(&message, ":");
-    channel_appendvalue(&message, settings->seconds, 10, 2);
-    channel_appendstring(&message, "\n");
+    message_init(&message, EVENT_DATA);
+    message_appendvalue(&message, settings->year, 10, 4);
+    message_appendstring(&message, "-");
+    message_appendvalue(&message, settings->month, 10, 2);
+    message_appendstring(&message, "-");
+    message_appendvalue(&message, settings->day, 10, 2);
+    message_appendstring(&message, " ");
+    message_appendvalue(&message, settings->hours, 10, 2);
+    message_appendstring(&message, ":");
+    message_appendvalue(&message, settings->minutes, 10, 2);
+    message_appendstring(&message, ":");
+    message_appendvalue(&message, settings->seconds, 10, 2);
+    message_appendstring(&message, "\n");
     channel_place(channel, &message, source);
 
 }

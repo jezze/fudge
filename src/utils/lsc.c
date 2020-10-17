@@ -13,13 +13,13 @@ static void print(struct channel *channel, unsigned int source)
 
         union message message;
 
-        channel_header(&message, EVENT_DATA);
-        channel_appendvalue(&message, record.id, 16, 8);
-        channel_appendstring(&message, " ");
-        channel_appendvalue(&message, record.size, 16, 8);
-        channel_appendstring(&message, " ");
-        channel_append(&message, record.length, record.name);
-        channel_appendstring(&message, "\n");
+        message_init(&message, EVENT_DATA);
+        message_appendvalue(&message, record.id, 16, 8);
+        message_appendstring(&message, " ");
+        message_appendvalue(&message, record.size, 16, 8);
+        message_appendstring(&message, " ");
+        message_append(&message, record.length, record.name);
+        message_appendstring(&message, "\n");
         channel_place(channel, &message, source);
 
         if (!file_step(FILE_G0))

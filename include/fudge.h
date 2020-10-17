@@ -8,7 +8,7 @@
 #include <fudge/record.h>
 #include <fudge/regexp.h>
 #include <fudge/ring.h>
-#include <fudge/ipc.h>
+#include <fudge/message.h>
 #include <fudge/event.h>
 #include <fudge/crc.h>
 #include <fudge/md5.h>

@@ -7,11 +7,11 @@ O:=\
     $(DIR_LIB)/fudge/crc.o \
     $(DIR_LIB)/fudge/ctrl.o \
     $(DIR_LIB)/fudge/elf.o \
-    $(DIR_LIB)/fudge/ipc.o \
     $(DIR_LIB)/fudge/keymap.o \
     $(DIR_LIB)/fudge/list.o \
     $(DIR_LIB)/fudge/md5.o \
     $(DIR_LIB)/fudge/memory.o \
+    $(DIR_LIB)/fudge/message.o \
     $(DIR_LIB)/fudge/mtwist.o \
     $(DIR_LIB)/fudge/pcf.o \
     $(DIR_LIB)/fudge/regexp.o \

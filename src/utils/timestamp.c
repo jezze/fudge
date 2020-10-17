@@ -33,9 +33,9 @@ static void print(struct channel *channel, unsigned int source, struct ctrl_cloc
 
     union message message;
 
-    channel_header(&message, EVENT_DATA);
-    channel_appendvalue(&message, gettimestamp(settings), 10, 0);
-    channel_appendstring(&message, "\n");
+    message_init(&message, EVENT_DATA);
+    message_appendvalue(&message, gettimestamp(settings), 10, 0);
+    message_appendstring(&message, "\n");
     channel_place(channel, &message, source);
 
 }

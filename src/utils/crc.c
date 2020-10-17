@@ -8,9 +8,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     union message message;
 
-    channel_header(&message, EVENT_DATA);
-    channel_appendvalue(&message, crc_finalize(&s), 10, 0);
-    channel_appendstring(&message, "\n");
+    message_init(&message, EVENT_DATA);
+    message_appendvalue(&message, crc_finalize(&s), 10, 0);
+    message_appendstring(&message, "\n");
     channel_place(channel, &message, source);
     channel_close(channel);
 

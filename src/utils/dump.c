@@ -13,9 +13,9 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
         union message message;
         unsigned int j;
 
-        channel_header(&message, EVENT_DATA);
-        channel_appendvalue(&message, i, 16, 8);
-        channel_appendstring(&message, "  ");
+        message_init(&message, EVENT_DATA);
+        message_appendvalue(&message, i, 16, 8);
+        message_appendstring(&message, "  ");
 
         for (j = i; j < i + 16; j++)
         {
@@ -23,21 +23,21 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
             if (j < count)
             {
 
-                channel_appendvalue(&message, data[j], 16, 2);
-                channel_appendstring(&message, " ");
+                message_appendvalue(&message, data[j], 16, 2);
+                message_appendstring(&message, " ");
 
             }
 
             else
             {
 
-                channel_appendstring(&message, "   ");
+                message_appendstring(&message, "   ");
 
             }
 
         }
 
-        channel_appendstring(&message, " |");
+        message_appendstring(&message, " |");
 
         for (j = i; j < i + 16; j++)
         {
@@ -50,20 +50,20 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
                 if (!(c >= 0x20 && c <= 0x7e))
                     c = ' ';
 
-                channel_append(&message, 1, &c);
+                message_append(&message, 1, &c);
 
             }
 
             else
             {
 
-                channel_appendstring(&message, " ");
+                message_appendstring(&message, " ");
 
             }
 
         }
 
-        channel_appendstring(&message, "|\n");
+        message_appendstring(&message, "|\n");
         channel_place(channel, &message, source);
 
     }

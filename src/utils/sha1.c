@@ -11,12 +11,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     unsigned int i;
 
     sha1_write(&s, digest);
-    channel_header(&message, EVENT_DATA);
+    message_init(&message, EVENT_DATA);
 
     for (i = 0; i < 20; i++)
-        channel_appendvalue(&message, digest[i], 16, 2);
+        message_appendvalue(&message, digest[i], 16, 2);
 
-    channel_appendstring(&message, "\n");
+    message_appendstring(&message, "\n");
     channel_place(channel, &message, source);
     channel_close(channel);
 

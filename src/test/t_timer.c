@@ -15,8 +15,8 @@ static void ontimertick(struct channel *channel, unsigned int source, void *mdat
 
     union message message;
 
-    channel_header(&message, EVENT_DATA);
-    channel_appendstring(&message, "HEJ!\n");
+    message_init(&message, EVENT_DATA);
+    message_appendstring(&message, "HEJ!\n");
     channel_place(channel, &message, source);
 
 }
