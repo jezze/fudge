@@ -21,6 +21,7 @@ void channel_appendstring(struct channel *channel, char *string);
 void channel_appendstring2(struct channel *channel, char *string);
 void channel_appendvalue(struct channel *channel, int value, unsigned int base, unsigned int padding);
 void channel_init(struct channel *channel);
+void channel_senddata(struct channel *channel, unsigned int id, unsigned int count, void *data);
 void channel_sendfile(struct channel *channel, unsigned int id, char *path);
 void channel_sendmain(struct channel *channel, unsigned int id);
 void channel_sendredirect(struct channel *channel, unsigned int id, unsigned int type, unsigned int mode, unsigned int source);

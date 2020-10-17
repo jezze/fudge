@@ -4,9 +4,9 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_DATA);
-    channel_appendstring(channel, "Hello world!\n");
-    channel_place(channel, source);
+    char *text = "Hello world!\n";
+
+    channel_senddata(channel, source, ascii_length(text), text);
     channel_close(channel);
 
 }

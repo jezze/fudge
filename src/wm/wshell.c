@@ -120,9 +120,7 @@ static void interpret(struct channel *channel, struct ring *ring)
     if (interpretbuiltin(count, data))
         return;
 
-    channel_request(channel, EVENT_DATA);
-    channel_append(channel, count, data);
-    channel_place(channel, idslang);
+    channel_senddata(channel, idslang, count, data);
 
 }
 
@@ -132,9 +130,7 @@ static void complete(struct channel *channel, struct ring *ring)
     char data[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
 
-    channel_request(channel, EVENT_DATA);
-    channel_append(channel, count, data);
-    channel_place(channel, idcomplete);
+    channel_senddata(channel, idcomplete, count, data);
 
 }
 

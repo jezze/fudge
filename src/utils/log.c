@@ -4,9 +4,7 @@
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_request(channel, EVENT_DATA);
-    channel_append(channel, msize, mdata);
-    channel_place(channel, source);
+    channel_senddata(channel, source, msize, mdata);
 
 }
 

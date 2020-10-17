@@ -192,6 +192,15 @@ void channel_init(struct channel *channel)
 
 }
 
+void channel_senddata(struct channel *channel, unsigned int id, unsigned int count, void *data)
+{
+
+    channel_request(channel, EVENT_DATA);
+    channel_append(channel, count, data);
+    channel_place(channel, id);
+
+}
+
 void channel_sendfile(struct channel *channel, unsigned int id, char *path)
 {
 
