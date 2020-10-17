@@ -51,13 +51,6 @@ unsigned int channel_place(struct channel *channel, union message *message, unsi
 
 }
 
-unsigned int channel_write(struct channel *channel, union message *message, unsigned int descriptor)
-{
-
-    return file_writeall(descriptor, message, message->header.length);
-
-}
-
 unsigned int channel_poll(struct channel *channel, struct message_header *header, void *data, unsigned int type)
 {
 

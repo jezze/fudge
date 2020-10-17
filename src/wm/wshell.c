@@ -317,7 +317,7 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
 
         message_init(&message, EVENT_DATA);
         message_append(&message, ring_count(&output), outputdata);
-        channel_write(channel, &message, FILE_G0);
+        file_writeall(FILE_G0, &message, message.header.length);
         ring_reset(&output);
 
     }
@@ -337,7 +337,7 @@ static void onmain2(struct channel *channel, unsigned int source, void *mdata, u
     union message message;
 
     message_init(&message, EVENT_WMMAP);
-    channel_write(channel, &message, FILE_G0);
+    file_writeall(FILE_G0, &message, message.header.length);
 
 }
 

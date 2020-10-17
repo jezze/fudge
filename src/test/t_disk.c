@@ -43,7 +43,7 @@ static void request_send(struct request *request, struct channel *channel)
 
     message_init(&message, EVENT_BLOCKREQUEST);
     message_append(&message, sizeof (struct event_blockrequest), &blockrequest);
-    channel_write(channel, &message, FILE_G0);
+    file_writeall(FILE_G0, &message, message.header.length);
 
 }
 
