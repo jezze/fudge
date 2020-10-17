@@ -23,4 +23,4 @@ void channel_appendvalue(struct channel *channel, int value, unsigned int base, 
 void channel_init(struct channel *channel);
 void channel_sendfile(struct channel *channel, unsigned int id, char *path);
 void channel_sendmain(struct channel *channel, unsigned int id);
-void channel_sendredirect(struct channel *channel, unsigned int id, struct event_redirect *redirect);
+void channel_sendredirect(struct channel *channel, unsigned int id, unsigned int type, unsigned int mode, unsigned int source);

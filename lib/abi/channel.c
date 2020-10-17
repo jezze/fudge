@@ -209,11 +209,17 @@ void channel_sendmain(struct channel *channel, unsigned int id)
 
 }
 
-void channel_sendredirect(struct channel *channel, unsigned int id, struct event_redirect *redirect)
+void channel_sendredirect(struct channel *channel, unsigned int id, unsigned int type, unsigned int mode, unsigned int source)
 {
 
+    struct event_redirect redirect;
+
+    redirect.type = type;
+    redirect.mode = mode;
+    redirect.id = source;
+
     channel_request(channel, EVENT_REDIRECT);
-    channel_append(channel, sizeof (struct event_redirect), redirect);
+    channel_append(channel, sizeof (struct event_redirect), &redirect);
     channel_place(channel, id);
 
 }

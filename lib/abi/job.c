@@ -83,27 +83,11 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
     {
 
         struct job *p = &jobs[i];
-        struct event_redirect redirect;
 
         if (i < n - 1)
-        {
-
-            redirect.mode = 1;
-            redirect.id = jobs[i + 1].id;
-
-        }
-
+            channel_sendredirect(channel, p->id, EVENT_DATA, 1, jobs[i + 1].id);
         else
-        {
-
-            redirect.mode = 2;
-            redirect.id = 0;
-
-        }
-
-        redirect.type = EVENT_DATA;
-
-        channel_sendredirect(channel, p->id, &redirect);
+            channel_sendredirect(channel, p->id, EVENT_DATA, 2, 0);
 
     }
 
