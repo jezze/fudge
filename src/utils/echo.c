@@ -11,11 +11,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    union message message;
+    struct message_header header;
 
-    message_init(&message, EVENT_DATA);
-    message_append(&message, msize, mdata);
-    channel_place(channel, &message, source);
+    message_initheader(&header, EVENT_DATA, msize);
+    channel_place2(channel, source, &header, mdata);
 
 }
 
@@ -33,11 +32,10 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
         while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE - 16)))
         {
 
-            union message message;
+            struct message_header header;
 
-            message_init(&message, EVENT_DATA);
-            message_append(&message, count, buffer);
-            channel_place(channel, &message, source);
+            message_initheader(&header, EVENT_DATA, count);
+            channel_place2(channel, source, &header, buffer);
 
         }
 
