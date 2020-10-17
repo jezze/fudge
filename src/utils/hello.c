@@ -4,11 +4,9 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
     char *data = "Hello world!\n";
 
-    message_initheader(&header, EVENT_DATA, ascii_length(data));
-    channel_place2(channel, source, &header, data);
+    channel_place3(channel, source, EVENT_DATA, ascii_length(data), data);
     channel_close(channel);
 
 }

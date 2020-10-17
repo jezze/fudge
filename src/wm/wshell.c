@@ -111,7 +111,6 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
 static void interpret(struct channel *channel, struct ring *ring)
 {
 
-    struct message_header header;
     char data[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
 
@@ -121,20 +120,17 @@ static void interpret(struct channel *channel, struct ring *ring)
     if (interpretbuiltin(count, data))
         return;
 
-    message_initheader(&header, EVENT_DATA, count);
-    channel_place2(channel, idslang, &header, data);
+    channel_place3(channel, idslang, EVENT_DATA, count, data);
 
 }
 
 static void complete(struct channel *channel, struct ring *ring)
 {
 
-    struct message_header header;
     char data[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_BSIZE);
 
-    message_initheader(&header, EVENT_DATA, count);
-    channel_place2(channel, idcomplete, &header, data);
+    channel_place3(channel, idcomplete, EVENT_DATA, count, data);
 
 }
 
@@ -294,13 +290,9 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-
-    message_initheader(&header, EVENT_MAIN, 0);
-    channel_place2(channel, idcomplete, &header, 0);
-    channel_place2(channel, idslang, &header, 0);
-    message_initheader(&header, EVENT_WMUNMAP, 0);
-    channel_place2(channel, source, &header, 0);
+    channel_place3(channel, idcomplete, EVENT_MAIN, 0, 0);
+    channel_place3(channel, idslang, EVENT_MAIN, 0, 0);
+    channel_place3(channel, source, EVENT_WMUNMAP, 0, 0);
     channel_close(channel);
 
 }

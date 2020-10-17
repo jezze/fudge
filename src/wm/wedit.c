@@ -162,10 +162,7 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-
-    message_initheader(&header, EVENT_WMUNMAP, 0);
-    channel_place2(channel, source, &header, 0);
+    channel_place3(channel, source, EVENT_WMUNMAP, 0, 0);
     channel_close(channel);
 
 }

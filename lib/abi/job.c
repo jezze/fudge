@@ -98,24 +98,10 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         unsigned int k;
 
         for (k = 0; k < p->nfiles; k++)
-        {
-
-            struct message_header header;
-
-            message_initheader(&header, EVENT_FILE, ascii_length(p->files[k]) + 1);
-            channel_place2(channel, p->id, &header, p->files[k]);
-
-        }
+            channel_place3(channel, p->id, EVENT_FILE, ascii_length(p->files[k]) + 1, p->files[k]);
 
         for (k = 0; k < p->ninputs; k++)
-        {
-
-            struct message_header header;
-
-            message_initheader(&header, EVENT_DATA, ascii_length(p->inputs[k]));
-            channel_place2(channel, p->id, &header, p->inputs[k]);
-
-        }
+            channel_place3(channel, p->id, EVENT_DATA, ascii_length(p->inputs[k]), p->inputs[k]);
 
     }
 
@@ -123,10 +109,8 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
     {
 
         struct job *p = &jobs[i];
-        struct message_header header;
 
-        message_initheader(&header, EVENT_MAIN, 0);
-        channel_place2(channel, p->id, &header, 0);
+        channel_place3(channel, p->id, EVENT_MAIN, 0, 0);
 
     }
 

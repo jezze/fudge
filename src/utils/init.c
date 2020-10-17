@@ -38,19 +38,14 @@ static void oninit(struct channel *channel)
     if (id)
     {
 
-        struct message_header header;
         char *base = "/config/base.slang";
         char *arch = "/config/arch.slang";
         char *init = "/config/init.slang";
 
-        message_initheader(&header, EVENT_FILE, ascii_length(base) + 1);
-        channel_place2(channel, id, &header, base);
-        message_initheader(&header, EVENT_FILE, ascii_length(arch) + 1);
-        channel_place2(channel, id, &header, arch);
-        message_initheader(&header, EVENT_FILE, ascii_length(init) + 1);
-        channel_place2(channel, id, &header, init);
-        message_initheader(&header, EVENT_MAIN, 0);
-        channel_place2(channel, id, &header, 0);
+        channel_place3(channel, id, EVENT_FILE, ascii_length(base) + 1, base);
+        channel_place3(channel, id, EVENT_FILE, ascii_length(arch) + 1, arch);
+        channel_place3(channel, id, EVENT_FILE, ascii_length(init) + 1, init);
+        channel_place3(channel, id, EVENT_MAIN, 0, 0);
 
     }
 

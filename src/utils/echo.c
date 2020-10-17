@@ -11,10 +11,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-
-    message_initheader(&header, EVENT_DATA, msize);
-    channel_place2(channel, source, &header, mdata);
+    channel_place3(channel, source, EVENT_DATA, msize, mdata);
 
 }
 
@@ -30,14 +27,7 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
         file_open(FILE_L0);
 
         while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE - 16)))
-        {
-
-            struct message_header header;
-
-            message_initheader(&header, EVENT_DATA, count);
-            channel_place2(channel, source, &header, buffer);
-
-        }
+            channel_place3(channel, source, EVENT_DATA, count, buffer);
 
         file_close(FILE_L0);
 

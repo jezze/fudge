@@ -142,14 +142,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             {
 
                 if ((count = sendpoll(request, channel, source, offset + cpio_filedata(header), cpio_filesize(header))))
-                {
-
-                    struct message_header header;
-
-                    message_initheader(&header, EVENT_DATA, count);
-                    channel_place2(channel, source, &header, getdata(request));
-
-                }
+                    channel_place3(channel, source, EVENT_DATA, count, getdata(request));
 
             }
 
