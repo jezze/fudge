@@ -59,74 +59,93 @@ unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int
 
 }
 
+static unsigned int spawn(struct job *job)
+{
+
+    if (!file_walk2(FILE_L0, "/bin"))
+        return 0;
+
+    if (!(file_walk(FILE_CP, FILE_L0, job->path) || file_walk2(FILE_CP, job->path)))
+        return 0;
+
+    return call_spawn(FILE_CP);
+
+}
+
+static void redirect(struct channel *channel, struct job *job, unsigned int mode, unsigned int id)
+{
+
+    struct event_redirect redirect;
+
+    redirect.type = EVENT_DATA;
+    redirect.mode = mode;
+    redirect.id = id;
+
+    channel_place(channel, job->id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+
+}
+
+static void senddata(struct channel *channel, struct job *job)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < job->nfiles; i++)
+        channel_place(channel, job->id, EVENT_FILE, ascii_length(job->files[i]) + 1, job->files[i]);
+
+    for (i = 0; i < job->ninputs; i++)
+        channel_place(channel, job->id, EVENT_DATA, ascii_length(job->inputs[i]), job->inputs[i]);
+
+}
+
+static void run(struct channel *channel, struct job *job)
+{
+
+    channel_place(channel, job->id, EVENT_MAIN, 0, 0);
+
+}
+
 void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
     unsigned int i;
 
-    if (!file_walk2(FILE_L0, "/bin"))
-        return;
-
     for (i = 0; i < n; i++)
     {
 
-        struct job *p = &jobs[i];
+        struct job *job = &jobs[i];
 
-        if (!(file_walk(FILE_CP, FILE_L0, p->path) || file_walk2(FILE_CP, p->path)))
-            continue;
-
-        p->id = call_spawn(FILE_CP);
+        job->id = spawn(job);
 
     }
 
     for (i = 0; i < n; i++)
     {
 
-        struct job *p = &jobs[i];
-        struct event_redirect redirect;
-
-        redirect.type = EVENT_DATA;
+        struct job *job = &jobs[i];
 
         if (i < n - 1)
-        {
-
-            redirect.mode = 1;
-            redirect.id = jobs[i + 1].id;
-
-        }
-
+            redirect(channel, job, 1, jobs[i + 1].id);
         else
-        {
-
-            redirect.mode = 2;
-            redirect.id = 0;
-
-        }
-
-        channel_place(channel, p->id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+            redirect(channel, job, 2, 0);
 
     }
 
     for (i = 0; i < n; i++)
     {
 
-        struct job *p = &jobs[i];
-        unsigned int k;
+        struct job *job = &jobs[i];
 
-        for (k = 0; k < p->nfiles; k++)
-            channel_place(channel, p->id, EVENT_FILE, ascii_length(p->files[k]) + 1, p->files[k]);
-
-        for (k = 0; k < p->ninputs; k++)
-            channel_place(channel, p->id, EVENT_DATA, ascii_length(p->inputs[k]), p->inputs[k]);
+        senddata(channel, job);
 
     }
 
     for (i = 0; i < n; i++)
     {
 
-        struct job *p = &jobs[i];
+        struct job *job = &jobs[i];
 
-        channel_place(channel, p->id, EVENT_MAIN, 0, 0);
+        run(channel, job);
 
     }
 
