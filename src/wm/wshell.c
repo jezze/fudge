@@ -339,7 +339,8 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
     struct event_redirect *redirect = mdata;
 
-    channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
+    if (redirect->type == EVENT_CLOSE)
+        channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
 
 }
 
