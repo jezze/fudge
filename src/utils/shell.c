@@ -67,10 +67,15 @@ static void interpret(struct channel *channel, struct ring *ring)
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
 
-    if (interpretbuiltin(count, data))
-        return;
+    if (mode == MODE_NORMAL)
+    {
 
-    channel_place(channel, idslang, EVENT_DATA, count, data);
+        if (interpretbuiltin(count, data))
+            return;
+
+        channel_place(channel, idslang, EVENT_DATA, count, data);
+
+    }
 
 }
 
@@ -80,7 +85,8 @@ static void complete(struct channel *channel, struct ring *ring)
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
 
-    channel_place(channel, idcomplete, EVENT_DATA, count, data);
+    if (mode == MODE_NORMAL)
+        channel_place(channel, idcomplete, EVENT_DATA, count, data);
 
 }
 
