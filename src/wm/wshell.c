@@ -87,6 +87,9 @@ static void moveright(unsigned int steps)
 static unsigned int interpretbuiltin(unsigned int count, char *data)
 {
 
+    if (count < 2)
+        return 1;
+
     if (memory_match(data, "cd ", 3))
     {
 
@@ -114,9 +117,6 @@ static void interpret(struct channel *channel, struct ring *ring)
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
 
-    if (count < 2)
-        return;
-
     if (interpretbuiltin(count, data))
         return;
 
@@ -134,56 +134,56 @@ static void complete(struct channel *channel, struct ring *ring)
 
 }
 
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void completedata(struct channel *channel, void *mdata, unsigned int msize)
 {
 
-    if (source == idcomplete)
+    if (memory_findbyte(mdata, msize, '\n') < msize - 1)
     {
 
-        if (memory_findbyte(mdata, msize, '\n') < msize - 1)
-        {
-
-            copyring(&prompt);
-            copybuffer("\n", 1);
-            copybuffer(mdata, msize);
-
-        }
-
-        else
-        {
-
-            ring_write(&input1, mdata, msize - 1);
-
-        }
-
-    }
-
-    else if (source == idslang)
-    {
-
-        struct job_status status;
-        struct job jobs[32];
-
-        status.start = mdata;
-        status.end = status.start + msize;
-
-        while (status.start < status.end)
-        {
-
-            unsigned int njobs = job_parse(&status, jobs, 32);
-
-            job_run(channel, jobs, njobs);
-
-        }
+        copyring(&prompt);
+        copybuffer("\n", 1);
+        copybuffer(mdata, msize);
 
     }
 
     else
     {
 
-        copybuffer(mdata, msize);
+        ring_write(&input1, mdata, msize - 1);
 
     }
+
+}
+
+static void slangdata(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    struct job_status status;
+    struct job jobs[32];
+
+    status.start = mdata;
+    status.end = status.start + msize;
+
+    while (status.start < status.end)
+    {
+
+        unsigned int njobs = job_parse(&status, jobs, 32);
+
+        job_run(channel, jobs, njobs);
+
+    }
+
+}
+
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    if (source == idcomplete)
+        completedata(channel, mdata, msize);
+    else if (source == idslang)
+        slangdata(channel, mdata, msize);
+    else
+        copybuffer(mdata, msize);
 
     updatecontent();
 

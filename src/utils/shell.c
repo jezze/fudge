@@ -1,21 +1,42 @@
 #include <fudge.h>
 #include <abi.h>
 
+#define MODE_NORMAL                     0
+#define MODE_WAITING                    1
+
 static unsigned int keymod = KEYMOD_NONE;
 static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 static unsigned int idcomplete;
 static unsigned int idslang;
+static unsigned int mode = MODE_NORMAL;
 
 static void printprompt(void)
 {
 
-    file_writeall(FILE_G1, "$ ", 2);
+    switch (mode)
+    {
+
+    case MODE_NORMAL:
+        file_writeall(FILE_G1, "$ ", 2);
+
+        break;
+
+    }
 
 }
 
 static unsigned int interpretbuiltin(unsigned int count, char *data)
 {
+
+    if (count < 2)
+    {
+
+        printprompt();
+
+        return 1;
+
+    }
 
     if (memory_match(data, "cd ", 3))
     {
@@ -29,6 +50,8 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
             file_duplicate(FILE_CW, FILE_L0);
 
         }
+
+        printprompt();
 
         return 1;
 
@@ -44,9 +67,6 @@ static void interpret(struct channel *channel, struct ring *ring)
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
 
-    if (count < 2)
-        return;
-
     if (interpretbuiltin(count, data))
         return;
 
@@ -61,6 +81,69 @@ static void complete(struct channel *channel, struct ring *ring)
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
 
     channel_place(channel, idcomplete, EVENT_DATA, count, data);
+
+}
+
+static void completedata(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    file_writeall(FILE_G1, mdata, msize);
+    printprompt();
+
+}
+
+static void slangdata(struct channel *channel, void *mdata, unsigned int msize)
+{
+
+    struct job_status status;
+    struct job jobs[32];
+    unsigned int njobs = 0;
+    unsigned int nids = 0;
+    unsigned int i;
+
+    status.start = mdata;
+    status.end = status.start + msize;
+
+    mode = MODE_WAITING;
+
+    while (status.start < status.end)
+    {
+
+        njobs = job_parse(&status, jobs, 32);
+
+        job_run(channel, jobs, njobs);
+
+    }
+
+    for (i = 0; i < njobs; i++)
+    {
+
+        struct job *job = &jobs[i];
+
+        if (job->id)
+            nids++;
+
+    }
+
+    if (nids)
+    {
+
+        struct message_header header;
+        char data[FUDGE_MSIZE];
+
+        while (channel_poll(channel, &header, data, EVENT_CLOSE))
+        {
+
+            if (--nids == 0)
+                break;
+
+        }
+
+    }
+
+    mode = MODE_NORMAL;
+
+    printprompt();
 
 }
 
@@ -96,7 +179,6 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         file_writeall(FILE_G1, &consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
         interpret(channel, &input);
-        printprompt();
 
         break;
 
@@ -120,40 +202,23 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (source == idcomplete)
+    switch (mode)
     {
 
+    case MODE_NORMAL:
+        if (source == idcomplete)
+            completedata(channel, mdata, msize);
+        else if (source == idslang)
+            slangdata(channel, mdata, msize);
+        else
+            file_writeall(FILE_G1, mdata, msize);
+
+        break;
+
+    case MODE_WAITING:
         file_writeall(FILE_G1, mdata, msize);
-        printprompt();
 
-    }
-
-    else if (source == idslang)
-    {
-
-        struct job_status status;
-        struct job jobs[32];
-
-        status.start = mdata;
-        status.end = status.start + msize;
-
-        while (status.start < status.end)
-        {
-
-            unsigned int njobs = job_parse(&status, jobs, 32);
-
-            job_run(channel, jobs, njobs);
-
-        }
-
-    }
-
-    else
-    {
-
-        file_writeall(FILE_G1, "\b\b  \b\b", 6);
-        file_writeall(FILE_G1, mdata, msize);
-        printprompt();
+        break;
 
     }
 
@@ -202,7 +267,6 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         file_writeall(FILE_G1, keycode->value, keycode->length);
         ring_write(&input, keycode->value, keycode->length);
         interpret(channel, &input);
-        printprompt();
 
         break;
 

@@ -49,7 +49,7 @@ static unsigned int request_poll(struct request *request, struct channel *channe
 {
 
     struct message_header header;
-    char data[FUDGE_BSIZE];
+    char data[FUDGE_MSIZE];
 
     while (channel_poll(channel, &header, data, EVENT_DATA))
     {
