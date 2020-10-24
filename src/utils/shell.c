@@ -14,15 +14,7 @@ static unsigned int mode = MODE_NORMAL;
 static void printprompt(void)
 {
 
-    switch (mode)
-    {
-
-    case MODE_NORMAL:
-        file_writeall(FILE_G1, "$ ", 2);
-
-        break;
-
-    }
+    file_writeall(FILE_G1, "$ ", 2);
 
 }
 
@@ -67,15 +59,10 @@ static void interpret(struct channel *channel, struct ring *ring)
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
 
-    if (mode == MODE_NORMAL)
-    {
+    if (interpretbuiltin(count, data))
+        return;
 
-        if (interpretbuiltin(count, data))
-            return;
-
-        channel_place(channel, idslang, EVENT_DATA, count, data);
-
-    }
+    channel_place(channel, idslang, EVENT_DATA, count, data);
 
 }
 
@@ -85,8 +72,7 @@ static void complete(struct channel *channel, struct ring *ring)
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
 
-    if (mode == MODE_NORMAL)
-        channel_place(channel, idcomplete, EVENT_DATA, count, data);
+    channel_place(channel, idcomplete, EVENT_DATA, count, data);
 
 }
 
@@ -165,7 +151,8 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         break;
 
     case '\t':
-        complete(channel, &input);
+        if (mode == MODE_NORMAL)
+            complete(channel, &input);
 
         break;
 
@@ -184,7 +171,9 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
     case '\n':
         file_writeall(FILE_G1, &consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
-        interpret(channel, &input);
+
+        if (mode == MODE_NORMAL)
+            interpret(channel, &input);
 
         break;
 
@@ -265,14 +254,17 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         break;
 
     case 0x0F:
-        complete(channel, &input);
+        if (mode == MODE_NORMAL)
+            complete(channel, &input);
 
         break;
 
     case 0x1C:
         file_writeall(FILE_G1, keycode->value, keycode->length);
         ring_write(&input, keycode->value, keycode->length);
-        interpret(channel, &input);
+
+        if (mode == MODE_NORMAL)
+            interpret(channel, &input);
 
         break;
 
