@@ -96,6 +96,9 @@ void channel_close(struct channel *channel)
 
     channel->poll = 0;
 
+    if (channel->signals[EVENT_CLOSE].redirect)
+        channel_place(channel, channel->signals[EVENT_CLOSE].redirect, EVENT_CLOSE, 0, 0);
+
 }
 
 void channel_setredirect(struct channel *channel, unsigned int type, unsigned int mode, unsigned int id, unsigned int source)

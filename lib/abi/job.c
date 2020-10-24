@@ -72,12 +72,12 @@ static unsigned int spawn(struct job *job)
 
 }
 
-static void redirect(struct channel *channel, struct job *job, unsigned int mode, unsigned int id)
+static void redirect(struct channel *channel, struct job *job, unsigned int type, unsigned int mode, unsigned int id)
 {
 
     struct event_redirect redirect;
 
-    redirect.type = EVENT_DATA;
+    redirect.type = type;
     redirect.mode = mode;
     redirect.id = id;
 
@@ -101,6 +101,7 @@ static void senddata(struct channel *channel, struct job *job)
 static void run(struct channel *channel, struct job *job)
 {
 
+    redirect(channel, job, EVENT_CLOSE, 2, 0);
     channel_place(channel, job->id, EVENT_MAIN, 0, 0);
 
 }
@@ -125,9 +126,9 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         struct job *job = &jobs[i];
 
         if (i < n - 1)
-            redirect(channel, job, 1, jobs[i + 1].id);
+            redirect(channel, job, EVENT_DATA, 1, jobs[i + 1].id);
         else
-            redirect(channel, job, 2, 0);
+            redirect(channel, job, EVENT_DATA, 2, 0);
 
     }
 
