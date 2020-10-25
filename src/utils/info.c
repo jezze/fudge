@@ -9,20 +9,20 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (id)
     {
 
-        struct event_redirect redirect;
+        struct message_header header;
         char *cores = "/system/info/cores";
         char *tasks = "/system/info/tasks";
         char *mailboxes = "/system/info/mailboxes";
+        char data[FUDGE_MSIZE];
 
-        redirect.type = EVENT_DATA;
-        redirect.mode = 1;
-        redirect.id = channel->signals[EVENT_DATA].redirect;
-
-        channel_place(channel, id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+        job_redirect(channel, id, EVENT_DATA, 1, channel->signals[EVENT_DATA].redirect);
+        job_redirect(channel, id, EVENT_CLOSE, 1, channel->signals[EVENT_CLOSE].redirect);
         channel_place(channel, id, EVENT_FILE, ascii_length(cores) + 1, cores);
         channel_place(channel, id, EVENT_FILE, ascii_length(tasks) + 1, tasks);
         channel_place(channel, id, EVENT_FILE, ascii_length(mailboxes) + 1, mailboxes);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
+
+        while (channel_poll(channel, id, EVENT_CLOSE, &header, data));
 
     }
 

@@ -73,6 +73,8 @@ static void interpret(struct channel *channel, struct ring *ring)
 
         mode = MODE_WAIT_SLANG;
 
+        job_redirect(channel, id, EVENT_DATA, 2, 0);
+        job_redirect(channel, id, EVENT_CLOSE, 2, 0);
         channel_place(channel, id, EVENT_DATA, count, data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
 
@@ -100,6 +102,8 @@ static void complete(struct channel *channel, struct ring *ring)
 
         mode = MODE_WAIT_COMPLETE;
 
+        job_redirect(channel, id, EVENT_DATA, 2, 0);
+        job_redirect(channel, id, EVENT_CLOSE, 2, 0);
         channel_place(channel, id, EVENT_DATA, count, data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
 
@@ -229,16 +233,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_redirect *redirect = mdata;
-
-    if (redirect->type == EVENT_CLOSE)
-        channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
-
-}
-
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -345,7 +339,6 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);

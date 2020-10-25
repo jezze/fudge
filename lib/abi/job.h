@@ -20,5 +20,6 @@ struct job
 
 };
 
+void job_redirect(struct channel *channel, unsigned int target, unsigned int type, unsigned int mode, unsigned int id);
 unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int n);
 void job_run(struct channel *channel, struct job *jobs, unsigned int n);
