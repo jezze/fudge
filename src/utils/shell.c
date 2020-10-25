@@ -4,7 +4,6 @@
 #define MODE_NORMAL                     0
 #define MODE_WAIT_JOB                   1
 #define MODE_WAIT_SLANG                 2
-#define MODE_WAIT_COMPLETE              3
 
 static unsigned int keymod = KEYMOD_NONE;
 static char inputbuffer[FUDGE_BSIZE];
@@ -99,25 +98,25 @@ static void complete(struct channel *channel, struct ring *ring)
 
         struct message_header header;
 
-        mode = MODE_WAIT_COMPLETE;
-
         job_redirect(channel, id, EVENT_DATA, 2, 0);
         job_redirect(channel, id, EVENT_CLOSE, 2, 0);
         channel_place(channel, id, EVENT_DATA, count, data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
-        channel_poll(channel, id, EVENT_CLOSE, &header, data);
 
-        mode = MODE_NORMAL;
+        while (channel_pollsource(channel, id, &header, data))
+        {
+
+            if (header.type == EVENT_CLOSE)
+                break;
+
+            if (header.type == EVENT_DATA)
+                file_writeall(FILE_G1, data, message_datasize(&header));
+
+        }
+
+        printprompt();
 
     }
-
-}
-
-static void completedata(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    file_writeall(FILE_G1, mdata, msize);
-    printprompt();
 
 }
 
@@ -236,11 +235,6 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
     switch (mode)
     {
-
-    case MODE_WAIT_COMPLETE:
-        completedata(channel, mdata, msize);
-
-        break;
 
     case MODE_WAIT_SLANG:
         slangdata(channel, mdata, msize);
