@@ -14,11 +14,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         char data[FUDGE_MSIZE];
 
         job_redirect(channel, id, EVENT_DATA, 1, channel->signals[EVENT_DATA].redirect);
-        job_redirect(channel, id, EVENT_CLOSE, 1, channel->signals[EVENT_CLOSE].redirect);
+        job_redirect(channel, id, EVENT_CLOSE, 2, 0);
         channel_place(channel, id, EVENT_FILE, ascii_length(path) + 1, path);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
-
-        while (channel_poll(channel, id, EVENT_CLOSE, &header, data));
+        channel_poll(channel, id, EVENT_CLOSE, &header, data);
 
     }
 

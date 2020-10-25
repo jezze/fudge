@@ -77,8 +77,7 @@ static void interpret(struct channel *channel, struct ring *ring)
         job_redirect(channel, id, EVENT_CLOSE, 2, 0);
         channel_place(channel, id, EVENT_DATA, count, data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
-
-        while (channel_poll(channel, id, EVENT_CLOSE, &header, data));
+        channel_poll(channel, id, EVENT_CLOSE, &header, data);
 
         mode = MODE_NORMAL;
 
@@ -106,8 +105,7 @@ static void complete(struct channel *channel, struct ring *ring)
         job_redirect(channel, id, EVENT_CLOSE, 2, 0);
         channel_place(channel, id, EVENT_DATA, count, data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
-
-        while (channel_poll(channel, id, EVENT_CLOSE, &header, data));
+        channel_poll(channel, id, EVENT_CLOSE, &header, data);
 
         mode = MODE_NORMAL;
 
