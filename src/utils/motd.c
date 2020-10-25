@@ -1,15 +1,23 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int idecho;
-
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int id = file_spawn(FILE_CP, "/bin/echo");
+    struct event_redirect redirect;
     char *path = "/data/motd.txt";
 
-    channel_place(channel, idecho, EVENT_FILE, ascii_length(path) + 1, path);
-    channel_place(channel, idecho, EVENT_MAIN, 0, 0);
+    if (!id)
+        return;
+
+    redirect.type = EVENT_DATA;
+    redirect.mode = 1;
+    redirect.id = channel->signals[EVENT_DATA].redirect;
+
+    channel_place(channel, id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+    channel_place(channel, id, EVENT_FILE, ascii_length(path) + 1, path);
+    channel_place(channel, id, EVENT_MAIN, 0, 0);
     channel_close(channel);
 
 }
@@ -19,22 +27,7 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
     struct event_redirect *redirect = mdata;
 
-    if (redirect->mode == 2)
-    {
-
-        redirect->mode = 1;
-        redirect->id = source;
-
-    }
-
-    channel_place(channel, idecho, EVENT_REDIRECT, sizeof (struct event_redirect), redirect);
-
-}
-
-static void oninit(struct channel *channel)
-{
-
-    idecho = file_spawn(FILE_CP, "/bin/echo");
+    channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
 
 }
 
@@ -46,7 +39,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
-    channel_listen(&channel, oninit, 0);
+    channel_listen(&channel, 0, 0);
 
 }
 
