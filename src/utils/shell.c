@@ -2,14 +2,15 @@
 #include <abi.h>
 
 #define MODE_NORMAL                     0
-#define MODE_WAITING                    1
+#define MODE_WAIT_JOB                   1
+#define MODE_WAIT_SLANG                 2
+#define MODE_WAIT_COMPLETE              3
 
 static unsigned int keymod = KEYMOD_NONE;
 static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
-static unsigned int idcomplete;
-static unsigned int idslang;
 static unsigned int mode = MODE_NORMAL;
+static unsigned int desc = FILE_G0;
 
 static void printprompt(void)
 {
@@ -58,11 +59,28 @@ static void interpret(struct channel *channel, struct ring *ring)
 
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
+    unsigned int id;
 
     if (interpretbuiltin(count, data))
         return;
 
-    channel_place(channel, idslang, EVENT_DATA, count, data);
+    id = file_spawn(FILE_CP, "/bin/slang");
+
+    if (id)
+    {
+
+        struct message_header header;
+
+        mode = MODE_WAIT_SLANG;
+
+        channel_place(channel, id, EVENT_DATA, count, data);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
+
+        while (channel_poll(channel, &header, data, EVENT_CLOSE));
+
+        mode = MODE_NORMAL;
+
+    }
 
 }
 
@@ -71,8 +89,25 @@ static void complete(struct channel *channel, struct ring *ring)
 
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
+    unsigned int id;
 
-    channel_place(channel, idcomplete, EVENT_DATA, count, data);
+    id = file_spawn(FILE_CP, "/bin/complete");
+
+    if (id)
+    {
+
+        struct message_header header;
+
+        mode = MODE_WAIT_COMPLETE;
+
+        channel_place(channel, id, EVENT_DATA, count, data);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
+
+        while (channel_poll(channel, &header, data, EVENT_CLOSE));
+
+        mode = MODE_NORMAL;
+
+    }
 
 }
 
@@ -96,7 +131,7 @@ static void slangdata(struct channel *channel, void *mdata, unsigned int msize)
     status.start = mdata;
     status.end = status.start + msize;
 
-    mode = MODE_WAITING;
+    mode = MODE_WAIT_JOB;
 
     while (status.start < status.end)
     {
@@ -200,17 +235,17 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
     switch (mode)
     {
 
-    case MODE_NORMAL:
-        if (source == idcomplete)
-            completedata(channel, mdata, msize);
-        else if (source == idslang)
-            slangdata(channel, mdata, msize);
-        else
-            file_writeall(FILE_G1, mdata, msize);
+    case MODE_WAIT_COMPLETE:
+        completedata(channel, mdata, msize);
 
         break;
 
-    case MODE_WAITING:
+    case MODE_WAIT_SLANG:
+        slangdata(channel, mdata, msize);
+
+        break;
+
+    default:
         file_writeall(FILE_G1, mdata, msize);
 
         break;
@@ -218,8 +253,6 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
     }
 
 }
-
-static unsigned int desc = FILE_G0;
 
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
@@ -291,16 +324,6 @@ static void oninit(struct channel *channel)
 {
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
-
-    idcomplete = file_spawn(FILE_CP, "/bin/complete");
-
-    if (!idcomplete)
-        return;
-
-    idslang = file_spawn(FILE_CP, "/bin/slang");
-
-    if (!idslang)
-        return;
 
 }
 
