@@ -55,14 +55,48 @@ unsigned int channel_place(struct channel *channel, unsigned int id, unsigned in
 
 }
 
-unsigned int channel_poll(struct channel *channel, struct message_header *header, void *data, unsigned int type)
+unsigned int channel_poll(struct channel *channel, unsigned int source, unsigned int type, struct message_header *header, void *data)
+{
+
+    while (poll(channel, header, data))
+    {
+
+        if (header->source == source && header->type == type)
+            return header->type;
+
+        dispatch(channel, header, data);
+
+    }
+
+    return 0;
+
+}
+
+unsigned int channel_polltype(struct channel *channel, unsigned int type, struct message_header *header, void *data)
 {
 
     while (poll(channel, header, data))
     {
 
         if (header->type == type)
-            return type;
+            return header->type;
+
+        dispatch(channel, header, data);
+
+    }
+
+    return 0;
+
+}
+
+unsigned int channel_pollsource(struct channel *channel, unsigned int source, struct message_header *header, void *data)
+{
+
+    while (poll(channel, header, data))
+    {
+
+        if (header->source == source)
+            return header->type;
 
         dispatch(channel, header, data);
 

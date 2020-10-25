@@ -76,7 +76,7 @@ static void interpret(struct channel *channel, struct ring *ring)
         channel_place(channel, id, EVENT_DATA, count, data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
 
-        while (channel_poll(channel, &header, data, EVENT_CLOSE));
+        while (channel_poll(channel, id, EVENT_CLOSE, &header, data));
 
         mode = MODE_NORMAL;
 
@@ -103,7 +103,7 @@ static void complete(struct channel *channel, struct ring *ring)
         channel_place(channel, id, EVENT_DATA, count, data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
 
-        while (channel_poll(channel, &header, data, EVENT_CLOSE));
+        while (channel_poll(channel, id, EVENT_CLOSE, &header, data));
 
         mode = MODE_NORMAL;
 
@@ -158,7 +158,7 @@ static void slangdata(struct channel *channel, void *mdata, unsigned int msize)
         struct message_header header;
         char data[FUDGE_MSIZE];
 
-        while (channel_poll(channel, &header, data, EVENT_CLOSE))
+        while (channel_polltype(channel, EVENT_CLOSE, &header, data))
         {
 
             if (--nids == 0)
