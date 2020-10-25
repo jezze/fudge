@@ -5,19 +5,23 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     unsigned int id = file_spawn(FILE_CP, "/bin/echo");
-    struct event_redirect redirect;
-    char *path = "/data/motd.txt";
 
-    if (!id)
-        return;
+    if (id)
+    {
 
-    redirect.type = EVENT_DATA;
-    redirect.mode = 1;
-    redirect.id = channel->signals[EVENT_DATA].redirect;
+        struct event_redirect redirect;
+        char *path = "/data/motd.txt";
 
-    channel_place(channel, id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
-    channel_place(channel, id, EVENT_FILE, ascii_length(path) + 1, path);
-    channel_place(channel, id, EVENT_MAIN, 0, 0);
+        redirect.type = EVENT_DATA;
+        redirect.mode = 1;
+        redirect.id = channel->signals[EVENT_DATA].redirect;
+
+        channel_place(channel, id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+        channel_place(channel, id, EVENT_FILE, ascii_length(path) + 1, path);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
+
+    }
+
     channel_close(channel);
 
 }

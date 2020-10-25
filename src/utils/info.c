@@ -5,23 +5,27 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     unsigned int id = file_spawn(FILE_CP, "/bin/echo");
-    struct event_redirect redirect;
-    char *cores = "/system/info/cores";
-    char *tasks = "/system/info/tasks";
-    char *mailboxes = "/system/info/mailboxes";
 
-    if (!id)
-        return;
+    if (id)
+    {
 
-    redirect.type = EVENT_DATA;
-    redirect.mode = 1;
-    redirect.id = channel->signals[EVENT_DATA].redirect;
+        struct event_redirect redirect;
+        char *cores = "/system/info/cores";
+        char *tasks = "/system/info/tasks";
+        char *mailboxes = "/system/info/mailboxes";
 
-    channel_place(channel, id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
-    channel_place(channel, id, EVENT_FILE, ascii_length(cores) + 1, cores);
-    channel_place(channel, id, EVENT_FILE, ascii_length(tasks) + 1, tasks);
-    channel_place(channel, id, EVENT_FILE, ascii_length(mailboxes) + 1, mailboxes);
-    channel_place(channel, id, EVENT_MAIN, 0, 0);
+        redirect.type = EVENT_DATA;
+        redirect.mode = 1;
+        redirect.id = channel->signals[EVENT_DATA].redirect;
+
+        channel_place(channel, id, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+        channel_place(channel, id, EVENT_FILE, ascii_length(cores) + 1, cores);
+        channel_place(channel, id, EVENT_FILE, ascii_length(tasks) + 1, tasks);
+        channel_place(channel, id, EVENT_FILE, ascii_length(mailboxes) + 1, mailboxes);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
+
+    }
+
     channel_close(channel);
 
 }
