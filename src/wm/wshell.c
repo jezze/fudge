@@ -13,7 +13,6 @@ static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
-static unsigned int idcomplete;
 static unsigned int idslang;
 
 static void updatecontent(void)
@@ -129,27 +128,48 @@ static void complete(struct channel *channel, struct ring *ring)
 
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
+    unsigned int id;
 
-    channel_place(channel, idcomplete, EVENT_DATA, count, data);
+    id = file_spawn(FILE_CP, "/bin/complete");
 
-}
-
-static void completedata(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    if (memory_findbyte(mdata, msize, '\n') < msize - 1)
+    if (id)
     {
 
-        copyring(&prompt);
-        copybuffer("\n", 1);
-        copybuffer(mdata, msize);
+        struct message_header header;
 
-    }
+        job_redirect(channel, id, EVENT_DATA, 2, 0);
+        job_redirect(channel, id, EVENT_CLOSE, 2, 0);
+        channel_place(channel, id, EVENT_DATA, count, data);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
 
-    else
-    {
+        while (channel_pollsource(channel, id, &header, data))
+        {
 
-        ring_write(&input1, mdata, msize - 1);
+            if (header.type == EVENT_CLOSE)
+                break;
+
+            if (header.type == EVENT_DATA)
+            {
+
+                if (memory_findbyte(data, message_datasize(&header), '\n') < message_datasize(&header) - 1)
+                {
+
+                    copyring(&prompt);
+                    copybuffer("\n", 1);
+                    copybuffer(data, message_datasize(&header));
+
+                }
+
+                else
+                {
+
+                    ring_write(&input1, data, message_datasize(&header) - 1);
+
+                }
+
+            }
+
+        }
 
     }
 
@@ -178,9 +198,7 @@ static void slangdata(struct channel *channel, void *mdata, unsigned int msize)
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (source == idcomplete)
-        completedata(channel, mdata, msize);
-    else if (source == idslang)
+    if (source == idslang)
         slangdata(channel, mdata, msize);
     else
         copybuffer(mdata, msize);
@@ -290,7 +308,6 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_place(channel, idcomplete, EVENT_MAIN, 0, 0);
     channel_place(channel, idslang, EVENT_MAIN, 0, 0);
     channel_place(channel, source, EVENT_WMUNMAP, 0, 0);
     channel_close(channel);
@@ -356,11 +373,6 @@ static void oninit(struct channel *channel)
     widget_inittextbox(&content);
 
     if (!file_walk2(FILE_G0, "/system/wclient"))
-        return;
-
-    idcomplete = file_spawn(FILE_CP, "/bin/complete");
-
-    if (!idcomplete)
         return;
 
     idslang = file_spawn(FILE_CP, "/bin/slang");

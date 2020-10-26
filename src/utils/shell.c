@@ -2,8 +2,7 @@
 #include <abi.h>
 
 #define MODE_NORMAL                     0
-#define MODE_WAIT_JOB                   1
-#define MODE_WAIT_SLANG                 2
+#define MODE_WAITING                    1
 
 static unsigned int keymod = KEYMOD_NONE;
 static char inputbuffer[FUDGE_BSIZE];
@@ -69,16 +68,74 @@ static void interpret(struct channel *channel, struct ring *ring)
     {
 
         struct message_header header;
-
-        mode = MODE_WAIT_SLANG;
+        struct job_status status;
+        struct job jobs[32];
+        unsigned int njobs = 0;
+        unsigned int nids = 0;
+        unsigned int i;
 
         job_redirect(channel, id, EVENT_DATA, 2, 0);
         job_redirect(channel, id, EVENT_CLOSE, 2, 0);
         channel_place(channel, id, EVENT_DATA, count, data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
-        channel_poll(channel, id, EVENT_CLOSE, &header, data);
 
-        mode = MODE_NORMAL;
+        while (channel_pollsource(channel, id, &header, data))
+        {
+
+            if (header.type == EVENT_CLOSE)
+                break;
+
+            if (header.type == EVENT_DATA)
+            {
+
+                status.start = data;
+                status.end = status.start + message_datasize(&header);
+
+                while (status.start < status.end)
+                {
+
+                    njobs = job_parse(&status, jobs, 32);
+
+                    job_run(channel, jobs, njobs);
+
+                }
+
+            }
+
+        }
+
+        for (i = 0; i < njobs; i++)
+        {
+
+            struct job *job = &jobs[i];
+
+            if (job->id)
+                nids++;
+
+        }
+
+        if (nids)
+        {
+
+            struct message_header header;
+            char data[FUDGE_MSIZE];
+
+            mode = MODE_WAITING;
+
+            while (channel_polltype(channel, EVENT_CLOSE, &header, data))
+            {
+
+                if (--nids == 0)
+                    break;
+
+            }
+
+            mode = MODE_NORMAL;
+
+        }
+
+
+        printprompt();
 
     }
 
@@ -117,61 +174,6 @@ static void complete(struct channel *channel, struct ring *ring)
         printprompt();
 
     }
-
-}
-
-static void slangdata(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    struct job_status status;
-    struct job jobs[32];
-    unsigned int njobs = 0;
-    unsigned int nids = 0;
-    unsigned int i;
-
-    status.start = mdata;
-    status.end = status.start + msize;
-
-    mode = MODE_WAIT_JOB;
-
-    while (status.start < status.end)
-    {
-
-        njobs = job_parse(&status, jobs, 32);
-
-        job_run(channel, jobs, njobs);
-
-    }
-
-    for (i = 0; i < njobs; i++)
-    {
-
-        struct job *job = &jobs[i];
-
-        if (job->id)
-            nids++;
-
-    }
-
-    if (nids)
-    {
-
-        struct message_header header;
-        char data[FUDGE_MSIZE];
-
-        while (channel_polltype(channel, EVENT_CLOSE, &header, data))
-        {
-
-            if (--nids == 0)
-                break;
-
-        }
-
-    }
-
-    mode = MODE_NORMAL;
-
-    printprompt();
 
 }
 
@@ -233,20 +235,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    switch (mode)
-    {
-
-    case MODE_WAIT_SLANG:
-        slangdata(channel, mdata, msize);
-
-        break;
-
-    default:
-        file_writeall(FILE_G1, mdata, msize);
-
-        break;
-
-    }
+    file_writeall(FILE_G1, mdata, msize);
 
 }
 
