@@ -2,6 +2,9 @@
 #include <abi.h>
 #include <widget.h>
 
+#define MODE_NORMAL                     0
+#define MODE_WAITING                    1
+
 static struct widget_textbox content;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
@@ -13,7 +16,7 @@ static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
-static unsigned int idslang;
+static unsigned int mode = MODE_NORMAL;
 
 static void updatecontent(void)
 {
@@ -115,11 +118,84 @@ static void interpret(struct channel *channel, struct ring *ring)
 
     char data[FUDGE_MSIZE];
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
+    unsigned int id;
 
     if (interpretbuiltin(count, data))
         return;
 
-    channel_place(channel, idslang, EVENT_DATA, count, data);
+    id = file_spawn(FILE_CP, "/bin/slang");
+
+    if (id)
+    {
+
+        struct message_header header;
+        struct job_status status;
+        struct job jobs[32];
+        unsigned int njobs = 0;
+        unsigned int nids = 0;
+        unsigned int i;
+
+        job_redirect(channel, id, EVENT_DATA, 2, 0);
+        job_redirect(channel, id, EVENT_CLOSE, 2, 0);
+        channel_place(channel, id, EVENT_DATA, count, data);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
+
+        while (channel_pollsource(channel, id, &header, data))
+        {
+
+            if (header.type == EVENT_CLOSE)
+                break;
+
+            if (header.type == EVENT_DATA)
+            {
+
+                status.start = data;
+                status.end = status.start + message_datasize(&header);
+
+                while (status.start < status.end)
+                {
+
+                    njobs = job_parse(&status, jobs, 32);
+
+                    job_run(channel, jobs, njobs);
+
+                }
+
+            }
+
+        }
+
+        for (i = 0; i < njobs; i++)
+        {
+
+            struct job *job = &jobs[i];
+
+            if (job->id)
+                nids++;
+
+        }
+
+        if (nids)
+        {
+
+            struct message_header header;
+            char data[FUDGE_MSIZE];
+
+            mode = MODE_WAITING;
+
+            while (channel_polltype(channel, EVENT_CLOSE, &header, data))
+            {
+
+                if (--nids == 0)
+                    break;
+
+            }
+
+            mode = MODE_NORMAL;
+
+        }
+
+    }
 
 }
 
@@ -175,34 +251,10 @@ static void complete(struct channel *channel, struct ring *ring)
 
 }
 
-static void slangdata(struct channel *channel, void *mdata, unsigned int msize)
-{
-
-    struct job_status status;
-    struct job jobs[32];
-
-    status.start = mdata;
-    status.end = status.start + msize;
-
-    while (status.start < status.end)
-    {
-
-        unsigned int njobs = job_parse(&status, jobs, 32);
-
-        job_run(channel, jobs, njobs);
-
-    }
-
-}
-
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (source == idslang)
-        slangdata(channel, mdata, msize);
-    else
-        copybuffer(mdata, msize);
-
+    copybuffer(mdata, msize);
     updatecontent();
 
 }
@@ -222,7 +274,9 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
 
     case 0x0F:
         ring_move(&input1, &input2);
-        complete(channel, &input1);
+
+        if (mode == MODE_NORMAL)
+            complete(channel, &input1);
 
         break;
 
@@ -231,7 +285,9 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
         ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
         copyring(&prompt);
         copyring(&input1);
-        interpret(channel, &input1);
+
+        if (mode == MODE_NORMAL)
+            interpret(channel, &input1);
 
         break;
 
@@ -308,7 +364,6 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_place(channel, idslang, EVENT_MAIN, 0, 0);
     channel_place(channel, source, EVENT_WMUNMAP, 0, 0);
     channel_close(channel);
 
@@ -373,11 +428,6 @@ static void oninit(struct channel *channel)
     widget_inittextbox(&content);
 
     if (!file_walk2(FILE_G0, "/system/wclient"))
-        return;
-
-    idslang = file_spawn(FILE_CP, "/bin/slang");
-
-    if (!idslang)
         return;
 
     channel_setsignal(channel, EVENT_ANY, onany);

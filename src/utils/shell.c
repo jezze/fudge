@@ -134,7 +134,6 @@ static void interpret(struct channel *channel, struct ring *ring)
 
         }
 
-
         printprompt();
 
     }
