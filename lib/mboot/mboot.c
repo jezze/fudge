@@ -5,6 +5,8 @@
 #include <kernel/x86/idt.h>
 #include <kernel/x86/tss.h>
 #include <kernel/x86/arch.h>
+#include "cpio.h"
+#include "elf.h"
 #include "mboot.h"
 
 #define MBOOT_MAGIC                     0x2BADB002
@@ -111,8 +113,12 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
+    arch_setup1();
+    elf_setup();
+    cpio_setup();
     service_initbackend(&backend, 1000, read, write, map);
-    arch_setup(&backend);
+    resource_register(&backend.resource);
+    arch_setup2();
 
 }
 

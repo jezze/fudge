@@ -54,4 +54,5 @@ void arch_leave(struct core *core);
 void arch_configuregdt(void);
 void arch_configureidt(void);
 void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp);
-void arch_setup(struct service_backend *backend);
+void arch_setup1(void);
+void arch_setup2(void);

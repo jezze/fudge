@@ -1,8 +1,6 @@
 #include <fudge.h>
-#include "resource.h"
-#include "binary.h"
-#include "task.h"
-#include "service.h"
+#include <kernel.h>
+#include "cpio.h"
 
 static struct service_protocol protocol;
 
@@ -332,7 +330,7 @@ static unsigned int protocol_map(struct service_backend *backend, struct service
 
 }
 
-void service_setupcpio(void)
+void cpio_setup(void)
 {
 
     service_initprotocol(&protocol, 1000, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);

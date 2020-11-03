@@ -1,6 +1,6 @@
 #include <fudge.h>
-#include "resource.h"
-#include "binary.h"
+#include <kernel.h>
+#include "elf.h"
 
 static struct binary_format format;
 
@@ -173,7 +173,7 @@ static unsigned int format_relocate(struct binary_node *node)
 
 }
 
-void binary_setupelf(void)
+void elf_setup(void)
 {
 
     binary_initformat(&format, format_match, format_findsymbol, format_findentry, format_findbase, format_copyprogram, format_relocate);

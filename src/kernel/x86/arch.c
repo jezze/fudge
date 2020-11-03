@@ -428,7 +428,7 @@ static void setuptask()
 
 }
 
-void arch_setup(struct service_backend *backend)
+void arch_setup1(void)
 {
 
     struct mmu_directory *directory = getkerneldirectory();
@@ -447,9 +447,12 @@ void arch_setup(struct service_backend *backend)
     kernel_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
     kernel_setcallback(coreget, coreassign);
     abi_setup(spawn, despawn);
-    binary_setupelf();
-    service_setupcpio();
-    resource_register(&backend->resource);
+
+}
+
+void arch_setup2(void)
+{
+
     setuptask();
     arch_leave(&core0);
 
