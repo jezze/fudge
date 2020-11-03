@@ -104,6 +104,9 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         struct job *job = &jobs[i];
 
+        if (!job->id)
+            continue;
+
         if (i < n - 1)
             job_redirect(channel, job->id, EVENT_DATA, 1, jobs[i + 1].id);
         else
@@ -116,6 +119,9 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         struct job *job = &jobs[i];
         unsigned int i;
+
+        if (!job->id)
+            continue;
 
         for (i = 0; i < job->nfiles; i++)
             channel_place(channel, job->id, EVENT_FILE, ascii_length(job->files[i]) + 1, job->files[i]);
@@ -130,8 +136,45 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         struct job *job = &jobs[i];
 
+        if (!job->id)
+            continue;
+
         job_redirect(channel, job->id, EVENT_CLOSE, 2, 0);
         channel_place(channel, job->id, EVENT_MAIN, 0, 0);
+
+    }
+
+}
+
+void job_wait(struct channel *channel, struct job *jobs, unsigned int n)
+{
+
+    unsigned int nids = 0;
+    unsigned int i;
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job *job = &jobs[i];
+
+        if (job->id)
+            nids++;
+
+    }
+
+    if (nids)
+    {
+
+        struct message_header header;
+        char data[FUDGE_MSIZE];
+
+        while (channel_polltype(channel, EVENT_CLOSE, &header, data))
+        {
+
+            if (--nids == 0)
+                break;
+
+        }
 
     }
 

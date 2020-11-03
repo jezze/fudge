@@ -71,8 +71,6 @@ static void interpret(struct channel *channel, struct ring *ring)
         struct job_status status;
         struct job jobs[32];
         unsigned int njobs = 0;
-        unsigned int nids = 0;
-        unsigned int i;
 
         job_redirect(channel, id, EVENT_DATA, 2, 0);
         job_redirect(channel, id, EVENT_CLOSE, 2, 0);
@@ -104,35 +102,11 @@ static void interpret(struct channel *channel, struct ring *ring)
 
         }
 
-        for (i = 0; i < njobs; i++)
-        {
+        mode = MODE_WAITING;
 
-            struct job *job = &jobs[i];
+        job_wait(channel, jobs, njobs);
 
-            if (job->id)
-                nids++;
-
-        }
-
-        if (nids)
-        {
-
-            struct message_header header;
-            char data[FUDGE_MSIZE];
-
-            mode = MODE_WAITING;
-
-            while (channel_polltype(channel, EVENT_CLOSE, &header, data))
-            {
-
-                if (--nids == 0)
-                    break;
-
-            }
-
-            mode = MODE_NORMAL;
-
-        }
+        mode = MODE_NORMAL;
 
         printprompt();
 
