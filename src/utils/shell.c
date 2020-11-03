@@ -244,7 +244,12 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
 
     case 0x0F:
         if (mode == MODE_NORMAL)
+        {
+
             complete(channel, &input);
+            printprompt();
+
+        }
 
         break;
 
@@ -253,7 +258,12 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         ring_write(&input, keycode->value, keycode->length);
 
         if (mode == MODE_NORMAL)
+        {
+
             interpret(channel, &input);
+            printprompt();
+
+        }
 
         break;
 
