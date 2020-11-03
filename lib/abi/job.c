@@ -4,6 +4,24 @@
 #include "file.h"
 #include "job.h"
 
+unsigned int job_simple(struct channel *channel, char *path, unsigned int count, void *data)
+{
+
+    unsigned int id = file_spawn(path);
+
+    if (id)
+    {
+
+        job_replyback(channel, id, EVENT_DATA);
+        job_replyback(channel, id, EVENT_CLOSE);
+        channel_place(channel, id, EVENT_DATA, count, data);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
+
+    }
+
+    return id;
+}
+
 unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int n)
 {
 

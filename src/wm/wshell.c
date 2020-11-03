@@ -123,7 +123,7 @@ static void interpret(struct channel *channel, struct ring *ring)
     if (interpretbuiltin(count, data))
         return;
 
-    id = file_spawn("/bin/slang");
+    id = job_simple(channel, "/bin/slang", count, data);
 
     if (id)
     {
@@ -132,11 +132,6 @@ static void interpret(struct channel *channel, struct ring *ring)
         struct job_status status;
         struct job jobs[32];
         unsigned int njobs = 0;
-
-        job_replyback(channel, id, EVENT_DATA);
-        job_replyback(channel, id, EVENT_CLOSE);
-        channel_place(channel, id, EVENT_DATA, count, data);
-        channel_place(channel, id, EVENT_MAIN, 0, 0);
 
         while (channel_pollsource(channel, id, &header, data))
         {
@@ -180,17 +175,12 @@ static void complete(struct channel *channel, struct ring *ring)
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
     unsigned int id;
 
-    id = file_spawn("/bin/complete");
+    id = job_simple(channel, "/bin/complete", count, data);
 
     if (id)
     {
 
         struct message_header header;
-
-        job_replyback(channel, id, EVENT_DATA);
-        job_replyback(channel, id, EVENT_CLOSE);
-        channel_place(channel, id, EVENT_DATA, count, data);
-        channel_place(channel, id, EVENT_MAIN, 0, 0);
 
         while (channel_pollsource(channel, id, &header, data))
         {
