@@ -21,13 +21,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
 {
 
     if (count < 2)
-    {
-
-        printprompt();
-
         return 1;
-
-    }
 
     if (memory_match(data, "cd ", 3))
     {
@@ -41,8 +35,6 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
             file_duplicate(FILE_CW, FILE_L0);
 
         }
-
-        printprompt();
 
         return 1;
 
@@ -108,8 +100,6 @@ static void interpret(struct channel *channel, struct ring *ring)
 
         mode = MODE_NORMAL;
 
-        printprompt();
-
     }
 
 }
@@ -144,8 +134,6 @@ static void complete(struct channel *channel, struct ring *ring)
 
         }
 
-        printprompt();
-
     }
 
 }
@@ -163,7 +151,12 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
     case '\t':
         if (mode == MODE_NORMAL)
+        {
+
             complete(channel, &input);
+            printprompt();
+
+        }
 
         break;
 
@@ -184,7 +177,12 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         ring_write(&input, &consoledata->data, 1);
 
         if (mode == MODE_NORMAL)
+        {
+
             interpret(channel, &input);
+            printprompt();
+
+        }
 
         break;
 
