@@ -64,8 +64,8 @@ static void interpret(struct channel *channel, struct ring *ring)
         struct job jobs[32];
         unsigned int njobs = 0;
 
-        job_redirect(channel, id, EVENT_DATA, 2, 0);
-        job_redirect(channel, id, EVENT_CLOSE, 2, 0);
+        job_replyback(channel, id, EVENT_DATA);
+        job_replyback(channel, id, EVENT_CLOSE);
         channel_place(channel, id, EVENT_DATA, count, data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
 
@@ -118,8 +118,8 @@ static void complete(struct channel *channel, struct ring *ring)
 
         struct message_header header;
 
-        job_redirect(channel, id, EVENT_DATA, 2, 0);
-        job_redirect(channel, id, EVENT_CLOSE, 2, 0);
+        job_replyback(channel, id, EVENT_DATA);
+        job_replyback(channel, id, EVENT_CLOSE);
         channel_place(channel, id, EVENT_DATA, count, data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
 
