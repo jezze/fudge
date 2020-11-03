@@ -417,17 +417,6 @@ void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
 
 }
 
-static void setuptask()
-{
-
-    struct task *task = kernel_picktask();
-
-    kernel_setupinit(task);
-    kernel_copydescriptors(task, task);
-    loadtask(task, 0x04);
-
-}
-
 void arch_setup1(void)
 {
 
@@ -453,7 +442,11 @@ void arch_setup1(void)
 void arch_setup2(void)
 {
 
-    setuptask();
+    struct task *task = kernel_picktask();
+
+    kernel_setupinit(task);
+    kernel_copydescriptors(task, task);
+    loadtask(task, 0x04);
     arch_leave(&core0);
 
 }
