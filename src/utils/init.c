@@ -33,7 +33,7 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 static void oninit(struct channel *channel)
 {
 
-    unsigned int id = file_spawn(FILE_CP, "/bin/slang");
+    unsigned int id = file_spawn("/bin/slang");
 
     if (id)
     {

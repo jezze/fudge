@@ -121,11 +121,11 @@ unsigned int file_seekwriteall(unsigned int descriptor, void *buffer, unsigned i
 
 }
 
-unsigned int file_spawn(unsigned int descriptor, char *path)
+unsigned int file_spawn(char *path)
 {
 
-    if (file_walk2(descriptor, path))
-        return call_spawn(descriptor);
+    if (file_walk2(FILE_CP, path))
+        return call_spawn(FILE_CP);
 
     return 0;
 

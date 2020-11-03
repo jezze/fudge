@@ -62,7 +62,7 @@ static void interpret(struct channel *channel, struct ring *ring)
     if (interpretbuiltin(count, data))
         return;
 
-    id = file_spawn(FILE_CP, "/bin/slang");
+    id = file_spawn("/bin/slang");
 
     if (id)
     {
@@ -147,7 +147,7 @@ static void complete(struct channel *channel, struct ring *ring)
     unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
     unsigned int id;
 
-    id = file_spawn(FILE_CP, "/bin/complete");
+    id = file_spawn("/bin/complete");
 
     if (id)
     {

@@ -4,7 +4,7 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = file_spawn(FILE_CP, "/bin/echo");
+    unsigned int id = file_spawn("/bin/echo");
 
     if (id)
     {
