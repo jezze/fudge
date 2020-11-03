@@ -21,7 +21,8 @@ void syse_resume(struct cpu_general *general)
 
     }
 
-    core_unschedule(core);
+    core->task = core_unschedule(core);
+
     kernel_assign();
 
     core->task = core_picktask(core);
