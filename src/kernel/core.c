@@ -4,7 +4,7 @@
 #include "task.h"
 #include "core.h"
 
-struct task *core_picktask(struct core *core)
+struct task *core_schedule(struct core *core)
 {
 
     struct list_item *current = list_picktail(&core->tasks);

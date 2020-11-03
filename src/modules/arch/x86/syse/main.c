@@ -25,7 +25,7 @@ void syse_resume(struct cpu_general *general)
 
     kernel_assign();
 
-    core->task = core_picktask(core);
+    core->task = core_schedule(core);
 
     if (core->task)
     {
