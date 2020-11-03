@@ -1,15 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_redirect *redirect = mdata;
-
-    channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
-
-}
-
 static void ontimertick(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -45,7 +36,6 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_setsignal(&channel, EVENT_TIMERTICK, ontimertick);
     channel_listen(&channel, oninit, onexit);
 

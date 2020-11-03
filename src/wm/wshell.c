@@ -366,13 +366,6 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel);
-
-}
-
-static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
     struct message_header header;
 
     message_initheader(&header, EVENT_WMMAP, 0);
@@ -405,7 +398,7 @@ static void oninit(struct channel *channel)
         return;
 
     channel_setsignal(channel, EVENT_ANY, onany);
-    channel_setsignal(channel, EVENT_MAIN, onmain2);
+    channel_setsignal(channel, EVENT_MAIN, onmain);
     channel_setsignal(channel, EVENT_DATA, ondata);
     channel_setsignal(channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(channel, EVENT_WMSHOW, onwmshow);
@@ -427,7 +420,6 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen(&channel, oninit, onexit);
 

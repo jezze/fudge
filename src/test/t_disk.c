@@ -154,15 +154,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_redirect *redirect = mdata;
-
-    channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
-
-}
-
 static void oninit(struct channel *channel)
 {
 
@@ -187,7 +178,6 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen(&channel, oninit, onexit);
 
 }

@@ -895,13 +895,6 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel);
-
-}
-
-static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
     file_open(FILE_G5);
     file_open(FILE_G6);
     setupvideo();
@@ -911,19 +904,8 @@ static void onmain2(struct channel *channel, unsigned int source, void *mdata, u
 
 }
 
-static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_redirect *redirect = mdata;
-
-    channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
-
-}
-
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
-
-    channel_setsignal(channel, EVENT_MAIN, onmain);
 
     if (!file_walk2(FILE_G4, mdata))
         return;
@@ -934,7 +916,7 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
     if (!file_walk(FILE_G6, FILE_G4, "data"))
         return;
 
-    channel_setsignal(channel, EVENT_MAIN, onmain2);
+    channel_setsignal(channel, EVENT_MAIN, onmain);
 
 }
 
@@ -965,7 +947,7 @@ static void oninit(struct channel *channel)
         return;
 
     channel_setsignal(channel, EVENT_ANY, onany);
-    channel_setsignal(channel, EVENT_MAIN, onmain2);
+    channel_setsignal(channel, EVENT_MAIN, onmain);
     channel_setsignal(channel, EVENT_DATA, ondata);
     channel_setsignal(channel, EVENT_FILE, onfile);
     channel_setsignal(channel, EVENT_KEYPRESS, onkeypress);
@@ -998,8 +980,6 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_listen(&channel, oninit, onexit);
 
 }

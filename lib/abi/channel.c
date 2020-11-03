@@ -160,6 +160,22 @@ void channel_setredirect(struct channel *channel, unsigned int type, unsigned in
 
 }
 
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_close(channel);
+
+}
+
+static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_redirect *redirect = mdata;
+
+    channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
+
+}
+
 void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize))
 {
 
@@ -179,6 +195,9 @@ void channel_init(struct channel *channel)
         channel_setredirect(channel, i, 0, 0, 0);
 
     }
+
+    channel_setsignal(channel, EVENT_MAIN, onmain);
+    channel_setsignal(channel, EVENT_REDIRECT, onredirect);
 
 }
 
