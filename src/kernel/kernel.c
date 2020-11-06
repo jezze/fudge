@@ -208,14 +208,17 @@ void kernel_assign(void)
 {
 
     struct list_item *current;
+    struct list_item *next;
 
     spinlock_acquire(&blockedtasks.spinlock);
 
-    for (current = blockedtasks.head; current; current = current->next)
+    for (current = blockedtasks.head; current; current = next)
     {
 
         struct task *task = current->data;
         struct mailbox *mailbox = &mailboxes[task->id];
+
+        next = current->next;
 
         spinlock_acquire(&mailbox->spinlock);
 
@@ -234,10 +237,12 @@ void kernel_assign(void)
     spinlock_release(&blockedtasks.spinlock);
     spinlock_acquire(&usedtasks.spinlock);
 
-    for (current = usedtasks.head; current; current = current->next)
+    for (current = usedtasks.head; current; current = next)
     {
 
         struct task *task = current->data;
+
+        next = current->next;
 
         list_remove_nolock(&usedtasks, current);
         coreassign(task);
