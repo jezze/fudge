@@ -82,7 +82,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    resource_register(&interface.resource);
+    debug_registerinterface(&interface);
     system_registernode(&root);
     system_addchild(&root, &messages);
     system_addchild(&root, &send);
@@ -92,7 +92,7 @@ void module_register(void)
 void module_unregister(void)
 {
 
-    resource_unregister(&interface.resource);
+    debug_unregisterinterface(&interface);
     system_unregisternode(&root);
     system_removechild(&root, &messages);
     system_removechild(&root, &send);

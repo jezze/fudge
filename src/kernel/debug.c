@@ -93,6 +93,20 @@ void debug_assert(unsigned int level, unsigned int test, char *file, unsigned in
 
 }
 
+void debug_registerinterface(struct debug_interface *interface)
+{
+
+    resource_register(&interface->resource);
+
+}
+
+void debug_unregisterinterface(struct debug_interface *interface)
+{
+
+    resource_unregister(&interface->resource);
+
+}
+
 void debug_initinterface(struct debug_interface *interface, void (*write)(unsigned int level, char *string, char *file, unsigned int line))
 {
 
