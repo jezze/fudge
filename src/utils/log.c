@@ -8,6 +8,11 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+}
+
 static void oninit(struct channel *channel)
 {
 
@@ -32,6 +37,7 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DATA, ondata);
+    channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_listen(&channel, oninit, onexit);
 
 }
