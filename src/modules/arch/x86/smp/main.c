@@ -79,7 +79,7 @@ void smp_setupbp(unsigned int stack, struct task *task, struct list *tasks)
     struct list_item *current;
 
     core_init(&cores[id], id, stack, task);
-    resource_register(&cores[id].resource);
+    core_register(&cores[id]);
     arch_configuretss(&tss[id], cores[id].id, cores[id].sp);
     apic_setup_bp();
     list_add(&corelist, &cores[id].item);
@@ -95,7 +95,7 @@ void smp_setupap(unsigned int stack)
     unsigned int id = apic_getid();
 
     core_init(&cores[id], id, stack, 0);
-    resource_register(&cores[id].resource);
+    core_register(&cores[id]);
     arch_configuretss(&tss[id], cores[id].id, cores[id].sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
     mmu_enable();

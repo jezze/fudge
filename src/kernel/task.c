@@ -3,6 +3,20 @@
 #include "binary.h"
 #include "task.h"
 
+void task_register(struct task *task)
+{
+
+    resource_register(&task->resource);
+
+}
+
+void task_unregister(struct task *task)
+{
+
+    resource_unregister(&task->resource);
+
+}
+
 void task_initthread(struct task_thread *thread)
 {
 

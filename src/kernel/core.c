@@ -23,6 +23,20 @@ struct task *core_unschedule(struct core *core)
 
 }
 
+void core_register(struct core *core)
+{
+
+    resource_register(&core->resource);
+
+}
+
+void core_unregister(struct core *core)
+{
+
+    resource_unregister(&core->resource);
+
+}
+
 void core_init(struct core *core, unsigned int id, unsigned int sp, struct task *task)
 {
 

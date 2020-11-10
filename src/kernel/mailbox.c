@@ -53,6 +53,20 @@ void mailbox_reset(struct mailbox *mailbox)
 
 }
 
+void mailbox_register(struct mailbox *mailbox)
+{
+
+    resource_register(&mailbox->resource);
+
+}
+
+void mailbox_unregister(struct mailbox *mailbox)
+{
+
+    resource_unregister(&mailbox->resource);
+
+}
+
 void mailbox_init(struct mailbox *mailbox, char *buffer, unsigned int count)
 {
 
