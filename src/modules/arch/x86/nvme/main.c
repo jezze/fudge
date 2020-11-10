@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/base/base.h>
+#include <modules/base/bus.h>
+#include <modules/base/driver.h>
 #include <modules/system/system.h>
 #include <modules/arch/x86/pci/pci.h>
 #include "nvme.h"

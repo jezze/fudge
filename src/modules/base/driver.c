@@ -1,15 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include "base.h"
-
-void base_registerbus(struct base_bus *bus)
-{
-
-    resource_register(&bus->resource);
-
-    bus->setup();
-
-}
+#include "bus.h"
+#include "driver.h"
 
 void base_registerdriver(struct base_driver *driver, unsigned int type)
 {
@@ -43,13 +35,6 @@ void base_registerdriver(struct base_driver *driver, unsigned int type)
 
 }
 
-void base_unregisterbus(struct base_bus *bus)
-{
-
-    resource_unregister(&bus->resource);
-
-}
-
 void base_unregisterdriver(struct base_driver *driver, unsigned int type)
 {
 
@@ -77,18 +62,6 @@ void base_unregisterdriver(struct base_driver *driver, unsigned int type)
     }
 
     resource_unregister(&driver->resource);
-
-}
-
-void base_initbus(struct base_bus *bus, unsigned int type, char *name, void (*setup)(void), unsigned int (*next)(unsigned int id))
-{
-
-    resource_init(&bus->resource, RESOURCE_BUS, bus);
-
-    bus->type = type;
-    bus->name = name;
-    bus->setup = setup;
-    bus->next = next;
 
 }
 
