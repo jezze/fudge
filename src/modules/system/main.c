@@ -2,24 +2,6 @@
 #include <kernel.h>
 #include "system.h"
 
-static struct system_node *open(struct system_node *self, struct service_state *state)
-{
-
-    list_add(&self->states, &state->item);
-
-    return self;
-
-}
-
-static struct system_node *close(struct system_node *self, struct service_state *state)
-{
-
-    list_remove(&self->states, &state->item);
-
-    return self;
-
-}
-
 static unsigned int readgroup(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -136,8 +118,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
     node->type = type;
     node->name = name;
-    node->operations.open = open;
-    node->operations.close = close;
     node->operations.read = read;
     node->operations.write = write;
     node->operations.seek = seek;

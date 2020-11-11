@@ -131,7 +131,9 @@ static unsigned int protocol_open(struct service_state *state, unsigned int id)
 
     struct system_node *node = getnode(id);
 
-    return (unsigned int)node->operations.open(node, state);
+    list_add(&node->states, &state->item);
+
+    return id;
 
 }
 
@@ -140,7 +142,9 @@ static unsigned int protocol_close(struct service_state *state, unsigned int id)
 
     struct system_node *node = getnode(id);
 
-    return (unsigned int)node->operations.close(node, state);
+    list_remove(&node->states, &state->item);
+
+    return id;
 
 }
 
