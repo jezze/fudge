@@ -2,6 +2,15 @@
 #define SYSTEM_NODETYPE_GROUP           1
 #define SYSTEM_NODETYPE_MULTIGROUP      2
 
+struct system_operations
+{
+
+    unsigned int (*read)(struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
+    unsigned int (*write)(struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
+    unsigned int (*seek)(unsigned int offset);
+
+};
+
 struct system_node
 {
 
@@ -9,16 +18,7 @@ struct system_node
     unsigned int type;
     unsigned int index;
     struct system_node *parent;
-
-    struct
-    {
-
-        unsigned int (*read)(struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
-        unsigned int (*write)(struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
-        unsigned int (*seek)(unsigned int offset);
-
-    } operations;
-
+    struct system_operations operations;
     struct list_item item;
     struct list children;
     struct list states;
