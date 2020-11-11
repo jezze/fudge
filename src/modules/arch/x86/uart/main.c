@@ -7,18 +7,79 @@
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/io/io.h>
 
-#define REGISTERRBR                     0x0000
-#define REGISTERTHR                     0x0000
-#define REGISTERDLL                     0x0000
-#define REGISTERDLM                     0x0000
-#define REGISTERIER                     0x0001
-#define REGISTERIIR                     0x0002
-#define REGISTERFCR                     0x0002
-#define REGISTERLCR                     0x0003
-#define REGISTERMCR                     0x0004
-#define REGISTERLSR                     0x0005
-#define REGISTERMSR                     0x0006
-#define REGISTERSCR                     0x0007
+#define R_RBR                           0x0000
+#define R_THR                           0x0000
+#define R_DLL                           0x0000
+#define R_DLM                           0x0000
+#define R_IER                           0x0001
+#define R_IIR                           0x0002
+#define R_FCR                           0x0002
+#define R_LCR                           0x0003
+#define R_MCR                           0x0004
+#define R_LSR                           0x0005
+#define R_MSR                           0x0006
+#define R_SCR                           0x0007
+#define F_IER_NULL                      0
+#define F_IER_RECEIVE                   (1 << 0)
+#define F_IER_TRANSMIT                  (1 << 1)
+#define F_IER_LINE                      (1 << 2)
+#define F_IER_MODEM                     (1 << 3)
+#define F_IER_SLEEP                     (1 << 4)
+#define F_IER_POWER                     (1 << 5)
+#define F_IIR_PENDING                   (1 << 0)
+#define F_IIR_MODEMSTATUS               (0 << 1)
+#define F_IIR_TRANSMIT                  (1 << 1)
+#define F_IIR_RECEIVE                   (2 << 1)
+#define F_IIR_LINE                      (3 << 1)
+#define F_IIR_TIMEOUT                   (6 << 1)
+#define F_IIR_LARGE                     (1 << 5)
+#define F_IIR_NOFIFO                    (1 << 6)
+#define F_IIR_ERRORFIFO                 (2 << 6)
+#define F_IIR_FIFO                      (3 << 6)
+#define F_FCR_ENABLE                    (1 << 0)
+#define F_FCR_RECEIVE                   (1 << 1)
+#define F_FCR_TRANSMIT                  (1 << 2)
+#define F_FCR_SELECT                    (1 << 3)
+#define F_FCR_LARGE                     (1 << 5)
+#define F_FCR_SIZE0                     (0 << 6)
+#define F_FCR_SIZE1                     (1 << 6)
+#define F_FCR_SIZE2                     (2 << 6)
+#define F_FCR_SIZE3                     (3 << 6)
+#define F_LCR_5BITS                     (0 << 0)
+#define F_LCR_6BITS                     (1 << 0)
+#define F_LCR_7BITS                     (2 << 0)
+#define F_LCR_8BITS                     (3 << 0)
+#define F_LCR_1STOP                     (0 << 2)
+#define F_LCR_2STOP                     (1 << 2)
+#define F_LCR_NOPARITY                  (0 << 3)
+#define F_LCR_ODDPARITY                 (1 << 3)
+#define F_LCR_EVENPARITY                (3 << 3)
+#define F_LCR_MARKPARITY                (5 << 3)
+#define F_LCR_SPACEPARITY               (7 << 3)
+#define F_LCR_BREAK                     (1 << 6)
+#define F_LCR_LATCH                     (1 << 7)
+#define F_MCR_READY                     (1 << 0)
+#define F_MCR_REQUEST                   (1 << 1)
+#define F_MCR_AUX1                      (1 << 2)
+#define F_MCR_AUX2                      (1 << 3)
+#define F_MCR_LOOPBACK                  (1 << 4)
+#define F_MCR_AUTOFLOW                  (1 << 5)
+#define F_LSR_READY                     (1 << 0)
+#define F_LSR_OVERRUN                   (1 << 1)
+#define F_LSR_PARITY                    (1 << 2)
+#define F_LSR_FRAMING                   (1 << 3)
+#define F_LSR_BREAK                     (1 << 4)
+#define F_LSR_TRANSMIT                  (1 << 5)
+#define F_LSR_RECEIVE                   (1 << 6)
+#define F_LSR_FIFO                      (1 << 7)
+#define F_MSR_DELTACLEAR                (1 << 0)
+#define F_MSR_DELTAREADY                (1 << 1)
+#define F_MSR_EDGERING                  (1 << 2)
+#define F_MSR_DELTADETECT               (1 << 3)
+#define F_MSR_CLEAR                     (1 << 4)
+#define F_MSR_READY                     (1 << 5)
+#define F_MSR_RING                      (1 << 6)
+#define F_MSR_DETECT                    (1 << 7)
 #define BAUDRATE50                      0x0900
 #define BAUDRATE110                     0x0417
 #define BAUDRATE220                     0x020C
@@ -32,67 +93,6 @@
 #define BAUDRATE38400                   0x0003
 #define BAUDRATE57600                   0x0002
 #define BAUDRATE115200                  0x0001
-#define IERNULL                         0
-#define IERRECEIVE                      (1 << 0)
-#define IERTRANSMIT                     (1 << 1)
-#define IERLINE                         (1 << 2)
-#define IERMODEM                        (1 << 3)
-#define IERSLEEP                        (1 << 4)
-#define IERPOWER                        (1 << 5)
-#define IIRPENDING                      (1 << 0)
-#define IIRMODEMSTATUS                  (0 << 1)
-#define IIRTRANSMIT                     (1 << 1)
-#define IIRRECEIVE                      (2 << 1)
-#define IIRLINE                         (3 << 1)
-#define IIRTIMEOUT                      (6 << 1)
-#define IIRLARGE                        (1 << 5)
-#define IIRNOFIFO                       (1 << 6)
-#define IIRERRORFIFO                    (2 << 6)
-#define IIRFIFO                         (3 << 6)
-#define FCRENABLE                       (1 << 0)
-#define FCRRECEIVE                      (1 << 1)
-#define FCRTRANSMIT                     (1 << 2)
-#define FCRSELECT                       (1 << 3)
-#define FCRLARGE                        (1 << 5)
-#define FCRSIZE0                        (0 << 6)
-#define FCRSIZE1                        (1 << 6)
-#define FCRSIZE2                        (2 << 6)
-#define FCRSIZE3                        (3 << 6)
-#define LCR5BITS                        (0 << 0)
-#define LCR6BITS                        (1 << 0)
-#define LCR7BITS                        (2 << 0)
-#define LCR8BITS                        (3 << 0)
-#define LCR1STOP                        (0 << 2)
-#define LCR2STOP                        (1 << 2)
-#define LCRNOPARITY                     (0 << 3)
-#define LCRODDPARITY                    (1 << 3)
-#define LCREVENPARITY                   (3 << 3)
-#define LCRMARKPARITY                   (5 << 3)
-#define LCRSPACEPARITY                  (7 << 3)
-#define LCRBREAK                        (1 << 6)
-#define LCRLATCH                        (1 << 7)
-#define MCRREADY                        (1 << 0)
-#define MCRREQUEST                      (1 << 1)
-#define MCRAUX1                         (1 << 2)
-#define MCRAUX2                         (1 << 3)
-#define MCRLOOPBACK                     (1 << 4)
-#define MCRAUTOFLOW                     (1 << 5)
-#define LSRREADY                        (1 << 0)
-#define LSROVERRUN                      (1 << 1)
-#define LSRPARITY                       (1 << 2)
-#define LSRFRAMING                      (1 << 3)
-#define LSRBREAK                        (1 << 4)
-#define LSRTRANSMIT                     (1 << 5)
-#define LSRRECEIVE                      (1 << 6)
-#define LSRFIFO                         (1 << 7)
-#define MSRDELTACLEAR                   (1 << 0)
-#define MSRDELTAREADY                   (1 << 1)
-#define MSREDGERING                     (1 << 2)
-#define MSRDELTADETECT                  (1 << 3)
-#define MSRCLEAR                        (1 << 4)
-#define MSRREADY                        (1 << 5)
-#define MSRRING                         (1 << 6)
-#define MSRDETECT                       (1 << 7)
 
 static struct base_driver driver;
 static struct console_interface consoleinterface;
@@ -101,7 +101,7 @@ static unsigned short io;
 unsigned char uart_get(void)
 {
 
-    while (!(io_inb(io + REGISTERLSR) & LSRREADY));
+    while (!(io_inb(io + R_LSR) & F_LSR_READY));
 
     return io_inb(io);
 
@@ -110,7 +110,7 @@ unsigned char uart_get(void)
 void uart_put(unsigned char c)
 {
 
-    while (!(io_inb(io + REGISTERLSR) & LSRTRANSMIT));
+    while (!(io_inb(io + R_LSR) & F_LSR_TRANSMIT));
 
     io_outb(io, c);
 
@@ -178,14 +178,14 @@ static void driver_reset(unsigned int id)
 
     io = platform_getbase(id);
 
-    io_outb(io + REGISTERIER, IERNULL);
-    io_outb(io + REGISTERLCR, LCR5BITS | LCR1STOP | LCRNOPARITY);
-    io_outb(io + REGISTERTHR, 0x03);
-    io_outb(io + REGISTERIER, IERNULL);
-    io_outb(io + REGISTERLCR, LCR8BITS | LCR1STOP | LCRNOPARITY);
-    io_outb(io + REGISTERFCR, FCRENABLE | FCRRECEIVE | FCRTRANSMIT | FCRSIZE3);
-    io_outb(io + REGISTERMCR, MCRREADY | MCRREQUEST | MCRAUX2);
-    io_outb(io + REGISTERIER, IERRECEIVE);
+    io_outb(io + R_IER, F_IER_NULL);
+    io_outb(io + R_LCR, F_LCR_5BITS | F_LCR_1STOP | F_LCR_NOPARITY);
+    io_outb(io + R_THR, 0x03);
+    io_outb(io + R_IER, F_IER_NULL);
+    io_outb(io + R_LCR, F_LCR_8BITS | F_LCR_1STOP | F_LCR_NOPARITY);
+    io_outb(io + R_FCR, F_FCR_ENABLE | F_FCR_RECEIVE | F_FCR_TRANSMIT | F_FCR_SIZE3);
+    io_outb(io + R_MCR, F_MCR_READY | F_MCR_REQUEST | F_MCR_AUX2);
+    io_outb(io + R_IER, F_IER_RECEIVE);
 
 }
 

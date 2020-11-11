@@ -7,14 +7,15 @@
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/io/io.h>
 
-#define REGISTERCOMMAND                 0x0000
-#define REGISTERDATA                    0x0001
-#define FLAGSECONDS                     0x00
-#define FLAGMINUTES                     0x02
-#define FLAGHOURS                       0x04
-#define FLAGDAY                         0x07
-#define FLAGMONTH                       0x08
-#define FLAGYEAR                        0x09
+#define R_COMMAND                       0x0000
+#define R_DATA                          0x0001
+#define C_COMMAND_SECONDS               0x00
+#define C_COMMAND_MINUTES               0x02
+#define C_COMMAND_HOURS                 0x04
+#define C_COMMAND_WEEKDAY               0x06
+#define C_COMMAND_DAY                   0x07
+#define C_COMMAND_MONTH                 0x08
+#define C_COMMAND_YEAR                  0x09
 
 static struct base_driver driver;
 static struct clock_interface clockinterface;
@@ -30,9 +31,9 @@ static unsigned char convert(unsigned char num)
 static unsigned char read(unsigned int type)
 {
 
-    io_outb(io + REGISTERCOMMAND, type);
+    io_outb(io + R_COMMAND, type);
 
-    return convert(io_inb(io + REGISTERDATA));
+    return convert(io_inb(io + R_DATA));
 
 }
 
@@ -46,13 +47,13 @@ static unsigned int clockinterface_readctrl(struct system_node *self, struct sys
 
     struct ctrl_clocksettings settings;
 
-    settings.seconds = read(0x00);
-    settings.minutes = read(0x02);
-    settings.hours = read(0x04);
-    settings.weekday = read(0x06);
-    settings.day = read(0x07);
-    settings.month = read(0x08);
-    settings.year = 2000 + read(0x09);
+    settings.seconds = read(C_COMMAND_SECONDS);
+    settings.minutes = read(C_COMMAND_MINUTES);
+    settings.hours = read(C_COMMAND_HOURS);
+    settings.weekday = read(C_COMMAND_WEEKDAY);
+    settings.day = read(C_COMMAND_DAY);
+    settings.month = read(C_COMMAND_MONTH);
+    settings.year = 2000 + read(C_COMMAND_YEAR);
 
     return memory_read(buffer, count, &settings, sizeof (struct ctrl_clocksettings), offset);
 

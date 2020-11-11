@@ -5,50 +5,52 @@
 #include <modules/arch/x86/io/io.h>
 #include "ps2.h"
 
-#define REGISTERDATA                    0x0060
-#define REGISTERCONTROL                 0x0064
-#define IRQKEYBOARD                     0x01
-#define IRQMOUSE                        0x0C
-#define COMMANDCONFIGR                  0x20
-#define COMMANDCONFIGW                  0x60
-#define COMMANDDEV2DISABLE              0xA7
-#define COMMANDDEV2ENABLE               0xA8
-#define COMMANDDEV2TEST                 0xA9
-#define COMMANDCTEST                    0xAA
-#define COMMANDDEV1TEST                 0xAB
-#define COMMANDDEV1DISABLE              0xAD
-#define COMMANDDEV1ENABLE               0xAE
-#define COMMANDCTRLRO                   0xD0
-#define COMMANDCTRLWO                   0xD1
-#define COMMANDDEV1WO                   0xD2
-#define COMMANDDEV2WO                   0xD3
-#define COMMANDDEV2WI                   0xD4
-#define COMMANDCTRLRESET                0xFE
-#define COMMANDDEVIDENTIFY              0xF2
-#define COMMANDDEVRATE                  0xF3
-#define COMMANDDEVENABLESCAN            0xF4
-#define COMMANDDEVDISABLESCAN           0xF5
-#define COMMANDDEVDEFAULT               0xF6
-#define COMMANDDEVRESET                 0xFF
-#define STATUSOFULL                     (1 << 0)
-#define STATUSIFULL                     (1 << 1)
-#define STATUSSYSTEM                    (1 << 2)
-#define STATUSCTRL                      (1 << 3)
-#define STATUSTIMEOUT                   (1 << 6)
-#define STATUSPARITY                    (1 << 7)
-#define CONFIGFLAG_DEV1INT              (1 << 0)
-#define CONFIGFLAG_DEV2INT              (1 << 1)
-#define CONFIGFLAG_SYSTEM               (1 << 2)
-#define CONFIGFLAG_DEV1CLOCK            (1 << 4)
-#define CONFIGFLAG_DEV2CLOCK            (1 << 5)
-#define CONFIGFLAG_DEV1TRANS            (1 << 6)
-#define CTESTOK                         0x55
-#define CTESTERROR                      0xFC
-#define PTESTOK                         0x00
-#define PTESTCLOCKLOW                   0x01
-#define PTESTCLOCKHIGH                  0x02
-#define PTESTLINELOW                    0x03
-#define PTESTLINEHIGH                   0x04
+#define I_KEYBOARD                      0x01
+#define I_MOUSE                         0x0C
+#define R_DATA                          0x0060
+#define R_COMMAND                       0x0064
+#define R_STATUS                        0x0064
+#define C_COMMAND_CONFIGR               0x20
+#define C_COMMAND_CONFIGW               0x60
+#define C_COMMAND_DEV2DISABLE           0xA7
+#define C_COMMAND_DEV2ENABLE            0xA8
+#define C_COMMAND_DEV2TEST              0xA9
+#define C_COMMAND_CTEST                 0xAA
+#define C_COMMAND_DEV1TEST              0xAB
+#define C_COMMAND_DEV1DISABLE           0xAD
+#define C_COMMAND_DEV1ENABLE            0xAE
+#define C_COMMAND_CTRLRO                0xD0
+#define C_COMMAND_CTRLWO                0xD1
+#define C_COMMAND_DEV1WO                0xD2
+#define C_COMMAND_DEV2WO                0xD3
+#define C_COMMAND_DEV2WI                0xD4
+#define C_COMMAND_CTRLRESET             0xFE
+#define C_COMMAND_DEVIDENTIFY           0xF2
+#define C_COMMAND_DEVRATE               0xF3
+#define C_COMMAND_DEVENABLESCAN         0xF4
+#define C_COMMAND_DEVDISABLESCAN        0xF5
+#define C_COMMAND_DEVDEFAULT            0xF6
+#define C_COMMAND_DEVRESET              0xFF
+#define C_COMMAND_CTEST_OK              0x55
+#define C_COMMAND_CTEST_ERROR           0xFC
+#define F_COMMAND_CONFIGR_DEV1INT       (1 << 0)
+#define F_COMMAND_CONFIGR_DEV2INT       (1 << 1)
+#define F_COMMAND_CONFIGR_SYSTEM        (1 << 2)
+#define F_COMMAND_CONFIGR_DEV1CLOCK     (1 << 4)
+#define F_COMMAND_CONFIGR_DEV2CLOCK     (1 << 5)
+#define F_COMMAND_CONFIGR_DEV1TRANS     (1 << 6)
+#define C_COMMAND_DEVTEST_OK            0x00
+#define C_COMMAND_DEVTEST_CLOCKLOW      0x01
+#define C_COMMAND_DEVTEST_CLOCKHIGH     0x02
+#define C_COMMAND_DEVTEST_LINELOW       0x03
+#define C_COMMAND_DEVTEST_LINEHIGH      0x04
+#define F_STATUS_OFULL                  (1 << 0)
+#define F_STATUS_IFULL                  (1 << 1)
+#define F_STATUS_SYSTEM                 (1 << 2)
+#define F_STATUS_CTRL                   (1 << 3)
+#define F_STATUS_AUX                    (1 << 5)
+#define F_STATUS_TIMEOUT                (1 << 6)
+#define F_STATUS_PARITY                 (1 << 7)
 
 struct device
 {
@@ -68,42 +70,42 @@ static struct system_node reset;
 
 static struct device devices[] = {
     {0},
-    {0, IRQKEYBOARD, COMMANDDEV1DISABLE, COMMANDDEV1ENABLE, CONFIGFLAG_DEV1INT, CONFIGFLAG_DEV1TRANS, COMMANDDEV1TEST},
-    {0, IRQMOUSE, COMMANDDEV2DISABLE, COMMANDDEV2ENABLE, CONFIGFLAG_DEV2INT, 0, COMMANDDEV2TEST}
+    {0, I_KEYBOARD, C_COMMAND_DEV1DISABLE, C_COMMAND_DEV1ENABLE, F_COMMAND_CONFIGR_DEV1INT, F_COMMAND_CONFIGR_DEV1TRANS, C_COMMAND_DEV1TEST},
+    {0, I_MOUSE, C_COMMAND_DEV2DISABLE, C_COMMAND_DEV2ENABLE, F_COMMAND_CONFIGR_DEV2INT, 0, C_COMMAND_DEV2TEST}
 };
 
 static void flushdata(void)
 {
 
-    while ((io_inb(REGISTERCONTROL) & STATUSOFULL))
-        io_inb(REGISTERDATA);
+    while ((io_inb(R_STATUS) & F_STATUS_OFULL))
+        io_inb(R_DATA);
 
 }
 
 static unsigned char polldata(void)
 {
 
-    while (!(io_inb(REGISTERCONTROL) & STATUSOFULL));
+    while (!(io_inb(R_STATUS) & F_STATUS_OFULL));
 
-    return io_inb(REGISTERDATA);
+    return io_inb(R_DATA);
 
 }
 
 static void setcommand(unsigned char value)
 {
 
-    while ((io_inb(REGISTERCONTROL) & STATUSIFULL));
+    while ((io_inb(R_STATUS) & F_STATUS_IFULL));
 
-    io_outb(REGISTERCONTROL, value);
+    io_outb(R_COMMAND, value);
 
 }
 
 static void setdata(unsigned char value)
 {
 
-    while ((io_inb(REGISTERCONTROL) & STATUSIFULL));
+    while ((io_inb(R_STATUS) & F_STATUS_IFULL));
 
-    io_outb(REGISTERDATA, value);
+    io_outb(R_DATA, value);
 
 }
 
@@ -111,7 +113,7 @@ static void setdevicedata(unsigned int id, unsigned char value)
 {
 
     if (id == PS2_MOUSE)
-        setcommand(COMMANDDEV2WI);
+        setcommand(C_COMMAND_DEV2WI);
 
     setdata(value);
 
@@ -120,7 +122,7 @@ static void setdevicedata(unsigned int id, unsigned char value)
 static unsigned char rconfig(void)
 {
 
-    setcommand(COMMANDCONFIGR);
+    setcommand(C_COMMAND_CONFIGR);
 
     return polldata();
 
@@ -129,7 +131,7 @@ static unsigned char rconfig(void)
 static void wconfig(unsigned char config)
 {
 
-    setcommand(COMMANDCONFIGW);
+    setcommand(C_COMMAND_CONFIGW);
     setdata(config);
 
 }
@@ -137,9 +139,9 @@ static void wconfig(unsigned char config)
 static unsigned int testbus(void)
 {
 
-    setcommand(COMMANDCTEST);
+    setcommand(C_COMMAND_CTEST);
 
-    return polldata() == CTESTOK;
+    return polldata() == C_COMMAND_CTEST_OK;
 
 }
 
@@ -148,26 +150,26 @@ static unsigned int testdevice(unsigned int id)
 
     setcommand(devices[id].test);
 
-    return polldata() == PTESTOK;
+    return polldata() == C_COMMAND_DEVTEST_OK;
 
 }
 
 unsigned int ps2_checkdata(unsigned int id)
 {
 
-    unsigned char control = io_inb(REGISTERCONTROL);
+    unsigned char status = io_inb(R_STATUS);
 
-    if ((control & STATUSTIMEOUT))
+    if ((status & F_STATUS_TIMEOUT))
         return 0;
 
-    if ((control & STATUSPARITY))
+    if ((status & F_STATUS_PARITY))
         return 0;
 
     switch (id)
     {
 
         case PS2_MOUSE:
-            return (control & 0x20);
+            return (status & F_STATUS_AUX);
 
     }
 
@@ -178,14 +180,14 @@ unsigned int ps2_checkdata(unsigned int id)
 unsigned char ps2_getdata(void)
 {
 
-    return io_inb(REGISTERDATA);
+    return io_inb(R_DATA);
 
 }
 
 unsigned char ps2_getstatus(void)
 {
 
-    return io_inb(REGISTERCONTROL);
+    return io_inb(R_STATUS);
 
 }
 
@@ -241,7 +243,7 @@ void ps2_disabletranslation(unsigned int id)
 void ps2_reset(unsigned int id)
 {
 
-    setdevicedata(id, COMMANDDEVRESET);
+    setdevicedata(id, C_COMMAND_DEVRESET);
     polldata();
     polldata();
 
@@ -253,7 +255,7 @@ void ps2_reset(unsigned int id)
 unsigned char ps2_identify(unsigned int id)
 {
 
-    setdevicedata(id, COMMANDDEVIDENTIFY);
+    setdevicedata(id, C_COMMAND_DEVIDENTIFY);
 
     if (polldata() != 0xFA)
         return 0;
@@ -265,7 +267,7 @@ unsigned char ps2_identify(unsigned int id)
 void ps2_enablescanning(unsigned int id)
 {
 
-    setdevicedata(id, COMMANDDEVENABLESCAN);
+    setdevicedata(id, C_COMMAND_DEVENABLESCAN);
     polldata();
 
 }
@@ -273,7 +275,7 @@ void ps2_enablescanning(unsigned int id)
 void ps2_disablescanning(unsigned int id)
 {
 
-    setdevicedata(id, COMMANDDEVDISABLESCAN);
+    setdevicedata(id, C_COMMAND_DEVDISABLESCAN);
     polldata();
 
 }
@@ -281,7 +283,7 @@ void ps2_disablescanning(unsigned int id)
 void ps2_default(unsigned int id)
 {
 
-    setdevicedata(id, COMMANDDEVDEFAULT);
+    setdevicedata(id, C_COMMAND_DEVDEFAULT);
     polldata();
 
 }
@@ -289,7 +291,7 @@ void ps2_default(unsigned int id)
 void ps2_rate(unsigned int id, unsigned char rate)
 {
 
-    setdevicedata(id, COMMANDDEVRATE);
+    setdevicedata(id, C_COMMAND_DEVRATE);
 
     if (polldata() != 0xFA)
         return;
@@ -311,10 +313,10 @@ static void bus_setup(void)
 
         unsigned char config = rconfig();
 
-        if (config & CONFIGFLAG_DEV1CLOCK)
+        if (config & F_COMMAND_CONFIGR_DEV1CLOCK)
             devices[PS2_KEYBOARD].present = testdevice(PS2_KEYBOARD);
 
-        if (config & CONFIGFLAG_DEV2CLOCK)
+        if (config & F_COMMAND_CONFIGR_DEV2CLOCK)
             devices[PS2_MOUSE].present = testdevice(PS2_MOUSE);
 
     }
@@ -331,7 +333,7 @@ static unsigned int bus_next(unsigned int id)
 static unsigned int reset_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    setcommand(COMMANDCTRLRESET);
+    setcommand(C_COMMAND_CTRLRESET);
 
     return 0;
 

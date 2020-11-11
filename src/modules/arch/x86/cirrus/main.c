@@ -6,8 +6,8 @@
 #include <arch/x86/pci/pci.h>
 #include <arch/x86/vga/timing.h>
 
-#define PCIVENDOR                       0x1013
-#define PCIDEVICE                       0x00B8
+#define VENDOR                          0x1013
+#define DEVICE                          0x00B8
 #define CLOCKS                          21
 #define CLGD5420                        0
 #define CLGD7548                        1
@@ -186,7 +186,7 @@ static void driver_init(void)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inw(id, PCI_CONFIG_VENDOR) == PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == PCIDEVICE;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE;
 
 }
 
