@@ -106,13 +106,6 @@ static unsigned int child(struct service_backend *backend, struct cpio_header *h
 
 }
 
-static unsigned int protocol_match(struct service_backend *backend)
-{
-
-    return mapheader(backend, 0) != 0;
-
-}
-
 static unsigned int protocol_root(struct service_backend *backend)
 {
 
@@ -333,7 +326,7 @@ static unsigned int protocol_map(struct service_backend *backend, unsigned int i
 void cpio_setup(void)
 {
 
-    service_initprotocol(&protocol, 1000, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
+    service_initprotocol(&protocol, 1000, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
     resource_register(&protocol.resource);
 
 }

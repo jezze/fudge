@@ -4,15 +4,6 @@
 
 static struct service_protocol protocol;
 
-static unsigned int protocol_match(struct service_backend *backend)
-{
-
-    struct system_header *header = (struct system_header *)backend->map(0, sizeof (struct system_header));
-
-    return (header) ? memory_match(header->id, "FUDGE_SYSTEM", 12) : 0;
-
-}
-
 static unsigned int protocol_root(struct service_backend *backend)
 {
 
@@ -186,7 +177,7 @@ static unsigned int protocol_map(struct service_backend *backend, unsigned int i
 void system_initprotocol(void)
 {
 
-    service_initprotocol(&protocol, 2000, protocol_match, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
+    service_initprotocol(&protocol, 2000, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
     resource_register(&protocol.resource);
 
 }

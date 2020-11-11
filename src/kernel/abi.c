@@ -186,9 +186,6 @@ static unsigned int auth(struct task *task, void *stack)
     if (!descriptor->protocol)
         return 0;
 
-    if (!descriptor->protocol->match(descriptor->backend))
-        return 0;
-
     descriptor->id = descriptor->protocol->root(descriptor->backend);
 
     return 1;
