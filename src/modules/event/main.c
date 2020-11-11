@@ -29,7 +29,7 @@ static unsigned int multicast(struct service_state *source, struct list *targets
 
 }
 
-static unsigned int wserver_seek(struct system_node *self, struct service_state *state, unsigned int offset)
+static unsigned int wserver_seek(struct system_node *self, unsigned int offset)
 {
 
     return 0;
@@ -45,7 +45,7 @@ static unsigned int wclient_write(struct system_node *self, struct system_node *
 
 }
 
-static unsigned int wclient_seek(struct system_node *self, struct service_state *state, unsigned int offset)
+static unsigned int wclient_seek(struct system_node *self, unsigned int offset)
 {
 
     return 0;

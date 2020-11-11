@@ -17,7 +17,7 @@ struct system_operations
     struct system_node *(*close)(struct system_node *self, struct service_state *state);
     unsigned int (*read)(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
-    unsigned int (*seek)(struct system_node *self, struct service_state *state, unsigned int offset);
+    unsigned int (*seek)(struct system_node *self, unsigned int offset);
 
 };
 

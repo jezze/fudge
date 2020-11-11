@@ -47,7 +47,7 @@ static unsigned int create(struct task *task, void *stack)
     if (!args->length || !args->name)
         return 0;
 
-    return descriptor->protocol->create(descriptor->backend, &descriptor->state, descriptor->id, args->name, args->length);
+    return descriptor->protocol->create(descriptor->backend, descriptor->id, args->name, args->length);
 
 }
 
@@ -63,7 +63,7 @@ static unsigned int destroy(struct task *task, void *stack)
     if (!args->length || !args->name)
         return 0;
 
-    return descriptor->protocol->destroy(descriptor->backend, &descriptor->state, descriptor->id, args->name, args->length);
+    return descriptor->protocol->destroy(descriptor->backend, descriptor->id, args->name, args->length);
 
 }
 
@@ -77,8 +77,8 @@ static unsigned int open(struct task *task, void *stack)
         return 0;
 
     descriptor->id = descriptor->protocol->open(descriptor->backend, &descriptor->state, descriptor->id);
-    descriptor->current = descriptor->protocol->step(descriptor->backend, &descriptor->state, descriptor->id, descriptor->id);
-    descriptor->offset = descriptor->protocol->seek(descriptor->backend, &descriptor->state, descriptor->id, 0);
+    descriptor->current = descriptor->protocol->step(descriptor->backend, descriptor->id, descriptor->id);
+    descriptor->offset = descriptor->protocol->seek(descriptor->backend, descriptor->id, 0);
 
     return descriptor->id;
 
@@ -94,8 +94,8 @@ static unsigned int close(struct task *task, void *stack)
         return 0;
 
     descriptor->id = descriptor->protocol->close(descriptor->backend, &descriptor->state, descriptor->id);
-    descriptor->current = descriptor->protocol->step(descriptor->backend, &descriptor->state, descriptor->id, descriptor->id);
-    descriptor->offset = descriptor->protocol->seek(descriptor->backend, &descriptor->state, descriptor->id, 0);
+    descriptor->current = descriptor->protocol->step(descriptor->backend, descriptor->id, descriptor->id);
+    descriptor->offset = descriptor->protocol->seek(descriptor->backend, descriptor->id, 0);
 
     return descriptor->id;
 
@@ -110,8 +110,8 @@ static unsigned int step(struct task *task, void *stack)
     if (!descriptor->backend || !descriptor->protocol)
         return 0;
 
-    descriptor->current = descriptor->protocol->step(descriptor->backend, &descriptor->state, descriptor->id, descriptor->current);
-    descriptor->offset = descriptor->protocol->seek(descriptor->backend, &descriptor->state, descriptor->id, 0);
+    descriptor->current = descriptor->protocol->step(descriptor->backend, descriptor->id, descriptor->current);
+    descriptor->offset = descriptor->protocol->seek(descriptor->backend, descriptor->id, 0);
 
     return descriptor->current;
 
@@ -130,7 +130,7 @@ static unsigned int read(struct task *task, void *stack)
         return 0;
 
     descriptor->count = descriptor->protocol->read(descriptor->backend, &descriptor->state, descriptor->id, descriptor->current, args->buffer, args->count, descriptor->offset);
-    descriptor->offset = descriptor->protocol->seek(descriptor->backend, &descriptor->state, descriptor->id, descriptor->offset + descriptor->count);
+    descriptor->offset = descriptor->protocol->seek(descriptor->backend, descriptor->id, descriptor->offset + descriptor->count);
 
     return descriptor->count;
 
@@ -149,7 +149,7 @@ static unsigned int write(struct task *task, void *stack)
         return 0;
 
     descriptor->count = descriptor->protocol->write(descriptor->backend, &descriptor->state, descriptor->id, descriptor->current, args->buffer, args->count, descriptor->offset);
-    descriptor->offset = descriptor->protocol->seek(descriptor->backend, &descriptor->state, descriptor->id, descriptor->offset + descriptor->count);
+    descriptor->offset = descriptor->protocol->seek(descriptor->backend, descriptor->id, descriptor->offset + descriptor->count);
 
     return descriptor->count;
 
@@ -164,7 +164,7 @@ static unsigned int seek(struct task *task, void *stack)
     if (!descriptor->backend || !descriptor->protocol)
         return 0;
 
-    descriptor->offset = descriptor->protocol->seek(descriptor->backend, &descriptor->state, descriptor->id, args->offset);
+    descriptor->offset = descriptor->protocol->seek(descriptor->backend, descriptor->id, args->offset);
 
     return descriptor->offset;
 
@@ -186,10 +186,10 @@ static unsigned int auth(struct task *task, void *stack)
     if (!descriptor->protocol)
         return 0;
 
-    if (!descriptor->protocol->match(descriptor->backend, &descriptor->state))
+    if (!descriptor->protocol->match(descriptor->backend))
         return 0;
 
-    descriptor->id = descriptor->protocol->root(descriptor->backend, &descriptor->state);
+    descriptor->id = descriptor->protocol->root(descriptor->backend);
 
     return 1;
 
@@ -238,7 +238,7 @@ static unsigned int load(struct task *task, void *stack)
     if (!descriptor->backend || !descriptor->protocol)
         return 0;
 
-    node.address = descriptor->protocol->map(descriptor->backend, &descriptor->state, descriptor->id);
+    node.address = descriptor->protocol->map(descriptor->backend, descriptor->id);
 
     if (!node.address)
         return 0;
@@ -277,7 +277,7 @@ static unsigned int unload(struct task *task, void *stack)
     if (!descriptor->backend || !descriptor->protocol)
         return 0;
 
-    node.address = descriptor->protocol->map(descriptor->backend, &descriptor->state, descriptor->id);
+    node.address = descriptor->protocol->map(descriptor->backend, descriptor->id);
 
     if (!node.address)
         return 0;

@@ -99,14 +99,14 @@ unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsi
 
             walkmountparent(descriptor);
 
-            descriptor->id = descriptor->protocol->parent(descriptor->backend, &descriptor->state, descriptor->id);
+            descriptor->id = descriptor->protocol->parent(descriptor->backend, descriptor->id);
 
         }
 
         else
         {
 
-            descriptor->id = descriptor->protocol->child(descriptor->backend, &descriptor->state, descriptor->id, cp, cl);
+            descriptor->id = descriptor->protocol->child(descriptor->backend, descriptor->id, cp, cl);
 
             walkmountchild(descriptor);
 
@@ -340,7 +340,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int descriptor, unsi
     if (!init)
         return 0;
 
-    task->node.address = init->protocol->map(init->backend, &init->state, init->id);
+    task->node.address = init->protocol->map(init->backend, init->id);
 
     if (!task->node.address)
         return 0;
@@ -366,15 +366,15 @@ void kernel_setupinit(struct task *task)
 
     root->backend = service_findbackend(1000);
     root->protocol = service_findprotocol(1000);
-    root->id = root->protocol->root(root->backend, &root->state);
+    root->id = root->protocol->root(root->backend);
     work->backend = root->backend;
     work->protocol = root->protocol;
-    work->id = work->protocol->root(work->backend, &work->state);
+    work->id = work->protocol->root(work->backend);
     init->backend = root->backend;
     init->protocol = root->protocol;
-    init->id = init->protocol->root(init->backend, &init->state);
-    init->id = init->protocol->child(init->backend, &init->state, init->id, "bin", 3);
-    init->id = init->protocol->child(init->backend, &init->state, init->id, "init", 4);
+    init->id = init->protocol->root(init->backend);
+    init->id = init->protocol->child(init->backend, init->id, "bin", 3);
+    init->id = init->protocol->child(init->backend, init->id, "init", 4);
 
 }
 

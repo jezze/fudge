@@ -69,7 +69,7 @@ static unsigned int write(struct system_node *self, struct system_node *current,
 
 }
 
-static unsigned int seek(struct system_node *self, struct service_state *state, unsigned int offset)
+static unsigned int seek(struct system_node *self, unsigned int offset)
 {
 
     return offset;
