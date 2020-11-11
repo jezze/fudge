@@ -20,66 +20,34 @@ static unsigned int write(void *buffer, unsigned int count, unsigned int offset)
 
 }
 
-static unsigned int map(unsigned int offset, unsigned int count)
+static struct cpio_header *getheader(unsigned int id)
 {
 
-    return address + offset;
-
-}
-
-static struct cpio_header *mapheader(unsigned int id)
-{
-
-    struct cpio_header *header = (struct cpio_header *)map(id, sizeof (struct cpio_header));
+    struct cpio_header *header = (struct cpio_header *)(address + id);
 
     return (cpio_validate(header)) ? header : 0;
 
 }
 
-static char *mapname(struct cpio_header *header, unsigned int id)
+static char *getname(struct cpio_header *header, unsigned int id)
 {
 
-    return (char *)map(id + sizeof (struct cpio_header), header->namesize);
-
-}
-
-static unsigned int root(void)
-{
-
-    struct cpio_header *eheader;
-    unsigned int id = 0;
-    unsigned int current = 0;
-
-    do
-    {
-
-        eheader = mapheader(current);
-
-        if (!eheader)
-            break;
-
-        if ((eheader->mode & 0xF000) != 0x4000)
-            continue;
-
-        id = current;
-
-    } while ((current = cpio_next(eheader, current)));
-
-    return id;
+    return (char *)(address + id + sizeof (struct cpio_header));
 
 }
 
 static unsigned int parent(struct cpio_header *header, unsigned int id)
 {
 
-    unsigned int length = memory_findlastbyte(mapname(header, id), header->namesize - 1, '/');
+    char *name = getname(header, id);
+    unsigned int length = memory_findlastbyte(name, header->namesize - 1, '/');
     struct cpio_header *eheader;
     unsigned int current = id;
 
     do
     {
 
-        eheader = mapheader(current);
+        eheader = getheader(current);
 
         if (!eheader)
             break;
@@ -107,7 +75,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
 
         char *name;
 
-        eheader = mapheader(current);
+        eheader = getheader(current);
 
         if (!eheader)
             break;
@@ -115,7 +83,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
         if (eheader->namesize != header->namesize + length + 1)
             continue;
 
-        name = mapname(eheader, current);
+        name = getname(eheader, current);
 
         if (!name)
             break;
@@ -132,14 +100,33 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
 static unsigned int protocol_root(void)
 {
 
-    return root();
+    struct cpio_header *eheader;
+    unsigned int id = 0;
+    unsigned int current = 0;
+
+    do
+    {
+
+        eheader = getheader(current);
+
+        if (!eheader)
+            break;
+
+        if ((eheader->mode & 0xF000) != 0x4000)
+            continue;
+
+        id = current;
+
+    } while ((current = cpio_next(eheader, current)));
+
+    return id;
 
 }
 
 static unsigned int protocol_parent(unsigned int id)
 {
 
-    struct cpio_header *header = mapheader(id);
+    struct cpio_header *header = getheader(id);
 
     if (!header)
         return 0;
@@ -151,7 +138,7 @@ static unsigned int protocol_parent(unsigned int id)
 static unsigned int protocol_child(unsigned int id, char *path, unsigned int length)
 {
 
-    struct cpio_header *header = mapheader(id);
+    struct cpio_header *header = getheader(id);
 
     if (!header)
         return 0;
@@ -177,7 +164,7 @@ static unsigned int protocol_destroy(unsigned int id, char *name, unsigned int l
 static unsigned int stepdirectory(unsigned int id, unsigned int current)
 {
 
-    struct cpio_header *eheader = mapheader(current);
+    struct cpio_header *eheader = getheader(current);
 
     if (!eheader)
         return 0;
@@ -188,7 +175,7 @@ static unsigned int stepdirectory(unsigned int id, unsigned int current)
         if (current == id)
             break;
 
-        eheader = mapheader(current);
+        eheader = getheader(current);
 
         if (!eheader)
             break;
@@ -205,7 +192,7 @@ static unsigned int stepdirectory(unsigned int id, unsigned int current)
 static unsigned int protocol_step(unsigned int id, unsigned int current)
 {
 
-    struct cpio_header *header = mapheader(id);
+    struct cpio_header *header = getheader(id);
 
     if (!header)
         return 0;
@@ -256,12 +243,12 @@ static unsigned int readdirectory(struct service_state *state, void *buffer, uns
     if (!current)
         return 0;
 
-    eheader = mapheader(current);
+    eheader = getheader(current);
 
     if (!eheader)
         return 0;
 
-    name = mapname(eheader, current);
+    name = getname(eheader, current);
 
     if (!name)
         return 0;
@@ -277,7 +264,7 @@ static unsigned int readdirectory(struct service_state *state, void *buffer, uns
 static unsigned int protocol_read(struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct cpio_header *header = mapheader(id);
+    struct cpio_header *header = getheader(id);
 
     if (!header)
         return 0;
@@ -310,7 +297,7 @@ static unsigned int writefile(struct service_state *state, void *buffer, unsigne
 static unsigned int protocol_write(struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct cpio_header *header = mapheader(id);
+    struct cpio_header *header = getheader(id);
 
     if (!header)
         return 0;
@@ -337,12 +324,12 @@ static unsigned int protocol_seek(unsigned int id, unsigned int offset)
 static unsigned int protocol_map(unsigned int id)
 {
 
-    struct cpio_header *header = mapheader(id);
+    struct cpio_header *header = getheader(id);
 
     if (!header)
         return 0;
 
-    return map(id + cpio_filedata(header), cpio_filesize(header));
+    return address + id + cpio_filedata(header);
 
 }
 
