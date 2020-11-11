@@ -24,10 +24,9 @@ static void (*coreassign)(struct task *task);
 static unsigned int walkmount(struct service_descriptor *descriptor, struct service_mountpoint *from, struct service_mountpoint *to)
 {
 
-    if (descriptor->backend == from->backend && descriptor->protocol == from->protocol && descriptor->id == from->id)
+    if (descriptor->protocol == from->protocol && descriptor->id == from->id)
     {
 
-        descriptor->backend = to->backend;
         descriptor->protocol = to->protocol;
         descriptor->id = to->id;
 
@@ -99,14 +98,14 @@ unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsi
 
             walkmountparent(descriptor);
 
-            descriptor->id = descriptor->protocol->parent(descriptor->backend, descriptor->id);
+            descriptor->id = descriptor->protocol->parent(descriptor->id);
 
         }
 
         else
         {
 
-            descriptor->id = descriptor->protocol->child(descriptor->backend, descriptor->id, cp, cl);
+            descriptor->id = descriptor->protocol->child(descriptor->id, cp, cl);
 
             walkmountchild(descriptor);
 
@@ -263,7 +262,6 @@ struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int 
 static void copydescriptor(struct service_descriptor *tdescriptor, struct service_descriptor *sdescriptor, struct task *task)
 {
 
-    tdescriptor->backend = (sdescriptor) ? sdescriptor->backend : 0;
     tdescriptor->protocol = (sdescriptor) ? sdescriptor->protocol : 0;
     tdescriptor->id = (sdescriptor) ? sdescriptor->id : 0;
 
@@ -340,7 +338,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int descriptor, unsi
     if (!init)
         return 0;
 
-    task->node.address = init->protocol->map(init->backend, init->id);
+    task->node.address = init->protocol->map(init->id);
 
     if (!task->node.address)
         return 0;
@@ -364,17 +362,14 @@ void kernel_setupinit(struct task *task)
     struct service_descriptor *root = kernel_getdescriptor(task, FILE_CR);
     struct service_descriptor *work = kernel_getdescriptor(task, FILE_CW);
 
-    root->backend = service_findbackend(1000);
     root->protocol = service_findprotocol(1000);
-    root->id = root->protocol->root(root->backend);
-    work->backend = root->backend;
+    root->id = root->protocol->root();
     work->protocol = root->protocol;
-    work->id = work->protocol->root(work->backend);
-    init->backend = root->backend;
+    work->id = work->protocol->root();
     init->protocol = root->protocol;
-    init->id = init->protocol->root(init->backend);
-    init->id = init->protocol->child(init->backend, init->id, "bin", 3);
-    init->id = init->protocol->child(init->backend, init->id, "init", 4);
+    init->id = init->protocol->root();
+    init->id = init->protocol->child(init->id, "bin", 3);
+    init->id = init->protocol->child(init->id, "init", 4);
 
 }
 

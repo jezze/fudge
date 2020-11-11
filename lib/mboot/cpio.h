@@ -1,1 +1,1 @@
-void cpio_setup(void);
+void cpio_setup(unsigned int address, unsigned int limit);

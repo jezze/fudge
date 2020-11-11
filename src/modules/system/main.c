@@ -147,7 +147,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 void module_init(void)
 {
 
-    system_initbackend();
     system_initprotocol();
 
 }

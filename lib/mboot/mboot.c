@@ -11,33 +11,10 @@
 
 #define MBOOT_MAGIC                     0x2BADB002
 
-static struct service_backend backend;
-static unsigned int address;
-static unsigned int limit;
-
-static unsigned int read(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return memory_read(buffer, count, (void *)address, limit, offset);
-
-}
-
-static unsigned int write(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return memory_write((void *)address, limit, buffer, count, offset);
-
-}
-
-static unsigned int map(unsigned int offset, unsigned int count)
-{
-
-    return address + offset;
-
-}
-
 void mboot_setup(struct mboot_header *header, unsigned int magic)
 {
+
+    arch_setup1();
 
     if (header->flags & MBOOT_FLAG_LOADER)
     {
@@ -78,8 +55,11 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
+    elf_setup();
+
     if (header->flags & MBOOT_FLAG_ELF)
     {
+
 
     }
 
@@ -88,8 +68,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
         struct mboot_module *modules = (struct mboot_module *)header->modules.address;
 
-        address = modules[0].address;
-        limit = modules[0].limit;
+        cpio_setup(modules[0].address, modules[0].limit);
 
     }
 
@@ -113,11 +92,6 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    arch_setup1();
-    elf_setup();
-    cpio_setup();
-    service_initbackend(&backend, 1000, read, write, map);
-    resource_register(&backend.resource);
     arch_setup2();
 
 }

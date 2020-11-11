@@ -2,14 +2,6 @@
 #define SYSTEM_NODETYPE_GROUP           1
 #define SYSTEM_NODETYPE_MULTIGROUP      2
 
-struct system_header
-{
-
-    char id[12];
-    unsigned int root;
-
-};
-
 struct system_operations
 {
 
@@ -40,6 +32,5 @@ void system_removechild(struct system_node *group, struct system_node *node);
 void system_movechild(struct system_node *to, struct system_node *from, struct system_node *node);
 void system_registernode(struct system_node *node);
 void system_unregisternode(struct system_node *node);
-void system_initbackend(void);
 void system_initprotocol(void);
 void system_initnode(struct system_node *node, unsigned int type, char *name);

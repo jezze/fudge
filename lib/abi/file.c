@@ -131,3 +131,12 @@ unsigned int file_spawn(char *path)
 
 }
 
+void file_mount(char *path, unsigned int id)
+{
+
+    file_walk2(FILE_L0, path);
+    call_auth(FILE_L1, id);
+    call_mount(FILE_L0, FILE_L1);
+
+}
+
