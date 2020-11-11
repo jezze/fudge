@@ -148,13 +148,48 @@ static unsigned int protocol_close(struct service_state *state, unsigned int id)
 
 }
 
+static unsigned int readgroup(struct system_node *current, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    struct record record;
+
+    if (!current)
+        return 0;
+
+    record.id = (unsigned int)current;
+    record.size = 0;
+    record.length = memory_read(record.name, RECORD_NAMESIZE, current->name, ascii_length(current->name), 0);
+
+    if (current->type == SYSTEM_NODETYPE_MULTIGROUP)
+    {
+
+        char num[FUDGE_NSIZE];
+
+        record.length += memory_write(record.name, RECORD_NAMESIZE, ":", 1, record.length);
+        record.length += memory_write(record.name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, current->index, 10, 0), record.length);
+
+    }
+
+    return memory_read(buffer, count, &record, sizeof (struct record), offset);
+
+}
+
 static unsigned int protocol_read(struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct system_node *node = getnode(id);
     struct system_node *currentnode = getnode(current);
 
-    return node->operations.read(node, currentnode, state, buffer, count, offset);
+    switch (node->type)
+    {
+
+    case SYSTEM_NODETYPE_GROUP:
+    case SYSTEM_NODETYPE_MULTIGROUP:
+        return readgroup(currentnode, buffer, count, offset);
+
+    }
+
+    return (node->operations.read) ? node->operations.read(state, buffer, count, offset) : 0;
 
 }
 
@@ -162,9 +197,8 @@ static unsigned int protocol_write(struct service_state *state, unsigned int id,
 {
 
     struct system_node *node = getnode(id);
-    struct system_node *currentnode = getnode(current);
 
-    return node->operations.write(node, currentnode, state, buffer, count, offset);
+    return (node->operations.write) ? node->operations.write(state, buffer, count, offset) : 0;
 
 }
 
@@ -173,7 +207,7 @@ static unsigned int protocol_seek(unsigned int id, unsigned int offset)
 
     struct system_node *node = getnode(id);
 
-    return node->operations.seek(node, offset);
+    return (node->operations.seek) ? node->operations.seek(offset) : offset;
 
 }
 

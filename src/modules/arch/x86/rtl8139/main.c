@@ -292,7 +292,7 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 
 }
 
-static unsigned int ethernetinterface_readaddr(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int ethernetinterface_readaddr(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char address[ETHERNET_ADDRSIZE];

@@ -330,7 +330,7 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-static unsigned int reset_write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int reset_write(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     setcommand(C_COMMAND_CTRLRESET);

@@ -2,62 +2,6 @@
 #include <kernel.h>
 #include "system.h"
 
-static unsigned int readgroup(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct record record;
-
-    if (!current)
-        return 0;
-
-    record.id = (unsigned int)current;
-    record.size = 0;
-    record.length = memory_read(record.name, RECORD_NAMESIZE, current->name, ascii_length(current->name), 0);
-
-    if (current->type == SYSTEM_NODETYPE_MULTIGROUP)
-    {
-
-        char num[FUDGE_NSIZE];
-
-        record.length += memory_write(record.name, RECORD_NAMESIZE, ":", 1, record.length);
-        record.length += memory_write(record.name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, current->index, 10, 0), record.length);
-
-    }
-
-    return memory_read(buffer, count, &record, sizeof (struct record), offset);
-
-}
-
-static unsigned int read(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    switch (self->type)
-    {
-
-    case SYSTEM_NODETYPE_GROUP:
-    case SYSTEM_NODETYPE_MULTIGROUP:
-        return readgroup(self, current, state, buffer, count, offset);
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int write(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return 0;
-
-}
-
-static unsigned int seek(struct system_node *self, unsigned int offset)
-{
-
-    return offset;
-
-}
-
 void system_addchild(struct system_node *group, struct system_node *node)
 {
 
@@ -118,9 +62,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
     node->type = type;
     node->name = name;
-    node->operations.read = read;
-    node->operations.write = write;
-    node->operations.seek = seek;
 
 }
 

@@ -38,14 +38,14 @@ static void setreg(unsigned short index, unsigned short data)
 
 }
 
-static unsigned int videointerface_readctrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readctrl(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
-static unsigned int videointerface_writectrl(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writectrl(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct ctrl_videosettings *settings = buffer;
@@ -62,28 +62,28 @@ static unsigned int videointerface_writectrl(struct system_node *self, struct sy
 
 }
 
-static unsigned int videointerface_readdata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readdata(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
 
 }
 
-static unsigned int videointerface_writedata(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writedata(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
 
 }
 
-static unsigned int videointerface_readcolormap(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readcolormap(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return 0;
 
 }
 
-static unsigned int videointerface_writecolormap(struct system_node *self, struct system_node *current, struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writecolormap(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return count;
