@@ -6,7 +6,6 @@ N:=\
 
 O:=\
     $(DIR_SRC)/modules/system/main.o \
-    $(DIR_SRC)/modules/system/protocol.o \
 
 L:=\
     $(DIR_LIB)/fudge/fudge.a \

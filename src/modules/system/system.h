@@ -30,5 +30,4 @@ void system_removechild(struct system_node *group, struct system_node *node);
 void system_movechild(struct system_node *to, struct system_node *from, struct system_node *node);
 void system_registernode(struct system_node *node);
 void system_unregisternode(struct system_node *node);
-void system_initprotocol(void);
 void system_initnode(struct system_node *node, unsigned int type, char *name);
