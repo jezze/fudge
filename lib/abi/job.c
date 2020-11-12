@@ -138,10 +138,10 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         if (!job->id)
             continue;
 
+        job_replyback(channel, job->id, EVENT_CLOSE);
+
         if (i < n - 1)
             job_replyto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
-        else
-            job_replyback(channel, job->id, EVENT_DATA);
 
     }
 
@@ -170,7 +170,6 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         if (!job->id)
             continue;
 
-        job_replyback(channel, job->id, EVENT_CLOSE);
         channel_place(channel, job->id, EVENT_MAIN, 0, 0);
 
     }

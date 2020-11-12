@@ -8,7 +8,6 @@ static unsigned int keymod = KEYMOD_NONE;
 static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 static unsigned int mode = MODE_NORMAL;
-static unsigned int desc = FILE_G0;
 
 static void printprompt(void)
 {
@@ -193,27 +192,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-}
-
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     file_writeall(FILE_G1, mdata, msize);
-
-}
-
-static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    if (!file_walk2(desc, mdata))
-        return;
-
-    file_open(desc);
-
-    desc++;
 
 }
 
@@ -286,6 +268,21 @@ static void oninit(struct channel *channel)
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
 
+    if (!file_walk2(FILE_G0, "/system/console/if:0/event"))
+        return;
+
+    if (!file_walk2(FILE_G1, "/system/console/if:0/transmit"))
+        return;
+
+    file_open(FILE_G0);
+
+}
+
+static void onexit(struct channel *channel)
+{
+
+    file_close(FILE_G0);
+
 }
 
 void main(void)
@@ -296,12 +293,10 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_REDIRECT, onredirect);
     channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
     channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
-    channel_listen(&channel, oninit, 0);
+    channel_listen(&channel, oninit, onexit);
 
 }
 
