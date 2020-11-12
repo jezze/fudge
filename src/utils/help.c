@@ -13,7 +13,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         char *path = "/data/help.txt";
         char data[FUDGE_MSIZE];
 
-        job_replyto(channel, id, EVENT_DATA, (channel->signals[EVENT_DATA].redirect) ? (channel->signals[EVENT_DATA].redirect): source);
+        job_replyto(channel, id, EVENT_DATA, source);
         job_replyback(channel, id, EVENT_CLOSE);
         channel_place(channel, id, EVENT_FILE, ascii_length(path) + 1, path);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
