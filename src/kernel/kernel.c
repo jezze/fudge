@@ -234,21 +234,15 @@ void kernel_assign(void)
     }
 
     spinlock_release(&blockedtasks.spinlock);
-    spinlock_acquire(&usedtasks.spinlock);
 
-    for (current = usedtasks.head; current; current = next)
+    while ((current = list_pickhead(&usedtasks)))
     {
 
         struct task *task = current->data;
 
-        next = current->next;
-
-        list_remove_nolock(&usedtasks, current);
         coreassign(task);
 
     }
-
-    spinlock_release(&usedtasks.spinlock);
 
 }
 
