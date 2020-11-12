@@ -17,7 +17,15 @@ struct task *core_unschedule(struct core *core)
 {
 
     if (core->task)
+    {
+
+        /* Task could be blocked */
+        if (core->task->item.list)
+            return 0;
+
         list_add(&core->tasks, &core->task->item);
+
+    }
 
     return 0;
 
