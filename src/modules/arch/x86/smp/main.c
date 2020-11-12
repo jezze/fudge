@@ -64,11 +64,18 @@ static struct core *coreget(void)
 static void coreassign(struct task *task)
 {
 
-    struct list_item *current = corelist.head;
-    struct core *core = current->data;
+    struct list_item *current = list_picktail(&corelist);
 
-    list_add(&core->tasks, &task->item);
-    apic_sendint(core->id, APIC_ICR_TYPE_NORMAL | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | 0xFE);
+    if (current)
+    {
+
+        struct core *core = current->data;
+
+        list_add(&core->tasks, &task->item);
+        apic_sendint(core->id, APIC_ICR_TYPE_NORMAL | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | 0xFE);
+        list_add(&corelist, current);
+
+    }
 
 }
 
