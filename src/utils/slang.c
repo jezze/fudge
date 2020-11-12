@@ -318,13 +318,16 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             offset = message_appendstring2(&message, t->str, offset);
             offset = message_appendstring2(&message, "E", offset);
 
+            channel_place(channel, source, EVENT_DATA, offset, &message);
+
+            offset = 0;
+
             break;
 
         }
 
     }
 
-    channel_place(channel, source, EVENT_DATA, offset, &message);
 
 }
 
