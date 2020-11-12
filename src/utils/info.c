@@ -15,7 +15,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         char *mailboxes = "/system/info/mailboxes";
         char data[FUDGE_MSIZE];
 
-        job_replyto(channel, id, EVENT_DATA, channel->signals[EVENT_DATA].redirect);
+        job_replyto(channel, id, EVENT_DATA, (channel->signals[EVENT_DATA].redirect) ? (channel->signals[EVENT_DATA].redirect): source);
         job_replyback(channel, id, EVENT_CLOSE);
         channel_place(channel, id, EVENT_FILE, ascii_length(cores) + 1, cores);
         channel_place(channel, id, EVENT_FILE, ascii_length(tasks) + 1, tasks);
