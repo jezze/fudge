@@ -4,15 +4,16 @@
 static void print(struct channel *channel, unsigned int source)
 {
 
-    struct record record;
-
     file_open(FILE_G0);
 
-    while (file_readall(FILE_G0, &record, sizeof (struct record)))
+    do
     {
 
         struct message_data message;
         unsigned int offset = 0;
+        struct record record;
+
+        file_readall(FILE_G0, &record, sizeof (struct record));
 
         offset = message_appendvalue(&message, record.id, 16, 8, offset);
         offset = message_appendstring(&message, " ", offset);
@@ -23,10 +24,7 @@ static void print(struct channel *channel, unsigned int source)
 
         channel_place(channel, source, EVENT_DATA, offset, &message);
 
-        if (!file_step(FILE_G0))
-            break;
-
-    }
+    } while (file_step(FILE_G0));
 
     file_close(FILE_G0);
 
