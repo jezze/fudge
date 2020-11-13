@@ -3,23 +3,23 @@
 #include "file.h"
 #include "channel.h"
 
-static void dispatch(struct channel *channel, struct message_header *header, void *data)
+static void dispatch(struct channel *channel, struct message_header *header, struct message_data *data)
 {
 
     if (header->type < EVENTS)
     {
 
         if (channel->signals[header->type].callback)
-            channel->signals[header->type].callback(channel, header->source, data, message_datasize(header));
+            channel->signals[header->type].callback(channel, header->source, data->buffer, message_datasize(header));
 
         if (channel->signals[EVENT_ANY].callback)
-            channel->signals[EVENT_ANY].callback(channel, header->source, data, message_datasize(header));
+            channel->signals[EVENT_ANY].callback(channel, header->source, data->buffer, message_datasize(header));
 
     }
 
 }
 
-static unsigned int poll(struct channel *channel, struct message_header *header, void *data)
+static unsigned int poll(struct channel *channel, struct message_header *header, struct message_data *data)
 {
 
     while (channel->poll)
@@ -55,7 +55,7 @@ unsigned int channel_place(struct channel *channel, unsigned int id, unsigned in
 
 }
 
-unsigned int channel_poll(struct channel *channel, unsigned int source, unsigned int type, struct message_header *header, void *data)
+unsigned int channel_poll(struct channel *channel, unsigned int source, unsigned int type, struct message_header *header, struct message_data *data)
 {
 
     while (poll(channel, header, data))
@@ -72,7 +72,7 @@ unsigned int channel_poll(struct channel *channel, unsigned int source, unsigned
 
 }
 
-unsigned int channel_polltype(struct channel *channel, unsigned int type, struct message_header *header, void *data)
+unsigned int channel_polltype(struct channel *channel, unsigned int type, struct message_header *header, struct message_data *data)
 {
 
     while (poll(channel, header, data))
@@ -89,7 +89,7 @@ unsigned int channel_polltype(struct channel *channel, unsigned int type, struct
 
 }
 
-unsigned int channel_pollsource(struct channel *channel, unsigned int source, struct message_header *header, void *data)
+unsigned int channel_pollsource(struct channel *channel, unsigned int source, struct message_header *header, struct message_data *data)
 {
 
     while (poll(channel, header, data))
@@ -110,15 +110,15 @@ void channel_listen(struct channel *channel, void (*oninit)(struct channel *chan
 {
 
     struct message_header header;
-    char data[FUDGE_BSIZE];
+    struct message_data data;
 
     if (oninit)
         oninit(channel);
 
     channel->poll = 1;
 
-    while (poll(channel, &header, data))
-        dispatch(channel, &header, data);
+    while (poll(channel, &header, &data))
+        dispatch(channel, &header, &data);
 
     if (onexit)
         onexit(channel);

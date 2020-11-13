@@ -10,14 +10,14 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     {
 
         struct message_header header;
+        struct message_data data;
         char *path = "/data/motd.txt";
-        char data[FUDGE_MSIZE];
 
         job_replyto(channel, id, EVENT_DATA, source);
         job_replyback(channel, id, EVENT_CLOSE);
         channel_place(channel, id, EVENT_FILE, ascii_length(path) + 1, path);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
-        channel_poll(channel, id, EVENT_CLOSE, &header, data);
+        channel_poll(channel, id, EVENT_CLOSE, &header, &data);
 
     }
 

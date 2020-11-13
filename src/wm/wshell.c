@@ -116,14 +116,14 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
 static void interpret(struct channel *channel, struct ring *ring)
 {
 
-    char data[FUDGE_MSIZE];
-    unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
+    struct message_data data;
+    unsigned int count = ring_read(ring, data.buffer, FUDGE_MSIZE);
     unsigned int id;
 
-    if (interpretbuiltin(count, data))
+    if (interpretbuiltin(count, data.buffer))
         return;
 
-    id = job_simple(channel, "/bin/slang", count, data);
+    id = job_simple(channel, "/bin/slang", count, data.buffer);
 
     if (id)
     {
@@ -133,7 +133,7 @@ static void interpret(struct channel *channel, struct ring *ring)
         struct job jobs[32];
         unsigned int njobs = 0;
 
-        while (channel_pollsource(channel, id, &header, data))
+        while (channel_pollsource(channel, id, &header, &data))
         {
 
             if (header.type == EVENT_CLOSE)
@@ -142,7 +142,7 @@ static void interpret(struct channel *channel, struct ring *ring)
             if (header.type == EVENT_DATA)
             {
 
-                status.start = data;
+                status.start = data.buffer;
                 status.end = status.start + message_datasize(&header);
 
                 while (status.start < status.end)
@@ -171,18 +171,18 @@ static void interpret(struct channel *channel, struct ring *ring)
 static void complete(struct channel *channel, struct ring *ring)
 {
 
-    char data[FUDGE_MSIZE];
-    unsigned int count = ring_read(ring, data, FUDGE_MSIZE);
+    struct message_data data;
+    unsigned int count = ring_read(ring, data.buffer, FUDGE_MSIZE);
     unsigned int id;
 
-    id = job_simple(channel, "/bin/complete", count, data);
+    id = job_simple(channel, "/bin/complete", count, data.buffer);
 
     if (id)
     {
 
         struct message_header header;
 
-        while (channel_pollsource(channel, id, &header, data))
+        while (channel_pollsource(channel, id, &header, &data))
         {
 
             if (header.type == EVENT_CLOSE)
@@ -191,19 +191,19 @@ static void complete(struct channel *channel, struct ring *ring)
             if (header.type == EVENT_DATA)
             {
 
-                if (memory_findbyte(data, message_datasize(&header), '\n') < message_datasize(&header) - 1)
+                if (memory_findbyte(data.buffer, message_datasize(&header), '\n') < message_datasize(&header) - 1)
                 {
 
                     copyring(&prompt);
                     copybuffer("\n", 1);
-                    copybuffer(data, message_datasize(&header));
+                    copybuffer(data.buffer, message_datasize(&header));
 
                 }
 
                 else
                 {
 
-                    ring_write(&input1, data, message_datasize(&header) - 1);
+                    ring_write(&input1, data.buffer, message_datasize(&header) - 1);
 
                 }
 

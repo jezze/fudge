@@ -10,10 +10,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     {
 
         struct message_header header;
+        struct message_data data;
         char *cores = "/system/info/cores";
         char *tasks = "/system/info/tasks";
         char *mailboxes = "/system/info/mailboxes";
-        char data[FUDGE_MSIZE];
 
         job_replyto(channel, id, EVENT_DATA, source);
         job_replyback(channel, id, EVENT_CLOSE);
@@ -21,7 +21,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         channel_place(channel, id, EVENT_FILE, ascii_length(tasks) + 1, tasks);
         channel_place(channel, id, EVENT_FILE, ascii_length(mailboxes) + 1, mailboxes);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
-        channel_poll(channel, id, EVENT_CLOSE, &header, data);
+        channel_poll(channel, id, EVENT_CLOSE, &header, &data);
 
     }
 

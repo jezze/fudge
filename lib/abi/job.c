@@ -196,9 +196,9 @@ void job_wait(struct channel *channel, struct job *jobs, unsigned int n)
     {
 
         struct message_header header;
-        char data[FUDGE_MSIZE];
+        struct message_data data;
 
-        while (channel_polltype(channel, EVENT_CLOSE, &header, data))
+        while (channel_polltype(channel, EVENT_CLOSE, &header, &data))
         {
 
             if (--nids == 0)

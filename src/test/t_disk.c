@@ -49,13 +49,13 @@ static unsigned int request_poll(struct request *request, struct channel *channe
 {
 
     struct message_header header;
-    char data[FUDGE_MSIZE];
+    struct message_data data;
 
-    while (channel_polltype(channel, EVENT_DATA, &header, data))
+    while (channel_polltype(channel, EVENT_DATA, &header, &data))
     {
 
         unsigned int size = message_datasize(&header);
-        unsigned int count = memory_write(blocks, BLOCKSIZE * 4, data, size, request->blockreads * BLOCKSIZE);
+        unsigned int count = memory_write(blocks, BLOCKSIZE * 4, &data, size, request->blockreads * BLOCKSIZE);
 
         request->blockreads += count / BLOCKSIZE;
 
