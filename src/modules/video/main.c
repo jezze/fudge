@@ -54,6 +54,9 @@ void video_initinterface(struct video_interface *interface, unsigned int id)
     system_initnode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event");
 
     interface->id = id;
+    interface->settings.w = 0;
+    interface->settings.h = 0;
+    interface->settings.bpp = 0;
 
 }
 
