@@ -195,8 +195,8 @@ void sha1_write(struct sha1 *s, unsigned char digest[20])
 void sha1_init(struct sha1 *s)
 {
 
-    memory_clear(s, sizeof (struct sha1));
-
+    s->lo = 0;
+    s->hi = 0;
     s->a = 0x67452301;
     s->b = 0xEFCDAB89;
     s->c = 0x98BADCFE;

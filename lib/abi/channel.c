@@ -188,6 +188,8 @@ void channel_init(struct channel *channel)
 
     unsigned int i;
 
+    channel->poll = 0;
+
     for (i = 0; i < EVENTS; i++)
     {
 

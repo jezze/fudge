@@ -11,10 +11,10 @@ struct list_item
 struct list
 {
 
+    struct spinlock spinlock;
     struct list_item *head;
     struct list_item *tail;
     unsigned int count;
-    struct spinlock spinlock;
 
 };
 

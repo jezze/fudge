@@ -1,8 +1,12 @@
 struct md5
 {
 
-    unsigned int lo, hi;
-    unsigned int a, b, c, d;
+    unsigned int lo;
+    unsigned int hi;
+    unsigned int a;
+    unsigned int b;
+    unsigned int c;
+    unsigned int d;
     unsigned char buffer[64];
 
 };

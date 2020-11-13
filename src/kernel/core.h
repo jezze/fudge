@@ -1,11 +1,11 @@
 struct core
 {
 
+    struct resource resource;
     struct list_item item;
+    struct list tasks;
     unsigned int id;
     unsigned int sp;
-    struct resource resource;
-    struct list tasks;
     struct task *task;
 
 };

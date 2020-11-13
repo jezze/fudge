@@ -136,11 +136,11 @@ void list_inititem(struct list_item *item, void *data)
 void list_init(struct list *list)
 {
 
+    spinlock_init(&list->spinlock);
+
     list->head = 0;
     list->tail = 0;
     list->count = 0;
-
-    spinlock_init(&list->spinlock);
 
 }
 

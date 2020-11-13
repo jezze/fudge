@@ -12,12 +12,12 @@ struct task_thread
 struct task
 {
 
-    unsigned int id;
     struct resource resource;
     struct list_item item;
     struct task_thread thread;
-    struct binary_format *format;
     struct binary_node node;
+    struct binary_format *format;
+    unsigned int id;
 
 };
 

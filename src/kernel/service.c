@@ -56,12 +56,28 @@ void service_initdescriptor(struct service_descriptor *descriptor, unsigned int 
 
     service_initstate(&descriptor->state, id);
 
+    descriptor->protocol = 0;
+    descriptor->id = 0;
+    descriptor->offset = 0;
+    descriptor->current = 0;
+    descriptor->count = 0;
+
+}
+
+void service_initmountpoint(struct service_mountpoint *mountpoint)
+{
+
+    mountpoint->protocol = 0;
+    mountpoint->id = 0;
+
 }
 
 void service_initmount(struct service_mount *mount)
 {
 
     list_inititem(&mount->item, mount);
+    service_initmountpoint(&mount->parent);
+    service_initmountpoint(&mount->child);
 
 }
 

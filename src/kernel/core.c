@@ -48,8 +48,8 @@ void core_unregister(struct core *core)
 void core_init(struct core *core, unsigned int id, unsigned int sp, struct task *task)
 {
 
-    list_inititem(&core->item, core);
     resource_init(&core->resource, RESOURCE_CORE, core);
+    list_inititem(&core->item, core);
     list_init(&core->tasks);
 
     core->id = id;

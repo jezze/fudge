@@ -193,8 +193,8 @@ void md5_write(struct md5 *s, unsigned char digest[16])
 void md5_init(struct md5 *s)
 {
 
-    memory_clear(s, sizeof (struct md5));
-
+    s->lo = 0;
+    s->hi = 0;
     s->a = 0x67452301;
     s->b = 0xEFCDAB89;
     s->c = 0x98BADCFE;
