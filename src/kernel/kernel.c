@@ -372,6 +372,14 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
     unsigned int i;
 
+    list_init(&usedtasks);
+    list_init(&freetasks);
+    list_init(&blockedtasks);
+    list_init(&usedmounts);
+    list_init(&freemounts);
+    list_init(&usedmailboxes);
+    list_init(&freemailboxes);
+
     for (i = 1; i < KERNEL_TASKS; i++)
     {
 

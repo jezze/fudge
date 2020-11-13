@@ -289,9 +289,16 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 {
 
     list_inititem(&node->item, node);
+    list_init(&node->children);
+    list_init(&node->states);
 
     node->type = type;
     node->name = name;
+    node->index = 0;
+    node->parent = 0;
+    node->operations.read = 0;
+    node->operations.write = 0;
+    node->operations.seek = 0;
 
 }
 

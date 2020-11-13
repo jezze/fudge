@@ -266,6 +266,7 @@ static void setupviews(void)
 
         struct view *view = &views[i];
 
+        list_init(&view->remotes);
         list_inititem(&view->item, view);
         widget_initpanel(&view->panel, 0);
         list_add(&viewlist, &view->item);
@@ -923,6 +924,8 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 static void oninit(struct channel *channel)
 {
 
+    list_init(&viewlist);
+    list_init(&remotelist);
     ring_init(&output, FUDGE_BSIZE, outputdata);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);

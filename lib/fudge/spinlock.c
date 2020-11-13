@@ -15,3 +15,9 @@ void spinlock_release(struct spinlock *spinlock)
 
 }
 
+void spinlock_init(struct spinlock *spinlock)
+{
+
+    spinlock->lock = 0;
+
+}

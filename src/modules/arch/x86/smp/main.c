@@ -119,6 +119,7 @@ void module_init(void)
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
     struct core *core = kernel_getcore();
 
+    list_init(&corelist);
     smp_setupbp(core->sp, core->task, &core->tasks);
     kernel_setcallback(coreget, coreassign);
 

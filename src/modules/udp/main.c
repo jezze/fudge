@@ -93,6 +93,7 @@ void udp_inithook(struct udp_hook *hook, unsigned int (*match)(unsigned int port
 void module_init(void)
 {
 
+    list_init(&hooks);
     ipv4_inithook(&ipv4hook, "udp", 0x11, ipv4hook_notify);
     ipv6_inithook(&ipv6hook, "udp", 0x11, ipv6hook_notify);
 

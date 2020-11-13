@@ -128,6 +128,7 @@ void arp_inithook(struct arp_hook *hook, unsigned int (*match)(unsigned int htyp
 void module_init(void)
 {
 
+    list_init(&hooks);
     ethernet_inithook(&ethernethook, "arp", 0x0806, ethernethook_notify);
 
 }

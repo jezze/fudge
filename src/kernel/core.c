@@ -50,6 +50,7 @@ void core_init(struct core *core, unsigned int id, unsigned int sp, struct task 
 
     list_inititem(&core->item, core);
     resource_init(&core->resource, RESOURCE_CORE, core);
+    list_init(&core->tasks);
 
     core->id = id;
     core->sp = sp;

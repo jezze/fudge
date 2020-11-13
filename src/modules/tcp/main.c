@@ -65,6 +65,7 @@ void tcp_inithook(struct tcp_hook *hook, unsigned int (*match)(unsigned int port
 void module_init(void)
 {
 
+    list_init(&hooks);
     ipv4_inithook(&ipv4hook, "tcp", 0x06, ipv4hook_notify);
     ipv6_inithook(&ipv6hook, "tcp", 0x06, ipv6hook_notify);
 

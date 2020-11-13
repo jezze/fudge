@@ -33,3 +33,4 @@ struct resource *resource_foreachtype(struct resource *resource, unsigned int ty
 void resource_register(struct resource *resource);
 void resource_unregister(struct resource *resource);
 void resource_init(struct resource *resource, unsigned int type, void *data);
+void resource_setup(void);
