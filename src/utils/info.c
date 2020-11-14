@@ -21,7 +21,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         channel_place(channel, id, EVENT_FILE, ascii_lengthz(tasks), tasks);
         channel_place(channel, id, EVENT_FILE, ascii_lengthz(mailboxes), mailboxes);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
-        channel_poll(channel, id, EVENT_CLOSE, &header, &data);
+        channel_pollonly(channel, id, EVENT_CLOSE, &header, &data);
 
     }
 

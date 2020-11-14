@@ -194,7 +194,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     printprompt();
     file_open(FILE_G0);
-    channel_pollall(channel, &header, &data);
+
+    while (channel_poll(channel, &header, &data))
+        channel_dispatch(channel, &header, &data);
+
     file_close(FILE_G0);
     channel_close(channel);
 

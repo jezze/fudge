@@ -12,7 +12,9 @@ void main(void)
 
     channel_init(&channel);
     init(&channel);
-    channel_pollall(&channel, &header, &data);
+
+    while (channel_poll(&channel, &header, &data))
+        channel_dispatch(&channel, &header, &data);
 
 }
 

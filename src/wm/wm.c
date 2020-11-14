@@ -908,7 +908,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     setupviews();
     setupremotes();
     activateview(currentview);
-    channel_pollall(channel, &header, &data);
+
+    while (channel_poll(channel, &header, &data))
+        channel_dispatch(channel, &header, &data);
+
     file_close(FILE_G6);
     file_close(FILE_G5);
     file_close(FILE_G3);

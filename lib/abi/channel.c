@@ -3,32 +3,6 @@
 #include "file.h"
 #include "channel.h"
 
-static void dispatch(struct channel *channel, struct message_header *header, struct message_data *data)
-{
-
-    if (channel->signals[header->type].callback)
-        channel->signals[header->type].callback(channel, header->source, data->buffer, message_datasize(header));
-
-    if (channel->signals[EVENT_ANY].callback)
-        channel->signals[EVENT_ANY].callback(channel, header->source, data->buffer, message_datasize(header));
-
-}
-
-static unsigned int poll(struct channel *channel, struct message_header *header, struct message_data *data)
-{
-
-    while (channel->poll)
-    {
-
-        if (call_pick(header, data))
-            return header->type;
-
-    }
-
-    return 0;
-
-}
-
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -49,6 +23,17 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
     struct event_redirect *redirect = mdata;
 
     channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
+
+}
+
+void channel_dispatch(struct channel *channel, struct message_header *header, struct message_data *data)
+{
+
+    if (channel->signals[header->type].callback)
+        channel->signals[header->type].callback(channel, header->source, data->buffer, message_datasize(header));
+
+    if (channel->signals[EVENT_ANY].callback)
+        channel->signals[EVENT_ANY].callback(channel, header->source, data->buffer, message_datasize(header));
 
 }
 
@@ -73,16 +58,31 @@ unsigned int channel_place(struct channel *channel, unsigned int id, unsigned in
 
 }
 
-unsigned int channel_poll(struct channel *channel, unsigned int source, unsigned int type, struct message_header *header, struct message_data *data)
+unsigned int channel_poll(struct channel *channel, struct message_header *header, struct message_data *data)
 {
 
-    while (poll(channel, header, data))
+    while (channel->poll)
+    {
+
+        if (call_pick(header, data))
+            return header->type;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int channel_pollonly(struct channel *channel, unsigned int source, unsigned int type, struct message_header *header, struct message_data *data)
+{
+
+    while (channel_poll(channel, header, data))
     {
 
         if (header->source == source && header->type == type)
             return header->type;
 
-        dispatch(channel, header, data);
+        channel_dispatch(channel, header, data);
 
     }
 
@@ -93,13 +93,13 @@ unsigned int channel_poll(struct channel *channel, unsigned int source, unsigned
 unsigned int channel_polltype(struct channel *channel, unsigned int type, struct message_header *header, struct message_data *data)
 {
 
-    while (poll(channel, header, data))
+    while (channel_poll(channel, header, data))
     {
 
         if (header->type == type)
             return header->type;
 
-        dispatch(channel, header, data);
+        channel_dispatch(channel, header, data);
 
     }
 
@@ -110,25 +110,15 @@ unsigned int channel_polltype(struct channel *channel, unsigned int type, struct
 unsigned int channel_pollsource(struct channel *channel, unsigned int source, struct message_header *header, struct message_data *data)
 {
 
-    while (poll(channel, header, data))
+    while (channel_poll(channel, header, data))
     {
 
         if (header->source == source)
             return header->type;
 
-        dispatch(channel, header, data);
+        channel_dispatch(channel, header, data);
 
     }
-
-    return 0;
-
-}
-
-unsigned int channel_pollall(struct channel *channel, struct message_header *header, struct message_data *data)
-{
-
-    while (poll(channel, header, data))
-        dispatch(channel, header, data);
 
     return 0;
 
