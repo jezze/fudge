@@ -20,7 +20,7 @@ unsigned int message_datasize(struct message_header *header)
 unsigned int message_append(struct message_data *data, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return offset += memory_write(data->buffer, FUDGE_MSIZE, buffer, count, offset);
+    return offset + memory_write(data->buffer, FUDGE_MSIZE, buffer, count, offset);
 
 }
 
