@@ -26,7 +26,7 @@ clean:
 	@rm -rf $(DIR_BUILD) $(DIR_ISO) $(KERNEL) $(RAMDISK) $(IMAGE) $(ISO) $(OBJ) $(DEP) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 
 check:
-	@cppcheck -Iinclude -Ilib -Isrc --enable=all --suppress=unusedFunction .
+	@cppcheck -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) --enable=all --suppress=unusedFunction .
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
