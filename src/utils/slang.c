@@ -270,8 +270,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            offset = message_appendstring2(&message, "F", offset);
-            offset = message_appendstring2(&message, t->str, offset);
+            offset = message_appendstringz(&message, "F", offset);
+            offset = message_appendstringz(&message, t->str, offset);
 
             break;
 
@@ -281,8 +281,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            offset = message_appendstring2(&message, "R", offset);
-            offset = message_appendstring2(&message, t->str, offset);
+            offset = message_appendstringz(&message, "R", offset);
+            offset = message_appendstringz(&message, t->str, offset);
 
             break;
 
@@ -292,8 +292,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            offset = message_appendstring2(&message, "D", offset);
-            offset = message_appendstring2(&message, t->str, offset);
+            offset = message_appendstringz(&message, "D", offset);
+            offset = message_appendstringz(&message, t->str, offset);
 
             break;
 
@@ -303,8 +303,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            offset = message_appendstring2(&message, "P", offset);
-            offset = message_appendstring2(&message, t->str, offset);
+            offset = message_appendstringz(&message, "P", offset);
+            offset = message_appendstringz(&message, t->str, offset);
 
             break;
 
@@ -314,9 +314,9 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            offset = message_appendstring2(&message, "P", offset);
-            offset = message_appendstring2(&message, t->str, offset);
-            offset = message_appendstring2(&message, "E", offset);
+            offset = message_appendstringz(&message, "P", offset);
+            offset = message_appendstringz(&message, t->str, offset);
+            offset = message_appendstringz(&message, "E", offset);
 
             channel_place(channel, source, EVENT_DATA, offset, &message);
 

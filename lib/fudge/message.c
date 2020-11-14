@@ -31,7 +31,7 @@ unsigned int message_appendstring(struct message_data *data, char *string, unsig
 
 }
 
-unsigned int message_appendstring2(struct message_data *data, char *string, unsigned int offset)
+unsigned int message_appendstringz(struct message_data *data, char *string, unsigned int offset)
 {
 
     return message_append(data, offset, ascii_length(string) + 1, string);
