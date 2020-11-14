@@ -34,6 +34,22 @@ static unsigned int poll(struct channel *channel, struct message_header *header,
 
 }
 
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_close(channel);
+
+}
+
+static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_redirect *redirect = mdata;
+
+    channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
+
+}
+
 unsigned int channel_place(struct channel *channel, unsigned int id, unsigned int type, unsigned int count, void *data)
 {
 
@@ -157,22 +173,6 @@ void channel_setredirect(struct channel *channel, unsigned int type, unsigned in
         break;
 
     }
-
-}
-
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    channel_close(channel);
-
-}
-
-static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_redirect *redirect = mdata;
-
-    channel_setredirect(channel, redirect->type, redirect->mode, redirect->id, source);
 
 }
 
