@@ -54,10 +54,7 @@ static unsigned int request_poll(struct request *request, struct channel *channe
     while (channel_polltype(channel, EVENT_DATA, &header, &data))
     {
 
-        unsigned int size = message_datasize(&header);
-        unsigned int count = memory_write(blocks, BLOCKSIZE * 4, &data, size, request->blockreads * BLOCKSIZE);
-
-        request->blockreads += count / BLOCKSIZE;
+        request->blockreads += memory_write(blocks, BLOCKSIZE * 4, &data, message_datasize(&header), request->blockreads * BLOCKSIZE) / BLOCKSIZE;
 
         if (request->blockreads == request->blockcount)
             return request->count;
