@@ -128,7 +128,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     struct request *request = &requests[0];
     unsigned int offset = walk(channel, source, request, "build/data/help.txt");
-    unsigned int count;
 
     if (offset != ERROR)
     {
@@ -140,6 +139,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             if (cpio_validate(header))
             {
+
+                unsigned int count;
 
                 if ((count = sendpoll(request, channel, source, offset + cpio_filedata(header), cpio_filesize(header))))
                     channel_place(channel, source, EVENT_DATA, count, getdata(request));

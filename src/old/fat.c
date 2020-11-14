@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <common.h>
 
 struct bpb
 {
@@ -22,6 +21,7 @@ struct bpb
 
 };
 
+/*
 struct fat32
 {
 
@@ -54,6 +54,7 @@ struct fat16
     unsigned char fat_type_label[8];
 
 };
+*/
 
 void main(void)
 {

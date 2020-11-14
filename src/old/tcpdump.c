@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <common.h>
 
 struct tcp_header
 {
@@ -20,23 +19,24 @@ void main(void)
 {
 
     struct tcp_header header;
-    unsigned int sp;
-    unsigned int tp;
-    unsigned int seq;
-    unsigned int ack;
-    unsigned int dataoff;
-    unsigned int flags0;
-    unsigned int flags1;
-    unsigned int flags2;
-    unsigned int windowsize;
-    unsigned int checksum;
-    unsigned int urgent;
 
     file_open(FILE_PO);
     file_open(FILE_PI);
 
     for (;;)
     {
+
+        unsigned int sp;
+        unsigned int tp;
+        unsigned int seq;
+        unsigned int ack;
+        unsigned int dataoff;
+        unsigned int flags0;
+        unsigned int flags1;
+        unsigned int flags2;
+        unsigned int windowsize;
+        unsigned int checksum;
+        unsigned int urgent;
 
         file_readall(FILE_PI, &header, sizeof (struct tcp_header));
 

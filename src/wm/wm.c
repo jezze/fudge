@@ -41,8 +41,7 @@ static unsigned int lineheight;
 static unsigned int steplength;
 static unsigned char fontdata[0x8000];
 static unsigned char canvasdata[0x10000];
-static unsigned int canvasfb;
-static unsigned int w, h, bpp;
+struct event_videomode vmode;
 static unsigned char colormap8[] = {
     0x00, 0x00, 0x00,
     0x3F, 0x3F, 0x3F,
@@ -60,8 +59,8 @@ static unsigned char colormap8[] = {
 static void draw(void *data, unsigned int count, unsigned int offset)
 {
 
-    if (canvasfb)
-        memory_write((void *)canvasfb, w * h * bpp, data, count, offset);
+    if (vmode.fb)
+        memory_write((void *)vmode.fb, vmode.w * vmode.h * vmode.bpp, data, count, offset);
     else
         file_seekwriteall(FILE_G6, data, count, offset);
 
@@ -216,9 +215,9 @@ static void arrangetiled(struct view *view)
     unsigned int y = body.y;
     unsigned int h = body.h / (view->remotes.count - 1);
     struct list_item *current;
-    struct remote *remote = view->remotes.tail->data;
+    struct remote *master = view->remotes.tail->data;
 
-    box_setsize(&remote->window.size, body.x, body.y, view->center, body.h);
+    box_setsize(&master->window.size, body.x, body.y, view->center, body.h);
 
     for (current = view->remotes.tail->prev; current; current = current->prev)
     {
@@ -783,10 +782,11 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     struct list_item *current;
     unsigned int i = 0;
 
-    canvasfb = videomode->fb;
-    w = videomode->w;
-    h = videomode->h;
-    bpp = videomode->bpp;
+    vmode.fb = videomode->fb;
+    vmode.w = videomode->w;
+    vmode.h = videomode->h;
+    vmode.bpp = videomode->bpp;
+
     lineheight = 12 + factor * 4;
     padding = 4 + factor * 2;
     steplength = videomode->w / 32;

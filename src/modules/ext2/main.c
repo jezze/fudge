@@ -1,7 +1,6 @@
-#include <fudge/module.h>
-#include <base/base.h>
-#include <base/block.h>
-#include <block/block.h>
+#include <fudge.h>
+#include <kernel.h>
+#include <modules/block/block.h>
 #include "ext2.h"
 
 static struct ext2_protocol protocol;

@@ -11,7 +11,6 @@ static void interface_write(unsigned int level, char *string, char *file, unsign
 {
 
     char buffer[FUDGE_BSIZE];
-    char num[FUDGE_NSIZE];
     unsigned int count = 0;
 
     switch (level)
@@ -43,6 +42,8 @@ static void interface_write(unsigned int level, char *string, char *file, unsign
 
     if (file && line)
     {
+
+        char num[FUDGE_NSIZE];
 
         count += memory_write(buffer, FUDGE_BSIZE, " (", 2, count);
         count += memory_write(buffer, FUDGE_BSIZE, file, ascii_length(file), count);

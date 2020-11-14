@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <keymap/keymap.h>
 
 static unsigned int modifier;
 

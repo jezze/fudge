@@ -1,10 +1,10 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <base/base.h>
-#include <system/system.h>
-#include <video/video.h>
-#include <arch/x86/pci/pci.h>
-#include <arch/x86/vga/timing.h>
+#include <modules/base/driver.h>
+#include <modules/system/system.h>
+#include <modules/video/video.h>
+#include <modules/arch/x86/pci/pci.h>
+#include <modules/arch/x86/vga/registers.h>
 
 #define VENDOR                          0x1013
 #define DEVICE                          0x00B8

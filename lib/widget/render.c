@@ -439,14 +439,12 @@ static void rendertext(void *canvas, void *data, unsigned int line)
     unsigned char *string = (unsigned char *)(text + 1);
     unsigned int rowindex = text->offset + line / font.lineheight;
     unsigned int rowtotal = findrowtotal(string, text->length);
-    unsigned int rowstart;
-    unsigned int rowcount;
 
     if (rowindex < rowtotal)
     {
 
-        rowstart = findrowstart(string, text->length, rowindex);
-        rowcount = findrowcount(string, text->length, rowstart);
+        unsigned int rowstart = findrowstart(string, text->length, rowindex);
+        unsigned int rowcount = findrowcount(string, text->length, rowstart);
 
         painttext(canvas, string + rowstart, rowcount - rowstart, text->size.x, text->size.x + text->size.w, textcolor[text->type], line % font.lineheight, rowcount - rowstart);
 
@@ -461,14 +459,12 @@ static void rendertextbox(void *canvas, void *data, unsigned int line)
     unsigned char *string = (unsigned char *)(textbox + 1);
     unsigned int rowindex = textbox->offset + line / font.lineheight;
     unsigned int rowtotal = findrowtotal(string, textbox->length);
-    unsigned int rowstart;
-    unsigned int rowcount;
 
     if (rowindex < rowtotal)
     {
 
-        rowstart = findrowstart(string, textbox->length, rowindex);
-        rowcount = findrowcount(string, textbox->length, rowstart);
+        unsigned int rowstart = findrowstart(string, textbox->length, rowindex);
+        unsigned int rowcount = findrowcount(string, textbox->length, rowstart);
 
         painttext(canvas, string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
 

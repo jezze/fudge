@@ -365,12 +365,12 @@ char *getpacket(void)
 void putpacket(char *buffer)
 {
 
-    unsigned char checksum;
-    int count;
-    char ch;
-
     do
     {
+
+        unsigned char checksum;
+        int count;
+        char ch;
 
         uart_put('$');
 
@@ -435,13 +435,14 @@ char *mem2hex(char *mem, char *buf, int count, int may_fault)
 {
 
     int i;
-    unsigned char ch;
 
     if (may_fault)
         mem_fault_routine = set_mem_err;
 
     for (i = 0; i < count; i++)
     {
+
+        unsigned char ch;
 
         ch = get_char(mem++);
 
@@ -466,13 +467,14 @@ char *hex2mem(char *buf, char *mem, int count, int may_fault)
 {
 
     int i;
-    unsigned char ch;
 
     if (may_fault)
         mem_fault_routine = set_mem_err;
 
     for (i = 0; i < count; i++)
     {
+
+        unsigned char ch;
 
         ch = hex(*buf++) << 4;
         ch = ch + hex(*buf++);
@@ -587,14 +589,13 @@ int hexToInt(char **ptr, int *intValue)
 {
 
     int numChars = 0;
-    int hexValue;
 
     *intValue = 0;
 
     while (**ptr)
     {
 
-        hexValue = hex(**ptr);
+        int hexValue = hex(**ptr);
 
         if (hexValue >= 0)
         {
@@ -656,7 +657,7 @@ void handle_exception(int exceptionVector)
 
     stepping = 0;
 
-    while (1 == 1)
+    for (;;)
     {
 
         remcomOutBuffer[0] = 0;

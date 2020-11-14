@@ -1,6 +1,5 @@
 #include <abi.h>
 #include <fudge.h>
-#include <common.h>
 
 struct partition
 {

@@ -174,12 +174,9 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
     {
 
         struct {struct message_header header; struct message_data message;} message;
-        unsigned int offset = 0;
 
         message_initheader(&message.header, EVENT_DATA, ring_count(&output));
-
-        offset = message_append(&message.message, offset, ring_count(&output), outputdata);
-
+        message_append(&message.message, 0, ring_count(&output), outputdata);
         file_writeall(FILE_G0, &message, message.header.length);
         ring_reset(&output);
 

@@ -1,7 +1,6 @@
-#include <fudge/module.h>
-#include <base/base.h>
-#include <base/block.h>
-#include <block/block.h>
+#include <fudge.h>
+#include <kernel.h>
+#include <modules/block/block.h>
 #include "ext2.h"
 
 static void read_superblock(struct base_block *interface, struct base_device *device, struct ext2_superblock *sb)
