@@ -50,23 +50,13 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void oninit(struct channel *channel)
+void init(struct channel *channel)
 {
 
     sha1_init(&s);
     channel_setsignal(channel, EVENT_MAIN, onmain);
     channel_setsignal(channel, EVENT_DATA, ondata);
     channel_setsignal(channel, EVENT_FILE, onfile);
-
-}
-
-void main(void)
-{
-
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_listen(&channel, oninit);
 
 }
 

@@ -21,7 +21,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void oninit(struct channel *channel)
+void init(struct channel *channel)
 {
 
     unsigned int id = file_spawn("/bin/slang");
@@ -40,16 +40,6 @@ static void oninit(struct channel *channel)
         channel_place(channel, id, EVENT_MAIN, 0, 0);
 
     }
-
-}
-
-void main(void)
-{
-
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_listen(&channel, oninit);
 
 }
 

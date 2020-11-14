@@ -54,7 +54,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void oninit(struct channel *channel)
+void init(struct channel *channel)
 {
 
     if (!file_walk2(FILE_G0, "/system/wclient"))
@@ -63,16 +63,6 @@ static void oninit(struct channel *channel)
     channel_setsignal(channel, EVENT_MAIN, onmain);
     channel_setsignal(channel, EVENT_WMMOUSEPRESS, onwmmousepress);
     channel_setsignal(channel, EVENT_WMCLOSE, onwmclose);
-
-}
-
-void main(void)
-{
-
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_listen(&channel, oninit);
 
 }
 

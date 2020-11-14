@@ -3,6 +3,7 @@ L:=\
 
 O:=\
     $(DIR_LIB)/abi/channel.o \
+    $(DIR_LIB)/abi/crt0.o \
     $(DIR_LIB)/abi/echo.o \
     $(DIR_LIB)/abi/file.o \
     $(DIR_LIB)/abi/job.o \
@@ -17,6 +18,7 @@ L:=\
 
 O:=\
     $(DIR_LIB)/abi/channel.o \
+    $(DIR_LIB)/abi/crt0.o \
     $(DIR_LIB)/abi/echo.o \
     $(DIR_LIB)/abi/file.o \
     $(DIR_LIB)/abi/job.o \

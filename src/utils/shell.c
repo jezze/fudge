@@ -270,7 +270,7 @@ static void onkeyrelease(struct channel *channel, unsigned int source, void *mda
 
 }
 
-static void oninit(struct channel *channel)
+void init(struct channel *channel)
 {
 
     ring_init(&input, FUDGE_BSIZE, inputbuffer);
@@ -286,16 +286,6 @@ static void oninit(struct channel *channel)
     channel_setsignal(channel, EVENT_KEYRELEASE, onkeyrelease);
     channel_setsignal(channel, EVENT_DATA, ondata);
     channel_setsignal(channel, EVENT_MAIN, onmain);
-
-}
-
-void main(void)
-{
-
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_listen(&channel, oninit);
 
 }
 

@@ -40,20 +40,10 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void oninit(struct channel *channel)
+void init(struct channel *channel)
 {
 
     channel_setsignal(channel, EVENT_DATA, ondata);
-
-}
-
-void main(void)
-{
-
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_listen(&channel, oninit);
 
 }
 

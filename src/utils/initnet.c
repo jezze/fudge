@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-void main(void)
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct ipv4_arpentry entry;
@@ -24,6 +24,14 @@ void main(void)
     file_open(FILE_L0);
     file_writeall(FILE_L0, &entry, sizeof (struct ipv4_arpentry));
     file_close(FILE_L0);
+    channel_close(channel);
+
+}
+
+void init(struct channel *channel)
+{
+
+    channel_setsignal(channel, EVENT_MAIN, onmain);
 
 }
 

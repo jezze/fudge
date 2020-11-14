@@ -368,7 +368,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void oninit(struct channel *channel)
+void init(struct channel *channel)
 {
 
     ring_init(&output, FUDGE_BSIZE, outputdata);
@@ -388,16 +388,6 @@ static void oninit(struct channel *channel)
     channel_setsignal(channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(channel, EVENT_WMCLOSE, onwmclose);
-
-}
-
-void main(void)
-{
-
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_listen(&channel, oninit);
 
 }
 

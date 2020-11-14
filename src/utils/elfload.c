@@ -251,7 +251,7 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void oninit(struct channel *channel)
+void init(struct channel *channel)
 {
 
     if (!file_walk2(FILE_G0, "/kernel"))
@@ -261,16 +261,6 @@ static void oninit(struct channel *channel)
         return;
 
     channel_setsignal(channel, EVENT_FILE, onfile);
-
-}
-
-void main(void)
-{
-
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_listen(&channel, oninit);
 
 }
 

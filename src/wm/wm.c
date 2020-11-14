@@ -931,7 +931,7 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void oninit(struct channel *channel)
+void init(struct channel *channel)
 {
 
     list_init(&viewlist);
@@ -972,16 +972,6 @@ static void oninit(struct channel *channel)
     channel_setsignal(channel, EVENT_VIDEOMODE, onvideomode);
     channel_setsignal(channel, EVENT_WMMAP, onwmmap);
     channel_setsignal(channel, EVENT_WMUNMAP, onwmunmap);
-
-}
-
-void main(void)
-{
-
-    struct channel channel;
-
-    channel_init(&channel);
-    channel_listen(&channel, oninit);
 
 }
 

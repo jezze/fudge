@@ -132,22 +132,6 @@ unsigned int channel_pollall(struct channel *channel, struct message_header *hea
 
 }
 
-void channel_listen(struct channel *channel, void (*oninit)(struct channel *channel))
-{
-
-    struct message_header header;
-    struct message_data data;
-
-    if (oninit)
-        oninit(channel);
-
-    channel->poll = 1;
-
-    while (poll(channel, &header, &data))
-        dispatch(channel, &header, &data);
-
-}
-
 void channel_close(struct channel *channel)
 {
 
@@ -195,7 +179,7 @@ void channel_init(struct channel *channel)
 
     unsigned int i;
 
-    channel->poll = 0;
+    channel->poll = 1;
 
     for (i = 0; i < EVENTS; i++)
     {
