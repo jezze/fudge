@@ -288,6 +288,8 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
         if (wmkeypress->keymod & KEYMOD_SHIFT)
             content.offset--;
 
+        break;
+
     case 0x4B:
         moveleft(1);
 
@@ -306,6 +308,8 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
     case 0x50:
         if (wmkeypress->keymod & KEYMOD_SHIFT)
             content.offset++;
+
+        break;
 
     default:
         ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
