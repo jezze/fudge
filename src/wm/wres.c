@@ -32,7 +32,7 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
 
 }
 
-static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_place(channel, source, EVENT_WMUNMAP, 0, 0);
@@ -61,8 +61,8 @@ void init(struct channel *channel)
         return;
 
     channel_setsignal(channel, EVENT_MAIN, onmain);
+    channel_setsignal(channel, EVENT_TERM, onterm);
     channel_setsignal(channel, EVENT_WMMOUSEPRESS, onwmmousepress);
-    channel_setsignal(channel, EVENT_WMCLOSE, onwmclose);
 
 }
 

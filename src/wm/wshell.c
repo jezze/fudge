@@ -329,7 +329,7 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-static void onwmclose(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_place(channel, source, EVENT_WMUNMAP, 0, 0);
@@ -384,10 +384,10 @@ void init(struct channel *channel)
 
     channel_setsignal(channel, EVENT_ANY, onany);
     channel_setsignal(channel, EVENT_MAIN, onmain);
+    channel_setsignal(channel, EVENT_TERM, onterm);
     channel_setsignal(channel, EVENT_DATA, ondata);
     channel_setsignal(channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(channel, EVENT_WMSHOW, onwmshow);
-    channel_setsignal(channel, EVENT_WMCLOSE, onwmclose);
 
 }
 

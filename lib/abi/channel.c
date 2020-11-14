@@ -41,6 +41,13 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
+static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_close(channel);
+
+}
+
 static void onredirect(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -190,6 +197,7 @@ void channel_init(struct channel *channel)
     }
 
     channel_setsignal(channel, EVENT_MAIN, onmain);
+    channel_setsignal(channel, EVENT_TERM, onterm);
     channel_setsignal(channel, EVENT_REDIRECT, onredirect);
 
 }

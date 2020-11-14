@@ -2,11 +2,11 @@
 #define EVENT_ANY                       0x00
 #define EVENT_ERROR                     0x01
 #define EVENT_MAIN                      0x02
-#define EVENT_CLOSE                     0x03
-#define EVENT_REDIRECT                  0x04
-#define EVENT_DATA                      0x05
-#define EVENT_FILE                      0x06
-#define EVENT_CTRL                      0x07
+#define EVENT_TERM                      0x03
+#define EVENT_CLOSE                     0x04
+#define EVENT_REDIRECT                  0x05
+#define EVENT_DATA                      0x06
+#define EVENT_FILE                      0x07
 #define EVENT_KEYPRESS                  0x10
 #define EVENT_KEYRELEASE                0x11
 #define EVENT_MOUSEMOVE                 0x12

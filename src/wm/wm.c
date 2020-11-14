@@ -179,7 +179,7 @@ static void closeremotes(struct channel *channel, struct list *remotes)
 
         struct remote *remote = current->data;
 
-        channel_place(channel, remote->source, EVENT_WMCLOSE, 0, 0);
+        channel_place(channel, remote->source, EVENT_TERM, 0, 0);
 
     }
 
@@ -429,7 +429,7 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
             break;
 
         if ((keymod & KEYMOD_SHIFT))
-            channel_place(channel, currentview->currentremote->source, EVENT_WMCLOSE, 0, 0);
+            channel_place(channel, currentview->currentremote->source, EVENT_TERM, 0, 0);
 
         break;
 
