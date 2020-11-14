@@ -6,16 +6,11 @@
 static void dispatch(struct channel *channel, struct message_header *header, struct message_data *data)
 {
 
-    if (header->type < EVENTS)
-    {
+    if (channel->signals[header->type].callback)
+        channel->signals[header->type].callback(channel, header->source, data->buffer, message_datasize(header));
 
-        if (channel->signals[header->type].callback)
-            channel->signals[header->type].callback(channel, header->source, data->buffer, message_datasize(header));
-
-        if (channel->signals[EVENT_ANY].callback)
-            channel->signals[EVENT_ANY].callback(channel, header->source, data->buffer, message_datasize(header));
-
-    }
+    if (channel->signals[EVENT_ANY].callback)
+        channel->signals[EVENT_ANY].callback(channel, header->source, data->buffer, message_datasize(header));
 
 }
 
