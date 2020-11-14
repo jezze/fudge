@@ -173,10 +173,10 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
     if (ring_count(&output))
     {
 
-        struct {struct message_header header; struct message_data message;} message;
+        struct {struct message_header header; struct message_data data;} message;
 
         message_initheader(&message.header, EVENT_DATA, ring_count(&output));
-        message_append(&message.message, 0, ring_count(&output), outputdata);
+        message_append(&message.data, 0, ring_count(&output), outputdata);
         file_writeall(FILE_G0, &message, message.header.length);
         ring_reset(&output);
 

@@ -6,13 +6,13 @@ static struct crc s;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_data message;
+    struct message_data data;
     unsigned int offset = 0;
 
-    offset = message_appendvalue(&message, crc_finalize(&s), 10, 0, offset);
-    offset = message_appendstring(&message, "\n", offset);
+    offset = message_appendvalue(&data, crc_finalize(&s), 10, 0, offset);
+    offset = message_appendstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &message);
+    channel_place(channel, source, EVENT_DATA, offset, &data);
     channel_close(channel);
 
 }

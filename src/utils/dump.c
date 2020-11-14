@@ -4,18 +4,18 @@
 static void print(struct channel *channel, unsigned int source, unsigned int count, void *buffer)
 {
 
-    unsigned char *data = buffer;
+    unsigned char *b = buffer;
     unsigned int i;
 
     for (i = 0; i < count; i += 16)
     {
 
-        struct message_data message;
+        struct message_data data;
         unsigned int offset = 0;
         unsigned int j;
 
-        offset = message_appendvalue(&message, i, 16, 8, offset);
-        offset = message_appendstring(&message, "  ", offset);
+        offset = message_appendvalue(&data, i, 16, 8, offset);
+        offset = message_appendstring(&data, "  ", offset);
 
         for (j = i; j < i + 16; j++)
         {
@@ -23,21 +23,21 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
             if (j < count)
             {
 
-                offset = message_appendvalue(&message, data[j], 16, 2, offset);
-                offset = message_appendstring(&message, " ", offset);
+                offset = message_appendvalue(&data, b[j], 16, 2, offset);
+                offset = message_appendstring(&data, " ", offset);
 
             }
 
             else
             {
 
-                offset = message_appendstring(&message, "   ", offset);
+                offset = message_appendstring(&data, "   ", offset);
 
             }
 
         }
 
-        offset = message_appendstring(&message, " |", offset);
+        offset = message_appendstring(&data, " |", offset);
 
         for (j = i; j < i + 16; j++)
         {
@@ -45,27 +45,27 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
             if (j < count)
             {
 
-                char c = data[j];
+                char c = b[j];
 
                 if (!(c >= 0x20 && c <= 0x7e))
                     c = ' ';
 
-                offset = message_append(&message, offset, 1, &c);
+                offset = message_append(&data, offset, 1, &c);
 
             }
 
             else
             {
 
-                offset = message_appendstring(&message, " ", offset);
+                offset = message_appendstring(&data, " ", offset);
 
             }
 
         }
 
-        offset = message_appendstring(&message, "|\n", offset);
+        offset = message_appendstring(&data, "|\n", offset);
 
-        channel_place(channel, source, EVENT_DATA, offset, &message);
+        channel_place(channel, source, EVENT_DATA, offset, &data);
 
     }
 

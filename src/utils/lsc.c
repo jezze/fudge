@@ -9,20 +9,20 @@ static void print(struct channel *channel, unsigned int source)
     do
     {
 
-        struct message_data message;
+        struct message_data data;
         unsigned int offset = 0;
         struct record record;
 
         file_readall(FILE_G0, &record, sizeof (struct record));
 
-        offset = message_appendvalue(&message, record.id, 16, 8, offset);
-        offset = message_appendstring(&message, " ", offset);
-        offset = message_appendvalue(&message, record.size, 16, 8, offset);
-        offset = message_appendstring(&message, " ", offset);
-        offset = message_append(&message, offset, record.length, record.name);
-        offset = message_appendstring(&message, "\n", offset);
+        offset = message_appendvalue(&data, record.id, 16, 8, offset);
+        offset = message_appendstring(&data, " ", offset);
+        offset = message_appendvalue(&data, record.size, 16, 8, offset);
+        offset = message_appendstring(&data, " ", offset);
+        offset = message_append(&data, offset, record.length, record.name);
+        offset = message_appendstring(&data, "\n", offset);
 
-        channel_place(channel, source, EVENT_DATA, offset, &message);
+        channel_place(channel, source, EVENT_DATA, offset, &data);
 
     } while (file_step(FILE_G0));
 

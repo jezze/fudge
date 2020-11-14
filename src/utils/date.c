@@ -4,23 +4,23 @@
 static void print(struct channel *channel, unsigned int source, struct ctrl_clocksettings *settings)
 {
 
-    struct message_data message;
+    struct message_data data;
     unsigned int offset = 0;
 
-    offset = message_appendvalue(&message, settings->year, 10, 4, offset);
-    offset = message_appendstring(&message, "-", offset);
-    offset = message_appendvalue(&message, settings->month, 10, 2, offset);
-    offset = message_appendstring(&message, "-", offset);
-    offset = message_appendvalue(&message, settings->day, 10, 2, offset);
-    offset = message_appendstring(&message, " ", offset);
-    offset = message_appendvalue(&message, settings->hours, 10, 2, offset);
-    offset = message_appendstring(&message, ":", offset);
-    offset = message_appendvalue(&message, settings->minutes, 10, 2, offset);
-    offset = message_appendstring(&message, ":", offset);
-    offset = message_appendvalue(&message, settings->seconds, 10, 2, offset);
-    offset = message_appendstring(&message, "\n", offset);
+    offset = message_appendvalue(&data, settings->year, 10, 4, offset);
+    offset = message_appendstring(&data, "-", offset);
+    offset = message_appendvalue(&data, settings->month, 10, 2, offset);
+    offset = message_appendstring(&data, "-", offset);
+    offset = message_appendvalue(&data, settings->day, 10, 2, offset);
+    offset = message_appendstring(&data, " ", offset);
+    offset = message_appendvalue(&data, settings->hours, 10, 2, offset);
+    offset = message_appendstring(&data, ":", offset);
+    offset = message_appendvalue(&data, settings->minutes, 10, 2, offset);
+    offset = message_appendstring(&data, ":", offset);
+    offset = message_appendvalue(&data, settings->seconds, 10, 2, offset);
+    offset = message_appendstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &message);
+    channel_place(channel, source, EVENT_DATA, offset, &data);
 
 }
 

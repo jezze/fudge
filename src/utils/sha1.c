@@ -7,18 +7,18 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     unsigned char digest[20];
-    struct message_data message;
+    struct message_data data;
     unsigned int offset = 0;
     unsigned int i;
 
     sha1_write(&s, digest);
 
     for (i = 0; i < 20; i++)
-        offset = message_appendvalue(&message, digest[i], 16, 2, offset);
+        offset = message_appendvalue(&data, digest[i], 16, 2, offset);
 
-    offset = message_appendstring(&message, "\n", offset);
+    offset = message_appendstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &message);
+    channel_place(channel, source, EVENT_DATA, offset, &data);
     channel_close(channel);
 
 }
