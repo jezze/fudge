@@ -1,12 +1,28 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void ontimertick(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *data = "HEJ\n";
+    struct message_header header;
+    struct message_data data;
 
-    channel_place(channel, source, EVENT_DATA, ascii_length(data), data);
+    while (channel_pollsource(channel, 0, &header, &data))
+    {
+
+        if (header.type == EVENT_TIMERTICK)
+        {
+
+            char *data = "HEJ\n";
+
+            channel_place(channel, source, EVENT_DATA, ascii_length(data), data);
+
+
+        }
+
+    }
+
+    channel_close(channel);
 
 }
 
@@ -36,7 +52,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_TIMERTICK, ontimertick);
+    channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_listen(&channel, oninit, onexit);
 
 }
