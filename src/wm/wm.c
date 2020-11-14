@@ -899,16 +899,18 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_header header;
     struct message_data data;
 
+    file_open(FILE_G1);
+    file_open(FILE_G2);
+    file_open(FILE_G3);
     file_open(FILE_G5);
     file_open(FILE_G6);
     setupvideo();
     setupviews();
     setupremotes();
     activateview(currentview);
-    file_open(FILE_G1);
-    file_open(FILE_G2);
-    file_open(FILE_G3);
     channel_pollall(channel, &header, &data);
+    file_close(FILE_G6);
+    file_close(FILE_G5);
     file_close(FILE_G3);
     file_close(FILE_G2);
     file_close(FILE_G1);

@@ -361,8 +361,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
 
     message_initheader(&header, EVENT_WMMAP, 0);
-    file_writeall(FILE_G0, &header, header.length);
     file_open(FILE_G0);
+    file_writeall(FILE_G0, &header, header.length);
     channel_pollall(channel, &header, &data);
     file_close(FILE_G0);
 
