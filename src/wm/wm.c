@@ -896,12 +896,22 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    struct message_header header;
+    struct message_data data;
+
     file_open(FILE_G5);
     file_open(FILE_G6);
     setupvideo();
     setupviews();
     setupremotes();
     activateview(currentview);
+    file_open(FILE_G1);
+    file_open(FILE_G2);
+    file_open(FILE_G3);
+    channel_pollall(channel, &header, &data);
+    file_close(FILE_G3);
+    file_close(FILE_G2);
+    file_close(FILE_G1);
 
 }
 
@@ -916,8 +926,6 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 
     if (!file_walk(FILE_G6, FILE_G4, "data"))
         return;
-
-    channel_setsignal(channel, EVENT_MAIN, onmain);
 
 }
 
@@ -962,18 +970,6 @@ static void oninit(struct channel *channel)
     channel_setsignal(channel, EVENT_VIDEOMODE, onvideomode);
     channel_setsignal(channel, EVENT_WMMAP, onwmmap);
     channel_setsignal(channel, EVENT_WMUNMAP, onwmunmap);
-    file_open(FILE_G1);
-    file_open(FILE_G2);
-    file_open(FILE_G3);
-
-}
-
-static void onexit(struct channel *channel)
-{
-
-    file_close(FILE_G3);
-    file_close(FILE_G2);
-    file_close(FILE_G1);
 
 }
 
@@ -983,7 +979,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_listen(&channel, oninit, onexit);
+    channel_listen(&channel, oninit);
 
 }
 

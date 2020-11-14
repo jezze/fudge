@@ -94,7 +94,7 @@ void main(void)
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_MAIN, onmain);
     channel_setsignal(&channel, EVENT_FILE, onfile);
-    channel_listen(&channel, 0, 0);
+    channel_listen(&channel, 0);
 
 }
 

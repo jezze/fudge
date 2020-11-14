@@ -188,7 +188,14 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    struct message_header header;
+    struct message_data data;
+
     printprompt();
+    file_open(FILE_G0);
+    channel_pollall(channel, &header, &data);
+    file_close(FILE_G0);
+    channel_close(channel);
 
 }
 
@@ -274,14 +281,11 @@ static void oninit(struct channel *channel)
     if (!file_walk2(FILE_G1, "/system/console/if:0/transmit"))
         return;
 
-    file_open(FILE_G0);
-
-}
-
-static void onexit(struct channel *channel)
-{
-
-    file_close(FILE_G0);
+    channel_setsignal(channel, EVENT_CONSOLEDATA, onconsoledata);
+    channel_setsignal(channel, EVENT_KEYPRESS, onkeypress);
+    channel_setsignal(channel, EVENT_KEYRELEASE, onkeyrelease);
+    channel_setsignal(channel, EVENT_DATA, ondata);
+    channel_setsignal(channel, EVENT_MAIN, onmain);
 
 }
 
@@ -291,12 +295,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_CONSOLEDATA, onconsoledata);
-    channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_setsignal(&channel, EVENT_KEYPRESS, onkeypress);
-    channel_setsignal(&channel, EVENT_KEYRELEASE, onkeyrelease);
-    channel_listen(&channel, oninit, onexit);
+    channel_listen(&channel, oninit);
 
 }
 

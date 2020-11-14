@@ -188,9 +188,13 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     struct message_header header;
+    struct message_data data;
 
     message_initheader(&header, EVENT_WMMAP, 0);
     file_writeall(FILE_G0, &header, header.length);
+    file_open(FILE_G0);
+    channel_pollall(channel, &header, &data);
+    file_close(FILE_G0);
 
 }
 
@@ -211,14 +215,6 @@ static void oninit(struct channel *channel)
     channel_setsignal(channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setsignal(channel, EVENT_WMSHOW, onwmshow);
     channel_setsignal(channel, EVENT_WMCLOSE, onwmclose);
-    file_open(FILE_G0);
-
-}
-
-static void onexit(struct channel *channel)
-{
-
-    file_close(FILE_G0);
 
 }
 
@@ -228,7 +224,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_listen(&channel, oninit, onexit);
+    channel_listen(&channel, oninit);
 
 }
 

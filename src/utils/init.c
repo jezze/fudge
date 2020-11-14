@@ -49,7 +49,7 @@ void main(void)
 
     channel_init(&channel);
     channel_setsignal(&channel, EVENT_DATA, ondata);
-    channel_listen(&channel, oninit, 0);
+    channel_listen(&channel, oninit);
 
 }
 

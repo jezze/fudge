@@ -127,7 +127,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     struct request *request = &requests[0];
-    unsigned int offset = walk(channel, source, request, "build/data/help.txt");
+    unsigned int offset;
+
+    file_open(FILE_G0);
+
+    offset = walk(channel, source, request, "build/data/help.txt");
 
     if (offset != ERROR)
     {
@@ -151,6 +155,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     }
 
+    file_close(FILE_G0);
     channel_close(channel);
 
 }
@@ -161,14 +166,7 @@ static void oninit(struct channel *channel)
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;
 
-    file_open(FILE_G0);
-
-}
-
-static void onexit(struct channel *channel)
-{
-
-    file_close(FILE_G0);
+    channel_setsignal(channel, EVENT_MAIN, onmain);
 
 }
 
@@ -178,8 +176,7 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_MAIN, onmain);
-    channel_listen(&channel, oninit, onexit);
+    channel_listen(&channel, oninit);
 
 }
 
