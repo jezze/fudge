@@ -260,6 +260,8 @@ static void oninit(struct channel *channel)
     if (!file_walk(FILE_G1, FILE_G0, "fudge"))
         return;
 
+    channel_setsignal(channel, EVENT_FILE, onfile);
+
 }
 
 void main(void)
@@ -268,7 +270,6 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_FILE, onfile);
     channel_listen(&channel, oninit);
 
 }

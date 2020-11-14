@@ -33,6 +33,7 @@ static void oninit(struct channel *channel)
         char *arch = "/config/arch.slang";
         char *init = "/config/init.slang";
 
+        channel_setsignal(channel, EVENT_DATA, ondata);
         channel_place(channel, id, EVENT_FILE, ascii_lengthz(base), base);
         channel_place(channel, id, EVENT_FILE, ascii_lengthz(arch), arch);
         channel_place(channel, id, EVENT_FILE, ascii_lengthz(init), init);
@@ -48,7 +49,6 @@ void main(void)
     struct channel channel;
 
     channel_init(&channel);
-    channel_setsignal(&channel, EVENT_DATA, ondata);
     channel_listen(&channel, oninit);
 
 }
