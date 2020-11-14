@@ -13,6 +13,7 @@
 
 extern void halt(void);
 
+/*
 struct atag_header
 {
 
@@ -20,6 +21,7 @@ struct atag_header
     unsigned int tag;
 
 };
+*/
 
 static struct arch_container
 {
@@ -193,7 +195,9 @@ void timer_do(void)
     mmio[0x00] = 0xffffff;
     mmio[0x06] = 0xffffff;
     mmio[0x02] = 0x80 | 0x40 | 0x02 | 0x00 | (1 << 5);
+    /*
     mmio[0x02] = ~0;
+    */
 
 }
 
