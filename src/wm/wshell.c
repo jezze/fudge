@@ -17,6 +17,8 @@ static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
 static unsigned int mode = MODE_NORMAL;
+static struct job jobs[32];
+static unsigned int njobs;
 
 static void updatecontent(void)
 {
@@ -129,9 +131,6 @@ static void interpret(struct channel *channel, struct ring *ring)
     {
 
         struct message_header header;
-        struct job_status status;
-        struct job jobs[32];
-        unsigned int njobs = 0;
 
         while (channel_pollsource(channel, id, &header, &data))
         {
@@ -141,6 +140,8 @@ static void interpret(struct channel *channel, struct ring *ring)
 
             if (header.type == EVENT_DATA)
             {
+
+                struct job_status status;
 
                 status.start = data.buffer;
                 status.end = status.start + message_datasize(&header);
