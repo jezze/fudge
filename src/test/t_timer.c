@@ -1,6 +1,8 @@
 #include <fudge.h>
 #include <abi.h>
 
+static unsigned int counter;
+
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -13,9 +15,14 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         if (header.type == EVENT_TIMERTICK)
         {
 
-            char *data = "HEJ\n";
+            struct message_data data;
+            unsigned int offset = 0;
 
-            channel_place(channel, source, EVENT_DATA, ascii_length(data), data);
+            offset = message_appendstring(&data, "Tick: ", offset);
+            offset = message_appendvalue(&data, counter++, 10, 0, offset);
+            offset = message_appendstring(&data, "\n", offset);
+
+            channel_place(channel, source, EVENT_DATA, offset, &data);
 
 
         }
