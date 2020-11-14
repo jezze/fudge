@@ -88,7 +88,7 @@ static void *getdata(struct request *request)
 static unsigned int walk(struct channel *channel, unsigned int source, struct request *request, char *path)
 {
 
-    unsigned int length = ascii_length(path) + 1;
+    unsigned int length = ascii_lengthz(path);
     unsigned int offset = 0;
 
     while (sendpoll(request, channel, source, offset, sizeof (struct cpio_header) + 1024))

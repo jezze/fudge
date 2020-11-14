@@ -17,9 +17,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
         job_replyto(channel, id, EVENT_DATA, source);
         job_replyback(channel, id, EVENT_CLOSE);
-        channel_place(channel, id, EVENT_FILE, ascii_length(cores) + 1, cores);
-        channel_place(channel, id, EVENT_FILE, ascii_length(tasks) + 1, tasks);
-        channel_place(channel, id, EVENT_FILE, ascii_length(mailboxes) + 1, mailboxes);
+        channel_place(channel, id, EVENT_FILE, ascii_lengthz(cores), cores);
+        channel_place(channel, id, EVENT_FILE, ascii_lengthz(tasks), tasks);
+        channel_place(channel, id, EVENT_FILE, ascii_lengthz(mailboxes), mailboxes);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
         channel_poll(channel, id, EVENT_CLOSE, &header, &data);
 

@@ -63,13 +63,13 @@ unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int
             break;
 
         case 'E':
-            status->start += ascii_length(status->start) + 1;
+            status->start += ascii_lengthz(status->start);
 
             return njobs;
 
         }
 
-        status->start += ascii_length(status->start) + 1;
+        status->start += ascii_lengthz(status->start);
 
     }
 
@@ -155,7 +155,7 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
             continue;
 
         for (j = 0; j < job->nfiles; j++)
-            channel_place(channel, job->id, EVENT_FILE, ascii_length(job->files[j]) + 1, job->files[j]);
+            channel_place(channel, job->id, EVENT_FILE, ascii_lengthz(job->files[j]), job->files[j]);
 
         for (j = 0; j < job->ninputs; j++)
             channel_place(channel, job->id, EVENT_DATA, ascii_length(job->inputs[j]), job->inputs[j]);
