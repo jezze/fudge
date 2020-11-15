@@ -178,6 +178,25 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
 }
 
+unsigned int job_close(struct channel *channel, unsigned int id, struct job *jobs, unsigned int n)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job *job = &jobs[i];
+
+        if (job->id == id)
+            job->id = 0;
+
+    }
+
+    return job_count(channel, jobs, n);
+
+}
+
 void job_term(struct channel *channel, struct job *jobs, unsigned int n)
 {
 

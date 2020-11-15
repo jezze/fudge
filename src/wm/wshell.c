@@ -179,7 +179,7 @@ static void interpret(struct channel *channel, struct ring *ring)
                 {
 
                 case EVENT_CLOSE:
-                    nids--;
+                    nids = job_close(channel, header.source, jobs, njobs);
 
                     break;
 
