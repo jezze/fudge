@@ -73,23 +73,6 @@ unsigned int channel_poll(struct channel *channel, struct message_header *header
 
 }
 
-unsigned int channel_pollonly(struct channel *channel, unsigned int source, unsigned int type, struct message_header *header, struct message_data *data)
-{
-
-    while (channel_poll(channel, header, data))
-    {
-
-        if (header->source == source && header->type == type)
-            return header->type;
-
-        channel_dispatch(channel, header, data);
-
-    }
-
-    return 0;
-
-}
-
 unsigned int channel_polltype(struct channel *channel, unsigned int type, struct message_header *header, struct message_data *data)
 {
 
@@ -114,6 +97,23 @@ unsigned int channel_pollsource(struct channel *channel, unsigned int source, st
     {
 
         if (header->source == source)
+            return header->type;
+
+        channel_dispatch(channel, header, data);
+
+    }
+
+    return 0;
+
+}
+
+unsigned int channel_pollsourcetype(struct channel *channel, unsigned int source, unsigned int type, struct message_header *header, struct message_data *data)
+{
+
+    while (channel_poll(channel, header, data))
+    {
+
+        if (header->source == source && header->type == type)
             return header->type;
 
         channel_dispatch(channel, header, data);
