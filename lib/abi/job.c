@@ -176,6 +176,25 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
 }
 
+void job_term(struct channel *channel, struct job *jobs, unsigned int n)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job *job = &jobs[i];
+
+        if (!job->id)
+            continue;
+
+        channel_place(channel, job->id, EVENT_TERM, 0, 0);
+
+    }
+
+}
+
 unsigned int job_count(struct channel *channel, struct job *jobs, unsigned int n)
 {
 

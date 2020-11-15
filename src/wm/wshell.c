@@ -2,9 +2,6 @@
 #include <abi.h>
 #include <widget.h>
 
-#define MODE_NORMAL                     0
-#define MODE_WAITING                    1
-
 static struct widget_textbox content;
 static char outputdata[FUDGE_BSIZE];
 static struct ring output;
@@ -16,9 +13,9 @@ static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
-static unsigned int mode = MODE_NORMAL;
 static struct job jobs[32];
 static unsigned int njobs;
+static unsigned int nids;
 
 static void updatecontent(void)
 {
@@ -115,6 +112,23 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
 
 }
 
+static void check(struct channel *channel, void *mdata)
+{
+
+    struct event_wmkeypress *wmkeypress = mdata;
+
+    switch (wmkeypress->scancode)
+    {
+
+    case 0x10:
+        job_term(channel, jobs, njobs);
+
+        break;
+
+    }
+
+}
+
 static void interpret(struct channel *channel, struct ring *ring)
 {
 
@@ -155,11 +169,9 @@ static void interpret(struct channel *channel, struct ring *ring)
 
         job_run(channel, jobs, njobs);
 
-        mode = MODE_WAITING;
+        nids = job_count(channel, jobs, njobs);
 
-        njobs = job_count(channel, jobs, njobs);
-
-        if (njobs)
+        if (nids)
         {
 
             while (channel_poll(channel, &header, &data))
@@ -169,7 +181,12 @@ static void interpret(struct channel *channel, struct ring *ring)
                 {
 
                 case EVENT_CLOSE:
-                    njobs--;
+                    nids--;
+
+                    break;
+
+                case EVENT_WMKEYPRESS:
+                    check(channel, data.buffer);
 
                     break;
 
@@ -180,14 +197,12 @@ static void interpret(struct channel *channel, struct ring *ring)
 
                 }
 
-                if (!njobs)
+                if (!nids)
                     break;
 
             }
 
         }
-
-        mode = MODE_NORMAL;
 
     }
 
@@ -263,9 +278,7 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
 
     case 0x0F:
         ring_move(&input1, &input2);
-
-        if (mode == MODE_NORMAL)
-            complete(channel, &input1);
+        complete(channel, &input1);
 
         break;
 
@@ -274,9 +287,7 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
         ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
         copyring(&prompt);
         copyring(&input1);
-
-        if (mode == MODE_NORMAL)
-            interpret(channel, &input1);
+        interpret(channel, &input1);
 
         break;
 

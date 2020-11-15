@@ -1,15 +1,12 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define MODE_NORMAL                     0
-#define MODE_WAITING                    1
-
 static unsigned int keymod = KEYMOD_NONE;
 static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
-static unsigned int mode = MODE_NORMAL;
 static struct job jobs[32];
 static unsigned int njobs;
+static unsigned int nids;
 
 static void printprompt(void)
 {
@@ -42,6 +39,23 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
     }
 
     return 0;
+
+}
+
+static void check(struct channel *channel, void *mdata)
+{
+
+    struct event_consoledata *consoledata = mdata;
+
+    switch (consoledata->data)
+    {
+
+    case 'q':
+        job_term(channel, jobs, njobs);
+
+        break;
+
+    }
 
 }
 
@@ -85,11 +99,9 @@ static void interpret(struct channel *channel, struct ring *ring)
 
         job_run(channel, jobs, njobs);
 
-        mode = MODE_WAITING;
+        nids = job_count(channel, jobs, njobs);
 
-        njobs = job_count(channel, jobs, njobs);
-
-        if (njobs)
+        if (nids)
         {
 
             while (channel_poll(channel, &header, &data))
@@ -99,7 +111,12 @@ static void interpret(struct channel *channel, struct ring *ring)
                 {
 
                 case EVENT_CLOSE:
-                    njobs--;
+                    nids--;
+
+                    break;
+
+                case EVENT_CONSOLEDATA:
+                    check(channel, data.buffer);
 
                     break;
 
@@ -110,14 +127,12 @@ static void interpret(struct channel *channel, struct ring *ring)
 
                 }
 
-                if (!njobs)
+                if (!nids)
                     break;
 
             }
 
         }
-
-        mode = MODE_NORMAL;
 
     }
 
@@ -164,13 +179,8 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         break;
 
     case '\t':
-        if (mode == MODE_NORMAL)
-        {
-
-            complete(channel, &input);
-            printprompt();
-
-        }
+        complete(channel, &input);
+        printprompt();
 
         break;
 
@@ -189,14 +199,8 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
     case '\n':
         file_writeall(FILE_G1, &consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
-
-        if (mode == MODE_NORMAL)
-        {
-
-            interpret(channel, &input);
-            printprompt();
-
-        }
+        interpret(channel, &input);
+        printprompt();
 
         break;
 
@@ -255,27 +259,16 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         break;
 
     case 0x0F:
-        if (mode == MODE_NORMAL)
-        {
-
-            complete(channel, &input);
-            printprompt();
-
-        }
+        complete(channel, &input);
+        printprompt();
 
         break;
 
     case 0x1C:
         file_writeall(FILE_G1, keycode->value, keycode->length);
         ring_write(&input, keycode->value, keycode->length);
-
-        if (mode == MODE_NORMAL)
-        {
-
-            interpret(channel, &input);
-            printprompt();
-
-        }
+        interpret(channel, &input);
+        printprompt();
 
         break;
 
