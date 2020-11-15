@@ -17,7 +17,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         job_replyback(channel, id, EVENT_CLOSE);
         channel_place(channel, id, EVENT_FILE, ascii_lengthz(path), path);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
-        channel_pollsourcetype(channel, id, EVENT_CLOSE, &header, &data);
+        channel_pollsourceevent(channel, id, EVENT_CLOSE, &header, &data);
 
     }
 

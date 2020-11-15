@@ -77,25 +77,25 @@ unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int
 
 }
 
-void job_replyto(struct channel *channel, unsigned int target, unsigned int type, unsigned int id)
+void job_replyto(struct channel *channel, unsigned int target, unsigned int event, unsigned int id)
 {
 
     struct event_redirect redirect;
 
-    redirect.type = type;
+    redirect.event = event;
     redirect.mode = EVENT_REDIRECT_TARGET;
-    redirect.id = (channel->callbacks[type].redirect) ? (channel->callbacks[type].redirect) : id;
+    redirect.id = (channel->callbacks[event].redirect) ? (channel->callbacks[event].redirect) : id;
 
     channel_place(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
 
 }
 
-void job_replyback(struct channel *channel, unsigned int target, unsigned int type)
+void job_replyback(struct channel *channel, unsigned int target, unsigned int event)
 {
 
     struct event_redirect redirect;
 
-    redirect.type = type;
+    redirect.event = event;
     redirect.mode = EVENT_REDIRECT_SOURCE;
     redirect.id = 0;
 

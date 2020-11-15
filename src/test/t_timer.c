@@ -14,7 +14,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     while (channel_pollsource(channel, 0, &header, &data))
     {
 
-        if (header.type == EVENT_TIMERTICK)
+        if (header.event == EVENT_TIMERTICK)
         {
 
             unsigned int offset = 0;

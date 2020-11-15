@@ -78,10 +78,10 @@ static void interpret(struct channel *channel, struct ring *ring)
         while (channel_pollsource(channel, id, &header, &data))
         {
 
-            if (header.type == EVENT_CLOSE)
+            if (header.event == EVENT_CLOSE)
                 break;
 
-            if (header.type == EVENT_DATA)
+            if (header.event == EVENT_DATA)
             {
 
                 struct job_status status;
@@ -101,7 +101,7 @@ static void interpret(struct channel *channel, struct ring *ring)
         while (nids && channel_poll(channel, &header, &data))
         {
 
-            switch (header.type)
+            switch (header.event)
             {
 
             case EVENT_CLOSE:
@@ -144,10 +144,10 @@ static void complete(struct channel *channel, struct ring *ring)
         while (channel_pollsource(channel, id, &header, &data))
         {
 
-            if (header.type == EVENT_CLOSE)
+            if (header.event == EVENT_CLOSE)
                 break;
 
-            if (header.type == EVENT_DATA)
+            if (header.event == EVENT_DATA)
                 file_writeall(FILE_G1, data.buffer, message_datasize(&header));
 
         }

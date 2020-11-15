@@ -47,10 +47,10 @@ unsigned int message_appendvalue(struct message_data *data, int value, unsigned 
 
 }
 
-void message_initheader(struct message_header *header, unsigned int type, unsigned int length)
+void message_initheader(struct message_header *header, unsigned int event, unsigned int length)
 {
 
-    header->type = type;
+    header->event = event;
     header->source = 0;
     header->length = message_headersize(header) + length;
 

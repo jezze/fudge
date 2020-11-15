@@ -33,7 +33,7 @@
 struct event_redirect
 {
 
-    unsigned int type;
+    unsigned int event;
     unsigned int mode;
     unsigned int id;
 
