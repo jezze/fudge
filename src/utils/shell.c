@@ -77,17 +77,13 @@ static void interpret(struct channel *channel, struct ring *ring)
                 status.end = status.start + message_datasize(&header);
 
                 while (status.start < status.end)
-                {
-
                     njobs = job_parse(&status, jobs, 32);
-
-                    job_run(channel, jobs, njobs);
-
-                }
 
             }
 
         }
+
+        job_run(channel, jobs, njobs);
 
         mode = MODE_WAITING;
 
