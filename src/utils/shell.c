@@ -240,7 +240,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     file_close(FILE_G1);
     file_close(FILE_G0);
-    channel_close(channel);
 
 }
 

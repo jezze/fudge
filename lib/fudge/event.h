@@ -17,17 +17,16 @@
 #define EVENT_TIMERTICK                 0x17
 #define EVENT_VIDEOMODE                 0x18
 #define EVENT_BLOCKREQUEST              0x19
-#define EVENT_WMCLOSE                   0x20
-#define EVENT_WMMAP                     0x21
-#define EVENT_WMUNMAP                   0x22
-#define EVENT_WMSHOW                    0x23
-#define EVENT_WMHIDE                    0x24
-#define EVENT_WMKEYPRESS                0x25
-#define EVENT_WMKEYRELEASE              0x26
-#define EVENT_WMMOUSEMOVE               0x27
-#define EVENT_WMMOUSESCROLL             0x28
-#define EVENT_WMMOUSEPRESS              0x29
-#define EVENT_WMMOUSERELEASE            0x2A
+#define EVENT_WMMAP                     0x20
+#define EVENT_WMUNMAP                   0x21
+#define EVENT_WMSHOW                    0x22
+#define EVENT_WMHIDE                    0x23
+#define EVENT_WMKEYPRESS                0x24
+#define EVENT_WMKEYRELEASE              0x25
+#define EVENT_WMMOUSEMOVE               0x26
+#define EVENT_WMMOUSESCROLL             0x27
+#define EVENT_WMMOUSEPRESS              0x28
+#define EVENT_WMMOUSERELEASE            0x29
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 

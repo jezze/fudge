@@ -162,7 +162,10 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_place(channel, source, EVENT_WMUNMAP, 0, 0);
+    struct message_header header;
+
+    message_initheader(&header, EVENT_WMUNMAP, 0);
+    file_writeall(FILE_G0, &header, header.length);
     channel_close(channel);
 
 }
