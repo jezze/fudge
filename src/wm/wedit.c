@@ -13,6 +13,9 @@ static struct ring input2;
 static void updatecontent(void)
 {
 
+    struct {struct message_header header; struct message_data data;} message;
+    unsigned int count;
+
     content.length = ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&input1);
 
@@ -21,6 +24,17 @@ static void updatecontent(void)
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
     ring_write(&output, "\n", 1);
+
+    while ((count = ring_read(&output, message.data.buffer, FUDGE_MSIZE)))
+    {
+
+        message_initheader(&message.header, EVENT_DATA, count);
+        file_writeall(FILE_G0, &message, message.header.length);
+
+    }
+
+    ring_reset(&output);
+
 
 }
 
@@ -170,23 +184,6 @@ static void onterm(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onany(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    if (ring_count(&output))
-    {
-
-        struct {struct message_header header; struct message_data data;} message;
-
-        message_initheader(&message.header, EVENT_DATA, ring_count(&output));
-        message_append(&message.data, 0, ring_count(&output), outputdata);
-        file_writeall(FILE_G0, &message, message.header.length);
-        ring_reset(&output);
-
-    }
-
-}
-
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -215,7 +212,6 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G0, "/system/wclient"))
         return;
 
-    channel_setcallback(channel, EVENT_ANY, onany);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_TERM, onterm);
     channel_setcallback(channel, EVENT_FILE, onfile);
