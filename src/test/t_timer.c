@@ -41,7 +41,7 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G0, "/system/timer/if:0/event"))
         return;
 
-    channel_setsignal(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
 
 }
 

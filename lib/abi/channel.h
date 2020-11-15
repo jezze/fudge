@@ -2,7 +2,7 @@ struct channel
 {
 
     unsigned int poll;
-    struct {void (*callback)(struct channel *channel, unsigned int source, void *data, unsigned int size); unsigned int redirect;} signals[EVENTS];
+    struct {void (*callback)(struct channel *channel, unsigned int source, void *data, unsigned int size); unsigned int redirect;} callbacks[EVENTS];
 
 };
 
@@ -14,5 +14,5 @@ unsigned int channel_pollsource(struct channel *channel, unsigned int source, st
 unsigned int channel_pollsourcetype(struct channel *channel, unsigned int source, unsigned int type, struct message_header *header, struct message_data *data);
 void channel_close(struct channel *channel);
 void channel_setredirect(struct channel *channel, unsigned int type, unsigned int mode, unsigned int id, unsigned int source);
-void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize));
+void channel_setcallback(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize));
 void channel_init(struct channel *channel);

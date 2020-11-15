@@ -66,9 +66,9 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G0, "/system/wclient"))
         return;
 
-    channel_setsignal(channel, EVENT_MAIN, onmain);
-    channel_setsignal(channel, EVENT_TERM, onterm);
-    channel_setsignal(channel, EVENT_WMMOUSEPRESS, onwmmousepress);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_TERM, onterm);
+    channel_setcallback(channel, EVENT_WMMOUSEPRESS, onwmmousepress);
 
 }
 

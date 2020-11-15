@@ -260,7 +260,7 @@ void init(struct channel *channel)
     if (!file_walk(FILE_G1, FILE_G0, "fudge"))
         return;
 
-    channel_setsignal(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_FILE, onfile);
 
 }
 

@@ -84,7 +84,7 @@ void job_replyto(struct channel *channel, unsigned int target, unsigned int type
 
     redirect.type = type;
     redirect.mode = EVENT_REDIRECT_TARGET;
-    redirect.id = (channel->signals[type].redirect) ? (channel->signals[type].redirect) : id;
+    redirect.id = (channel->callbacks[type].redirect) ? (channel->callbacks[type].redirect) : id;
 
     channel_place(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
 

@@ -98,7 +98,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    channel_setsignal(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
 
 }
 

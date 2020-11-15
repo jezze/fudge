@@ -163,7 +163,7 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G0, "/system/block/if:0/data"))
         return;
 
-    channel_setsignal(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
 
 }
 

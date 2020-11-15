@@ -215,12 +215,12 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G0, "/system/wclient"))
         return;
 
-    channel_setsignal(channel, EVENT_ANY, onany);
-    channel_setsignal(channel, EVENT_MAIN, onmain);
-    channel_setsignal(channel, EVENT_TERM, onterm);
-    channel_setsignal(channel, EVENT_FILE, onfile);
-    channel_setsignal(channel, EVENT_WMKEYPRESS, onwmkeypress);
-    channel_setsignal(channel, EVENT_WMSHOW, onwmshow);
+    channel_setcallback(channel, EVENT_ANY, onany);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_TERM, onterm);
+    channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_WMKEYPRESS, onwmkeypress);
+    channel_setcallback(channel, EVENT_WMSHOW, onwmshow);
 
 }
 

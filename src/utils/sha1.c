@@ -54,9 +54,9 @@ void init(struct channel *channel)
 {
 
     sha1_init(&s);
-    channel_setsignal(channel, EVENT_MAIN, onmain);
-    channel_setsignal(channel, EVENT_DATA, ondata);
-    channel_setsignal(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_DATA, ondata);
+    channel_setcallback(channel, EVENT_FILE, onfile);
 
 }
 

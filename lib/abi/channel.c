@@ -29,11 +29,11 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 void channel_dispatch(struct channel *channel, struct message_header *header, struct message_data *data)
 {
 
-    if (channel->signals[header->type].callback)
-        channel->signals[header->type].callback(channel, header->source, data->buffer, message_datasize(header));
+    if (channel->callbacks[header->type].callback)
+        channel->callbacks[header->type].callback(channel, header->source, data->buffer, message_datasize(header));
 
-    if (channel->signals[EVENT_ANY].callback)
-        channel->signals[EVENT_ANY].callback(channel, header->source, data->buffer, message_datasize(header));
+    if (channel->callbacks[EVENT_ANY].callback)
+        channel->callbacks[EVENT_ANY].callback(channel, header->source, data->buffer, message_datasize(header));
 
 }
 
@@ -47,8 +47,8 @@ unsigned int channel_place(struct channel *channel, unsigned int id, unsigned in
     if (type < EVENTS)
     {
 
-        if (channel->signals[type].redirect)
-            id = channel->signals[type].redirect;
+        if (channel->callbacks[type].redirect)
+            id = channel->callbacks[type].redirect;
 
         return call_place(id, &header, data);
 
@@ -129,8 +129,8 @@ void channel_close(struct channel *channel)
 
     channel->poll = 0;
 
-    if (channel->signals[EVENT_CLOSE].redirect)
-        channel_place(channel, channel->signals[EVENT_CLOSE].redirect, EVENT_CLOSE, 0, 0);
+    if (channel->callbacks[EVENT_CLOSE].redirect)
+        channel_place(channel, channel->callbacks[EVENT_CLOSE].redirect, EVENT_CLOSE, 0, 0);
 
 }
 
@@ -141,17 +141,17 @@ void channel_setredirect(struct channel *channel, unsigned int type, unsigned in
     {
 
     case 1:
-        channel->signals[type].redirect = id;
+        channel->callbacks[type].redirect = id;
 
         break;
 
     case 2:
-        channel->signals[type].redirect = source;
+        channel->callbacks[type].redirect = source;
 
         break;
 
     default:
-        channel->signals[type].redirect = 0;
+        channel->callbacks[type].redirect = 0;
 
         break;
 
@@ -159,10 +159,10 @@ void channel_setredirect(struct channel *channel, unsigned int type, unsigned in
 
 }
 
-void channel_setsignal(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize))
+void channel_setcallback(struct channel *channel, unsigned int type, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize))
 {
 
-    channel->signals[type].callback = callback;
+    channel->callbacks[type].callback = callback;
 
 }
 
@@ -176,14 +176,14 @@ void channel_init(struct channel *channel)
     for (i = 0; i < EVENTS; i++)
     {
 
-        channel_setsignal(channel, i, 0);
+        channel_setcallback(channel, i, 0);
         channel_setredirect(channel, i, 0, 0, 0);
 
     }
 
-    channel_setsignal(channel, EVENT_MAIN, onmain);
-    channel_setsignal(channel, EVENT_TERM, onterm);
-    channel_setsignal(channel, EVENT_REDIRECT, onredirect);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_TERM, onterm);
+    channel_setcallback(channel, EVENT_REDIRECT, onredirect);
 
 }
 

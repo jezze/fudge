@@ -253,10 +253,10 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G1, "/system/console/if:0/transmit"))
         return;
 
-    channel_setsignal(channel, EVENT_MAIN, onmain);
-    channel_setsignal(channel, EVENT_DATA, ondata);
-    channel_setsignal(channel, EVENT_FILE, onfile);
-    channel_setsignal(channel, EVENT_CONSOLEDATA, onconsoledata);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_DATA, ondata);
+    channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
 }
 

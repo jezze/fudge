@@ -31,7 +31,7 @@ void init(struct channel *channel)
         char *archslang = "/config/arch.slang";
         char *initslang = "/config/init.slang";
 
-        channel_setsignal(channel, EVENT_DATA, ondata);
+        channel_setcallback(channel, EVENT_DATA, ondata);
         channel_place(channel, id, EVENT_FILE, ascii_lengthz(baseslang), baseslang);
         channel_place(channel, id, EVENT_FILE, ascii_lengthz(archslang), archslang);
         channel_place(channel, id, EVENT_FILE, ascii_lengthz(initslang), initslang);

@@ -962,19 +962,19 @@ void init(struct channel *channel)
     if (!file_walk(FILE_G6, FILE_G4, "data"))
         return;
 
-    channel_setsignal(channel, EVENT_ANY, onany);
-    channel_setsignal(channel, EVENT_MAIN, onmain);
-    channel_setsignal(channel, EVENT_DATA, ondata);
-    channel_setsignal(channel, EVENT_FILE, onfile);
-    channel_setsignal(channel, EVENT_KEYPRESS, onkeypress);
-    channel_setsignal(channel, EVENT_KEYRELEASE, onkeyrelease);
-    channel_setsignal(channel, EVENT_MOUSEMOVE, onmousemove);
-    channel_setsignal(channel, EVENT_MOUSESCROLL, onmousescroll);
-    channel_setsignal(channel, EVENT_MOUSEPRESS, onmousepress);
-    channel_setsignal(channel, EVENT_MOUSERELEASE, onmouserelease);
-    channel_setsignal(channel, EVENT_VIDEOMODE, onvideomode);
-    channel_setsignal(channel, EVENT_WMMAP, onwmmap);
-    channel_setsignal(channel, EVENT_WMUNMAP, onwmunmap);
+    channel_setcallback(channel, EVENT_ANY, onany);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_DATA, ondata);
+    channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_KEYPRESS, onkeypress);
+    channel_setcallback(channel, EVENT_KEYRELEASE, onkeyrelease);
+    channel_setcallback(channel, EVENT_MOUSEMOVE, onmousemove);
+    channel_setcallback(channel, EVENT_MOUSESCROLL, onmousescroll);
+    channel_setcallback(channel, EVENT_MOUSEPRESS, onmousepress);
+    channel_setcallback(channel, EVENT_MOUSERELEASE, onmouserelease);
+    channel_setcallback(channel, EVENT_VIDEOMODE, onvideomode);
+    channel_setcallback(channel, EVENT_WMMAP, onwmmap);
+    channel_setcallback(channel, EVENT_WMUNMAP, onwmunmap);
 
 }
 

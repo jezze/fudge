@@ -376,8 +376,8 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    channel_setsignal(channel, EVENT_DATA, ondata);
-    channel_setsignal(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_DATA, ondata);
+    channel_setcallback(channel, EVENT_FILE, onfile);
 
 }
 
