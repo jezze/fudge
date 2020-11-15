@@ -1,12 +1,11 @@
 #include <fudge.h>
 #include <abi.h>
 
-static struct job jobs[32];
-static unsigned int njobs;
-
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    struct job jobs[32];
+    unsigned int njobs = 0;
     struct job_status status;
 
     status.start = mdata;

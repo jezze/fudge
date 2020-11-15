@@ -3,8 +3,6 @@
 
 static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
-static struct job jobs[32];
-static unsigned int njobs;
 
 static void printprompt(void)
 {
@@ -40,7 +38,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
 
 }
 
-static void check(struct channel *channel, void *mdata)
+static void check(struct channel *channel, void *mdata, struct job *jobs, unsigned int njobs)
 {
 
     struct event_consoledata *consoledata = mdata;
@@ -73,6 +71,8 @@ static void interpret(struct channel *channel, struct ring *ring)
     {
 
         struct message_header header;
+        struct job jobs[32];
+        unsigned int njobs = 0;
         unsigned int nids;
 
         while (channel_pollsource(channel, id, &header, &data))
@@ -110,7 +110,7 @@ static void interpret(struct channel *channel, struct ring *ring)
                 break;
 
             case EVENT_CONSOLEDATA:
-                check(channel, data.buffer);
+                check(channel, data.buffer, jobs, njobs);
 
                 break;
 

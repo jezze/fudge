@@ -13,8 +13,6 @@ static char inputdata2[FUDGE_BSIZE];
 static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
-static struct job jobs[32];
-static unsigned int njobs;
 
 static void updatecontent(void)
 {
@@ -111,7 +109,7 @@ static unsigned int interpretbuiltin(unsigned int count, char *data)
 
 }
 
-static void check(struct channel *channel, void *mdata)
+static void check(struct channel *channel, void *mdata, struct job *jobs, unsigned int njobs)
 {
 
     struct event_wmkeypress *wmkeypress = mdata;
@@ -144,6 +142,8 @@ static void interpret(struct channel *channel, struct ring *ring)
     {
 
         struct message_header header;
+        struct job jobs[32];
+        unsigned int njobs = 0;
         unsigned int nids;
 
         while (channel_pollsource(channel, id, &header, &data))
@@ -181,7 +181,7 @@ static void interpret(struct channel *channel, struct ring *ring)
                 break;
 
             case EVENT_WMKEYPRESS:
-                check(channel, data.buffer);
+                check(channel, data.buffer, jobs, njobs);
 
                 break;
 
