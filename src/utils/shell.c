@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int keymod = KEYMOD_NONE;
 static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 static struct job jobs[32];
@@ -212,18 +211,34 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
 }
 
+static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    if (!file_walk2(FILE_L0, mdata))
+        return;
+
+    if (!file_walk(FILE_G0, FILE_L0, "event"))
+        return;
+
+    if (!file_walk(FILE_G1, FILE_L0, "transmit"))
+        return;
+
+}
+
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct message_header header;
     struct message_data data;
 
-    printprompt();
     file_open(FILE_G0);
+    file_open(FILE_G1);
+    printprompt();
 
     while (channel_poll(channel, &header, &data))
         channel_dispatch(channel, &header, &data);
 
+    file_close(FILE_G1);
     file_close(FILE_G0);
     channel_close(channel);
 
@@ -233,59 +248,6 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     file_writeall(FILE_G1, mdata, msize);
-
-}
-
-static void onkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_keypress *keypress = mdata;
-    struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
-
-    keymod = keymap_modkey(keypress->scancode, keymod);
-
-    switch (keypress->scancode)
-    {
-
-    case 0x0E:
-        if (!ring_skipreverse(&input, 1))
-            break;
-
-        file_writeall(FILE_G1, "\b \b", 3);
-
-        break;
-
-    case 0x0F:
-        complete(channel, &input);
-        printprompt();
-
-        break;
-
-    case 0x1C:
-        file_writeall(FILE_G1, keycode->value, keycode->length);
-        ring_write(&input, keycode->value, keycode->length);
-        interpret(channel, &input);
-        printprompt();
-
-        break;
-
-    default:
-        ring_write(&input, keycode->value, keycode->length);
-        file_writeall(FILE_G1, keycode->value, keycode->length);
-
-        break;
-
-    }
-
-}
-
-static void onkeyrelease(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_keyrelease *keyrelease = mdata;
-
-    keymod = keymap_modkey(keyrelease->scancode, keymod);
 
 }
 
@@ -300,11 +262,10 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G1, "/system/console/if:0/transmit"))
         return;
 
-    channel_setsignal(channel, EVENT_CONSOLEDATA, onconsoledata);
-    channel_setsignal(channel, EVENT_KEYPRESS, onkeypress);
-    channel_setsignal(channel, EVENT_KEYRELEASE, onkeyrelease);
-    channel_setsignal(channel, EVENT_DATA, ondata);
     channel_setsignal(channel, EVENT_MAIN, onmain);
+    channel_setsignal(channel, EVENT_DATA, ondata);
+    channel_setsignal(channel, EVENT_FILE, onfile);
+    channel_setsignal(channel, EVENT_CONSOLEDATA, onconsoledata);
 
 }
 
