@@ -6,7 +6,6 @@ static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 static struct job jobs[32];
 static unsigned int njobs;
-static unsigned int nids;
 
 static void printprompt(void)
 {
@@ -75,6 +74,7 @@ static void interpret(struct channel *channel, struct ring *ring)
     {
 
         struct message_header header;
+        unsigned int nids;
 
         while (channel_pollsource(channel, id, &header, &data))
         {

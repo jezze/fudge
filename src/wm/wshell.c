@@ -15,7 +15,6 @@ static char textdata[FUDGE_BSIZE];
 static struct ring text;
 static struct job jobs[32];
 static unsigned int njobs;
-static unsigned int nids;
 
 static void updatecontent(void)
 {
@@ -145,6 +144,7 @@ static void interpret(struct channel *channel, struct ring *ring)
     {
 
         struct message_header header;
+        unsigned int nids;
 
         while (channel_pollsource(channel, id, &header, &data))
         {
