@@ -169,34 +169,26 @@ static void interpret(struct channel *channel, struct ring *ring)
 
         nids = job_run(channel, jobs, njobs);
 
-        if (nids)
+        while (nids && channel_poll(channel, &header, &data))
         {
 
-            while (channel_poll(channel, &header, &data))
+            switch (header.type)
             {
 
-                switch (header.type)
-                {
+            case EVENT_CLOSE:
+                nids = job_close(channel, header.source, jobs, njobs);
 
-                case EVENT_CLOSE:
-                    nids = job_close(channel, header.source, jobs, njobs);
+                break;
 
-                    break;
+            case EVENT_WMKEYPRESS:
+                check(channel, data.buffer);
 
-                case EVENT_WMKEYPRESS:
-                    check(channel, data.buffer);
+                break;
 
-                    break;
+            default:
+                channel_dispatch(channel, &header, &data);
 
-                default:
-                    channel_dispatch(channel, &header, &data);
-
-                    break;
-
-                }
-
-                if (!nids)
-                    break;
+                break;
 
             }
 
