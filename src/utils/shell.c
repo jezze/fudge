@@ -91,7 +91,35 @@ static void interpret(struct channel *channel, struct ring *ring)
 
         mode = MODE_WAITING;
 
-        job_wait(channel, jobs, njobs);
+        njobs = job_count(channel, jobs, njobs);
+
+        if (njobs)
+        {
+
+            while (channel_poll(channel, &header, &data))
+            {
+
+                switch (header.type)
+                {
+
+                case EVENT_CLOSE:
+                    njobs--;
+
+                    break;
+
+                default:
+                    channel_dispatch(channel, &header, &data);
+
+                    break;
+
+                }
+
+                if (!njobs)
+                    break;
+
+            }
+
+        }
 
         mode = MODE_NORMAL;
 

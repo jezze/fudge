@@ -176,7 +176,7 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
 }
 
-void job_wait(struct channel *channel, struct job *jobs, unsigned int n)
+unsigned int job_count(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
     unsigned int nids = 0;
@@ -192,21 +192,7 @@ void job_wait(struct channel *channel, struct job *jobs, unsigned int n)
 
     }
 
-    if (nids)
-    {
-
-        struct message_header header;
-        struct message_data data;
-
-        while (channel_polltype(channel, EVENT_CLOSE, &header, &data))
-        {
-
-            if (--nids == 0)
-                break;
-
-        }
-
-    }
+    return nids;
 
 }
 
