@@ -116,7 +116,7 @@ static unsigned int spawn(struct job *job)
 
 }
 
-void job_run(struct channel *channel, struct job *jobs, unsigned int n)
+unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
     unsigned int i;
@@ -173,6 +173,8 @@ void job_run(struct channel *channel, struct job *jobs, unsigned int n)
         channel_place(channel, job->id, EVENT_MAIN, 0, 0);
 
     }
+
+    return job_count(channel, jobs, n);
 
 }
 

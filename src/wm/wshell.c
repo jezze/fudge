@@ -167,9 +167,7 @@ static void interpret(struct channel *channel, struct ring *ring)
 
         }
 
-        job_run(channel, jobs, njobs);
-
-        nids = job_count(channel, jobs, njobs);
+        nids = job_run(channel, jobs, njobs);
 
         if (nids)
         {
