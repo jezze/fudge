@@ -99,33 +99,6 @@ static void moveright(unsigned int steps)
 
 }
 
-static unsigned int interpretbuiltin(unsigned int count, char *data)
-{
-
-    if (count < 2)
-        return 1;
-
-    if (memory_match(data, "cd ", 3))
-    {
-
-        data[count - 1] = '\0';
-
-        if (file_walk2(FILE_L0, data + 3))
-        {
-
-            file_duplicate(FILE_PW, FILE_L0);
-            file_duplicate(FILE_CW, FILE_L0);
-
-        }
-
-        return 1;
-
-    }
-
-    return 0;
-
-}
-
 static void check(struct channel *channel, void *mdata, struct job *jobs, unsigned int njobs)
 {
 
@@ -143,22 +116,16 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
 
 }
 
-static void interpret(struct channel *channel, struct ring *ring)
+static void runcommand(struct channel *channel, unsigned int count, void *buffer)
 {
 
-    struct message_data data;
-    unsigned int count = ring_read(ring, data.buffer, FUDGE_MSIZE);
-    unsigned int id;
-
-    if (interpretbuiltin(count, data.buffer))
-        return;
-
-    id = job_simple(channel, "/bin/slang", count, data.buffer);
+    unsigned int id = job_simple(channel, "/bin/slang", count, buffer);
 
     if (id)
     {
 
         struct message_header header;
+        struct message_data data;
         struct job jobs[32];
         unsigned int njobs = 0;
         unsigned int nids;
@@ -212,6 +179,43 @@ static void interpret(struct channel *channel, struct ring *ring)
         }
 
     }
+
+}
+
+static void interpret(struct channel *channel, struct ring *ring)
+{
+
+    char buffer[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
+
+    if (count >= 2)
+    {
+
+        if (memory_match(buffer, "cd ", 3))
+        {
+
+            buffer[count - 1] = '\0';
+
+            if (file_walk2(FILE_L0, buffer + 3))
+            {
+
+                file_duplicate(FILE_PW, FILE_L0);
+                file_duplicate(FILE_CW, FILE_L0);
+
+            }
+
+        }
+
+        else
+        {
+
+            runcommand(channel, count, buffer);
+
+        }
+
+    }
+
+    printprompt();
 
 }
 
@@ -293,7 +297,6 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
         ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
         copyring(&input1);
         interpret(channel, &input1);
-        printprompt();
 
         break;
 
