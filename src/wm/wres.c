@@ -5,7 +5,6 @@
 static void onwmmousepress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
     struct event_wmmousepress *wmmousepress = mdata;
 
     switch (wmmousepress->button)
@@ -28,8 +27,7 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
 
     }
 
-    message_initheader(&header, EVENT_WMUNMAP, 0);
-    file_notify(FILE_G0, &header, 0);
+    file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
     channel_close(channel);
 
 }
@@ -37,10 +35,7 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
 static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-
-    message_initheader(&header, EVENT_WMUNMAP, 0);
-    file_notify(FILE_G0, &header, 0);
+    file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
     channel_close(channel);
 
 }
@@ -51,8 +46,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_header header;
     struct message_data data;
 
-    message_initheader(&header, EVENT_WMMAP, 0);
-    file_notify(FILE_G0, &header, &data);
+    file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
 
     while (channel_poll(channel, &header, &data))
         channel_dispatch(channel, &header, &data);

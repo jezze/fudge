@@ -13,7 +13,6 @@ static struct ring input2;
 static void updatecontent(void)
 {
 
-    struct message_header header;
     struct message_data data;
     unsigned int count;
 
@@ -27,12 +26,7 @@ static void updatecontent(void)
     ring_write(&output, "\n", 1);
 
     while ((count = ring_read(&output, data.buffer, FUDGE_MSIZE)))
-    {
-
-        message_initheader(&header, EVENT_DATA, count);
-        file_notify(FILE_G0, &header, &data);
-
-    }
+        file_notify(FILE_G0, EVENT_DATA, count, &data);
 
     ring_reset(&output);
 
@@ -176,10 +170,7 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-
-    message_initheader(&header, EVENT_WMUNMAP, 0);
-    file_notify(FILE_G0, &header, 0);
+    file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
     channel_close(channel);
 
 }
@@ -190,8 +181,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_header header;
     struct message_data data;
 
-    message_initheader(&header, EVENT_WMMAP, 0);
-    file_notify(FILE_G0, &header, &data);
+    file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
 
     while (channel_poll(channel, &header, &data))
         channel_dispatch(channel, &header, &data);

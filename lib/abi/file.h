@@ -14,6 +14,6 @@ unsigned int file_seekwrite(unsigned int descriptor, void *buffer, unsigned int 
 unsigned int file_seekwriteall(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset);
 unsigned int file_link(unsigned int descriptor);
 unsigned int file_unlink(unsigned int descriptor);
-unsigned int file_notify(unsigned int descriptor, struct message_header *header, void *data);
+unsigned int file_notify(unsigned int descriptor, unsigned int event, unsigned int count, void *data);
 unsigned int file_spawn(char *path);
 void file_mount(char *path, unsigned int id);

@@ -145,10 +145,14 @@ unsigned int file_unlink(unsigned int descriptor)
 
 }
 
-unsigned int file_notify(unsigned int descriptor, struct message_header *header, void *data)
+unsigned int file_notify(unsigned int descriptor, unsigned int event, unsigned int count, void *data)
 {
 
-    return call_notify(descriptor, header, data);
+    struct message_header header;
+
+    message_initheader(&header, event, count);
+
+    return call_notify(descriptor, &header, data);
 
 }
 
