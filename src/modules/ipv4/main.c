@@ -124,18 +124,18 @@ static void ethernethook_notify(struct ethernet_header *ethernetheader, void *bu
 
     }
 
-    kernel_notify(&ethernethook.data.states, EVENT_DATA, buffer, count);
+    kernel_notify(&ethernethook.data.links, EVENT_DATA, buffer, count);
 
 }
 
-static unsigned int arptablenode_read(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int arptablenode_read(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, offset);
 
 }
 
-static unsigned int arptablenode_write(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int arptablenode_write(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_write(arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, buffer, count, offset);

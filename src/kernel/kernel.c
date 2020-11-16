@@ -277,25 +277,25 @@ unsigned int kernel_place(unsigned int id, struct message_header *header, void *
 
 }
 
-void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigned int count)
+void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned int count)
 {
 
     struct message_header header;
     struct list_item *current;
 
     message_initheader(&header, type, count);
-    spinlock_acquire(&states->spinlock);
+    spinlock_acquire(&links->spinlock);
 
-    for (current = states->head; current; current = current->next)
+    for (current = links->head; current; current = current->next)
     {
 
-        struct service_state *state = current->data;
+        struct service_link *link = current->data;
 
-        kernel_place(state->id, &header, buffer);
+        kernel_place(link->id, &header, buffer);
 
     }
 
-    spinlock_release(&states->spinlock);
+    spinlock_release(&links->spinlock);
 
 }
 

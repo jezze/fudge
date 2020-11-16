@@ -41,7 +41,7 @@ static void clear(unsigned int offset)
 
 }
 
-static unsigned int consoleinterface_readctrl(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_readctrl(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct ctrl_consolesettings settings;
@@ -52,7 +52,7 @@ static unsigned int consoleinterface_readctrl(struct service_state *state, void 
 
 }
 
-static unsigned int consoleinterface_writetransmit(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_writetransmit(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int total = videointerface.settings.w * videointerface.settings.h;
@@ -106,14 +106,14 @@ static unsigned int consoleinterface_writetransmit(struct service_state *state, 
 
 }
 
-static unsigned int videointerface_readctrl(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readctrl(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
-static unsigned int videointerface_writectrl(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writectrl(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct ctrl_videosettings *settings = buffer;
@@ -146,21 +146,21 @@ static unsigned int videointerface_writectrl(struct service_state *state, void *
 
 }
 
-static unsigned int videointerface_readdata(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readdata(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
 
 }
 
-static unsigned int videointerface_writedata(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writedata(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
 
 }
 
-static unsigned int videointerface_readcolormap(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readcolormap(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     char *c = buffer;
@@ -186,7 +186,7 @@ static unsigned int videointerface_readcolormap(struct service_state *state, voi
 
 }
 
-static unsigned int videointerface_writecolormap(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writecolormap(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     char *c = buffer;

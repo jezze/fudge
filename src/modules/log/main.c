@@ -55,11 +55,11 @@ static void interface_write(unsigned int level, char *string, char *file, unsign
 
     count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
 
-    kernel_notify(&messages.states, EVENT_DATA, buffer, count);
+    kernel_notify(&messages.links, EVENT_DATA, buffer, count);
 
 }
 
-static unsigned int send_write(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int send_write(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     interface_write(DEBUG_INFO, buffer, 0, 0);

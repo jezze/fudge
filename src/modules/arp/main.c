@@ -96,7 +96,7 @@ static void ethernethook_notify(struct ethernet_header *ethernetheader, void *bu
 
     }
 
-    kernel_notify(&ethernethook.data.states, EVENT_DATA, buffer, count);
+    kernel_notify(&ethernethook.data.links, EVENT_DATA, buffer, count);
 
 }
 

@@ -5,7 +5,7 @@
 static struct system_node wserver;
 static struct system_node wclient;
 
-static unsigned int multicast(struct service_state *source, struct list *targets, struct message_header *header, void *data)
+static unsigned int multicast(struct service_link *link, struct list *targets, struct message_header *header, void *data)
 {
 
     struct list_item *current;
@@ -15,9 +15,9 @@ static unsigned int multicast(struct service_state *source, struct list *targets
     for (current = targets->head; current; current = current->next)
     {
 
-        struct service_state *target = current->data;
+        struct service_link *target = current->data;
 
-        header->source = source->id;
+        header->source = link->id;
 
         kernel_place(target->id, header, data);
 
@@ -36,12 +36,12 @@ static unsigned int wserver_seek(unsigned int offset)
 
 }
 
-static unsigned int wclient_write(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int wclient_write(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct message_header *header = buffer;
 
-    return multicast(state, &wserver.states, header, header + 1);
+    return multicast(link, &wserver.links, header, header + 1);
 
 }
 

@@ -5,8 +5,8 @@
 struct system_operations
 {
 
-    unsigned int (*read)(struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
-    unsigned int (*write)(struct service_state *state, void *buffer, unsigned int count, unsigned int offset);
+    unsigned int (*read)(struct service_link *link, void *buffer, unsigned int count, unsigned int offset);
+    unsigned int (*write)(struct service_link *link, void *buffer, unsigned int count, unsigned int offset);
     unsigned int (*seek)(unsigned int offset);
 
 };
@@ -21,7 +21,7 @@ struct system_node
     struct system_operations operations;
     struct list_item item;
     struct list children;
-    struct list states;
+    struct list links;
 
 };
 

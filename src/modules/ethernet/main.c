@@ -69,7 +69,7 @@ void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigne
 
     }
 
-    kernel_notify(&interface->data.states, EVENT_DATA, buffer, count);
+    kernel_notify(&interface->data.links, EVENT_DATA, buffer, count);
 
 }
 

@@ -209,21 +209,21 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
 
 }
 
-static unsigned int protocol_open(struct service_state *state, unsigned int id)
+static unsigned int protocol_open(struct service_link *link, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int protocol_close(struct service_state *state, unsigned int id)
+static unsigned int protocol_close(struct service_link *link, unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int readfile(struct service_state *state, void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
+static unsigned int readfile(struct service_link *link, void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
     unsigned int s = cpio_filesize(header) - offset;
@@ -233,7 +233,7 @@ static unsigned int readfile(struct service_state *state, void *buffer, unsigned
 
 }
 
-static unsigned int readdirectory(struct service_state *state, void *buffer, unsigned int count, unsigned int offset, unsigned int current, struct cpio_header *header)
+static unsigned int readdirectory(struct service_link *link, void *buffer, unsigned int count, unsigned int offset, unsigned int current, struct cpio_header *header)
 {
 
     struct record record;
@@ -261,7 +261,7 @@ static unsigned int readdirectory(struct service_state *state, void *buffer, uns
 
 }
 
-static unsigned int protocol_read(struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int protocol_read(struct service_link *link, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header *header = getheader(id);
@@ -273,10 +273,10 @@ static unsigned int protocol_read(struct service_state *state, unsigned int id, 
     {
 
     case 0x8000:
-        return readfile(state, buffer, count, offset, id, header);
+        return readfile(link, buffer, count, offset, id, header);
 
     case 0x4000:
-        return readdirectory(state, buffer, count, offset, current, header);
+        return readdirectory(link, buffer, count, offset, current, header);
 
     }
 
@@ -284,7 +284,7 @@ static unsigned int protocol_read(struct service_state *state, unsigned int id, 
 
 }
 
-static unsigned int writefile(struct service_state *state, void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
+static unsigned int writefile(struct service_link *link, void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
     unsigned int s = cpio_filesize(header) - offset;
@@ -294,7 +294,7 @@ static unsigned int writefile(struct service_state *state, void *buffer, unsigne
 
 }
 
-static unsigned int protocol_write(struct service_state *state, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int protocol_write(struct service_link *link, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header *header = getheader(id);
@@ -306,7 +306,7 @@ static unsigned int protocol_write(struct service_state *state, unsigned int id,
     {
 
     case 0x8000:
-        return writefile(state, buffer, count, offset, id, header);
+        return writefile(link, buffer, count, offset, id, header);
 
     }
 

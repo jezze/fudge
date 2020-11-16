@@ -7,7 +7,7 @@ static struct system_node cores;
 static struct system_node tasks;
 static struct system_node mailboxes;
 
-static unsigned int cores_read(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int cores_read(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct resource *resource = 0;
@@ -46,7 +46,7 @@ static unsigned int cores_read(struct service_state *state, void *buffer, unsign
 
 }
 
-static unsigned int tasks_read(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int tasks_read(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct resource *resource = 0;
@@ -69,7 +69,7 @@ static unsigned int tasks_read(struct service_state *state, void *buffer, unsign
 
 }
 
-static unsigned int mailboxes_read(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int mailboxes_read(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct resource *resource = 0;

@@ -12,7 +12,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(&interface->event.states, EVENT_TIMERTICK, &timertick, sizeof (struct event_timertick));
+    kernel_notify(&interface->event.links, EVENT_TIMERTICK, &timertick, sizeof (struct event_timertick));
 
 }
 

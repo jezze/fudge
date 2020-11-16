@@ -27,14 +27,14 @@ static void ipv4hook_notify(struct ipv4_header *ipv4header, void *buffer, unsign
 
     }
 
-    kernel_notify(&ipv4hook.data.states, EVENT_DATA, buffer, count);
+    kernel_notify(&ipv4hook.data.links, EVENT_DATA, buffer, count);
 
 }
 
 static void ipv6hook_notify(struct ipv6_header *ipv6header, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&ipv6hook.data.states, EVENT_DATA, buffer, count);
+    kernel_notify(&ipv6hook.data.links, EVENT_DATA, buffer, count);
 
 }
 

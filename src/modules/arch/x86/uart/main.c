@@ -125,7 +125,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int consoleinterface_readctrl(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_readctrl(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct ctrl_consolesettings settings;
@@ -136,7 +136,7 @@ static unsigned int consoleinterface_readctrl(struct service_state *state, void 
 
 }
 
-static unsigned int consoleinterface_writetransmit(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_writetransmit(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;

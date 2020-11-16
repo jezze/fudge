@@ -42,7 +42,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int clockinterface_readctrl(struct service_state *state, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int clockinterface_readctrl(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct ctrl_clocksettings settings;
