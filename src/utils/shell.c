@@ -4,10 +4,17 @@
 static char inputbuffer[FUDGE_BSIZE];
 static struct ring input;
 
+static void print(void *buffer, unsigned int count)
+{
+
+    file_writeall(FILE_G1, buffer, count);
+
+}
+
 static void printprompt(void)
 {
 
-    file_writeall(FILE_G1, "$ ", 2);
+    print("$ ", 2);
 
 }
 
@@ -31,7 +38,7 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
 static void runcommand(struct channel *channel, unsigned int count, void *buffer)
 {
 
-    unsigned int id = job_simple(channel, "/bin/slang", count, buffer);
+    unsigned int id = file_spawn("/bin/slang");
 
     if (id)
     {
@@ -41,6 +48,11 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
         struct job jobs[32];
         unsigned int njobs = 0;
         unsigned int nids;
+
+        job_replyback(channel, id, EVENT_DATA);
+        job_replyback(channel, id, EVENT_CLOSE);
+        channel_place(channel, id, EVENT_DATA, count, buffer);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
 
         while (channel_pollsource(channel, id, &header, &data))
         {
@@ -136,13 +148,19 @@ static void complete(struct channel *channel, struct ring *ring)
 
     char buffer[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
-    unsigned int id = job_simple(channel, "/bin/complete", count, buffer);
+    unsigned int id = file_spawn("/bin/complete");
 
     if (id)
     {
 
         struct message_header header;
         struct message_data data;
+        unsigned int offset = 0;
+
+        job_replyback(channel, id, EVENT_DATA);
+        job_replyback(channel, id, EVENT_CLOSE);
+        channel_place(channel, id, EVENT_DATA, count, buffer);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
 
         while (channel_pollsource(channel, id, &header, &data))
         {
@@ -151,13 +169,43 @@ static void complete(struct channel *channel, struct ring *ring)
                 break;
 
             if (header.event == EVENT_DATA)
-                file_writeall(FILE_G1, data.buffer, message_datasize(&header));
+                offset += memory_write(buffer, FUDGE_BSIZE, data.buffer, message_datasize(&header), offset);
+
+        }
+
+        if (offset)
+        {
+
+            unsigned int nlines = 0;
+            unsigned int i;
+
+            for (i = 0; i < offset; i++)
+            {
+
+                if (buffer[i] == '\n')
+                    nlines++;
+
+            }
+
+            if (nlines > 1)
+            {
+
+                print("\n", 1);
+                print(buffer, offset);
+                printprompt();
+
+            }
+
+            else
+            {
+
+                print(buffer, offset - 1);
+
+            }
 
         }
 
     }
-
-    printprompt();
 
 }
 
@@ -182,7 +230,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         if (!ring_skipreverse(&input, 1))
             break;
 
-        file_writeall(FILE_G1, "\b \b", 3);
+        print("\b \b", 3);
 
         break;
 
@@ -190,7 +238,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         consoledata->data = '\n';
 
     case '\n':
-        file_writeall(FILE_G1, &consoledata->data, 1);
+        print(&consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
         interpret(channel, &input);
 
@@ -198,7 +246,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
     default:
         ring_write(&input, &consoledata->data, 1);
-        file_writeall(FILE_G1, &consoledata->data, 1);
+        print(&consoledata->data, 1);
 
         break;
 
@@ -241,7 +289,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_writeall(FILE_G1, mdata, msize);
+    print(mdata, msize);
 
 }
 

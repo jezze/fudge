@@ -12,10 +12,28 @@ static struct ring input2;
 static char textdata[FUDGE_BSIZE];
 static struct ring text;
 
+static void print(void *buffer, unsigned int count)
+{
+
+    char *b = buffer;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (!ring_avail(&text))
+            ring_skip(&text, ring_find(&text, '\n') + 1);
+
+        ring_write(&text, &b[i], 1);
+
+    }
+
+}
+
 static void printprompt(void)
 {
 
-    ring_write(&text, "$ ", 2);
+    print("$ ", 2);
 
 }
 
@@ -47,24 +65,6 @@ static void updatecontent(void)
 
 }
 
-static void copybuffer(void *buffer, unsigned int count)
-{
-
-    char *b = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (!ring_avail(&text))
-            ring_skip(&text, ring_find(&text, '\n') + 1);
-
-        ring_write(&text, &b[i], 1);
-
-    }
-
-}
-
 static void copyring(struct ring *ring)
 {
 
@@ -74,7 +74,7 @@ static void copyring(struct ring *ring)
     unsigned int tail = ring->tail;
 
     while ((count = ring_read(ring, buffer, FUDGE_BSIZE)))
-        copybuffer(buffer, count);
+        print(buffer, count);
 
     ring->head = head;
     ring->tail = tail;
@@ -119,7 +119,7 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
 static void runcommand(struct channel *channel, unsigned int count, void *buffer)
 {
 
-    unsigned int id = job_simple(channel, "/bin/slang", count, buffer);
+    unsigned int id = file_spawn("/bin/slang");
 
     if (id)
     {
@@ -129,6 +129,11 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
         struct job jobs[32];
         unsigned int njobs = 0;
         unsigned int nids;
+
+        job_replyback(channel, id, EVENT_DATA);
+        job_replyback(channel, id, EVENT_CLOSE);
+        channel_place(channel, id, EVENT_DATA, count, buffer);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
 
         while (channel_pollsource(channel, id, &header, &data))
         {
@@ -224,13 +229,19 @@ static void complete(struct channel *channel, struct ring *ring)
 
     char buffer[FUDGE_BSIZE];
     unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
-    unsigned int id = job_simple(channel, "/bin/complete", count, buffer);
+    unsigned int id = file_spawn("/bin/complete");
 
     if (id)
     {
 
         struct message_header header;
         struct message_data data;
+        unsigned int offset = 0;
+
+        job_replyback(channel, id, EVENT_DATA);
+        job_replyback(channel, id, EVENT_CLOSE);
+        channel_place(channel, id, EVENT_DATA, count, buffer);
+        channel_place(channel, id, EVENT_MAIN, 0, 0);
 
         while (channel_pollsource(channel, id, &header, &data))
         {
@@ -239,22 +250,37 @@ static void complete(struct channel *channel, struct ring *ring)
                 break;
 
             if (header.event == EVENT_DATA)
+                offset += memory_write(buffer, FUDGE_BSIZE, data.buffer, message_datasize(&header), offset);
+
+        }
+
+        if (offset)
+        {
+
+            unsigned int nlines = 0;
+            unsigned int i;
+
+            for (i = 0; i < offset; i++)
             {
 
-                if (memory_findbyte(data.buffer, message_datasize(&header), '\n') < message_datasize(&header) - 1)
-                {
+                if (buffer[i] == '\n')
+                    nlines++;
 
-                    copybuffer("\n", 1);
-                    copybuffer(data.buffer, message_datasize(&header));
+            }
 
-                }
+            if (nlines > 1)
+            {
 
-                else
-                {
+                print("\n", 1);
+                print(buffer, offset);
+                printprompt();
 
-                    ring_write(&input1, data.buffer, message_datasize(&header) - 1);
+            }
 
-                }
+            else
+            {
+
+                print(buffer, offset - 1);
 
             }
 
@@ -267,7 +293,7 @@ static void complete(struct channel *channel, struct ring *ring)
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    copybuffer(mdata, msize);
+    print(mdata, msize);
     updatecontent();
 
 }
