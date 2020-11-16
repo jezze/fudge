@@ -158,6 +158,8 @@ static void complete(struct channel *channel, struct ring *ring)
 
     }
 
+    printprompt();
+
 }
 
 static void onconsoledata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
@@ -173,7 +175,6 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
     case '\t':
         complete(channel, &input);
-        printprompt();
 
         break;
 
