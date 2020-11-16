@@ -3,7 +3,7 @@
 #include <widget.h>
 
 #define REMOTES                         64
-#define VIEWS                           8
+#define VIEWS                           6
 
 static struct remote
 {
@@ -455,10 +455,10 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         break;
 
     case 0x23:
-        if (currentview->center <= 6 * steplength)
+        if (currentview->center <= steplength)
             break;
 
-        currentview->center -= 4 * steplength;
+        currentview->center -= steplength;
 
         arrangeview(channel, currentview);
         showremotes(channel, &currentview->remotes);
@@ -504,10 +504,10 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         break;
 
     case 0x26:
-        if (currentview->center >= 26 * steplength)
+        if (currentview->center >= steplength * 11)
             break;
 
-        currentview->center += 4 * steplength;
+        currentview->center += steplength;
 
         arrangeview(channel, currentview);
         showremotes(channel, &currentview->remotes);
@@ -620,9 +620,9 @@ static void onmousescroll(struct channel *channel, unsigned int source, void *md
     /* REMOVE STUFF BELOW AFTER TEST */
 
     if (mousescroll->relz < 0)
-        currentview->center -= (currentview->center > 6 * steplength) ? steplength : 0;
+        currentview->center -= (currentview->center > steplength) ? steplength : 0;
     else
-        currentview->center += (currentview->center < 26 * steplength) ? steplength : 0;
+        currentview->center += (currentview->center < steplength) ? steplength : 0;
 
     arrangeview(channel, currentview);
     showremotes(channel, &currentview->remotes);
@@ -789,7 +789,7 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
 
     lineheight = 12 + factor * 4;
     padding = 4 + factor * 2;
-    steplength = videomode->w / 32;
+    steplength = videomode->w / 12;
 
     loadfont(factor);
     box_setsize(&screen, 0, 0, videomode->w, videomode->h);
@@ -804,7 +804,7 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
 
         struct view *view = current->data;
 
-        view->center = 18 * steplength;
+        view->center = steplength * 7;
 
         box_setsize(&view->panel.size, i * videomode->w / viewlist.count, 0, videomode->w / viewlist.count, (lineheight + padding * 2));
         arrangeview(channel, view);
