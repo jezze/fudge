@@ -433,7 +433,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     while (channel_poll(channel, &header, &data))
         channel_dispatch(channel, &header, &data);
 
-
 }
 
 void init(struct channel *channel)
