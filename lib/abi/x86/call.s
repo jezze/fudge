@@ -19,6 +19,9 @@
 .set CALL_INDEX_DESPAWN,                0x0F
 .set CALL_INDEX_PICK,                   0x10
 .set CALL_INDEX_PLACE,                  0x11
+.set CALL_INDEX_LINK,                   0x12
+.set CALL_INDEX_UNLINK,                 0x13
+.set CALL_INDEX_NOTIFY,                 0x14
 
 .section .text
 
@@ -58,6 +61,12 @@ call_despawn:
     int $CALL_INTERRUPT
     ret
 
+.global call_link
+call_link:
+    movl $CALL_INDEX_LINK, %eax
+    int $CALL_INTERRUPT
+    ret
+
 .global call_load
 call_load:
     movl $CALL_INDEX_LOAD, %eax
@@ -67,6 +76,12 @@ call_load:
 .global call_mount
 call_mount:
     movl $CALL_INDEX_MOUNT, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_notify
+call_notify:
+    movl $CALL_INDEX_NOTIFY, %eax
     int $CALL_INTERRUPT
     ret
 
@@ -109,6 +124,12 @@ call_spawn:
 .global call_step
 call_step:
     movl $CALL_INDEX_STEP, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_unlink
+call_unlink:
+    movl $CALL_INDEX_UNLINK, %eax
     int $CALL_INTERRUPT
     ret
 

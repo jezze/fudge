@@ -131,6 +131,27 @@ unsigned int file_spawn(char *path)
 
 }
 
+unsigned int file_link(unsigned int descriptor)
+{
+
+    return call_link(descriptor);
+
+}
+
+unsigned int file_unlink(unsigned int descriptor)
+{
+
+    return call_unlink(descriptor);
+
+}
+
+unsigned int file_notify(unsigned int descriptor, struct message_header *header, void *data)
+{
+
+    return call_notify(descriptor, header, data);
+
+}
+
 void file_mount(char *path, unsigned int id)
 {
 

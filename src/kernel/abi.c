@@ -6,7 +6,7 @@
 #include "service.h"
 #include "kernel.h"
 
-#define CALLS                           18
+#define CALLS                           32
 
 static unsigned int (*calls[CALLS])(struct task *task, void *stack);
 
@@ -305,6 +305,45 @@ static unsigned int place(struct task *task, void *stack)
 
 }
 
+static unsigned int link(struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int descriptor;} *args = stack;
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+
+    if (!descriptor->protocol)
+        return 0;
+
+    return descriptor->protocol->link(descriptor->id, &descriptor->link);
+
+}
+
+static unsigned int unlink(struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int descriptor;} *args = stack;
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+
+    if (!descriptor->protocol)
+        return 0;
+
+    return descriptor->protocol->unlink(descriptor->id, &descriptor->link);
+
+}
+
+static unsigned int notify(struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int descriptor; struct message_header *header; void *data;} *args = stack;
+    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+
+    if (!descriptor->protocol)
+        return 0;
+
+    return descriptor->protocol->notify(descriptor->id, &descriptor->link, args->header, args->data);
+
+}
+
 unsigned int abi_call(unsigned int index, struct task *task, void *stack)
 {
 
@@ -333,6 +372,9 @@ void abi_setup(unsigned int (*spawn)(struct task *task, void *stack), unsigned i
     calls[0x0F] = despawn;
     calls[0x10] = pick;
     calls[0x11] = place;
+    calls[0x12] = link;
+    calls[0x13] = unlink;
+    calls[0x14] = notify;
 
 }
 

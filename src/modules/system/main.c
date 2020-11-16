@@ -240,11 +240,10 @@ static unsigned int protocol_unlink(unsigned int id, struct service_link *link)
 
 }
 
-static unsigned int protocol_notify(unsigned int id, struct service_link *link, void *buffer, unsigned int count)
+static unsigned int protocol_notify(unsigned int id, struct service_link *link, struct message_header *header, void *data)
 {
 
     struct system_node *node = getnode(id);
-    struct message_header *header = buffer;
     struct list_item *current;
 
     spinlock_acquire(&node->links.spinlock);
@@ -256,7 +255,7 @@ static unsigned int protocol_notify(unsigned int id, struct service_link *link, 
 
         header->source = link->id;
 
-        kernel_place(target->id, header, header + 1);
+        kernel_place(target->id, header, data);
 
     }
 

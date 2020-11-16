@@ -899,10 +899,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_header header;
     struct message_data data;
 
-    file_open(FILE_G1);
-    file_open(FILE_G2);
-    file_open(FILE_G3);
-    file_open(FILE_G5);
+    file_link(FILE_G1);
+    file_link(FILE_G2);
+    file_link(FILE_G3);
+    file_link(FILE_G5);
     file_open(FILE_G6);
     setupvideo();
     setupviews();
@@ -913,10 +913,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         channel_dispatch(channel, &header, &data);
 
     file_close(FILE_G6);
-    file_close(FILE_G5);
-    file_close(FILE_G3);
-    file_close(FILE_G2);
-    file_close(FILE_G1);
+    file_unlink(FILE_G5);
+    file_unlink(FILE_G3);
+    file_unlink(FILE_G2);
+    file_unlink(FILE_G1);
 
 }
 

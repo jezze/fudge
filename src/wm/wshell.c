@@ -40,7 +40,8 @@ static void printprompt(void)
 static void updatecontent(void)
 {
 
-    struct {struct message_header header; struct message_data data;} message;
+    struct message_header header;
+    struct message_data data;
     unsigned int count;
 
     content.length = ring_count(&text) + ring_count(&input1) + ring_count(&input2) + 1;
@@ -53,11 +54,11 @@ static void updatecontent(void)
     ring_copy(&output, &input2);
     ring_write(&output, "\n", 1);
 
-    while ((count = ring_read(&output, message.data.buffer, FUDGE_MSIZE)))
+    while ((count = ring_read(&output, data.buffer, FUDGE_MSIZE)))
     {
 
-        message_initheader(&message.header, EVENT_DATA, count);
-        file_writeall(FILE_G0, &message, message.header.length);
+        message_initheader(&header, EVENT_DATA, count);
+        file_notify(FILE_G0, &header, &data);
 
     }
 
@@ -415,7 +416,7 @@ static void onterm(struct channel *channel, unsigned int source, void *mdata, un
     struct message_header header;
 
     message_initheader(&header, EVENT_WMUNMAP, 0);
-    file_writeall(FILE_G0, &header, header.length);
+    file_notify(FILE_G0, &header, 0);
     channel_close(channel);
 
 }
@@ -427,13 +428,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
 
     message_initheader(&header, EVENT_WMMAP, 0);
-    file_open(FILE_G0);
-    file_writeall(FILE_G0, &header, header.length);
+    file_notify(FILE_G0, &header, 0);
 
     while (channel_poll(channel, &header, &data))
         channel_dispatch(channel, &header, &data);
 
-    file_close(FILE_G0);
 
 }
 
@@ -447,7 +446,7 @@ void init(struct channel *channel)
     printprompt();
     widget_inittextbox(&content);
 
-    if (!file_walk2(FILE_G0, "/system/wclient"))
+    if (!file_walk2(FILE_G0, "/system/wserver"))
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);
