@@ -222,16 +222,15 @@ static void interpret(struct channel *channel, struct ring *ring)
 static void complete(struct channel *channel, struct ring *ring)
 {
 
-    struct message_data data;
-    unsigned int count = ring_read(ring, data.buffer, FUDGE_MSIZE);
-    unsigned int id;
-
-    id = job_simple(channel, "/bin/complete", count, data.buffer);
+    char buffer[FUDGE_BSIZE];
+    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
+    unsigned int id = job_simple(channel, "/bin/complete", count, buffer);
 
     if (id)
     {
 
         struct message_header header;
+        struct message_data data;
 
         while (channel_pollsource(channel, id, &header, &data))
         {
