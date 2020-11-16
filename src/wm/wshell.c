@@ -285,7 +285,6 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
     case 0x0F:
         ring_move(&input1, &input2);
         complete(channel, &input1);
-        printprompt();
 
         break;
 

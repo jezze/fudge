@@ -1,37 +1,35 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void print(struct channel *channel, unsigned int source)
+static void print(struct channel *channel, unsigned int source, struct record *record)
 {
 
-    file_open(FILE_G0);
+    struct message_data data;
+    unsigned int offset = 0;
 
-    do
-    {
+    offset = message_append(&data, offset, record->length, record->name);
+    offset = message_appendstring(&data, "\n", offset);
 
-        struct message_data data;
-        unsigned int offset = 0;
-        struct record record;
-
-        file_readall(FILE_G0, &record, sizeof (struct record));
-
-        offset = message_append(&data, offset, record.length, record.name);
-        offset = message_appendstring(&data, "\n", offset);
-
-        channel_place(channel, source, EVENT_DATA, offset, &data);
-
-    } while (file_step(FILE_G0));
-
-    file_close(FILE_G0);
+    channel_place(channel, source, EVENT_DATA, offset, &data);
 
 }
 
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_duplicate(FILE_G0, FILE_PW))
-        print(channel, source);
+    file_open(FILE_PW);
 
+    do
+    {
+
+        struct record record;
+
+        if (file_readall(FILE_PW, &record, sizeof (struct record)))
+            print(channel, source, &record);
+
+    } while (file_step(FILE_PW));
+
+    file_close(FILE_PW);
     channel_close(channel);
 
 }
@@ -47,7 +45,23 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     if (file_walk2(FILE_G0, mdata))
-        print(channel, source);
+    {
+
+        file_open(FILE_G0);
+
+        do
+        {
+
+            struct record record;
+
+            if (file_readall(FILE_G0, &record, sizeof (struct record)))
+                print(channel, source, &record);
+
+        } while (file_step(FILE_G0));
+
+        file_close(FILE_G0);
+
+    }
 
     channel_setcallback(channel, EVENT_MAIN, onmain2);
 

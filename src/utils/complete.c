@@ -1,42 +1,38 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void complete(struct channel *channel, unsigned int source, unsigned int descriptor, void *name, unsigned int length)
+static void print(struct channel *channel, unsigned int source, struct record *record, char *name, unsigned int length)
 {
 
-    struct record record;
+    struct message_data data;
+    unsigned int offset = 0;
 
-    file_open(descriptor);
+    if (record->length < length || !memory_match(record->name, name, length))
+        return;
 
-    while (file_readall(descriptor, &record, sizeof (struct record)))
-    {
+    offset = message_append(&data, offset, record->length, record->name);
+    offset = message_appendstring(&data, "\n", offset);
 
-        if (record.length >= length && memory_match(record.name, name, length))
-        {
-
-            struct message_data data;
-            unsigned int offset = 0;
-
-            offset = message_append(&data, offset, record.length, record.name);
-            offset = message_appendstring(&data, "\n", offset);
-
-            channel_place(channel, source, EVENT_DATA, offset, &data);
-
-        }
-
-        if (!file_step(descriptor))
-            break;
-
-    }
-
-    file_close(descriptor);
+    channel_place(channel, source, EVENT_DATA, offset, &data);
 
 }
 
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    complete(channel, source, FILE_PW, mdata, msize);
+    file_open(FILE_PW);
+
+    do
+    {
+
+        struct record record;
+
+        if (file_readall(FILE_PW, &record, sizeof (struct record)))
+            print(channel, source, &record, mdata, msize);
+
+    } while (file_step(FILE_PW));
+
+    file_close(FILE_PW);
 
 }
 
