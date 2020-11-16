@@ -128,7 +128,7 @@ static unsigned int read(struct task *task, void *stack)
     if (!args->buffer || !args->count)
         return 0;
 
-    descriptor->count = descriptor->protocol->read(&descriptor->link, descriptor->id, descriptor->current, args->buffer, args->count, descriptor->offset);
+    descriptor->count = descriptor->protocol->read(descriptor->id, descriptor->current, args->buffer, args->count, descriptor->offset);
     descriptor->offset = descriptor->protocol->seek(descriptor->id, descriptor->offset + descriptor->count);
 
     return descriptor->count;

@@ -174,7 +174,7 @@ static unsigned int readgroup(struct system_node *current, void *buffer, unsigne
 
 }
 
-static unsigned int protocol_read(struct service_link *link, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int protocol_read(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct system_node *node = getnode(id);
@@ -189,7 +189,7 @@ static unsigned int protocol_read(struct service_link *link, unsigned int id, un
 
     }
 
-    return (node->operations.read) ? node->operations.read(link, buffer, count, offset) : 0;
+    return (node->operations.read) ? node->operations.read(buffer, count, offset) : 0;
 
 }
 
@@ -215,6 +215,54 @@ static unsigned int protocol_map(unsigned int id)
 {
 
     return id;
+
+}
+
+static unsigned int protocol_link(unsigned int id, struct service_link *link)
+{
+
+    struct system_node *node = getnode(id);
+
+    list_add(&node->links, &link->item);
+
+    return id;
+
+}
+
+static unsigned int protocol_unlink(unsigned int id, struct service_link *link)
+{
+
+    struct system_node *node = getnode(id);
+
+    list_remove(&node->links, &link->item);
+
+    return id;
+
+}
+
+static unsigned int protocol_notify(unsigned int id, struct service_link *link, void *buffer, unsigned int count)
+{
+
+    struct system_node *node = getnode(id);
+    struct message_header *header = buffer;
+    struct list_item *current;
+
+    spinlock_acquire(&node->links.spinlock);
+
+    for (current = node->links.head; current; current = current->next)
+    {
+
+        struct service_link *target = current->data;
+
+        header->source = link->id;
+
+        kernel_place(target->id, header, header + 1);
+
+    }
+
+    spinlock_release(&node->links.spinlock);
+
+    return header->length;
 
 }
 
@@ -309,7 +357,7 @@ void module_init(void)
 
     root.parent = &root;
 
-    service_initprotocol(&protocol, 2000, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
+    service_initprotocol(&protocol, 2000, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map, protocol_link, protocol_unlink, protocol_notify);
     resource_register(&protocol.resource);
 
 }

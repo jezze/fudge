@@ -223,7 +223,7 @@ static unsigned int protocol_close(struct service_link *link, unsigned int id)
 
 }
 
-static unsigned int readfile(struct service_link *link, void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
+static unsigned int readfile(void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
     unsigned int s = cpio_filesize(header) - offset;
@@ -233,7 +233,7 @@ static unsigned int readfile(struct service_link *link, void *buffer, unsigned i
 
 }
 
-static unsigned int readdirectory(struct service_link *link, void *buffer, unsigned int count, unsigned int offset, unsigned int current, struct cpio_header *header)
+static unsigned int readdirectory(void *buffer, unsigned int count, unsigned int offset, unsigned int current, struct cpio_header *header)
 {
 
     struct record record;
@@ -261,7 +261,7 @@ static unsigned int readdirectory(struct service_link *link, void *buffer, unsig
 
 }
 
-static unsigned int protocol_read(struct service_link *link, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int protocol_read(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header *header = getheader(id);
@@ -273,10 +273,10 @@ static unsigned int protocol_read(struct service_link *link, unsigned int id, un
     {
 
     case 0x8000:
-        return readfile(link, buffer, count, offset, id, header);
+        return readfile(buffer, count, offset, id, header);
 
     case 0x4000:
-        return readdirectory(link, buffer, count, offset, current, header);
+        return readdirectory(buffer, count, offset, current, header);
 
     }
 
@@ -333,13 +333,34 @@ static unsigned int protocol_map(unsigned int id)
 
 }
 
+static unsigned int protocol_link(unsigned int id, struct service_link *link)
+{
+
+    return 0;
+
+}
+
+static unsigned int protocol_unlink(unsigned int id, struct service_link *link)
+{
+
+    return 0;
+
+}
+
+static unsigned int protocol_notify(unsigned int id, struct service_link *link, void *buffer, unsigned int count)
+{
+
+    return 0;
+
+}
+
 void cpio_setup(unsigned int addr, unsigned int lim)
 {
 
     address = addr;
     limit = lim;
 
-    service_initprotocol(&protocol, 1000, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map);
+    service_initprotocol(&protocol, 1000, protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map, protocol_link, protocol_unlink, protocol_notify);
     resource_register(&protocol.resource);
 
 }

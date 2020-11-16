@@ -194,7 +194,7 @@ static void setrx(void)
 
 }
 
-static unsigned int ethernetinterface_readaddr(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char address[ETHERNET_ADDRSIZE];

@@ -128,7 +128,7 @@ static void ethernethook_notify(struct ethernet_header *ethernetheader, void *bu
 
 }
 
-static unsigned int arptablenode_read(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int arptablenode_read(void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, offset);

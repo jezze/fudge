@@ -125,7 +125,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int consoleinterface_readctrl(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct ctrl_consolesettings settings;

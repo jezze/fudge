@@ -38,7 +38,7 @@ static void setreg(unsigned short index, unsigned short data)
 
 }
 
-static unsigned int videointerface_readctrl(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
@@ -62,7 +62,7 @@ static unsigned int videointerface_writectrl(struct service_link *link, void *bu
 
 }
 
-static unsigned int videointerface_readdata(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
@@ -76,7 +76,7 @@ static unsigned int videointerface_writedata(struct service_link *link, void *bu
 
 }
 
-static unsigned int videointerface_readcolormap(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_readcolormap(void *buffer, unsigned int count, unsigned int offset)
 {
 
     return 0;

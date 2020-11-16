@@ -5,7 +5,7 @@
 struct system_operations
 {
 
-    unsigned int (*read)(struct service_link *link, void *buffer, unsigned int count, unsigned int offset);
+    unsigned int (*read)(void *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(struct service_link *link, void *buffer, unsigned int count, unsigned int offset);
     unsigned int (*seek)(unsigned int offset);
 
