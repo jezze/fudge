@@ -60,8 +60,8 @@
 #define R_CURRENTCOUNT                  0x0390
 #define R_DIVIDECONFIG                  0x03E0
 
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
-static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
 
 static unsigned int apic_ind(unsigned int reg)
@@ -89,7 +89,7 @@ unsigned int apic_getid(void)
     unsigned int directory = cpu_getcr3();
     unsigned int id;
 
-    cpu_setcr3(ARCH_MMUKERNELADDRESS);
+    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
 
     id = apic_ind(R_ID) >> 24;
 
@@ -104,7 +104,7 @@ unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt i
 
     unsigned int directory = cpu_getcr3();
 
-    cpu_setcr3(ARCH_MMUKERNELADDRESS);
+    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
     apic_outd(R_EOI, 0);
     cpu_setcr3(directory);
 
@@ -149,7 +149,7 @@ void apic_sendint(unsigned int id, unsigned int value)
 
     unsigned int directory = cpu_getcr3();
 
-    cpu_setcr3(ARCH_MMUKERNELADDRESS);
+    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
 
     apic_outd(R_ICR1, id << 24);
     apic_outd(R_ICR0, value);

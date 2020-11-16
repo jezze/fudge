@@ -8,8 +8,8 @@
 #include "mmu.h"
 #include "arch.h"
 
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
-static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static struct cpu_general registers[KERNEL_TASKS];
 static struct core core0;
 static struct arch_tss tss0;
@@ -17,14 +17,14 @@ static struct arch_tss tss0;
 static struct mmu_directory *getkerneldirectory(void)
 {
 
-    return (struct mmu_directory *)ARCH_MMUKERNELADDRESS;
+    return (struct mmu_directory *)ARCH_KERNELMMUPHYSICAL;
 
 }
 
 static struct mmu_directory *gettaskdirectory(unsigned int index)
 {
 
-    return (struct mmu_directory *)ARCH_MMUTASKADDRESS + index * ARCH_MMUTASKCOUNT;
+    return (struct mmu_directory *)(ARCH_TASKMMUPHYSICAL + index * ARCH_TASKMMUSIZE);
 
 }
 
@@ -67,7 +67,7 @@ static unsigned int unloadtask(struct task *task)
 static unsigned int loadtask(struct task *task, unsigned int descriptor)
 {
 
-    if (kernel_setupbinary(task, descriptor, ARCH_TASKSTACKADDRESS))
+    if (kernel_setupbinary(task, descriptor, ARCH_TASKSTACKVIRTUAL))
     {
 
         memory_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
@@ -344,8 +344,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (code)
     {
 
-        maptask(core->task, 0, ARCH_TASKCODEADDRESS + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE);
-        maptask(core->task, 1, ARCH_TASKCODEADDRESS + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKADDRESS - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE);
+        maptask(core->task, 0, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE);
+        maptask(core->task, 1, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE);
         core->task->format->copyprogram(&core->task->node);
 
     }
@@ -424,7 +424,7 @@ void arch_setup1(void)
     struct mmu_directory *directory = getkerneldirectory();
 
     resource_setup();
-    core_init(&core0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE, 0);
+    core_init(&core0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE, 0);
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, core0.id, core0.sp);
@@ -435,7 +435,7 @@ void arch_setup1(void)
     arch_setmap(3, 0x00C00000, 0x00C00000, 0x00400000);
     mmu_setdirectory(directory);
     mmu_enable();
-    kernel_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
+    kernel_setup(ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
     kernel_setcallback(coreget, coreassign);
     abi_setup(spawn, despawn);
 

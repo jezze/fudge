@@ -14,8 +14,8 @@
 #include <modules/arch/x86/pit/pit.h>
 #include "smp.h"
 
-#define INIT16ADDRESS                   0x00008000
-#define INIT32ADDRESS                   0x00008200
+#define INIT16PHYSICAL                  0x00008000
+#define INIT32PHYSICAL                  0x00008200
 
 static struct arch_tss tss[256];
 static struct core cores[256];
@@ -42,7 +42,7 @@ static void detect(struct acpi_madt *madt)
 
                 apic_sendint(apic->id, APIC_ICR_TYPE_INIT | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | 0x00);
                 pit_wait(10);
-                apic_sendint(apic->id, APIC_ICR_TYPE_SIPI | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | (INIT16ADDRESS >> 12));
+                apic_sendint(apic->id, APIC_ICR_TYPE_SIPI | APIC_ICR_MODE_PHYSICAL | APIC_ICR_LEVEL_ASSERT | APIC_ICR_TRIGGER_EDGE | APIC_ICR_TARGET_NORMAL | (INIT16PHYSICAL >> 12));
 
             }
 
@@ -104,7 +104,7 @@ void smp_setupap(unsigned int stack)
     core_init(&cores[id], id, stack, 0);
     core_register(&cores[id]);
     arch_configuretss(&tss[id], cores[id].id, cores[id].sp);
-    mmu_setdirectory((struct mmu_directory *)ARCH_MMUKERNELADDRESS);
+    mmu_setdirectory((struct mmu_directory *)ARCH_KERNELMMUPHYSICAL);
     mmu_enable();
     apic_setup_ap();
     pat_setup();
@@ -126,9 +126,9 @@ void module_init(void)
     if (!madt)
         return;
 
-    memory_copy((void *)INIT16ADDRESS, (void *)(unsigned int)smp_begin16, (unsigned int)smp_end16 - (unsigned int)smp_begin16);
-    memory_copy((void *)INIT32ADDRESS, (void *)(unsigned int)smp_begin32, (unsigned int)smp_end32 - (unsigned int)smp_begin32);
-    smp_prep(ARCH_KERNELSTACKADDRESS + 2 * ARCH_KERNELSTACKSIZE);
+    memory_copy((void *)INIT16PHYSICAL, (void *)(unsigned int)smp_begin16, (unsigned int)smp_end16 - (unsigned int)smp_begin16);
+    memory_copy((void *)INIT32PHYSICAL, (void *)(unsigned int)smp_begin32, (unsigned int)smp_end32 - (unsigned int)smp_begin32);
+    smp_prep(ARCH_KERNELSTACKPHYSICAL + 2 * ARCH_KERNELSTACKSIZE);
     detect(madt);
 
 }
