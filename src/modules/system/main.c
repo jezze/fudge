@@ -126,23 +126,15 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
 
 }
 
-static unsigned int protocol_open(struct service_link *link, unsigned int id)
+static unsigned int protocol_open(unsigned int id)
 {
-
-    struct system_node *node = getnode(id);
-
-    list_add(&node->links, &link->item);
 
     return id;
 
 }
 
-static unsigned int protocol_close(struct service_link *link, unsigned int id)
+static unsigned int protocol_close(unsigned int id)
 {
-
-    struct system_node *node = getnode(id);
-
-    list_remove(&node->links, &link->item);
 
     return id;
 
@@ -193,12 +185,12 @@ static unsigned int protocol_read(unsigned int id, unsigned int current, void *b
 
 }
 
-static unsigned int protocol_write(struct service_link *link, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int protocol_write(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct system_node *node = getnode(id);
 
-    return (node->operations.write) ? node->operations.write(link, buffer, count, offset) : 0;
+    return (node->operations.write) ? node->operations.write(buffer, count, offset) : 0;
 
 }
 

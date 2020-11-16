@@ -209,14 +209,14 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
 
 }
 
-static unsigned int protocol_open(struct service_link *link, unsigned int id)
+static unsigned int protocol_open(unsigned int id)
 {
 
     return id;
 
 }
 
-static unsigned int protocol_close(struct service_link *link, unsigned int id)
+static unsigned int protocol_close(unsigned int id)
 {
 
     return id;
@@ -284,7 +284,7 @@ static unsigned int protocol_read(unsigned int id, unsigned int current, void *b
 
 }
 
-static unsigned int writefile(struct service_link *link, void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
+static unsigned int writefile(void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
     unsigned int s = cpio_filesize(header) - offset;
@@ -294,7 +294,7 @@ static unsigned int writefile(struct service_link *link, void *buffer, unsigned 
 
 }
 
-static unsigned int protocol_write(struct service_link *link, unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int protocol_write(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header *header = getheader(id);
@@ -306,7 +306,7 @@ static unsigned int protocol_write(struct service_link *link, unsigned int id, u
     {
 
     case 0x8000:
-        return writefile(link, buffer, count, offset, id, header);
+        return writefile(buffer, count, offset, id, header);
 
     }
 

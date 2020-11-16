@@ -59,7 +59,7 @@ static void interface_write(unsigned int level, char *string, char *file, unsign
 
 }
 
-static unsigned int send_write(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int send_write(void *buffer, unsigned int count, unsigned int offset)
 {
 
     interface_write(DEBUG_INFO, buffer, 0, 0);

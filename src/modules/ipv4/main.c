@@ -135,7 +135,7 @@ static unsigned int arptablenode_read(void *buffer, unsigned int count, unsigned
 
 }
 
-static unsigned int arptablenode_write(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int arptablenode_write(void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_write(arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, buffer, count, offset);

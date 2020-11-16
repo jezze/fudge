@@ -45,7 +45,7 @@ static unsigned int videointerface_readctrl(void *buffer, unsigned int count, un
 
 }
 
-static unsigned int videointerface_writectrl(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writectrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct ctrl_videosettings *settings = buffer;
@@ -69,7 +69,7 @@ static unsigned int videointerface_readdata(void *buffer, unsigned int count, un
 
 }
 
-static unsigned int videointerface_writedata(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
     return memory_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
@@ -83,7 +83,7 @@ static unsigned int videointerface_readcolormap(void *buffer, unsigned int count
 
 }
 
-static unsigned int videointerface_writecolormap(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_writecolormap(void *buffer, unsigned int count, unsigned int offset)
 {
 
     return count;

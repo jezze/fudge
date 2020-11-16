@@ -23,7 +23,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int blockinterface_writedata(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int blockinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct {struct message_header header; struct event_blockrequest blockrequest;} *message = buffer;

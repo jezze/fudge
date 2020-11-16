@@ -136,7 +136,7 @@ static unsigned int consoleinterface_readctrl(void *buffer, unsigned int count, 
 
 }
 
-static unsigned int consoleinterface_writetransmit(struct service_link *link, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_writetransmit(void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;

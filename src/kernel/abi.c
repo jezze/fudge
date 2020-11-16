@@ -75,7 +75,7 @@ static unsigned int open(struct task *task, void *stack)
     if (!descriptor->protocol)
         return 0;
 
-    descriptor->id = descriptor->protocol->open(&descriptor->link, descriptor->id);
+    descriptor->id = descriptor->protocol->open(descriptor->id);
     descriptor->current = descriptor->protocol->step(descriptor->id, descriptor->id);
     descriptor->offset = descriptor->protocol->seek(descriptor->id, 0);
 
@@ -92,7 +92,7 @@ static unsigned int close(struct task *task, void *stack)
     if (!descriptor->protocol)
         return 0;
 
-    descriptor->id = descriptor->protocol->close(&descriptor->link, descriptor->id);
+    descriptor->id = descriptor->protocol->close(descriptor->id);
     descriptor->current = descriptor->protocol->step(descriptor->id, descriptor->id);
     descriptor->offset = descriptor->protocol->seek(descriptor->id, 0);
 
@@ -147,7 +147,7 @@ static unsigned int write(struct task *task, void *stack)
     if (!args->buffer || !args->count)
         return 0;
 
-    descriptor->count = descriptor->protocol->write(&descriptor->link, descriptor->id, descriptor->current, args->buffer, args->count, descriptor->offset);
+    descriptor->count = descriptor->protocol->write(descriptor->id, descriptor->current, args->buffer, args->count, descriptor->offset);
     descriptor->offset = descriptor->protocol->seek(descriptor->id, descriptor->offset + descriptor->count);
 
     return descriptor->count;

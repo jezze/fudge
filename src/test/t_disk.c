@@ -126,6 +126,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct request *request = &requests[0];
     unsigned int offset;
 
+    file_link(FILE_G0);
     file_open(FILE_G0);
 
     offset = walk(channel, source, request, "build/data/help.txt");
@@ -153,6 +154,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     }
 
     file_close(FILE_G0);
+    file_unlink(FILE_G0);
     channel_close(channel);
 
 }
