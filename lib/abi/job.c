@@ -101,10 +101,15 @@ static unsigned int spawn(struct job *job)
 void activatenext(struct channel *channel, unsigned int index, struct job *jobs, unsigned int n)
 {
 
-    struct job *job = &jobs[index];
+    if (index < n)
+    {
 
-    if (job->id)
-        channel_place(channel, job->id, EVENT_MAIN, 0, 0);
+        struct job *job = &jobs[index];
+
+        if (job->id)
+            channel_place(channel, job->id, EVENT_MAIN, 0, 0);
+
+    }
 
 }
 
@@ -120,6 +125,15 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         job->id = spawn(job);
 
+        if (!job->id)
+        {
+
+            job_term(channel, jobs, i);
+
+            return i;
+
+        }
+
     }
 
     for (i = 0; i < n; i++)
@@ -127,13 +141,15 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
         struct job *job = &jobs[i];
 
-        if (!job->id)
-            continue;
+        if (job->id)
+        {
 
-        job_replyback(channel, job->id, EVENT_CLOSE);
+            job_replyback(channel, job->id, EVENT_CLOSE);
 
-        if (i < n - 1)
-            job_replyto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
+            if (i < n - 1)
+                job_replyto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
+
+        }
 
     }
 
@@ -141,25 +157,23 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
     {
 
         struct job *job = &jobs[i];
-        unsigned int j;
 
-        if (!job->id)
-            continue;
+        if (job->id)
+        {
 
-        for (j = 0; j < job->nfiles; j++)
-            channel_place(channel, job->id, EVENT_FILE, ascii_lengthz(job->files[j]), job->files[j]);
+            unsigned int j;
 
-        for (j = 0; j < job->ninputs; j++)
-            channel_place(channel, job->id, EVENT_DATA, ascii_length(job->inputs[j]), job->inputs[j]);
+            for (j = 0; j < job->nfiles; j++)
+                channel_place(channel, job->id, EVENT_FILE, ascii_lengthz(job->files[j]), job->files[j]);
 
-    }
+            for (j = 0; j < job->ninputs; j++)
+                channel_place(channel, job->id, EVENT_DATA, ascii_length(job->inputs[j]), job->inputs[j]);
 
-    if (n)
-    {
-
-        activatenext(channel, 0, jobs, n);
+        }
 
     }
+
+    activatenext(channel, 0, jobs, n);
 
     return job_count(channel, jobs, n);
 
@@ -202,10 +216,8 @@ void job_term(struct channel *channel, struct job *jobs, unsigned int n)
 
         struct job *job = &jobs[i];
 
-        if (!job->id)
-            continue;
-
-        channel_place(channel, job->id, EVENT_TERM, 0, 0);
+        if (job->id)
+            channel_place(channel, job->id, EVENT_TERM, 0, 0);
 
     }
 
@@ -214,7 +226,7 @@ void job_term(struct channel *channel, struct job *jobs, unsigned int n)
 unsigned int job_count(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
-    unsigned int nids = 0;
+    unsigned int count = 0;
     unsigned int i;
 
     for (i = 0; i < n; i++)
@@ -223,11 +235,11 @@ unsigned int job_count(struct channel *channel, struct job *jobs, unsigned int n
         struct job *job = &jobs[i];
 
         if (job->id)
-            nids++;
+            count++;
 
     }
 
-    return nids;
+    return count;
 
 }
 
