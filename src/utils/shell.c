@@ -47,7 +47,7 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
         struct message_data data;
         struct job jobs[32];
         unsigned int njobs = 0;
-        unsigned int nids;
+        unsigned int tasks;
 
         job_replyback(channel, id, EVENT_DATA);
         job_replyback(channel, id, EVENT_CLOSE);
@@ -75,16 +75,16 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
 
         }
 
-        nids = job_run(channel, jobs, njobs);
+        tasks = job_run(channel, jobs, njobs);
 
-        while (nids && channel_poll(channel, &header, &data))
+        while (tasks && channel_poll(channel, &header, &data))
         {
 
             switch (header.event)
             {
 
             case EVENT_CLOSE:
-                nids = job_close(channel, header.source, jobs, njobs);
+                tasks = job_close(channel, header.source, jobs, njobs);
 
                 break;
 
