@@ -50,7 +50,9 @@ unsigned int channel_place(struct channel *channel, unsigned int id, unsigned in
         if (channel->callbacks[event].redirect)
             id = channel->callbacks[event].redirect;
 
-        return call_place(id, &header, data);
+        while (!call_place(id, &header, data));
+
+        return count;
 
     }
 
