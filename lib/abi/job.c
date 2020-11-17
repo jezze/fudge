@@ -98,6 +98,16 @@ static unsigned int spawn(struct job *job)
 
 }
 
+void activatenext(struct channel *channel, unsigned int index, struct job *jobs, unsigned int n)
+{
+
+    struct job *job = &jobs[index];
+
+    if (job->id)
+        channel_place(channel, job->id, EVENT_MAIN, 0, 0);
+
+}
+
 unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
@@ -144,15 +154,10 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
     }
 
-    for (i = 0; i < n; i++)
+    if (n)
     {
 
-        struct job *job = &jobs[i];
-
-        if (!job->id)
-            continue;
-
-        channel_place(channel, job->id, EVENT_MAIN, 0, 0);
+        activatenext(channel, 0, jobs, n);
 
     }
 
@@ -171,7 +176,15 @@ unsigned int job_close(struct channel *channel, unsigned int id, struct job *job
         struct job *job = &jobs[i];
 
         if (job->id == id)
+        {
+
             job->id = 0;
+
+            activatenext(channel, i + 1, jobs, n);
+
+            break;
+
+        }
 
     }
 

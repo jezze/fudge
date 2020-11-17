@@ -64,7 +64,7 @@ static struct core *coreget(void)
 static void coreassign(struct task *task)
 {
 
-    struct list_item *current = list_picktail(&corelist);
+    struct list_item *current = list_pickhead(&corelist);
 
     if (current)
     {
