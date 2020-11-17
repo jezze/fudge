@@ -73,22 +73,21 @@ unsigned int ascii_wvalue(char *out, unsigned int count, int value, unsigned int
     char *current = out;
     int b = base;
     int num = value;
-    int tmp = value;
     unsigned int i;
 
     for (i = 1; i < count; i++)
     {
 
-        tmp = num;
+        *current++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + num % b];
+
         num /= b;
-        *current++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + (tmp - num * b)];
 
         if (!num && i >= padding)
             break;
 
     }
 
-    if (tmp < 0)
+    if (value < 0)
     {
 
         *current++ = '-';
