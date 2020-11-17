@@ -200,7 +200,7 @@ void kernel_assign(void)
         {
 
             list_remove_nolock(&blockedtasks, current);
-            coreassign(task);
+            kernel_readytask(task);
 
         }
 
