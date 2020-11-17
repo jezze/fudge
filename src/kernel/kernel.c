@@ -11,7 +11,7 @@ static struct task tasks[KERNEL_TASKS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct service_descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct service_mount mounts[KERNEL_MOUNTS];
-static struct list usedtasks;
+static struct list readytasks;
 static struct list freetasks;
 static struct list blockedtasks;
 static struct list usedmounts;
@@ -150,10 +150,10 @@ struct service_mount *kernel_pickmount(void)
 
 }
 
-void kernel_usetask(struct task *task)
+void kernel_readytask(struct task *task)
 {
 
-    list_add(&usedtasks, &task->item);
+    list_add(&readytasks, &task->item);
 
 }
 
@@ -210,7 +210,7 @@ void kernel_assign(void)
 
     spinlock_release(&blockedtasks.spinlock);
 
-    while ((current = list_pickhead(&usedtasks)))
+    while ((current = list_pickhead(&readytasks)))
     {
 
         struct task *task = current->data;
@@ -347,7 +347,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
     unsigned int i;
 
-    list_init(&usedtasks);
+    list_init(&readytasks);
     list_init(&freetasks);
     list_init(&blockedtasks);
     list_init(&usedmounts);

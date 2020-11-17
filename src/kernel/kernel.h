@@ -8,7 +8,7 @@ struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *task));
 struct task *kernel_picktask(void);
 struct service_mount *kernel_pickmount(void);
-void kernel_usetask(struct task *task);
+void kernel_readytask(struct task *task);
 void kernel_usemount(struct service_mount *mount);
 void kernel_freetask(struct task *task);
 void kernel_freemount(struct service_mount *mount);
