@@ -1,5 +1,4 @@
-#include "define.h"
-#include "memory.h"
+#include "buffer.h"
 #include "ascii.h"
 #include "message.h"
 
@@ -20,7 +19,7 @@ unsigned int message_datasize(struct message_header *header)
 unsigned int message_append(struct message_data *data, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    return offset + memory_write(data->buffer, FUDGE_MSIZE, buffer, count, offset);
+    return offset + buffer_write(data->buffer, MESSAGE_SIZE, buffer, count, offset);
 
 }
 
@@ -41,9 +40,9 @@ unsigned int message_appendstringz(struct message_data *data, char *string, unsi
 unsigned int message_appendvalue(struct message_data *data, int value, unsigned int base, unsigned int padding, unsigned int offset)
 {
 
-    char num[FUDGE_NSIZE];
+    char num[ASCII_NUMSIZE];
 
-    return message_append(data, offset, ascii_wvalue(num, FUDGE_NSIZE, value, base, padding), num);
+    return message_append(data, offset, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num);
 
 }
 

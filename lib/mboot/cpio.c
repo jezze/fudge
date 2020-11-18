@@ -9,14 +9,14 @@ static unsigned int limit;
 static unsigned int read(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, (void *)address, limit, offset);
+    return buffer_read(buffer, count, (void *)address, limit, offset);
 
 }
 
 static unsigned int write(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write((void *)address, limit, buffer, count, offset);
+    return buffer_write((void *)address, limit, buffer, count, offset);
 
 }
 
@@ -40,7 +40,7 @@ static unsigned int parent(struct cpio_header *header, unsigned int id)
 {
 
     char *name = getname(header, id);
-    unsigned int length = memory_findlastbyte(name, header->namesize - 1, '/');
+    unsigned int length = buffer_findlastbyte(name, header->namesize - 1, '/');
     struct cpio_header *eheader;
     unsigned int current = id;
 
@@ -88,7 +88,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
         if (!name)
             break;
 
-        if (memory_match(name + header->namesize, path, length))
+        if (buffer_match(name + header->namesize, path, length))
             return current;
 
     } while ((current = cpio_next(eheader, current)));
@@ -255,9 +255,9 @@ static unsigned int readdirectory(void *buffer, unsigned int count, unsigned int
 
     record.id = current;
     record.size = cpio_filesize(eheader);
-    record.length = memory_read(record.name, RECORD_NAMESIZE, name, eheader->namesize - 1, header->namesize);
+    record.length = buffer_read(record.name, RECORD_NAMESIZE, name, eheader->namesize - 1, header->namesize);
 
-    return memory_read(buffer, count, &record, sizeof (struct record), offset);
+    return buffer_read(buffer, count, &record, sizeof (struct record), offset);
 
 }
 

@@ -1,3 +1,5 @@
+#define ASCII_NUMSIZE                   1024
+
 unsigned int ascii_length(char *in);
 unsigned int ascii_lengthz(char *in);
 void ascii_copy(char *out, char *in);

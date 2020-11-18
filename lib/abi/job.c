@@ -9,7 +9,7 @@ unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int
 
     unsigned int njobs = 0;
 
-    memory_clear(jobs, sizeof (struct job) * n);
+    buffer_clear(jobs, sizeof (struct job) * n);
 
     while (status->start < status->end)
     {

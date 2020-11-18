@@ -26,7 +26,7 @@ struct tokenlist
 
 };
 
-static char stringdata[FUDGE_BSIZE];
+static char stringdata[BUFFER_SIZE];
 static struct ring stringtable;
 static struct token infixdata[1024];
 static struct token postfixdata[1024];
@@ -337,7 +337,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
     if (!msize)
         return;
 
-    ring_init(&stringtable, FUDGE_BSIZE, stringdata);
+    ring_init(&stringtable, BUFFER_SIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
@@ -353,16 +353,16 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
     if (file_walk2(FILE_L0, mdata))
     {
 
-        char buffer[FUDGE_BSIZE];
+        char buffer[BUFFER_SIZE];
         unsigned int count;
 
-        ring_init(&stringtable, FUDGE_BSIZE, stringdata);
+        ring_init(&stringtable, BUFFER_SIZE, stringdata);
         tokenlist_init(&infix, 1024, infixdata);
         tokenlist_init(&postfix, 1024, postfixdata);
         tokenlist_init(&stack, 8, stackdata);
         file_open(FILE_L0);
 
-        while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE)))
+        while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
             tokenizebuffer(&infix, &stringtable, count, buffer);
 
         file_close(FILE_L0);

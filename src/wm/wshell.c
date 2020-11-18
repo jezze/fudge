@@ -3,13 +3,13 @@
 #include <widget.h>
 
 static struct widget_textbox content;
-static char outputdata[FUDGE_BSIZE];
+static char outputdata[BUFFER_SIZE];
 static struct ring output;
-static char inputdata1[FUDGE_BSIZE];
+static char inputdata1[BUFFER_SIZE];
 static struct ring input1;
-static char inputdata2[FUDGE_BSIZE];
+static char inputdata2[BUFFER_SIZE];
 static struct ring input2;
-static char textdata[FUDGE_BSIZE];
+static char textdata[BUFFER_SIZE];
 static struct ring text;
 
 static void print(void *buffer, unsigned int count)
@@ -53,7 +53,7 @@ static void updatecontent(void)
     ring_copy(&output, &input2);
     ring_write(&output, "\n", 1);
 
-    while ((count = ring_read(&output, data.buffer, FUDGE_MSIZE)))
+    while ((count = ring_read(&output, data.buffer, MESSAGE_SIZE)))
         file_notify(FILE_G0, EVENT_DATA, count, &data);
 
     ring_reset(&output);
@@ -63,12 +63,12 @@ static void updatecontent(void)
 static void copyring(struct ring *ring)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char buffer[BUFFER_SIZE];
     unsigned int count;
     unsigned int head = ring->head;
     unsigned int tail = ring->tail;
 
-    while ((count = ring_read(ring, buffer, FUDGE_BSIZE)))
+    while ((count = ring_read(ring, buffer, BUFFER_SIZE)))
         print(buffer, count);
 
     ring->head = head;
@@ -79,7 +79,7 @@ static void copyring(struct ring *ring)
 static void moveleft(unsigned int steps)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char buffer[BUFFER_SIZE];
 
     ring_writereverse(&input2, buffer, ring_readreverse(&input1, buffer, steps));
 
@@ -88,7 +88,7 @@ static void moveleft(unsigned int steps)
 static void moveright(unsigned int steps)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char buffer[BUFFER_SIZE];
 
     ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
 
@@ -185,13 +185,13 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
 static void interpret(struct channel *channel, struct ring *ring)
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
+    char buffer[BUFFER_SIZE];
+    unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
 
     if (count >= 2)
     {
 
-        if (memory_match(buffer, "cd ", 3))
+        if (buffer_match(buffer, "cd ", 3))
         {
 
             buffer[count - 1] = '\0';
@@ -222,8 +222,8 @@ static void interpret(struct channel *channel, struct ring *ring)
 static void complete(struct channel *channel, struct ring *ring)
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
+    char buffer[BUFFER_SIZE];
+    unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
     unsigned int id = file_spawn("/bin/complete");
 
     if (id)
@@ -245,7 +245,7 @@ static void complete(struct channel *channel, struct ring *ring)
                 break;
 
             if (header.event == EVENT_DATA)
-                offset += memory_write(buffer, FUDGE_BSIZE, data.buffer, message_datasize(&header), offset);
+                offset += buffer_write(buffer, BUFFER_SIZE, data.buffer, message_datasize(&header), offset);
 
         }
 
@@ -428,10 +428,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
-    ring_init(&text, FUDGE_BSIZE, textdata);
+    ring_init(&output, BUFFER_SIZE, outputdata);
+    ring_init(&input1, BUFFER_SIZE, inputdata1);
+    ring_init(&input2, BUFFER_SIZE, inputdata2);
+    ring_init(&text, BUFFER_SIZE, textdata);
     printprompt();
     widget_inittextbox(&content);
 

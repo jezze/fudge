@@ -31,7 +31,7 @@ void gdt_cleardescriptors(struct gdt_pointer *pointer, unsigned int count)
 
     struct gdt_descriptor *descriptors = (struct gdt_descriptor *)(pointer->base0 | pointer->base1 << 8 | pointer->base2 << 16 | pointer->base3 << 24);
 
-    memory_clear(descriptors, sizeof (struct gdt_descriptor) * count);
+    buffer_clear(descriptors, sizeof (struct gdt_descriptor) * count);
 
 }
 

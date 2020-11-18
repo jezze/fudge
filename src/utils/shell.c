@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static char inputbuffer[FUDGE_BSIZE];
+static char inputbuffer[BUFFER_SIZE];
 static struct ring input;
 
 static void print(void *buffer, unsigned int count)
@@ -109,13 +109,13 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
 static void interpret(struct channel *channel, struct ring *ring)
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
+    char buffer[BUFFER_SIZE];
+    unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
 
     if (count >= 2)
     {
 
-        if (memory_match(buffer, "cd ", 3))
+        if (buffer_match(buffer, "cd ", 3))
         {
 
             buffer[count - 1] = '\0';
@@ -146,8 +146,8 @@ static void interpret(struct channel *channel, struct ring *ring)
 static void complete(struct channel *channel, struct ring *ring)
 {
 
-    char buffer[FUDGE_BSIZE];
-    unsigned int count = ring_read(ring, buffer, FUDGE_BSIZE);
+    char buffer[BUFFER_SIZE];
+    unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
     unsigned int id = file_spawn("/bin/complete");
 
     if (id)
@@ -169,7 +169,7 @@ static void complete(struct channel *channel, struct ring *ring)
                 break;
 
             if (header.event == EVENT_DATA)
-                offset += memory_write(buffer, FUDGE_BSIZE, data.buffer, message_datasize(&header), offset);
+                offset += buffer_write(buffer, BUFFER_SIZE, data.buffer, message_datasize(&header), offset);
 
         }
 
@@ -296,7 +296,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    ring_init(&input, FUDGE_BSIZE, inputbuffer);
+    ring_init(&input, BUFFER_SIZE, inputbuffer);
 
     if (!file_walk2(FILE_G0, "/system/console/if:0/event"))
         return;

@@ -1,3 +1,5 @@
+#define MESSAGE_SIZE                    1536
+
 struct message_header
 {
 
@@ -10,7 +12,7 @@ struct message_header
 struct message_data
 {
 
-    char buffer[FUDGE_MSIZE];
+    char buffer[MESSAGE_SIZE];
 
 };
 

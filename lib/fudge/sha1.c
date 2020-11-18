@@ -1,4 +1,4 @@
-#include "memory.h"
+#include "buffer.h"
 #include "sha1.h"
 
 #define F0(b, c, d)                     (d ^ (b & (c ^ d)))
@@ -117,13 +117,13 @@ void sha1_read(struct sha1 *s, void *buffer, unsigned int count)
         if (count < c)
         {
 
-            memory_copy(s->buffer + r, p, count);
+            buffer_copy(s->buffer + r, p, count);
 
             return;
 
         }
 
-        memory_copy(s->buffer + r, p, c);
+        buffer_copy(s->buffer + r, p, c);
         processblock(s, s->buffer);
 
         p += c;
@@ -134,7 +134,7 @@ void sha1_read(struct sha1 *s, void *buffer, unsigned int count)
     for (; count >= 64; count -= 64, p += 64)
         processblock(s, p);
 
-    memory_copy(s->buffer, p, count);
+    buffer_copy(s->buffer, p, count);
 
 }
 
@@ -148,14 +148,14 @@ void sha1_write(struct sha1 *s, unsigned char digest[20])
     if (r > 56)
     {
 
-        memory_clear(s->buffer + r, 64 - r);
+        buffer_clear(s->buffer + r, 64 - r);
         processblock(s, s->buffer);
 
         r = 0;
 
     }
 
-    memory_clear(s->buffer + r, 56 - r);
+    buffer_clear(s->buffer + r, 56 - r);
 
     s->lo <<= 3;
     s->buffer[56] = s->hi >> 24;

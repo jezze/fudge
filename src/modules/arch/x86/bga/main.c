@@ -41,7 +41,7 @@ static void setreg(unsigned short index, unsigned short data)
 static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
+    return buffer_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
@@ -65,14 +65,14 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
+    return buffer_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
 
 }
 
 static unsigned int videointerface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+    return buffer_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
 
 }
 

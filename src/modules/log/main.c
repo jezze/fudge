@@ -10,50 +10,50 @@ static struct system_node send;
 static void interface_write(unsigned int level, char *string, char *file, unsigned int line)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char buffer[BUFFER_SIZE];
     unsigned int count = 0;
 
     switch (level)
     {
 
     case DEBUG_CRITICAL:
-        count += memory_write(buffer, FUDGE_BSIZE, "[CRIT] ", 7, count);
+        count += buffer_write(buffer, BUFFER_SIZE, "[CRIT] ", 7, count);
 
         break;
 
     case DEBUG_ERROR:
-        count += memory_write(buffer, FUDGE_BSIZE, "[ERRO] ", 7, count);
+        count += buffer_write(buffer, BUFFER_SIZE, "[ERRO] ", 7, count);
 
         break;
 
     case DEBUG_WARNING:
-        count += memory_write(buffer, FUDGE_BSIZE, "[WARN] ", 7, count);
+        count += buffer_write(buffer, BUFFER_SIZE, "[WARN] ", 7, count);
 
         break;
 
     case DEBUG_INFO:
-        count += memory_write(buffer, FUDGE_BSIZE, "[INFO] ", 7, count);
+        count += buffer_write(buffer, BUFFER_SIZE, "[INFO] ", 7, count);
 
         break;
 
     }
 
-    count += memory_write(buffer, FUDGE_BSIZE, string, ascii_length(string), count);
+    count += buffer_write(buffer, BUFFER_SIZE, string, ascii_length(string), count);
 
     if (file && line)
     {
 
-        char num[FUDGE_NSIZE];
+        char num[ASCII_NUMSIZE];
 
-        count += memory_write(buffer, FUDGE_BSIZE, " (", 2, count);
-        count += memory_write(buffer, FUDGE_BSIZE, file, ascii_length(file), count);
-        count += memory_write(buffer, FUDGE_BSIZE, ":", 1, count);
-        count += memory_write(buffer, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, line, 10, 0), count);
-        count += memory_write(buffer, FUDGE_BSIZE, ")", 1, count);
+        count += buffer_write(buffer, BUFFER_SIZE, " (", 2, count);
+        count += buffer_write(buffer, BUFFER_SIZE, file, ascii_length(file), count);
+        count += buffer_write(buffer, BUFFER_SIZE, ":", 1, count);
+        count += buffer_write(buffer, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, line, 10, 0), count);
+        count += buffer_write(buffer, BUFFER_SIZE, ")", 1, count);
 
     }
 
-    count += memory_write(buffer, FUDGE_BSIZE, "\n", 1, count);
+    count += buffer_write(buffer, BUFFER_SIZE, "\n", 1, count);
 
     kernel_notify(&messages.links, EVENT_DATA, buffer, count);
 

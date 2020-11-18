@@ -1,7 +1,6 @@
-#include "define.h"
-#include "memory.h"
+#include "buffer.h"
 
-void memory_clear(void *out, unsigned int count)
+void buffer_clear(void *out, unsigned int count)
 {
 
     unsigned char *op = out;
@@ -11,7 +10,7 @@ void memory_clear(void *out, unsigned int count)
 
 }
 
-void memory_copy(void *out, void *in, unsigned int count)
+void buffer_copy(void *out, void *in, unsigned int count)
 {
 
     unsigned char *op = out;
@@ -22,7 +21,7 @@ void memory_copy(void *out, void *in, unsigned int count)
 
 }
 
-unsigned int memory_findbyte(void *in, unsigned int count, unsigned char value)
+unsigned int buffer_findbyte(void *in, unsigned int count, unsigned char value)
 {
 
     unsigned char *ip = in;
@@ -34,7 +33,7 @@ unsigned int memory_findbyte(void *in, unsigned int count, unsigned char value)
 
 }
 
-unsigned int memory_findlastbyte(void *in, unsigned int count, unsigned char value)
+unsigned int buffer_findlastbyte(void *in, unsigned int count, unsigned char value)
 {
 
     unsigned char *ip = in;
@@ -53,7 +52,7 @@ unsigned int memory_findlastbyte(void *in, unsigned int count, unsigned char val
 
 }
 
-unsigned int memory_match(void *in1, void *in2, unsigned int count)
+unsigned int buffer_match(void *in1, void *in2, unsigned int count)
 {
 
     unsigned char *ip1 = in1;
@@ -71,7 +70,7 @@ unsigned int memory_match(void *in1, void *in2, unsigned int count)
 
 }
 
-unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
+unsigned int buffer_read(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
 {
 
     unsigned char *op = out;
@@ -83,13 +82,13 @@ unsigned int memory_read(void *out, unsigned int ocount, void *in, unsigned int 
     if (ocount > icount - offset)
         ocount = icount - offset;
 
-    memory_copy(op, ip + offset, ocount);
+    buffer_copy(op, ip + offset, ocount);
 
     return ocount;
 
 }
 
-unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
+unsigned int buffer_write(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
 {
 
     unsigned char *op = out;
@@ -101,23 +100,23 @@ unsigned int memory_write(void *out, unsigned int ocount, void *in, unsigned int
     if (icount > ocount - offset)
         icount = ocount - offset;
 
-    memory_copy(op + offset, ip, icount);
+    buffer_copy(op + offset, ip, icount);
 
     return icount;
 
 }
 
-unsigned int memory_pagecount(unsigned int value)
+unsigned int buffer_pagecount(unsigned int value)
 {
 
-    return (value + (FUDGE_BSIZE - 1)) / FUDGE_BSIZE;
+    return (value + (BUFFER_SIZE - 1)) / BUFFER_SIZE;
 
 }
 
-unsigned int memory_pagealign(unsigned int value)
+unsigned int buffer_pagealign(unsigned int value)
 {
 
-    return memory_pagecount(value) * FUDGE_BSIZE;
+    return buffer_pagecount(value) * BUFFER_SIZE;
 
 }
 

@@ -3,11 +3,11 @@
 #include <widget.h>
 
 static struct widget_textbox content;
-static char outputdata[FUDGE_BSIZE];
+static char outputdata[BUFFER_SIZE];
 static struct ring output;
-static char inputdata1[FUDGE_BSIZE];
+static char inputdata1[BUFFER_SIZE];
 static struct ring input1;
-static char inputdata2[FUDGE_BSIZE];
+static char inputdata2[BUFFER_SIZE];
 static struct ring input2;
 
 static void updatecontent(void)
@@ -25,7 +25,7 @@ static void updatecontent(void)
     ring_copy(&output, &input2);
     ring_write(&output, "\n", 1);
 
-    while ((count = ring_read(&output, data.buffer, FUDGE_MSIZE)))
+    while ((count = ring_read(&output, data.buffer, MESSAGE_SIZE)))
         file_notify(FILE_G0, EVENT_DATA, count, &data);
 
     ring_reset(&output);
@@ -35,7 +35,7 @@ static void updatecontent(void)
 static void moveleft(unsigned int steps)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char buffer[BUFFER_SIZE];
 
     ring_writereverse(&input2, buffer, ring_readreverse(&input1, buffer, steps));
 
@@ -44,7 +44,7 @@ static void moveleft(unsigned int steps)
 static void moveright(unsigned int steps)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char buffer[BUFFER_SIZE];
 
     ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
 
@@ -85,7 +85,7 @@ static void movedown(void)
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char buffer[BUFFER_SIZE];
     unsigned int count;
 
     if (!file_walk2(FILE_L0, mdata))
@@ -93,7 +93,7 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 
     file_open(FILE_L0);
 
-    while ((count = file_read(FILE_L0, buffer, FUDGE_BSIZE)))
+    while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
         ring_write(&input2, buffer, count);
 
     file_close(FILE_L0);
@@ -191,9 +191,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    ring_init(&output, FUDGE_BSIZE, outputdata);
-    ring_init(&input1, FUDGE_BSIZE, inputdata1);
-    ring_init(&input2, FUDGE_BSIZE, inputdata2);
+    ring_init(&output, BUFFER_SIZE, outputdata);
+    ring_init(&input1, BUFFER_SIZE, inputdata1);
+    ring_init(&input2, BUFFER_SIZE, inputdata2);
     widget_inittextbox(&content);
 
     if (!file_walk2(FILE_G0, "/system/wserver"))

@@ -14,7 +14,7 @@ static void *icmp_writehead(void *buffer, unsigned char type, unsigned char code
     struct icmp_header *header = ipv4_writehead(buffer, sip, tip, ipv4hook.id, count);
     unsigned int checksum;
 
-    memory_copy(header, payload, count);
+    buffer_copy(header, payload, count);
 
     header->type = type;
     header->code = code;

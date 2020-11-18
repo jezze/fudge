@@ -54,7 +54,7 @@ static unsigned int request_poll(struct request *request, struct channel *channe
     while (channel_pollevent(channel, EVENT_DATA, &header, &data))
     {
 
-        request->blockreads += memory_write(blocks, BLOCKSIZE * 4, &data, message_datasize(&header), request->blockreads * BLOCKSIZE) / BLOCKSIZE;
+        request->blockreads += buffer_write(blocks, BLOCKSIZE * 4, &data, message_datasize(&header), request->blockreads * BLOCKSIZE) / BLOCKSIZE;
 
         if (request->blockreads == request->blockcount)
             return request->count;
@@ -99,7 +99,7 @@ static unsigned int walk(struct channel *channel, unsigned int source, struct re
         if (header->namesize == 11)
         {
 
-            if (memory_match("TRAILER!!!", header + 1, 11))
+            if (buffer_match("TRAILER!!!", header + 1, 11))
                 break;
 
         }
@@ -107,7 +107,7 @@ static unsigned int walk(struct channel *channel, unsigned int source, struct re
         if (header->namesize == length)
         {
 
-            if (memory_match(path, header + 1, length))
+            if (buffer_match(path, header + 1, length))
                 return request->offset;
 
         }

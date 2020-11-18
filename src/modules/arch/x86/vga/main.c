@@ -48,7 +48,7 @@ static unsigned int consoleinterface_readctrl(void *buffer, unsigned int count, 
 
     settings.scroll = 1;
 
-    return memory_read(buffer, count, &settings, sizeof (struct ctrl_consolesettings), offset);
+    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 
@@ -90,7 +90,7 @@ static unsigned int consoleinterface_writetransmit(void *buffer, unsigned int co
         if (cursor.offset >= total)
         {
 
-            memory_copy(taddress, taddress + videointerface.settings.w, videointerface.settings.w * (videointerface.settings.h - 1) * sizeof (struct vga_character));
+            buffer_copy(taddress, taddress + videointerface.settings.w, videointerface.settings.w * (videointerface.settings.h - 1) * sizeof (struct vga_character));
             clear(videointerface.settings.w * (videointerface.settings.h - 1));
 
             cursor.offset -= videointerface.settings.w;
@@ -109,7 +109,7 @@ static unsigned int consoleinterface_writetransmit(void *buffer, unsigned int co
 static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
+    return buffer_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
@@ -149,14 +149,14 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
+    return buffer_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
 
 }
 
 static unsigned int videointerface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+    return buffer_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
 
 }
 

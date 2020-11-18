@@ -27,7 +27,7 @@ static struct view
 } views[VIEWS];
 
 static unsigned int keymod = KEYMOD_NONE;
-static char outputdata[FUDGE_BSIZE];
+static char outputdata[BUFFER_SIZE];
 static struct ring output;
 static struct box screen;
 static struct box body;
@@ -60,7 +60,7 @@ static void draw(void *data, unsigned int count, unsigned int offset)
 {
 
     if (vmode.fb)
-        memory_write((void *)vmode.fb, vmode.w * vmode.h * vmode.bpp, data, count, offset);
+        buffer_write((void *)vmode.fb, vmode.w * vmode.h * vmode.bpp, data, count, offset);
     else
         file_seekwriteall(FILE_G6, data, count, offset);
 
@@ -302,7 +302,7 @@ static void setupvideo(void)
     unsigned char black[768];
 
     ctrl_setvideosettings(&settings, 1024, 768, 4);
-    memory_clear(black, 768);
+    buffer_clear(black, 768);
 
     if (!file_walk(FILE_L0, FILE_G4, "ctrl"))
         return;
@@ -939,7 +939,7 @@ void init(struct channel *channel)
 
     list_init(&viewlist);
     list_init(&remotelist);
-    ring_init(&output, FUDGE_BSIZE, outputdata);
+    ring_init(&output, BUFFER_SIZE, outputdata);
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     render_init();

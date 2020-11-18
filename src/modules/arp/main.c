@@ -22,10 +22,10 @@ void *arp_writehead(void *buffer, unsigned int htype, unsigned char hlength, uns
     header->operation[0] = operation >> 8;
     header->operation[1] = operation;
 
-    memory_copy(data, sha, header->hlength);
-    memory_copy(data + header->hlength, spa, header->plength);
-    memory_copy(data + header->hlength + header->plength, tha, header->hlength);
-    memory_copy(data + header->hlength + header->plength + header->hlength, tpa, header->plength);
+    buffer_copy(data, sha, header->hlength);
+    buffer_copy(data + header->hlength, spa, header->plength);
+    buffer_copy(data + header->hlength + header->plength, tha, header->hlength);
+    buffer_copy(data + header->hlength + header->plength + header->hlength, tpa, header->plength);
 
     return data + header->hlength + header->plength + header->hlength + header->plength;
 

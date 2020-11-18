@@ -528,7 +528,7 @@ static void markwidgetsall(struct layer *layer, unsigned int source, unsigned in
 static void addwidget(struct layer *layer, struct widget *widget)
 {
 
-    layer->count += memory_write(layer->data, layer->total, widget, widget->count, layer->count);
+    layer->count += buffer_write(layer->data, layer->total, widget, widget->count, layer->count);
 
 }
 
@@ -537,7 +537,7 @@ static void removedata(struct layer *layer, void *data, unsigned int count)
 
     unsigned char *position = data;
 
-    memory_copy(position, position + count, layer->count - (position - layer->data) - count);
+    buffer_copy(position, position + count, layer->count - (position - layer->data) - count);
 
     layer->count -= count;
 
@@ -604,7 +604,7 @@ void render_flush(unsigned char *canvasdata, unsigned int size, void (*draw)(voi
     unsigned int chunk = 0;
     unsigned int chunkstart = 0;
     unsigned int line;
-    char lines[FUDGE_BSIZE];
+    char lines[BUFFER_SIZE];
 
     for (line = 0; line < currenth; line++)
         lines[line] = testline(line);

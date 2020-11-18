@@ -4,13 +4,13 @@
 void log(unsigned int descriptor, char *key, char *value)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char buffer[BUFFER_SIZE];
     unsigned int count = 0;
 
-    count += memory_write(buffer, FUDGE_BSIZE, key, ascii_length(key), count);
-    count += memory_write(buffer, FUDGE_BSIZE, ": ", 2, count);
-    count += memory_write(buffer, FUDGE_BSIZE, value, ascii_length(value), count);
-    count += memory_write(buffer, FUDGE_BSIZE, "", 1, count);
+    count += buffer_write(buffer, BUFFER_SIZE, key, ascii_length(key), count);
+    count += buffer_write(buffer, BUFFER_SIZE, ": ", 2, count);
+    count += buffer_write(buffer, BUFFER_SIZE, value, ascii_length(value), count);
+    count += buffer_write(buffer, BUFFER_SIZE, "", 1, count);
 
     if (!file_walk2(descriptor, "/system/log/send"))
         return;

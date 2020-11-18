@@ -32,8 +32,8 @@ void *ethernet_writehead(void *buffer, unsigned int type, unsigned char *sha, un
     header->type[0] = type >> 8;
     header->type[1] = type;
 
-    memory_copy(header->sha, sha, ETHERNET_ADDRSIZE);
-    memory_copy(header->tha, tha, ETHERNET_ADDRSIZE);
+    buffer_copy(header->sha, sha, ETHERNET_ADDRSIZE);
+    buffer_copy(header->tha, tha, ETHERNET_ADDRSIZE);
 
     return header + 1;
 

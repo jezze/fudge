@@ -17,7 +17,7 @@ static struct acpi_rsdp *findrsdp(void)
     for (rsdp = 0x000E0000; rsdp < 0x00100000; rsdp += 0x10)
     {
 
-        if (memory_match((void *)rsdp, signature, 8))
+        if (buffer_match((void *)rsdp, signature, 8))
             return (struct acpi_rsdp *)rsdp;
 
     }
@@ -28,7 +28,7 @@ static struct acpi_rsdp *findrsdp(void)
     for (rsdp = ebda; rsdp < ebda + 0x400; rsdp += 0x10)
     {
 
-        if (memory_match((void *)rsdp, signature, 8))
+        if (buffer_match((void *)rsdp, signature, 8))
             return (struct acpi_rsdp *)rsdp;
 
     }
@@ -49,7 +49,7 @@ struct acpi_sdth *acpi_findheader(char *name)
     for (i = 0; i < total; i++)
     {
 
-        if (memory_match(entries[i]->signature, name, 4))
+        if (buffer_match(entries[i]->signature, name, 4))
             return entries[i];
 
     }

@@ -55,7 +55,7 @@ static unsigned int clockinterface_readctrl(void *buffer, unsigned int count, un
     settings.month = read(C_COMMAND_MONTH);
     settings.year = 2000 + read(C_COMMAND_YEAR);
 
-    return memory_read(buffer, count, &settings, sizeof (struct ctrl_clocksettings), offset);
+    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_clocksettings), offset);
 
 }
 

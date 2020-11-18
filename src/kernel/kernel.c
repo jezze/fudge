@@ -89,7 +89,7 @@ unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsi
         char *cp = path + offset;
         unsigned int cl = length - offset;
 
-        cl = memory_findbyte(cp, cl, '/');
+        cl = buffer_findbyte(cp, cl, '/');
 
         if (cl == 2 && cp[0] == '.' && cp[1] == '.')
         {

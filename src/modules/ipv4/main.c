@@ -20,7 +20,7 @@ static struct ipv4_arpentry *findarpentry(void *paddress)
     for (i = 0; i < ARPTABLESIZE; i++)
     {
 
-        if (memory_match(arptable[i].paddress, paddress, IPV4_ADDRSIZE))
+        if (buffer_match(arptable[i].paddress, paddress, IPV4_ADDRSIZE))
             return &arptable[i];
 
     }
@@ -131,14 +131,14 @@ static void ethernethook_notify(struct ethernet_header *ethernetheader, void *bu
 static unsigned int arptablenode_read(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, offset);
+    return buffer_read(buffer, count, arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, offset);
 
 }
 
 static unsigned int arptablenode_write(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write(arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, buffer, count, offset);
+    return buffer_write(arptable, sizeof (struct ipv4_arpentry) * ARPTABLESIZE, buffer, count, offset);
 
 }
 
@@ -171,8 +171,8 @@ static void arphook_save(void *haddress, void *paddress)
     if (!entry)
         return;
 
-    memory_copy(entry->haddress, haddress, ETHERNET_ADDRSIZE);
-    memory_copy(entry->paddress, paddress, IPV4_ADDRSIZE);
+    buffer_copy(entry->haddress, haddress, ETHERNET_ADDRSIZE);
+    buffer_copy(entry->paddress, paddress, IPV4_ADDRSIZE);
 
 }
 

@@ -83,8 +83,8 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
     unsigned int i;
 
     debug_logs(DEBUG_INFO, "vbe loaded");
-    memory_copy((void *)0x9000, &realmode_gdt, 0x1000);
-    memory_copy((void *)0x8000, (void *)(unsigned int)vbe_begin16, (unsigned int)vbe_end16 - (unsigned int)vbe_begin16);
+    buffer_copy((void *)0x9000, &realmode_gdt, 0x1000);
+    buffer_copy((void *)0x8000, (void *)(unsigned int)vbe_begin16, (unsigned int)vbe_end16 - (unsigned int)vbe_begin16);
 
     vbe_getedid();
     vbe_getinfo();
@@ -145,7 +145,7 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
+    return buffer_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
@@ -163,14 +163,14 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
+    return buffer_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
 
 }
 
 static unsigned int videointerface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return memory_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+    return buffer_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
 
 }
 

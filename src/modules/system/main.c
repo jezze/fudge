@@ -46,13 +46,13 @@ static unsigned int protocol_child(unsigned int id, char *path, unsigned int len
         if (n2->type == SYSTEM_NODETYPE_MULTIGROUP)
         {
 
-            unsigned int colon = memory_findbyte(path, length, ':');
+            unsigned int colon = buffer_findbyte(path, length, ':');
             unsigned int val;
 
             if (length0 != colon)
                 continue;
 
-            if (!memory_match(n2->name, path, colon))
+            if (!buffer_match(n2->name, path, colon))
                 continue;
 
             val = ascii_rvalue(path + colon + 1, length - colon - 1, 10);
@@ -68,7 +68,7 @@ static unsigned int protocol_child(unsigned int id, char *path, unsigned int len
             if (length0 != length)
                 continue;
 
-            if (!memory_match(n2->name, path, length))
+            if (!buffer_match(n2->name, path, length))
                 continue;
 
         }
@@ -150,19 +150,19 @@ static unsigned int readgroup(struct system_node *current, void *buffer, unsigne
 
     record.id = (unsigned int)current;
     record.size = 0;
-    record.length = memory_read(record.name, RECORD_NAMESIZE, current->name, ascii_length(current->name), 0);
+    record.length = buffer_read(record.name, RECORD_NAMESIZE, current->name, ascii_length(current->name), 0);
 
     if (current->type == SYSTEM_NODETYPE_MULTIGROUP)
     {
 
-        char num[FUDGE_NSIZE];
+        char num[ASCII_NUMSIZE];
 
-        record.length += memory_write(record.name, RECORD_NAMESIZE, ":", 1, record.length);
-        record.length += memory_write(record.name, RECORD_NAMESIZE, num, ascii_wvalue(num, FUDGE_NSIZE, current->index, 10, 0), record.length);
+        record.length += buffer_write(record.name, RECORD_NAMESIZE, ":", 1, record.length);
+        record.length += buffer_write(record.name, RECORD_NAMESIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, current->index, 10, 0), record.length);
 
     }
 
-    return memory_read(buffer, count, &record, sizeof (struct record), offset);
+    return buffer_read(buffer, count, &record, sizeof (struct record), offset);
 
 }
 
@@ -289,7 +289,7 @@ void system_addchild(struct system_node *group, struct system_node *node)
             struct system_node *n = current->data;
             unsigned int length1 = ascii_length(n->name);
 
-            if (length0 != length1 || !memory_match(n->name, node->name, length0))
+            if (length0 != length1 || !buffer_match(n->name, node->name, length0))
                 continue;
 
             node->index++;

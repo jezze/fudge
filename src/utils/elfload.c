@@ -31,7 +31,7 @@ static unsigned int findvalue(unsigned int descriptor, struct elf_header *header
         if (strings[symbol.name + count] != '\0')
             continue;
 
-        if (!memory_match(symbolname, &strings[symbol.name], count))
+        if (!buffer_match(symbolname, &strings[symbol.name], count))
             continue;
 
         if (header->type == ELF_TYPE_RELOCATABLE)
@@ -71,7 +71,7 @@ static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char
 
         struct elf_sectionheader symbolheader;
         struct elf_sectionheader stringheader;
-        char strings[FUDGE_BSIZE * 4];
+        char strings[BUFFER_SIZE * 4];
         unsigned int value;
 
         if (!readsectionheader(descriptor, &header, i, &symbolheader))
@@ -83,7 +83,7 @@ static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char
         if (!readsectionheader(descriptor, &header, symbolheader.link, &stringheader))
             return 0;
 
-        if (stringheader.size > FUDGE_BSIZE * 4)
+        if (stringheader.size > BUFFER_SIZE * 4)
             return 0;
 
         if (!file_seekreadall(descriptor, strings, stringheader.size, stringheader.offset))
@@ -107,8 +107,8 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
     unsigned int offset = 0;
     char module[32];
 
-    offset += memory_write(module, 32, symbolname, memory_findbyte(symbolname, count, '_'), offset);
-    offset += memory_write(module, 32, ".ko", 4, offset);
+    offset += buffer_write(module, 32, symbolname, buffer_findbyte(symbolname, count, '_'), offset);
+    offset += buffer_write(module, 32, ".ko", 4, offset);
 
     if (file_walk(FILE_L0, FILE_G0, module))
     {
@@ -202,7 +202,7 @@ static unsigned int resolve(unsigned int descriptor)
         struct elf_sectionheader dataheader;
         struct elf_sectionheader symbolheader;
         struct elf_sectionheader stringheader;
-        char strings[FUDGE_BSIZE];
+        char strings[BUFFER_SIZE];
 
         if (!readsectionheader(descriptor, &header, i, &relocationheader))
             return 0;
@@ -219,7 +219,7 @@ static unsigned int resolve(unsigned int descriptor)
         if (!readsectionheader(descriptor, &header, symbolheader.link, &stringheader))
             return 0;
 
-        if (stringheader.size > FUDGE_BSIZE)
+        if (stringheader.size > BUFFER_SIZE)
             return 0;
 
         if (!file_seekreadall(descriptor, strings, stringheader.size, stringheader.offset))

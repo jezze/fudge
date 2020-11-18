@@ -11,7 +11,7 @@ static unsigned int cores_read(void *buffer, unsigned int count, unsigned int of
 {
 
     struct resource *resource = 0;
-    char data[FUDGE_BSIZE];
+    char data[BUFFER_SIZE];
     unsigned int c = 0;
 
     while ((resource = resource_foreachtype(resource, RESOURCE_CORE)))
@@ -19,11 +19,11 @@ static unsigned int cores_read(void *buffer, unsigned int count, unsigned int of
 
         struct core *core = resource->data;
         struct list_item *item;
-        char num[FUDGE_NSIZE];
+        char num[ASCII_NUMSIZE];
 
-        c += memory_write(data, FUDGE_BSIZE, "core ", 5, c);
-        c += memory_write(data, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, core->id, 10, 0), c);
-        c += memory_write(data, FUDGE_BSIZE, "\n", 1, c);
+        c += buffer_write(data, BUFFER_SIZE, "core ", 5, c);
+        c += buffer_write(data, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, core->id, 10, 0), c);
+        c += buffer_write(data, BUFFER_SIZE, "\n", 1, c);
 
         spinlock_acquire(&core->tasks.spinlock);
 
@@ -32,9 +32,9 @@ static unsigned int cores_read(void *buffer, unsigned int count, unsigned int of
 
             struct task *task = item->data;
 
-            c += memory_write(data, FUDGE_BSIZE, "    task ", 9, c);
-            c += memory_write(data, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, task->id, 10, 0), c);
-            c += memory_write(data, FUDGE_BSIZE, "\n", 1, c);
+            c += buffer_write(data, BUFFER_SIZE, "    task ", 9, c);
+            c += buffer_write(data, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, task->id, 10, 0), c);
+            c += buffer_write(data, BUFFER_SIZE, "\n", 1, c);
 
         }
 
@@ -42,7 +42,7 @@ static unsigned int cores_read(void *buffer, unsigned int count, unsigned int of
 
     }
 
-    return memory_read(buffer, count, data, c, offset);
+    return buffer_read(buffer, count, data, c, offset);
 
 }
 
@@ -50,22 +50,22 @@ static unsigned int tasks_read(void *buffer, unsigned int count, unsigned int of
 {
 
     struct resource *resource = 0;
-    char data[FUDGE_BSIZE];
+    char data[BUFFER_SIZE];
     unsigned int c = 0;
 
     while ((resource = resource_foreachtype(resource, RESOURCE_TASK)))
     {
 
         struct task *task = resource->data;
-        char num[FUDGE_NSIZE];
+        char num[ASCII_NUMSIZE];
 
-        c += memory_write(data, FUDGE_BSIZE, "task ", 5, c);
-        c += memory_write(data, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, task->id, 10, 0), c);
-        c += memory_write(data, FUDGE_BSIZE, "\n", 1, c);
+        c += buffer_write(data, BUFFER_SIZE, "task ", 5, c);
+        c += buffer_write(data, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, task->id, 10, 0), c);
+        c += buffer_write(data, BUFFER_SIZE, "\n", 1, c);
 
     }
 
-    return memory_read(buffer, count, data, c, offset);
+    return buffer_read(buffer, count, data, c, offset);
 
 }
 
@@ -73,23 +73,23 @@ static unsigned int mailboxes_read(void *buffer, unsigned int count, unsigned in
 {
 
     struct resource *resource = 0;
-    char data[FUDGE_BSIZE];
+    char data[BUFFER_SIZE];
     unsigned int c = 0;
 
     while ((resource = resource_foreachtype(resource, RESOURCE_MAILBOX)))
     {
 
         struct mailbox *mailbox = resource->data;
-        char num[FUDGE_NSIZE];
+        char num[ASCII_NUMSIZE];
 
-        c += memory_write(data, FUDGE_BSIZE, "mailbox ", 8, c);
-        c += memory_write(data, FUDGE_BSIZE, "0x", 2, c);
-        c += memory_write(data, FUDGE_BSIZE, num, ascii_wvalue(num, FUDGE_NSIZE, (unsigned int)mailbox->ring.buffer, 16, 8), c);
-        c += memory_write(data, FUDGE_BSIZE, "\n", 1, c);
+        c += buffer_write(data, BUFFER_SIZE, "mailbox ", 8, c);
+        c += buffer_write(data, BUFFER_SIZE, "0x", 2, c);
+        c += buffer_write(data, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, (unsigned int)mailbox->ring.buffer, 16, 8), c);
+        c += buffer_write(data, BUFFER_SIZE, "\n", 1, c);
 
     }
 
-    return memory_read(buffer, count, data, c, offset);
+    return buffer_read(buffer, count, data, c, offset);
 
 }
 

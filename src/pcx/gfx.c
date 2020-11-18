@@ -5,7 +5,7 @@
 static void fillrectangle(struct gfx_surface *self)
 {
 
-    char buffer[FUDGE_BSIZE];
+    char buffer[BUFFER_SIZE];
     unsigned int line = self->width * self->bpp;
     unsigned int recline = self->context.width * self->bpp;
     unsigned int size = line * self->context.height;
@@ -13,7 +13,7 @@ static void fillrectangle(struct gfx_surface *self)
     unsigned int i;
 
     for (i = 0; i < recline; i += self->bpp)
-        memory_copy(buffer + i, &self->context.color, self->bpp);
+        buffer_copy(buffer + i, &self->context.color, self->bpp);
 
     for (i = offset; i < size; i += line)
         self->write(self, buffer, recline, i);
@@ -76,13 +76,13 @@ void gfx_wsurface(unsigned int id, struct gfx_surface *in)
     unsigned int offset = 0;
     unsigned int scanline;
 
-    if (in->width > FUDGE_BSIZE)
+    if (in->width > BUFFER_SIZE)
         return;
 
     for (scanline = 0; scanline < in->height; scanline++)
     {
 
-        char buffer[FUDGE_BSIZE];
+        char buffer[BUFFER_SIZE];
 
         offset += in->read(in, buffer, in->width, offset);
 
@@ -95,7 +95,7 @@ void gfx_wsurface(unsigned int id, struct gfx_surface *in)
 void gfx_initcontext(struct gfx_context *context)
 {
 
-    memory_clear(context, sizeof (struct gfx_context));
+    buffer_clear(context, sizeof (struct gfx_context));
 
     context->color = 0xFFFFFF;
     context->primitive = GFX_PRIMITIVE_NONE;
@@ -105,7 +105,7 @@ void gfx_initcontext(struct gfx_context *context)
 void gfx_initsurface(struct gfx_surface *surface, unsigned int (*read)(struct gfx_surface *self, void *buffer, unsigned int count, unsigned int offset), unsigned int (*write)(struct gfx_surface *self, void *buffer, unsigned int count, unsigned int offset))
 {
 
-    memory_clear(surface, sizeof (struct gfx_surface));
+    buffer_clear(surface, sizeof (struct gfx_surface));
     gfx_initcontext(&surface->context);
 
     surface->read = read;

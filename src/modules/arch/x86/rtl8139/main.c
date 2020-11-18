@@ -247,7 +247,7 @@ static unsigned int ethernetinterface_matchaddress(void *buffer, unsigned int co
     address[4] = io_inb(io + R_IDR4);
     address[5] = io_inb(io + R_IDR5);
 
-    return memory_match(address, buffer, count);
+    return buffer_match(address, buffer, count);
 
 }
 
@@ -260,25 +260,25 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
     {
 
     case 0:
-        memory_write(tx0, 0x800, buffer, count, 0);
+        buffer_write(tx0, 0x800, buffer, count, 0);
         io_outd(io + R_TSD0, status);
 
         break;
 
     case 1:
-        memory_write(tx1, 0x800, buffer, count, 0);
+        buffer_write(tx1, 0x800, buffer, count, 0);
         io_outd(io + R_TSD1, status);
 
         break;
 
     case 2:
-        memory_write(tx2, 0x800, buffer, count, 0);
+        buffer_write(tx2, 0x800, buffer, count, 0);
         io_outd(io + R_TSD2, status);
 
         break;
 
     case 3:
-        memory_write(tx3, 0x800, buffer, count, 0);
+        buffer_write(tx3, 0x800, buffer, count, 0);
         io_outd(io + R_TSD3, status);
 
         break;
@@ -304,7 +304,7 @@ static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count,
     address[4] = io_inb(io + R_IDR4);
     address[5] = io_inb(io + R_IDR5);
 
-    return memory_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
+    return buffer_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
 
 }
 

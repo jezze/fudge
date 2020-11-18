@@ -7,7 +7,7 @@ static void print(struct channel *channel, unsigned int source, struct record *r
     struct message_data data;
     unsigned int offset = 0;
 
-    if (record->length < length || !memory_match(record->name, name, length))
+    if (record->length < length || !buffer_match(record->name, name, length))
         return;
 
     offset = message_append(&data, offset, record->length, record->name);

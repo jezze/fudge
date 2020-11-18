@@ -70,7 +70,7 @@ static unsigned int loadtask(struct task *task, unsigned int descriptor)
     if (kernel_setupbinary(task, descriptor, ARCH_TASKSTACKVIRTUAL))
     {
 
-        memory_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
+        buffer_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
         kernel_readytask(task);
         kernel_reset(task->id);
 
@@ -124,7 +124,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->task)
     {
 
-        memory_copy(&registers[core->task->id], general, sizeof (struct cpu_general));
+        buffer_copy(&registers[core->task->id], general, sizeof (struct cpu_general));
 
         core->task->thread.ip = interrupt->eip.value;
         core->task->thread.sp = interrupt->esp.value;
@@ -140,7 +140,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->task)
     {
 
-        memory_copy(general, &registers[core->task->id], sizeof (struct cpu_general));
+        buffer_copy(general, &registers[core->task->id], sizeof (struct cpu_general));
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
@@ -428,7 +428,7 @@ void arch_setup1(void)
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, core0.id, core0.sp);
-    memory_clear(directory, sizeof (struct mmu_directory));
+    buffer_clear(directory, sizeof (struct mmu_directory));
     arch_setmap(0, 0x00000000, 0x00000000, 0x00400000);
     arch_setmap(1, 0x00400000, 0x00400000, 0x00400000);
     arch_setmap(2, 0x00800000, 0x00800000, 0x00400000);

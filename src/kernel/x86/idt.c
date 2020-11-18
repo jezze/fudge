@@ -22,7 +22,7 @@ void idt_cleardescriptors(struct idt_pointer *pointer, unsigned int count)
 
     struct idt_descriptor *descriptors = (struct idt_descriptor *)(pointer->base0 | pointer->base1 << 8 | pointer->base2 << 16 | pointer->base3 << 24);
 
-    memory_clear(descriptors, sizeof (struct idt_descriptor) * count);
+    buffer_clear(descriptors, sizeof (struct idt_descriptor) * count);
 
 }
 

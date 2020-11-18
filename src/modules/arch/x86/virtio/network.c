@@ -90,7 +90,7 @@ static unsigned int ethernetinterface_matchaddress(void *buffer, unsigned int co
     address[4] = io_inb(io + 0x18);
     address[5] = io_inb(io + 0x19);
 
-    return memory_match(address, buffer, count);
+    return buffer_match(address, buffer, count);
 
 }
 
@@ -105,8 +105,8 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
     nheader.checksumstart = 0;
     nheader.checksumoffset = count;
 
-    memory_copy(txbuffer, &nheader, sizeof (struct header));
-    memory_copy(txbuffer + sizeof (struct header), buffer, count);
+    buffer_copy(txbuffer, &nheader, sizeof (struct header));
+    buffer_copy(txbuffer + sizeof (struct header), buffer, count);
 
     vq->buffers[bi].address = (unsigned int)&txbuffer;
     vq->buffers[bi].length = sizeof (struct header) + count;
@@ -142,13 +142,13 @@ static void setqueue(unsigned short index)
     if (!vq->size)
         return;
 
-    vq->address = memory_pagealign((unsigned int)virtqbuffer[index]);
+    vq->address = buffer_pagealign((unsigned int)virtqbuffer[index]);
     vq->buffers = (struct virtio_buffer *)vq->address;
     vq->bufferssize = 16 * vq->size;
     vq->availablehead = (struct virtio_availablehead *)(vq->address + vq->bufferssize);
     vq->availablering = (struct virtio_availablering *)(vq->availablehead + 1);
     vq->availablesize = 6 + 2 * vq->size;
-    vq->usedhead = (struct virtio_usedhead *)(vq->address + memory_pagealign(vq->bufferssize + vq->availablesize));
+    vq->usedhead = (struct virtio_usedhead *)(vq->address + buffer_pagealign(vq->bufferssize + vq->availablesize));
     vq->usedring = (struct virtio_usedring *)(vq->usedhead + 1);
     vq->usedsize = 6 + 8 * vq->size;
 
@@ -206,7 +206,7 @@ static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count,
     address[4] = io_inb(io + 0x18);
     address[5] = io_inb(io + 0x19);
 
-    return memory_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
+    return buffer_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
 
 }
 

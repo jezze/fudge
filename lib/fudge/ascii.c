@@ -1,5 +1,4 @@
-#include "define.h"
-#include "memory.h"
+#include "buffer.h"
 #include "ascii.h"
 
 unsigned int ascii_length(char *in)
@@ -34,7 +33,7 @@ unsigned int ascii_match(char *in1, char *in2)
     unsigned int n1 = ascii_lengthz(in1);
     unsigned int n2 = ascii_lengthz(in2);
 
-    return memory_match(in1, in2, (n1 < n2) ? n1 : n2);
+    return buffer_match(in1, in2, (n1 < n2) ? n1 : n2);
 
 }
 

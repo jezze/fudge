@@ -132,7 +132,7 @@ static unsigned int consoleinterface_readctrl(void *buffer, unsigned int count, 
 
     settings.scroll = 1;
 
-    return memory_read(buffer, count, &settings, sizeof (struct ctrl_consolesettings), offset);
+    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_consolesettings), offset);
 
 }
 

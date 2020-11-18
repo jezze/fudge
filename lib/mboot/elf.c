@@ -56,7 +56,7 @@ static unsigned int findsymbol(struct binary_node *node, struct elf_sectionheade
         if (!symbols[i].shindex)
             continue;
 
-        if (strings[symbols[i].name + count] == '\0' && memory_match(symbolname, &strings[symbols[i].name], count))
+        if (strings[symbols[i].name + count] == '\0' && buffer_match(symbolname, &strings[symbols[i].name], count))
             return symbols[i].value + sectionheaders[symbols[i].shindex].address + sectionheaders[symbols[i].shindex].offset;
 
     }
@@ -139,9 +139,9 @@ static unsigned int format_copyprogram(struct binary_node *node)
     {
 
         if (programheaders[i].fsize)
-            memory_copy((void *)programheaders[i].vaddress, (void *)(node->address + programheaders[i].offset), programheaders[i].fsize);
+            buffer_copy((void *)programheaders[i].vaddress, (void *)(node->address + programheaders[i].offset), programheaders[i].fsize);
 
-        memory_clear((void *)(programheaders[i].vaddress + programheaders[i].fsize), programheaders[i].msize - programheaders[i].fsize);
+        buffer_clear((void *)(programheaders[i].vaddress + programheaders[i].fsize), programheaders[i].msize - programheaders[i].fsize);
 
     }
 

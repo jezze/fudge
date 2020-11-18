@@ -3,6 +3,7 @@ L:=\
 
 O:=\
     $(DIR_LIB)/fudge/ascii.o \
+    $(DIR_LIB)/fudge/buffer.o \
     $(DIR_LIB)/fudge/cpio.o \
     $(DIR_LIB)/fudge/crc.o \
     $(DIR_LIB)/fudge/ctrl.o \
@@ -10,7 +11,6 @@ O:=\
     $(DIR_LIB)/fudge/keymap.o \
     $(DIR_LIB)/fudge/list.o \
     $(DIR_LIB)/fudge/md5.o \
-    $(DIR_LIB)/fudge/memory.o \
     $(DIR_LIB)/fudge/message.o \
     $(DIR_LIB)/fudge/mtwist.o \
     $(DIR_LIB)/fudge/pcf.o \

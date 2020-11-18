@@ -19,10 +19,10 @@ static void setuptables(void)
     unsigned int i;
     int *c = pt;
 
-    memory_clear(pml4t, 0x1000);
-    memory_clear(pml4t, 0x1000);
-    memory_clear(pdt, 0x1000);
-    memory_clear(pt, 0x200000);
+    buffer_clear(pml4t, 0x1000);
+    buffer_clear(pml4t, 0x1000);
+    buffer_clear(pdt, 0x1000);
+    buffer_clear(pt, 0x200000);
 
     pml4t[0] = (unsigned int)pdpt | 3;
     pdpt[0] = (unsigned int)pdt | 3;
