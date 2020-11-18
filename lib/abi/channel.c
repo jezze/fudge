@@ -6,14 +6,14 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 
 static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 
@@ -129,13 +129,12 @@ unsigned int channel_pollsourceevent(struct channel *channel, unsigned int sourc
 
 }
 
-void channel_close(struct channel *channel)
+void channel_close(struct channel *channel, unsigned int source)
 {
 
     channel->poll = 0;
 
-    if (channel->callbacks[EVENT_CLOSE].redirect)
-        channel_place(channel, channel->callbacks[EVENT_CLOSE].redirect, EVENT_CLOSE, 0, 0);
+    channel_place(channel, source, EVENT_CLOSE, 0, 0);
 
 }
 

@@ -31,7 +31,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     }
 
     file_unlink(FILE_G0);
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 

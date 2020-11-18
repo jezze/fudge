@@ -13,7 +13,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     offset = message_appendstring(&data, "\n", offset);
 
     channel_place(channel, source, EVENT_DATA, offset, &data);
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 

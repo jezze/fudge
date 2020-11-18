@@ -13,7 +13,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         channel_place(channel, source, EVENT_DATA, message_datasize(&header), &data);
 
     file_unlink(FILE_G0);
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 

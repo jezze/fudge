@@ -24,7 +24,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     file_open(FILE_L0);
     file_writeall(FILE_L0, &entry, sizeof (struct ipv4_arpentry));
     file_close(FILE_L0);
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 

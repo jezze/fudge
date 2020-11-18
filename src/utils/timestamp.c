@@ -56,14 +56,14 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     }
 
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 
 static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 

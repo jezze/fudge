@@ -30,14 +30,14 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     } while (file_step(FILE_PW));
 
     file_close(FILE_PW);
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 
 static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 

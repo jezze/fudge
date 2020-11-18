@@ -5,7 +5,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     file_mount("/system", 2000);
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 

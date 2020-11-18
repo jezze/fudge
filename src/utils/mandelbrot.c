@@ -91,7 +91,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     file_close(FILE_L1);
     setup(&settings);
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    channel_close(channel);
+    channel_close(channel, source);
 
 }
 

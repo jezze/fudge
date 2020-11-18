@@ -529,7 +529,7 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
 
             }
 
-            channel_close(channel);
+            channel_close(channel, source);
 
         }
 
