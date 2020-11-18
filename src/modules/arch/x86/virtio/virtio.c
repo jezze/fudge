@@ -10,6 +10,22 @@ void virtio_reset(unsigned short io)
 
 }
 
+void virtio_setrx(unsigned short io, struct virtio_queue *vq, void *buffer)
+{
+
+    unsigned int bi = vq->numbuffers;
+
+    vq->buffers[bi].address = (unsigned int)buffer;
+    vq->buffers[bi].length = 0x4000;
+    vq->buffers[bi].flags = 2;
+    vq->availablering[vq->availablehead->index % vq->size].index = bi;
+    vq->availablehead->index++;
+    vq->numbuffers++;
+
+    io_outw(io + VIRTIO_REGISTERQNOTIFY, 0);
+
+}
+
 unsigned int virtio_pagecount(unsigned int value)
 {
 

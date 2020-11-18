@@ -169,23 +169,6 @@ static void setfeatures(void)
 
 }
 
-static void setrx(void)
-{
-
-    struct virtio_queue *vq = &vqs[0];
-    unsigned int bi = vq->numbuffers;
-
-    vq->buffers[bi].address = (unsigned int)&rxbuffer;
-    vq->buffers[bi].length = 0x4000;
-    vq->buffers[bi].flags = 2;
-    vq->availablering[vq->availablehead->index % vq->size].index = bi;
-    vq->availablehead->index++;
-    vq->numbuffers++;
-
-    io_outw(io + VIRTIO_REGISTERQNOTIFY, 0);
-
-}
-
 static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -250,7 +233,7 @@ static void driver_reset(unsigned int id)
         return;
 
     setqueues();
-    setrx();
+    virtio_setrx(io, &vqs[0], rxbuffer);
     io_outb(io + VIRTIO_REGISTERSTATUS, VIRTIO_STATUSACKNOWLEDGE | VIRTIO_STATUSDRIVER | VIRTIO_STATUSFEATURES | VIRTIO_STATUSREADY);
     pci_setmaster(id);
 
