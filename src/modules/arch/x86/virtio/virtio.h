@@ -84,5 +84,6 @@ struct virtio_queue
 
 };
 
+void virtio_reset(unsigned short io);
 unsigned int virtio_pagecount(unsigned int value);
 unsigned int virtio_pagealign(unsigned int value);

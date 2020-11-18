@@ -27,14 +27,6 @@ static unsigned char virtqbuffer[3][0x4000];
 static unsigned char rxbuffer[0x4000];
 static unsigned char txbuffer[0x4000];
 
-static void reset(void)
-{
-
-    io_outb(io + VIRTIO_REGISTERSTATUS, 0);
-    io_inb(io + VIRTIO_REGISTERSTATUS);
-
-}
-
 static void handlequeue(struct virtio_queue *vq)
 {
 
@@ -246,7 +238,7 @@ static void driver_reset(unsigned int id)
 
     io = pci_inw(id, PCI_CONFIG_BAR0) & ~1;
 
-    reset();
+    virtio_reset(io);
     io_outb(io + VIRTIO_REGISTERSTATUS, VIRTIO_STATUSACKNOWLEDGE);
     io_outb(io + VIRTIO_REGISTERSTATUS, VIRTIO_STATUSACKNOWLEDGE | VIRTIO_STATUSDRIVER);
     setfeatures();
