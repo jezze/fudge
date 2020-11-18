@@ -2,6 +2,20 @@
 #include <modules/arch/x86/io/io.h>
 #include "virtio.h"
 
+static unsigned int pagecount(unsigned int value)
+{
+
+    return (value + (4096 - 1)) / 4096;
+
+}
+
+static unsigned int pagealign(unsigned int value)
+{
+
+    return pagecount(value) * 4096;
+
+}
+
 void virtio_reset(unsigned short io)
 {
 
@@ -20,13 +34,13 @@ void virtio_setqueue(unsigned short io, unsigned short index, struct virtio_queu
     if (!vq->size)
         return;
 
-    vq->address = virtio_pagealign(address);
+    vq->address = pagealign(address);
     vq->buffers = (struct virtio_buffer *)vq->address;
     vq->bufferssize = 16 * vq->size;
     vq->availablehead = (struct virtio_availablehead *)(vq->address + vq->bufferssize);
     vq->availablering = (struct virtio_availablering *)(vq->availablehead + 1);
     vq->availablesize = 6 + 2 * vq->size;
-    vq->usedhead = (struct virtio_usedhead *)(vq->address + virtio_pagealign(vq->bufferssize + vq->availablesize));
+    vq->usedhead = (struct virtio_usedhead *)(vq->address + pagealign(vq->bufferssize + vq->availablesize));
     vq->usedring = (struct virtio_usedring *)(vq->usedhead + 1);
     vq->usedsize = 6 + 8 * vq->size;
 
@@ -47,20 +61,6 @@ void virtio_setrx(unsigned short io, struct virtio_queue *vq, void *buffer)
     vq->numbuffers++;
 
     io_outw(io + VIRTIO_REGISTERQNOTIFY, 0);
-
-}
-
-unsigned int virtio_pagecount(unsigned int value)
-{
-
-    return (value + (BUFFER_SIZE - 1)) / BUFFER_SIZE;
-
-}
-
-unsigned int virtio_pagealign(unsigned int value)
-{
-
-    return virtio_pagecount(value) * BUFFER_SIZE;
 
 }
 
