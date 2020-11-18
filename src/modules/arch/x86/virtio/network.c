@@ -122,39 +122,13 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 
 }
 
-static void setqueue(unsigned short index)
-{
-
-    struct virtio_queue *vq = &vqs[index];
-
-    io_outw(io + VIRTIO_REGISTERQSELECT, index);
-
-    vq->size = io_inw(io + VIRTIO_REGISTERQSIZE);
-
-    if (!vq->size)
-        return;
-
-    vq->address = virtio_pagealign((unsigned int)virtqbuffer[index]);
-    vq->buffers = (struct virtio_buffer *)vq->address;
-    vq->bufferssize = 16 * vq->size;
-    vq->availablehead = (struct virtio_availablehead *)(vq->address + vq->bufferssize);
-    vq->availablering = (struct virtio_availablering *)(vq->availablehead + 1);
-    vq->availablesize = 6 + 2 * vq->size;
-    vq->usedhead = (struct virtio_usedhead *)(vq->address + virtio_pagealign(vq->bufferssize + vq->availablesize));
-    vq->usedring = (struct virtio_usedring *)(vq->usedhead + 1);
-    vq->usedsize = 6 + 8 * vq->size;
-
-    io_outd(io + VIRTIO_REGISTERQADDRESS, vq->address >> 12);
-
-}
-
 static void setqueues(void)
 {
 
     unsigned short i;
 
     for (i = 0; i < 16; i++)
-        setqueue(i);
+        virtio_setqueue(io, i, &vqs[i], (unsigned int)virtqbuffer[i]);
 
 }
 
