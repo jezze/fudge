@@ -1,6 +1,8 @@
 #include <fudge.h>
 #include <abi.h>
 
+static unsigned int page;
+
 static void print(struct channel *channel, unsigned int source, unsigned int count, void *buffer)
 {
 
@@ -14,7 +16,7 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
         unsigned int offset = 0;
         unsigned int j;
 
-        offset = message_appendvalue(&data, i, 16, 8, offset);
+        offset = message_appendvalue(&data, page, 16, 8, offset);
         offset = message_appendstring(&data, "  ", offset);
 
         for (j = i; j < i + 16; j++)
@@ -67,6 +69,8 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
 
         channel_place(channel, source, EVENT_DATA, offset, &data);
 
+        page += 16;
+
     }
 
 }
@@ -80,6 +84,8 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
+
+    page = 0;
 
     if (file_walk2(FILE_L0, mdata))
     {
