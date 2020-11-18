@@ -1,8 +1,20 @@
+#define CHANNEL_CALLBACKS               256
+
+struct channel;
+
+struct channel_callback
+{
+
+    void (*callback)(struct channel *channel, unsigned int source, void *data, unsigned int size);
+    unsigned int redirect;
+
+};
+
 struct channel
 {
 
     unsigned int poll;
-    struct {void (*callback)(struct channel *channel, unsigned int source, void *data, unsigned int size); unsigned int redirect;} callbacks[EVENTS];
+    struct channel_callback *callbacks;
 
 };
 
@@ -15,4 +27,4 @@ unsigned int channel_pollsourceevent(struct channel *channel, unsigned int sourc
 void channel_close(struct channel *channel);
 void channel_setredirect(struct channel *channel, unsigned int event, unsigned int mode, unsigned int id, unsigned int source);
 void channel_setcallback(struct channel *channel, unsigned int event, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize));
-void channel_init(struct channel *channel);
+void channel_init(struct channel *channel, struct channel_callback *callbacks);

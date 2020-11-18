@@ -29,11 +29,16 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 void channel_dispatch(struct channel *channel, struct message_header *header, struct message_data *data)
 {
 
-    if (channel->callbacks[header->event].callback)
-        channel->callbacks[header->event].callback(channel, header->source, data->buffer, message_datasize(header));
+    if (header->event < CHANNEL_CALLBACKS)
+    {
 
-    if (channel->callbacks[EVENT_ANY].callback)
-        channel->callbacks[EVENT_ANY].callback(channel, header->source, data->buffer, message_datasize(header));
+        if (channel->callbacks[header->event].callback)
+            channel->callbacks[header->event].callback(channel, header->source, data->buffer, message_datasize(header));
+
+        if (channel->callbacks[EVENT_ANY].callback)
+            channel->callbacks[EVENT_ANY].callback(channel, header->source, data->buffer, message_datasize(header));
+
+    }
 
 }
 
@@ -44,19 +49,17 @@ unsigned int channel_place(struct channel *channel, unsigned int id, unsigned in
 
     message_initheader(&header, event, count);
 
-    if (event < EVENTS)
+    if (event < CHANNEL_CALLBACKS)
     {
 
         if (channel->callbacks[event].redirect)
             id = channel->callbacks[event].redirect;
 
-        while (!call_place(id, &header, data));
-
-        return count;
-
     }
 
-    return 0;
+    while (!call_place(id, &header, data));
+
+    return count;
 
 }
 
@@ -168,14 +171,15 @@ void channel_setcallback(struct channel *channel, unsigned int event, void (*cal
 
 }
 
-void channel_init(struct channel *channel)
+void channel_init(struct channel *channel, struct channel_callback *callbacks)
 {
 
     unsigned int i;
 
     channel->poll = 1;
+    channel->callbacks = callbacks;
 
-    for (i = 0; i < EVENTS; i++)
+    for (i = 0; i < CHANNEL_CALLBACKS; i++)
     {
 
         channel_setcallback(channel, i, 0);

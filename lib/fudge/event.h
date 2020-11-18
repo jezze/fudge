@@ -1,4 +1,3 @@
-#define EVENTS                          64
 #define EVENT_ANY                       0x00
 #define EVENT_ERROR                     0x01
 #define EVENT_MAIN                      0x02
