@@ -142,13 +142,13 @@ static void setqueue(unsigned short index)
     if (!vq->size)
         return;
 
-    vq->address = buffer_pagealign((unsigned int)virtqbuffer[index]);
+    vq->address = virtio_pagealign((unsigned int)virtqbuffer[index]);
     vq->buffers = (struct virtio_buffer *)vq->address;
     vq->bufferssize = 16 * vq->size;
     vq->availablehead = (struct virtio_availablehead *)(vq->address + vq->bufferssize);
     vq->availablering = (struct virtio_availablering *)(vq->availablehead + 1);
     vq->availablesize = 6 + 2 * vq->size;
-    vq->usedhead = (struct virtio_usedhead *)(vq->address + buffer_pagealign(vq->bufferssize + vq->availablesize));
+    vq->usedhead = (struct virtio_usedhead *)(vq->address + virtio_pagealign(vq->bufferssize + vq->availablesize));
     vq->usedring = (struct virtio_usedring *)(vq->usedhead + 1);
     vq->usedsize = 6 + 8 * vq->size;
 

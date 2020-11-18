@@ -106,17 +106,3 @@ unsigned int buffer_write(void *out, unsigned int ocount, void *in, unsigned int
 
 }
 
-unsigned int buffer_pagecount(unsigned int value)
-{
-
-    return (value + (BUFFER_SIZE - 1)) / BUFFER_SIZE;
-
-}
-
-unsigned int buffer_pagealign(unsigned int value)
-{
-
-    return buffer_pagecount(value) * BUFFER_SIZE;
-
-}
-

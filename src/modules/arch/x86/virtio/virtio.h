@@ -83,3 +83,6 @@ struct virtio_queue
     unsigned int numbuffers;
 
 };
+
+unsigned int virtio_pagecount(unsigned int value);
+unsigned int virtio_pagealign(unsigned int value);
