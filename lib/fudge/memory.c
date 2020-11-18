@@ -22,7 +22,7 @@ void memory_copy(void *out, void *in, unsigned int count)
 
 }
 
-unsigned int memory_findbyte(void *in, unsigned int count, char value)
+unsigned int memory_findbyte(void *in, unsigned int count, unsigned char value)
 {
 
     unsigned char *ip = in;
@@ -34,7 +34,7 @@ unsigned int memory_findbyte(void *in, unsigned int count, char value)
 
 }
 
-unsigned int memory_findlastbyte(void *in, unsigned int count, char value)
+unsigned int memory_findlastbyte(void *in, unsigned int count, unsigned char value)
 {
 
     unsigned char *ip = in;
