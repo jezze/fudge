@@ -99,8 +99,8 @@ static unsigned int consoleinterface_writetransmit(void *buffer, unsigned int co
 
     }
 
-    outcrt1(VGA_CRTINDEX_CRT0E, cursor.offset >> 8);
-    outcrt1(VGA_CRTINDEX_CRT0F, cursor.offset);
+    outcrt1(VGA_REG_CRTINDEX1_CRT0E, cursor.offset >> 8);
+    outcrt1(VGA_REG_CRTINDEX1_CRT0F, cursor.offset);
 
     return count;
 
@@ -175,10 +175,10 @@ static unsigned int videointerface_readcolormap(void *buffer, unsigned int count
     for (i = offset; i < count * 3; i += 3)
     {
 
-        io_outb(VGA_REGISTER_DACRINDEX, i / 3);
-        c[i + 0] = io_inb(VGA_REGISTER_DACDATA);
-        c[i + 1] = io_inb(VGA_REGISTER_DACDATA);
-        c[i + 2] = io_inb(VGA_REGISTER_DACDATA);
+        io_outb(VGA_REG_DACRINDEX, i / 3);
+        c[i + 0] = io_inb(VGA_REG_DACDATA);
+        c[i + 1] = io_inb(VGA_REG_DACDATA);
+        c[i + 2] = io_inb(VGA_REG_DACDATA);
 
     }
 
@@ -201,10 +201,10 @@ static unsigned int videointerface_writecolormap(void *buffer, unsigned int coun
     for (i = offset; i < count * 3; i += 3)
     {
 
-        io_outb(VGA_REGISTER_DACWINDEX, i / 3);
-        io_outb(VGA_REGISTER_DACDATA, c[i + 0]);
-        io_outb(VGA_REGISTER_DACDATA, c[i + 1]);
-        io_outb(VGA_REGISTER_DACDATA, c[i + 2]);
+        io_outb(VGA_REG_DACWINDEX, i / 3);
+        io_outb(VGA_REG_DACDATA, c[i + 0]);
+        io_outb(VGA_REG_DACDATA, c[i + 1]);
+        io_outb(VGA_REG_DACDATA, c[i + 2]);
 
     }
 

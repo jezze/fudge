@@ -19,17 +19,17 @@ static unsigned int pagealign(unsigned int value)
 void virtio_reset(unsigned short io)
 {
 
-    io_outb(io + VIRTIO_REGISTERSTATUS, 0);
-    io_inb(io + VIRTIO_REGISTERSTATUS);
+    io_outb(io + VIRTIO_REG_STATUS, 0);
+    io_inb(io + VIRTIO_REG_STATUS);
 
 }
 
 void virtio_setqueue(unsigned short io, unsigned short index, struct virtio_queue *vq, unsigned int address)
 {
 
-    io_outw(io + VIRTIO_REGISTERQSELECT, index);
+    io_outw(io + VIRTIO_REG_QSELECT, index);
 
-    vq->size = io_inw(io + VIRTIO_REGISTERQSIZE);
+    vq->size = io_inw(io + VIRTIO_REG_QSIZE);
 
     if (!vq->size)
         return;
@@ -44,7 +44,7 @@ void virtio_setqueue(unsigned short io, unsigned short index, struct virtio_queu
     vq->usedring = (struct virtio_usedring *)(vq->usedhead + 1);
     vq->usedsize = 6 + 8 * vq->size;
 
-    io_outd(io + VIRTIO_REGISTERQADDRESS, vq->address >> 12);
+    io_outd(io + VIRTIO_REG_QADDRESS, vq->address >> 12);
 
 }
 
@@ -60,7 +60,7 @@ void virtio_setrx(unsigned short io, struct virtio_queue *vq, void *buffer)
     vq->availablehead->index++;
     vq->numbuffers++;
 
-    io_outw(io + VIRTIO_REGISTERQNOTIFY, 0);
+    io_outw(io + VIRTIO_REG_QNOTIFY, 0);
 
 }
 

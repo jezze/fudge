@@ -6,8 +6,8 @@
 #include <modules/arch/x86/io/io.h>
 #include "pci.h"
 
-#define R_CONTROL                       0x0CF8
-#define R_DATA                          0x0CFC
+#define REG_CONTROL                     0x0CF8
+#define REG_DATA                        0x0CFC
 
 static struct base_bus bus;
 static struct {unsigned int address[64]; unsigned int count;} devices;
@@ -15,51 +15,51 @@ static struct {unsigned int address[64]; unsigned int count;} devices;
 unsigned int pci_ind(unsigned int id, unsigned short offset)
 {
 
-    io_outd(R_CONTROL, id | (offset & 0xFC));
+    io_outd(REG_CONTROL, id | (offset & 0xFC));
 
-    return io_ind(R_DATA);
+    return io_ind(REG_DATA);
 
 }
 
 unsigned short pci_inw(unsigned int id, unsigned short offset)
 {
 
-    io_outd(R_CONTROL, id | (offset & 0xFC));
+    io_outd(REG_CONTROL, id | (offset & 0xFC));
 
-    return io_ind(R_DATA) >> ((offset & 2) * 8);
+    return io_ind(REG_DATA) >> ((offset & 2) * 8);
 
 }
 
 unsigned char pci_inb(unsigned int id, unsigned short offset)
 {
 
-    io_outd(R_CONTROL, id | (offset & 0xFC));
+    io_outd(REG_CONTROL, id | (offset & 0xFC));
 
-    return io_ind(R_DATA) >> ((offset & 3) * 8);
+    return io_ind(REG_DATA) >> ((offset & 3) * 8);
 
 }
 
 void pci_outd(unsigned int id, unsigned short offset, unsigned int value)
 {
 
-    io_outd(R_CONTROL, id | (offset & 0xFC));
-    io_outd(R_DATA, value);
+    io_outd(REG_CONTROL, id | (offset & 0xFC));
+    io_outd(REG_DATA, value);
 
 }
 
 void pci_outw(unsigned int id, unsigned short offset, unsigned short value)
 {
 
-    io_outd(R_CONTROL, id | (offset & 0xFC));
-    io_outw(R_DATA, value);
+    io_outd(REG_CONTROL, id | (offset & 0xFC));
+    io_outw(REG_DATA, value);
 
 }
 
 void pci_outb(unsigned int id, unsigned short offset, unsigned char value)
 {
 
-    io_outd(R_CONTROL, id | (offset & 0xFC));
-    io_outb(R_DATA, value);
+    io_outd(REG_CONTROL, id | (offset & 0xFC));
+    io_outb(REG_DATA, value);
 
 }
 

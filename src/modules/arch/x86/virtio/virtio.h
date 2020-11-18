@@ -1,28 +1,27 @@
 #define VIRTIO_PCIVENDOR                0x1AF4
-#define VIRTIO_TYPENETWORK              1
-#define VIRTIO_TYPEBLOCK                2
-#define VIRTIO_TYPECONSOLE              3
-#define VIRTIO_TYPESCSI                 8
-#define VIRTIO_TYPE9P                   9
-#define VIRTIO_TYPEWLAN                 10
-#define VIRTIO_TYPEGPU                  16
-#define VIRTIO_TYPECLOCK                17
-#define VIRTIO_TYPEINPUT                18
-#define VIRTIO_TYPESOCKET               19
-#define VIRTIO_TYPECRYPTO               20
-
-#define VIRTIO_REGISTERDEVFEATURES      0x00
-#define VIRTIO_REGISTERGUESTFEATURES    0x04
-#define VIRTIO_REGISTERQADDRESS         0x08
-#define VIRTIO_REGISTERQSIZE            0x0C
-#define VIRTIO_REGISTERQSELECT          0x0E
-#define VIRTIO_REGISTERQNOTIFY          0x10
-#define VIRTIO_REGISTERSTATUS           0x12
-#define VIRTIO_REGISTERISR              0x13
-#define VIRTIO_STATUSACKNOWLEDGE        0x01
-#define VIRTIO_STATUSDRIVER             0x02
-#define VIRTIO_STATUSREADY              0x04
-#define VIRTIO_STATUSFEATURES           0x08
+#define VIRTIO_TYPE_NETWORK             1
+#define VIRTIO_TYPE_BLOCK               2
+#define VIRTIO_TYPE_CONSOLE             3
+#define VIRTIO_TYPE_SCSI                8
+#define VIRTIO_TYPE_9P                  9
+#define VIRTIO_TYPE_WLAN                10
+#define VIRTIO_TYPE_GPU                 16
+#define VIRTIO_TYPE_CLOCK               17
+#define VIRTIO_TYPE_INPUT               18
+#define VIRTIO_TYPE_SOCKET              19
+#define VIRTIO_TYPE_CRYPTO              20
+#define VIRTIO_REG_DEVFEATURES          0x00
+#define VIRTIO_REG_GUESTFEATURES        0x04
+#define VIRTIO_REG_QADDRESS             0x08
+#define VIRTIO_REG_QSIZE                0x0C
+#define VIRTIO_REG_QSELECT              0x0E
+#define VIRTIO_REG_QNOTIFY              0x10
+#define VIRTIO_REG_STATUS               0x12
+#define VIRTIO_REG_STATUS_ACKNOWLEDGE   0x01
+#define VIRTIO_REG_STATUS_DRIVER        0x02
+#define VIRTIO_REG_STATUS_READY         0x04
+#define VIRTIO_REG_STATUS_FEATURES      0x08
+#define VIRTIO_REG_ISR                  0x13
 
 struct virtio_buffer
 {

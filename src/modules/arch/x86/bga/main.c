@@ -13,18 +13,18 @@
 
 #define VENDOR                          0x1234
 #define DEVICE                          0x1111
-#define R_COMMAND                       0x01CE
-#define R_COMMAND_ID                    0x0000
-#define R_COMMAND_XRES                  0x0001
-#define R_COMMAND_YRES                  0x0002
-#define R_COMMAND_BPP                   0x0003
-#define R_COMMAND_ENABLE                0x0004
-#define R_COMMAND_BANK                  0x0005
-#define R_COMMAND_VIRTWIDTH             0x0006
-#define R_COMMAND_VIRTHEIGHT            0x0007
-#define R_COMMAND_XOFF                  0x0008
-#define R_COMMAND_YOFF                  0x0009
-#define R_DATA                          0x01CF
+#define REG_COMMAND                     0x01CE
+#define REG_COMMAND_ID                  0x0000
+#define REG_COMMAND_XRES                0x0001
+#define REG_COMMAND_YRES                0x0002
+#define REG_COMMAND_BPP                 0x0003
+#define REG_COMMAND_ENABLE              0x0004
+#define REG_COMMAND_BANK                0x0005
+#define REG_COMMAND_VIRTWIDTH           0x0006
+#define REG_COMMAND_VIRTHEIGHT          0x0007
+#define REG_COMMAND_XOFF                0x0008
+#define REG_COMMAND_YOFF                0x0009
+#define REG_DATA                        0x01CF
 
 static struct base_driver driver;
 static struct video_interface videointerface;
@@ -33,8 +33,8 @@ static unsigned int framebuffer;
 static void setreg(unsigned short index, unsigned short data)
 {
 
-    io_outw(R_COMMAND, index);
-    io_outw(R_DATA, data);
+    io_outw(REG_COMMAND, index);
+    io_outw(REG_DATA, data);
 
 }
 
@@ -51,11 +51,11 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
     struct ctrl_videosettings *settings = buffer;
 
     ctrl_setvideosettings(&videointerface.settings, settings->w, settings->h, settings->bpp);
-    setreg(R_COMMAND_ENABLE, 0x00);
-    setreg(R_COMMAND_XRES, videointerface.settings.w);
-    setreg(R_COMMAND_YRES, videointerface.settings.h);
-    setreg(R_COMMAND_BPP, videointerface.settings.bpp * 8);
-    setreg(R_COMMAND_ENABLE, 0x40 | 0x01);
+    setreg(REG_COMMAND_ENABLE, 0x00);
+    setreg(REG_COMMAND_XRES, videointerface.settings.w);
+    setreg(REG_COMMAND_YRES, videointerface.settings.h);
+    setreg(REG_COMMAND_BPP, videointerface.settings.bpp * 8);
+    setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
     video_notifymode(&videointerface, framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
     return count;

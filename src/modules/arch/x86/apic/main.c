@@ -10,55 +10,7 @@
 #include <modules/arch/x86/pic/pic.h>
 #include "apic.h"
 
-#define MSRLAPIC                        0x1B
-
-#define R_ID                            0x0020
-#define R_VERSION                       0x0030
-#define R_TPR                           0x0080
-#define R_APR                           0x0090
-#define R_CPR                           0x00A0
-#define R_EOI                           0x00B0
-#define R_REMOTEREAD                    0x00C0
-#define R_LDR                           0x00D0
-#define R_DFR                           0x00E0
-#define R_SV                            0x00F0
-#define R_ISR0                          0x0100
-#define R_ISR1                          0x0110
-#define R_ISR2                          0x0120
-#define R_ISR3                          0x0130
-#define R_ISR4                          0x0140
-#define R_ISR5                          0x0150
-#define R_ISR6                          0x0160
-#define R_ISR7                          0x0170
-#define R_TMR0                          0x0180
-#define R_TMR1                          0x0190
-#define R_TMR2                          0x01A0
-#define R_TMR3                          0x01B0
-#define R_TMR4                          0x01C0
-#define R_TMR5                          0x01D0
-#define R_TMR6                          0x01E0
-#define R_TMR7                          0x01F0
-#define R_IRR0                          0x0200
-#define R_IRR1                          0x0210
-#define R_IRR2                          0x0220
-#define R_IRR3                          0x0230
-#define R_IRR4                          0x0240
-#define R_IRR5                          0x0250
-#define R_IRR6                          0x0260
-#define R_IRR7                          0x0270
-#define R_ERRORSTATUS                   0x0280
-#define R_LVTCMCI                       0x02F0
-#define R_ICR0                          0x0300
-#define R_ICR1                          0x0310
-#define R_LVTTIMER                      0x0320
-#define R_LVTTHERMAL                    0x0330
-#define R_LVTPERF                       0x0340
-#define R_LVTLINT0                      0x0350
-#define R_LVTLINT1                      0x0360
-#define R_LVTERROR                      0x0370
-#define R_INITIALCOUNT                  0x0380
-#define R_CURRENTCOUNT                  0x0390
-#define R_DIVIDECONFIG                  0x03E0
+#define MSR_LAPIC                       0x1B
 
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
@@ -91,7 +43,7 @@ unsigned int apic_getid(void)
 
     cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
 
-    id = apic_ind(R_ID) >> 24;
+    id = apic_ind(APIC_REG_ID) >> 24;
 
     cpu_setcr3(directory);
 
@@ -105,7 +57,7 @@ unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt i
     unsigned int directory = cpu_getcr3();
 
     cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
-    apic_outd(R_EOI, 0);
+    apic_outd(APIC_REG_EOI, 0);
     cpu_setcr3(directory);
 
     return arch_resume(&general, &interrupt);
@@ -115,32 +67,32 @@ unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt i
 void apic_setup_ap(void)
 {
 
-    apic_outd(R_TPR, 0x00000000);
-    apic_outd(R_LDR, 0x00000000);
-    apic_outd(R_DFR, 0xFFFFFFFF);
-    apic_outd(R_SV, (1 << 8) | 0xFF);
-    apic_outd(R_LVTCMCI, 0x00010000);
-    apic_outd(R_LVTTIMER, 0x00010000);
-    apic_outd(R_LVTPERF, 0x00010000);
-    apic_outd(R_LVTLINT0, 0x00010000);
-    apic_outd(R_LVTLINT1, 0x00010000);
-    apic_outd(R_LVTERROR, 0x00010000);
+    apic_outd(APIC_REG_TPR, 0x00000000);
+    apic_outd(APIC_REG_LDR, 0x00000000);
+    apic_outd(APIC_REG_DFR, 0xFFFFFFFF);
+    apic_outd(APIC_REG_SV, (1 << 8) | 0xFF);
+    apic_outd(APIC_REG_LVTCMCI, 0x00010000);
+    apic_outd(APIC_REG_LVTTIMER, 0x00010000);
+    apic_outd(APIC_REG_LVTPERF, 0x00010000);
+    apic_outd(APIC_REG_LVTLINT0, 0x00010000);
+    apic_outd(APIC_REG_LVTLINT1, 0x00010000);
+    apic_outd(APIC_REG_LVTERROR, 0x00010000);
 
 }
 
 void apic_setup_bp(void)
 {
 
-    apic_outd(R_TPR, 0x00000000);
-    apic_outd(R_LDR, 0x00000000);
-    apic_outd(R_DFR, 0xFFFFFFFF);
-    apic_outd(R_SV, (1 << 8) | 0xFF);
-    apic_outd(R_LVTCMCI, 0x00010000);
-    apic_outd(R_LVTTIMER, 0x00010000);
-    apic_outd(R_LVTPERF, 0x00010000);
-    apic_outd(R_LVTLINT0, 0x00000700);
-    apic_outd(R_LVTLINT1, 0x00000400);
-    apic_outd(R_LVTERROR, 0x00010000);
+    apic_outd(APIC_REG_TPR, 0x00000000);
+    apic_outd(APIC_REG_LDR, 0x00000000);
+    apic_outd(APIC_REG_DFR, 0xFFFFFFFF);
+    apic_outd(APIC_REG_SV, (1 << 8) | 0xFF);
+    apic_outd(APIC_REG_LVTCMCI, 0x00010000);
+    apic_outd(APIC_REG_LVTTIMER, 0x00010000);
+    apic_outd(APIC_REG_LVTPERF, 0x00010000);
+    apic_outd(APIC_REG_LVTLINT0, 0x00000700);
+    apic_outd(APIC_REG_LVTLINT1, 0x00000400);
+    apic_outd(APIC_REG_LVTERROR, 0x00010000);
 
 }
 
@@ -151,10 +103,10 @@ void apic_sendint(unsigned int id, unsigned int value)
 
     cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
 
-    apic_outd(R_ICR1, id << 24);
-    apic_outd(R_ICR0, value);
+    apic_outd(APIC_REG_ICR1, id << 24);
+    apic_outd(APIC_REG_ICR0, value);
 
-    while (apic_ind(R_ICR0) & APIC_ICR_STATUS_PENDING);
+    while (apic_ind(APIC_REG_ICR0) & APIC_REG_ICR_STATUS_PENDING);
 
     cpu_setcr3(directory);
 
@@ -185,7 +137,7 @@ void module_init(void)
     if ((data.edx & CPUID_FEATURES01_APIC))
     {
 
-        msr_get(MSRLAPIC, &msrdata);
+        msr_get(MSR_LAPIC, &msrdata);
 
         mmio = (msrdata.eax & 0xFFFFF000);
 

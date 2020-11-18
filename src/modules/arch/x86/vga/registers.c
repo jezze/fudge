@@ -10,56 +10,56 @@ static unsigned char font2[0x10000];
 unsigned int inar(unsigned char index)
 {
 
-    io_outb(VGA_REGISTER_ARINDEX, index);
+    io_outb(VGA_REG_ARINDEX, index);
 
-    return io_inb(VGA_REGISTER_ARREAD);
+    return io_inb(VGA_REG_ARREAD);
 
 }
 
 unsigned int incrt1(unsigned char index)
 {
 
-    io_outb(VGA_REGISTER_CRTINDEX1, index);
+    io_outb(VGA_REG_CRTINDEX1, index);
 
-    return io_inb(VGA_REGISTER_CRTDATA1);
+    return io_inb(VGA_REG_CRTDATA1);
 
 }
 
 unsigned int insr(unsigned char index)
 {
 
-    io_outb(VGA_REGISTER_SRINDEX, index);
+    io_outb(VGA_REG_SRINDEX, index);
 
-    return io_inb(VGA_REGISTER_SRDATA);
+    return io_inb(VGA_REG_SRDATA);
 
 }
 
 void outar(unsigned char index, unsigned char value)
 {
 
-    io_outb(VGA_REGISTER_ARINDEX, index);
-    io_outb(VGA_REGISTER_ARWRITE, value);
+    io_outb(VGA_REG_ARINDEX, index);
+    io_outb(VGA_REG_ARWRITE, value);
 
 }
 
 void outcrt1(unsigned char index, unsigned char value)
 {
 
-    io_outw(VGA_REGISTER_CRTINDEX1, (value << 8) | index);
+    io_outw(VGA_REG_CRTINDEX1, (value << 8) | index);
 
 }
 
 void outgr(unsigned char index, unsigned char value)
 {
 
-    io_outw(VGA_REGISTER_GRINDEX, (value << 8) | index);
+    io_outw(VGA_REG_GRINDEX, (value << 8) | index);
 
 }
 
 void outsr(unsigned char index, unsigned char value)
 {
 
-    io_outw(VGA_REGISTER_SRINDEX, (value << 8) | index);
+    io_outw(VGA_REG_SRINDEX, (value << 8) | index);
 
 }
 

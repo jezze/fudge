@@ -4,14 +4,14 @@
 #include <modules/system/system.h>
 #include <modules/arch/x86/pci/pci.h>
 
-#define REGISTERCOMMAND                 0x00
-#define REGISTERSTATUS                  0x02
-#define REGISTERINTERRUPT               0x04
-#define REGISTERFRAMEINDEX              0x06
-#define REGISTERFRAMEBASE               0x08
-#define REGISTERFRAMEMOD                0x0C
-#define REGISTERPORT1                   0x10
-#define REGISTERPORT2                   0x12
+#define REG_COMMAND                     0x00
+#define REG_STATUS                      0x02
+#define REG_INTERRUPT                   0x04
+#define REG_FRAMEINDEX                  0x06
+#define REG_FRAMEBASE                   0x08
+#define REG_FRAMEMOD                    0x0C
+#define REG_PORT1                       0x10
+#define REG_PORT2                       0x12
 
 static struct base_driver driver;
 

@@ -4,27 +4,27 @@
 #include <modules/system/system.h>
 #include <modules/arch/x86/pci/pci.h>
 
-#define R_REVISION                      0x00
-#define R_CONTROL                       0x04
-#define R_STATUS                        0x08
-#define R_INTSTATUS                     0x0C
-#define R_INTENABLE                     0x10
-#define R_INTDISABLE                    0x14
-#define R_HCCA                          0x18
-#define R_PERIODCURRENT                 0x1C
-#define R_CONTROLHEAD                   0x20
-#define R_CONTROLCURRENT                0x24
-#define R_BULKHEAD                      0x28
-#define R_BULKCURRENT                   0x2C
-#define R_DONEHEAD                      0x30
-#define R_FMINTERVAL                    0x34
-#define R_FMREMAINING                   0x38
-#define R_FMNUMBER                      0x3C
-#define R_PERIODICSTART                 0x40
-#define R_THRESHOLD                     0x44
-#define R_RHDESCRIPTORA                 0x48
-#define R_RHDESCRIPTORB                 0x4C
-#define R_RHSTATUS                      0x50
+#define REG_REVISION                    0x00
+#define REG_CONTROL                     0x04
+#define REG_STATUS                      0x08
+#define REG_INTSTATUS                   0x0C
+#define REG_INTENABLE                   0x10
+#define REG_INTDISABLE                  0x14
+#define REG_HCCA                        0x18
+#define REG_PERIODCURRENT               0x1C
+#define REG_CONTROLHEAD                 0x20
+#define REG_CONTROLCURRENT              0x24
+#define REG_BULKHEAD                    0x28
+#define REG_BULKCURRENT                 0x2C
+#define REG_DONEHEAD                    0x30
+#define REG_FMINTERVAL                  0x34
+#define REG_FMREMAINING                 0x38
+#define REG_FMNUMBER                    0x3C
+#define REG_PERIODICSTART               0x40
+#define REG_THRESHOLD                   0x44
+#define REG_RHDESCRIPTORA               0x48
+#define REG_RHDESCRIPTORB               0x4C
+#define REG_RHSTATUS                    0x50
 
 static struct base_driver driver;
 

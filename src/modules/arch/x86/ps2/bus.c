@@ -5,52 +5,57 @@
 #include <modules/arch/x86/io/io.h>
 #include "ps2.h"
 
-#define I_KEYBOARD                      0x01
-#define I_MOUSE                         0x0C
-#define R_DATA                          0x0060
-#define R_COMMAND                       0x0064
-#define R_STATUS                        0x0064
-#define C_COMMAND_CONFIGR               0x20
-#define C_COMMAND_CONFIGW               0x60
-#define C_COMMAND_DEV2DISABLE           0xA7
-#define C_COMMAND_DEV2ENABLE            0xA8
-#define C_COMMAND_DEV2TEST              0xA9
-#define C_COMMAND_CTEST                 0xAA
-#define C_COMMAND_DEV1TEST              0xAB
-#define C_COMMAND_DEV1DISABLE           0xAD
-#define C_COMMAND_DEV1ENABLE            0xAE
-#define C_COMMAND_CTRLRO                0xD0
-#define C_COMMAND_CTRLWO                0xD1
-#define C_COMMAND_DEV1WO                0xD2
-#define C_COMMAND_DEV2WO                0xD3
-#define C_COMMAND_DEV2WI                0xD4
-#define C_COMMAND_CTRLRESET             0xFE
-#define C_COMMAND_DEVIDENTIFY           0xF2
-#define C_COMMAND_DEVRATE               0xF3
-#define C_COMMAND_DEVENABLESCAN         0xF4
-#define C_COMMAND_DEVDISABLESCAN        0xF5
-#define C_COMMAND_DEVDEFAULT            0xF6
-#define C_COMMAND_DEVRESET              0xFF
-#define C_COMMAND_CTEST_OK              0x55
-#define C_COMMAND_CTEST_ERROR           0xFC
-#define F_COMMAND_CONFIGR_DEV1INT       (1 << 0)
-#define F_COMMAND_CONFIGR_DEV2INT       (1 << 1)
-#define F_COMMAND_CONFIGR_SYSTEM        (1 << 2)
-#define F_COMMAND_CONFIGR_DEV1CLOCK     (1 << 4)
-#define F_COMMAND_CONFIGR_DEV2CLOCK     (1 << 5)
-#define F_COMMAND_CONFIGR_DEV1TRANS     (1 << 6)
-#define C_COMMAND_DEVTEST_OK            0x00
-#define C_COMMAND_DEVTEST_CLOCKLOW      0x01
-#define C_COMMAND_DEVTEST_CLOCKHIGH     0x02
-#define C_COMMAND_DEVTEST_LINELOW       0x03
-#define C_COMMAND_DEVTEST_LINEHIGH      0x04
-#define F_STATUS_OFULL                  (1 << 0)
-#define F_STATUS_IFULL                  (1 << 1)
-#define F_STATUS_SYSTEM                 (1 << 2)
-#define F_STATUS_CTRL                   (1 << 3)
-#define F_STATUS_AUX                    (1 << 5)
-#define F_STATUS_TIMEOUT                (1 << 6)
-#define F_STATUS_PARITY                 (1 << 7)
+#define REG_DATA                        0x0060
+#define REG_COMMAND                     0x0064
+#define REG_COMMAND_CONFIGR             0x20
+#define REG_COMMAND_CONFIGR_DEV1INT     (1 << 0)
+#define REG_COMMAND_CONFIGR_DEV2INT     (1 << 1)
+#define REG_COMMAND_CONFIGR_SYSTEM      (1 << 2)
+#define REG_COMMAND_CONFIGR_DEV1CLOCK   (1 << 4)
+#define REG_COMMAND_CONFIGR_DEV2CLOCK   (1 << 5)
+#define REG_COMMAND_CONFIGR_DEV1TRANS   (1 << 6)
+#define REG_COMMAND_CONFIGW             0x60
+#define REG_COMMAND_DEV2DISABLE         0xA7
+#define REG_COMMAND_DEV2ENABLE          0xA8
+#define REG_COMMAND_DEV2TEST            0xA9
+#define REG_COMMAND_DEV2TEST_OK         0x00
+#define REG_COMMAND_DEV2TEST_CLOCKLOW   0x01
+#define REG_COMMAND_DEV2TEST_CLOCKHIGH  0x02
+#define REG_COMMAND_DEV2TEST_LINELOW    0x03
+#define REG_COMMAND_DEV2TEST_LINEHIGH   0x04
+#define REG_COMMAND_CTEST               0xAA
+#define REG_COMMAND_CTEST_OK            0x55
+#define REG_COMMAND_CTEST_ERROR         0xFC
+#define REG_COMMAND_DEV1TEST            0xAB
+#define REG_COMMAND_DEV1TEST_OK         0x00
+#define REG_COMMAND_DEV1TEST_CLOCKLOW   0x01
+#define REG_COMMAND_DEV1TEST_CLOCKHIGH  0x02
+#define REG_COMMAND_DEV1TEST_LINELOW    0x03
+#define REG_COMMAND_DEV1TEST_LINEHIGH   0x04
+#define REG_COMMAND_DEV1DISABLE         0xAD
+#define REG_COMMAND_DEV1ENABLE          0xAE
+#define REG_COMMAND_CTRLRO              0xD0
+#define REG_COMMAND_CTRLWO              0xD1
+#define REG_COMMAND_DEV1WO              0xD2
+#define REG_COMMAND_DEV2WO              0xD3
+#define REG_COMMAND_DEV2WI              0xD4
+#define REG_COMMAND_CTRLRESET           0xFE
+#define REG_COMMAND_DEVIDENTIFY         0xF2
+#define REG_COMMAND_DEVRATE             0xF3
+#define REG_COMMAND_DEVENABLESCAN       0xF4
+#define REG_COMMAND_DEVDISABLESCAN      0xF5
+#define REG_COMMAND_DEVDEFAULT          0xF6
+#define REG_COMMAND_DEVRESET            0xFF
+#define REG_STATUS                      0x0064
+#define REG_STATUS_OFULL                (1 << 0)
+#define REG_STATUS_IFULL                (1 << 1)
+#define REG_STATUS_SYSTEM               (1 << 2)
+#define REG_STATUS_CTRL                 (1 << 3)
+#define REG_STATUS_AUX                  (1 << 5)
+#define REG_STATUS_TIMEOUT              (1 << 6)
+#define REG_STATUS_PARITY               (1 << 7)
+#define IRQ_KEYBOARD                    0x01
+#define IRQ_MOUSE                       0x0C
 
 struct device
 {
@@ -62,6 +67,7 @@ struct device
     unsigned char interrupt;
     unsigned char translation;
     unsigned char test;
+    unsigned char testok;
 
 };
 
@@ -70,42 +76,42 @@ static struct system_node reset;
 
 static struct device devices[] = {
     {0},
-    {0, I_KEYBOARD, C_COMMAND_DEV1DISABLE, C_COMMAND_DEV1ENABLE, F_COMMAND_CONFIGR_DEV1INT, F_COMMAND_CONFIGR_DEV1TRANS, C_COMMAND_DEV1TEST},
-    {0, I_MOUSE, C_COMMAND_DEV2DISABLE, C_COMMAND_DEV2ENABLE, F_COMMAND_CONFIGR_DEV2INT, 0, C_COMMAND_DEV2TEST}
+    {0, IRQ_KEYBOARD, REG_COMMAND_DEV1DISABLE, REG_COMMAND_DEV1ENABLE, REG_COMMAND_CONFIGR_DEV1INT, REG_COMMAND_CONFIGR_DEV1TRANS, REG_COMMAND_DEV1TEST, REG_COMMAND_DEV1TEST_OK},
+    {0, IRQ_MOUSE, REG_COMMAND_DEV2DISABLE, REG_COMMAND_DEV2ENABLE, REG_COMMAND_CONFIGR_DEV2INT, 0, REG_COMMAND_DEV2TEST, REG_COMMAND_DEV2TEST_OK}
 };
 
 static void flushdata(void)
 {
 
-    while ((io_inb(R_STATUS) & F_STATUS_OFULL))
-        io_inb(R_DATA);
+    while ((io_inb(REG_STATUS) & REG_STATUS_OFULL))
+        io_inb(REG_DATA);
 
 }
 
 static unsigned char polldata(void)
 {
 
-    while (!(io_inb(R_STATUS) & F_STATUS_OFULL));
+    while (!(io_inb(REG_STATUS) & REG_STATUS_OFULL));
 
-    return io_inb(R_DATA);
+    return io_inb(REG_DATA);
 
 }
 
 static void setcommand(unsigned char value)
 {
 
-    while ((io_inb(R_STATUS) & F_STATUS_IFULL));
+    while ((io_inb(REG_STATUS) & REG_STATUS_IFULL));
 
-    io_outb(R_COMMAND, value);
+    io_outb(REG_COMMAND, value);
 
 }
 
 static void setdata(unsigned char value)
 {
 
-    while ((io_inb(R_STATUS) & F_STATUS_IFULL));
+    while ((io_inb(REG_STATUS) & REG_STATUS_IFULL));
 
-    io_outb(R_DATA, value);
+    io_outb(REG_DATA, value);
 
 }
 
@@ -113,7 +119,7 @@ static void setdevicedata(unsigned int id, unsigned char value)
 {
 
     if (id == PS2_MOUSE)
-        setcommand(C_COMMAND_DEV2WI);
+        setcommand(REG_COMMAND_DEV2WI);
 
     setdata(value);
 
@@ -122,7 +128,7 @@ static void setdevicedata(unsigned int id, unsigned char value)
 static unsigned char rconfig(void)
 {
 
-    setcommand(C_COMMAND_CONFIGR);
+    setcommand(REG_COMMAND_CONFIGR);
 
     return polldata();
 
@@ -131,7 +137,7 @@ static unsigned char rconfig(void)
 static void wconfig(unsigned char config)
 {
 
-    setcommand(C_COMMAND_CONFIGW);
+    setcommand(REG_COMMAND_CONFIGW);
     setdata(config);
 
 }
@@ -139,9 +145,9 @@ static void wconfig(unsigned char config)
 static unsigned int testbus(void)
 {
 
-    setcommand(C_COMMAND_CTEST);
+    setcommand(REG_COMMAND_CTEST);
 
-    return polldata() == C_COMMAND_CTEST_OK;
+    return polldata() == REG_COMMAND_CTEST_OK;
 
 }
 
@@ -150,26 +156,26 @@ static unsigned int testdevice(unsigned int id)
 
     setcommand(devices[id].test);
 
-    return polldata() == C_COMMAND_DEVTEST_OK;
+    return polldata() == devices[id].testok;
 
 }
 
 unsigned int ps2_checkdata(unsigned int id)
 {
 
-    unsigned char status = io_inb(R_STATUS);
+    unsigned char status = io_inb(REG_STATUS);
 
-    if ((status & F_STATUS_TIMEOUT))
+    if ((status & REG_STATUS_TIMEOUT))
         return 0;
 
-    if ((status & F_STATUS_PARITY))
+    if ((status & REG_STATUS_PARITY))
         return 0;
 
     switch (id)
     {
 
         case PS2_MOUSE:
-            return (status & F_STATUS_AUX);
+            return (status & REG_STATUS_AUX);
 
     }
 
@@ -180,14 +186,14 @@ unsigned int ps2_checkdata(unsigned int id)
 unsigned char ps2_getdata(void)
 {
 
-    return io_inb(R_DATA);
+    return io_inb(REG_DATA);
 
 }
 
 unsigned char ps2_getstatus(void)
 {
 
-    return io_inb(R_STATUS);
+    return io_inb(REG_STATUS);
 
 }
 
@@ -243,7 +249,7 @@ void ps2_disabletranslation(unsigned int id)
 void ps2_reset(unsigned int id)
 {
 
-    setdevicedata(id, C_COMMAND_DEVRESET);
+    setdevicedata(id, REG_COMMAND_DEVRESET);
     polldata();
     polldata();
 
@@ -255,7 +261,7 @@ void ps2_reset(unsigned int id)
 unsigned char ps2_identify(unsigned int id)
 {
 
-    setdevicedata(id, C_COMMAND_DEVIDENTIFY);
+    setdevicedata(id, REG_COMMAND_DEVIDENTIFY);
 
     if (polldata() != 0xFA)
         return 0;
@@ -267,7 +273,7 @@ unsigned char ps2_identify(unsigned int id)
 void ps2_enablescanning(unsigned int id)
 {
 
-    setdevicedata(id, C_COMMAND_DEVENABLESCAN);
+    setdevicedata(id, REG_COMMAND_DEVENABLESCAN);
     polldata();
 
 }
@@ -275,7 +281,7 @@ void ps2_enablescanning(unsigned int id)
 void ps2_disablescanning(unsigned int id)
 {
 
-    setdevicedata(id, C_COMMAND_DEVDISABLESCAN);
+    setdevicedata(id, REG_COMMAND_DEVDISABLESCAN);
     polldata();
 
 }
@@ -283,7 +289,7 @@ void ps2_disablescanning(unsigned int id)
 void ps2_default(unsigned int id)
 {
 
-    setdevicedata(id, C_COMMAND_DEVDEFAULT);
+    setdevicedata(id, REG_COMMAND_DEVDEFAULT);
     polldata();
 
 }
@@ -291,7 +297,7 @@ void ps2_default(unsigned int id)
 void ps2_rate(unsigned int id, unsigned char rate)
 {
 
-    setdevicedata(id, C_COMMAND_DEVRATE);
+    setdevicedata(id, REG_COMMAND_DEVRATE);
 
     if (polldata() != 0xFA)
         return;
@@ -313,10 +319,10 @@ static void bus_setup(void)
 
         unsigned char config = rconfig();
 
-        if (config & F_COMMAND_CONFIGR_DEV1CLOCK)
+        if (config & REG_COMMAND_CONFIGR_DEV1CLOCK)
             devices[PS2_KEYBOARD].present = testdevice(PS2_KEYBOARD);
 
-        if (config & F_COMMAND_CONFIGR_DEV2CLOCK)
+        if (config & REG_COMMAND_CONFIGR_DEV2CLOCK)
             devices[PS2_MOUSE].present = testdevice(PS2_MOUSE);
 
     }
@@ -333,7 +339,7 @@ static unsigned int bus_next(unsigned int id)
 static unsigned int reset_write(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    setcommand(C_COMMAND_CTRLRESET);
+    setcommand(REG_COMMAND_CTRLRESET);
 
     return 0;
 

@@ -7,15 +7,15 @@
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/io/io.h>
 
-#define R_COMMAND                       0x0000
-#define R_DATA                          0x0001
-#define C_COMMAND_SECONDS               0x00
-#define C_COMMAND_MINUTES               0x02
-#define C_COMMAND_HOURS                 0x04
-#define C_COMMAND_WEEKDAY               0x06
-#define C_COMMAND_DAY                   0x07
-#define C_COMMAND_MONTH                 0x08
-#define C_COMMAND_YEAR                  0x09
+#define REG_COMMAND                     0x0000
+#define REG_COMMAND_SECONDS             0x00
+#define REG_COMMAND_MINUTES             0x02
+#define REG_COMMAND_HOURS               0x04
+#define REG_COMMAND_WEEKDAY             0x06
+#define REG_COMMAND_DAY                 0x07
+#define REG_COMMAND_MONTH               0x08
+#define REG_COMMAND_YEAR                0x09
+#define REG_DATA                        0x0001
 
 static struct base_driver driver;
 static struct clock_interface clockinterface;
@@ -31,9 +31,9 @@ static unsigned char convert(unsigned char num)
 static unsigned char read(unsigned int type)
 {
 
-    io_outb(io + R_COMMAND, type);
+    io_outb(io + REG_COMMAND, type);
 
-    return convert(io_inb(io + R_DATA));
+    return convert(io_inb(io + REG_DATA));
 
 }
 
@@ -47,13 +47,13 @@ static unsigned int clockinterface_readctrl(void *buffer, unsigned int count, un
 
     struct ctrl_clocksettings settings;
 
-    settings.seconds = read(C_COMMAND_SECONDS);
-    settings.minutes = read(C_COMMAND_MINUTES);
-    settings.hours = read(C_COMMAND_HOURS);
-    settings.weekday = read(C_COMMAND_WEEKDAY);
-    settings.day = read(C_COMMAND_DAY);
-    settings.month = read(C_COMMAND_MONTH);
-    settings.year = 2000 + read(C_COMMAND_YEAR);
+    settings.seconds = read(REG_COMMAND_SECONDS);
+    settings.minutes = read(REG_COMMAND_MINUTES);
+    settings.hours = read(REG_COMMAND_HOURS);
+    settings.weekday = read(REG_COMMAND_WEEKDAY);
+    settings.day = read(REG_COMMAND_DAY);
+    settings.month = read(REG_COMMAND_MONTH);
+    settings.year = 2000 + read(REG_COMMAND_YEAR);
 
     return buffer_read(buffer, count, &settings, sizeof (struct ctrl_clocksettings), offset);
 

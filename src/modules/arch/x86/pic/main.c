@@ -9,17 +9,17 @@
 #include "pic.h"
 
 #define ROUTINES                        16
-#define R_COMMAND0                      0x0020
-#define R_COMMAND1                      0x00A0
-#define R_DATA0                         0x0021
-#define R_DATA1                         0x00A1
-#define C_COMMAND_IRR                   0x0A
-#define C_COMMAND_ISR                   0x0B
-#define C_COMMAND_CONFIG                0x11
-#define C_COMMAND_EOI                   0x20
-#define C_DATA_8086                     0x01
-#define C_DATA_VECTOR0                  0x20
-#define C_DATA_VECTOR1                  0x28
+#define REG_COMMAND0                    0x0020
+#define REG_COMMAND1                    0x00A0
+#define REG_COMMAND_IRR                 0x0A
+#define REG_COMMAND_ISR                 0x0B
+#define REG_COMMAND_CONFIG              0x11
+#define REG_COMMAND_EOI                 0x20
+#define REG_DATA0                       0x0021
+#define REG_DATA1                       0x00A1
+#define REG_DATA_8086                   0x01
+#define REG_DATA_VECTOR0                0x20
+#define REG_DATA_VECTOR1                0x28
 
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
@@ -28,10 +28,10 @@ static void (*routines[ROUTINES])(unsigned int irq);
 static void setchip(unsigned char command, unsigned char data, unsigned char vector, unsigned char wire)
 {
 
-    io_outb(command, C_COMMAND_CONFIG);
+    io_outb(command, REG_COMMAND_CONFIG);
     io_outb(data, vector);
     io_outb(data, wire);
-    io_outb(data, C_DATA_8086);
+    io_outb(data, REG_DATA_8086);
 
 }
 
@@ -45,10 +45,10 @@ static void setmask(unsigned short port, unsigned char mask)
 static unsigned short getirqreg(unsigned char reg)
 {
 
-    io_outb(R_COMMAND0, reg);
-    io_outb(R_COMMAND1, reg);
+    io_outb(REG_COMMAND0, reg);
+    io_outb(REG_COMMAND1, reg);
 
-    return (io_inb(R_COMMAND1) << 8) | io_inb(R_COMMAND0);
+    return (io_inb(REG_COMMAND1) << 8) | io_inb(REG_COMMAND0);
 
 }
 
@@ -78,14 +78,14 @@ static void disableline(unsigned short port, unsigned char line)
 unsigned short pic_getirr(void)
 {
 
-    return getirqreg(C_COMMAND_IRR);
+    return getirqreg(REG_COMMAND_IRR);
 
 }
 
 unsigned short pic_getisr(void)
 {
 
-    return getirqreg(C_COMMAND_ISR);
+    return getirqreg(REG_COMMAND_ISR);
 
 }
 
@@ -95,9 +95,9 @@ unsigned short pic_interrupt(struct cpu_general general, unsigned int index, uns
     routines[index](index);
 
     if (slave)
-        io_outb(R_COMMAND1, C_COMMAND_EOI);
+        io_outb(REG_COMMAND1, REG_COMMAND_EOI);
 
-    io_outb(R_COMMAND0, C_COMMAND_EOI);
+    io_outb(REG_COMMAND0, REG_COMMAND_EOI);
 
     return arch_resume(&general, &interrupt);
 
@@ -112,9 +112,9 @@ unsigned int pic_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
     routines[irq] = routine;
 
     if (irq >= 8)
-        enableline(R_DATA1, irq);
+        enableline(REG_DATA1, irq);
     else
-        enableline(R_DATA0, irq);
+        enableline(REG_DATA0, irq);
 
     return 1;
 
@@ -129,9 +129,9 @@ unsigned int pic_unsetroutine(unsigned int irq)
     routines[irq] = 0;
 
     if (irq >= 8)
-        disableline(R_DATA1, irq);
+        disableline(REG_DATA1, irq);
     else
-        disableline(R_DATA0, irq);
+        disableline(REG_DATA0, irq);
 
     return 1;
 
@@ -140,46 +140,46 @@ unsigned int pic_unsetroutine(unsigned int irq)
 void pic_disable(void)
 {
 
-    setmask(R_DATA0, 0xFF);
-    setmask(R_DATA1, 0xFF);
+    setmask(REG_DATA0, 0xFF);
+    setmask(REG_DATA1, 0xFF);
 
 }
 
 void module_init(void)
 {
 
-    setchip(R_COMMAND0, R_DATA0, C_DATA_VECTOR0, 0x04);
-    setchip(R_COMMAND1, R_DATA1, C_DATA_VECTOR1, 0x02);
-    setmask(R_DATA0, 0xFB);
-    setmask(R_DATA1, 0xFF);
+    setchip(REG_COMMAND0, REG_DATA0, REG_DATA_VECTOR0, 0x04);
+    setchip(REG_COMMAND1, REG_DATA1, REG_DATA_VECTOR1, 0x02);
+    setmask(REG_DATA0, 0xFB);
+    setmask(REG_DATA1, 0xFF);
 
-    while (getstatus(R_COMMAND1, C_COMMAND_ISR))
+    while (getstatus(REG_COMMAND1, REG_COMMAND_ISR))
     {
 
-        io_outb(R_COMMAND1, C_COMMAND_EOI);
-        io_outb(R_COMMAND0, C_COMMAND_EOI);
+        io_outb(REG_COMMAND1, REG_COMMAND_EOI);
+        io_outb(REG_COMMAND0, REG_COMMAND_EOI);
 
     }
 
-    while (getstatus(R_COMMAND0, C_COMMAND_ISR))
-        io_outb(R_COMMAND0, C_COMMAND_EOI);
+    while (getstatus(REG_COMMAND0, REG_COMMAND_ISR))
+        io_outb(REG_COMMAND0, REG_COMMAND_EOI);
 
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR0 + 0x00, pic_routine00, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR0 + 0x01, pic_routine01, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR0 + 0x02, pic_routine02, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR0 + 0x03, pic_routine03, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR0 + 0x04, pic_routine04, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR0 + 0x05, pic_routine05, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR0 + 0x06, pic_routine06, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR0 + 0x07, pic_routine07, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR1 + 0x00, pic_routine08, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR1 + 0x01, pic_routine09, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR1 + 0x02, pic_routine0A, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR1 + 0x03, pic_routine0B, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR1 + 0x04, pic_routine0C, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR1 + 0x05, pic_routine0D, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR1 + 0x06, pic_routine0E, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, C_DATA_VECTOR1 + 0x07, pic_routine0F, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x00, pic_routine00, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x01, pic_routine01, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x02, pic_routine02, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x03, pic_routine03, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x04, pic_routine04, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x05, pic_routine05, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x06, pic_routine06, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x07, pic_routine07, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x00, pic_routine08, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x01, pic_routine09, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x02, pic_routine0A, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x03, pic_routine0B, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x04, pic_routine0C, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x05, pic_routine0D, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x06, pic_routine0E, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x07, pic_routine0F, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
 
 }
 

@@ -36,7 +36,7 @@ static void handlequeue(struct virtio_queue *vq)
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char status = io_inb(io + VIRTIO_REGISTERISR);
+    unsigned char status = io_inb(io + VIRTIO_REG_ISR);
 
     if (status & 1)
     {
@@ -70,11 +70,11 @@ static void setqueues(void)
 static void setfeatures(void)
 {
 
-    unsigned int features = io_ind(io + VIRTIO_REGISTERDEVFEATURES);
+    unsigned int features = io_ind(io + VIRTIO_REG_DEVFEATURES);
 
     /* MODIFY FEATURES */
 
-    io_outd(io + VIRTIO_REGISTERGUESTFEATURES, features);
+    io_outd(io + VIRTIO_REG_GUESTFEATURES, features);
 
 }
 
@@ -113,19 +113,19 @@ static void driver_reset(unsigned int id)
     io = pci_inw(id, PCI_CONFIG_BAR0) & ~1;
 
     virtio_reset(io);
-    io_outb(io + VIRTIO_REGISTERSTATUS, VIRTIO_STATUSACKNOWLEDGE);
-    io_outb(io + VIRTIO_REGISTERSTATUS, VIRTIO_STATUSACKNOWLEDGE | VIRTIO_STATUSDRIVER);
+    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE);
+    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE | VIRTIO_REG_STATUS_DRIVER);
     setfeatures();
-    io_outb(io + VIRTIO_REGISTERSTATUS, VIRTIO_STATUSACKNOWLEDGE | VIRTIO_STATUSDRIVER | VIRTIO_STATUSFEATURES);
+    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE | VIRTIO_REG_STATUS_DRIVER | VIRTIO_REG_STATUS_FEATURES);
 
-    status = io_inb(io + VIRTIO_REGISTERSTATUS);
+    status = io_inb(io + VIRTIO_REG_STATUS);
 
-    if (!(status & VIRTIO_STATUSFEATURES))
+    if (!(status & VIRTIO_REG_STATUS_FEATURES))
         return;
 
     setqueues();
     virtio_setrx(io, &vqs[0], rxbuffer);
-    io_outb(io + VIRTIO_REGISTERSTATUS, VIRTIO_STATUSACKNOWLEDGE | VIRTIO_STATUSDRIVER | VIRTIO_STATUSFEATURES | VIRTIO_STATUSREADY);
+    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE | VIRTIO_REG_STATUS_DRIVER | VIRTIO_REG_STATUS_FEATURES | VIRTIO_REG_STATUS_READY);
     pci_setmaster(id);
 
 }
