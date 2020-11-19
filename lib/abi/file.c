@@ -125,7 +125,7 @@ unsigned int file_spawn(char *path)
 {
 
     if (file_walk2(FILE_CP, path))
-        return call_spawn(FILE_CP);
+        return call_spawn();
 
     return 0;
 

@@ -94,7 +94,7 @@ static unsigned int spawn(struct job *job)
     if (!(file_walk(FILE_CP, FILE_L0, job->path) || file_walk2(FILE_CP, job->path)))
         return 0;
 
-    return call_spawn(FILE_CP);
+    return call_spawn();
 
 }
 

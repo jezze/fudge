@@ -64,10 +64,10 @@ static unsigned int unloadtask(struct task *task)
 
 }
 
-static unsigned int loadtask(struct task *task, unsigned int descriptor)
+static unsigned int loadtask(struct task *task)
 {
 
-    if (kernel_setupbinary(task, descriptor, ARCH_TASKSTACKVIRTUAL))
+    if (kernel_setupbinary(task, ARCH_TASKSTACKVIRTUAL))
     {
 
         buffer_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
@@ -85,7 +85,6 @@ static unsigned int loadtask(struct task *task, unsigned int descriptor)
 static unsigned int spawn(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor;} *args = stack;
     struct task *next = kernel_picktask();
 
     if (!next)
@@ -93,7 +92,7 @@ static unsigned int spawn(struct task *task, void *stack)
 
     kernel_copydescriptors(task, next);
 
-    return loadtask(next, args->descriptor);
+    return loadtask(next);
 
 }
 
@@ -448,7 +447,7 @@ void arch_setup2(void)
 
     kernel_setupinit(task);
     kernel_copydescriptors(task, task);
-    loadtask(task, 0x04);
+    loadtask(task);
     arch_leave(&core0);
 
 }

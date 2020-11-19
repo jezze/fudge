@@ -313,10 +313,10 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 
 }
 
-unsigned int kernel_setupbinary(struct task *task, unsigned int descriptor, unsigned int sp)
+unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 {
 
-    struct service_descriptor *init = kernel_getdescriptor(task, descriptor);
+    struct service_descriptor *init = kernel_getdescriptor(task, FILE_CP);
 
     if (!init)
         return 0;
