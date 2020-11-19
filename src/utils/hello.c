@@ -4,9 +4,9 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *data = "Hello world!\n";
+    struct message_data data;
 
-    channel_place(channel, source, EVENT_DATA, ascii_length(data), data);
+    channel_place(channel, source, EVENT_DATA, message_putstring(&data, "Hello World!\n", 0), &data);
     channel_close(channel, source);
 
 }
