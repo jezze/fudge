@@ -26,14 +26,12 @@ void init(struct channel *channel)
     if (id)
     {
 
-        char *baseslang = "/config/base.slang";
-        char *archslang = "/config/arch.slang";
-        char *initslang = "/config/init.slang";
+        struct message_data data;
 
         channel_setcallback(channel, EVENT_DATA, ondata);
-        channel_place(channel, id, EVENT_FILE, ascii_lengthz(baseslang), baseslang);
-        channel_place(channel, id, EVENT_FILE, ascii_lengthz(archslang), archslang);
-        channel_place(channel, id, EVENT_FILE, ascii_lengthz(initslang), initslang);
+        channel_place(channel, id, EVENT_FILE, message_putstringz(&data, "/config/base.slang", 0), &data);
+        channel_place(channel, id, EVENT_FILE, message_putstringz(&data, "/config/arch.slang", 0), &data);
+        channel_place(channel, id, EVENT_FILE, message_putstringz(&data, "/config/init.slang", 0), &data);
         channel_place(channel, id, EVENT_MAIN, 0, 0);
 
     }
