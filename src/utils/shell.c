@@ -61,17 +61,7 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
                 break;
 
             if (header.event == EVENT_DATA)
-            {
-
-                struct job_status status;
-
-                status.start = data.buffer;
-                status.end = status.start + message_datasize(&header);
-
-                while (status.start < status.end)
-                    njobs = job_parse(&status, jobs, 32);
-
-            }
+                njobs += job_parse(jobs, 32, data.buffer, message_datasize(&header));
 
         }
 

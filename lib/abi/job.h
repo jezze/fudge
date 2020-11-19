@@ -1,11 +1,3 @@
-struct job_status
-{
-
-    char *start;
-    char *end;
-
-};
-
 struct job
 {
 
@@ -20,7 +12,7 @@ struct job
 
 };
 
-unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int n);
+unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned int count);
 void job_replyto(struct channel *channel, unsigned int target, unsigned int type, unsigned int id);
 void job_replyback(struct channel *channel, unsigned int target, unsigned int type);
 unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n);

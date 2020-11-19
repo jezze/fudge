@@ -4,54 +4,56 @@
 #include "file.h"
 #include "job.h"
 
-unsigned int job_parse(struct job_status *status, struct job *jobs, unsigned int n)
+unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned int count)
 {
 
+    char *start = buffer;
+    char *end = start + count;
     unsigned int njobs = 0;
 
     buffer_clear(jobs, sizeof (struct job) * n);
 
-    while (status->start < status->end)
+    while (start < end)
     {
 
         struct job *p = &jobs[njobs];
 
-        switch (status->start[0])
+        switch (start[0])
         {
 
         case 'F':
-            p->files[p->nfiles] = status->start + 2;
+            p->files[p->nfiles] = start + 2;
             p->nfiles++;
 
             break;
 
         case 'R':
-            p->redirects[p->nredirects] = status->start + 2;
+            p->redirects[p->nredirects] = start + 2;
             p->nredirects++;
 
             break;
 
         case 'D':
-            p->inputs[p->ninputs] = status->start + 2;
+            p->inputs[p->ninputs] = start + 2;
             p->ninputs++;
 
             break;
 
         case 'P':
-            p->path = status->start + 2;
+            p->path = start + 2;
 
             njobs++;
 
             break;
 
         case 'E':
-            status->start += ascii_lengthz(status->start);
+            start += ascii_lengthz(start);
 
             return njobs;
 
         }
 
-        status->start += ascii_lengthz(status->start);
+        start += ascii_lengthz(start);
 
     }
 
