@@ -22,6 +22,7 @@
 .set CALL_INDEX_LINK,                   0x12
 .set CALL_INDEX_UNLINK,                 0x13
 .set CALL_INDEX_NOTIFY,                 0x14
+.set CALL_INDEX_KILL,                   0x15
 
 .section .text
 
@@ -58,6 +59,12 @@ call_destroy:
 .global call_despawn
 call_despawn:
     movl $CALL_INDEX_DESPAWN, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_kill
+call_kill:
+    movl $CALL_INDEX_KILL, %eax
     int $CALL_INTERRUPT
     ret
 

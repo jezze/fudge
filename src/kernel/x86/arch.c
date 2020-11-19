@@ -58,7 +58,7 @@ static void maptask(struct task *task, unsigned int index, unsigned int paddress
 static unsigned int unloadtask(struct task *task)
 {
 
-    kernel_freetask(task);
+    kernel_freetask(task->id);
 
     return 0;
 
@@ -71,7 +71,7 @@ static unsigned int loadtask(struct task *task, unsigned int descriptor)
     {
 
         buffer_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
-        kernel_readytask(task);
+        kernel_readytask(task->id);
         kernel_reset(task->id);
 
         return task->id;

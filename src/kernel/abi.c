@@ -344,6 +344,17 @@ static unsigned int notify(struct task *task, void *stack)
 
 }
 
+static unsigned int kill(struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int id;} *args = stack;
+
+    kernel_killtask(args->id);
+
+    return 0;
+
+}
+
 unsigned int abi_call(unsigned int index, struct task *task, void *stack)
 {
 
@@ -375,6 +386,7 @@ void abi_setup(unsigned int (*spawn)(struct task *task, void *stack), unsigned i
     calls[0x12] = link;
     calls[0x13] = unlink;
     calls[0x14] = notify;
+    calls[0x15] = kill;
 
 }
 

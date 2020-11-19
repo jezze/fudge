@@ -11,11 +11,12 @@ static struct task tasks[KERNEL_TASKS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct service_descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct service_mount mounts[KERNEL_MOUNTS];
-static struct list readytasks;
 static struct list freetasks;
+static struct list readytasks;
 static struct list blockedtasks;
-static struct list usedmounts;
+static struct list killedtasks;
 static struct list freemounts;
+static struct list usedmounts;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct task *task);
 
@@ -150,24 +151,30 @@ struct service_mount *kernel_pickmount(void)
 
 }
 
-void kernel_readytask(struct task *task)
+void kernel_freetask(unsigned int id)
 {
+
+    struct task *task = &tasks[id];
+
+    list_add(&freetasks, &task->item);
+
+}
+
+void kernel_readytask(unsigned int id)
+{
+
+    struct task *task = &tasks[id];
 
     list_add(&readytasks, &task->item);
 
 }
 
-void kernel_usemount(struct service_mount *mount)
+void kernel_killtask(unsigned int id)
 {
 
-    list_add(&usedmounts, &mount->item);
+    struct task *task = &tasks[id];
 
-}
-
-void kernel_freetask(struct task *task)
-{
-
-    list_add(&freetasks, &task->item);
+    list_add(&killedtasks, &task->item);
 
 }
 
@@ -175,6 +182,13 @@ void kernel_freemount(struct service_mount *mount)
 {
 
     list_add(&freemounts, &mount->item);
+
+}
+
+void kernel_usemount(struct service_mount *mount)
+{
+
+    list_add(&usedmounts, &mount->item);
 
 }
 
@@ -200,7 +214,7 @@ void kernel_assign(void)
         {
 
             list_remove_nolock(&blockedtasks, current);
-            kernel_readytask(task);
+            kernel_readytask(task->id);
 
         }
 
@@ -347,11 +361,12 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
     unsigned int i;
 
-    list_init(&readytasks);
     list_init(&freetasks);
+    list_init(&readytasks);
     list_init(&blockedtasks);
-    list_init(&usedmounts);
+    list_init(&killedtasks);
     list_init(&freemounts);
+    list_init(&usedmounts);
 
     for (i = 1; i < KERNEL_TASKS; i++)
     {
@@ -361,7 +376,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
         task_init(task, i);
         task_register(task);
-        kernel_freetask(task);
+        kernel_freetask(task->id);
 
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
         {
