@@ -52,7 +52,7 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
                 if (!(c >= 0x20 && c <= 0x7e))
                     c = ' ';
 
-                offset = message_putbuffer(&data, offset, 1, &c);
+                offset = message_putbuffer(&data, 1, &c, offset);
 
             }
 

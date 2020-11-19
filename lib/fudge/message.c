@@ -16,7 +16,7 @@ unsigned int message_datasize(struct message_header *header)
 
 }
 
-unsigned int message_putbuffer(struct message_data *data, unsigned int offset, unsigned int count, void *buffer)
+unsigned int message_putbuffer(struct message_data *data, unsigned int count, void *buffer, unsigned int offset)
 {
 
     return offset + buffer_write(data->buffer, MESSAGE_SIZE, buffer, count, offset);
@@ -26,14 +26,14 @@ unsigned int message_putbuffer(struct message_data *data, unsigned int offset, u
 unsigned int message_putstring(struct message_data *data, char *string, unsigned int offset)
 {
 
-    return message_putbuffer(data, offset, ascii_length(string), string);
+    return message_putbuffer(data, ascii_length(string), string, offset);
 
 }
 
 unsigned int message_putstringz(struct message_data *data, char *string, unsigned int offset)
 {
 
-    return message_putbuffer(data, offset, ascii_lengthz(string), string);
+    return message_putbuffer(data, ascii_lengthz(string), string, offset);
 
 }
 
@@ -42,7 +42,7 @@ unsigned int message_putvalue(struct message_data *data, int value, unsigned int
 
     char num[ASCII_NUMSIZE];
 
-    return message_putbuffer(data, offset, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num);
+    return message_putbuffer(data, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num, offset);
 
 }
 
