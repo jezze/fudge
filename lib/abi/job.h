@@ -19,4 +19,5 @@ unsigned int job_spawn(struct channel *channel, struct job *jobs, unsigned int n
 unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n);
 unsigned int job_close(struct channel *channel, unsigned int id, struct job *jobs, unsigned int n);
 void job_term(struct channel *channel, struct job *jobs, unsigned int n);
+void job_kill(struct channel *channel, struct job *jobs, unsigned int n);
 unsigned int job_count(struct channel *channel, struct job *jobs, unsigned int n);

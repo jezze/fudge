@@ -31,6 +31,11 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
 
         break;
 
+    case 'Q':
+        job_kill(channel, jobs, njobs);
+
+        break;
+
     }
 
 }

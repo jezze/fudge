@@ -103,7 +103,10 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
     {
 
     case 0x10:
-        job_term(channel, jobs, njobs);
+        if (wmkeypress->keymod & KEYMOD_SHIFT)
+            job_kill(channel, jobs, njobs);
+        else
+            job_term(channel, jobs, njobs);
 
         break;
 

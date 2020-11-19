@@ -234,6 +234,23 @@ void job_term(struct channel *channel, struct job *jobs, unsigned int n)
 
 }
 
+void job_kill(struct channel *channel, struct job *jobs, unsigned int n)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job *job = &jobs[i];
+
+        if (job->id)
+            call_kill(job->id);
+
+    }
+
+}
+
 unsigned int job_count(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
