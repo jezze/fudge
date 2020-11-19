@@ -115,7 +115,7 @@ void activatenext(struct channel *channel, unsigned int index, struct job *jobs,
 
 }
 
-unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
+unsigned int job_spawn(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
     unsigned int i;
@@ -137,6 +137,15 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
         }
 
     }
+
+    return n;
+
+}
+
+unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
+{
+
+    unsigned int i;
 
     for (i = 0; i < n; i++)
     {

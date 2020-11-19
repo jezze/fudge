@@ -137,7 +137,13 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
                 break;
 
             if (header.event == EVENT_DATA)
-                njobs += job_parse(jobs, 32, data.buffer, message_datasize(&header));
+            {
+
+                unsigned int n = job_parse(jobs, 32, data.buffer, message_datasize(&header));
+
+                njobs = job_spawn(channel, jobs, n);
+
+            }
 
         }
 
