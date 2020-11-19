@@ -19,9 +19,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             unsigned int offset = 0;
 
-            offset = message_appendstring(&data, "Tick: ", offset);
-            offset = message_appendvalue(&data, counter++, 10, 0, offset);
-            offset = message_appendstring(&data, "\n", offset);
+            offset = message_putstring(&data, "Tick: ", offset);
+            offset = message_putvalue(&data, counter++, 10, 0, offset);
+            offset = message_putstring(&data, "\n", offset);
 
             channel_place(channel, source, EVENT_DATA, offset, &data);
 

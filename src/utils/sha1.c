@@ -14,9 +14,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     sha1_write(&sum, digest);
 
     for (i = 0; i < 20; i++)
-        offset = message_appendvalue(&data, digest[i], 16, 2, offset);
+        offset = message_putvalue(&data, digest[i], 16, 2, offset);
 
-    offset = message_appendstring(&data, "\n", offset);
+    offset = message_putstring(&data, "\n", offset);
 
     channel_place(channel, source, EVENT_DATA, offset, &data);
     channel_close(channel, source);

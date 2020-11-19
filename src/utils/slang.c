@@ -270,8 +270,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            offset = message_appendstringz(&data, "F", offset);
-            offset = message_appendstringz(&data, t->str, offset);
+            offset = message_putstringz(&data, "F", offset);
+            offset = message_putstringz(&data, t->str, offset);
 
             break;
 
@@ -281,8 +281,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            offset = message_appendstringz(&data, "R", offset);
-            offset = message_appendstringz(&data, t->str, offset);
+            offset = message_putstringz(&data, "R", offset);
+            offset = message_putstringz(&data, t->str, offset);
 
             break;
 
@@ -292,8 +292,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            offset = message_appendstringz(&data, "D", offset);
-            offset = message_appendstringz(&data, t->str, offset);
+            offset = message_putstringz(&data, "D", offset);
+            offset = message_putstringz(&data, t->str, offset);
 
             break;
 
@@ -303,8 +303,8 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            offset = message_appendstringz(&data, "P", offset);
-            offset = message_appendstringz(&data, t->str, offset);
+            offset = message_putstringz(&data, "P", offset);
+            offset = message_putstringz(&data, t->str, offset);
 
             break;
 
@@ -314,9 +314,9 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             if (!t)
                 return;
 
-            offset = message_appendstringz(&data, "P", offset);
-            offset = message_appendstringz(&data, t->str, offset);
-            offset = message_appendstringz(&data, "E", offset);
+            offset = message_putstringz(&data, "P", offset);
+            offset = message_putstringz(&data, t->str, offset);
+            offset = message_putstringz(&data, "E", offset);
 
             channel_place(channel, source, EVENT_DATA, offset, &data);
 

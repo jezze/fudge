@@ -10,8 +10,8 @@ static void print(struct channel *channel, unsigned int source, struct record *r
     if (record->length < length || !buffer_match(record->name, name, length))
         return;
 
-    offset = message_append(&data, offset, record->length, record->name);
-    offset = message_appendstring(&data, "\n", offset);
+    offset = message_putbuffer(&data, offset, record->length, record->name);
+    offset = message_putstring(&data, "\n", offset);
 
     channel_place(channel, source, EVENT_DATA, offset, &data);
 

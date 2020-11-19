@@ -9,8 +9,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
     unsigned int offset = 0;
 
-    offset = message_appendvalue(&data, crc_finalize(&sum), 10, 0, offset);
-    offset = message_appendstring(&data, "\n", offset);
+    offset = message_putvalue(&data, crc_finalize(&sum), 10, 0, offset);
+    offset = message_putstring(&data, "\n", offset);
 
     channel_place(channel, source, EVENT_DATA, offset, &data);
     channel_close(channel, source);

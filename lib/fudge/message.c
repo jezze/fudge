@@ -16,33 +16,33 @@ unsigned int message_datasize(struct message_header *header)
 
 }
 
-unsigned int message_append(struct message_data *data, unsigned int offset, unsigned int count, void *buffer)
+unsigned int message_putbuffer(struct message_data *data, unsigned int offset, unsigned int count, void *buffer)
 {
 
     return offset + buffer_write(data->buffer, MESSAGE_SIZE, buffer, count, offset);
 
 }
 
-unsigned int message_appendstring(struct message_data *data, char *string, unsigned int offset)
+unsigned int message_putstring(struct message_data *data, char *string, unsigned int offset)
 {
 
-    return message_append(data, offset, ascii_length(string), string);
+    return message_putbuffer(data, offset, ascii_length(string), string);
 
 }
 
-unsigned int message_appendstringz(struct message_data *data, char *string, unsigned int offset)
+unsigned int message_putstringz(struct message_data *data, char *string, unsigned int offset)
 {
 
-    return message_append(data, offset, ascii_lengthz(string), string);
+    return message_putbuffer(data, offset, ascii_lengthz(string), string);
 
 }
 
-unsigned int message_appendvalue(struct message_data *data, int value, unsigned int base, unsigned int padding, unsigned int offset)
+unsigned int message_putvalue(struct message_data *data, int value, unsigned int base, unsigned int padding, unsigned int offset)
 {
 
     char num[ASCII_NUMSIZE];
 
-    return message_append(data, offset, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num);
+    return message_putbuffer(data, offset, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num);
 
 }
 

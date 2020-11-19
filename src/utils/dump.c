@@ -16,8 +16,8 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
         unsigned int offset = 0;
         unsigned int j;
 
-        offset = message_appendvalue(&data, page, 16, 8, offset);
-        offset = message_appendstring(&data, "  ", offset);
+        offset = message_putvalue(&data, page, 16, 8, offset);
+        offset = message_putstring(&data, "  ", offset);
 
         for (j = i; j < i + 16; j++)
         {
@@ -25,21 +25,21 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
             if (j < count)
             {
 
-                offset = message_appendvalue(&data, b[j], 16, 2, offset);
-                offset = message_appendstring(&data, " ", offset);
+                offset = message_putvalue(&data, b[j], 16, 2, offset);
+                offset = message_putstring(&data, " ", offset);
 
             }
 
             else
             {
 
-                offset = message_appendstring(&data, "   ", offset);
+                offset = message_putstring(&data, "   ", offset);
 
             }
 
         }
 
-        offset = message_appendstring(&data, " |", offset);
+        offset = message_putstring(&data, " |", offset);
 
         for (j = i; j < i + 16; j++)
         {
@@ -52,20 +52,20 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
                 if (!(c >= 0x20 && c <= 0x7e))
                     c = ' ';
 
-                offset = message_append(&data, offset, 1, &c);
+                offset = message_putbuffer(&data, offset, 1, &c);
 
             }
 
             else
             {
 
-                offset = message_appendstring(&data, " ", offset);
+                offset = message_putstring(&data, " ", offset);
 
             }
 
         }
 
-        offset = message_appendstring(&data, "|\n", offset);
+        offset = message_putstring(&data, "|\n", offset);
 
         channel_place(channel, source, EVENT_DATA, offset, &data);
 

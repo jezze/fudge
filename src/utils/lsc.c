@@ -7,12 +7,12 @@ static void print(struct channel *channel, unsigned int source, struct record *r
     struct message_data data;
     unsigned int offset = 0;
 
-    offset = message_appendvalue(&data, record->id, 16, 8, offset);
-    offset = message_appendstring(&data, " ", offset);
-    offset = message_appendvalue(&data, record->size, 16, 8, offset);
-    offset = message_appendstring(&data, " ", offset);
-    offset = message_append(&data, offset, record->length, record->name);
-    offset = message_appendstring(&data, "\n", offset);
+    offset = message_putvalue(&data, record->id, 16, 8, offset);
+    offset = message_putstring(&data, " ", offset);
+    offset = message_putvalue(&data, record->size, 16, 8, offset);
+    offset = message_putstring(&data, " ", offset);
+    offset = message_putbuffer(&data, offset, record->length, record->name);
+    offset = message_putstring(&data, "\n", offset);
 
     channel_place(channel, source, EVENT_DATA, offset, &data);
 
