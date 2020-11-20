@@ -21,28 +21,24 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
         switch (start[0])
         {
 
-        case 'F':
-            p->files[p->nfiles] = start + 2;
-            p->nfiles++;
-
-            break;
-
-        case 'R':
-            p->redirects[p->nredirects] = start + 2;
-            p->nredirects++;
-
-            break;
-
-        case 'D':
-            p->inputs[p->ninputs] = start + 2;
-            p->ninputs++;
-
-            break;
-
         case 'P':
             p->path = start + 2;
 
             njobs++;
+
+            break;
+
+        case 'A':
+            p->args[p->nargs].value = start + 2;
+            start += ascii_lengthz(start + 2);
+            p->args[p->nargs].key = start + 2;
+            p->nargs++;
+
+            break;
+
+        case 'F':
+            p->files[p->nfiles] = start + 2;
+            p->nfiles++;
 
             break;
 
@@ -174,11 +170,21 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
             unsigned int j;
 
+            for (j = 0; j < job->nargs; j++)
+            {
+
+                struct message_data data;
+                unsigned int offset = 0;
+
+                offset = message_putstringz(&data, job->args[j].key, offset);
+                offset = message_putstringz(&data, job->args[j].value, offset);
+
+                channel_place(channel, job->id, EVENT_ARGUMENT, offset, &data);
+
+            }
+
             for (j = 0; j < job->nfiles; j++)
                 channel_place(channel, job->id, EVENT_FILE, ascii_lengthz(job->files[j]), job->files[j]);
-
-            for (j = 0; j < job->ninputs; j++)
-                channel_place(channel, job->id, EVENT_DATA, ascii_length(job->inputs[j]), job->inputs[j]);
 
         }
 

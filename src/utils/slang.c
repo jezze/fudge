@@ -1,13 +1,12 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define TOKENSKIP                       1
-#define TOKENEND                        2
-#define TOKENIDENT                      3
-#define TOKENFILE                       4
-#define TOKENREDIRECT                   5
-#define TOKENDATA                       6
-#define TOKENPIPE                       7
+#define TOKEN_SKIP                      1
+#define TOKEN_END                       2
+#define TOKEN_IDENT                     3
+#define TOKEN_ARGUMENT                  4
+#define TOKEN_FILE                      5
+#define TOKEN_PIPE                      7
 
 struct token
 {
@@ -80,15 +79,14 @@ static unsigned int precedence(struct token *token)
     switch (token->type)
     {
 
-    case TOKENEND:
+    case TOKEN_END:
         return 1;
 
-    case TOKENPIPE:
+    case TOKEN_PIPE:
         return 2;
 
-    case TOKENFILE:
-    case TOKENREDIRECT:
-    case TOKENDATA:
+    case TOKEN_ARGUMENT:
+    case TOKEN_FILE:
         return 3;
 
     }
@@ -105,27 +103,24 @@ static unsigned int tokenize(char c)
 
     case ' ':
     case '\t':
-        return TOKENSKIP;
+        return TOKEN_SKIP;
 
     case '<':
-        return TOKENFILE;
+        return TOKEN_FILE;
 
-    case '>':
-        return TOKENREDIRECT;
-
-    case '!':
-        return TOKENDATA;
+    case '=':
+        return TOKEN_ARGUMENT;
 
     case '|':
-        return TOKENPIPE;
+        return TOKEN_PIPE;
 
     case ';':
     case '\n':
-        return TOKENEND;
+        return TOKEN_END;
 
     }
 
-    return TOKENIDENT;
+    return TOKEN_IDENT;
 
 }
 
@@ -139,7 +134,7 @@ static unsigned int getidentlength(unsigned int count, char *buffer)
 
         unsigned int token = tokenize(buffer[i]);
 
-        if (token != TOKENIDENT)
+        if (token != TOKEN_IDENT)
             break;
 
     }
@@ -163,10 +158,10 @@ static void tokenizebuffer(struct tokenlist *infix, struct ring *stringtable, un
         switch (token)
         {
 
-        case TOKENSKIP:
+        case TOKEN_SKIP:
             continue;
 
-        case TOKENIDENT:
+        case TOKEN_IDENT:
             tokenlist_add(infix, token, stringtable->buffer + ring_count(stringtable));
 
             c = getidentlength(count - i, data + i);
@@ -200,7 +195,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
         struct token *token = &infix->table[i];
         struct token *t;
 
-        if (token->type == TOKENIDENT)
+        if (token->type == TOKEN_IDENT)
         {
 
             tokenlist_push(postfix, token);
@@ -209,7 +204,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
         }
 
-        if (token->type == TOKENEND || token->type == TOKENPIPE)
+        if (token->type == TOKEN_END || token->type == TOKEN_PIPE)
         {
 
             while ((t = tokenlist_pop(stack)))
@@ -255,16 +250,34 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
         struct token *token = &postfix->table[i];
         struct token *t;
+        struct token *t2;
 
         switch (token->type)
         {
 
-        case TOKENIDENT:
+        case TOKEN_IDENT:
             tokenlist_push(stack, token);
 
             break;
 
-        case TOKENFILE:
+        case TOKEN_ARGUMENT:
+            t = tokenlist_pop(stack);
+
+            if (!t)
+                return;
+
+            t2 = tokenlist_pop(stack);
+
+            if (!t2)
+                return;
+
+            offset = message_putstringz(&data, "A", offset);
+            offset = message_putstringz(&data, t->str, offset);
+            offset = message_putstringz(&data, t2->str, offset);
+
+            break;
+
+        case TOKEN_FILE:
             t = tokenlist_pop(stack);
 
             if (!t)
@@ -275,29 +288,7 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
             break;
 
-        case TOKENREDIRECT:
-            t = tokenlist_pop(stack);
-
-            if (!t)
-                return;
-
-            offset = message_putstringz(&data, "R", offset);
-            offset = message_putstringz(&data, t->str, offset);
-
-            break;
-
-        case TOKENDATA:
-            t = tokenlist_pop(stack);
-
-            if (!t)
-                return;
-
-            offset = message_putstringz(&data, "D", offset);
-            offset = message_putstringz(&data, t->str, offset);
-
-            break;
-
-        case TOKENPIPE:
+        case TOKEN_PIPE:
             t = tokenlist_pop(stack);
 
             if (!t)
@@ -308,7 +299,7 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
             break;
 
-        case TOKENEND:
+        case TOKEN_END:
             t = tokenlist_pop(stack);
 
             if (!t)

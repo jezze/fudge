@@ -1,14 +1,20 @@
+struct job_arg
+{
+
+    char *key;
+    char *value;
+
+};
+
 struct job
 {
 
     char *path;
     unsigned int id;
-    char *inputs[32];
-    unsigned int ninputs;
+    struct job_arg args[32];
+    unsigned int nargs;
     char *files[32];
     unsigned int nfiles;
-    char *redirects[32];
-    unsigned int nredirects;
 
 };
 
