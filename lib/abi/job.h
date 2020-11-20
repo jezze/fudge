@@ -6,6 +6,13 @@ struct job_arg
 
 };
 
+struct job_file
+{
+
+    char *name;
+
+};
+
 struct job
 {
 
@@ -13,7 +20,7 @@ struct job
     unsigned int id;
     struct job_arg args[32];
     unsigned int nargs;
-    char *files[32];
+    struct job_file files[32];
     unsigned int nfiles;
 
 };

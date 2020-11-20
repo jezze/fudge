@@ -4,6 +4,13 @@
 #include "file.h"
 #include "job.h"
 
+static char *nextword(char *current)
+{
+
+    return current + ascii_lengthz(current);
+
+}
+
 unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned int count)
 {
 
@@ -22,34 +29,37 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
         {
 
         case 'P':
-            p->path = start + 2;
-
+            start = nextword(start);
+            p->path = start;
             njobs++;
 
             break;
 
         case 'A':
-            p->args[p->nargs].value = start + 2;
-            start += ascii_lengthz(start + 2);
-            p->args[p->nargs].key = start + 2;
+            start = nextword(start);
+            p->args[p->nargs].value = start;
+            start = nextword(start);
+            p->args[p->nargs].key = start;
             p->nargs++;
 
             break;
 
         case 'F':
-            p->files[p->nfiles] = start + 2;
+            start = nextword(start);
+
+            p->files[p->nfiles].name = start;
             p->nfiles++;
 
             break;
 
         case 'E':
-            start += ascii_lengthz(start);
+            start = nextword(start);
 
             return njobs;
 
         }
 
-        start += ascii_lengthz(start);
+        start = nextword(start);
 
     }
 
@@ -169,11 +179,11 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
         {
 
             unsigned int j;
+            struct message_data data;
 
             for (j = 0; j < job->nargs; j++)
             {
 
-                struct message_data data;
                 unsigned int offset = 0;
 
                 offset = message_putstringz(&data, job->args[j].key, offset);
@@ -184,7 +194,15 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
             }
 
             for (j = 0; j < job->nfiles; j++)
-                channel_place(channel, job->id, EVENT_FILE, ascii_lengthz(job->files[j]), job->files[j]);
+            {
+
+                unsigned int offset = 0;
+
+                offset = message_putstringz(&data, job->files[j].name, offset);
+
+                channel_place(channel, job->id, EVENT_FILE, offset, &data);
+
+            }
 
         }
 
