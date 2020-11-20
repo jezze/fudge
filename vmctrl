@@ -3,7 +3,7 @@
 cmd_run() {
     sttybak=$(stty -g)
     devices="-vga std -serial stdio"
-    devices="$devices -device virtio-net-pci,netdev=eth0,bus=pci.0,addr=0x4,mac=52:50:00:00:0$1:01 -netdev tap,id=eth0,ifname=node$1-eth0,script=no,downscript=no"
+    devices="$devices -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4,mac=52:50:00:00:0$1:01 -netdev tap,id=eth0,ifname=node$1-eth0,script=no,downscript=no"
 
     if test -f "disks/node$1-sda.qcow2"
     then
