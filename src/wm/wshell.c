@@ -171,6 +171,9 @@ static void interpret(struct channel *channel, struct ring *ring)
     char buffer[BUFFER_SIZE];
     unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
 
+    print(buffer, count);
+    updatecontent();
+
     if (count >= 2)
     {
 
@@ -199,6 +202,7 @@ static void interpret(struct channel *channel, struct ring *ring)
     }
 
     printprompt();
+    updatecontent();
 
 }
 
@@ -298,7 +302,6 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
     case 0x1C:
         ring_move(&input1, &input2);
         ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
-        ring_copy(&text, &input1);
         interpret(channel, &input1);
 
         break;
@@ -401,6 +404,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_header header;
     struct message_data data;
 
+    printprompt();
     file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
 
     while (channel_poll(channel, &header, &data))
@@ -415,7 +419,6 @@ void init(struct channel *channel)
     ring_init(&input1, BUFFER_SIZE, inputdata1);
     ring_init(&input2, BUFFER_SIZE, inputdata2);
     ring_init(&text, BUFFER_SIZE, textdata);
-    printprompt();
     widget_inittextbox(&content);
 
     if (!file_walk2(FILE_G0, "/system/wserver"))
