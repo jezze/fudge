@@ -60,22 +60,6 @@ static void updatecontent(void)
 
 }
 
-static void copyring(struct ring *ring)
-{
-
-    char buffer[BUFFER_SIZE];
-    unsigned int count;
-    unsigned int head = ring->head;
-    unsigned int tail = ring->tail;
-
-    while ((count = ring_read(ring, buffer, BUFFER_SIZE)))
-        print(buffer, count);
-
-    ring->head = head;
-    ring->tail = tail;
-
-}
-
 static void moveleft(unsigned int steps)
 {
 
@@ -314,7 +298,7 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
     case 0x1C:
         ring_move(&input1, &input2);
         ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
-        copyring(&input1);
+        ring_copy(&text, &input1);
         interpret(channel, &input1);
 
         break;
