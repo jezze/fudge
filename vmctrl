@@ -70,7 +70,7 @@ cmd_mkdisk() {
 }
 
 cmd_help() {
-    echo "commands:"
+    echo "Commands:"
     echo "    run <id>"
     echo "    nat <iface>"
     echo "    connect"
