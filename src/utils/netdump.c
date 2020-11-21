@@ -39,7 +39,7 @@ static void print_ethernet(struct channel *channel, unsigned int source, struct 
     offset = message_putvalue(&data, header->type[0], 16, 2, offset);
     offset = message_putvalue(&data, header->type[1], 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
- 
+
     channel_place(channel, source, EVENT_DATA, offset, &data);
 
 }
