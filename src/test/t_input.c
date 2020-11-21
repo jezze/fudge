@@ -21,7 +21,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             {
 
                 channel_place(channel, source, EVENT_DATA, message_putstring(&data, "\nYou clicked f, goodbye!\n", 0), &data);
-                channel_close(channel, source);
+
+                break;
 
             }
 
@@ -42,6 +43,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         }
 
     }
+
+    channel_close(channel, source);
 
 }
 
