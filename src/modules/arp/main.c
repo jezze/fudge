@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <net.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
@@ -13,15 +14,7 @@ void *arp_writehead(void *buffer, unsigned int htype, unsigned char hlength, uns
     struct arp_header *header = ethernet_writehead(buffer, ethernethook.type, sha, tha);
     unsigned char *data = (unsigned char *)(header + 1);
 
-    header->htype[0] = htype >> 8;
-    header->htype[1] = htype;
-    header->ptype[0] = ptype >> 8;
-    header->ptype[1] = ptype;
-    header->hlength = hlength;
-    header->plength = plength;
-    header->operation[0] = operation >> 8;
-    header->operation[1] = operation;
-
+    arp_initheader(header, htype, hlength, ptype, plength, operation);
     buffer_copy(data, sha, header->hlength);
     buffer_copy(data + header->hlength, spa, header->plength);
     buffer_copy(data + header->hlength + header->plength, tha, header->hlength);

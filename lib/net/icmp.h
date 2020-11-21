@@ -14,3 +14,5 @@ struct icmp_header
     unsigned char checksum[2];
 
 };
+
+void icmp_initheader(struct icmp_header *header, unsigned char type, unsigned char code);

@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <net.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include "ethernet.h"
@@ -29,11 +30,7 @@ void *ethernet_writehead(void *buffer, unsigned int type, unsigned char *sha, un
 
     struct ethernet_header *header = buffer;
 
-    header->type[0] = type >> 8;
-    header->type[1] = type;
-
-    buffer_copy(header->sha, sha, ETHERNET_ADDRSIZE);
-    buffer_copy(header->tha, tha, ETHERNET_ADDRSIZE);
+    ethernet_initheader(header, type, sha, tha);
 
     return header + 1;
 

@@ -1,9 +1,9 @@
 #include <fudge.h>
+#include <net.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ipv4/ipv4.h>
 #include <modules/ipv6/ipv6.h>
-#include "icmp.h"
 
 static struct ipv4_hook ipv4hook;
 static struct ipv6_hook ipv6hook;

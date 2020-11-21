@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <net.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ipv4/ipv4.h>
@@ -46,14 +47,7 @@ void *udp_writehead(void *buffer, unsigned char *sip, unsigned char *sp, unsigne
     if (!header)
         return 0;
 
-    header->sp[0] = sp[0];
-    header->sp[1] = sp[1];
-    header->tp[0] = tp[0];
-    header->tp[1] = tp[1];
-    header->length[0] = (count + 8) >> 8;
-    header->length[1] = (count + 8);
-    header->checksum[0] = 0;
-    header->checksum[1] = 0;
+    udp_initheader(header, sp, tp, count);
 
     return header + 1;
 

@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <net.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>

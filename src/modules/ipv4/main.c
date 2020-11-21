@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <net.h>
 #include <kernel.h>
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
@@ -29,38 +30,12 @@ static struct ipv4_arpentry *findarpentry(void *paddress)
 
 }
 
-unsigned int ipv4_calculatechecksum(void *buffer, unsigned int count)
-{
-
-    unsigned short *ip1 = buffer;
-    unsigned int sum = 0;
-
-    while (count > 1)
-    {
-
-        sum += *ip1++;
-
-        if (sum & 0x80000000)
-            sum = (sum & 0xFFFF) + (sum >> 16);
-
-        count -= 2;
-
-    }
-
-    while (sum >> 16)
-        sum = (sum & 0xFFFF) + (sum >> 16);
-
-    return ~sum;
-
-}
-
 void *ipv4_writehead(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol, unsigned int count)
 {
 
     struct ipv4_arpentry *sentry = findarpentry(sip);
     struct ipv4_arpentry *tentry = findarpentry(tip);
     struct ipv4_header *header;
-    unsigned int checksum;
 
     if (!sentry || !tentry)
         return 0;
@@ -70,31 +45,7 @@ void *ipv4_writehead(void *buffer, unsigned char *sip, unsigned char *tip, unsig
     if (!header)
         return 0;
 
-    header->version = 0x45;
-    header->dscp = 0;
-    header->length[0] = (count + 20) >> 8;
-    header->length[1] = (count + 20);
-    header->identification[0] = 0;
-    header->identification[1] = 0;
-    header->fragment[0] = 0;
-    header->fragment[1] = 0;
-    header->ttl = 64;
-    header->protocol = protocol;
-    header->checksum[0] = 0;
-    header->checksum[1] = 0;
-    header->sip[0] = sip[0];
-    header->sip[1] = sip[1];
-    header->sip[2] = sip[2];
-    header->sip[3] = sip[3];
-    header->tip[0] = tip[0];
-    header->tip[1] = tip[1];
-    header->tip[2] = tip[2];
-    header->tip[3] = tip[3];
-
-    checksum = ipv4_calculatechecksum(header, sizeof (struct ipv4_header));
-
-    header->checksum[0] = checksum;
-    header->checksum[1] = checksum >> 8;
+    ipv4_initheader(header, sip, tip, protocol, count);
 
     return header + 1;
 
