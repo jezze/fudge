@@ -224,6 +224,17 @@ L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
+B:=\
+    $(DIR_SRC)/utils/netdump \
+
+O:=\
+    $(DIR_SRC)/utils/netdump.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/net/net.a \
+
 include $(DIR_MK)/bin.mk
 
 B:=\
