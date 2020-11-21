@@ -136,7 +136,7 @@ unsigned int job_spawn(struct channel *channel, struct job *jobs, unsigned int n
         if (!job->id)
         {
 
-            job_term(channel, jobs, i);
+            job_sendall(channel, jobs, i, EVENT_TERM, 0, 0);
 
             return i;
 
@@ -241,7 +241,7 @@ unsigned int job_close(struct channel *channel, unsigned int id, struct job *job
 
 }
 
-void job_term(struct channel *channel, struct job *jobs, unsigned int n)
+void job_send(struct channel *channel, struct job *jobs, unsigned int n, unsigned int event, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -252,7 +252,26 @@ void job_term(struct channel *channel, struct job *jobs, unsigned int n)
         struct job *job = &jobs[i];
 
         if (job->id)
-            channel_place(channel, job->id, EVENT_TERM, 0, 0);
+            channel_place(channel, job->id, event, count, buffer);
+
+        break;
+
+    }
+
+}
+
+void job_sendall(struct channel *channel, struct job *jobs, unsigned int n, unsigned int event, unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job *job = &jobs[i];
+
+        if (job->id)
+            channel_place(channel, job->id, event, count, buffer);
 
     }
 

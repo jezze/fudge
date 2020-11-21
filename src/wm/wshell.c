@@ -83,6 +83,8 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
 
     struct event_wmkeypress *wmkeypress = mdata;
 
+    job_send(channel, jobs, njobs, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+
     switch (wmkeypress->scancode)
     {
 
@@ -90,7 +92,7 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
         if (wmkeypress->keymod & KEYMOD_SHIFT)
             job_kill(channel, jobs, njobs);
         else
-            job_term(channel, jobs, njobs);
+            job_send(channel, jobs, njobs, EVENT_TERM, 0, 0);
 
         break;
 
