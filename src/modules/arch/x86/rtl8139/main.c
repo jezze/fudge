@@ -309,12 +309,26 @@ static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count,
 
 }
 
+static unsigned int ethernetinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
+{
+
+    if (offset)
+        return 0;
+
+    ethernetinterface_send(buffer, count);
+    kernel_notify(&ethernetinterface.data.links, EVENT_DATA, buffer, count);
+
+    return count;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
     ethernet_initinterface(&ethernetinterface, id, ethernetinterface_matchaddress, ethernetinterface_send);
 
     ethernetinterface.addr.operations.read = ethernetinterface_readaddr;
+    ethernetinterface.data.operations.write = ethernetinterface_writedata;
 
 }
 

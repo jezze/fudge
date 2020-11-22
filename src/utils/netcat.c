@@ -14,6 +14,8 @@ struct session
 
 static struct session ins[32];
 static struct ipv4_arpentry arptable[8];
+static unsigned char addr[4] = {10, 0, 5, 1};
+static unsigned char port[2] = {0x07, 0xD0};
 
 static unsigned int savesession(struct ethernet_header *eheader, struct ipv4_header *iheader, struct udp_header *uheader)
 {
@@ -31,25 +33,14 @@ static unsigned int savesession(struct ethernet_header *eheader, struct ipv4_hea
 
 }
 
-static void *writeethernet(void *buffer, unsigned int type, unsigned char *sha, unsigned char *tha)
-{
-
-    struct ethernet_header *header = buffer;
-
-    ethernet_initheader(header, type, sha, tha);
-
-    return header + 1;
-
-}
-
 static struct ipv4_arpentry *findarpentry(void *paddress)
 {
 
     unsigned int i;
 
-    file_open(FILE_G1);
-    file_readall(FILE_G1, arptable, sizeof (struct ipv4_arpentry) * 8);
-    file_close(FILE_G1);
+    file_open(FILE_G2);
+    file_readall(FILE_G2, arptable, sizeof (struct ipv4_arpentry) * 8);
+    file_close(FILE_G2);
 
     for (i = 0; i < 8; i++)
     {
@@ -60,6 +51,17 @@ static struct ipv4_arpentry *findarpentry(void *paddress)
     }
 
     return 0;
+
+}
+
+static void *writeethernet(void *buffer, unsigned int type, unsigned char *sha, unsigned char *tha)
+{
+
+    struct ethernet_header *header = buffer;
+
+    ethernet_initheader(header, type, sha, tha);
+
+    return header + 1;
 
 }
 
@@ -104,6 +106,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_header header;
     struct message_data data;
 
+/*
+    file_open(FILE_G1);
+    file_readall(FILE_G1, addr, IPV4_ADDRSIZE);
+    file_close(FILE_G1);
+*/
+
     file_link(FILE_G0);
 
     while (channel_poll(channel, &header, &data))
@@ -146,39 +154,31 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             struct event_consoledata *consoledata = (struct event_consoledata *)data.buffer;
 
-            if (consoledata->data == 'f')
-            {
-
-                channel_place(channel, source, EVENT_DATA, message_putstring(&data, "\nYou clicked f, goodbye!\n", 0), &data);
-
-                break;
-
-            }
-
-            else if (consoledata->data == '\r')
-            {
- 
-                channel_place(channel, source, EVENT_DATA, message_putstring(&data, "\n", 0), &data);
-
-            }
-
-            else
-            {
-
-                channel_place(channel, source, EVENT_DATA, message_datasize(&header), &data);
-
-            }
+            channel_place(channel, source, EVENT_DATA, message_datasize(&header), &data);
 
             if (ins[1].active)
             {
 
                 char c = consoledata->data;
-                unsigned char ip[4] = {10, 0, 5, 1};
-                unsigned char port[2] = {0x07, 0xD0};
-                void *payload = writeudp(data.buffer, ip, port, ins[1].iheader.sip, ins[1].uheader.sp, 1);
+                char *payload = writeudp(data.buffer, addr, port, ins[1].iheader.sip, ins[1].uheader.sp, 1);
 
                 if (payload)
+                {
+
                     buffer_copy(payload, &c, 1);
+
+                    file_open(FILE_G0);
+                    file_writeall(FILE_G0, data.buffer, payload - data.buffer + 1);
+                    file_close(FILE_G0);
+
+                }
+
+                else
+                {
+
+                    channel_place(channel, source, EVENT_DATA, message_putstring(&data, "Unable to send\n", 0), &data);
+
+                }
 
             }
 
@@ -197,7 +197,10 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;
 
-    if (!file_walk2(FILE_G1, "/system/ethernet/ipv4/arptable"))
+    if (!file_walk2(FILE_G1, "/system/ethernet/if:0/addr"))
+        return;
+
+    if (!file_walk2(FILE_G2, "/system/ethernet/ipv4/arptable"))
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);
