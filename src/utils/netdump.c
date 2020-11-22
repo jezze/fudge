@@ -162,7 +162,6 @@ static void print_udp(struct channel *channel, unsigned int source, struct udp_h
 
 }
 
-
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 

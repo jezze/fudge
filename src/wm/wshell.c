@@ -179,7 +179,7 @@ static void interpret(struct channel *channel, struct ring *ring)
     if (count >= 2)
     {
 
-        if (buffer_match(buffer, "cd ", 3))
+        if (count >= 4 && buffer_match(buffer, "cd ", 3))
         {
 
             buffer[count - 1] = '\0';
