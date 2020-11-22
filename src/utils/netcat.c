@@ -2,6 +2,28 @@
 #include <net.h>
 #include <abi.h>
 
+struct session
+{
+
+    struct ethernet_header *eheader;
+    struct ipv4_header *iheader;
+    struct udp_header *uheader;
+
+};
+
+static struct session ins[32];
+
+static void save(unsigned int index, struct ethernet_header *eheader, struct ipv4_header *iheader, struct udp_header *uheader)
+{
+
+    struct session *in = &ins[index];
+
+    buffer_copy(&in->eheader, eheader, sizeof (struct ethernet_header));
+    buffer_copy(&in->iheader, iheader, sizeof (struct ipv4_header));
+    buffer_copy(&in->uheader, uheader, sizeof (struct udp_header));
+
+}
+
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -34,6 +56,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                         char *payload = (char *)(uheader + 1);
                         unsigned int length = (uheader->length[1] | uheader->length[0] << 8) - sizeof (struct udp_header);
 
+                        save(0, eheader, iheader, uheader);
                         channel_place(channel, source, EVENT_DATA, length, payload);
 
                     }
