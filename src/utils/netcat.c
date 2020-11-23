@@ -6,6 +6,7 @@ struct remote
 {
 
     unsigned int active;
+    unsigned char protocol;
     unsigned char address[IPV4_ADDRSIZE];
     unsigned char port[UDP_PORTSIZE];
 
@@ -16,13 +17,25 @@ static struct ipv4_arpentry arptable[8];
 static unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
 static unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
 
-static void remote_init(struct remote *remote, struct ipv4_header *iheader, struct udp_header *uheader)
+static void remote_init_udp(struct remote *remote, struct ipv4_header *iheader, struct udp_header *uheader)
 {
 
     remote->active = 1;
+    remote->protocol = iheader->protocol;
 
     buffer_copy(&remote->address, iheader->sip, IPV4_ADDRSIZE);
     buffer_copy(&remote->port, uheader->sp, UDP_PORTSIZE);
+
+}
+
+static void remote_init_tcp(struct remote *remote, struct ipv4_header *iheader, struct tcp_header *theader)
+{
+
+    remote->active = 1;
+    remote->protocol = iheader->protocol;
+
+    buffer_copy(&remote->address, iheader->sip, IPV4_ADDRSIZE);
+    buffer_copy(&remote->port, theader->sp, UDP_PORTSIZE);
 
 }
 
@@ -80,9 +93,26 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                         unsigned int length = (uheader->length[1] | uheader->length[0] << 8) - sizeof (struct udp_header);
 
                         if (!incoming.active)
-                            remote_init(&incoming, iheader, uheader);
+                            remote_init_udp(&incoming, iheader, uheader);
 
                         channel_place(channel, source, EVENT_DATA, length, payload);
+
+                    }
+
+                }
+
+                else if (iheader->protocol == 0x06)
+                {
+
+                    struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
+
+                    if (theader->tp[0] == port[0] && theader->tp[1] == port[1])
+                    {
+
+                        if (!incoming.active)
+                            remote_init_tcp(&incoming, iheader, theader);
+
+                        channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP recv!\n", 0), &data);
 
                     }
 
@@ -110,23 +140,35 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 if (sentry && tentry)
                 {
 
-                    struct ethernet_header eheader;
-                    struct ipv4_header iheader;
-                    struct udp_header uheader;
-                    unsigned int offset = 0;
+                    if (incoming.protocol == 0x11)
+                    {
 
-                    ethernet_initheader(&eheader, 0x0800, sentry->haddress, tentry->haddress);
-                    ipv4_initheader(&iheader, address, incoming.address, 0x11, sizeof (struct udp_header) + length);
-                    udp_initheader(&uheader, port, incoming.port, length);
+                        struct ethernet_header eheader;
+                        struct ipv4_header iheader;
+                        struct udp_header uheader;
+                        unsigned int offset = 0;
 
-                    offset = message_putbuffer(&data, sizeof (struct ethernet_header), &eheader, offset);
-                    offset = message_putbuffer(&data, sizeof (struct ipv4_header), &iheader, offset);
-                    offset = message_putbuffer(&data, sizeof (struct udp_header), &uheader, offset);
-                    offset = message_putbuffer(&data, length, &s, offset);
+                        ethernet_initheader(&eheader, 0x0800, sentry->haddress, tentry->haddress);
+                        ipv4_initheader(&iheader, address, incoming.address, 0x11, sizeof (struct udp_header) + length);
+                        udp_initheader(&uheader, port, incoming.port, length);
 
-                    file_open(FILE_G0);
-                    file_writeall(FILE_G0, data.buffer, offset);
-                    file_close(FILE_G0);
+                        offset = message_putbuffer(&data, sizeof (struct ethernet_header), &eheader, offset);
+                        offset = message_putbuffer(&data, sizeof (struct ipv4_header), &iheader, offset);
+                        offset = message_putbuffer(&data, sizeof (struct udp_header), &uheader, offset);
+                        offset = message_putbuffer(&data, length, &s, offset);
+
+                        file_open(FILE_G0);
+                        file_writeall(FILE_G0, data.buffer, offset);
+                        file_close(FILE_G0);
+
+                    }
+
+                    else if (incoming.protocol == 0x06)
+                    {
+
+                        channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP send!\n", 0), &data);
+
+                    }
 
                 }
 
