@@ -6,30 +6,23 @@ struct session
 {
 
     unsigned int active;
-    struct ethernet_header eheader;
     struct ipv4_header iheader;
     struct udp_header uheader;
 
 };
 
-static struct session ins[32];
+static struct session incoming;
 static struct ipv4_arpentry arptable[8];
 static unsigned char addr[4] = {10, 0, 5, 1};
 static unsigned char port[2] = {0x07, 0xD0};
 
-static unsigned int savesession(struct ethernet_header *eheader, struct ipv4_header *iheader, struct udp_header *uheader)
+static void session_init(struct session *session, struct ipv4_header *iheader, struct udp_header *uheader)
 {
 
-    unsigned int index = 1;
-    struct session *in = &ins[index];
+    session->active = 1;
 
-    in->active = 1;
-
-    buffer_copy(&in->eheader, eheader, sizeof (struct ethernet_header));
-    buffer_copy(&in->iheader, iheader, sizeof (struct ipv4_header));
-    buffer_copy(&in->uheader, uheader, sizeof (struct udp_header));
-
-    return index;
+    buffer_copy(&session->iheader, iheader, sizeof (struct ipv4_header));
+    buffer_copy(&session->uheader, uheader, sizeof (struct udp_header));
 
 }
 
@@ -68,17 +61,7 @@ static void *writeethernet(void *buffer, unsigned int type, unsigned char *sha, 
 static void *writeipv4(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol, unsigned int count)
 {
 
-    struct ipv4_arpentry *sentry = findarpentry(sip);
-    struct ipv4_arpentry *tentry = findarpentry(tip);
-    struct ipv4_header *header;
-
-    if (!sentry || !tentry)
-        return 0;
-
-    header = writeethernet(buffer, 0x0800, sentry->haddress, tentry->haddress);
-
-    if (!header)
-        return 0;
+    struct ipv4_header *header = buffer;
 
     ipv4_initheader(header, sip, tip, protocol, count);
 
@@ -86,13 +69,10 @@ static void *writeipv4(void *buffer, unsigned char *sip, unsigned char *tip, uns
 
 }
 
-static void *writeudp(void *buffer, unsigned char *sip, unsigned char *sp, unsigned char *tip, unsigned char *tp, unsigned int count)
+static void *writeudp(void *buffer, unsigned char *sp, unsigned char *tp, unsigned int count)
 {
 
-    struct udp_header *header = writeipv4(buffer, sip, tip, 0x11, count + 8);
-
-    if (!header)
-        return 0;
+    struct udp_header *header = buffer;
 
     udp_initheader(header, sp, tp, count);
 
@@ -138,7 +118,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                         char *payload = (char *)(uheader + 1);
                         unsigned int length = (uheader->length[1] | uheader->length[0] << 8) - sizeof (struct udp_header);
 
-                        savesession(eheader, iheader, uheader);
+                        if (!incoming.active)
+                            session_init(&incoming, iheader, uheader);
+
                         channel_place(channel, source, EVENT_DATA, length, payload);
 
                     }
@@ -153,30 +135,32 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
             struct event_consoledata *consoledata = (struct event_consoledata *)data.buffer;
+            char s = consoledata->data;
 
             channel_place(channel, source, EVENT_DATA, message_datasize(&header), &data);
 
-            if (ins[1].active)
+            if (incoming.active)
             {
 
-                char c = consoledata->data;
-                char *payload = writeudp(data.buffer, addr, port, ins[1].iheader.sip, ins[1].uheader.sp, 1);
+                struct ipv4_arpentry *sentry = findarpentry(addr);
+                struct ipv4_arpentry *tentry = findarpentry(incoming.iheader.sip);
+                char *buffer = data.buffer;
+                unsigned int length = 1;
 
-                if (payload)
+                if (sentry && tentry)
                 {
 
-                    buffer_copy(payload, &c, 1);
+                    buffer = writeethernet(buffer, 0x0800, sentry->haddress, tentry->haddress);
+                    buffer = writeipv4(buffer, addr, incoming.iheader.sip, 0x11, sizeof (struct udp_header) + length);
+                    buffer = writeudp(buffer, port, incoming.uheader.sp, length);
+
+                    buffer_copy(buffer, &s, length);
+
+                    buffer += length;
 
                     file_open(FILE_G0);
-                    file_writeall(FILE_G0, data.buffer, payload - data.buffer + 1);
+                    file_writeall(FILE_G0, data.buffer, buffer - data.buffer);
                     file_close(FILE_G0);
-
-                }
-
-                else
-                {
-
-                    channel_place(channel, source, EVENT_DATA, message_putstring(&data, "Unable to send\n", 0), &data);
 
                 }
 
