@@ -190,13 +190,13 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 if (iheader->protocol == 0x06)
                 {
 
-                    struct tcp_header *uheader = (struct tcp_header *)(iheader + 1);
+                    struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
 
-                    print_tcp(channel, source, uheader);
+                    print_tcp(channel, source, theader);
 
                 }
 
-                if (iheader->protocol == 0x11)
+                else if (iheader->protocol == 0x11)
                 {
 
                     struct udp_header *uheader = (struct udp_header *)(iheader + 1);

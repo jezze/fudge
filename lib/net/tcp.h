@@ -1,12 +1,12 @@
 #define TCP_PORTSIZE                    2
-#define TCP_FLAGS0_ACK                  0x01
-#define TCP_FLAGS0_URG                  0x02
-#define TCP_FLAGS0_ECE                  0x04
-#define TCP_FLAGS0_CWR                  0x08
 #define TCP_FLAGS1_FIN                  0x01
 #define TCP_FLAGS1_SYN                  0x02
 #define TCP_FLAGS1_RST                  0x04
 #define TCP_FLAGS1_PSH                  0x08
+#define TCP_FLAGS1_ACK                  0x10
+#define TCP_FLAGS1_URG                  0x20
+#define TCP_FLAGS1_ECE                  0x40
+#define TCP_FLAGS1_CWR                  0x80
 
 struct tcp_header
 {
@@ -21,3 +21,5 @@ struct tcp_header
     unsigned char urgent[2];
 
 };
+
+void tcp_initheader(struct tcp_header *header, unsigned char *sp, unsigned char *tp);
