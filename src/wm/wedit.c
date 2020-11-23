@@ -28,8 +28,6 @@ static void updatecontent(void)
     while ((count = ring_read(&output, data.buffer, MESSAGE_SIZE)))
         file_notify(FILE_G0, EVENT_DATA, count, &data);
 
-    ring_reset(&output);
-
 }
 
 static void moveleft(unsigned int steps)
