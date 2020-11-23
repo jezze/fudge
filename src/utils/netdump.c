@@ -136,6 +136,10 @@ static void print_tcp(struct channel *channel, unsigned int source, struct tcp_h
     offset = message_putvalue(&data, header->flags[0], 16, 2, offset);
     offset = message_putvalue(&data, header->flags[1], 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
+    offset = message_putstring(&data, "  Window: 0x", offset);
+    offset = message_putvalue(&data, header->window[0], 16, 2, offset);
+    offset = message_putvalue(&data, header->window[1], 16, 2, offset);
+    offset = message_putstring(&data, "\n", offset);
 
     channel_place(channel, source, EVENT_DATA, offset, &data);
 
