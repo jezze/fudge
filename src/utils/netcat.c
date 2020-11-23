@@ -47,50 +47,11 @@ static struct ipv4_arpentry *findarpentry(void *paddress)
 
 }
 
-static void *writeethernet(void *buffer, unsigned int type, unsigned char *sha, unsigned char *tha)
-{
-
-    struct ethernet_header *header = buffer;
-
-    ethernet_initheader(header, type, sha, tha);
-
-    return header + 1;
-
-}
-
-static void *writeipv4(void *buffer, unsigned char *sip, unsigned char *tip, unsigned int protocol, unsigned int count)
-{
-
-    struct ipv4_header *header = buffer;
-
-    ipv4_initheader(header, sip, tip, protocol, count);
-
-    return header + 1;
-
-}
-
-static void *writeudp(void *buffer, unsigned char *sp, unsigned char *tp, unsigned int count)
-{
-
-    struct udp_header *header = buffer;
-
-    udp_initheader(header, sp, tp, count);
-
-    return header + 1;
-
-}
-
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct message_header header;
     struct message_data data;
-
-/*
-    file_open(FILE_G1);
-    file_readall(FILE_G1, addr, IPV4_ADDRSIZE);
-    file_close(FILE_G1);
-*/
 
     file_link(FILE_G0);
 
@@ -136,30 +97,35 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             struct event_consoledata *consoledata = (struct event_consoledata *)data.buffer;
             char s = consoledata->data;
+            unsigned int length = 1;
 
-            channel_place(channel, source, EVENT_DATA, message_datasize(&header), &data);
+            channel_place(channel, source, EVENT_DATA, length, &s);
 
             if (incoming.active)
             {
 
                 struct ipv4_arpentry *sentry = findarpentry(addr);
                 struct ipv4_arpentry *tentry = findarpentry(incoming.iheader.sip);
-                char *buffer = data.buffer;
-                unsigned int length = 1;
 
                 if (sentry && tentry)
                 {
 
-                    buffer = writeethernet(buffer, 0x0800, sentry->haddress, tentry->haddress);
-                    buffer = writeipv4(buffer, addr, incoming.iheader.sip, 0x11, sizeof (struct udp_header) + length);
-                    buffer = writeudp(buffer, port, incoming.uheader.sp, length);
+                    struct ethernet_header eheader;
+                    struct ipv4_header iheader;
+                    struct udp_header uheader;
+                    unsigned int offset = 0;
 
-                    buffer_copy(buffer, &s, length);
+                    ethernet_initheader(&eheader, 0x0800, sentry->haddress, tentry->haddress);
+                    ipv4_initheader(&iheader, addr, incoming.iheader.sip, 0x11, sizeof (struct udp_header) + length);
+                    udp_initheader(&uheader, port, incoming.uheader.sp, length);
 
-                    buffer += length;
+                    offset = message_putbuffer(&data, sizeof (struct ethernet_header), &eheader, offset);
+                    offset = message_putbuffer(&data, sizeof (struct ipv4_header), &iheader, offset);
+                    offset = message_putbuffer(&data, sizeof (struct udp_header), &uheader, offset);
+                    offset = message_putbuffer(&data, length, &s, offset);
 
                     file_open(FILE_G0);
-                    file_writeall(FILE_G0, data.buffer, buffer - data.buffer);
+                    file_writeall(FILE_G0, data.buffer, offset);
                     file_close(FILE_G0);
 
                 }
