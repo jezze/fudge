@@ -1,6 +1,33 @@
 #include <fudge.h>
 #include "ipv4.h"
 
+/*
+static unsigned short ipv4_checksum(unsigned short *addr, unsigned int count)
+{
+
+    unsigned int sum = 0;
+
+    while (count > 1)
+    {
+
+        sum += * addr++;
+        count -= 2;
+
+    }
+
+    if (count > 0)
+        sum += ((*addr)&htons(0xFF00));
+
+    while (sum >> 16)
+      sum = (sum & 0xffff) + (sum >> 16);
+
+    sum = ~sum;
+
+    return ((unsigned short)sum);
+
+}
+*/
+
 unsigned int ipv4_calculatechecksum(void *buffer, unsigned int count)
 {
 

@@ -144,12 +144,12 @@ void channel_setredirect(struct channel *channel, unsigned int event, unsigned i
     switch (mode)
     {
 
-    case 1:
+    case EVENT_REDIRECT_TARGET:
         channel->callbacks[event].redirect = id;
 
         break;
 
-    case 2:
+    case EVENT_REDIRECT_SOURCE:
         channel->callbacks[event].redirect = source;
 
         break;

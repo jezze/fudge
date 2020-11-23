@@ -1,6 +1,40 @@
 #include <fudge.h>
 #include "tcp.h"
 
+/*
+static unsigned char tcp_checksum(unsigned short iphdr_totlen, unsigned char iphdr_ihl, unsigned short iphdr_saddr, unsigned short iphdr_daddr, unsigned short *payload)
+{
+
+    unsigned int sum = 0;
+    unsigned short tcpLen = ntohs(iphdr_totlen) - (iphdr_ihl << 2);
+
+    sum += (saddr >> 16) & 0xFFFF;
+    sum += (saddr) & 0xFFFF;
+    sum += (daddr >> 16) & 0xFFFF;
+    sum += (daddr) & 0xFFFF;
+    sum += htons(0x06);
+    sum += htons(tcpLen);
+
+    while (tcpLen > 1)
+    {
+
+        sum += *payload++;
+        tcpLen -= 2;
+
+    }
+
+    if (tcpLen > 0)
+        sum += ((*payload) & htons(0xFF00));
+
+    while (sum >> 16)
+        sum = (sum & 0xffff) + (sum >> 16);
+
+    sum = ~sum;
+
+    return (unsigned short)sum;
+}
+*/
+
 void tcp_initheader(struct tcp_header *header, unsigned char *sp, unsigned char *tp)
 {
 
