@@ -14,10 +14,8 @@ static void flush(void)
 {
 
     struct message_data data;
-    unsigned int count;
 
-    while ((count = ring_read(&output, data.buffer, MESSAGE_SIZE)))
-        file_notify(FILE_G0, EVENT_DATA, count, &data);
+    file_notify(FILE_G0, EVENT_DATA, ring_read(&output, data.buffer, MESSAGE_SIZE), &data);
 
 }
 
