@@ -13,8 +13,8 @@ struct session
 
 static struct session incoming;
 static struct ipv4_arpentry arptable[8];
-static unsigned char addr[4] = {10, 0, 5, 1};
-static unsigned char port[2] = {0x07, 0xD0};
+static unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
+static unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
 
 static void session_init(struct session *session, struct ipv4_header *iheader, struct udp_header *uheader)
 {
@@ -104,7 +104,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             if (incoming.active)
             {
 
-                struct ipv4_arpentry *sentry = findarpentry(addr);
+                struct ipv4_arpentry *sentry = findarpentry(address);
                 struct ipv4_arpentry *tentry = findarpentry(incoming.iheader.sip);
 
                 if (sentry && tentry)
@@ -116,7 +116,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                     unsigned int offset = 0;
 
                     ethernet_initheader(&eheader, 0x0800, sentry->haddress, tentry->haddress);
-                    ipv4_initheader(&iheader, addr, incoming.iheader.sip, 0x11, sizeof (struct udp_header) + length);
+                    ipv4_initheader(&iheader, address, incoming.iheader.sip, 0x11, sizeof (struct udp_header) + length);
                     udp_initheader(&uheader, port, incoming.uheader.sp, length);
 
                     offset = message_putbuffer(&data, sizeof (struct ethernet_header), &eheader, offset);

@@ -1,8 +1,10 @@
+#define UDP_PORTSIZE                    2
+
 struct udp_header
 {
 
-    unsigned char sp[2];
-    unsigned char tp[2];
+    unsigned char sp[UDP_PORTSIZE];
+    unsigned char tp[UDP_PORTSIZE];
     unsigned char length[2];
     unsigned char checksum[2];
 
