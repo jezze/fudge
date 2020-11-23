@@ -2,7 +2,7 @@
 #include <net.h>
 #include <abi.h>
 
-struct session
+struct remote
 {
 
     unsigned int active;
@@ -11,18 +11,18 @@ struct session
 
 };
 
-static struct session incoming;
+static struct remote incoming;
 static struct ipv4_arpentry arptable[8];
 static unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
 static unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
 
-static void session_init(struct session *session, struct ipv4_header *iheader, struct udp_header *uheader)
+static void remote_init(struct remote *remote, struct ipv4_header *iheader, struct udp_header *uheader)
 {
 
-    session->active = 1;
+    remote->active = 1;
 
-    buffer_copy(&session->address, iheader->sip, IPV4_ADDRSIZE);
-    buffer_copy(&session->port, uheader->sp, UDP_PORTSIZE);
+    buffer_copy(&remote->address, iheader->sip, IPV4_ADDRSIZE);
+    buffer_copy(&remote->port, uheader->sp, UDP_PORTSIZE);
 
 }
 
@@ -80,7 +80,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                         unsigned int length = (uheader->length[1] | uheader->length[0] << 8) - sizeof (struct udp_header);
 
                         if (!incoming.active)
-                            session_init(&incoming, iheader, uheader);
+                            remote_init(&incoming, iheader, uheader);
 
                         channel_place(channel, source, EVENT_DATA, length, payload);
 
