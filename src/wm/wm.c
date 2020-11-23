@@ -883,11 +883,13 @@ static void onany(struct channel *channel, unsigned int source, void *mdata, uns
     if (ring_count(&output))
     {
 
-        render_write(0, outputdata, ring_count(&output));
+        char buffer[BUFFER_SIZE];
+        unsigned int count = ring_read(&output, buffer, BUFFER_SIZE);
+
+        render_write(0, buffer, count);
         render_resize(0, screen.x, screen.y, screen.w, screen.h, padding, lineheight, steplength);
         render_flush(canvasdata, 0x10000, draw);
         render_complete();
-        ring_reset(&output);
 
     }
 

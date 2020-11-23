@@ -10,11 +10,19 @@ static struct ring input1;
 static char inputdata2[BUFFER_SIZE];
 static struct ring input2;
 
-static void updatecontent(void)
+static void flush(void)
 {
 
     struct message_data data;
     unsigned int count;
+
+    while ((count = ring_read(&output, data.buffer, MESSAGE_SIZE)))
+        file_notify(FILE_G0, EVENT_DATA, count, &data);
+
+}
+
+static void updatecontent(void)
+{
 
     content.length = ring_count(&input1) + ring_count(&input2) + 1;
     content.cursor = ring_count(&input1);
@@ -24,9 +32,7 @@ static void updatecontent(void)
     ring_copy(&output, &input1);
     ring_copy(&output, &input2);
     ring_write(&output, "\n", 1);
-
-    while ((count = ring_read(&output, data.buffer, MESSAGE_SIZE)))
-        file_notify(FILE_G0, EVENT_DATA, count, &data);
+    flush();
 
 }
 
