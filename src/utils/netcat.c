@@ -73,7 +73,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                     struct udp_header *uheader = (struct udp_header *)(iheader + 1);
 
-                    if (uheader->tp[0] == 0x07 && uheader->tp[1] == 0xD0)
+                    if (uheader->tp[0] == port[0] && uheader->tp[1] == port[1])
                     {
 
                         char *payload = (char *)(uheader + 1);
