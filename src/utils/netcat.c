@@ -106,7 +106,7 @@ static void endpoint_init_udp(struct endpoint *endpoint, unsigned char address[I
 
 }
 
-static unsigned int create_tcp_message(struct message_data *data, unsigned char sha[6], unsigned char tha[6], unsigned short flags, unsigned int count)
+static unsigned int create_tcp_message(struct message_data *data, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned short flags, unsigned int count)
 {
 
     struct ethernet_header eheader;
@@ -141,7 +141,7 @@ static unsigned int create_tcp_message(struct message_data *data, unsigned char 
 
 }
 
-static unsigned int create_udp_message(struct message_data *data, unsigned char sha[6], unsigned char tha[6], unsigned int count)
+static unsigned int create_udp_message(struct message_data *data, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned int count)
 {
 
     struct ethernet_header eheader;
