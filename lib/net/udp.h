@@ -10,5 +10,5 @@ struct udp_header
 
 };
 
-unsigned short udp_checksum(unsigned short iphdr_saddr, unsigned short iphdr_daddr, unsigned short udphdr_len, unsigned short *payload);
+unsigned short udp_checksum(unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned short len, unsigned short *payload);
 void udp_initheader(struct udp_header *header, unsigned char *sp, unsigned char *tp, unsigned int count);

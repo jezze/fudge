@@ -1,46 +1,47 @@
 #include <fudge.h>
+#include "ipv4.h"
 #include "udp.h"
 
 static unsigned short htons(unsigned short v)
 {
 
     unsigned char c1 = v;
-    unsigned char c2 = v >> 8;
+    unsigned char c2 = (v >> 8);
 
-    return c1 << 8 | c2;
+    return (c1 << 8) | c2;
 
 }
 
-unsigned short udp_checksum(unsigned short iphdr_saddr, unsigned short iphdr_daddr, unsigned short udphdr_len, unsigned short *payload)
+unsigned short udp_checksum(unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned short len, unsigned short *payload)
 {
 
     unsigned int sum = 0;
-    unsigned short udpLen = htons(udphdr_len);
+    unsigned short sum2;
 
-    sum += (iphdr_saddr >> 16) & 0xFFFF;
-    sum += (iphdr_saddr) & 0xFFFF;
-    sum += (iphdr_daddr >> 16) & 0xFFFF;
-    sum += (iphdr_daddr) & 0xFFFF;
-    sum += htons(0x11);
-    sum += htons(udpLen);
+    sum += ((sip[1] << 8) | sip[0]);
+    sum += ((sip[3] << 8) | sip[2]);
+    sum += ((tip[1] << 8) | tip[0]);
+    sum += ((tip[3] << 8) | tip[2]);
+    sum += htons(0x0011);
+    sum += htons(len);
 
-    while (udpLen > 1)
+    while (len > 1)
     {
 
-        sum += * payload++;
-        udpLen -= 2;
+        sum += *payload++;
+        len -= 2;
 
     }
 
-    if (udpLen > 0)
-        sum += ((*payload)&htons(0xFF00));
+    if (len > 0)
+        sum += ((*payload) & htons(0xFF00));
 
     while (sum >> 16)
-        sum = (sum & 0xffff) + (sum >> 16);
+        sum = (sum & 0xFFFF) + (sum >> 16);
 
-    sum = ~sum;
+    sum2 = ~sum;
 
-    return ((unsigned short)sum == 0x0000) ? 0xFFFF : (unsigned short)sum;
+    return (!sum2) ? 0xFFFF : sum2;
 
 }
 
