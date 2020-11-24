@@ -192,6 +192,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                                 unsigned short checksum;
 
                                 local.state = TCP_STATE_SYNRECEIVED;
+                                remote.seq = loadint(theader->seq);
 
                                 channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP SYN received! Sending SYN+ACK\n", 0), &data);
 
@@ -202,13 +203,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                                 theader2.flags[0] = (5 << 4);
                                 theader2.flags[1] = TCP_FLAGS1_ACK | TCP_FLAGS1_SYN;
 
-                                remote.seq = loadint(theader->seq);
-
                                 saveint(theader2.ack, remote.seq + 1);
                                 saveint(theader2.seq, local.seq);
                                 saveshort(theader2.window, 0x2000);
 
-                                checksum = tcp_checksum(loadshort(iheader2.length), 5, loadint(iheader2.sip), loadint(iheader2.tip), (unsigned short *)&theader2);
+                                checksum = tcp_checksum((int)iheader2.sip, (int)iheader2.tip, (unsigned short *)&theader2);
 
                                 saveshort(theader2.checksum, checksum);
 

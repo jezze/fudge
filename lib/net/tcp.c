@@ -11,28 +11,29 @@ static unsigned short htons(unsigned short v)
 
 }
 
-unsigned short tcp_checksum(unsigned short iphdr_totlen, unsigned char iphdr_ihl, unsigned int iphdr_saddr, unsigned int iphdr_daddr, unsigned short *payload)
+unsigned short tcp_checksum(unsigned int iphdr_saddr, unsigned int iphdr_daddr, unsigned short *payload)
 {
 
     unsigned int sum = 0;
-    unsigned short tcpLen = iphdr_totlen - (iphdr_ihl << 2);
+    unsigned short type = 0x0006;
+    unsigned short len = 0x0020;
 
     sum += (iphdr_saddr >> 16) & 0xFFFF;
     sum += (iphdr_saddr) & 0xFFFF;
     sum += (iphdr_daddr >> 16) & 0xFFFF;
     sum += (iphdr_daddr) & 0xFFFF;
-    sum += htons(0x06);
-    sum += htons(tcpLen);
+    sum += htons(type);
+    sum += htons(len);
 
-    while (tcpLen > 1)
+    while (len > 1)
     {
 
         sum += *payload++;
-        tcpLen -= 2;
+        len -= 2;
 
     }
 
-    if (tcpLen > 0)
+    if (len > 0)
         sum += ((*payload) & htons(0xFF00));
 
     while (sum >> 16)
