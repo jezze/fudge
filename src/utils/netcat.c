@@ -34,14 +34,14 @@ static struct ipv4_arpentry arptable[8];
 static unsigned short loadshort(unsigned char seq[2])
 {
 
-    return seq[0] << 8 | seq[1];
+    return (seq[0] << 8) | (seq[1] << 0);
 
 }
 
 static unsigned int loadint(unsigned char seq[4])
 {
 
-    return seq[0] << 24 | seq[1] << 16 | seq[2] << 8 | seq[3];
+    return (seq[0] << 24) | (seq[1] << 16) | (seq[2] << 8) | (seq[3] << 0);
 
 }
 
@@ -183,8 +183,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                             struct ipv4_arpentry *tentry = findarpentry(remote.address);
                             struct ethernet_header eheader2;
                             struct ipv4_header iheader2;
-                            struct tcp_header theader2;
+                            struct {struct tcp_header theader2; char data[2];} xxx;
+                            unsigned int msgsize = sizeof (struct tcp_header);
                             unsigned int offset = 0;
+
+                            xxx.data[0] = 'H';
+                            xxx.data[1] = 'i';
 
                             if (sentry && tentry)
                             {
@@ -197,23 +201,26 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                                 channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP SYN received! Sending SYN+ACK\n", 0), &data);
 
                                 ethernet_initheader(&eheader2, 0x0800, sentry->haddress, tentry->haddress);
-                                ipv4_initheader(&iheader2, local.address, remote.address, 0x06, sizeof (struct tcp_header));
-                                tcp_initheader(&theader2, local.port, remote.port);
 
-                                theader2.flags[0] = (5 << 4);
-                                theader2.flags[1] = TCP_FLAGS1_ACK | TCP_FLAGS1_SYN;
+                                ipv4_initheader(&iheader2, local.address, remote.address, 0x06, msgsize);
+                                tcp_initheader(&xxx.theader2, local.port, remote.port);
 
-                                saveint(theader2.ack, remote.seq + 1);
-                                saveint(theader2.seq, local.seq);
-                                saveshort(theader2.window, 0x2000);
+                                saveint(xxx.theader2.seq, local.seq);
+                                saveint(xxx.theader2.ack, remote.seq + 1);
 
-                                checksum = tcp_checksum((int)iheader2.sip, (int)iheader2.tip, (unsigned short *)&theader2);
+                                xxx.theader2.flags[0] = (5 << 4);
+                                xxx.theader2.flags[1] = TCP_FLAGS1_ACK | TCP_FLAGS1_SYN;
 
-                                saveshort(theader2.checksum, checksum);
+                                saveshort(xxx.theader2.window, 8192);
+
+                                checksum = tcp_checksum(iheader2.sip, iheader2.tip, msgsize, (unsigned short *)&xxx);
+
+                                xxx.theader2.checksum[0] = checksum;
+                                xxx.theader2.checksum[1] = checksum >> 8;
 
                                 offset = message_putbuffer(&data, sizeof (struct ethernet_header), &eheader2, offset);
                                 offset = message_putbuffer(&data, sizeof (struct ipv4_header), &iheader2, offset);
-                                offset = message_putbuffer(&data, sizeof (struct tcp_header), &theader2, offset);
+                                offset = message_putbuffer(&data, sizeof (struct tcp_header), &xxx.theader2, offset);
 
                                 file_open(FILE_G0);
                                 file_writeall(FILE_G0, data.buffer, offset);

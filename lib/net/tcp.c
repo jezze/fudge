@@ -1,28 +1,27 @@
 #include <fudge.h>
+#include "ipv4.h"
 #include "tcp.h"
 
 static unsigned short htons(unsigned short v)
 {
 
     unsigned char c1 = v;
-    unsigned char c2 = v >> 8;
+    unsigned char c2 = (v >> 8);
 
-    return c1 << 8 | c2;
+    return (c1 << 8) | c2;
 
 }
 
-unsigned short tcp_checksum(unsigned int iphdr_saddr, unsigned int iphdr_daddr, unsigned short *payload)
+unsigned short tcp_checksum(unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned short len, unsigned short *payload)
 {
 
     unsigned int sum = 0;
-    unsigned short type = 0x0006;
-    unsigned short len = 0x0020;
 
-    sum += (iphdr_saddr >> 16) & 0xFFFF;
-    sum += (iphdr_saddr) & 0xFFFF;
-    sum += (iphdr_daddr >> 16) & 0xFFFF;
-    sum += (iphdr_daddr) & 0xFFFF;
-    sum += htons(type);
+    sum += ((sip[1] << 8) | sip[0]);
+    sum += ((sip[3] << 8) | sip[2]);
+    sum += ((tip[1] << 8) | tip[0]);
+    sum += ((tip[3] << 8) | tip[2]);
+    sum += htons(0x0006);
     sum += htons(len);
 
     while (len > 1)
@@ -37,11 +36,10 @@ unsigned short tcp_checksum(unsigned int iphdr_saddr, unsigned int iphdr_daddr, 
         sum += ((*payload) & htons(0xFF00));
 
     while (sum >> 16)
-        sum = (sum & 0xffff) + (sum >> 16);
+        sum = (sum & 0xFFFF) + (sum >> 16);
 
-    sum = ~sum;
+    return ~sum;
 
-    return (unsigned short)sum;
 }
 
 void tcp_initheader(struct tcp_header *header, unsigned char *sp, unsigned char *tp)
