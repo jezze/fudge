@@ -22,4 +22,5 @@ struct tcp_header
 
 };
 
+unsigned short tcp_checksum(unsigned short iphdr_totlen, unsigned char iphdr_ihl, unsigned int iphdr_saddr, unsigned int iphdr_daddr, unsigned short *payload);
 void tcp_initheader(struct tcp_header *header, unsigned char *sp, unsigned char *tp);

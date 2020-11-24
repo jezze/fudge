@@ -1,17 +1,26 @@
 #include <fudge.h>
 #include "udp.h"
 
-/*
-static void udp_checksum(unsigned short iphdr_saddr, unsigned short iphdr_daddr, unsigned short udphdr_len, unsigned short *payload)
+static unsigned short htons(unsigned short v)
+{
+
+    unsigned char c1 = v;
+    unsigned char c2 = v >> 8;
+
+    return c1 << 8 | c2;
+
+}
+
+unsigned short udp_checksum(unsigned short iphdr_saddr, unsigned short iphdr_daddr, unsigned short udphdr_len, unsigned short *payload)
 {
 
     unsigned int sum = 0;
     unsigned short udpLen = htons(udphdr_len);
 
-    sum += (saddr >> 16) & 0xFFFF;
-    sum += (saddr) & 0xFFFF;
-    sum += (daddr >> 16) & 0xFFFF;
-    sum += (daddr) & 0xFFFF;
+    sum += (iphdr_saddr >> 16) & 0xFFFF;
+    sum += (iphdr_saddr) & 0xFFFF;
+    sum += (iphdr_daddr >> 16) & 0xFFFF;
+    sum += (iphdr_daddr) & 0xFFFF;
     sum += htons(0x11);
     sum += htons(udpLen);
 
@@ -34,7 +43,6 @@ static void udp_checksum(unsigned short iphdr_saddr, unsigned short iphdr_daddr,
     return ((unsigned short)sum == 0x0000) ? 0xFFFF : (unsigned short)sum;
 
 }
-*/
 
 void udp_initheader(struct udp_header *header, unsigned char *sp, unsigned char *tp, unsigned int count)
 {

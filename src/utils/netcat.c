@@ -31,10 +31,25 @@ static struct endpoint local;
 static struct endpoint remote;
 static struct ipv4_arpentry arptable[8];
 
+static unsigned short loadshort(unsigned char seq[2])
+{
+
+    return seq[0] << 8 | seq[1];
+
+}
+
 static unsigned int loadint(unsigned char seq[4])
 {
 
     return seq[0] << 24 | seq[1] << 16 | seq[2] << 8 | seq[3];
+
+}
+
+static void saveshort(unsigned char seq[2], unsigned short num)
+{
+
+    seq[0] = num >> 8;
+    seq[1] = num >> 0;
 
 }
 
@@ -126,7 +141,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             struct ethernet_header *eheader = (struct ethernet_header *)data.buffer;
 
-            if (eheader->type[0] == 0x08 && eheader->type[1] == 0x00)
+            if (loadshort(eheader->type) == 0x0800)
             {
 
                 struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
@@ -136,16 +151,15 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                     struct udp_header *uheader = (struct udp_header *)(iheader + 1);
 
-                    if (uheader->tp[0] == local.port[0] && uheader->tp[1] == local.port[1])
+                    if (loadshort(uheader->tp) == loadshort(local.port))
                     {
 
-                        char *payload = (char *)(uheader + 1);
-                        unsigned int length = (uheader->length[1] | uheader->length[0] << 8) - sizeof (struct udp_header);
+                        unsigned int length = loadshort(uheader->length) - sizeof (struct udp_header);
 
                         if (!remote.active)
                             endpoint_init_udp(&remote, iheader, uheader);
 
-                        channel_place(channel, source, EVENT_DATA, length, payload);
+                        channel_place(channel, source, EVENT_DATA, length, uheader + 1);
 
                     }
 
@@ -156,7 +170,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                     struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
 
-                    if (theader->tp[0] == local.port[0] && theader->tp[1] == local.port[1])
+                    if (loadshort(theader->tp) == loadshort(local.port))
                     {
 
                         if (!remote.active)
@@ -175,6 +189,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                             if (sentry && tentry)
                             {
 
+                                unsigned short checksum;
+
                                 local.state = TCP_STATE_SYNRECEIVED;
 
                                 channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP SYN received! Sending SYN+ACK\n", 0), &data);
@@ -190,9 +206,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                                 saveint(theader2.ack, remote.seq + 1);
                                 saveint(theader2.seq, local.seq);
+                                saveshort(theader2.window, 0x2000);
 
-                                /* Fix checksum */
-                                /* Fix window */
+                                checksum = tcp_checksum(loadshort(iheader2.length), 5, loadint(iheader2.sip), loadint(iheader2.tip), (unsigned short *)&theader2);
+
+                                saveshort(theader2.checksum, checksum);
 
                                 offset = message_putbuffer(&data, sizeof (struct ethernet_header), &eheader2, offset);
                                 offset = message_putbuffer(&data, sizeof (struct ipv4_header), &iheader2, offset);
