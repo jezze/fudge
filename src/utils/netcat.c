@@ -102,7 +102,6 @@ static void endpoint_init_udp(struct endpoint *endpoint, unsigned char address[I
 {
 
     endpoint_init(endpoint, 0x11, address);
-
     buffer_copy(&endpoint->body.udp.port, port, UDP_PORTSIZE);
 
 }
