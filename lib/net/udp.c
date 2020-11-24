@@ -41,7 +41,7 @@ unsigned short udp_checksum(unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[
 
     sum2 = ~sum;
 
-    return (!sum2) ? 0xFFFF : sum2;
+    return (sum2) ? sum2 : 0xFFFF;
 
 }
 
