@@ -87,22 +87,6 @@ static void endpoint_init(struct endpoint *endpoint, unsigned char protocol, uns
 
 }
 
-static void endpoint_init_local(struct endpoint *endpoint)
-{
-
-    unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
-    unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
-
-    endpoint->active = 1;
-    endpoint->body.tcp.state = 0;
-    endpoint->body.tcp.seq = 42;
-
-    buffer_copy(&endpoint->address, address, IPV4_ADDRSIZE);
-    buffer_copy(&endpoint->body.tcp.port, port, TCP_PORTSIZE);
-    buffer_copy(&endpoint->body.udp.port, port, UDP_PORTSIZE);
-
-}
-
 static void endpoint_init_tcp(struct endpoint *endpoint, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq)
 {
 
@@ -363,7 +347,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    endpoint_init_local(&local);
+    unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
+    unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
+
+    endpoint_init_tcp(&local, address, port, 42);
 
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;
