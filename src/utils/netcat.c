@@ -193,9 +193,6 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
         if ((header->flags[1] & TCP_FLAGS1_PSH) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[PSH+ACK : ACK] ESTABLISHED -> ESTABLISHED\n", 0), &data);
-
             local.info.tcp.seq = loadint(header->ack);
             remote.info.tcp.seq = loadint(header->seq) + psize;
 
