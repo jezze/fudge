@@ -1,5 +1,6 @@
 #define ETHERNET_MTU                    1500
 #define ETHERNET_ADDRSIZE               6
+#define ETHERNET_TYPE_IPV4              0x0800
 
 struct ethernet_header
 {

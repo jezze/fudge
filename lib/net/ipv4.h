@@ -1,4 +1,6 @@
 #define IPV4_ADDRSIZE                   4
+#define IPV4_PROTOCOL_TCP               0x06
+#define IPV4_PROTOCOL_UDP               0x11
 
 struct ipv4_header
 {

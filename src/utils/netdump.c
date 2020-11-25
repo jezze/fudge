@@ -191,7 +191,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                 print_ipv4(channel, source, iheader);
 
-                if (iheader->protocol == 0x06)
+                if (iheader->protocol == IPV4_PROTOCOL_TCP)
                 {
 
                     struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
@@ -200,7 +200,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                 }
 
-                else if (iheader->protocol == 0x11)
+                else if (iheader->protocol == IPV4_PROTOCOL_UDP)
                 {
 
                     struct udp_header *uheader = (struct udp_header *)(iheader + 1);

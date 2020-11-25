@@ -48,8 +48,8 @@ static unsigned int create_tcp_message(struct message_data *data, unsigned char 
     unsigned short checksum;
     unsigned int offset = 0;
 
-    ethernet_initheader(&eheader, 0x0800, sha, tha);
-    ipv4_initheader(&iheader, local.address, remote.address, 0x06, msgsize);
+    ethernet_initheader(&eheader, ETHERNET_TYPE_IPV4, sha, tha);
+    ipv4_initheader(&iheader, local.address, remote.address, IPV4_PROTOCOL_TCP, msgsize);
     tcp_initheader(&theader, local.info.tcp.port, remote.info.tcp.port);
 
     saveint(theader.seq, local.info.tcp.seq);
@@ -82,8 +82,8 @@ static unsigned int create_udp_message(struct message_data *data, unsigned char 
     unsigned int msgsize = sizeof (struct udp_header) + count;
     unsigned int offset = 0;
 
-    ethernet_initheader(&eheader, 0x0800, sha, tha);
-    ipv4_initheader(&iheader, local.address, remote.address, 0x11, msgsize);
+    ethernet_initheader(&eheader, ETHERNET_TYPE_IPV4, sha, tha);
+    ipv4_initheader(&iheader, local.address, remote.address, IPV4_PROTOCOL_UDP, msgsize);
     udp_initheader(&uheader, local.info.udp.port, remote.info.udp.port, count);
 
     offset = message_putbuffer(data, sizeof (struct ethernet_header), &eheader, offset);
@@ -246,12 +246,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             struct ethernet_header *eheader = (struct ethernet_header *)data.buffer;
 
-            if (loadshort(eheader->type) == 0x0800)
+            if (loadshort(eheader->type) == ETHERNET_TYPE_IPV4)
             {
 
                 struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
 
-                if (iheader->protocol == 0x06)
+                if (iheader->protocol == IPV4_PROTOCOL_TCP)
                 {
 
                     struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
@@ -268,7 +268,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                 }
 
-                else if (iheader->protocol == 0x11)
+                else if (iheader->protocol == IPV4_PROTOCOL_UDP)
                 {
 
                     struct udp_header *uheader = (struct udp_header *)(iheader + 1);
@@ -304,12 +304,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 switch (remote.protocol)
                 {
 
-                case 0x06:
+                case IPV4_PROTOCOL_TCP:
                     handle_tcp_send(channel, source, length, &s);
 
                     break;
 
-                case 0x11:
+                case IPV4_PROTOCOL_UDP:
                     handle_udp_send(channel, source, length, &s);
 
                     break;
