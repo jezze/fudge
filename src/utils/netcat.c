@@ -128,7 +128,7 @@ static void tcp_connect(void)
 }
 #endif
 
-static void handle_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header, void *mdata, unsigned int msize)
+static void handle_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header, void *payload, unsigned int psize)
 {
 
     struct ipv4_arpentry *sentry = findarpentry(local.address);
@@ -182,6 +182,7 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[ACK : ___] SYNRECEIVED -> ESTABLISHED\n", 0), &data);
 
+            local.info.tcp.seq = loadint(header->ack);
             local.info.tcp.state = TCP_STATE_ESTABLISHED;
 
         }
@@ -189,7 +190,24 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
         break;
 
     case TCP_STATE_ESTABLISHED:
-        if (header->flags[1] & TCP_FLAGS1_FIN)
+        if ((header->flags[1] & TCP_FLAGS1_PSH) && (header->flags[1] & TCP_FLAGS1_ACK))
+        {
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[PSH+ACK : ACK] ESTABLISHED -> ESTABLISHED\n", 0), &data);
+
+            local.info.tcp.seq = loadint(header->ack);
+            remote.info.tcp.seq = loadint(header->seq) + psize;
+
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, payload, psize), &data);
+
+            file_open(FILE_G0);
+            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
+            file_close(FILE_G0);
+
+        }
+
+        else if (header->flags[1] & TCP_FLAGS1_FIN)
         {
 
             /* remove later */
@@ -207,23 +225,6 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
             /* SEND FIN */
 
             local.info.tcp.state = TCP_STATE_LASTACK;
-
-        }
-
-        else if ((header->flags[1] & TCP_FLAGS1_PSH) && (header->flags[1] & TCP_FLAGS1_ACK))
-        {
-
-            void *payload = (void *)(header + 1);
-            unsigned int len = msize - ((unsigned int)payload - (unsigned int)mdata);
-
-            remote.info.tcp.seq = loadint(header->seq) + len;
-
-            /* print data */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, payload, len), &data);
-
-            file_open(FILE_G0);
-            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
-            file_close(FILE_G0);
 
         }
 
@@ -329,12 +330,10 @@ static void handle_tcp_send(struct channel *channel, unsigned int source, unsign
 
 }
 
-static void handle_udp_receive(struct channel *channel, unsigned int source, struct udp_header *header, void *mdata, unsigned int msize)
+static void handle_udp_receive(struct channel *channel, unsigned int source, struct udp_header *header, void *payload, unsigned int psize)
 {
 
-    unsigned int length = loadshort(header->length) - sizeof (struct udp_header);
-
-    channel_place(channel, source, EVENT_DATA, length, header + 1);
+    channel_place(channel, source, EVENT_DATA, psize, payload);
 
 }
 
@@ -386,7 +385,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                         if (!remote.active)
                             socket_inittcp(&remote, iheader->sip, theader->sp, loadint(theader->seq));
 
-                        handle_tcp_receive(channel, source, theader, mdata, msize);
+                        handle_tcp_receive(channel, source, theader, theader + 1, loadshort(iheader->length) - sizeof (struct ipv4_header) - sizeof (struct tcp_header));
 
                     }
 
@@ -403,7 +402,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                         if (!remote.active)
                             socket_initudp(&remote, iheader->sip, uheader->sp);
 
-                        handle_udp_receive(channel, source, uheader, mdata, msize);
+                        handle_udp_receive(channel, source, uheader, uheader + 1, loadshort(iheader->length) - sizeof (struct ipv4_header) - sizeof (struct udp_header));
 
                     }
 
