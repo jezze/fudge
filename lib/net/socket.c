@@ -20,7 +20,7 @@ void socket_inittcp(struct socket *socket, unsigned char address[IPV4_ADDRSIZE],
     socket_init(socket, 0x06, address);
     buffer_copy(&socket->info.tcp.port, port, TCP_PORTSIZE);
 
-    socket->info.tcp.state = TCP_STATE_NONE;
+    socket->info.tcp.state = TCP_STATE_CLOSED;
     socket->info.tcp.seq = seq;
 
 }

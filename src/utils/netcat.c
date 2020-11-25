@@ -118,37 +118,49 @@ static struct ipv4_arpentry *findarpentry(void *paddress)
 static void handle_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header)
 {
 
+    struct ipv4_arpentry *sentry = findarpentry(local.address);
+    struct ipv4_arpentry *tentry = findarpentry(remote.address);
     struct message_data data;
+
+    if (!sentry || !tentry)
+        return;
 
     switch (local.info.tcp.state)
     {
 
-    case TCP_STATE_NONE:
+    case TCP_STATE_LISTEN:
         if (header->flags[1] & TCP_FLAGS1_SYN)
         {
 
-            struct ipv4_arpentry *sentry = findarpentry(local.address);
-            struct ipv4_arpentry *tentry = findarpentry(remote.address);
+            unsigned int offset;
 
-            if (sentry && tentry)
-            {
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[SYN : SYN+ACK] LISTEN -> SYNRECEIVED\n", 0), &data);
 
-                unsigned int offset;
+            remote.info.tcp.seq = loadint(header->seq);
 
-                /* remove later */
-                channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP SYN received! Sending SYN+ACK\n", 0), &data);
+            offset = create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, 0);
 
-                remote.info.tcp.seq = loadint(header->seq);
+            file_open(FILE_G0);
+            file_writeall(FILE_G0, data.buffer, offset);
+            file_close(FILE_G0);
 
-                offset = create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, 0);
+            local.info.tcp.state = TCP_STATE_SYNRECEIVED;
 
-                file_open(FILE_G0);
-                file_writeall(FILE_G0, data.buffer, offset);
-                file_close(FILE_G0);
+        }
 
-                local.info.tcp.state = TCP_STATE_SYNRECEIVED;
+        break;
 
-            }
+    case TCP_STATE_SYNSENT:
+        if ((header->flags[1] & TCP_FLAGS1_SYN) && (header->flags[1] & TCP_FLAGS1_ACK))
+        {
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[SYN+ACK : ACK] SYNSENT -> ESTABLISHED\n", 0), &data);
+
+            /* SEND ACK */
+
+            local.info.tcp.state = TCP_STATE_ESTABLISHED;
 
         }
 
@@ -159,7 +171,7 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
         {
 
             /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP ACK received! Communication established\n", 0), &data);
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[ACK : ___] SYNRECEIVED -> ESTABLISHED\n", 0), &data);
 
             local.info.tcp.state = TCP_STATE_ESTABLISHED;
 
@@ -172,7 +184,20 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
         {
 
             /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP FIN received! Sending ACK+FIN\n", 0), &data);
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[FIN : ACK] ESTABLISHED -> CLOSEWAIT\n", 0), &data);
+
+            /* SEND ACK */
+
+            local.info.tcp.state = TCP_STATE_CLOSEWAIT;
+
+            /* Wait for application to close down */
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[___ : FIN] CLOSEWAIT -> LASTACK\n", 0), &data);
+
+            /* SEND FIN */
+
+            local.info.tcp.state = TCP_STATE_LASTACK;
 
         }
 
@@ -180,10 +205,97 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
         {
 
             /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP received!\n", 0), &data);
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "DATA\n", 0), &data);
 
         }
 
+        break;
+
+    case TCP_STATE_FINWAIT1:
+        if (header->flags[1] & TCP_FLAGS1_ACK)
+        {
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[ACK : ___] FINWAIT1 -> FINWAIT2\n", 0), &data);
+
+            local.info.tcp.state = TCP_STATE_FINWAIT2;
+
+        }
+
+        else if (header->flags[1] & TCP_FLAGS1_FIN)
+        {
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[FIN : ACK] FINWAIT1 -> CLOSING\n", 0), &data);
+
+            /* Send ACK */
+
+            local.info.tcp.state = TCP_STATE_CLOSING;
+
+        }
+
+        break;
+
+    case TCP_STATE_FINWAIT2:
+        if (header->flags[1] & TCP_FLAGS1_FIN)
+        {
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[FIN : ACK] FINWAIT2 -> TIMEWAIT\n", 0), &data);
+
+            local.info.tcp.state = TCP_STATE_TIMEWAIT;
+
+            /* Sleep some time */
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[___ : ___] TIMEWAIT -> CLOSED\n", 0), &data);
+
+            local.info.tcp.state = TCP_STATE_CLOSED;
+
+        }
+
+        break;
+
+    case TCP_STATE_CLOSEWAIT:
+        break;
+
+    case TCP_STATE_CLOSING:
+        if (header->flags[1] & TCP_FLAGS1_ACK)
+        {
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[ACK : ___] CLOSING -> TIMEWAIT\n", 0), &data);
+
+            local.info.tcp.state = TCP_STATE_TIMEWAIT;
+
+            /* Sleep some time */
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[___ : ___] TIMEWAIT -> CLOSED\n", 0), &data);
+
+            local.info.tcp.state = TCP_STATE_CLOSED;
+
+        }
+
+        break;
+
+    case TCP_STATE_LASTACK:
+        if (header->flags[1] & TCP_FLAGS1_ACK)
+        {
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[ACK : ___] LASTACK -> CLOSED\n", 0), &data);
+
+            local.info.tcp.state = TCP_STATE_CLOSED;
+
+        }
+
+        break;
+
+    case TCP_STATE_TIMEWAIT:
+        break;
+
+    case TCP_STATE_CLOSED:
         break;
 
     }
@@ -213,20 +325,18 @@ static void handle_udp_send(struct channel *channel, unsigned int source, unsign
 
     struct ipv4_arpentry *sentry = findarpentry(local.address);
     struct ipv4_arpentry *tentry = findarpentry(remote.address);
+    struct message_data data;
+    unsigned int offset;
 
-    if (sentry && tentry)
-    {
+    if (!sentry || !tentry)
+        return;
 
-        struct message_data data;
-        unsigned int offset = create_udp_message(&data, sentry->haddress, tentry->haddress, length);
+    offset = create_udp_message(&data, sentry->haddress, tentry->haddress, length);
+    offset = message_putbuffer(&data, length, buffer, offset);
 
-        offset = message_putbuffer(&data, length, buffer, offset);
-
-        file_open(FILE_G0);
-        file_writeall(FILE_G0, data.buffer, offset);
-        file_close(FILE_G0);
-
-    }
+    file_open(FILE_G0);
+    file_writeall(FILE_G0, data.buffer, offset);
+    file_close(FILE_G0);
 
 }
 
@@ -334,6 +444,8 @@ void init(struct channel *channel)
     unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
 
     socket_inittcp(&local, address, port, 42);
+
+    local.info.tcp.state = TCP_STATE_LISTEN;
 
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;

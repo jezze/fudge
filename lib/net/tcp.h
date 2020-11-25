@@ -7,7 +7,6 @@
 #define TCP_FLAGS1_URG                  0x20
 #define TCP_FLAGS1_ECE                  0x40
 #define TCP_FLAGS1_CWR                  0x80
-#define TCP_STATE_NONE                  0
 #define TCP_STATE_LISTEN                1
 #define TCP_STATE_SYNSENT               2
 #define TCP_STATE_SYNRECEIVED           3
