@@ -240,12 +240,43 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
 
 }
 
+static void handle_tcp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
+{
+
+    struct message_data data;
+
+    channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP send!\n", 0), &data);
+
+}
+
 static void handle_udp_receive(struct channel *channel, unsigned int source, struct udp_header *header)
 {
 
     unsigned int length = loadshort(header->length) - sizeof (struct udp_header);
 
     channel_place(channel, source, EVENT_DATA, length, header + 1);
+
+}
+
+static void handle_udp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
+{
+
+    struct ipv4_arpentry *sentry = findarpentry(local.address);
+    struct ipv4_arpentry *tentry = findarpentry(remote.address);
+
+    if (sentry && tentry)
+    {
+
+        struct message_data data;
+        unsigned int offset = create_udp_message(&data, sentry->haddress, tentry->haddress, length);
+
+        offset = message_putbuffer(&data, length, buffer, offset);
+
+        file_open(FILE_G0);
+        file_writeall(FILE_G0, data.buffer, offset);
+        file_close(FILE_G0);
+
+    }
 
 }
 
@@ -320,31 +351,18 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             if (remote.active)
             {
 
-                struct ipv4_arpentry *sentry = findarpentry(local.address);
-                struct ipv4_arpentry *tentry = findarpentry(remote.address);
-
-                if (sentry && tentry)
+                switch (remote.protocol)
                 {
 
-                    if (remote.protocol == 0x06)
-                    {
+                case 0x06:
+                    handle_tcp_send(channel, source, length, &s);
 
-                        channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP send!\n", 0), &data);
+                    break;
 
-                    }
+                case 0x11:
+                    handle_udp_send(channel, source, length, &s);
 
-                    else if (remote.protocol == 0x11)
-                    {
-
-                        unsigned int offset = create_udp_message(&data, sentry->haddress, tentry->haddress, length);
-
-                        offset = message_putbuffer(&data, length, &s, offset);
-
-                        file_open(FILE_G0);
-                        file_writeall(FILE_G0, data.buffer, offset);
-                        file_close(FILE_G0);
-
-                    }
+                    break;
 
                 }
 
