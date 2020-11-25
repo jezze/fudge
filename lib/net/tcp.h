@@ -7,6 +7,18 @@
 #define TCP_FLAGS1_URG                  0x20
 #define TCP_FLAGS1_ECE                  0x40
 #define TCP_FLAGS1_CWR                  0x80
+#define TCP_STATE_NONE                  0
+#define TCP_STATE_LISTEN                1
+#define TCP_STATE_SYNSENT               2
+#define TCP_STATE_SYNRECEIVED           3
+#define TCP_STATE_ESTABLISHED           4
+#define TCP_STATE_FINWAIT1              5
+#define TCP_STATE_FINWAIT2              6
+#define TCP_STATE_CLOSEWAIT             7
+#define TCP_STATE_CLOSING               8
+#define TCP_STATE_LASTACK               9
+#define TCP_STATE_TIMEWAIT              10
+#define TCP_STATE_CLOSED                11
 
 struct tcp_header
 {

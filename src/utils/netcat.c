@@ -2,47 +2,8 @@
 #include <net.h>
 #include <abi.h>
 
-#define TCP_STATE_NONE                  0
-#define TCP_STATE_LISTEN                1
-#define TCP_STATE_SYNSENT               2
-#define TCP_STATE_SYNRECEIVED           3
-#define TCP_STATE_ESTABLISHED           4
-#define TCP_STATE_FINWAIT1              5
-#define TCP_STATE_FINWAIT2              6
-#define TCP_STATE_CLOSEWAIT             7
-#define TCP_STATE_CLOSING               8
-#define TCP_STATE_LASTACK               9
-#define TCP_STATE_TIMEWAIT              10
-#define TCP_STATE_CLOSED                11
-
-struct endpoint_tcp
-{
-
-    unsigned int state;
-    unsigned int seq;
-    unsigned char port[TCP_PORTSIZE];
-
-};
-
-struct endpoint_udp
-{
-
-    unsigned char port[UDP_PORTSIZE];
-
-};
-
-struct endpoint
-{
-
-    unsigned int active;
-    unsigned char protocol;
-    unsigned char address[IPV4_ADDRSIZE];
-    union { struct endpoint_tcp tcp; struct endpoint_udp udp; } body;
-
-};
-
-static struct endpoint local;
-static struct endpoint remote;
+static struct socket local;
+static struct socket remote;
 static struct ipv4_arpentry arptable[8];
 
 static unsigned short loadshort(unsigned char seq[2])
@@ -74,35 +35,6 @@ static void saveint(unsigned char seq[4], unsigned int num)
     seq[1] = num >> 16;
     seq[2] = num >> 8;
     seq[3] = num >> 0;
-
-}
-
-static void endpoint_init(struct endpoint *endpoint, unsigned char protocol, unsigned char address[IPV4_ADDRSIZE])
-{
-
-    endpoint->active = 1;
-    endpoint->protocol = protocol;
-
-    buffer_copy(&endpoint->address, address, IPV4_ADDRSIZE);
-
-}
-
-static void endpoint_init_tcp(struct endpoint *endpoint, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq)
-{
-
-    endpoint_init(endpoint, 0x06, address);
-    buffer_copy(&endpoint->body.tcp.port, port, TCP_PORTSIZE);
-
-    endpoint->body.tcp.state = TCP_STATE_NONE;
-    endpoint->body.tcp.seq = seq;
-
-}
-
-static void endpoint_init_udp(struct endpoint *endpoint, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE])
-{
-
-    endpoint_init(endpoint, 0x11, address);
-    buffer_copy(&endpoint->body.udp.port, port, UDP_PORTSIZE);
 
 }
 
@@ -310,7 +242,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                     {
 
                         if (!remote.active)
-                            endpoint_init_tcp(&remote, iheader->sip, theader->sp, loadint(theader->seq));
+                            socket_inittcp(&remote, iheader->sip, theader->sp, loadint(theader->seq));
 
                         handle_tcp_receive(channel, source, theader);
 
@@ -327,7 +259,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                     {
 
                         if (!remote.active)
-                            endpoint_init_udp(&remote, iheader->sip, uheader->sp);
+                            socket_initudp(&remote, iheader->sip, uheader->sp);
 
                         handle_udp_receive(channel, source, uheader);
 
@@ -383,7 +315,7 @@ void init(struct channel *channel)
     unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
     unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
 
-    endpoint_init_tcp(&local, address, port, 42);
+    socket_inittcp(&local, address, port, 42);
 
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;
