@@ -148,10 +148,10 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[SYN : SYN+ACK] LISTEN -> SYNRECEIVED\n", 0), &data);
 
-            remote.info.tcp.seq = loadint(header->seq);
+            remote.info.tcp.seq = loadint(header->seq) + 1;
 
             file_open(FILE_G0);
-            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local.info.tcp.seq, remote.info.tcp.seq + 1, 0, 0));
+            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
             file_close(FILE_G0);
 
             local.info.tcp.state = TCP_STATE_SYNRECEIVED;
@@ -213,13 +213,16 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
         else if ((header->flags[1] & TCP_FLAGS1_PSH) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
-            remote.info.tcp.seq = loadint(header->seq);
+            void *payload = (void *)(header + 1);
+            unsigned int len = msize - ((unsigned int)payload - (unsigned int)mdata);
+
+            remote.info.tcp.seq = loadint(header->seq) + len;
 
             /* print data */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "DATA\n", 0), &data);
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, payload, len), &data);
 
             file_open(FILE_G0);
-            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq + 1, 0, 0));
+            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
             file_close(FILE_G0);
 
         }
