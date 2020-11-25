@@ -38,59 +38,54 @@ static void saveint(unsigned char seq[4], unsigned int num)
 
 }
 
-static unsigned int create_tcp_message(struct message_data *data, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned short flags, unsigned int count)
+static unsigned int create_tcp_message(struct message_data *data, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
 {
 
-    struct ethernet_header eheader;
-    struct ipv4_header iheader;
-    struct tcp_header theader;
-    unsigned int msgsize = sizeof (struct tcp_header) + count;
+    struct ethernet_header *eheader = (struct ethernet_header *)data;
+    struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
+    struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
+    void *payload = (void *)(theader + 1);
+    unsigned int length = sizeof (struct tcp_header) + count;
     unsigned short checksum;
-    unsigned int offset = 0;
 
-    ethernet_initheader(&eheader, ETHERNET_TYPE_IPV4, sha, tha);
-    ipv4_initheader(&iheader, local.address, remote.address, IPV4_PROTOCOL_TCP, msgsize);
-    tcp_initheader(&theader, local.info.tcp.port, remote.info.tcp.port);
+    ethernet_initheader(eheader, ETHERNET_TYPE_IPV4, sha, tha);
+    ipv4_initheader(iheader, local.address, remote.address, IPV4_PROTOCOL_TCP, length);
+    tcp_initheader(theader, local.info.tcp.port, remote.info.tcp.port);
+    buffer_copy(payload, buffer, count); 
 
-    saveint(theader.seq, local.info.tcp.seq);
-    saveint(theader.ack, remote.info.tcp.seq + 1);
+    theader->flags[0] = (5 << 4);
+    theader->flags[1] = flags;
 
-    theader.flags[0] = (5 << 4);
-    theader.flags[1] = flags;
+    saveint(theader->seq, seq);
+    saveint(theader->ack, ack);
+    saveshort(theader->window, 8192);
 
-    saveshort(theader.window, 8192);
+    checksum = tcp_checksum(iheader->sip, iheader->tip, length, (unsigned short *)theader);
 
-    checksum = tcp_checksum(iheader.sip, iheader.tip, msgsize, (unsigned short *)&theader);
+    theader->checksum[0] = checksum;
+    theader->checksum[1] = checksum >> 8;
 
-    theader.checksum[0] = checksum;
-    theader.checksum[1] = checksum >> 8;
-
-    offset = message_putbuffer(data, sizeof (struct ethernet_header), &eheader, offset);
-    offset = message_putbuffer(data, sizeof (struct ipv4_header), &iheader, offset);
-    offset = message_putbuffer(data, sizeof (struct tcp_header), &theader, offset);
-
-    return offset;
+    return sizeof (struct ethernet_header) + sizeof (struct ipv4_header) + length;
 
 }
 
-static unsigned int create_udp_message(struct message_data *data, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned int count)
+static unsigned int create_udp_message(struct message_data *data, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned int count, void *buffer)
 {
 
-    struct ethernet_header eheader;
-    struct ipv4_header iheader;
-    struct udp_header uheader;
-    unsigned int msgsize = sizeof (struct udp_header) + count;
-    unsigned int offset = 0;
+    struct ethernet_header *eheader = (struct ethernet_header *)data;
+    struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
+    struct udp_header *uheader = (struct udp_header *)(iheader + 1);
+    void *payload = (void *)(uheader + 1);
+    unsigned int length = sizeof (struct udp_header) + count;
 
-    ethernet_initheader(&eheader, ETHERNET_TYPE_IPV4, sha, tha);
-    ipv4_initheader(&iheader, local.address, remote.address, IPV4_PROTOCOL_UDP, msgsize);
-    udp_initheader(&uheader, local.info.udp.port, remote.info.udp.port, count);
+    ethernet_initheader(eheader, ETHERNET_TYPE_IPV4, sha, tha);
+    ipv4_initheader(iheader, local.address, remote.address, IPV4_PROTOCOL_UDP, length);
+    udp_initheader(uheader, local.info.udp.port, remote.info.udp.port, count);
+    buffer_copy(payload, buffer, count); 
 
-    offset = message_putbuffer(data, sizeof (struct ethernet_header), &eheader, offset);
-    offset = message_putbuffer(data, sizeof (struct ipv4_header), &iheader, offset);
-    offset = message_putbuffer(data, sizeof (struct udp_header), &uheader, offset);
+    /* Create checksum */
 
-    return offset;
+    return sizeof (struct ethernet_header) + sizeof (struct ipv4_header) + length;
 
 }
 
@@ -150,17 +145,13 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
         if (header->flags[1] & TCP_FLAGS1_SYN)
         {
 
-            unsigned int offset;
-
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[SYN : SYN+ACK] LISTEN -> SYNRECEIVED\n", 0), &data);
 
             remote.info.tcp.seq = loadint(header->seq);
 
-            offset = create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, 0);
-
             file_open(FILE_G0);
-            file_writeall(FILE_G0, data.buffer, offset);
+            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local.info.tcp.seq, remote.info.tcp.seq + 1, 0, 0));
             file_close(FILE_G0);
 
             local.info.tcp.state = TCP_STATE_SYNRECEIVED;
@@ -344,16 +335,12 @@ static void handle_udp_send(struct channel *channel, unsigned int source, unsign
     struct ipv4_arpentry *sentry = findarpentry(local.address);
     struct ipv4_arpentry *tentry = findarpentry(remote.address);
     struct message_data data;
-    unsigned int offset;
 
     if (!sentry || !tentry)
         return;
 
-    offset = create_udp_message(&data, sentry->haddress, tentry->haddress, length);
-    offset = message_putbuffer(&data, length, buffer, offset);
-
     file_open(FILE_G0);
-    file_writeall(FILE_G0, data.buffer, offset);
+    file_writeall(FILE_G0, &data, create_udp_message(&data, sentry->haddress, tentry->haddress, length, buffer));
     file_close(FILE_G0);
 
 }
