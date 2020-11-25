@@ -115,6 +115,24 @@ static struct ipv4_arpentry *findarpentry(void *paddress)
 
 }
 
+static void tcp_listen(void)
+{
+
+    local.info.tcp.state = TCP_STATE_LISTEN;
+
+}
+
+#if 0
+static void tcp_connect(void)
+{
+
+    /* Send SYN */
+
+    local.info.tcp.state = TCP_STATE_SYNSENT;
+
+}
+#endif
+
 static void handle_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header)
 {
 
@@ -444,8 +462,7 @@ void init(struct channel *channel)
     unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
 
     socket_inittcp(&local, address, port, 42);
-
-    local.info.tcp.state = TCP_STATE_LISTEN;
+    tcp_listen();
 
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;
