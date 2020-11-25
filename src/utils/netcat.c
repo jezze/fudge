@@ -50,10 +50,10 @@ static unsigned int create_tcp_message(struct message_data *data, unsigned char 
 
     ethernet_initheader(&eheader, 0x0800, sha, tha);
     ipv4_initheader(&iheader, local.address, remote.address, 0x06, msgsize);
-    tcp_initheader(&theader, local.body.tcp.port, remote.body.tcp.port);
+    tcp_initheader(&theader, local.info.tcp.port, remote.info.tcp.port);
 
-    saveint(theader.seq, local.body.tcp.seq);
-    saveint(theader.ack, remote.body.tcp.seq + 1);
+    saveint(theader.seq, local.info.tcp.seq);
+    saveint(theader.ack, remote.info.tcp.seq + 1);
 
     theader.flags[0] = (5 << 4);
     theader.flags[1] = flags;
@@ -84,7 +84,7 @@ static unsigned int create_udp_message(struct message_data *data, unsigned char 
 
     ethernet_initheader(&eheader, 0x0800, sha, tha);
     ipv4_initheader(&iheader, local.address, remote.address, 0x11, msgsize);
-    udp_initheader(&uheader, local.body.udp.port, remote.body.udp.port, count);
+    udp_initheader(&uheader, local.info.udp.port, remote.info.udp.port, count);
 
     offset = message_putbuffer(data, sizeof (struct ethernet_header), &eheader, offset);
     offset = message_putbuffer(data, sizeof (struct ipv4_header), &iheader, offset);
@@ -120,53 +120,71 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
 
     struct message_data data;
 
-    if (header->flags[1] & TCP_FLAGS1_SYN)
+    switch (local.info.tcp.state)
     {
 
-        struct ipv4_arpentry *sentry = findarpentry(local.address);
-        struct ipv4_arpentry *tentry = findarpentry(remote.address);
-
-        if (sentry && tentry)
+    case TCP_STATE_NONE:
+        if (header->flags[1] & TCP_FLAGS1_SYN)
         {
 
-            unsigned int offset;
+            struct ipv4_arpentry *sentry = findarpentry(local.address);
+            struct ipv4_arpentry *tentry = findarpentry(remote.address);
 
-            local.body.tcp.state = TCP_STATE_SYNRECEIVED;
-            remote.body.tcp.seq = loadint(header->seq);
+            if (sentry && tentry)
+            {
 
-            /* remove */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP SYN received! Sending SYN+ACK\n", 0), &data);
+                unsigned int offset;
 
-            offset = create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, 0);
+                /* remove later */
+                channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP SYN received! Sending SYN+ACK\n", 0), &data);
 
-            file_open(FILE_G0);
-            file_writeall(FILE_G0, data.buffer, offset);
-            file_close(FILE_G0);
+                remote.info.tcp.seq = loadint(header->seq);
+
+                offset = create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, 0);
+
+                file_open(FILE_G0);
+                file_writeall(FILE_G0, data.buffer, offset);
+                file_close(FILE_G0);
+
+                local.info.tcp.state = TCP_STATE_SYNRECEIVED;
+
+            }
 
         }
 
-    }
+        break;
 
-    else if (header->flags[1] & TCP_FLAGS1_ACK)
-    {
+    case TCP_STATE_SYNRECEIVED:
+        if (header->flags[1] & TCP_FLAGS1_ACK)
+        {
 
-        local.body.tcp.state = TCP_STATE_ESTABLISHED;
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP ACK received! Communication established\n", 0), &data);
 
-        channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP ACK received! Communication established\n", 0), &data);
+            local.info.tcp.state = TCP_STATE_ESTABLISHED;
 
-    }
+        }
 
-    else if (header->flags[1] & TCP_FLAGS1_FIN)
-    {
+        break;
 
-        channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP FIN received! Sending ACK+FIN\n", 0), &data);
+    case TCP_STATE_ESTABLISHED:
+        if (header->flags[1] & TCP_FLAGS1_FIN)
+        {
 
-    }
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP FIN received! Sending ACK+FIN\n", 0), &data);
 
-    else
-    {
+        }
 
-        channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP received!\n", 0), &data);
+        else
+        {
+
+            /* remove later */
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP received!\n", 0), &data);
+
+        }
+
+        break;
 
     }
 
@@ -238,7 +256,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                     struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
 
-                    if (loadshort(theader->tp) == loadshort(local.body.tcp.port))
+                    if (loadshort(theader->tp) == loadshort(local.info.tcp.port))
                     {
 
                         if (!remote.active)
@@ -255,7 +273,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                     struct udp_header *uheader = (struct udp_header *)(iheader + 1);
 
-                    if (loadshort(uheader->tp) == loadshort(local.body.udp.port))
+                    if (loadshort(uheader->tp) == loadshort(local.info.udp.port))
                     {
 
                         if (!remote.active)

@@ -20,7 +20,7 @@ struct socket
     unsigned int active;
     unsigned char protocol;
     unsigned char address[IPV4_ADDRSIZE];
-    union { struct socket_tcp tcp; struct socket_udp udp; } body;
+    union { struct socket_tcp tcp; struct socket_udp udp; } info;
 
 };
 

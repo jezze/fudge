@@ -18,10 +18,10 @@ void socket_inittcp(struct socket *socket, unsigned char address[IPV4_ADDRSIZE],
 {
 
     socket_init(socket, 0x06, address);
-    buffer_copy(&socket->body.tcp.port, port, TCP_PORTSIZE);
+    buffer_copy(&socket->info.tcp.port, port, TCP_PORTSIZE);
 
-    socket->body.tcp.state = TCP_STATE_NONE;
-    socket->body.tcp.seq = seq;
+    socket->info.tcp.state = TCP_STATE_NONE;
+    socket->info.tcp.seq = seq;
 
 }
 
@@ -29,7 +29,7 @@ void socket_initudp(struct socket *socket, unsigned char address[IPV4_ADDRSIZE],
 {
 
     socket_init(socket, 0x11, address);
-    buffer_copy(&socket->body.udp.port, port, UDP_PORTSIZE);
+    buffer_copy(&socket->info.udp.port, port, UDP_PORTSIZE);
 
 }
 
