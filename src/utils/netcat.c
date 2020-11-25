@@ -370,19 +370,23 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             {
 
                 struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
+                unsigned int ipv4tot = loadshort(iheader->length);
+                unsigned int ipv4len = (iheader->version & 0x0F) * 4;
 
                 if (iheader->protocol == IPV4_PROTOCOL_TCP)
                 {
 
-                    struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
+                    struct tcp_header *theader = (struct tcp_header *)((char *)iheader + ipv4len);
 
                     if (loadshort(theader->tp) == loadshort(local.info.tcp.port))
                     {
 
+                        unsigned int tcplen = (theader->flags[0] >> 4) * 4;
+
                         if (!remote.active)
                             socket_inittcp(&remote, iheader->sip, theader->sp, loadint(theader->seq));
 
-                        handle_tcp_receive(channel, source, theader, theader + 1, loadshort(iheader->length) - sizeof (struct ipv4_header) - sizeof (struct tcp_header));
+                        handle_tcp_receive(channel, source, theader, (char *)theader + tcplen, ipv4tot - ipv4len - tcplen);
 
                     }
 
@@ -391,15 +395,17 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 else if (iheader->protocol == IPV4_PROTOCOL_UDP)
                 {
 
-                    struct udp_header *uheader = (struct udp_header *)(iheader + 1);
+                    struct udp_header *uheader = (struct udp_header *)((char *)iheader + ipv4len);
 
                     if (loadshort(uheader->tp) == loadshort(local.info.udp.port))
                     {
 
+                        unsigned int udplen = sizeof (struct udp_header);
+
                         if (!remote.active)
                             socket_initudp(&remote, iheader->sip, uheader->sp);
 
-                        handle_udp_receive(channel, source, uheader, uheader + 1, loadshort(iheader->length) - sizeof (struct ipv4_header) - sizeof (struct udp_header));
+                        handle_udp_receive(channel, source, uheader, (char *)uheader + udplen, ipv4tot - ipv4len - udplen);
 
                     }
 
