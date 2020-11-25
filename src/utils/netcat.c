@@ -128,7 +128,7 @@ static void tcp_connect(void)
 }
 #endif
 
-static void handle_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header)
+static void handle_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header, void *mdata, unsigned int msize)
 {
 
     struct ipv4_arpentry *sentry = findarpentry(local.address);
@@ -210,11 +210,17 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
 
         }
 
-        else
+        else if ((header->flags[1] & TCP_FLAGS1_PSH) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
-            /* remove later */
+            remote.info.tcp.seq = loadint(header->seq);
+
+            /* print data */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "DATA\n", 0), &data);
+
+            file_open(FILE_G0);
+            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq + 1, 0, 0));
+            file_close(FILE_G0);
 
         }
 
@@ -320,7 +326,7 @@ static void handle_tcp_send(struct channel *channel, unsigned int source, unsign
 
 }
 
-static void handle_udp_receive(struct channel *channel, unsigned int source, struct udp_header *header)
+static void handle_udp_receive(struct channel *channel, unsigned int source, struct udp_header *header, void *mdata, unsigned int msize)
 {
 
     unsigned int length = loadshort(header->length) - sizeof (struct udp_header);
@@ -377,7 +383,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                         if (!remote.active)
                             socket_inittcp(&remote, iheader->sip, theader->sp, loadint(theader->seq));
 
-                        handle_tcp_receive(channel, source, theader);
+                        handle_tcp_receive(channel, source, theader, mdata, msize);
 
                     }
 
@@ -394,7 +400,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                         if (!remote.active)
                             socket_initudp(&remote, iheader->sip, uheader->sp);
 
-                        handle_udp_receive(channel, source, uheader);
+                        handle_udp_receive(channel, source, uheader, mdata, msize);
 
                     }
 
