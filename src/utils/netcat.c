@@ -232,6 +232,13 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
 
         }
 
+        else if (header->flags[1] & TCP_FLAGS1_ACK)
+        {
+
+            local.info.tcp.seq = loadint(header->ack);
+
+        }
+
         break;
 
     case TCP_STATE_FINWAIT1:
@@ -328,9 +335,22 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
 static void handle_tcp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
 {
 
+    struct ipv4_arpentry *sentry = findarpentry(local.address);
+    struct ipv4_arpentry *tentry = findarpentry(remote.address);
     struct message_data data;
 
-    channel_place(channel, source, EVENT_DATA, message_putstring(&data, "TCP send!\n", 0), &data);
+    if (!sentry || !tentry)
+        return;
+
+    switch (local.info.tcp.state)
+    {
+
+    case TCP_STATE_ESTABLISHED:
+        send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, length, buffer));
+
+        break;
+
+    }
 
 }
 
