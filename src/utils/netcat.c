@@ -334,50 +334,10 @@ static unsigned int socket_tcp_receive(struct channel *channel, unsigned int sou
 
 }
 
-static unsigned int socket_tcp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
-{
-
-    struct ipv4_arpentry *sentry = findarpentry(local.address);
-    struct ipv4_arpentry *tentry = findarpentry(remote.address);
-    struct message_data data;
-
-    if (!sentry || !tentry)
-        return 0;
-
-    switch (local.info.tcp.state)
-    {
-
-    case TCP_STATE_ESTABLISHED:
-        send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, length, buffer));
-
-        return length;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int socket_udp_receive(struct channel *channel, unsigned int source, struct udp_header *header, void *payload, unsigned int psize)
 {
 
     return psize;
-
-}
-
-static unsigned int socket_udp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
-{
-
-    struct ipv4_arpentry *sentry = findarpentry(local.address);
-    struct ipv4_arpentry *tentry = findarpentry(remote.address);
-    struct message_data data;
-
-    if (!sentry || !tentry)
-        return 0;
-
-    send(&data, create_udp_message(&data, sentry->haddress, tentry->haddress, length, buffer));
-
-    return length;
 
 }
 
@@ -404,11 +364,14 @@ static unsigned int socket_receive(struct channel *channel, unsigned int source,
             if (loadshort(theader->tp) == loadshort(local->info.tcp.port))
             {
 
+                void *payload = data + elen + ilen + tlen;
+                unsigned int payloadcount = itot - (ilen + tlen);
+
                 if (!remote->active)
                     socket_inittcp(remote, iheader->sip, theader->sp, loadint(theader->seq));
 
-                if (socket_tcp_receive(channel, source, theader, data + elen + ilen + tlen, itot - (ilen + tlen)))
-                    return buffer_write(output, outputcount, data + elen + ilen + tlen, itot - (ilen + tlen), 0);
+                if (socket_tcp_receive(channel, source, theader, payload, payloadcount))
+                    return buffer_write(output, outputcount, payload, payloadcount, 0);
 
             }
 
@@ -423,11 +386,14 @@ static unsigned int socket_receive(struct channel *channel, unsigned int source,
             if (loadshort(uheader->tp) == loadshort(local->info.udp.port))
             {
 
+                void *payload = data + elen + ilen + ulen;
+                unsigned int payloadcount = itot - (ilen + ulen);
+
                 if (!remote->active)
                     socket_initudp(remote, iheader->sip, uheader->sp);
 
-                if (socket_udp_receive(channel, source, uheader, data + elen + ilen + ulen, itot - (ilen + ulen)))
-                    return buffer_write(output, outputcount, data + elen + ilen + ulen, itot - (ilen + ulen), 0);
+                if (socket_udp_receive(channel, source, uheader, payload, payloadcount))
+                    return buffer_write(output, outputcount, payload, payloadcount, 0);
 
             }
 
@@ -436,6 +402,46 @@ static unsigned int socket_receive(struct channel *channel, unsigned int source,
     }
 
     return 0;
+
+}
+
+static unsigned int socket_tcp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
+{
+
+    struct ipv4_arpentry *sentry = findarpentry(local.address);
+    struct ipv4_arpentry *tentry = findarpentry(remote.address);
+    struct message_data data;
+
+    if (!sentry || !tentry)
+        return 0;
+
+    switch (local.info.tcp.state)
+    {
+
+    case TCP_STATE_ESTABLISHED:
+        send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, length, buffer));
+
+        return length;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int socket_udp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
+{
+
+    struct ipv4_arpentry *sentry = findarpentry(local.address);
+    struct ipv4_arpentry *tentry = findarpentry(remote.address);
+    struct message_data data;
+
+    if (!sentry || !tentry)
+        return 0;
+
+    send(&data, create_udp_message(&data, sentry->haddress, tentry->haddress, length, buffer));
+
+    return length;
 
 }
 
@@ -479,7 +485,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
-
 
         }
 
