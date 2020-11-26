@@ -363,7 +363,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     file_link(FILE_G0);
 
-    while (channel_poll(channel, &header, &data))
+    while (channel_pollsource(channel, 0, &header, &data))
     {
 
         if (header.event == EVENT_DATA)
@@ -419,41 +419,41 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
         }
 
-        if (header.event == EVENT_CONSOLEDATA)
-        {
-
-            struct event_consoledata *consoledata = (struct event_consoledata *)data.buffer;
-            char s = consoledata->data;
-            unsigned int length = 1;
-
-            channel_place(channel, source, EVENT_DATA, length, &s);
-
-            if (remote.active)
-            {
-
-                switch (remote.protocol)
-                {
-
-                case IPV4_PROTOCOL_TCP:
-                    handle_tcp_send(channel, source, length, &s);
-
-                    break;
-
-                case IPV4_PROTOCOL_UDP:
-                    handle_udp_send(channel, source, length, &s);
-
-                    break;
-
-                }
-
-            }
-
-        }
-
     }
 
     file_unlink(FILE_G0);
     channel_close(channel, source);
+
+}
+
+static void onconsoledata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_consoledata *consoledata = mdata;
+    char s = consoledata->data;
+    unsigned int length = 1;
+
+    channel_place(channel, source, EVENT_DATA, length, &s);
+
+    if (remote.active)
+    {
+
+        switch (remote.protocol)
+        {
+
+        case IPV4_PROTOCOL_TCP:
+            handle_tcp_send(channel, source, length, &s);
+
+            break;
+
+        case IPV4_PROTOCOL_UDP:
+            handle_udp_send(channel, source, length, &s);
+
+            break;
+
+        }
+
+    }
 
 }
 
@@ -476,6 +476,7 @@ void init(struct channel *channel)
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
 }
 
