@@ -45,6 +45,13 @@ unsigned short udp_checksum(unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[
 
 }
 
+unsigned short udp_hlen(struct udp_header *header)
+{
+
+    return sizeof (struct udp_header);
+
+}
+
 void udp_initheader(struct udp_header *header, unsigned char *sp, unsigned char *tp, unsigned int count)
 {
 

@@ -42,6 +42,13 @@ unsigned short tcp_checksum(unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[
 
 }
 
+unsigned short tcp_hlen(struct tcp_header *header)
+{
+
+    return (header->flags[0] >> 4) * 4;
+
+}
+
 void tcp_initheader(struct tcp_header *header, unsigned char *sp, unsigned char *tp)
 {
 

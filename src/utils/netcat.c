@@ -370,20 +370,20 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
             struct ethernet_header *eheader = (struct ethernet_header *)(data.buffer);
-            unsigned int elen = sizeof (struct ethernet_header);
+            unsigned short elen = ethernet_hlen(eheader);
 
             if (loadshort(eheader->type) == ETHERNET_TYPE_IPV4)
             {
 
                 struct ipv4_header *iheader = (struct ipv4_header *)(data.buffer + elen);
-                unsigned int ilen = (iheader->version & 0x0F) * 4;
-                unsigned int itot = loadshort(iheader->length);
+                unsigned short ilen = ipv4_hlen(iheader);
+                unsigned short itot = ipv4_len(iheader);
 
                 if (iheader->protocol == IPV4_PROTOCOL_TCP)
                 {
 
                     struct tcp_header *theader = (struct tcp_header *)(data.buffer + elen + ilen);
-                    unsigned int tlen = (theader->flags[0] >> 4) * 4;
+                    unsigned short tlen = tcp_hlen(theader);
 
                     if (loadshort(theader->tp) == loadshort(local.info.tcp.port))
                     {
@@ -401,7 +401,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 {
 
                     struct udp_header *uheader = (struct udp_header *)(data.buffer + elen + ilen);
-                    unsigned int ulen = sizeof (struct udp_header);
+                    unsigned short ulen = udp_hlen(uheader);
 
                     if (loadshort(uheader->tp) == loadshort(local.info.udp.port))
                     {

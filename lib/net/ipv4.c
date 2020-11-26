@@ -53,6 +53,20 @@ unsigned int ipv4_calculatechecksum(void *buffer, unsigned int count)
 
 }
 
+unsigned short ipv4_hlen(struct ipv4_header *header)
+{
+
+    return (header->version & 0x0F) * 4;
+
+}
+
+unsigned short ipv4_len(struct ipv4_header *header)
+{
+
+    return (header->length[0] << 8) | header->length[1];
+
+}
+
 void ipv4_initheader(struct ipv4_header *header, unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned int protocol, unsigned int count)
 {
 

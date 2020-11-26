@@ -18,4 +18,5 @@ struct ethernet_footer
 
 };
 
+unsigned short ethernet_hlen(struct ethernet_header *header);
 void ethernet_initheader(struct ethernet_header *header, unsigned int type, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE]);
