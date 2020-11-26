@@ -137,7 +137,7 @@ static void send(void *buffer, unsigned int count)
 
 }
 
-static void handle_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header, void *payload, unsigned int psize)
+static void socket_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header, void *payload, unsigned int psize)
 {
 
     struct ipv4_arpentry *sentry = findarpentry(local.address);
@@ -332,7 +332,7 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
 
 }
 
-static void handle_tcp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
+static unsigned int socket_tcp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
 {
 
     struct ipv4_arpentry *sentry = findarpentry(local.address);
@@ -340,7 +340,7 @@ static void handle_tcp_send(struct channel *channel, unsigned int source, unsign
     struct message_data data;
 
     if (!sentry || !tentry)
-        return;
+        return 0;
 
     switch (local.info.tcp.state)
     {
@@ -348,20 +348,22 @@ static void handle_tcp_send(struct channel *channel, unsigned int source, unsign
     case TCP_STATE_ESTABLISHED:
         send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, length, buffer));
 
-        break;
+        return length;
 
     }
 
+    return 0;
+
 }
 
-static void handle_udp_receive(struct channel *channel, unsigned int source, struct udp_header *header, void *payload, unsigned int psize)
+static void socket_udp_receive(struct channel *channel, unsigned int source, struct udp_header *header, void *payload, unsigned int psize)
 {
 
     channel_place(channel, source, EVENT_DATA, psize, payload);
 
 }
 
-static void handle_udp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
+static unsigned int socket_udp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
 {
 
     struct ipv4_arpentry *sentry = findarpentry(local.address);
@@ -369,9 +371,92 @@ static void handle_udp_send(struct channel *channel, unsigned int source, unsign
     struct message_data data;
 
     if (!sentry || !tentry)
-        return;
+        return 0;
 
     send(&data, create_udp_message(&data, sentry->haddress, tentry->haddress, length, buffer));
+
+    return length;
+
+}
+
+static unsigned int socket_receive(struct channel *channel, unsigned int source, struct socket *local, struct socket *remote, unsigned int count, void *buffer)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (loadshort(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+        unsigned short ilen = ipv4_hlen(iheader);
+        unsigned short itot = ipv4_len(iheader);
+
+        if (iheader->protocol == IPV4_PROTOCOL_TCP)
+        {
+
+            struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);
+            unsigned short tlen = tcp_hlen(theader);
+
+            if (loadshort(theader->tp) == loadshort(local->info.tcp.port))
+            {
+
+                if (!remote->active)
+                    socket_inittcp(remote, iheader->sip, theader->sp, loadint(theader->seq));
+
+                socket_tcp_receive(channel, source, theader, data + elen + ilen + tlen, itot - (ilen + tlen));
+
+                return 0;
+
+            }
+
+        }
+
+        else if (iheader->protocol == IPV4_PROTOCOL_UDP)
+        {
+
+            struct udp_header *uheader = (struct udp_header *)(data + elen + ilen);
+            unsigned short ulen = udp_hlen(uheader);
+
+            if (loadshort(uheader->tp) == loadshort(local->info.udp.port))
+            {
+
+                if (!remote->active)
+                    socket_initudp(remote, iheader->sip, uheader->sp);
+
+                socket_udp_receive(channel, source, uheader, data + elen + ilen + ulen, itot - (ilen + ulen));
+
+                return 0;
+
+            }
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int socket_send(struct channel *channel, unsigned int source, struct socket *socket, unsigned int count, void *buffer)
+{
+
+    if (!socket->active)
+        return 0;
+
+    switch (socket->protocol)
+    {
+
+    case IPV4_PROTOCOL_TCP:
+        return socket_tcp_send(channel, source, count, buffer);
+
+    case IPV4_PROTOCOL_UDP:
+        return socket_udp_send(channel, source, count, buffer);
+
+    }
+
+    return 0;
 
 }
 
@@ -389,53 +474,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         if (header.event == EVENT_DATA)
         {
 
-            struct ethernet_header *eheader = (struct ethernet_header *)(data.buffer);
-            unsigned short elen = ethernet_hlen(eheader);
+            socket_receive(channel, source, &local, &remote, message_datasize(&header), &data);
 
-            if (loadshort(eheader->type) == ETHERNET_TYPE_IPV4)
-            {
-
-                struct ipv4_header *iheader = (struct ipv4_header *)(data.buffer + elen);
-                unsigned short ilen = ipv4_hlen(iheader);
-                unsigned short itot = ipv4_len(iheader);
-
-                if (iheader->protocol == IPV4_PROTOCOL_TCP)
-                {
-
-                    struct tcp_header *theader = (struct tcp_header *)(data.buffer + elen + ilen);
-                    unsigned short tlen = tcp_hlen(theader);
-
-                    if (loadshort(theader->tp) == loadshort(local.info.tcp.port))
-                    {
-
-                        if (!remote.active)
-                            socket_inittcp(&remote, iheader->sip, theader->sp, loadint(theader->seq));
-
-                        handle_tcp_receive(channel, source, theader, data.buffer + elen + ilen + tlen, itot - (ilen + tlen));
-
-                    }
-
-                }
-
-                else if (iheader->protocol == IPV4_PROTOCOL_UDP)
-                {
-
-                    struct udp_header *uheader = (struct udp_header *)(data.buffer + elen + ilen);
-                    unsigned short ulen = udp_hlen(uheader);
-
-                    if (loadshort(uheader->tp) == loadshort(local.info.udp.port))
-                    {
-
-                        if (!remote.active)
-                            socket_initudp(&remote, iheader->sip, uheader->sp);
-
-                        handle_udp_receive(channel, source, uheader, data.buffer + elen + ilen + ulen, itot - (ilen + ulen));
-
-                    }
-
-                }
-
-            }
+            /* Print here */
 
         }
 
@@ -451,29 +492,9 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
     struct event_consoledata *consoledata = mdata;
     char s = consoledata->data;
-    unsigned int length = 1;
+    unsigned int count = socket_send(channel, source, &remote, 1, &s);
 
-    channel_place(channel, source, EVENT_DATA, length, &s);
-
-    if (remote.active)
-    {
-
-        switch (remote.protocol)
-        {
-
-        case IPV4_PROTOCOL_TCP:
-            handle_tcp_send(channel, source, length, &s);
-
-            break;
-
-        case IPV4_PROTOCOL_UDP:
-            handle_udp_send(channel, source, length, &s);
-
-            break;
-
-        }
-
-    }
+    channel_place(channel, source, EVENT_DATA, count, &s);
 
 }
 
