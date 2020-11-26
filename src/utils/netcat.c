@@ -495,7 +495,35 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 {
 
     struct event_consoledata *consoledata = mdata;
-    unsigned int count = socket_send(&local, &remote, 1, &consoledata->data);
+    unsigned int count = 0;
+
+    switch (consoledata->data)
+    {
+
+    case '\0':
+        break;
+
+    case '\t':
+        break;
+
+    case '\b':
+    case 0x7F:
+        break;
+
+    case '\r':
+        consoledata->data = '\n';
+
+    case '\n':
+        count = socket_send(&local, &remote, 1, &consoledata->data);
+
+        break;
+
+    default:
+        count = socket_send(&local, &remote, 1, &consoledata->data);
+
+        break;
+
+    }
 
     if (count)
         channel_place(channel, source, EVENT_DATA, count, &consoledata->data);
