@@ -501,7 +501,8 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
     struct event_consoledata *consoledata = mdata;
     unsigned int count = socket_send(&local, &remote, 1, &consoledata->data);
 
-    channel_place(channel, source, EVENT_DATA, count, &consoledata->data);
+    if (count)
+        channel_place(channel, source, EVENT_DATA, count, &consoledata->data);
 
 }
 
