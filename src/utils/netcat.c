@@ -128,6 +128,15 @@ static void tcp_connect(void)
 }
 #endif
 
+static void send(void *buffer, unsigned int count)
+{
+
+    file_open(FILE_G0);
+    file_writeall(FILE_G0, buffer, count);
+    file_close(FILE_G0);
+
+}
+
 static void handle_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header, void *payload, unsigned int psize)
 {
 
@@ -150,9 +159,7 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
 
             remote.info.tcp.seq = loadint(header->seq) + 1;
 
-            file_open(FILE_G0);
-            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
-            file_close(FILE_G0);
+            send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
 
             local.info.tcp.state = TCP_STATE_SYNRECEIVED;
 
@@ -198,9 +205,7 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
             local.info.tcp.seq = loadint(header->ack);
             remote.info.tcp.seq = loadint(header->seq) + psize;
 
-            file_open(FILE_G0);
-            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
-            file_close(FILE_G0);
+            send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
 
         }
 
@@ -212,9 +217,7 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
 
             remote.info.tcp.seq = loadint(header->seq) + 1;
 
-            file_open(FILE_G0);
-            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
-            file_close(FILE_G0);
+            send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
 
             local.info.tcp.state = TCP_STATE_CLOSEWAIT;
 
@@ -223,9 +226,7 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[___ : FIN] CLOSEWAIT -> LASTACK\n", 0), &data);
 
-            file_open(FILE_G0);
-            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_FIN, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
-            file_close(FILE_G0);
+            send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_FIN, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
 
             local.info.tcp.state = TCP_STATE_LASTACK;
 
@@ -350,9 +351,7 @@ static void handle_udp_send(struct channel *channel, unsigned int source, unsign
     if (!sentry || !tentry)
         return;
 
-    file_open(FILE_G0);
-    file_writeall(FILE_G0, &data, create_udp_message(&data, sentry->haddress, tentry->haddress, length, buffer));
-    file_close(FILE_G0);
+    send(&data, create_udp_message(&data, sentry->haddress, tentry->haddress, length, buffer));
 
 }
 
