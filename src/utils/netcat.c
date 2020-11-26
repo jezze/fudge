@@ -210,6 +210,8 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[FIN+ACK : ACK] ESTABLISHED -> CLOSEWAIT\n", 0), &data);
 
+            remote.info.tcp.seq = loadint(header->seq) + 1;
+
             file_open(FILE_G0);
             file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
             file_close(FILE_G0);
