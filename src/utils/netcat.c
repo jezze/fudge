@@ -196,7 +196,7 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
             local.info.tcp.seq = loadint(header->ack);
             remote.info.tcp.seq = loadint(header->seq) + psize;
 
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, payload, psize), &data);
+            channel_place(channel, source, EVENT_DATA, message_putbuffer(&data, psize, payload, 0), &data);
 
             file_open(FILE_G0);
             file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
@@ -364,29 +364,29 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         if (header.event == EVENT_DATA)
         {
 
-            struct ethernet_header *eheader = (struct ethernet_header *)data.buffer;
+            struct ethernet_header *eheader = (struct ethernet_header *)(data.buffer);
+            unsigned int elen = sizeof (struct ethernet_header);
 
             if (loadshort(eheader->type) == ETHERNET_TYPE_IPV4)
             {
 
-                struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
-                unsigned int ipv4tot = loadshort(iheader->length);
-                unsigned int ipv4len = (iheader->version & 0x0F) * 4;
+                struct ipv4_header *iheader = (struct ipv4_header *)(data.buffer + elen);
+                unsigned int ilen = (iheader->version & 0x0F) * 4;
+                unsigned int itot = loadshort(iheader->length);
 
                 if (iheader->protocol == IPV4_PROTOCOL_TCP)
                 {
 
-                    struct tcp_header *theader = (struct tcp_header *)((char *)iheader + ipv4len);
+                    struct tcp_header *theader = (struct tcp_header *)(data.buffer + elen + ilen);
+                    unsigned int tlen = (theader->flags[0] >> 4) * 4;
 
                     if (loadshort(theader->tp) == loadshort(local.info.tcp.port))
                     {
 
-                        unsigned int tcplen = (theader->flags[0] >> 4) * 4;
-
                         if (!remote.active)
                             socket_inittcp(&remote, iheader->sip, theader->sp, loadint(theader->seq));
 
-                        handle_tcp_receive(channel, source, theader, (char *)theader + tcplen, ipv4tot - ipv4len - tcplen);
+                        handle_tcp_receive(channel, source, theader, data.buffer + elen + ilen + tlen, itot - (ilen + tlen));
 
                     }
 
@@ -395,17 +395,16 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 else if (iheader->protocol == IPV4_PROTOCOL_UDP)
                 {
 
-                    struct udp_header *uheader = (struct udp_header *)((char *)iheader + ipv4len);
+                    struct udp_header *uheader = (struct udp_header *)(data.buffer + elen + ilen);
+                    unsigned int ulen = sizeof (struct udp_header);
 
                     if (loadshort(uheader->tp) == loadshort(local.info.udp.port))
                     {
 
-                        unsigned int udplen = sizeof (struct udp_header);
-
                         if (!remote.active)
                             socket_initudp(&remote, iheader->sip, uheader->sp);
 
-                        handle_udp_receive(channel, source, uheader, (char *)uheader + udplen, ipv4tot - ipv4len - udplen);
+                        handle_udp_receive(channel, source, uheader, data.buffer + elen + ilen + ulen, itot - (ilen + ulen));
 
                     }
 
