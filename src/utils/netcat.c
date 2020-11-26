@@ -193,10 +193,10 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
         if ((header->flags[1] & TCP_FLAGS1_PSH) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
+            channel_place(channel, source, EVENT_DATA, message_putbuffer(&data, psize, payload, 0), &data);
+
             local.info.tcp.seq = loadint(header->ack);
             remote.info.tcp.seq = loadint(header->seq) + psize;
-
-            channel_place(channel, source, EVENT_DATA, message_putbuffer(&data, psize, payload, 0), &data);
 
             file_open(FILE_G0);
             file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
@@ -204,13 +204,15 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
 
         }
 
-        else if (header->flags[1] & TCP_FLAGS1_FIN)
+        else if ((header->flags[1] & TCP_FLAGS1_FIN) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
             /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[FIN : ACK] ESTABLISHED -> CLOSEWAIT\n", 0), &data);
+            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[FIN+ACK : ACK] ESTABLISHED -> CLOSEWAIT\n", 0), &data);
 
-            /* SEND ACK */
+            file_open(FILE_G0);
+            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
+            file_close(FILE_G0);
 
             local.info.tcp.state = TCP_STATE_CLOSEWAIT;
 
@@ -219,7 +221,9 @@ static void handle_tcp_receive(struct channel *channel, unsigned int source, str
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[___ : FIN] CLOSEWAIT -> LASTACK\n", 0), &data);
 
-            /* SEND FIN */
+            file_open(FILE_G0);
+            file_writeall(FILE_G0, &data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_FIN, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
+            file_close(FILE_G0);
 
             local.info.tcp.state = TCP_STATE_LASTACK;
 
