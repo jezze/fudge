@@ -2,8 +2,6 @@
 #include <net.h>
 #include <abi.h>
 
-static struct socket local;
-static struct socket remote;
 static struct ipv4_arpentry arptable[8];
 
 static unsigned short loadshort(unsigned char seq[2])
@@ -38,54 +36,12 @@ static void saveint(unsigned char seq[4], unsigned int num)
 
 }
 
-static unsigned int create_tcp_message(struct message_data *data, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
+static void send(void *buffer, unsigned int count)
 {
 
-    struct ethernet_header *eheader = (struct ethernet_header *)data;
-    struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
-    struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
-    void *pdata = (void *)(theader + 1);
-    unsigned int length = sizeof (struct tcp_header) + count;
-    unsigned short checksum;
-
-    ethernet_initheader(eheader, ETHERNET_TYPE_IPV4, sha, tha);
-    ipv4_initheader(iheader, local.address, remote.address, IPV4_PROTOCOL_TCP, length);
-    tcp_initheader(theader, local.info.tcp.port, remote.info.tcp.port);
-    buffer_copy(pdata, buffer, count); 
-
-    theader->flags[0] = (5 << 4);
-    theader->flags[1] = flags;
-
-    saveint(theader->seq, seq);
-    saveint(theader->ack, ack);
-    saveshort(theader->window, 8192);
-
-    checksum = tcp_checksum(iheader->sip, iheader->tip, length, (unsigned short *)theader);
-
-    theader->checksum[0] = checksum;
-    theader->checksum[1] = checksum >> 8;
-
-    return sizeof (struct ethernet_header) + sizeof (struct ipv4_header) + length;
-
-}
-
-static unsigned int create_udp_message(struct message_data *data, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned int count, void *buffer)
-{
-
-    struct ethernet_header *eheader = (struct ethernet_header *)data;
-    struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
-    struct udp_header *uheader = (struct udp_header *)(iheader + 1);
-    void *pdata = (void *)(uheader + 1);
-    unsigned int length = sizeof (struct udp_header) + count;
-
-    ethernet_initheader(eheader, ETHERNET_TYPE_IPV4, sha, tha);
-    ipv4_initheader(iheader, local.address, remote.address, IPV4_PROTOCOL_UDP, length);
-    udp_initheader(uheader, local.info.udp.port, remote.info.udp.port, count);
-    buffer_copy(pdata, buffer, count); 
-
-    /* Create checksum */
-
-    return sizeof (struct ethernet_header) + sizeof (struct ipv4_header) + length;
+    file_open(FILE_G0);
+    file_writeall(FILE_G0, buffer, count);
+    file_close(FILE_G0);
 
 }
 
@@ -110,42 +66,89 @@ static struct ipv4_arpentry *findarpentry(void *paddress)
 
 }
 
-static void tcp_listen(void)
-{
-
-    local.info.tcp.state = TCP_STATE_LISTEN;
-
-}
-
-#if 0
-static void tcp_connect(void)
-{
-
-    /* Send SYN */
-
-    local.info.tcp.state = TCP_STATE_SYNSENT;
-
-}
-#endif
-
-static void send(void *buffer, unsigned int count)
-{
-
-    file_open(FILE_G0);
-    file_writeall(FILE_G0, buffer, count);
-    file_close(FILE_G0);
-
-}
-
-static unsigned int socket_tcp_receive(struct socket *local, struct socket *remote, struct tcp_header *header, void *pdata, unsigned int psize, struct channel *channel, unsigned int source)
+static unsigned int socket_tcp_create(struct socket *local, struct socket *remote, struct message_data *data, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
 {
 
     struct ipv4_arpentry *sentry = findarpentry(local->address);
     struct ipv4_arpentry *tentry = findarpentry(remote->address);
-    struct message_data data;
+    struct ethernet_header *eheader = (struct ethernet_header *)data;
+    struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
+    struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
+    void *pdata = (void *)(theader + 1);
+    unsigned int length = sizeof (struct tcp_header) + count;
+    unsigned short checksum;
 
     if (!sentry || !tentry)
         return 0;
+
+    ethernet_initheader(eheader, ETHERNET_TYPE_IPV4, sentry->haddress, tentry->haddress);
+    ipv4_initheader(iheader, local->address, remote->address, IPV4_PROTOCOL_TCP, length);
+    tcp_initheader(theader, local->info.tcp.port, remote->info.tcp.port);
+    buffer_copy(pdata, buffer, count); 
+
+    theader->flags[0] = (5 << 4);
+    theader->flags[1] = flags;
+
+    saveint(theader->seq, seq);
+    saveint(theader->ack, ack);
+    saveshort(theader->window, 8192);
+
+    checksum = tcp_checksum(iheader->sip, iheader->tip, length, (unsigned short *)theader);
+
+    theader->checksum[0] = checksum;
+    theader->checksum[1] = checksum >> 8;
+
+    return sizeof (struct ethernet_header) + sizeof (struct ipv4_header) + length;
+
+}
+
+static unsigned int socket_udp_create(struct socket *local, struct socket *remote, struct message_data *data, unsigned int count, void *buffer)
+{
+
+    struct ipv4_arpentry *sentry = findarpentry(local->address);
+    struct ipv4_arpentry *tentry = findarpentry(remote->address);
+    struct ethernet_header *eheader = (struct ethernet_header *)data;
+    struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
+    struct udp_header *uheader = (struct udp_header *)(iheader + 1);
+    void *pdata = (void *)(uheader + 1);
+    unsigned int length = sizeof (struct udp_header) + count;
+
+    if (!sentry || !tentry)
+        return 0;
+
+    ethernet_initheader(eheader, ETHERNET_TYPE_IPV4, sentry->haddress, tentry->haddress);
+    ipv4_initheader(iheader, local->address, remote->address, IPV4_PROTOCOL_UDP, length);
+    udp_initheader(uheader, local->info.udp.port, remote->info.udp.port, count);
+    buffer_copy(pdata, buffer, count); 
+
+    /* Create checksum */
+
+    return sizeof (struct ethernet_header) + sizeof (struct ipv4_header) + length;
+
+}
+
+static void socket_tcp_listen(struct socket *local)
+{
+
+    local->info.tcp.state = TCP_STATE_LISTEN;
+
+}
+
+#if 0
+static void socket_tcp_connect(struct socket *local)
+{
+
+    /* Send SYN */
+
+    local->info.tcp.state = TCP_STATE_SYNSENT;
+
+}
+#endif
+
+static unsigned int socket_tcp_receive(struct socket *local, struct socket *remote, struct tcp_header *header, void *pdata, unsigned int psize, struct channel *channel, unsigned int source)
+{
+
+    struct message_data data;
 
     switch (local->info.tcp.state)
     {
@@ -159,7 +162,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
             remote->info.tcp.seq = loadint(header->seq) + 1;
 
-            send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(&data, socket_tcp_create(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
 
@@ -203,7 +206,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
             local->info.tcp.seq = loadint(header->ack);
             remote->info.tcp.seq = loadint(header->seq) + psize;
 
-            send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(&data, socket_tcp_create(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             return psize;
 
@@ -217,7 +220,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
             remote->info.tcp.seq = loadint(header->seq) + 1;
 
-            send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(&data, socket_tcp_create(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_CLOSEWAIT;
 
@@ -226,7 +229,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[___ : FIN] CLOSEWAIT -> LASTACK\n", 0), &data);
 
-            send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(&data, socket_tcp_create(local, remote, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_LASTACK;
 
@@ -408,18 +411,13 @@ static unsigned int socket_receive(struct channel *channel, unsigned int source,
 static unsigned int socket_tcp_send(struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
 {
 
-    struct ipv4_arpentry *sentry = findarpentry(local->address);
-    struct ipv4_arpentry *tentry = findarpentry(remote->address);
     struct message_data data;
-
-    if (!sentry || !tentry)
-        return 0;
 
     switch (local->info.tcp.state)
     {
 
     case TCP_STATE_ESTABLISHED:
-        send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, psize, pdata));
+        send(&data, socket_tcp_create(local, remote, &data, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, psize, pdata));
 
         return psize;
 
@@ -432,14 +430,9 @@ static unsigned int socket_tcp_send(struct socket *local, struct socket *remote,
 static unsigned int socket_udp_send(struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
 {
 
-    struct ipv4_arpentry *sentry = findarpentry(local->address);
-    struct ipv4_arpentry *tentry = findarpentry(remote->address);
     struct message_data data;
 
-    if (!sentry || !tentry)
-        return 0;
-
-    send(&data, create_udp_message(&data, sentry->haddress, tentry->haddress, psize, pdata));
+    send(&data, socket_udp_create(local, remote, &data, psize, pdata));
 
     return psize;
 
@@ -465,6 +458,9 @@ static unsigned int socket_send(struct socket *local, struct socket *remote, uns
     return 0;
 
 }
+
+static struct socket local;
+static struct socket remote;
 
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
@@ -513,7 +509,7 @@ void init(struct channel *channel)
     unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
 
     socket_inittcp(&local, address, port, 42);
-    tcp_listen();
+    socket_tcp_listen(&local);
 
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;
