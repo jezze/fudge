@@ -137,7 +137,7 @@ static void send(void *buffer, unsigned int count)
 
 }
 
-static void socket_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header, void *payload, unsigned int psize)
+static unsigned int socket_tcp_receive(struct channel *channel, unsigned int source, struct tcp_header *header, void *payload, unsigned int psize)
 {
 
     struct ipv4_arpentry *sentry = findarpentry(local.address);
@@ -145,7 +145,7 @@ static void socket_tcp_receive(struct channel *channel, unsigned int source, str
     struct message_data data;
 
     if (!sentry || !tentry)
-        return;
+        return 0;
 
     switch (local.info.tcp.state)
     {
@@ -200,12 +200,12 @@ static void socket_tcp_receive(struct channel *channel, unsigned int source, str
         if ((header->flags[1] & TCP_FLAGS1_PSH) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
-            channel_place(channel, source, EVENT_DATA, message_putbuffer(&data, psize, payload, 0), &data);
-
             local.info.tcp.seq = loadint(header->ack);
             remote.info.tcp.seq = loadint(header->seq) + psize;
 
             send(&data, create_tcp_message(&data, sentry->haddress, tentry->haddress, TCP_FLAGS1_ACK, local.info.tcp.seq, remote.info.tcp.seq, 0, 0));
+
+            return psize;
 
         }
 
@@ -330,6 +330,8 @@ static void socket_tcp_receive(struct channel *channel, unsigned int source, str
 
     }
 
+    return 0;
+
 }
 
 static unsigned int socket_tcp_send(struct channel *channel, unsigned int source, unsigned int length, void *buffer)
@@ -356,10 +358,10 @@ static unsigned int socket_tcp_send(struct channel *channel, unsigned int source
 
 }
 
-static void socket_udp_receive(struct channel *channel, unsigned int source, struct udp_header *header, void *payload, unsigned int psize)
+static unsigned int socket_udp_receive(struct channel *channel, unsigned int source, struct udp_header *header, void *payload, unsigned int psize)
 {
 
-    channel_place(channel, source, EVENT_DATA, psize, payload);
+    return psize;
 
 }
 
@@ -379,7 +381,7 @@ static unsigned int socket_udp_send(struct channel *channel, unsigned int source
 
 }
 
-static unsigned int socket_receive(struct channel *channel, unsigned int source, struct socket *local, struct socket *remote, unsigned int count, void *buffer)
+static unsigned int socket_receive(struct channel *channel, unsigned int source, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
     unsigned char *data = buffer;
@@ -405,9 +407,8 @@ static unsigned int socket_receive(struct channel *channel, unsigned int source,
                 if (!remote->active)
                     socket_inittcp(remote, iheader->sip, theader->sp, loadint(theader->seq));
 
-                socket_tcp_receive(channel, source, theader, data + elen + ilen + tlen, itot - (ilen + tlen));
-
-                return 0;
+                if (socket_tcp_receive(channel, source, theader, data + elen + ilen + tlen, itot - (ilen + tlen)))
+                    return buffer_write(output, outputcount, data + elen + ilen + tlen, itot - (ilen + tlen), 0);
 
             }
 
@@ -425,9 +426,8 @@ static unsigned int socket_receive(struct channel *channel, unsigned int source,
                 if (!remote->active)
                     socket_initudp(remote, iheader->sip, uheader->sp);
 
-                socket_udp_receive(channel, source, uheader, data + elen + ilen + ulen, itot - (ilen + ulen));
-
-                return 0;
+                if (socket_udp_receive(channel, source, uheader, data + elen + ilen + ulen, itot - (ilen + ulen)))
+                    return buffer_write(output, outputcount, data + elen + ilen + ulen, itot - (ilen + ulen), 0);
 
             }
 
@@ -474,9 +474,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         if (header.event == EVENT_DATA)
         {
 
-            socket_receive(channel, source, &local, &remote, message_datasize(&header), &data);
+            char buffer[BUFFER_SIZE];
+            unsigned int count = socket_receive(channel, source, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
 
-            /* Print here */
+            if (count)
+                channel_place(channel, source, EVENT_DATA, count, buffer);
+
 
         }
 
