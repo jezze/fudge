@@ -118,7 +118,7 @@ static unsigned int socket_tcp_create(struct socket *local, struct socket *remot
     theader->checksum[0] = checksum;
     theader->checksum[1] = checksum >> 8;
 
-    return sizeof (struct ethernet_header) + sizeof (struct ipv4_header) + length;
+    return ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader) + count;
 
 }
 
@@ -131,13 +131,12 @@ static unsigned int socket_udp_create(struct socket *local, struct socket *remot
     struct udp_header *uheader = (struct udp_header *)((char *)iheader + ipv4_hlen(iheader));
     void *pdata = ((char *)uheader + udp_hlen(uheader));
 
-    ipv4_initheader(iheader, local->address, remote->address, IPV4_PROTOCOL_UDP, length);
     udp_initheader(uheader, local->info.udp.port, remote->info.udp.port, count);
     buffer_copy(pdata, buffer, count); 
 
     /* Create checksum */
 
-    return sizeof (struct ethernet_header) + sizeof (struct ipv4_header) + length;
+    return ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader) + count;
 
 }
 
