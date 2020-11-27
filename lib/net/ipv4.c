@@ -1,48 +1,21 @@
 #include <fudge.h>
 #include "ipv4.h"
 
-/*
-static unsigned short ipv4_checksum(unsigned short *addr, unsigned int count)
+unsigned short ipv4_calculatechecksum(struct ipv4_header *header, unsigned int len)
 {
 
+    unsigned short *payload = (unsigned short *)header;
     unsigned int sum = 0;
 
-    while (count > 1)
+    while (len > 1)
     {
 
-        sum += * addr++;
-        count -= 2;
-
-    }
-
-    if (count > 0)
-        sum += ((*addr)&htons(0xFF00));
-
-    while (sum >> 16)
-      sum = (sum & 0xffff) + (sum >> 16);
-
-    sum = ~sum;
-
-    return ((unsigned short)sum);
-
-}
-*/
-
-unsigned int ipv4_calculatechecksum(void *buffer, unsigned int count)
-{
-
-    unsigned short *ip1 = buffer;
-    unsigned int sum = 0;
-
-    while (count > 1)
-    {
-
-        sum += *ip1++;
+        sum += *payload++;
 
         if (sum & 0x80000000)
             sum = (sum & 0xFFFF) + (sum >> 16);
 
-        count -= 2;
+        len -= 2;
 
     }
 
@@ -70,7 +43,7 @@ unsigned short ipv4_len(struct ipv4_header *header)
 void ipv4_initheader(struct ipv4_header *header, unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned int protocol, unsigned int count)
 {
 
-    unsigned int checksum;
+    unsigned short checksum;
 
     header->version = 0x45;
     header->dscp = 0;

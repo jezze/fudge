@@ -12,9 +12,10 @@ static unsigned short htons(unsigned short v)
 
 }
 
-unsigned short udp_checksum(unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned short len, unsigned short *payload)
+unsigned short udp_checksum(struct udp_header *header, unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned short len)
 {
 
+    unsigned short *payload = (unsigned short *)header;
     unsigned int sum = 0;
     unsigned short sum2;
 

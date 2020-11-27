@@ -15,4 +15,5 @@ struct icmp_header
 
 };
 
+unsigned short icmp_calculatechecksum(struct icmp_header *header, unsigned int len);
 void icmp_initheader(struct icmp_header *header, unsigned char type, unsigned char code);

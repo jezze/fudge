@@ -21,7 +21,7 @@ static void *icmp_writehead(void *buffer, unsigned char type, unsigned char code
     header->checksum[0] = 0;
     header->checksum[1] = 0;
 
-    checksum = ipv4_calculatechecksum(header, count);
+    checksum = icmp_calculatechecksum(header, count);
 
     header->checksum[0] = checksum;
     header->checksum[1] = checksum >> 8;
