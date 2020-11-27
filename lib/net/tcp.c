@@ -12,9 +12,10 @@ static unsigned short htons(unsigned short v)
 
 }
 
-unsigned short tcp_checksum(unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned short len, unsigned short *payload)
+unsigned short tcp_checksum(struct tcp_header *header, unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned short len)
 {
 
+    unsigned short *payload = (unsigned short *)header;
     unsigned int sum = 0;
 
     sum += ((sip[1] << 8) | sip[0]);
