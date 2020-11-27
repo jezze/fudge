@@ -66,23 +66,43 @@ static struct ipv4_arpentry *findarpentry(void *paddress)
 
 }
 
-static unsigned int socket_tcp_create(struct socket *local, struct socket *remote, struct message_data *data, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
+static struct ethernet_header *socket_ethernet_create(struct socket *local, struct socket *remote, void *buffer)
 {
 
+    struct ethernet_header *header = buffer;
     struct ipv4_arpentry *sentry = findarpentry(local->address);
     struct ipv4_arpentry *tentry = findarpentry(remote->address);
-    struct ethernet_header *eheader = (struct ethernet_header *)data;
-    struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
-    struct tcp_header *theader = (struct tcp_header *)(iheader + 1);
-    void *pdata = (void *)(theader + 1);
-    unsigned int length = sizeof (struct tcp_header) + count;
-    unsigned short checksum;
 
     if (!sentry || !tentry)
         return 0;
 
-    ethernet_initheader(eheader, ETHERNET_TYPE_IPV4, sentry->haddress, tentry->haddress);
-    ipv4_initheader(iheader, local->address, remote->address, IPV4_PROTOCOL_TCP, length);
+    ethernet_initheader(header, ETHERNET_TYPE_IPV4, sentry->haddress, tentry->haddress);
+
+    return header;
+
+}
+
+static struct ipv4_header *socket_ipv4_create(struct socket *local, struct socket *remote, void *buffer, unsigned char protocol, unsigned short length)
+{
+
+    struct ipv4_header *header = buffer;
+
+    ipv4_initheader(header, local->address, remote->address, protocol, length);
+
+    return header;
+
+}
+
+static unsigned int socket_tcp_create(struct socket *local, struct socket *remote, struct message_data *data, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
+{
+
+    unsigned int length = sizeof (struct tcp_header) + count;
+    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data);
+    struct ipv4_header *iheader = socket_ipv4_create(local, remote, (char *)eheader + ethernet_hlen(eheader), IPV4_PROTOCOL_TCP, length);
+    struct tcp_header *theader = (struct tcp_header *)((char *)iheader + ipv4_hlen(iheader));
+    void *pdata = ((char *)theader + tcp_hlen(theader));
+    unsigned short checksum;
+
     tcp_initheader(theader, local->info.tcp.port, remote->info.tcp.port);
     buffer_copy(pdata, buffer, count); 
 
@@ -105,18 +125,12 @@ static unsigned int socket_tcp_create(struct socket *local, struct socket *remot
 static unsigned int socket_udp_create(struct socket *local, struct socket *remote, struct message_data *data, unsigned int count, void *buffer)
 {
 
-    struct ipv4_arpentry *sentry = findarpentry(local->address);
-    struct ipv4_arpentry *tentry = findarpentry(remote->address);
-    struct ethernet_header *eheader = (struct ethernet_header *)data;
-    struct ipv4_header *iheader = (struct ipv4_header *)(eheader + 1);
-    struct udp_header *uheader = (struct udp_header *)(iheader + 1);
-    void *pdata = (void *)(uheader + 1);
     unsigned int length = sizeof (struct udp_header) + count;
+    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data);
+    struct ipv4_header *iheader = socket_ipv4_create(local, remote, (char *)eheader + ethernet_hlen(eheader), IPV4_PROTOCOL_UDP, length);
+    struct udp_header *uheader = (struct udp_header *)((char *)iheader + ipv4_hlen(iheader));
+    void *pdata = ((char *)uheader + udp_hlen(uheader));
 
-    if (!sentry || !tentry)
-        return 0;
-
-    ethernet_initheader(eheader, ETHERNET_TYPE_IPV4, sentry->haddress, tentry->haddress);
     ipv4_initheader(iheader, local->address, remote->address, IPV4_PROTOCOL_UDP, length);
     udp_initheader(uheader, local->info.udp.port, remote->info.udp.port, count);
     buffer_copy(pdata, buffer, count); 
