@@ -24,6 +24,8 @@ struct socket
 
 };
 
+void socket_listen(struct socket *local);
+void socket_connect(struct socket *local, struct socket *remote);
 void socket_init(struct socket *socket, unsigned char protocol, unsigned char address[IPV4_ADDRSIZE]);
-void socket_inittcp(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq);
-void socket_initudp(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE]);
+void socket_tcp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq);
+void socket_udp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE]);

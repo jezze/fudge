@@ -4,6 +4,44 @@
 #include "udp.h"
 #include "socket.h"
 
+void socket_listen(struct socket *local)
+{
+
+    switch (local->protocol)
+    {
+
+    case IPV4_PROTOCOL_TCP:
+        local->info.tcp.state = TCP_STATE_LISTEN;
+
+        break;
+
+    case IPV4_PROTOCOL_UDP:
+        break;
+
+    }
+
+}
+
+void socket_connect(struct socket *local, struct socket *remote)
+{
+
+    switch (local->protocol)
+    {
+
+    case IPV4_PROTOCOL_TCP:
+        /* TODO: Send SYN */
+
+        local->info.tcp.state = TCP_STATE_SYNSENT;
+
+        break;
+
+    case IPV4_PROTOCOL_UDP:
+        break;
+
+    }
+
+}
+
 void socket_init(struct socket *socket, unsigned char protocol, unsigned char address[IPV4_ADDRSIZE])
 {
 
@@ -14,7 +52,7 @@ void socket_init(struct socket *socket, unsigned char protocol, unsigned char ad
 
 }
 
-void socket_inittcp(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq)
+void socket_tcp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq)
 {
 
     socket_init(socket, 0x06, address);
@@ -25,7 +63,7 @@ void socket_inittcp(struct socket *socket, unsigned char address[IPV4_ADDRSIZE],
 
 }
 
-void socket_initudp(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE])
+void socket_udp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE])
 {
 
     socket_init(socket, 0x11, address);

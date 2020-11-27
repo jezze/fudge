@@ -127,24 +127,6 @@ static unsigned int socket_udp_create(struct socket *local, struct socket *remot
 
 }
 
-static void socket_tcp_listen(struct socket *local)
-{
-
-    local->info.tcp.state = TCP_STATE_LISTEN;
-
-}
-
-#if 0
-static void socket_tcp_connect(struct socket *local)
-{
-
-    /* Send SYN */
-
-    local->info.tcp.state = TCP_STATE_SYNSENT;
-
-}
-#endif
-
 static unsigned int socket_tcp_receive(struct socket *local, struct socket *remote, struct tcp_header *header, void *pdata, unsigned int psize, struct channel *channel, unsigned int source)
 {
 
@@ -371,7 +353,7 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
                 unsigned int psize = itot - (ilen + tlen);
 
                 if (!remote->active)
-                    socket_inittcp(remote, iheader->sip, theader->sp, loadint(theader->seq));
+                    socket_tcp_init(remote, iheader->sip, theader->sp, loadint(theader->seq));
 
                 if (socket_tcp_receive(local, remote, theader, pdata, psize, channel, source))
                     return buffer_write(output, outputcount, pdata, psize, 0);
@@ -393,7 +375,7 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
                 unsigned int psize = itot - (ilen + ulen);
 
                 if (!remote->active)
-                    socket_initudp(remote, iheader->sip, uheader->sp);
+                    socket_udp_init(remote, iheader->sip, uheader->sp);
 
                 if (socket_udp_receive(local, remote, uheader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
@@ -536,8 +518,8 @@ void init(struct channel *channel)
     unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
     unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
 
-    socket_inittcp(&local, address, port, 42);
-    socket_tcp_listen(&local);
+    socket_tcp_init(&local, address, port, 42);
+    socket_listen(&local);
 
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;
