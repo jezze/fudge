@@ -151,10 +151,14 @@ static unsigned int socket_udp_build(struct socket *local, struct socket *remote
     struct ipv4_header *iheader = socket_ipv4_create(local, remote, data->buffer + ethernet_hlen(eheader), IPV4_PROTOCOL_UDP, length);
     struct udp_header *uheader = socket_udp_create(local, remote, data->buffer + ethernet_hlen(eheader) + ipv4_hlen(iheader), count);
     void *pdata = (data->buffer + ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader));
+    unsigned short checksum;
 
     buffer_copy(pdata, buffer, count); 
 
-    /* Create checksum */
+    checksum = udp_checksum(uheader, local->address, remote->address, udp_hlen(uheader) + count);
+
+    uheader->checksum[0] = checksum;
+    uheader->checksum[1] = checksum >> 8;
 
     return ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader) + count;
 
