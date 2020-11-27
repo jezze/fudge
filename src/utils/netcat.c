@@ -126,10 +126,10 @@ static unsigned int socket_tcp_build(struct socket *local, struct socket *remote
 {
 
     unsigned int length = sizeof (struct tcp_header) + count;
-    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data);
-    struct ipv4_header *iheader = socket_ipv4_create(local, remote, (char *)eheader + ethernet_hlen(eheader), IPV4_PROTOCOL_TCP, length);
-    struct tcp_header *theader = socket_tcp_create(local, remote, (char *)iheader + ipv4_hlen(iheader), flags, seq, ack);
-    void *pdata = ((char *)theader + tcp_hlen(theader));
+    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data->buffer);
+    struct ipv4_header *iheader = socket_ipv4_create(local, remote, data->buffer + ethernet_hlen(eheader), IPV4_PROTOCOL_TCP, length);
+    struct tcp_header *theader = socket_tcp_create(local, remote, data->buffer + ethernet_hlen(eheader) + ipv4_hlen(iheader), flags, seq, ack);
+    void *pdata = (data->buffer + ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader));
     unsigned short checksum;
 
     buffer_copy(pdata, buffer, count); 
@@ -147,10 +147,10 @@ static unsigned int socket_udp_build(struct socket *local, struct socket *remote
 {
 
     unsigned int length = sizeof (struct udp_header) + count;
-    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data);
-    struct ipv4_header *iheader = socket_ipv4_create(local, remote, (char *)eheader + ethernet_hlen(eheader), IPV4_PROTOCOL_UDP, length);
-    struct udp_header *uheader = socket_udp_create(local, remote, (char *)iheader + ipv4_hlen(iheader), count);
-    void *pdata = ((char *)uheader + udp_hlen(uheader));
+    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data->buffer);
+    struct ipv4_header *iheader = socket_ipv4_create(local, remote, data->buffer + ethernet_hlen(eheader), IPV4_PROTOCOL_UDP, length);
+    struct udp_header *uheader = socket_udp_create(local, remote, data->buffer + ethernet_hlen(eheader) + ipv4_hlen(iheader), count);
+    void *pdata = (data->buffer + ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader));
 
     buffer_copy(pdata, buffer, count); 
 
