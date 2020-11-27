@@ -93,25 +93,46 @@ static struct ipv4_header *socket_ipv4_create(struct socket *local, struct socke
 
 }
 
-static unsigned int socket_tcp_create(struct socket *local, struct socket *remote, struct message_data *data, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
+static struct tcp_header *socket_tcp_create(struct socket *local, struct socket *remote, void *buffer, unsigned short flags, unsigned int seq, unsigned int ack)
+{
+
+    struct tcp_header *header = buffer;
+
+    tcp_initheader(header, local->info.tcp.port, remote->info.tcp.port);
+
+    header->flags[0] = (5 << 4);
+    header->flags[1] = flags;
+
+    saveint(header->seq, seq);
+    saveint(header->ack, ack);
+    saveshort(header->window, 8192);
+
+    return header;
+
+}
+
+static struct udp_header *socket_udp_create(struct socket *local, struct socket *remote, void *buffer, unsigned int count)
+{
+
+    struct udp_header *header = buffer;
+
+    udp_initheader(header, local->info.udp.port, remote->info.udp.port, count);
+
+    return header;
+
+}
+
+static unsigned int socket_tcp_build(struct socket *local, struct socket *remote, struct message_data *data, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
 {
 
     unsigned int length = sizeof (struct tcp_header) + count;
     struct ethernet_header *eheader = socket_ethernet_create(local, remote, data);
     struct ipv4_header *iheader = socket_ipv4_create(local, remote, (char *)eheader + ethernet_hlen(eheader), IPV4_PROTOCOL_TCP, length);
-    struct tcp_header *theader = (struct tcp_header *)((char *)iheader + ipv4_hlen(iheader));
+    struct tcp_header *theader = socket_tcp_create(local, remote, (char *)iheader + ipv4_hlen(iheader), flags, seq, ack);
     void *pdata = ((char *)theader + tcp_hlen(theader));
     unsigned short checksum;
 
-    tcp_initheader(theader, local->info.tcp.port, remote->info.tcp.port);
     buffer_copy(pdata, buffer, count); 
-
-    theader->flags[0] = (5 << 4);
-    theader->flags[1] = flags;
-
-    saveint(theader->seq, seq);
-    saveint(theader->ack, ack);
-    saveshort(theader->window, 8192);
 
     checksum = tcp_checksum(theader, local->address, remote->address, tcp_hlen(theader) + count);
 
@@ -122,16 +143,15 @@ static unsigned int socket_tcp_create(struct socket *local, struct socket *remot
 
 }
 
-static unsigned int socket_udp_create(struct socket *local, struct socket *remote, struct message_data *data, unsigned int count, void *buffer)
+static unsigned int socket_udp_build(struct socket *local, struct socket *remote, struct message_data *data, unsigned int count, void *buffer)
 {
 
     unsigned int length = sizeof (struct udp_header) + count;
     struct ethernet_header *eheader = socket_ethernet_create(local, remote, data);
     struct ipv4_header *iheader = socket_ipv4_create(local, remote, (char *)eheader + ethernet_hlen(eheader), IPV4_PROTOCOL_UDP, length);
-    struct udp_header *uheader = (struct udp_header *)((char *)iheader + ipv4_hlen(iheader));
+    struct udp_header *uheader = socket_udp_create(local, remote, (char *)iheader + ipv4_hlen(iheader), count);
     void *pdata = ((char *)uheader + udp_hlen(uheader));
 
-    udp_initheader(uheader, local->info.udp.port, remote->info.udp.port, count);
     buffer_copy(pdata, buffer, count); 
 
     /* Create checksum */
@@ -157,7 +177,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
             remote->info.tcp.seq = loadint(header->seq) + 1;
 
-            send(&data, socket_tcp_create(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
 
@@ -201,7 +221,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
             local->info.tcp.seq = loadint(header->ack);
             remote->info.tcp.seq = loadint(header->seq) + psize;
 
-            send(&data, socket_tcp_create(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             return psize;
 
@@ -215,7 +235,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
             remote->info.tcp.seq = loadint(header->seq) + 1;
 
-            send(&data, socket_tcp_create(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_CLOSEWAIT;
 
@@ -224,7 +244,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[___ : FIN] CLOSEWAIT -> LASTACK\n", 0), &data);
 
-            send(&data, socket_tcp_create(local, remote, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_LASTACK;
 
@@ -412,7 +432,7 @@ static unsigned int socket_tcp_send(struct socket *local, struct socket *remote,
     {
 
     case TCP_STATE_ESTABLISHED:
-        send(&data, socket_tcp_create(local, remote, &data, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, psize, pdata));
+        send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, psize, pdata));
 
         return psize;
 
@@ -427,7 +447,7 @@ static unsigned int socket_udp_send(struct socket *local, struct socket *remote,
 
     struct message_data data;
 
-    send(&data, socket_udp_create(local, remote, &data, psize, pdata));
+    send(&data, socket_udp_build(local, remote, &data, psize, pdata));
 
     return psize;
 
