@@ -113,7 +113,7 @@ static unsigned int socket_tcp_create(struct socket *local, struct socket *remot
     saveint(theader->ack, ack);
     saveshort(theader->window, 8192);
 
-    checksum = tcp_checksum(iheader->sip, iheader->tip, length, (unsigned short *)theader);
+    checksum = tcp_checksum(local->address, remote->address, tcp_hlen(theader) + count, (unsigned short *)theader);
 
     theader->checksum[0] = checksum;
     theader->checksum[1] = checksum >> 8;
