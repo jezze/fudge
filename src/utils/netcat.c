@@ -344,7 +344,7 @@ static unsigned int socket_udp_receive(struct socket *local, struct socket *remo
 
 }
 
-static unsigned int socket_receive(struct channel *channel, unsigned int source, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+static unsigned int socket_receive(struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output, struct channel *channel, unsigned int source)
 {
 
     unsigned char *data = buffer;
@@ -477,7 +477,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
             char buffer[BUFFER_SIZE];
-            unsigned int count = socket_receive(channel, source, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            unsigned int count = socket_receive(&local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer, channel, source);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
