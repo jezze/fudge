@@ -12,4 +12,5 @@ struct arp_header
 
 };
 
+unsigned short arp_hlen(struct arp_header *header);
 void arp_initheader(struct arp_header *header, unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength, unsigned int operation);

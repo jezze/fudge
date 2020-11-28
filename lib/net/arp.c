@@ -1,6 +1,13 @@
 #include <fudge.h>
 #include "arp.h"
 
+unsigned short arp_hlen(struct arp_header *header)
+{
+
+    return sizeof (struct arp_header);
+
+}
+
 void arp_initheader(struct arp_header *header, unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength, unsigned int operation)
 {
 

@@ -370,7 +370,38 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
     struct ethernet_header *eheader = (struct ethernet_header *)(data);
     unsigned short elen = ethernet_hlen(eheader);
 
-    if (loadshort(eheader->type) == ETHERNET_TYPE_IPV4)
+    if (loadshort(eheader->type) == ETHERNET_TYPE_ARP)
+    {
+
+        struct arp_header *aheader = (struct arp_header *)(data + elen);
+        /*
+        unsigned short alen = arp_hlen(aheader);
+        */
+
+        if (loadshort(aheader->htype) == 0x0001 && loadshort(aheader->ptype) == ETHERNET_TYPE_IPV4)
+        {
+
+            channel_place(channel, source, EVENT_DATA, 13, "ARP received\n");
+
+            if (loadshort(aheader->operation) == ARP_REQUEST)
+            {
+
+/*
+                unsigned char *sha = data + elen + alen;
+                unsigned char *sip = data + elen + alen + aheader->hlength;
+                unsigned char *tha = data + elen + alen + aheader->hlength + aheader->plength;
+                unsigned char *tip = data + elen + alen + aheader->hlength + aheader->plength + aheader->hlength;
+*/
+
+                channel_place(channel, source, EVENT_DATA, 12, "ARP request\n");
+
+            }
+
+        }
+
+    }
+
+    else if (loadshort(eheader->type) == ETHERNET_TYPE_IPV4)
     {
 
         struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
