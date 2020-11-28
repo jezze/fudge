@@ -128,14 +128,15 @@ static struct udp_header *socket_udp_create(struct socket *local, struct socket 
 
 }
 
-static unsigned int socket_tcp_build(struct socket *local, struct socket *remote, struct message_data *data, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
+static unsigned int socket_tcp_build(struct socket *local, struct socket *remote, void *output, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
 {
 
+    unsigned char *data = output;
     unsigned int length = sizeof (struct tcp_header) + count;
-    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data->buffer);
-    struct ipv4_header *iheader = socket_ipv4_create(local, remote, data->buffer + ethernet_hlen(eheader), IPV4_PROTOCOL_TCP, length);
-    struct tcp_header *theader = socket_tcp_create(local, remote, data->buffer + ethernet_hlen(eheader) + ipv4_hlen(iheader), flags, seq, ack);
-    void *pdata = (data->buffer + ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader));
+    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data);
+    struct ipv4_header *iheader = socket_ipv4_create(local, remote, data + ethernet_hlen(eheader), IPV4_PROTOCOL_TCP, length);
+    struct tcp_header *theader = socket_tcp_create(local, remote, data + ethernet_hlen(eheader) + ipv4_hlen(iheader), flags, seq, ack);
+    void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader));
     unsigned short checksum;
 
     buffer_copy(pdata, buffer, count); 
@@ -149,14 +150,15 @@ static unsigned int socket_tcp_build(struct socket *local, struct socket *remote
 
 }
 
-static unsigned int socket_udp_build(struct socket *local, struct socket *remote, struct message_data *data, unsigned int count, void *buffer)
+static unsigned int socket_udp_build(struct socket *local, struct socket *remote, void *output, unsigned int count, void *buffer)
 {
 
+    unsigned char *data = output;
     unsigned int length = sizeof (struct udp_header) + count;
-    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data->buffer);
-    struct ipv4_header *iheader = socket_ipv4_create(local, remote, data->buffer + ethernet_hlen(eheader), IPV4_PROTOCOL_UDP, length);
-    struct udp_header *uheader = socket_udp_create(local, remote, data->buffer + ethernet_hlen(eheader) + ipv4_hlen(iheader), count);
-    void *pdata = (data->buffer + ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader));
+    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data);
+    struct ipv4_header *iheader = socket_ipv4_create(local, remote, data + ethernet_hlen(eheader), IPV4_PROTOCOL_UDP, length);
+    struct udp_header *uheader = socket_udp_create(local, remote, data + ethernet_hlen(eheader) + ipv4_hlen(iheader), count);
+    void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader));
     unsigned short checksum;
 
     buffer_copy(pdata, buffer, count); 
