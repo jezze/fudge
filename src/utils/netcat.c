@@ -385,9 +385,6 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
         if (loadshort(aheader->htype) == 0x0001 && loadshort(aheader->ptype) == ETHERNET_TYPE_IPV4)
         {
 
-            unsigned char *sha = data + elen + alen;
-            unsigned char *sip = data + elen + alen + aheader->hlength;
-
             if (loadshort(aheader->operation) == ARP_REQUEST)
             {
 
@@ -395,6 +392,9 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
 
                 if (buffer_match(tip, arplocal.paddress, IPV4_ADDRSIZE))
                 {
+
+                    unsigned char *sha = data + elen + alen;
+                    unsigned char *sip = data + elen + alen + aheader->hlength;
 
                     savearpremote(sha, sip);
 
