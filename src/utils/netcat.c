@@ -391,10 +391,9 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
             if (loadshort(aheader->operation) == ARP_REQUEST)
             {
 
-                unsigned char *tha = data + elen + alen + aheader->hlength + aheader->plength;
                 unsigned char *tip = data + elen + alen + aheader->hlength + aheader->plength + aheader->hlength;
 
-                if (buffer_match(tha, arplocal.haddress, ETHERNET_ADDRSIZE), buffer_match(tip, arplocal.paddress, IPV4_ADDRSIZE))
+                if (buffer_match(tip, arplocal.paddress, IPV4_ADDRSIZE))
                 {
 
                     savearpremote(sha, sip);
