@@ -2,7 +2,8 @@
 #include <net.h>
 #include <abi.h>
 
-static struct ipv4_arpentry arptable[8];
+static struct ipv4_arpentry arplocal;
+static struct ipv4_arpentry arpremote;
 
 static unsigned short loadshort(unsigned char seq[2])
 {
@@ -45,24 +46,29 @@ static void send(void *buffer, unsigned int count)
 
 }
 
+static void loadarplocal(unsigned char paddress[IPV4_ADDRSIZE])
+{
+
+    buffer_copy(arplocal.paddress, paddress, IPV4_ADDRSIZE);
+
+    file_open(FILE_G1);
+    file_readall(FILE_G1, arplocal.haddress, ETHERNET_ADDRSIZE);
+    file_close(FILE_G1);
+
+}
+
+static void savearpremote(unsigned char haddress[ETHERNET_ADDRSIZE], unsigned char paddress[IPV4_ADDRSIZE])
+{
+
+    buffer_copy(arpremote.haddress, haddress, ETHERNET_ADDRSIZE);
+    buffer_copy(arpremote.paddress, paddress, IPV4_ADDRSIZE);
+
+}
+
 static struct ipv4_arpentry *findarpentry(void *paddress)
 {
 
-    unsigned int i;
-
-    file_open(FILE_G2);
-    file_readall(FILE_G2, arptable, sizeof (struct ipv4_arpentry) * 8);
-    file_close(FILE_G2);
-
-    for (i = 0; i < 8; i++)
-    {
-
-        if (buffer_match(arptable[i].paddress, paddress, IPV4_ADDRSIZE))
-            return &arptable[i];
-
-    }
-
-    return 0;
+    return &arpremote;
 
 }
 
@@ -70,7 +76,7 @@ static struct ethernet_header *socket_ethernet_create(struct socket *local, stru
 {
 
     struct ethernet_header *header = buffer;
-    struct ipv4_arpentry *sentry = findarpentry(local->address);
+    struct ipv4_arpentry *sentry = &arplocal;
     struct ipv4_arpentry *tentry = findarpentry(remote->address);
 
     if (!sentry || !tentry)
@@ -374,26 +380,28 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
     {
 
         struct arp_header *aheader = (struct arp_header *)(data + elen);
-        /*
         unsigned short alen = arp_hlen(aheader);
-        */
 
         if (loadshort(aheader->htype) == 0x0001 && loadshort(aheader->ptype) == ETHERNET_TYPE_IPV4)
         {
 
-            channel_place(channel, source, EVENT_DATA, 13, "ARP received\n");
+            unsigned char *sha = data + elen + alen;
+            unsigned char *sip = data + elen + alen + aheader->hlength;
 
             if (loadshort(aheader->operation) == ARP_REQUEST)
             {
 
-/*
-                unsigned char *sha = data + elen + alen;
-                unsigned char *sip = data + elen + alen + aheader->hlength;
                 unsigned char *tha = data + elen + alen + aheader->hlength + aheader->plength;
                 unsigned char *tip = data + elen + alen + aheader->hlength + aheader->plength + aheader->hlength;
-*/
 
-                channel_place(channel, source, EVENT_DATA, 12, "ARP request\n");
+                if (buffer_match(tha, arplocal.haddress, ETHERNET_ADDRSIZE), buffer_match(tip, arplocal.paddress, IPV4_ADDRSIZE))
+                {
+
+                    savearpremote(sha, sip);
+
+                    /* Add reply here */
+
+                }
 
             }
 
@@ -595,9 +603,7 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G1, "/system/ethernet/if:0/addr"))
         return;
 
-    if (!file_walk2(FILE_G2, "/system/ethernet/ipv4/arptable"))
-        return;
-
+    loadarplocal(address);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
