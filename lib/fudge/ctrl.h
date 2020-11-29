@@ -36,31 +36,6 @@ struct ctrl_videosettings
 
 };
 
-struct ipv4_arpentry
-{
-
-    unsigned char haddress[6];
-    unsigned char paddress[4];
-
-};
-
-struct ipv4_socket
-{
-
-    unsigned char address[4];
-    unsigned char port[2];
-
-};
-
-struct ctrl_conheader
-{
-
-    struct ipv4_socket sender;
-    struct ipv4_socket target;
-    unsigned int count;
-
-};
-
 struct ctrl_timertick
 {
 

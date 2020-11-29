@@ -1,6 +1,14 @@
 #include <fudge.h>
 #include <abi.h>
 
+struct ipv4_arpentry
+{
+
+    unsigned char haddress[6];
+    unsigned char paddress[4];
+
+};
+
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
