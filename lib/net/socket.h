@@ -19,7 +19,8 @@ struct socket
 
     unsigned int active;
     unsigned char protocol;
-    unsigned char address[IPV4_ADDRSIZE];
+    unsigned char haddress[ETHERNET_ADDRSIZE];
+    unsigned char paddress[IPV4_ADDRSIZE];
     union { struct socket_tcp tcp; struct socket_udp udp; } info;
 
 };

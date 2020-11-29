@@ -1,4 +1,6 @@
 #include <fudge.h>
+#include "ethernet.h"
+#include "arp.h"
 #include "ipv4.h"
 #include "tcp.h"
 #include "udp.h"
@@ -48,7 +50,7 @@ void socket_init(struct socket *socket, unsigned char protocol, unsigned char ad
     socket->active = 1;
     socket->protocol = protocol;
 
-    buffer_copy(&socket->address, address, IPV4_ADDRSIZE);
+    buffer_copy(&socket->paddress, address, IPV4_ADDRSIZE);
 
 }
 

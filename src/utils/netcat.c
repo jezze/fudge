@@ -2,9 +2,6 @@
 #include <net.h>
 #include <abi.h>
 
-static struct ipv4_arpentry arplocal;
-static struct ipv4_arpentry arpremote;
-
 static unsigned short loadshort(unsigned char seq[2])
 {
 
@@ -46,29 +43,20 @@ static void send(void *buffer, unsigned int count)
 
 }
 
-static void loadarplocal(unsigned char paddress[IPV4_ADDRSIZE])
+static void loadarplocal(struct socket *local)
 {
 
-    buffer_copy(arplocal.paddress, paddress, IPV4_ADDRSIZE);
-
     file_open(FILE_G1);
-    file_readall(FILE_G1, arplocal.haddress, ETHERNET_ADDRSIZE);
+    file_readall(FILE_G1, local->haddress, ETHERNET_ADDRSIZE);
     file_close(FILE_G1);
 
 }
 
-static void savearpremote(unsigned char haddress[ETHERNET_ADDRSIZE], unsigned char paddress[IPV4_ADDRSIZE])
+static void savearpremote(struct socket *remote, unsigned char haddress[ETHERNET_ADDRSIZE], unsigned char paddress[IPV4_ADDRSIZE])
 {
 
-    buffer_copy(arpremote.haddress, haddress, ETHERNET_ADDRSIZE);
-    buffer_copy(arpremote.paddress, paddress, IPV4_ADDRSIZE);
-
-}
-
-static struct ipv4_arpentry *findarpentry(void *paddress)
-{
-
-    return &arpremote;
+    buffer_copy(remote->haddress, haddress, ETHERNET_ADDRSIZE);
+    buffer_copy(remote->paddress, paddress, IPV4_ADDRSIZE);
 
 }
 
@@ -87,13 +75,8 @@ static struct ethernet_header *socket_ethernet_create(struct socket *local, stru
 {
 
     struct ethernet_header *header = buffer;
-    struct ipv4_arpentry *sentry = &arplocal;
-    struct ipv4_arpentry *tentry = findarpentry(remote->address);
 
-    if (!sentry || !tentry)
-        return 0;
-
-    ethernet_initheader(header, ETHERNET_TYPE_IPV4, sentry->haddress, tentry->haddress);
+    ethernet_initheader(header, ETHERNET_TYPE_IPV4, local->haddress, remote->haddress);
 
     return header;
 
@@ -104,7 +87,7 @@ static struct ipv4_header *socket_ipv4_create(struct socket *local, struct socke
 
     struct ipv4_header *header = buffer;
 
-    ipv4_initheader(header, local->address, remote->address, protocol, length);
+    ipv4_initheader(header, local->paddress, remote->paddress, protocol, length);
 
     return header;
 
@@ -163,7 +146,7 @@ static unsigned int socket_tcp_build(struct socket *local, struct socket *remote
 
     buffer_copy(pdata, buffer, count); 
 
-    checksum = tcp_checksum(theader, local->address, remote->address, tcp_hlen(theader) + count);
+    checksum = tcp_checksum(theader, local->paddress, remote->paddress, tcp_hlen(theader) + count);
 
     theader->checksum[0] = checksum;
     theader->checksum[1] = checksum >> 8;
@@ -185,7 +168,7 @@ static unsigned int socket_udp_build(struct socket *local, struct socket *remote
 
     buffer_copy(pdata, buffer, count); 
 
-    checksum = udp_checksum(uheader, local->address, remote->address, udp_hlen(uheader) + count);
+    checksum = udp_checksum(uheader, local->paddress, remote->paddress, udp_hlen(uheader) + count);
 
     uheader->checksum[0] = checksum;
     uheader->checksum[1] = checksum >> 8;
@@ -414,13 +397,13 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
 
                 unsigned char *tip = data + elen + alen + aheader->hlength + aheader->plength + aheader->hlength;
 
-                if (buffer_match(tip, arplocal.paddress, IPV4_ADDRSIZE))
+                if (buffer_match(tip, local->paddress, IPV4_ADDRSIZE))
                 {
 
                     unsigned char *sha = data + elen + alen;
                     unsigned char *sip = data + elen + alen + aheader->hlength;
 
-                    savearpremote(sha, sip);
+                    savearpremote(remote, sha, sip);
 
                     /* Send as well */
 
@@ -638,7 +621,7 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G1, "/system/ethernet/if:0/addr"))
         return;
 
-    loadarplocal(address);
+    loadarplocal(&local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
