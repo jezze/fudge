@@ -72,6 +72,17 @@ static struct ipv4_arpentry *findarpentry(void *paddress)
 
 }
 
+static struct arp_header *socket_arp_create(struct socket *local, struct socket *remote, void *buffer, unsigned short operation)
+{
+
+    struct arp_header *header = buffer;
+
+    arp_initheader(header, 1, ETHERNET_ADDRSIZE, ETHERNET_TYPE_IPV4, IPV4_ADDRSIZE, operation);
+
+    return header;
+
+}
+
 static struct ethernet_header *socket_ethernet_create(struct socket *local, struct socket *remote, void *buffer)
 {
 
@@ -125,6 +136,17 @@ static struct udp_header *socket_udp_create(struct socket *local, struct socket 
     udp_initheader(header, local->info.udp.port, remote->info.udp.port, count);
 
     return header;
+
+}
+
+static unsigned int socket_arp_build(struct socket *local, struct socket *remote, void *output)
+{
+
+    unsigned char *data = output;
+    struct ethernet_header *eheader = socket_ethernet_create(local, remote, data);
+    struct arp_header *aheader = socket_arp_create(local, remote, data + ethernet_hlen(eheader), ARP_REQUEST);
+
+    return ethernet_hlen(eheader) + arp_len(aheader);
 
 }
 
@@ -400,7 +422,7 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
 
                     savearpremote(sha, sip);
 
-                    /* Add reply here */
+                    /* Send as well */
 
                 }
 
@@ -464,6 +486,18 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
     }
 
     return 0;
+
+}
+
+/* add static later */
+unsigned int socket_arp_send(struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
+{
+
+    struct message_data data;
+
+    send(&data, socket_arp_build(local, remote, &data));
+
+    return psize;
 
 }
 

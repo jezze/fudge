@@ -8,7 +8,14 @@ unsigned short arp_hlen(struct arp_header *header)
 
 }
 
-void arp_initheader(struct arp_header *header, unsigned int htype, unsigned char hlength, unsigned int ptype, unsigned char plength, unsigned int operation)
+unsigned short arp_len(struct arp_header *header)
+{
+
+    return sizeof (struct arp_header) + header->hlength * 2 + header->plength * 2;
+
+}
+
+void arp_initheader(struct arp_header *header, unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength, unsigned short operation)
 {
 
     header->htype[0] = htype >> 8;
