@@ -2,38 +2,6 @@
 #include <net.h>
 #include <abi.h>
 
-static unsigned short loadshort(unsigned char seq[2])
-{
-
-    return (seq[0] << 8) | (seq[1] << 0);
-
-}
-
-static unsigned int loadint(unsigned char seq[4])
-{
-
-    return (seq[0] << 24) | (seq[1] << 16) | (seq[2] << 8) | (seq[3] << 0);
-
-}
-
-static void saveshort(unsigned char seq[2], unsigned short num)
-{
-
-    seq[0] = num >> 8;
-    seq[1] = num >> 0;
-
-}
-
-static void saveint(unsigned char seq[4], unsigned int num)
-{
-
-    seq[0] = num >> 24;
-    seq[1] = num >> 16;
-    seq[2] = num >> 8;
-    seq[3] = num >> 0;
-
-}
-
 static void send(void *buffer, unsigned int count)
 {
 
@@ -57,68 +25,6 @@ static void savearpremote(struct socket *remote, unsigned char haddress[ETHERNET
 
     buffer_copy(remote->haddress, haddress, ETHERNET_ADDRSIZE);
     buffer_copy(remote->paddress, paddress, IPV4_ADDRSIZE);
-
-}
-
-static struct arp_header *socket_arp_create(struct socket *local, struct socket *remote, void *buffer, unsigned short operation)
-{
-
-    struct arp_header *header = buffer;
-
-    arp_initheader(header, 1, ETHERNET_ADDRSIZE, ETHERNET_TYPE_IPV4, IPV4_ADDRSIZE, operation);
-
-    return header;
-
-}
-
-static struct ethernet_header *socket_ethernet_create(struct socket *local, struct socket *remote, void *buffer)
-{
-
-    struct ethernet_header *header = buffer;
-
-    ethernet_initheader(header, ETHERNET_TYPE_IPV4, local->haddress, remote->haddress);
-
-    return header;
-
-}
-
-static struct ipv4_header *socket_ipv4_create(struct socket *local, struct socket *remote, void *buffer, unsigned char protocol, unsigned short length)
-{
-
-    struct ipv4_header *header = buffer;
-
-    ipv4_initheader(header, local->paddress, remote->paddress, protocol, length);
-
-    return header;
-
-}
-
-static struct tcp_header *socket_tcp_create(struct socket *local, struct socket *remote, void *buffer, unsigned short flags, unsigned int seq, unsigned int ack)
-{
-
-    struct tcp_header *header = buffer;
-
-    tcp_initheader(header, local->info.tcp.port, remote->info.tcp.port);
-
-    header->flags[0] = (5 << 4);
-    header->flags[1] = flags;
-
-    saveint(header->seq, seq);
-    saveint(header->ack, ack);
-    saveshort(header->window, 8192);
-
-    return header;
-
-}
-
-static struct udp_header *socket_udp_create(struct socket *local, struct socket *remote, void *buffer, unsigned int count)
-{
-
-    struct udp_header *header = buffer;
-
-    udp_initheader(header, local->info.udp.port, remote->info.udp.port, count);
-
-    return header;
 
 }
 
@@ -192,7 +98,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[SYN : SYN+ACK] LISTEN -> SYNRECEIVED\n", 0), &data);
 
-            remote->info.tcp.seq = loadint(header->seq) + 1;
+            remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
             send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
@@ -224,7 +130,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[ACK : ___] SYNRECEIVED -> ESTABLISHED\n", 0), &data);
 
-            local->info.tcp.seq = loadint(header->ack);
+            local->info.tcp.seq = socket_load32(header->ack);
             local->info.tcp.state = TCP_STATE_ESTABLISHED;
 
         }
@@ -235,8 +141,8 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
         if ((header->flags[1] & TCP_FLAGS1_PSH) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
-            local->info.tcp.seq = loadint(header->ack);
-            remote->info.tcp.seq = loadint(header->seq) + psize;
+            local->info.tcp.seq = socket_load32(header->ack);
+            remote->info.tcp.seq = socket_load32(header->seq) + psize;
 
             send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
@@ -250,7 +156,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
             /* remove later */
             channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[FIN+ACK : ACK] ESTABLISHED -> CLOSEWAIT\n", 0), &data);
 
-            remote->info.tcp.seq = loadint(header->seq) + 1;
+            remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
             send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
@@ -270,7 +176,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
         else if (header->flags[1] & TCP_FLAGS1_ACK)
         {
 
-            local->info.tcp.seq = loadint(header->ack);
+            local->info.tcp.seq = socket_load32(header->ack);
 
         }
 
@@ -383,16 +289,16 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
     struct ethernet_header *eheader = (struct ethernet_header *)(data);
     unsigned short elen = ethernet_hlen(eheader);
 
-    if (loadshort(eheader->type) == ETHERNET_TYPE_ARP)
+    if (socket_load16(eheader->type) == ETHERNET_TYPE_ARP)
     {
 
         struct arp_header *aheader = (struct arp_header *)(data + elen);
         unsigned short alen = arp_hlen(aheader);
 
-        if (loadshort(aheader->htype) == 0x0001 && loadshort(aheader->ptype) == ETHERNET_TYPE_IPV4)
+        if (socket_load16(aheader->htype) == 0x0001 && socket_load16(aheader->ptype) == ETHERNET_TYPE_IPV4)
         {
 
-            if (loadshort(aheader->operation) == ARP_REQUEST)
+            if (socket_load16(aheader->operation) == ARP_REQUEST)
             {
 
                 unsigned char *tip = data + elen + alen + aheader->hlength + aheader->plength + aheader->hlength;
@@ -415,7 +321,7 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
 
     }
 
-    else if (loadshort(eheader->type) == ETHERNET_TYPE_IPV4)
+    else if (socket_load16(eheader->type) == ETHERNET_TYPE_IPV4)
     {
 
         struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
@@ -428,14 +334,14 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
             struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);
             unsigned short tlen = tcp_hlen(theader);
 
-            if (loadshort(theader->tp) == loadshort(local->info.tcp.port))
+            if (socket_load16(theader->tp) == socket_load16(local->info.tcp.port))
             {
 
                 void *pdata = data + elen + ilen + tlen;
                 unsigned int psize = itot - (ilen + tlen);
 
                 if (!remote->active)
-                    socket_tcp_init(remote, iheader->sip, theader->sp, loadint(theader->seq));
+                    socket_tcp_init(remote, iheader->sip, theader->sp, socket_load32(theader->seq));
 
                 if (socket_tcp_receive(local, remote, theader, pdata, psize, channel, source))
                     return buffer_write(output, outputcount, pdata, psize, 0);
@@ -450,7 +356,7 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
             struct udp_header *uheader = (struct udp_header *)(data + elen + ilen);
             unsigned short ulen = udp_hlen(uheader);
 
-            if (loadshort(uheader->tp) == loadshort(local->info.udp.port))
+            if (socket_load16(uheader->tp) == socket_load16(local->info.udp.port))
             {
 
                 void *pdata = data + elen + ilen + ulen;
