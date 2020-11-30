@@ -95,9 +95,6 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
         if (header->flags[1] & TCP_FLAGS1_SYN)
         {
 
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[SYN : SYN+ACK] LISTEN -> SYNRECEIVED\n", 0), &data);
-
             remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
             send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
@@ -112,10 +109,9 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
         if ((header->flags[1] & TCP_FLAGS1_SYN) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[SYN+ACK : ACK] SYNSENT -> ESTABLISHED\n", 0), &data);
+            remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
-            /* SEND ACK */
+            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_ESTABLISHED;
 
@@ -126,9 +122,6 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
     case TCP_STATE_SYNRECEIVED:
         if (header->flags[1] & TCP_FLAGS1_ACK)
         {
-
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[ACK : ___] SYNRECEIVED -> ESTABLISHED\n", 0), &data);
 
             local->info.tcp.seq = socket_load32(header->ack);
             local->info.tcp.state = TCP_STATE_ESTABLISHED;
@@ -153,9 +146,6 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
         else if ((header->flags[1] & TCP_FLAGS1_FIN) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[FIN+ACK : ACK] ESTABLISHED -> CLOSEWAIT\n", 0), &data);
-
             remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
             send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
@@ -163,9 +153,6 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
             local->info.tcp.state = TCP_STATE_CLOSEWAIT;
 
             /* Wait for application to close down */
-
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[___ : FIN] CLOSEWAIT -> LASTACK\n", 0), &data);
 
             send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
@@ -186,9 +173,6 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
         if (header->flags[1] & TCP_FLAGS1_ACK)
         {
 
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[ACK : ___] FINWAIT1 -> FINWAIT2\n", 0), &data);
-
             local->info.tcp.state = TCP_STATE_FINWAIT2;
 
         }
@@ -196,10 +180,9 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
         else if (header->flags[1] & TCP_FLAGS1_FIN)
         {
 
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[FIN : ACK] FINWAIT1 -> CLOSING\n", 0), &data);
+            remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
-            /* Send ACK */
+            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_CLOSING;
 
@@ -211,15 +194,9 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
         if (header->flags[1] & TCP_FLAGS1_FIN)
         {
 
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[FIN : ACK] FINWAIT2 -> TIMEWAIT\n", 0), &data);
-
             local->info.tcp.state = TCP_STATE_TIMEWAIT;
 
             /* Sleep some time */
-
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[___ : ___] TIMEWAIT -> CLOSED\n", 0), &data);
 
             local->info.tcp.state = TCP_STATE_CLOSED;
 
@@ -234,15 +211,9 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
         if (header->flags[1] & TCP_FLAGS1_ACK)
         {
 
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[ACK : ___] CLOSING -> TIMEWAIT\n", 0), &data);
-
             local->info.tcp.state = TCP_STATE_TIMEWAIT;
 
             /* Sleep some time */
-
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[___ : ___] TIMEWAIT -> CLOSED\n", 0), &data);
 
             local->info.tcp.state = TCP_STATE_CLOSED;
 
@@ -253,9 +224,6 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
     case TCP_STATE_LASTACK:
         if (header->flags[1] & TCP_FLAGS1_ACK)
         {
-
-            /* remove later */
-            channel_place(channel, source, EVENT_DATA, message_putstring(&data, "[ACK : ___] LASTACK -> CLOSED\n", 0), &data);
 
             local->info.tcp.state = TCP_STATE_CLOSED;
 
