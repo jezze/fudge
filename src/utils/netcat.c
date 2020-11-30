@@ -83,7 +83,7 @@ static unsigned int socket_udp_build(struct socket *local, struct socket *remote
 
 }
 
-static unsigned int socket_tcp_receive(struct socket *local, struct socket *remote, struct tcp_header *header, void *pdata, unsigned int psize, struct channel *channel, unsigned int source)
+static unsigned int socket_tcp_receive(struct socket *local, struct socket *remote, struct tcp_header *header, void *pdata, unsigned int psize)
 {
 
     struct message_data data;
@@ -311,7 +311,7 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
                 if (!remote->active)
                     socket_tcp_init(remote, iheader->sip, theader->sp, socket_load32(theader->seq));
 
-                if (socket_tcp_receive(local, remote, theader, pdata, psize, channel, source))
+                if (socket_tcp_receive(local, remote, theader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
 
             }
