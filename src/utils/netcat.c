@@ -117,6 +117,17 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
         }
 
+        else if ((header->flags[1] & TCP_FLAGS1_SYN))
+        {
+
+            remote->info.tcp.seq = socket_load32(header->seq) + 1;
+
+            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+
+            local->info.tcp.state = TCP_STATE_SYNRECEIVED;
+
+        }
+
         break;
 
     case TCP_STATE_SYNRECEIVED:
