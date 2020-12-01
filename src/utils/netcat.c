@@ -14,7 +14,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     file_link(FILE_G0);
 
-    while (channel_pollsource(channel, 0, &header, &data))
+    while (channel_polldescriptor(channel, FILE_G0, &header, &data))
     {
 
         if (header.event == EVENT_DATA)

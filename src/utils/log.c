@@ -9,7 +9,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     file_link(FILE_G0);
 
-    while (channel_pollsource(channel, 0, &header, &data))
+    while (channel_polldescriptor(channel, FILE_G0, &header, &data))
         channel_place(channel, source, EVENT_DATA, message_datasize(&header), &data);
 
     file_unlink(FILE_G0);

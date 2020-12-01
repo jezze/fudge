@@ -95,6 +95,24 @@ unsigned int channel_pollevent(struct channel *channel, unsigned int event, stru
 
 }
 
+unsigned int channel_polldescriptor(struct channel *channel, unsigned int descriptor, struct message_header *header, struct message_data *data)
+{
+
+    while (channel_poll(channel, header, data))
+    {
+
+        /* All kernel messages are 0 right now */
+        if (header->source == 0)
+            return header->event;
+
+        channel_dispatch(channel, header, data);
+
+    }
+
+    return 0;
+
+}
+
 unsigned int channel_pollsource(struct channel *channel, unsigned int source, struct message_header *header, struct message_data *data)
 {
 
