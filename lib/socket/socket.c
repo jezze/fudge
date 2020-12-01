@@ -1,10 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
-#include "ethernet.h"
-#include "arp.h"
-#include "ipv4.h"
-#include "tcp.h"
-#include "udp.h"
+#include <net.h>
 #include "socket.h"
 
 static unsigned short load16(unsigned char seq[2])

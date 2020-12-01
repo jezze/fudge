@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <net.h>
 #include <abi.h>
+#include <socket.h>
 
 static struct socket local;
 static struct socket remote;
