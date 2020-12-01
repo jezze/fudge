@@ -80,16 +80,15 @@ void init(struct channel *channel)
     unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
     unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
 
-    socket_tcp_init(&local, address, port, 42);
-    socket_listen(&local);
-
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;
 
     if (!file_walk2(FILE_G1, "/system/ethernet/if:0/addr"))
         return;
 
+    socket_tcp_init(&local, address, port, 42);
     socket_loadarplocal(FILE_G1, &local);
+    socket_listen(&local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
