@@ -36,7 +36,7 @@ $ tar xjf crosstool-ng-1.24.0.tar.bz2
 $ cd crosstool-ng-1.24.0
 $ ./configure
 $ make
-# make install
+$ make install
 ```
 
 The last command must be run as root.
@@ -117,36 +117,39 @@ top directory of your source tree.
 
 ## Running in QEMU
 
-There is a script you can use to start Fudge in QEMU called vmctrl.
+There is a script you can use to start Fudge in QEMU called vmctrl. All of the
+vmctrl commands most likely requires root because they will set up networking in
+the form of tap interfaces.
 
 ```sh
-# ./vmctrl run 1
+$ ./vmctrl run 1
 ```
 
-This will start instance 1 of Fudge. Notice that this requires root because it
-needs to set up some userspace networking. The 1 is a unique identifier for this
-particular instance of Fudge. Valid number are between 1 and 254.
+This will start instance 1 of Fudge. The 1 is a unique identifier for this
+particular instance. Valid number are between 1 and 254.
 
 Once you started one or more instances of Fudge you can bridge their networks
 together with this command.
 
 ```sh
-# ./vmctrl connect
+$ ./vmctrl connect
 ```
 
 Now each VM should be able to talk to eachother. In order for them to talk with
-the outside works you need to set up NAT on your host machine and as argument
-you need to select the NIC that connects to the internet (like eth0 in this
-example).
+the outside world you need to set up NAT on your host machine. This can be done
+by issuing the following command:
 
 ```sh
-# ./vmctrl nat eth0
+$ ./vmctrl nat eth0
 ```
+
+Replace eth0 with the interface you have connected to the internet.
 
 ## COMMUNITY
 
 Come talk to us on irc:
 
 Server: irc.freenode.net
+
 Channel: #fudge
 
