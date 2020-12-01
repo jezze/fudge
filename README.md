@@ -1,8 +1,8 @@
-# FUDGE OPERATING SYSTEM
+# Fudge Operating System
 
 http://www.fudgeos.com/
 
-## OVERVIEW
+## Overview
 
 Fudge is a concurrent-focused operating system. Fudge is different from most
 other operating systems in that it adheres strongly to the actor model. The
@@ -20,7 +20,7 @@ are typically only big enough to support only the most basic of functionallity,
 leaving the higher level logic to be done in userspace. This is to not force a
 design onto the user so they can choose to implement things differently.
 
-## Building
+## Building a cross compiler
 
 In order to compile Fudge for x86 we need to have a cross-compiler. Building a
 cross-compiler can be a tedious task but luckily there is a tool called
@@ -81,6 +81,10 @@ $ ct-ng build
 
 Depending on your system this may take some time, usually around 10-15 minutes.
 
+## Building Fudge
+
+This requires you to have the cross compiler built.
+
 ### Get the Fudge source code
 
 First you need to download the source code if you haven't done that already.
@@ -115,7 +119,7 @@ $ make ARCH=x86
 You should now have a binary called fudge and an image called fudge.cpio in the
 top directory of your source tree.
 
-## Running in QEMU
+## Running Fudge in QEMU
 
 There is a script you can use to start Fudge in QEMU called vmctrl. All of the
 vmctrl commands most likely requires root because they will set up networking in
@@ -145,7 +149,7 @@ $ ./vmctrl nat eth0
 
 Replace eth0 with the interface you have connected to the internet.
 
-## COMMUNITY
+## Community
 
 Come talk to us on irc:
 
