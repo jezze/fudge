@@ -2,21 +2,21 @@
 #include <net.h>
 #include <abi.h>
 
-static void send(void *buffer, unsigned int count)
+static void send(unsigned int descriptor, void *buffer, unsigned int count)
 {
 
-    file_open(FILE_G0);
-    file_writeall(FILE_G0, buffer, count);
-    file_close(FILE_G0);
+    file_open(descriptor);
+    file_writeall(descriptor, buffer, count);
+    file_close(descriptor);
 
 }
 
-static void loadarplocal(struct socket *local)
+static void loadarplocal(unsigned int descriptor, struct socket *local)
 {
 
-    file_open(FILE_G1);
-    file_readall(FILE_G1, local->haddress, ETHERNET_ADDRSIZE);
-    file_close(FILE_G1);
+    file_open(descriptor);
+    file_readall(descriptor, local->haddress, ETHERNET_ADDRSIZE);
+    file_close(descriptor);
 
 }
 
@@ -83,7 +83,7 @@ static unsigned int socket_udp_build(struct socket *local, struct socket *remote
 
 }
 
-static unsigned int socket_tcp_receive(struct socket *local, struct socket *remote, struct tcp_header *header, void *pdata, unsigned int psize)
+static unsigned int socket_tcp_receive(unsigned int descriptor, struct socket *local, struct socket *remote, struct tcp_header *header, void *pdata, unsigned int psize)
 {
 
     struct message_data data;
@@ -97,7 +97,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
             remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
-            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
 
@@ -111,7 +111,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
             remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
-            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_ESTABLISHED;
 
@@ -122,7 +122,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
             remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
-            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
 
@@ -148,7 +148,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
             local->info.tcp.seq = socket_load32(header->ack);
             remote->info.tcp.seq = socket_load32(header->seq) + psize;
 
-            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             return psize;
 
@@ -159,13 +159,13 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
             remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
-            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_CLOSEWAIT;
 
             /* Wait for application to close down */
 
-            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_LASTACK;
 
@@ -193,7 +193,7 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
             remote->info.tcp.seq = socket_load32(header->seq) + 1;
 
-            send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_CLOSING;
 
@@ -254,14 +254,14 @@ static unsigned int socket_tcp_receive(struct socket *local, struct socket *remo
 
 }
 
-static unsigned int socket_udp_receive(struct socket *local, struct socket *remote, struct udp_header *header, void *pdata, unsigned int psize)
+static unsigned int socket_udp_receive(unsigned int descriptor, struct socket *local, struct socket *remote, struct udp_header *header, void *pdata, unsigned int psize)
 {
 
     return psize;
 
 }
 
-static unsigned int socket_receive(struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output, struct channel *channel, unsigned int source)
+static unsigned int socket_receive(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output, struct channel *channel, unsigned int source)
 {
 
     unsigned char *data = buffer;
@@ -322,7 +322,7 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
                 if (!remote->active)
                     socket_tcp_init(remote, iheader->sip, theader->sp, socket_load32(theader->seq));
 
-                if (socket_tcp_receive(local, remote, theader, pdata, psize))
+                if (socket_tcp_receive(descriptor, local, remote, theader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
 
             }
@@ -344,7 +344,7 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
                 if (!remote->active)
                     socket_udp_init(remote, iheader->sip, uheader->sp);
 
-                if (socket_udp_receive(local, remote, uheader, pdata, psize))
+                if (socket_udp_receive(descriptor, local, remote, uheader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
 
             }
@@ -358,18 +358,18 @@ static unsigned int socket_receive(struct socket *local, struct socket *remote, 
 }
 
 /* add static later */
-unsigned int socket_arp_send(struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
+unsigned int socket_arp_send(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
 {
 
     struct message_data data;
 
-    send(&data, socket_arp_build(local, remote, &data));
+    send(descriptor, &data, socket_arp_build(local, remote, &data));
 
     return psize;
 
 }
 
-static unsigned int socket_tcp_send(struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
+static unsigned int socket_tcp_send(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
 {
 
     struct message_data data;
@@ -378,7 +378,7 @@ static unsigned int socket_tcp_send(struct socket *local, struct socket *remote,
     {
 
     case TCP_STATE_ESTABLISHED:
-        send(&data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, psize, pdata));
+        send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, psize, pdata));
 
         return psize;
 
@@ -388,18 +388,18 @@ static unsigned int socket_tcp_send(struct socket *local, struct socket *remote,
 
 }
 
-static unsigned int socket_udp_send(struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
+static unsigned int socket_udp_send(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
 {
 
     struct message_data data;
 
-    send(&data, socket_udp_build(local, remote, &data, psize, pdata));
+    send(descriptor, &data, socket_udp_build(local, remote, &data, psize, pdata));
 
     return psize;
 
 }
 
-static unsigned int socket_send(struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
+static unsigned int socket_send(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
 {
 
     if (!remote->active)
@@ -409,10 +409,10 @@ static unsigned int socket_send(struct socket *local, struct socket *remote, uns
     {
 
     case IPV4_PROTOCOL_TCP:
-        return socket_tcp_send(local, remote, psize, pdata);
+        return socket_tcp_send(descriptor, local, remote, psize, pdata);
 
     case IPV4_PROTOCOL_UDP:
-        return socket_udp_send(local, remote, psize, pdata);
+        return socket_udp_send(descriptor, local, remote, psize, pdata);
 
     }
 
@@ -438,7 +438,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
             char buffer[BUFFER_SIZE];
-            unsigned int count = socket_receive(&local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer, channel, source);
+            unsigned int count = socket_receive(FILE_G0, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer, channel, source);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
@@ -475,12 +475,12 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         consoledata->data = '\n';
 
     case '\n':
-        count = socket_send(&local, &remote, 1, &consoledata->data);
+        count = socket_send(FILE_G0, &local, &remote, 1, &consoledata->data);
 
         break;
 
     default:
-        count = socket_send(&local, &remote, 1, &consoledata->data);
+        count = socket_send(FILE_G0, &local, &remote, 1, &consoledata->data);
 
         break;
 
@@ -506,7 +506,7 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G1, "/system/ethernet/if:0/addr"))
         return;
 
-    loadarplocal(&local);
+    loadarplocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
