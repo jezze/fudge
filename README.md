@@ -17,8 +17,9 @@ Fudge tries to keep as little state as possible inside the kernel itself to
 avoid complexity. There is for instance no out-of-the-box support for dynamic
 memory allocation. Drivers are implemented as loadable kernel modules but they
 are typically only big enough to support only the most basic of functionallity,
-leaving the higher level logic to be done in userspace. This is to not force a
-design onto the user so they can choose to implement things differently.
+leaving the higher level logic to be done in userspace because there is no best
+solution to every use case so a user can chose to implement things differently
+if they wish.
 
 ## Building a cross compiler
 
@@ -57,8 +58,6 @@ $ ct-ng menuconfig
 ```
 
 This will start the configuration program. Set the target architecture to x86.
-
-Select:
 
 ```sh
 Target options -> Target Architecture -> x86
