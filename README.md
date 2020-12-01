@@ -81,7 +81,7 @@ last screen you will be asked if you want to save the settings. Press yes.
 
 ### Building the cross compiler
 
-Start to build the cross-compiler:
+Start building the cross-compiler:
 
 ```sh
 $ ct-ng build
@@ -91,7 +91,7 @@ Depending on your system this may take some time, usually around 10-15 minutes.
 
 ## Building Fudge
 
-This requires you to have the cross compiler built.
+This requires you to have the cross-compiler built.
 
 ### Get the Fudge source code
 
@@ -121,7 +121,7 @@ start another one. This means that you will need to reset it from time to time.
 Finally we can build Fudge.
 
 ```sh
-$ make ARCH=x86
+$ make
 ```
 
 You should now have a binary called fudge and an image called fudge.cpio in the
