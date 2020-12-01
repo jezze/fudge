@@ -566,7 +566,7 @@ void socket_init(struct socket *socket, unsigned char protocol, unsigned char ad
 void socket_tcp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq)
 {
 
-    socket_init(socket, 0x06, address);
+    socket_init(socket, IPV4_PROTOCOL_TCP, address);
     buffer_copy(&socket->info.tcp.port, port, TCP_PORTSIZE);
 
     socket->info.tcp.state = TCP_STATE_CLOSED;
@@ -577,7 +577,7 @@ void socket_tcp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]
 void socket_udp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE])
 {
 
-    socket_init(socket, 0x11, address);
+    socket_init(socket, IPV4_PROTOCOL_UDP, address);
     buffer_copy(&socket->info.udp.port, port, UDP_PORTSIZE);
 
 }
