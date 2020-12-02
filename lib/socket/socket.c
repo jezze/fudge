@@ -123,14 +123,23 @@ static struct udp_header *createudp(struct socket *local, struct socket *remote,
 
 }
 
-static unsigned int buildarp(struct socket *local, struct socket *remote, void *output)
+static unsigned int buildarp(struct socket *local, struct socket *remote, void *output, unsigned short operation, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char sip[IPV4_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE])
 {
 
     unsigned char *data = output;
     struct ethernet_header *eheader = createethernet(local, remote, data);
-    struct arp_header *aheader = createarp(local, remote, data + ethernet_hlen(eheader), ARP_REQUEST);
+    struct arp_header *aheader = createarp(local, remote, data + ethernet_hlen(eheader), operation);
+    void *psha = (data + ethernet_hlen(eheader) + arp_hlen(aheader));
+    void *psip = (data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE);
+    void *ptha = (data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE);
+    void *ptip = (data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE + ETHERNET_ADDRSIZE);
 
-    return ethernet_hlen(eheader) + arp_len(aheader);
+    buffer_copy(psha, sha, ETHERNET_ADDRSIZE); 
+    buffer_copy(psip, sip, IPV4_ADDRSIZE); 
+    buffer_copy(ptha, tha, ETHERNET_ADDRSIZE); 
+    buffer_copy(ptip, tip, IPV4_ADDRSIZE); 
+
+    return ethernet_hlen(eheader) + arp_len(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE;
 
 }
 
@@ -453,12 +462,25 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 }
 
 /* add static later */
-unsigned int sendarp(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
+unsigned int sendarprequest(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
+{
+
+    unsigned char tha[ETHERNET_ADDRSIZE] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    struct message_data data;
+
+    send(descriptor, &data, buildarp(local, remote, &data, ARP_REQUEST, local->haddress, local->paddress, tha, remote->paddress));
+
+    return psize;
+
+}
+
+/* add static later */
+unsigned int sendarreply(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
 {
 
     struct message_data data;
 
-    send(descriptor, &data, buildarp(local, remote, &data));
+    send(descriptor, &data, buildarp(local, remote, &data, ARP_REPLY, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
     return psize;
 
