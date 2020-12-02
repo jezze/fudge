@@ -9,9 +9,10 @@ static unsigned short load16(unsigned char seq[2])
 
 }
 
-static void print_icmp(struct channel *channel, unsigned int source, struct icmp_header *header)
+static void print_icmp(struct channel *channel, unsigned int source, void *buffer)
 {
 
+    struct icmp_header *header = buffer;
     struct message_data data;
     unsigned int offset = 0;
 
@@ -27,18 +28,19 @@ static void print_icmp(struct channel *channel, unsigned int source, struct icmp
 
 }
 
-static void print_tcp(struct channel *channel, unsigned int source, struct tcp_header *header)
+static void print_tcp(struct channel *channel, unsigned int source, void *buffer)
 {
 
+    struct tcp_header *header = buffer;
     struct message_data data;
     unsigned int offset = 0;
 
     offset = message_putstring(&data, "TCP:\n", offset);
     offset = message_putstring(&data, "  Source Port: ", offset);
-    offset = message_putvalue(&data, header->sp[1] | header->sp[0] << 8, 10, 0, offset);
+    offset = message_putvalue(&data, load16(header->sp), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
     offset = message_putstring(&data, "  Target Port: ", offset);
-    offset = message_putvalue(&data, header->tp[1] | header->tp[0] << 8, 10, 0, offset);
+    offset = message_putvalue(&data, load16(header->tp), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
     offset = message_putstring(&data, "  Sequence: 0x", offset);
     offset = message_putvalue(&data, header->seq[0], 16, 2, offset);
@@ -65,30 +67,32 @@ static void print_tcp(struct channel *channel, unsigned int source, struct tcp_h
 
 }
 
-static void print_udp(struct channel *channel, unsigned int source, struct udp_header *header)
+static void print_udp(struct channel *channel, unsigned int source, void *buffer)
 {
 
+    struct udp_header *header = buffer;
     struct message_data data;
     unsigned int offset = 0;
 
     offset = message_putstring(&data, "UDP:\n", offset);
     offset = message_putstring(&data, "  Source Port: ", offset);
-    offset = message_putvalue(&data, header->sp[1] | header->sp[0] << 8, 10, 0, offset);
+    offset = message_putvalue(&data, load16(header->sp), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
     offset = message_putstring(&data, "  Target Port: ", offset);
-    offset = message_putvalue(&data, header->tp[1] | header->tp[0] << 8, 10, 0, offset);
+    offset = message_putvalue(&data, load16(header->tp), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
     offset = message_putstring(&data, "  Length: ", offset);
-    offset = message_putvalue(&data, header->length[1] | header->length[0] << 8, 10, 0, offset);
+    offset = message_putvalue(&data, load16(header->length), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
 
     channel_place(channel, source, EVENT_DATA, offset, &data);
 
 }
 
-static void print_arp(struct channel *channel, unsigned int source, struct arp_header *header)
+static void print_arp(struct channel *channel, unsigned int source, void *buffer)
 {
 
+    struct arp_header *header = buffer;
     struct message_data data;
     unsigned int offset = 0;
 
@@ -116,9 +120,11 @@ static void print_arp(struct channel *channel, unsigned int source, struct arp_h
 
 }
 
-static void print_ipv4(struct channel *channel, unsigned int source, struct ipv4_header *header)
+static void print_ipv4(struct channel *channel, unsigned int source, void *buffer)
 {
 
+    struct ipv4_header *header = buffer;
+    void *payload = (char *)buffer + ipv4_hlen(header);
     struct message_data data;
     unsigned int offset = 0;
 
@@ -151,17 +157,17 @@ static void print_ipv4(struct channel *channel, unsigned int source, struct ipv4
     {
 
     case IPV4_PROTOCOL_ICMP:
-        print_icmp(channel, source, (struct icmp_header *)(header + 1));
+        print_icmp(channel, source, payload);
 
         break;
 
     case IPV4_PROTOCOL_TCP:
-        print_tcp(channel, source, (struct tcp_header *)(header + 1));
+        print_tcp(channel, source, payload);
 
         break;
 
     case IPV4_PROTOCOL_UDP:
-        print_udp(channel, source, (struct udp_header *)(header + 1));
+        print_udp(channel, source, payload);
 
         break;
 
@@ -169,9 +175,10 @@ static void print_ipv4(struct channel *channel, unsigned int source, struct ipv4
 
 }
 
-static void print_ipv6(struct channel *channel, unsigned int source, struct ipv6_header *header)
+static void print_ipv6(struct channel *channel, unsigned int source, void *buffer)
 {
 
+    struct ipv6_header *header = buffer;
     struct message_data data;
     unsigned int offset = 0;
 
@@ -237,9 +244,11 @@ static void print_ipv6(struct channel *channel, unsigned int source, struct ipv6
 
 }
 
-static void print_ethernet(struct channel *channel, unsigned int source, struct ethernet_header *header)
+static void print_ethernet(struct channel *channel, unsigned int source, void *buffer)
 {
 
+    struct ethernet_header *header = buffer;
+    void *payload = (char *)buffer + ethernet_hlen(header);
     struct message_data data;
     unsigned int offset = 0;
 
@@ -281,17 +290,17 @@ static void print_ethernet(struct channel *channel, unsigned int source, struct 
     {
 
     case ETHERNET_TYPE_ARP:
-        print_arp(channel, source, (struct arp_header *)(header + 1));
+        print_arp(channel, source, payload);
 
         break;
 
     case ETHERNET_TYPE_IPV4:
-        print_ipv4(channel, source, (struct ipv4_header *)(header + 1));
+        print_ipv4(channel, source, payload);
 
         break;
 
     case ETHERNET_TYPE_IPV6:
-        print_ipv6(channel, source, (struct ipv6_header *)(header + 1));
+        print_ipv6(channel, source, payload);
 
         break;
 
@@ -311,13 +320,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     {
 
         if (header.event == EVENT_DATA)
-        {
-
-            struct ethernet_header *eheader = (struct ethernet_header *)data.buffer;
-
-            print_ethernet(channel, source, eheader);
-
-        }
+            print_ethernet(channel, source, data.buffer);
 
     }
 
