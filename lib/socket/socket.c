@@ -537,7 +537,7 @@ unsigned int socket_send(unsigned int descriptor, struct socket *local, struct s
 
 }
 
-void socket_listen(struct socket *local)
+void socket_listen(unsigned int descriptor, struct socket *local)
 {
 
     switch (local->protocol)
@@ -555,14 +555,16 @@ void socket_listen(struct socket *local)
 
 }
 
-void socket_connect(struct socket *local, struct socket *remote)
+void socket_connect(unsigned int descriptor, struct socket *local, struct socket *remote)
 {
+
+    struct message_data data;
 
     switch (local->protocol)
     {
 
     case IPV4_PROTOCOL_TCP:
-        /* TODO: Send SYN */
+        send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, 0, 0));
 
         local->info.tcp.state = TCP_STATE_SYNSENT;
 

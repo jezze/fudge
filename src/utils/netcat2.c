@@ -13,7 +13,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
 
     file_link(FILE_G0);
-    socket_listen(FILE_G0, &local);
+    socket_connect(FILE_G0, &local, &remote);
 
     while (channel_polldescriptor(channel, FILE_G0, &header, &data))
     {
@@ -78,8 +78,10 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 void init(struct channel *channel)
 {
 
-    unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
-    unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
+    unsigned char address1[IPV4_ADDRSIZE] = {10, 0, 5, 1};
+    unsigned char port1[UDP_PORTSIZE] = {0x07, 0xD0};
+    unsigned char address2[IPV4_ADDRSIZE] = {10, 0, 5, 80};
+    unsigned char port2[UDP_PORTSIZE] = {0x07, 0xD0};
 
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;
@@ -87,7 +89,8 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G1, "/system/ethernet/if:0/addr"))
         return;
 
-    socket_tcp_init(&local, address, port, 42);
+    socket_tcp_init(&local, address1, port1, 42);
+    socket_tcp_init(&remote, address2, port2, 0);
     socket_loadarplocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);

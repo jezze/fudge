@@ -28,8 +28,8 @@ struct socket
 void socket_loadarplocal(unsigned int descriptor, struct socket *local);
 unsigned int socket_receive(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output);
 unsigned int socket_send(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata);
-void socket_listen(struct socket *local);
-void socket_connect(struct socket *local, struct socket *remote);
+void socket_listen(unsigned int descriptor, struct socket *local);
+void socket_connect(unsigned int descriptor, struct socket *local, struct socket *remote);
 void socket_init(struct socket *socket, unsigned char protocol, unsigned char address[IPV4_ADDRSIZE]);
 void socket_tcp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq);
 void socket_udp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE]);
