@@ -72,12 +72,12 @@ static struct arp_header *createarp(struct socket *local, struct socket *remote,
 
 }
 
-static struct ethernet_header *createethernet(struct socket *local, struct socket *remote, void *buffer)
+static struct ethernet_header *createethernet(struct socket *local, struct socket *remote, unsigned short type, void *buffer)
 {
 
     struct ethernet_header *header = buffer;
 
-    ethernet_initheader(header, ETHERNET_TYPE_IPV4, local->haddress, remote->haddress);
+    ethernet_initheader(header, type, local->haddress, remote->haddress);
 
     return header;
 
@@ -127,7 +127,7 @@ static unsigned int buildarp(struct socket *local, struct socket *remote, void *
 {
 
     unsigned char *data = output;
-    struct ethernet_header *eheader = createethernet(local, remote, data);
+    struct ethernet_header *eheader = createethernet(local, remote, ETHERNET_TYPE_ARP, data);
     struct arp_header *aheader = createarp(local, remote, data + ethernet_hlen(eheader), operation);
     void *psha = (data + ethernet_hlen(eheader) + arp_hlen(aheader));
     void *psip = (data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE);
@@ -148,7 +148,7 @@ static unsigned int buildtcp(struct socket *local, struct socket *remote, void *
 
     unsigned char *data = output;
     unsigned int length = sizeof (struct tcp_header) + count;
-    struct ethernet_header *eheader = createethernet(local, remote, data);
+    struct ethernet_header *eheader = createethernet(local, remote, ETHERNET_TYPE_IPV4, data);
     struct ipv4_header *iheader = createipv4(local, remote, data + ethernet_hlen(eheader), IPV4_PROTOCOL_TCP, length);
     struct tcp_header *theader = createtcp(local, remote, data + ethernet_hlen(eheader) + ipv4_hlen(iheader), flags, seq, ack);
     void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader));
@@ -170,7 +170,7 @@ static unsigned int buildudp(struct socket *local, struct socket *remote, void *
 
     unsigned char *data = output;
     unsigned int length = sizeof (struct udp_header) + count;
-    struct ethernet_header *eheader = createethernet(local, remote, data);
+    struct ethernet_header *eheader = createethernet(local, remote, ETHERNET_TYPE_IPV4, data);
     struct ipv4_header *iheader = createipv4(local, remote, data + ethernet_hlen(eheader), IPV4_PROTOCOL_UDP, length);
     struct udp_header *uheader = createudp(local, remote, data + ethernet_hlen(eheader) + ipv4_hlen(iheader), count);
     void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader));
@@ -365,6 +365,31 @@ static unsigned int receiveudp(unsigned int descriptor, struct socket *local, st
 
 }
 
+/* add static later */
+unsigned int endarprequest(unsigned int descriptor, struct socket *local, struct socket *remote)
+{
+
+    unsigned char tha[ETHERNET_ADDRSIZE] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    struct message_data data;
+
+    send(descriptor, &data, buildarp(local, remote, &data, ARP_REQUEST, local->haddress, local->paddress, tha, remote->paddress));
+
+    return 0;
+
+}
+
+/* add static later */
+unsigned int sendarpreply(unsigned int descriptor, struct socket *local, struct socket *remote)
+{
+
+    struct message_data data;
+
+    send(descriptor, &data, buildarp(local, remote, &data, ARP_REPLY, local->haddress, local->paddress, remote->haddress, remote->paddress));
+
+    return 0;
+
+}
+
 unsigned int socket_receive(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
@@ -393,12 +418,29 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
                     unsigned char *sip = data + elen + alen + aheader->hlength;
 
                     savearpremote(remote, sha, sip);
-
-                    /* Send as well */
+                    sendarpreply(descriptor, local, remote);
 
                 }
 
             }
+
+            else if (load16(aheader->operation) == ARP_REPLY)
+            {
+
+                unsigned char *tip = data + elen + alen + aheader->hlength + aheader->plength + aheader->hlength;
+
+                if (buffer_match(tip, local->paddress, IPV4_ADDRSIZE))
+                {
+
+                    unsigned char *sha = data + elen + alen;
+                    unsigned char *sip = data + elen + alen + aheader->hlength;
+
+                    savearpremote(remote, sha, sip);
+
+                }
+
+            }
+
 
         }
 
@@ -458,31 +500,6 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
     }
 
     return 0;
-
-}
-
-/* add static later */
-unsigned int sendarprequest(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
-{
-
-    unsigned char tha[ETHERNET_ADDRSIZE] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    struct message_data data;
-
-    send(descriptor, &data, buildarp(local, remote, &data, ARP_REQUEST, local->haddress, local->paddress, tha, remote->paddress));
-
-    return psize;
-
-}
-
-/* add static later */
-unsigned int sendarreply(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
-{
-
-    struct message_data data;
-
-    send(descriptor, &data, buildarp(local, remote, &data, ARP_REPLY, local->haddress, local->paddress, remote->haddress, remote->paddress));
-
-    return psize;
 
 }
 

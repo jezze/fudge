@@ -53,8 +53,6 @@ static void ethernethook_notify(struct ethernet_header *ethernetheader, void *bu
     unsigned int operation = (header->operation[0] << 8) | header->operation[1];
     unsigned char *sha = data;
     unsigned char *spa = data + header->hlength;
-    unsigned char *tha = data + header->hlength + header->plength;
-    unsigned char *tpa = data + header->hlength + header->plength + header->hlength;
     struct arp_hook *hook = findhook(htype, header->hlength, ptype, header->plength);
 
     if (hook)
@@ -65,18 +63,6 @@ static void ethernethook_notify(struct ethernet_header *ethernetheader, void *bu
 
         case ARP_REQUEST:
             hook->save(sha, spa);
-
-            tha = hook->lookup(tpa);
-
-            if (tha)
-            {
-
-                unsigned char response[ETHERNET_MTU];
-                unsigned char *current = arp_writehead(response, htype, header->hlength, ptype, header->plength, ARP_REPLY, tha, tpa, sha, spa);
-
-                ethernet_send(response, current - response);
-
-            }
 
             break;
 
