@@ -488,10 +488,9 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 unsigned int sendarprequest(unsigned int descriptor, struct socket *local, struct socket *remote)
 {
 
-    unsigned char tha[ETHERNET_ADDRSIZE] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     struct message_data data;
 
-    send(descriptor, &data, buildarp(local, remote, &data, ARP_REQUEST, local->haddress, local->paddress, tha, remote->paddress));
+    send(descriptor, &data, buildarp(local, remote, &data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
     return 0;
 
