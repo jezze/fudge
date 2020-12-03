@@ -13,7 +13,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
 
     file_link(FILE_G0);
-    socket_connect(FILE_G0, &local, &remote);
+    socket_resolve(FILE_G0, &local, &remote);
 
     while (channel_polldescriptor(channel, FILE_G0, &header, &data))
     {
