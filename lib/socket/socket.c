@@ -292,6 +292,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         if ((header->flags[1] & TCP_FLAGS1_SYN) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
+            local->info.tcp.seq = load32(header->ack);
             remote->info.tcp.seq = load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
@@ -300,6 +301,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
 
         }
 
+/*
         else if ((header->flags[1] & TCP_FLAGS1_SYN))
         {
 
@@ -310,6 +312,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
 
         }
+*/
 
         break;
 
@@ -340,6 +343,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         else if ((header->flags[1] & TCP_FLAGS1_FIN) && (header->flags[1] & TCP_FLAGS1_ACK))
         {
 
+            local->info.tcp.seq = load32(header->ack);
             remote->info.tcp.seq = load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
@@ -367,6 +371,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         if (header->flags[1] & TCP_FLAGS1_ACK)
         {
 
+            local->info.tcp.seq = load32(header->ack);
             local->info.tcp.state = TCP_STATE_FINWAIT2;
 
         }
@@ -405,6 +410,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         if (header->flags[1] & TCP_FLAGS1_ACK)
         {
 
+            local->info.tcp.seq = load32(header->ack);
             local->info.tcp.state = TCP_STATE_TIMEWAIT;
 
             /* Sleep some time */
@@ -419,6 +425,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         if (header->flags[1] & TCP_FLAGS1_ACK)
         {
 
+            local->info.tcp.seq = load32(header->ack);
             local->info.tcp.state = TCP_STATE_CLOSED;
 
         }
