@@ -252,6 +252,36 @@ static unsigned int buildudp(struct socket *local, struct socket *remote, void *
 
 }
 
+unsigned int socket_ethernet_read(unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+
+    return buffer_write(output, outputcount, eheader, ethernet_hlen(eheader), 0);
+    
+}
+
+unsigned int socket_arp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (load16(eheader->type) == ETHERNET_TYPE_ARP)
+    {
+
+        struct arp_header *aheader = (struct arp_header *)(data + elen);
+
+        return buffer_write(output, outputcount, aheader, arp_len(aheader), 0);
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int receivearp(unsigned int descriptor, struct socket *local, struct socket *remote, struct arp_header *header, unsigned char *pdata)
 {
 
@@ -285,7 +315,7 @@ static unsigned int receivearp(unsigned int descriptor, struct socket *local, st
                 savearpremote(remote, sha, sip);
 
                 /* Maybe the wrong place */
-                socket_connect(descriptor, local, remote);
+                socket_connect(descriptor, IPV4_PROTOCOL_TCP, local, remote);
 
             }
 
@@ -613,10 +643,10 @@ static unsigned int sendudp(unsigned int descriptor, struct socket *local, struc
 
 }
 
-unsigned int socket_send(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
+unsigned int socket_send(unsigned int descriptor, unsigned char protocol, struct socket *local, struct socket *remote, unsigned int psize, void *pdata)
 {
 
-    switch (local->protocol)
+    switch (protocol)
     {
 
     case IPV4_PROTOCOL_TCP:
@@ -631,10 +661,10 @@ unsigned int socket_send(unsigned int descriptor, struct socket *local, struct s
 
 }
 
-void socket_listen(unsigned int descriptor, struct socket *local)
+void socket_listen(unsigned int descriptor, unsigned char protocol, struct socket *local)
 {
 
-    switch (local->protocol)
+    switch (protocol)
     {
 
     case IPV4_PROTOCOL_TCP:
@@ -649,12 +679,12 @@ void socket_listen(unsigned int descriptor, struct socket *local)
 
 }
 
-void socket_connect(unsigned int descriptor, struct socket *local, struct socket *remote)
+void socket_connect(unsigned int descriptor, unsigned char protocol, struct socket *local, struct socket *remote)
 {
 
     struct message_data data;
 
-    switch (local->protocol)
+    switch (protocol)
     {
 
     case IPV4_PROTOCOL_TCP:
@@ -680,11 +710,10 @@ void socket_resolve(unsigned int descriptor, struct socket *local, struct socket
 
 }
 
-void socket_init(struct socket *socket, unsigned char protocol, unsigned char address[IPV4_ADDRSIZE])
+void socket_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE])
 {
 
     socket->active = 1;
-    socket->protocol = protocol;
 
     buffer_copy(&socket->paddress, address, IPV4_ADDRSIZE);
 
@@ -693,7 +722,7 @@ void socket_init(struct socket *socket, unsigned char protocol, unsigned char ad
 void socket_tcp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq)
 {
 
-    socket_init(socket, IPV4_PROTOCOL_TCP, address);
+    socket_init(socket, address);
     buffer_copy(&socket->info.tcp.port, port, TCP_PORTSIZE);
 
     socket->info.tcp.state = TCP_STATE_CLOSED;
@@ -704,7 +733,7 @@ void socket_tcp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]
 void socket_udp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE])
 {
 
-    socket_init(socket, IPV4_PROTOCOL_UDP, address);
+    socket_init(socket, address);
     buffer_copy(&socket->info.udp.port, port, UDP_PORTSIZE);
 
 }

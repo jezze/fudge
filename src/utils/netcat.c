@@ -13,7 +13,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
 
     file_link(FILE_G0);
-    socket_listen(FILE_G0, &local);
+    socket_listen(FILE_G0, IPV4_PROTOCOL_TCP, &local);
 
     while (channel_polldescriptor(channel, FILE_G0, &header, &data))
     {
@@ -59,12 +59,12 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         consoledata->data = '\n';
 
     case '\n':
-        count = socket_send(FILE_G0, &local, &remote, 1, &consoledata->data);
+        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, 1, &consoledata->data);
 
         break;
 
     default:
-        count = socket_send(FILE_G0, &local, &remote, 1, &consoledata->data);
+        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, 1, &consoledata->data);
 
         break;
 
