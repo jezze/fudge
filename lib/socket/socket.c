@@ -106,6 +106,17 @@ static struct ipv4_header *createipv4(struct socket *local, struct socket *remot
 
 }
 
+static struct icmp_header *createicmp(struct socket *local, struct socket *remote, void *buffer, unsigned char type, unsigned char code)
+{
+
+    struct icmp_header *header = buffer;
+
+    icmp_initheader(header, type, code);
+
+    return header;
+
+}
+
 static struct tcp_header *createtcp(struct socket *local, struct socket *remote, void *buffer, unsigned short flags, unsigned int seq, unsigned int ack)
 {
 
@@ -172,6 +183,28 @@ static unsigned int buildarp2(struct socket *local, struct socket *remote, void 
     buffer_copy(ptip, tip, IPV4_ADDRSIZE); 
 
     return ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE;
+
+}
+
+static unsigned int buildicmp(struct socket *local, struct socket *remote, void *output, unsigned char type, unsigned char code, unsigned int count, void *buffer)
+{
+
+    unsigned char *data = output;
+    unsigned int length = sizeof (struct icmp_header) + count;
+    struct ethernet_header *eheader = createethernet(local, remote, ETHERNET_TYPE_IPV4, data);
+    struct ipv4_header *iheader = createipv4(local, remote, data + ethernet_hlen(eheader), IPV4_PROTOCOL_ICMP, length);
+    struct icmp_header *icmpheader = createicmp(local, remote, data + ethernet_hlen(eheader) + ipv4_hlen(iheader), type, code);
+    void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + icmp_hlen(icmpheader));
+    unsigned short checksum;
+
+    buffer_copy(pdata, buffer, count); 
+
+    checksum = icmp_calculatechecksum(icmpheader, icmp_hlen(icmpheader) + count);
+
+    icmpheader->checksum[0] = checksum;
+    icmpheader->checksum[1] = checksum >> 8;
+
+    return ethernet_hlen(eheader) + ipv4_hlen(iheader) + icmp_hlen(icmpheader) + count;
 
 }
 
@@ -259,6 +292,25 @@ static unsigned int receivearp(unsigned int descriptor, struct socket *local, st
             break;
 
         }
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int receiveicmp(unsigned int descriptor, struct socket *local, struct socket *remote, struct icmp_header *header, void *pdata, unsigned int psize)
+{
+
+    struct message_data data;
+
+    switch (header->type)
+    {
+
+    case ICMP_ECHOREQUEST:
+        send(descriptor, &data, buildicmp(local, remote, &data, ICMP_ECHOREPLY, 0, psize, pdata));
+
+        break;
 
     }
 
@@ -469,7 +521,19 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
         unsigned short ilen = ipv4_hlen(iheader);
         unsigned short itot = ipv4_len(iheader);
 
-        if (iheader->protocol == IPV4_PROTOCOL_TCP)
+        if (iheader->protocol == IPV4_PROTOCOL_ICMP)
+        {
+
+            struct icmp_header *icmpheader = (struct icmp_header *)(data + elen + ilen);
+            unsigned short icmplen = icmp_hlen(icmpheader);
+            void *pdata = data + elen + ilen + icmplen;
+            unsigned int psize = itot - (ilen + icmplen);
+
+            receiveicmp(descriptor, local, remote, icmpheader, pdata, psize);
+
+        }
+
+        else if (iheader->protocol == IPV4_PROTOCOL_TCP)
         {
 
             struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);

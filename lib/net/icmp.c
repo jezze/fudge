@@ -27,20 +27,20 @@ unsigned short icmp_calculatechecksum(struct icmp_header *header, unsigned int l
 
 }
 
-void icmp_initheader(struct icmp_header *header, unsigned char type, unsigned char code)
+unsigned short icmp_hlen(struct icmp_header *header)
 {
 
-    unsigned short checksum;
+    return sizeof (struct icmp_header);
+
+}
+
+void icmp_initheader(struct icmp_header *header, unsigned char type, unsigned char code)
+{
 
     header->type = type;
     header->code = code;
     header->checksum[0] = 0;
     header->checksum[1] = 0;
-
-    checksum = icmp_calculatechecksum(header, sizeof (struct icmp_header));
-
-    header->checksum[0] = checksum;
-    header->checksum[1] = checksum >> 8;
 
 }
 

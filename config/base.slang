@@ -11,8 +11,4 @@ elfload < /kernel/timer.ko
 elfload < /kernel/audio.ko
 elfload < /kernel/video.ko
 elfload < /kernel/ethernet.ko
-elfload < /kernel/arp.ko
-elfload < /kernel/ipv4.ko
-elfload < /kernel/ipv6.ko
-elfload < /kernel/icmp.ko
 elfload < /kernel/info.ko
