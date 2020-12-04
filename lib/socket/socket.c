@@ -275,60 +275,57 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
     {
 
     case TCP_STATE_LISTEN:
-        if (header->flags[1] & TCP_FLAGS1_SYN)
+        if (header->flags[1] == TCP_FLAGS1_SYN)
         {
 
+            local->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.seq = load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
-            local->info.tcp.state = TCP_STATE_SYNRECEIVED;
 
         }
 
         break;
 
     case TCP_STATE_SYNSENT:
-        if ((header->flags[1] & TCP_FLAGS1_SYN) && (header->flags[1] & TCP_FLAGS1_ACK))
+        if (header->flags[1] == (TCP_FLAGS1_SYN | TCP_FLAGS1_ACK))
         {
 
+            local->info.tcp.state = TCP_STATE_ESTABLISHED;
             local->info.tcp.seq = load32(header->ack);
             remote->info.tcp.seq = load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
-            local->info.tcp.state = TCP_STATE_ESTABLISHED;
-
         }
 
-/*
-        else if ((header->flags[1] & TCP_FLAGS1_SYN))
+        else if (header->flags[1] == TCP_FLAGS1_SYN)
         {
 
+            local->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.seq = load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
-            local->info.tcp.state = TCP_STATE_SYNRECEIVED;
 
         }
-*/
 
         break;
 
     case TCP_STATE_SYNRECEIVED:
-        if (header->flags[1] & TCP_FLAGS1_ACK)
+        if (header->flags[1] == TCP_FLAGS1_ACK)
         {
 
-            local->info.tcp.seq = load32(header->ack);
             local->info.tcp.state = TCP_STATE_ESTABLISHED;
+            local->info.tcp.seq = load32(header->ack);
 
         }
 
         break;
 
     case TCP_STATE_ESTABLISHED:
-        if ((header->flags[1] & TCP_FLAGS1_PSH) && (header->flags[1] & TCP_FLAGS1_ACK))
+        if (header->flags[1] == (TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
         {
 
             local->info.tcp.seq = load32(header->ack);
@@ -340,25 +337,24 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
 
         }
 
-        else if ((header->flags[1] & TCP_FLAGS1_FIN) && (header->flags[1] & TCP_FLAGS1_ACK))
+        else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_ACK))
         {
 
+            local->info.tcp.state = TCP_STATE_CLOSEWAIT;
             local->info.tcp.seq = load32(header->ack);
             remote->info.tcp.seq = load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
-            local->info.tcp.state = TCP_STATE_CLOSEWAIT;
-
             /* Wait for application to close down */
-
-            send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             local->info.tcp.state = TCP_STATE_LASTACK;
 
+            send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+
         }
 
-        else if (header->flags[1] & TCP_FLAGS1_ACK)
+        else if (header->flags[1] == TCP_FLAGS1_ACK)
         {
 
             local->info.tcp.seq = load32(header->ack);
@@ -368,29 +364,28 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         break;
 
     case TCP_STATE_FINWAIT1:
-        if (header->flags[1] & TCP_FLAGS1_ACK)
+        if (header->flags[1] == TCP_FLAGS1_ACK)
         {
 
-            local->info.tcp.seq = load32(header->ack);
             local->info.tcp.state = TCP_STATE_FINWAIT2;
+            local->info.tcp.seq = load32(header->ack);
 
         }
 
-        else if (header->flags[1] & TCP_FLAGS1_FIN)
+        else if (header->flags[1] == TCP_FLAGS1_FIN)
         {
 
+            local->info.tcp.state = TCP_STATE_CLOSING;
             remote->info.tcp.seq = load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
-
-            local->info.tcp.state = TCP_STATE_CLOSING;
 
         }
 
         break;
 
     case TCP_STATE_FINWAIT2:
-        if (header->flags[1] & TCP_FLAGS1_FIN)
+        if (header->flags[1] == TCP_FLAGS1_FIN)
         {
 
             local->info.tcp.state = TCP_STATE_TIMEWAIT;
@@ -407,11 +402,11 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         break;
 
     case TCP_STATE_CLOSING:
-        if (header->flags[1] & TCP_FLAGS1_ACK)
+        if (header->flags[1] == TCP_FLAGS1_ACK)
         {
 
-            local->info.tcp.seq = load32(header->ack);
             local->info.tcp.state = TCP_STATE_TIMEWAIT;
+            local->info.tcp.seq = load32(header->ack);
 
             /* Sleep some time */
 
@@ -422,11 +417,11 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         break;
 
     case TCP_STATE_LASTACK:
-        if (header->flags[1] & TCP_FLAGS1_ACK)
+        if (header->flags[1] == TCP_FLAGS1_ACK)
         {
 
-            local->info.tcp.seq = load32(header->ack);
             local->info.tcp.state = TCP_STATE_CLOSED;
+            local->info.tcp.seq = load32(header->ack);
 
         }
 
@@ -601,9 +596,9 @@ void socket_connect(unsigned int descriptor, struct socket *local, struct socket
     {
 
     case IPV4_PROTOCOL_TCP:
-        send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, 0, 0));
-
         local->info.tcp.state = TCP_STATE_SYNSENT;
+
+        send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, 0, 0));
 
         break;
 

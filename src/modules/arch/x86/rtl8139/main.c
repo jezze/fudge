@@ -316,7 +316,6 @@ static unsigned int ethernetinterface_writedata(void *buffer, unsigned int count
         return 0;
 
     ethernetinterface_send(buffer, count);
-    kernel_notify(&ethernetinterface.data.links, EVENT_DATA, buffer, count);
 
     return count;
 
