@@ -283,7 +283,6 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
-
         }
 
         break;
@@ -307,7 +306,6 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
             remote->info.tcp.seq = load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
-
 
         }
 
