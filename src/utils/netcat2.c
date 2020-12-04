@@ -80,8 +80,8 @@ void init(struct channel *channel)
 
     unsigned char address1[IPV4_ADDRSIZE] = {10, 0, 5, 1};
     unsigned char port1[UDP_PORTSIZE] = {0x07, 0xD0};
-    unsigned char address2[IPV4_ADDRSIZE] = {10, 0, 5, 80};
-    unsigned char port2[UDP_PORTSIZE] = {0x07, 0xD0};
+    unsigned char address2[IPV4_ADDRSIZE] = {212, 47, 234, 3};
+    unsigned char port2[UDP_PORTSIZE] = {0x00, 0x50};
 
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;

@@ -16,5 +16,3 @@ elfload < /kernel/ipv4.ko
 elfload < /kernel/ipv6.ko
 elfload < /kernel/icmp.ko
 elfload < /kernel/info.ko
-elfload < /kernel/udp.ko
-elfload < /kernel/tcp.ko
