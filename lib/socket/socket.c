@@ -534,7 +534,7 @@ unsigned int socket_udp_respond(unsigned int descriptor, struct socket *local, s
 
 }
 
-unsigned int socket_receive(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+static unsigned int receiveicmp(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
     unsigned char *data = buffer;
@@ -560,7 +560,27 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 
         }
 
-        else if (iheader->protocol == IPV4_PROTOCOL_TCP)
+    }
+
+    return 0;
+
+}
+
+static unsigned int receivetcp(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+        unsigned short ilen = ipv4_hlen(iheader);
+        unsigned short itot = ipv4_len(iheader);
+
+        if (iheader->protocol == IPV4_PROTOCOL_TCP)
         {
 
             struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);
@@ -572,10 +592,53 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
                 void *pdata = data + elen + ilen + tlen;
                 unsigned int psize = itot - (ilen + tlen);
 
-#if 0
+                if (socket_tcp_respond(descriptor, local, remote, theader, pdata, psize))
+                    return buffer_write(output, outputcount, pdata, psize, 0);
+
+            }
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int socket_tcp_receive2(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+        unsigned short ilen = ipv4_hlen(iheader);
+        unsigned short itot = ipv4_len(iheader);
+
+        if (iheader->protocol == IPV4_PROTOCOL_TCP)
+        {
+
+            struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);
+            unsigned short tlen = tcp_hlen(theader);
+
+            if (net_load16(theader->tp) == net_load16(local->info.tcp.port))
+            {
+
+                void *pdata = data + elen + ilen + tlen;
+                unsigned int psize = itot - (ilen + tlen);
+
                 if (!remote->resolved)
-                    socket_tcp_init(remote, iheader->sip, theader->sp, net_load32(theader->seq));
-#endif
+                {
+
+                    socket_tcp_bind(remote, iheader->sip, theader->sp, net_load32(theader->seq));
+
+                    remote->resolved = 1;
+
+                }
 
                 if (socket_tcp_respond(descriptor, local, remote, theader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
@@ -584,7 +647,27 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 
         }
 
-        else if (iheader->protocol == IPV4_PROTOCOL_UDP)
+    }
+
+    return 0;
+
+}
+
+static unsigned int receiveudp(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+        unsigned short ilen = ipv4_hlen(iheader);
+        unsigned short itot = ipv4_len(iheader);
+
+        if (iheader->protocol == IPV4_PROTOCOL_UDP)
         {
 
             struct udp_header *uheader = (struct udp_header *)(data + elen + ilen);
@@ -596,10 +679,53 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
                 void *pdata = data + elen + ilen + ulen;
                 unsigned int psize = itot - (ilen + ulen);
 
-#if 0
+                if (socket_udp_respond(descriptor, local, remote, uheader, pdata, psize))
+                    return buffer_write(output, outputcount, pdata, psize, 0);
+
+            }
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int socket_udp_receive2(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+        unsigned short ilen = ipv4_hlen(iheader);
+        unsigned short itot = ipv4_len(iheader);
+
+        if (iheader->protocol == IPV4_PROTOCOL_UDP)
+        {
+
+            struct udp_header *uheader = (struct udp_header *)(data + elen + ilen);
+            unsigned short ulen = udp_hlen(uheader);
+
+            if (net_load16(uheader->tp) == net_load16(local->info.udp.port))
+            {
+
+                void *pdata = data + elen + ilen + ulen;
+                unsigned int psize = itot - (ilen + ulen);
+
                 if (!remote->resolved)
-                    socket_udp_init(remote, iheader->sip, uheader->sp);
-#endif
+                {
+
+                    socket_udp_bind(remote, iheader->sip, uheader->sp);
+
+                    remote->resolved = 1;
+
+                }
 
                 if (socket_udp_respond(descriptor, local, remote, uheader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
@@ -607,6 +733,27 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
             }
 
         }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int socket_receive(unsigned int descriptor, unsigned int protocol, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    switch (protocol)
+    {
+
+    case IPV4_PROTOCOL_ICMP:
+        return receiveicmp(descriptor, local, remote, count, buffer, outputcount, output);
+
+    case IPV4_PROTOCOL_TCP:
+        return receivetcp(descriptor, local, remote, count, buffer, outputcount, output);
+
+    case IPV4_PROTOCOL_UDP:
+        return receiveudp(descriptor, local, remote, count, buffer, outputcount, output);
 
     }
 
@@ -722,19 +869,17 @@ void socket_resolvelocal(unsigned int descriptor, struct socket *socket)
 
 }
 
-void socket_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE])
+void socket_bind(struct socket *socket, unsigned char address[IPV4_ADDRSIZE])
 {
-
-    socket->resolved = 0;
 
     buffer_copy(&socket->paddress, address, IPV4_ADDRSIZE);
 
 }
 
-void socket_tcp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq)
+void socket_tcp_bind(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq)
 {
 
-    socket_init(socket, address);
+    socket_bind(socket, address);
     buffer_copy(&socket->info.tcp.port, port, TCP_PORTSIZE);
 
     socket->info.tcp.state = TCP_STATE_CLOSED;
@@ -742,11 +887,18 @@ void socket_tcp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]
 
 }
 
-void socket_udp_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE])
+void socket_udp_bind(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE])
 {
 
-    socket_init(socket, address);
+    socket_bind(socket, address);
     buffer_copy(&socket->info.udp.port, port, UDP_PORTSIZE);
+
+}
+
+void socket_init(struct socket *socket)
+{
+
+    socket->resolved = 0;
 
 }
 

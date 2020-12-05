@@ -13,7 +13,8 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
     struct socket remote;
 
     file_link(FILE_G0);
-    socket_init(&remote, mdata);
+    socket_init(&remote);
+    socket_bind(&remote, mdata);
     socket_resolveremote(FILE_G0, &local, &remote);
 
     while (channel_polldescriptor(channel, FILE_G0, &header, &data))
@@ -64,7 +65,8 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G1, "/system/ethernet/if:0/addr"))
         return;
 
-    socket_init(&local, address);
+    socket_init(&local);
+    socket_bind(&local, address);
     socket_resolvelocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_DATA, ondata);
 

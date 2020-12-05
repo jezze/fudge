@@ -47,7 +47,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             }
 
-            count = socket_receive(FILE_G0, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            count = socket_receive(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
@@ -117,8 +117,10 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G1, "/system/ethernet/if:0/addr"))
         return;
 
-    socket_tcp_init(&local, address1, port1, 42);
-    socket_tcp_init(&remote, address2, port2, 0);
+    socket_init(&local);
+    socket_tcp_bind(&local, address1, port1, 42);
+    socket_init(&remote);
+    socket_tcp_bind(&remote, address2, port2, 0);
     socket_resolvelocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
