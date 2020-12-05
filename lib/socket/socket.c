@@ -169,8 +169,7 @@ static unsigned int buildicmp(struct socket *local, struct socket *remote, void 
 
     checksum = icmp_calculatechecksum(icmpheader, icmp_hlen(icmpheader) + count);
 
-    icmpheader->checksum[0] = checksum;
-    icmpheader->checksum[1] = checksum >> 8;
+    buffer_copy(icmpheader->checksum, &checksum, 2);
 
     return ethernet_hlen(eheader) + ipv4_hlen(iheader) + icmp_hlen(icmpheader) + count;
 
@@ -191,8 +190,7 @@ static unsigned int buildtcp(struct socket *local, struct socket *remote, void *
 
     checksum = tcp_checksum(theader, local->paddress, remote->paddress, tcp_hlen(theader) + count);
 
-    theader->checksum[0] = checksum;
-    theader->checksum[1] = checksum >> 8;
+    buffer_copy(theader->checksum, &checksum, 2);
 
     return ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader) + count;
 
@@ -213,8 +211,7 @@ static unsigned int buildudp(struct socket *local, struct socket *remote, void *
 
     checksum = udp_checksum(uheader, local->paddress, remote->paddress, udp_hlen(uheader) + count);
 
-    uheader->checksum[0] = checksum;
-    uheader->checksum[1] = checksum >> 8;
+    buffer_copy(uheader->checksum, &checksum, 2);
 
     return ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader) + count;
 
