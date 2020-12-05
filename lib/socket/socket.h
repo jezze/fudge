@@ -31,6 +31,10 @@ unsigned int socket_ipv4_read(unsigned int count, void *buffer, unsigned int out
 unsigned int socket_icmp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
 unsigned int socket_tcp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
 unsigned int socket_udp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
+unsigned int socket_arp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct arp_header *header, unsigned char *pdata);
+unsigned int socket_icmp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct icmp_header *header, void *pdata, unsigned int psize);
+unsigned int socket_tcp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct tcp_header *header, void *pdata, unsigned int psize);
+unsigned int socket_udp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct udp_header *header, void *pdata, unsigned int psize);
 unsigned int socket_receive(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output);
 unsigned int socket_send(unsigned int descriptor, unsigned char protocol, struct socket *local, struct socket *remote, unsigned int psize, void *pdata);
 void socket_listen(unsigned int descriptor, unsigned char protocol, struct socket *local);

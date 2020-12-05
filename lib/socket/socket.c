@@ -354,7 +354,7 @@ unsigned int socket_udp_read(unsigned int count, void *buffer, unsigned int outp
 
 }
 
-static unsigned int receivearp(unsigned int descriptor, struct socket *local, struct socket *remote, struct arp_header *header, unsigned char *pdata)
+unsigned int socket_arp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct arp_header *header, unsigned char *pdata)
 {
 
     struct message_data data;
@@ -400,7 +400,7 @@ static unsigned int receivearp(unsigned int descriptor, struct socket *local, st
 
 }
 
-static unsigned int receiveicmp(unsigned int descriptor, struct socket *local, struct socket *remote, struct icmp_header *header, void *pdata, unsigned int psize)
+unsigned int socket_icmp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct icmp_header *header, void *pdata, unsigned int psize)
 {
 
     struct message_data data;
@@ -419,7 +419,7 @@ static unsigned int receiveicmp(unsigned int descriptor, struct socket *local, s
 
 }
 
-static unsigned int receivetcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct tcp_header *header, void *pdata, unsigned int psize)
+unsigned int socket_tcp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct tcp_header *header, void *pdata, unsigned int psize)
 {
 
     struct message_data data;
@@ -590,7 +590,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
 
 }
 
-static unsigned int receiveudp(unsigned int descriptor, struct socket *local, struct socket *remote, struct udp_header *header, void *pdata, unsigned int psize)
+unsigned int socket_udp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct udp_header *header, void *pdata, unsigned int psize)
 {
 
     return psize;
@@ -611,7 +611,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
         unsigned short alen = arp_hlen(aheader);
         unsigned char *pdata = (unsigned char *)data + elen + alen;
 
-        receivearp(descriptor, local, remote, aheader, pdata);
+        socket_arp_respond(descriptor, local, remote, aheader, pdata);
 
     }
 
@@ -630,7 +630,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
             void *pdata = data + elen + ilen + icmplen;
             unsigned int psize = itot - (ilen + icmplen);
 
-            receiveicmp(descriptor, local, remote, icmpheader, pdata, psize);
+            socket_icmp_respond(descriptor, local, remote, icmpheader, pdata, psize);
 
         }
 
@@ -651,7 +651,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
                     socket_tcp_init(remote, iheader->sip, theader->sp, net_load32(theader->seq));
 #endif
 
-                if (receivetcp(descriptor, local, remote, theader, pdata, psize))
+                if (socket_tcp_respond(descriptor, local, remote, theader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
 
             }
@@ -670,10 +670,12 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
                 void *pdata = data + elen + ilen + ulen;
                 unsigned int psize = itot - (ilen + ulen);
 
+#if 0
                 if (!remote->active)
                     socket_udp_init(remote, iheader->sip, uheader->sp);
+#endif
 
-                if (receiveudp(descriptor, local, remote, uheader, pdata, psize))
+                if (socket_udp_respond(descriptor, local, remote, uheader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
 
             }
@@ -785,8 +787,6 @@ void socket_resolve(unsigned int descriptor, struct socket *local, struct socket
 
 void socket_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE])
 {
-
-    socket->active = 1;
 
     buffer_copy(&socket->paddress, address, IPV4_ADDRSIZE);
 
