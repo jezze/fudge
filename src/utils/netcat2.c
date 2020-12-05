@@ -13,7 +13,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
 
     file_link(FILE_G0);
-    socket_resolve(FILE_G0, &local, &remote);
+    socket_resolveremote(FILE_G0, &local, &remote);
 
     while (channel_polldescriptor(channel, FILE_G0, &header, &data))
     {
@@ -21,7 +21,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         if (header.event == EVENT_DATA)
         {
 
-            char buffer[BUFFER_SIZE];
+            unsigned char buffer[BUFFER_SIZE];
             unsigned int count;
 
             count = socket_arp_read(message_datasize(&header), &data, BUFFER_SIZE, &buffer);
@@ -36,6 +36,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                 case ARP_REPLY:
                     buffer_copy(remote.haddress, buffer + arp_hlen(aheader), ETHERNET_ADDRSIZE);
+
+                    remote.resolved = 1;
+
                     socket_connect(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote);
 
                     break;
@@ -63,6 +66,9 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
     struct event_consoledata *consoledata = mdata;
     unsigned int count = 0;
+
+    if (!remote.resolved)
+        return;
 
     switch (consoledata->data)
     {
@@ -113,7 +119,7 @@ void init(struct channel *channel)
 
     socket_tcp_init(&local, address1, port1, 42);
     socket_tcp_init(&remote, address2, port2, 0);
-    socket_loadarplocal(FILE_G1, &local);
+    socket_resolvelocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 

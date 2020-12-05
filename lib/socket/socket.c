@@ -12,23 +12,6 @@ static void send(unsigned int descriptor, void *buffer, unsigned int count)
 
 }
 
-void socket_loadarplocal(unsigned int descriptor, struct socket *local)
-{
-
-    file_open(descriptor);
-    file_readall(descriptor, local->haddress, ETHERNET_ADDRSIZE);
-    file_close(descriptor);
-
-}
-
-static void savearpremote(struct socket *remote, unsigned char haddress[ETHERNET_ADDRSIZE], unsigned char paddress[IPV4_ADDRSIZE])
-{
-
-    buffer_copy(remote->haddress, haddress, ETHERNET_ADDRSIZE);
-    buffer_copy(remote->paddress, paddress, IPV4_ADDRSIZE);
-
-}
-
 static struct arp_header *createarp(struct socket *local, struct socket *remote, void *buffer, unsigned short operation)
 {
 
@@ -354,52 +337,6 @@ unsigned int socket_udp_read(unsigned int count, void *buffer, unsigned int outp
 
 }
 
-unsigned int socket_arp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct arp_header *header, unsigned char *pdata)
-{
-
-    struct message_data data;
-
-    if (net_load16(header->htype) == 0x0001 && net_load16(header->ptype) == ETHERNET_TYPE_IPV4)
-    {
-
-        unsigned char *tip = pdata + header->hlength + header->plength + header->hlength;
-        unsigned char *sha = pdata;
-        unsigned char *sip = pdata + header->hlength;
-
-        switch (net_load16(header->operation))
-        {
-
-        case ARP_REQUEST:
-            if (buffer_match(tip, local->paddress, IPV4_ADDRSIZE))
-            {
-
-                savearpremote(remote, sha, sip);
-                send(descriptor, &data, socket_arp_build(local, remote, &data, ARP_REPLY, local->haddress, local->paddress, remote->haddress, remote->paddress));
-
-            }
-
-            break;
-
-#if 0
-        case ARP_REPLY:
-            if (buffer_match(tip, local->paddress, IPV4_ADDRSIZE))
-            {
-
-                savearpremote(remote, sha, sip);
-
-            }
-
-            break;
-#endif
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 unsigned int socket_icmp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct icmp_header *header, void *pdata, unsigned int psize)
 {
 
@@ -604,17 +541,6 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
     struct ethernet_header *eheader = (struct ethernet_header *)(data);
     unsigned short elen = ethernet_hlen(eheader);
 
-    if (net_load16(eheader->type) == ETHERNET_TYPE_ARP)
-    {
-
-        struct arp_header *aheader = (struct arp_header *)(data + elen);
-        unsigned short alen = arp_hlen(aheader);
-        unsigned char *pdata = (unsigned char *)data + elen + alen;
-
-        socket_arp_respond(descriptor, local, remote, aheader, pdata);
-
-    }
-
     if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
     {
 
@@ -647,7 +573,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
                 unsigned int psize = itot - (ilen + tlen);
 
 #if 0
-                if (!remote->active)
+                if (!remote->resolved)
                     socket_tcp_init(remote, iheader->sip, theader->sp, net_load32(theader->seq));
 #endif
 
@@ -671,7 +597,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
                 unsigned int psize = itot - (ilen + ulen);
 
 #if 0
-                if (!remote->active)
+                if (!remote->resolved)
                     socket_udp_init(remote, iheader->sip, uheader->sp);
 #endif
 
@@ -776,7 +702,7 @@ void socket_connect(unsigned int descriptor, unsigned char protocol, struct sock
 
 }
 
-void socket_resolve(unsigned int descriptor, struct socket *local, struct socket *remote)
+void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote)
 {
 
     struct message_data data;
@@ -785,8 +711,21 @@ void socket_resolve(unsigned int descriptor, struct socket *local, struct socket
 
 }
 
+void socket_resolvelocal(unsigned int descriptor, struct socket *socket)
+{
+
+    file_open(descriptor);
+    file_readall(descriptor, socket->haddress, ETHERNET_ADDRSIZE);
+    file_close(descriptor);
+
+    socket->resolved = 1;
+
+}
+
 void socket_init(struct socket *socket, unsigned char address[IPV4_ADDRSIZE])
 {
+
+    socket->resolved = 0;
 
     buffer_copy(&socket->paddress, address, IPV4_ADDRSIZE);
 

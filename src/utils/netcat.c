@@ -21,8 +21,42 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         if (header.event == EVENT_DATA)
         {
 
-            char buffer[BUFFER_SIZE];
-            unsigned int count = socket_receive(FILE_G0, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            unsigned char buffer[BUFFER_SIZE];
+            unsigned int count;
+
+            count = socket_arp_read(message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+
+            if (count)
+            {
+
+                struct arp_header *aheader = (struct arp_header *)buffer;
+
+                switch (net_load16(aheader->operation))
+                {
+
+                case ARP_REQUEST:
+                    if (buffer_match(buffer + arp_hlen(aheader) + aheader->hlength + aheader->plength + aheader->hlength, local.paddress, IPV4_ADDRSIZE))
+                    {
+
+                        /* Should I save these here? */
+                        buffer_copy(remote.haddress, buffer + arp_hlen(aheader), ETHERNET_ADDRSIZE);
+                        buffer_copy(remote.paddress, buffer + arp_hlen(aheader) + aheader->hlength, IPV4_ADDRSIZE);
+
+                        remote.resolved = 1;
+
+                        file_open(FILE_G0);
+                        file_writeall(FILE_G0, &data, socket_arp_build(&local, &remote, &data, ARP_REPLY, local.haddress, local.paddress, buffer + arp_hlen(aheader), buffer + arp_hlen(aheader) + aheader->hlength));
+                        file_close(FILE_G0);
+
+                    }
+
+                    break;
+
+                }
+
+            }
+
+            count = socket_receive(FILE_G0, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
@@ -41,6 +75,9 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
     struct event_consoledata *consoledata = mdata;
     unsigned int count = 0;
+
+    if (!remote.resolved)
+        return;
 
     switch (consoledata->data)
     {
@@ -88,7 +125,7 @@ void init(struct channel *channel)
         return;
 
     socket_tcp_init(&local, address, port, 42);
-    socket_loadarplocal(FILE_G1, &local);
+    socket_resolvelocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 

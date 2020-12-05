@@ -14,7 +14,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
     file_link(FILE_G0);
     socket_init(&remote, mdata);
-    socket_resolve(FILE_G0, &local, &remote);
+    socket_resolveremote(FILE_G0, &local, &remote);
 
     while (channel_polldescriptor(channel, FILE_G0, &header, &data))
     {
@@ -22,7 +22,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
         if (header.event == EVENT_DATA)
         {
 
-            char buffer[BUFFER_SIZE];
+            unsigned char buffer[BUFFER_SIZE];
             unsigned int count;
 
             count = socket_arp_read(message_datasize(&header), &data, BUFFER_SIZE, &buffer);
@@ -65,7 +65,7 @@ void init(struct channel *channel)
         return;
 
     socket_init(&local, address);
-    socket_loadarplocal(FILE_G1, &local);
+    socket_resolvelocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_DATA, ondata);
 
 }
