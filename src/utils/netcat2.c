@@ -29,11 +29,14 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                 struct arp_header *aheader = (struct arp_header *)buffer;
 
-                if (net_load16(aheader->operation) == ARP_REPLY)
+                switch (net_load16(aheader->operation))
                 {
 
+                case ARP_REPLY:
                     buffer_copy(remote.haddress, buffer + arp_hlen(aheader), ETHERNET_ADDRSIZE);
                     socket_connect(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote);
+
+                    break;
 
                 }
 

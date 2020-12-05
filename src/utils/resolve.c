@@ -29,9 +29,10 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
                 struct arp_header *aheader = (struct arp_header *)buffer;
 
-                if (net_load16(aheader->operation) == ARP_REPLY)
+                switch (net_load16(aheader->operation))
                 {
 
+                case ARP_REPLY:
                     channel_place(channel, source, EVENT_DATA, aheader->hlength, buffer + arp_hlen(aheader));
 
                     break;
