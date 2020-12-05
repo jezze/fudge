@@ -6,6 +6,7 @@ O:=\
     $(DIR_LIB)/net/ethernet.o \
     $(DIR_LIB)/net/icmp.o \
     $(DIR_LIB)/net/ipv4.o \
+    $(DIR_LIB)/net/net.o \
     $(DIR_LIB)/net/tcp.o \
     $(DIR_LIB)/net/udp.o \
 

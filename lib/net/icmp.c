@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include "net.h"
 #include "ipv4.h"
 #include "icmp.h"
 
@@ -39,8 +40,8 @@ void icmp_initheader(struct icmp_header *header, unsigned char type, unsigned ch
 
     header->type = type;
     header->code = code;
-    header->checksum[0] = 0;
-    header->checksum[1] = 0;
+
+    net_save16(header->checksum, 0);
 
 }
 

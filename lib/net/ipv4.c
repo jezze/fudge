@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include "net.h"
 #include "ipv4.h"
 
 unsigned short ipv4_calculatechecksum(struct ipv4_header *header, unsigned int len)
@@ -47,17 +48,15 @@ void ipv4_initheader(struct ipv4_header *header, unsigned char sip[IPV4_ADDRSIZE
 
     header->version = 0x45;
     header->dscp = 0;
-    header->length[0] = (count + 20) >> 8;
-    header->length[1] = (count + 20);
-    header->identification[0] = 0;
-    header->identification[1] = 0;
-    header->fragment[0] = 0;
-    header->fragment[1] = 0;
+
+    net_save16(header->length, count + 20);
+    net_save16(header->identification, 0);
+    net_save16(header->fragment, 0);
+
     header->ttl = 64;
     header->protocol = protocol;
-    header->checksum[0] = 0;
-    header->checksum[1] = 0;
 
+    net_save16(header->checksum, 0);
     buffer_copy(header->sip, sip, IPV4_ADDRSIZE);
     buffer_copy(header->tip, tip, IPV4_ADDRSIZE);
 

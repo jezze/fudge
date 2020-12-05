@@ -1,3 +1,4 @@
+#include <net/net.h>
 #include <net/arp.h>
 #include <net/ethernet.h>
 #include <net/icmp.h>

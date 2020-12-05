@@ -3,38 +3,6 @@
 #include <net.h>
 #include "socket.h"
 
-static unsigned short load16(unsigned char seq[2])
-{
-
-    return (seq[0] << 8) | (seq[1] << 0);
-
-}
-
-static unsigned int load32(unsigned char seq[4])
-{
-
-    return (seq[0] << 24) | (seq[1] << 16) | (seq[2] << 8) | (seq[3] << 0);
-
-}
-
-static void save16(unsigned char seq[2], unsigned short num)
-{
-
-    seq[0] = num >> 8;
-    seq[1] = num >> 0;
-
-}
-
-static void save32(unsigned char seq[4], unsigned int num)
-{
-
-    seq[0] = num >> 24;
-    seq[1] = num >> 16;
-    seq[2] = num >> 8;
-    seq[3] = num >> 0;
-
-}
-
 static void send(unsigned int descriptor, void *buffer, unsigned int count)
 {
 
@@ -127,9 +95,9 @@ static struct tcp_header *createtcp(struct socket *local, struct socket *remote,
     header->flags[0] = (5 << 4);
     header->flags[1] = flags;
 
-    save32(header->seq, seq);
-    save32(header->ack, ack);
-    save16(header->window, 8192);
+    net_save32(header->seq, seq);
+    net_save32(header->ack, ack);
+    net_save16(header->window, 8192);
 
     return header;
 
@@ -269,7 +237,7 @@ unsigned int socket_arp_read(unsigned int count, void *buffer, unsigned int outp
     struct ethernet_header *eheader = (struct ethernet_header *)(data);
     unsigned short elen = ethernet_hlen(eheader);
 
-    if (load16(eheader->type) == ETHERNET_TYPE_ARP)
+    if (net_load16(eheader->type) == ETHERNET_TYPE_ARP)
     {
 
         struct arp_header *aheader = (struct arp_header *)(data + elen);
@@ -287,14 +255,14 @@ static unsigned int receivearp(unsigned int descriptor, struct socket *local, st
 
     struct message_data data;
 
-    if (load16(header->htype) == 0x0001 && load16(header->ptype) == ETHERNET_TYPE_IPV4)
+    if (net_load16(header->htype) == 0x0001 && net_load16(header->ptype) == ETHERNET_TYPE_IPV4)
     {
 
         unsigned char *tip = pdata + header->hlength + header->plength + header->hlength;
         unsigned char *sha = pdata;
         unsigned char *sip = pdata + header->hlength;
 
-        switch (load16(header->operation))
+        switch (net_load16(header->operation))
         {
 
         case ARP_REQUEST:
@@ -361,7 +329,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         {
 
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
-            remote->info.tcp.seq = load32(header->seq) + 1;
+            remote->info.tcp.seq = net_load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
@@ -374,8 +342,8 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         {
 
             local->info.tcp.state = TCP_STATE_ESTABLISHED;
-            local->info.tcp.seq = load32(header->ack);
-            remote->info.tcp.seq = load32(header->seq) + 1;
+            local->info.tcp.seq = net_load32(header->ack);
+            remote->info.tcp.seq = net_load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
@@ -385,7 +353,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         {
 
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
-            remote->info.tcp.seq = load32(header->seq) + 1;
+            remote->info.tcp.seq = net_load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
@@ -398,7 +366,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         {
 
             local->info.tcp.state = TCP_STATE_ESTABLISHED;
-            local->info.tcp.seq = load32(header->ack);
+            local->info.tcp.seq = net_load32(header->ack);
 
         }
 
@@ -408,8 +376,8 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         if (header->flags[1] == (TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
         {
 
-            local->info.tcp.seq = load32(header->ack);
-            remote->info.tcp.seq = load32(header->seq) + psize;
+            local->info.tcp.seq = net_load32(header->ack);
+            remote->info.tcp.seq = net_load32(header->seq) + psize;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
@@ -421,8 +389,8 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         {
 
             local->info.tcp.state = TCP_STATE_CLOSEWAIT;
-            local->info.tcp.seq = load32(header->ack);
-            remote->info.tcp.seq = load32(header->seq) + 1;
+            local->info.tcp.seq = net_load32(header->ack);
+            remote->info.tcp.seq = net_load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
@@ -437,7 +405,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         else if (header->flags[1] == TCP_FLAGS1_ACK)
         {
 
-            local->info.tcp.seq = load32(header->ack);
+            local->info.tcp.seq = net_load32(header->ack);
 
         }
 
@@ -448,7 +416,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         {
 
             local->info.tcp.state = TCP_STATE_FINWAIT2;
-            local->info.tcp.seq = load32(header->ack);
+            local->info.tcp.seq = net_load32(header->ack);
 
         }
 
@@ -456,7 +424,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         {
 
             local->info.tcp.state = TCP_STATE_CLOSING;
-            remote->info.tcp.seq = load32(header->seq) + 1;
+            remote->info.tcp.seq = net_load32(header->seq) + 1;
 
             send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
@@ -486,7 +454,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         {
 
             local->info.tcp.state = TCP_STATE_TIMEWAIT;
-            local->info.tcp.seq = load32(header->ack);
+            local->info.tcp.seq = net_load32(header->ack);
 
             /* Sleep some time */
 
@@ -501,7 +469,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
         {
 
             local->info.tcp.state = TCP_STATE_CLOSED;
-            local->info.tcp.seq = load32(header->ack);
+            local->info.tcp.seq = net_load32(header->ack);
 
         }
 
@@ -533,7 +501,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
     struct ethernet_header *eheader = (struct ethernet_header *)(data);
     unsigned short elen = ethernet_hlen(eheader);
 
-    if (load16(eheader->type) == ETHERNET_TYPE_ARP)
+    if (net_load16(eheader->type) == ETHERNET_TYPE_ARP)
     {
 
         struct arp_header *aheader = (struct arp_header *)(data + elen);
@@ -544,7 +512,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 
     }
 
-    else if (load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    else if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
     {
 
         struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
@@ -569,14 +537,14 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
             struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);
             unsigned short tlen = tcp_hlen(theader);
 
-            if (load16(theader->tp) == load16(local->info.tcp.port))
+            if (net_load16(theader->tp) == net_load16(local->info.tcp.port))
             {
 
                 void *pdata = data + elen + ilen + tlen;
                 unsigned int psize = itot - (ilen + tlen);
 
                 if (!remote->active)
-                    socket_tcp_init(remote, iheader->sip, theader->sp, load32(theader->seq));
+                    socket_tcp_init(remote, iheader->sip, theader->sp, net_load32(theader->seq));
 
                 if (receivetcp(descriptor, local, remote, theader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
@@ -591,7 +559,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
             struct udp_header *uheader = (struct udp_header *)(data + elen + ilen);
             unsigned short ulen = udp_hlen(uheader);
 
-            if (load16(uheader->tp) == load16(local->info.udp.port))
+            if (net_load16(uheader->tp) == net_load16(local->info.udp.port))
             {
 
                 void *pdata = data + elen + ilen + ulen;

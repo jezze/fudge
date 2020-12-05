@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include "net.h"
 #include "ipv4.h"
 #include "tcp.h"
 
@@ -53,26 +54,14 @@ unsigned short tcp_hlen(struct tcp_header *header)
 void tcp_initheader(struct tcp_header *header, unsigned char *sp, unsigned char *tp)
 {
 
-    header->sp[0] = sp[0];
-    header->sp[1] = sp[1];
-    header->tp[0] = tp[0];
-    header->tp[1] = tp[1];
-    header->seq[0] = 0;
-    header->seq[1] = 0;
-    header->seq[2] = 0;
-    header->seq[3] = 0;
-    header->ack[0] = 0;
-    header->ack[1] = 0;
-    header->ack[2] = 0;
-    header->ack[3] = 0;
-    header->flags[0] = 0;
-    header->flags[1] = 0;
-    header->window[0] = 0;
-    header->window[1] = 0;
-    header->checksum[0] = 0;
-    header->checksum[1] = 0;
-    header->urgent[0] = 0;
-    header->urgent[1] = 0;
+    buffer_copy(header->sp, sp, TCP_PORTSIZE);
+    buffer_copy(header->tp, tp, TCP_PORTSIZE);
+    net_save32(header->seq, 0);
+    net_save32(header->ack, 0);
+    net_save16(header->flags, 0);
+    net_save16(header->window, 0);
+    net_save16(header->checksum, 0);
+    net_save16(header->urgent, 0);
 
 }
 
