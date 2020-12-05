@@ -269,7 +269,7 @@ unsigned int socket_icmp_read(unsigned int count, void *buffer, unsigned int out
 
             struct icmp_header *icmpheader = (struct icmp_header *)(data + elen + ilen);
 
-            return buffer_write(output, outputcount, icmpheader, itot, 0);
+            return buffer_write(output, outputcount, icmpheader, itot - ilen, 0);
 
         }
 
@@ -298,7 +298,7 @@ unsigned int socket_tcp_read(unsigned int count, void *buffer, unsigned int outp
 
             struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);
 
-            return buffer_write(output, outputcount, theader, itot, 0);
+            return buffer_write(output, outputcount, theader, itot - ilen, 0);
 
         }
 
@@ -327,7 +327,7 @@ unsigned int socket_udp_read(unsigned int count, void *buffer, unsigned int outp
 
             struct tcp_header *uheader = (struct tcp_header *)(data + elen + ilen);
 
-            return buffer_write(output, outputcount, uheader, itot, 0);
+            return buffer_write(output, outputcount, uheader, itot - ilen, 0);
 
         }
 
