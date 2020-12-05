@@ -24,7 +24,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             char buffer[BUFFER_SIZE];
             unsigned int count;
 
-            if (socket_arp_read(message_datasize(&header), &data, BUFFER_SIZE, &buffer))
+            count = socket_arp_read(message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+
+            if (count)
             {
 
                 struct arp_header *aheader = (struct arp_header *)buffer;
