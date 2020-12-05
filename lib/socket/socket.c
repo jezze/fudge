@@ -114,7 +114,7 @@ static struct udp_header *createudp(struct socket *local, struct socket *remote,
 
 }
 
-static unsigned int buildarp(struct socket *local, struct socket *remote, void *output, unsigned short operation, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char sip[IPV4_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE])
+unsigned int socket_arp_build(struct socket *local, struct socket *remote, void *output, unsigned short operation, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char sip[IPV4_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE])
 {
 
     unsigned char *data = output;
@@ -134,7 +134,7 @@ static unsigned int buildarp(struct socket *local, struct socket *remote, void *
 
 }
 
-static unsigned int buildarp2(struct socket *local, struct socket *remote, void *output, unsigned short operation, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char sip[IPV4_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE])
+unsigned int socket_arp_build2(struct socket *local, struct socket *remote, void *output, unsigned short operation, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char sip[IPV4_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE])
 {
 
     unsigned char *data = output;
@@ -154,7 +154,7 @@ static unsigned int buildarp2(struct socket *local, struct socket *remote, void 
 
 }
 
-static unsigned int buildicmp(struct socket *local, struct socket *remote, void *output, unsigned char type, unsigned char code, unsigned int count, void *buffer)
+unsigned int socket_icmp_build(struct socket *local, struct socket *remote, void *output, unsigned char type, unsigned char code, unsigned int count, void *buffer)
 {
 
     unsigned char *data = output;
@@ -175,7 +175,7 @@ static unsigned int buildicmp(struct socket *local, struct socket *remote, void 
 
 }
 
-static unsigned int buildtcp(struct socket *local, struct socket *remote, void *output, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
+unsigned int socket_tcp_build(struct socket *local, struct socket *remote, void *output, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
 {
 
     unsigned char *data = output;
@@ -196,7 +196,7 @@ static unsigned int buildtcp(struct socket *local, struct socket *remote, void *
 
 }
 
-static unsigned int buildudp(struct socket *local, struct socket *remote, void *output, unsigned int count, void *buffer)
+unsigned int socket_udp_build(struct socket *local, struct socket *remote, void *output, unsigned int count, void *buffer)
 {
 
     unsigned char *data = output;
@@ -374,7 +374,7 @@ unsigned int socket_arp_respond(unsigned int descriptor, struct socket *local, s
             {
 
                 savearpremote(remote, sha, sip);
-                send(descriptor, &data, buildarp(local, remote, &data, ARP_REPLY, local->haddress, local->paddress, remote->haddress, remote->paddress));
+                send(descriptor, &data, socket_arp_build(local, remote, &data, ARP_REPLY, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
             }
 
@@ -409,7 +409,7 @@ unsigned int socket_icmp_respond(unsigned int descriptor, struct socket *local, 
     {
 
     case ICMP_ECHOREQUEST:
-        send(descriptor, &data, buildicmp(local, remote, &data, ICMP_ECHOREPLY, 0, psize, pdata));
+        send(descriptor, &data, socket_icmp_build(local, remote, &data, ICMP_ECHOREPLY, 0, psize, pdata));
 
         break;
 
@@ -434,7 +434,7 @@ unsigned int socket_tcp_respond(unsigned int descriptor, struct socket *local, s
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
         }
 
@@ -448,7 +448,7 @@ unsigned int socket_tcp_respond(unsigned int descriptor, struct socket *local, s
             local->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
         }
 
@@ -458,7 +458,7 @@ unsigned int socket_tcp_respond(unsigned int descriptor, struct socket *local, s
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
         }
 
@@ -482,7 +482,7 @@ unsigned int socket_tcp_respond(unsigned int descriptor, struct socket *local, s
             local->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.seq = net_load32(header->seq) + psize;
 
-            send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             return psize;
 
@@ -495,13 +495,13 @@ unsigned int socket_tcp_respond(unsigned int descriptor, struct socket *local, s
             local->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
             /* Wait for application to close down */
 
             local->info.tcp.state = TCP_STATE_LASTACK;
 
-            send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
         }
 
@@ -529,7 +529,7 @@ unsigned int socket_tcp_respond(unsigned int descriptor, struct socket *local, s
             local->info.tcp.state = TCP_STATE_CLOSING;
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
 
         }
 
@@ -697,7 +697,7 @@ static unsigned int sendtcp(unsigned int descriptor, struct socket *local, struc
     {
 
     case TCP_STATE_ESTABLISHED:
-        send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, psize, pdata));
+        send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, psize, pdata));
 
         return psize;
 
@@ -712,7 +712,7 @@ static unsigned int sendudp(unsigned int descriptor, struct socket *local, struc
 
     struct message_data data;
 
-    send(descriptor, &data, buildudp(local, remote, &data, psize, pdata));
+    send(descriptor, &data, socket_udp_build(local, remote, &data, psize, pdata));
 
     return psize;
 
@@ -765,7 +765,7 @@ void socket_connect(unsigned int descriptor, unsigned char protocol, struct sock
     case IPV4_PROTOCOL_TCP:
         local->info.tcp.state = TCP_STATE_SYNSENT;
 
-        send(descriptor, &data, buildtcp(local, remote, &data, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, 0, 0));
+        send(descriptor, &data, socket_tcp_build(local, remote, &data, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, 0, 0));
 
         break;
 
@@ -781,7 +781,7 @@ void socket_resolve(unsigned int descriptor, struct socket *local, struct socket
 
     struct message_data data;
 
-    send(descriptor, &data, buildarp2(local, remote, &data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
+    send(descriptor, &data, socket_arp_build2(local, remote, &data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
 }
 
