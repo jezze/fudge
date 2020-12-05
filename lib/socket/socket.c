@@ -273,18 +273,17 @@ static unsigned int receivearp(unsigned int descriptor, struct socket *local, st
 
             break;
 
+#if 0
         case ARP_REPLY:
             if (buffer_match(tip, local->paddress, IPV4_ADDRSIZE))
             {
 
                 savearpremote(remote, sha, sip);
 
-                /* Maybe the wrong place */
-                socket_connect(descriptor, IPV4_PROTOCOL_TCP, local, remote);
-
             }
 
             break;
+#endif
 
         }
 
@@ -509,7 +508,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 
     }
 
-    else if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
     {
 
         struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);

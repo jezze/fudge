@@ -22,7 +22,24 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
             char buffer[BUFFER_SIZE];
-            unsigned int count = socket_receive(FILE_G0, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            unsigned int count;
+
+            if (socket_arp_read(message_datasize(&header), &data, BUFFER_SIZE, &buffer))
+            {
+
+                struct arp_header *aheader = (struct arp_header *)buffer;
+
+                if (net_load16(aheader->operation) == ARP_REPLY)
+                {
+
+                    buffer_copy(remote.haddress, buffer + arp_hlen(aheader), ETHERNET_ADDRSIZE);
+                    socket_connect(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote);
+
+                }
+
+            }
+
+            count = socket_receive(FILE_G0, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
