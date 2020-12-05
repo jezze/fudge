@@ -5,6 +5,13 @@
 
 static struct socket local;
 
+static unsigned short load16(unsigned char seq[2])
+{
+
+    return (seq[0] << 8) | (seq[1] << 0);
+
+}
+
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -28,11 +35,15 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
             {
 
                 struct arp_header *aheader = (struct arp_header *)buffer;
-                char *sha = buffer + arp_hlen(aheader);
 
-                channel_place(channel, source, EVENT_DATA, aheader->hlength, sha);
+                if (load16(aheader->operation) == ARP_REPLY)
+                {
 
-                break;
+                    channel_place(channel, source, EVENT_DATA, aheader->hlength, buffer + arp_hlen(aheader));
+
+                    break;
+
+                }
 
             }
 
