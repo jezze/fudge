@@ -27,6 +27,10 @@ struct socket
 void socket_loadarplocal(unsigned int descriptor, struct socket *local);
 unsigned int socket_ethernet_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
 unsigned int socket_arp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
+unsigned int socket_ipv4_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
+unsigned int socket_icmp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
+unsigned int socket_tcp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
+unsigned int socket_udp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
 unsigned int socket_receive(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer, unsigned int outputcount, void *output);
 unsigned int socket_send(unsigned int descriptor, unsigned char protocol, struct socket *local, struct socket *remote, unsigned int psize, void *pdata);
 void socket_listen(unsigned int descriptor, unsigned char protocol, struct socket *local);

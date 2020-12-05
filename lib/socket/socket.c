@@ -247,6 +247,113 @@ unsigned int socket_arp_read(unsigned int count, void *buffer, unsigned int outp
 
 }
 
+unsigned int socket_ipv4_read(unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+
+        return buffer_write(output, outputcount, iheader, ipv4_len(iheader), 0);
+
+    }
+
+    return 0;
+
+}
+
+unsigned int socket_icmp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+        unsigned short ilen = ipv4_hlen(iheader);
+        unsigned short itot = ipv4_len(iheader);
+
+        if (iheader->protocol == IPV4_PROTOCOL_TCP)
+        {
+
+            struct icmp_header *icmpheader = (struct icmp_header *)(data + elen + ilen);
+
+            return buffer_write(output, outputcount, icmpheader, itot, 0);
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int socket_tcp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+        unsigned short ilen = ipv4_hlen(iheader);
+        unsigned short itot = ipv4_len(iheader);
+
+        if (iheader->protocol == IPV4_PROTOCOL_TCP)
+        {
+
+            struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);
+
+            return buffer_write(output, outputcount, theader, itot, 0);
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int socket_udp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+        unsigned short ilen = ipv4_hlen(iheader);
+        unsigned short itot = ipv4_len(iheader);
+
+        if (iheader->protocol == IPV4_PROTOCOL_UDP)
+        {
+
+            struct tcp_header *uheader = (struct tcp_header *)(data + elen + ilen);
+
+            return buffer_write(output, outputcount, uheader, itot, 0);
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int receivearp(unsigned int descriptor, struct socket *local, struct socket *remote, struct arp_header *header, unsigned char *pdata)
 {
 
@@ -539,8 +646,10 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
                 void *pdata = data + elen + ilen + tlen;
                 unsigned int psize = itot - (ilen + tlen);
 
+#if 0
                 if (!remote->active)
                     socket_tcp_init(remote, iheader->sip, theader->sp, net_load32(theader->seq));
+#endif
 
                 if (receivetcp(descriptor, local, remote, theader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
