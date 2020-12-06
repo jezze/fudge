@@ -34,18 +34,6 @@ static struct ethernet_header *createethernet(void *buffer, struct socket *local
 
 }
 
-static struct ethernet_header *createethernet2(void *buffer, struct socket *local, struct socket *remote, unsigned short type)
-{
-
-    struct ethernet_header *header = buffer;
-    unsigned char tha[ETHERNET_ADDRSIZE] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-
-    ethernet_initheader(header, type, local->haddress, tha);
-
-    return header;
-
-}
-
 static struct ipv4_header *createipv4(void *buffer, struct socket *local, struct socket *remote, unsigned char protocol, unsigned short length)
 {
 
@@ -102,22 +90,6 @@ unsigned int socket_arp_build(struct socket *local, struct socket *remote, struc
 
     unsigned char *data = output;
     struct ethernet_header *eheader = createethernet(data, local, router, ETHERNET_TYPE_ARP);
-    struct arp_header *aheader = createarp(data + ethernet_hlen(eheader), local, remote, operation);
-
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader), sha, ETHERNET_ADDRSIZE); 
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE, sip, IPV4_ADDRSIZE); 
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE, tha, ETHERNET_ADDRSIZE); 
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE + ETHERNET_ADDRSIZE, tip, IPV4_ADDRSIZE); 
-
-    return ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE;
-
-}
-
-unsigned int socket_arp_build2(struct socket *local, struct socket *remote, struct socket *router, void *output, unsigned short operation, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char sip[IPV4_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE])
-{
-
-    unsigned char *data = output;
-    struct ethernet_header *eheader = createethernet2(data, local, router, ETHERNET_TYPE_ARP);
     struct arp_header *aheader = createarp(data + ethernet_hlen(eheader), local, remote, operation);
 
     buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader), sha, ETHERNET_ADDRSIZE); 
@@ -844,9 +816,13 @@ void socket_connect(unsigned int descriptor, unsigned char protocol, struct sock
 void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
 {
 
+    struct socket multicast;
     struct message_data data;
+    unsigned char haddress[ETHERNET_ADDRSIZE] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-    send(descriptor, &data, socket_arp_build2(local, remote, router, &data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
+    buffer_copy(&multicast, router, sizeof (struct socket));
+    buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE); 
+    send(descriptor, &data, socket_arp_build(local, remote, &multicast, &data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
 }
 
