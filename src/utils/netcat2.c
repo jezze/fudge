@@ -5,6 +5,7 @@
 
 static struct socket local;
 static struct socket remote;
+static struct socket router;
 
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
@@ -13,7 +14,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
 
     file_link(FILE_G0);
-    socket_resolveremote(FILE_G0, &local, &remote, &remote);
+    socket_resolveremote(FILE_G0, &local, &router, &router);
 
     while (channel_polldescriptor(channel, FILE_G0, &header, &data))
     {
@@ -22,9 +23,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
             unsigned char buffer[BUFFER_SIZE];
-            unsigned int count;
-
-            count = socket_arp_read(message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            unsigned int count = socket_arp_read(message_datasize(&header), &data, BUFFER_SIZE, &buffer);
 
             if (count)
             {
@@ -35,11 +34,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 {
 
                 case ARP_REPLY:
-                    buffer_copy(remote.haddress, buffer + arp_hlen(aheader), ETHERNET_ADDRSIZE);
+                    buffer_copy(router.haddress, buffer + arp_hlen(aheader), ETHERNET_ADDRSIZE);
 
-                    remote.resolved = 1;
-
-                    socket_connect(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote);
+                    router.resolved = 1;
 
                     break;
 
@@ -47,7 +44,23 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             }
 
-            count = socket_receive(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+        }
+
+        if (router.resolved)
+            break;
+
+    }
+
+    socket_connect(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &router);
+
+    while (channel_polldescriptor(channel, FILE_G0, &header, &data))
+    {
+
+        if (header.event == EVENT_DATA)
+        {
+
+            unsigned char buffer[BUFFER_SIZE];
+            unsigned int count = socket_receive(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
@@ -67,7 +80,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
     struct event_consoledata *consoledata = mdata;
     unsigned int count = 0;
 
-    if (!remote.resolved)
+    if (!router.resolved)
         return;
 
     switch (consoledata->data)
@@ -87,12 +100,12 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         consoledata->data = '\n';
 
     case '\n':
-        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote, 1, &consoledata->data);
+        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &router, 1, &consoledata->data);
 
         break;
 
     default:
-        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote, 1, &consoledata->data);
+        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &router, 1, &consoledata->data);
 
         break;
 
@@ -108,8 +121,9 @@ void init(struct channel *channel)
 
     unsigned char address1[IPV4_ADDRSIZE] = {10, 0, 5, 1};
     unsigned char port1[UDP_PORTSIZE] = {0x07, 0xD0};
-    unsigned char address2[IPV4_ADDRSIZE] = {10, 0, 5, 80};
-    unsigned char port2[UDP_PORTSIZE] = {0x07, 0xD0};
+    unsigned char address2[IPV4_ADDRSIZE] = {212, 47, 234, 3};
+    unsigned char port2[UDP_PORTSIZE] = {0x00, 0x50};
+    unsigned char address3[IPV4_ADDRSIZE] = {192, 168, 0, 8};
 
     if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
         return;
@@ -122,6 +136,8 @@ void init(struct channel *channel)
     socket_init(&remote);
     socket_tcp_bind(&remote, address2, port2, 0);
     socket_resolvelocal(FILE_G1, &local);
+    socket_init(&router);
+    socket_bind(&router, address3);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
