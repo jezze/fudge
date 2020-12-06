@@ -43,7 +43,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                         buffer_copy(remote.paddress, buffer + arp_hlen(aheader) + aheader->hlength, IPV4_ADDRSIZE);
 
                         file_open(FILE_G0);
-                        file_writeall(FILE_G0, &data, socket_arp_build(&local, &remote, &data, ARP_REPLY, local.haddress, local.paddress, buffer + arp_hlen(aheader), buffer + arp_hlen(aheader) + aheader->hlength));
+                        file_writeall(FILE_G0, &data, socket_arp_build(&local, &remote, &remote, &data, ARP_REPLY, local.haddress, local.paddress, buffer + arp_hlen(aheader), buffer + arp_hlen(aheader) + aheader->hlength));
                         file_close(FILE_G0);
 
                     }
@@ -54,7 +54,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             }
 
-            count = socket_tcp_receive2(FILE_G0, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            count = socket_tcp_receive2(FILE_G0, &local, &remote, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
@@ -94,12 +94,12 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         consoledata->data = '\n';
 
     case '\n':
-        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, 1, &consoledata->data);
+        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote, 1, &consoledata->data);
 
         break;
 
     default:
-        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, 1, &consoledata->data);
+        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote, 1, &consoledata->data);
 
         break;
 

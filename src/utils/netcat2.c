@@ -13,7 +13,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
 
     file_link(FILE_G0);
-    socket_resolveremote(FILE_G0, &local, &remote);
+    socket_resolveremote(FILE_G0, &local, &remote, &remote);
 
     while (channel_polldescriptor(channel, FILE_G0, &header, &data))
     {
@@ -39,7 +39,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                     remote.resolved = 1;
 
-                    socket_connect(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote);
+                    socket_connect(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote);
 
                     break;
 
@@ -47,7 +47,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             }
 
-            count = socket_receive(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            count = socket_receive(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
@@ -87,12 +87,12 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         consoledata->data = '\n';
 
     case '\n':
-        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, 1, &consoledata->data);
+        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote, 1, &consoledata->data);
 
         break;
 
     default:
-        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, 1, &consoledata->data);
+        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote, 1, &consoledata->data);
 
         break;
 
