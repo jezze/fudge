@@ -24,19 +24,6 @@ struct socket
 
 };
 
-unsigned int socket_arp_build(struct socket *local, struct socket *remote, struct socket *router, void *output, unsigned short operation, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char sip[IPV4_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE]);
-unsigned int socket_icmp_build(struct socket *local, struct socket *remote, struct socket *router, void *output, unsigned char type, unsigned char code, unsigned int count, void *buffer);
-unsigned int socket_tcp_build(struct socket *local, struct socket *remote, struct socket *router, void *output, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer);
-unsigned int socket_udp_build(struct socket *local, struct socket *remote, struct socket *router, void *output, unsigned int count, void *buffer);
-unsigned int socket_ethernet_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
-unsigned int socket_arp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
-unsigned int socket_ipv4_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
-unsigned int socket_icmp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
-unsigned int socket_tcp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
-unsigned int socket_udp_read(unsigned int count, void *buffer, unsigned int outputcount, void *output);
-unsigned int socket_icmp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, struct icmp_header *header, void *pdata, unsigned int psize);
-unsigned int socket_tcp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, struct tcp_header *header, void *pdata, unsigned int psize);
-unsigned int socket_udp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, struct udp_header *header, void *pdata, unsigned int psize);
 unsigned int socket_arp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer);
 unsigned int socket_icmp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer);
 unsigned int socket_tcp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);

@@ -23,27 +23,10 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
         if (header.event == EVENT_DATA)
         {
 
-            unsigned char buffer[BUFFER_SIZE];
-            unsigned int count;
+            socket_arp_handle(FILE_G0, &local, &remote, message_datasize(&header), &data);
 
-            count = socket_arp_read(message_datasize(&header), &data, BUFFER_SIZE, buffer);
-
-            if (count)
-            {
-
-                struct arp_header *aheader = (struct arp_header *)buffer;
-
-                switch (net_load16(aheader->operation))
-                {
-
-                case ARP_REPLY:
-                    channel_place(channel, source, EVENT_DATA, aheader->hlength, buffer + arp_hlen(aheader));
-
-                    break;
-
-                }
-
-            }
+            if (remote.resolved)
+                break;
 
         }
 
