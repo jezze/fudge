@@ -37,8 +37,11 @@ unsigned int socket_udp_read(unsigned int count, void *buffer, unsigned int outp
 unsigned int socket_icmp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, struct icmp_header *header, void *pdata, unsigned int psize);
 unsigned int socket_tcp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, struct tcp_header *header, void *pdata, unsigned int psize);
 unsigned int socket_udp_respond(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, struct udp_header *header, void *pdata, unsigned int psize);
-unsigned int socket_receive(unsigned int descriptor, unsigned int protocol, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);
-unsigned int socket_send(unsigned int descriptor, unsigned char protocol, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
+unsigned int socket_icmp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);
+unsigned int socket_tcp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);
+unsigned int socket_udp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);
+unsigned int socket_tcp_send(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
+unsigned int socket_udp_send(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
 void socket_listen(unsigned int descriptor, unsigned char protocol, struct socket *local);
 void socket_connect(unsigned int descriptor, unsigned char protocol, struct socket *local, struct socket *remote, struct socket *router);
 void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);

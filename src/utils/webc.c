@@ -60,7 +60,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
             unsigned char buffer[BUFFER_SIZE];
-            unsigned int count = socket_receive(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            unsigned int count = socket_tcp_handle(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
@@ -100,12 +100,12 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         consoledata->data = '\n';
 
     case '\n':
-        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &router, 1, &consoledata->data);
+        count = socket_tcp_send(FILE_G0, &local, &remote, &router, 1, &consoledata->data);
 
         break;
 
     default:
-        count = socket_send(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &router, 1, &consoledata->data);
+        count = socket_tcp_send(FILE_G0, &local, &remote, &router, 1, &consoledata->data);
 
         break;
 

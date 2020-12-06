@@ -425,7 +425,7 @@ unsigned int socket_udp_respond(unsigned int descriptor, struct socket *local, s
 
 }
 
-static unsigned int receiveicmp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+unsigned int socket_icmp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
     unsigned char *data = buffer;
@@ -457,7 +457,7 @@ static unsigned int receiveicmp(unsigned int descriptor, struct socket *local, s
 
 }
 
-static unsigned int receivetcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+unsigned int socket_tcp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
     unsigned char *data = buffer;
@@ -507,7 +507,7 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
 
 }
 
-static unsigned int receiveudp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+unsigned int socket_udp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
     unsigned char *data = buffer;
@@ -557,28 +557,7 @@ static unsigned int receiveudp(unsigned int descriptor, struct socket *local, st
 
 }
 
-unsigned int socket_receive(unsigned int descriptor, unsigned int protocol, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
-{
-
-    switch (protocol)
-    {
-
-    case IPV4_PROTOCOL_ICMP:
-        return receiveicmp(descriptor, local, remote, router, count, buffer, outputcount, output);
-
-    case IPV4_PROTOCOL_TCP:
-        return receivetcp(descriptor, local, remote, router, count, buffer, outputcount, output);
-
-    case IPV4_PROTOCOL_UDP:
-        return receiveudp(descriptor, local, remote, router, count, buffer, outputcount, output);
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int sendtcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
+unsigned int socket_tcp_send(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
 {
 
     struct message_data data;
@@ -597,7 +576,7 @@ static unsigned int sendtcp(unsigned int descriptor, struct socket *local, struc
 
 }
 
-static unsigned int sendudp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
+unsigned int socket_udp_send(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
 {
 
     struct message_data data;
@@ -605,24 +584,6 @@ static unsigned int sendudp(unsigned int descriptor, struct socket *local, struc
     send(descriptor, &data, socket_udp_build(local, remote, router, &data, psize, pdata));
 
     return psize;
-
-}
-
-unsigned int socket_send(unsigned int descriptor, unsigned char protocol, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
-{
-
-    switch (protocol)
-    {
-
-    case IPV4_PROTOCOL_TCP:
-        return sendtcp(descriptor, local, remote, router, psize, pdata);
-
-    case IPV4_PROTOCOL_UDP:
-        return sendudp(descriptor, local, remote, router, psize, pdata);
-
-    }
-
-    return 0;
 
 }
 
