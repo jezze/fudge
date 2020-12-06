@@ -425,7 +425,55 @@ unsigned int socket_udp_respond(unsigned int descriptor, struct socket *local, s
 
 }
 
-unsigned int socket_icmp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+unsigned int socket_arp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer)
+{
+
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_ARP)
+    {
+
+        struct arp_header *aheader = (struct arp_header *)(data + elen);
+        unsigned short alen = arp_hlen(aheader);
+
+        switch (net_load16(aheader->operation))
+        {
+
+        case ARP_REQUEST:
+            if (buffer_match(data + elen + alen + aheader->hlength + aheader->plength + aheader->hlength, local->paddress, IPV4_ADDRSIZE))
+            {
+
+                struct socket answer;
+                struct message_data msgdata;
+
+                socket_init(&answer);
+                buffer_copy(answer.haddress, data + elen + alen, ETHERNET_ADDRSIZE);
+                buffer_copy(answer.paddress, data + elen + alen + aheader->hlength, IPV4_ADDRSIZE);
+
+                send(descriptor, &msgdata, socket_arp_build(local, &answer, &answer, &msgdata, ARP_REPLY, local->haddress, local->paddress, data + elen + alen, data + elen + alen + aheader->hlength));
+
+            }
+
+            break;
+
+        case ARP_REPLY:
+            buffer_copy(remote->haddress, data + elen + alen, ETHERNET_ADDRSIZE);
+
+            remote->resolved = 1;
+
+            break;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int socket_icmp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer)
 {
 
     unsigned char *data = buffer;

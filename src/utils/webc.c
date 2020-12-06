@@ -22,32 +22,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         if (header.event == EVENT_DATA)
         {
 
-            unsigned char buffer[BUFFER_SIZE];
-            unsigned int count = socket_arp_read(message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            socket_arp_handle(FILE_G0, &local, &router, message_datasize(&header), &data);
 
-            if (count)
-            {
-
-                struct arp_header *aheader = (struct arp_header *)buffer;
-
-                switch (net_load16(aheader->operation))
-                {
-
-                case ARP_REPLY:
-                    buffer_copy(router.haddress, buffer + arp_hlen(aheader), ETHERNET_ADDRSIZE);
-
-                    router.resolved = 1;
-
-                    break;
-
-                }
-
-            }
+            if (router.resolved)
+                break;
 
         }
-
-        if (router.resolved)
-            break;
 
     }
 
@@ -60,7 +40,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
             unsigned char buffer[BUFFER_SIZE];
-            unsigned int count = socket_tcp_handle(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            unsigned int count = socket_tcp_handle(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
