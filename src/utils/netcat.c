@@ -38,12 +38,14 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                     if (buffer_match(buffer + arp_hlen(aheader) + aheader->hlength + aheader->plength + aheader->hlength, local.paddress, IPV4_ADDRSIZE))
                     {
 
-                        /* Should I save these here? */
-                        buffer_copy(remote.haddress, buffer + arp_hlen(aheader), ETHERNET_ADDRSIZE);
-                        buffer_copy(remote.paddress, buffer + arp_hlen(aheader) + aheader->hlength, IPV4_ADDRSIZE);
+                        struct socket answer;
+
+                        socket_init(&answer);
+                        buffer_copy(answer.haddress, buffer + arp_hlen(aheader), ETHERNET_ADDRSIZE);
+                        buffer_copy(answer.paddress, buffer + arp_hlen(aheader) + aheader->hlength, IPV4_ADDRSIZE);
 
                         file_open(FILE_G0);
-                        file_writeall(FILE_G0, &data, socket_arp_build(&local, &remote, &remote, &data, ARP_REPLY, local.haddress, local.paddress, buffer + arp_hlen(aheader), buffer + arp_hlen(aheader) + aheader->hlength));
+                        file_writeall(FILE_G0, &data, socket_arp_build(&local, &answer, &answer, &data, ARP_REPLY, local.haddress, local.paddress, buffer + arp_hlen(aheader), buffer + arp_hlen(aheader) + aheader->hlength));
                         file_close(FILE_G0);
 
                     }

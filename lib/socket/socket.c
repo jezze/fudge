@@ -525,6 +525,7 @@ unsigned int socket_tcp_receive2(unsigned int descriptor, struct socket *local, 
                 if (!remote->resolved)
                 {
 
+                    buffer_copy(remote->haddress, eheader->sha, ETHERNET_ADDRSIZE);
                     socket_tcp_bind(remote, iheader->sip, theader->sp, net_load32(theader->seq));
 
                     remote->resolved = 1;
