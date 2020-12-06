@@ -32,7 +32,7 @@ unsigned int socket_tcp_send(unsigned int descriptor, struct socket *local, stru
 unsigned int socket_udp_send(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
 void socket_listen(unsigned int descriptor, unsigned char protocol, struct socket *local);
 void socket_connect(unsigned int descriptor, unsigned char protocol, struct socket *local, struct socket *remote, struct socket *router);
-void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);
+void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote);
 void socket_resolvelocal(unsigned int descriptor, struct socket *socket);
 void socket_bind(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]);
 void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], unsigned int seq);

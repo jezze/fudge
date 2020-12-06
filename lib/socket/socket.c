@@ -550,14 +550,14 @@ void socket_connect(unsigned int descriptor, unsigned char protocol, struct sock
 
 }
 
-void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
+void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote)
 {
 
     struct socket multicast;
     struct message_data data;
     unsigned char haddress[ETHERNET_ADDRSIZE] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-    buffer_copy(&multicast, router, sizeof (struct socket));
+    buffer_copy(&multicast, remote, sizeof (struct socket));
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE); 
     send(descriptor, &data, buildarp(local, remote, &multicast, &data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 

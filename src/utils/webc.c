@@ -14,7 +14,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
 
     file_link(FILE_G0);
-    socket_resolveremote(FILE_G0, &local, &router, &router);
+    socket_resolveremote(FILE_G0, &local, &router);
 
     while (channel_polldescriptor(channel, FILE_G0, &header, &data))
     {
