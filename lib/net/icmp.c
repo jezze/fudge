@@ -35,6 +35,17 @@ unsigned short icmp_hlen(struct icmp_header *header)
 
 }
 
+struct icmp_header *icmp_putheader(void *buffer, unsigned char type, unsigned char code)
+{
+
+    struct icmp_header *header = buffer;
+
+    icmp_initheader(header, type, code);
+
+    return header;
+
+}
+
 void icmp_initheader(struct icmp_header *header, unsigned char type, unsigned char code)
 {
 

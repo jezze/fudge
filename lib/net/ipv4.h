@@ -22,4 +22,5 @@ struct ipv4_header
 unsigned short ipv4_calculatechecksum(struct ipv4_header *header, unsigned int len);
 unsigned short ipv4_hlen(struct ipv4_header *header);
 unsigned short ipv4_len(struct ipv4_header *header);
+struct ipv4_header *ipv4_putheader(void *buffer, unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned char protocol, unsigned short length);
 void ipv4_initheader(struct ipv4_header *header, unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE], unsigned int protocol, unsigned int count);

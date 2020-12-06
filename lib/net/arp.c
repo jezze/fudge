@@ -16,6 +16,17 @@ unsigned short arp_len(struct arp_header *header)
 
 }
 
+struct arp_header *arp_putheader(void *buffer, unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength, unsigned short operation)
+{
+
+    struct arp_header *header = buffer;
+
+    arp_initheader(header, htype, hlength, ptype, plength, operation);
+
+    return header;
+
+}
+
 void arp_initheader(struct arp_header *header, unsigned short htype, unsigned char hlength, unsigned short ptype, unsigned char plength, unsigned short operation)
 {
 

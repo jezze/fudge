@@ -9,6 +9,17 @@ unsigned short ethernet_hlen(struct ethernet_header *header)
 
 }
 
+struct ethernet_header *ethernet_putheader(void *buffer, unsigned short type, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE])
+{
+
+    struct ethernet_header *header = buffer;
+
+    ethernet_initheader(header, type, sha, tha);
+
+    return header;
+
+}
+
 void ethernet_initheader(struct ethernet_header *header, unsigned short type, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE])
 {
 

@@ -17,4 +17,5 @@ struct icmp_header
 
 unsigned short icmp_calculatechecksum(struct icmp_header *header, unsigned int len);
 unsigned short icmp_hlen(struct icmp_header *header);
+struct icmp_header *icmp_putheader(void *buffer, unsigned char type, unsigned char code);
 void icmp_initheader(struct icmp_header *header, unsigned char type, unsigned char code);

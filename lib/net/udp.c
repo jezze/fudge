@@ -54,6 +54,17 @@ unsigned short udp_hlen(struct udp_header *header)
 
 }
 
+struct udp_header *udp_putheader(void *buffer, unsigned char sp[UDP_PORTSIZE], unsigned char tp[UDP_PORTSIZE], unsigned int count)
+{
+
+    struct udp_header *header = buffer;
+
+    udp_initheader(header, sp, tp, count);
+
+    return header;
+
+}
+
 void udp_initheader(struct udp_header *header, unsigned char *sp, unsigned char *tp, unsigned int count)
 {
 
