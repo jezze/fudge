@@ -23,23 +23,23 @@ static struct arp_header *createarp(void *buffer, struct socket *local, struct s
 
 }
 
-static struct ethernet_header *createethernet(void *buffer, struct socket *local, struct socket *remote, unsigned short type)
+static struct ethernet_header *createethernet(void *buffer, unsigned short type, unsigned char sha[ETHERNET_ADDRSIZE], unsigned char tha[ETHERNET_ADDRSIZE])
 {
 
     struct ethernet_header *header = buffer;
 
-    ethernet_initheader(header, type, local->haddress, remote->haddress);
+    ethernet_initheader(header, type, sha, tha);
 
     return header;
 
 }
 
-static struct ipv4_header *createipv4(void *buffer, struct socket *local, struct socket *remote, unsigned char protocol, unsigned short length)
+static struct ipv4_header *createipv4(void *buffer, unsigned char protocol, unsigned short length, unsigned char sip[IPV4_ADDRSIZE], unsigned char tip[IPV4_ADDRSIZE])
 {
 
     struct ipv4_header *header = buffer;
 
-    ipv4_initheader(header, local->paddress, remote->paddress, protocol, length);
+    ipv4_initheader(header, sip, tip, protocol, length);
 
     return header;
 
@@ -89,7 +89,7 @@ unsigned int socket_arp_build(struct socket *local, struct socket *remote, struc
 {
 
     unsigned char *data = output;
-    struct ethernet_header *eheader = createethernet(data, local, router, ETHERNET_TYPE_ARP);
+    struct ethernet_header *eheader = createethernet(data, ETHERNET_TYPE_ARP, local->haddress, router->haddress);
     struct arp_header *aheader = createarp(data + ethernet_hlen(eheader), local, remote, operation);
 
     buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader), sha, ETHERNET_ADDRSIZE); 
@@ -106,8 +106,8 @@ unsigned int socket_icmp_build(struct socket *local, struct socket *remote, stru
 
     unsigned char *data = output;
     unsigned int length = sizeof (struct icmp_header) + count;
-    struct ethernet_header *eheader = createethernet(data, local, router, ETHERNET_TYPE_IPV4);
-    struct ipv4_header *iheader = createipv4(data + ethernet_hlen(eheader), local, remote, IPV4_PROTOCOL_ICMP, length);
+    struct ethernet_header *eheader = createethernet(data, ETHERNET_TYPE_IPV4, local->haddress, router->haddress);
+    struct ipv4_header *iheader = createipv4(data + ethernet_hlen(eheader), IPV4_PROTOCOL_ICMP, length, local->paddress, remote->paddress);
     struct icmp_header *icmpheader = createicmp(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), local, remote, type, code);
     void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + icmp_hlen(icmpheader));
     unsigned short checksum;
@@ -127,8 +127,8 @@ unsigned int socket_tcp_build(struct socket *local, struct socket *remote, struc
 
     unsigned char *data = output;
     unsigned int length = sizeof (struct tcp_header) + count;
-    struct ethernet_header *eheader = createethernet(data, local, router, ETHERNET_TYPE_IPV4);
-    struct ipv4_header *iheader = createipv4(data + ethernet_hlen(eheader), local, remote, IPV4_PROTOCOL_TCP, length);
+    struct ethernet_header *eheader = createethernet(data, ETHERNET_TYPE_IPV4, local->haddress, router->haddress);
+    struct ipv4_header *iheader = createipv4(data + ethernet_hlen(eheader), IPV4_PROTOCOL_TCP, length, local->paddress, remote->paddress);
     struct tcp_header *theader = createtcp(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), local, remote, flags, seq, ack);
     void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader));
     unsigned short checksum;
@@ -148,8 +148,8 @@ unsigned int socket_udp_build(struct socket *local, struct socket *remote, struc
 
     unsigned char *data = output;
     unsigned int length = sizeof (struct udp_header) + count;
-    struct ethernet_header *eheader = createethernet(data, local, router, ETHERNET_TYPE_IPV4);
-    struct ipv4_header *iheader = createipv4(data + ethernet_hlen(eheader), local, remote, IPV4_PROTOCOL_UDP, length);
+    struct ethernet_header *eheader = createethernet(data, ETHERNET_TYPE_IPV4, local->haddress, router->haddress);
+    struct ipv4_header *iheader = createipv4(data + ethernet_hlen(eheader), IPV4_PROTOCOL_UDP, length, local->paddress, remote->paddress);
     struct udp_header *uheader = createudp(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), local, remote, count);
     void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader));
     unsigned short checksum;
