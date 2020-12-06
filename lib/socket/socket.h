@@ -47,6 +47,6 @@ void socket_connect(unsigned int descriptor, unsigned char protocol, struct sock
 void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);
 void socket_resolvelocal(unsigned int descriptor, struct socket *socket);
 void socket_bind(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]);
-void socket_tcp_bind(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[TCP_PORTSIZE], unsigned int seq);
-void socket_udp_bind(struct socket *socket, unsigned char address[IPV4_ADDRSIZE], unsigned char port[UDP_PORTSIZE]);
+void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], unsigned int seq);
+void socket_bind_udp(struct socket *socket, unsigned char port[UDP_PORTSIZE]);
 void socket_init(struct socket *socket);

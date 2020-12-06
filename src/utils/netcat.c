@@ -125,7 +125,8 @@ void init(struct channel *channel)
         return;
 
     socket_init(&local);
-    socket_tcp_bind(&local, address, port, 42);
+    socket_bind(&local, address);
+    socket_bind_tcp(&local, port, 42);
     socket_resolvelocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);

@@ -132,9 +132,11 @@ void init(struct channel *channel)
         return;
 
     socket_init(&local);
-    socket_tcp_bind(&local, address1, port1, 42);
+    socket_bind(&local, address1);
+    socket_bind_tcp(&local, port1, 42);
     socket_init(&remote);
-    socket_tcp_bind(&remote, address2, port2, 0);
+    socket_bind(&remote, address2);
+    socket_bind_tcp(&remote, port2, 0);
     socket_resolvelocal(FILE_G1, &local);
     socket_init(&router);
     socket_bind(&router, address3);
