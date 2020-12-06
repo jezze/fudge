@@ -483,45 +483,6 @@ static unsigned int receivetcp(unsigned int descriptor, struct socket *local, st
                 void *pdata = data + elen + ilen + tlen;
                 unsigned int psize = itot - (ilen + tlen);
 
-                if (socket_tcp_respond(descriptor, local, remote, router, theader, pdata, psize))
-                    return buffer_write(output, outputcount, pdata, psize, 0);
-
-            }
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-unsigned int socket_tcp_receive2(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
-{
-
-    unsigned char *data = buffer;
-    struct ethernet_header *eheader = (struct ethernet_header *)(data);
-    unsigned short elen = ethernet_hlen(eheader);
-
-    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
-    {
-
-        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
-        unsigned short ilen = ipv4_hlen(iheader);
-        unsigned short itot = ipv4_len(iheader);
-
-        if (iheader->protocol == IPV4_PROTOCOL_TCP)
-        {
-
-            struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);
-            unsigned short tlen = tcp_hlen(theader);
-
-            if (net_load16(theader->tp) == net_load16(local->info.tcp.port))
-            {
-
-                void *pdata = data + elen + ilen + tlen;
-                unsigned int psize = itot - (ilen + tlen);
-
                 if (!remote->resolved)
                 {
 
@@ -547,45 +508,6 @@ unsigned int socket_tcp_receive2(unsigned int descriptor, struct socket *local, 
 }
 
 static unsigned int receiveudp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
-{
-
-    unsigned char *data = buffer;
-    struct ethernet_header *eheader = (struct ethernet_header *)(data);
-    unsigned short elen = ethernet_hlen(eheader);
-
-    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
-    {
-
-        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
-        unsigned short ilen = ipv4_hlen(iheader);
-        unsigned short itot = ipv4_len(iheader);
-
-        if (iheader->protocol == IPV4_PROTOCOL_UDP)
-        {
-
-            struct udp_header *uheader = (struct udp_header *)(data + elen + ilen);
-            unsigned short ulen = udp_hlen(uheader);
-
-            if (net_load16(uheader->tp) == net_load16(local->info.udp.port))
-            {
-
-                void *pdata = data + elen + ilen + ulen;
-                unsigned int psize = itot - (ilen + ulen);
-
-                if (socket_udp_respond(descriptor, local, remote, router, uheader, pdata, psize))
-                    return buffer_write(output, outputcount, pdata, psize, 0);
-
-            }
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-unsigned int socket_udp_receive2(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
     unsigned char *data = buffer;

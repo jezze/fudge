@@ -56,7 +56,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             }
 
-            count = socket_tcp_receive2(FILE_G0, &local, &remote, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
+            /* Add router lookup */
+            count = socket_receive(FILE_G0, IPV4_PROTOCOL_TCP, &local, &remote, &remote, message_datasize(&header), &data, BUFFER_SIZE, &buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
