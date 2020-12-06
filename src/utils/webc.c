@@ -117,9 +117,9 @@ void init(struct channel *channel)
     socket_init(&remote);
     socket_bind(&remote, address2);
     socket_bind_tcp(&remote, port2, 0);
-    socket_resolvelocal(FILE_G1, &local);
     socket_init(&router);
     socket_bind(&router, address3);
+    socket_resolvelocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
