@@ -10,6 +10,7 @@ static struct socket router;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    char *request = "GET / HTTP/1.1\r\nHost: www.blunder.se\r\n\r\n";
     struct message_header header;
     struct message_data data;
 
@@ -44,19 +45,13 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             socket_handle_tcp(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
 
             if (local.info.tcp.state == TCP_STATE_ESTABLISHED)
-            {
-
-                char *request = "GET / HTTP/1.1\r\nHost: www.blunder.se\r\n\r\n";
-
-                socket_send_tcp(FILE_G0, &local, &remote, &router, ascii_length(request), request);
-
                 break;
-
-            }
 
         }
 
     }
+
+    socket_send_tcp(FILE_G0, &local, &remote, &router, ascii_length(request), request);
 
     while (channel_polldescriptor(channel, FILE_G0, &header, &data))
     {
