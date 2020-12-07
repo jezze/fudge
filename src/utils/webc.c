@@ -40,10 +40,38 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
             unsigned char buffer[BUFFER_SIZE];
+
+            socket_handle_tcp(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
+
+            if (local.info.tcp.state == TCP_STATE_ESTABLISHED)
+            {
+
+                char *request = "GET / HTTP/1.1\r\nHost: www.blunder.se\r\n\r\n";
+
+                socket_send_tcp(FILE_G0, &local, &remote, &router, ascii_length(request), request);
+
+                break;
+
+            }
+
+        }
+
+    }
+
+    while (channel_polldescriptor(channel, FILE_G0, &header, &data))
+    {
+
+        if (header.event == EVENT_DATA)
+        {
+
+            unsigned char buffer[BUFFER_SIZE];
             unsigned int count = socket_handle_tcp(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
+
+            if (local.info.tcp.state == TCP_STATE_CLOSED)
+                break;
 
         }
 
@@ -51,48 +79,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     file_unlink(FILE_G0);
     channel_close(channel, source);
-
-}
-
-static void onconsoledata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_consoledata *consoledata = mdata;
-    unsigned int count = 0;
-
-    if (!router.resolved)
-        return;
-
-    switch (consoledata->data)
-    {
-
-    case '\0':
-        break;
-
-    case '\t':
-        break;
-
-    case '\b':
-    case 0x7F:
-        break;
-
-    case '\r':
-        consoledata->data = '\n';
-
-    case '\n':
-        count = socket_send_tcp(FILE_G0, &local, &remote, &router, 1, &consoledata->data);
-
-        break;
-
-    default:
-        count = socket_send_tcp(FILE_G0, &local, &remote, &router, 1, &consoledata->data);
-
-        break;
-
-    }
-
-    if (count)
-        channel_place(channel, source, EVENT_DATA, count, &consoledata->data);
 
 }
 
@@ -124,7 +110,6 @@ void init(struct channel *channel)
     socket_bind(&router, address3);
     socket_resolvelocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
 }
 
