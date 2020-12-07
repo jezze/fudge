@@ -24,7 +24,8 @@ static void print(void *buffer, unsigned int count)
         if (!ring_avail(&text))
             ring_skip(&text, ring_find(&text, '\n') + 1);
 
-        ring_write(&text, &b[i], 1);
+        if (b[i] != '\r')
+            ring_write(&text, &b[i], 1);
 
     }
 
