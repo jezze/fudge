@@ -17,18 +17,13 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
     socket_bind(&remote, mdata);
     socket_resolveremote(FILE_G0, &local, &remote);
 
-    while (channel_polldescriptor(channel, FILE_G0, &header, &data))
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
     {
 
-        if (header.event == EVENT_DATA)
-        {
+        socket_handle_arp(FILE_G0, &local, &remote, message_datasize(&header), &data);
 
-            socket_handle_arp(FILE_G0, &local, &remote, message_datasize(&header), &data);
-
-            if (remote.resolved)
-                break;
-
-        }
+        if (remote.resolved)
+            break;
 
     }
 

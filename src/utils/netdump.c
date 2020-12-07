@@ -309,13 +309,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     file_link(FILE_G0);
 
-    while (channel_polldescriptor(channel, FILE_G0, &header, &data))
-    {
-
-        if (header.event == EVENT_DATA)
-            print_ethernet(channel, source, data.buffer);
-
-    }
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
+        print_ethernet(channel, source, data.buffer);
 
     file_unlink(FILE_G0);
     channel_close(channel, source);

@@ -11,22 +11,16 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     file_link(FILE_G0);
 
-    while (channel_polldescriptor(channel, FILE_G0, &header, &data))
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_TIMERTICK, &header, &data))
     {
 
-        if (header.event == EVENT_TIMERTICK)
-        {
+        unsigned int offset = 0;
 
-            unsigned int offset = 0;
+        offset = message_putstring(&data, "Tick: ", offset);
+        offset = message_putvalue(&data, counter++, 10, 0, offset);
+        offset = message_putstring(&data, "\n", offset);
 
-            offset = message_putstring(&data, "Tick: ", offset);
-            offset = message_putvalue(&data, counter++, 10, 0, offset);
-            offset = message_putstring(&data, "\n", offset);
-
-            channel_place(channel, source, EVENT_DATA, offset, &data);
-
-
-        }
+        channel_place(channel, source, EVENT_DATA, offset, &data);
 
     }
 
