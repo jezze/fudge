@@ -16,40 +16,30 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     file_link(FILE_G0);
     socket_resolveremote(FILE_G0, &local, &router);
 
-    while (channel_polldescriptor(channel, FILE_G0, &header, &data))
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
     {
 
-        if (header.event == EVENT_DATA)
-        {
+        socket_handle_arp(FILE_G0, &local, &router, message_datasize(&header), &data);
 
-            socket_handle_arp(FILE_G0, &local, &router, message_datasize(&header), &data);
-
-            if (router.resolved)
-                break;
-
-        }
+        if (router.resolved)
+            break;
 
     }
 
     socket_listen(FILE_G0, IPV4_PROTOCOL_TCP, &local);
 
-    while (channel_polldescriptor(channel, FILE_G0, &header, &data))
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
     {
 
-        if (header.event == EVENT_DATA)
-        {
+        unsigned char buffer[BUFFER_SIZE];
+        unsigned int count;
 
-            unsigned char buffer[BUFFER_SIZE];
-            unsigned int count;
+        socket_handle_arp(FILE_G0, &local, &remote, message_datasize(&header), &data);
 
-            socket_handle_arp(FILE_G0, &local, &remote, message_datasize(&header), &data);
+        count = socket_handle_tcp(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
 
-            count = socket_handle_tcp(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
-
-            if (count)
-                channel_place(channel, source, EVENT_DATA, count, buffer);
-
-        }
+        if (count)
+            channel_place(channel, source, EVENT_DATA, count, buffer);
 
     }
 
