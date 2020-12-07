@@ -238,6 +238,8 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
 
             local->info.tcp.seq = net_load32(header->ack);
 
+            return psize;
+
         }
 
         break;
