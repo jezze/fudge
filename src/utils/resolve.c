@@ -42,10 +42,13 @@ void init(struct channel *channel)
 
     unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
 
-    if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
+    if (!file_walk2(FILE_L0, "/system/ethernet/if:0"))
         return;
 
-    if (!file_walk2(FILE_G1, "/system/ethernet/if:0/addr"))
+    if (!file_walk(FILE_G0, FILE_L0, "data"))
+        return;
+
+    if (!file_walk(FILE_G1, FILE_L0, "addr"))
         return;
 
     socket_init(&local);

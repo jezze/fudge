@@ -105,10 +105,13 @@ void init(struct channel *channel)
     unsigned char port2[UDP_PORTSIZE] = {0x00, 0x50};
     unsigned char address3[IPV4_ADDRSIZE] = {192, 168, 0, 8};
 
-    if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
+    if (!file_walk2(FILE_L0, "/system/ethernet/if:0"))
         return;
 
-    if (!file_walk2(FILE_G1, "/system/ethernet/if:0/addr"))
+    if (!file_walk(FILE_G0, FILE_L0, "data"))
+        return;
+
+    if (!file_walk(FILE_G1, FILE_L0, "addr"))
         return;
 
     socket_init(&local);

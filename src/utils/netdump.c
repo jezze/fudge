@@ -2,13 +2,6 @@
 #include <net.h>
 #include <abi.h>
 
-static unsigned short load16(unsigned char seq[2])
-{
-
-    return (seq[0] << 8) | (seq[1] << 0);
-
-}
-
 static void print_icmp(struct channel *channel, unsigned int source, void *buffer)
 {
 
@@ -37,10 +30,10 @@ static void print_tcp(struct channel *channel, unsigned int source, void *buffer
 
     offset = message_putstring(&data, "TCP:\n", offset);
     offset = message_putstring(&data, "  Source Port: ", offset);
-    offset = message_putvalue(&data, load16(header->sp), 10, 0, offset);
+    offset = message_putvalue(&data, net_load16(header->sp), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
     offset = message_putstring(&data, "  Target Port: ", offset);
-    offset = message_putvalue(&data, load16(header->tp), 10, 0, offset);
+    offset = message_putvalue(&data, net_load16(header->tp), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
     offset = message_putstring(&data, "  Sequence: 0x", offset);
     offset = message_putvalue(&data, header->seq[0], 16, 2, offset);
@@ -76,13 +69,13 @@ static void print_udp(struct channel *channel, unsigned int source, void *buffer
 
     offset = message_putstring(&data, "UDP:\n", offset);
     offset = message_putstring(&data, "  Source Port: ", offset);
-    offset = message_putvalue(&data, load16(header->sp), 10, 0, offset);
+    offset = message_putvalue(&data, net_load16(header->sp), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
     offset = message_putstring(&data, "  Target Port: ", offset);
-    offset = message_putvalue(&data, load16(header->tp), 10, 0, offset);
+    offset = message_putvalue(&data, net_load16(header->tp), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
     offset = message_putstring(&data, "  Length: ", offset);
-    offset = message_putvalue(&data, load16(header->length), 10, 0, offset);
+    offset = message_putvalue(&data, net_load16(header->length), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
 
     channel_place(channel, source, EVENT_DATA, offset, &data);
@@ -286,7 +279,7 @@ static void print_ethernet(struct channel *channel, unsigned int source, void *b
 
     channel_place(channel, source, EVENT_DATA, offset, &data);
 
-    switch (load16(header->type))
+    switch (net_load16(header->type))
     {
 
     case ETHERNET_TYPE_ARP:
@@ -332,7 +325,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    if (!file_walk2(FILE_G0, "/system/ethernet/if:0/data"))
+    if (!file_walk2(FILE_L0, "/system/ethernet/if:0"))
+        return;
+
+    if (!file_walk(FILE_G0, FILE_L0, "data"))
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);
