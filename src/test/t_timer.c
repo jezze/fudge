@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
+static unsigned int ticks;
 static unsigned int counter;
 
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
@@ -14,13 +15,22 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     while (channel_polldescriptorevent(channel, FILE_G0, EVENT_TIMERTICK, &header, &data))
     {
 
-        unsigned int offset = 0;
+        ticks++;
 
-        offset = message_putstring(&data, "Tick: ", offset);
-        offset = message_putvalue(&data, counter++, 10, 0, offset);
-        offset = message_putstring(&data, "\n", offset);
+        if (ticks % 6)
+        {
 
-        channel_place(channel, source, EVENT_DATA, offset, &data);
+            unsigned int offset = 0;
+
+            offset = message_putstring(&data, "Tick: ", offset);
+            offset = message_putvalue(&data, counter * 60, 10, 0, offset);
+            offset = message_putstring(&data, "ms\n", offset);
+
+            channel_place(channel, source, EVENT_DATA, offset, &data);
+
+            counter++;
+
+        }
 
     }
 
@@ -32,7 +42,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    if (!file_walk2(FILE_G0, "/system/timer/if:0/event"))
+    if (!file_walk2(FILE_G0, "/system/timer/if:0/event10"))
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);
