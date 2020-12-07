@@ -6,38 +6,6 @@
 
 static struct system_node root;
 
-static struct ethernet_interface *findinterface(void *address)
-{
-
-    struct resource *current = 0;
-
-    while ((current = resource_foreachtype(current, RESOURCE_ETHERNETINTERFACE)))
-    {
-
-        struct ethernet_interface *interface = current->data;
-
-        if (interface->matchaddress(address, ETHERNET_ADDRSIZE))
-            return interface;
-
-    }
-
-    return 0;
-
-}
-
-void ethernet_send(void *buffer, unsigned int count)
-{
-
-    struct ethernet_header *header = buffer;
-    struct ethernet_interface *interface = findinterface(header->sha);
-
-    if (!interface)
-        return;
-
-    interface->send(buffer, count);
-
-}
-
 void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
@@ -67,7 +35,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, unsigned int (*matchaddress)(void *buffer, unsigned int count), unsigned int (*send)(void *buffer, unsigned int count))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
@@ -77,8 +45,6 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
     system_initnode(&interface->addr, SYSTEM_NODETYPE_NORMAL, "addr");
 
     interface->id = id;
-    interface->matchaddress = matchaddress;
-    interface->send = send;
 
 }
 

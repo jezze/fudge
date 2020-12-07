@@ -236,22 +236,6 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int ethernetinterface_matchaddress(void *buffer, unsigned int count)
-{
-
-    unsigned char address[ETHERNET_ADDRSIZE];
-
-    address[0] = io_inb(io + REG_IDR0);
-    address[1] = io_inb(io + REG_IDR1);
-    address[2] = io_inb(io + REG_IDR2);
-    address[3] = io_inb(io + REG_IDR3);
-    address[4] = io_inb(io + REG_IDR4);
-    address[5] = io_inb(io + REG_IDR5);
-
-    return buffer_match(address, buffer, count);
-
-}
-
 static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
@@ -324,7 +308,7 @@ static unsigned int ethernetinterface_writedata(void *buffer, unsigned int count
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_matchaddress, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, id);
 
     ethernetinterface.addr.operations.read = ethernetinterface_readaddr;
     ethernetinterface.data.operations.write = ethernetinterface_writedata;

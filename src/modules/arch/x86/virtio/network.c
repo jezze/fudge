@@ -26,7 +26,9 @@ static unsigned short io;
 static struct virtio_queue vqs[16];
 static unsigned char virtqbuffer[3][0x4000];
 static unsigned char rxbuffer[0x4000];
+#if 0
 static unsigned char txbuffer[0x4000];
+#endif
 
 static void handlequeue(struct virtio_queue *vq)
 {
@@ -71,22 +73,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int ethernetinterface_matchaddress(void *buffer, unsigned int count)
-{
-
-    unsigned char address[ETHERNET_ADDRSIZE];
-
-    address[0] = io_inb(io + 0x14);
-    address[1] = io_inb(io + 0x15);
-    address[2] = io_inb(io + 0x16);
-    address[3] = io_inb(io + 0x17);
-    address[4] = io_inb(io + 0x18);
-    address[5] = io_inb(io + 0x19);
-
-    return buffer_match(address, buffer, count);
-
-}
-
+#if 0
 static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
@@ -122,6 +109,7 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
     return count;
 
 }
+#endif
 
 static void setqueues(void)
 {
@@ -163,7 +151,7 @@ static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count,
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_matchaddress, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, id);
 
     ethernetinterface.addr.operations.read = ethernetinterface_readaddr;
 
