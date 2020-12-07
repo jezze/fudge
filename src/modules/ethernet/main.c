@@ -25,17 +25,6 @@ static struct ethernet_interface *findinterface(void *address)
 
 }
 
-void *ethernet_writehead(void *buffer, unsigned int type, unsigned char *sha, unsigned char *tha)
-{
-
-    struct ethernet_header *header = buffer;
-
-    ethernet_initheader(header, type, sha, tha);
-
-    return header + 1;
-
-}
-
 void ethernet_send(void *buffer, unsigned int count)
 {
 
@@ -52,20 +41,6 @@ void ethernet_send(void *buffer, unsigned int count)
 void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    struct ethernet_header *header = buffer;
-    unsigned int type = (header->type[0] << 8) | header->type[1];
-    struct resource *current = 0;
-
-    while ((current = resource_foreachtype(current, RESOURCE_ETHERNETHOOK)))
-    {
-
-        struct ethernet_hook *hook = current->data;
-
-        if (hook->type == type)
-            hook->notify(header, header + 1, count - 18);
-
-    }
-
     kernel_notify(&interface->data.links, EVENT_DATA, buffer, count);
 
 }
@@ -81,15 +56,6 @@ void ethernet_registerinterface(struct ethernet_interface *interface)
 
 }
 
-void ethernet_registerhook(struct ethernet_hook *hook)
-{
-
-    resource_register(&hook->resource);
-    system_addchild(&hook->root, &hook->data);
-    system_addchild(&root, &hook->root);
-
-}
-
 void ethernet_unregisterinterface(struct ethernet_interface *interface)
 {
 
@@ -98,15 +64,6 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
     system_removechild(&interface->root, &interface->data);
     system_removechild(&interface->root, &interface->addr);
     system_removechild(&root, &interface->root);
-
-}
-
-void ethernet_unregisterhook(struct ethernet_hook *hook)
-{
-
-    resource_unregister(&hook->resource);
-    system_removechild(&hook->root, &hook->data);
-    system_removechild(&root, &hook->root);
 
 }
 
@@ -122,18 +79,6 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
     interface->id = id;
     interface->matchaddress = matchaddress;
     interface->send = send;
-
-}
-
-void ethernet_inithook(struct ethernet_hook *hook, char *name, unsigned int type, void (*notify)(struct ethernet_header *header, void *buffer, unsigned int count))
-{
-
-    resource_init(&hook->resource, RESOURCE_ETHERNETHOOK, hook);
-    system_initnode(&hook->root, SYSTEM_NODETYPE_GROUP, name);
-    system_initnode(&hook->data, SYSTEM_NODETYPE_NORMAL, "data");
-
-    hook->type = type;
-    hook->notify = notify;
 
 }
 
