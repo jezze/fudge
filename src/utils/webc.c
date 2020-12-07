@@ -22,7 +22,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         if (header.event == EVENT_DATA)
         {
 
-            socket_arp_handle(FILE_G0, &local, &router, message_datasize(&header), &data);
+            socket_handle_arp(FILE_G0, &local, &router, message_datasize(&header), &data);
 
             if (router.resolved)
                 break;
@@ -40,7 +40,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         {
 
             unsigned char buffer[BUFFER_SIZE];
-            unsigned int count = socket_tcp_handle(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
+            unsigned int count = socket_handle_tcp(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
 
             if (count)
                 channel_place(channel, source, EVENT_DATA, count, buffer);
@@ -80,12 +80,12 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         consoledata->data = '\n';
 
     case '\n':
-        count = socket_tcp_send(FILE_G0, &local, &remote, &router, 1, &consoledata->data);
+        count = socket_send_tcp(FILE_G0, &local, &remote, &router, 1, &consoledata->data);
 
         break;
 
     default:
-        count = socket_tcp_send(FILE_G0, &local, &remote, &router, 1, &consoledata->data);
+        count = socket_send_tcp(FILE_G0, &local, &remote, &router, 1, &consoledata->data);
 
         break;
 

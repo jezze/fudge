@@ -23,7 +23,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
         if (header.event == EVENT_DATA)
         {
 
-            socket_arp_handle(FILE_G0, &local, &remote, message_datasize(&header), &data);
+            socket_handle_arp(FILE_G0, &local, &remote, message_datasize(&header), &data);
 
             if (remote.resolved)
                 break;

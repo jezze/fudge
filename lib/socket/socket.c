@@ -325,7 +325,7 @@ static unsigned int respondudp(unsigned int descriptor, struct socket *local, st
 
 }
 
-unsigned int socket_arp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer)
+unsigned int socket_handle_arp(unsigned int descriptor, struct socket *local, struct socket *remote, unsigned int count, void *buffer)
 {
 
     unsigned char *data = buffer;
@@ -348,7 +348,7 @@ unsigned int socket_arp_handle(unsigned int descriptor, struct socket *local, st
 
 }
 
-unsigned int socket_icmp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer)
+unsigned int socket_handle_icmp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer)
 {
 
     unsigned char *data = buffer;
@@ -380,7 +380,7 @@ unsigned int socket_icmp_handle(unsigned int descriptor, struct socket *local, s
 
 }
 
-unsigned int socket_tcp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+unsigned int socket_handle_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
     unsigned char *data = buffer;
@@ -430,7 +430,7 @@ unsigned int socket_tcp_handle(unsigned int descriptor, struct socket *local, st
 
 }
 
-unsigned int socket_udp_handle(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+unsigned int socket_handle_udp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
     unsigned char *data = buffer;
@@ -480,7 +480,7 @@ unsigned int socket_udp_handle(unsigned int descriptor, struct socket *local, st
 
 }
 
-unsigned int socket_tcp_send(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
+unsigned int socket_send_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
 {
 
     struct message_data data;
@@ -499,7 +499,7 @@ unsigned int socket_tcp_send(unsigned int descriptor, struct socket *local, stru
 
 }
 
-unsigned int socket_udp_send(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
+unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
 {
 
     struct message_data data;
