@@ -512,56 +512,136 @@ unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, stru
 
 }
 
-void socket_listen(unsigned int descriptor, unsigned char protocol, struct socket *local)
+unsigned int socket_receive_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count)
 {
 
-    switch (protocol)
-    {
-
-    case IPV4_PROTOCOL_TCP:
-        local->info.tcp.state = TCP_STATE_LISTEN;
-
-        break;
-
-    case IPV4_PROTOCOL_UDP:
-        break;
-
-    }
-
-}
-
-void socket_connect(unsigned int descriptor, unsigned char protocol, struct socket *local, struct socket *remote, struct socket *router)
-{
-
+    struct message_header header;
     struct message_data data;
 
-    switch (protocol)
+    if (local->info.tcp.state != TCP_STATE_ESTABLISHED)
+        return 0;
+
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
     {
 
-    case IPV4_PROTOCOL_TCP:
-        local->info.tcp.state = TCP_STATE_SYNSENT;
+        unsigned int payploadcount;
 
-        send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, 0, 0));
+        socket_handle_arp(FILE_G0, local, remote, message_datasize(&header), &data);
 
-        break;
+        payploadcount = socket_handle_tcp(FILE_G0, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
 
-    case IPV4_PROTOCOL_UDP:
-        break;
+        if (payploadcount)
+            return payploadcount;
+
+        if (local->info.tcp.state != TCP_STATE_ESTABLISHED)
+            return 0;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int socket_receive_udp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count)
+{
+
+    struct message_header header;
+    struct message_data data;
+
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
+    {
+
+        unsigned int payploadcount;
+
+        socket_handle_arp(FILE_G0, local, remote, message_datasize(&header), &data);
+
+        payploadcount = socket_handle_udp(FILE_G0, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
+
+        if (payploadcount)
+            return payploadcount;
+
+    }
+
+    return 0;
+
+}
+
+void socket_listen_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
+{
+
+    struct message_header header;
+    struct message_data data;
+
+    local->info.tcp.state = TCP_STATE_LISTEN;
+
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
+    {
+
+        unsigned char buffer[BUFFER_SIZE];
+
+        socket_handle_arp(FILE_G0, local, remote, message_datasize(&header), &data);
+        socket_handle_tcp(FILE_G0, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
+
+        if (local->info.tcp.state == TCP_STATE_ESTABLISHED)
+            return;
 
     }
 
 }
 
-void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote)
+void socket_connect_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
+{
+
+    struct message_header header;
+    struct message_data data;
+
+    local->info.tcp.state = TCP_STATE_SYNSENT;
+
+    send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, 0, 0));
+
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
+    {
+
+        unsigned char buffer[BUFFER_SIZE];
+
+        socket_handle_arp(FILE_G0, local, remote, message_datasize(&header), &data);
+        socket_handle_tcp(FILE_G0, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
+
+        if (local->info.tcp.state == TCP_STATE_ESTABLISHED)
+            break;
+
+    }
+
+}
+
+void socket_disconnect_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
+{
+
+    /* Implement */
+
+}
+
+void socket_resolveremote(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote)
 {
 
     struct socket multicast;
+    struct message_header header;
     struct message_data data;
     unsigned char haddress[ETHERNET_ADDRSIZE] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
     buffer_copy(&multicast, remote, sizeof (struct socket));
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE); 
     send(descriptor, &data, buildarp(local, remote, &multicast, &data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
+
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
+    {
+
+        socket_handle_arp(FILE_G0, local, remote, message_datasize(&header), &data);
+
+        if (remote->resolved)
+            break;
+
+    }
 
 }
 

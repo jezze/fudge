@@ -8,25 +8,12 @@ static struct socket local;
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-    struct message_data data;
     struct socket remote;
 
     file_link(FILE_G0);
     socket_init(&remote);
     socket_bind(&remote, mdata);
-    socket_resolveremote(FILE_G0, &local, &remote);
-
-    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
-    {
-
-        socket_handle_arp(FILE_G0, &local, &remote, message_datasize(&header), &data);
-
-        if (remote.resolved)
-            break;
-
-    }
-
+    socket_resolveremote(channel, FILE_G0, &local, &remote);
     file_unlink(FILE_G0);
     channel_close(channel, source);
 

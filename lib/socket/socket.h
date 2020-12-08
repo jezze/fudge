@@ -30,9 +30,12 @@ unsigned int socket_handle_tcp(unsigned int descriptor, struct socket *local, st
 unsigned int socket_handle_udp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);
 unsigned int socket_send_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
 unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
-void socket_listen(unsigned int descriptor, unsigned char protocol, struct socket *local);
-void socket_connect(unsigned int descriptor, unsigned char protocol, struct socket *local, struct socket *remote, struct socket *router);
-void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote);
+unsigned int socket_receive_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count);
+unsigned int socket_receive_udp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count);
+void socket_listen_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);
+void socket_connect_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);
+void socket_disconnect_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);
+void socket_resolveremote(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote);
 void socket_resolvelocal(unsigned int descriptor, struct socket *socket);
 void socket_bind(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]);
 void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], unsigned int seq);

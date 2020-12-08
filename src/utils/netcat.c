@@ -10,38 +10,15 @@ static struct socket router;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-    struct message_data data;
+    unsigned char buffer[BUFFER_SIZE];
+    unsigned int count;
 
     file_link(FILE_G0);
-    socket_resolveremote(FILE_G0, &local, &router);
+    socket_resolveremote(channel, FILE_G0, &local, &router);
+    socket_listen_tcp(channel, FILE_G0, &local, &remote, &router);
 
-    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
-    {
-
-        socket_handle_arp(FILE_G0, &local, &router, message_datasize(&header), &data);
-
-        if (router.resolved)
-            break;
-
-    }
-
-    socket_listen(FILE_G0, IPV4_PROTOCOL_TCP, &local);
-
-    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
-    {
-
-        unsigned char buffer[BUFFER_SIZE];
-        unsigned int count;
-
-        socket_handle_arp(FILE_G0, &local, &remote, message_datasize(&header), &data);
-
-        count = socket_handle_tcp(FILE_G0, &local, &remote, &router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
-
-        if (count)
-            channel_place(channel, source, EVENT_DATA, count, buffer);
-
-    }
+    while ((count = socket_receive_tcp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
+        channel_place(channel, source, EVENT_DATA, count, buffer);
 
     file_unlink(FILE_G0);
     channel_close(channel, source);
