@@ -617,7 +617,29 @@ void socket_connect_tcp(struct channel *channel, unsigned int descriptor, struct
 void socket_disconnect_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
 {
 
-    /* Implement */
+    struct message_header header;
+    struct message_data data;
+
+    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
+    {
+
+        unsigned char buffer[BUFFER_SIZE];
+
+        socket_handle_arp(FILE_G0, local, remote, message_datasize(&header), &data);
+        socket_handle_tcp(FILE_G0, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
+
+        /* No timeout implemented */
+        if (local->info.tcp.state == TCP_STATE_TIMEWAIT)
+            break;
+
+        /* Sometimes no last ack is sent back */
+        if (local->info.tcp.state == TCP_STATE_LASTACK)
+            break;
+
+        if (local->info.tcp.state == TCP_STATE_CLOSED)
+            break;
+
+    }
 
 }
 
