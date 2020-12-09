@@ -12,7 +12,7 @@ static struct ring input;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *request = "NICK jfu_fudge\nUSER jfu_fudge 8 x : jfu_fudge\nJOIN #fudge\n";
+    char *request = "NICK jfu_fudge\nUSER jfu_fudge 0 * :Jens Fudge\nJOIN #fudge\n";
     char buffer[BUFFER_SIZE];
     unsigned int count;
 
