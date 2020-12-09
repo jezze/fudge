@@ -216,6 +216,25 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
 
         }
 
+        else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
+        {
+
+            local->info.tcp.state = TCP_STATE_CLOSEWAIT;
+            local->info.tcp.seq = net_load32(header->ack);
+            remote->info.tcp.seq = net_load32(header->seq) + psize + 1;
+
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+
+            /* Wait for application to close down */
+
+            local->info.tcp.state = TCP_STATE_LASTACK;
+
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+
+            return psize;
+
+        }
+
         else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_ACK))
         {
 
