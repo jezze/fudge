@@ -13,7 +13,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     char *request = "NICK jfu_fudge\nUSER jfu_fudge 8 x : jfu_fudge\nJOIN #fudge\n";
-    unsigned char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE];
     unsigned int count;
 
     file_link(FILE_G0);
@@ -61,8 +61,8 @@ static void interpret(void *buffer, unsigned int count)
 static void onconsoledata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[BUFFER_SIZE];
     struct event_consoledata *consoledata = mdata;
+    char buffer[BUFFER_SIZE];
     unsigned int count;
 
     if (!remote.resolved)

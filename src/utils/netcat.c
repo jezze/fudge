@@ -10,7 +10,7 @@ static struct socket router;
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE];
     unsigned int count;
 
     file_link(FILE_G0);

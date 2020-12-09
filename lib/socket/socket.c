@@ -577,7 +577,7 @@ void socket_listen_tcp(struct channel *channel, unsigned int descriptor, struct 
     while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
     {
 
-        unsigned char buffer[BUFFER_SIZE];
+        char buffer[BUFFER_SIZE];
 
         socket_handle_arp(FILE_G0, local, remote, message_datasize(&header), &data);
         socket_handle_tcp(FILE_G0, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
@@ -602,7 +602,7 @@ void socket_connect_tcp(struct channel *channel, unsigned int descriptor, struct
     while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
     {
 
-        unsigned char buffer[BUFFER_SIZE];
+        char buffer[BUFFER_SIZE];
 
         socket_handle_arp(FILE_G0, local, remote, message_datasize(&header), &data);
         socket_handle_tcp(FILE_G0, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
@@ -623,7 +623,7 @@ void socket_disconnect_tcp(struct channel *channel, unsigned int descriptor, str
     while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
     {
 
-        unsigned char buffer[BUFFER_SIZE];
+        char buffer[BUFFER_SIZE];
 
         socket_handle_arp(FILE_G0, local, remote, message_datasize(&header), &data);
         socket_handle_tcp(FILE_G0, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
