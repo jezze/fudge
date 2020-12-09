@@ -30,12 +30,31 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void prep(void)
+static void interpret(void *buffer, unsigned int count)
 {
 
-    char *text = "PRIVMSG #fudge :";
+    char *data = buffer;
 
-    ring_write(&input, text, ascii_length(text));
+    if (data[0] == '/')
+    {
+
+        socket_send_tcp(FILE_G0, &local, &remote, &router, count - 1, data + 1);
+
+    }
+
+    else
+    {
+
+        char *text = "PRIVMSG #fudge :";
+        char outputdata[BUFFER_SIZE];
+        unsigned int offset = 0;
+
+        offset += buffer_write(outputdata, BUFFER_SIZE, text, ascii_length(text), offset);
+        offset += buffer_write(outputdata, BUFFER_SIZE, buffer, count, offset);
+
+        socket_send_tcp(FILE_G0, &local, &remote, &router, offset, outputdata);
+
+    }
 
 }
 
@@ -72,9 +91,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         count = ring_read(&input, buffer, BUFFER_SIZE);
 
         if (count)
-            socket_send_tcp(FILE_G0, &local, &remote, &router, count, buffer);
-
-        prep();
+            interpret(buffer, count);
 
         break;
 
@@ -98,7 +115,6 @@ void init(struct channel *channel)
     unsigned char address3[IPV4_ADDRSIZE] = {192, 168, 0, 8};
 
     ring_init(&input, BUFFER_SIZE, inputbuffer);
-    prep();
 
     if (!file_walk2(FILE_L0, "/system/ethernet/if:0"))
         return;
