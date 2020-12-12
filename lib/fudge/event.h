@@ -27,6 +27,7 @@
 #define EVENT_WMMOUSESCROLL             0x27
 #define EVENT_WMMOUSEPRESS              0x28
 #define EVENT_WMMOUSERELEASE            0x29
+#define EVENT_WMRENDERDATA              0x2A
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 

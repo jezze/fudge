@@ -322,35 +322,6 @@ static void setupvideo(void)
 
 }
 
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct list_item *current;
-
-    for (current = currentview->remotes.head; current; current = current->next)
-    {
-
-        struct remote *remote = current->data;
-
-        if (remote->source == source)
-        {
-
-            unsigned int x = remote->window.size.x + 2 + padding;
-            unsigned int y = remote->window.size.y + 2 + padding;
-            unsigned int w = remote->window.size.w - 4 - padding * 2;
-            unsigned int h = remote->window.size.h - 4 - padding * 2;
-
-            render_write(source, mdata, msize);
-            render_resize(source, x, y, w, h, padding, lineheight, steplength);
-            render_flush(canvasdata, 0x10000, draw);
-            render_complete();
-
-        }
-
-    }
-
-}
-
 static void onkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -877,6 +848,35 @@ static void onwmunmap(struct channel *channel, unsigned int source, void *mdata,
 
 }
 
+static void onwmrenderdata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct list_item *current;
+
+    for (current = currentview->remotes.head; current; current = current->next)
+    {
+
+        struct remote *remote = current->data;
+
+        if (remote->source == source)
+        {
+
+            unsigned int x = remote->window.size.x + 2 + padding;
+            unsigned int y = remote->window.size.y + 2 + padding;
+            unsigned int w = remote->window.size.w - 4 - padding * 2;
+            unsigned int h = remote->window.size.h - 4 - padding * 2;
+
+            render_write(source, mdata, msize);
+            render_resize(source, x, y, w, h, padding, lineheight, steplength);
+            render_flush(canvasdata, 0x10000, draw);
+            render_complete();
+
+        }
+
+    }
+
+}
+
 static void onany(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -966,7 +966,6 @@ void init(struct channel *channel)
 
     channel_setcallback(channel, EVENT_ANY, onany);
     channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_DATA, ondata);
     channel_setcallback(channel, EVENT_FILE, onfile);
     channel_setcallback(channel, EVENT_KEYPRESS, onkeypress);
     channel_setcallback(channel, EVENT_KEYRELEASE, onkeyrelease);
@@ -977,6 +976,7 @@ void init(struct channel *channel)
     channel_setcallback(channel, EVENT_VIDEOMODE, onvideomode);
     channel_setcallback(channel, EVENT_WMMAP, onwmmap);
     channel_setcallback(channel, EVENT_WMUNMAP, onwmunmap);
+    channel_setcallback(channel, EVENT_WMRENDERDATA, onwmrenderdata);
 
 }
 
