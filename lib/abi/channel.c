@@ -35,9 +35,6 @@ void channel_dispatch(struct channel *channel, struct message_header *header, st
         if (channel->callbacks[header->event].callback)
             channel->callbacks[header->event].callback(channel, header->source, data->buffer, message_datasize(header));
 
-        if (channel->callbacks[EVENT_ANY].callback)
-            channel->callbacks[EVENT_ANY].callback(channel, header->source, data->buffer, message_datasize(header));
-
     }
 
 }

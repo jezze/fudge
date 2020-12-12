@@ -877,24 +877,6 @@ static void onwmrenderdata(struct channel *channel, unsigned int source, void *m
 
 }
 
-static void onany(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    if (ring_count(&output))
-    {
-
-        char buffer[BUFFER_SIZE];
-        unsigned int count = ring_read(&output, buffer, BUFFER_SIZE);
-
-        render_write(0, buffer, count);
-        render_resize(0, screen.x, screen.y, screen.w, screen.h, padding, lineheight, steplength);
-        render_flush(canvasdata, 0x10000, draw);
-        render_complete();
-
-    }
-
-}
-
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -912,7 +894,24 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     activateview(currentview);
 
     while (channel_poll(channel, &header, &data))
+    {
+
         channel_dispatch(channel, &header, &data);
+
+        if (ring_count(&output))
+        {
+
+            char buffer[BUFFER_SIZE];
+            unsigned int count = ring_read(&output, buffer, BUFFER_SIZE);
+
+            render_write(0, buffer, count);
+            render_resize(0, screen.x, screen.y, screen.w, screen.h, padding, lineheight, steplength);
+            render_flush(canvasdata, 0x10000, draw);
+            render_complete();
+
+        }
+
+    }
 
     file_close(FILE_G6);
     file_unlink(FILE_G5);
@@ -964,7 +963,6 @@ void init(struct channel *channel)
     if (!file_walk(FILE_G6, FILE_G4, "data"))
         return;
 
-    channel_setcallback(channel, EVENT_ANY, onany);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_FILE, onfile);
     channel_setcallback(channel, EVENT_KEYPRESS, onkeypress);
