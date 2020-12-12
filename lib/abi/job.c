@@ -165,6 +165,8 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
             if (i < n - 1)
                 job_replyto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
+            else
+                job_replyback(channel, job->id, EVENT_DATA);
 
         }
 

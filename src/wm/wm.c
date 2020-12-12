@@ -440,7 +440,7 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
         id = file_spawn("/bin/wshell");
 
         if (id)
-            channel_place(channel, id, EVENT_MAIN, 0, 0);
+            channel_place2(channel, id, EVENT_MAIN, 0, 0);
 
         break;
 

@@ -14,10 +14,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
         job_replyto(channel, id, EVENT_DATA, source);
         job_replyback(channel, id, EVENT_CLOSE);
-        channel_place(channel, id, EVENT_FILE, message_putstringz(&data, "/system/info/cores", 0), &data);
-        channel_place(channel, id, EVENT_FILE, message_putstringz(&data, "/system/info/tasks", 0), &data);
-        channel_place(channel, id, EVENT_FILE, message_putstringz(&data, "/system/info/mailboxes", 0), &data);
-        channel_place(channel, id, EVENT_MAIN, 0, 0);
+        channel_place2(channel, id, EVENT_FILE, message_putstringz(&data, "/system/info/cores", 0), &data);
+        channel_place2(channel, id, EVENT_FILE, message_putstringz(&data, "/system/info/tasks", 0), &data);
+        channel_place2(channel, id, EVENT_FILE, message_putstringz(&data, "/system/info/mailboxes", 0), &data);
+        channel_place2(channel, id, EVENT_MAIN, 0, 0);
         channel_pollsourceevent(channel, id, EVENT_CLOSE, &header, &data);
 
     }

@@ -63,6 +63,19 @@ unsigned int channel_place(struct channel *channel, unsigned int id, unsigned in
 
 }
 
+unsigned int channel_place2(struct channel *channel, unsigned int id, unsigned int event, unsigned int count, void *data)
+{
+
+    struct message_header header;
+
+    message_initheader(&header, event, count);
+
+    while (!call_place(id, &header, data));
+
+    return count;
+
+}
+
 unsigned int channel_poll(struct channel *channel, struct message_header *header, struct message_data *data)
 {
 
