@@ -1,8 +1,7 @@
 struct job_arg
 {
 
-    char *key;
-    char *value;
+    char *name;
 
 };
 

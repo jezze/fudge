@@ -4,9 +4,8 @@
 #define TOKEN_SKIP                      1
 #define TOKEN_END                       2
 #define TOKEN_IDENT                     3
-#define TOKEN_ARGUMENT                  4
-#define TOKEN_FILE                      5
-#define TOKEN_PIPE                      7
+#define TOKEN_FILE                      4
+#define TOKEN_PIPE                      5
 
 struct token
 {
@@ -61,6 +60,13 @@ static struct token *tokenlist_pop(struct tokenlist *list)
 
 }
 
+static unsigned int tokenlist_check(struct tokenlist *list)
+{
+
+    return (list->head) ? list->table[list->head - 1].type : 0;
+
+}
+
 static void tokenlist_add(struct tokenlist *list, unsigned int type, char *str)
 {
 
@@ -85,7 +91,6 @@ static unsigned int precedence(struct token *token)
     case TOKEN_PIPE:
         return 2;
 
-    case TOKEN_ARGUMENT:
     case TOKEN_FILE:
         return 3;
 
@@ -107,9 +112,6 @@ static unsigned int tokenize(char c)
 
     case '<':
         return TOKEN_FILE;
-
-    case '=':
-        return TOKEN_ARGUMENT;
 
     case '|':
         return TOKEN_PIPE;
@@ -250,30 +252,12 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
         struct token *token = &postfix->table[i];
         struct token *t;
-        struct token *t2;
 
         switch (token->type)
         {
 
         case TOKEN_IDENT:
             tokenlist_push(stack, token);
-
-            break;
-
-        case TOKEN_ARGUMENT:
-            t = tokenlist_pop(stack);
-
-            if (!t)
-                return;
-
-            t2 = tokenlist_pop(stack);
-
-            if (!t2)
-                return;
-
-            offset = message_putstringz(&data, "A", offset);
-            offset = message_putstringz(&data, t->str, offset);
-            offset = message_putstringz(&data, t2->str, offset);
 
             break;
 
@@ -300,13 +284,29 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             break;
 
         case TOKEN_END:
-            t = tokenlist_pop(stack);
+            while (tokenlist_check(stack) == TOKEN_IDENT)
+            {
 
-            if (!t)
-                return;
+                t = tokenlist_pop(stack);
 
-            offset = message_putstringz(&data, "P", offset);
-            offset = message_putstringz(&data, t->str, offset);
+                if (tokenlist_check(stack) == TOKEN_IDENT)
+                {
+
+                    offset = message_putstringz(&data, "A", offset);
+                    offset = message_putstringz(&data, t->str, offset);
+
+                }
+
+                else
+                {
+
+                    offset = message_putstringz(&data, "P", offset);
+                    offset = message_putstringz(&data, t->str, offset);
+
+                }
+
+            }
+
             offset = message_putstringz(&data, "E", offset);
 
             channel_place(channel, EVENT_DATA, offset, &data);
