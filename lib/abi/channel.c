@@ -195,6 +195,19 @@ void channel_setredirect(struct channel *channel, unsigned int event, unsigned i
 
 }
 
+void channel_redirectsame(struct channel *channel, unsigned int target, unsigned int event)
+{
+
+    struct event_redirect redirect;
+
+    redirect.event = event;
+    redirect.mode = EVENT_REDIRECT_TARGET;
+    redirect.id = channel->callbacks[event].target;
+
+    channel_placefor(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+
+}
+
 void channel_redirectto(struct channel *channel, unsigned int target, unsigned int event, unsigned int id)
 {
 
