@@ -136,6 +136,7 @@ void job_pipe(struct channel *channel, struct job *jobs, unsigned int n)
         {
 
             channel_redirectback(channel, job->id, EVENT_CLOSE);
+            channel_redirectback(channel, job->id, EVENT_ARGUMENT);
 
             if (i < n - 1)
                 channel_redirectto(channel, job->id, EVENT_DATA, jobs[i + 1].id);

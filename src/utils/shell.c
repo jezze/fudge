@@ -298,6 +298,15 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
+static void onargument(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    file_walk2(FILE_L0, mdata);
+    file_duplicate(FILE_PW, FILE_L0);
+    file_duplicate(FILE_CW, FILE_L0);
+
+}
+
 void init(struct channel *channel)
 {
 
@@ -312,6 +321,7 @@ void init(struct channel *channel)
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_DATA, ondata);
     channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_ARGUMENT, onargument);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
 }
