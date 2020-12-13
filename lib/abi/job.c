@@ -67,32 +67,6 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
 
 }
 
-void job_replyto(struct channel *channel, unsigned int target, unsigned int event, unsigned int id)
-{
-
-    struct event_redirect redirect;
-
-    redirect.event = event;
-    redirect.mode = EVENT_REDIRECT_TARGET;
-    redirect.id = id;
-
-    channel_placefor(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
-
-}
-
-void job_replyback(struct channel *channel, unsigned int target, unsigned int event)
-{
-
-    struct event_redirect redirect;
-
-    redirect.event = event;
-    redirect.mode = EVENT_REDIRECT_SOURCE;
-    redirect.id = 0;
-
-    channel_placefor(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
-
-}
-
 static unsigned int spawn(struct job *job)
 {
 
@@ -161,12 +135,12 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
         if (job->id)
         {
 
-            job_replyback(channel, job->id, EVENT_CLOSE);
+            channel_redirectback(channel, job->id, EVENT_CLOSE);
 
             if (i < n - 1)
-                job_replyto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
+                channel_redirectto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
             else
-                job_replyback(channel, job->id, EVENT_DATA);
+                channel_redirectback(channel, job->id, EVENT_DATA);
 
         }
 

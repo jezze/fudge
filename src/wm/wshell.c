@@ -117,8 +117,8 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
         unsigned int njobs = 0;
         unsigned int tasks;
 
-        job_replyback(channel, id, EVENT_DATA);
-        job_replyback(channel, id, EVENT_CLOSE);
+        channel_redirectback(channel, id, EVENT_DATA);
+        channel_redirectback(channel, id, EVENT_CLOSE);
         channel_placefor(channel, id, EVENT_DATA, count, buffer);
         channel_placefor(channel, id, EVENT_MAIN, 0, 0);
 
@@ -225,8 +225,8 @@ static void complete(struct channel *channel, struct ring *ring)
         struct message_data data;
         unsigned int offset = 0;
 
-        job_replyback(channel, id, EVENT_DATA);
-        job_replyback(channel, id, EVENT_CLOSE);
+        channel_redirectback(channel, id, EVENT_DATA);
+        channel_redirectback(channel, id, EVENT_CLOSE);
         channel_placefor(channel, id, EVENT_DATA, count, buffer);
         channel_placefor(channel, id, EVENT_MAIN, 0, 0);
 

@@ -195,6 +195,32 @@ void channel_setredirect(struct channel *channel, unsigned int event, unsigned i
 
 }
 
+void channel_redirectto(struct channel *channel, unsigned int target, unsigned int event, unsigned int id)
+{
+
+    struct event_redirect redirect;
+
+    redirect.event = event;
+    redirect.mode = EVENT_REDIRECT_TARGET;
+    redirect.id = id;
+
+    channel_placefor(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+
+}
+
+void channel_redirectback(struct channel *channel, unsigned int target, unsigned int event)
+{
+
+    struct event_redirect redirect;
+
+    redirect.event = event;
+    redirect.mode = EVENT_REDIRECT_SOURCE;
+    redirect.id = 0;
+
+    channel_placefor(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+
+}
+
 void channel_setcallback(struct channel *channel, unsigned int event, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize))
 {
 

@@ -29,5 +29,7 @@ unsigned int channel_pollsource(struct channel *channel, unsigned int source, st
 unsigned int channel_pollsourceevent(struct channel *channel, unsigned int source, unsigned int event, struct message_header *header, struct message_data *data);
 void channel_close(struct channel *channel);
 void channel_setredirect(struct channel *channel, unsigned int event, unsigned int mode, unsigned int id, unsigned int source);
+void channel_redirectto(struct channel *channel, unsigned int target, unsigned int event, unsigned int id);
+void channel_redirectback(struct channel *channel, unsigned int target, unsigned int event);
 void channel_setcallback(struct channel *channel, unsigned int event, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize));
 void channel_init(struct channel *channel, struct channel_callback *callbacks);
