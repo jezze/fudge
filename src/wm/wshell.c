@@ -182,31 +182,7 @@ static void interpret(struct channel *channel, struct ring *ring)
     updatecontent();
 
     if (count >= 2)
-    {
-
-        if (count >= 4 && buffer_match(buffer, "cd ", 3))
-        {
-
-            buffer[count - 1] = '\0';
-
-            if (file_walk2(FILE_L0, buffer + 3))
-            {
-
-                file_duplicate(FILE_PW, FILE_L0);
-                file_duplicate(FILE_CW, FILE_L0);
-
-            }
-
-        }
-
-        else
-        {
-
-            runcommand(channel, count, buffer);
-
-        }
-
-    }
+        runcommand(channel, count, buffer);
 
     printprompt();
     updatecontent();
