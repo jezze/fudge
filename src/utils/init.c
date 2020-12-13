@@ -8,6 +8,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
     unsigned int n = job_parse(jobs, 32, mdata, msize);
     unsigned int njobs = job_spawn(channel, jobs, n);
 
+    job_pipe(channel, jobs, njobs);
     job_run(channel, jobs, njobs);
 
 }

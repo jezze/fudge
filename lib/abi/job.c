@@ -122,7 +122,8 @@ unsigned int job_spawn(struct channel *channel, struct job *jobs, unsigned int n
 
 }
 
-unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
+/* The targets for redirection will surely need more options in the future */
+void job_pipe(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
     unsigned int i;
@@ -145,6 +146,13 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
         }
 
     }
+
+}
+
+unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
+{
+
+    unsigned int i;
 
     for (i = 0; i < n; i++)
     {

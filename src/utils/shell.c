@@ -78,6 +78,8 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
 
         }
 
+        job_pipe(channel, jobs, njobs);
+
         tasks = job_run(channel, jobs, njobs);
 
         while (tasks && channel_poll(channel, &header, &data))
