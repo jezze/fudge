@@ -24,7 +24,6 @@ void init(struct channel *channel)
 
         channel_setcallback(channel, EVENT_DATA, ondata);
         job_replyback(channel, id, EVENT_DATA);
-        job_replyback(channel, id, EVENT_CLOSE);
         channel_placefor(channel, id, EVENT_FILE, message_putstringz(&data, "/config/base.slang", 0), &data);
         channel_placefor(channel, id, EVENT_FILE, message_putstringz(&data, "/config/arch.slang", 0), &data);
         channel_placefor(channel, id, EVENT_FILE, message_putstringz(&data, "/config/init.slang", 0), &data);
