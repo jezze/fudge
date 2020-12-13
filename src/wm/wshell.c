@@ -119,8 +119,8 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
 
         job_replyback(channel, id, EVENT_DATA);
         job_replyback(channel, id, EVENT_CLOSE);
-        channel_place2(channel, id, EVENT_DATA, count, buffer);
-        channel_place2(channel, id, EVENT_MAIN, 0, 0);
+        channel_placefor(channel, id, EVENT_DATA, count, buffer);
+        channel_placefor(channel, id, EVENT_MAIN, 0, 0);
 
         while (channel_pollsource(channel, id, &header, &data))
         {
@@ -227,8 +227,8 @@ static void complete(struct channel *channel, struct ring *ring)
 
         job_replyback(channel, id, EVENT_DATA);
         job_replyback(channel, id, EVENT_CLOSE);
-        channel_place2(channel, id, EVENT_DATA, count, buffer);
-        channel_place2(channel, id, EVENT_MAIN, 0, 0);
+        channel_placefor(channel, id, EVENT_DATA, count, buffer);
+        channel_placefor(channel, id, EVENT_MAIN, 0, 0);
 
         while (channel_pollsource(channel, id, &header, &data))
         {
@@ -399,7 +399,7 @@ static void onterm(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 

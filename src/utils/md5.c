@@ -18,8 +18,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     offset = message_putstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &data);
-    channel_close(channel, source);
+    channel_place(channel, EVENT_DATA, offset, &data);
+    channel_close(channel);
 
 }
 

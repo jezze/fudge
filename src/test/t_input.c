@@ -7,7 +7,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_header header;
     struct message_data data;
 
-    channel_place(channel, source, EVENT_DATA, message_putstring(&data, "If you press f I will quit\n", 0), &data);
+    channel_place(channel, EVENT_DATA, message_putstring(&data, "If you press f I will quit\n", 0), &data);
 
     while (channel_pollsource(channel, source, &header, &data))
     {
@@ -20,7 +20,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             if (consoledata->data == 'f')
             {
 
-                channel_place(channel, source, EVENT_DATA, message_putstring(&data, "\nYou clicked f, goodbye!\n", 0), &data);
+                channel_place(channel, EVENT_DATA, message_putstring(&data, "\nYou clicked f, goodbye!\n", 0), &data);
 
                 break;
 
@@ -29,14 +29,14 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             else if (consoledata->data == '\r')
             {
  
-                channel_place(channel, source, EVENT_DATA, message_putstring(&data, "\n", 0), &data);
+                channel_place(channel, EVENT_DATA, message_putstring(&data, "\n", 0), &data);
 
             }
 
             else
             {
 
-                channel_place(channel, source, EVENT_DATA, message_datasize(&header), &data);
+                channel_place(channel, EVENT_DATA, message_datasize(&header), &data);
 
             }
 
@@ -44,7 +44,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     }
 
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 

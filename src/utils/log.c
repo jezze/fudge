@@ -10,10 +10,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     file_link(FILE_G0);
 
     while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
-        channel_place(channel, source, EVENT_DATA, message_datasize(&header), &data);
+        channel_place(channel, EVENT_DATA, message_datasize(&header), &data);
 
     file_unlink(FILE_G0);
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 

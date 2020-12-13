@@ -6,14 +6,14 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 
 static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 
@@ -39,20 +39,12 @@ void channel_dispatch(struct channel *channel, struct message_header *header, st
 
 }
 
-unsigned int channel_place(struct channel *channel, unsigned int id, unsigned int event, unsigned int count, void *data)
+unsigned int channel_placefor(struct channel *channel, unsigned int id, unsigned int event, unsigned int count, void *data)
 {
 
     struct message_header header;
 
     message_initheader(&header, event, count);
-
-    if (event < CHANNEL_CALLBACKS)
-    {
-
-        if (channel->callbacks[event].redirect)
-            id = channel->callbacks[event].redirect;
-
-    }
 
     while (!call_place(id, &header, data));
 
@@ -60,16 +52,10 @@ unsigned int channel_place(struct channel *channel, unsigned int id, unsigned in
 
 }
 
-unsigned int channel_place2(struct channel *channel, unsigned int id, unsigned int event, unsigned int count, void *data)
+unsigned int channel_place(struct channel *channel, unsigned int event, unsigned int count, void *data)
 {
 
-    struct message_header header;
-
-    message_initheader(&header, event, count);
-
-    while (!call_place(id, &header, data));
-
-    return count;
+    return (channel->callbacks[event].target) ? channel_placefor(channel, channel->callbacks[event].target, event, count, data) : 0;
 
 }
 
@@ -175,12 +161,12 @@ unsigned int channel_pollsourceevent(struct channel *channel, unsigned int sourc
 
 }
 
-void channel_close(struct channel *channel, unsigned int source)
+void channel_close(struct channel *channel)
 {
 
     channel->poll = 0;
 
-    channel_place(channel, source, EVENT_CLOSE, 0, 0);
+    channel_place(channel, EVENT_CLOSE, 0, 0);
 
 }
 
@@ -191,17 +177,17 @@ void channel_setredirect(struct channel *channel, unsigned int event, unsigned i
     {
 
     case EVENT_REDIRECT_TARGET:
-        channel->callbacks[event].redirect = id;
+        channel->callbacks[event].target = id;
 
         break;
 
     case EVENT_REDIRECT_SOURCE:
-        channel->callbacks[event].redirect = source;
+        channel->callbacks[event].target = source;
 
         break;
 
     default:
-        channel->callbacks[event].redirect = 0;
+        channel->callbacks[event].target = 0;
 
         break;
 

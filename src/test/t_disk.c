@@ -145,7 +145,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 unsigned int count;
 
                 if ((count = sendpoll(request, channel, source, offset + cpio_filedata(header), cpio_filesize(header))))
-                    channel_place(channel, source, EVENT_DATA, count, getdata(request));
+                    channel_place(channel, EVENT_DATA, count, getdata(request));
 
             }
 
@@ -155,7 +155,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     file_close(FILE_G0);
     file_unlink(FILE_G0);
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 

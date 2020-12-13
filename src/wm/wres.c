@@ -28,7 +28,7 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
     }
 
     file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 
@@ -36,7 +36,7 @@ static void onterm(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 

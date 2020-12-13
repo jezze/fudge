@@ -15,7 +15,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
     socket_bind(&remote, mdata);
     socket_resolveremote(channel, FILE_G0, &local, &remote);
     file_unlink(FILE_G0);
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 

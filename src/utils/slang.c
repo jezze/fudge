@@ -309,7 +309,7 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             offset = message_putstringz(&data, t->str, offset);
             offset = message_putstringz(&data, "E", offset);
 
-            channel_place(channel, source, EVENT_DATA, offset, &data);
+            channel_place(channel, EVENT_DATA, offset, &data);
 
             offset = 0;
 

@@ -14,7 +14,7 @@ static void print(struct channel *channel, unsigned int source, struct record *r
     offset = message_putbuffer(&data, record->length, record->name, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &data);
+    channel_place(channel, EVENT_DATA, offset, &data);
 
 }
 
@@ -34,14 +34,14 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     } while (file_step(FILE_PW));
 
     file_close(FILE_PW);
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 
 static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 

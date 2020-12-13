@@ -17,7 +17,7 @@ static void print_icmp(struct channel *channel, unsigned int source, void *buffe
     offset = message_putvalue(&data, header->code, 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &data);
+    channel_place(channel, EVENT_DATA, offset, &data);
 
 }
 
@@ -56,7 +56,7 @@ static void print_tcp(struct channel *channel, unsigned int source, void *buffer
     offset = message_putvalue(&data, header->window[1], 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &data);
+    channel_place(channel, EVENT_DATA, offset, &data);
 
 }
 
@@ -78,7 +78,7 @@ static void print_udp(struct channel *channel, unsigned int source, void *buffer
     offset = message_putvalue(&data, net_load16(header->length), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &data);
+    channel_place(channel, EVENT_DATA, offset, &data);
 
 }
 
@@ -109,7 +109,7 @@ static void print_arp(struct channel *channel, unsigned int source, void *buffer
     offset = message_putvalue(&data, header->operation[1], 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &data);
+    channel_place(channel, EVENT_DATA, offset, &data);
 
 }
 
@@ -144,7 +144,7 @@ static void print_ipv4(struct channel *channel, unsigned int source, void *buffe
     offset = message_putvalue(&data, header->tip[3], 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &data);
+    channel_place(channel, EVENT_DATA, offset, &data);
 
     switch (header->protocol)
     {
@@ -233,7 +233,7 @@ static void print_ipv6(struct channel *channel, unsigned int source, void *buffe
     offset = message_putvalue(&data, header->tip[15], 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &data);
+    channel_place(channel, EVENT_DATA, offset, &data);
 
 }
 
@@ -277,7 +277,7 @@ static void print_ethernet(struct channel *channel, unsigned int source, void *b
     offset = message_putvalue(&data, header->type[1], 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_place(channel, source, EVENT_DATA, offset, &data);
+    channel_place(channel, EVENT_DATA, offset, &data);
 
     switch (net_load16(header->type))
     {
@@ -313,7 +313,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         print_ethernet(channel, source, data.buffer);
 
     file_unlink(FILE_G0);
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 

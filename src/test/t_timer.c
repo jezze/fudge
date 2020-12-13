@@ -26,7 +26,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             offset = message_putvalue(&data, counter * 60, 10, 0, offset);
             offset = message_putstring(&data, "ms\n", offset);
 
-            channel_place(channel, source, EVENT_DATA, offset, &data);
+            channel_place(channel, EVENT_DATA, offset, &data);
 
             counter++;
 
@@ -35,7 +35,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     }
 
     file_unlink(FILE_G0);
-    channel_close(channel, source);
+    channel_close(channel);
 
 }
 
