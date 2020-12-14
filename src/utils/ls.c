@@ -1,19 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void print(struct channel *channel, unsigned int source, struct record *record)
-{
-
-    struct message_data data;
-    unsigned int offset = 0;
-
-    offset = message_putbuffer(&data, record->length, record->name, offset);
-    offset = message_putstring(&data, "\n", offset);
-
-    channel_place(channel, EVENT_DATA, offset, &data);
-
-}
-
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -25,7 +12,17 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         struct record record;
 
         if (file_readall(FILE_PW, &record, sizeof (struct record)))
-            print(channel, source, &record);
+        {
+
+            struct message_data data;
+            unsigned int offset = 0;
+
+            offset = message_putbuffer(&data, record.length, record.name, offset);
+            offset = message_putstring(&data, "\n", offset);
+
+            channel_place(channel, EVENT_DATA, offset, &data);
+
+        }
 
     } while (file_step(FILE_PW));
 
