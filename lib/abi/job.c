@@ -30,16 +30,15 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
 
         case 'P':
             start = nextword(start);
-            p->path = start;
+            p->program = start;
             njobs++;
 
             break;
 
-        case 'A':
+        case 'D':
             start = nextword(start);
 
-            p->args[p->nargs] = start;
-            p->nargs++;
+            p->directory = start;
 
             break;
 
@@ -72,7 +71,7 @@ static unsigned int spawn(struct job *job)
     if (!file_walk2(FILE_L0, "/bin"))
         return 0;
 
-    if (!(file_walk(FILE_CP, FILE_L0, job->path) || file_walk2(FILE_CP, job->path)))
+    if (!(file_walk(FILE_CP, FILE_L0, job->program) || file_walk2(FILE_CP, job->program)))
         return 0;
 
     return call_spawn();
@@ -136,7 +135,7 @@ void job_pipe(struct channel *channel, struct job *jobs, unsigned int n)
         {
 
             channel_redirectback(channel, job->id, EVENT_CLOSE);
-            channel_redirectback(channel, job->id, EVENT_ARGUMENT);
+            channel_redirectback(channel, job->id, EVENT_DIRECTORY);
 
             if (i < n - 1)
                 channel_redirectto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
@@ -165,6 +164,18 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
             unsigned int j;
             struct message_data data;
 
+            if (job->directory)
+            {
+
+                unsigned int offset = 0;
+
+                offset = message_putstringz(&data, job->directory, offset);
+
+                channel_placefor(channel, job->id, EVENT_DIRECTORY, offset, &data);
+
+            }
+
+/*
             for (j = 0; j < job->nargs; j++)
             {
 
@@ -175,6 +186,7 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
                 channel_placefor(channel, job->id, EVENT_ARGUMENT, offset, &data);
 
             }
+*/
 
             for (j = 0; j < job->nfiles; j++)
             {

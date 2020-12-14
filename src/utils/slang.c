@@ -292,7 +292,7 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
                 if (tokenlist_check(stack) == TOKEN_IDENT)
                 {
 
-                    offset = message_putstringz(&data, "A", offset);
+                    offset = message_putstringz(&data, "D", offset);
                     offset = message_putstringz(&data, t->str, offset);
 
                 }

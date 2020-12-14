@@ -1,10 +1,13 @@
 struct job
 {
 
-    char *path;
+    char *program;
     unsigned int id;
+    char *directory;
+    /*
     char *args[32];
     unsigned int nargs;
+    */
     char *files[32];
     unsigned int nfiles;
 
