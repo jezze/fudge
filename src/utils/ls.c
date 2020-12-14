@@ -34,36 +34,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onmain2(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onargument(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_close(channel);
-
-}
-
-static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    if (file_walk2(FILE_G0, mdata))
-    {
-
-        file_open(FILE_G0);
-
-        do
-        {
-
-            struct record record;
-
-            if (file_readall(FILE_G0, &record, sizeof (struct record)))
-                print(channel, source, &record);
-
-        } while (file_step(FILE_G0));
-
-        file_close(FILE_G0);
-
-    }
-
-    channel_setcallback(channel, EVENT_MAIN, onmain2);
+    if (file_walk2(FILE_L0, mdata))
+        file_duplicate(FILE_PW, FILE_L0);
 
 }
 
@@ -71,7 +46,7 @@ void init(struct channel *channel)
 {
 
     channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_ARGUMENT, onargument);
 
 }
 
