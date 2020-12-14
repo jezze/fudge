@@ -326,7 +326,6 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
     }
 
-
 }
 
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
