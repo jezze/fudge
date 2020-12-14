@@ -38,7 +38,7 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
         case 'A':
             start = nextword(start);
 
-            p->args[p->nargs].name = start;
+            p->args[p->nargs] = start;
             p->nargs++;
 
             break;
@@ -46,7 +46,7 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
         case 'F':
             start = nextword(start);
 
-            p->files[p->nfiles].name = start;
+            p->files[p->nfiles] = start;
             p->nfiles++;
 
             break;
@@ -170,7 +170,7 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
                 unsigned int offset = 0;
 
-                offset = message_putstringz(&data, job->args[j].name, offset);
+                offset = message_putstringz(&data, job->args[j], offset);
 
                 channel_placefor(channel, job->id, EVENT_ARGUMENT, offset, &data);
 
@@ -181,7 +181,7 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
                 unsigned int offset = 0;
 
-                offset = message_putstringz(&data, job->files[j].name, offset);
+                offset = message_putstringz(&data, job->files[j], offset);
 
                 channel_placefor(channel, job->id, EVENT_FILE, offset, &data);
 

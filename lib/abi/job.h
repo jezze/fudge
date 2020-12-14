@@ -1,25 +1,11 @@
-struct job_arg
-{
-
-    char *name;
-
-};
-
-struct job_file
-{
-
-    char *name;
-
-};
-
 struct job
 {
 
     char *path;
     unsigned int id;
-    struct job_arg args[32];
+    char *args[32];
     unsigned int nargs;
-    struct job_file files[32];
+    char *files[32];
     unsigned int nfiles;
 
 };
