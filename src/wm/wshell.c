@@ -266,9 +266,13 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 static void ondirectory(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_walk2(FILE_L0, mdata);
-    file_duplicate(FILE_PW, FILE_L0);
-    file_duplicate(FILE_CW, FILE_L0);
+    if (file_walk2(FILE_L0, mdata))
+    {
+
+        file_duplicate(FILE_PW, FILE_L0);
+        file_duplicate(FILE_CW, FILE_L0);
+
+    }
 
 }
 
