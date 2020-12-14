@@ -37,14 +37,21 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
 
         case 'D':
             start = nextword(start);
-
             p->directory = start;
+
+            break;
+
+        case 'O':
+            start = nextword(start);
+            p->options[p->noptions].key = start;
+            start = nextword(start);
+            p->options[p->noptions].value = start;
+            p->noptions++;
 
             break;
 
         case 'F':
             start = nextword(start);
-
             p->files[p->nfiles] = start;
             p->nfiles++;
 
@@ -164,6 +171,18 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
             unsigned int j;
             struct message_data data;
 
+            for (j = 0; j < job->noptions; j++)
+            {
+
+                unsigned int offset = 0;
+
+                offset = message_putstringz(&data, job->options[j].key, offset);
+                offset = message_putstringz(&data, job->options[j].value, offset);
+
+                channel_placefor(channel, job->id, EVENT_OPTION, offset, &data);
+
+            }
+
             if (job->directory)
             {
 
@@ -174,19 +193,6 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
                 channel_placefor(channel, job->id, EVENT_DIRECTORY, offset, &data);
 
             }
-
-/*
-            for (j = 0; j < job->nargs; j++)
-            {
-
-                unsigned int offset = 0;
-
-                offset = message_putstringz(&data, job->args[j], offset);
-
-                channel_placefor(channel, job->id, EVENT_ARGUMENT, offset, &data);
-
-            }
-*/
 
             for (j = 0; j < job->nfiles; j++)
             {
