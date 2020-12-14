@@ -42,6 +42,13 @@ static void tokenlist_init(struct tokenlist *list, unsigned int size, struct tok
 
 }
 
+static void tokenlist_reset(struct tokenlist *list)
+{
+
+    list->head = 0;
+
+}
+
 static void tokenlist_push(struct tokenlist *list, struct token *token)
 {
 
@@ -328,10 +335,10 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
     if (!msize)
         return;
 
-    ring_init(&stringtable, BUFFER_SIZE, stringdata);
-    tokenlist_init(&infix, 1024, infixdata);
-    tokenlist_init(&postfix, 1024, postfixdata);
-    tokenlist_init(&stack, 8, stackdata);
+    ring_reset(&stringtable);
+    tokenlist_reset(&infix);
+    tokenlist_reset(&postfix);
+    tokenlist_reset(&stack);
     tokenizebuffer(&infix, &stringtable, msize, mdata);
     translate(&postfix, &infix, &stack);
     parse(channel, source, &postfix, &stack);
@@ -347,10 +354,10 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
         char buffer[BUFFER_SIZE];
         unsigned int count;
 
-        ring_init(&stringtable, BUFFER_SIZE, stringdata);
-        tokenlist_init(&infix, 1024, infixdata);
-        tokenlist_init(&postfix, 1024, postfixdata);
-        tokenlist_init(&stack, 8, stackdata);
+        ring_reset(&stringtable);
+        tokenlist_reset(&infix);
+        tokenlist_reset(&postfix);
+        tokenlist_reset(&stack);
         file_open(FILE_L0);
 
         while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
@@ -367,6 +374,10 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
+    ring_init(&stringtable, BUFFER_SIZE, stringdata);
+    tokenlist_init(&infix, 1024, infixdata);
+    tokenlist_init(&postfix, 1024, postfixdata);
+    tokenlist_init(&stack, 8, stackdata);
     channel_setcallback(channel, EVENT_DATA, ondata);
     channel_setcallback(channel, EVENT_FILE, onfile);
 
