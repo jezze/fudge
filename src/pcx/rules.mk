@@ -2,8 +2,6 @@ B:=\
     $(DIR_SRC)/pcx/pcxcmap \
 
 O:=\
-    $(DIR_SRC)/pcx/gfx.o \
-    $(DIR_SRC)/pcx/pcx.o \
     $(DIR_SRC)/pcx/pcxcmap.o \
 
 L:=\
@@ -16,8 +14,6 @@ B:=\
     $(DIR_SRC)/pcx/pcxdata \
 
 O:=\
-    $(DIR_SRC)/pcx/gfx.o \
-    $(DIR_SRC)/pcx/pcx.o \
     $(DIR_SRC)/pcx/pcxdata.o \
 
 L:=\
