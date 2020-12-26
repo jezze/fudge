@@ -21,6 +21,25 @@ struct service_protocol *service_findprotocol(unsigned int id)
 
 }
 
+struct service_protocol *service_findprotocolbyname(char *name)
+{
+
+    struct resource *current = 0;
+
+    while ((current = resource_foreachtype(current, RESOURCE_SERVICEPROTOCOL)))
+    {
+
+        struct service_protocol *protocol = current->data;
+
+        if (ascii_match(protocol->name, name))
+            return protocol;
+
+    }
+
+    return 0;
+
+}
+
 void service_initlink(struct service_link *link, unsigned int id)
 {
 
