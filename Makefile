@@ -52,7 +52,6 @@ $(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@cp $(KMOD) $@/kernel
 	@mkdir -p $@/lib
 	@cp $(LIB) $@/lib
-	@mkdir -p $@/system
 
 $(DIR_ISO): $(KERNEL) $(RAMDISK)
 	@echo ISO $@

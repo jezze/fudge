@@ -1,30 +1,27 @@
 .code32
 
+.set CALL_INDEX_DEBUG,                  0x00
 .set CALL_INDEX_WALK,                   0x01
 .set CALL_INDEX_CREATE,                 0x02
 .set CALL_INDEX_DESTROY,                0x03
 .set CALL_INDEX_OPEN,                   0x04
 .set CALL_INDEX_CLOSE,                  0x05
-.set CALL_INDEX_READ,                   0x06
-.set CALL_INDEX_WRITE,                  0x07
-.set CALL_INDEX_AUTH,                   0x08
-.set CALL_INDEX_MOUNT,                  0x09
+.set CALL_INDEX_STEP,                   0x06
+.set CALL_INDEX_READ,                   0x07
+.set CALL_INDEX_WRITE,                  0x08
+.set CALL_INDEX_SEEK,                   0x09
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
 .set CALL_INDEX_SPAWN,                  0x0C
 .set CALL_INDEX_DESPAWN,                0x0D
-.set CALL_INDEX_SEEK,                   0x0E
+.set CALL_INDEX_PICK,                   0x0E
+.set CALL_INDEX_PLACE,                  0x0F
+.set CALL_INDEX_LINK,                   0x10
+.set CALL_INDEX_UNLINK,                 0x11
+.set CALL_INDEX_NOTIFY,                 0x12
+.set CALL_INDEX_KILL,                   0x13
 
 .section .text
-
-.global call_auth
-call_auth:
-    pushl %ecx
-    pushl %edx
-    movl $CALL_INDEX_AUTH, %eax
-    movl %esp, %ecx
-    movl $callreturn, %edx
-    sysenter
 
 .global call_close
 call_close:
@@ -67,15 +64,6 @@ call_load:
     pushl %ecx
     pushl %edx
     movl $CALL_INDEX_LOAD, %eax
-    movl %esp, %ecx
-    movl $callreturn, %edx
-    sysenter
-
-.global call_mount
-call_mount:
-    pushl %ecx
-    pushl %edx
-    movl $CALL_INDEX_MOUNT, %eax
     movl %esp, %ecx
     movl $callreturn, %edx
     sysenter

@@ -24,7 +24,7 @@ void init(struct channel *channel)
 
     unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
 
-    if (!file_walk2(FILE_L0, "/system/ethernet/if:0"))
+    if (!file_walk2(FILE_L0, "system:ethernet/if:0"))
         return;
 
     if (!file_walk(FILE_G0, FILE_L0, "data"))

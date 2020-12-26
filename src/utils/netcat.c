@@ -74,7 +74,7 @@ void init(struct channel *channel)
     unsigned char port[UDP_PORTSIZE] = {0x07, 0xD0};
     unsigned char address3[IPV4_ADDRSIZE] = {192, 168, 0, 8};
 
-    if (!file_walk2(FILE_L0, "/system/ethernet/if:0"))
+    if (!file_walk2(FILE_L0, "system:ethernet/if:0"))
         return;
 
     if (!file_walk(FILE_G0, FILE_L0, "data"))

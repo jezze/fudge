@@ -11,7 +11,7 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
     {
 
     case 0x01:
-        if (file_walk2(FILE_L0, "/system/video/if:0/ctrl"))
+        if (file_walk2(FILE_L0, "system:video/if:0/ctrl"))
         {
 
             struct ctrl_videosettings settings;
@@ -56,7 +56,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    if (!file_walk2(FILE_G0, "/system/wserver"))
+    if (!file_walk2(FILE_G0, "system:wserver"))
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);

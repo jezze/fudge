@@ -945,16 +945,16 @@ void init(struct channel *channel)
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     render_init();
 
-    if (!file_walk2(FILE_G1, "/system/wserver"))
+    if (!file_walk2(FILE_G1, "system:wserver"))
         return;
 
-    if (!file_walk2(FILE_G2, "/system/keyboard/event"))
+    if (!file_walk2(FILE_G2, "system:keyboard/event"))
         return;
 
-    if (!file_walk2(FILE_G3, "/system/mouse/event"))
+    if (!file_walk2(FILE_G3, "system:mouse/event"))
         return;
 
-    if (!file_walk2(FILE_G4, "/system/video/if:0"))
+    if (!file_walk2(FILE_G4, "system:video/if:0"))
         return;
 
     if (!file_walk(FILE_G5, FILE_G4, "event"))

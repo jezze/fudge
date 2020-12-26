@@ -81,7 +81,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct ctrl_videosettings settings;
 
     ctrl_setvideosettings(&settings, 320, 200, 1);
-    file_walk2(FILE_L0, "/system/video/if:0");
+    file_walk2(FILE_L0, "system:video/if:0");
     file_walk(FILE_L1, FILE_L0, "ctrl");
     file_open(FILE_L1);
     file_writeall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));

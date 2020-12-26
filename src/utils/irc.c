@@ -116,7 +116,7 @@ void init(struct channel *channel)
 
     ring_init(&input, BUFFER_SIZE, inputbuffer);
 
-    if (!file_walk2(FILE_L0, "/system/ethernet/if:0"))
+    if (!file_walk2(FILE_L0, "system:ethernet/if:0"))
         return;
 
     if (!file_walk(FILE_G0, FILE_L0, "data"))

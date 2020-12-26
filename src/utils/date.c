@@ -27,7 +27,7 @@ static void print(struct channel *channel, unsigned int source, struct ctrl_cloc
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, "/system/clock/if:0/ctrl"))
+    if (file_walk2(FILE_L0, "system:clock/if:0/ctrl"))
     {
 
         struct ctrl_clocksettings settings;

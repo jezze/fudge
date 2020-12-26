@@ -360,7 +360,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_initprotocol(&protocol, 1000, "initrd", protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map, protocol_link, protocol_unlink, protocol_notify);
+    service_initprotocol(&protocol, "initrd", protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map, protocol_link, protocol_unlink, protocol_notify);
     resource_register(&protocol.resource);
 
 }

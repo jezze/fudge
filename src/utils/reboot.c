@@ -14,7 +14,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    if (!file_walk2(FILE_L0, "/system/reset"))
+    if (!file_walk2(FILE_L0, "system:reset"))
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);

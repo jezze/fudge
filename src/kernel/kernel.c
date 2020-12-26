@@ -10,79 +10,34 @@
 static struct task tasks[KERNEL_TASKS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct service_descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
-static struct service_mount mounts[KERNEL_MOUNTS];
 static struct list freetasks;
 static struct list readytasks;
 static struct list blockedtasks;
 static struct list killedtasks;
-static struct list freemounts;
-static struct list usedmounts;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct task *task);
-
-static unsigned int walkmount(struct service_descriptor *descriptor, struct service_mountpoint *from, struct service_mountpoint *to)
-{
-
-    if (descriptor->protocol == from->protocol && descriptor->id == from->id)
-    {
-
-        descriptor->protocol = to->protocol;
-        descriptor->id = to->id;
-
-        return 1;
-
-    }
-
-    return 0;
-
-}
-
-static void walkmountparent(struct service_descriptor *descriptor)
-{
-
-    struct list_item *current;
-
-    spinlock_acquire(&usedmounts.spinlock);
-
-    for (current = usedmounts.head; current; current = current->next)
-    {
-
-        struct service_mount *mount = current->data;
-
-        if (walkmount(descriptor, &mount->child, &mount->parent))
-            break;
-
-    }
-
-    spinlock_release(&usedmounts.spinlock);
-
-}
-
-static void walkmountchild(struct service_descriptor *descriptor)
-{
-
-    struct list_item *current;
-
-    spinlock_acquire(&usedmounts.spinlock);
-
-    for (current = usedmounts.head; current; current = current->next)
-    {
-
-        struct service_mount *mount = current->data;
-
-        if (walkmount(descriptor, &mount->parent, &mount->child))
-            break;
-
-    }
-
-    spinlock_release(&usedmounts.spinlock);
-
-}
 
 unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsigned int length)
 {
 
     unsigned int offset = 0;
+
+    if (length >= 7 && path[6] == ':')
+    {
+
+        struct service_protocol *protocol = service_findprotocol(6, path);
+
+        if (protocol)
+        {
+
+            descriptor->protocol = protocol;
+            descriptor->id = protocol->root();
+
+            offset += 7;
+
+        }
+
+    }
 
     while (offset < length)
     {
@@ -93,22 +48,9 @@ unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsi
         cl = buffer_findbyte(cp, cl, '/');
 
         if (cl == 2 && cp[0] == '.' && cp[1] == '.')
-        {
-
-            walkmountparent(descriptor);
-
             descriptor->id = descriptor->protocol->parent(descriptor->id);
-
-        }
-
         else
-        {
-
             descriptor->id = descriptor->protocol->child(descriptor->id, cp, cl);
-
-            walkmountchild(descriptor);
-
-        }
 
         offset += cl + 1;
 
@@ -142,15 +84,6 @@ struct task *kernel_picktask(void)
 
 }
 
-struct service_mount *kernel_pickmount(void)
-{
-
-    struct list_item *current = list_picktail(&freemounts);
-
-    return (current) ? current->data : 0;
-
-}
-
 void kernel_freetask(unsigned int id)
 {
 
@@ -175,20 +108,6 @@ void kernel_killtask(unsigned int id)
     struct task *task = &tasks[id];
 
     list_add(&killedtasks, &task->item);
-
-}
-
-void kernel_freemount(struct service_mount *mount)
-{
-
-    list_add(&freemounts, &mount->item);
-
-}
-
-void kernel_usemount(struct service_mount *mount)
-{
-
-    list_add(&usedmounts, &mount->item);
 
 }
 
@@ -345,7 +264,7 @@ void kernel_setupinit(struct task *task)
     struct service_descriptor *root = kernel_getdescriptor(task, FILE_CR);
     struct service_descriptor *work = kernel_getdescriptor(task, FILE_CW);
 
-    root->protocol = service_findprotocol(1000);
+    root->protocol = service_findprotocol(6, "initrd");
     root->id = root->protocol->root();
     work->protocol = root->protocol;
     work->id = work->protocol->root();
@@ -365,8 +284,6 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     list_init(&readytasks);
     list_init(&blockedtasks);
     list_init(&killedtasks);
-    list_init(&freemounts);
-    list_init(&usedmounts);
 
     for (i = 1; i < KERNEL_TASKS; i++)
     {
@@ -396,16 +313,6 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
         mailbox_init(mailbox, (char *)(mbaddress + i * mbsize), mbsize);
         mailbox_register(mailbox);
-
-    }
-
-    for (i = 0; i < KERNEL_MOUNTS; i++)
-    {
-
-        struct service_mount *mount = &mounts[i];
-
-        service_initmount(mount);
-        kernel_freemount(mount);
 
     }
 

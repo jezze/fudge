@@ -339,7 +339,7 @@ void module_init(void)
 
     root.parent = &root;
 
-    service_initprotocol(&protocol, 2000, "system", protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map, protocol_link, protocol_unlink, protocol_notify);
+    service_initprotocol(&protocol, "system", protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map, protocol_link, protocol_unlink, protocol_notify);
     resource_register(&protocol.resource);
 
 }
