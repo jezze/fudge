@@ -21,7 +21,7 @@ struct service_protocol *service_findprotocol(unsigned int id)
 
 }
 
-struct service_protocol *service_findprotocolbyname(char *name)
+struct service_protocol *service_findprotocolbyname(unsigned int count, char *name)
 {
 
     struct resource *current = 0;
@@ -31,7 +31,7 @@ struct service_protocol *service_findprotocolbyname(char *name)
 
         struct service_protocol *protocol = current->data;
 
-        if (ascii_match(protocol->name, name))
+        if (buffer_match(protocol->name, name, count))
             return protocol;
 
     }
