@@ -68,7 +68,7 @@ struct vbe_mode
 };
 
 extern void *realmode_gdt;
-extern short modenum;
+extern unsigned short modenum;
 
 static struct base_driver driver;
 static struct video_interface videointerface;
