@@ -21,11 +21,12 @@ unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsi
 {
 
     unsigned int offset = 0;
+    unsigned int colon = buffer_findbyte(path, length, ':');
 
-    if (length >= 7 && path[6] == ':')
+    if (colon < length)
     {
 
-        struct service_protocol *protocol = service_findprotocol(6, path);
+        struct service_protocol *protocol = service_findprotocol(colon, path);
 
         if (protocol)
         {
@@ -33,7 +34,7 @@ unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsi
             descriptor->protocol = protocol;
             descriptor->id = protocol->root();
 
-            offset += 7;
+            offset += colon + 1;
 
         }
 
