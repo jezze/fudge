@@ -56,7 +56,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    if (!file_walk2(FILE_G0, "system:wserver"))
+    if (!file_walk2(FILE_G0, "system:wm"))
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);
