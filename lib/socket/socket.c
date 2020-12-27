@@ -431,7 +431,7 @@ unsigned int socket_handle_tcp(unsigned int descriptor, struct socket *local, st
                 {
 
                     buffer_copy(remote->haddress, eheader->sha, ETHERNET_ADDRSIZE);
-                    socket_bind(remote, iheader->sip);
+                    socket_bind_ipv4(remote, iheader->sip);
                     socket_bind_tcp(remote, theader->sp, net_load32(theader->seq));
 
                     remote->resolved = 1;
@@ -481,7 +481,7 @@ unsigned int socket_handle_udp(unsigned int descriptor, struct socket *local, st
                 {
 
                     buffer_copy(remote->haddress, eheader->sha, ETHERNET_ADDRSIZE);
-                    socket_bind(remote, iheader->sip);
+                    socket_bind_ipv4(remote, iheader->sip);
                     socket_bind_udp(remote, uheader->sp);
 
                     remote->resolved = 1;
@@ -697,7 +697,7 @@ void socket_resolvelocal(unsigned int descriptor, struct socket *socket)
 
 }
 
-void socket_bind(struct socket *socket, unsigned char address[IPV4_ADDRSIZE])
+void socket_bind_ipv4(struct socket *socket, unsigned char address[IPV4_ADDRSIZE])
 {
 
     buffer_copy(&socket->paddress, address, IPV4_ADDRSIZE);

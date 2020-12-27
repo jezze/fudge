@@ -12,7 +12,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
     file_link(FILE_G0);
     socket_init(&remote);
-    socket_bind(&remote, mdata);
+    socket_bind_ipv4(&remote, mdata);
     socket_resolveremote(channel, FILE_G0, &local, &remote);
     file_unlink(FILE_G0);
     channel_close(channel);
@@ -34,7 +34,7 @@ void init(struct channel *channel)
         return;
 
     socket_init(&local);
-    socket_bind(&local, address);
+    socket_bind_ipv4(&local, address);
     socket_resolvelocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_DATA, ondata);
 

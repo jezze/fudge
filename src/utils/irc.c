@@ -109,9 +109,9 @@ void init(struct channel *channel)
 {
 
     unsigned char address1[IPV4_ADDRSIZE] = {10, 0, 5, 1};
-    unsigned char port1[UDP_PORTSIZE] = {0x07, 0xD0};
+    unsigned char port1[TCP_PORTSIZE] = {0x07, 0xD0};
     unsigned char address2[IPV4_ADDRSIZE] = {130, 239, 18, 119};
-    unsigned char port2[UDP_PORTSIZE] = {0x1A, 0x0B};
+    unsigned char port2[TCP_PORTSIZE] = {0x1A, 0x0B};
     unsigned char address3[IPV4_ADDRSIZE] = {192, 168, 0, 8};
 
     ring_init(&input, BUFFER_SIZE, inputbuffer);
@@ -126,13 +126,13 @@ void init(struct channel *channel)
         return;
 
     socket_init(&local);
-    socket_bind(&local, address1);
+    socket_bind_ipv4(&local, address1);
     socket_bind_tcp(&local, port1, 42);
     socket_init(&remote);
-    socket_bind(&remote, address2);
+    socket_bind_ipv4(&remote, address2);
     socket_bind_tcp(&remote, port2, 0);
     socket_init(&router);
-    socket_bind(&router, address3);
+    socket_bind_ipv4(&router, address3);
     socket_resolvelocal(FILE_G1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
