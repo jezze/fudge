@@ -20,8 +20,8 @@ static void (*coreassign)(struct task *task);
 unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsigned int length)
 {
 
-    unsigned int offset = 0;
     unsigned int colon = buffer_findbyte(path, length, ':');
+    unsigned int offset = 0;
 
     if (colon < length)
     {
