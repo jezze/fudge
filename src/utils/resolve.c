@@ -27,15 +27,15 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_L0, "system:ethernet/if:0"))
         return;
 
-    if (!file_walk(FILE_G0, FILE_L0, "data"))
+    if (!file_walk(FILE_L1, FILE_L0, "addr"))
         return;
 
-    if (!file_walk(FILE_G1, FILE_L0, "addr"))
+    if (!file_walk(FILE_G0, FILE_L0, "data"))
         return;
 
     socket_init(&local);
     socket_bind_ipv4(&local, address);
-    socket_resolvelocal(FILE_G1, &local);
+    socket_resolvelocal(FILE_L1, &local);
     channel_setcallback(channel, EVENT_DATA, ondata);
 
 }
