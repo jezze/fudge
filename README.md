@@ -72,7 +72,7 @@ This will start the configuration program. Set the target architecture to x86.
 Target options -> Target Architecture -> x86
 ```
 
-By default the cross-compiler will be installed in ~/x-tools/x86-unknown-elf/.
+By default the cross-compiler will be installed in ~/x-tools/i386-unknown-elf/.
 You can change this if you want. Please refer to the crosstool-ng website for
 more information on how to customize your setup.
 
@@ -105,12 +105,12 @@ $ cd fudge
 ### Set the PATH environment variable
 
 In this example the cross-compiler was installed in
-/home/foo/x-tools/x86-unknown-elf/. Change this to match your setup. If you
+/home/foo/x-tools/i386-unknown-elf/. Change this to match your setup. If you
 haven't made any major modifications you just need to change foo to match your
 username instead.
 
 ```sh
-$ export PATH=/home/foo/x-tools/x86-unknown-elf/bin:$PATH
+$ export PATH=/home/foo/x-tools/i386-unknown-elf/bin:$PATH
 ```
 
 The PATH modifications will be gone as soon as you leave the current session or
