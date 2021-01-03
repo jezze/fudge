@@ -159,7 +159,11 @@ Replace eth0 with the interface you have connected to the internet.
 
 ## Community
 
-Come talk to us on irc:
+There is a discord server:
+
+Link: https://discord.gg/4nNq6Grhtz
+
+There is also an irc channel:
 
 Server: irc.freenode.net
 
