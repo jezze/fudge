@@ -6,7 +6,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     struct message_data data;
 
-    channel_place(channel, EVENT_DATA, message_putstring(&data, "Hello World!\n", 0), &data);
+    channel_reply(channel, EVENT_DATA, message_putstring(&data, "Hello World!\n", 0), &data);
     channel_close(channel);
 
 }

@@ -24,11 +24,11 @@ void init(struct channel *channel)
         struct message_data data;
 
         channel_setcallback(channel, EVENT_DATA, ondata);
-        channel_redirectback(channel, id, EVENT_DATA);
-        channel_placefor(channel, id, EVENT_FILE, message_putstringz(&data, "/config/base.slang", 0), &data);
-        channel_placefor(channel, id, EVENT_FILE, message_putstringz(&data, "/config/arch.slang", 0), &data);
-        channel_placefor(channel, id, EVENT_FILE, message_putstringz(&data, "/config/init.slang", 0), &data);
-        channel_placefor(channel, id, EVENT_MAIN, 0, 0);
+        channel_sendredirectback(channel, id, EVENT_DATA);
+        channel_send(channel, id, EVENT_FILE, message_putstringz(&data, "/config/base.slang", 0), &data);
+        channel_send(channel, id, EVENT_FILE, message_putstringz(&data, "/config/arch.slang", 0), &data);
+        channel_send(channel, id, EVENT_FILE, message_putstringz(&data, "/config/init.slang", 0), &data);
+        channel_send(channel, id, EVENT_MAIN, 0, 0);
 
     }
 

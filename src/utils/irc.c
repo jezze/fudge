@@ -22,7 +22,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     socket_send_tcp(FILE_G0, &local, &remote, &router, ascii_length(request), request);
 
     while ((count = socket_receive_tcp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
-        channel_place(channel, EVENT_DATA, count, buffer);
+        channel_reply(channel, EVENT_DATA, count, buffer);
 
     socket_disconnect_tcp(channel, FILE_G0, &local, &remote, &router);
     file_unlink(FILE_G0);
@@ -86,7 +86,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
     case '\n':
         ring_write(&input, &consoledata->data, 1);
-        channel_place(channel, EVENT_DATA, 1, &consoledata->data);
+        channel_reply(channel, EVENT_DATA, 1, &consoledata->data);
 
         count = ring_read(&input, buffer, BUFFER_SIZE);
 
@@ -97,7 +97,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
     default:
         ring_write(&input, &consoledata->data, 1);
-        channel_place(channel, EVENT_DATA, 1, &consoledata->data);
+        channel_reply(channel, EVENT_DATA, 1, &consoledata->data);
 
         break;
 

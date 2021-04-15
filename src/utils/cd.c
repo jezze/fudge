@@ -5,7 +5,7 @@ static void ondirectory(struct channel *channel, unsigned int source, void *mdat
 {
 
     if (file_walk2(FILE_L0, mdata))
-        channel_place(channel, EVENT_DIRECTORY, msize, mdata);
+        channel_reply(channel, EVENT_DIRECTORY, msize, mdata);
 
 }
 

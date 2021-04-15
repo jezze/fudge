@@ -145,7 +145,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 unsigned int count;
 
                 if ((count = sendpoll(request, channel, source, offset + cpio_filedata(header), cpio_filesize(header))))
-                    channel_place(channel, EVENT_DATA, count, getdata(request));
+                    channel_reply(channel, EVENT_DATA, count, getdata(request));
 
             }
 

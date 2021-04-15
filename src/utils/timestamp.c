@@ -37,7 +37,7 @@ static void print(struct channel *channel, unsigned int source, struct ctrl_cloc
     offset = message_putvalue(&data, gettimestamp(settings), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_place(channel, EVENT_DATA, offset, &data);
+    channel_reply(channel, EVENT_DATA, offset, &data);
 
 }
 

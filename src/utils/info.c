@@ -12,12 +12,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         struct message_header header;
         struct message_data data;
 
-        channel_redirectsame(channel, id, EVENT_DATA);
-        channel_redirectback(channel, id, EVENT_CLOSE);
-        channel_placefor(channel, id, EVENT_FILE, message_putstringz(&data, "system:info/cores", 0), &data);
-        channel_placefor(channel, id, EVENT_FILE, message_putstringz(&data, "system:info/tasks", 0), &data);
-        channel_placefor(channel, id, EVENT_FILE, message_putstringz(&data, "system:info/mailboxes", 0), &data);
-        channel_placefor(channel, id, EVENT_MAIN, 0, 0);
+        channel_sendredirectsame(channel, id, EVENT_DATA);
+        channel_sendredirectback(channel, id, EVENT_CLOSE);
+        channel_send(channel, id, EVENT_FILE, message_putstringz(&data, "system:info/cores", 0), &data);
+        channel_send(channel, id, EVENT_FILE, message_putstringz(&data, "system:info/tasks", 0), &data);
+        channel_send(channel, id, EVENT_FILE, message_putstringz(&data, "system:info/mailboxes", 0), &data);
+        channel_send(channel, id, EVENT_MAIN, 0, 0);
         channel_pollsourceevent(channel, id, EVENT_CLOSE, &header, &data);
 
     }

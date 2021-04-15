@@ -94,7 +94,7 @@ void activatenext(struct channel *channel, unsigned int index, struct job *jobs,
         struct job *job = &jobs[index];
 
         if (job->id)
-            channel_placefor(channel, job->id, EVENT_MAIN, 0, 0);
+            channel_send(channel, job->id, EVENT_MAIN, 0, 0);
 
     }
 
@@ -141,13 +141,13 @@ void job_pipe(struct channel *channel, struct job *jobs, unsigned int n)
         if (job->id)
         {
 
-            channel_redirectback(channel, job->id, EVENT_CLOSE);
-            channel_redirectback(channel, job->id, EVENT_DIRECTORY);
+            channel_sendredirectback(channel, job->id, EVENT_CLOSE);
+            channel_sendredirectback(channel, job->id, EVENT_DIRECTORY);
 
             if (i < n - 1)
-                channel_redirectto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
+                channel_sendredirectto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
             else
-                channel_redirectback(channel, job->id, EVENT_DATA);
+                channel_sendredirectback(channel, job->id, EVENT_DATA);
 
         }
 
@@ -179,7 +179,7 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
                 offset = message_putstringz(&data, job->options[j].key, offset);
                 offset = message_putstringz(&data, job->options[j].value, offset);
 
-                channel_placefor(channel, job->id, EVENT_OPTION, offset, &data);
+                channel_send(channel, job->id, EVENT_OPTION, offset, &data);
 
             }
 
@@ -190,7 +190,7 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
                 offset = message_putstringz(&data, job->directory, offset);
 
-                channel_placefor(channel, job->id, EVENT_DIRECTORY, offset, &data);
+                channel_send(channel, job->id, EVENT_DIRECTORY, offset, &data);
 
             }
 
@@ -201,7 +201,7 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
                 offset = message_putstringz(&data, job->files[j], offset);
 
-                channel_placefor(channel, job->id, EVENT_FILE, offset, &data);
+                channel_send(channel, job->id, EVENT_FILE, offset, &data);
 
             }
 
@@ -253,7 +253,7 @@ void job_send(struct channel *channel, struct job *jobs, unsigned int n, unsigne
         struct job *job = &jobs[i];
 
         if (job->id)
-            channel_placefor(channel, job->id, event, count, buffer);
+            channel_send(channel, job->id, event, count, buffer);
 
         break;
 
@@ -272,7 +272,7 @@ void job_sendall(struct channel *channel, struct job *jobs, unsigned int n, unsi
         struct job *job = &jobs[i];
 
         if (job->id)
-            channel_placefor(channel, job->id, event, count, buffer);
+            channel_send(channel, job->id, event, count, buffer);
 
     }
 

@@ -67,7 +67,7 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
 
         offset = message_putstring(&data, "|\n", offset);
 
-        channel_place(channel, EVENT_DATA, offset, &data);
+        channel_reply(channel, EVENT_DATA, offset, &data);
 
         page += 16;
 

@@ -71,7 +71,7 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
 
             offset = readline(width, offset, buffer);
 
-            channel_place(channel, EVENT_DATA, width, buffer);
+            channel_reply(channel, EVENT_DATA, width, buffer);
 
         }
 

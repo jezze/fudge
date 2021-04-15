@@ -22,7 +22,7 @@ static void onfile(struct channel *channel, unsigned int source, void *mdata, un
             unsigned char colormap[768];
 
             file_seekreadall(FILE_L0, colormap, 768, filesize - 768);
-            channel_place(channel, EVENT_DATA, 768, colormap);
+            channel_reply(channel, EVENT_DATA, 768, colormap);
 
         }
 
