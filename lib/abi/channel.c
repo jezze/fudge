@@ -44,6 +44,19 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
 }
 
+static unsigned int sendredirect(struct channel *channel, unsigned int target, unsigned int event, unsigned int mode, unsigned int id)
+{
+
+    struct event_redirect redirect;
+
+    redirect.event = event;
+    redirect.mode = mode;
+    redirect.id = id;
+
+    return channel_send(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+
+}
+
 void channel_dispatch(struct channel *channel, struct message_header *header, struct message_data *data)
 {
 
@@ -73,39 +86,21 @@ unsigned int channel_send(struct channel *channel, unsigned int target, unsigned
 unsigned int channel_sendredirectsame(struct channel *channel, unsigned int target, unsigned int event)
 {
 
-    struct event_redirect redirect;
-
-    redirect.event = event;
-    redirect.mode = EVENT_REDIRECT_TARGET;
-    redirect.id = channel->callbacks[event].target;
-
-    return channel_send(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+    return sendredirect(channel, target, event, EVENT_REDIRECT_TARGET, channel->callbacks[event].target);
 
 }
 
 unsigned int channel_sendredirectto(struct channel *channel, unsigned int target, unsigned int event, unsigned int id)
 {
 
-    struct event_redirect redirect;
-
-    redirect.event = event;
-    redirect.mode = EVENT_REDIRECT_TARGET;
-    redirect.id = id;
-
-    return channel_send(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+    return sendredirect(channel, target, event, EVENT_REDIRECT_TARGET, id);
 
 }
 
 unsigned int channel_sendredirectback(struct channel *channel, unsigned int target, unsigned int event)
 {
 
-    struct event_redirect redirect;
-
-    redirect.event = event;
-    redirect.mode = EVENT_REDIRECT_SOURCE;
-    redirect.id = 0;
-
-    return channel_send(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+    return sendredirect(channel, target, event, EVENT_REDIRECT_SOURCE, 0);
 
 }
 
