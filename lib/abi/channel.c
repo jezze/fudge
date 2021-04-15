@@ -126,59 +126,6 @@ unsigned int channel_poll(struct channel *channel, struct message_header *header
 
 }
 
-unsigned int channel_pollevent(struct channel *channel, unsigned int event, struct message_header *header, struct message_data *data)
-{
-
-    while (channel_poll(channel, header, data))
-    {
-
-        if (header->event == event)
-            return header->event;
-
-        channel_dispatch(channel, header, data);
-
-    }
-
-    return 0;
-
-}
-
-unsigned int channel_polldescriptor(struct channel *channel, unsigned int descriptor, struct message_header *header, struct message_data *data)
-{
-
-    while (channel_poll(channel, header, data))
-    {
-
-        /* All kernel messages are 0 right now */
-        if (header->source == 0)
-            return header->event;
-
-        channel_dispatch(channel, header, data);
-
-    }
-
-    return 0;
-
-}
-
-unsigned int channel_polldescriptorevent(struct channel *channel, unsigned int descriptor, unsigned int event, struct message_header *header, struct message_data *data)
-{
-
-    while (channel_poll(channel, header, data))
-    {
-
-        /* All kernel messages are 0 right now */
-        if (header->source == 0 && header->event == event)
-            return header->event;
-
-        channel_dispatch(channel, header, data);
-
-    }
-
-    return 0;
-
-}
-
 unsigned int channel_pollsource(struct channel *channel, unsigned int source, struct message_header *header, struct message_data *data)
 {
 
@@ -186,6 +133,23 @@ unsigned int channel_pollsource(struct channel *channel, unsigned int source, st
     {
 
         if (header->source == source)
+            return header->event;
+
+        channel_dispatch(channel, header, data);
+
+    }
+
+    return 0;
+
+}
+
+unsigned int channel_pollevent(struct channel *channel, unsigned int event, struct message_header *header, struct message_data *data)
+{
+
+    while (channel_poll(channel, header, data))
+    {
+
+        if (header->event == event)
             return header->event;
 
         channel_dispatch(channel, header, data);
@@ -210,6 +174,20 @@ unsigned int channel_pollsourceevent(struct channel *channel, unsigned int sourc
     }
 
     return 0;
+
+}
+
+unsigned int channel_polldescriptor(struct channel *channel, unsigned int descriptor, struct message_header *header, struct message_data *data)
+{
+
+    return channel_pollsource(channel, 0, header, data);
+
+}
+
+unsigned int channel_polldescriptorevent(struct channel *channel, unsigned int descriptor, unsigned int event, struct message_header *header, struct message_data *data)
+{
+
+    return channel_pollsourceevent(channel, 0, event, header, data);
 
 }
 
