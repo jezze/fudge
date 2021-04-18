@@ -62,7 +62,7 @@ static void draw(void *data, unsigned int count, unsigned int offset)
     if (vmode.fb)
         buffer_write((void *)vmode.fb, vmode.w * vmode.h * vmode.bpp, data, count, offset);
     else
-        file_seekwriteall(FILE_G6, data, count, offset);
+        file_seekwriteall(FILE_G5, data, count, offset);
 
 }
 
@@ -304,10 +304,10 @@ static void setupvideo(void)
     ctrl_setvideosettings(&settings, 1024, 768, 4);
     buffer_clear(black, 768);
 
-    if (!file_walk(FILE_L0, FILE_G4, "ctrl"))
+    if (!file_walk(FILE_L0, FILE_G3, "ctrl"))
         return;
 
-    if (!file_walk(FILE_L1, FILE_G4, "colormap"))
+    if (!file_walk(FILE_L1, FILE_G3, "colormap"))
         return;
 
     file_open(FILE_L1);
@@ -883,11 +883,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_header header;
     struct message_data data;
 
+    file_link(FILE_G0);
     file_link(FILE_G1);
     file_link(FILE_G2);
-    file_link(FILE_G3);
-    file_link(FILE_G5);
-    file_open(FILE_G6);
+    file_link(FILE_G4);
+    file_open(FILE_G5);
     setupvideo();
     setupviews();
     setupremotes();
@@ -913,24 +913,24 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     }
 
-    file_close(FILE_G6);
-    file_unlink(FILE_G5);
-    file_unlink(FILE_G3);
+    file_close(FILE_G5);
+    file_unlink(FILE_G4);
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);
+    file_unlink(FILE_G0);
 
 }
 
 static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G4, mdata))
+    if (!file_walk2(FILE_G3, mdata))
         return;
 
-    if (!file_walk(FILE_G5, FILE_G4, "event"))
+    if (!file_walk(FILE_G4, FILE_G3, "event"))
         return;
 
-    if (!file_walk(FILE_G6, FILE_G4, "data"))
+    if (!file_walk(FILE_G5, FILE_G3, "data"))
         return;
 
 }
@@ -945,22 +945,22 @@ void init(struct channel *channel)
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     render_init();
 
-    if (!file_walk2(FILE_G1, "system:wm"))
+    if (!file_walk2(FILE_G0, "system:wm"))
         return;
 
-    if (!file_walk2(FILE_G2, "system:keyboard/event"))
+    if (!file_walk2(FILE_G1, "system:keyboard/event"))
         return;
 
-    if (!file_walk2(FILE_G3, "system:mouse/event"))
+    if (!file_walk2(FILE_G2, "system:mouse/event"))
         return;
 
-    if (!file_walk2(FILE_G4, "system:video/if:0"))
+    if (!file_walk2(FILE_G3, "system:video/if:0"))
         return;
 
-    if (!file_walk(FILE_G5, FILE_G4, "event"))
+    if (!file_walk(FILE_G4, FILE_G3, "event"))
         return;
 
-    if (!file_walk(FILE_G6, FILE_G4, "data"))
+    if (!file_walk(FILE_G5, FILE_G3, "data"))
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);
