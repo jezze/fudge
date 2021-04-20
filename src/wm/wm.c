@@ -954,15 +954,6 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G2, "system:mouse/event"))
         return;
 
-    if (!file_walk2(FILE_G3, "system:video/if:0"))
-        return;
-
-    if (!file_walk(FILE_G4, FILE_G3, "event"))
-        return;
-
-    if (!file_walk(FILE_G5, FILE_G3, "data"))
-        return;
-
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_FILE, onfile);
     channel_setcallback(channel, EVENT_KEYPRESS, onkeypress);

@@ -291,13 +291,6 @@ void init(struct channel *channel)
 {
 
     ring_init(&input, BUFFER_SIZE, inputbuffer);
-
-    if (!file_walk2(FILE_G0, "system:console/if:0/event"))
-        return;
-
-    if (!file_walk2(FILE_G1, "system:console/if:0/transmit"))
-        return;
-
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_DATA, ondata);
     channel_setcallback(channel, EVENT_FILE, onfile);
