@@ -269,7 +269,7 @@ static unsigned int link(struct task *task, void *stack)
     if (!descriptor->protocol)
         return 0;
 
-    return descriptor->protocol->link(descriptor->id, &descriptor->link);
+    return descriptor->protocol->link(descriptor->id, task->id);
 
 }
 
@@ -282,7 +282,7 @@ static unsigned int unlink(struct task *task, void *stack)
     if (!descriptor->protocol)
         return 0;
 
-    return descriptor->protocol->unlink(descriptor->id, &descriptor->link);
+    return descriptor->protocol->unlink(descriptor->id, task->id);
 
 }
 

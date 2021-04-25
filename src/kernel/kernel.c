@@ -9,7 +9,9 @@
 
 static struct task tasks[KERNEL_TASKS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
+static struct service_link links[KERNEL_LINKS];
 static struct service_descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
+static struct list freelinks;
 static struct list freetasks;
 static struct list readytasks;
 static struct list blockedtasks;
@@ -73,6 +75,35 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *t
 
     coreget = get;
     coreassign = assign;
+
+}
+
+struct service_link *kernel_picklink(unsigned int source)
+{
+
+    struct list_item *current = list_picktail(&freelinks);
+
+    if (current)
+    {
+
+        struct service_link *link = current->data;
+
+        link->source = source;
+
+        return link;
+
+    }
+
+    return 0;
+
+}
+
+void kernel_freelink(struct service_link *link)
+{
+
+    link->source = 0;
+
+    list_add(&freelinks, &link->item);
 
 }
 
@@ -225,7 +256,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 
         struct service_link *link = current->data;
 
-        kernel_place(link->id, &header, buffer);
+        kernel_place(link->source, &header, buffer);
 
     }
 
@@ -290,20 +321,10 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     {
 
         struct task *task = &tasks[i];
-        unsigned int j;
 
         task_init(task, i);
         task_register(task);
         kernel_freetask(task->id);
-
-        for (j = 0; j < KERNEL_DESCRIPTORS; j++)
-        {
-
-            struct service_descriptor *descriptor = &descriptors[i * KERNEL_DESCRIPTORS + j];
-
-            service_initdescriptor(descriptor, task->id);
-
-        }
 
     }
 
@@ -314,6 +335,16 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
         mailbox_init(mailbox, (char *)(mbaddress + i * mbsize), mbsize);
         mailbox_register(mailbox);
+
+    }
+
+    for (i = 0; i < KERNEL_LINKS; i++)
+    {
+
+        struct service_link *link = &links[i];
+
+        service_initlink(link);
+        list_add(&freelinks, &link->item);
 
     }
 

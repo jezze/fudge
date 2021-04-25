@@ -210,23 +210,43 @@ static unsigned int protocol_map(unsigned int id)
 
 }
 
-static unsigned int protocol_link(unsigned int id, struct service_link *link)
+static unsigned int protocol_link(unsigned int id, unsigned int source)
 {
 
     struct system_node *node = getnode(id);
+    struct service_link *link = kernel_picklink(source);
 
-    list_add(&node->links, &link->item);
+    if (link)
+        list_add(&node->links, &link->item);
 
     return id;
 
 }
 
-static unsigned int protocol_unlink(unsigned int id, struct service_link *link)
+static unsigned int protocol_unlink(unsigned int id, unsigned int source)
 {
 
     struct system_node *node = getnode(id);
+    struct list_item *current;
 
-    list_remove(&node->links, &link->item);
+    spinlock_acquire(&node->links.spinlock);
+
+    for (current = node->links.head; current; current = current->next)
+    {
+
+        struct service_link *link = current->data;
+
+        if (link->source == source)
+        {
+
+            list_remove(&node->links, &link->item);
+            kernel_freelink(link);
+
+        }
+
+    }
+
+    spinlock_release(&node->links.spinlock);
 
     return id;
 
@@ -247,7 +267,7 @@ static unsigned int protocol_notify(unsigned int id, unsigned int source, struct
 
         header->source = source;
 
-        kernel_place(target->id, header, data);
+        kernel_place(target->source, header, data);
 
     }
 

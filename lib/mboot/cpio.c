@@ -333,14 +333,14 @@ static unsigned int protocol_map(unsigned int id)
 
 }
 
-static unsigned int protocol_link(unsigned int id, struct service_link *link)
+static unsigned int protocol_link(unsigned int id, unsigned int source)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_unlink(unsigned int id, struct service_link *link)
+static unsigned int protocol_unlink(unsigned int id, unsigned int source)
 {
 
     return 0;

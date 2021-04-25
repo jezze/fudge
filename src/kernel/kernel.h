@@ -1,10 +1,13 @@
 #define KERNEL_TASKS                    128
+#define KERNEL_LINKS                    128
 #define KERNEL_DESCRIPTORS              32
 #define KERNEL_MAILBOXES                128
 
 unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsigned int length);
 struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *task));
+struct service_link *kernel_picklink(unsigned int source);
+void kernel_freelink(struct service_link *link);
 struct task *kernel_picktask(void);
 void kernel_freetask(unsigned int id);
 void kernel_readytask(unsigned int id);
