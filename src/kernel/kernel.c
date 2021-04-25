@@ -193,7 +193,7 @@ struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int 
 
 }
 
-static void copydescriptor(struct service_descriptor *tdescriptor, struct service_descriptor *sdescriptor, struct task *task)
+static void copydescriptor(struct service_descriptor *tdescriptor, struct service_descriptor *sdescriptor)
 {
 
     tdescriptor->protocol = (sdescriptor) ? sdescriptor->protocol : 0;
@@ -209,8 +209,8 @@ void kernel_copydescriptors(struct task *source, struct task *target)
     for (i = 0x00; i < 0x04; i++)
     {
 
-        copydescriptor(kernel_getdescriptor(target, i + FILE_PP), kernel_getdescriptor(source, i + FILE_CP), target);
-        copydescriptor(kernel_getdescriptor(target, i + FILE_CP), kernel_getdescriptor(source, i + FILE_CP), target);
+        copydescriptor(kernel_getdescriptor(target, i + FILE_PP), kernel_getdescriptor(source, i + FILE_CP));
+        copydescriptor(kernel_getdescriptor(target, i + FILE_CP), kernel_getdescriptor(source, i + FILE_CP));
 
     }
 
