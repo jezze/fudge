@@ -296,10 +296,10 @@ void kernel_setupinit(struct task *task)
 
     root->protocol = service_findprotocol(6, "initrd");
     root->id = root->protocol->root();
-    work->protocol = root->protocol;
-    work->id = work->protocol->root();
-    init->protocol = root->protocol;
-    init->id = init->protocol->root();
+
+    copydescriptor(work, root);
+    copydescriptor(init, root);
+
     init->id = init->protocol->child(init->id, "bin", 3);
     init->id = init->protocol->child(init->id, "init", 4);
 
