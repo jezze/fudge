@@ -4,12 +4,13 @@
 #include "mailbox.h"
 #include "task.h"
 #include "core.h"
+#include "link.h"
 #include "service.h"
 #include "kernel.h"
 
 static struct task tasks[KERNEL_TASKS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
-static struct service_link links[KERNEL_LINKS];
+static struct link links[KERNEL_LINKS];
 static struct service_descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct list freelinks;
 static struct list freetasks;
@@ -78,7 +79,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *t
 
 }
 
-struct service_link *kernel_picklink(unsigned int source)
+struct link *kernel_picklink(unsigned int source)
 {
 
     struct list_item *current = list_picktail(&freelinks);
@@ -86,7 +87,7 @@ struct service_link *kernel_picklink(unsigned int source)
     if (current)
     {
 
-        struct service_link *link = current->data;
+        struct link *link = current->data;
 
         link->source = source;
 
@@ -98,7 +99,7 @@ struct service_link *kernel_picklink(unsigned int source)
 
 }
 
-void kernel_freelink(struct service_link *link)
+void kernel_freelink(struct link *link)
 {
 
     link->source = 0;
@@ -251,7 +252,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
     for (current = links->head; current; current = current->next)
     {
 
-        struct service_link *link = current->data;
+        struct link *link = current->data;
 
         kernel_place(link->source, &header, buffer);
 
@@ -338,9 +339,9 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     for (i = 0; i < KERNEL_LINKS; i++)
     {
 
-        struct service_link *link = &links[i];
+        struct link *link = &links[i];
 
-        service_initlink(link);
+        link_init(link);
         list_add(&freelinks, &link->item);
 
     }

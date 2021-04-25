@@ -214,7 +214,7 @@ static unsigned int protocol_link(unsigned int id, unsigned int source)
 {
 
     struct system_node *node = getnode(id);
-    struct service_link *link = kernel_picklink(source);
+    struct link *link = kernel_picklink(source);
 
     if (link)
         list_add(&node->links, &link->item);
@@ -234,7 +234,7 @@ static unsigned int protocol_unlink(unsigned int id, unsigned int source)
     for (current = node->links.head; current; current = current->next)
     {
 
-        struct service_link *link = current->data;
+        struct link *link = current->data;
 
         if (link->source == source)
         {
@@ -263,7 +263,7 @@ static unsigned int protocol_notify(unsigned int id, unsigned int source, struct
     for (current = node->links.head; current; current = current->next)
     {
 
-        struct service_link *target = current->data;
+        struct link *target = current->data;
 
         header->source = source;
 
