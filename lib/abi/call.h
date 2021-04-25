@@ -6,7 +6,7 @@ unsigned int call_despawn(void);
 unsigned int call_kill(unsigned int id);
 unsigned int call_link(unsigned int descriptor);
 unsigned int call_load(unsigned int descriptor);
-unsigned int call_notify(unsigned int descriptor, struct message_header *header, void *data);
+unsigned int call_notify(unsigned int descriptor, unsigned int event, unsigned int count, void *data);
 unsigned int call_open(unsigned int descriptor);
 unsigned int call_pick(struct message_header *header, void *data);
 unsigned int call_place(unsigned int id, struct message_header *header, void *data);

@@ -347,7 +347,7 @@ static unsigned int protocol_unlink(unsigned int id, unsigned int source)
 
 }
 
-static unsigned int protocol_notify(unsigned int id, unsigned int source, struct message_header *header, void *data)
+static unsigned int protocol_notify(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     return 0;

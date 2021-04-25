@@ -252,12 +252,14 @@ static unsigned int protocol_unlink(unsigned int id, unsigned int source)
 
 }
 
-static unsigned int protocol_notify(unsigned int id, unsigned int source, struct message_header *header, void *data)
+static unsigned int protocol_notify(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct system_node *node = getnode(id);
+    struct message_header header;
     struct list_item *current;
 
+    message_initheader(&header, event, source, count);
     spinlock_acquire(&node->links.spinlock);
 
     for (current = node->links.head; current; current = current->next)
@@ -265,15 +267,13 @@ static unsigned int protocol_notify(unsigned int id, unsigned int source, struct
 
         struct link *target = current->data;
 
-        header->source = source;
-
-        kernel_place(target->source, header, data);
+        kernel_place(target->source, &header, data);
 
     }
 
     spinlock_release(&node->links.spinlock);
 
-    return header->length;
+    return count;
 
 }
 

@@ -246,7 +246,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
     struct message_header header;
     struct list_item *current;
 
-    message_initheader(&header, type, count);
+    message_initheader(&header, type, 0, count);
     spinlock_acquire(&links->spinlock);
 
     for (current = links->head; current; current = current->next)

@@ -75,7 +75,7 @@ unsigned int channel_send(struct channel *channel, unsigned int target, unsigned
 
     struct message_header header;
 
-    message_initheader(&header, event, count);
+    message_initheader(&header, event, 0, count);
 
     while (!call_place(target, &header, data));
 

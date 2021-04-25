@@ -289,13 +289,13 @@ static unsigned int unlink(struct task *task, void *stack)
 static unsigned int notify(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; struct message_header *header; void *data;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int event; unsigned int count; void *data;} *args = stack;
     struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!descriptor->protocol)
         return 0;
 
-    return descriptor->protocol->notify(descriptor->id, task->id, args->header, args->data);
+    return descriptor->protocol->notify(descriptor->id, task->id, args->event, args->count, args->data);
 
 }
 
