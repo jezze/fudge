@@ -310,6 +310,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
     unsigned int i;
 
+    list_init(&freelinks);
     list_init(&freetasks);
     list_init(&readytasks);
     list_init(&blockedtasks);
