@@ -239,7 +239,7 @@ static unsigned int protocol_unlink(unsigned int id, unsigned int source)
         if (link->source == source)
         {
 
-            list_remove(&node->links, &link->item);
+            list_remove_nolock(&node->links, &link->item);
             kernel_freelink(link);
 
         }
