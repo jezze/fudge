@@ -232,7 +232,7 @@ static unsigned int protocol_unlink(unsigned int id, struct service_link *link)
 
 }
 
-static unsigned int protocol_notify(unsigned int id, struct service_link *link, struct message_header *header, void *data)
+static unsigned int protocol_notify(unsigned int id, unsigned int source, struct message_header *header, void *data)
 {
 
     struct system_node *node = getnode(id);
@@ -245,7 +245,7 @@ static unsigned int protocol_notify(unsigned int id, struct service_link *link, 
 
         struct service_link *target = current->data;
 
-        header->source = link->id;
+        header->source = source;
 
         kernel_place(target->id, header, data);
 

@@ -295,7 +295,7 @@ static unsigned int notify(struct task *task, void *stack)
     if (!descriptor->protocol)
         return 0;
 
-    return descriptor->protocol->notify(descriptor->id, &descriptor->link, args->header, args->data);
+    return descriptor->protocol->notify(descriptor->id, task->id, args->header, args->data);
 
 }
 
