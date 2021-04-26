@@ -154,7 +154,7 @@ static unsigned int protocol_create(unsigned int id, char *name, unsigned int le
 
 }
 
-static unsigned int protocol_destroy(unsigned int id, char *name, unsigned int length)
+static unsigned int protocol_destroy(unsigned int id)
 {
 
     return 0;

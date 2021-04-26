@@ -37,32 +37,33 @@ static unsigned int walk(struct task *task, void *stack)
 static unsigned int create(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *name; unsigned int length;} *args = stack;
     struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct service_descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
 
-    if (!descriptor->protocol)
+    if (!pdescriptor->protocol)
         return 0;
 
     if (!args->length || !args->name)
         return 0;
 
-    return descriptor->protocol->create(descriptor->id, args->name, args->length);
+    descriptor->protocol = pdescriptor->protocol;
+    descriptor->id = pdescriptor->protocol->create(pdescriptor->id, args->name, args->length);
+
+    return descriptor->id;
 
 }
 
 static unsigned int destroy(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; char *name; unsigned int length;} *args = stack;
+    struct {void *caller; unsigned int descriptor;} *args = stack;
     struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!descriptor->protocol)
         return 0;
 
-    if (!args->length || !args->name)
-        return 0;
-
-    return descriptor->protocol->destroy(descriptor->id, args->name, args->length);
+    return descriptor->protocol->destroy(descriptor->id);
 
 }
 

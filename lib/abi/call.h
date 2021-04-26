@@ -1,7 +1,7 @@
 unsigned int call_close(unsigned int descriptor);
-unsigned int call_create(unsigned int descriptor, char *name, unsigned int length);
+unsigned int call_create(unsigned int descriptor, unsigned int pdescriptor, char *name, unsigned int length);
 unsigned int call_debug(void);
-unsigned int call_destroy(unsigned int descriptor, char *name, unsigned int length);
+unsigned int call_destroy(unsigned int descriptor);
 unsigned int call_despawn(void);
 unsigned int call_kill(unsigned int id);
 unsigned int call_link(unsigned int descriptor);
