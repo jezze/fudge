@@ -129,15 +129,22 @@ top directory of your source tree.
 
 ## Running Fudge in QEMU
 
-There is a script you can use to start Fudge in QEMU called vmctrl. All of the
-vmctrl commands most likely requires root/sudo because they will set up
-networking in the form of tap interfaces.
+There is a script you can use to start Fudge in QEMU called vmctrl. The easiest
+way to run fudge in QEMU is to issue:
+
+```sh
+$ sudo ./vmctrl runsimple node1
+```
+
+This will start an instance of Fudge called node1. This node will not have any
+networking abilities.
+
+To enable networking, your user need to be allowed to create TAP interfaces on
+your host machine. Typically sudo will allow you to do this.
 
 ```sh
 $ sudo ./vmctrl run node1
 ```
-
-This will start an instance of Fudge called node1.
 
 Once you started one or more instances of Fudge you can bridge their networks
 together with this command.
@@ -154,8 +161,8 @@ by issuing the following command:
 $ sudo ./vmctrl nat eth0
 ```
 
-Replace eth0 with the interface you have connected to the internet. You only
-need to run this command once.
+Replace eth0 with the interface that is connected to the internet. You only
+need to run this command once unless you reboot your host machine.
 
 ## Community
 

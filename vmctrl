@@ -1,7 +1,16 @@
 #!/bin/bash
 
-cmd_run() {
+run() {
     sttybak=$(stty -g)
+
+    echo "Use ctrl+] to kill node-$1"
+
+    stty intr ^]
+    qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio $2
+    stty $sttybak
+}
+
+cmd_run() {
     devices="-vga std -serial stdio"
     devices="$devices -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-$1-eth0,script=no,downscript=no"
 
@@ -10,11 +19,18 @@ cmd_run() {
         devices="$devices -drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
     fi
 
-    echo "Use ctrl+] to kill node-$1"
+    run $1 "$devices"
+}
 
-    stty intr ^]
-    qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio $devices
-    stty $sttybak
+cmd_runsimple() {
+    devices="-vga std -serial stdio"
+
+    if test -f "disks/node-$1-sda.qcow2"
+    then
+        devices="$devices -drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
+    fi
+
+    run $1 "$devices"
 }
 
 cmd_nat() {
@@ -78,6 +94,7 @@ cmd_mkdisk() {
 cmd_help() {
     echo "Commands:"
     echo "    run <id>"
+    echo "    runsimple <id>"
     echo "    nat <iface>"
     echo "    connect"
     echo "    disconnect"
@@ -87,6 +104,9 @@ cmd_help() {
 case "$1" in
 run)
     cmd_run $2
+    ;;
+runsimple)
+    cmd_runsimple $2
     ;;
 nat)
     cmd_nat $2
