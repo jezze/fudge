@@ -945,8 +945,10 @@ void init(struct channel *channel)
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     render_init();
 
-    if (!file_walk2(FILE_G0, "system:wm"))
+    if (!file_walk2(FILE_L0, "system:service"))
         return;
+
+    call_create(FILE_G0, FILE_L0, "wm", 2);
 
     if (!file_walk2(FILE_G1, "system:keyboard/event"))
         return;

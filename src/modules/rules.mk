@@ -4,11 +4,11 @@ include $(DIR_SRC)/modules/block/rules.mk
 include $(DIR_SRC)/modules/clock/rules.mk
 include $(DIR_SRC)/modules/console/rules.mk
 include $(DIR_SRC)/modules/ethernet/rules.mk
-include $(DIR_SRC)/modules/event/rules.mk
 include $(DIR_SRC)/modules/info/rules.mk
 include $(DIR_SRC)/modules/keyboard/rules.mk
 include $(DIR_SRC)/modules/log/rules.mk
 include $(DIR_SRC)/modules/mouse/rules.mk
+include $(DIR_SRC)/modules/service/rules.mk
 include $(DIR_SRC)/modules/system/rules.mk
 include $(DIR_SRC)/modules/timer/rules.mk
 include $(DIR_SRC)/modules/video/rules.mk

@@ -417,7 +417,7 @@ void init(struct channel *channel)
     ring_init(&text, BUFFER_SIZE, textdata);
     widget_inittextbox(&content);
 
-    if (!file_walk2(FILE_G0, "system:wm"))
+    if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);

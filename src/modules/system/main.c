@@ -88,14 +88,18 @@ static unsigned int protocol_child(unsigned int id, char *path, unsigned int len
 static unsigned int protocol_create(unsigned int id, char *name, unsigned int length)
 {
 
-    return 0;
+    struct system_node *node = getnode(id);
+
+    return (node->operations.create) ? node->operations.create(name, length) : 0;
 
 }
 
 static unsigned int protocol_destroy(unsigned int id)
 {
 
-    return 0;
+    struct system_node *node = getnode(id);
+
+    return (node->operations.destroy) ? node->operations.destroy() : 0;
 
 }
 
@@ -346,6 +350,8 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     node->name = name;
     node->index = 0;
     node->parent = 0;
+    node->operations.create = 0;
+    node->operations.destroy = 0;
     node->operations.read = 0;
     node->operations.write = 0;
     node->operations.seek = 0;

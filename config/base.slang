@@ -1,7 +1,7 @@
 elfload < /kernel/base.ko
 elfload < /kernel/system.ko
 elfload < /kernel/log.ko
-elfload < /kernel/event.ko
+elfload < /kernel/service.ko
 elfload < /kernel/block.ko
 elfload < /kernel/clock.ko
 elfload < /kernel/console.ko
