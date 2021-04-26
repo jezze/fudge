@@ -46,10 +46,10 @@ $ tar xjf crosstool-ng-1.24.0.tar.bz2
 $ cd crosstool-ng-1.24.0
 $ ./configure
 $ make
-$ make install
+$ sudo make install
 ```
 
-The last command must be run as root.
+The last command must be run with root privileges (by using sudo in this case).
 
 ### Configuring crosstools-ng
 
@@ -133,7 +133,7 @@ There is a script you can use to start Fudge in QEMU called vmctrl. The easiest
 way to run fudge in QEMU is to issue:
 
 ```sh
-$ sudo ./vmctrl runsimple node1
+$ ./vmctrl runsimple node1
 ```
 
 This will start an instance of Fudge called node1. This node will not have any
