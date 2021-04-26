@@ -92,15 +92,16 @@ $ git clone git://github.com/jezze/fudge.git
 $ cd fudge
 ```
 
-In this example the cross-compiler was installed in the home directory of your
-current user i.e. /home/$(whoami)/x-tools/i386-unknown-elf/. We need to add
-this path to the PATH environment variable in order for the system to find it.
+Now we need to make sure our system can find the new cross-compiler that we
+created previously. This is done by adding the path to the compiler to the
+$PATH environment variable on your host. Unless you changed the install path,
+this should work:
 
 ```sh
 $ export PATH=/home/$(whoami)/x-tools/i386-unknown-elf/bin:$PATH
 ```
 
-The changes to PATH will disappear as soon as you leave the current session or
+The changes to $PATH will disappear as soon as you leave the current session or
 start another one so you will need to set it again from time to time.
 
 Finally we can build Fudge.
