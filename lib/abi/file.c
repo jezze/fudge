@@ -26,6 +26,13 @@ unsigned int file_duplicate(unsigned int descriptor, unsigned int pdescriptor)
 
 }
 
+unsigned int file_create(unsigned int descriptor, unsigned int pdescriptor, char *name)
+{
+
+    return call_create(descriptor, pdescriptor, name, ascii_length(name));
+
+}
+
 unsigned int file_open(unsigned int descriptor)
 {
 
