@@ -30,13 +30,11 @@ from the channel, either from a certain sender or of a certain type. Anything
 that falls outside of that will be automatically dispatched to the default
 registered callbacks. It is also possible to dispatch a message manually.
 
-## Building a cross compiler
+## Building the cross-compiler (crosstool-ng)
 
 In order to compile Fudge for x86 we need to have a cross-compiler. Building a
 cross-compiler can be a tedious task but luckily there is a tool called
-crosstool-ng that automates the entire process for you.
-
-### Installing crosstools-ng
+crosstool-ng that automates the entire process for us.
 
 Download and install crosstool-ng. The recommended version is 1.24.0.
 
@@ -49,24 +47,20 @@ $ make
 $ sudo make install
 ```
 
-The last command must be run with root privileges (by using sudo in this case).
-
-### Configuring crosstools-ng
-
-Create a folder in your home directory called temp and cd to it.
+Create a temporary folder in your home directory and cd to it:
 
 ```sh
 $ mkdir ~/temp
 $ cd ~/temp
 ```
 
-Configure the cross-compiler environment by running:
+Configure our new cross-compiler build by running:
 
 ```sh
 $ ct-ng menuconfig
 ```
 
-This will start the configuration program. Set the target architecture to x86.
+This will start the configuration tool. Set the target architecture to x86:
 
 ```sh
 Target options -> Target Architecture -> x86
@@ -79,8 +73,6 @@ more information on how to customize your setup.
 Exit the configuration tool by pressing exit a few times. Before you leave the
 last screen you will be asked if you want to save the settings. Press yes.
 
-### Building the cross compiler
-
 Start building the cross-compiler:
 
 ```sh
@@ -91,9 +83,7 @@ Depending on your system this may take some time, usually around 10-15 minutes.
 
 ## Building Fudge
 
-This requires you to have the cross-compiler built.
-
-### Get the Fudge source code
+This step requires that you to have the cross-compiler built.
 
 First you need to download the source code if you haven't done that already.
 
@@ -102,21 +92,16 @@ $ git clone git://github.com/jezze/fudge.git
 $ cd fudge
 ```
 
-### Set the PATH environment variable
-
-In this example the cross-compiler was installed in
-/home/foo/x-tools/i386-unknown-elf/. Change this to match your setup. If you
-haven't made any major modifications you just need to change foo to match your
-username instead.
+In this example the cross-compiler was installed in the home directory of your
+current user i.e. /home/$(whoami)/x-tools/i386-unknown-elf/. We need to add
+this path to the PATH environment variable in order for the system to find it.
 
 ```sh
-$ export PATH=/home/foo/x-tools/i386-unknown-elf/bin:$PATH
+$ export PATH=/home/$(whoami)/x-tools/i386-unknown-elf/bin:$PATH
 ```
 
-The PATH modifications will be gone as soon as you leave the current session or
-start another one. This means that you will need to reset it from time to time.
-
-### Building Fudge
+The changes to PATH will disappear as soon as you leave the current session or
+start another one so you will need to set it again from time to time.
 
 Finally we can build Fudge.
 
@@ -124,23 +109,22 @@ Finally we can build Fudge.
 $ make
 ```
 
-You should now have a binary called fudge and an image called fudge.cpio in the
-top directory of your source tree.
+You should now have a binary called fudge and a ramdisk image called fudge.cpio
+in the top directory of your source tree.
 
-## Running Fudge in QEMU
+## Running Fudge in QEMU with vmctrl
 
-There is a script you can use to start Fudge in QEMU called vmctrl. The easiest
-way to run fudge in QEMU is to issue:
+There is a script call vmctrl that you can use to run Fudge as a virtual
+machine in QEMU.
 
 ```sh
 $ ./vmctrl runsimple node1
 ```
 
 This will start an instance of Fudge called node1. This node will not have any
-networking abilities.
-
-To enable networking, your user need to be allowed to create TAP interfaces on
-your host machine. Typically sudo will allow you to do this.
+networking abilities however. To enable networking, your user need to be
+allowed to create TAP interfaces on your host machine. Typically using sudo
+will allow you to do this.
 
 ```sh
 $ sudo ./vmctrl run node1
@@ -153,16 +137,18 @@ together with this command.
 $ sudo ./vmctrl connect
 ```
 
-Now each VM should be able to talk to eachother. In order for them to talk with
-the outside world you need to set up NAT on your host machine. This can be done
-by issuing the following command:
+Now each virtual machine should be able to find and talk to each other. In
+order for them to be able to talk to the outside world you need to set up
+network address translation on your host machine. This can be done by issuing
+the following command:
 
 ```sh
 $ sudo ./vmctrl nat eth0
 ```
 
-Replace eth0 with the interface that is connected to the internet. You only
-need to run this command once unless you reboot your host machine.
+Replace eth0 with the name of the network interface that is connected to the
+internet. You only need to run this command once unless you reboot your host
+machine.
 
 ## Community
 
