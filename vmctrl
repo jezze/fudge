@@ -3,14 +3,14 @@
 cmd_run() {
     sttybak=$(stty -g)
     devices="-vga std -serial stdio"
-    devices="$devices -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node$1-eth0,script=no,downscript=no"
+    devices="$devices -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-$1-eth0,script=no,downscript=no"
 
-    if test -f "disks/node$1-sda.qcow2"
+    if test -f "disks/node-$1-sda.qcow2"
     then
-        devices="$devices -drive file=disks/node$1-sda.qcow2,format=qcow2,if=ide,index=0"
+        devices="$devices -drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
     fi
 
-    echo "Use ctrl+] to kill node$1"
+    echo "Use ctrl+] to kill node-$1"
 
     stty intr ^]
     qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio $devices
@@ -18,54 +18,60 @@ cmd_run() {
 }
 
 cmd_nat() {
-    iface=$1
-
     sysctl -w net.ipv4.conf.all.forwarding=1
-    iptables -t nat -A POSTROUTING -o $iface -j MASQUERADE
+    iptables -t nat -A POSTROUTING -o $1 -j MASQUERADE
 }
 
 cmd_connect() {
-    net="eth0"
-    bridge="bridge-$net"
-    address="10.0.5.80/24"
+    networks="eth0"
 
-    if ! test -e /sys/class/net/$bridge
-    then
-        ip link add $bridge type bridge
-        ip link set $bridge up
-        ip addr add $address dev $bridge
-    fi
-
-    for interface in $(ls -1 /sys/class/net | grep node.*-$net)
+    for net in $networks
     do
-        ip link set $interface master $bridge
-        ip link set $interface up
+        bridge="bridge-$net"
+        address="10.0.5.80/24"
+
+        if ! test -e /sys/class/net/$bridge
+        then
+            ip link add $bridge type bridge
+            ip link set $bridge up
+            ip addr add $address dev $bridge
+        fi
+
+        for interface in $(ls -1 /sys/class/net | grep node-.*-$net)
+        do
+            ip link set $interface master $bridge
+            ip link set $interface up
+        done
     done
 }
 
 cmd_disconnect() {
-    net="eth0"
-    bridge="bridge-$net"
-    address="10.0.5.80/24"
+    networks="eth0"
 
-    for interface in $(ls -1 /sys/class/net | grep node.*-$net)
+    for net in $networks
     do
-        ip link set $interface down
-        ip link set $interface nomaster
-    done
+        bridge="bridge-$net"
+        address="10.0.5.80/24"
 
-    if test -e /sys/class/net/$bridge
-    then
-        ip addr del $address dev $bridge
-        ip link set $bridge down
-        ip link del $bridge type bridge
-    fi
+        for interface in $(ls -1 /sys/class/net | grep node-.*-$net)
+        do
+            ip link set $interface down
+            ip link set $interface nomaster
+        done
+
+        if test -e /sys/class/net/$bridge
+        then
+            ip addr del $address dev $bridge
+            ip link set $bridge down
+            ip link del $bridge type bridge
+        fi
+    done
 }
 
 cmd_mkdisk() {
     mkdir -p disks
     echo -n "Creating sda disk... "
-    qemu-img create -q -f qcow2 disks/node$1-sda.qcow2 5G
+    qemu-img create -q -f qcow2 disks/node-$1-sda.qcow2 5G
     echo "done"
 }
 
