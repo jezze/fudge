@@ -72,7 +72,7 @@ void init(struct channel *channel)
 
     unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
     unsigned char port[TCP_PORTSIZE] = {0x07, 0xD0};
-    unsigned char address3[IPV4_ADDRSIZE] = {192, 168, 0, 8};
+    unsigned char address3[IPV4_ADDRSIZE] = {10, 0, 5, 80};
 
     if (!file_walk2(FILE_L0, "system:ethernet/if:0"))
         return;
