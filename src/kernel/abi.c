@@ -255,9 +255,7 @@ static unsigned int place(struct task *task, void *stack)
 
     struct {void *caller; unsigned int id; struct message_header *header; void *data;} *args = stack;
 
-    args->header->source = task->id;
-
-    return kernel_place(args->id, args->header, args->data);
+    return kernel_place(task->id, args->id, args->header, args->data);
 
 }
 

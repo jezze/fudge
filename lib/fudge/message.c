@@ -46,11 +46,11 @@ unsigned int message_putvalue(struct message_data *data, int value, unsigned int
 
 }
 
-void message_initheader(struct message_header *header, unsigned int event, unsigned int source, unsigned int length)
+void message_initheader(struct message_header *header, unsigned int event, unsigned int length)
 {
 
     header->event = event;
-    header->source = source;
+    header->source = 0;
     header->length = message_headersize(header) + length;
 
 }

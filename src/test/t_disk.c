@@ -40,7 +40,7 @@ static void request_send(struct request *request, struct channel *channel)
     message.blockrequest.sector = request->blocksector;
     message.blockrequest.count = request->blockcount;
 
-    message_initheader(&message.header, EVENT_BLOCKREQUEST, 0, sizeof (struct event_blockrequest));
+    message_initheader(&message.header, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
     file_writeall(FILE_G0, &message, message.header.length);
 
 }

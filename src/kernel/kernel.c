@@ -221,22 +221,24 @@ void kernel_reset(unsigned int id)
 
 }
 
-unsigned int kernel_pick(unsigned int id, struct message_header *header, void *data)
+unsigned int kernel_pick(unsigned int source, struct message_header *header, void *data)
 {
 
-    unsigned int count = mailbox_pick(&mailboxes[id], header, data);
+    unsigned int count = mailbox_pick(&mailboxes[source], header, data);
 
     if (!count)
-        list_add(&blockedtasks, &tasks[id].item);
+        list_add(&blockedtasks, &tasks[source].item);
 
     return count;
 
 }
 
-unsigned int kernel_place(unsigned int id, struct message_header *header, void *data)
+unsigned int kernel_place(unsigned int source, unsigned int target, struct message_header *header, void *data)
 {
 
-    return mailbox_place(&mailboxes[id], header, data);
+    header->source = source;
+
+    return mailbox_place(&mailboxes[target], header, data);
 
 }
 
@@ -246,7 +248,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
     struct message_header header;
     struct list_item *current;
 
-    message_initheader(&header, type, 0, count);
+    message_initheader(&header, type, count);
     spinlock_acquire(&links->spinlock);
 
     for (current = links->head; current; current = current->next)
@@ -254,7 +256,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 
         struct link *link = current->data;
 
-        kernel_place(link->source, &header, buffer);
+        kernel_place(0, link->source, &header, buffer);
 
     }
 
