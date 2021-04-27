@@ -5,7 +5,8 @@
 #define TOKEN_END                       2
 #define TOKEN_IDENT                     3
 #define TOKEN_FILE                      4
-#define TOKEN_PIPE                      5
+#define TOKEN_OPTION                    5
+#define TOKEN_PIPE                      6
 
 struct token
 {
@@ -98,6 +99,7 @@ static unsigned int precedence(struct token *token)
     case TOKEN_PIPE:
         return 2;
 
+    case TOKEN_OPTION:
     case TOKEN_FILE:
         return 3;
 
@@ -116,6 +118,9 @@ static unsigned int tokenize(char c)
     case ' ':
     case '\t':
         return TOKEN_SKIP;
+
+    case '?':
+        return TOKEN_OPTION;
 
     case '<':
         return TOKEN_FILE;
@@ -259,12 +264,30 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
         struct token *token = &postfix->table[i];
         struct token *t;
+        struct token *u;
 
         switch (token->type)
         {
 
         case TOKEN_IDENT:
             tokenlist_push(stack, token);
+
+            break;
+
+        case TOKEN_OPTION:
+            t = tokenlist_pop(stack);
+
+            if (!t)
+                return;
+
+            u = tokenlist_pop(stack);
+
+            if (!u)
+                return;
+
+            offset = message_putstringz(&data, "O", offset);
+            offset = message_putstringz(&data, t->str, offset);
+            offset = message_putstringz(&data, u->str, offset);
 
             break;
 

@@ -6,18 +6,32 @@
 static struct socket local;
 static struct socket remote;
 static struct socket router;
+static char request[1024];
+static unsigned int reqc = 0;
+
+static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    char *key = mdata;
+    char *value = key + ascii_length(key) + 1;
+
+    reqc += buffer_write(request, 1024, "GET / HTTP/1.1\r\n", 16, reqc);
+    reqc += buffer_write(request, 1024, "Host: ", 6, reqc);
+    reqc += buffer_write(request, 1024, value, ascii_length(value), reqc);
+    reqc += buffer_write(request, 1024, "\r\n\r\n", 4, reqc);
+
+}
 
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *request = "GET / HTTP/1.1\r\nHost: www.blunder.se\r\n\r\n";
     unsigned char buffer[BUFFER_SIZE];
     unsigned int count;
 
     file_link(FILE_G0);
     socket_resolveremote(channel, FILE_G0, &local, &router);
     socket_connect_tcp(channel, FILE_G0, &local, &remote, &router);
-    socket_send_tcp(FILE_G0, &local, &remote, &router, ascii_length(request), request);
+    socket_send_tcp(FILE_G0, &local, &remote, &router, reqc, request);
 
     while ((count = socket_receive_tcp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
         channel_reply(channel, EVENT_DATA, count, buffer);
@@ -56,6 +70,7 @@ void init(struct channel *channel)
     socket_bind_ipv4(&router, address3);
     socket_resolvelocal(FILE_L1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_OPTION, onoption);
 
 }
 

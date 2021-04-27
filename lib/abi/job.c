@@ -43,9 +43,9 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
 
         case 'O':
             start = nextword(start);
-            p->options[p->noptions].key = start;
-            start = nextword(start);
             p->options[p->noptions].value = start;
+            start = nextword(start);
+            p->options[p->noptions].key = start;
             p->noptions++;
 
             break;
