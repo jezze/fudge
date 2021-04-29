@@ -29,6 +29,16 @@ struct dns_question
 
 };
 
+struct dns_answer
+{
+
+    unsigned char type[2];
+    unsigned char class[2];
+    unsigned char ttl[4];
+    unsigned char rdata[2];
+
+};
+
 static unsigned int copyname(void *buffer, unsigned int count, char *name)
 {
 
@@ -107,8 +117,38 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         socket_resolveremote(channel, FILE_G0, &local, &router);
         socket_send_udp(FILE_G0, &local, &remote, &router, requestlength, request);
 
-        while ((count = socket_receive_udp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
-            channel_reply(channel, EVENT_DATA, count, buffer);
+        count = socket_receive_udp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE);
+
+        if (count)
+        {
+
+            struct dns_header *header = (struct dns_header *)buffer;
+            /*struct dns_answer *answers = (struct dns_answer *)(buffer + 34);*/
+            unsigned char *addr = (unsigned char *)(buffer + 34 + sizeof (struct dns_answer));
+
+            if (net_load16(header->answers))
+            {
+
+                struct message_data data;
+                unsigned int offset = 0;
+
+                offset = message_putstring(&data, "Name: ", offset);
+                offset = message_putstring(&data, "\n", offset);
+                offset = message_putstring(&data, "Address: ", offset);
+                offset = message_putvalue(&data, addr[0], 10, 0, offset);
+                offset = message_putstring(&data, ".", offset);
+                offset = message_putvalue(&data, addr[1], 10, 0, offset);
+                offset = message_putstring(&data, ".", offset);
+                offset = message_putvalue(&data, addr[2], 10, 0, offset);
+                offset = message_putstring(&data, ".", offset);
+                offset = message_putvalue(&data, addr[3], 10, 0, offset);
+                offset = message_putstring(&data, "\n", offset);
+
+                channel_reply(channel, EVENT_DATA, offset, &data);
+
+            }
+
+        }
 
         file_unlink(FILE_G0);
 
