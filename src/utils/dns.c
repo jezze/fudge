@@ -90,7 +90,7 @@ static unsigned int putname(void *buffer, unsigned int count, char *name, void *
 
             unsigned char *temp = start;
 
-            name = (char *)(temp + (((name[index] << 8) & 0x2F) | name[index + 1]));
+            name = (char *)(temp + (((name[index] & 0x2F) << 8) | name[index + 1]));
             index = 0;
 
         }
