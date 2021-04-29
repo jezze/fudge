@@ -76,7 +76,7 @@ static unsigned int copyname(void *buffer, unsigned int count, char *name)
 
 }
 
-static unsigned int putname(void *buffer, unsigned int count, char *name)
+static unsigned int putname(void *buffer, unsigned int count, char *name, void *start)
 {
 
     unsigned int offset = 0;
@@ -85,11 +85,26 @@ static unsigned int putname(void *buffer, unsigned int count, char *name)
     while (name[index])
     {
 
-        offset += buffer_write(buffer, count, name + index + 1, name[index], offset);
-        index += name[index] + 1;
+        if ((name[index] & 0xC0) == 0xC0)
+        {
 
-        if (name[index])
-            offset += buffer_write(buffer, count, ".", 1, offset);
+            unsigned char *temp = start;
+
+            name = (char *)(temp + ((name[index] << 8 | name[index + 1]) & 0x2F));
+            index = 0;
+
+        }
+
+        else
+        {
+
+            offset += buffer_write(buffer, count, name + index + 1, name[index], offset);
+            index += name[index] + 1;
+
+            if (name[index])
+                offset += buffer_write(buffer, count, ".", 1, offset);
+
+        }
 
     }
 
@@ -97,14 +112,21 @@ static unsigned int putname(void *buffer, unsigned int count, char *name)
 
 }
 
-static unsigned int namelengthz(void *buffer)
+static unsigned int namesize(void *buffer)
 {
 
     char *name = buffer;
     unsigned int index = 0;
 
     while (name[index])
-        index += name[index] + 1;
+    {
+
+        if ((name[index] & 0xC0) == 0xC0)
+            return index + 2;
+        else
+            index += name[index] + 1;
+
+    }
 
     return index + 1;
 
@@ -168,7 +190,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 char *name;
 
                 name = (char *)(buffer + responselength);
-                responselength += namelengthz(name);
+                responselength += namesize(name);
                 responselength += sizeof (struct dns_question);
 
             }
@@ -181,29 +203,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 unsigned char *addr;
 
                 name = (char *)(buffer + responselength);
-
-                if ((name[0] & 0xC0) == 0xC0)
-                {
-
-                    name = (char *)(buffer + ((name[0] << 8 | name[1]) & 0x2F));
-
-                    responselength += 2;
-
-                }
-
-                else
-                {
-
-                    responselength += namelengthz(name);
-
-                }
-
+                responselength += namesize(name);
                 answer = (struct dns_answer *)(buffer + responselength);
-
                 responselength += sizeof (struct dns_answer);
-
                 addr = (unsigned char *)(buffer + responselength);
-
                 responselength += net_load16(answer->rdlength);
 
                 if (name)
@@ -212,7 +215,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                     char temp[256];
 
                     offset = message_putstring(&data, "Name: ", offset);
-                    offset = message_putbuffer(&data, putname(temp, 256, name), temp, offset);
+                    offset = message_putbuffer(&data, putname(temp, 256, name, buffer), temp, offset);
                     offset = message_putstring(&data, "\n", offset);
 
                 }
@@ -232,9 +235,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                 }
 
-                channel_reply(channel, EVENT_DATA, offset, &data);
-
             }
+
+            channel_reply(channel, EVENT_DATA, offset, &data);
 
         }
 
