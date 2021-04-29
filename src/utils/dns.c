@@ -201,6 +201,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 struct dns_answer *answer;
                 char *name;
                 unsigned char *addr;
+                char temp[256];
 
                 name = (char *)(buffer + responselength);
                 responselength += namesize(name);
@@ -208,32 +209,18 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 responselength += sizeof (struct dns_answer);
                 addr = (unsigned char *)(buffer + responselength);
                 responselength += net_load16(answer->rdlength);
-
-                if (name)
-                {
-
-                    char temp[256];
-
-                    offset = message_putstring(&data, "Name: ", offset);
-                    offset = message_putbuffer(&data, putname(temp, 256, name, buffer), temp, offset);
-                    offset = message_putstring(&data, "\n", offset);
-
-                }
-
-                if (addr)
-                {
-
-                    offset = message_putstring(&data, "Address: ", offset);
-                    offset = message_putvalue(&data, addr[0], 10, 0, offset);
-                    offset = message_putstring(&data, ".", offset);
-                    offset = message_putvalue(&data, addr[1], 10, 0, offset);
-                    offset = message_putstring(&data, ".", offset);
-                    offset = message_putvalue(&data, addr[2], 10, 0, offset);
-                    offset = message_putstring(&data, ".", offset);
-                    offset = message_putvalue(&data, addr[3], 10, 0, offset);
-                    offset = message_putstring(&data, "\n", offset);
-
-                }
+                offset = message_putstring(&data, "Name: ", offset);
+                offset = message_putbuffer(&data, putname(temp, 256, name, buffer), temp, offset);
+                offset = message_putstring(&data, "\n", offset);
+                offset = message_putstring(&data, "Address: ", offset);
+                offset = message_putvalue(&data, addr[0], 10, 0, offset);
+                offset = message_putstring(&data, ".", offset);
+                offset = message_putvalue(&data, addr[1], 10, 0, offset);
+                offset = message_putstring(&data, ".", offset);
+                offset = message_putvalue(&data, addr[2], 10, 0, offset);
+                offset = message_putstring(&data, ".", offset);
+                offset = message_putvalue(&data, addr[3], 10, 0, offset);
+                offset = message_putstring(&data, "\n", offset);
 
             }
 
