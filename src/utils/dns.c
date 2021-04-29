@@ -35,7 +35,7 @@ struct dns_answer
     unsigned char type[2];
     unsigned char class[2];
     unsigned char ttl[4];
-    unsigned char rdata[2];
+    unsigned char rdlength[2];
 
 };
 
@@ -185,6 +185,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 for (i = 0; i < net_load16(header->answers); i++)
                 {
 
+                    struct dns_answer *answer;
                     unsigned char *name;
                     unsigned char *addr;
 
@@ -206,21 +207,21 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                     }
 
+                    answer = (struct dns_answer *)(buffer + responselength);
+
                     responselength += sizeof (struct dns_answer);
 
                     addr = (unsigned char *)(buffer + responselength);
 
-                    /* Should be RDATA field */
-                    responselength += 4;
+                    responselength += net_load16(answer->rdlength);
 
                     if (name)
                     {
 
                         char temp[256];
-                        unsigned int c = putname(temp, 256, name);
 
                         offset = message_putstring(&data, "Name: ", offset);
-                        offset = message_putbuffer(&data, c, temp, offset);
+                        offset = message_putbuffer(&data, putname(temp, 256, name), temp, offset);
                         offset = message_putstring(&data, "\n", offset);
 
                     }
