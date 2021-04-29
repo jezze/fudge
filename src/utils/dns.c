@@ -90,7 +90,7 @@ static unsigned int putname(void *buffer, unsigned int count, char *name, void *
 
             unsigned char *temp = start;
 
-            name = (char *)(temp + ((name[index] << 8 | name[index + 1]) & 0x2F));
+            name = (char *)(temp + (((name[index] << 8) & 0x2F) | name[index + 1]));
             index = 0;
 
         }
@@ -209,18 +209,27 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 responselength += sizeof (struct dns_answer);
                 addr = (unsigned char *)(buffer + responselength);
                 responselength += net_load16(answer->rdlength);
+                offset = message_putstring(&data, "Type: 0x", offset);
+                offset = message_putvalue(&data, net_load16(answer->type), 16, 4, offset);
+                offset = message_putstring(&data, "\n", offset);
                 offset = message_putstring(&data, "Name: ", offset);
                 offset = message_putbuffer(&data, putname(temp, 256, name, buffer), temp, offset);
                 offset = message_putstring(&data, "\n", offset);
-                offset = message_putstring(&data, "Address: ", offset);
-                offset = message_putvalue(&data, addr[0], 10, 0, offset);
-                offset = message_putstring(&data, ".", offset);
-                offset = message_putvalue(&data, addr[1], 10, 0, offset);
-                offset = message_putstring(&data, ".", offset);
-                offset = message_putvalue(&data, addr[2], 10, 0, offset);
-                offset = message_putstring(&data, ".", offset);
-                offset = message_putvalue(&data, addr[3], 10, 0, offset);
-                offset = message_putstring(&data, "\n", offset);
+
+                if (net_load16(answer->type) == 0x0001)
+                {
+
+                    offset = message_putstring(&data, "Address: ", offset);
+                    offset = message_putvalue(&data, addr[0], 10, 0, offset);
+                    offset = message_putstring(&data, ".", offset);
+                    offset = message_putvalue(&data, addr[1], 10, 0, offset);
+                    offset = message_putstring(&data, ".", offset);
+                    offset = message_putvalue(&data, addr[2], 10, 0, offset);
+                    offset = message_putstring(&data, ".", offset);
+                    offset = message_putvalue(&data, addr[3], 10, 0, offset);
+                    offset = message_putstring(&data, "\n", offset);
+
+                }
 
             }
 
