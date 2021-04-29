@@ -7,7 +7,7 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 static char request[1024];
-static unsigned int reqc = 0;
+static unsigned int requestlength = 0;
 
 struct dns_header
 {
@@ -29,67 +29,91 @@ struct dns_question
 
 };
 
+static unsigned int copyname(void *buffer, unsigned int count, char *name)
+{
+
+    unsigned char namelen = 0;
+    unsigned int valstart = 0;
+    unsigned int c = 0;
+    unsigned int i;
+
+    for (i = 0; i < ascii_lengthz(name); i++)
+    {
+
+        if (name[i] == '.' || name[i] == '\0')
+        {
+
+            c += buffer_write(buffer, count, &namelen, 1, c);
+            c += buffer_write(buffer, count, name + valstart, namelen, c);
+
+            valstart = i + 1;
+            namelen = 0;
+
+        }
+
+        else
+        {
+
+            namelen++;
+
+        }
+
+    }
+
+    c += buffer_write(buffer, count, "\0", 1, c);
+
+    return c;
+
+}
+
 static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    /*
     char *key = mdata;
-    char *value = key + ascii_length(key) + 1;
-    */
-    struct dns_header header;
-    struct dns_question question;
-    unsigned char namelen;
 
-    buffer_clear(&header, sizeof (struct dns_header));
-    buffer_clear(&question, sizeof (struct dns_question));
+    if (ascii_match(key, "name"))
+    {
 
-    net_save16(header.id, 0x0001);
-    net_save16(header.flags, 0x0100);
-    net_save16(header.questions, 0x0001);
-    net_save16(question.type, 0x0001);
-    net_save16(question.class, 0x0001);
+        char *value = key + ascii_lengthz(key);
+        struct dns_header header;
+        struct dns_question question;
 
-    reqc += buffer_write(request, 1024, &header, sizeof (struct dns_header), reqc);
+        buffer_clear(&header, sizeof (struct dns_header));
+        buffer_clear(&question, sizeof (struct dns_question));
+        net_save16(header.id, 0x0001);
+        net_save16(header.flags, 0x0100);
+        net_save16(header.questions, 0x0001);
+        net_save16(question.type, 0x0001);
+        net_save16(question.class, 0x0001);
 
-    namelen = 3;
+        requestlength += buffer_write(request, 1024, &header, sizeof (struct dns_header), requestlength);
+        requestlength += copyname(request + requestlength, 1024 - requestlength, value);
+        requestlength += buffer_write(request, 1024, &question, sizeof (struct dns_question), requestlength);
 
-    reqc += buffer_write(request, 1024, &namelen, 1, reqc);
-    reqc += buffer_write(request, 1024, "www", namelen, reqc);
-
-    namelen = 7;
-
-    reqc += buffer_write(request, 1024, &namelen, 1, reqc);
-    reqc += buffer_write(request, 1024, "blunder", namelen, reqc);
-
-    namelen = 2;
-
-    reqc += buffer_write(request, 1024, &namelen, 1, reqc);
-    reqc += buffer_write(request, 1024, "se", namelen, reqc);
-
-    reqc += buffer_write(request, 1024, "\0", 1, reqc);
-
-/*
-    reqc += buffer_write(request, 1024, value, ascii_lengthz(value), reqc);
-*/
-
-    reqc += buffer_write(request, 1024, &question, sizeof (struct dns_question), reqc);
+    }
 
 }
 
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned char buffer[BUFFER_SIZE];
-    unsigned int count;
+    if (requestlength > 0)
+    {
 
-    file_link(FILE_G0);
-    socket_resolveremote(channel, FILE_G0, &local, &router);
-    socket_send_udp(FILE_G0, &local, &remote, &router, reqc, request);
+        unsigned char buffer[BUFFER_SIZE];
+        unsigned int count;
 
-    while ((count = socket_receive_udp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
-        channel_reply(channel, EVENT_DATA, count, buffer);
+        file_link(FILE_G0);
+        socket_resolveremote(channel, FILE_G0, &local, &router);
+        socket_send_udp(FILE_G0, &local, &remote, &router, requestlength, request);
 
-    file_unlink(FILE_G0);
+        while ((count = socket_receive_udp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
+            channel_reply(channel, EVENT_DATA, count, buffer);
+
+        file_unlink(FILE_G0);
+
+    }
+
     channel_close(channel);
 
 }

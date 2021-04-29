@@ -7,37 +7,49 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 static char request[1024];
-static unsigned int reqc = 0;
+static unsigned int requestlength;
 
 static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
-    char *value = key + ascii_length(key) + 1;
 
-    reqc += buffer_write(request, 1024, "GET / HTTP/1.1\r\n", 16, reqc);
-    reqc += buffer_write(request, 1024, "Host: ", 6, reqc);
-    reqc += buffer_write(request, 1024, value, ascii_length(value), reqc);
-    reqc += buffer_write(request, 1024, "\r\n\r\n", 4, reqc);
+    if (ascii_match(key, "url"))
+    {
+
+        char *value = key + ascii_lengthz(key);
+
+        requestlength += buffer_write(request, 1024, "GET / HTTP/1.1\r\n", 16, requestlength);
+        requestlength += buffer_write(request, 1024, "Host: ", 6, requestlength);
+        requestlength += buffer_write(request, 1024, value, ascii_length(value), requestlength);
+        requestlength += buffer_write(request, 1024, "\r\n\r\n", 4, requestlength);
+
+    }
 
 }
 
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned char buffer[BUFFER_SIZE];
-    unsigned int count;
+    if (requestlength > 0)
+    {
 
-    file_link(FILE_G0);
-    socket_resolveremote(channel, FILE_G0, &local, &router);
-    socket_connect_tcp(channel, FILE_G0, &local, &remote, &router);
-    socket_send_tcp(FILE_G0, &local, &remote, &router, reqc, request);
+        unsigned char buffer[BUFFER_SIZE];
+        unsigned int count;
 
-    while ((count = socket_receive_tcp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
-        channel_reply(channel, EVENT_DATA, count, buffer);
+        file_link(FILE_G0);
+        socket_resolveremote(channel, FILE_G0, &local, &router);
+        socket_connect_tcp(channel, FILE_G0, &local, &remote, &router);
+        socket_send_tcp(FILE_G0, &local, &remote, &router, requestlength, request);
 
-    socket_disconnect_tcp(channel, FILE_G0, &local, &remote, &router);
-    file_unlink(FILE_G0);
+        while ((count = socket_receive_tcp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
+            channel_reply(channel, EVENT_DATA, count, buffer);
+
+        socket_disconnect_tcp(channel, FILE_G0, &local, &remote, &router);
+        file_unlink(FILE_G0);
+
+    }
+
     channel_close(channel);
 
 }
