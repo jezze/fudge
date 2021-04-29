@@ -76,7 +76,7 @@ static unsigned int copyname(void *buffer, unsigned int count, char *name)
 
 }
 
-static unsigned int putname(void *buffer, unsigned int count, unsigned char *name)
+static unsigned int putname(void *buffer, unsigned int count, char *name)
 {
 
     unsigned int offset = 0;
@@ -100,7 +100,7 @@ static unsigned int putname(void *buffer, unsigned int count, unsigned char *nam
 static unsigned int namelengthz(void *buffer)
 {
 
-    unsigned char *name = buffer;
+    char *name = buffer;
     unsigned int index = 0;
 
     while (name[index])
@@ -158,88 +158,77 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
             struct dns_header *header = (struct dns_header *)buffer;
             unsigned int responselength = sizeof (struct dns_header);
+            struct message_data data;
+            unsigned int offset = 0;
+            unsigned int i;
 
-            if (net_load16(header->questions))
+            for (i = 0; i < net_load16(header->questions); i++)
             {
 
-                unsigned int i;
+                char *name;
 
-                for (i = 0; i < net_load16(header->questions); i++)
-                {
-
-                    unsigned char *name = (unsigned char *)(buffer + responselength);
-
-                    responselength += namelengthz(name) + sizeof (struct dns_question);
-
-                }
+                name = (char *)(buffer + responselength);
+                responselength += namelengthz(name);
+                responselength += sizeof (struct dns_question);
 
             }
 
-            if (net_load16(header->answers))
+            for (i = 0; i < net_load16(header->answers); i++)
             {
 
-                struct message_data data;
-                unsigned int offset = 0;
-                unsigned int i;
+                struct dns_answer *answer;
+                char *name;
+                unsigned char *addr;
 
-                for (i = 0; i < net_load16(header->answers); i++)
+                name = (char *)(buffer + responselength);
+
+                if ((name[0] & 0xC0) == 0xC0)
                 {
 
-                    struct dns_answer *answer;
-                    unsigned char *name;
-                    unsigned char *addr;
+                    name = (char *)(buffer + ((name[0] << 8 | name[1]) & 0x2F));
 
-                    name = (unsigned char *)(buffer + responselength);
+                    responselength += 2;
 
-                    if ((name[0] & 0xC0) == 0xC0)
-                    {
+                }
 
-                        name = (buffer + ((name[0] << 8 | name[1]) & 0x2F));
+                else
+                {
 
-                        responselength += 2;
+                    responselength += namelengthz(name);
 
-                    }
+                }
 
-                    else
-                    {
+                answer = (struct dns_answer *)(buffer + responselength);
 
-                        responselength += namelengthz(name);
+                responselength += sizeof (struct dns_answer);
 
-                    }
+                addr = (unsigned char *)(buffer + responselength);
 
-                    answer = (struct dns_answer *)(buffer + responselength);
+                responselength += net_load16(answer->rdlength);
 
-                    responselength += sizeof (struct dns_answer);
+                if (name)
+                {
 
-                    addr = (unsigned char *)(buffer + responselength);
+                    char temp[256];
 
-                    responselength += net_load16(answer->rdlength);
+                    offset = message_putstring(&data, "Name: ", offset);
+                    offset = message_putbuffer(&data, putname(temp, 256, name), temp, offset);
+                    offset = message_putstring(&data, "\n", offset);
 
-                    if (name)
-                    {
+                }
 
-                        char temp[256];
+                if (addr)
+                {
 
-                        offset = message_putstring(&data, "Name: ", offset);
-                        offset = message_putbuffer(&data, putname(temp, 256, name), temp, offset);
-                        offset = message_putstring(&data, "\n", offset);
-
-                    }
-
-                    if (addr)
-                    {
-
-                        offset = message_putstring(&data, "Address: ", offset);
-                        offset = message_putvalue(&data, addr[0], 10, 0, offset);
-                        offset = message_putstring(&data, ".", offset);
-                        offset = message_putvalue(&data, addr[1], 10, 0, offset);
-                        offset = message_putstring(&data, ".", offset);
-                        offset = message_putvalue(&data, addr[2], 10, 0, offset);
-                        offset = message_putstring(&data, ".", offset);
-                        offset = message_putvalue(&data, addr[3], 10, 0, offset);
-                        offset = message_putstring(&data, "\n", offset);
-
-                    }
+                    offset = message_putstring(&data, "Address: ", offset);
+                    offset = message_putvalue(&data, addr[0], 10, 0, offset);
+                    offset = message_putstring(&data, ".", offset);
+                    offset = message_putvalue(&data, addr[1], 10, 0, offset);
+                    offset = message_putstring(&data, ".", offset);
+                    offset = message_putvalue(&data, addr[2], 10, 0, offset);
+                    offset = message_putstring(&data, ".", offset);
+                    offset = message_putvalue(&data, addr[3], 10, 0, offset);
+                    offset = message_putstring(&data, "\n", offset);
 
                 }
 
