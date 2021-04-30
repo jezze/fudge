@@ -35,7 +35,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void ondirectory(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     file_walk2(FILE_G0, mdata);
@@ -47,7 +47,7 @@ void init(struct channel *channel)
 
     file_duplicate(FILE_G0, FILE_PW);
     channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_DIRECTORY, ondirectory);
 
 }
 
