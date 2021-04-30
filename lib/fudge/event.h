@@ -4,7 +4,7 @@
 #define EVENT_CLOSE                     0x03
 #define EVENT_REDIRECT                  0x04
 #define EVENT_OPTION                    0x05
-#define EVENT_DIRECTORY                 0x06
+#define EVENT_PATH                      0x06
 #define EVENT_FILE                      0x07
 #define EVENT_DATA                      0x08
 #define EVENT_KEYPRESS                  0x10

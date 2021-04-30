@@ -37,8 +37,8 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
 
         case 'D':
             start = nextword(start);
-            p->directories[p->ndirectories] = start;
-            p->ndirectories++;
+            p->paths[p->npaths] = start;
+            p->npaths++;
 
             break;
 
@@ -143,7 +143,7 @@ void job_pipe(struct channel *channel, struct job *jobs, unsigned int n)
         {
 
             channel_sendredirectback(channel, job->id, EVENT_CLOSE);
-            channel_sendredirectback(channel, job->id, EVENT_DIRECTORY);
+            channel_sendredirectback(channel, job->id, EVENT_PATH);
 
             if (i < n - 1)
                 channel_sendredirectto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
@@ -184,14 +184,14 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
             }
 
-            for (j = 0; j < job->ndirectories; j++)
+            for (j = 0; j < job->npaths; j++)
             {
 
                 unsigned int offset = 0;
 
-                offset = message_putstringz(&data, job->directories[j], offset);
+                offset = message_putstringz(&data, job->paths[j], offset);
 
-                channel_send(channel, job->id, EVENT_DIRECTORY, offset, &data);
+                channel_send(channel, job->id, EVENT_PATH, offset, &data);
 
             }
 

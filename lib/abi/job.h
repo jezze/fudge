@@ -11,8 +11,8 @@ struct job
 
     char *program;
     unsigned int id;
-    char *directories[32];
-    unsigned int ndirectories;
+    char *paths[32];
+    unsigned int npaths;
     struct job_arg options[32];
     unsigned int noptions;
     char *files[32];
