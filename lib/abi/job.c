@@ -37,7 +37,8 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
 
         case 'D':
             start = nextword(start);
-            p->directory = start;
+            p->directories[p->ndirectories] = start;
+            p->ndirectories++;
 
             break;
 
@@ -183,12 +184,12 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
 
             }
 
-            if (job->directory)
+            for (j = 0; j < job->ndirectories; j++)
             {
 
                 unsigned int offset = 0;
 
-                offset = message_putstringz(&data, job->directory, offset);
+                offset = message_putstringz(&data, job->directories[j], offset);
 
                 channel_send(channel, job->id, EVENT_DIRECTORY, offset, &data);
 
