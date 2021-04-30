@@ -921,17 +921,38 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G3, mdata))
-        return;
+    char *key = mdata;
+    char *value = key + ascii_lengthz(key);
 
-    if (!file_walk(FILE_G4, FILE_G3, "event"))
-        return;
+    if (ascii_match(key, "keyboard"))
+    {
 
-    if (!file_walk(FILE_G5, FILE_G3, "data"))
-        return;
+        file_walk2(FILE_G1, value);
+
+    }
+
+    if (ascii_match(key, "mouse"))
+    {
+
+        file_walk2(FILE_G2, value);
+
+    }
+
+    if (ascii_match(key, "video"))
+    {
+
+        if (file_walk2(FILE_G3, value))
+        {
+
+            file_walk(FILE_G4, FILE_G3, "event");
+            file_walk(FILE_G5, FILE_G3, "data");
+
+        }
+
+    }
 
 }
 
@@ -951,14 +972,8 @@ void init(struct channel *channel)
     if (!file_create(FILE_G0, FILE_L0, "wm"))
         return;
 
-    if (!file_walk2(FILE_G1, "system:keyboard/event"))
-        return;
-
-    if (!file_walk2(FILE_G2, "system:mouse/event"))
-        return;
-
     channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_OPTION, onoption);
     channel_setcallback(channel, EVENT_KEYPRESS, onkeypress);
     channel_setcallback(channel, EVENT_KEYRELEASE, onkeyrelease);
     channel_setcallback(channel, EVENT_MOUSEMOVE, onmousemove);

@@ -3,7 +3,6 @@
 
 static char inputbuffer[BUFFER_SIZE];
 static struct ring input;
-static char path[256];
 
 static void print(void *buffer, unsigned int count)
 {
@@ -242,33 +241,36 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
     char *key = mdata;
     char *value = key + ascii_lengthz(key);
 
-    if (ascii_match(key, "device"))
-        ascii_copy(path, value);
+    if (ascii_match(key, "console"))
+    {
+
+        if (file_walk2(FILE_L0, value))
+        {
+
+            file_walk(FILE_G0, FILE_L0, "event");
+            file_walk(FILE_G1, FILE_L0, "transmit");
+
+        }
+
+    }
 
 }
 
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, path))
-    {
+    struct message_header header;
+    struct message_data data;
 
-        struct message_header header;
-        struct message_data data;
+    file_link(FILE_G0);
+    file_open(FILE_G1);
+    printprompt();
 
-        file_walk(FILE_G0, FILE_L0, "event");
-        file_walk(FILE_G1, FILE_L0, "transmit");
-        file_link(FILE_G0);
-        file_open(FILE_G1);
-        printprompt();
+    while (channel_poll(channel, &header, &data))
+        channel_dispatch(channel, &header, &data);
 
-        while (channel_poll(channel, &header, &data))
-            channel_dispatch(channel, &header, &data);
-
-        file_close(FILE_G1);
-        file_unlink(FILE_G0);
-
-    }
+    file_close(FILE_G1);
+    file_unlink(FILE_G0);
 
 }
 
@@ -295,7 +297,6 @@ static void ondirectory(struct channel *channel, unsigned int source, void *mdat
 void init(struct channel *channel)
 {
 
-    ascii_copy(path, "system:console/if:0");
     ring_init(&input, BUFFER_SIZE, inputbuffer);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_DATA, ondata);
