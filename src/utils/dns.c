@@ -136,11 +136,11 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 {
 
     char *key = mdata;
+    char *value = key + ascii_lengthz(key);
 
     if (ascii_match(key, "name"))
     {
 
-        char *value = key + ascii_lengthz(key);
         struct dns_header header;
         struct dns_question question;
 

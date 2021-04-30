@@ -13,11 +13,10 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 {
 
     char *key = mdata;
+    char *value = key + ascii_lengthz(key);
 
     if (ascii_match(key, "url"))
     {
-
-        char *value = key + ascii_lengthz(key);
 
         requestlength += buffer_write(request, 1024, "GET / HTTP/1.1\r\n", 16, requestlength);
         requestlength += buffer_write(request, 1024, "Host: ", 6, requestlength);

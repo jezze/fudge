@@ -1,8 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static char path[256];
-
 static void print(struct channel *channel, unsigned int source, struct ctrl_clocksettings *settings)
 {
 
@@ -29,7 +27,7 @@ static void print(struct channel *channel, unsigned int source, struct ctrl_cloc
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, path))
+    if (file_walk(FILE_L0, FILE_G0, "ctrl"))
     {
 
         struct ctrl_clocksettings settings;
@@ -45,19 +43,27 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    ascii_copy(path, mdata);
+    char *key = mdata;
+    char *value = key + ascii_lengthz(key);
+
+    if (ascii_match(key, "clock"))
+    {
+
+        file_walk2(FILE_G0, value);
+
+    }
 
 }
 
 void init(struct channel *channel)
 {
 
-    ascii_copy(path, "system:clock/if:0/ctrl");
+    file_walk2(FILE_G0, "system:clock/if:0");
     channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_OPTION, onoption);
 
 }
 
