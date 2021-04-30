@@ -4,14 +4,14 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_open(FILE_G0);
+    file_open(FILE_PW);
 
     do
     {
 
         struct record record;
 
-        if (file_readall(FILE_G0, &record, sizeof (struct record)))
+        if (file_readall(FILE_PW, &record, sizeof (struct record)))
         {
 
             struct message_data data;
@@ -28,9 +28,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
         }
 
-    } while (file_step(FILE_G0));
+    } while (file_step(FILE_PW));
 
-    file_close(FILE_G0);
+    file_close(FILE_PW);
     channel_close(channel);
 
 }
@@ -38,14 +38,19 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 static void ondirectory(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_walk2(FILE_G0, mdata);
+    if (file_walk2(FILE_L0, mdata))
+    {
+
+        file_duplicate(FILE_PW, FILE_L0);
+        file_duplicate(FILE_CW, FILE_L0);
+
+    }
 
 }
 
 void init(struct channel *channel)
 {
 
-    file_duplicate(FILE_G0, FILE_PW);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_DIRECTORY, ondirectory);
 
