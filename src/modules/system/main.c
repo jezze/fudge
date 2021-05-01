@@ -210,7 +210,7 @@ static unsigned int protocol_seek(unsigned int id, unsigned int offset)
 static unsigned int protocol_map(unsigned int id)
 {
 
-    return id;
+    return 0;
 
 }
 
