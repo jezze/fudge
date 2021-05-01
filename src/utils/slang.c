@@ -303,13 +303,28 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
             break;
 
         case TOKEN_PIPE:
-            t = tokenlist_pop(stack);
+            while (tokenlist_check(stack) == TOKEN_IDENT)
+            {
 
-            if (!t)
-                return;
+                t = tokenlist_pop(stack);
 
-            offset = message_putstringz(&data, "P", offset);
-            offset = message_putstringz(&data, t->str, offset);
+                if (tokenlist_check(stack) == TOKEN_IDENT)
+                {
+
+                    offset = message_putstringz(&data, "D", offset);
+                    offset = message_putstringz(&data, t->str, offset);
+
+                }
+
+                else
+                {
+
+                    offset = message_putstringz(&data, "P", offset);
+                    offset = message_putstringz(&data, t->str, offset);
+
+                }
+
+            }
 
             break;
 
