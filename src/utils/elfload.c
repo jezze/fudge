@@ -234,7 +234,7 @@ static unsigned int resolve(unsigned int descriptor)
 
 }
 
-static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_G2, mdata))
@@ -260,7 +260,7 @@ void init(struct channel *channel)
     if (!file_walk(FILE_G1, FILE_G0, "fudge"))
         return;
 
-    channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_PATH, onpath);
 
 }
 

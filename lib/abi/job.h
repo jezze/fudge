@@ -15,8 +15,6 @@ struct job
     unsigned int npaths;
     struct job_arg options[32];
     unsigned int noptions;
-    char *files[32];
-    unsigned int nfiles;
 
 };
 

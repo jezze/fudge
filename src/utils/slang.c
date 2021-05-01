@@ -4,9 +4,8 @@
 #define TOKEN_SKIP                      1
 #define TOKEN_END                       2
 #define TOKEN_IDENT                     3
-#define TOKEN_FILE                      4
-#define TOKEN_OPTION                    5
-#define TOKEN_PIPE                      6
+#define TOKEN_OPTION                    4
+#define TOKEN_PIPE                      5
 
 struct token
 {
@@ -100,7 +99,6 @@ static unsigned int precedence(struct token *token)
         return 2;
 
     case TOKEN_OPTION:
-    case TOKEN_FILE:
         return 3;
 
     }
@@ -121,9 +119,6 @@ static unsigned int tokenize(char c)
 
     case '?':
         return TOKEN_OPTION;
-
-    case '<':
-        return TOKEN_FILE;
 
     case '|':
         return TOKEN_PIPE;
@@ -291,17 +286,6 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
             break;
 
-        case TOKEN_FILE:
-            t = tokenlist_pop(stack);
-
-            if (!t)
-                return;
-
-            offset = message_putstringz(&data, "F", offset);
-            offset = message_putstringz(&data, t->str, offset);
-
-            break;
-
         case TOKEN_PIPE:
             while (tokenlist_check(stack) == TOKEN_IDENT)
             {
@@ -382,7 +366,7 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_L0, mdata))
@@ -416,7 +400,7 @@ void init(struct channel *channel)
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
     channel_setcallback(channel, EVENT_DATA, ondata);
-    channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_PATH, onpath);
 
 }
 

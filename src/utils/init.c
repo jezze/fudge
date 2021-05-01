@@ -25,9 +25,9 @@ void init(struct channel *channel)
 
         channel_setcallback(channel, EVENT_DATA, ondata);
         channel_sendredirectback(channel, id, EVENT_DATA);
-        channel_send(channel, id, EVENT_FILE, message_putstringz(&data, "/config/base.slang", 0), &data);
-        channel_send(channel, id, EVENT_FILE, message_putstringz(&data, "/config/arch.slang", 0), &data);
-        channel_send(channel, id, EVENT_FILE, message_putstringz(&data, "/config/init.slang", 0), &data);
+        channel_send(channel, id, EVENT_PATH, message_putstringz(&data, "/config/base.slang", 0), &data);
+        channel_send(channel, id, EVENT_PATH, message_putstringz(&data, "/config/arch.slang", 0), &data);
+        channel_send(channel, id, EVENT_PATH, message_putstringz(&data, "/config/init.slang", 0), &data);
         channel_send(channel, id, EVENT_MAIN, 0, 0);
 
     }

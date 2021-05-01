@@ -5,8 +5,7 @@ ls                          | Print files in current working tree
 
 A program does not use arguments. It only uses streams.
 
-echo < "hello"              | Write hello to stdout
-echo < help.txt             | Print content of help.txt to stdout
+echo /data/help.txt         | Print content of help.txt to stdout
 cd /                        | Change to root directory
 cd /system/                 | Change to home directory (from anywhere)
 cd system/                  | Change to home directory (from root)

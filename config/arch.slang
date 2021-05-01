@@ -1,25 +1,25 @@
-elfload < /kernel/io.ko
-elfload < /kernel/cpuid.ko
-elfload < /kernel/msr.ko
-elfload < /kernel/pat.ko
-elfload < /kernel/acpi.ko
-elfload < /kernel/syse.ko
-elfload < /kernel/pic.ko
-elfload < /kernel/apic.ko
-elfload < /kernel/ioapic.ko
-elfload < /kernel/platform.ko
-elfload < /kernel/pci.ko
-elfload < /kernel/pit.ko
-elfload < /kernel/rtc.ko
-elfload < /kernel/ps2.ko
-elfload < /kernel/ps2-keyboard.ko
-elfload < /kernel/ps2-mouse.ko
-elfload < /kernel/vbe.ko
-elfload < /kernel/uart.ko
-elfload < /kernel/vga.ko
-elfload < /kernel/rtl8139.ko
-elfload < /kernel/ide.ko
-elfload < /kernel/ahci.ko
-elfload < /kernel/nvme.ko
-elfload < /kernel/ata.ko
-elfload < /kernel/virtio-network.ko
+elfload /kernel/io.ko
+elfload /kernel/cpuid.ko
+elfload /kernel/msr.ko
+elfload /kernel/pat.ko
+elfload /kernel/acpi.ko
+elfload /kernel/syse.ko
+elfload /kernel/pic.ko
+elfload /kernel/apic.ko
+elfload /kernel/ioapic.ko
+elfload /kernel/platform.ko
+elfload /kernel/pci.ko
+elfload /kernel/pit.ko
+elfload /kernel/rtc.ko
+elfload /kernel/ps2.ko
+elfload /kernel/ps2-keyboard.ko
+elfload /kernel/ps2-mouse.ko
+elfload /kernel/vbe.ko
+elfload /kernel/uart.ko
+elfload /kernel/vga.ko
+elfload /kernel/rtl8139.ko
+elfload /kernel/ide.ko
+elfload /kernel/ahci.ko
+elfload /kernel/nvme.ko
+elfload /kernel/ata.ko
+elfload /kernel/virtio-network.ko

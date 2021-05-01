@@ -14,7 +14,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
         channel_sendredirectsame(channel, id, EVENT_DATA);
         channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_send(channel, id, EVENT_FILE, message_putstringz(&data, "/data/motd.txt", 0), &data);
+        channel_send(channel, id, EVENT_PATH, message_putstringz(&data, "/data/motd.txt", 0), &data);
         channel_send(channel, id, EVENT_MAIN, 0, 0);
         channel_pollsourceevent(channel, id, EVENT_CLOSE, &header, &data);
 

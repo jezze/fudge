@@ -84,7 +84,7 @@ static void movedown(void)
 
 }
 
-static void onfile(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     char buffer[BUFFER_SIZE];
@@ -203,7 +203,7 @@ void init(struct channel *channel)
 
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_TERM, onterm);
-    channel_setcallback(channel, EVENT_FILE, onfile);
+    channel_setcallback(channel, EVENT_PATH, onpath);
     channel_setcallback(channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setcallback(channel, EVENT_WMSHOW, onwmshow);
 
