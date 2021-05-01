@@ -138,6 +138,13 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
     char *key = mdata;
     char *value = key + ascii_lengthz(key);
 
+    if (ascii_match(key, "ethernet"))
+    {
+
+        file_walk2(FILE_G0, value);
+
+    }
+
     if (ascii_match(key, "name"))
     {
 
@@ -169,75 +176,83 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         unsigned char buffer[BUFFER_SIZE];
         unsigned int count;
 
-        file_link(FILE_G0);
-        socket_resolveremote(channel, FILE_G0, &local, &router);
-        socket_send_udp(FILE_G0, &local, &remote, &router, requestlength, request);
+        if (file_walk(FILE_L0, FILE_G0, "addr"))
+            socket_resolvelocal(FILE_L0, &local);
 
-        count = socket_receive_udp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE);
-
-        if (count)
+        if (file_walk(FILE_L0, FILE_G0, "data"))
         {
 
-            struct dns_header *header = (struct dns_header *)buffer;
-            unsigned int responselength = sizeof (struct dns_header);
-            struct message_data data;
-            unsigned int offset = 0;
-            unsigned int i;
+            file_link(FILE_L0);
+            socket_resolveremote(channel, FILE_L0, &local, &router);
+            socket_send_udp(FILE_L0, &local, &remote, &router, requestlength, request);
 
-            for (i = 0; i < net_load16(header->questions); i++)
+            count = socket_receive_udp(channel, FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE);
+
+            if (count)
             {
 
-                char *name;
+                struct dns_header *header = (struct dns_header *)buffer;
+                unsigned int responselength = sizeof (struct dns_header);
+                struct message_data data;
+                unsigned int offset = 0;
+                unsigned int i;
 
-                name = (char *)(buffer + responselength);
-                responselength += namesize(name);
-                responselength += sizeof (struct dns_question);
-
-            }
-
-            for (i = 0; i < net_load16(header->answers); i++)
-            {
-
-                struct dns_answer *answer;
-                char *name;
-                unsigned char *addr;
-                char temp[256];
-
-                name = (char *)(buffer + responselength);
-                responselength += namesize(name);
-                answer = (struct dns_answer *)(buffer + responselength);
-                responselength += sizeof (struct dns_answer);
-                addr = (unsigned char *)(buffer + responselength);
-                responselength += net_load16(answer->rdlength);
-                offset = message_putstring(&data, "Type: 0x", offset);
-                offset = message_putvalue(&data, net_load16(answer->type), 16, 4, offset);
-                offset = message_putstring(&data, "\n", offset);
-                offset = message_putstring(&data, "Name: ", offset);
-                offset = message_putbuffer(&data, putname(temp, 256, name, buffer), temp, offset);
-                offset = message_putstring(&data, "\n", offset);
-
-                if (net_load16(answer->type) == 0x0001)
+                for (i = 0; i < net_load16(header->questions); i++)
                 {
 
-                    offset = message_putstring(&data, "Address: ", offset);
-                    offset = message_putvalue(&data, addr[0], 10, 0, offset);
-                    offset = message_putstring(&data, ".", offset);
-                    offset = message_putvalue(&data, addr[1], 10, 0, offset);
-                    offset = message_putstring(&data, ".", offset);
-                    offset = message_putvalue(&data, addr[2], 10, 0, offset);
-                    offset = message_putstring(&data, ".", offset);
-                    offset = message_putvalue(&data, addr[3], 10, 0, offset);
-                    offset = message_putstring(&data, "\n", offset);
+                    char *name;
+
+                    name = (char *)(buffer + responselength);
+                    responselength += namesize(name);
+                    responselength += sizeof (struct dns_question);
 
                 }
 
+                for (i = 0; i < net_load16(header->answers); i++)
+                {
+
+                    struct dns_answer *answer;
+                    char *name;
+                    unsigned char *addr;
+                    char temp[256];
+
+                    name = (char *)(buffer + responselength);
+                    responselength += namesize(name);
+                    answer = (struct dns_answer *)(buffer + responselength);
+                    responselength += sizeof (struct dns_answer);
+                    addr = (unsigned char *)(buffer + responselength);
+                    responselength += net_load16(answer->rdlength);
+                    offset = message_putstring(&data, "Type: 0x", offset);
+                    offset = message_putvalue(&data, net_load16(answer->type), 16, 4, offset);
+                    offset = message_putstring(&data, "\n", offset);
+                    offset = message_putstring(&data, "Name: ", offset);
+                    offset = message_putbuffer(&data, putname(temp, 256, name, buffer), temp, offset);
+                    offset = message_putstring(&data, "\n", offset);
+
+                    if (net_load16(answer->type) == 0x0001)
+                    {
+
+                        offset = message_putstring(&data, "Address: ", offset);
+                        offset = message_putvalue(&data, addr[0], 10, 0, offset);
+                        offset = message_putstring(&data, ".", offset);
+                        offset = message_putvalue(&data, addr[1], 10, 0, offset);
+                        offset = message_putstring(&data, ".", offset);
+                        offset = message_putvalue(&data, addr[2], 10, 0, offset);
+                        offset = message_putstring(&data, ".", offset);
+                        offset = message_putvalue(&data, addr[3], 10, 0, offset);
+                        offset = message_putstring(&data, "\n", offset);
+
+                    }
+
+                }
+
+                channel_reply(channel, EVENT_DATA, offset, &data);
+
             }
 
-            channel_reply(channel, EVENT_DATA, offset, &data);
+            file_unlink(FILE_L0);
 
         }
-
-        file_unlink(FILE_G0);
 
     }
 
@@ -254,15 +269,7 @@ void init(struct channel *channel)
     unsigned char port2[TCP_PORTSIZE] = {0x00, 0x35};
     unsigned char address3[IPV4_ADDRSIZE] = {10, 0, 5, 80};
 
-    if (!file_walk2(FILE_L0, "system:ethernet/if:0"))
-        return;
-
-    if (!file_walk(FILE_L1, FILE_L0, "addr"))
-        return;
-
-    if (!file_walk(FILE_G0, FILE_L0, "data"))
-        return;
-
+    file_walk2(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
     socket_bind_ipv4(&local, address1);
     socket_bind_udp(&local, port1);
@@ -271,7 +278,6 @@ void init(struct channel *channel)
     socket_bind_udp(&remote, port2);
     socket_init(&router);
     socket_bind_ipv4(&router, address3);
-    socket_resolvelocal(FILE_L1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_OPTION, onoption);
 

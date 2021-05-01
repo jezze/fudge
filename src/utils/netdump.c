@@ -301,18 +301,39 @@ static void print_ethernet(struct channel *channel, unsigned int source, void *b
 
 }
 
+static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    char *key = mdata;
+    char *value = key + ascii_lengthz(key);
+
+    if (ascii_match(key, "ethernet"))
+    {
+
+        file_walk2(FILE_G0, value);
+
+    }
+
+}
+
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct message_header header;
     struct message_data data;
 
-    file_link(FILE_G0);
+    if (file_walk(FILE_L0, FILE_G0, "data"))
+    {
 
-    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_DATA, &header, &data))
-        print_ethernet(channel, source, data.buffer);
+        file_link(FILE_L0);
 
-    file_unlink(FILE_G0);
+        while (channel_polldescriptorevent(channel, FILE_L0, EVENT_DATA, &header, &data))
+            print_ethernet(channel, source, data.buffer);
+
+        file_unlink(FILE_L0);
+
+    }
+
     channel_close(channel);
 
 }
@@ -320,13 +341,9 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    if (!file_walk2(FILE_L0, "system:ethernet/if:0"))
-        return;
-
-    if (!file_walk(FILE_G0, FILE_L0, "data"))
-        return;
-
+    file_walk2(FILE_G0, "system:ethernet/if:0");
     channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_OPTION, onoption);
 
 }
 

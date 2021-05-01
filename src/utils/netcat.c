@@ -7,20 +7,44 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 
+static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    char *key = mdata;
+    char *value = key + ascii_lengthz(key);
+
+    if (ascii_match(key, "ethernet"))
+    {
+
+        file_walk2(FILE_G0, value);
+
+    }
+
+}
+
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
     char buffer[BUFFER_SIZE];
     unsigned int count;
 
-    file_link(FILE_G0);
-    socket_resolveremote(channel, FILE_G0, &local, &router);
-    socket_listen_tcp(channel, FILE_G0, &local, &remote, &router);
+    if (file_walk(FILE_L0, FILE_G0, "addr"))
+        socket_resolvelocal(FILE_L0, &local);
 
-    while ((count = socket_receive_tcp(channel, FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
-        channel_reply(channel, EVENT_DATA, count, buffer);
+    if (file_walk(FILE_G1, FILE_G0, "data"))
+    {
 
-    file_unlink(FILE_G0);
+        file_link(FILE_G1);
+        socket_resolveremote(channel, FILE_G1, &local, &router);
+        socket_listen_tcp(channel, FILE_G1, &local, &remote, &router);
+
+        while ((count = socket_receive_tcp(channel, FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
+            channel_reply(channel, EVENT_DATA, count, buffer);
+
+        file_unlink(FILE_G1);
+
+    }
+
     channel_close(channel);
 
 }
@@ -51,12 +75,12 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         consoledata->data = '\n';
 
     case '\n':
-        count = socket_send_tcp(FILE_G0, &local, &remote, &router, 1, &consoledata->data);
+        count = socket_send_tcp(FILE_G1, &local, &remote, &router, 1, &consoledata->data);
 
         break;
 
     default:
-        count = socket_send_tcp(FILE_G0, &local, &remote, &router, 1, &consoledata->data);
+        count = socket_send_tcp(FILE_G1, &local, &remote, &router, 1, &consoledata->data);
 
         break;
 
@@ -74,22 +98,14 @@ void init(struct channel *channel)
     unsigned char port[TCP_PORTSIZE] = {0x07, 0xD0};
     unsigned char address3[IPV4_ADDRSIZE] = {10, 0, 5, 80};
 
-    if (!file_walk2(FILE_L0, "system:ethernet/if:0"))
-        return;
-
-    if (!file_walk(FILE_L1, FILE_L0, "addr"))
-        return;
-
-    if (!file_walk(FILE_G0, FILE_L0, "data"))
-        return;
-
+    file_walk2(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
     socket_bind_ipv4(&local, address);
     socket_bind_tcp(&local, port, 42);
     socket_init(&router);
     socket_bind_ipv4(&router, address3);
-    socket_resolvelocal(FILE_L1, &local);
     channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_OPTION, onoption);
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
 }
