@@ -84,6 +84,19 @@ static void movedown(void)
 
 }
 
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct message_header header;
+    struct message_data data;
+
+    file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
+
+    while (channel_poll(channel, &header, &data))
+        channel_dispatch(channel, &header, &data);
+
+}
+
 static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -99,6 +112,14 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
         ring_write(&input2, buffer, count);
 
     file_close(FILE_L0);
+
+}
+
+static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
+    channel_close(channel);
 
 }
 
@@ -169,27 +190,6 @@ static void onwmshow(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
-    channel_close(channel);
-
-}
-
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct message_header header;
-    struct message_data data;
-
-    file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
-
-    while (channel_poll(channel, &header, &data))
-        channel_dispatch(channel, &header, &data);
-
-}
-
 void init(struct channel *channel)
 {
 
@@ -202,8 +202,8 @@ void init(struct channel *channel)
         return;
 
     channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_TERM, onterm);
     channel_setcallback(channel, EVENT_PATH, onpath);
+    channel_setcallback(channel, EVENT_TERM, onterm);
     channel_setcallback(channel, EVENT_WMKEYPRESS, onwmkeypress);
     channel_setcallback(channel, EVENT_WMSHOW, onwmshow);
 

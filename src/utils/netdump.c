@@ -301,21 +301,6 @@ static void print_ethernet(struct channel *channel, unsigned int source, void *b
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    char *key = mdata;
-    char *value = key + ascii_lengthz(key);
-
-    if (ascii_match(key, "ethernet"))
-    {
-
-        file_walk2(FILE_G0, value);
-
-    }
-
-}
-
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -335,6 +320,21 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     }
 
     channel_close(channel);
+
+}
+
+static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    char *key = mdata;
+    char *value = key + ascii_lengthz(key);
+
+    if (ascii_match(key, "ethernet"))
+    {
+
+        file_walk2(FILE_G0, value);
+
+    }
 
 }
 

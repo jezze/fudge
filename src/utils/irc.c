@@ -9,51 +9,6 @@ static struct socket router;
 static char inputbuffer[BUFFER_SIZE];
 static struct ring input;
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    char *key = mdata;
-    char *value = key + ascii_lengthz(key);
-
-    if (ascii_match(key, "ethernet"))
-    {
-
-        file_walk2(FILE_G0, value);
-
-    }
-
-}
-
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    char *request = "NICK jfu_fudge\nUSER jfu_fudge 0 * :Jens Fudge\nJOIN #fudge\n";
-    char buffer[BUFFER_SIZE];
-    unsigned int count;
-
-    if (file_walk(FILE_L0, FILE_G0, "addr"))
-        socket_resolvelocal(FILE_L0, &local);
-
-    if (file_walk(FILE_G1, FILE_G0, "data"))
-    {
-
-        file_link(FILE_G1);
-        socket_resolveremote(channel, FILE_G1, &local, &router);
-        socket_connect_tcp(channel, FILE_G1, &local, &remote, &router);
-        socket_send_tcp(FILE_G1, &local, &remote, &router, ascii_length(request), request);
-
-        while ((count = socket_receive_tcp(channel, FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
-            channel_reply(channel, EVENT_DATA, count, buffer);
-
-        socket_disconnect_tcp(channel, FILE_G1, &local, &remote, &router);
-        file_unlink(FILE_G1);
-
-    }
-
-    channel_close(channel);
-
-}
-
 static void interpret(void *buffer, unsigned int count)
 {
 
@@ -129,6 +84,51 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
 }
 
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    char *request = "NICK jfu_fudge\nUSER jfu_fudge 0 * :Jens Fudge\nJOIN #fudge\n";
+    char buffer[BUFFER_SIZE];
+    unsigned int count;
+
+    if (file_walk(FILE_L0, FILE_G0, "addr"))
+        socket_resolvelocal(FILE_L0, &local);
+
+    if (file_walk(FILE_G1, FILE_G0, "data"))
+    {
+
+        file_link(FILE_G1);
+        socket_resolveremote(channel, FILE_G1, &local, &router);
+        socket_connect_tcp(channel, FILE_G1, &local, &remote, &router);
+        socket_send_tcp(FILE_G1, &local, &remote, &router, ascii_length(request), request);
+
+        while ((count = socket_receive_tcp(channel, FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
+            channel_reply(channel, EVENT_DATA, count, buffer);
+
+        socket_disconnect_tcp(channel, FILE_G1, &local, &remote, &router);
+        file_unlink(FILE_G1);
+
+    }
+
+    channel_close(channel);
+
+}
+
+static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    char *key = mdata;
+    char *value = key + ascii_lengthz(key);
+
+    if (ascii_match(key, "ethernet"))
+    {
+
+        file_walk2(FILE_G0, value);
+
+    }
+
+}
+
 void init(struct channel *channel)
 {
 
@@ -148,9 +148,9 @@ void init(struct channel *channel)
     socket_bind_tcp(&remote, port2, 0);
     socket_init(&router);
     socket_bind_ipv4(&router, address3);
+    channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_OPTION, onoption);
-    channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
 }
 

@@ -45,6 +45,13 @@ static void sum(unsigned int count, void *buffer)
 
 }
 
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    sum(msize, mdata);
+
+}
+
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -60,13 +67,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     channel_reply(channel, EVENT_DATA, offset, &data);
     channel_close(channel);
-
-}
-
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    sum(msize, mdata);
 
 }
 
@@ -93,8 +93,8 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
 void init(struct channel *channel)
 {
 
-    channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_DATA, ondata);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_PATH, onpath);
 
 }

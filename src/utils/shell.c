@@ -235,24 +235,10 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *key = mdata;
-    char *value = key + ascii_lengthz(key);
-
-    if (ascii_match(key, "console"))
-    {
-
-        if (file_walk2(FILE_L0, value))
-        {
-
-            file_walk(FILE_G0, FILE_L0, "event");
-            file_walk(FILE_G1, FILE_L0, "transmit");
-
-        }
-
-    }
+    print(mdata, msize);
 
 }
 
@@ -274,10 +260,24 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    print(mdata, msize);
+    char *key = mdata;
+    char *value = key + ascii_lengthz(key);
+
+    if (ascii_match(key, "console"))
+    {
+
+        if (file_walk2(FILE_L0, value))
+        {
+
+            file_walk(FILE_G0, FILE_L0, "event");
+            file_walk(FILE_G1, FILE_L0, "transmit");
+
+        }
+
+    }
 
 }
 
@@ -298,11 +298,11 @@ void init(struct channel *channel)
 {
 
     ring_init(&input, BUFFER_SIZE, inputbuffer);
-    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setcallback(channel, EVENT_DATA, ondata);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_OPTION, onoption);
     channel_setcallback(channel, EVENT_PATH, onpath);
-    channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
 
 }
 

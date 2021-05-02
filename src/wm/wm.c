@@ -322,6 +322,62 @@ static void setupvideo(void)
 
 }
 
+static void setmouse(unsigned int x, unsigned int y, unsigned int factor)
+{
+
+    switch (factor)
+    {
+
+    case 0:
+    case 1:
+        box_setsize(&mouse.size, x, y, 12, 16);
+
+        break;
+
+    case 2:
+    default:
+        box_setsize(&mouse.size, x, y, 18, 24);
+
+        break;
+
+    }
+
+}
+
+static void loadfont(unsigned int factor)
+{
+
+    switch (factor)
+    {
+
+    case 0:
+        file_walk2(FILE_L0, "/data/ter-112n.pcf");
+
+        break;
+
+    case 1:
+        file_walk2(FILE_L0, "/data/ter-114n.pcf");
+
+        break;
+
+    case 2:
+        file_walk2(FILE_L0, "/data/ter-116n.pcf");
+
+        break;
+
+    default:
+        file_walk2(FILE_L0, "/data/ter-118n.pcf");
+
+        break;
+
+    }
+
+    file_open(FILE_L0);
+    file_read(FILE_L0, fontdata, 0x8000);
+    file_close(FILE_L0);
+
+}
+
 static void onkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -542,6 +598,50 @@ static void onkeyrelease(struct channel *channel, unsigned int source, void *mda
 
 }
 
+static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct message_header header;
+    struct message_data data;
+
+    file_link(FILE_G0);
+    file_link(FILE_G1);
+    file_link(FILE_G2);
+    file_link(FILE_G4);
+    file_open(FILE_G5);
+    setupvideo();
+    setupviews();
+    setupremotes();
+    activateview(currentview);
+
+    while (channel_poll(channel, &header, &data))
+    {
+
+        channel_dispatch(channel, &header, &data);
+
+        if (ring_count(&output))
+        {
+
+            char buffer[BUFFER_SIZE];
+            unsigned int count = ring_read(&output, buffer, BUFFER_SIZE);
+
+            render_write(0, buffer, count);
+            render_resize(0, screen.x, screen.y, screen.w, screen.h, padding, lineheight, steplength);
+            render_flush(canvasdata, 0x10000, draw);
+            render_complete();
+
+        }
+
+    }
+
+    file_close(FILE_G5);
+    file_unlink(FILE_G4);
+    file_unlink(FILE_G2);
+    file_unlink(FILE_G1);
+    file_unlink(FILE_G0);
+
+}
+
 static void onmousemove(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -569,34 +669,6 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
         channel_send(channel, currentview->currentremote->source, EVENT_WMMOUSEMOVE, sizeof (struct event_wmmousemove), &wmmousemove);
 
     }
-
-}
-
-static void onmousescroll(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_mousescroll *mousescroll = mdata;
-
-    if (currentview->currentremote)
-    {
-
-        struct event_wmmousescroll wmmousescroll;
-
-        wmmousescroll.relz = mousescroll->relz;
-
-        channel_send(channel, currentview->currentremote->source, EVENT_WMMOUSESCROLL, sizeof (struct event_wmmousescroll), &wmmousescroll);
-
-    }
-
-    /* REMOVE STUFF BELOW AFTER TEST */
-
-    if (mousescroll->relz < 0)
-        currentview->center -= (currentview->center > steplength) ? steplength : 0;
-    else
-        currentview->center += (currentview->center < steplength) ? steplength : 0;
-
-    arrangeview(channel, currentview);
-    showremotes(channel, &currentview->remotes);
 
 }
 
@@ -689,59 +761,66 @@ static void onmouserelease(struct channel *channel, unsigned int source, void *m
 
 }
 
-static void setmouse(unsigned int x, unsigned int y, unsigned int factor)
+static void onmousescroll(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    switch (factor)
+    struct event_mousescroll *mousescroll = mdata;
+
+    if (currentview->currentremote)
     {
 
-    case 0:
-    case 1:
-        box_setsize(&mouse.size, x, y, 12, 16);
+        struct event_wmmousescroll wmmousescroll;
 
-        break;
+        wmmousescroll.relz = mousescroll->relz;
 
-    case 2:
-    default:
-        box_setsize(&mouse.size, x, y, 18, 24);
-
-        break;
+        channel_send(channel, currentview->currentremote->source, EVENT_WMMOUSESCROLL, sizeof (struct event_wmmousescroll), &wmmousescroll);
 
     }
+
+    /* REMOVE STUFF BELOW AFTER TEST */
+
+    if (mousescroll->relz < 0)
+        currentview->center -= (currentview->center > steplength) ? steplength : 0;
+    else
+        currentview->center += (currentview->center < steplength) ? steplength : 0;
+
+    arrangeview(channel, currentview);
+    showremotes(channel, &currentview->remotes);
 
 }
 
-static void loadfont(unsigned int factor)
+static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    switch (factor)
+    char *key = mdata;
+    char *value = key + ascii_lengthz(key);
+
+    if (ascii_match(key, "keyboard"))
     {
 
-    case 0:
-        file_walk2(FILE_L0, "/data/ter-112n.pcf");
-
-        break;
-
-    case 1:
-        file_walk2(FILE_L0, "/data/ter-114n.pcf");
-
-        break;
-
-    case 2:
-        file_walk2(FILE_L0, "/data/ter-116n.pcf");
-
-        break;
-
-    default:
-        file_walk2(FILE_L0, "/data/ter-118n.pcf");
-
-        break;
+        file_walk2(FILE_G1, value);
 
     }
 
-    file_open(FILE_L0);
-    file_read(FILE_L0, fontdata, 0x8000);
-    file_close(FILE_L0);
+    if (ascii_match(key, "mouse"))
+    {
+
+        file_walk2(FILE_G2, value);
+
+    }
+
+    if (ascii_match(key, "video"))
+    {
+
+        if (file_walk2(FILE_G3, value))
+        {
+
+            file_walk(FILE_G4, FILE_G3, "event");
+            file_walk(FILE_G5, FILE_G3, "data");
+
+        }
+
+    }
 
 }
 
@@ -810,6 +889,35 @@ static void onwmmap(struct channel *channel, unsigned int source, void *mdata, u
 
 }
 
+static void onwmrenderdata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct list_item *current;
+
+    for (current = currentview->remotes.head; current; current = current->next)
+    {
+
+        struct remote *remote = current->data;
+
+        if (remote->source == source)
+        {
+
+            unsigned int x = remote->window.size.x + 2 + padding;
+            unsigned int y = remote->window.size.y + 2 + padding;
+            unsigned int w = remote->window.size.w - 4 - padding * 2;
+            unsigned int h = remote->window.size.h - 4 - padding * 2;
+
+            render_write(source, mdata, msize);
+            render_resize(source, x, y, w, h, padding, lineheight, steplength);
+            render_flush(canvasdata, 0x10000, draw);
+            render_complete();
+
+        }
+
+    }
+
+}
+
 static void onwmunmap(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -848,114 +956,6 @@ static void onwmunmap(struct channel *channel, unsigned int source, void *mdata,
 
 }
 
-static void onwmrenderdata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct list_item *current;
-
-    for (current = currentview->remotes.head; current; current = current->next)
-    {
-
-        struct remote *remote = current->data;
-
-        if (remote->source == source)
-        {
-
-            unsigned int x = remote->window.size.x + 2 + padding;
-            unsigned int y = remote->window.size.y + 2 + padding;
-            unsigned int w = remote->window.size.w - 4 - padding * 2;
-            unsigned int h = remote->window.size.h - 4 - padding * 2;
-
-            render_write(source, mdata, msize);
-            render_resize(source, x, y, w, h, padding, lineheight, steplength);
-            render_flush(canvasdata, 0x10000, draw);
-            render_complete();
-
-        }
-
-    }
-
-}
-
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct message_header header;
-    struct message_data data;
-
-    file_link(FILE_G0);
-    file_link(FILE_G1);
-    file_link(FILE_G2);
-    file_link(FILE_G4);
-    file_open(FILE_G5);
-    setupvideo();
-    setupviews();
-    setupremotes();
-    activateview(currentview);
-
-    while (channel_poll(channel, &header, &data))
-    {
-
-        channel_dispatch(channel, &header, &data);
-
-        if (ring_count(&output))
-        {
-
-            char buffer[BUFFER_SIZE];
-            unsigned int count = ring_read(&output, buffer, BUFFER_SIZE);
-
-            render_write(0, buffer, count);
-            render_resize(0, screen.x, screen.y, screen.w, screen.h, padding, lineheight, steplength);
-            render_flush(canvasdata, 0x10000, draw);
-            render_complete();
-
-        }
-
-    }
-
-    file_close(FILE_G5);
-    file_unlink(FILE_G4);
-    file_unlink(FILE_G2);
-    file_unlink(FILE_G1);
-    file_unlink(FILE_G0);
-
-}
-
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    char *key = mdata;
-    char *value = key + ascii_lengthz(key);
-
-    if (ascii_match(key, "keyboard"))
-    {
-
-        file_walk2(FILE_G1, value);
-
-    }
-
-    if (ascii_match(key, "mouse"))
-    {
-
-        file_walk2(FILE_G2, value);
-
-    }
-
-    if (ascii_match(key, "video"))
-    {
-
-        if (file_walk2(FILE_G3, value))
-        {
-
-            file_walk(FILE_G4, FILE_G3, "event");
-            file_walk(FILE_G5, FILE_G3, "data");
-
-        }
-
-    }
-
-}
-
 void init(struct channel *channel)
 {
 
@@ -972,18 +972,18 @@ void init(struct channel *channel)
     if (!file_create(FILE_G0, FILE_L0, "wm"))
         return;
 
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_OPTION, onoption);
     channel_setcallback(channel, EVENT_KEYPRESS, onkeypress);
     channel_setcallback(channel, EVENT_KEYRELEASE, onkeyrelease);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_MOUSEMOVE, onmousemove);
-    channel_setcallback(channel, EVENT_MOUSESCROLL, onmousescroll);
     channel_setcallback(channel, EVENT_MOUSEPRESS, onmousepress);
     channel_setcallback(channel, EVENT_MOUSERELEASE, onmouserelease);
+    channel_setcallback(channel, EVENT_MOUSESCROLL, onmousescroll);
+    channel_setcallback(channel, EVENT_OPTION, onoption);
     channel_setcallback(channel, EVENT_VIDEOMODE, onvideomode);
     channel_setcallback(channel, EVENT_WMMAP, onwmmap);
-    channel_setcallback(channel, EVENT_WMUNMAP, onwmunmap);
     channel_setcallback(channel, EVENT_WMRENDERDATA, onwmrenderdata);
+    channel_setcallback(channel, EVENT_WMUNMAP, onwmunmap);
 
 }
 

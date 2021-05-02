@@ -3,6 +3,13 @@
 
 static struct md5 sum;
 
+static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    md5_read(&sum, mdata, msize);
+
+}
+
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -20,13 +27,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     channel_reply(channel, EVENT_DATA, offset, &data);
     channel_close(channel);
-
-}
-
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
-{
-
-    md5_read(&sum, mdata, msize);
 
 }
 
@@ -54,8 +54,8 @@ void init(struct channel *channel)
 {
 
     md5_init(&sum);
-    channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_DATA, ondata);
+    channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_PATH, onpath);
 
 }
