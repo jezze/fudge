@@ -200,6 +200,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 unsigned char *addr;
                 char temp[256];
 
+                /* temp stuff */
+                char *xa = "address";
+                char *xv = "255.255.255.255";
+                char xmsg[32];
+                unsigned int xc = 0;
+
                 name = (char *)(buffer + responselength);
                 responselength += namesize(name);
                 answer = (struct dns_answer *)(buffer + responselength);
@@ -227,6 +233,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                     offset = message_putstring(&data, "\n", offset);
 
                 }
+
+                xc += buffer_write(xmsg, 32, xa, ascii_lengthz(xa), xc);
+                xc += buffer_write(xmsg, 32, xv, ascii_lengthz(xv), xc);
+
+                channel_reply(channel, EVENT_OPTION, xc, xmsg);
 
             }
 
