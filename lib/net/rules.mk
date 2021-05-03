@@ -3,6 +3,7 @@ L:=\
 
 O:=\
     $(DIR_LIB)/net/arp.o \
+    $(DIR_LIB)/net/dns.o \
     $(DIR_LIB)/net/ethernet.o \
     $(DIR_LIB)/net/icmp.o \
     $(DIR_LIB)/net/ipv4.o \

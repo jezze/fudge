@@ -8,129 +8,6 @@ static struct socket remote;
 static struct socket router;
 static char name[512];
 
-struct dns_header
-{
-
-    unsigned char id[2];
-    unsigned char flags[2];
-    unsigned char questions[2];
-    unsigned char answers[2];
-    unsigned char authority[2];
-    unsigned char additional[2];
-
-};
-
-struct dns_question
-{
-
-    unsigned char type[2];
-    unsigned char class[2];
-
-};
-
-struct dns_answer
-{
-
-    unsigned char type[2];
-    unsigned char class[2];
-    unsigned char ttl[4];
-    unsigned char rdlength[2];
-
-};
-
-static unsigned int copyname(void *buffer, unsigned int count, char *name)
-{
-
-    unsigned char namelen = 0;
-    unsigned int valstart = 0;
-    unsigned int c = 0;
-    unsigned int i;
-
-    for (i = 0; i < ascii_lengthz(name); i++)
-    {
-
-        if (name[i] == '.' || name[i] == '\0')
-        {
-
-            c += buffer_write(buffer, count, &namelen, 1, c);
-            c += buffer_write(buffer, count, name + valstart, namelen, c);
-
-            valstart = i + 1;
-            namelen = 0;
-
-        }
-
-        else
-        {
-
-            namelen++;
-
-        }
-
-    }
-
-    c += buffer_write(buffer, count, "\0", 1, c);
-
-    return c;
-
-}
-
-static unsigned int putname(void *buffer, unsigned int count, char *name, void *start)
-{
-
-    unsigned int offset = 0;
-    unsigned int index = 0;
-
-    while (name[index])
-    {
-
-        if ((name[index] & 0xC0) == 0xC0)
-        {
-
-            unsigned char *temp = start;
-
-            name = (char *)(temp + (((name[index] & 0x2F) << 8) | name[index + 1]));
-            index = 0;
-
-        }
-
-        else
-        {
-
-            offset += buffer_write(buffer, count, name + index + 1, name[index], offset);
-            index += name[index] + 1;
-
-            if (name[index])
-                offset += buffer_write(buffer, count, ".", 1, offset);
-
-        }
-
-    }
-
-    return offset;
-
-}
-
-static unsigned int namesize(void *buffer)
-{
-
-    char *name = buffer;
-    unsigned int index = 0;
-
-    while (name[index])
-    {
-
-        if ((name[index] & 0xC0) == 0xC0)
-            return index + 2;
-        else
-            index += name[index] + 1;
-
-    }
-
-    return index + 1;
-
-}
-
 static unsigned int buildrequest(unsigned int count, void *buffer)
 {
 
@@ -147,7 +24,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
     net_save16(question.class, 0x0001);
 
     offset += buffer_write(buffer, count, &header, sizeof (struct dns_header), offset);
-    offset += copyname((char *)buffer + offset, count - offset, name);
+    offset += dns_copyname((char *)buffer + offset, count - offset, name);
     offset += buffer_write(buffer, count, &question, sizeof (struct dns_question), offset);
 
     return offset;
@@ -187,7 +64,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 char *name;
 
                 name = (char *)(buffer + responselength);
-                responselength += namesize(name);
+                responselength += dns_namesize(name);
                 responselength += sizeof (struct dns_question);
 
             }
@@ -207,7 +84,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 unsigned int xc = 0;
 
                 name = (char *)(buffer + responselength);
-                responselength += namesize(name);
+                responselength += dns_namesize(name);
                 answer = (struct dns_answer *)(buffer + responselength);
                 responselength += sizeof (struct dns_answer);
                 addr = (unsigned char *)(buffer + responselength);
@@ -216,7 +93,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 offset = message_putvalue(&data, net_load16(answer->type), 16, 4, offset);
                 offset = message_putstring(&data, "\n", offset);
                 offset = message_putstring(&data, "Name: ", offset);
-                offset = message_putbuffer(&data, putname(temp, 256, name, buffer), temp, offset);
+                offset = message_putbuffer(&data, dns_writename(temp, 256, name, buffer), temp, offset);
                 offset = message_putstring(&data, "\n", offset);
 
                 if (net_load16(answer->type) == 0x0001)
