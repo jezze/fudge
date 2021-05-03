@@ -74,32 +74,23 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                 struct dns_answer *answer;
                 char *name;
-                unsigned char *addr;
-                char temp[256];
-
-                /* temp stuff */
-                char *xa = "address";
-                char *xv = "255.255.255.255";
-                char xmsg[32];
-                unsigned int xc = 0;
+                void *rddata;
 
                 name = (char *)(buffer + responselength);
                 responselength += dns_namesize(name);
                 answer = (struct dns_answer *)(buffer + responselength);
                 responselength += sizeof (struct dns_answer);
-                addr = (unsigned char *)(buffer + responselength);
+                rddata = (buffer + responselength);
                 responselength += net_load16(answer->rdlength);
-                offset = message_putstring(&data, "Type: 0x", offset);
-                offset = message_putvalue(&data, net_load16(answer->type), 16, 4, offset);
-                offset = message_putstring(&data, "\n", offset);
-                offset = message_putstring(&data, "Name: ", offset);
-                offset = message_putbuffer(&data, dns_writename(temp, 256, name, buffer), temp, offset);
-                offset = message_putstring(&data, "\n", offset);
 
                 if (net_load16(answer->type) == 0x0001)
                 {
 
-                    offset = message_putstring(&data, "Address: ", offset);
+                    char fullname[256];
+                    unsigned char *addr = rddata;
+
+                    offset = message_putbuffer(&data, dns_writename(fullname, 256, name, buffer), fullname, offset);
+                    offset = message_putstring(&data, " has address ", offset);
                     offset = message_putvalue(&data, addr[0], 10, 0, offset);
                     offset = message_putstring(&data, ".", offset);
                     offset = message_putvalue(&data, addr[1], 10, 0, offset);
@@ -111,10 +102,17 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
                 }
 
-                xc += buffer_write(xmsg, 32, xa, ascii_lengthz(xa), xc);
-                xc += buffer_write(xmsg, 32, xv, ascii_lengthz(xv), xc);
+                if (net_load16(answer->type) == 0x0005)
+                {
 
-                channel_reply(channel, EVENT_OPTION, xc, xmsg);
+                    char fullname[256];
+
+                    offset = message_putbuffer(&data, dns_writename(fullname, 256, name, buffer), fullname, offset);
+                    offset = message_putstring(&data, " is an alias for ", offset);
+                    offset = message_putbuffer(&data, dns_writename(fullname, 256, rddata, buffer), fullname, offset);
+                    offset = message_putstring(&data, "\n", offset);
+
+                }
 
             }
 
