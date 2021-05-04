@@ -35,7 +35,7 @@ static void convert(unsigned char address[IPV4_ADDRSIZE], char *buffer)
         if (buffer[i] == '.' || buffer[i] == '\0')
         {
 
-            address[n] = ascii_rvalue(buffer + start, i, 10);
+            address[n] = ascii_rvalue(buffer + start, i - start, 10);
 
             start = i + 1;
             n++;
