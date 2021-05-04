@@ -6,6 +6,7 @@
 #define EVENT_OPTION                    0x05
 #define EVENT_PATH                      0x06
 #define EVENT_DATA                      0x07
+#define EVENT_QUERY                     0x08
 #define EVENT_KEYPRESS                  0x10
 #define EVENT_KEYRELEASE                0x11
 #define EVENT_MOUSEMOVE                 0x12
