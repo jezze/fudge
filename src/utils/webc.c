@@ -57,7 +57,7 @@ static void resolve(struct channel *channel, char *name)
         struct message_header header;
         struct message_data data;
 
-        channel_sendredirectsame(channel, id, EVENT_DATA);
+        channel_sendredirectback(channel, id, EVENT_DATA);
         channel_sendredirectback(channel, id, EVENT_CLOSE);
         channel_send(channel, id, EVENT_OPTION, message_putstringz(&data, name, message_putstringz(&data, "name", 0)), &data);
         channel_send(channel, id, EVENT_QUERY, message_putstringz(&data, "data", 0), &data);
