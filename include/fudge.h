@@ -18,3 +18,4 @@
 #include <fudge/tar.h>
 #include <fudge/keymap.h>
 #include <fudge/mtwist.h>
+#include <fudge/url.h>

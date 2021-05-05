@@ -8,14 +8,16 @@ static struct socket remote;
 static struct socket router;
 static char url[512];
 
-static unsigned int buildrequest(unsigned int count, void *buffer)
+static unsigned int buildrequest(unsigned int count, void *buffer, struct url *kurl)
 {
 
     unsigned int offset = 0;
 
-    offset += buffer_write(buffer, count, "GET / HTTP/1.1\r\n", 16, offset);
+    offset += buffer_write(buffer, count, "GET /", 5, offset);
+    offset += buffer_write(buffer, count, kurl->path, ascii_length(kurl->path), offset);
+    offset += buffer_write(buffer, count, " HTTP/1.1\r\n", 11, offset);
     offset += buffer_write(buffer, count, "Host: ", 6, offset);
-    offset += buffer_write(buffer, count, url, ascii_length(url), offset);
+    offset += buffer_write(buffer, count, kurl->host, ascii_length(kurl->host), offset);
     offset += buffer_write(buffer, count, "\r\n\r\n", 4, offset);
 
     return offset;
@@ -49,7 +51,6 @@ static void resolve(struct channel *channel, char *domain)
 
                 socket_bind_ipv4s(&remote, data.buffer);
                 socket_bind_tcps(&remote, "80", 0);
-                channel_reply(channel, EVENT_DATA, ascii_length(data.buffer), data.buffer);
 
             }
 
@@ -62,17 +63,24 @@ static void resolve(struct channel *channel, char *domain)
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
+    char urldata[BUFFER_SIZE];
+    struct url kurl;
+
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
 
-    /* need to cut away only domain here */
-    resolve(channel, url);
+    if (ascii_match(url, "http"))
+        url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_SCHEME);
+    else
+        url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_HOST);
+
+    resolve(channel, kurl.host);
 
     if (file_walk(FILE_L0, FILE_G0, "data"))
     {
 
         unsigned char buffer[BUFFER_SIZE];
-        unsigned int count = buildrequest(BUFFER_SIZE, buffer);
+        unsigned int count = buildrequest(BUFFER_SIZE, buffer, &kurl);
 
         file_link(FILE_L0);
         socket_resolveremote(channel, FILE_L0, &local, &router);
