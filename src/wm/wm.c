@@ -796,18 +796,10 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
     char *value = key + ascii_lengthz(key);
 
     if (ascii_match(key, "keyboard"))
-    {
-
         file_walk2(FILE_G1, value);
 
-    }
-
     if (ascii_match(key, "mouse"))
-    {
-
         file_walk2(FILE_G2, value);
-
-    }
 
     if (ascii_match(key, "video"))
     {

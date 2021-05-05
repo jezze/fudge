@@ -202,18 +202,25 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
     char *value = key + ascii_lengthz(key);
 
     if (ascii_match(key, "ethernet"))
-    {
-
         file_walk2(FILE_G0, value);
 
-    }
-
     if (ascii_match(key, "name"))
-    {
-
         ascii_copy(name, value);
 
-    }
+    if (ascii_match(key, "local-address"))
+        socket_bind_ipv4s(&local, value);
+
+    if (ascii_match(key, "local-port"))
+        socket_bind_udps(&local, value);
+
+    if (ascii_match(key, "remote-address") || ascii_match(key, "address"))
+        socket_bind_ipv4s(&remote, value);
+
+    if (ascii_match(key, "remote-port") || ascii_match(key, "port"))
+        socket_bind_udps(&remote, value);
+
+    if (ascii_match(key, "router-address"))
+        socket_bind_ipv4s(&router, value);
 
 }
 

@@ -83,11 +83,16 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
     char *value = key + ascii_lengthz(key);
 
     if (ascii_match(key, "ethernet"))
-    {
-
         file_walk2(FILE_G0, value);
 
-    }
+    if (ascii_match(key, "local-address"))
+        socket_bind_ipv4s(&local, value);
+
+    if (ascii_match(key, "local-port"))
+        socket_bind_tcps(&local, value, 42);
+
+    if (ascii_match(key, "router-address"))
+        socket_bind_ipv4s(&router, value);
 
 }
 

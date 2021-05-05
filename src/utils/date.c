@@ -50,11 +50,7 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
     char *value = key + ascii_lengthz(key);
 
     if (ascii_match(key, "clock"))
-    {
-
         file_walk2(FILE_G0, value);
-
-    }
 
 }
 
