@@ -6,7 +6,7 @@ unsigned int ascii_length(char *in)
 
     unsigned int length = 0;
 
-    while (in[length] != '\0')
+    while (*in++)
         length++;
 
     return length;
