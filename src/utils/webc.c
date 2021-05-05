@@ -116,7 +116,7 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
         socket_bind_ipv4s(&remote, value);
 
     if (ascii_match(key, "remote-port") || ascii_match(key, "port"))
-        socket_bind_tcps(&remote, value, 42);
+        socket_bind_tcps(&remote, value, 0);
 
     if (ascii_match(key, "router-address"))
         socket_bind_ipv4s(&router, value);
