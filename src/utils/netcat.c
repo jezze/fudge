@@ -94,16 +94,12 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 void init(struct channel *channel)
 {
 
-    unsigned char address[IPV4_ADDRSIZE] = {10, 0, 5, 1};
-    unsigned char port[TCP_PORTSIZE] = {0x07, 0xD0};
-    unsigned char address3[IPV4_ADDRSIZE] = {10, 0, 5, 80};
-
     file_walk2(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
-    socket_bind_ipv4(&local, address);
-    socket_bind_tcp(&local, port, 42);
+    socket_bind_ipv4s(&local, "10.0.5.1");
+    socket_bind_tcps(&local, "50002", 42);
     socket_init(&router);
-    socket_bind_ipv4(&router, address3);
+    socket_bind_ipv4s(&router, "10.0.5.80");
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_OPTION, onoption);

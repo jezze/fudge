@@ -292,21 +292,15 @@ static void onquery(struct channel *channel, unsigned int source, void *mdata, u
 void init(struct channel *channel)
 {
 
-    unsigned char address1[IPV4_ADDRSIZE] = {10, 0, 5, 1};
-    unsigned char port1[TCP_PORTSIZE] = {0x07, 0xD0};
-    unsigned char address2[IPV4_ADDRSIZE] = {8, 8, 8, 8};
-    unsigned char port2[TCP_PORTSIZE] = {0x00, 0x35};
-    unsigned char address3[IPV4_ADDRSIZE] = {10, 0, 5, 80};
-
     file_walk2(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
-    socket_bind_ipv4(&local, address1);
-    socket_bind_udp(&local, port1);
+    socket_bind_ipv4s(&local, "10.0.5.1");
+    socket_bind_udps(&local, "50000");
     socket_init(&remote);
-    socket_bind_ipv4(&remote, address2);
-    socket_bind_udp(&remote, port2);
+    socket_bind_ipv4s(&remote, "8.8.8.8");
+    socket_bind_udps(&remote, "53");
     socket_init(&router);
-    socket_bind_ipv4(&router, address3);
+    socket_bind_ipv4s(&router, "10.0.5.80");
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_OPTION, onoption);
     channel_setcallback(channel, EVENT_QUERY, onquery);

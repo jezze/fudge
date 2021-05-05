@@ -3,6 +3,32 @@
 #include <net.h>
 #include "socket.h"
 
+static unsigned int convert(unsigned char address[IPV4_ADDRSIZE], char *buffer)
+{
+
+    unsigned int i;
+    unsigned int start = 0;
+    unsigned int n = 0;
+
+    for (i = 0; i < ascii_lengthz(buffer); i++)
+    {
+
+        if (buffer[i] == '.' || buffer[i] == '\0')
+        {
+
+            address[n] = ascii_rvalue(buffer + start, i - start, 10);
+
+            start = i + 1;
+            n++;
+
+        }
+
+    }
+
+    return n;
+
+}
+
 static void send(unsigned int descriptor, void *buffer, unsigned int count)
 {
 
@@ -704,6 +730,16 @@ void socket_bind_ipv4(struct socket *socket, unsigned char address[IPV4_ADDRSIZE
 
 }
 
+void socket_bind_ipv4s(struct socket *socket, char *address)
+{
+
+    unsigned char a[IPV4_ADDRSIZE];
+
+    if (convert(a, address) == IPV4_ADDRSIZE)
+        socket_bind_ipv4(socket, a);
+
+}
+
 void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], unsigned int seq)
 {
 
@@ -714,11 +750,31 @@ void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], un
 
 }
 
+void socket_bind_tcps(struct socket *socket, char *port, unsigned int seq)
+{
+
+    unsigned char p[TCP_PORTSIZE];
+
+    net_save16(p, ascii_rvalue(port, ascii_length(port), 10));
+    socket_bind_tcp(socket, p, seq);
+ 
+}
+
 void socket_bind_udp(struct socket *socket, unsigned char port[UDP_PORTSIZE])
 {
 
     buffer_copy(&socket->info.udp.port, port, UDP_PORTSIZE);
 
+}
+
+void socket_bind_udps(struct socket *socket, char *port)
+{
+
+    unsigned char p[UDP_PORTSIZE];
+
+    net_save16(p, ascii_rvalue(port, ascii_length(port), 10));
+    socket_bind_udp(socket, p);
+ 
 }
 
 void socket_init(struct socket *socket)

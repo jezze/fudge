@@ -132,22 +132,16 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 void init(struct channel *channel)
 {
 
-    unsigned char address1[IPV4_ADDRSIZE] = {10, 0, 5, 1};
-    unsigned char port1[TCP_PORTSIZE] = {0x07, 0xD0};
-    unsigned char address2[IPV4_ADDRSIZE] = {185, 30, 166, 37};
-    unsigned char port2[TCP_PORTSIZE] = {0x1A, 0x0B};
-    unsigned char address3[IPV4_ADDRSIZE] = {10, 0, 5, 80};
-
     ring_init(&input, BUFFER_SIZE, inputbuffer);
     file_walk2(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
-    socket_bind_ipv4(&local, address1);
-    socket_bind_tcp(&local, port1, 42);
+    socket_bind_ipv4s(&local, "10.0.5.1");
+    socket_bind_tcps(&local, "50003", 42);
     socket_init(&remote);
-    socket_bind_ipv4(&remote, address2);
-    socket_bind_tcp(&remote, port2, 0);
+    socket_bind_ipv4s(&remote, "185.30.166.37");
+    socket_bind_tcps(&remote, "6667", 0);
     socket_init(&router);
-    socket_bind_ipv4(&router, address3);
+    socket_bind_ipv4s(&router, "10.0.5.80");
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_OPTION, onoption);

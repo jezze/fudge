@@ -38,6 +38,9 @@ void socket_disconnect_tcp(struct channel *channel, unsigned int descriptor, str
 void socket_resolveremote(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote);
 void socket_resolvelocal(unsigned int descriptor, struct socket *socket);
 void socket_bind_ipv4(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]);
+void socket_bind_ipv4s(struct socket *socket, char *address);
 void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], unsigned int seq);
+void socket_bind_tcps(struct socket *socket, char *port, unsigned int seq);
 void socket_bind_udp(struct socket *socket, unsigned char port[UDP_PORTSIZE]);
+void socket_bind_udps(struct socket *socket, char *port);
 void socket_init(struct socket *socket);

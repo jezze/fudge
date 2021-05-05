@@ -22,30 +22,6 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
 
 }
 
-static void convert(unsigned char address[IPV4_ADDRSIZE], char *buffer)
-{
-
-    unsigned int i;
-    unsigned int start = 0;
-    unsigned int n = 0;
-
-    for (i = 0; i < ascii_lengthz(buffer); i++)
-    {
-
-        if (buffer[i] == '.' || buffer[i] == '\0')
-        {
-
-            address[n] = ascii_rvalue(buffer + start, i - start, 10);
-
-            start = i + 1;
-            n++;
-
-        }
-
-    }
-
-}
-
 static void resolve(struct channel *channel, char *name)
 {
 
@@ -71,10 +47,8 @@ static void resolve(struct channel *channel, char *name)
             if (header.event == EVENT_DATA)
             {
 
-                unsigned char address[IPV4_ADDRSIZE] = {0, 0, 0, 0};
-
-                convert(address, data.buffer);
-                socket_bind_ipv4(&remote, address);
+                socket_bind_ipv4s(&remote, data.buffer);
+                socket_bind_tcps(&remote, "80", 0);
 
             }
 
@@ -140,21 +114,13 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 void init(struct channel *channel)
 {
 
-    unsigned char address1[IPV4_ADDRSIZE] = {10, 0, 5, 1};
-    unsigned char port1[TCP_PORTSIZE] = {0x07, 0xD0};
-    unsigned char address2[IPV4_ADDRSIZE] = {0, 0, 0, 0};
-    unsigned char port2[TCP_PORTSIZE] = {0x00, 0x50};
-    unsigned char address3[IPV4_ADDRSIZE] = {10, 0, 5, 80};
-
     file_walk2(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
-    socket_bind_ipv4(&local, address1);
-    socket_bind_tcp(&local, port1, 42);
+    socket_bind_ipv4s(&local, "10.0.5.1");
+    socket_bind_tcps(&local, "50001", 42);
     socket_init(&remote);
-    socket_bind_ipv4(&remote, address2);
-    socket_bind_tcp(&remote, port2, 0);
     socket_init(&router);
-    socket_bind_ipv4(&router, address3);
+    socket_bind_ipv4s(&router, "10.0.5.1");
     channel_setcallback(channel, EVENT_MAIN, onmain);
     channel_setcallback(channel, EVENT_OPTION, onoption);
 
