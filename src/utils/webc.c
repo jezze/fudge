@@ -69,7 +69,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     else
         url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_HOST);
 
-    resolve(channel, kurl.host);
+    if (kurl.host)
+        resolve(channel, kurl.host);
+
+    if (kurl.port)
+        socket_bind_tcps(&remote, kurl.port, 0);
 
     if (file_walk(FILE_L0, FILE_G0, "data"))
     {
