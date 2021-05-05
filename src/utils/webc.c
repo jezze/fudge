@@ -14,7 +14,10 @@ static unsigned int buildrequest(unsigned int count, void *buffer, struct url *k
     unsigned int offset = 0;
 
     offset += buffer_write(buffer, count, "GET /", 5, offset);
-    offset += buffer_write(buffer, count, kurl->path, ascii_length(kurl->path), offset);
+
+    if (kurl->path)
+        offset += buffer_write(buffer, count, kurl->path, ascii_length(kurl->path), offset);
+
     offset += buffer_write(buffer, count, " HTTP/1.1\r\n", 11, offset);
     offset += buffer_write(buffer, count, "Host: ", 6, offset);
     offset += buffer_write(buffer, count, kurl->host, ascii_length(kurl->host), offset);
