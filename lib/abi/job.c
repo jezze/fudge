@@ -139,20 +139,9 @@ void job_pipe(struct channel *channel, struct job *jobs, unsigned int n)
             channel_sendredirectback(channel, job->id, EVENT_PATH);
 
             if (i < n - 1)
-            {
-
                 channel_sendredirectto(channel, job->id, EVENT_DATA, jobs[i + 1].id);
-                channel_sendredirectto(channel, job->id, EVENT_OPTION, jobs[i + 1].id);
-
-            }
-
             else
-            {
-
                 channel_sendredirectback(channel, job->id, EVENT_DATA);
-                channel_sendredirectback(channel, job->id, EVENT_OPTION);
-
-            }
 
         }
 
