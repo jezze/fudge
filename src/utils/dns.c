@@ -86,6 +86,7 @@ static void printquery(struct channel *channel, char *query, unsigned int qsize,
     {
 
         offset = message_putvalue(&data, type, 10, 0, offset);
+        offset = message_putstringz(&data, "", offset);
 
     }
 
@@ -93,6 +94,7 @@ static void printquery(struct channel *channel, char *query, unsigned int qsize,
     {
 
         offset = message_putbuffer(&data, dns_writename(fullname, 256, name, buffer), fullname, offset);
+        offset = message_putstringz(&data, "", offset);
 
     }
 
@@ -110,16 +112,18 @@ static void printquery(struct channel *channel, char *query, unsigned int qsize,
             offset = message_putvalue(&data, addr[2], 10, 0, offset);
             offset = message_putstring(&data, ".", offset);
             offset = message_putvalue(&data, addr[3], 10, 0, offset);
+            offset = message_putstringz(&data, "", offset);
 
             break;
 
         case 5:
             offset = message_putbuffer(&data, dns_writename(fullname, 256, rddata, buffer), fullname, offset);
+            offset = message_putstringz(&data, "", offset);
 
             break;
 
         default:
-            offset = message_putstring(&data, "<null>", offset);
+            offset = message_putstringz(&data, "<null>", offset);
 
             break;
 

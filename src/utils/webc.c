@@ -49,6 +49,7 @@ static void resolve(struct channel *channel, char *name)
 
                 socket_bind_ipv4s(&remote, data.buffer);
                 socket_bind_tcps(&remote, "80", 0);
+                channel_reply(channel, EVENT_DATA, ascii_length(data.buffer), data.buffer);
 
             }
 
