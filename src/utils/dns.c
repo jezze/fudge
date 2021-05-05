@@ -6,7 +6,7 @@
 static struct socket local;
 static struct socket remote;
 static struct socket router;
-static char name[512];
+static char domain[512];
 
 static unsigned int buildrequest(unsigned int count, void *buffer)
 {
@@ -24,7 +24,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
     net_save16(question.class, 0x0001);
 
     offset += buffer_write(buffer, count, &header, sizeof (struct dns_header), offset);
-    offset += dns_copyname((char *)buffer + offset, count - offset, name);
+    offset += dns_copyname((char *)buffer + offset, count - offset, domain);
     offset += buffer_write(buffer, count, &question, sizeof (struct dns_question), offset);
 
     return offset;
@@ -208,8 +208,8 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
     if (ascii_match(key, "ethernet"))
         file_walk2(FILE_G0, value);
 
-    if (ascii_match(key, "name"))
-        ascii_copy(name, value);
+    if (ascii_match(key, "domain"))
+        ascii_copy(domain, value);
 
     if (ascii_match(key, "local-address"))
         socket_bind_ipv4s(&local, value);

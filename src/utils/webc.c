@@ -22,7 +22,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
 
 }
 
-static void resolve(struct channel *channel, char *name)
+static void resolve(struct channel *channel, char *domain)
 {
 
     unsigned int id = file_spawn("/bin/dns");
@@ -35,7 +35,7 @@ static void resolve(struct channel *channel, char *name)
 
         channel_sendredirectback(channel, id, EVENT_DATA);
         channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_send(channel, id, EVENT_OPTION, message_putstringz(&data, name, message_putstringz(&data, "name", 0)), &data);
+        channel_send(channel, id, EVENT_OPTION, message_putstringz(&data, domain, message_putstringz(&data, "domain", 0)), &data);
         channel_send(channel, id, EVENT_QUERY, message_putstringz(&data, "data", 0), &data);
 
         while (channel_pollsource(channel, id, &header, &data))
@@ -65,6 +65,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
 
+    /* need to cut away only domain here */
     resolve(channel, url);
 
     if (file_walk(FILE_L0, FILE_G0, "data"))

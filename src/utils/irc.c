@@ -8,6 +8,7 @@ static struct socket remote;
 static struct socket router;
 static char inputbuffer[BUFFER_SIZE];
 static struct ring input;
+static char domain[512];
 
 static void interpret(void *buffer, unsigned int count)
 {
@@ -32,6 +33,43 @@ static void interpret(void *buffer, unsigned int count)
         offset += buffer_write(outputdata, BUFFER_SIZE, buffer, count, offset);
 
         socket_send_tcp(FILE_G1, &local, &remote, &router, offset, outputdata);
+
+    }
+
+}
+
+static void resolve(struct channel *channel, char *domain)
+{
+
+    unsigned int id = file_spawn("/bin/dns");
+
+    if (id)
+    {
+
+        struct message_header header;
+        struct message_data data;
+
+        channel_sendredirectback(channel, id, EVENT_DATA);
+        channel_sendredirectback(channel, id, EVENT_CLOSE);
+        channel_send(channel, id, EVENT_OPTION, message_putstringz(&data, domain, message_putstringz(&data, "domain", 0)), &data);
+        channel_send(channel, id, EVENT_QUERY, message_putstringz(&data, "data", 0), &data);
+
+        while (channel_pollsource(channel, id, &header, &data))
+        {
+
+            if (header.event == EVENT_CLOSE)
+                break;
+
+            if (header.event == EVENT_DATA)
+            {
+
+                socket_bind_ipv4s(&remote, data.buffer);
+                socket_bind_tcps(&remote, "6667", 0);
+                channel_reply(channel, EVENT_DATA, ascii_length(data.buffer), data.buffer);
+
+            }
+
+        }
 
     }
 
@@ -94,6 +132,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
 
+    resolve(channel, domain);
+
     if (file_walk(FILE_G1, FILE_G0, "data"))
     {
 
@@ -123,6 +163,9 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
     if (ascii_match(key, "ethernet"))
         file_walk2(FILE_G0, value);
 
+    if (ascii_match(key, "domain"))
+        ascii_copy(domain, value);
+
     if (ascii_match(key, "local-address"))
         socket_bind_ipv4s(&local, value);
 
@@ -149,8 +192,6 @@ void init(struct channel *channel)
     socket_bind_ipv4s(&local, "10.0.5.1");
     socket_bind_tcps(&local, "50003", 42);
     socket_init(&remote);
-    socket_bind_ipv4s(&remote, "185.30.166.37");
-    socket_bind_tcps(&remote, "6667", 0);
     socket_init(&router);
     socket_bind_ipv4s(&router, "10.0.5.80");
     channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
