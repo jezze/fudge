@@ -47,12 +47,7 @@ static void resolve(struct channel *channel, char *domain)
                 break;
 
             if (header.event == EVENT_DATA)
-            {
-
                 socket_bind_ipv4s(&remote, data.buffer);
-                socket_bind_tcps(&remote, "80", 0);
-
-            }
 
         }
 
@@ -136,6 +131,7 @@ void init(struct channel *channel)
     socket_bind_ipv4s(&local, "10.0.5.1");
     socket_bind_tcps(&local, "50001", 42);
     socket_init(&remote);
+    socket_bind_tcps(&remote, "80", 0);
     socket_init(&router);
     socket_bind_ipv4s(&router, "10.0.5.80");
     channel_setcallback(channel, EVENT_MAIN, onmain);
