@@ -75,14 +75,14 @@ static unsigned int buildicmp(struct socket *local, struct socket *remote, struc
 
 }
 
-static unsigned int buildtcp(struct socket *local, struct socket *remote, struct socket *router, void *output, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int count, void *buffer)
+static unsigned int buildtcp(struct socket *local, struct socket *remote, struct socket *router, void *output, unsigned short flags, unsigned int seq, unsigned int ack, unsigned int window, unsigned int count, void *buffer)
 {
 
     unsigned char *data = output;
     unsigned int length = sizeof (struct tcp_header) + count;
     struct ethernet_header *eheader = ethernet_putheader(data, ETHERNET_TYPE_IPV4, local->haddress, router->haddress);
     struct ipv4_header *iheader = ipv4_putheader(data + ethernet_hlen(eheader), local->paddress, remote->paddress, IPV4_PROTOCOL_TCP, length);
-    struct tcp_header *theader = tcp_putheader(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), local->info.tcp.port, remote->info.tcp.port, flags, seq, ack);
+    struct tcp_header *theader = tcp_putheader(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), local->info.tcp.port, remote->info.tcp.port, flags, seq, ack, window);
     void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader));
     unsigned short checksum;
 
@@ -188,7 +188,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -202,7 +202,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             local->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -212,7 +212,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             local->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -236,7 +236,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             local->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.seq = net_load32(header->seq) + psize;
 
-            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
             return psize;
 
@@ -249,13 +249,13 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             local->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.seq = net_load32(header->seq) + psize + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
             /* Wait for application to close down */
 
             local->info.tcp.state = TCP_STATE_LASTACK;
 
-            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
             return psize;
 
@@ -268,13 +268,13 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             local->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
             /* Wait for application to close down */
 
             local->info.tcp.state = TCP_STATE_LASTACK;
 
-            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -304,7 +304,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             local->info.tcp.state = TCP_STATE_CLOSING;
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
-            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -536,7 +536,7 @@ unsigned int socket_send_tcp(unsigned int descriptor, struct socket *local, stru
     {
 
     case TCP_STATE_ESTABLISHED:
-        send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, psize, pdata));
+        send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, psize, pdata));
 
         return psize;
 
@@ -642,7 +642,7 @@ void socket_connect_tcp(struct channel *channel, unsigned int descriptor, struct
 
     local->info.tcp.state = TCP_STATE_SYNSENT;
 
-    send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, 0, 0));
+    send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, BUFFER_SIZE, 0, 0));
 
     while (channel_polldescriptorevent(channel, descriptor, EVENT_DATA, &header, &data))
     {

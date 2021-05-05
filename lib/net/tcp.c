@@ -51,7 +51,7 @@ unsigned short tcp_hlen(struct tcp_header *header)
 
 }
 
-struct tcp_header *tcp_putheader(void *buffer, unsigned char sp[TCP_PORTSIZE], unsigned char tp[TCP_PORTSIZE], unsigned short flags, unsigned int seq, unsigned int ack)
+struct tcp_header *tcp_putheader(void *buffer, unsigned char sp[TCP_PORTSIZE], unsigned char tp[TCP_PORTSIZE], unsigned short flags, unsigned int seq, unsigned int ack, unsigned int window)
 {
 
     struct tcp_header *header = buffer;
@@ -63,7 +63,7 @@ struct tcp_header *tcp_putheader(void *buffer, unsigned char sp[TCP_PORTSIZE], u
 
     net_save32(header->seq, seq);
     net_save32(header->ack, ack);
-    net_save16(header->window, 8192);
+    net_save16(header->window, window);
 
     return header;
 
