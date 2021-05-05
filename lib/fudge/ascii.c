@@ -37,7 +37,30 @@ unsigned int ascii_match(char *in1, char *in2)
 
 }
 
-unsigned int ascii_toint(unsigned char c)
+unsigned int ascii_isalpha(char c)
+{
+
+    if (c >= 'a' && c <= 'z')
+        return 1;
+
+    if (c >= 'A' && c <= 'Z')
+        return 1;
+
+    return 0;
+
+}
+
+unsigned int ascii_isdigit(char c)
+{
+
+    if (c >= '0' && c <= '9')
+        return 1;
+
+    return 0;
+
+}
+
+unsigned int ascii_toint(char c)
 {
 
     if (c >= 'a')

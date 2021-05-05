@@ -19,6 +19,7 @@ O:=\
     $(DIR_LIB)/fudge/sha1.o \
     $(DIR_LIB)/fudge/spinlock.o \
     $(DIR_LIB)/fudge/tar.o \
+    $(DIR_LIB)/fudge/url.o \
     $(DIR_LIB)/fudge/utf8.o \
 
 include $(DIR_LIB)/fudge/$(ARCH)/rules.mk
