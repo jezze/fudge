@@ -67,7 +67,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
 
-    if (ascii_match(url, "http"))
+    if (ascii_length(url) >= 4 && buffer_match(url, "http", 4))
         url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_SCHEME);
     else
         url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_HOST);
