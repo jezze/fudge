@@ -209,20 +209,6 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
 
 }
 
-static unsigned int protocol_open(unsigned int id)
-{
-
-    return id;
-
-}
-
-static unsigned int protocol_close(unsigned int id)
-{
-
-    return id;
-
-}
-
 static unsigned int readfile(void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
@@ -360,7 +346,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_initprotocol(&protocol, "initrd", protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_open, protocol_close, protocol_read, protocol_write, protocol_seek, protocol_map, protocol_link, protocol_unlink, protocol_notify);
+    service_initprotocol(&protocol, "initrd", protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_read, protocol_write, protocol_seek, protocol_map, protocol_link, protocol_unlink, protocol_notify);
     resource_register(&protocol.resource);
 
 }
