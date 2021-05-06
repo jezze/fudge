@@ -60,6 +60,8 @@ static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char
     struct elf_header header;
     unsigned int i;
 
+    file_reset(descriptor);
+
     if (!readheader(descriptor, &header))
         return 0;
 
@@ -111,26 +113,10 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
     offset += buffer_write(module, 32, ".ko", 4, offset);
 
     if (file_walk(FILE_L0, FILE_G0, module))
-    {
-
-        file_open(FILE_L0);
-
         address = findsymbol(FILE_L0, count, symbolname);
 
-        file_close(FILE_L0);
-
-    }
-
     if (!address)
-    {
-
-        file_open(FILE_G1);
-
         address = findsymbol(FILE_G1, count, symbolname);
-
-        file_close(FILE_G1);
-
-    }
 
     return address;
 
@@ -240,12 +226,8 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
     if (file_walk2(FILE_G2, mdata))
     {
 
-        file_open(FILE_G2);
-
         if (resolve(FILE_G2))
             call_load(FILE_G2);
-
-        file_close(FILE_G2);
 
     }
 

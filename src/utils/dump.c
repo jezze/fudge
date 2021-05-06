@@ -93,12 +93,10 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
         struct message_data data;
         unsigned int count;
 
-        file_open(FILE_L0);
+        file_seek(FILE_L0, 0);
 
         while ((count = file_read(FILE_L0, &data, sizeof (struct message_data))))
             print(channel, source, count, &data);
-
-        file_close(FILE_L0);
 
     }
 

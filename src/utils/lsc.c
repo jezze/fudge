@@ -4,7 +4,7 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_open(FILE_G0);
+    file_reset(FILE_G0);
 
     do
     {
@@ -30,7 +30,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     } while (file_step(FILE_G0));
 
-    file_close(FILE_G0);
     channel_close(channel);
 
 }

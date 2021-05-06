@@ -67,7 +67,7 @@ static unsigned int destroy(struct task *task, void *stack)
 
 }
 
-static unsigned int open(struct task *task, void *stack)
+static unsigned int reset(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
@@ -76,24 +76,6 @@ static unsigned int open(struct task *task, void *stack)
     if (!descriptor->protocol)
         return 0;
 
-    descriptor->id = descriptor->protocol->open(descriptor->id);
-    descriptor->current = descriptor->protocol->step(descriptor->id, descriptor->id);
-    descriptor->offset = descriptor->protocol->seek(descriptor->id, 0);
-
-    return descriptor->id;
-
-}
-
-static unsigned int close(struct task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
-
-    if (!descriptor->protocol)
-        return 0;
-
-    descriptor->id = descriptor->protocol->close(descriptor->id);
     descriptor->current = descriptor->protocol->step(descriptor->id, descriptor->id);
     descriptor->offset = descriptor->protocol->seek(descriptor->id, 0);
 
@@ -323,22 +305,21 @@ void abi_setup(unsigned int (*spawn)(struct task *task, void *stack), unsigned i
     calls[0x01] = walk;
     calls[0x02] = create;
     calls[0x03] = destroy;
-    calls[0x04] = open;
-    calls[0x05] = close;
-    calls[0x06] = step;
-    calls[0x07] = read;
-    calls[0x08] = write;
-    calls[0x09] = seek;
-    calls[0x0A] = load;
-    calls[0x0B] = unload;
-    calls[0x0C] = spawn;
-    calls[0x0D] = despawn;
-    calls[0x0E] = pick;
-    calls[0x0F] = place;
-    calls[0x10] = link;
-    calls[0x11] = unlink;
-    calls[0x12] = notify;
-    calls[0x13] = kill;
+    calls[0x04] = reset;
+    calls[0x05] = step;
+    calls[0x06] = read;
+    calls[0x07] = write;
+    calls[0x08] = seek;
+    calls[0x09] = load;
+    calls[0x0A] = unload;
+    calls[0x0B] = spawn;
+    calls[0x0C] = despawn;
+    calls[0x0D] = pick;
+    calls[0x0E] = place;
+    calls[0x0F] = link;
+    calls[0x10] = unlink;
+    calls[0x11] = notify;
+    calls[0x12] = kill;
 
 }
 

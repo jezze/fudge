@@ -32,9 +32,7 @@ static unsigned int convert(unsigned char address[IPV4_ADDRSIZE], char *buffer)
 static void send(unsigned int descriptor, void *buffer, unsigned int count)
 {
 
-    file_open(descriptor);
-    file_writeall(descriptor, buffer, count);
-    file_close(descriptor);
+    file_seekwriteall(descriptor, buffer, count, 0);
 
 }
 
@@ -715,9 +713,7 @@ void socket_resolveremote(struct channel *channel, unsigned int descriptor, stru
 void socket_resolvelocal(unsigned int descriptor, struct socket *socket)
 {
 
-    file_open(descriptor);
-    file_readall(descriptor, socket->haddress, ETHERNET_ADDRSIZE);
-    file_close(descriptor);
+    file_seekreadall(descriptor, socket->haddress, ETHERNET_ADDRSIZE, 0);
 
     socket->resolved = 1;
 

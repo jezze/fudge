@@ -5,13 +5,7 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
 {
 
     if (file_walk2(FILE_G0, mdata))
-    {
-
-        file_open(FILE_G0);
         call_unload(FILE_G0);
-        file_close(FILE_G0);
-
-    }
 
 }
 

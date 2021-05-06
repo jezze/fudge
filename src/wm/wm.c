@@ -310,15 +310,9 @@ static void setupvideo(void)
     if (!file_walk(FILE_L1, FILE_G3, "colormap"))
         return;
 
-    file_open(FILE_L1);
-    file_writeall(FILE_L1, black, 768);
-    file_close(FILE_L1);
-    file_open(FILE_L0);
-    file_writeall(FILE_L0, &settings, sizeof (struct ctrl_videosettings));
-    file_close(FILE_L0);
-    file_open(FILE_L1);
-    file_writeall(FILE_L1, colormap8, 3 * 11);
-    file_close(FILE_L1);
+    file_seekwriteall(FILE_L1, black, 768, 0);
+    file_seekwriteall(FILE_L0, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(FILE_L1, colormap8, 3 * 11, 0);
 
 }
 
@@ -372,9 +366,7 @@ static void loadfont(unsigned int factor)
 
     }
 
-    file_open(FILE_L0);
-    file_read(FILE_L0, fontdata, 0x8000);
-    file_close(FILE_L0);
+    file_seekread(FILE_L0, fontdata, 0x8000, 0);
 
 }
 
@@ -608,7 +600,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     file_link(FILE_G1);
     file_link(FILE_G2);
     file_link(FILE_G4);
-    file_open(FILE_G5);
     setupvideo();
     setupviews();
     setupremotes();
@@ -634,7 +625,6 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     }
 
-    file_close(FILE_G5);
     file_unlink(FILE_G4);
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);

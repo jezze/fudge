@@ -56,7 +56,6 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
         unsigned int offset = 0;
         unsigned int h;
 
-        file_open(FILE_L0);
         file_seekreadall(FILE_L0, &header, sizeof (struct pcx_header), 0);
 
         width = header.xend - header.xstart + 1;
@@ -74,8 +73,6 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
             channel_reply(channel, EVENT_DATA, width, buffer);
 
         }
-
-        file_close(FILE_L0);
 
     }
 

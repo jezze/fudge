@@ -249,13 +249,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     struct message_data data;
 
     file_link(FILE_G0);
-    file_open(FILE_G1);
     printprompt();
 
     while (channel_poll(channel, &header, &data))
         channel_dispatch(channel, &header, &data);
 
-    file_close(FILE_G1);
     file_unlink(FILE_G0);
 
 }

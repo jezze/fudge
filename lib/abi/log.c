@@ -12,12 +12,8 @@ void log(unsigned int descriptor, char *key, char *value)
     count += buffer_write(buffer, BUFFER_SIZE, value, ascii_length(value), count);
     count += buffer_write(buffer, BUFFER_SIZE, "", 1, count);
 
-    if (!file_walk2(descriptor, "/system/log/send"))
-        return;
-
-    file_open(descriptor);
-    file_writeall(descriptor, buffer, count);
-    file_close(descriptor);
+    if (file_walk2(descriptor, "system:log/send"))
+        file_writeall(descriptor, buffer, count);
 
 }
 

@@ -33,17 +33,17 @@ unsigned int file_create(unsigned int descriptor, unsigned int pdescriptor, char
 
 }
 
-unsigned int file_open(unsigned int descriptor)
+unsigned int file_reset(unsigned int descriptor)
 {
 
-    return call_open(descriptor);
+    return call_reset(descriptor);
 
 }
 
-unsigned int file_close(unsigned int descriptor)
+unsigned int file_seek(unsigned int descriptor, unsigned int offset)
 {
 
-    return call_close(descriptor);
+    return call_seek(descriptor, offset);
 
 }
 

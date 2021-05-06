@@ -103,15 +103,15 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
     char buffer[BUFFER_SIZE];
     unsigned int count;
 
-    if (!file_walk2(FILE_L0, mdata))
-        return;
+    if (file_walk2(FILE_L0, mdata))
+    {
 
-    file_open(FILE_L0);
+        file_seek(FILE_L0, 0);
 
-    while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
-        ring_write(&input2, buffer, count);
+        while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
+            ring_write(&input2, buffer, count);
 
-    file_close(FILE_L0);
+    }
 
 }
 

@@ -39,7 +39,7 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
     if (file_walk2(FILE_L0, mdata))
     {
 
-        file_open(FILE_L0);
+        file_reset(FILE_L0);
 
         do
         {
@@ -50,8 +50,6 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
                 print(channel, source, &record);
 
         } while (file_step(FILE_L0));
-
-        file_close(FILE_L0);
 
     }
 

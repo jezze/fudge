@@ -39,12 +39,10 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
         char buffer[BUFFER_SIZE];
         unsigned int count;
 
-        file_open(FILE_L0);
+        file_seek(FILE_L0, 0);
 
         while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
             md5_read(&sum, buffer, count);
-
-        file_close(FILE_L0);
 
     }
 

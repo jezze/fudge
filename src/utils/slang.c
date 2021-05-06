@@ -379,12 +379,11 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
         tokenlist_reset(&infix);
         tokenlist_reset(&postfix);
         tokenlist_reset(&stack);
-        file_open(FILE_L0);
+        file_seek(FILE_L0, 0);
 
         while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
             tokenizebuffer(&infix, &stringtable, count, buffer);
 
-        file_close(FILE_L0);
         translate(&postfix, &infix, &stack);
         parse(channel, source, &postfix, &stack);
 

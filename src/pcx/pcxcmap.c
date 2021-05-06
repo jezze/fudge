@@ -12,7 +12,6 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
         unsigned char magic;
         unsigned int filesize = 31467;
 
-        file_open(FILE_L0);
         file_seekreadall(FILE_L0, &header, sizeof (struct pcx_header), 0);
         file_seekreadall(FILE_L0, &magic, 1, filesize - 768 - 1);
 
@@ -25,8 +24,6 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
             channel_reply(channel, EVENT_DATA, 768, colormap);
 
         }
-
-        file_close(FILE_L0);
 
     }
 

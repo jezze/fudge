@@ -22,9 +22,7 @@ static void setup(struct ctrl_videosettings *settings)
     }
 
     file_walk(FILE_L1, FILE_L0, "colormap");
-    file_open(FILE_L1);
     file_seekwriteall(FILE_L1, colormap, 768, 0);
-    file_close(FILE_L1);
 
 }
 
@@ -38,7 +36,6 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
     unsigned int y;
 
     file_walk(FILE_L1, FILE_L0, "data");
-    file_open(FILE_L1);
 
     for (y = 0; y < settings->h; y++)
     {
@@ -71,8 +68,6 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
     }
 
-    file_close(FILE_L1);
-
 }
 
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
@@ -83,12 +78,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     ctrl_setvideosettings(&settings, 320, 200, 1);
     file_walk2(FILE_L0, "system:video/if:0");
     file_walk(FILE_L1, FILE_L0, "ctrl");
-    file_open(FILE_L1);
-    file_writeall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
-    file_close(FILE_L1);
-    file_open(FILE_L1);
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
-    file_close(FILE_L1);
+    file_seekwriteall(FILE_L1, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekreadall(FILE_L1, &settings, sizeof (struct ctrl_videosettings), 0);
     setup(&settings);
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
     channel_close(channel);

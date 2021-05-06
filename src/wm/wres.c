@@ -38,9 +38,7 @@ static void onwmmousepress(struct channel *channel, unsigned int source, void *m
             struct ctrl_videosettings settings;
 
             ctrl_setvideosettings(&settings, 1920, 1080, 4);
-            file_open(FILE_L0);
-            file_writeall(FILE_L0, &settings, sizeof (struct ctrl_videosettings));
-            file_close(FILE_L0);
+            file_seekwriteall(FILE_L0, &settings, sizeof (struct ctrl_videosettings), 0);
 
         }
 

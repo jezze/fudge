@@ -49,9 +49,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
         struct ctrl_clocksettings settings;
 
-        file_open(FILE_L0);
-        file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
-        file_close(FILE_L0);
+        file_seekreadall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings), 0);
         print(channel, source, &settings);
 
     }
