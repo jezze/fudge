@@ -353,16 +353,18 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!msize)
-        return;
+    if (msize)
+    {
 
-    ring_reset(&stringtable);
-    tokenlist_reset(&infix);
-    tokenlist_reset(&postfix);
-    tokenlist_reset(&stack);
-    tokenizebuffer(&infix, &stringtable, msize, mdata);
-    translate(&postfix, &infix, &stack);
-    parse(channel, source, &postfix, &stack);
+        ring_reset(&stringtable);
+        tokenlist_reset(&infix);
+        tokenlist_reset(&postfix);
+        tokenlist_reset(&stack);
+        tokenizebuffer(&infix, &stringtable, msize, mdata);
+        translate(&postfix, &infix, &stack);
+        parse(channel, source, &postfix, &stack);
+
+    }
 
 }
 
