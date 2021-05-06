@@ -320,6 +320,19 @@ void abi_setup(unsigned int (*spawn)(struct task *task, void *stack), unsigned i
     calls[0x10] = unlink;
     calls[0x11] = notify;
     calls[0x12] = kill;
+    calls[0x13] = debug;
+    calls[0x14] = debug;
+    calls[0x15] = debug;
+    calls[0x16] = debug;
+    calls[0x17] = debug;
+    calls[0x18] = debug;
+    calls[0x19] = debug;
+    calls[0x1A] = debug;
+    calls[0x1B] = debug;
+    calls[0x1C] = debug;
+    calls[0x1D] = debug;
+    calls[0x1E] = debug;
+    calls[0x1F] = debug;
 
 }
 
