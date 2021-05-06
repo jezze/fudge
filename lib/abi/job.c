@@ -121,7 +121,6 @@ unsigned int job_spawn(struct channel *channel, struct job *jobs, unsigned int n
 
 }
 
-/* The targets for redirection will surely need more options in the future */
 void job_pipe(struct channel *channel, struct job *jobs, unsigned int n)
 {
 
@@ -166,27 +165,10 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
             struct message_data data;
 
             for (j = 0; j < job->noptions; j++)
-            {
-
-                unsigned int offset = 0;
-
-                offset = message_putstringz(&data, job->options[j].key, offset);
-                offset = message_putstringz(&data, job->options[j].value, offset);
-
-                channel_send(channel, job->id, EVENT_OPTION, offset, &data);
-
-            }
+                channel_send(channel, job->id, EVENT_OPTION, message_putstringz(&data, job->options[j].value, message_putstringz(&data, job->options[j].key, 0)), &data);
 
             for (j = 0; j < job->npaths; j++)
-            {
-
-                unsigned int offset = 0;
-
-                offset = message_putstringz(&data, job->paths[j], offset);
-
-                channel_send(channel, job->id, EVENT_PATH, offset, &data);
-
-            }
+                channel_send(channel, job->id, EVENT_PATH, message_putstringz(&data, job->paths[j], 0), &data);
 
         }
 
