@@ -201,9 +201,7 @@ static unsigned int protocol_write(unsigned int id, unsigned int current, void *
 static unsigned int protocol_seek(unsigned int id, unsigned int offset)
 {
 
-    struct system_node *node = getnode(id);
-
-    return (node->operations.seek) ? node->operations.seek(offset) : offset;
+    return offset;
 
 }
 
@@ -354,7 +352,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     node->operations.destroy = 0;
     node->operations.read = 0;
     node->operations.write = 0;
-    node->operations.seek = 0;
 
 }
 

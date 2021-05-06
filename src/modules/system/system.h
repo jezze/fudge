@@ -9,7 +9,6 @@ struct system_operations
     unsigned int (*destroy)(void);
     unsigned int (*read)(void *buffer, unsigned int count, unsigned int offset);
     unsigned int (*write)(void *buffer, unsigned int count, unsigned int offset);
-    unsigned int (*seek)(unsigned int offset);
 
 };
 
