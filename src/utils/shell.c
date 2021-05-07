@@ -136,7 +136,6 @@ static void complete(struct channel *channel, struct ring *ring)
 
         struct message_header header;
         struct message_data data;
-        unsigned int offset = 0;
 
         channel_sendredirectback(channel, id, EVENT_DATA);
         channel_sendredirectback(channel, id, EVENT_CLOSE);
@@ -148,41 +147,6 @@ static void complete(struct channel *channel, struct ring *ring)
 
             if (header.event == EVENT_CLOSE)
                 break;
-
-            if (header.event == EVENT_DATA)
-                offset += buffer_write(buffer, BUFFER_SIZE, data.buffer, message_datasize(&header), offset);
-
-        }
-
-        if (offset)
-        {
-
-            unsigned int nlines = 0;
-            unsigned int i;
-
-            for (i = 0; i < offset; i++)
-            {
-
-                if (buffer[i] == '\n')
-                    nlines++;
-
-            }
-
-            if (nlines > 1)
-            {
-
-                print("\n", 1);
-                print(buffer, offset);
-                printprompt();
-
-            }
-
-            else
-            {
-
-                print(buffer, offset - 1);
-
-            }
 
         }
 

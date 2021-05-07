@@ -5,11 +5,11 @@
 static struct widget_textbox content;
 static char outputdata[BUFFER_SIZE];
 static struct ring output;
-static char inputdata1[BUFFER_SIZE];
+static char inputdata1[128];
 static struct ring input1;
-static char inputdata2[BUFFER_SIZE];
+static char inputdata2[128];
 static struct ring input2;
-static char textdata[BUFFER_SIZE];
+static char textdata[1024];
 static struct ring text;
 
 static void print(void *buffer, unsigned int count)
@@ -66,7 +66,7 @@ static void updatecontent(void)
 static void moveleft(unsigned int steps)
 {
 
-    char buffer[BUFFER_SIZE];
+    char buffer[128];
 
     ring_writereverse(&input2, buffer, ring_readreverse(&input1, buffer, steps));
 
@@ -75,7 +75,7 @@ static void moveleft(unsigned int steps)
 static void moveright(unsigned int steps)
 {
 
-    char buffer[BUFFER_SIZE];
+    char buffer[128];
 
     ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
 
@@ -175,8 +175,8 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
 static void interpret(struct channel *channel, struct ring *ring)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
+    char buffer[128];
+    unsigned int count = ring_read(ring, buffer, 128);
 
     print(buffer, count);
     updatecontent();
@@ -192,8 +192,8 @@ static void interpret(struct channel *channel, struct ring *ring)
 static void complete(struct channel *channel, struct ring *ring)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
+    char buffer[128];
+    unsigned int count = ring_read(ring, buffer, 128);
     unsigned int id = file_spawn("/bin/complete");
 
     if (id)
@@ -201,7 +201,6 @@ static void complete(struct channel *channel, struct ring *ring)
 
         struct message_header header;
         struct message_data data;
-        unsigned int offset = 0;
 
         channel_sendredirectback(channel, id, EVENT_DATA);
         channel_sendredirectback(channel, id, EVENT_CLOSE);
@@ -213,41 +212,6 @@ static void complete(struct channel *channel, struct ring *ring)
 
             if (header.event == EVENT_CLOSE)
                 break;
-
-            if (header.event == EVENT_DATA)
-                offset += buffer_write(buffer, BUFFER_SIZE, data.buffer, message_datasize(&header), offset);
-
-        }
-
-        if (offset)
-        {
-
-            unsigned int nlines = 0;
-            unsigned int i;
-
-            for (i = 0; i < offset; i++)
-            {
-
-                if (buffer[i] == '\n')
-                    nlines++;
-
-            }
-
-            if (nlines > 1)
-            {
-
-                print("\n", 1);
-                print(buffer, offset);
-                printprompt();
-
-            }
-
-            else
-            {
-
-                print(buffer, offset - 1);
-
-            }
 
         }
 
@@ -412,9 +376,9 @@ void init(struct channel *channel)
 {
 
     ring_init(&output, BUFFER_SIZE, outputdata);
-    ring_init(&input1, BUFFER_SIZE, inputdata1);
-    ring_init(&input2, BUFFER_SIZE, inputdata2);
-    ring_init(&text, BUFFER_SIZE, textdata);
+    ring_init(&input1, 128, inputdata1);
+    ring_init(&input2, 128, inputdata2);
+    ring_init(&text, 1024, textdata);
     widget_inittextbox(&content);
 
     if (!file_walk2(FILE_G0, "system:service/wm"))
