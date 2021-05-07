@@ -42,12 +42,7 @@ static struct font font;
 static void (*drawables[32])(void *canvas, void *data, unsigned int line);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
-static unsigned char layerdata1[0x8000];
-static unsigned char layerdata2[0x1000];
-static struct layer layers[LAYERS] = {
-    {layerdata1, 0, 0x8000},
-    {layerdata2, 0, 0x1000}
-};
+static struct layer layers[LAYERS];
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -761,6 +756,14 @@ void render_setfont(void *data, unsigned int lineheight, unsigned int padding)
     font.bitmapalign = pcf_getbitmapalign(font.data);
     font.lineheight = lineheight;
     font.padding = padding;
+
+}
+
+void render_setlayer(unsigned int index, unsigned char *data, unsigned int total)
+{
+
+    layers[index].data = data;
+    layers[index].total = total;
 
 }
 

@@ -5,4 +5,5 @@ void render_clean(unsigned int source);
 void render_complete(void);
 void render_setdraw(unsigned int w, unsigned int h, unsigned int bpp);
 void render_setfont(void *data, unsigned int lineheight, unsigned int padding);
+void render_setlayer(unsigned int index, unsigned char *data, unsigned int total);
 void render_init();
