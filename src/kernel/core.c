@@ -45,7 +45,7 @@ void core_unregister(struct core *core)
 
 }
 
-void core_init(struct core *core, unsigned int id, unsigned int sp, struct task *task)
+void core_init(struct core *core, unsigned int id, unsigned int sp)
 {
 
     resource_init(&core->resource, RESOURCE_CORE, core);
@@ -54,7 +54,6 @@ void core_init(struct core *core, unsigned int id, unsigned int sp, struct task 
 
     core->id = id;
     core->sp = sp;
-    core->task = task;
 
 }
 

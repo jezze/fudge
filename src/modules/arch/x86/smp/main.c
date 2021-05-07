@@ -79,13 +79,13 @@ static void coreassign(struct task *task)
 
 }
 
-void smp_setupbp(unsigned int stack, struct task *task, struct list *tasks)
+void smp_setupbp(unsigned int stack, struct list *tasks)
 {
 
     unsigned int id = apic_getid();
     struct list_item *current;
 
-    core_init(&cores[id], id, stack, task);
+    core_init(&cores[id], id, stack);
     core_register(&cores[id]);
     arch_configuretss(&tss[id], cores[id].id, cores[id].sp);
     apic_setup_bp();
@@ -101,7 +101,7 @@ void smp_setupap(unsigned int stack)
 
     unsigned int id = apic_getid();
 
-    core_init(&cores[id], id, stack, 0);
+    core_init(&cores[id], id, stack);
     core_register(&cores[id]);
     arch_configuretss(&tss[id], cores[id].id, cores[id].sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_KERNELMMUPHYSICAL);
@@ -120,7 +120,7 @@ void module_init(void)
     struct core *core = kernel_getcore();
 
     list_init(&corelist);
-    smp_setupbp(core->sp, core->task, &core->tasks);
+    smp_setupbp(core->sp, &core->tasks);
     kernel_setcallback(coreget, coreassign);
 
     if (!madt)

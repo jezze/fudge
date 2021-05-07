@@ -423,7 +423,7 @@ void arch_setup1(void)
     struct mmu_directory *directory = getkerneldirectory();
 
     resource_setup();
-    core_init(&core0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE, 0);
+    core_init(&core0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, core0.id, core0.sp);
