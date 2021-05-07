@@ -71,8 +71,8 @@ static unsigned int loadtask(struct task *task)
     {
 
         buffer_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
-        kernel_readytask(task->id);
         kernel_reset(task->id);
+        kernel_readytask(task->id);
 
         return task->id;
 
