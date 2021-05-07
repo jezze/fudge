@@ -23,13 +23,6 @@ void widget_initpanel(struct widget_panel *panel, unsigned int active)
 
 }
 
-void widget_inittext(struct widget_text *text, unsigned int type)
-{
-
-    text->type = type;
-
-}
-
 void widget_inittextbox(struct widget_textbox *textbox)
 {
 

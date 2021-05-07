@@ -39,7 +39,7 @@ static unsigned int currentw;
 static unsigned int currenth;
 static unsigned int currentbpp;
 static struct font font;
-static void (*drawables[7])(void *canvas, void *data, unsigned int line);
+static void (*drawables[32])(void *canvas, void *data, unsigned int line);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
 static unsigned char layerdata1[0x8000];
@@ -432,26 +432,6 @@ static void renderpanel(void *canvas, void *data, unsigned int line)
 
 }
 
-static void rendertext(void *canvas, void *data, unsigned int line)
-{
-
-    struct widget_text *text = data;
-    unsigned char *string = (unsigned char *)(text + 1);
-    unsigned int rowindex = text->offset + line / font.lineheight;
-    unsigned int rowtotal = findrowtotal(string, text->length);
-
-    if (rowindex < rowtotal)
-    {
-
-        unsigned int rowstart = findrowstart(string, text->length, rowindex);
-        unsigned int rowcount = findrowcount(string, text->length, rowstart);
-
-        painttext(canvas, string + rowstart, rowcount - rowstart, text->size.x, text->size.x + text->size.w, textcolor[text->type], line % font.lineheight, rowcount - rowstart);
-
-    }
-
-}
-
 static void rendertextbox(void *canvas, void *data, unsigned int line)
 {
 
@@ -459,11 +439,13 @@ static void rendertextbox(void *canvas, void *data, unsigned int line)
     unsigned char *string = (unsigned char *)(textbox + 1);
     unsigned int rowindex = textbox->offset + line / font.lineheight;
     unsigned int rowtotal = findrowtotal(string, textbox->length);
+    unsigned int visiblerows = (textbox->size.h / font.lineheight);
+    unsigned int rowoffset = (rowtotal > visiblerows) ? rowtotal - visiblerows : 0;
 
     if (rowindex < rowtotal)
     {
 
-        unsigned int rowstart = findrowstart(string, textbox->length, rowindex);
+        unsigned int rowstart = findrowstart(string, textbox->length, rowindex + rowoffset);
         unsigned int rowcount = findrowcount(string, textbox->length, rowstart);
 
         painttext(canvas, string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
@@ -688,24 +670,6 @@ void render_resize(unsigned int source, int x, int y, int w, int h, unsigned int
         if (current->source != source)
             continue;
 
-        if (current->type == WIDGET_TYPE_TEXT)
-        {
-
-            struct widget_text *text = (struct widget_text *)(current + 1);
-
-            current->size.x = x;
-            current->size.y = y;
-            current->size.w = w;
-            current->size.h = h;
-            text->size.x = x;
-            text->size.y = y;
-            text->size.w = w;
-
-            /* make dynamic */
-            text->size.h = h;
-
-        }
-
         if (current->type == WIDGET_TYPE_TEXTBOX)
         {
 
@@ -718,8 +682,6 @@ void render_resize(unsigned int source, int x, int y, int w, int h, unsigned int
             textbox->size.x = x;
             textbox->size.y = y;
             textbox->size.w = w;
-
-            /* make dynamic */
             textbox->size.h = h;
 
         }
@@ -811,7 +773,6 @@ void render_init()
     drawables[WIDGET_TYPE_FILL] = renderfill;
     drawables[WIDGET_TYPE_MOUSE] = rendermouse;
     drawables[WIDGET_TYPE_PANEL] = renderpanel;
-    drawables[WIDGET_TYPE_TEXT] = rendertext;
     drawables[WIDGET_TYPE_TEXTBOX] = rendertextbox;
     drawables[WIDGET_TYPE_WINDOW] = renderwindow;
 
