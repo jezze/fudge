@@ -41,8 +41,8 @@ static unsigned int lineheight;
 static unsigned int steplength;
 static unsigned char fontdata[0x8000];
 static unsigned char canvasdata[0x10000];
-static unsigned char layerdata0[0x8000];
-static unsigned char layerdata1[0x1000];
+static unsigned char layerdata0[0x10000];
+static unsigned char layerdata1[0x200];
 struct event_videomode vmode;
 static unsigned char colormap8[] = {
     0x00, 0x00, 0x00,
@@ -949,8 +949,8 @@ void init(struct channel *channel)
     widget_initfill(&background, 2);
     widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
     render_init();
-    render_setlayer(0, layerdata0, 0x8000);
-    render_setlayer(1, layerdata1, 0x1000);
+    render_setlayer(0, layerdata0, 0x10000);
+    render_setlayer(1, layerdata1, 0x200);
 
     if (!file_walk2(FILE_L0, "system:service"))
         return;
