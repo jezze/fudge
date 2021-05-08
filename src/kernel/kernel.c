@@ -342,7 +342,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
         struct mailbox *mailbox = &mailboxes[i];
 
-        mailbox_init(mailbox, (char *)(mbaddress + i * mbsize), mbsize);
+        mailbox_init(mailbox, (void *)(mbaddress + i * mbsize), mbsize);
         mailbox_register(mailbox);
 
     }

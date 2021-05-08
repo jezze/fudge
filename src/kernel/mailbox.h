@@ -13,4 +13,4 @@ unsigned int mailbox_place(struct mailbox *mailbox, struct message_header *heade
 void mailbox_reset(struct mailbox *mailbox);
 void mailbox_register(struct mailbox *mailbox);
 void mailbox_unregister(struct mailbox *mailbox);
-void mailbox_init(struct mailbox *mailbox, char *buffer, unsigned int count);
+void mailbox_init(struct mailbox *mailbox, void *buffer, unsigned int count);

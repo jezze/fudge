@@ -67,7 +67,7 @@ void mailbox_unregister(struct mailbox *mailbox)
 
 }
 
-void mailbox_init(struct mailbox *mailbox, char *buffer, unsigned int count)
+void mailbox_init(struct mailbox *mailbox, void *buffer, unsigned int count)
 {
 
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
