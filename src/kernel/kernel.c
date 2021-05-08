@@ -144,11 +144,13 @@ void kernel_killtask(unsigned int id)
 
 }
 
-void kernel_assign(void)
+void kernel_schedule(struct core *core)
 {
 
     struct list_item *current;
     struct list_item *next;
+
+    core->task = core_unschedule(core);
 
     spinlock_acquire(&blockedtasks.spinlock);
 
@@ -184,6 +186,8 @@ void kernel_assign(void)
         coreassign(task);
 
     }
+
+    core->task = core_schedule(core);
 
 }
 

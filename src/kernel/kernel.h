@@ -12,7 +12,7 @@ struct task *kernel_picktask(void);
 void kernel_freetask(unsigned int id);
 void kernel_readytask(unsigned int id);
 void kernel_killtask(unsigned int id);
-void kernel_assign(void);
+void kernel_schedule(struct core *core);
 struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor);
 void kernel_copydescriptors(struct task *source, struct task *target);
 void kernel_reset(unsigned int id);
