@@ -150,6 +150,10 @@ void kernel_schedule(struct core *core)
     struct list_item *current;
     struct list_item *next;
 
+    /* Task could be blocked or something else. Needs to be investigated */
+    if (core->task->item.list)
+        core->task = 0;
+
     core->task = core_unschedule(core);
 
     spinlock_acquire(&blockedtasks.spinlock);
