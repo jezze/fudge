@@ -16,7 +16,6 @@ static struct list freelinks;
 static struct list freetasks;
 static struct list readytasks;
 static struct list blockedtasks;
-static struct list killedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct task *task);
 
@@ -126,15 +125,6 @@ void kernel_readytask(unsigned int id)
 
 }
 
-void kernel_killtask(unsigned int id)
-{
-
-    struct task *task = &tasks[id];
-
-    list_add(&killedtasks, &task->item);
-
-}
-
 void kernel_schedule(struct core *core)
 {
 
@@ -149,6 +139,11 @@ void kernel_schedule(struct core *core)
 
         case TASK_STATE_NORMAL:
             list_add(&core->tasks, &core->task->item);
+
+            break;
+
+        case TASK_STATE_KILLED:
+            list_add(&freetasks, &core->task->item);
 
             break;
 
@@ -339,7 +334,6 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     list_init(&freetasks);
     list_init(&readytasks);
     list_init(&blockedtasks);
-    list_init(&killedtasks);
 
     for (i = 1; i < KERNEL_TASKS; i++)
     {

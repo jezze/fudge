@@ -1,8 +1,7 @@
-#define TASK_STATUS_NORMAL              0
-#define TASK_STATUS_BLOCKED             1
 #define TASK_STATE_NORMAL               0
-#define TASK_STATE_DESPAWNED            1
-#define TASK_STATE_BLOCKED              2
+#define TASK_STATE_KILLED               1
+#define TASK_STATE_DESPAWNED            2
+#define TASK_STATE_BLOCKED              3
 
 struct task_thread
 {
