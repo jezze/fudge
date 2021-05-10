@@ -82,15 +82,6 @@ static unsigned int loadtask(struct task *task, struct task *parent)
 
 }
 
-static unsigned int unloadtask(struct task *task)
-{
-
-    task_setstate(task, TASK_STATE_DESPAWNED);
-
-    return 0;
-
-}
-
 static unsigned int spawn(struct task *task, void *stack)
 {
 
@@ -103,7 +94,9 @@ static unsigned int spawn(struct task *task, void *stack)
 static unsigned int despawn(struct task *task, void *stack)
 {
 
-    return unloadtask(task);
+    task_setstate(task, TASK_STATE_DESPAWNED);
+
+    return 0;
 
 }
 
@@ -216,7 +209,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     DEBUG_LOG(DEBUG_INFO, "exception: divide by zero");
 
     if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
-        unloadtask(core->task);
+        task_setstate(core->task, TASK_STATE_KILLED);
 
     return arch_resume(&general, &interrupt);
 
