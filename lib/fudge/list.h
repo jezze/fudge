@@ -1,7 +1,6 @@
 struct list_item
 {
 
-    struct list *list;
     struct list_item *next;
     struct list_item *prev;
     void *data;

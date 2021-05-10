@@ -1,5 +1,8 @@
 #define TASK_STATUS_NORMAL              0
 #define TASK_STATUS_BLOCKED             1
+#define TASK_STATE_NORMAL               0
+#define TASK_STATE_DESPAWNED            1
+#define TASK_STATE_BLOCKED              2
 
 struct task_thread
 {
@@ -18,6 +21,7 @@ struct task
     struct binary_node node;
     struct binary_format *format;
     unsigned int id;
+    unsigned int state;
 
 };
 

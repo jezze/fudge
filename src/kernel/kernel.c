@@ -150,11 +150,33 @@ void kernel_schedule(struct core *core)
     struct list_item *current;
     struct list_item *next;
 
-    /* Task could be blocked or something else. Needs to be investigated */
-    if (core->task->item.list)
+    if (core->task)
+    {
+
+        switch (core->task->state)
+        {
+
+        case TASK_STATE_NORMAL:
+            list_add(&core->tasks, &core->task->item);
+
+            break;
+
+        case TASK_STATE_DESPAWNED:
+            list_add(&freetasks, &core->task->item);
+
+            break;
+
+        case TASK_STATE_BLOCKED:
+            list_add(&blockedtasks, &core->task->item);
+
+            break;
+
+        }
+
+        core->task->state = 0;
         core->task = 0;
 
-    core->task = core_unschedule(core);
+    }
 
     spinlock_acquire(&blockedtasks.spinlock);
 
@@ -191,7 +213,9 @@ void kernel_schedule(struct core *core)
 
     }
 
-    core->task = core_schedule(core);
+    current = list_picktail(&core->tasks);
+
+    core->task = (current) ? current->data : 0;
 
 }
 
@@ -235,7 +259,7 @@ unsigned int kernel_pick(unsigned int source, struct message_header *header, voi
     unsigned int count = mailbox_pick(&mailboxes[source], header, data);
 
     if (!count)
-        list_add(&blockedtasks, &tasks[source].item);
+        tasks[source].state = TASK_STATE_BLOCKED;
 
     return count;
 

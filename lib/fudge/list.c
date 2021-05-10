@@ -5,7 +5,6 @@
 static void add(struct list *list, struct list_item *item)
 {
 
-    item->list = list;
     item->prev = list->tail;
     item->next = 0;
 
@@ -40,7 +39,6 @@ static void remove(struct list *list, struct list_item *item)
     if (item->prev)
         item->prev->next = item->next;
 
-    item->list = 0;
     item->next = 0;
     item->prev = 0;
     list->count--;
@@ -51,10 +49,7 @@ void list_add(struct list *list, struct list_item *item)
 {
 
     spinlock_acquire(&list->spinlock);
-
-    if (item->list == 0)
-        add(list, item);
-
+    add(list, item);
     spinlock_release(&list->spinlock);
 
 }
@@ -63,10 +58,7 @@ void list_remove(struct list *list, struct list_item *item)
 {
 
     spinlock_acquire(&list->spinlock);
-
-    if (item->list == list)
-        remove(list, item);
-
+    remove(list, item);
     spinlock_release(&list->spinlock);
 
 }
@@ -74,8 +66,7 @@ void list_remove(struct list *list, struct list_item *item)
 void list_remove_nolock(struct list *list, struct list_item *item)
 {
 
-    if (item->list == list)
-        remove(list, item);
+     remove(list, item);
 
 }
 
@@ -126,7 +117,6 @@ struct list_item *list_picktail(struct list *list)
 void list_inititem(struct list_item *item, void *data)
 {
 
-    item->list = 0;
     item->next = 0;
     item->prev = 0;
     item->data = data;

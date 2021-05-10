@@ -4,25 +4,6 @@
 #include "task.h"
 #include "core.h"
 
-struct task *core_schedule(struct core *core)
-{
-
-    struct list_item *current = list_picktail(&core->tasks);
-
-    return (current) ? current->data : 0;
-
-}
-
-struct task *core_unschedule(struct core *core)
-{
-
-    if (core->task)
-        list_add(&core->tasks, &core->task->item);
-
-    return 0;
-
-}
-
 void core_register(struct core *core)
 {
 

@@ -58,7 +58,7 @@ static void maptask(struct task *task, unsigned int index, unsigned int paddress
 static unsigned int unloadtask(struct task *task)
 {
 
-    kernel_freetask(task->id);
+    task->state = TASK_STATE_DESPAWNED;
 
     return 0;
 
