@@ -208,8 +208,13 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
 
     DEBUG_LOG(DEBUG_INFO, "exception: divide by zero");
 
-    if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
-        task_setstate(core->task, TASK_STATE_KILLED);
+    if (core->task)
+    {
+
+        if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
+            task_setstate(core->task, TASK_STATE_KILLED);
+
+    }
 
     return arch_resume(&general, &interrupt);
 
