@@ -90,7 +90,7 @@ static unsigned int spawn(struct task *task, void *stack)
     if (!next)
         return 0;
 
-    kernel_copydescriptors(task, next);
+    kernel_copydescriptors(next, task);
 
     return loadtask(next);
 
