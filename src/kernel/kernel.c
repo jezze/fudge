@@ -116,19 +116,15 @@ struct task *kernel_picktask(void)
 
 }
 
-void kernel_readytask(unsigned int id)
+void kernel_readytask(struct task *task)
 {
-
-    struct task *task = &tasks[id];
 
     list_add(&readytasks, &task->item);
 
 }
 
-void kernel_unreadytask(unsigned int id)
+void kernel_freetask(struct task *task)
 {
-
-    struct task *task = &tasks[id];
 
     list_add(&freetasks, &task->item);
 
@@ -190,7 +186,7 @@ void kernel_schedule(struct core *core)
         {
 
             list_remove_nolock(&blockedtasks, current);
-            kernel_readytask(task->id);
+            list_add(&readytasks, &task->item);
 
         }
 
@@ -242,10 +238,10 @@ void kernel_copydescriptors(struct task *task, struct task *parent)
 
 }
 
-void kernel_reset(unsigned int id)
+void kernel_reset(struct task *task)
 {
 
-    mailbox_reset(&mailboxes[id]);
+    mailbox_reset(&mailboxes[task->id]);
 
 }
 
