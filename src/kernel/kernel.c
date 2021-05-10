@@ -159,7 +159,8 @@ void kernel_schedule(struct core *core)
 
         }
 
-        core->task->state = TASK_STATE_NORMAL;
+        task_setstate(core->task, TASK_STATE_NORMAL);
+
         core->task = 0;
 
     }
@@ -245,7 +246,7 @@ unsigned int kernel_pick(unsigned int source, struct message_header *header, voi
     unsigned int count = mailbox_pick(&mailboxes[source], header, data);
 
     if (!count)
-        tasks[source].state = TASK_STATE_BLOCKED;
+        task_setstate(&tasks[source], TASK_STATE_BLOCKED);
 
     return count;
 

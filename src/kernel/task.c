@@ -3,6 +3,13 @@
 #include "binary.h"
 #include "task.h"
 
+void task_setstate(struct task *task, unsigned int state)
+{
+
+    task->state = state;
+
+}
+
 void task_register(struct task *task)
 {
 
@@ -33,7 +40,6 @@ void task_init(struct task *task, unsigned int id)
     task_initthread(&task->thread);
     binary_initnode(&task->node);
 
-    task->format = 0;
     task->id = id;
 
 }

@@ -24,6 +24,7 @@ struct task
 
 };
 
+void task_setstate(struct task *task, unsigned int state);
 void task_register(struct task *task);
 void task_unregister(struct task *task);
 void task_initthread(struct task_thread *thread);
