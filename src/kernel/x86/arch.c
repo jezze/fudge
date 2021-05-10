@@ -64,8 +64,10 @@ static unsigned int unloadtask(struct task *task)
 
 }
 
-static unsigned int loadtask(struct task *task)
+static unsigned int loadtask(struct task *task, struct task *parent)
 {
+
+    kernel_copydescriptors(task, parent);
 
     if (kernel_setupbinary(task, ARCH_TASKSTACKVIRTUAL))
     {
@@ -87,12 +89,7 @@ static unsigned int spawn(struct task *task, void *stack)
 
     struct task *next = kernel_picktask();
 
-    if (!next)
-        return 0;
-
-    kernel_copydescriptors(next, task);
-
-    return loadtask(next);
+    return (next) ? loadtask(next, task) : 0;
 
 }
 
@@ -442,8 +439,7 @@ void arch_setup2(void)
     struct task *task = kernel_picktask();
 
     kernel_setupinit(task);
-    kernel_copydescriptors(task, task);
-    loadtask(task);
+    loadtask(task, task);
     arch_leave(&core0);
 
 }
