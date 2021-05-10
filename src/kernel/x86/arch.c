@@ -55,15 +55,6 @@ static void maptask(struct task *task, unsigned int index, unsigned int paddress
 
 }
 
-static unsigned int unloadtask(struct task *task)
-{
-
-    task_setstate(task, TASK_STATE_DESPAWNED);
-
-    return 0;
-
-}
-
 static unsigned int loadtask(struct task *task, struct task *parent)
 {
 
@@ -88,6 +79,15 @@ static unsigned int loadtask(struct task *task, struct task *parent)
         return 0;
 
     }
+
+}
+
+static unsigned int unloadtask(struct task *task)
+{
+
+    task_setstate(task, TASK_STATE_DESPAWNED);
+
+    return 0;
 
 }
 
