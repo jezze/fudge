@@ -125,6 +125,15 @@ void kernel_readytask(unsigned int id)
 
 }
 
+void kernel_unreadytask(unsigned int id)
+{
+
+    struct task *task = &tasks[id];
+
+    list_add(&freetasks, &task->item);
+
+}
+
 void kernel_schedule(struct core *core)
 {
 

@@ -80,7 +80,14 @@ static unsigned int loadtask(struct task *task, struct task *parent)
 
     }
 
-    return unloadtask(task);
+    else
+    {
+
+        kernel_unreadytask(task->id);
+
+        return 0;
+
+    }
 
 }
 
