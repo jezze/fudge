@@ -117,15 +117,6 @@ struct task *kernel_picktask(void)
 
 }
 
-void kernel_freetask(unsigned int id)
-{
-
-    struct task *task = &tasks[id];
-
-    list_add(&freetasks, &task->item);
-
-}
-
 void kernel_readytask(unsigned int id)
 {
 
@@ -357,7 +348,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
         task_init(task, i);
         task_register(task);
-        kernel_freetask(task->id);
+        list_add(&freetasks, &task->item);
 
     }
 
