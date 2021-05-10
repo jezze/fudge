@@ -313,7 +313,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
     task->thread.ip = task->format->findentry(&task->node);
     task->thread.sp = sp;
 
-    return 1;
+    return task->id;
 
 }
 
