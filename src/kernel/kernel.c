@@ -173,7 +173,7 @@ void kernel_schedule(struct core *core)
 
         }
 
-        core->task->state = 0;
+        core->task->state = TASK_STATE_NORMAL;
         core->task = 0;
 
     }
