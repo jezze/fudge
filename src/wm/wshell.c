@@ -86,14 +86,19 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
 
     struct event_wmkeypress *wmkeypress = mdata;
 
-    job_send(channel, jobs, njobs, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
-
     switch (wmkeypress->scancode)
     {
 
     case 0x2E:
         if (wmkeypress->keymod & KEYMOD_CTRL)
             job_send(channel, jobs, njobs, EVENT_TERM, 0, 0);
+        else
+            job_send(channel, jobs, njobs, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+
+        break;
+
+    default:
+        job_send(channel, jobs, njobs, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
 
         break;
 

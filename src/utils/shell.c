@@ -23,13 +23,16 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
 
     struct event_consoledata *consoledata = mdata;
 
-    job_send(channel, jobs, njobs, EVENT_CONSOLEDATA, 1, &consoledata->data);
-
     switch (consoledata->data)
     {
 
     case 0x03:
         job_send(channel, jobs, njobs, EVENT_TERM, 0, 0);
+
+        break;
+
+    default:
+        job_send(channel, jobs, njobs, EVENT_CONSOLEDATA, 1, &consoledata->data);
 
         break;
 
