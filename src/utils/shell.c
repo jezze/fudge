@@ -193,8 +193,8 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_link(FILE_G0);
     printprompt();
+    file_link(FILE_G0);
 
     while (channel_process(channel));
 
