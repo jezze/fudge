@@ -41,9 +41,9 @@ static void printprompt(void)
 static void flush(void)
 {
 
-    struct message_data data;
+    char buffer[MESSAGE_SIZE];
 
-    file_notify(FILE_G0, EVENT_WMRENDERDATA, ring_read(&output, data.buffer, MESSAGE_SIZE), &data);
+    file_notify(FILE_G0, EVENT_WMRENDERDATA, ring_read(&output, buffer, MESSAGE_SIZE), buffer);
 
 }
 

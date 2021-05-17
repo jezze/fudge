@@ -156,6 +156,20 @@ unsigned int channel_reply(struct channel *channel, unsigned int event, unsigned
 
 }
 
+unsigned int channel_replystring(struct channel *channel, unsigned int event, char *string)
+{
+
+    return channel_reply(channel, event, ascii_length(string), string);
+
+}
+
+unsigned int channel_replystringz(struct channel *channel, unsigned int event, char *string)
+{
+
+    return channel_reply(channel, event, ascii_lengthz(string), string);
+
+}
+
 unsigned int channel_poll(struct channel *channel, struct message_header *header, struct message_data *data)
 {
 

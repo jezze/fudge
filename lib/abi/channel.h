@@ -27,6 +27,8 @@ unsigned int channel_sendredirectsame(struct channel *channel, unsigned int targ
 unsigned int channel_sendredirectto(struct channel *channel, unsigned int target, unsigned int event, unsigned int id);
 unsigned int channel_sendredirectback(struct channel *channel, unsigned int target, unsigned int event);
 unsigned int channel_reply(struct channel *channel, unsigned int event, unsigned int count, void *data);
+unsigned int channel_replystring(struct channel *channel, unsigned int event, char *string);
+unsigned int channel_replystringz(struct channel *channel, unsigned int event, char *string);
 unsigned int channel_poll(struct channel *channel, struct message_header *header, struct message_data *data);
 unsigned int channel_pollsource(struct channel *channel, unsigned int source, struct message_header *header, struct message_data *data);
 unsigned int channel_pollevent(struct channel *channel, unsigned int event, struct message_header *header, struct message_data *data);
