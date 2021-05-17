@@ -111,7 +111,7 @@ unsigned int job_spawn(struct channel *channel, struct job *jobs, unsigned int n
 
             job_send(channel, jobs, i, EVENT_TERM, 0, 0);
 
-            return i;
+            return 0;
 
         }
 
