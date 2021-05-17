@@ -21,14 +21,12 @@ void init(struct channel *channel)
     if (id)
     {
 
-        struct message_data data;
-
         channel_setcallback(channel, EVENT_DATA, ondata);
         channel_sendredirectback(channel, id, EVENT_DATA);
-        channel_send(channel, id, EVENT_PATH, message_putstringz(&data, "/config/base.slang", 0), &data);
-        channel_send(channel, id, EVENT_PATH, message_putstringz(&data, "/config/arch.slang", 0), &data);
-        channel_send(channel, id, EVENT_PATH, message_putstringz(&data, "/config/init.slang", 0), &data);
-        channel_send(channel, id, EVENT_MAIN, 0, 0);
+        channel_sendstringz(channel, id, EVENT_PATH, "/config/base.slang");
+        channel_sendstringz(channel, id, EVENT_PATH, "/config/arch.slang");
+        channel_sendstringz(channel, id, EVENT_PATH, "/config/init.slang");
+        channel_send(channel, id, EVENT_MAIN);
 
     }
 

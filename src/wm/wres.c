@@ -5,13 +5,9 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-    struct message_data data;
-
     file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
 
-    while (channel_poll(channel, &header, &data))
-        channel_dispatch(channel, &header, &data);
+    while (channel_process(channel));
 
 }
 

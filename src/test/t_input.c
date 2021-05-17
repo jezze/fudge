@@ -9,36 +9,31 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     channel_reply(channel, EVENT_DATA, message_putstring(&data, "If you press f I will quit\n", 0), &data);
 
-    while (channel_pollsource(channel, source, &header, &data))
+    while (channel_pollsourceevent(channel, source, EVENT_CONSOLEDATA, &header, &data))
     {
 
-        if (header.event == EVENT_CONSOLEDATA)
+        struct event_consoledata *consoledata = (struct event_consoledata *)data.buffer;
+
+        if (consoledata->data == 'f')
         {
 
-            struct event_consoledata *consoledata = (struct event_consoledata *)data.buffer;
+            channel_reply(channel, EVENT_DATA, message_putstring(&data, "\nYou clicked f, goodbye!\n", 0), &data);
 
-            if (consoledata->data == 'f')
-            {
+            break;
 
-                channel_reply(channel, EVENT_DATA, message_putstring(&data, "\nYou clicked f, goodbye!\n", 0), &data);
+        }
 
-                break;
+        else if (consoledata->data == '\r')
+        {
 
-            }
+            channel_reply(channel, EVENT_DATA, message_putstring(&data, "\n", 0), &data);
 
-            else if (consoledata->data == '\r')
-            {
- 
-                channel_reply(channel, EVENT_DATA, message_putstring(&data, "\n", 0), &data);
+        }
 
-            }
+        else
+        {
 
-            else
-            {
-
-                channel_reply(channel, EVENT_DATA, message_datasize(&header), &data);
-
-            }
+            channel_reply(channel, EVENT_DATA, message_datasize(&header), &data);
 
         }
 

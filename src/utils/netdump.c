@@ -304,15 +304,15 @@ static void print_ethernet(struct channel *channel, unsigned int source, void *b
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-    struct message_data data;
-
     if (file_walk(FILE_L0, FILE_G0, "data"))
     {
 
+        struct message_data data;
+        unsigned int count;
+
         file_link(FILE_L0);
 
-        while (channel_polldescriptorevent(channel, FILE_L0, EVENT_DATA, &header, &data))
+        while ((count = channel_readdescriptor(channel, FILE_L0, data.buffer)))
             print_ethernet(channel, source, data.buffer);
 
         file_unlink(FILE_L0);

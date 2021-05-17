@@ -55,26 +55,19 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
         struct job jobs[32];
         unsigned int njobs = 0;
         unsigned int tasks;
+        unsigned int c;
 
         channel_sendredirectback(channel, id, EVENT_DATA);
         channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_send(channel, id, EVENT_DATA, count, buffer);
-        channel_send(channel, id, EVENT_MAIN, 0, 0);
+        channel_sendbuffer(channel, id, EVENT_DATA, count, buffer);
+        channel_send(channel, id, EVENT_MAIN);
 
-        while (channel_pollsource(channel, id, &header, &data))
+        while ((c = channel_readsource(channel, id, data.buffer)))
         {
 
-            if (header.event == EVENT_CLOSE)
-                break;
+            unsigned int n = job_parse(jobs, 32, data.buffer, c);
 
-            if (header.event == EVENT_DATA)
-            {
-
-                unsigned int n = job_parse(jobs, 32, data.buffer, message_datasize(&header));
-
-                njobs = job_spawn(channel, jobs, n);
-
-            }
+            njobs = job_spawn(channel, jobs, n);
 
         }
 
@@ -134,21 +127,14 @@ static void complete(struct channel *channel, struct ring *ring)
     if (id)
     {
 
-        struct message_header header;
         struct message_data data;
 
         channel_sendredirectback(channel, id, EVENT_DATA);
         channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_send(channel, id, EVENT_DATA, count, buffer);
-        channel_send(channel, id, EVENT_MAIN, 0, 0);
+        channel_sendbuffer(channel, id, EVENT_DATA, count, buffer);
+        channel_send(channel, id, EVENT_MAIN);
 
-        while (channel_pollsource(channel, id, &header, &data))
-        {
-
-            if (header.event == EVENT_CLOSE)
-                break;
-
-        }
+        while (channel_readsource(channel, id, data.buffer));
 
     }
 
@@ -209,14 +195,10 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-    struct message_data data;
-
     file_link(FILE_G0);
     printprompt();
 
-    while (channel_poll(channel, &header, &data))
-        channel_dispatch(channel, &header, &data);
+    while (channel_process(channel));
 
     file_unlink(FILE_G0);
 

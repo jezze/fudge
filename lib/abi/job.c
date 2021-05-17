@@ -88,7 +88,7 @@ void activatenext(struct channel *channel, unsigned int index, struct job *jobs,
         struct job *job = &jobs[index];
 
         if (job->id)
-            channel_send(channel, job->id, EVENT_MAIN, 0, 0);
+            channel_send(channel, job->id, EVENT_MAIN);
 
     }
 
@@ -165,10 +165,10 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
             struct message_data data;
 
             for (j = 0; j < job->noptions; j++)
-                channel_send(channel, job->id, EVENT_OPTION, message_putstringz(&data, job->options[j].value, message_putstringz(&data, job->options[j].key, 0)), &data);
+                channel_sendbuffer(channel, job->id, EVENT_OPTION, message_putstringz(&data, job->options[j].value, message_putstringz(&data, job->options[j].key, 0)), &data);
 
             for (j = 0; j < job->npaths; j++)
-                channel_send(channel, job->id, EVENT_PATH, message_putstringz(&data, job->paths[j], 0), &data);
+                channel_sendstringz(channel, job->id, EVENT_PATH, job->paths[j]);
 
         }
 
@@ -218,7 +218,7 @@ void job_send(struct channel *channel, struct job *jobs, unsigned int n, unsigne
         struct job *job = &jobs[i];
 
         if (job->id)
-            channel_send(channel, job->id, event, count, buffer);
+            channel_sendbuffer(channel, job->id, event, count, buffer);
 
         break;
 

@@ -9,14 +9,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (id)
     {
 
-        struct message_header header;
-        struct message_data data;
-
         channel_sendredirectsame(channel, id, EVENT_DATA);
         channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_send(channel, id, EVENT_PATH, message_putstringz(&data, "/data/motd.txt", 0), &data);
-        channel_send(channel, id, EVENT_MAIN, 0, 0);
-        channel_pollsourceevent(channel, id, EVENT_CLOSE, &header, &data);
+        channel_sendstringz(channel, id, EVENT_PATH, "/data/motd.txt");
+        channel_send(channel, id, EVENT_MAIN);
+        channel_wait(channel, id, EVENT_CLOSE);
 
     }
 

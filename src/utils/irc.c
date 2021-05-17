@@ -46,28 +46,20 @@ static void resolve(struct channel *channel, char *domain)
     if (id)
     {
 
-        struct message_header header;
         struct message_data data;
+        unsigned int c;
 
         channel_sendredirectback(channel, id, EVENT_DATA);
         channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_send(channel, id, EVENT_OPTION, message_putstringz(&data, domain, message_putstringz(&data, "domain", 0)), &data);
-        channel_send(channel, id, EVENT_QUERY, message_putstringz(&data, "data", 0), &data);
+        channel_sendbuffer(channel, id, EVENT_OPTION, message_putstringz(&data, domain, message_putstringz(&data, "domain", 0)), &data);
+        channel_sendstringz(channel, id, EVENT_QUERY, "data");
 
-        while (channel_pollsource(channel, id, &header, &data))
+        while ((c = channel_readsource(channel, id, data.buffer)))
         {
 
-            if (header.event == EVENT_CLOSE)
-                break;
-
-            if (header.event == EVENT_DATA)
-            {
-
-                socket_bind_ipv4s(&remote, data.buffer);
-                socket_bind_tcps(&remote, "6667", 0);
-                channel_reply(channel, EVENT_DATA, ascii_length(data.buffer), data.buffer);
-
-            }
+            socket_bind_ipv4s(&remote, data.buffer);
+            socket_bind_tcps(&remote, "6667", 0);
+            channel_reply(channel, EVENT_DATA, ascii_length(data.buffer), data.buffer);
 
         }
 
