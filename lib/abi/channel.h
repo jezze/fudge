@@ -34,8 +34,8 @@ unsigned int channel_pollsourceevent(struct channel *channel, unsigned int sourc
 unsigned int channel_polldescriptor(struct channel *channel, unsigned int descriptor, struct message_header *header, struct message_data *data);
 unsigned int channel_polldescriptorevent(struct channel *channel, unsigned int descriptor, unsigned int event, struct message_header *header, struct message_data *data);
 unsigned int channel_process(struct channel *channel);
-unsigned int channel_readsource(struct channel *channel, unsigned int source, void *buffer);
-unsigned int channel_readdescriptor(struct channel *channel, unsigned int descriptor, void *buffer);
+unsigned int channel_readsource(struct channel *channel, unsigned int source, void *buffer, unsigned int count);
+unsigned int channel_readdescriptor(struct channel *channel, unsigned int descriptor, void *buffer, unsigned int count);
 unsigned int channel_wait(struct channel *channel, unsigned int source, unsigned int event);
 void channel_close(struct channel *channel);
 void channel_setcallback(struct channel *channel, unsigned int event, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize));

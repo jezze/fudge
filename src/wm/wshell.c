@@ -123,7 +123,7 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
         channel_sendbuffer(channel, id, EVENT_DATA, count, buffer);
         channel_send(channel, id, EVENT_MAIN);
 
-        while ((c = channel_readsource(channel, id, data.buffer)))
+        while ((c = channel_readsource(channel, id, data.buffer, MESSAGE_SIZE)))
         {
 
             unsigned int n = job_parse(jobs, 32, data.buffer, c);
@@ -185,21 +185,19 @@ static void interpret(struct channel *channel, struct ring *ring)
 static void complete(struct channel *channel, struct ring *ring)
 {
 
-    char buffer[128];
-    unsigned int count = ring_read(ring, buffer, 128);
+    char buffer[BUFFER_SIZE];
+    unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
     unsigned int id = file_spawn("/bin/complete");
 
     if (id)
     {
-
-        struct message_data data;
 
         channel_sendredirectback(channel, id, EVENT_DATA);
         channel_sendredirectback(channel, id, EVENT_CLOSE);
         channel_sendbuffer(channel, id, EVENT_DATA, count, buffer);
         channel_send(channel, id, EVENT_MAIN);
 
-        while (channel_readsource(channel, id, data.buffer));
+        while (channel_readsource(channel, id, buffer, BUFFER_SIZE));
 
     }
 

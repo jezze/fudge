@@ -307,13 +307,13 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (file_walk(FILE_L0, FILE_G0, "data"))
     {
 
-        struct message_data data;
+        char buffer[BUFFER_SIZE];
         unsigned int count;
 
         file_link(FILE_L0);
 
-        while ((count = channel_readdescriptor(channel, FILE_L0, data.buffer)))
-            print_ethernet(channel, source, data.buffer);
+        while ((count = channel_readdescriptor(channel, FILE_L0, buffer, BUFFER_SIZE)))
+            print_ethernet(channel, source, buffer);
 
         file_unlink(FILE_L0);
 

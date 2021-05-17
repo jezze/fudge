@@ -43,7 +43,7 @@ static void resolve(struct channel *channel, char *domain)
         channel_sendbuffer(channel, id, EVENT_OPTION, message_putstringz(&data, domain, message_putstringz(&data, "domain", 0)), &data);
         channel_sendstringz(channel, id, EVENT_QUERY, "data");
 
-        while ((c = channel_readsource(channel, id, data.buffer)))
+        while ((c = channel_readsource(channel, id, data.buffer, MESSAGE_SIZE)))
             socket_bind_ipv4s(&remote, data.buffer);
 
     }

@@ -255,12 +255,13 @@ unsigned int channel_process(struct channel *channel)
 
 }
 
-unsigned int channel_readsource(struct channel *channel, unsigned int source, void *buffer)
+unsigned int channel_readsource(struct channel *channel, unsigned int source, void *buffer, unsigned int count)
 {
 
     struct message_header header;
+    struct message_data data;
 
-    while (channel_poll(channel, &header, buffer))
+    while (channel_poll(channel, &header, &data))
     {
 
         if (header.source == source)
@@ -273,10 +274,10 @@ unsigned int channel_readsource(struct channel *channel, unsigned int source, vo
                 return 0;
 
             case EVENT_DATA:
-                return message_datasize(&header);
+                return buffer_write(buffer, count, data.buffer, message_datasize(&header), 0);
 
             default:
-                channel_dispatch(channel, &header, buffer);
+                channel_dispatch(channel, &header, &data);
 
                 break;
 
@@ -287,7 +288,7 @@ unsigned int channel_readsource(struct channel *channel, unsigned int source, vo
         else
         {
 
-            channel_dispatch(channel, &header, buffer);
+            channel_dispatch(channel, &header, &data);
 
         }
 
@@ -297,12 +298,13 @@ unsigned int channel_readsource(struct channel *channel, unsigned int source, vo
 
 }
 
-unsigned int channel_readdescriptor(struct channel *channel, unsigned int descriptor, void *buffer)
+unsigned int channel_readdescriptor(struct channel *channel, unsigned int descriptor, void *buffer, unsigned int count)
 {
 
     struct message_header header;
+    struct message_data data;
 
-    while (channel_poll(channel, &header, buffer))
+    while (channel_poll(channel, &header, &data))
     {
 
         if (header.source == 0)
@@ -315,10 +317,10 @@ unsigned int channel_readdescriptor(struct channel *channel, unsigned int descri
                 return 0;
 
             case EVENT_DATA:
-                return message_datasize(&header);
+                return buffer_write(buffer, count, data.buffer, message_datasize(&header), 0);
 
             default:
-                channel_dispatch(channel, &header, buffer);
+                channel_dispatch(channel, &header, &data);
 
                 break;
 
@@ -329,7 +331,7 @@ unsigned int channel_readdescriptor(struct channel *channel, unsigned int descri
         else
         {
 
-            channel_dispatch(channel, &header, buffer);
+            channel_dispatch(channel, &header, &data);
 
         }
 

@@ -4,13 +4,13 @@
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_data data;
+    char buffer[BUFFER_SIZE];
     unsigned int count;
 
     file_link(FILE_G0);
 
-    while ((count = channel_readdescriptor(channel, FILE_G0, data.buffer)))
-        channel_reply(channel, EVENT_DATA, count, data.buffer);
+    while ((count = channel_readdescriptor(channel, FILE_G0, buffer, BUFFER_SIZE)))
+        channel_reply(channel, EVENT_DATA, count, buffer);
 
     file_unlink(FILE_G0);
     channel_close(channel);
