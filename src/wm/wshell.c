@@ -91,10 +91,8 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
     switch (wmkeypress->scancode)
     {
 
-    case 0x10:
-        if (wmkeypress->keymod & KEYMOD_SHIFT)
-            job_kill(channel, jobs, njobs);
-        else
+    case 0x2E:
+        if (wmkeypress->keymod & KEYMOD_CTRL)
             job_send(channel, jobs, njobs, EVENT_TERM, 0, 0);
 
         break;

@@ -28,13 +28,8 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
     switch (consoledata->data)
     {
 
-    case 'q':
+    case 0x03:
         job_send(channel, jobs, njobs, EVENT_TERM, 0, 0);
-
-        break;
-
-    case 'Q':
-        job_kill(channel, jobs, njobs);
 
         break;
 
