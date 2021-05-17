@@ -44,6 +44,33 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
 
 }
 
+static unsigned int send(struct channel *channel, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    struct message_header header;
+    unsigned int offset = 0;
+    char *buffer = data;
+
+    while (count > MESSAGE_SIZE)
+    {
+
+        message_initheader(&header, event, MESSAGE_SIZE);
+
+        while (!call_place(target, &header, buffer + offset));
+
+        count -= MESSAGE_SIZE;
+        offset += MESSAGE_SIZE;
+
+    }
+
+    message_initheader(&header, event, count);
+
+    while (!call_place(target, &header, buffer + offset));
+
+    return count + offset;
+
+}
+
 static unsigned int sendredirect(struct channel *channel, unsigned int target, unsigned int event, unsigned int mode, unsigned int id)
 {
 
@@ -53,7 +80,7 @@ static unsigned int sendredirect(struct channel *channel, unsigned int target, u
     redirect.mode = mode;
     redirect.id = id;
 
-    return channel_sendbuffer(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+    return send(channel, target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
 
 }
 
@@ -73,58 +100,28 @@ void channel_dispatch(struct channel *channel, struct message_header *header, st
 unsigned int channel_send(struct channel *channel, unsigned int target, unsigned int event)
 {
 
-    struct message_header header;
-
-    message_initheader(&header, event, 0);
-
-    while (!call_place(target, &header, 0));
-
-    return 0;
+    return send(channel, target, event, 0, 0);
 
 }
 
 unsigned int channel_sendbuffer(struct channel *channel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct message_header header;
-
-    message_initheader(&header, event, count);
-
-    while (!call_place(target, &header, data));
-
-    return count;
+    return send(channel, target, event, count, data);
 
 }
 
 unsigned int channel_sendstring(struct channel *channel, unsigned int target, unsigned int event, char *string)
 {
 
-    struct message_header header;
-    struct message_data data;
-    unsigned int count = ascii_length(string);
-
-    message_initheader(&header, event, count);
-    message_putbuffer(&data, count, string, 0);
-
-    while (!call_place(target, &header, &data));
-
-    return count;
+    return send(channel, target, event, ascii_length(string), string);
 
 }
 
 unsigned int channel_sendstringz(struct channel *channel, unsigned int target, unsigned int event, char *string)
 {
 
-    struct message_header header;
-    struct message_data data;
-    unsigned int count = ascii_lengthz(string);
-
-    message_initheader(&header, event, count);
-    message_putbuffer(&data, count, string, 0);
-
-    while (!call_place(target, &header, &data));
-
-    return count;
+    return send(channel, target, event, ascii_lengthz(string), string);
 
 }
 
@@ -152,7 +149,7 @@ unsigned int channel_sendredirectback(struct channel *channel, unsigned int targ
 unsigned int channel_reply(struct channel *channel, unsigned int event, unsigned int count, void *data)
 {
 
-    return (channel->callbacks[event].target) ? channel_sendbuffer(channel, channel->callbacks[event].target, event, count, data) : 0;
+    return (channel->callbacks[event].target) ? send(channel, channel->callbacks[event].target, event, count, data) : 0;
 
 }
 

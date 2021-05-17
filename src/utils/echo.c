@@ -14,12 +14,12 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
     if (file_walk2(FILE_L0, mdata))
     {
 
-        char buffer[MESSAGE_SIZE];
+        char buffer[BUFFER_SIZE];
         unsigned int count;
 
         file_seek(FILE_L0, 0);
 
-        while ((count = file_read(FILE_L0, buffer, MESSAGE_SIZE)))
+        while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
             channel_reply(channel, EVENT_DATA, count, buffer);
 
     }
