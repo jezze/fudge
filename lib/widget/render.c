@@ -437,6 +437,8 @@ static void rendertextbox(void *canvas, void *data, unsigned int line)
     unsigned int visiblerows = (textbox->size.h / font.lineheight);
     unsigned int rowoffset = (rowtotal > visiblerows) ? rowtotal - visiblerows : 0;
 
+    rowoffset += textbox->scroll;
+
     if (rowindex < rowtotal)
     {
 

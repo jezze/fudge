@@ -58,6 +58,7 @@ struct widget_textbox
     unsigned int length;
     unsigned int cursor;
     unsigned int offset;
+    int scroll;
 
 };
 

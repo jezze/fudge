@@ -179,6 +179,17 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
 
 }
 
+static void onwmmousescroll(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_wmmousescroll *wmmousescroll = mdata;
+
+    content.scroll += wmmousescroll->relz;
+
+    updatecontent();
+
+}
+
 static void onwmshow(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -201,6 +212,7 @@ void init(struct channel *channel)
     channel_setcallback(channel, EVENT_PATH, onpath);
     channel_setcallback(channel, EVENT_TERM, onterm);
     channel_setcallback(channel, EVENT_WMKEYPRESS, onwmkeypress);
+    channel_setcallback(channel, EVENT_WMMOUSESCROLL, onwmmousescroll);
     channel_setcallback(channel, EVENT_WMSHOW, onwmshow);
 
 }

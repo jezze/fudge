@@ -764,16 +764,6 @@ static void onmousescroll(struct channel *channel, unsigned int source, void *md
 
     }
 
-    /* REMOVE STUFF BELOW AFTER TEST */
-
-    if (mousescroll->relz < 0)
-        currentview->center -= (currentview->center > steplength) ? steplength : 0;
-    else
-        currentview->center += (currentview->center < steplength) ? steplength : 0;
-
-    arrangeview(channel, currentview);
-    showremotes(channel, &currentview->remotes);
-
 }
 
 static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
