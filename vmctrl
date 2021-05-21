@@ -6,12 +6,12 @@ run() {
     echo "Use ctrl+] to kill node-$1"
 
     stty intr ^]
-    qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -kernel fudge -initrd fudge.cpio $2
+    qemu-system-x86_64 -nodefaults -enable-kvm $2
     stty $sttybak
 }
 
 cmd_run() {
-    devices="-vga std -serial stdio"
+    devices="-smp 4 -kernel fudge -initrd fudge.cpio -vga std -serial stdio"
     devices="$devices -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-$1-eth0,script=no,downscript=no"
 
     if test -f "disks/node-$1-sda.qcow2"
@@ -23,7 +23,30 @@ cmd_run() {
 }
 
 cmd_runsimple() {
-    devices="-vga std -serial stdio"
+    devices="-smp 4 -kernel fudge -initrd fudge.cpio -vga std -serial stdio"
+
+    if test -f "disks/node-$1-sda.qcow2"
+    then
+        devices="$devices -drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
+    fi
+
+    run $1 "$devices"
+}
+
+cmd_runiso() {
+    devices="-smp 4 -cdrom fudge.iso -vga std -serial stdio"
+    devices="$devices -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-$1-eth0,script=no,downscript=no"
+
+    if test -f "disks/node-$1-sda.qcow2"
+    then
+        devices="$devices -drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
+    fi
+
+    run $1 "$devices"
+}
+
+cmd_runisosimple() {
+    devices="-smp 4 -cdrom fudge.iso -vga std -serial stdio"
 
     if test -f "disks/node-$1-sda.qcow2"
     then
@@ -94,7 +117,9 @@ cmd_mkdisk() {
 cmd_help() {
     echo "Commands:"
     echo "    run <id>"
+    echo "    runiso <id>"
     echo "    runsimple <id>"
+    echo "    runisosimple <id>"
     echo "    nat <iface>"
     echo "    connect"
     echo "    disconnect"
@@ -102,25 +127,10 @@ cmd_help() {
 }
 
 case "$1" in
-run)
-    cmd_run $2
-    ;;
-runsimple)
-    cmd_runsimple $2
-    ;;
-nat)
-    cmd_nat $2
-    ;;
-connect)
-    cmd_connect
-    ;;
-disconnect)
-    cmd_disconnect
-    ;;
-mkdisk)
-    cmd_mkdisk $2
+run|runiso|runsimple|runisosimple|nat|connect|disconnect|mkdisk)
+    "cmd_$@"
     ;;
 *)
-    cmd_help
+    "cmd_help"
     ;;
 esac
