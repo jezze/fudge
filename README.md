@@ -159,7 +159,7 @@ Link: https://discord.gg/4nNq6Grhtz
 
 There is also an irc channel:
 
-Server: irc.freenode.net
+Server: irc.libera.chat
 
 Channel: #fudge
 
