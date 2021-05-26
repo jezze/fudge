@@ -167,6 +167,20 @@ unsigned int job_run(struct channel *channel, struct job *jobs, unsigned int n)
             for (j = 0; j < job->noptions; j++)
                 channel_sendbuffer(channel, job->id, EVENT_OPTION, message_putstringz(&data, job->options[j].value, message_putstringz(&data, job->options[j].key, 0)), &data);
 
+        }
+
+    }
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job *job = &jobs[i];
+
+        if (job->id)
+        {
+
+            unsigned int j;
+
             for (j = 0; j < job->npaths; j++)
                 channel_sendstringz(channel, job->id, EVENT_PATH, job->paths[j]);
 
