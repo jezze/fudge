@@ -40,7 +40,7 @@ static unsigned int currenth;
 static unsigned int currentbpp;
 static struct font font;
 static void (*drawables[32])(void *canvas, void *data, unsigned int line);
-static void (*getbbox[32])(struct box *bbox, struct widget *widget, void *data);
+static void (*getbbox[32])(struct box *bbox, void *data);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
 static struct layer layers[LAYERS];
@@ -462,7 +462,7 @@ static void renderwindow(void *canvas, void *data, unsigned int line)
 
 }
 
-static void getbboxnull(struct box *bbox, struct widget *widget, void *data)
+static void getbboxnull(struct box *bbox, void *data)
 {
 
     bbox->x = 0;
@@ -472,7 +472,7 @@ static void getbboxnull(struct box *bbox, struct widget *widget, void *data)
 
 }
 
-static void getbboxfill(struct box *bbox, struct widget *widget, void *data)
+static void getbboxfill(struct box *bbox, void *data)
 {
 
     struct widget_fill *fill = data;
@@ -484,7 +484,7 @@ static void getbboxfill(struct box *bbox, struct widget *widget, void *data)
 
 }
 
-static void getbboxmouse(struct box *bbox, struct widget *widget, void *data)
+static void getbboxmouse(struct box *bbox, void *data)
 {
 
     struct widget_mouse *mouse = data;
@@ -496,7 +496,7 @@ static void getbboxmouse(struct box *bbox, struct widget *widget, void *data)
 
 }
 
-static void getbboxpanel(struct box *bbox, struct widget *widget, void *data)
+static void getbboxpanel(struct box *bbox, void *data)
 {
 
     struct widget_panel *panel = data;
@@ -508,7 +508,7 @@ static void getbboxpanel(struct box *bbox, struct widget *widget, void *data)
 
 }
 
-static void getbboxtextbox(struct box *bbox, struct widget *widget, void *data)
+static void getbboxtextbox(struct box *bbox, void *data)
 {
 
     struct widget_textbox *textbox = data;
@@ -520,7 +520,7 @@ static void getbboxtextbox(struct box *bbox, struct widget *widget, void *data)
 
 }
 
-static void getbboxwindow(struct box *bbox, struct widget *widget, void *data)
+static void getbboxwindow(struct box *bbox, void *data)
 {
 
     struct widget_window *window = data;
@@ -615,7 +615,7 @@ static unsigned int testline(unsigned int line)
 
             struct box bbox;
 
-            getbbox[current->type](&bbox, current, current + 1);
+            getbbox[current->type](&bbox, current + 1);
 
             if (current->damage != WIDGET_DAMAGE_NONE && isoverlap(line, &bbox))
                 return 1;
@@ -643,7 +643,7 @@ static void renderline(void *canvas, unsigned int line)
 
             struct box bbox;
 
-            getbbox[current->type](&bbox, current, current + 1);
+            getbbox[current->type](&bbox, current + 1);
 
             if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &bbox))
                 drawables[current->type](canvas, current + 1, line - bbox.y);
