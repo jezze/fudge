@@ -416,15 +416,12 @@ static void renderpanel(void *canvas, void *data, unsigned int line)
     unsigned int stringcolor = panel->active ? textcolor[WIDGET_TEXTTYPE_HIGHLIGHT] : textcolor[WIDGET_TEXTTYPE_NORMAL];
     unsigned int framecolor = panel->active ? COLOR_ACTIVEFRAME : COLOR_PASSIVEFRAME;
     unsigned int backgroundcolor = panel->active ? COLOR_ACTIVEBACK : COLOR_PASSIVEBACK;
-    struct box textbox;
 
-    box_setsize(&textbox, panel->size.x, panel->size.y, panel->size.w, panel->size.h);
-    box_resize(&textbox, font.padding);
     paint(canvas, backgroundcolor, panel->size.x, panel->size.w);
     paintframe(canvas, framecolor, &panel->size, line);
 
     if (line >= font.padding && ((line - font.padding) / font.lineheight == 0))
-        painttext(canvas, string, panel->length, textbox.x, textbox.x + textbox.w, stringcolor, (line - font.padding) % font.lineheight, panel->length);
+        painttext(canvas, string, panel->length, panel->textbox.x, panel->textbox.x + panel->textbox.w, stringcolor, (line - font.padding) % font.lineheight, panel->length);
 
 }
 
@@ -606,15 +603,17 @@ static unsigned int testline(unsigned int line)
         while ((current = nextwidget(&layers[i], current)))
         {
 
-            struct box bbox;
-            int relline;
+            if (current->damage != WIDGET_DAMAGE_NONE)
+            {
 
-            getbbox[current->type](&bbox, current + 1);
+                struct box bbox;
 
-            relline = line - bbox.y;
+                getbbox[current->type](&bbox, current + 1);
 
-            if (current->damage != WIDGET_DAMAGE_NONE && (relline >= 0 && relline < bbox.h))
-                return 1;
+                if (line >= bbox.y && line < bbox.y + bbox.h)
+                    return 1;
+
+            }
 
         }
 
@@ -637,15 +636,17 @@ static void renderline(void *canvas, unsigned int line)
         while ((current = nextwidget(&layers[i], current)))
         {
 
-            struct box bbox;
-            int relline;
+            if (current->damage != WIDGET_DAMAGE_REMOVE)
+            {
 
-            getbbox[current->type](&bbox, current + 1);
+                struct box bbox;
 
-            relline = line - bbox.y;
+                getbbox[current->type](&bbox, current + 1);
 
-            if (current->damage != WIDGET_DAMAGE_REMOVE && (relline >= 0 && relline < bbox.h))
-                drawables[current->type](canvas, current + 1, relline);
+                if (line >= bbox.y && line < bbox.y + bbox.h)
+                    drawables[current->type](canvas, current + 1, line - bbox.y);
+
+            }
 
         }
 
@@ -661,15 +662,11 @@ void render_flush(unsigned char *canvasdata, unsigned int size, void (*draw)(voi
     unsigned int chunk = 0;
     unsigned int chunkstart = 0;
     unsigned int line;
-    char lines[BUFFER_SIZE];
-
-    for (line = 0; line < currenth; line++)
-        lines[line] = testline(line);
 
     for (line = 0; line < currenth; line++)
     {
 
-        if (lines[line])
+        if (testline(line))
         {
 
             renderline(canvasdata + chunk * linesize, line);
@@ -744,6 +741,18 @@ void render_resize(unsigned int source, int x, int y, int w, int h, unsigned int
 
         if (current->source != source)
             continue;
+
+        if (current->type == WIDGET_TYPE_PANEL)
+        {
+
+            struct widget_panel *panel = (struct widget_panel *)(current + 1);
+
+            panel->textbox.x = panel->size.x + padding;
+            panel->textbox.y = panel->size.y + padding;
+            panel->textbox.w = panel->size.w - padding * 2;
+            panel->textbox.h = panel->size.h - padding * 2;
+
+        }
 
         if (current->type == WIDGET_TYPE_TEXTBOX)
         {

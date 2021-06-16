@@ -45,6 +45,7 @@ struct widget_panel
 {
 
     struct box size;
+    struct box textbox;
     unsigned int active;
     unsigned int length;
 
