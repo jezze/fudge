@@ -593,13 +593,6 @@ static void removedata(struct layer *layer, void *data, unsigned int count)
 
 }
 
-static unsigned int isoverlap(unsigned int line, struct box *size)
-{
-
-    return line >= size->y && line < size->y + size->h;
-
-}
-
 static unsigned int testline(unsigned int line)
 {
 
@@ -614,10 +607,13 @@ static unsigned int testline(unsigned int line)
         {
 
             struct box bbox;
+            int relline;
 
             getbbox[current->type](&bbox, current + 1);
 
-            if (current->damage != WIDGET_DAMAGE_NONE && isoverlap(line, &bbox))
+            relline = line - bbox.y;
+
+            if (current->damage != WIDGET_DAMAGE_NONE && (relline >= 0 && relline < bbox.h))
                 return 1;
 
         }
@@ -642,11 +638,14 @@ static void renderline(void *canvas, unsigned int line)
         {
 
             struct box bbox;
+            int relline;
 
             getbbox[current->type](&bbox, current + 1);
 
-            if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &bbox))
-                drawables[current->type](canvas, current + 1, line - bbox.y);
+            relline = line - bbox.y;
+
+            if (current->damage != WIDGET_DAMAGE_REMOVE && (relline >= 0 && relline < bbox.h))
+                drawables[current->type](canvas, current + 1, relline);
 
         }
 
