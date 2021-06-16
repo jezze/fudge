@@ -40,6 +40,7 @@ static unsigned int currenth;
 static unsigned int currentbpp;
 static struct font font;
 static void (*drawables[32])(void *canvas, void *data, unsigned int line);
+static void (*getbbox[32])(struct box *bbox, struct widget *widget, void *data);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
 static struct layer layers[LAYERS];
@@ -461,6 +462,76 @@ static void renderwindow(void *canvas, void *data, unsigned int line)
 
 }
 
+static void getbboxnull(struct box *bbox, struct widget *widget, void *data)
+{
+
+    bbox->x = 0;
+    bbox->y = 0;
+    bbox->w = 0;
+    bbox->h = 0;
+
+}
+
+static void getbboxfill(struct box *bbox, struct widget *widget, void *data)
+{
+
+    struct widget_fill *fill = data;
+
+    bbox->x = fill->size.x;
+    bbox->y = fill->size.y;
+    bbox->w = fill->size.w;
+    bbox->h = fill->size.h;
+
+}
+
+static void getbboxmouse(struct box *bbox, struct widget *widget, void *data)
+{
+
+    struct widget_mouse *mouse = data;
+
+    bbox->x = mouse->size.x;
+    bbox->y = mouse->size.y;
+    bbox->w = mouse->size.w;
+    bbox->h = mouse->size.h;
+
+}
+
+static void getbboxpanel(struct box *bbox, struct widget *widget, void *data)
+{
+
+    struct widget_panel *panel = data;
+
+    bbox->x = panel->size.x;
+    bbox->y = panel->size.y;
+    bbox->w = panel->size.w;
+    bbox->h = panel->size.h;
+
+}
+
+static void getbboxtextbox(struct box *bbox, struct widget *widget, void *data)
+{
+
+    struct widget_textbox *textbox = data;
+
+    bbox->x = textbox->size.x;
+    bbox->y = textbox->size.y;
+    bbox->w = textbox->size.w;
+    bbox->h = textbox->size.h;
+
+}
+
+static void getbboxwindow(struct box *bbox, struct widget *widget, void *data)
+{
+
+    struct widget_window *window = data;
+
+    bbox->x = window->size.x;
+    bbox->y = window->size.y;
+    bbox->w = window->size.w;
+    bbox->h = window->size.h;
+
+}
+
 static struct widget *nextwidget(struct layer *layer, void *current)
 {
 
@@ -542,7 +613,11 @@ static unsigned int testline(unsigned int line)
         while ((current = nextwidget(&layers[i], current)))
         {
 
-            if (current->damage != WIDGET_DAMAGE_NONE && isoverlap(line, &current->bbox))
+            struct box bbox;
+
+            getbbox[current->type](&bbox, current, current + 1);
+
+            if (current->damage != WIDGET_DAMAGE_NONE && isoverlap(line, &bbox))
                 return 1;
 
         }
@@ -566,8 +641,12 @@ static void renderline(void *canvas, unsigned int line)
         while ((current = nextwidget(&layers[i], current)))
         {
 
-            if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &current->bbox))
-                drawables[current->type](canvas, current + 1, line - current->bbox.y);
+            struct box bbox;
+
+            getbbox[current->type](&bbox, current, current + 1);
+
+            if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &bbox))
+                drawables[current->type](canvas, current + 1, line - bbox.y);
 
         }
 
@@ -672,10 +751,6 @@ void render_resize(unsigned int source, int x, int y, int w, int h, unsigned int
 
             struct widget_textbox *textbox = (struct widget_textbox *)(current + 1);
 
-            current->bbox.x = x + 2 + padding;
-            current->bbox.y = y + 2 + padding;
-            current->bbox.w = w - 4 - padding * 2;
-            current->bbox.h = h - 4 - padding * 2;
             textbox->size.x = x + 2 + padding;
             textbox->size.y = y + 2 + padding;
             textbox->size.w = w - 4 - padding * 2;
@@ -774,6 +849,12 @@ void render_init()
 
     textcolor[WIDGET_TEXTTYPE_NORMAL] = COLOR_TEXTNORMAL;
     textcolor[WIDGET_TEXTTYPE_HIGHLIGHT] = COLOR_TEXTLIGHT;
+    getbbox[WIDGET_TYPE_NULL] = getbboxnull;
+    getbbox[WIDGET_TYPE_FILL] = getbboxfill;
+    getbbox[WIDGET_TYPE_MOUSE] = getbboxmouse;
+    getbbox[WIDGET_TYPE_PANEL] = getbboxpanel;
+    getbbox[WIDGET_TYPE_TEXTBOX] = getbboxtextbox;
+    getbbox[WIDGET_TYPE_WINDOW] = getbboxwindow;
     drawables[WIDGET_TYPE_NULL] = rendernull;
     drawables[WIDGET_TYPE_FILL] = renderfill;
     drawables[WIDGET_TYPE_MOUSE] = rendermouse;

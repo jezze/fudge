@@ -22,7 +22,6 @@ struct widget
     unsigned int z;
     unsigned int damage;
     unsigned int count;
-    struct box bbox;
 
 };
 
@@ -75,5 +74,5 @@ void widget_initmouse(struct widget_mouse *mouse, unsigned int type);
 void widget_initpanel(struct widget_panel *panel, unsigned int active);
 void widget_inittextbox(struct widget_textbox *textbox);
 void widget_initwindow(struct widget_window *window, unsigned int active);
-void widget_update(struct ring *ring, void *item, unsigned int z, unsigned int type, unsigned int count, struct box *size);
+void widget_update(struct ring *ring, void *item, unsigned int z, unsigned int type, unsigned int count);
 void widget_remove(struct ring *ring, void *item, unsigned int z);

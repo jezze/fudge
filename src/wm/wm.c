@@ -71,7 +71,7 @@ static void draw(void *data, unsigned int count, unsigned int offset)
 static void updateremote(struct remote *remote)
 {
 
-    widget_update(&output, &remote->window, WIDGET_Z_BOTTOM, WIDGET_TYPE_WINDOW, sizeof (struct widget_window), &remote->window.size);
+    widget_update(&output, &remote->window, WIDGET_Z_BOTTOM, WIDGET_TYPE_WINDOW, sizeof (struct widget_window));
     ring_write(&output, &remote->window, sizeof (struct widget_window));
 
 }
@@ -79,7 +79,7 @@ static void updateremote(struct remote *remote)
 static void updateview(struct view *view)
 {
 
-    widget_update(&output, &view->panel, WIDGET_Z_BOTTOM, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length, &view->panel.size);
+    widget_update(&output, &view->panel, WIDGET_Z_BOTTOM, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length);
     ring_write(&output, &view->panel, sizeof (struct widget_panel));
     ring_write(&output, &view->numberstring, view->panel.length);
 
@@ -88,7 +88,7 @@ static void updateview(struct view *view)
 static void updatemouse(void)
 {
 
-    widget_update(&output, &mouse, WIDGET_Z_TOP, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse), &mouse.size);
+    widget_update(&output, &mouse, WIDGET_Z_TOP, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse));
     ring_write(&output, &mouse, sizeof (struct widget_mouse));
 
 }
@@ -96,7 +96,7 @@ static void updatemouse(void)
 static void updatebackground(void)
 {
 
-    widget_update(&output, &background, WIDGET_Z_BOTTOM, WIDGET_TYPE_FILL, sizeof (struct widget_fill), &background.size);
+    widget_update(&output, &background, WIDGET_Z_BOTTOM, WIDGET_TYPE_FILL, sizeof (struct widget_fill));
     ring_write(&output, &background, sizeof (struct widget_fill));
 
 }
