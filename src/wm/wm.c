@@ -871,13 +871,8 @@ static void onwmrenderdata(struct channel *channel, unsigned int source, void *m
         if (remote->source == source)
         {
 
-            unsigned int x = remote->window.size.x + 2 + padding;
-            unsigned int y = remote->window.size.y + 2 + padding;
-            unsigned int w = remote->window.size.w - 4 - padding * 2;
-            unsigned int h = remote->window.size.h - 4 - padding * 2;
-
             render_write(source, mdata, msize);
-            render_resize(source, x, y, w, h, padding, lineheight, steplength);
+            render_resize(source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h, padding, lineheight, steplength);
             render_flush(canvasdata, 0x10000, draw);
             render_complete();
 

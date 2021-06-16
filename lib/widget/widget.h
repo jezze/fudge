@@ -22,7 +22,7 @@ struct widget
     unsigned int z;
     unsigned int damage;
     unsigned int count;
-    struct box size;
+    struct box bbox;
 
 };
 

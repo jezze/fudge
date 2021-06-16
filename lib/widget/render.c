@@ -542,7 +542,7 @@ static unsigned int testline(unsigned int line)
         while ((current = nextwidget(&layers[i], current)))
         {
 
-            if (current->damage != WIDGET_DAMAGE_NONE && isoverlap(line, &current->size))
+            if (current->damage != WIDGET_DAMAGE_NONE && isoverlap(line, &current->bbox))
                 return 1;
 
         }
@@ -566,8 +566,8 @@ static void renderline(void *canvas, unsigned int line)
         while ((current = nextwidget(&layers[i], current)))
         {
 
-            if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &current->size))
-                drawables[current->type](canvas, current + 1, line - current->size.y);
+            if (current->damage != WIDGET_DAMAGE_REMOVE && isoverlap(line, &current->bbox))
+                drawables[current->type](canvas, current + 1, line - current->bbox.y);
 
         }
 
@@ -672,14 +672,14 @@ void render_resize(unsigned int source, int x, int y, int w, int h, unsigned int
 
             struct widget_textbox *textbox = (struct widget_textbox *)(current + 1);
 
-            current->size.x = x;
-            current->size.y = y;
-            current->size.w = w;
-            current->size.h = h;
-            textbox->size.x = x;
-            textbox->size.y = y;
-            textbox->size.w = w;
-            textbox->size.h = h;
+            current->bbox.x = x + 2 + padding;
+            current->bbox.y = y + 2 + padding;
+            current->bbox.w = w - 4 - padding * 2;
+            current->bbox.h = h - 4 - padding * 2;
+            textbox->size.x = x + 2 + padding;
+            textbox->size.y = y + 2 + padding;
+            textbox->size.w = w - 4 - padding * 2;
+            textbox->size.h = h - 4 - padding * 2;
 
         }
 

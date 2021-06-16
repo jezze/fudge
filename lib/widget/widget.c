@@ -45,10 +45,10 @@ void widget_update(struct ring *ring, void *item, unsigned int z, unsigned int t
     widget.z = z;
     widget.damage = WIDGET_DAMAGE_REPLACE;
     widget.count = sizeof (struct widget) + count;
-    widget.size.x = size->x;
-    widget.size.y = size->y;
-    widget.size.w = size->w;
-    widget.size.h = size->h;
+    widget.bbox.x = size->x;
+    widget.bbox.y = size->y;
+    widget.bbox.w = size->w;
+    widget.bbox.h = size->h;
 
     ring_write(ring, &widget, sizeof (struct widget));
 
@@ -64,10 +64,10 @@ void widget_remove(struct ring *ring, void *item, unsigned int z)
     widget.z = z;
     widget.damage = WIDGET_DAMAGE_REMOVE;
     widget.count = sizeof (struct widget);
-    widget.size.x = 0;
-    widget.size.y = 0;
-    widget.size.w = 0;
-    widget.size.h = 0;
+    widget.bbox.x = 0;
+    widget.bbox.y = 0;
+    widget.bbox.w = 0;
+    widget.bbox.h = 0;
 
     ring_write(ring, &widget, sizeof (struct widget));
 
