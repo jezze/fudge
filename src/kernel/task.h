@@ -21,6 +21,7 @@ struct task
     struct binary_format *format;
     unsigned int id;
     unsigned int state;
+    unsigned int kicked;
 
 };
 

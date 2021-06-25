@@ -135,6 +135,8 @@ void kernel_schedule(struct core *core)
 
     struct list_item *current;
     struct list_item *next;
+    struct list normal;
+    struct list kicked;
 
     if (core->task)
     {
@@ -205,6 +207,50 @@ void kernel_schedule(struct core *core)
 
     }
 
+    list_init(&normal);
+    list_init(&kicked);
+
+    while ((current = list_pickhead(&core->tasks)))
+    {
+
+        struct task *task = current->data;
+
+        if (task->kicked)
+        {
+
+            task->kicked = 0;
+
+            list_add(&kicked, &task->item);
+
+        }
+
+        else
+        {
+
+            list_add(&normal, &task->item);
+
+        }
+
+    }
+
+    while ((current = list_pickhead(&normal)))
+    {
+
+        struct task *task = current->data;
+
+        list_add(&core->tasks, &task->item);
+
+    }
+
+    while ((current = list_pickhead(&kicked)))
+    {
+
+        struct task *task = current->data;
+
+        list_add(&core->tasks, &task->item);
+
+    }
+
     current = list_picktail(&core->tasks);
 
     core->task = (current) ? current->data : 0;
@@ -261,6 +307,8 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct messa
 {
 
     header->source = source;
+
+    tasks[target].kicked++;
 
     return mailbox_place(&mailboxes[target], header, data);
 
