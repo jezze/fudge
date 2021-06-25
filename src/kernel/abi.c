@@ -283,7 +283,9 @@ static unsigned int notify(struct task *task, void *stack)
 static unsigned int kill(struct task *task, void *stack)
 {
 
-    task_setstate(task, TASK_STATE_KILLED);
+    struct {void *caller; unsigned int id;} *args = stack;
+
+    kernel_kill(args->id);
 
     return 0;
 

@@ -15,6 +15,7 @@ void kernel_schedule(struct core *core);
 struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor);
 void kernel_copydescriptors(struct task *task, struct task *parent);
 void kernel_reset(struct task *task);
+void kernel_kill(unsigned int id);
 unsigned int kernel_pick(unsigned int source, struct message_header *header, void *data);
 unsigned int kernel_place(unsigned int source, unsigned int target, struct message_header *header, void *data);
 void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigned int count);

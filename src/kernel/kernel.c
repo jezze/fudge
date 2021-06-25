@@ -291,6 +291,13 @@ void kernel_reset(struct task *task)
 
 }
 
+void kernel_kill(unsigned int id)
+{
+
+    task_setstate(&tasks[id], TASK_STATE_KILLED);
+
+}
+
 unsigned int kernel_pick(unsigned int source, struct message_header *header, void *data)
 {
 
