@@ -26,18 +26,6 @@ static void copydescriptor(struct service_descriptor *descriptor, struct service
 
 }
 
-static void copydescriptors(struct task *task, struct task *parent)
-{
-
-    copydescriptor(kernel_getdescriptor(task, FILE_PP + 0), kernel_getdescriptor(parent, FILE_CP + 0));
-    copydescriptor(kernel_getdescriptor(task, FILE_CP + 0), kernel_getdescriptor(parent, FILE_CP + 0));
-    copydescriptor(kernel_getdescriptor(task, FILE_PP + 1), kernel_getdescriptor(parent, FILE_CP + 1));
-    copydescriptor(kernel_getdescriptor(task, FILE_CP + 1), kernel_getdescriptor(parent, FILE_CP + 1));
-    copydescriptor(kernel_getdescriptor(task, FILE_PP + 2), kernel_getdescriptor(parent, FILE_CP + 2));
-    copydescriptor(kernel_getdescriptor(task, FILE_CP + 2), kernel_getdescriptor(parent, FILE_CP + 2));
-
-}
-
 static unsigned int setupbinary(struct task *task, unsigned int sp)
 {
 
@@ -60,24 +48,6 @@ static unsigned int setupbinary(struct task *task, unsigned int sp)
     task->thread.sp = sp;
 
     return task->id;
-
-}
-
-static void setupinit(struct task *task)
-{
-
-    struct service_descriptor *init = kernel_getdescriptor(task, FILE_CP);
-    struct service_descriptor *root = kernel_getdescriptor(task, FILE_CR);
-    struct service_descriptor *work = kernel_getdescriptor(task, FILE_CW);
-
-    root->protocol = service_findprotocol(6, "initrd");
-    root->id = root->protocol->root();
-
-    copydescriptor(work, root);
-    copydescriptor(init, root);
-
-    init->id = init->protocol->child(init->id, "bin", 3);
-    init->id = init->protocol->child(init->id, "init", 4);
 
 }
 
@@ -309,15 +279,37 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         if (parent)
         {
 
-            copydescriptors(task, parent);
+            copydescriptor(kernel_getdescriptor(task, FILE_PP + 0), kernel_getdescriptor(parent, FILE_CP + 0));
+            copydescriptor(kernel_getdescriptor(task, FILE_CP + 0), kernel_getdescriptor(parent, FILE_CP + 0));
+            copydescriptor(kernel_getdescriptor(task, FILE_PP + 1), kernel_getdescriptor(parent, FILE_CP + 1));
+            copydescriptor(kernel_getdescriptor(task, FILE_CP + 1), kernel_getdescriptor(parent, FILE_CP + 1));
+            copydescriptor(kernel_getdescriptor(task, FILE_PP + 2), kernel_getdescriptor(parent, FILE_CP + 2));
+            copydescriptor(kernel_getdescriptor(task, FILE_CP + 2), kernel_getdescriptor(parent, FILE_CP + 2));
 
         }
 
         else
         {
 
-            setupinit(task);
-            copydescriptors(task, task);
+            struct service_descriptor *init = kernel_getdescriptor(task, FILE_CP);
+            struct service_descriptor *root = kernel_getdescriptor(task, FILE_CR);
+            struct service_descriptor *work = kernel_getdescriptor(task, FILE_CW);
+
+            root->protocol = service_findprotocol(6, "initrd");
+            root->id = root->protocol->root();
+
+            copydescriptor(work, root);
+            copydescriptor(init, root);
+
+            init->id = init->protocol->child(init->id, "bin", 3);
+            init->id = init->protocol->child(init->id, "init", 4);
+
+            copydescriptor(kernel_getdescriptor(task, FILE_PP + 0), kernel_getdescriptor(task, FILE_CP + 0));
+            copydescriptor(kernel_getdescriptor(task, FILE_CP + 0), kernel_getdescriptor(task, FILE_CP + 0));
+            copydescriptor(kernel_getdescriptor(task, FILE_PP + 1), kernel_getdescriptor(task, FILE_CP + 1));
+            copydescriptor(kernel_getdescriptor(task, FILE_CP + 1), kernel_getdescriptor(task, FILE_CP + 1));
+            copydescriptor(kernel_getdescriptor(task, FILE_PP + 2), kernel_getdescriptor(task, FILE_CP + 2));
+            copydescriptor(kernel_getdescriptor(task, FILE_CP + 2), kernel_getdescriptor(task, FILE_CP + 2));
 
         }
 
