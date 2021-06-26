@@ -10,7 +10,6 @@ struct link *kernel_picklink(unsigned int source);
 void kernel_freelink(struct link *link);
 void kernel_schedule(struct core *core);
 struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor);
-void kernel_copydescriptors(struct task *task, struct task *parent);
 void kernel_kill(unsigned int source, unsigned int target);
 unsigned int kernel_pick(unsigned int source, struct message_header *header, void *data);
 unsigned int kernel_place(unsigned int source, unsigned int target, struct message_header *header, void *data);
