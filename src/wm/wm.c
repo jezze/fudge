@@ -932,10 +932,7 @@ void init(struct channel *channel)
     render_setlayer(0, layerdata0, 0x10000);
     render_setlayer(1, layerdata1, 0x200);
 
-    if (!file_walk2(FILE_L0, "system:service"))
-        return;
-
-    if (!file_create(FILE_G0, FILE_L0, "wm"))
+    if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
     channel_setcallback(channel, EVENT_KEYPRESS, onkeypress);
