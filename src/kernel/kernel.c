@@ -135,8 +135,6 @@ void kernel_schedule(struct core *core)
 
     struct list_item *current;
     struct list_item *next;
-    struct list normal;
-    struct list kicked;
 
     if (core->task)
     {
@@ -150,11 +148,6 @@ void kernel_schedule(struct core *core)
             break;
 
         case TASK_STATE_KILLED:
-            list_add(&freetasks, &core->task->item);
-
-            break;
-
-        case TASK_STATE_DESPAWNED:
             list_add(&freetasks, &core->task->item);
 
             break;
@@ -207,49 +200,7 @@ void kernel_schedule(struct core *core)
 
     }
 
-    list_init(&normal);
-    list_init(&kicked);
-
-    while ((current = list_pickhead(&core->tasks)))
-    {
-
-        struct task *task = current->data;
-
-        if (task->kicked)
-        {
-
-            task->kicked = 0;
-
-            list_add(&kicked, &task->item);
-
-        }
-
-        else
-        {
-
-            list_add(&normal, &task->item);
-
-        }
-
-    }
-
-    while ((current = list_pickhead(&normal)))
-    {
-
-        struct task *task = current->data;
-
-        list_add(&core->tasks, &task->item);
-
-    }
-
-    while ((current = list_pickhead(&kicked)))
-    {
-
-        struct task *task = current->data;
-
-        list_add(&core->tasks, &task->item);
-
-    }
+    core_sorttasks(core);
 
     current = list_picktail(&core->tasks);
 

@@ -6,6 +6,27 @@
 void task_setstate(struct task *task, unsigned int state)
 {
 
+    switch (state)
+    {
+
+    case TASK_STATE_NORMAL:
+        task->state = state;
+
+        break;
+
+    case TASK_STATE_KILLED:
+        task->state = state;
+
+        break;
+
+    case TASK_STATE_BLOCKED:
+        if (task->state == TASK_STATE_NORMAL)
+            task->state = state;
+
+        break;
+
+    }
+
     task->state = state;
 
 }
