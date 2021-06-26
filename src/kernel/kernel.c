@@ -14,7 +14,6 @@ static struct link links[KERNEL_LINKS];
 static struct service_descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct list freelinks;
 static struct list freetasks;
-static struct list readytasks;
 static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct task *task);
@@ -116,10 +115,10 @@ struct task *kernel_picktask(void)
 
 }
 
-void kernel_readytask(struct task *task)
+void kernel_assigntask(struct task *task)
 {
 
-    list_add(&readytasks, &task->item);
+    coreassign(task);
 
 }
 
@@ -181,7 +180,7 @@ void kernel_schedule(struct core *core)
         {
 
             list_remove_nolock(&blockedtasks, current);
-            list_add(&readytasks, &task->item);
+            coreassign(task);
 
         }
 
@@ -190,16 +189,6 @@ void kernel_schedule(struct core *core)
     }
 
     spinlock_release(&blockedtasks.spinlock);
-
-    while ((current = list_pickhead(&readytasks)))
-    {
-
-        struct task *task = current->data;
-
-        coreassign(task);
-
-    }
-
     core_sorttasks(core);
 
     current = list_picktail(&core->tasks);
@@ -344,7 +333,6 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
     list_init(&freelinks);
     list_init(&freetasks);
-    list_init(&readytasks);
     list_init(&blockedtasks);
 
     for (i = 1; i < KERNEL_TASKS; i++)

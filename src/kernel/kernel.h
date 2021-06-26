@@ -9,7 +9,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *t
 struct link *kernel_picklink(unsigned int source);
 void kernel_freelink(struct link *link);
 struct task *kernel_picktask(void);
-void kernel_readytask(struct task *task);
+void kernel_assigntask(struct task *task);
 void kernel_freetask(struct task *task);
 void kernel_schedule(struct core *core);
 struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor);
