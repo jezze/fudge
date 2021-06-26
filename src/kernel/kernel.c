@@ -106,29 +106,6 @@ void kernel_freelink(struct link *link)
 
 }
 
-struct task *kernel_picktask(void)
-{
-
-    struct list_item *current = list_picktail(&freetasks);
-
-    return (current) ? current->data : 0;
-
-}
-
-void kernel_assigntask(struct task *task)
-{
-
-    coreassign(task);
-
-}
-
-void kernel_freetask(struct task *task)
-{
-
-    list_add(&freetasks, &task->item);
-
-}
-
 void kernel_schedule(struct core *core)
 {
 
@@ -224,17 +201,10 @@ void kernel_copydescriptors(struct task *task, struct task *parent)
 
 }
 
-void kernel_reset(struct task *task)
+void kernel_kill(unsigned int source, unsigned int target)
 {
 
-    mailbox_reset(&mailboxes[task->id]);
-
-}
-
-void kernel_kill(unsigned int id)
-{
-
-    task_setstate(&tasks[id], TASK_STATE_KILLED);
+    task_setstate(&tasks[target], TASK_STATE_KILLED);
 
 }
 
@@ -283,7 +253,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 
 }
 
-unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
+static unsigned int setupbinary(struct task *task, unsigned int sp)
 {
 
     struct service_descriptor *init = kernel_getdescriptor(task, FILE_CP);
@@ -308,7 +278,7 @@ unsigned int kernel_setupbinary(struct task *task, unsigned int sp)
 
 }
 
-void kernel_setupinit(struct task *task)
+static void setupinit(struct task *task)
 {
 
     struct service_descriptor *init = kernel_getdescriptor(task, FILE_CP);
@@ -323,6 +293,56 @@ void kernel_setupinit(struct task *task)
 
     init->id = init->protocol->child(init->id, "bin", 3);
     init->id = init->protocol->child(init->id, "init", 4);
+
+}
+
+unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
+{
+
+    struct list_item *current = list_picktail(&freetasks);
+
+    if (current)
+    {
+
+        struct task *task = current->data;
+
+        if (parent)
+        {
+
+            kernel_copydescriptors(task, parent);
+
+        }
+
+        else
+        {
+
+            setupinit(task);
+            kernel_copydescriptors(task, task);
+
+        }
+
+        if (setupbinary(task, sp))
+        {
+
+            mailbox_reset(&mailboxes[task->id]);
+            coreassign(task);
+
+            return task->id;
+
+        }
+
+        else
+        {
+
+            list_add(&freetasks, &task->item);
+
+            return 0;
+
+        }
+
+    }
+
+    return 0;
 
 }
 

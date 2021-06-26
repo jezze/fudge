@@ -285,7 +285,7 @@ static unsigned int kill(struct task *task, void *stack)
 
     struct {void *caller; unsigned int id;} *args = stack;
 
-    kernel_kill(args->id);
+    kernel_kill(task->id, args->id);
 
     return 0;
 

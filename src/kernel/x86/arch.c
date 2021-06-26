@@ -55,39 +55,15 @@ static void maptask(struct task *task, unsigned int index, unsigned int paddress
 
 }
 
-static unsigned int loadtask(struct task *task, struct task *parent)
-{
-
-    kernel_copydescriptors(task, parent);
-
-    if (kernel_setupbinary(task, ARCH_TASKSTACKVIRTUAL))
-    {
-
-        buffer_copy(gettaskdirectory(task->id), getkerneldirectory(), sizeof (struct mmu_directory));
-        kernel_reset(task);
-        kernel_assigntask(task);
-
-        return task->id;
-
-    }
-
-    else
-    {
-
-        kernel_freetask(task);
-
-        return 0;
-
-    }
-
-}
-
 static unsigned int spawn(struct task *task, void *stack)
 {
 
-    struct task *next = kernel_picktask();
+    unsigned int id = kernel_loadtask(task, ARCH_TASKSTACKVIRTUAL);
 
-    return (next) ? loadtask(next, task) : 0;
+    if (id)
+        buffer_copy(gettaskdirectory(id), getkerneldirectory(), sizeof (struct mmu_directory));
+
+    return id;
 
 }
 
@@ -441,10 +417,11 @@ void arch_setup1(void)
 void arch_setup2(void)
 {
 
-    struct task *task = kernel_picktask();
+    unsigned int id = kernel_loadtask(0, ARCH_TASKSTACKVIRTUAL);
 
-    kernel_setupinit(task);
-    loadtask(task, task);
+    if (id)
+        buffer_copy(gettaskdirectory(id), getkerneldirectory(), sizeof (struct mmu_directory));
+
     arch_leave(&core0);
 
 }
