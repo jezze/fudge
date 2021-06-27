@@ -52,6 +52,9 @@ static unsigned int create(struct task *task, void *stack)
 
     descriptor->protocol = pdescriptor->protocol;
     descriptor->id = pdescriptor->protocol->create(pdescriptor->id, args->name, args->length);
+    descriptor->offset = 0;
+    descriptor->current = 0;
+    descriptor->count = 0;
 
     return descriptor->id;
 
