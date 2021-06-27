@@ -21,12 +21,12 @@ unsigned int cpio_filesize(struct cpio_header *header)
 
 }
 
-unsigned int cpio_next(struct cpio_header *header, unsigned int offset)
+unsigned int cpio_next(struct cpio_header *header)
 {
 
     unsigned int size = cpio_filesize(header);
 
-    return offset + cpio_filedata(header) + size + (size & 1);
+    return cpio_filedata(header) + size + (size & 1);
 
 }
 

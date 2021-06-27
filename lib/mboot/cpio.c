@@ -9,14 +9,25 @@ static unsigned int limit;
 static struct cpio_header *getheader(unsigned int id)
 {
 
-    struct cpio_header *header = (struct cpio_header *)(id);
+    struct cpio_header *header = (struct cpio_header *)id;
 
     return (cpio_validate(header)) ? header : 0;
 
 }
 
-static char *getname(struct cpio_header *header)
+unsigned int getnext(unsigned int id)
 {
+
+    struct cpio_header *header = (struct cpio_header *)id;
+
+    return id + cpio_next(header);
+
+}
+
+static char *getname(unsigned int id)
+{
+
+    struct cpio_header *header = (struct cpio_header *)id;
 
     return (char *)(header + 1);
 
@@ -25,7 +36,7 @@ static char *getname(struct cpio_header *header)
 static unsigned int parent(struct cpio_header *header, unsigned int id)
 {
 
-    char *name = getname(header);
+    char *name = getname(id);
     unsigned int length = buffer_findlastbyte(name, header->namesize - 1, '/');
     struct cpio_header *eheader;
     unsigned int current = id;
@@ -44,7 +55,7 @@ static unsigned int parent(struct cpio_header *header, unsigned int id)
         if (eheader->namesize == length + 1)
             return current;
 
-    } while ((current = cpio_next(eheader, current)));
+    } while ((current = getnext(current)));
 
     return id;
 
@@ -69,7 +80,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
         if (eheader->namesize != header->namesize + length + 1)
             continue;
 
-        name = getname(eheader);
+        name = getname(current);
 
         if (!name)
             break;
@@ -77,7 +88,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
         if (buffer_match(name + header->namesize, path, length))
             return current;
 
-    } while ((current = cpio_next(eheader, current)));
+    } while ((current = getnext(current)));
 
     return id;
 
@@ -103,7 +114,7 @@ static unsigned int protocol_root(void)
 
         id = current;
 
-    } while ((current = cpio_next(eheader, current)));
+    } while ((current = getnext(current)));
 
     return id;
 
@@ -155,7 +166,7 @@ static unsigned int stepdirectory(unsigned int id, unsigned int current)
     if (!eheader)
         return 0;
 
-    while ((current = cpio_next(eheader, current)))
+    while ((current = getnext(current)))
     {
 
         if (current == id)
@@ -217,7 +228,7 @@ static unsigned int readdirectory(void *buffer, unsigned int count, unsigned int
     if (!eheader)
         return 0;
 
-    name = getname(eheader);
+    name = getname(current);
 
     if (!name)
         return 0;
