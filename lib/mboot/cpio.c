@@ -36,8 +36,7 @@ static char *getname(unsigned int id)
 static unsigned int parent(struct cpio_header *header, unsigned int id)
 {
 
-    char *name = getname(id);
-    unsigned int length = buffer_findlastbyte(name, header->namesize - 1, '/');
+    unsigned int length = buffer_findlastbyte(getname(id), header->namesize - 1, '/');
     struct cpio_header *eheader;
     unsigned int current = id;
 
@@ -118,10 +117,7 @@ static unsigned int protocol_parent(unsigned int id)
 
     struct cpio_header *header = getheader(id);
 
-    if (!header)
-        return 0;
-
-    return parent(header, id);
+    return (header) ? parent(header, id) : 0;
 
 }
 
@@ -130,10 +126,7 @@ static unsigned int protocol_child(unsigned int id, char *path, unsigned int len
 
     struct cpio_header *header = getheader(id);
 
-    if (!header)
-        return 0;
-
-    return child(header, id, path, length);
+    return (header) ? child(header, id, path, length) : 0;
 
 }
 
@@ -199,19 +192,11 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
 
 }
 
-static unsigned int readfile(void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
-{
-
-    return buffer_read(buffer, count, (void *)(id + cpio_filedata(header)), cpio_filesize(header), offset);
-
-}
-
 static unsigned int readdirectory(void *buffer, unsigned int count, unsigned int offset, unsigned int current, struct cpio_header *header)
 {
 
-    struct record record;
     struct cpio_header *eheader;
-    char *name;
+    struct record record;
 
     if (!current)
         return 0;
@@ -221,14 +206,9 @@ static unsigned int readdirectory(void *buffer, unsigned int count, unsigned int
     if (!eheader)
         return 0;
 
-    name = getname(current);
-
-    if (!name)
-        return 0;
-
     record.id = current;
     record.size = cpio_filesize(eheader);
-    record.length = buffer_read(record.name, RECORD_NAMESIZE, name, eheader->namesize - 1, header->namesize);
+    record.length = buffer_read(record.name, RECORD_NAMESIZE, getname(current), eheader->namesize - 1, header->namesize);
 
     return buffer_read(buffer, count, &record, sizeof (struct record), offset);
 
@@ -246,7 +226,7 @@ static unsigned int protocol_read(unsigned int id, unsigned int current, void *b
     {
 
     case 0x8000:
-        return readfile(buffer, count, offset, id, header);
+        return buffer_read(buffer, count, (void *)(id + cpio_filedata(header)), cpio_filesize(header), offset);
 
     case 0x4000:
         return readdirectory(buffer, count, offset, current, header);
@@ -254,13 +234,6 @@ static unsigned int protocol_read(unsigned int id, unsigned int current, void *b
     }
 
     return 0;
-
-}
-
-static unsigned int writefile(void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
-{
-
-    return buffer_write((void *)(id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset);
 
 }
 
@@ -276,7 +249,7 @@ static unsigned int protocol_write(unsigned int id, unsigned int current, void *
     {
 
     case 0x8000:
-        return writefile(buffer, count, offset, id, header);
+        return buffer_write((void *)(id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset);
 
     }
 
@@ -296,10 +269,7 @@ static unsigned int protocol_map(unsigned int id)
 
     struct cpio_header *header = getheader(id);
 
-    if (!header)
-        return 0;
-
-    return id + cpio_filedata(header);
+    return (header) ? id + cpio_filedata(header) : 0;
 
 }
 
