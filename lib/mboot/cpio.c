@@ -18,7 +18,7 @@ static struct cpio_header *getheader(unsigned int id)
 unsigned int getnext(unsigned int id)
 {
 
-    struct cpio_header *header = (struct cpio_header *)id;
+    struct cpio_header *header = getheader(id);
 
     return id + cpio_next(header);
 
@@ -27,7 +27,7 @@ unsigned int getnext(unsigned int id)
 static char *getname(unsigned int id)
 {
 
-    struct cpio_header *header = (struct cpio_header *)id;
+    struct cpio_header *header = getheader(id);
 
     return (char *)(header + 1);
 
