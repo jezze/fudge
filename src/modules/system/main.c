@@ -24,7 +24,7 @@ static unsigned int protocol_parent(unsigned int id)
 
     struct system_node *node = getnode(id);
 
-    return (unsigned int)node->parent;
+    return (node->parent) ? (unsigned int)node->parent : id;
 
 }
 
@@ -347,9 +347,6 @@ void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
-
-    root.parent = &root;
-
     service_initprotocol(&protocol, "system", protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_read, protocol_write, protocol_seek, protocol_map, protocol_link, protocol_unlink, protocol_notify);
     resource_register(&protocol.resource);
 
