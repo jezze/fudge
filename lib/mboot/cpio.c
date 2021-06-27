@@ -70,8 +70,6 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
     do
     {
 
-        char *name;
-
         eheader = getheader(current);
 
         if (!eheader)
@@ -80,12 +78,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
         if (eheader->namesize != header->namesize + length + 1)
             continue;
 
-        name = getname(current);
-
-        if (!name)
-            break;
-
-        if (buffer_match(name + header->namesize, path, length))
+        if (buffer_match(getname(current) + header->namesize, path, length))
             return current;
 
     } while ((current = getnext(current)));
