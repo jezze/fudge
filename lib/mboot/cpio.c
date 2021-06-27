@@ -55,7 +55,7 @@ static unsigned int parent(struct cpio_header *header, unsigned int id)
 
     } while ((current = getnext(current)));
 
-    return id;
+    return 0;
 
 }
 
@@ -80,7 +80,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
 
     } while ((current = getnext(current)));
 
-    return id;
+    return 0;
 
 }
 
@@ -144,20 +144,15 @@ static unsigned int protocol_destroy(unsigned int id)
 static unsigned int stepdirectory(unsigned int id, unsigned int current)
 {
 
-    struct cpio_header *cheader = getheader(current);
-
-    if (!cheader)
-        return 0;
-
     do
     {
 
-        if (current == id)
-            break;
-
-        cheader = getheader(current);
+        struct cpio_header *cheader = getheader(current);
 
         if (!cheader)
+            break;
+
+        if (current == id)
             break;
 
         if (parent(cheader, current) == id)
