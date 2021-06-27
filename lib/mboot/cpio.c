@@ -9,7 +9,7 @@ static unsigned int limit;
 static struct cpio_header *getheader(unsigned int id)
 {
 
-    struct cpio_header *header = (struct cpio_header *)(address + id);
+    struct cpio_header *header = (struct cpio_header *)(id);
 
     return (cpio_validate(header)) ? header : 0;
 
@@ -18,7 +18,7 @@ static struct cpio_header *getheader(unsigned int id)
 static char *getname(struct cpio_header *header, unsigned int id)
 {
 
-    return (char *)(address + id + sizeof (struct cpio_header));
+    return (char *)(id + sizeof (struct cpio_header));
 
 }
 
@@ -54,7 +54,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
 {
 
     struct cpio_header *eheader;
-    unsigned int current = 0;
+    unsigned int current = address;
 
     do
     {
@@ -88,7 +88,7 @@ static unsigned int protocol_root(void)
 
     struct cpio_header *eheader;
     unsigned int id = 0;
-    unsigned int current = 0;
+    unsigned int current = address;
 
     do
     {
@@ -187,7 +187,7 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
     {
 
     case 0x4000:
-        return stepdirectory(id, (id == current) ? 0 : current);
+        return stepdirectory(id, (id == current) ? address : current);
 
     }
 
@@ -198,7 +198,7 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
 static unsigned int readfile(void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
-    return buffer_read(buffer, count, (void *)(address + id + cpio_filedata(header)), cpio_filesize(header), offset);
+    return buffer_read(buffer, count, (void *)(id + cpio_filedata(header)), cpio_filesize(header), offset);
 
 }
 
@@ -256,7 +256,7 @@ static unsigned int protocol_read(unsigned int id, unsigned int current, void *b
 static unsigned int writefile(void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
-    return buffer_write((void *)(address + id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset);
+    return buffer_write((void *)(id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset);
 
 }
 
@@ -295,7 +295,7 @@ static unsigned int protocol_map(unsigned int id)
     if (!header)
         return 0;
 
-    return address + id + cpio_filedata(header);
+    return id + cpio_filedata(header);
 
 }
 
