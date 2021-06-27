@@ -15,17 +15,17 @@ static struct cpio_header *getheader(unsigned int id)
 
 }
 
-static char *getname(struct cpio_header *header, unsigned int id)
+static char *getname(struct cpio_header *header)
 {
 
-    return (char *)(id + sizeof (struct cpio_header));
+    return (char *)(header + 1);
 
 }
 
 static unsigned int parent(struct cpio_header *header, unsigned int id)
 {
 
-    char *name = getname(header, id);
+    char *name = getname(header);
     unsigned int length = buffer_findlastbyte(name, header->namesize - 1, '/');
     struct cpio_header *eheader;
     unsigned int current = id;
@@ -69,7 +69,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
         if (eheader->namesize != header->namesize + length + 1)
             continue;
 
-        name = getname(eheader, current);
+        name = getname(eheader);
 
         if (!name)
             break;
@@ -217,7 +217,7 @@ static unsigned int readdirectory(void *buffer, unsigned int count, unsigned int
     if (!eheader)
         return 0;
 
-    name = getname(eheader, current);
+    name = getname(eheader);
 
     if (!name)
         return 0;
