@@ -6,20 +6,6 @@ static struct service_protocol protocol;
 static unsigned int address;
 static unsigned int limit;
 
-static unsigned int read(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return buffer_read(buffer, count, (void *)address, limit, offset);
-
-}
-
-static unsigned int write(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return buffer_write((void *)address, limit, buffer, count, offset);
-
-}
-
 static struct cpio_header *getheader(unsigned int id)
 {
 
@@ -212,10 +198,7 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
 static unsigned int readfile(void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
-    unsigned int s = cpio_filesize(header) - offset;
-    unsigned int o = id + cpio_filedata(header) + offset;
-
-    return read(buffer, (count > s) ? s : count, o);
+    return buffer_read(buffer, count, (void *)(address + id + cpio_filedata(header)), cpio_filesize(header), offset);
 
 }
 
@@ -273,10 +256,7 @@ static unsigned int protocol_read(unsigned int id, unsigned int current, void *b
 static unsigned int writefile(void *buffer, unsigned int count, unsigned int offset, unsigned int id, struct cpio_header *header)
 {
 
-    unsigned int s = cpio_filesize(header) - offset;
-    unsigned int o = id + cpio_filedata(header) + offset;
-
-    return write(buffer, (count > s) ? s : count, o);
+    return buffer_write((void *)(address + id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset);
 
 }
 
