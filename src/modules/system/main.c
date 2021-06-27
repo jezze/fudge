@@ -24,7 +24,7 @@ static unsigned int protocol_parent(unsigned int id)
 
     struct system_node *node = getnode(id);
 
-    return (node->parent) ? (unsigned int)node->parent : id;
+    return (unsigned int)node->parent;
 
 }
 
@@ -32,18 +32,18 @@ static unsigned int protocol_child(unsigned int id, char *path, unsigned int len
 {
 
     struct system_node *node = getnode(id);
+    struct system_node *child = 0;
     struct list_item *current;
-    struct system_node *n = node;
 
     spinlock_acquire(&node->children.spinlock);
 
     for (current = node->children.head; current; current = current->next)
     {
 
-        struct system_node *n2 = current->data;
-        unsigned int length0 = ascii_length(n2->name);
+        struct system_node *cnode = current->data;
+        unsigned int length0 = ascii_length(cnode->name);
 
-        if (n2->type == SYSTEM_NODETYPE_MULTIGROUP)
+        if (cnode->type == SYSTEM_NODETYPE_MULTIGROUP)
         {
 
             unsigned int colon = buffer_findbyte(path, length, ':');
@@ -52,12 +52,12 @@ static unsigned int protocol_child(unsigned int id, char *path, unsigned int len
             if (length0 != colon)
                 continue;
 
-            if (!buffer_match(n2->name, path, colon))
+            if (!buffer_match(cnode->name, path, colon))
                 continue;
 
             val = ascii_rvalue(path + colon + 1, length - colon - 1, 10);
 
-            if (val != n2->index)
+            if (val != cnode->index)
                 continue;
 
         }
@@ -68,12 +68,12 @@ static unsigned int protocol_child(unsigned int id, char *path, unsigned int len
             if (length0 != length)
                 continue;
 
-            if (!buffer_match(n2->name, path, length))
+            if (!buffer_match(cnode->name, path, length))
                 continue;
 
         }
 
-        n = n2;
+        child = cnode;
 
         break;
 
@@ -81,7 +81,7 @@ static unsigned int protocol_child(unsigned int id, char *path, unsigned int len
 
     spinlock_release(&node->children.spinlock);
 
-    return (unsigned int)n;
+    return (unsigned int)child;
 
 }
 
