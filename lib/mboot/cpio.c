@@ -45,7 +45,7 @@ static unsigned int parent(struct cpio_header *header, unsigned int id)
         struct cpio_header *cheader = getheader(current);
 
         if (!cheader)
-            break;
+            return 0;
 
         if ((cheader->mode & 0xF000) != 0x4000)
             continue;
@@ -70,7 +70,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
         struct cpio_header *cheader = getheader(current);
 
         if (!cheader)
-            break;
+            return 0;
 
         if (cheader->namesize != header->namesize + length + 1)
             continue;
@@ -96,7 +96,7 @@ static unsigned int protocol_root(void)
         struct cpio_header *cheader = getheader(current);
 
         if (!cheader)
-            break;
+            return id;
 
         if ((cheader->mode & 0xF000) != 0x4000)
             continue;
@@ -105,7 +105,7 @@ static unsigned int protocol_root(void)
 
     } while ((current = getnext(current)));
 
-    return id;
+    return 0;
 
 }
 
