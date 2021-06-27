@@ -2,6 +2,13 @@
 #include "resource.h"
 #include "service.h"
 
+unsigned int service_checkdescriptor(struct service_descriptor *descriptor)
+{
+
+    return descriptor->protocol && descriptor->id;
+
+}
+
 struct service_protocol *service_findprotocol(unsigned int count, char *name)
 {
 

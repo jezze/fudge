@@ -87,11 +87,14 @@ unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsi
         else
             descriptor->id = descriptor->protocol->child(descriptor->id, cp, cl);
 
+        if (!descriptor->id)
+            return 0;
+
         offset += cl + 1;
 
     }
 
-    return offset >= length;
+    return descriptor->id;
 
 }
 
