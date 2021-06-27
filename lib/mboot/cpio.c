@@ -152,7 +152,7 @@ static unsigned int stepdirectory(unsigned int id, unsigned int current)
     if (!eheader)
         return 0;
 
-    while ((current = getnext(current)))
+    do
     {
 
         if (current == id)
@@ -166,7 +166,7 @@ static unsigned int stepdirectory(unsigned int id, unsigned int current)
         if (parent(eheader, current) == id)
             return current;
 
-    }
+    } while ((current = getnext(current)));
 
     return 0;
 
@@ -184,7 +184,7 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
     {
 
     case 0x4000:
-        return stepdirectory(id, (id == current) ? address : current);
+        return stepdirectory(id, (current) ? getnext(current) : address);
 
     }
 

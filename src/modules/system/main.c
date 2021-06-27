@@ -106,10 +106,19 @@ static unsigned int protocol_destroy(unsigned int id)
 static unsigned int protocol_step(unsigned int id, unsigned int current)
 {
 
-    struct system_node *node = getnode(current);
-
-    if (id == current)
+    if (current)
     {
+
+        struct system_node *node = getnode(current);
+
+        return (node->item.next) ? (unsigned int)node->item.next->data : 0;
+
+    }
+
+    else
+    {
+
+        struct system_node *node = getnode(id);
 
         spinlock_acquire(&node->children.spinlock);
 
@@ -118,13 +127,6 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
         spinlock_release(&node->children.spinlock);
 
         return id;
-
-    }
-
-    else
-    {
-
-        return (node->item.next) ? (unsigned int)node->item.next->data : 0;
 
     }
 

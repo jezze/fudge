@@ -76,7 +76,7 @@ static unsigned int reset(struct task *task, void *stack)
     if (!service_checkdescriptor(descriptor))
         return 0;
 
-    descriptor->current = descriptor->protocol->step(descriptor->id, descriptor->id);
+    descriptor->current = descriptor->protocol->step(descriptor->id, 0);
     descriptor->offset = descriptor->protocol->seek(descriptor->id, 0);
 
     return descriptor->id;
