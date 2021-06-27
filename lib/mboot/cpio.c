@@ -150,10 +150,10 @@ static unsigned int stepdirectory(unsigned int id, unsigned int current)
         struct cpio_header *cheader = getheader(current);
 
         if (!cheader)
-            break;
+            return 0;
 
         if (current == id)
-            break;
+            return 0;
 
         if (parent(cheader, current) == id)
             return current;
