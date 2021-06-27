@@ -67,7 +67,6 @@ unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsi
 
             descriptor->protocol = protocol;
             descriptor->id = protocol->root();
-
             offset += colon + 1;
 
         }

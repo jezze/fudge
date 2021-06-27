@@ -188,16 +188,21 @@ static unsigned int readdirectory(void *buffer, unsigned int count, unsigned int
 {
 
     struct cpio_header *cheader = getheader(current);
-    struct record record;
 
-    if (!cheader)
-        return 0;
+    if (cheader)
+    {
 
-    record.id = current;
-    record.size = cpio_filesize(cheader);
-    record.length = buffer_read(record.name, RECORD_NAMESIZE, getname(current), cheader->namesize - 1, header->namesize);
+        struct record record;
 
-    return buffer_read(buffer, count, &record, sizeof (struct record), offset);
+        record.id = current;
+        record.size = cpio_filesize(cheader);
+        record.length = buffer_read(record.name, RECORD_NAMESIZE, getname(current), cheader->namesize - 1, header->namesize);
+
+        return buffer_read(buffer, count, &record, sizeof (struct record), offset);
+
+    }
+
+    return 0;
 
 }
 
@@ -206,17 +211,19 @@ static unsigned int protocol_read(unsigned int id, unsigned int current, void *b
 
     struct cpio_header *header = getheader(id);
 
-    if (!header)
-        return 0;
-
-    switch (header->mode & 0xF000)
+    if (header)
     {
 
-    case 0x8000:
-        return buffer_read(buffer, count, (void *)(id + cpio_filedata(header)), cpio_filesize(header), offset);
+        switch (header->mode & 0xF000)
+        {
 
-    case 0x4000:
-        return readdirectory(buffer, count, offset, current, header);
+        case 0x8000:
+            return buffer_read(buffer, count, (void *)(id + cpio_filedata(header)), cpio_filesize(header), offset);
+
+        case 0x4000:
+            return readdirectory(buffer, count, offset, current, header);
+
+        }
 
     }
 
@@ -229,14 +236,16 @@ static unsigned int protocol_write(unsigned int id, unsigned int current, void *
 
     struct cpio_header *header = getheader(id);
 
-    if (!header)
-        return 0;
-
-    switch (header->mode & 0xF000)
+    if (header)
     {
 
-    case 0x8000:
-        return buffer_write((void *)(id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset);
+        switch (header->mode & 0xF000)
+        {
+
+        case 0x8000:
+            return buffer_write((void *)(id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset);
+
+        }
 
     }
 
