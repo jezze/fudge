@@ -37,21 +37,20 @@ static unsigned int parent(struct cpio_header *header, unsigned int id)
 {
 
     unsigned int length = buffer_findlastbyte(getname(id), header->namesize - 1, '/');
-    struct cpio_header *eheader;
     unsigned int current = id;
 
     do
     {
 
-        eheader = getheader(current);
+        struct cpio_header *cheader = getheader(current);
 
-        if (!eheader)
+        if (!cheader)
             break;
 
-        if ((eheader->mode & 0xF000) != 0x4000)
+        if ((cheader->mode & 0xF000) != 0x4000)
             continue;
 
-        if (eheader->namesize == length + 1)
+        if (cheader->namesize == length + 1)
             return current;
 
     } while ((current = getnext(current)));
@@ -63,18 +62,17 @@ static unsigned int parent(struct cpio_header *header, unsigned int id)
 static unsigned int child(struct cpio_header *header, unsigned int id, char *path, unsigned int length)
 {
 
-    struct cpio_header *eheader;
     unsigned int current = address;
 
     do
     {
 
-        eheader = getheader(current);
+        struct cpio_header *cheader = getheader(current);
 
-        if (!eheader)
+        if (!cheader)
             break;
 
-        if (eheader->namesize != header->namesize + length + 1)
+        if (cheader->namesize != header->namesize + length + 1)
             continue;
 
         if (buffer_match(getname(current) + header->namesize, path, length))
@@ -89,19 +87,18 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
 static unsigned int protocol_root(void)
 {
 
-    struct cpio_header *eheader;
-    unsigned int id = 0;
     unsigned int current = address;
+    unsigned int id = 0;
 
     do
     {
 
-        eheader = getheader(current);
+        struct cpio_header *cheader = getheader(current);
 
-        if (!eheader)
+        if (!cheader)
             break;
 
-        if ((eheader->mode & 0xF000) != 0x4000)
+        if ((cheader->mode & 0xF000) != 0x4000)
             continue;
 
         id = current;
@@ -147,9 +144,9 @@ static unsigned int protocol_destroy(unsigned int id)
 static unsigned int stepdirectory(unsigned int id, unsigned int current)
 {
 
-    struct cpio_header *eheader = getheader(current);
+    struct cpio_header *cheader = getheader(current);
 
-    if (!eheader)
+    if (!cheader)
         return 0;
 
     do
@@ -158,12 +155,12 @@ static unsigned int stepdirectory(unsigned int id, unsigned int current)
         if (current == id)
             break;
 
-        eheader = getheader(current);
+        cheader = getheader(current);
 
-        if (!eheader)
+        if (!cheader)
             break;
 
-        if (parent(eheader, current) == id)
+        if (parent(cheader, current) == id)
             return current;
 
     } while ((current = getnext(current)));
@@ -195,20 +192,15 @@ static unsigned int protocol_step(unsigned int id, unsigned int current)
 static unsigned int readdirectory(void *buffer, unsigned int count, unsigned int offset, unsigned int current, struct cpio_header *header)
 {
 
-    struct cpio_header *eheader;
+    struct cpio_header *cheader = getheader(current);
     struct record record;
 
-    if (!current)
-        return 0;
-
-    eheader = getheader(current);
-
-    if (!eheader)
+    if (!cheader)
         return 0;
 
     record.id = current;
-    record.size = cpio_filesize(eheader);
-    record.length = buffer_read(record.name, RECORD_NAMESIZE, getname(current), eheader->namesize - 1, header->namesize);
+    record.size = cpio_filesize(cheader);
+    record.length = buffer_read(record.name, RECORD_NAMESIZE, getname(current), cheader->namesize - 1, header->namesize);
 
     return buffer_read(buffer, count, &record, sizeof (struct record), offset);
 
