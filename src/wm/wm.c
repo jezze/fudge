@@ -26,6 +26,9 @@ static struct view
 
 } views[VIEWS];
 
+static unsigned int optwidth = 1024;
+static unsigned int optheight = 768;
+static unsigned int optbpp = 4;
 static unsigned int keymod = KEYMOD_NONE;
 static char outputdata[BUFFER_SIZE];
 static struct ring output;
@@ -303,7 +306,7 @@ static void setupvideo(void)
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
-    ctrl_setvideosettings(&settings, 1024, 768, 4);
+    ctrl_setvideosettings(&settings, optwidth, optheight, optbpp);
     buffer_clear(black, 768);
 
     if (!file_walk(FILE_L0, FILE_G3, "ctrl"))
@@ -771,6 +774,15 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
     char *key = mdata;
     char *value = key + ascii_lengthz(key);
+
+    if (ascii_match(key, "width"))
+        optwidth = ascii_rvalue(value, ascii_length(value), 10);
+
+    if (ascii_match(key, "height"))
+        optheight = ascii_rvalue(value, ascii_length(value), 10);
+
+    if (ascii_match(key, "bpp"))
+        optbpp = ascii_rvalue(value, ascii_length(value), 10);
 
     if (ascii_match(key, "keyboard"))
         file_walk2(FILE_G1, value);
