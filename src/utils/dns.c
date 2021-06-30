@@ -58,7 +58,6 @@ static void printmain(struct channel *channel, unsigned short type, char *name, 
 
     case 5:
         offset = message_putbuffer(&data, dns_writename(fullname, 256, name, buffer), fullname, offset);
-        offset = message_putbuffer(&data, dns_writename(fullname, 256, name, buffer), fullname, offset);
         offset = message_putstring(&data, " is an alias for ", offset);
         offset = message_putbuffer(&data, dns_writename(fullname, 256, rddata, buffer), fullname, offset);
         offset = message_putstring(&data, "\n", offset);
