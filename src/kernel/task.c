@@ -27,8 +27,6 @@ void task_setstate(struct task *task, unsigned int state)
 
     }
 
-    task->state = state;
-
 }
 
 void task_register(struct task *task)
