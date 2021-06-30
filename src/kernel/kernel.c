@@ -277,6 +277,9 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
     {
 
         struct task *task = current->data;
+        struct mailbox *mailbox = &mailboxes[task->id];
+
+        mailbox_reset(mailbox);
 
         if (parent)
         {
@@ -318,7 +321,6 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         if (setupbinary(task, sp))
         {
 
-            mailbox_reset(&mailboxes[task->id]);
             coreassign(task);
 
             return task->id;
