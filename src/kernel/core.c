@@ -7,17 +7,15 @@
 void core_sorttasks(struct core *core)
 {
 
-    struct list_item *current;
     struct list normal;
     struct list kicked;
+    struct task *task;
 
     list_init(&normal);
     list_init(&kicked);
 
-    while ((current = list_pickhead(&core->tasks)))
+    while ((task = list_pickhead(&core->tasks)))
     {
-
-        struct task *task = current->data;
 
         spinlock_acquire(&task->spinlock);
 
@@ -32,23 +30,11 @@ void core_sorttasks(struct core *core)
 
     }
 
-    while ((current = list_pickhead(&normal)))
-    {
-
-        struct task *task = current->data;
-
+    while ((task = list_pickhead(&normal)))
         list_add(&core->tasks, &task->item);
 
-    }
-
-    while ((current = list_pickhead(&kicked)))
-    {
-
-        struct task *task = current->data;
-
+    while ((task = list_pickhead(&kicked)))
         list_add(&core->tasks, &task->item);
-
-    }
 
 }
 

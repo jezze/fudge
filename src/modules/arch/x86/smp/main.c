@@ -64,15 +64,13 @@ static struct core *coreget(void)
 static void coreassign(struct task *task)
 {
 
-    struct list_item *current = list_pickhead(&corelist);
+    struct core *core = list_pickhead(&corelist);
 
-    if (current)
+    if (core)
     {
 
-        struct core *core = current->data;
-
         list_add(&core->tasks, &task->item);
-        list_add(&corelist, current);
+        list_add(&corelist, &core->item);
         apic_sendint(core->id, APIC_REG_ICR_TYPE_NORMAL | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0xFE);
 
     }
@@ -83,7 +81,7 @@ void smp_setupbp(unsigned int stack, struct list *tasks)
 {
 
     unsigned int id = apic_getid();
-    struct list_item *current;
+    struct task *task;
 
     core_init(&cores[id], id, stack);
     core_register(&cores[id]);
@@ -91,8 +89,8 @@ void smp_setupbp(unsigned int stack, struct list *tasks)
     apic_setup_bp();
     list_add(&corelist, &cores[id].item);
 
-    while ((current = list_pickhead(tasks)))
-        list_add(&cores[id].tasks, current);
+    while ((task = list_pickhead(tasks)))
+        list_add(&cores[id].tasks, &task->item);
 
 }
 
