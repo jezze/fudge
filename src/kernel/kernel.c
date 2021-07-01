@@ -29,12 +29,12 @@ static void copydescriptor(struct service_descriptor *descriptor, struct service
 static unsigned int setupbinary(struct task *task, unsigned int sp)
 {
 
-    struct service_descriptor *init = kernel_getdescriptor(task, FILE_CP);
+    struct service_descriptor *prog = kernel_getdescriptor(task, FILE_CP);
 
-    if (!init)
+    if (!prog)
         return 0;
 
-    task->node.address = init->protocol->map(init->id);
+    task->node.address = prog->protocol->map(prog->id);
 
     if (!task->node.address)
         return 0;
