@@ -21,6 +21,7 @@ struct task
     unsigned int id;
     unsigned int state;
     unsigned int kicked;
+    struct spinlock spinlock;
 
 };
 

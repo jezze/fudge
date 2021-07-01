@@ -238,9 +238,15 @@ unsigned int kernel_pick(unsigned int source, struct message_header *header, voi
 unsigned int kernel_place(unsigned int source, unsigned int target, struct message_header *header, void *data)
 {
 
+    struct task *task = &tasks[target];
+
     header->source = source;
 
-    tasks[target].kicked++;
+    spinlock_acquire(&task->spinlock);
+
+    task->kicked++;
+
+    spinlock_release(&task->spinlock);
 
     return mailbox_place(&mailboxes[target], header, data);
 

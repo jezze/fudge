@@ -19,21 +19,16 @@ void core_sorttasks(struct core *core)
 
         struct task *task = current->data;
 
+        spinlock_acquire(&task->spinlock);
+
         if (task->kicked)
-        {
-
-            task->kicked = 0;
-
             list_add(&kicked, &task->item);
-
-        }
-
         else
-        {
-
             list_add(&normal, &task->item);
 
-        }
+        task->kicked = 0;
+
+        spinlock_release(&task->spinlock);
 
     }
 

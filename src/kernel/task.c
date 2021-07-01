@@ -6,6 +6,8 @@
 void task_setstate(struct task *task, unsigned int state)
 {
 
+    spinlock_acquire(&task->spinlock);
+
     switch (state)
     {
 
@@ -26,6 +28,8 @@ void task_setstate(struct task *task, unsigned int state)
         break;
 
     }
+
+    spinlock_release(&task->spinlock);
 
 }
 
@@ -58,6 +62,7 @@ void task_init(struct task *task, unsigned int id)
     list_inititem(&task->item, task);
     task_initthread(&task->thread);
     binary_initnode(&task->node);
+    spinlock_init(&task->spinlock);
 
     task->id = id;
 
