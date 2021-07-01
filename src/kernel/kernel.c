@@ -219,17 +219,21 @@ struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int 
 void kernel_kill(unsigned int source, unsigned int target)
 {
 
-    task_setstate(&tasks[target], TASK_STATE_KILLED);
+    struct task *task = &tasks[target];
+
+    task_setstate(task, TASK_STATE_KILLED);
 
 }
 
 unsigned int kernel_pick(unsigned int source, struct message_header *header, void *data)
 {
 
-    unsigned int count = mailbox_pick(&mailboxes[source], header, data);
+    struct task *task = &tasks[source];
+    struct mailbox *mailbox = &mailboxes[source];
+    unsigned int count = mailbox_pick(mailbox, header, data);
 
     if (!count)
-        task_setstate(&tasks[source], TASK_STATE_BLOCKED);
+        task_setstate(task, TASK_STATE_BLOCKED);
 
     return count;
 
@@ -239,6 +243,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct messa
 {
 
     struct task *task = &tasks[target];
+    struct mailbox *mailbox = &mailboxes[target];
 
     header->source = source;
 
@@ -248,7 +253,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct messa
 
     spinlock_release(&task->spinlock);
 
-    return mailbox_place(&mailboxes[target], header, data);
+    return mailbox_place(mailbox, header, data);
 
 }
 
@@ -286,23 +291,21 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         struct mailbox *mailbox = &mailboxes[task->id];
 
         mailbox_reset(mailbox);
+        buffer_clear(kernel_getdescriptor(task, FILE_PP), sizeof (struct service_descriptor) * KERNEL_DESCRIPTORS);
 
         if (parent)
         {
 
-            copydescriptor(kernel_getdescriptor(task, FILE_PP + 0), kernel_getdescriptor(parent, FILE_CP + 0));
-            copydescriptor(kernel_getdescriptor(task, FILE_CP + 0), kernel_getdescriptor(parent, FILE_CP + 0));
-            copydescriptor(kernel_getdescriptor(task, FILE_PP + 1), kernel_getdescriptor(parent, FILE_CP + 1));
-            copydescriptor(kernel_getdescriptor(task, FILE_CP + 1), kernel_getdescriptor(parent, FILE_CP + 1));
-            copydescriptor(kernel_getdescriptor(task, FILE_PP + 2), kernel_getdescriptor(parent, FILE_CP + 2));
-            copydescriptor(kernel_getdescriptor(task, FILE_CP + 2), kernel_getdescriptor(parent, FILE_CP + 2));
+            copydescriptor(kernel_getdescriptor(task, FILE_CP), kernel_getdescriptor(parent, FILE_CP));
+            copydescriptor(kernel_getdescriptor(task, FILE_CR), kernel_getdescriptor(parent, FILE_CR));
+            copydescriptor(kernel_getdescriptor(task, FILE_CW), kernel_getdescriptor(parent, FILE_CW));
 
         }
 
         else
         {
 
-            struct service_descriptor *init = kernel_getdescriptor(task, FILE_CP);
+            struct service_descriptor *prog = kernel_getdescriptor(task, FILE_CP);
             struct service_descriptor *root = kernel_getdescriptor(task, FILE_CR);
             struct service_descriptor *work = kernel_getdescriptor(task, FILE_CW);
 
@@ -310,19 +313,16 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
             root->id = root->protocol->root();
 
             copydescriptor(work, root);
-            copydescriptor(init, root);
+            copydescriptor(prog, root);
 
-            init->id = init->protocol->child(init->id, "bin", 3);
-            init->id = init->protocol->child(init->id, "init", 4);
-
-            copydescriptor(kernel_getdescriptor(task, FILE_PP + 0), kernel_getdescriptor(task, FILE_CP + 0));
-            copydescriptor(kernel_getdescriptor(task, FILE_CP + 0), kernel_getdescriptor(task, FILE_CP + 0));
-            copydescriptor(kernel_getdescriptor(task, FILE_PP + 1), kernel_getdescriptor(task, FILE_CP + 1));
-            copydescriptor(kernel_getdescriptor(task, FILE_CP + 1), kernel_getdescriptor(task, FILE_CP + 1));
-            copydescriptor(kernel_getdescriptor(task, FILE_PP + 2), kernel_getdescriptor(task, FILE_CP + 2));
-            copydescriptor(kernel_getdescriptor(task, FILE_CP + 2), kernel_getdescriptor(task, FILE_CP + 2));
+            prog->id = prog->protocol->child(prog->id, "bin", 3);
+            prog->id = prog->protocol->child(prog->id, "init", 4);
 
         }
+
+        copydescriptor(kernel_getdescriptor(task, FILE_PP), kernel_getdescriptor(task, FILE_CP));
+        copydescriptor(kernel_getdescriptor(task, FILE_PR), kernel_getdescriptor(task, FILE_CR));
+        copydescriptor(kernel_getdescriptor(task, FILE_PW), kernel_getdescriptor(task, FILE_CW));
 
         if (setupbinary(task, sp))
         {
