@@ -118,15 +118,9 @@ struct link *kernel_picklink(unsigned int source)
     struct link *link = list_picktail(&freelinks);
 
     if (link)
-    {
-
         link->source = source;
 
-        return link;
-
-    }
-
-    return 0;
+    return link;
 
 }
 
