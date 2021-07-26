@@ -51,7 +51,7 @@ static void maptask(struct task *task, unsigned int index, unsigned int paddress
     struct mmu_directory *directory = gettaskdirectory(task->id);
     struct mmu_table *table = (struct mmu_table *)(directory + 1) + index;
 
-    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -139,7 +139,7 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
     struct mmu_directory *directory = getkerneldirectory();
     struct mmu_table *table = (struct mmu_table *)(directory + 1) + index;
 
-    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
@@ -149,7 +149,7 @@ void arch_setmapvideo(unsigned char index, unsigned int paddress, unsigned int v
     struct mmu_directory *directory = getkerneldirectory();
     struct mmu_table *table = (struct mmu_table *)(directory + 1) + index;
 
-    mmu_map(directory, &table[index], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_CACHEWRITE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_CACHEWRITE);
+    mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_CACHEWRITE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_CACHEWRITE);
 
 }
 
