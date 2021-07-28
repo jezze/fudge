@@ -35,33 +35,6 @@ static struct mmu_table *gettable(struct mmu_directory *directory, unsigned int 
 
 }
 
-static void mapmissing(struct task *task)
-{
-
-    struct mmu_directory *kdirectory = getkerneldirectory();
-    struct mmu_directory *directory = gettaskdirectory(task->id);
-    unsigned int i;
-
-    for (i = 0; i < MMU_TABLES; i++)
-    {
-
-        if (kdirectory->tables[i])
-            directory->tables[i] = kdirectory->tables[i];
-
-    }
-
-}
-
-static void maptask(struct task *task, unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size)
-{
-
-    struct mmu_directory *directory = gettaskdirectory(task->id);
-    struct mmu_table *table = gettable(directory, index);
-
-    mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-
-}
-
 static unsigned int spawn(struct task *task, void *stack)
 {
 
@@ -317,15 +290,16 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     struct core *core = kernel_getcore();
     unsigned int address = cpu_getcr2();
     unsigned int code = core->task->format->findbase(&core->task->node, address);
+    struct mmu_directory *directory = gettaskdirectory(core->task->id);
 
     DEBUG_LOG(DEBUG_INFO, "exception: page fault");
-    mapmissing(core->task);
 
     if (code)
     {
 
-        maptask(core->task, 0, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE);
-        maptask(core->task, 1, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE);
+        mmu_map(directory, gettable(directory, 0), ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_map(directory, gettable(directory, 1), ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+
         core->task->format->copyprogram(&core->task->node);
 
     }
@@ -333,9 +307,20 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     else
     {
 
-        /* TODO: If address is not mapped, task segfaulted and should be killed. */
+        struct mmu_directory *kdirectory = getkerneldirectory();
+        unsigned int i;
+
+        for (i = 0; i < MMU_TABLES; i++)
+        {
+
+            if (kdirectory->tables[i])
+                directory->tables[i] = kdirectory->tables[i];
+
+        }
 
     }
+
+    /* TODO: If address was not mapped, task segfaulted and should be killed. */
 
     return arch_resume(&general, &interrupt);
 
