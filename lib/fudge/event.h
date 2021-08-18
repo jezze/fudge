@@ -100,7 +100,7 @@ struct event_timertick
 struct event_videomode
 {
 
-    unsigned int fb;
+    unsigned int framebuffer;
     unsigned int w;
     unsigned int h;
     unsigned int bpp;

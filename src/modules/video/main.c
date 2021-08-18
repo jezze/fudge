@@ -5,12 +5,12 @@
 
 static struct system_node root;
 
-void video_notifymode(struct video_interface *interface, unsigned int fb, unsigned int w, unsigned int h, unsigned int bpp)
+void video_notifymode(struct video_interface *interface, unsigned int framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
     struct event_videomode videomode;
 
-    videomode.fb = fb;
+    videomode.framebuffer = framebuffer;
     videomode.w = w;
     videomode.h = h;
     videomode.bpp = bpp;

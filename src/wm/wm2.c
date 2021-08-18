@@ -11,29 +11,46 @@ struct box
 
 };
 
+struct image
+{
+
+    struct box size;
+    void *data;
+
+};
+
 struct mouse
 {
 
     int x;
     int y;
-    unsigned int w;
-    unsigned int h;
+    struct image image;
 
 };
 
-static unsigned int optwidth = 1024;
-static unsigned int optheight = 768;
+struct configuration
+{
+
+    unsigned int padding;
+    unsigned int lineheight;
+    unsigned int steplength;
+    unsigned int framebuffer;
+    unsigned int w;
+    unsigned int h;
+    unsigned int bpp;
+
+};
+
+static unsigned int optwidth = 1920;
+static unsigned int optheight = 1080;
 static unsigned int optbpp = 4;
 /*
 static unsigned int keymod = KEYMOD_NONE;
 */
 static struct box screen;
 static struct mouse mouse;
-static unsigned int padding;
-static unsigned int lineheight;
-static unsigned int steplength;
+static struct configuration configuration;
 static unsigned char fontdata[0x8000];
-struct event_videomode vmode;
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -60,7 +77,6 @@ static unsigned char mousedata24[] = {
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
-/*
 unsigned char mousedata16[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -79,7 +95,6 @@ unsigned char mousedata16[] = {
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
-*/
 static unsigned char colormap8[] = {
     0x00, 0x00, 0x00,
     0x3F, 0x3F, 0x3F,
@@ -133,21 +148,25 @@ static void setmouse(unsigned int x, unsigned int y, unsigned int factor)
 
     mouse.x = x;
     mouse.y = y;
+    mouse.image.size.x = 0;
+    mouse.image.size.y = 0;
 
     switch (factor)
     {
 
     case 0:
     case 1:
-        mouse.w = 12;
-        mouse.h = 16;
+        mouse.image.size.w = 12;
+        mouse.image.size.h = 16;
+        mouse.image.data = mousedata16;
 
         break;
 
     case 2:
     default:
-        mouse.w = 18;
-        mouse.h = 24;
+        mouse.image.size.w = 18;
+        mouse.image.size.h = 24;
+        mouse.image.data = mousedata24;
 
         break;
 
@@ -191,9 +210,9 @@ static void paintbg(void)
 {
 
     unsigned int i;
-    unsigned char *data = (unsigned char *)vmode.fb;
+    unsigned char *data = (unsigned char *)configuration.framebuffer;
 
-    for (i = 0; i < vmode.w * vmode.h * vmode.bpp; i++)
+    for (i = 0; i < configuration.w * configuration.h * configuration.bpp; i++)
     {
 
         data[i] = 0x20;
@@ -205,7 +224,7 @@ static void paintbg(void)
 static void blit_cmap32(unsigned char *s, unsigned int *cmap, unsigned int sw, unsigned int sh, unsigned char *t, unsigned int tw, unsigned int th, unsigned int px, unsigned int py, unsigned int pw, unsigned int ph)
 {
 
-    unsigned int *tdata = (unsigned int *)vmode.fb;
+    unsigned int *tdata = (unsigned int *)configuration.framebuffer;
     unsigned int x;
     unsigned int y;
 
@@ -234,16 +253,16 @@ static void blit_cmap32(unsigned char *s, unsigned int *cmap, unsigned int sw, u
 static void paintmouse(void)
 {
 
-    unsigned int w = mouse.w;
-    unsigned int h = mouse.h;
+    unsigned int w = mouse.image.size.w;
+    unsigned int h = mouse.image.size.h;
 
-    if (mouse.x + mouse.w > vmode.w)
-        w = mouse.w - (mouse.x + mouse.w - vmode.w);
+    if (mouse.x + mouse.image.size.w > configuration.w)
+        w = mouse.image.size.w - (mouse.x + mouse.image.size.w - configuration.w);
 
-    if (mouse.y + mouse.h > vmode.h)
-        h = mouse.h - (mouse.y + mouse.h - vmode.h);
+    if (mouse.y + mouse.image.size.h > configuration.h)
+        h = mouse.image.size.h - (mouse.y + mouse.image.size.h - configuration.h);
 
-    blit_cmap32(mousedata24, colormap32, mouse.w, mouse.h, (unsigned char *)vmode.fb, vmode.w, vmode.h, mouse.x, mouse.y, w, h);
+    blit_cmap32(mouse.image.data, colormap32, mouse.image.size.w, mouse.image.size.h, (unsigned char *)configuration.framebuffer, configuration.w, configuration.h, mouse.x, mouse.y, w, h);
 
 }
 
@@ -298,7 +317,8 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     while (channel_process(channel))
     {
 
-        paint();
+        if (configuration.framebuffer)
+            paint();
 
     }
 
@@ -389,14 +409,13 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     struct event_videomode *videomode = mdata;
     unsigned int factor = videomode->h / 320;
 
-    vmode.fb = videomode->fb;
-    vmode.w = videomode->w;
-    vmode.h = videomode->h;
-    vmode.bpp = videomode->bpp;
-
-    lineheight = 12 + factor * 4;
-    padding = 4 + factor * 2;
-    steplength = videomode->w / 12;
+    configuration.framebuffer = videomode->framebuffer;
+    configuration.w = videomode->w;
+    configuration.h = videomode->h;
+    configuration.bpp = videomode->bpp;
+    configuration.lineheight = 12 + factor * 4;
+    configuration.padding = 4 + factor * 2;
+    configuration.steplength = videomode->w / 12;
 
     loadfont(factor);
 

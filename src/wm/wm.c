@@ -46,7 +46,7 @@ static unsigned char fontdata[0x8000];
 static unsigned char canvasdata[0x10000];
 static unsigned char layerdata0[0x10000];
 static unsigned char layerdata1[0x200];
-struct event_videomode vmode;
+static struct event_videomode vmode;
 static unsigned char colormap8[] = {
     0x00, 0x00, 0x00,
     0x3F, 0x3F, 0x3F,
@@ -64,8 +64,8 @@ static unsigned char colormap8[] = {
 static void draw(void *data, unsigned int count, unsigned int offset)
 {
 
-    if (vmode.fb)
-        buffer_write((void *)vmode.fb, vmode.w * vmode.h * vmode.bpp, data, count, offset);
+    if (vmode.framebuffer)
+        buffer_write((void *)vmode.framebuffer, vmode.w * vmode.h * vmode.bpp, data, count, offset);
     else
         file_seekwriteall(FILE_G5, data, count, offset);
 
@@ -813,7 +813,7 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     struct list_item *current;
     unsigned int i = 0;
 
-    vmode.fb = videomode->fb;
+    vmode.framebuffer = videomode->framebuffer;
     vmode.w = videomode->w;
     vmode.h = videomode->h;
     vmode.bpp = videomode->bpp;
