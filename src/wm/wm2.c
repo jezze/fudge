@@ -1,7 +1,15 @@
 #include <fudge.h>
 #include <abi.h>
 
-struct box
+struct point
+{
+
+    unsigned int x;
+    unsigned int y;
+
+};
+
+struct rectangle
 {
 
     unsigned int x;
@@ -14,7 +22,7 @@ struct box
 struct image
 {
 
-    struct box size;
+    struct rectangle size;
     void *data;
 
 };
@@ -22,8 +30,7 @@ struct image
 struct mouse
 {
 
-    int x;
-    int y;
+    struct point position;
     struct image image;
 
 };
@@ -46,6 +53,8 @@ struct window
 
     char *title;
     unsigned int active;
+    struct rectangle size;
+    struct point position;
 
 };
 
@@ -55,7 +64,7 @@ static unsigned int optbpp = 4;
 /*
 static unsigned int keymod = KEYMOD_NONE;
 */
-static struct box screen;
+static struct rectangle screen;
 static struct mouse mouse;
 static struct configuration configuration;
 static unsigned char fontdata[0x8000];
@@ -146,8 +155,8 @@ static void setupvideo(void)
 static void setmouse(unsigned int x, unsigned int y, unsigned int factor)
 {
 
-    mouse.x = x;
-    mouse.y = y;
+    mouse.position.x = x;
+    mouse.position.y = y;
     mouse.image.size.x = 0;
     mouse.image.size.y = 0;
 
@@ -206,43 +215,22 @@ static void loadfont(unsigned int factor)
 
 }
 
-static void paintbg(void)
-{
-
-    unsigned int i;
-    unsigned char *data = (unsigned char *)configuration.framebuffer;
-
-    for (i = 0; i < configuration.w * configuration.h * configuration.bpp; i++)
-    {
-
-        data[i] = 0x20;
-
-    }
-
-}
-
-static void blit_cmap32(unsigned char *s, unsigned int *cmap, unsigned int sw, unsigned int sh, unsigned char *t, unsigned int tw, unsigned int th, unsigned int px, unsigned int py, unsigned int pw, unsigned int ph)
+static void paintrectangle(struct rectangle *r, unsigned int color)
 {
 
     unsigned int *tdata = (unsigned int *)configuration.framebuffer;
     unsigned int x;
     unsigned int y;
 
-    for (x = 0; x < pw; x++)
+    for (y = r->y; y < r->y + r->h; y++)
     {
 
-        for (y = 0; y < ph; y++)
+        for (x = r->x; x < r->x + r->w; x++)
         {
 
-            unsigned int soffset = y * sw + x;
-            unsigned int toffset = tw * py + px + x + y * tw;
+            unsigned int toffset = y * screen.w + x;
 
-            if (s[soffset] != 0xFF)
-            {
-
-                tdata[toffset] = cmap[s[soffset]];
-
-            }
+            tdata[toffset] = color;
 
         }
 
@@ -250,26 +238,92 @@ static void blit_cmap32(unsigned char *s, unsigned int *cmap, unsigned int sw, u
 
 }
 
+static void paintwindow(struct window *window)
+{
+
+    struct rectangle r1;
+
+    r1.x = 100;
+    r1.y = 80;
+    r1.w = 400;
+    r1.h = 600;
+
+    paintrectangle(&r1, 0xFF88A878);
+
+}
+
+static void blit_cmap32(unsigned char *s, unsigned int *cmap, unsigned int sw, unsigned int sh, unsigned char *t, unsigned int tw, unsigned int th, unsigned int px, unsigned int py, struct rectangle *clip)
+{
+
+    unsigned int *tdata = (unsigned int *)configuration.framebuffer;
+    unsigned int x;
+    unsigned int y;
+
+    for (y = clip->y; y < clip->h; y++)
+    {
+
+        for (x = clip->x; x < clip->w; x++)
+        {
+
+            unsigned int soffset = (y * sw + x);
+            unsigned int toffset = (py * tw + px) + (y * tw + x);
+
+            if (s[soffset] != 0xFF)
+                tdata[toffset] = cmap[s[soffset]];
+
+        }
+
+    }
+
+}
+
+static void calculateclip(struct rectangle *clip, unsigned int x0, unsigned int y0, unsigned int w0, unsigned int h0, unsigned int x1, unsigned int y1, unsigned int w1, unsigned int h1)
+{
+
+    unsigned int xw0 = x0 + w0;
+    unsigned int yh0 = y0 + h0;
+    unsigned int xw1 = x1 + w1;
+    unsigned int yh1 = y1 + h1;
+
+    if (xw0 > xw1)
+        clip->w = w0 - (xw0 - xw1);
+
+    if (yh0 > yh1)
+        clip->h = h0 - (yh0 - yh1);
+
+}
+
 static void paintmouse(void)
 {
 
-    unsigned int w = mouse.image.size.w;
-    unsigned int h = mouse.image.size.h;
+    struct rectangle clip;
 
-    if (mouse.x + mouse.image.size.w > configuration.w)
-        w = mouse.image.size.w - (mouse.x + mouse.image.size.w - configuration.w);
+    clip.x = mouse.image.size.x;
+    clip.y = mouse.image.size.y;
+    clip.w = mouse.image.size.w;
+    clip.h = mouse.image.size.h;
 
-    if (mouse.y + mouse.image.size.h > configuration.h)
-        h = mouse.image.size.h - (mouse.y + mouse.image.size.h - configuration.h);
-
-    blit_cmap32(mouse.image.data, mousecmap, mouse.image.size.w, mouse.image.size.h, (unsigned char *)configuration.framebuffer, configuration.w, configuration.h, mouse.x, mouse.y, w, h);
+    calculateclip(&clip, mouse.position.x, mouse.position.y, mouse.image.size.w, mouse.image.size.h, 0, 0, configuration.w, configuration.h);
+    blit_cmap32(mouse.image.data, mousecmap, mouse.image.size.w, mouse.image.size.h, (unsigned char *)configuration.framebuffer, configuration.w, configuration.h, mouse.position.x, mouse.position.y, &clip);
 
 }
 
 static void paint(void)
 {
 
-    paintbg();
+    struct window window1;
+
+    window1.title = "Example1";
+    window1.active = 1;
+    window1.size.x = 0;
+    window1.size.y = 0;
+    window1.size.w = 400;
+    window1.size.h = 300;
+    window1.position.x = 200;
+    window1.position.y = 140;
+
+    paintrectangle(&screen, 0xFF202020);
+    paintwindow(&window1);
     paintmouse();
 
 }
@@ -334,14 +388,14 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
 
     struct event_mousemove *mousemove = mdata;
 
-    mouse.x += mousemove->relx;
-    mouse.y += mousemove->rely;
+    mouse.position.x += mousemove->relx;
+    mouse.position.y += mousemove->rely;
 
-    if (mouse.x < screen.x || mouse.x >= screen.x + screen.w)
-        mouse.x = (mousemove->relx < 0) ? screen.x : screen.x + screen.w - 1;
+    if (mouse.position.x < screen.x || mouse.position.x >= screen.x + screen.w)
+        mouse.position.x = (mousemove->relx < 0) ? screen.x : screen.x + screen.w - 1;
 
-    if (mouse.y < screen.y || mouse.y >= screen.y + screen.h)
-        mouse.y = (mousemove->rely < 0) ? screen.y : screen.y + screen.h - 1;
+    if (mouse.position.y < screen.y || mouse.position.y >= screen.y + screen.h)
+        mouse.position.y = (mousemove->rely < 0) ? screen.y : screen.y + screen.h - 1;
 
 }
 
