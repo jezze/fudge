@@ -138,7 +138,7 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 
     vbe_setvideomode();
 
-    video_notifymode(&videointerface, framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, (void *)framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
 }
 

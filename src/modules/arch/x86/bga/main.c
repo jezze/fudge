@@ -56,7 +56,7 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
     setreg(REG_COMMAND_YRES, videointerface.settings.h);
     setreg(REG_COMMAND_BPP, videointerface.settings.bpp * 8);
     setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
-    video_notifymode(&videointerface, framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, (void *)framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
     return count;
 

@@ -1,28 +1,34 @@
 #include <fudge.h>
 #include <abi.h>
 
-struct point
+struct position
 {
 
     unsigned int x;
     unsigned int y;
+
+};
+
+struct size
+{
+
+    unsigned int w;
+    unsigned int h;
 
 };
 
 struct rectangle
 {
 
-    unsigned int x;
-    unsigned int y;
-    unsigned int w;
-    unsigned int h;
+    struct position position;
+    struct size size;
 
 };
 
 struct image
 {
 
-    struct rectangle size;
+    struct size size;
     void *data;
 
 };
@@ -30,8 +36,17 @@ struct image
 struct mouse
 {
 
-    struct point position;
+    struct position position;
     struct image image;
+
+};
+
+struct display
+{
+
+    void *framebuffer;
+    struct size size;
+    unsigned int bpp;
 
 };
 
@@ -41,10 +56,7 @@ struct configuration
     unsigned int padding;
     unsigned int lineheight;
     unsigned int steplength;
-    unsigned int framebuffer;
-    unsigned int w;
-    unsigned int h;
-    unsigned int bpp;
+    struct display display;
 
 };
 
@@ -53,13 +65,13 @@ struct window
 
     char *title;
     unsigned int active;
-    struct rectangle size;
-    struct point position;
+    struct position position;
+    struct size size;
 
 };
 
-static unsigned int optwidth = 1920;
-static unsigned int optheight = 1080;
+static unsigned int optwidth = 1024;
+static unsigned int optheight = 768;
 static unsigned int optbpp = 4;
 /*
 static unsigned int keymod = KEYMOD_NONE;
@@ -157,8 +169,6 @@ static void setmouse(unsigned int x, unsigned int y, unsigned int factor)
 
     mouse.position.x = x;
     mouse.position.y = y;
-    mouse.image.size.x = 0;
-    mouse.image.size.y = 0;
 
     switch (factor)
     {
@@ -215,20 +225,37 @@ static void loadfont(unsigned int factor)
 
 }
 
+static void paintline(struct rectangle *r, unsigned int color, unsigned int y)
+{
+
+    unsigned int *tdata = configuration.display.framebuffer;
+    unsigned int x;
+
+    for (x = r->position.x; x < r->position.x + r->size.w; x++)
+    {
+
+        unsigned int toffset = y * screen.size.w + x;
+
+        tdata[toffset] = color;
+
+    }
+
+}
+
 static void paintrectangle(struct rectangle *r, unsigned int color)
 {
 
-    unsigned int *tdata = (unsigned int *)configuration.framebuffer;
+    unsigned int *tdata = configuration.display.framebuffer;
     unsigned int x;
     unsigned int y;
 
-    for (y = r->y; y < r->y + r->h; y++)
+    for (y = r->position.y; y < r->position.y + r->size.h; y++)
     {
 
-        for (x = r->x; x < r->x + r->w; x++)
+        for (x = r->position.x; x < r->position.x + r->size.w; x++)
         {
 
-            unsigned int toffset = y * screen.w + x;
+            unsigned int toffset = y * screen.size.w + x;
 
             tdata[toffset] = color;
 
@@ -238,31 +265,156 @@ static void paintrectangle(struct rectangle *r, unsigned int color)
 
 }
 
+struct colorpos
+{
+
+    int x;
+    int w;
+    unsigned int color;
+
+};
+
+static void convert(struct rectangle *r1, int x, int w, unsigned int y, struct rectangle *r)
+{
+
+    if (x >= 0)
+        r->position.x = r1->position.x + x;
+    else
+        r->position.x = r1->position.x + (int)r1->size.w + x;
+
+    if (w > 0)
+        r->size.w = w;
+    else
+        r->size.w = (int)r1->size.w + (w * 2);
+
+}
+
+static void paintcolorpos(struct rectangle *r1, unsigned int *cmap, struct colorpos *pos, unsigned int n, unsigned int y)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct colorpos *p = &pos[i];
+        struct rectangle r;
+
+        convert(r1, p->x, p->w, y, &r);
+        paintline(&r, cmap[p->color], y);
+
+    }
+
+}
+
+static unsigned int bordercmap[] = {
+    0xFF101010,
+    0xFFA8C898,
+    0xFF88A878
+};
+
+#define BORDER_TYPE_0 0
+#define BORDER_TYPE_1 1
+#define BORDER_TYPE_2 2
+#define BORDER_TYPE_3 3
+#define BORDER_TYPE_TITLE 4
+#define BORDER_TYPE_SPACING 5
+#define BORDER_TYPE_AREA 6
+#define BORDER_COLOR_SHADOW 0
+#define BORDER_COLOR_MAIN_LIGHT 1
+#define BORDER_COLOR_MAIN_NORMAL 2
+
+static struct colorpos cp0[1] = {
+    {1, -1, BORDER_COLOR_SHADOW}
+};
+
+static struct colorpos cp1[1] = {
+    {0, 0, BORDER_COLOR_SHADOW}
+};
+
+static struct colorpos cp2[3] = {
+    {0, 3, BORDER_COLOR_SHADOW},
+    {3, -3, BORDER_COLOR_MAIN_LIGHT},
+    {-3, 3, BORDER_COLOR_SHADOW}
+};
+
+static struct colorpos cp3[5] = {
+    {0, 2, BORDER_COLOR_SHADOW},
+    {2, 2, BORDER_COLOR_MAIN_LIGHT},
+    {4, -4, BORDER_COLOR_MAIN_NORMAL},
+    {-4, 2, BORDER_COLOR_MAIN_LIGHT},
+    {-2, 2, BORDER_COLOR_SHADOW}
+};
+
+static struct colorpos cptitle[5] = {
+    {0, 2, BORDER_COLOR_SHADOW},
+    {2, 1, BORDER_COLOR_MAIN_LIGHT},
+    {3, -3, BORDER_COLOR_MAIN_NORMAL},
+    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
+    {-2, 2, BORDER_COLOR_SHADOW}
+};
+
+static struct colorpos cpspacing[7] = {
+    {0, 2, BORDER_COLOR_SHADOW},
+    {2, 1, BORDER_COLOR_MAIN_LIGHT},
+    {3, 1, BORDER_COLOR_MAIN_NORMAL},
+    {4, -4, BORDER_COLOR_SHADOW},
+    {-4, 1, BORDER_COLOR_MAIN_NORMAL},
+    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
+    {-2, 2, BORDER_COLOR_SHADOW}
+};
+
+static struct colorpos cparea[7] = {
+    {0, 2, BORDER_COLOR_SHADOW},
+    {2, 1, BORDER_COLOR_MAIN_LIGHT},
+    {3, 1, BORDER_COLOR_MAIN_NORMAL},
+    {4, -4, BORDER_COLOR_SHADOW},
+    {-4, 1, BORDER_COLOR_MAIN_NORMAL},
+    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
+    {-2, 2, BORDER_COLOR_SHADOW}
+};
+
 static void paintwindow(struct window *window)
 {
 
-    struct rectangle r1;
+    struct rectangle r;
+    unsigned int y = window->position.y;
+    unsigned int i;
 
-    r1.x = 100;
-    r1.y = 80;
-    r1.w = 400;
-    r1.h = 600;
+    r.position.x = window->position.x;
+    r.size.w = window->size.w;
 
-    paintrectangle(&r1, 0xFF88A878);
+    paintcolorpos(&r, bordercmap, cp0, 1, y++);
+    paintcolorpos(&r, bordercmap, cp1, 1, y++);
+    paintcolorpos(&r, bordercmap, cp2, 3, y++);
+    paintcolorpos(&r, bordercmap, cp3, 5, y++);
+
+    for (i = 0; i < 36; i++)
+        paintcolorpos(&r, bordercmap, cptitle, 5, y++);
+
+    paintcolorpos(&r, bordercmap, cpspacing, 7, y++);
+
+    for (i = 0; i < window->size.h - 45; i++)
+        paintcolorpos(&r, bordercmap, cparea, 7, y++);
+
+    paintcolorpos(&r, bordercmap, cp3, 5, y++);
+    paintcolorpos(&r, bordercmap, cp2, 3, y++);
+    paintcolorpos(&r, bordercmap, cp1, 1, y++);
+    paintcolorpos(&r, bordercmap, cp0, 1, y++);
 
 }
 
 static void blit_cmap32(unsigned char *s, unsigned int *cmap, unsigned int sw, unsigned int sh, unsigned char *t, unsigned int tw, unsigned int th, unsigned int px, unsigned int py, struct rectangle *clip)
 {
 
-    unsigned int *tdata = (unsigned int *)configuration.framebuffer;
+    unsigned int *tdata = configuration.display.framebuffer;
     unsigned int x;
     unsigned int y;
 
-    for (y = clip->y; y < clip->h; y++)
+    for (y = clip->position.y; y < clip->size.h; y++)
     {
 
-        for (x = clip->x; x < clip->w; x++)
+        for (x = clip->position.x; x < clip->size.w; x++)
         {
 
             unsigned int soffset = (y * sw + x);
@@ -286,10 +438,10 @@ static void calculateclip(struct rectangle *clip, unsigned int x0, unsigned int 
     unsigned int yh1 = y1 + h1;
 
     if (xw0 > xw1)
-        clip->w = w0 - (xw0 - xw1);
+        clip->size.w = w0 - (xw0 - xw1);
 
     if (yh0 > yh1)
-        clip->h = h0 - (yh0 - yh1);
+        clip->size.h = h0 - (yh0 - yh1);
 
 }
 
@@ -298,13 +450,13 @@ static void paintmouse(void)
 
     struct rectangle clip;
 
-    clip.x = mouse.image.size.x;
-    clip.y = mouse.image.size.y;
-    clip.w = mouse.image.size.w;
-    clip.h = mouse.image.size.h;
+    clip.position.x = 0;
+    clip.position.y = 0;
+    clip.size.w = mouse.image.size.w;
+    clip.size.h = mouse.image.size.h;
 
-    calculateclip(&clip, mouse.position.x, mouse.position.y, mouse.image.size.w, mouse.image.size.h, 0, 0, configuration.w, configuration.h);
-    blit_cmap32(mouse.image.data, mousecmap, mouse.image.size.w, mouse.image.size.h, (unsigned char *)configuration.framebuffer, configuration.w, configuration.h, mouse.position.x, mouse.position.y, &clip);
+    calculateclip(&clip, mouse.position.x, mouse.position.y, mouse.image.size.w, mouse.image.size.h, 0, 0, configuration.display.size.w, configuration.display.size.h);
+    blit_cmap32(mouse.image.data, mousecmap, mouse.image.size.w, mouse.image.size.h, configuration.display.framebuffer, configuration.display.size.w, configuration.display.size.h, mouse.position.x, mouse.position.y, &clip);
 
 }
 
@@ -315,12 +467,10 @@ static void paint(void)
 
     window1.title = "Example1";
     window1.active = 1;
-    window1.size.x = 0;
-    window1.size.y = 0;
     window1.size.w = 400;
-    window1.size.h = 300;
-    window1.position.x = 200;
-    window1.position.y = 140;
+    window1.size.h = 600;
+    window1.position.x = 100;
+    window1.position.y = 80;
 
     paintrectangle(&screen, 0xFF202020);
     paintwindow(&window1);
@@ -371,7 +521,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     while (channel_process(channel))
     {
 
-        if (configuration.framebuffer)
+        if (configuration.display.framebuffer)
             paint();
 
     }
@@ -391,11 +541,11 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
     mouse.position.x += mousemove->relx;
     mouse.position.y += mousemove->rely;
 
-    if (mouse.position.x < screen.x || mouse.position.x >= screen.x + screen.w)
-        mouse.position.x = (mousemove->relx < 0) ? screen.x : screen.x + screen.w - 1;
+    if (mouse.position.x < screen.position.x || mouse.position.x >= screen.position.x + screen.size.w)
+        mouse.position.x = (mousemove->relx < 0) ? screen.position.x : screen.position.x + screen.size.w - 1;
 
-    if (mouse.position.y < screen.y || mouse.position.y >= screen.y + screen.h)
-        mouse.position.y = (mousemove->rely < 0) ? screen.y : screen.y + screen.h - 1;
+    if (mouse.position.y < screen.position.y || mouse.position.y >= screen.position.y + screen.size.h)
+        mouse.position.y = (mousemove->rely < 0) ? screen.position.y : screen.position.y + screen.size.h - 1;
 
 }
 
@@ -463,20 +613,20 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     struct event_videomode *videomode = mdata;
     unsigned int factor = videomode->h / 320;
 
-    configuration.framebuffer = videomode->framebuffer;
-    configuration.w = videomode->w;
-    configuration.h = videomode->h;
-    configuration.bpp = videomode->bpp;
+    configuration.display.framebuffer = videomode->framebuffer;
+    configuration.display.size.w = videomode->w;
+    configuration.display.size.h = videomode->h;
+    configuration.display.bpp = videomode->bpp;
     configuration.lineheight = 12 + factor * 4;
     configuration.padding = 4 + factor * 2;
     configuration.steplength = videomode->w / 12;
 
     loadfont(factor);
 
-    screen.x = 0;
-    screen.y = 0;
-    screen.w = videomode->w;
-    screen.h = videomode->h;
+    screen.position.x = 0;
+    screen.position.y = 0;
+    screen.size.w = videomode->w;
+    screen.size.h = videomode->h;
 
     setmouse(videomode->w / 4, videomode->h / 4, factor);
 
