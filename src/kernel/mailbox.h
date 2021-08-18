@@ -4,7 +4,6 @@ struct mailbox
     struct resource resource;
     struct ring ring;
     struct spinlock spinlock;
-    struct list_item item;
 
 };
 

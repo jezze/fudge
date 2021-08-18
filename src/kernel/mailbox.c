@@ -73,7 +73,6 @@ void mailbox_init(struct mailbox *mailbox, void *buffer, unsigned int count)
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
     ring_init(&mailbox->ring, count, buffer);
     spinlock_init(&mailbox->spinlock);
-    list_inititem(&mailbox->item, mailbox);
 
 }
 
