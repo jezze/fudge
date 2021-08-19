@@ -441,26 +441,36 @@ static void paintlinesegments(struct rectangle *r1, unsigned int *cmap, struct l
 
 }
 
-static void paintwindow(struct window *window, struct rectangle *area, unsigned int y)
+static void paintmouse(struct mouse *m, struct rectangle *area, unsigned int y)
 {
 
-    unsigned int *cmap = (window->focus) ? windowcmapfocus : windowcmap;
+    unsigned int *cmap = mousecmap;
+    unsigned int ly = y - m->position.y;
+
+    blit_cmap32line(&m->position, &m->image, cmap, &screen.size, ly);
+
+}
+
+static void paintwindow(struct window *w, struct rectangle *area, unsigned int y)
+{
+
+    unsigned int *cmap = (w->focus) ? windowcmapfocus : windowcmap;
+    unsigned int ly = y - w->position.y;
     struct rectangle r;
-    unsigned int ly = y - window->position.y;
 
-    r.position.x = window->position.x;
-    r.size.w = window->size.w;
+    r.position.x = w->position.x;
+    r.size.w = w->size.w;
 
-    if (ly == 0 || ly == window->size.h - 1)
+    if (ly == 0 || ly == w->size.h - 1)
         paintlinesegments(&r, cmap, windowborder0, 1, area, y);
 
-    if (ly == 1 || ly == window->size.h - 2)
+    if (ly == 1 || ly == w->size.h - 2)
         paintlinesegments(&r, cmap, windowborder1, 1, area, y);
 
-    if (ly == 2 || ly == window->size.h - 3)
+    if (ly == 2 || ly == w->size.h - 3)
         paintlinesegments(&r, cmap, windowborder2, 3, area, y);
 
-    if (ly == 3 || ly == window->size.h - 4)
+    if (ly == 3 || ly == w->size.h - 4)
         paintlinesegments(&r, cmap, windowborder3, 5, area, y);
 
     if (ly >= 4 && ly < 40)
@@ -469,7 +479,7 @@ static void paintwindow(struct window *window, struct rectangle *area, unsigned 
     if (ly == 40)
         paintlinesegments(&r, cmap, windowborderspacing, 7, area, y);
 
-    if (ly > 40 && ly < window->size.h - 4)
+    if (ly > 40 && ly < w->size.h - 4)
         paintlinesegments(&r, cmap, windowborderarea, 9, area, y);
 
 }
@@ -502,7 +512,7 @@ static void paint(void)
                 paintwindow(&window1, &repaint.area, y);
 
             if (intersects(y, mouse.position.y, mouse.position.y + mouse.image.size.h))
-                blit_cmap32line(&mouse.position, &mouse.image, mousecmap, &screen.size, y - mouse.position.y);
+                paintmouse(&mouse, &repaint.area, y);
 
         }
 
