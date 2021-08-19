@@ -60,6 +60,15 @@ struct configuration
 
 };
 
+struct linesegment
+{
+
+    int x;
+    int w;
+    unsigned int color;
+
+};
+
 struct window
 {
 
@@ -129,6 +138,12 @@ static unsigned int mousecmap[] = {
     0xFFB05070,
     0xFFF898B8
 };
+static unsigned int windowcmap[] = {
+    0xFF101010,
+    0xFFA8C898,
+    0xFF88A878,
+    0xFF242424
+};
 static unsigned char colormap8[] = {
     0x00, 0x00, 0x00,
     0x3F, 0x3F, 0x3F,
@@ -141,6 +156,63 @@ static unsigned char colormap8[] = {
     0x38, 0x20, 0x28,
     0x1C, 0x18, 0x18,
     0x3F, 0x3F, 0x3F
+};
+
+#define BORDER_COLOR_SHADOW 0
+#define BORDER_COLOR_MAIN_LIGHT 1
+#define BORDER_COLOR_MAIN_NORMAL 2
+#define BORDER_COLOR_AREA_NORMAL 3
+
+static struct linesegment windowborder0[1] = {
+    {1, -1, BORDER_COLOR_SHADOW}
+};
+
+static struct linesegment windowborder1[1] = {
+    {0, 0, BORDER_COLOR_SHADOW}
+};
+
+static struct linesegment windowborder2[3] = {
+    {0, 3, BORDER_COLOR_SHADOW},
+    {3, -3, BORDER_COLOR_MAIN_LIGHT},
+    {-3, 3, BORDER_COLOR_SHADOW}
+};
+
+static struct linesegment windowborder3[5] = {
+    {0, 2, BORDER_COLOR_SHADOW},
+    {2, 2, BORDER_COLOR_MAIN_LIGHT},
+    {4, -4, BORDER_COLOR_MAIN_NORMAL},
+    {-4, 2, BORDER_COLOR_MAIN_LIGHT},
+    {-2, 2, BORDER_COLOR_SHADOW}
+};
+
+static struct linesegment windowbordertitle[5] = {
+    {0, 2, BORDER_COLOR_SHADOW},
+    {2, 1, BORDER_COLOR_MAIN_LIGHT},
+    {3, -3, BORDER_COLOR_MAIN_NORMAL},
+    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
+    {-2, 2, BORDER_COLOR_SHADOW}
+};
+
+static struct linesegment windowborderspacing[7] = {
+    {0, 2, BORDER_COLOR_SHADOW},
+    {2, 1, BORDER_COLOR_MAIN_LIGHT},
+    {3, 1, BORDER_COLOR_MAIN_NORMAL},
+    {4, -4, BORDER_COLOR_SHADOW},
+    {-4, 1, BORDER_COLOR_MAIN_NORMAL},
+    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
+    {-2, 2, BORDER_COLOR_SHADOW}
+};
+
+static struct linesegment windowborderarea[9] = {
+    {0, 2, BORDER_COLOR_SHADOW},
+    {2, 1, BORDER_COLOR_MAIN_LIGHT},
+    {3, 1, BORDER_COLOR_MAIN_NORMAL},
+    {4, 1, BORDER_COLOR_SHADOW},
+    {5, -5, BORDER_COLOR_AREA_NORMAL},
+    {-5, 1, BORDER_COLOR_SHADOW},
+    {-4, 1, BORDER_COLOR_MAIN_NORMAL},
+    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
+    {-2, 2, BORDER_COLOR_SHADOW}
 };
 
 static void setupvideo(void)
@@ -265,15 +337,6 @@ static void paintrectangle(struct rectangle *r, unsigned int color)
 
 }
 
-struct colorpos
-{
-
-    int x;
-    int w;
-    unsigned int color;
-
-};
-
 static void convert(struct rectangle *r1, int x, int w, unsigned int y, struct rectangle *r)
 {
 
@@ -289,7 +352,7 @@ static void convert(struct rectangle *r1, int x, int w, unsigned int y, struct r
 
 }
 
-static void paintcolorpos(struct rectangle *r1, unsigned int *cmap, struct colorpos *pos, unsigned int n, unsigned int y)
+static void paintlinesegments(struct rectangle *r1, unsigned int *cmap, struct linesegment *ls, unsigned int n, unsigned int y)
 {
 
     unsigned int i;
@@ -297,7 +360,7 @@ static void paintcolorpos(struct rectangle *r1, unsigned int *cmap, struct color
     for (i = 0; i < n; i++)
     {
 
-        struct colorpos *p = &pos[i];
+        struct linesegment *p = &ls[i];
         struct rectangle r;
 
         convert(r1, p->x, p->w, y, &r);
@@ -306,73 +369,6 @@ static void paintcolorpos(struct rectangle *r1, unsigned int *cmap, struct color
     }
 
 }
-
-static unsigned int bordercmap[] = {
-    0xFF101010,
-    0xFFA8C898,
-    0xFF88A878
-};
-
-#define BORDER_TYPE_0 0
-#define BORDER_TYPE_1 1
-#define BORDER_TYPE_2 2
-#define BORDER_TYPE_3 3
-#define BORDER_TYPE_TITLE 4
-#define BORDER_TYPE_SPACING 5
-#define BORDER_TYPE_AREA 6
-#define BORDER_COLOR_SHADOW 0
-#define BORDER_COLOR_MAIN_LIGHT 1
-#define BORDER_COLOR_MAIN_NORMAL 2
-
-static struct colorpos cp0[1] = {
-    {1, -1, BORDER_COLOR_SHADOW}
-};
-
-static struct colorpos cp1[1] = {
-    {0, 0, BORDER_COLOR_SHADOW}
-};
-
-static struct colorpos cp2[3] = {
-    {0, 3, BORDER_COLOR_SHADOW},
-    {3, -3, BORDER_COLOR_MAIN_LIGHT},
-    {-3, 3, BORDER_COLOR_SHADOW}
-};
-
-static struct colorpos cp3[5] = {
-    {0, 2, BORDER_COLOR_SHADOW},
-    {2, 2, BORDER_COLOR_MAIN_LIGHT},
-    {4, -4, BORDER_COLOR_MAIN_NORMAL},
-    {-4, 2, BORDER_COLOR_MAIN_LIGHT},
-    {-2, 2, BORDER_COLOR_SHADOW}
-};
-
-static struct colorpos cptitle[5] = {
-    {0, 2, BORDER_COLOR_SHADOW},
-    {2, 1, BORDER_COLOR_MAIN_LIGHT},
-    {3, -3, BORDER_COLOR_MAIN_NORMAL},
-    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
-    {-2, 2, BORDER_COLOR_SHADOW}
-};
-
-static struct colorpos cpspacing[7] = {
-    {0, 2, BORDER_COLOR_SHADOW},
-    {2, 1, BORDER_COLOR_MAIN_LIGHT},
-    {3, 1, BORDER_COLOR_MAIN_NORMAL},
-    {4, -4, BORDER_COLOR_SHADOW},
-    {-4, 1, BORDER_COLOR_MAIN_NORMAL},
-    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
-    {-2, 2, BORDER_COLOR_SHADOW}
-};
-
-static struct colorpos cparea[7] = {
-    {0, 2, BORDER_COLOR_SHADOW},
-    {2, 1, BORDER_COLOR_MAIN_LIGHT},
-    {3, 1, BORDER_COLOR_MAIN_NORMAL},
-    {4, -4, BORDER_COLOR_SHADOW},
-    {-4, 1, BORDER_COLOR_MAIN_NORMAL},
-    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
-    {-2, 2, BORDER_COLOR_SHADOW}
-};
 
 static void paintwindow(struct window *window)
 {
@@ -384,23 +380,23 @@ static void paintwindow(struct window *window)
     r.position.x = window->position.x;
     r.size.w = window->size.w;
 
-    paintcolorpos(&r, bordercmap, cp0, 1, y++);
-    paintcolorpos(&r, bordercmap, cp1, 1, y++);
-    paintcolorpos(&r, bordercmap, cp2, 3, y++);
-    paintcolorpos(&r, bordercmap, cp3, 5, y++);
+    paintlinesegments(&r, windowcmap, windowborder0, 1, y++);
+    paintlinesegments(&r, windowcmap, windowborder1, 1, y++);
+    paintlinesegments(&r, windowcmap, windowborder2, 3, y++);
+    paintlinesegments(&r, windowcmap, windowborder3, 5, y++);
 
     for (i = 0; i < 36; i++)
-        paintcolorpos(&r, bordercmap, cptitle, 5, y++);
+        paintlinesegments(&r, windowcmap, windowbordertitle, 5, y++);
 
-    paintcolorpos(&r, bordercmap, cpspacing, 7, y++);
+    paintlinesegments(&r, windowcmap, windowborderspacing, 7, y++);
 
     for (i = 0; i < window->size.h - 45; i++)
-        paintcolorpos(&r, bordercmap, cparea, 7, y++);
+        paintlinesegments(&r, windowcmap, windowborderarea, 9, y++);
 
-    paintcolorpos(&r, bordercmap, cp3, 5, y++);
-    paintcolorpos(&r, bordercmap, cp2, 3, y++);
-    paintcolorpos(&r, bordercmap, cp1, 1, y++);
-    paintcolorpos(&r, bordercmap, cp0, 1, y++);
+    paintlinesegments(&r, windowcmap, windowborder3, 5, y++);
+    paintlinesegments(&r, windowcmap, windowborder2, 3, y++);
+    paintlinesegments(&r, windowcmap, windowborder1, 1, y++);
+    paintlinesegments(&r, windowcmap, windowborder0, 1, y++);
 
 }
 
@@ -467,7 +463,7 @@ static void paint(void)
 
     window1.title = "Example1";
     window1.active = 1;
-    window1.size.w = 400;
+    window1.size.w = 800;
     window1.size.h = 600;
     window1.position.x = 100;
     window1.position.y = 80;
