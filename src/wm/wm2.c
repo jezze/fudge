@@ -75,9 +75,19 @@ struct window
 {
 
     char *title;
-    unsigned int active;
+    unsigned int focus;
     struct position position;
     struct size size;
+
+};
+
+struct repaint
+{
+
+    unsigned int state;
+    struct position position0;
+    struct position position1;
+    struct rectangle area;
 
 };
 
@@ -90,7 +100,9 @@ static unsigned int keymod = KEYMOD_NONE;
 static struct rectangle screen;
 static struct mouse mouse;
 static struct configuration configuration;
+static struct repaint repaint;
 static struct window window1;
+static struct window window2;
 static unsigned char fontdata[0x8000];
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -142,6 +154,12 @@ static unsigned int mousecmap[] = {
     0xFFF898B8
 };
 static unsigned int windowcmap[] = {
+    0xFF101010,
+    0xFFA0A0A0,
+    0xFF808080,
+    0xFF242424
+};
+static unsigned int windowcmapfocus[] = {
     0xFF101010,
     0xFFA8C898,
     0xFF88A878,
@@ -300,171 +318,194 @@ static void loadfont(unsigned int factor)
 
 }
 
-static void paintline(struct rectangle *r, unsigned int color, unsigned int y)
+static void pos2rect(struct position *p0, struct position *p1, struct rectangle *r)
 {
 
-    unsigned int *tdata = configuration.display.framebuffer;
+    r->position.x = p0->x;
+    r->position.y = p0->y;
+    r->size.w = p1->x - p0->x;
+    r->size.h = p1->y - p0->y;
+
+}
+
+/*
+static void rect2pos(struct rectangle *r, struct position *p0, struct position *p1)
+{
+
+    p0->x = r->position.x;
+    p0->y = r->position.y;
+    p1->x = r->position.x + r->size.w;
+    p1->y = r->position.y + r->size.h;
+
+}
+*/
+
+static void posset(struct position *p0, struct position *p1, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
+{
+
+    p0->x = x0;
+    p0->y = y0;
+    p1->x = x1;
+    p1->y = y1;
+
+}
+
+static void posshrink(struct position *p0, struct position *p1, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
+{
+
+    if (x0 < p0->x)
+        p0->x = x0;
+
+    if (y0 < p0->y)
+        p0->y = y0;
+
+    if (x1 > p1->x)
+        p1->x = x1;
+
+    if (y1 > p1->y)
+        p1->y = y1;
+
+}
+
+static void markforpaint(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
+{
+
+    if (repaint.state)
+        posshrink(&repaint.position0, &repaint.position1, x0, y0, x1, y1);
+    else
+        posset(&repaint.position0, &repaint.position1, x0, y0, x1, y1);
+
+    pos2rect(&repaint.position0, &repaint.position1, &repaint.area);
+
+    repaint.state = 1;
+
+}
+
+static void blit_line(unsigned int x0, unsigned int x1, unsigned int w, unsigned int color, unsigned int y)
+{
+
+    unsigned int *buffer = configuration.display.framebuffer;
     unsigned int x;
 
-    for (x = r->position.x; x < r->position.x + r->size.w; x++)
+    for (x = x0; x < x1; x++)
+        buffer[y * w + x] = color;
+
+}
+
+static void blit_cmap32line(struct position *p, struct image *image, unsigned int *cmap, struct size *tsize, unsigned int y)
+{
+
+    unsigned int *buffer = configuration.display.framebuffer;
+    unsigned char *data = image->data;
+    unsigned int x;
+
+    for (x = 0; x < image->size.w; x++)
     {
 
-        unsigned int toffset = y * screen.size.w + x;
+        unsigned int soffset = (y * image->size.w + x);
+        unsigned int toffset = (p->y * tsize->w + p->x) + (y * tsize->w + x);
 
-        tdata[toffset] = color;
+        if (data[soffset] != 0xFF)
+            buffer[toffset] = cmap[data[soffset]];
 
     }
 
 }
 
-static void paintrectangle(struct rectangle *r, unsigned int color)
+static void convert(int r1x, int r1w, int x, int w, unsigned int y, struct position *p0, struct position *p1)
 {
 
-    unsigned int *tdata = configuration.display.framebuffer;
-    unsigned int x;
-    unsigned int y;
-
-    for (y = r->position.y; y < r->position.y + r->size.h; y++)
-    {
-
-        for (x = r->position.x; x < r->position.x + r->size.w; x++)
-        {
-
-            unsigned int toffset = y * screen.size.w + x;
-
-            tdata[toffset] = color;
-
-        }
-
-    }
+    p0->x = (x >= 0) ? r1x + x : r1x + r1w + x;
+    p1->x = (w > 0) ? w + p0->x : r1w + (w * 2) + p0->x;
 
 }
 
-static void convert(struct rectangle *r1, int x, int w, unsigned int y, struct rectangle *r)
+static void paintlinesegment(struct rectangle *r1, unsigned int *cmap, struct linesegment *p, struct rectangle *area, unsigned int y)
 {
 
-    if (x >= 0)
-        r->position.x = r1->position.x + x;
-    else
-        r->position.x = r1->position.x + (int)r1->size.w + x;
+    struct position p0;
+    struct position p1;
 
-    if (w > 0)
-        r->size.w = w;
-    else
-        r->size.w = (int)r1->size.w + (w * 2);
+    convert(r1->position.x, r1->size.w, p->x, p->w, y, &p0, &p1);
+    blit_line(p0.x, p1.x, screen.size.w, cmap[p->color], y);
 
 }
 
-static void paintlinesegments(struct rectangle *r1, unsigned int *cmap, struct linesegment *ls, unsigned int n, unsigned int y)
+static void paintlinesegments(struct rectangle *r1, unsigned int *cmap, struct linesegment *ls, unsigned int n, struct rectangle *area, unsigned int y)
 {
 
     unsigned int i;
 
     for (i = 0; i < n; i++)
-    {
-
-        struct linesegment *p = &ls[i];
-        struct rectangle r;
-
-        convert(r1, p->x, p->w, y, &r);
-        paintline(&r, cmap[p->color], y);
-
-    }
+        paintlinesegment(r1, cmap, &ls[i], area, y);
 
 }
 
-static void paintwindow(struct window *window)
+static void paintwindow(struct window *window, struct rectangle *area, unsigned int y)
 {
 
+    unsigned int *cmap = (window->focus) ? windowcmapfocus : windowcmap;
     struct rectangle r;
-    unsigned int y = window->position.y;
-    unsigned int i;
+    unsigned int ly = y - window->position.y;
 
     r.position.x = window->position.x;
     r.size.w = window->size.w;
 
-    paintlinesegments(&r, windowcmap, windowborder0, 1, y++);
-    paintlinesegments(&r, windowcmap, windowborder1, 1, y++);
-    paintlinesegments(&r, windowcmap, windowborder2, 3, y++);
-    paintlinesegments(&r, windowcmap, windowborder3, 5, y++);
+    if (ly == 0 || ly == window->size.h - 1)
+        paintlinesegments(&r, cmap, windowborder0, 1, area, y);
 
-    for (i = 0; i < 36; i++)
-        paintlinesegments(&r, windowcmap, windowbordertitle, 5, y++);
+    if (ly == 1 || ly == window->size.h - 2)
+        paintlinesegments(&r, cmap, windowborder1, 1, area, y);
 
-    paintlinesegments(&r, windowcmap, windowborderspacing, 7, y++);
+    if (ly == 2 || ly == window->size.h - 3)
+        paintlinesegments(&r, cmap, windowborder2, 3, area, y);
 
-    for (i = 0; i < window->size.h - 45; i++)
-        paintlinesegments(&r, windowcmap, windowborderarea, 9, y++);
+    if (ly == 3 || ly == window->size.h - 4)
+        paintlinesegments(&r, cmap, windowborder3, 5, area, y);
 
-    paintlinesegments(&r, windowcmap, windowborder3, 5, y++);
-    paintlinesegments(&r, windowcmap, windowborder2, 3, y++);
-    paintlinesegments(&r, windowcmap, windowborder1, 1, y++);
-    paintlinesegments(&r, windowcmap, windowborder0, 1, y++);
+    if (ly >= 4 && ly < 40)
+        paintlinesegments(&r, cmap, windowbordertitle, 5, area, y);
 
-}
+    if (ly == 40)
+        paintlinesegments(&r, cmap, windowborderspacing, 7, area, y);
 
-static void blit_cmap32(unsigned char *s, unsigned int *cmap, unsigned int sw, unsigned int sh, unsigned char *t, unsigned int tw, unsigned int th, unsigned int px, unsigned int py, struct rectangle *clip)
-{
-
-    unsigned int *tdata = configuration.display.framebuffer;
-    unsigned int x;
-    unsigned int y;
-
-    for (y = clip->position.y; y < clip->size.h; y++)
-    {
-
-        for (x = clip->position.x; x < clip->size.w; x++)
-        {
-
-            unsigned int soffset = (y * sw + x);
-            unsigned int toffset = (py * tw + px) + (y * tw + x);
-
-            if (s[soffset] != 0xFF)
-                tdata[toffset] = cmap[s[soffset]];
-
-        }
-
-    }
+    if (ly > 40 && ly < window->size.h - 4)
+        paintlinesegments(&r, cmap, windowborderarea, 9, area, y);
 
 }
 
-static void calculateclip(struct rectangle *clip, unsigned int x0, unsigned int y0, unsigned int w0, unsigned int h0, unsigned int x1, unsigned int y1, unsigned int w1, unsigned int h1)
+static int intersects(unsigned int y, unsigned int y0, unsigned int y1)
 {
 
-    unsigned int xw0 = x0 + w0;
-    unsigned int yh0 = y0 + h0;
-    unsigned int xw1 = x1 + w1;
-    unsigned int yh1 = y1 + h1;
-
-    if (xw0 > xw1)
-        clip->size.w = w0 - (xw0 - xw1);
-
-    if (yh0 > yh1)
-        clip->size.h = h0 - (yh0 - yh1);
-
-}
-
-static void paintmouse(void)
-{
-
-    struct rectangle clip;
-
-    clip.position.x = 0;
-    clip.position.y = 0;
-    clip.size.w = mouse.image.size.w;
-    clip.size.h = mouse.image.size.h;
-
-    calculateclip(&clip, mouse.position.x, mouse.position.y, mouse.image.size.w, mouse.image.size.h, 0, 0, configuration.display.size.w, configuration.display.size.h);
-    blit_cmap32(mouse.image.data, mousecmap, mouse.image.size.w, mouse.image.size.h, configuration.display.framebuffer, configuration.display.size.w, configuration.display.size.h, mouse.position.x, mouse.position.y, &clip);
+    return y >= y0 && y < y1;
 
 }
 
 static void paint(void)
 {
 
-    paintrectangle(&screen, 0xFF202020);
-    paintwindow(&window1);
-    paintmouse();
+    if (repaint.state)
+    {
+
+        unsigned int y;
+
+        for (y = repaint.position0.y; y < repaint.position1.y; y++)
+        {
+
+            if (intersects(y, screen.position.y, screen.position.y + screen.size.h))
+                blit_line(repaint.position0.x, repaint.position1.x, screen.size.w, 0xFF202020, y);
+
+            paintwindow(&window2, &repaint.area, y);
+            paintwindow(&window1, &repaint.area, y);
+
+            if (intersects(y, mouse.position.y, mouse.position.y + mouse.image.size.h))
+                blit_cmap32line(&mouse.position, &mouse.image, mousecmap, &screen.size, y - mouse.position.y);
+
+        }
+
+        repaint.state = 0;
+
+    }
 
 }
 
@@ -528,6 +569,8 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
 
     struct event_mousemove *mousemove = mdata;
 
+    markforpaint(mouse.position.x, mouse.position.y, mouse.position.x + mouse.image.size.w, mouse.position.y + mouse.image.size.h);
+
     mouse.position.x += mousemove->relx;
     mouse.position.y += mousemove->rely;
 
@@ -537,19 +580,29 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
     if (mouse.position.y < screen.position.y || mouse.position.y >= screen.position.y + screen.size.h)
         mouse.position.y = (mousemove->rely < 0) ? screen.position.y : screen.position.y + screen.size.h - 1;
 
+    markforpaint(mouse.position.x, mouse.position.y, mouse.position.x + mouse.image.size.w, mouse.position.y + mouse.image.size.h);
+
     if (mouse.drag)
     {
 
+        markforpaint(window1.position.x, window1.position.y, window1.position.x + window1.size.w, window1.position.y + window1.size.h);
+
         window1.position.x += mousemove->relx;
         window1.position.y += mousemove->rely;
+
+        markforpaint(window1.position.x, window1.position.y, window1.position.x + window1.size.w, window1.position.y + window1.size.h);
 
     }
 
     if (mouse.resize)
     {
 
+        markforpaint(window1.position.x, window1.position.y, window1.position.x + window1.size.w, window1.position.y + window1.size.h);
+
         window1.size.w += mousemove->relx;
         window1.size.h += mousemove->rely;
+
+        markforpaint(window1.position.x, window1.position.y, window1.position.x + window1.size.w, window1.position.y + window1.size.h);
 
     }
 
@@ -663,6 +716,8 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
 
     setmouse(videomode->w / 4, videomode->h / 4, factor);
 
+    markforpaint(screen.position.x, screen.position.y, screen.position.x + screen.size.w, screen.position.y + screen.size.h);
+
 }
 
 static void onwmmap(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
@@ -684,11 +739,18 @@ void init(struct channel *channel)
 {
 
     window1.title = "Example1";
-    window1.active = 1;
+    window1.focus = 1;
     window1.size.w = 800;
     window1.size.h = 600;
     window1.position.x = 100;
     window1.position.y = 80;
+
+    window2.title = "Example2";
+    window2.focus = 0;
+    window2.size.w = 800;
+    window2.size.h = 600;
+    window2.position.x = 200;
+    window2.position.y = 100;
 
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
