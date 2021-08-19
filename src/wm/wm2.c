@@ -91,8 +91,8 @@ struct repaint
 
 };
 
-static unsigned int optwidth = 1024;
-static unsigned int optheight = 768;
+static unsigned int optwidth = 1920;
+static unsigned int optheight = 1080;
 static unsigned int optbpp = 4;
 /*
 static unsigned int keymod = KEYMOD_NONE;
@@ -495,8 +495,11 @@ static void paint(void)
             if (intersects(y, screen.position.y, screen.position.y + screen.size.h))
                 blit_line(repaint.position0.x, repaint.position1.x, screen.size.w, 0xFF202020, y);
 
-            paintwindow(&window2, &repaint.area, y);
-            paintwindow(&window1, &repaint.area, y);
+            if (intersects(y, window2.position.y, window2.position.y + window2.size.h))
+                paintwindow(&window2, &repaint.area, y);
+
+            if (intersects(y, window1.position.y, window1.position.y + window1.size.h))
+                paintwindow(&window1, &repaint.area, y);
 
             if (intersects(y, mouse.position.y, mouse.position.y + mouse.image.size.h))
                 blit_cmap32line(&mouse.position, &mouse.image, mousecmap, &screen.size, y - mouse.position.y);
