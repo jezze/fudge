@@ -38,6 +38,8 @@ struct mouse
 
     struct position position;
     struct image image;
+    unsigned int drag;
+    unsigned int resize;
 
 };
 
@@ -88,6 +90,7 @@ static unsigned int keymod = KEYMOD_NONE;
 static struct rectangle screen;
 static struct mouse mouse;
 static struct configuration configuration;
+static struct window window1;
 static unsigned char fontdata[0x8000];
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -459,15 +462,6 @@ static void paintmouse(void)
 static void paint(void)
 {
 
-    struct window window1;
-
-    window1.title = "Example1";
-    window1.active = 1;
-    window1.size.w = 800;
-    window1.size.h = 600;
-    window1.position.x = 100;
-    window1.position.y = 80;
-
     paintrectangle(&screen, 0xFF202020);
     paintwindow(&window1);
     paintmouse();
@@ -543,6 +537,22 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
     if (mouse.position.y < screen.position.y || mouse.position.y >= screen.position.y + screen.size.h)
         mouse.position.y = (mousemove->rely < 0) ? screen.position.y : screen.position.y + screen.size.h - 1;
 
+    if (mouse.drag)
+    {
+
+        window1.position.x += mousemove->relx;
+        window1.position.y += mousemove->rely;
+
+    }
+
+    if (mouse.resize)
+    {
+
+        window1.size.w += mousemove->relx;
+        window1.size.h += mousemove->rely;
+
+    }
+
 }
 
 static void onmousepress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
@@ -553,12 +563,39 @@ static void onmousepress(struct channel *channel, unsigned int source, void *mda
     switch (mousepress->button)
     {
 
+    case 1:
+        mouse.drag = 1;
+
+        break;
+
+    case 2:
+        mouse.resize = 1;
+
+        break;
+
     }
 
 }
 
 static void onmouserelease(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
+
+    struct event_mouserelease *mouserelease = mdata;
+
+    switch (mouserelease->button)
+    {
+
+    case 1:
+        mouse.drag = 0;
+
+        break;
+
+    case 2:
+        mouse.resize = 0;
+
+        break;
+
+    }
 
 }
 
@@ -645,6 +682,13 @@ static void onwmunmap(struct channel *channel, unsigned int source, void *mdata,
 
 void init(struct channel *channel)
 {
+
+    window1.title = "Example1";
+    window1.active = 1;
+    window1.size.w = 800;
+    window1.size.h = 600;
+    window1.position.x = 100;
+    window1.position.y = 80;
 
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
