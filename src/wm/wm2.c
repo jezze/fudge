@@ -153,7 +153,29 @@ static unsigned int mousecmap[] = {
     0xFFB05070,
     0xFFF898B8
 };
-static unsigned int windowcmap[] = {
+
+#if 0
+#define BORDERRECT_COLOR_NORMAL 0
+
+static unsigned int borderrectcmap[] = {
+    0xFFFF0000,
+};
+static struct linesegment borderrect0[1] = {
+    {1, -1, BORDERRECT_COLOR_NORMAL}
+};
+
+static struct linesegment borderrect1[2] = {
+    {0, 1, BORDERRECT_COLOR_NORMAL},
+    {-1, 1, BORDERRECT_COLOR_NORMAL}
+};
+#endif
+
+#define WINDOW_COLOR_SHADOW 0
+#define WINDOW_COLOR_MAIN_LIGHT 1
+#define WINDOW_COLOR_MAIN_NORMAL 2
+#define WINDOW_COLOR_AREA_NORMAL 3
+
+static unsigned int windowcmapnormal[] = {
     0xFF101010,
     0xFFA0A0A0,
     0xFF808080,
@@ -165,75 +187,56 @@ static unsigned int windowcmapfocus[] = {
     0xFF88A878,
     0xFF242424
 };
-static unsigned char colormap8[] = {
-    0x00, 0x00, 0x00,
-    0x3F, 0x3F, 0x3F,
-    0x04, 0x02, 0x02,
-    0x06, 0x04, 0x04,
-    0x08, 0x06, 0x06,
-    0x08, 0x10, 0x18,
-    0x0C, 0x14, 0x1C,
-    0x28, 0x10, 0x18,
-    0x38, 0x20, 0x28,
-    0x1C, 0x18, 0x18,
-    0x3F, 0x3F, 0x3F
-};
-
-#define BORDER_COLOR_SHADOW 0
-#define BORDER_COLOR_MAIN_LIGHT 1
-#define BORDER_COLOR_MAIN_NORMAL 2
-#define BORDER_COLOR_AREA_NORMAL 3
-
 static struct linesegment windowborder0[1] = {
-    {1, -1, BORDER_COLOR_SHADOW}
+    {1, -1, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowborder1[1] = {
-    {0, 0, BORDER_COLOR_SHADOW}
+    {0, 0, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowborder2[3] = {
-    {0, 3, BORDER_COLOR_SHADOW},
-    {3, -3, BORDER_COLOR_MAIN_LIGHT},
-    {-3, 3, BORDER_COLOR_SHADOW}
+    {0, 3, WINDOW_COLOR_SHADOW},
+    {3, -3, WINDOW_COLOR_MAIN_LIGHT},
+    {-3, 3, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowborder3[5] = {
-    {0, 2, BORDER_COLOR_SHADOW},
-    {2, 2, BORDER_COLOR_MAIN_LIGHT},
-    {4, -4, BORDER_COLOR_MAIN_NORMAL},
-    {-4, 2, BORDER_COLOR_MAIN_LIGHT},
-    {-2, 2, BORDER_COLOR_SHADOW}
+    {0, 2, WINDOW_COLOR_SHADOW},
+    {2, 2, WINDOW_COLOR_MAIN_LIGHT},
+    {4, -4, WINDOW_COLOR_MAIN_NORMAL},
+    {-4, 2, WINDOW_COLOR_MAIN_LIGHT},
+    {-2, 2, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowbordertitle[5] = {
-    {0, 2, BORDER_COLOR_SHADOW},
-    {2, 1, BORDER_COLOR_MAIN_LIGHT},
-    {3, -3, BORDER_COLOR_MAIN_NORMAL},
-    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
-    {-2, 2, BORDER_COLOR_SHADOW}
+    {0, 2, WINDOW_COLOR_SHADOW},
+    {2, 1, WINDOW_COLOR_MAIN_LIGHT},
+    {3, -3, WINDOW_COLOR_MAIN_NORMAL},
+    {-3, 1, WINDOW_COLOR_MAIN_LIGHT},
+    {-2, 2, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowborderspacing[7] = {
-    {0, 2, BORDER_COLOR_SHADOW},
-    {2, 1, BORDER_COLOR_MAIN_LIGHT},
-    {3, 1, BORDER_COLOR_MAIN_NORMAL},
-    {4, -4, BORDER_COLOR_SHADOW},
-    {-4, 1, BORDER_COLOR_MAIN_NORMAL},
-    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
-    {-2, 2, BORDER_COLOR_SHADOW}
+    {0, 2, WINDOW_COLOR_SHADOW},
+    {2, 1, WINDOW_COLOR_MAIN_LIGHT},
+    {3, 1, WINDOW_COLOR_MAIN_NORMAL},
+    {4, -4, WINDOW_COLOR_SHADOW},
+    {-4, 1, WINDOW_COLOR_MAIN_NORMAL},
+    {-3, 1, WINDOW_COLOR_MAIN_LIGHT},
+    {-2, 2, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowborderarea[9] = {
-    {0, 2, BORDER_COLOR_SHADOW},
-    {2, 1, BORDER_COLOR_MAIN_LIGHT},
-    {3, 1, BORDER_COLOR_MAIN_NORMAL},
-    {4, 1, BORDER_COLOR_SHADOW},
-    {5, -5, BORDER_COLOR_AREA_NORMAL},
-    {-5, 1, BORDER_COLOR_SHADOW},
-    {-4, 1, BORDER_COLOR_MAIN_NORMAL},
-    {-3, 1, BORDER_COLOR_MAIN_LIGHT},
-    {-2, 2, BORDER_COLOR_SHADOW}
+    {0, 2, WINDOW_COLOR_SHADOW},
+    {2, 1, WINDOW_COLOR_MAIN_LIGHT},
+    {3, 1, WINDOW_COLOR_MAIN_NORMAL},
+    {4, 1, WINDOW_COLOR_SHADOW},
+    {5, -5, WINDOW_COLOR_AREA_NORMAL},
+    {-5, 1, WINDOW_COLOR_SHADOW},
+    {-4, 1, WINDOW_COLOR_MAIN_NORMAL},
+    {-3, 1, WINDOW_COLOR_MAIN_LIGHT},
+    {-2, 2, WINDOW_COLOR_SHADOW}
 };
 
 static void setupvideo(void)
@@ -253,7 +256,6 @@ static void setupvideo(void)
 
     file_seekwriteall(FILE_L1, black, 768, 0);
     file_seekwriteall(FILE_L0, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekwriteall(FILE_L1, colormap8, 3 * 11, 0);
 
 }
 
@@ -420,24 +422,24 @@ static void convert(int r1x, int r1w, int x, int w, unsigned int y, struct posit
 
 }
 
-static void paintlinesegment(struct rectangle *r1, unsigned int *cmap, struct linesegment *p, struct rectangle *area, unsigned int y)
+static void paintlinesegment(int x, int w, unsigned int *cmap, struct linesegment *p, struct rectangle *area, unsigned int y)
 {
 
     struct position p0;
     struct position p1;
 
-    convert(r1->position.x, r1->size.w, p->x, p->w, y, &p0, &p1);
+    convert(x, w, p->x, p->w, y, &p0, &p1);
     blit_line(p0.x, p1.x, screen.size.w, cmap[p->color], y);
 
 }
 
-static void paintlinesegments(struct rectangle *r1, unsigned int *cmap, struct linesegment *ls, unsigned int n, struct rectangle *area, unsigned int y)
+static void paintlinesegments(int x, int w, unsigned int *cmap, struct linesegment *ls, unsigned int n, struct rectangle *area, unsigned int y)
 {
 
     unsigned int i;
 
     for (i = 0; i < n; i++)
-        paintlinesegment(r1, cmap, &ls[i], area, y);
+        paintlinesegment(x, w, cmap, &ls[i], area, y);
 
 }
 
@@ -451,36 +453,48 @@ static void paintmouse(struct mouse *m, struct rectangle *area, unsigned int y)
 
 }
 
+#if 0
+static void paintborderrect(struct rectangle *area, unsigned int y)
+{
+
+    unsigned int *cmap = borderrectcmap;
+    unsigned int ly = y - area->position.y;
+
+    if (ly == 0 || ly == area->size.h - 1)
+        paintlinesegments(area->position.x, area->size.w, cmap, borderrect0, 1, area, y);
+
+    if (ly > 1 && ly < area->size.h - 2)
+        paintlinesegments(area->position.x, area->size.w, cmap, borderrect1, 2, area, y);
+
+}
+#endif
+
 static void paintwindow(struct window *w, struct rectangle *area, unsigned int y)
 {
 
-    unsigned int *cmap = (w->focus) ? windowcmapfocus : windowcmap;
+    unsigned int *cmap = (w->focus) ? windowcmapfocus : windowcmapnormal;
     unsigned int ly = y - w->position.y;
-    struct rectangle r;
-
-    r.position.x = w->position.x;
-    r.size.w = w->size.w;
 
     if (ly == 0 || ly == w->size.h - 1)
-        paintlinesegments(&r, cmap, windowborder0, 1, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborder0, 1, area, y);
 
     if (ly == 1 || ly == w->size.h - 2)
-        paintlinesegments(&r, cmap, windowborder1, 1, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborder1, 1, area, y);
 
     if (ly == 2 || ly == w->size.h - 3)
-        paintlinesegments(&r, cmap, windowborder2, 3, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborder2, 3, area, y);
 
     if (ly == 3 || ly == w->size.h - 4)
-        paintlinesegments(&r, cmap, windowborder3, 5, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborder3, 5, area, y);
 
     if (ly >= 4 && ly < 40)
-        paintlinesegments(&r, cmap, windowbordertitle, 5, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowbordertitle, 5, area, y);
 
     if (ly == 40)
-        paintlinesegments(&r, cmap, windowborderspacing, 7, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborderspacing, 7, area, y);
 
     if (ly > 40 && ly < w->size.h - 4)
-        paintlinesegments(&r, cmap, windowborderarea, 9, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborderarea, 9, area, y);
 
 }
 
@@ -514,6 +528,9 @@ static void paint(void)
             if (intersects(y, mouse.position.y, mouse.position.y + mouse.image.size.h))
                 paintmouse(&mouse, &repaint.area, y);
 
+            #if 0
+            paintborderrect(&repaint.area, y);
+            #endif
         }
 
         repaint.state = 0;
