@@ -369,7 +369,7 @@ static void blit_line(unsigned int x0, unsigned int x1, unsigned int w, unsigned
 
 }
 
-static void blit_cmap32line(struct position *p, struct image *image, unsigned int *cmap, struct size *tsize, unsigned int y)
+static void blit_cmap32line(struct position *p, struct image *image, unsigned int *cmap, unsigned int tw, unsigned int y)
 {
 
     unsigned int *buffer = configuration.display.framebuffer;
@@ -380,7 +380,7 @@ static void blit_cmap32line(struct position *p, struct image *image, unsigned in
     {
 
         unsigned int soffset = (y * image->size.w + x);
-        unsigned int toffset = (p->y * tsize->w + p->x) + (y * tsize->w + x);
+        unsigned int toffset = (p->y * tw + p->x) + (y * tw + x);
 
         if (data[soffset] != 0xFF)
             buffer[toffset] = cmap[data[soffset]];
@@ -424,7 +424,7 @@ static void paintmouse(struct mouse *m, unsigned int y)
     unsigned int *cmap = mousecmap;
     unsigned int ly = y - m->position.y;
 
-    blit_cmap32line(&m->position, &m->image, cmap, &screen.size, ly);
+    blit_cmap32line(&m->position, &m->image, cmap, screen.size.w, ly);
 
 }
 
