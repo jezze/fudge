@@ -17,14 +17,6 @@ struct size
 
 };
 
-struct rectangle
-{
-
-    struct position position;
-    struct size size;
-
-};
-
 struct image
 {
 
@@ -40,6 +32,14 @@ struct mouse
     struct image image;
     unsigned int drag;
     unsigned int resize;
+
+};
+
+struct screen
+{
+
+    struct position position;
+    struct size size;
 
 };
 
@@ -87,7 +87,6 @@ struct repaint
     unsigned int state;
     struct position position0;
     struct position position1;
-    struct rectangle area;
 
 };
 
@@ -97,7 +96,7 @@ static unsigned int optbpp = 4;
 /*
 static unsigned int keymod = KEYMOD_NONE;
 */
-static struct rectangle screen;
+static struct screen screen;
 static struct mouse mouse;
 static struct configuration configuration;
 static struct repaint repaint;
@@ -320,28 +319,6 @@ static void loadfont(unsigned int factor)
 
 }
 
-static void pos2rect(struct position *p0, struct position *p1, struct rectangle *r)
-{
-
-    r->position.x = p0->x;
-    r->position.y = p0->y;
-    r->size.w = p1->x - p0->x;
-    r->size.h = p1->y - p0->y;
-
-}
-
-/*
-static void rect2pos(struct rectangle *r, struct position *p0, struct position *p1)
-{
-
-    p0->x = r->position.x;
-    p0->y = r->position.y;
-    p1->x = r->position.x + r->size.w;
-    p1->y = r->position.y + r->size.h;
-
-}
-*/
-
 static void posset(struct position *p0, struct position *p1, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
 {
 
@@ -376,8 +353,6 @@ static void markforpaint(unsigned int x0, unsigned int y0, unsigned int x1, unsi
         posshrink(&repaint.position0, &repaint.position1, x0, y0, x1, y1);
     else
         posset(&repaint.position0, &repaint.position1, x0, y0, x1, y1);
-
-    pos2rect(&repaint.position0, &repaint.position1, &repaint.area);
 
     repaint.state = 1;
 
@@ -422,7 +397,7 @@ static void convert(int r1x, int r1w, int x, int w, unsigned int y, struct posit
 
 }
 
-static void paintlinesegment(int x, int w, unsigned int *cmap, struct linesegment *p, struct rectangle *area, unsigned int y)
+static void paintlinesegment(int x, int w, unsigned int *cmap, struct linesegment *p, unsigned int y)
 {
 
     struct position p0;
@@ -433,17 +408,17 @@ static void paintlinesegment(int x, int w, unsigned int *cmap, struct linesegmen
 
 }
 
-static void paintlinesegments(int x, int w, unsigned int *cmap, struct linesegment *ls, unsigned int n, struct rectangle *area, unsigned int y)
+static void paintlinesegments(int x, int w, unsigned int *cmap, struct linesegment *ls, unsigned int n, unsigned int y)
 {
 
     unsigned int i;
 
     for (i = 0; i < n; i++)
-        paintlinesegment(x, w, cmap, &ls[i], area, y);
+        paintlinesegment(x, w, cmap, &ls[i], y);
 
 }
 
-static void paintmouse(struct mouse *m, struct rectangle *area, unsigned int y)
+static void paintmouse(struct mouse *m, unsigned int y)
 {
 
     unsigned int *cmap = mousecmap;
@@ -454,47 +429,47 @@ static void paintmouse(struct mouse *m, struct rectangle *area, unsigned int y)
 }
 
 #if 0
-static void paintborderrect(struct rectangle *area, unsigned int y)
+static void paintborderrect(int px, int py, unsigned int pw, unsigned int y)
 {
 
     unsigned int *cmap = borderrectcmap;
-    unsigned int ly = y - area->position.y;
+    unsigned int ly = y - py;
 
     if (ly == 0 || ly == area->size.h - 1)
-        paintlinesegments(area->position.x, area->size.w, cmap, borderrect0, 1, area, y);
+        paintlinesegments(px, pw, cmap, borderrect0, 1, y);
 
     if (ly > 1 && ly < area->size.h - 2)
-        paintlinesegments(area->position.x, area->size.w, cmap, borderrect1, 2, area, y);
+        paintlinesegments(px, pw, cmap, borderrect1, 2, y);
 
 }
 #endif
 
-static void paintwindow(struct window *w, struct rectangle *area, unsigned int y)
+static void paintwindow(struct window *w, unsigned int y)
 {
 
     unsigned int *cmap = (w->focus) ? windowcmapfocus : windowcmapnormal;
     unsigned int ly = y - w->position.y;
 
     if (ly == 0 || ly == w->size.h - 1)
-        paintlinesegments(w->position.x, w->size.w, cmap, windowborder0, 1, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborder0, 1, y);
 
     if (ly == 1 || ly == w->size.h - 2)
-        paintlinesegments(w->position.x, w->size.w, cmap, windowborder1, 1, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborder1, 1, y);
 
     if (ly == 2 || ly == w->size.h - 3)
-        paintlinesegments(w->position.x, w->size.w, cmap, windowborder2, 3, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborder2, 3, y);
 
     if (ly == 3 || ly == w->size.h - 4)
-        paintlinesegments(w->position.x, w->size.w, cmap, windowborder3, 5, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborder3, 5, y);
 
     if (ly >= 4 && ly < 40)
-        paintlinesegments(w->position.x, w->size.w, cmap, windowbordertitle, 5, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowbordertitle, 5, y);
 
     if (ly == 40)
-        paintlinesegments(w->position.x, w->size.w, cmap, windowborderspacing, 7, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborderspacing, 7, y);
 
     if (ly > 40 && ly < w->size.h - 4)
-        paintlinesegments(w->position.x, w->size.w, cmap, windowborderarea, 9, area, y);
+        paintlinesegments(w->position.x, w->size.w, cmap, windowborderarea, 9, y);
 
 }
 
@@ -520,16 +495,16 @@ static void paint(void)
                 blit_line(repaint.position0.x, repaint.position1.x, screen.size.w, 0xFF202020, y);
 
             if (intersects(y, window2.position.y, window2.position.y + window2.size.h))
-                paintwindow(&window2, &repaint.area, y);
+                paintwindow(&window2, y);
 
             if (intersects(y, window1.position.y, window1.position.y + window1.size.h))
-                paintwindow(&window1, &repaint.area, y);
+                paintwindow(&window1, y);
 
             if (intersects(y, mouse.position.y, mouse.position.y + mouse.image.size.h))
-                paintmouse(&mouse, &repaint.area, y);
+                paintmouse(&mouse, y);
 
             #if 0
-            paintborderrect(&repaint.area, y);
+            paintborderrect(repaint.point0.x, repaint.point0.y, repaint.point1.x - repaint.point0.x, 0, y);
             #endif
         }
 
