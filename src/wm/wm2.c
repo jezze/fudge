@@ -35,17 +35,10 @@ struct mouse
 
 };
 
-struct screen
-{
-
-    struct position position;
-    struct size size;
-
-};
-
 struct display
 {
 
+    struct position position;
     void *framebuffer;
     struct size size;
     unsigned int bpp;
@@ -58,7 +51,6 @@ struct configuration
     unsigned int padding;
     unsigned int lineheight;
     unsigned int steplength;
-    struct display display;
 
 };
 
@@ -96,7 +88,7 @@ static unsigned int optbpp = 4;
 /*
 static unsigned int keymod = KEYMOD_NONE;
 */
-static struct screen screen;
+static struct display display;
 static struct mouse mouse;
 static struct configuration configuration;
 static struct repaint repaint;
@@ -361,7 +353,7 @@ static void markforpaint(unsigned int x0, unsigned int y0, unsigned int x1, unsi
 static void blit_line(unsigned int x0, unsigned int x1, unsigned int w, unsigned int color, unsigned int y)
 {
 
-    unsigned int *buffer = configuration.display.framebuffer;
+    unsigned int *buffer = display.framebuffer;
     unsigned int x;
 
     for (x = x0; x < x1; x++)
@@ -372,7 +364,7 @@ static void blit_line(unsigned int x0, unsigned int x1, unsigned int w, unsigned
 static void blit_cmap32line(struct position *p, struct image *image, unsigned int *cmap, unsigned int tw, unsigned int y)
 {
 
-    unsigned int *buffer = configuration.display.framebuffer;
+    unsigned int *buffer = display.framebuffer;
     unsigned char *data = image->data;
     unsigned int x;
 
@@ -404,7 +396,7 @@ static void paintlinesegment(int x, int w, unsigned int *cmap, struct linesegmen
     struct position p1;
 
     convert(x, w, p->x, p->w, y, &p0, &p1);
-    blit_line(p0.x, p1.x, screen.size.w, cmap[p->color], y);
+    blit_line(p0.x, p1.x, display.size.w, cmap[p->color], y);
 
 }
 
@@ -424,7 +416,7 @@ static void paintmouse(struct mouse *m, unsigned int y)
     unsigned int *cmap = mousecmap;
     unsigned int ly = y - m->position.y;
 
-    blit_cmap32line(&m->position, &m->image, cmap, screen.size.w, ly);
+    blit_cmap32line(&m->position, &m->image, cmap, display.size.w, ly);
 
 }
 
@@ -491,8 +483,8 @@ static void paint(void)
         for (y = repaint.position0.y; y < repaint.position1.y; y++)
         {
 
-            if (intersects(y, screen.position.y, screen.position.y + screen.size.h))
-                blit_line(repaint.position0.x, repaint.position1.x, screen.size.w, 0xFF202020, y);
+            if (intersects(y, display.position.y, display.position.y + display.size.h))
+                blit_line(repaint.position0.x, repaint.position1.x, display.size.w, 0xFF202020, y);
 
             if (intersects(y, window2.position.y, window2.position.y + window2.size.h))
                 paintwindow(&window2, y);
@@ -557,7 +549,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     while (channel_process(channel))
     {
 
-        if (configuration.display.framebuffer)
+        if (display.framebuffer)
             paint();
 
     }
@@ -579,11 +571,11 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
     mouse.position.x += mousemove->relx;
     mouse.position.y += mousemove->rely;
 
-    if (mouse.position.x < screen.position.x || mouse.position.x >= screen.position.x + screen.size.w)
-        mouse.position.x = (mousemove->relx < 0) ? screen.position.x : screen.position.x + screen.size.w - 1;
+    if (mouse.position.x < display.position.x || mouse.position.x >= display.position.x + display.size.w)
+        mouse.position.x = (mousemove->relx < 0) ? display.position.x : display.position.x + display.size.w - 1;
 
-    if (mouse.position.y < screen.position.y || mouse.position.y >= screen.position.y + screen.size.h)
-        mouse.position.y = (mousemove->rely < 0) ? screen.position.y : screen.position.y + screen.size.h - 1;
+    if (mouse.position.y < display.position.y || mouse.position.y >= display.position.y + display.size.h)
+        mouse.position.y = (mousemove->rely < 0) ? display.position.y : display.position.y + display.size.h - 1;
 
     markforpaint(mouse.position.x, mouse.position.y, mouse.position.x + mouse.image.size.w, mouse.position.y + mouse.image.size.h);
 
@@ -704,24 +696,21 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     struct event_videomode *videomode = mdata;
     unsigned int factor = videomode->h / 320;
 
-    configuration.display.framebuffer = videomode->framebuffer;
-    configuration.display.size.w = videomode->w;
-    configuration.display.size.h = videomode->h;
-    configuration.display.bpp = videomode->bpp;
+    display.framebuffer = videomode->framebuffer;
+    display.position.x = 0;
+    display.position.y = 0;
+    display.size.w = videomode->w;
+    display.size.h = videomode->h;
+    display.bpp = videomode->bpp;
     configuration.lineheight = 12 + factor * 4;
     configuration.padding = 4 + factor * 2;
     configuration.steplength = videomode->w / 12;
 
     loadfont(factor);
 
-    screen.position.x = 0;
-    screen.position.y = 0;
-    screen.size.w = videomode->w;
-    screen.size.h = videomode->h;
-
     setmouse(videomode->w / 4, videomode->h / 4, factor);
 
-    markforpaint(screen.position.x, screen.position.y, screen.position.x + screen.size.w, screen.position.y + screen.size.h);
+    markforpaint(display.position.x, display.position.y, display.position.x + display.size.w, display.position.y + display.size.h);
 
 }
 
