@@ -58,7 +58,7 @@ struct linesegment
 {
 
     int x;
-    int w;
+    unsigned int w;
     unsigned int color;
 
 };
