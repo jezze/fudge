@@ -57,9 +57,8 @@ struct configuration
 struct linesegment
 {
 
-    unsigned int relp0;
+    unsigned int type;
     int p0;
-    unsigned int relp1;
     int p1;
     unsigned int color;
 
@@ -147,8 +146,9 @@ static unsigned int mousecmap[] = {
     0xFFF898B8
 };
 
-#define RELX0 1
-#define RELX1 2
+#define RELX0X0 1
+#define RELX0X1 2
+#define RELX1X1 3
 
 #if 0
 #define BORDERRECT_COLOR_NORMAL 0
@@ -157,12 +157,12 @@ static unsigned int borderrectcmap[] = {
     0xFFFF0000,
 };
 static struct linesegment borderrect0[1] = {
-    {RELX0, 1, RELX1, -1, BORDERRECT_COLOR_NORMAL}
+    {RELX0X1, 1, -1, BORDERRECT_COLOR_NORMAL}
 };
 
 static struct linesegment borderrect1[2] = {
-    {RELX0, 0, RELX0, 1, BORDERRECT_COLOR_NORMAL},
-    {RELX1, -1, RELX1, 0, BORDERRECT_COLOR_NORMAL}
+    {RELX0X0, 0, 1, BORDERRECT_COLOR_NORMAL},
+    {RELX1X1, -1, 0, BORDERRECT_COLOR_NORMAL}
 };
 #endif
 
@@ -184,55 +184,55 @@ static unsigned int windowcmapfocus[] = {
     0xFF242424
 };
 static struct linesegment windowborder0[1] = {
-    {RELX0, 1, RELX1, -1, WINDOW_COLOR_SHADOW}
+    {RELX0X1, 1, -1, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowborder1[1] = {
-    {RELX0, 0, RELX1, 0, WINDOW_COLOR_SHADOW}
+    {RELX0X1, 0, 0, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowborder2[3] = {
-    {RELX0, 0, RELX0, 3, WINDOW_COLOR_SHADOW},
-    {RELX0, 3, RELX1, -3, WINDOW_COLOR_MAIN_LIGHT},
-    {RELX1, -3, RELX1, 0, WINDOW_COLOR_SHADOW}
+    {RELX0X0, 0, 3, WINDOW_COLOR_SHADOW},
+    {RELX0X1, 3, -3, WINDOW_COLOR_MAIN_LIGHT},
+    {RELX1X1, -3, 0, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowborder3[5] = {
-    {RELX0, 0, RELX0, 2, WINDOW_COLOR_SHADOW},
-    {RELX0, 2, RELX0, 2, WINDOW_COLOR_MAIN_LIGHT},
-    {RELX0, 4, RELX1, -4, WINDOW_COLOR_MAIN_NORMAL},
-    {RELX1, -4, RELX1, -2, WINDOW_COLOR_MAIN_LIGHT},
-    {RELX1, -2, RELX1, 0, WINDOW_COLOR_SHADOW}
+    {RELX0X0, 0, 2, WINDOW_COLOR_SHADOW},
+    {RELX0X0, 2, 2, WINDOW_COLOR_MAIN_LIGHT},
+    {RELX0X1, 4, -4, WINDOW_COLOR_MAIN_NORMAL},
+    {RELX1X1, -4, -2, WINDOW_COLOR_MAIN_LIGHT},
+    {RELX1X1, -2, 0, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowbordertitle[5] = {
-    {RELX0, 0, RELX0, 2, WINDOW_COLOR_SHADOW},
-    {RELX0, 2, RELX0, 3, WINDOW_COLOR_MAIN_LIGHT},
-    {RELX0, 3, RELX1, -3, WINDOW_COLOR_MAIN_NORMAL},
-    {RELX1, -3, RELX1, -2, WINDOW_COLOR_MAIN_LIGHT},
-    {RELX1, -2, RELX1, 0, WINDOW_COLOR_SHADOW}
+    {RELX0X0, 0, 2, WINDOW_COLOR_SHADOW},
+    {RELX0X0, 2, 3, WINDOW_COLOR_MAIN_LIGHT},
+    {RELX0X1, 3, -3, WINDOW_COLOR_MAIN_NORMAL},
+    {RELX1X1, -3, -2, WINDOW_COLOR_MAIN_LIGHT},
+    {RELX1X1, -2, 0, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowborderspacing[7] = {
-    {RELX0, 0, RELX0, 2, WINDOW_COLOR_SHADOW},
-    {RELX0, 2, RELX0, 3, WINDOW_COLOR_MAIN_LIGHT},
-    {RELX0, 3, RELX0, 4, WINDOW_COLOR_MAIN_NORMAL},
-    {RELX0, 4, RELX1, -4, WINDOW_COLOR_SHADOW},
-    {RELX1, -4, RELX1, -3, WINDOW_COLOR_MAIN_NORMAL},
-    {RELX1, -3, RELX1, -2, WINDOW_COLOR_MAIN_LIGHT},
-    {RELX1, -2, RELX1, 0, WINDOW_COLOR_SHADOW}
+    {RELX0X0, 0, 2, WINDOW_COLOR_SHADOW},
+    {RELX0X0, 2, 3, WINDOW_COLOR_MAIN_LIGHT},
+    {RELX0X0, 3, 4, WINDOW_COLOR_MAIN_NORMAL},
+    {RELX0X1, 4, -4, WINDOW_COLOR_SHADOW},
+    {RELX1X1, -4, -3, WINDOW_COLOR_MAIN_NORMAL},
+    {RELX1X1, -3, -2, WINDOW_COLOR_MAIN_LIGHT},
+    {RELX1X1, -2, 0, WINDOW_COLOR_SHADOW}
 };
 
 static struct linesegment windowborderarea[9] = {
-    {RELX0, 0, RELX0, 2, WINDOW_COLOR_SHADOW},
-    {RELX0, 2, RELX0, 3, WINDOW_COLOR_MAIN_LIGHT},
-    {RELX0, 3, RELX0, 4, WINDOW_COLOR_MAIN_NORMAL},
-    {RELX0, 4, RELX0, 5, WINDOW_COLOR_SHADOW},
-    {RELX0, 5, RELX1, -5, WINDOW_COLOR_AREA_NORMAL},
-    {RELX1, -5, RELX1, -4, WINDOW_COLOR_SHADOW},
-    {RELX1, -4, RELX1, -3, WINDOW_COLOR_MAIN_NORMAL},
-    {RELX1, -3, RELX1, -2, WINDOW_COLOR_MAIN_LIGHT},
-    {RELX1, -2, RELX1, 0, WINDOW_COLOR_SHADOW}
+    {RELX0X0, 0, 2, WINDOW_COLOR_SHADOW},
+    {RELX0X0, 2, 3, WINDOW_COLOR_MAIN_LIGHT},
+    {RELX0X0, 3, 4, WINDOW_COLOR_MAIN_NORMAL},
+    {RELX0X0, 4, 5, WINDOW_COLOR_SHADOW},
+    {RELX0X1, 5, -5, WINDOW_COLOR_AREA_NORMAL},
+    {RELX1X1, -5, -4, WINDOW_COLOR_SHADOW},
+    {RELX1X1, -4, -3, WINDOW_COLOR_MAIN_NORMAL},
+    {RELX1X1, -3, -2, WINDOW_COLOR_MAIN_LIGHT},
+    {RELX1X1, -2, 0, WINDOW_COLOR_SHADOW}
 };
 
 static void setupvideo(void)
@@ -392,40 +392,29 @@ static void paintlinesegment(int x0, int x1, unsigned int *cmap, struct linesegm
     int p0;
     int p1;
 
-    switch (p->relp0)
+    switch (p->type)
     {
 
-    case RELX0:
+    case RELX0X0:
         p0 = x0 + p->p0;
-
-        break;
-
-    case RELX1:
-        p0 = x1 + p->p0;
-
-        break;
-
-    default:
-        p0 = x0;
-
-        break;
-
-    }
-
-    switch (p->relp1)
-    {
-
-    case RELX0:
         p1 = x0 + p->p1;
 
         break;
 
-    case RELX1:
+    case RELX0X1:
+        p0 = x0 + p->p0;
+        p1 = x1 + p->p1;
+
+        break;
+
+    case RELX1X1:
+        p0 = x1 + p->p0;
         p1 = x1 + p->p1;
 
         break;
 
     default:
+        p0 = x0;
         p1 = x1;
 
         break;
