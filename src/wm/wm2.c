@@ -445,21 +445,21 @@ static void paintmouse(struct mouse *m, unsigned int y)
 
 }
 
-#if 0
-static void paintborderrect(int px0, int px1, unsigned int pw, unsigned int y)
+static void paintborderrect(int px0, int py0, int px1, int py1, unsigned int y)
 {
 
+#if 0
     unsigned int *cmap = borderrectcmap;
-    unsigned int ly = y - py;
+    unsigned int ly = y - py0;
 
-    if (ly == 0 || ly == area->size.h - 1)
+    if (ly == 0 || ly == (py1 - py0) - 1)
         paintlinesegments(px0, px1, cmap, borderrect0, 1, y);
 
-    if (ly > 1 && ly < area->size.h - 2)
+    if (ly > 1 && ly < (py1 - py0) - 2)
         paintlinesegments(px0, px1, cmap, borderrect1, 2, y);
+#endif
 
 }
-#endif
 
 static void paintwindow(struct window *w, unsigned int y)
 {
@@ -520,9 +520,8 @@ static void paint(void)
             if (intersects(y, mouse.position.y, mouse.position.y + mouse.image.size.h))
                 paintmouse(&mouse, y);
 
-            #if 0
-            paintborderrect(repaint.point0.x, repaint.point0.y, repaint.point1.x - repaint.point0.x, 0, y);
-            #endif
+            paintborderrect(repaint.position0.x, repaint.position0.y, repaint.position1.x, repaint.position1.y, y);
+
         }
 
         repaint.state = 0;
