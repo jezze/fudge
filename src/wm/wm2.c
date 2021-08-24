@@ -326,7 +326,7 @@ static void posset(struct position *p0, struct position *p1, unsigned int x0, un
 
 }
 
-static void posshrink(struct position *p0, struct position *p1, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
+static void posshrink(struct position *p0, struct position *p1, int x0, int y0, int x1, int y1)
 {
 
     if (x0 < p0->x)
@@ -343,7 +343,7 @@ static void posshrink(struct position *p0, struct position *p1, unsigned int x0,
 
 }
 
-static void markforpaint(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
+static void markforpaint(int x0, int y0, int x1, int y1)
 {
 
     if (repaint.state)
