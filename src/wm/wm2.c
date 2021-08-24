@@ -38,7 +38,6 @@ struct mouse
 struct display
 {
 
-    struct position position;
     void *framebuffer;
     struct size size;
     unsigned int bpp;
@@ -316,6 +315,19 @@ static void loadfont(unsigned int factor)
 
 }
 
+static int capvalue(int x, int min, int max)
+{
+
+    if (x < min)
+        x = min;
+
+    if (x > max)
+        x = max;
+
+    return x;
+
+}
+
 static void posset(struct position *p0, struct position *p1, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
 {
 
@@ -508,7 +520,7 @@ static void paint(void)
         for (y = repaint.position0.y; y < repaint.position1.y; y++)
         {
 
-            if (intersects(y, display.position.y, display.position.y + display.size.h))
+            if (intersects(y, 0, display.size.h))
                 blit_line(repaint.position0.x, repaint.position1.x, display.size.w, 0xFF202020, y);
 
             if (intersects(y, window2.position.y, window2.position.y + window2.size.h))
@@ -592,14 +604,8 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
 
     markforpaint(mouse.position.x, mouse.position.y, mouse.position.x + mouse.image.size.w, mouse.position.y + mouse.image.size.h);
 
-    mouse.position.x += mousemove->relx;
-    mouse.position.y += mousemove->rely;
-
-    if (mouse.position.x < display.position.x || mouse.position.x >= display.position.x + display.size.w)
-        mouse.position.x = (mousemove->relx < 0) ? display.position.x : display.position.x + display.size.w - 1;
-
-    if (mouse.position.y < display.position.y || mouse.position.y >= display.position.y + display.size.h)
-        mouse.position.y = (mousemove->rely < 0) ? display.position.y : display.position.y + display.size.h - 1;
+    mouse.position.x = capvalue(mouse.position.x + mousemove->relx, 0, display.size.w);
+    mouse.position.y = capvalue(mouse.position.y + mousemove->rely, 0, display.size.h);
 
     markforpaint(mouse.position.x, mouse.position.y, mouse.position.x + mouse.image.size.w, mouse.position.y + mouse.image.size.h);
 
@@ -721,8 +727,6 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
     unsigned int factor = videomode->h / 320;
 
     display.framebuffer = videomode->framebuffer;
-    display.position.x = 0;
-    display.position.y = 0;
     display.size.w = videomode->w;
     display.size.h = videomode->h;
     display.bpp = videomode->bpp;
@@ -734,7 +738,7 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
 
     setmouse(videomode->w / 4, videomode->h / 4, factor);
 
-    markforpaint(display.position.x, display.position.y, display.position.x + display.size.w, display.position.y + display.size.h);
+    markforpaint(0, 0, display.size.w, display.size.h);
 
 }
 
