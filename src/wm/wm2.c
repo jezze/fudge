@@ -92,8 +92,8 @@ static struct display display;
 static struct mouse mouse;
 static struct configuration configuration;
 static struct repaint repaint;
-static struct window window1;
-static struct window window2;
+static struct window windows[32];
+static unsigned int nwindows;
 static unsigned char fontdata[0x8000];
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -185,17 +185,14 @@ static unsigned int windowcmapfocus[] = {
 static struct linesegment windowborder0[1] = {
     {RELX0X1, 1, -1, WINDOW_COLOR_SHADOW}
 };
-
 static struct linesegment windowborder1[1] = {
     {RELX0X1, 0, 0, WINDOW_COLOR_SHADOW}
 };
-
 static struct linesegment windowborder2[3] = {
     {RELX0X0, 0, 3, WINDOW_COLOR_SHADOW},
     {RELX0X1, 3, -3, WINDOW_COLOR_MAIN_LIGHT},
     {RELX1X1, -3, 0, WINDOW_COLOR_SHADOW}
 };
-
 static struct linesegment windowborder3[5] = {
     {RELX0X0, 0, 2, WINDOW_COLOR_SHADOW},
     {RELX0X0, 2, 2, WINDOW_COLOR_MAIN_LIGHT},
@@ -203,7 +200,6 @@ static struct linesegment windowborder3[5] = {
     {RELX1X1, -4, -2, WINDOW_COLOR_MAIN_LIGHT},
     {RELX1X1, -2, 0, WINDOW_COLOR_SHADOW}
 };
-
 static struct linesegment windowbordertitle[5] = {
     {RELX0X0, 0, 2, WINDOW_COLOR_SHADOW},
     {RELX0X0, 2, 3, WINDOW_COLOR_MAIN_LIGHT},
@@ -211,7 +207,6 @@ static struct linesegment windowbordertitle[5] = {
     {RELX1X1, -3, -2, WINDOW_COLOR_MAIN_LIGHT},
     {RELX1X1, -2, 0, WINDOW_COLOR_SHADOW}
 };
-
 static struct linesegment windowborderspacing[7] = {
     {RELX0X0, 0, 2, WINDOW_COLOR_SHADOW},
     {RELX0X0, 2, 3, WINDOW_COLOR_MAIN_LIGHT},
@@ -221,7 +216,6 @@ static struct linesegment windowborderspacing[7] = {
     {RELX1X1, -3, -2, WINDOW_COLOR_MAIN_LIGHT},
     {RELX1X1, -2, 0, WINDOW_COLOR_SHADOW}
 };
-
 static struct linesegment windowborderarea[9] = {
     {RELX0X0, 0, 2, WINDOW_COLOR_SHADOW},
     {RELX0X0, 2, 3, WINDOW_COLOR_MAIN_LIGHT},
@@ -520,14 +514,20 @@ static void paint(void)
         for (y = repaint.position0.y; y < repaint.position1.y; y++)
         {
 
+            unsigned int i;
+
             if (intersects(y, 0, display.size.h))
                 blit_line(repaint.position0.x, repaint.position1.x, display.size.w, 0xFF202020, y);
 
-            if (intersects(y, window2.position.y, window2.position.y + window2.size.h))
-                paintwindow(&window2, y);
+            for (i = 0; i < nwindows; i++)
+            {
 
-            if (intersects(y, window1.position.y, window1.position.y + window1.size.h))
-                paintwindow(&window1, y);
+                struct window *w = &windows[i];
+
+                if (intersects(y, w->position.y, w->position.y + w->size.h))
+                    paintwindow(w, y);
+
+            }
 
             if (intersects(y, mouse.position.y, mouse.position.y + mouse.image.size.h))
                 paintmouse(&mouse, y);
@@ -597,6 +597,25 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
+static struct window *getfocusedwindow(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < nwindows; i++)
+    {
+
+        struct window *w = &windows[i];
+
+        if (w->focus)
+            return w;
+
+    }
+
+    return 0;
+
+}
+
 static void onmousemove(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -612,24 +631,28 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
     if (mouse.drag)
     {
 
-        markforpaint(window1.position.x, window1.position.y, window1.position.x + window1.size.w, window1.position.y + window1.size.h);
+        struct window *w = getfocusedwindow();
 
-        window1.position.x += mousemove->relx;
-        window1.position.y += mousemove->rely;
+        markforpaint(w->position.x, w->position.y, w->position.x + w->size.w, w->position.y + w->size.h);
 
-        markforpaint(window1.position.x, window1.position.y, window1.position.x + window1.size.w, window1.position.y + window1.size.h);
+        w->position.x += mousemove->relx;
+        w->position.y += mousemove->rely;
+
+        markforpaint(w->position.x, w->position.y, w->position.x + w->size.w, w->position.y + w->size.h);
 
     }
 
     if (mouse.resize)
     {
 
-        markforpaint(window1.position.x, window1.position.y, window1.position.x + window1.size.w, window1.position.y + window1.size.h);
+        struct window *w = getfocusedwindow();
 
-        window1.size.w += mousemove->relx;
-        window1.size.h += mousemove->rely;
+        markforpaint(w->position.x, w->position.y, w->position.x + w->size.w, w->position.y + w->size.h);
 
-        markforpaint(window1.position.x, window1.position.y, window1.position.x + window1.size.w, window1.position.y + window1.size.h);
+        w->size.w += mousemove->relx;
+        w->size.h += mousemove->rely;
+
+        markforpaint(w->position.x, w->position.y, w->position.x + w->size.w, w->position.y + w->size.h);
 
     }
 
@@ -760,19 +783,19 @@ static void onwmunmap(struct channel *channel, unsigned int source, void *mdata,
 void init(struct channel *channel)
 {
 
-    window1.title = "Example1";
-    window1.focus = 1;
-    window1.size.w = 800;
-    window1.size.h = 600;
-    window1.position.x = 100;
-    window1.position.y = 80;
-
-    window2.title = "Example2";
-    window2.focus = 0;
-    window2.size.w = 800;
-    window2.size.h = 600;
-    window2.position.x = 200;
-    window2.position.y = 100;
+    windows[0].title = "Example1";
+    windows[0].focus = 0;
+    windows[0].size.w = 800;
+    windows[0].size.h = 600;
+    windows[0].position.x = 200;
+    windows[0].position.y = 100;
+    windows[1].title = "Example2";
+    windows[1].focus = 1;
+    windows[1].size.w = 800;
+    windows[1].size.h = 600;
+    windows[1].position.x = 100;
+    windows[1].position.y = 80;
+    nwindows = 2;
 
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
