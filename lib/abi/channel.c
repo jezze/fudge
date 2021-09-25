@@ -359,24 +359,24 @@ void channel_setcallback(unsigned int event, void (*callback)(unsigned int sourc
 
 }
 
-void channel_redirect(struct event_redirect *redirect, unsigned int source)
+void channel_redirect(unsigned int event, unsigned int mode, unsigned int id, unsigned int source)
 {
 
-    switch (redirect->mode)
+    switch (mode)
     {
 
     case EVENT_REDIRECT_TARGET:
-        callbacks[redirect->event].target = redirect->id;
+        callbacks[event].target = id;
 
         break;
 
     case EVENT_REDIRECT_SOURCE:
-        callbacks[redirect->event].target = source;
+        callbacks[event].target = source;
 
         break;
 
     default:
-        callbacks[redirect->event].target = 0;
+        callbacks[event].target = 0;
 
         break;
 

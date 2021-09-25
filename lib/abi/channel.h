@@ -21,5 +21,5 @@ unsigned int channel_readdescriptor(unsigned int descriptor, void *buffer, unsig
 unsigned int channel_wait(unsigned int source, unsigned int event);
 void channel_close(void);
 void channel_setcallback(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize));
-void channel_redirect(struct event_redirect *redirect, unsigned int source);
+void channel_redirect(unsigned int event, unsigned int mode, unsigned int id, unsigned int source);
 void channel_init(void);
