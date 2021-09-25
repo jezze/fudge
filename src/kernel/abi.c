@@ -23,6 +23,8 @@ static unsigned int walk(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *path; unsigned int length;} *args = stack;
     struct service_descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     struct service_descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
+    unsigned int colon = buffer_findbyte(args->path, args->length, ':');
+    unsigned int offset = 0;
 
     if (!service_checkdescriptor(pdescriptor))
         return 0;
@@ -33,7 +35,43 @@ static unsigned int walk(struct task *task, void *stack)
     descriptor->current = 0;
     descriptor->count = 0;
 
-    return kernel_walk(descriptor, args->path, args->length);
+    if (colon < args->length)
+    {
+
+        struct service_protocol *protocol = service_findprotocol(colon, args->path);
+
+        if (protocol)
+        {
+
+            descriptor->protocol = protocol;
+            descriptor->id = protocol->root();
+            offset += colon + 1;
+
+        }
+
+    }
+
+    while (offset < args->length)
+    {
+
+        char *cp = args->path + offset;
+        unsigned int cl = args->length - offset;
+
+        cl = buffer_findbyte(cp, cl, '/');
+
+        if (cl == 2 && cp[0] == '.' && cp[1] == '.')
+            descriptor->id = descriptor->protocol->parent(descriptor->id);
+        else
+            descriptor->id = descriptor->protocol->child(descriptor->id, cp, cl);
+
+        if (!descriptor->id)
+            return 0;
+
+        offset += cl + 1;
+
+    }
+
+    return descriptor->id;
 
 }
 

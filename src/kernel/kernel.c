@@ -51,52 +51,6 @@ static unsigned int setupbinary(struct task *task, unsigned int sp)
 
 }
 
-unsigned int kernel_walk(struct service_descriptor *descriptor, char *path, unsigned int length)
-{
-
-    unsigned int colon = buffer_findbyte(path, length, ':');
-    unsigned int offset = 0;
-
-    if (colon < length)
-    {
-
-        struct service_protocol *protocol = service_findprotocol(colon, path);
-
-        if (protocol)
-        {
-
-            descriptor->protocol = protocol;
-            descriptor->id = protocol->root();
-            offset += colon + 1;
-
-        }
-
-    }
-
-    while (offset < length)
-    {
-
-        char *cp = path + offset;
-        unsigned int cl = length - offset;
-
-        cl = buffer_findbyte(cp, cl, '/');
-
-        if (cl == 2 && cp[0] == '.' && cp[1] == '.')
-            descriptor->id = descriptor->protocol->parent(descriptor->id);
-        else
-            descriptor->id = descriptor->protocol->child(descriptor->id, cp, cl);
-
-        if (!descriptor->id)
-            return 0;
-
-        offset += cl + 1;
-
-    }
-
-    return descriptor->id;
-
-}
-
 struct core *kernel_getcore(void)
 {
 
