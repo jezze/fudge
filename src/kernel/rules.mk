@@ -17,7 +17,6 @@ O:=\
     $(DIR_SRC)/kernel/service.o \
 
 L:=\
-    $(DIR_LIB)/$(LOADER)/$(LOADER).a \
     $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk

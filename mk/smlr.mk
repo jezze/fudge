@@ -7,7 +7,7 @@ NM=$(TARGET2)-nm -gp
 PP=$(TARGET)pp -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC)
 LD_BIN=$(TARGET)l -elf -entry _start -o
 #LD_KBIN=$(TARGET)l -elf -origin 0x100000 -entry mboot_init -nobss -o
-LD_KBIN=$(TARGET2)-ld -static -nostdlib -T$(DIR_LIB)/$(LOADER)/linker.ld -o
+LD_KBIN=$(TARGET2)-ld -static -nostdlib -T$(DIR_SRC)/kernel/$(ARCH)/$(LOADER)/linker.ld -o
 LD_KMOD=$(TARGET2)-ld -static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r -o
 NASM=nasm -f elf -o
 

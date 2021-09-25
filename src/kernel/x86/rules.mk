@@ -7,3 +7,5 @@ O:=\
     $(DIR_SRC)/kernel/x86/isr.o \
     $(DIR_SRC)/kernel/x86/mmu.o \
     $(DIR_SRC)/kernel/x86/tss.o \
+
+include $(DIR_SRC)/kernel/x86/$(LOADER)/rules.mk

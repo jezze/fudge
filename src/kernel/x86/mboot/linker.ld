@@ -7,7 +7,7 @@ SECTIONS
 
     .mboot :
     {
-        lib/mboot/x86/init.o(.data)
+        src/kernel/x86/mboot/init.o(.data)
     }
 
     .text :
