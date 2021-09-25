@@ -6,89 +6,54 @@
 #include "pic.h"
 #include "reg.h"
 #include "uart.h"
+#include "arch.h"
 
-#define CONTAINERS                      8
 #define TASKS                           64
 #define TASKVSTACKLIMIT                 0x80000000
 
 extern void halt(void);
 
-/*
-struct atag_header
+static struct core core0;
+
+static unsigned int spawn(struct task *task, void *stack)
 {
 
-    unsigned int size;
-    unsigned int tag;
+    unsigned int id = kernel_loadtask(task, ARCH_TASKSTACKVIRTUAL);
 
-};
-*/
+    return id;
 
-static struct arch_container
+}
+
+static unsigned int despawn(struct task *task, void *stack)
 {
 
-    struct container base;
-
-} containers[CONTAINERS];
-
-static struct arch_task
-{
-
-    struct task base;
-
-} tasks[TASKS];
-
-static struct
-{
-
-    struct container *container;
-    struct task *task;
-
-} current;
-
-static struct service_backend backend;
-
-static unsigned int backend_read(unsigned int offset, void *buffer, unsigned int count)
-{
+    task_setstate(task, TASK_STATE_KILLED);
 
     return 0;
 
 }
 
-static unsigned int backend_write(unsigned int offset, void *buffer, unsigned int count)
+static struct core *coreget(void)
 {
 
-    return 0;
+    return &core0;
 
 }
 
-static unsigned int backend_getphysical(void)
+static void coreassign(struct task *task)
 {
 
-    return 0;
-
-}
-
-static unsigned int spawn(struct container *container, struct task *task, void *stack)
-{
-
-    return 0;
-
-}
-
-static unsigned int despawn(struct container *container, struct task *task, void *stack)
-{
-
-    return 0;
+    list_add(&core0.tasks, &task->item);
 
 }
 
 static void debugnum(unsigned int value, unsigned int base)
 {
 
-    char num[FUDGE_NSIZE];
+    char num[ASCII_NUMSIZE];
 
-    memory_clear(num, FUDGE_NSIZE);
-    ascii_wvalue(num, FUDGE_NSIZE, value, base, 0);
+    buffer_clear(num, ASCII_NUMSIZE);
+    ascii_wvalue(num, ASCII_NUMSIZE, value, base, 0);
     uart_puts(num);
     uart_puts("\n");
 
@@ -138,46 +103,6 @@ __attribute__ ((interrupt("FIQ"))) void arch_fiq(void)
 
 }
 
-static void setupcontainer(struct arch_container *container, unsigned int i)
-{
-
-    container_init(&container->base);
-
-}
-
-static struct container *setupcontainers(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < CONTAINERS; i++)
-        setupcontainer(&containers[i], i);
-
-    return &containers[0].base;
-
-}
-
-static void setuptask(struct arch_task *task, unsigned int i)
-{
-
-    task_init(&task->base);
-
-    scheduler_registertask(&task->base);
-
-}
-
-static struct task *setuptasks(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < TASKS; i++)
-        setuptask(&tasks[i], i);
-
-    return &tasks[0].base;
-
-}
-
 void pic_do(void)
 {
 
@@ -214,18 +139,11 @@ void arch_setup(void)
     uart_puts("Fudge Console\n");
     swi_test();
 
-    service_initbackend(&backend, 1000, backend_read, backend_write, backend_getphysical);
-    kernel_setup();
-
-    current.container = setupcontainers();
-    current.task = setuptasks();
-
-    kernel_setupramdisk(current.container, current.task, &backend);
-    kernel_copytask(current.task, current.task);
-    kernel_setuptask(current.task, TASKVSTACKLIMIT);
-    scheduler_setstatus(current.task, TASK_STATUS_ACTIVE);
+    resource_setup();
+    core_init(&core0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
+    kernel_setup(ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
+    kernel_setcallback(coreget, coreassign);
     abi_setup(spawn, despawn);
-
     uart_puts("Loop forever...\n");
 
     for (;;);
