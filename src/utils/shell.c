@@ -18,7 +18,7 @@ static void printprompt(void)
 
 }
 
-static void check(struct channel *channel, void *mdata, struct job *jobs, unsigned int njobs)
+static void check(void *mdata, struct job *jobs, unsigned int njobs)
 {
 
     struct event_consoledata *consoledata = mdata;
@@ -27,12 +27,12 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
     {
 
     case 0x03:
-        job_send(channel, jobs, njobs, EVENT_TERM, 0, 0);
+        job_send(jobs, njobs, EVENT_TERM, 0, 0);
 
         break;
 
     default:
-        job_send(channel, jobs, njobs, EVENT_CONSOLEDATA, 1, &consoledata->data);
+        job_send(jobs, njobs, EVENT_CONSOLEDATA, 1, &consoledata->data);
 
         break;
 
@@ -40,7 +40,7 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
 
 }
 
-static void runcommand(struct channel *channel, unsigned int count, void *buffer)
+static void runcommand(unsigned int count, void *buffer)
 {
 
     unsigned int id = file_spawn("/bin/slang");
@@ -55,42 +55,42 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
         unsigned int tasks;
         unsigned int c;
 
-        channel_sendredirectback(channel, id, EVENT_DATA);
-        channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_sendbuffer(channel, id, EVENT_DATA, count, buffer);
-        channel_send(channel, id, EVENT_MAIN);
+        channel_sendredirectback(id, EVENT_DATA);
+        channel_sendredirectback(id, EVENT_CLOSE);
+        channel_sendbuffer(id, EVENT_DATA, count, buffer);
+        channel_send(id, EVENT_MAIN);
 
-        while ((c = channel_readsource(channel, id, data.buffer, MESSAGE_SIZE)))
+        while ((c = channel_readsource(id, data.buffer, MESSAGE_SIZE)))
         {
 
             unsigned int n = job_parse(jobs, 32, data.buffer, c);
 
-            njobs = job_spawn(channel, jobs, n);
+            njobs = job_spawn(jobs, n);
 
         }
 
-        job_pipe(channel, jobs, njobs);
+        job_pipe(jobs, njobs);
 
-        tasks = job_run(channel, jobs, njobs);
+        tasks = job_run(jobs, njobs);
 
-        while (tasks && channel_poll(channel, &header, &data))
+        while (tasks && channel_poll(&header, &data))
         {
 
             switch (header.event)
             {
 
             case EVENT_CLOSE:
-                tasks = job_close(channel, header.source, jobs, njobs);
+                tasks = job_close(header.source, jobs, njobs);
 
                 break;
 
             case EVENT_CONSOLEDATA:
-                check(channel, data.buffer, jobs, njobs);
+                check(data.buffer, jobs, njobs);
 
                 break;
 
             default:
-                channel_dispatch(channel, &header, &data);
+                channel_dispatch(&header, &data);
 
                 break;
 
@@ -102,20 +102,20 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
 
 }
 
-static void interpret(struct channel *channel, struct ring *ring)
+static void interpret(struct ring *ring)
 {
 
     char buffer[BUFFER_SIZE];
     unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
 
     if (count >= 2)
-        runcommand(channel, count, buffer);
+        runcommand(count, buffer);
 
     printprompt();
 
 }
 
-static void complete(struct channel *channel, struct ring *ring)
+static void complete(struct ring *ring)
 {
 
     char buffer[BUFFER_SIZE];
@@ -125,18 +125,18 @@ static void complete(struct channel *channel, struct ring *ring)
     if (id)
     {
 
-        channel_sendredirectback(channel, id, EVENT_DATA);
-        channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_sendbuffer(channel, id, EVENT_DATA, count, buffer);
-        channel_send(channel, id, EVENT_MAIN);
+        channel_sendredirectback(id, EVENT_DATA);
+        channel_sendredirectback(id, EVENT_CLOSE);
+        channel_sendbuffer(id, EVENT_DATA, count, buffer);
+        channel_send(id, EVENT_MAIN);
 
-        while (channel_readsource(channel, id, buffer, BUFFER_SIZE));
+        while (channel_readsource(id, buffer, BUFFER_SIZE));
 
     }
 
 }
 
-static void onconsoledata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_consoledata *consoledata = mdata;
@@ -148,7 +148,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
         break;
 
     case '\t':
-        complete(channel, &input);
+        complete(&input);
 
         break;
 
@@ -167,7 +167,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
     case '\n':
         print(&consoledata->data, 1);
         ring_write(&input, &consoledata->data, 1);
-        interpret(channel, &input);
+        interpret(&input);
 
         break;
 
@@ -181,26 +181,26 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
 }
 
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     print(mdata, msize);
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     printprompt();
     file_link(FILE_G0);
 
-    while (channel_process(channel));
+    while (channel_process());
 
     file_unlink(FILE_G0);
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
@@ -221,7 +221,7 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_L0, mdata))
@@ -234,15 +234,15 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     ring_init(&input, BUFFER_SIZE, inputbuffer);
-    channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
-    channel_setcallback(channel, EVENT_DATA, ondata);
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_OPTION, onoption);
-    channel_setcallback(channel, EVENT_PATH, onpath);
+    channel_setcallback(EVENT_CONSOLEDATA, onconsoledata);
+    channel_setcallback(EVENT_DATA, ondata);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_OPTION, onoption);
+    channel_setcallback(EVENT_PATH, onpath);
 
 }
 

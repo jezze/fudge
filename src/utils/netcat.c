@@ -7,7 +7,7 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 
-static void onconsoledata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_consoledata *consoledata = mdata;
@@ -45,11 +45,11 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
     }
 
     if (count)
-        channel_reply(channel, EVENT_DATA, count, &consoledata->data);
+        channel_reply(EVENT_DATA, count, &consoledata->data);
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char buffer[BUFFER_SIZE];
@@ -62,21 +62,21 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     {
 
         file_link(FILE_G1);
-        socket_resolveremote(channel, FILE_G1, &local, &router);
-        socket_listen_tcp(channel, FILE_G1, &local, &remote, &router);
+        socket_resolveremote(FILE_G1, &local, &router);
+        socket_listen_tcp(FILE_G1, &local, &remote, &router);
 
-        while ((count = socket_receive_tcp(channel, FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
-            channel_reply(channel, EVENT_DATA, count, buffer);
+        while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
+            channel_reply(EVENT_DATA, count, buffer);
 
         file_unlink(FILE_G1);
 
     }
 
-    channel_close(channel);
+    channel_close();
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
@@ -96,7 +96,7 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     file_walk2(FILE_G0, "system:ethernet/if:0");
@@ -105,9 +105,9 @@ void init(struct channel *channel)
     socket_bind_tcps(&local, "50002", 42);
     socket_init(&router);
     socket_bind_ipv4s(&router, "10.0.5.80");
-    channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_OPTION, onoption);
+    channel_setcallback(EVENT_CONSOLEDATA, onconsoledata);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_OPTION, onoption);
 
 }
 

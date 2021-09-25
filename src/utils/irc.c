@@ -38,7 +38,7 @@ static void interpret(void *buffer, unsigned int count)
 
 }
 
-static void resolve(struct channel *channel, char *domain)
+static void resolve(char *domain)
 {
 
     unsigned int id = file_spawn("/bin/dns");
@@ -49,17 +49,17 @@ static void resolve(struct channel *channel, char *domain)
         struct message_data data;
         unsigned int c;
 
-        channel_sendredirectback(channel, id, EVENT_DATA);
-        channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_sendbuffer(channel, id, EVENT_OPTION, message_putstringz(&data, domain, message_putstringz(&data, "domain", 0)), &data);
-        channel_sendstringz(channel, id, EVENT_QUERY, "data");
+        channel_sendredirectback(id, EVENT_DATA);
+        channel_sendredirectback(id, EVENT_CLOSE);
+        channel_sendbuffer(id, EVENT_OPTION, message_putstringz(&data, domain, message_putstringz(&data, "domain", 0)), &data);
+        channel_sendstringz(id, EVENT_QUERY, "data");
 
-        while ((c = channel_readsource(channel, id, data.buffer, MESSAGE_SIZE)))
+        while ((c = channel_readsource(id, data.buffer, MESSAGE_SIZE)))
         {
 
             socket_bind_ipv4s(&remote, data.buffer);
             socket_bind_tcps(&remote, "6667", 0);
-            channel_reply(channel, EVENT_DATA, ascii_length(data.buffer), data.buffer);
+            channel_reply(EVENT_DATA, ascii_length(data.buffer), data.buffer);
 
         }
 
@@ -67,7 +67,7 @@ static void resolve(struct channel *channel, char *domain)
 
 }
 
-static void onconsoledata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_consoledata *consoledata = mdata;
@@ -95,7 +95,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
     case '\n':
         ring_write(&input, &consoledata->data, 1);
-        channel_reply(channel, EVENT_DATA, 1, &consoledata->data);
+        channel_reply(EVENT_DATA, 1, &consoledata->data);
 
         count = ring_read(&input, buffer, BUFFER_SIZE);
 
@@ -106,7 +106,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
     default:
         ring_write(&input, &consoledata->data, 1);
-        channel_reply(channel, EVENT_DATA, 1, &consoledata->data);
+        channel_reply(EVENT_DATA, 1, &consoledata->data);
 
         break;
 
@@ -114,7 +114,7 @@ static void onconsoledata(struct channel *channel, unsigned int source, void *md
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *request = "NICK jfu_fudge\nUSER jfu_fudge 0 * :Jens Fudge\nJOIN #fudge\n";
@@ -124,29 +124,29 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
 
-    resolve(channel, domain);
+    resolve(domain);
 
     if (file_walk(FILE_G1, FILE_G0, "data"))
     {
 
         file_link(FILE_G1);
-        socket_resolveremote(channel, FILE_G1, &local, &router);
-        socket_connect_tcp(channel, FILE_G1, &local, &remote, &router);
+        socket_resolveremote(FILE_G1, &local, &router);
+        socket_connect_tcp(FILE_G1, &local, &remote, &router);
         socket_send_tcp(FILE_G1, &local, &remote, &router, ascii_length(request), request);
 
-        while ((count = socket_receive_tcp(channel, FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
-            channel_reply(channel, EVENT_DATA, count, buffer);
+        while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
+            channel_reply(EVENT_DATA, count, buffer);
 
-        socket_disconnect_tcp(channel, FILE_G1, &local, &remote, &router);
+        socket_disconnect_tcp(FILE_G1, &local, &remote, &router);
         file_unlink(FILE_G1);
 
     }
 
-    channel_close(channel);
+    channel_close();
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
@@ -175,7 +175,7 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     ring_init(&input, BUFFER_SIZE, inputbuffer);
@@ -186,9 +186,9 @@ void init(struct channel *channel)
     socket_init(&remote);
     socket_init(&router);
     socket_bind_ipv4s(&router, "10.0.5.80");
-    channel_setcallback(channel, EVENT_CONSOLEDATA, onconsoledata);
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_OPTION, onoption);
+    channel_setcallback(EVENT_CONSOLEDATA, onconsoledata);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_OPTION, onoption);
 
 }
 

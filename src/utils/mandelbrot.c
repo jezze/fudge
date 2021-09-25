@@ -70,7 +70,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct ctrl_videosettings settings;
@@ -82,14 +82,14 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     file_seekreadall(FILE_L1, &settings, sizeof (struct ctrl_videosettings), 0);
     setup(&settings);
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    channel_close(channel);
+    channel_close();
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
-    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_MAIN, onmain);
 
 }
 

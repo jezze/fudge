@@ -3,7 +3,7 @@
 
 static unsigned int page;
 
-static void print(struct channel *channel, unsigned int source, unsigned int count, void *buffer)
+static void print(unsigned int source, unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
@@ -67,7 +67,7 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
 
         offset = message_putstring(&data, "|\n", offset);
 
-        channel_reply(channel, EVENT_DATA, offset, &data);
+        channel_reply(EVENT_DATA, offset, &data);
 
         page += 16;
 
@@ -75,14 +75,14 @@ static void print(struct channel *channel, unsigned int source, unsigned int cou
 
 }
 
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    print(channel, source, msize, mdata);
+    print(source, msize, mdata);
 
 }
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     page = 0;
@@ -96,17 +96,17 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
         file_seek(FILE_L0, 0);
 
         while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
-            print(channel, source, count, buffer);
+            print(source, count, buffer);
 
     }
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
-    channel_setcallback(channel, EVENT_DATA, ondata);
-    channel_setcallback(channel, EVENT_PATH, onpath);
+    channel_setcallback(EVENT_DATA, ondata);
+    channel_setcallback(EVENT_PATH, onpath);
 
 }
 

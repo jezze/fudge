@@ -4,7 +4,7 @@
 static unsigned int ticks;
 static unsigned int counter;
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct message_header header;
@@ -12,7 +12,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     file_link(FILE_G0);
 
-    while (channel_polldescriptorevent(channel, FILE_G0, EVENT_TIMERTICK, &header, &data))
+    while (channel_polldescriptorevent(FILE_G0, EVENT_TIMERTICK, &header, &data))
     {
 
         ticks++;
@@ -26,7 +26,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             offset = message_putvalue(&data, counter * 60, 10, 0, offset);
             offset = message_putstring(&data, "ms\n", offset);
 
-            channel_reply(channel, EVENT_DATA, offset, &data);
+            channel_reply(EVENT_DATA, offset, &data);
 
             counter++;
 
@@ -35,17 +35,17 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     }
 
     file_unlink(FILE_G0);
-    channel_close(channel);
+    channel_close();
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     if (!file_walk2(FILE_G0, "system:timer/if:0/event10"))
         return;
 
-    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_MAIN, onmain);
 
 }
 

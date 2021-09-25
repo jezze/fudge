@@ -3,14 +3,14 @@
 
 static struct crc sum;
 
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     crc_read(&sum, mdata, msize);
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct message_data data;
@@ -19,12 +19,12 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     offset = message_putvalue(&data, crc_finalize(&sum), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
-    channel_close(channel);
+    channel_reply(EVENT_DATA, offset, &data);
+    channel_close();
 
 }
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_L0, mdata))
@@ -42,12 +42,12 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
-    channel_setcallback(channel, EVENT_DATA, ondata);
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_PATH, onpath);
+    channel_setcallback(EVENT_DATA, ondata);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_PATH, onpath);
 
 }
 

@@ -247,7 +247,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void parse(struct channel *channel, unsigned int source, struct tokenlist *postfix, struct tokenlist *stack)
+static void parse(unsigned int source, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     struct message_data data;
@@ -338,7 +338,7 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
             offset = message_putstringz(&data, "E", offset);
 
-            channel_reply(channel, EVENT_DATA, offset, &data);
+            channel_reply(EVENT_DATA, offset, &data);
 
             offset = 0;
 
@@ -350,7 +350,7 @@ static void parse(struct channel *channel, unsigned int source, struct tokenlist
 
 }
 
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (msize)
@@ -362,13 +362,13 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
         tokenlist_reset(&stack);
         tokenizebuffer(&infix, &stringtable, msize, mdata);
         translate(&postfix, &infix, &stack);
-        parse(channel, source, &postfix, &stack);
+        parse(source, &postfix, &stack);
 
     }
 
 }
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_L0, mdata))
@@ -387,21 +387,21 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
             tokenizebuffer(&infix, &stringtable, count, buffer);
 
         translate(&postfix, &infix, &stack);
-        parse(channel, source, &postfix, &stack);
+        parse(source, &postfix, &stack);
 
     }
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     ring_init(&stringtable, BUFFER_SIZE, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
-    channel_setcallback(channel, EVENT_DATA, ondata);
-    channel_setcallback(channel, EVENT_PATH, onpath);
+    channel_setcallback(EVENT_DATA, ondata);
+    channel_setcallback(EVENT_PATH, onpath);
 
 }
 

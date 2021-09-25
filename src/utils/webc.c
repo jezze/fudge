@@ -27,7 +27,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer, struct url *k
 
 }
 
-static void resolve(struct channel *channel, char *domain)
+static void resolve(char *domain)
 {
 
     unsigned int id = file_spawn("/bin/dns");
@@ -38,19 +38,19 @@ static void resolve(struct channel *channel, char *domain)
         struct message_data data;
         unsigned int c;
 
-        channel_sendredirectback(channel, id, EVENT_DATA);
-        channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_sendbuffer(channel, id, EVENT_OPTION, message_putstringz(&data, domain, message_putstringz(&data, "domain", 0)), &data);
-        channel_sendstringz(channel, id, EVENT_QUERY, "data");
+        channel_sendredirectback(id, EVENT_DATA);
+        channel_sendredirectback(id, EVENT_CLOSE);
+        channel_sendbuffer(id, EVENT_OPTION, message_putstringz(&data, domain, message_putstringz(&data, "domain", 0)), &data);
+        channel_sendstringz(id, EVENT_QUERY, "data");
 
-        while ((c = channel_readsource(channel, id, data.buffer, MESSAGE_SIZE)))
+        while ((c = channel_readsource(id, data.buffer, MESSAGE_SIZE)))
             socket_bind_ipv4s(&remote, data.buffer);
 
     }
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char urldata[BUFFER_SIZE];
@@ -65,7 +65,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_HOST);
 
     if (kurl.host)
-        resolve(channel, kurl.host);
+        resolve(kurl.host);
 
     if (kurl.port)
         socket_bind_tcps(&remote, kurl.port, 0);
@@ -77,23 +77,23 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         unsigned int count = buildrequest(BUFFER_SIZE, buffer, &kurl);
 
         file_link(FILE_L0);
-        socket_resolveremote(channel, FILE_L0, &local, &router);
-        socket_connect_tcp(channel, FILE_L0, &local, &remote, &router);
+        socket_resolveremote(FILE_L0, &local, &router);
+        socket_connect_tcp(FILE_L0, &local, &remote, &router);
         socket_send_tcp(FILE_L0, &local, &remote, &router, count, buffer);
 
-        while ((count = socket_receive_tcp(channel, FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE)))
-            channel_reply(channel, EVENT_DATA, count, buffer);
+        while ((count = socket_receive_tcp(FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE)))
+            channel_reply(EVENT_DATA, count, buffer);
 
-        socket_disconnect_tcp(channel, FILE_L0, &local, &remote, &router);
+        socket_disconnect_tcp(FILE_L0, &local, &remote, &router);
         file_unlink(FILE_L0);
 
     }
 
-    channel_close(channel);
+    channel_close();
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
@@ -122,7 +122,7 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     file_walk2(FILE_G0, "system:ethernet/if:0");
@@ -133,8 +133,8 @@ void init(struct channel *channel)
     socket_bind_tcps(&remote, "80", 0);
     socket_init(&router);
     socket_bind_ipv4s(&router, "10.0.5.80");
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_OPTION, onoption);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_OPTION, onoption);
 
 }
 

@@ -555,7 +555,7 @@ unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, stru
 
 }
 
-unsigned int socket_receive_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count)
+unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count)
 {
 
     struct message_header header;
@@ -564,7 +564,7 @@ unsigned int socket_receive_tcp(struct channel *channel, unsigned int descriptor
     if (local->info.tcp.state != TCP_STATE_ESTABLISHED)
         return 0;
 
-    while (channel_polldescriptorevent(channel, descriptor, EVENT_DATA, &header, &data))
+    while (channel_polldescriptorevent(descriptor, EVENT_DATA, &header, &data))
     {
 
         unsigned int payploadcount;
@@ -585,13 +585,13 @@ unsigned int socket_receive_tcp(struct channel *channel, unsigned int descriptor
 
 }
 
-unsigned int socket_receive_udp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count)
+unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count)
 {
 
     struct message_header header;
     struct message_data data;
 
-    while (channel_polldescriptorevent(channel, descriptor, EVENT_DATA, &header, &data))
+    while (channel_polldescriptorevent(descriptor, EVENT_DATA, &header, &data))
     {
 
         unsigned int payploadcount;
@@ -609,7 +609,7 @@ unsigned int socket_receive_udp(struct channel *channel, unsigned int descriptor
 
 }
 
-void socket_listen_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
+void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
 {
 
     struct message_header header;
@@ -617,7 +617,7 @@ void socket_listen_tcp(struct channel *channel, unsigned int descriptor, struct 
 
     local->info.tcp.state = TCP_STATE_LISTEN;
 
-    while (channel_polldescriptorevent(channel, descriptor, EVENT_DATA, &header, &data))
+    while (channel_polldescriptorevent(descriptor, EVENT_DATA, &header, &data))
     {
 
         char buffer[BUFFER_SIZE];
@@ -632,7 +632,7 @@ void socket_listen_tcp(struct channel *channel, unsigned int descriptor, struct 
 
 }
 
-void socket_connect_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
+void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
 {
 
     struct message_header header;
@@ -642,7 +642,7 @@ void socket_connect_tcp(struct channel *channel, unsigned int descriptor, struct
 
     send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, BUFFER_SIZE, 0, 0));
 
-    while (channel_polldescriptorevent(channel, descriptor, EVENT_DATA, &header, &data))
+    while (channel_polldescriptorevent(descriptor, EVENT_DATA, &header, &data))
     {
 
         char buffer[BUFFER_SIZE];
@@ -657,13 +657,13 @@ void socket_connect_tcp(struct channel *channel, unsigned int descriptor, struct
 
 }
 
-void socket_disconnect_tcp(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
+void socket_disconnect_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
 {
 
     struct message_header header;
     struct message_data data;
 
-    while (channel_polldescriptorevent(channel, descriptor, EVENT_DATA, &header, &data))
+    while (channel_polldescriptorevent(descriptor, EVENT_DATA, &header, &data))
     {
 
         char buffer[BUFFER_SIZE];
@@ -686,7 +686,7 @@ void socket_disconnect_tcp(struct channel *channel, unsigned int descriptor, str
 
 }
 
-void socket_resolveremote(struct channel *channel, unsigned int descriptor, struct socket *local, struct socket *remote)
+void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote)
 {
 
     struct socket multicast;
@@ -698,7 +698,7 @@ void socket_resolveremote(struct channel *channel, unsigned int descriptor, stru
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE); 
     send(descriptor, &data, buildarp(local, remote, &multicast, &data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
-    while (channel_polldescriptorevent(channel, descriptor, EVENT_DATA, &header, &data))
+    while (channel_polldescriptorevent(descriptor, EVENT_DATA, &header, &data))
     {
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&header), &data);

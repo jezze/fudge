@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char buffer[BUFFER_SIZE];
@@ -9,21 +9,21 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     file_link(FILE_G0);
 
-    while ((count = channel_readdescriptor(channel, FILE_G0, buffer, BUFFER_SIZE)))
-        channel_reply(channel, EVENT_DATA, count, buffer);
+    while ((count = channel_readdescriptor(FILE_G0, buffer, BUFFER_SIZE)))
+        channel_reply(EVENT_DATA, count, buffer);
 
     file_unlink(FILE_G0);
-    channel_close(channel);
+    channel_close();
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     if (!file_walk2(FILE_G0, "system:log/messages"))
         return;
 
-    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_MAIN, onmain);
 
 }
 

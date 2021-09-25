@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     file_reset(FILE_G0);
@@ -24,17 +24,17 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
             offset = message_putbuffer(&data, record.length, record.name, offset);
             offset = message_putstring(&data, "\n", offset);
 
-            channel_reply(channel, EVENT_DATA, offset, &data);
+            channel_reply(EVENT_DATA, offset, &data);
 
         }
 
     } while (file_step(FILE_G0));
 
-    channel_close(channel);
+    channel_close();
 
 }
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_L0, mdata))
@@ -42,12 +42,12 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     file_duplicate(FILE_G0, FILE_PW);
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_PATH, onpath);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_PATH, onpath);
 
 }
 

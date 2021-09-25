@@ -2,7 +2,7 @@
 #include <net.h>
 #include <abi.h>
 
-static void print_icmp(struct channel *channel, unsigned int source, void *buffer)
+static void print_icmp(unsigned int source, void *buffer)
 {
 
     struct icmp_header *header = buffer;
@@ -17,11 +17,11 @@ static void print_icmp(struct channel *channel, unsigned int source, void *buffe
     offset = message_putvalue(&data, header->code, 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, &data);
 
 }
 
-static void print_tcp(struct channel *channel, unsigned int source, void *buffer)
+static void print_tcp(unsigned int source, void *buffer)
 {
 
     struct tcp_header *header = buffer;
@@ -56,11 +56,11 @@ static void print_tcp(struct channel *channel, unsigned int source, void *buffer
     offset = message_putvalue(&data, header->window[1], 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, &data);
 
 }
 
-static void print_udp(struct channel *channel, unsigned int source, void *buffer)
+static void print_udp(unsigned int source, void *buffer)
 {
 
     struct udp_header *header = buffer;
@@ -78,11 +78,11 @@ static void print_udp(struct channel *channel, unsigned int source, void *buffer
     offset = message_putvalue(&data, net_load16(header->length), 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, &data);
 
 }
 
-static void print_arp(struct channel *channel, unsigned int source, void *buffer)
+static void print_arp(unsigned int source, void *buffer)
 {
 
     struct arp_header *header = buffer;
@@ -109,11 +109,11 @@ static void print_arp(struct channel *channel, unsigned int source, void *buffer
     offset = message_putvalue(&data, header->operation[1], 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, &data);
 
 }
 
-static void print_ipv4(struct channel *channel, unsigned int source, void *buffer)
+static void print_ipv4(unsigned int source, void *buffer)
 {
 
     struct ipv4_header *header = buffer;
@@ -144,23 +144,23 @@ static void print_ipv4(struct channel *channel, unsigned int source, void *buffe
     offset = message_putvalue(&data, header->tip[3], 10, 0, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, &data);
 
     switch (header->protocol)
     {
 
     case IPV4_PROTOCOL_ICMP:
-        print_icmp(channel, source, payload);
+        print_icmp(source, payload);
 
         break;
 
     case IPV4_PROTOCOL_TCP:
-        print_tcp(channel, source, payload);
+        print_tcp(source, payload);
 
         break;
 
     case IPV4_PROTOCOL_UDP:
-        print_udp(channel, source, payload);
+        print_udp(source, payload);
 
         break;
 
@@ -168,7 +168,7 @@ static void print_ipv4(struct channel *channel, unsigned int source, void *buffe
 
 }
 
-static void print_ipv6(struct channel *channel, unsigned int source, void *buffer)
+static void print_ipv6(unsigned int source, void *buffer)
 {
 
     struct ipv6_header *header = buffer;
@@ -233,11 +233,11 @@ static void print_ipv6(struct channel *channel, unsigned int source, void *buffe
     offset = message_putvalue(&data, header->tip[15], 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, &data);
 
 }
 
-static void print_ethernet(struct channel *channel, unsigned int source, void *buffer)
+static void print_ethernet(unsigned int source, void *buffer)
 {
 
     struct ethernet_header *header = buffer;
@@ -277,23 +277,23 @@ static void print_ethernet(struct channel *channel, unsigned int source, void *b
     offset = message_putvalue(&data, header->type[1], 16, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, &data);
 
     switch (net_load16(header->type))
     {
 
     case ETHERNET_TYPE_ARP:
-        print_arp(channel, source, payload);
+        print_arp(source, payload);
 
         break;
 
     case ETHERNET_TYPE_IPV4:
-        print_ipv4(channel, source, payload);
+        print_ipv4(source, payload);
 
         break;
 
     case ETHERNET_TYPE_IPV6:
-        print_ipv6(channel, source, payload);
+        print_ipv6(source, payload);
 
         break;
 
@@ -301,7 +301,7 @@ static void print_ethernet(struct channel *channel, unsigned int source, void *b
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk(FILE_L0, FILE_G0, "data"))
@@ -312,18 +312,18 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
         file_link(FILE_L0);
 
-        while ((count = channel_readdescriptor(channel, FILE_L0, buffer, BUFFER_SIZE)))
-            print_ethernet(channel, source, buffer);
+        while ((count = channel_readdescriptor(FILE_L0, buffer, BUFFER_SIZE)))
+            print_ethernet(source, buffer);
 
         file_unlink(FILE_L0);
 
     }
 
-    channel_close(channel);
+    channel_close();
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
@@ -334,12 +334,12 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     file_walk2(FILE_G0, "system:ethernet/if:0");
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_OPTION, onoption);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_OPTION, onoption);
 
 }
 

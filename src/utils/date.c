@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void print(struct channel *channel, unsigned int source, struct ctrl_clocksettings *settings)
+static void print(unsigned int source, struct ctrl_clocksettings *settings)
 {
 
     struct message_data data;
@@ -20,11 +20,11 @@ static void print(struct channel *channel, unsigned int source, struct ctrl_cloc
     offset = message_putvalue(&data, settings->seconds, 10, 2, offset);
     offset = message_putstring(&data, "\n", offset);
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, &data);
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk(FILE_L0, FILE_G0, "ctrl"))
@@ -33,15 +33,15 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         struct ctrl_clocksettings settings;
 
         file_seekreadall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings), 0);
-        print(channel, source, &settings);
+        print(source, &settings);
 
     }
 
-    channel_close(channel);
+    channel_close();
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
@@ -52,12 +52,12 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     file_walk2(FILE_G0, "system:clock/if:0");
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_OPTION, onoption);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_OPTION, onoption);
 
 }
 

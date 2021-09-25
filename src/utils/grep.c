@@ -4,7 +4,7 @@
 static char match[1024];
 static unsigned int matchcount;
 
-static void checkline(struct channel *channel, unsigned int source, void *buffer, unsigned int count)
+static void checkline(unsigned int source, void *buffer, unsigned int count)
 {
 
     unsigned int i;
@@ -18,7 +18,7 @@ static void checkline(struct channel *channel, unsigned int source, void *buffer
         if (buffer_match((char *)buffer + i, match, matchcount))
         {
 
-            channel_reply(channel, EVENT_DATA, count, buffer);
+            channel_reply(EVENT_DATA, count, buffer);
 
             break;
 
@@ -28,7 +28,7 @@ static void checkline(struct channel *channel, unsigned int source, void *buffer
 
 }
 
-static void check(struct channel *channel, unsigned int source, void *buffer, unsigned int count)
+static void check(unsigned int source, void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;
@@ -46,7 +46,7 @@ static void check(struct channel *channel, unsigned int source, void *buffer, un
         if (b[i] == '\n' || b[i] == '\0')
         {
 
-            checkline(channel, source, b + start, i - start + 1);
+            checkline(source, b + start, i - start + 1);
 
             start = i + 1;
 
@@ -56,14 +56,14 @@ static void check(struct channel *channel, unsigned int source, void *buffer, un
 
 }
 
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    check(channel, source, mdata, msize);
+    check(source, mdata, msize);
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
@@ -74,7 +74,7 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_L0, mdata))
@@ -86,18 +86,18 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
         file_seek(FILE_L0, 0);
 
         while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
-            check(channel, source, buffer, count);
+            check(source, buffer, count);
 
     }
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
-    channel_setcallback(channel, EVENT_DATA, ondata);
-    channel_setcallback(channel, EVENT_OPTION, onoption);
-    channel_setcallback(channel, EVENT_PATH, onpath);
+    channel_setcallback(EVENT_DATA, ondata);
+    channel_setcallback(EVENT_OPTION, onoption);
+    channel_setcallback(EVENT_PATH, onpath);
 
 }
 

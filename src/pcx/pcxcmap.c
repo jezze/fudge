@@ -2,7 +2,7 @@
 #include <abi.h>
 #include "pcx.h"
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_L0, mdata))
@@ -21,7 +21,7 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
             unsigned char colormap[768];
 
             file_seekreadall(FILE_L0, colormap, 768, filesize - 768);
-            channel_reply(channel, EVENT_DATA, 768, colormap);
+            channel_reply(EVENT_DATA, 768, colormap);
 
         }
 
@@ -29,10 +29,10 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
-    channel_setcallback(channel, EVENT_PATH, onpath);
+    channel_setcallback(EVENT_PATH, onpath);
 
 }
 

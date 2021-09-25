@@ -31,7 +31,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
 
 }
 
-static void printmain(struct channel *channel, unsigned short type, char *name, void *rddata, void *buffer)
+static void printmain(unsigned short type, char *name, void *rddata, void *buffer)
 {
 
     unsigned char *addr = rddata;
@@ -66,11 +66,11 @@ static void printmain(struct channel *channel, unsigned short type, char *name, 
 
     }
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, &data);
 
 }
 
-static void printquery(struct channel *channel, char *query, unsigned int qsize, unsigned short type, char *name, void *rddata, void *buffer)
+static void printquery(char *query, unsigned int qsize, unsigned short type, char *name, void *rddata, void *buffer)
 {
 
     unsigned int qtype = ascii_match(query, "type");
@@ -130,11 +130,11 @@ static void printquery(struct channel *channel, char *query, unsigned int qsize,
 
     }
 
-    channel_reply(channel, EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, &data);
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk(FILE_L0, FILE_G0, "addr"))
@@ -147,10 +147,10 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
         unsigned int count = buildrequest(BUFFER_SIZE, buffer);
 
         file_link(FILE_L0);
-        socket_resolveremote(channel, FILE_L0, &local, &router);
+        socket_resolveremote(FILE_L0, &local, &router);
         socket_send_udp(FILE_L0, &local, &remote, &router, count, buffer);
 
-        count = socket_receive_udp(channel, FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE);
+        count = socket_receive_udp(FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE);
 
         if (count)
         {
@@ -184,7 +184,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
                 rddata = (buffer + responselength);
                 responselength += net_load16(answer->rdlength);
 
-                printmain(channel, net_load16(answer->type), name, rddata, buffer);
+                printmain(net_load16(answer->type), name, rddata, buffer);
 
             }
 
@@ -194,11 +194,11 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
 
     }
 
-    channel_close(channel);
+    channel_close();
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
@@ -227,7 +227,7 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-static void onquery(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onquery(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk(FILE_L0, FILE_G0, "addr"))
@@ -240,10 +240,10 @@ static void onquery(struct channel *channel, unsigned int source, void *mdata, u
         unsigned int count = buildrequest(BUFFER_SIZE, buffer);
 
         file_link(FILE_L0);
-        socket_resolveremote(channel, FILE_L0, &local, &router);
+        socket_resolveremote(FILE_L0, &local, &router);
         socket_send_udp(FILE_L0, &local, &remote, &router, count, buffer);
 
-        count = socket_receive_udp(channel, FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE);
+        count = socket_receive_udp(FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE);
 
         if (count)
         {
@@ -281,7 +281,7 @@ static void onquery(struct channel *channel, unsigned int source, void *mdata, u
                 if (net_load16(answer->type) == 1)
                 {
 
-                    printquery(channel, mdata, msize, net_load16(answer->type), name, rddata, buffer);
+                    printquery(mdata, msize, net_load16(answer->type), name, rddata, buffer);
 
                     break;
 
@@ -295,11 +295,11 @@ static void onquery(struct channel *channel, unsigned int source, void *mdata, u
 
     }
 
-    channel_close(channel);
+    channel_close();
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     file_walk2(FILE_G0, "system:ethernet/if:0");
@@ -311,9 +311,9 @@ void init(struct channel *channel)
     socket_bind_udps(&remote, "53");
     socket_init(&router);
     socket_bind_ipv4s(&router, "10.0.5.80");
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_OPTION, onoption);
-    channel_setcallback(channel, EVENT_QUERY, onquery);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_OPTION, onoption);
+    channel_setcallback(EVENT_QUERY, onquery);
 
 }
 

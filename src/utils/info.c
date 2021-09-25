@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int id = file_spawn("/bin/echo");
@@ -9,24 +9,24 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     if (id)
     {
 
-        channel_sendredirectsame(channel, id, EVENT_DATA);
-        channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_sendstringz(channel, id, EVENT_PATH, "system:info/cores");
-        channel_sendstringz(channel, id, EVENT_PATH, "system:info/tasks");
-        channel_sendstringz(channel, id, EVENT_PATH, "system:info/mailboxes");
-        channel_send(channel, id, EVENT_MAIN);
-        channel_wait(channel, id, EVENT_CLOSE);
+        channel_sendredirectsame(id, EVENT_DATA);
+        channel_sendredirectback(id, EVENT_CLOSE);
+        channel_sendstringz(id, EVENT_PATH, "system:info/cores");
+        channel_sendstringz(id, EVENT_PATH, "system:info/tasks");
+        channel_sendstringz(id, EVENT_PATH, "system:info/mailboxes");
+        channel_send(id, EVENT_MAIN);
+        channel_wait(id, EVENT_CLOSE);
 
     }
 
-    channel_close(channel);
+    channel_close();
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
-    channel_setcallback(channel, EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_MAIN, onmain);
 
 }
 

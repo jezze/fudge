@@ -4,7 +4,7 @@
 static char key[1024];
 static unsigned int keylength;
 
-static void print(struct channel *channel, unsigned int source, struct record *record)
+static void print(unsigned int source, struct record *record)
 {
 
     if (buffer_match(record->name, key, keylength))
@@ -16,13 +16,13 @@ static void print(struct channel *channel, unsigned int source, struct record *r
         offset = message_putbuffer(&data, record->length, record->name, offset);
         offset = message_putstring(&data, "\n", offset);
 
-        channel_reply(channel, EVENT_DATA, offset, &data);
+        channel_reply(EVENT_DATA, offset, &data);
 
     }
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
@@ -33,7 +33,7 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_L0, mdata))
@@ -47,7 +47,7 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
             struct record record;
 
             if (file_readall(FILE_L0, &record, sizeof (struct record)))
-                print(channel, source, &record);
+                print(source, &record);
 
         } while (file_step(FILE_L0));
 
@@ -55,11 +55,11 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
-    channel_setcallback(channel, EVENT_OPTION, onoption);
-    channel_setcallback(channel, EVENT_PATH, onpath);
+    channel_setcallback(EVENT_OPTION, onoption);
+    channel_setcallback(EVENT_PATH, onpath);
 
 }
 

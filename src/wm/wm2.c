@@ -542,7 +542,7 @@ static void paint(void)
 
 }
 
-static void onkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     /*
@@ -560,7 +560,7 @@ static void onkeypress(struct channel *channel, unsigned int source, void *mdata
 
 }
 
-static void onkeyrelease(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 {
 
     /*
@@ -573,7 +573,7 @@ static void onkeyrelease(struct channel *channel, unsigned int source, void *mda
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     file_link(FILE_G0);
@@ -582,7 +582,7 @@ static void onmain(struct channel *channel, unsigned int source, void *mdata, un
     file_link(FILE_G4);
     setupvideo();
 
-    while (channel_process(channel))
+    while (channel_process())
     {
 
         if (display.framebuffer)
@@ -616,7 +616,7 @@ static struct window *getfocusedwindow(void)
 
 }
 
-static void onmousemove(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousemove *mousemove = mdata;
@@ -658,7 +658,7 @@ static void onmousemove(struct channel *channel, unsigned int source, void *mdat
 
 }
 
-static void onmousepress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
@@ -680,7 +680,7 @@ static void onmousepress(struct channel *channel, unsigned int source, void *mda
 
 }
 
-static void onmouserelease(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mouserelease *mouserelease = mdata;
@@ -702,12 +702,12 @@ static void onmouserelease(struct channel *channel, unsigned int source, void *m
 
 }
 
-static void onmousescroll(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 {
 
 }
 
-static void onoption(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
@@ -743,7 +743,7 @@ static void onoption(struct channel *channel, unsigned int source, void *mdata, 
 
 }
 
-static void onvideomode(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_videomode *videomode = mdata;
@@ -765,22 +765,22 @@ static void onvideomode(struct channel *channel, unsigned int source, void *mdat
 
 }
 
-static void onwmmap(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
 {
 
 }
 
-static void onwmrenderdata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 {
 
 }
 
-static void onwmunmap(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 {
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     windows[0].title = "Example1";
@@ -800,18 +800,18 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
-    channel_setcallback(channel, EVENT_KEYPRESS, onkeypress);
-    channel_setcallback(channel, EVENT_KEYRELEASE, onkeyrelease);
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_MOUSEMOVE, onmousemove);
-    channel_setcallback(channel, EVENT_MOUSEPRESS, onmousepress);
-    channel_setcallback(channel, EVENT_MOUSERELEASE, onmouserelease);
-    channel_setcallback(channel, EVENT_MOUSESCROLL, onmousescroll);
-    channel_setcallback(channel, EVENT_OPTION, onoption);
-    channel_setcallback(channel, EVENT_VIDEOMODE, onvideomode);
-    channel_setcallback(channel, EVENT_WMMAP, onwmmap);
-    channel_setcallback(channel, EVENT_WMRENDERDATA, onwmrenderdata);
-    channel_setcallback(channel, EVENT_WMUNMAP, onwmunmap);
+    channel_setcallback(EVENT_KEYPRESS, onkeypress);
+    channel_setcallback(EVENT_KEYRELEASE, onkeyrelease);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_MOUSEMOVE, onmousemove);
+    channel_setcallback(EVENT_MOUSEPRESS, onmousepress);
+    channel_setcallback(EVENT_MOUSERELEASE, onmouserelease);
+    channel_setcallback(EVENT_MOUSESCROLL, onmousescroll);
+    channel_setcallback(EVENT_OPTION, onoption);
+    channel_setcallback(EVENT_VIDEOMODE, onvideomode);
+    channel_setcallback(EVENT_WMMAP, onwmmap);
+    channel_setcallback(EVENT_WMRENDERDATA, onwmrenderdata);
+    channel_setcallback(EVENT_WMUNMAP, onwmunmap);
 
 }
 

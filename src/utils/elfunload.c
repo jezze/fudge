@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_G0, mdata))
@@ -9,10 +9,10 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
-    channel_setcallback(channel, EVENT_PATH, onpath);
+    channel_setcallback(EVENT_PATH, onpath);
 
 }
 

@@ -84,16 +84,16 @@ static void movedown(void)
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
 
-    while (channel_process(channel));
+    while (channel_process());
 
 }
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char buffer[BUFFER_SIZE];
@@ -111,15 +111,15 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
     file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
-    channel_close(channel);
+    channel_close();
 
 }
 
-static void onwmkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmkeypress *wmkeypress = mdata;
@@ -179,7 +179,7 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
 
 }
 
-static void onwmmousescroll(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onwmmousescroll(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmmousescroll *wmmousescroll = mdata;
@@ -190,14 +190,14 @@ static void onwmmousescroll(struct channel *channel, unsigned int source, void *
 
 }
 
-static void onwmshow(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
 {
 
     updatecontent();
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     ring_init(&output, BUFFER_SIZE, outputdata);
@@ -208,12 +208,12 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_PATH, onpath);
-    channel_setcallback(channel, EVENT_TERM, onterm);
-    channel_setcallback(channel, EVENT_WMKEYPRESS, onwmkeypress);
-    channel_setcallback(channel, EVENT_WMMOUSESCROLL, onwmmousescroll);
-    channel_setcallback(channel, EVENT_WMSHOW, onwmshow);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_PATH, onpath);
+    channel_setcallback(EVENT_TERM, onterm);
+    channel_setcallback(EVENT_WMKEYPRESS, onwmkeypress);
+    channel_setcallback(EVENT_WMMOUSESCROLL, onwmmousescroll);
+    channel_setcallback(EVENT_WMSHOW, onwmshow);
 
 }
 

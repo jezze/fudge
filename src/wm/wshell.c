@@ -81,7 +81,7 @@ static void moveright(unsigned int steps)
 
 }
 
-static void check(struct channel *channel, void *mdata, struct job *jobs, unsigned int njobs)
+static void check(void *mdata, struct job *jobs, unsigned int njobs)
 {
 
     struct event_wmkeypress *wmkeypress = mdata;
@@ -91,14 +91,14 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
 
     case 0x2E:
         if (wmkeypress->keymod & KEYMOD_CTRL)
-            job_send(channel, jobs, njobs, EVENT_TERM, 0, 0);
+            job_send(jobs, njobs, EVENT_TERM, 0, 0);
         else
-            job_send(channel, jobs, njobs, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+            job_send(jobs, njobs, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
 
         break;
 
     default:
-        job_send(channel, jobs, njobs, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+        job_send(jobs, njobs, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
 
         break;
 
@@ -106,7 +106,7 @@ static void check(struct channel *channel, void *mdata, struct job *jobs, unsign
 
 }
 
-static void runcommand(struct channel *channel, unsigned int count, void *buffer)
+static void runcommand(unsigned int count, void *buffer)
 {
 
     unsigned int id = file_spawn("/bin/slang");
@@ -121,42 +121,42 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
         unsigned int tasks;
         unsigned int c;
 
-        channel_sendredirectback(channel, id, EVENT_DATA);
-        channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_sendbuffer(channel, id, EVENT_DATA, count, buffer);
-        channel_send(channel, id, EVENT_MAIN);
+        channel_sendredirectback(id, EVENT_DATA);
+        channel_sendredirectback(id, EVENT_CLOSE);
+        channel_sendbuffer(id, EVENT_DATA, count, buffer);
+        channel_send(id, EVENT_MAIN);
 
-        while ((c = channel_readsource(channel, id, data.buffer, MESSAGE_SIZE)))
+        while ((c = channel_readsource(id, data.buffer, MESSAGE_SIZE)))
         {
 
             unsigned int n = job_parse(jobs, 32, data.buffer, c);
 
-            njobs = job_spawn(channel, jobs, n);
+            njobs = job_spawn(jobs, n);
 
         }
 
-        job_pipe(channel, jobs, njobs);
+        job_pipe(jobs, njobs);
 
-        tasks = job_run(channel, jobs, njobs);
+        tasks = job_run(jobs, njobs);
 
-        while (tasks && channel_poll(channel, &header, &data))
+        while (tasks && channel_poll(&header, &data))
         {
 
             switch (header.event)
             {
 
             case EVENT_CLOSE:
-                tasks = job_close(channel, header.source, jobs, njobs);
+                tasks = job_close(header.source, jobs, njobs);
 
                 break;
 
             case EVENT_WMKEYPRESS:
-                check(channel, data.buffer, jobs, njobs);
+                check(data.buffer, jobs, njobs);
 
                 break;
 
             default:
-                channel_dispatch(channel, &header, &data);
+                channel_dispatch(&header, &data);
 
                 break;
 
@@ -168,7 +168,7 @@ static void runcommand(struct channel *channel, unsigned int count, void *buffer
 
 }
 
-static void interpret(struct channel *channel, struct ring *ring)
+static void interpret(struct ring *ring)
 {
 
     char buffer[128];
@@ -178,14 +178,14 @@ static void interpret(struct channel *channel, struct ring *ring)
     updatecontent();
 
     if (count >= 2)
-        runcommand(channel, count, buffer);
+        runcommand(count, buffer);
 
     printprompt();
     updatecontent();
 
 }
 
-static void complete(struct channel *channel, struct ring *ring)
+static void complete(struct ring *ring)
 {
 
     char buffer[BUFFER_SIZE];
@@ -195,18 +195,18 @@ static void complete(struct channel *channel, struct ring *ring)
     if (id)
     {
 
-        channel_sendredirectback(channel, id, EVENT_DATA);
-        channel_sendredirectback(channel, id, EVENT_CLOSE);
-        channel_sendbuffer(channel, id, EVENT_DATA, count, buffer);
-        channel_send(channel, id, EVENT_MAIN);
+        channel_sendredirectback(id, EVENT_DATA);
+        channel_sendredirectback(id, EVENT_CLOSE);
+        channel_sendbuffer(id, EVENT_DATA, count, buffer);
+        channel_send(id, EVENT_MAIN);
 
-        while (channel_readsource(channel, id, buffer, BUFFER_SIZE));
+        while (channel_readsource(id, buffer, BUFFER_SIZE));
 
     }
 
 }
 
-static void ondata(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     print(mdata, msize);
@@ -214,17 +214,17 @@ static void ondata(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     printprompt();
     file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
 
-    while (channel_process(channel));
+    while (channel_process());
 
 }
 
-static void onpath(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_L0, mdata))
@@ -237,15 +237,15 @@ static void onpath(struct channel *channel, unsigned int source, void *mdata, un
 
 }
 
-static void onterm(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
     file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
-    channel_close(channel);
+    channel_close();
 
 }
 
-static void onwmkeypress(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmkeypress *wmkeypress = mdata;
@@ -260,14 +260,14 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
 
     case 0x0F:
         ring_move(&input1, &input2);
-        complete(channel, &input1);
+        complete(&input1);
 
         break;
 
     case 0x1C:
         ring_move(&input1, &input2);
         ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
-        interpret(channel, &input1);
+        interpret(&input1);
 
         break;
 
@@ -348,7 +348,7 @@ static void onwmkeypress(struct channel *channel, unsigned int source, void *mda
 
 }
 
-static void onwmmousescroll(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onwmmousescroll(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmmousescroll *wmmousescroll = mdata;
@@ -359,14 +359,14 @@ static void onwmmousescroll(struct channel *channel, unsigned int source, void *
 
 }
 
-static void onwmshow(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
+static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
 {
 
     updatecontent();
 
 }
 
-void init(struct channel *channel)
+void init(void)
 {
 
     ring_init(&output, BUFFER_SIZE, outputdata);
@@ -378,13 +378,13 @@ void init(struct channel *channel)
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
-    channel_setcallback(channel, EVENT_DATA, ondata);
-    channel_setcallback(channel, EVENT_MAIN, onmain);
-    channel_setcallback(channel, EVENT_PATH, onpath);
-    channel_setcallback(channel, EVENT_TERM, onterm);
-    channel_setcallback(channel, EVENT_WMKEYPRESS, onwmkeypress);
-    channel_setcallback(channel, EVENT_WMMOUSESCROLL, onwmmousescroll);
-    channel_setcallback(channel, EVENT_WMSHOW, onwmshow);
+    channel_setcallback(EVENT_DATA, ondata);
+    channel_setcallback(EVENT_MAIN, onmain);
+    channel_setcallback(EVENT_PATH, onpath);
+    channel_setcallback(EVENT_TERM, onterm);
+    channel_setcallback(EVENT_WMKEYPRESS, onwmkeypress);
+    channel_setcallback(EVENT_WMMOUSESCROLL, onwmmousescroll);
+    channel_setcallback(EVENT_WMSHOW, onwmshow);
 
 }
 
