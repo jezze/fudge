@@ -8,9 +8,6 @@
 #include "uart.h"
 #include "arch.h"
 
-#define TASKS                           64
-#define TASKVSTACKLIMIT                 0x80000000
-
 extern void halt(void);
 
 static struct core core0;
@@ -137,7 +134,7 @@ void arch_setup(void)
     */
 
     uart_puts("Fudge Console\n");
-    swi_test();
+    /*swi_test();*/
 
     resource_setup();
     core_init(&core0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
