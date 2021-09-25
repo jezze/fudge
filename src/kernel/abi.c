@@ -55,9 +55,7 @@ static unsigned int walk(struct task *task, void *stack)
     {
 
         char *cp = args->path + offset;
-        unsigned int cl = args->length - offset;
-
-        cl = buffer_findbyte(cp, cl, '/');
+        unsigned int cl = buffer_findbyte(cp, args->length - offset, '/');
 
         if (cl == 2 && cp[0] == '.' && cp[1] == '.')
             descriptor->id = descriptor->protocol->parent(descriptor->id);
