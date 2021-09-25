@@ -46,20 +46,20 @@ static void resolve(char *domain)
     if (id)
     {
 
-        struct message_data data;
+        struct message message;
         unsigned int c;
 
         channel_sendredirectback(id, EVENT_DATA);
         channel_sendredirectback(id, EVENT_CLOSE);
-        channel_sendbuffer(id, EVENT_OPTION, message_putstringz(&data, domain, message_putstringz(&data, "domain", 0)), &data);
+        channel_sendbuffer(id, EVENT_OPTION, message_putstringz(&message, domain, message_putstringz(&message, "domain", 0)), message.data.buffer);
         channel_sendstringz(id, EVENT_QUERY, "data");
 
-        while ((c = channel_readsource(id, data.buffer, MESSAGE_SIZE)))
+        while ((c = channel_readsource(id, message.data.buffer, MESSAGE_SIZE)))
         {
 
-            socket_bind_ipv4s(&remote, data.buffer);
+            socket_bind_ipv4s(&remote, message.data.buffer);
             socket_bind_tcps(&remote, "6667", 0);
-            channel_reply(EVENT_DATA, ascii_length(data.buffer), data.buffer);
+            channel_reply(EVENT_DATA, ascii_length(message.data.buffer), message.data.buffer);
 
         }
 

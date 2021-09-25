@@ -4,20 +4,19 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-    struct message_data data;
+    struct message message;
 
-    channel_reply(EVENT_DATA, message_putstring(&data, "If you press f I will quit\n", 0), &data);
+    channel_reply(EVENT_DATA, message_putstring(&message, "If you press f I will quit\n", 0), message.data.buffer);
 
-    while (channel_pollsourceevent(source, EVENT_CONSOLEDATA, &header, &data))
+    while (channel_pollsourceevent(source, EVENT_CONSOLEDATA, &message))
     {
 
-        struct event_consoledata *consoledata = (struct event_consoledata *)data.buffer;
+        struct event_consoledata *consoledata = (struct event_consoledata *)message.data.buffer;
 
         if (consoledata->data == 'f')
         {
 
-            channel_reply(EVENT_DATA, message_putstring(&data, "\nYou clicked f, goodbye!\n", 0), &data);
+            channel_reply(EVENT_DATA, message_putstring(&message, "\nYou clicked f, goodbye!\n", 0), message.data.buffer);
 
             break;
 
@@ -26,14 +25,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         else if (consoledata->data == '\r')
         {
 
-            channel_reply(EVENT_DATA, message_putstring(&data, "\n", 0), &data);
+            channel_reply(EVENT_DATA, message_putstring(&message, "\n", 0), message.data.buffer);
 
         }
 
         else
         {
 
-            channel_reply(EVENT_DATA, message_datasize(&header), &data);
+            channel_reply(EVENT_DATA, message_datasize(&message.header), message.data.buffer);
 
         }
 

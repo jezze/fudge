@@ -10,13 +10,13 @@ static void print(unsigned int source, struct record *record)
     if (buffer_match(record->name, key, keylength))
     {
 
-        struct message_data data;
+        struct message message;
         unsigned int offset = 0;
 
-        offset = message_putbuffer(&data, record->length, record->name, offset);
-        offset = message_putstring(&data, "\n", offset);
+        offset = message_putbuffer(&message, record->length, record->name, offset);
+        offset = message_putstring(&message, "\n", offset);
 
-        channel_reply(EVENT_DATA, offset, &data);
+        channel_reply(EVENT_DATA, offset, message.data.buffer);
 
     }
 

@@ -29,8 +29,7 @@ static void onredirect(unsigned int source, void *mdata, unsigned int msize)
 void main(void)
 {
 
-    struct message_header header;
-    struct message_data data;
+    struct message message;
 
     channel_init();
     channel_setcallback(EVENT_MAIN, onmain);
@@ -38,8 +37,8 @@ void main(void)
     channel_setcallback(EVENT_REDIRECT, onredirect);
     init();
 
-    while (channel_poll(&header, &data))
-        channel_dispatch(&header, &data);
+    while (channel_poll(&message))
+        channel_dispatch(&message);
 
 }
 

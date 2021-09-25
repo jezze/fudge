@@ -31,13 +31,13 @@ static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
 static void print(unsigned int source, struct ctrl_clocksettings *settings)
 {
 
-    struct message_data data;
+    struct message message;
     unsigned int offset = 0;
 
-    offset = message_putvalue(&data, gettimestamp(settings), 10, 0, offset);
-    offset = message_putstring(&data, "\n", offset);
+    offset = message_putvalue(&message, gettimestamp(settings), 10, 0, offset);
+    offset = message_putstring(&message, "\n", offset);
 
-    channel_reply(EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, message.data.buffer);
 
 }
 

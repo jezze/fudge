@@ -162,10 +162,10 @@ unsigned int job_run(struct job *jobs, unsigned int n)
         {
 
             unsigned int j;
-            struct message_data data;
+            struct message message;
 
             for (j = 0; j < job->noptions; j++)
-                channel_sendbuffer(job->id, EVENT_OPTION, message_putstringz(&data, job->options[j].value, message_putstringz(&data, job->options[j].key, 0)), &data);
+                channel_sendbuffer(job->id, EVENT_OPTION, message_putstringz(&message, job->options[j].value, message_putstringz(&message, job->options[j].key, 0)), message.data.buffer);
 
         }
 

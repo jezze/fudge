@@ -7,12 +7,11 @@ static unsigned int counter;
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
-    struct message_data data;
+    struct message message;
 
     file_link(FILE_G0);
 
-    while (channel_polldescriptorevent(FILE_G0, EVENT_TIMERTICK, &header, &data))
+    while (channel_polldescriptorevent(FILE_G0, EVENT_TIMERTICK, &message))
     {
 
         ticks++;
@@ -22,11 +21,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
             unsigned int offset = 0;
 
-            offset = message_putstring(&data, "Tick: ", offset);
-            offset = message_putvalue(&data, counter * 60, 10, 0, offset);
-            offset = message_putstring(&data, "ms\n", offset);
+            offset = message_putstring(&message, "Tick: ", offset);
+            offset = message_putvalue(&message, counter * 60, 10, 0, offset);
+            offset = message_putstring(&message, "ms\n", offset);
 
-            channel_reply(EVENT_DATA, offset, &data);
+            channel_reply(EVENT_DATA, offset, message.data.buffer);
 
             counter++;
 

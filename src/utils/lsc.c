@@ -14,17 +14,17 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (file_readall(FILE_G0, &record, sizeof (struct record)))
         {
 
-            struct message_data data;
+            struct message message;
             unsigned int offset = 0;
 
-            offset = message_putvalue(&data, record.id, 16, 8, offset);
-            offset = message_putstring(&data, " ", offset);
-            offset = message_putvalue(&data, record.size, 16, 8, offset);
-            offset = message_putstring(&data, " ", offset);
-            offset = message_putbuffer(&data, record.length, record.name, offset);
-            offset = message_putstring(&data, "\n", offset);
+            offset = message_putvalue(&message, record.id, 16, 8, offset);
+            offset = message_putstring(&message, " ", offset);
+            offset = message_putvalue(&message, record.size, 16, 8, offset);
+            offset = message_putstring(&message, " ", offset);
+            offset = message_putbuffer(&message, record.length, record.name, offset);
+            offset = message_putstring(&message, "\n", offset);
 
-            channel_reply(EVENT_DATA, offset, &data);
+            channel_reply(EVENT_DATA, offset, message.data.buffer);
 
         }
 

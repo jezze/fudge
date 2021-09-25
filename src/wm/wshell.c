@@ -114,8 +114,7 @@ static void runcommand(unsigned int count, void *buffer)
     if (id)
     {
 
-        struct message_header header;
-        struct message_data data;
+        struct message message;
         struct job jobs[32];
         unsigned int njobs = 0;
         unsigned int tasks;
@@ -126,10 +125,10 @@ static void runcommand(unsigned int count, void *buffer)
         channel_sendbuffer(id, EVENT_DATA, count, buffer);
         channel_send(id, EVENT_MAIN);
 
-        while ((c = channel_readsource(id, data.buffer, MESSAGE_SIZE)))
+        while ((c = channel_readsource(id, message.data.buffer, MESSAGE_SIZE)))
         {
 
-            unsigned int n = job_parse(jobs, 32, data.buffer, c);
+            unsigned int n = job_parse(jobs, 32, message.data.buffer, c);
 
             njobs = job_spawn(jobs, n);
 
@@ -139,24 +138,24 @@ static void runcommand(unsigned int count, void *buffer)
 
         tasks = job_run(jobs, njobs);
 
-        while (tasks && channel_poll(&header, &data))
+        while (tasks && channel_poll(&message))
         {
 
-            switch (header.event)
+            switch (message.header.event)
             {
 
             case EVENT_CLOSE:
-                tasks = job_close(header.source, jobs, njobs);
+                tasks = job_close(message.header.source, jobs, njobs);
 
                 break;
 
             case EVENT_WMKEYPRESS:
-                check(data.buffer, jobs, njobs);
+                check(message.data.buffer, jobs, njobs);
 
                 break;
 
             default:
-                channel_dispatch(&header, &data);
+                channel_dispatch(&message);
 
                 break;
 

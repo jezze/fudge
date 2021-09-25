@@ -14,18 +14,18 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned char digest[16];
-    struct message_data data;
+    struct message message;
     unsigned int offset = 0;
     unsigned int i;
 
     md5_write(&sum, digest);
 
     for (i = 0; i < 16; i++)
-        offset = message_putvalue(&data, digest[i], 16, 2, offset);
+        offset = message_putvalue(&message, digest[i], 16, 2, offset);
 
-    offset = message_putstring(&data, "\n", offset);
+    offset = message_putstring(&message, "\n", offset);
 
-    channel_reply(EVENT_DATA, offset, &data);
+    channel_reply(EVENT_DATA, offset, message.data.buffer);
     channel_close();
 
 }
