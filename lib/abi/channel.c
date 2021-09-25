@@ -3,6 +3,9 @@
 #include "file.h"
 #include "channel.h"
 
+static struct channel_callback callbacks[CHANNEL_CALLBACKS];
+static unsigned int poll;
+
 static void onmain(struct channel *channel, unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -26,17 +29,17 @@ static void onredirect(struct channel *channel, unsigned int source, void *mdata
     {
 
     case EVENT_REDIRECT_TARGET:
-        channel->callbacks[redirect->event].target = redirect->id;
+        callbacks[redirect->event].target = redirect->id;
 
         break;
 
     case EVENT_REDIRECT_SOURCE:
-        channel->callbacks[redirect->event].target = source;
+        callbacks[redirect->event].target = source;
 
         break;
 
     default:
-        channel->callbacks[redirect->event].target = 0;
+        callbacks[redirect->event].target = 0;
 
         break;
 
@@ -90,8 +93,8 @@ void channel_dispatch(struct channel *channel, struct message_header *header, st
     if (header->event < CHANNEL_CALLBACKS)
     {
 
-        if (channel->callbacks[header->event].callback)
-            channel->callbacks[header->event].callback(channel, header->source, data->buffer, message_datasize(header));
+        if (callbacks[header->event].callback)
+            callbacks[header->event].callback(channel, header->source, data->buffer, message_datasize(header));
 
     }
 
@@ -128,7 +131,7 @@ unsigned int channel_sendstringz(struct channel *channel, unsigned int target, u
 unsigned int channel_sendredirectsame(struct channel *channel, unsigned int target, unsigned int event)
 {
 
-    return sendredirect(channel, target, event, EVENT_REDIRECT_TARGET, channel->callbacks[event].target);
+    return sendredirect(channel, target, event, EVENT_REDIRECT_TARGET, callbacks[event].target);
 
 }
 
@@ -149,7 +152,7 @@ unsigned int channel_sendredirectback(struct channel *channel, unsigned int targ
 unsigned int channel_reply(struct channel *channel, unsigned int event, unsigned int count, void *data)
 {
 
-    return (channel->callbacks[event].target) ? send(channel, channel->callbacks[event].target, event, count, data) : 0;
+    return (callbacks[event].target) ? send(channel, callbacks[event].target, event, count, data) : 0;
 
 }
 
@@ -170,7 +173,7 @@ unsigned int channel_replystringz(struct channel *channel, unsigned int event, c
 unsigned int channel_poll(struct channel *channel, struct message_header *header, struct message_data *data)
 {
 
-    while (channel->poll)
+    while (poll)
     {
 
         if (call_pick(header, data))
@@ -375,7 +378,7 @@ unsigned int channel_wait(struct channel *channel, unsigned int source, unsigned
 void channel_close(struct channel *channel)
 {
 
-    channel->poll = 0;
+    poll = 0;
 
     channel_reply(channel, EVENT_CLOSE, 0, 0);
 
@@ -384,23 +387,22 @@ void channel_close(struct channel *channel)
 void channel_setcallback(struct channel *channel, unsigned int event, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize))
 {
 
-    channel->callbacks[event].callback = callback;
+    callbacks[event].callback = callback;
 
 }
 
-void channel_init(struct channel *channel, struct channel_callback *callbacks)
+void channel_init(struct channel *channel)
 {
 
     unsigned int i;
 
-    channel->poll = 1;
-    channel->callbacks = callbacks;
+    poll = 1;
 
     for (i = 0; i < CHANNEL_CALLBACKS; i++)
     {
 
-        channel->callbacks[i].target = 0;
-        channel->callbacks[i].callback = 0;
+        callbacks[i].target = 0;
+        callbacks[i].callback = 0;
 
     }
 

@@ -14,7 +14,6 @@ struct channel
 {
 
     unsigned int poll;
-    struct channel_callback *callbacks;
 
 };
 
@@ -41,4 +40,4 @@ unsigned int channel_readdescriptor(struct channel *channel, unsigned int descri
 unsigned int channel_wait(struct channel *channel, unsigned int source, unsigned int event);
 void channel_close(struct channel *channel);
 void channel_setcallback(struct channel *channel, unsigned int event, void (*callback)(struct channel *channel, unsigned int source, void *mdata, unsigned int msize));
-void channel_init(struct channel *channel, struct channel_callback *callbacks);
+void channel_init(struct channel *channel);
