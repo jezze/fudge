@@ -301,8 +301,13 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (code)
         {
 
-            mmu_map(directory, gettable(directory, 0), ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-            mmu_map(directory, gettable(directory, 1), ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            struct mmu_table *ctable = gettable(directory, 0);
+            struct mmu_table *stable = gettable(directory, 1);
+
+            buffer_clear(ctable, sizeof (struct mmu_table));
+            buffer_clear(stable, sizeof (struct mmu_table));
+            mmu_map(directory, ctable, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            mmu_map(directory, stable, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
             core->task->format->copyprogram(&core->task->node);
 
