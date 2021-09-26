@@ -21,7 +21,7 @@ void init(void)
     if (id)
     {
 
-        channel_setcallback(EVENT_DATA, ondata);
+        channel_bind(EVENT_DATA, ondata);
         channel_sendredirectback(id, EVENT_DATA);
         channel_sendstringz(id, EVENT_PATH, "/config/base.slang");
         channel_sendstringz(id, EVENT_PATH, "/config/arch.slang");

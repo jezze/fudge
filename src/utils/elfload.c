@@ -242,7 +242,7 @@ void init(void)
     if (!file_walk(FILE_G1, FILE_G0, "fudge"))
         return;
 
-    channel_setcallback(EVENT_PATH, onpath);
+    channel_bind(EVENT_PATH, onpath);
 
 }
 

@@ -399,8 +399,8 @@ void init(void)
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
-    channel_setcallback(EVENT_DATA, ondata);
-    channel_setcallback(EVENT_PATH, onpath);
+    channel_bind(EVENT_DATA, ondata);
+    channel_bind(EVENT_PATH, onpath);
 
 }
 

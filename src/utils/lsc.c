@@ -45,8 +45,8 @@ void init(void)
 {
 
     file_duplicate(FILE_G0, FILE_PW);
-    channel_setcallback(EVENT_MAIN, onmain);
-    channel_setcallback(EVENT_PATH, onpath);
+    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_PATH, onpath);
 
 }
 

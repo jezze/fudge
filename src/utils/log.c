@@ -23,7 +23,7 @@ void init(void)
     if (!file_walk2(FILE_G0, "system:log/messages"))
         return;
 
-    channel_setcallback(EVENT_MAIN, onmain);
+    channel_bind(EVENT_MAIN, onmain);
 
 }
 

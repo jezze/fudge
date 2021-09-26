@@ -53,9 +53,9 @@ void init(void)
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
-    channel_setcallback(EVENT_MAIN, onmain);
-    channel_setcallback(EVENT_TERM, onterm);
-    channel_setcallback(EVENT_WMMOUSEPRESS, onwmmousepress);
+    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_TERM, onterm);
+    channel_bind(EVENT_WMMOUSEPRESS, onwmmousepress);
 
 }
 

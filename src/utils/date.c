@@ -55,8 +55,8 @@ void init(void)
 {
 
     file_walk2(FILE_G0, "system:clock/if:0");
-    channel_setcallback(EVENT_MAIN, onmain);
-    channel_setcallback(EVENT_OPTION, onoption);
+    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_OPTION, onoption);
 
 }
 

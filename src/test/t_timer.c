@@ -42,7 +42,7 @@ void init(void)
     if (!file_walk2(FILE_G0, "system:timer/if:0/event10"))
         return;
 
-    channel_setcallback(EVENT_MAIN, onmain);
+    channel_bind(EVENT_MAIN, onmain);
 
 }
 

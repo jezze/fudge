@@ -377,13 +377,13 @@ void init(void)
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
-    channel_setcallback(EVENT_DATA, ondata);
-    channel_setcallback(EVENT_MAIN, onmain);
-    channel_setcallback(EVENT_PATH, onpath);
-    channel_setcallback(EVENT_TERM, onterm);
-    channel_setcallback(EVENT_WMKEYPRESS, onwmkeypress);
-    channel_setcallback(EVENT_WMMOUSESCROLL, onwmmousescroll);
-    channel_setcallback(EVENT_WMSHOW, onwmshow);
+    channel_bind(EVENT_DATA, ondata);
+    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_PATH, onpath);
+    channel_bind(EVENT_TERM, onterm);
+    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
+    channel_bind(EVENT_WMMOUSESCROLL, onwmmousescroll);
+    channel_bind(EVENT_WMSHOW, onwmshow);
 
 }
 

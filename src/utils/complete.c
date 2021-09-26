@@ -57,8 +57,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    channel_setcallback(EVENT_OPTION, onoption);
-    channel_setcallback(EVENT_PATH, onpath);
+    channel_bind(EVENT_OPTION, onoption);
+    channel_bind(EVENT_PATH, onpath);
 
 }
 

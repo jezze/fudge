@@ -947,18 +947,18 @@ void init(void)
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
-    channel_setcallback(EVENT_KEYPRESS, onkeypress);
-    channel_setcallback(EVENT_KEYRELEASE, onkeyrelease);
-    channel_setcallback(EVENT_MAIN, onmain);
-    channel_setcallback(EVENT_MOUSEMOVE, onmousemove);
-    channel_setcallback(EVENT_MOUSEPRESS, onmousepress);
-    channel_setcallback(EVENT_MOUSERELEASE, onmouserelease);
-    channel_setcallback(EVENT_MOUSESCROLL, onmousescroll);
-    channel_setcallback(EVENT_OPTION, onoption);
-    channel_setcallback(EVENT_VIDEOMODE, onvideomode);
-    channel_setcallback(EVENT_WMMAP, onwmmap);
-    channel_setcallback(EVENT_WMRENDERDATA, onwmrenderdata);
-    channel_setcallback(EVENT_WMUNMAP, onwmunmap);
+    channel_bind(EVENT_KEYPRESS, onkeypress);
+    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
+    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_MOUSEMOVE, onmousemove);
+    channel_bind(EVENT_MOUSEPRESS, onmousepress);
+    channel_bind(EVENT_MOUSERELEASE, onmouserelease);
+    channel_bind(EVENT_MOUSESCROLL, onmousescroll);
+    channel_bind(EVENT_OPTION, onoption);
+    channel_bind(EVENT_VIDEOMODE, onvideomode);
+    channel_bind(EVENT_WMMAP, onwmmap);
+    channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);
+    channel_bind(EVENT_WMUNMAP, onwmunmap);
 
 }
 

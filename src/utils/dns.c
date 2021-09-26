@@ -313,9 +313,9 @@ void init(void)
     socket_bind_udps(&remote, "53");
     socket_init(&router);
     socket_bind_ipv4s(&router, "10.0.5.80");
-    channel_setcallback(EVENT_MAIN, onmain);
-    channel_setcallback(EVENT_OPTION, onoption);
-    channel_setcallback(EVENT_QUERY, onquery);
+    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_OPTION, onoption);
+    channel_bind(EVENT_QUERY, onquery);
 
 }
 

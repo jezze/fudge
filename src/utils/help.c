@@ -24,7 +24,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    channel_setcallback(EVENT_MAIN, onmain);
+    channel_bind(EVENT_MAIN, onmain);
 
 }
 

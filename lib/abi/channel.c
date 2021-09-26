@@ -341,7 +341,7 @@ void channel_close(void)
 
 }
 
-void channel_setcallback(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
+void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
 {
 
     callbacks[event].callback = callback;

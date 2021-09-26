@@ -105,9 +105,9 @@ void init(void)
     socket_bind_tcps(&local, "50002", 42);
     socket_init(&router);
     socket_bind_ipv4s(&router, "10.0.5.80");
-    channel_setcallback(EVENT_CONSOLEDATA, onconsoledata);
-    channel_setcallback(EVENT_MAIN, onmain);
-    channel_setcallback(EVENT_OPTION, onoption);
+    channel_bind(EVENT_CONSOLEDATA, onconsoledata);
+    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_OPTION, onoption);
 
 }
 

@@ -169,7 +169,7 @@ void init(void)
     if (!file_walk2(FILE_G0, "system:block/if:0/data"))
         return;
 
-    channel_setcallback(EVENT_MAIN, onmain);
+    channel_bind(EVENT_MAIN, onmain);
 
 }
 

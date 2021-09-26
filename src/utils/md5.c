@@ -51,9 +51,9 @@ void init(void)
 {
 
     md5_init(&sum);
-    channel_setcallback(EVENT_DATA, ondata);
-    channel_setcallback(EVENT_MAIN, onmain);
-    channel_setcallback(EVENT_PATH, onpath);
+    channel_bind(EVENT_DATA, ondata);
+    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_PATH, onpath);
 
 }
 

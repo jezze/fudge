@@ -237,11 +237,11 @@ void init(void)
 {
 
     ring_init(&input, BUFFER_SIZE, inputbuffer);
-    channel_setcallback(EVENT_CONSOLEDATA, onconsoledata);
-    channel_setcallback(EVENT_DATA, ondata);
-    channel_setcallback(EVENT_MAIN, onmain);
-    channel_setcallback(EVENT_OPTION, onoption);
-    channel_setcallback(EVENT_PATH, onpath);
+    channel_bind(EVENT_CONSOLEDATA, onconsoledata);
+    channel_bind(EVENT_DATA, ondata);
+    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_OPTION, onoption);
+    channel_bind(EVENT_PATH, onpath);
 
 }
 

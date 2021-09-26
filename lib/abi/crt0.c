@@ -32,9 +32,9 @@ void main(void)
     struct message message;
 
     channel_init();
-    channel_setcallback(EVENT_MAIN, onmain);
-    channel_setcallback(EVENT_TERM, onterm);
-    channel_setcallback(EVENT_REDIRECT, onredirect);
+    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_TERM, onterm);
+    channel_bind(EVENT_REDIRECT, onredirect);
     init();
 
     while (channel_poll(&message))
