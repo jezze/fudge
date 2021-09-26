@@ -281,9 +281,9 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
             if (!u)
                 return;
 
-            message_putstringz2(&message, "O");
-            message_putstringz2(&message, t->str);
-            message_putstringz2(&message, u->str);
+            message_putstringz(&message, "O");
+            message_putstringz(&message, t->str);
+            message_putstringz(&message, u->str);
 
             break;
 
@@ -296,16 +296,16 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
                 if (tokenlist_check(stack) == TOKEN_IDENT)
                 {
 
-                    message_putstringz2(&message, "D");
-                    message_putstringz2(&message, t->str);
+                    message_putstringz(&message, "D");
+                    message_putstringz(&message, t->str);
 
                 }
 
                 else
                 {
 
-                    message_putstringz2(&message, "P");
-                    message_putstringz2(&message, t->str);
+                    message_putstringz(&message, "P");
+                    message_putstringz(&message, t->str);
 
                 }
 
@@ -322,22 +322,22 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
                 if (tokenlist_check(stack) == TOKEN_IDENT)
                 {
 
-                    message_putstringz2(&message, "D");
-                    message_putstringz2(&message, t->str);
+                    message_putstringz(&message, "D");
+                    message_putstringz(&message, t->str);
 
                 }
 
                 else
                 {
 
-                    message_putstringz2(&message, "P");
-                    message_putstringz2(&message, t->str);
+                    message_putstringz(&message, "P");
+                    message_putstringz(&message, t->str);
 
                 }
 
             }
 
-            message_putstringz2(&message, "E");
+            message_putstringz(&message, "E");
             channel_replymsg(&message);
             message_init(&message, EVENT_DATA);
 

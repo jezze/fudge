@@ -168,8 +168,8 @@ unsigned int job_run(struct job *jobs, unsigned int n)
             {
 
                 message_init(&message, EVENT_OPTION);
-                message_putstringz2(&message, job->options[j].key);
-                message_putstringz2(&message, job->options[j].value);
+                message_putstringz(&message, job->options[j].key);
+                message_putstringz(&message, job->options[j].value);
                 channel_sendbuffer(job->id, EVENT_OPTION, message_datasize(&message.header), message.data.buffer);
 
             }

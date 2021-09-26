@@ -21,9 +21,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     message_init(&message, EVENT_DATA);
 
     for (i = 0; i < 16; i++)
-        message_putvalue2(&message, digest[i], 16, 2);
+        message_putvalue(&message, digest[i], 16, 2);
 
-    message_putstring2(&message, "\n");
+    message_putstring(&message, "\n");
     channel_replymsg(&message);
     channel_close();
 

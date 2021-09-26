@@ -44,24 +44,24 @@ static void printmain(unsigned short type, char *name, void *rddata, void *buffe
     {
 
     case 1:
-        message_putbuffer2(&message, dns_writename(fullname, 256, name, buffer), fullname);
-        message_putstring2(&message, " has address ");
-        message_putvalue2(&message, addr[0], 10, 0);
-        message_putstring2(&message, ".");
-        message_putvalue2(&message, addr[1], 10, 0);
-        message_putstring2(&message, ".");
-        message_putvalue2(&message, addr[2], 10, 0);
-        message_putstring2(&message, ".");
-        message_putvalue2(&message, addr[3], 10, 0);
-        message_putstring2(&message, "\n");
+        message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
+        message_putstring(&message, " has address ");
+        message_putvalue(&message, addr[0], 10, 0);
+        message_putstring(&message, ".");
+        message_putvalue(&message, addr[1], 10, 0);
+        message_putstring(&message, ".");
+        message_putvalue(&message, addr[2], 10, 0);
+        message_putstring(&message, ".");
+        message_putvalue(&message, addr[3], 10, 0);
+        message_putstring(&message, "\n");
 
         break;
 
     case 5:
-        message_putbuffer2(&message, dns_writename(fullname, 256, name, buffer), fullname);
-        message_putstring2(&message, " is an alias for ");
-        message_putbuffer2(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
-        message_putstring2(&message, "\n");
+        message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
+        message_putstring(&message, " is an alias for ");
+        message_putbuffer(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
+        message_putstring(&message, "\n");
 
         break;
 
@@ -86,16 +86,16 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
     if (qtype)
     {
 
-        message_putvalue2(&message, type, 10, 0);
-        message_putstringz2(&message, "");
+        message_putvalue(&message, type, 10, 0);
+        message_putstringz(&message, "");
 
     }
 
     if (qname)
     {
 
-        message_putbuffer2(&message, dns_writename(fullname, 256, name, buffer), fullname);
-        message_putstringz2(&message, "");
+        message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
+        message_putstringz(&message, "");
 
     }
 
@@ -106,25 +106,25 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
         {
 
         case 1:
-            message_putvalue2(&message, addr[0], 10, 0);
-            message_putstring2(&message, ".");
-            message_putvalue2(&message, addr[1], 10, 0);
-            message_putstring2(&message, ".");
-            message_putvalue2(&message, addr[2], 10, 0);
-            message_putstring2(&message, ".");
-            message_putvalue2(&message, addr[3], 10, 0);
-            message_putstringz2(&message, "");
+            message_putvalue(&message, addr[0], 10, 0);
+            message_putstring(&message, ".");
+            message_putvalue(&message, addr[1], 10, 0);
+            message_putstring(&message, ".");
+            message_putvalue(&message, addr[2], 10, 0);
+            message_putstring(&message, ".");
+            message_putvalue(&message, addr[3], 10, 0);
+            message_putstringz(&message, "");
 
             break;
 
         case 5:
-            message_putbuffer2(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
-            message_putstringz2(&message, "");
+            message_putbuffer(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
+            message_putstringz(&message, "");
 
             break;
 
         default:
-            message_putstringz2(&message, "<null>");
+            message_putstringz(&message, "<null>");
 
             break;
 

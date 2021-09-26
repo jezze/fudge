@@ -20,9 +20,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         {
 
             message_init(&message, EVENT_DATA);
-            message_putstring2(&message, "Tick: ");
-            message_putvalue2(&message, counter * 60, 10, 0);
-            message_putstring2(&message, "ms\n");
+            message_putstring(&message, "Tick: ");
+            message_putvalue(&message, counter * 60, 10, 0);
+            message_putstring(&message, "ms\n");
             channel_replymsg(&message);
 
             counter++;

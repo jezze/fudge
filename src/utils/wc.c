@@ -58,12 +58,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct message message;
 
     message_init(&message, EVENT_DATA);
-    message_putvalue2(&message, lines, 10, 0);
-    message_putstring2(&message, "\n");
-    message_putvalue2(&message, words, 10, 0);
-    message_putstring2(&message, "\n");
-    message_putvalue2(&message, bytes, 10, 0);
-    message_putstring2(&message, "\n");
+    message_putvalue(&message, lines, 10, 0);
+    message_putstring(&message, "\n");
+    message_putvalue(&message, words, 10, 0);
+    message_putstring(&message, "\n");
+    message_putvalue(&message, bytes, 10, 0);
+    message_putstring(&message, "\n");
     channel_replymsg(&message);
     channel_close();
 

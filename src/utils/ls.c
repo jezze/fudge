@@ -17,8 +17,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             struct message message;
 
             message_init(&message, EVENT_DATA);
-            message_putbuffer2(&message, record.length, record.name);
-            message_putstring2(&message, "\n");
+            message_putbuffer(&message, record.length, record.name);
+            message_putstring(&message, "\n");
             channel_replymsg(&message);
 
         }

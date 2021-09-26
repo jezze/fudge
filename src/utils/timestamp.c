@@ -34,8 +34,8 @@ static void print(unsigned int source, struct ctrl_clocksettings *settings)
     struct message message;
 
     message_init(&message, EVENT_DATA);
-    message_putvalue2(&message, gettimestamp(settings), 10, 0);
-    message_putstring2(&message, "\n");
+    message_putvalue(&message, gettimestamp(settings), 10, 0);
+    message_putstring(&message, "\n");
     channel_replymsg(&message);
 
 }

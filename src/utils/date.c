@@ -7,18 +7,18 @@ static void print(unsigned int source, struct ctrl_clocksettings *settings)
     struct message message;
 
     message_init(&message, EVENT_DATA);
-    message_putvalue2(&message, settings->year, 10, 4);
-    message_putstring2(&message, "-");
-    message_putvalue2(&message, settings->month, 10, 2);
-    message_putstring2(&message, "-");
-    message_putvalue2(&message, settings->day, 10, 2);
-    message_putstring2(&message, " ");
-    message_putvalue2(&message, settings->hours, 10, 2);
-    message_putstring2(&message, ":");
-    message_putvalue2(&message, settings->minutes, 10, 2);
-    message_putstring2(&message, ":");
-    message_putvalue2(&message, settings->seconds, 10, 2);
-    message_putstring2(&message, "\n");
+    message_putvalue(&message, settings->year, 10, 4);
+    message_putstring(&message, "-");
+    message_putvalue(&message, settings->month, 10, 2);
+    message_putstring(&message, "-");
+    message_putvalue(&message, settings->day, 10, 2);
+    message_putstring(&message, " ");
+    message_putvalue(&message, settings->hours, 10, 2);
+    message_putstring(&message, ":");
+    message_putvalue(&message, settings->minutes, 10, 2);
+    message_putstring(&message, ":");
+    message_putvalue(&message, settings->seconds, 10, 2);
+    message_putstring(&message, "\n");
     channel_replymsg(&message);
 
 }

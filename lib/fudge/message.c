@@ -16,33 +16,33 @@ unsigned int message_datasize(struct message_header *header)
 
 }
 
-unsigned int message_putbuffer2(struct message *message, unsigned int count, void *buffer)
+unsigned int message_putbuffer(struct message *message, unsigned int count, void *buffer)
 {
 
     return message->header.length += buffer_write(message->data.buffer, MESSAGE_SIZE, buffer, count, message_datasize(&message->header));
 
 }
 
-unsigned int message_putstring2(struct message *message, char *string)
+unsigned int message_putstring(struct message *message, char *string)
 {
 
-    return message_putbuffer2(message, ascii_length(string), string);
+    return message_putbuffer(message, ascii_length(string), string);
 
 }
 
-unsigned int message_putstringz2(struct message *message, char *string)
+unsigned int message_putstringz(struct message *message, char *string)
 {
 
-    return message_putbuffer2(message, ascii_lengthz(string), string);
+    return message_putbuffer(message, ascii_lengthz(string), string);
 
 }
 
-unsigned int message_putvalue2(struct message *message, int value, unsigned int base, unsigned int padding)
+unsigned int message_putvalue(struct message *message, int value, unsigned int base, unsigned int padding)
 {
 
     char num[ASCII_NUMSIZE];
 
-    return message_putbuffer2(message, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num);
+    return message_putbuffer(message, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num);
 
 }
 

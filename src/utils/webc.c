@@ -39,8 +39,8 @@ static void resolve(char *domain)
         unsigned int c;
 
         message_init(&message, EVENT_OPTION);
-        message_putstringz2(&message, "domain");
-        message_putstringz2(&message, domain);
+        message_putstringz(&message, "domain");
+        message_putstringz(&message, domain);
         channel_sendredirectback(id, EVENT_DATA);
         channel_sendredirectback(id, EVENT_CLOSE);
         channel_sendbuffer(id, EVENT_OPTION, message_datasize(&message.header), message.data.buffer);
