@@ -119,6 +119,7 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
     struct mmu_directory *directory = getkerneldirectory();
     struct mmu_table *table = gettable(directory, index);
 
+    buffer_clear(table, sizeof (struct mmu_table));
     mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
@@ -129,6 +130,7 @@ void arch_setmapvideo(unsigned char index, unsigned int paddress, unsigned int v
     struct mmu_directory *directory = getkerneldirectory();
     struct mmu_table *table = gettable(directory, index);
 
+    buffer_clear(table, sizeof (struct mmu_table));
     mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_CACHEWRITE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_CACHEWRITE);
 
 }
