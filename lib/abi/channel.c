@@ -127,21 +127,7 @@ unsigned int channel_reply(unsigned int event, unsigned int count, void *data)
 unsigned int channel_replymsg(struct message *message)
 {
 
-    return (callbacks[message->header.event].target) ? send(callbacks[message->header.event].target, message->header.event, message_datasize(&message->header), message->data.buffer) : 0;
-
-}
-
-unsigned int channel_replystring(unsigned int event, char *string)
-{
-
-    return channel_reply(event, ascii_length(string), string);
-
-}
-
-unsigned int channel_replystringz(unsigned int event, char *string)
-{
-
-    return channel_reply(event, ascii_lengthz(string), string);
+    return channel_reply(message->header.event, message_datasize(&message->header), message->data.buffer);
 
 }
 

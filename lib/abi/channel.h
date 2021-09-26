@@ -8,8 +8,6 @@ unsigned int channel_sendredirectto(unsigned int target, unsigned int event, uns
 unsigned int channel_sendredirectback(unsigned int target, unsigned int event);
 unsigned int channel_reply(unsigned int event, unsigned int count, void *data);
 unsigned int channel_replymsg(struct message *message);
-unsigned int channel_replystring(unsigned int event, char *string);
-unsigned int channel_replystringz(unsigned int event, char *string);
 unsigned int channel_poll(struct message *message);
 unsigned int channel_pollsource(unsigned int source, struct message *message);
 unsigned int channel_pollevent(unsigned int event, struct message *message);

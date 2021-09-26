@@ -4,7 +4,11 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_replystring(EVENT_DATA, "Hello World!\n");
+    struct message message;
+
+    message_init(&message, EVENT_DATA);
+    message_putstring2(&message, "Hello World!\n");
+    channel_replymsg(&message);
     channel_close();
 
 }

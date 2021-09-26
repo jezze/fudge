@@ -12,11 +12,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         struct event_consoledata *consoledata = (struct event_consoledata *)message.data.buffer;
+        struct message reply;
 
         if (consoledata->data == 'f')
         {
 
-            channel_reply(EVENT_DATA, message_putstring(&message, "\nYou clicked f, goodbye!\n", 0), message.data.buffer);
+            message_init(&reply, EVENT_DATA);
+            message_putstring2(&reply, "\nYou clicked f, goodbye!\n");
+            channel_replymsg(&reply);
 
             break;
 
@@ -25,14 +28,18 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         else if (consoledata->data == '\r')
         {
 
-            channel_reply(EVENT_DATA, message_putstring(&message, "\n", 0), message.data.buffer);
+            message_init(&reply, EVENT_DATA);
+            message_putstring2(&reply, "\n");
+            channel_replymsg(&reply);
 
         }
 
         else
         {
 
-            channel_reply(EVENT_DATA, message_datasize(&message.header), message.data.buffer);
+            message_init(&reply, EVENT_DATA);
+            message_putbuffer2(&reply, message_datasize(&message.header), message.data.buffer);
+            channel_replymsg(&reply);
 
         }
 

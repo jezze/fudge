@@ -38,9 +38,12 @@ static void resolve(char *domain)
         struct message message;
         unsigned int c;
 
+        message_init(&message, EVENT_OPTION);
+        message_putstringz2(&message, "domain");
+        message_putstringz2(&message, domain);
         channel_sendredirectback(id, EVENT_DATA);
         channel_sendredirectback(id, EVENT_CLOSE);
-        channel_sendbuffer(id, EVENT_OPTION, message_putstringz(&message, domain, message_putstringz(&message, "domain", 0)), message.data.buffer);
+        channel_sendbuffer(id, EVENT_OPTION, message_datasize(&message.header), message.data.buffer);
         channel_sendstringz(id, EVENT_QUERY, "data");
 
         while ((c = channel_readsource(id, message.data.buffer, MESSAGE_SIZE)))
