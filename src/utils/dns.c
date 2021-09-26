@@ -74,16 +74,13 @@ static void printmain(unsigned short type, char *name, void *rddata, void *buffe
 static void printquery(char *query, unsigned int qsize, unsigned short type, char *name, void *rddata, void *buffer)
 {
 
-    unsigned int qtype = ascii_match(query, "type");
-    unsigned int qname = ascii_match(query, "name");
-    unsigned int qdata = ascii_match(query, "data");
     unsigned char *addr = rddata;
     struct message message;
     char fullname[256];
 
     message_init(&message, EVENT_DATA);
 
-    if (qtype)
+    if (ascii_match(query, "type"))
     {
 
         message_putvalue(&message, type, 10, 0);
@@ -91,7 +88,7 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
 
     }
 
-    if (qname)
+    if (ascii_match(query, "name"))
     {
 
         message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
@@ -99,7 +96,7 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
 
     }
 
-    if (qdata)
+    if (ascii_match(query, "data"))
     {
 
         switch (type)
