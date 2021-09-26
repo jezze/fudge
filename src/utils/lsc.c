@@ -15,16 +15,15 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         {
 
             struct message message;
-            unsigned int offset = 0;
 
-            offset = message_putvalue(&message, record.id, 16, 8, offset);
-            offset = message_putstring(&message, " ", offset);
-            offset = message_putvalue(&message, record.size, 16, 8, offset);
-            offset = message_putstring(&message, " ", offset);
-            offset = message_putbuffer(&message, record.length, record.name, offset);
-            offset = message_putstring(&message, "\n", offset);
-
-            channel_reply(EVENT_DATA, offset, message.data.buffer);
+            message_init(&message, EVENT_DATA);
+            message_putvalue2(&message, record.id, 16, 8);
+            message_putstring2(&message, " ");
+            message_putvalue2(&message, record.size, 16, 8);
+            message_putstring2(&message, " ");
+            message_putbuffer2(&message, record.length, record.name);
+            message_putstring2(&message, "\n");
+            channel_replymsg(&message);
 
         }
 

@@ -13,11 +13,11 @@ static void print(unsigned int source, unsigned int count, void *buffer)
     {
 
         struct message message;
-        unsigned int offset = 0;
         unsigned int j;
 
-        offset = message_putvalue(&message, page, 16, 8, offset);
-        offset = message_putstring(&message, "  ", offset);
+        message_init(&message, EVENT_DATA);
+        message_putvalue2(&message, page, 16, 8);
+        message_putstring2(&message, "  ");
 
         for (j = i; j < i + 16; j++)
         {
@@ -25,21 +25,21 @@ static void print(unsigned int source, unsigned int count, void *buffer)
             if (j < count)
             {
 
-                offset = message_putvalue(&message, b[j], 16, 2, offset);
-                offset = message_putstring(&message, " ", offset);
+                message_putvalue2(&message, b[j], 16, 2);
+                message_putstring2(&message, " ");
 
             }
 
             else
             {
 
-                offset = message_putstring(&message, "   ", offset);
+                message_putstring2(&message, "   ");
 
             }
 
         }
 
-        offset = message_putstring(&message, " |", offset);
+        message_putstring2(&message, " |");
 
         for (j = i; j < i + 16; j++)
         {
@@ -52,22 +52,21 @@ static void print(unsigned int source, unsigned int count, void *buffer)
                 if (!(c >= 0x20 && c <= 0x7e))
                     c = ' ';
 
-                offset = message_putbuffer(&message, 1, &c, offset);
+                message_putbuffer2(&message, 1, &c);
 
             }
 
             else
             {
 
-                offset = message_putstring(&message, " ", offset);
+                message_putstring2(&message, " ");
 
             }
 
         }
 
-        offset = message_putstring(&message, "|\n", offset);
-
-        channel_reply(EVENT_DATA, offset, message.data.buffer);
+        message_putstring2(&message, "|\n");
+        channel_replymsg(&message);
 
         page += 16;
 

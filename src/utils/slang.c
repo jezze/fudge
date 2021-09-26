@@ -251,8 +251,9 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
 {
 
     struct message message;
-    unsigned int offset = 0;
     unsigned int i;
+
+    message_init(&message, EVENT_DATA);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -280,9 +281,9 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
             if (!u)
                 return;
 
-            offset = message_putstringz(&message, "O", offset);
-            offset = message_putstringz(&message, t->str, offset);
-            offset = message_putstringz(&message, u->str, offset);
+            message_putstringz2(&message, "O");
+            message_putstringz2(&message, t->str);
+            message_putstringz2(&message, u->str);
 
             break;
 
@@ -295,16 +296,16 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
                 if (tokenlist_check(stack) == TOKEN_IDENT)
                 {
 
-                    offset = message_putstringz(&message, "D", offset);
-                    offset = message_putstringz(&message, t->str, offset);
+                    message_putstringz2(&message, "D");
+                    message_putstringz2(&message, t->str);
 
                 }
 
                 else
                 {
 
-                    offset = message_putstringz(&message, "P", offset);
-                    offset = message_putstringz(&message, t->str, offset);
+                    message_putstringz2(&message, "P");
+                    message_putstringz2(&message, t->str);
 
                 }
 
@@ -321,26 +322,24 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
                 if (tokenlist_check(stack) == TOKEN_IDENT)
                 {
 
-                    offset = message_putstringz(&message, "D", offset);
-                    offset = message_putstringz(&message, t->str, offset);
+                    message_putstringz2(&message, "D");
+                    message_putstringz2(&message, t->str);
 
                 }
 
                 else
                 {
 
-                    offset = message_putstringz(&message, "P", offset);
-                    offset = message_putstringz(&message, t->str, offset);
+                    message_putstringz2(&message, "P");
+                    message_putstringz2(&message, t->str);
 
                 }
 
             }
 
-            offset = message_putstringz(&message, "E", offset);
-
-            channel_reply(EVENT_DATA, offset, message.data.buffer);
-
-            offset = 0;
+            message_putstringz2(&message, "E");
+            channel_replymsg(&message);
+            message_init(&message, EVENT_DATA);
 
             break;
 

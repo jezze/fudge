@@ -36,37 +36,38 @@ static void printmain(unsigned short type, char *name, void *rddata, void *buffe
 
     unsigned char *addr = rddata;
     struct message message;
-    unsigned int offset = 0;
     char fullname[256];
+
+    message_init(&message, EVENT_DATA);
 
     switch (type)
     {
 
     case 1:
-        offset = message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname, offset);
-        offset = message_putstring(&message, " has address ", offset);
-        offset = message_putvalue(&message, addr[0], 10, 0, offset);
-        offset = message_putstring(&message, ".", offset);
-        offset = message_putvalue(&message, addr[1], 10, 0, offset);
-        offset = message_putstring(&message, ".", offset);
-        offset = message_putvalue(&message, addr[2], 10, 0, offset);
-        offset = message_putstring(&message, ".", offset);
-        offset = message_putvalue(&message, addr[3], 10, 0, offset);
-        offset = message_putstring(&message, "\n", offset);
+        message_putbuffer2(&message, dns_writename(fullname, 256, name, buffer), fullname);
+        message_putstring2(&message, " has address ");
+        message_putvalue2(&message, addr[0], 10, 0);
+        message_putstring2(&message, ".");
+        message_putvalue2(&message, addr[1], 10, 0);
+        message_putstring2(&message, ".");
+        message_putvalue2(&message, addr[2], 10, 0);
+        message_putstring2(&message, ".");
+        message_putvalue2(&message, addr[3], 10, 0);
+        message_putstring2(&message, "\n");
 
         break;
 
     case 5:
-        offset = message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname, offset);
-        offset = message_putstring(&message, " is an alias for ", offset);
-        offset = message_putbuffer(&message, dns_writename(fullname, 256, rddata, buffer), fullname, offset);
-        offset = message_putstring(&message, "\n", offset);
+        message_putbuffer2(&message, dns_writename(fullname, 256, name, buffer), fullname);
+        message_putstring2(&message, " is an alias for ");
+        message_putbuffer2(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
+        message_putstring2(&message, "\n");
 
         break;
 
     }
 
-    channel_reply(EVENT_DATA, offset, message.data.buffer);
+    channel_replymsg(&message);
 
 }
 
@@ -78,22 +79,23 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
     unsigned int qdata = ascii_match(query, "data");
     unsigned char *addr = rddata;
     struct message message;
-    unsigned int offset = 0;
     char fullname[256];
+
+    message_init(&message, EVENT_DATA);
 
     if (qtype)
     {
 
-        offset = message_putvalue(&message, type, 10, 0, offset);
-        offset = message_putstringz(&message, "", offset);
+        message_putvalue2(&message, type, 10, 0);
+        message_putstringz2(&message, "");
 
     }
 
     if (qname)
     {
 
-        offset = message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname, offset);
-        offset = message_putstringz(&message, "", offset);
+        message_putbuffer2(&message, dns_writename(fullname, 256, name, buffer), fullname);
+        message_putstringz2(&message, "");
 
     }
 
@@ -104,25 +106,25 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
         {
 
         case 1:
-            offset = message_putvalue(&message, addr[0], 10, 0, offset);
-            offset = message_putstring(&message, ".", offset);
-            offset = message_putvalue(&message, addr[1], 10, 0, offset);
-            offset = message_putstring(&message, ".", offset);
-            offset = message_putvalue(&message, addr[2], 10, 0, offset);
-            offset = message_putstring(&message, ".", offset);
-            offset = message_putvalue(&message, addr[3], 10, 0, offset);
-            offset = message_putstringz(&message, "", offset);
+            message_putvalue2(&message, addr[0], 10, 0);
+            message_putstring2(&message, ".");
+            message_putvalue2(&message, addr[1], 10, 0);
+            message_putstring2(&message, ".");
+            message_putvalue2(&message, addr[2], 10, 0);
+            message_putstring2(&message, ".");
+            message_putvalue2(&message, addr[3], 10, 0);
+            message_putstringz2(&message, "");
 
             break;
 
         case 5:
-            offset = message_putbuffer(&message, dns_writename(fullname, 256, rddata, buffer), fullname, offset);
-            offset = message_putstringz(&message, "", offset);
+            message_putbuffer2(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
+            message_putstringz2(&message, "");
 
             break;
 
         default:
-            offset = message_putstringz(&message, "<null>", offset);
+            message_putstringz2(&message, "<null>");
 
             break;
 
@@ -130,7 +132,7 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
 
     }
 
-    channel_reply(EVENT_DATA, offset, message.data.buffer);
+    channel_replymsg(&message);
 
 }
 

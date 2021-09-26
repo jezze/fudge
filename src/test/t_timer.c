@@ -19,13 +19,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (ticks % 6)
         {
 
-            unsigned int offset = 0;
-
-            offset = message_putstring(&message, "Tick: ", offset);
-            offset = message_putvalue(&message, counter * 60, 10, 0, offset);
-            offset = message_putstring(&message, "ms\n", offset);
-
-            channel_reply(EVENT_DATA, offset, message.data.buffer);
+            message_init(&message, EVENT_DATA);
+            message_putstring2(&message, "Tick: ");
+            message_putvalue2(&message, counter * 60, 10, 0);
+            message_putstring2(&message, "ms\n");
+            channel_replymsg(&message);
 
             counter++;
 

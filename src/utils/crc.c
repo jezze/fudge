@@ -14,12 +14,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct message message;
-    unsigned int offset = 0;
 
-    offset = message_putvalue(&message, crc_finalize(&sum), 10, 0, offset);
-    offset = message_putstring(&message, "\n", offset);
-
-    channel_reply(EVENT_DATA, offset, message.data.buffer);
+    message_init(&message, EVENT_DATA);
+    message_putvalue2(&message, crc_finalize(&sum), 10, 0);
+    message_putstring2(&message, "\n");
+    channel_replymsg(&message);
     channel_close();
 
 }

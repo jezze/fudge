@@ -15,17 +15,16 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned char digest[20];
     struct message message;
-    unsigned int offset = 0;
     unsigned int i;
 
     sha1_write(&sum, digest);
+    message_init(&message, EVENT_DATA);
 
     for (i = 0; i < 20; i++)
-        offset = message_putvalue(&message, digest[i], 16, 2, offset);
+        message_putvalue2(&message, digest[i], 16, 2);
 
-    offset = message_putstring(&message, "\n", offset);
-
-    channel_reply(EVENT_DATA, offset, message.data.buffer);
+    message_putstring2(&message, "\n");
+    channel_replymsg(&message);
     channel_close();
 
 }
