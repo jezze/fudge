@@ -162,10 +162,11 @@ unsigned int job_run(struct job *jobs, unsigned int n)
         {
 
             unsigned int j;
-            struct message message;
 
             for (j = 0; j < job->noptions; j++)
             {
+
+                struct message message;
 
                 message_init(&message, EVENT_OPTION);
                 message_putstringz(&message, job->options[j].key);
