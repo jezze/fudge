@@ -1,28 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void print(unsigned int source, struct ctrl_clocksettings *settings)
-{
-
-    struct message message;
-
-    message_init(&message, EVENT_DATA);
-    message_putvalue(&message, settings->year, 10, 4);
-    message_putstring(&message, "-");
-    message_putvalue(&message, settings->month, 10, 2);
-    message_putstring(&message, "-");
-    message_putvalue(&message, settings->day, 10, 2);
-    message_putstring(&message, " ");
-    message_putvalue(&message, settings->hours, 10, 2);
-    message_putstring(&message, ":");
-    message_putvalue(&message, settings->minutes, 10, 2);
-    message_putstring(&message, ":");
-    message_putvalue(&message, settings->seconds, 10, 2);
-    message_putstring(&message, "\n");
-    channel_replymsg(&message);
-
-}
-
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -30,9 +8,23 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         struct ctrl_clocksettings settings;
+        struct message message;
 
         file_seekreadall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings), 0);
-        print(source, &settings);
+        message_init(&message, EVENT_DATA);
+        message_putvalue(&message, settings.year, 10, 4);
+        message_putstring(&message, "-");
+        message_putvalue(&message, settings.month, 10, 2);
+        message_putstring(&message, "-");
+        message_putvalue(&message, settings.day, 10, 2);
+        message_putstring(&message, " ");
+        message_putvalue(&message, settings.hours, 10, 2);
+        message_putstring(&message, ":");
+        message_putvalue(&message, settings.minutes, 10, 2);
+        message_putstring(&message, ":");
+        message_putvalue(&message, settings.seconds, 10, 2);
+        message_putstring(&message, "\n");
+        channel_replymsg(&message);
 
     }
 

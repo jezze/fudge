@@ -28,18 +28,6 @@ static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
 
 }
 
-static void print(unsigned int source, struct ctrl_clocksettings *settings)
-{
-
-    struct message message;
-
-    message_init(&message, EVENT_DATA);
-    message_putvalue(&message, gettimestamp(settings), 10, 0);
-    message_putstring(&message, "\n");
-    channel_replymsg(&message);
-
-}
-
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -47,9 +35,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         struct ctrl_clocksettings settings;
+        struct message message;
 
         file_seekreadall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings), 0);
-        print(source, &settings);
+        message_init(&message, EVENT_DATA);
+        message_putvalue(&message, gettimestamp(&settings), 10, 0);
+        message_putstring(&message, "\n");
+        channel_replymsg(&message);
 
     }
 
