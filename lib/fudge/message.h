@@ -26,10 +26,6 @@ struct message
 
 unsigned int message_headersize(struct message_header *header);
 unsigned int message_datasize(struct message_header *header);
-unsigned int message_putbuffer(struct message *message, unsigned int count, void *buffer, unsigned int offset);
-unsigned int message_putstring(struct message *message, char *string, unsigned int offset);
-unsigned int message_putstringz(struct message *message, char *string, unsigned int offset);
-unsigned int message_putvalue(struct message *message, int value, unsigned int base, unsigned int padding, unsigned int offset);
 unsigned int message_putbuffer2(struct message *message, unsigned int count, void *buffer);
 unsigned int message_putstring2(struct message *message, char *string);
 unsigned int message_putstringz2(struct message *message, char *string);

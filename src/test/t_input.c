@@ -6,7 +6,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     struct message message;
 
-    channel_reply(EVENT_DATA, message_putstring(&message, "If you press f I will quit\n", 0), message.data.buffer);
+    message_init(&message, EVENT_DATA);
+    message_putstring2(&message, "If you press f I will quit\n");
+    channel_replymsg(&message);
 
     while (channel_pollsourceevent(source, EVENT_CONSOLEDATA, &message))
     {
