@@ -58,6 +58,8 @@ static unsigned int walk(struct task *task, void *stack)
         char *cp = args->path + offset;
         unsigned int cl = buffer_findbyte(cp, args->length - offset, '/');
 
+        if (cl == 0)
+            descriptor->id = descriptor->service->root();
         if (cl == 2 && cp[0] == '.' && cp[1] == '.')
             descriptor->id = descriptor->service->parent(descriptor->id);
         else
