@@ -6,22 +6,23 @@
 #include "core.h"
 #include "link.h"
 #include "service.h"
+#include "descriptor.h"
 #include "kernel.h"
 
 static struct task tasks[KERNEL_TASKS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct link links[KERNEL_LINKS];
-static struct service_descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
+static struct descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct list freelinks;
 static struct list freetasks;
 static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct task *task);
 
-static void copydescriptor(struct service_descriptor *descriptor, struct service_descriptor *pdescriptor)
+static void copydescriptor(struct descriptor *descriptor, struct descriptor *pdescriptor)
 {
 
-    descriptor->protocol = pdescriptor->protocol;
+    descriptor->service = pdescriptor->service;
     descriptor->id = pdescriptor->id;
 
 }
@@ -29,12 +30,12 @@ static void copydescriptor(struct service_descriptor *descriptor, struct service
 static unsigned int setupbinary(struct task *task, unsigned int sp)
 {
 
-    struct service_descriptor *prog = kernel_getdescriptor(task, FILE_CP);
+    struct descriptor *prog = kernel_getdescriptor(task, FILE_CP);
 
     if (!prog)
         return 0;
 
-    task->node.address = prog->protocol->map(prog->id);
+    task->node.address = prog->service->map(prog->id);
 
     if (!task->node.address)
         return 0;
@@ -153,7 +154,7 @@ void kernel_schedule(struct core *core)
 
 }
 
-struct service_descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor)
+struct descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor)
 {
 
     return &descriptors[task->id * KERNEL_DESCRIPTORS + (descriptor & (KERNEL_DESCRIPTORS - 1))];
@@ -234,7 +235,7 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         struct mailbox *mailbox = &mailboxes[task->id];
 
         mailbox_reset(mailbox);
-        buffer_clear(kernel_getdescriptor(task, FILE_PP), sizeof (struct service_descriptor) * KERNEL_DESCRIPTORS);
+        buffer_clear(kernel_getdescriptor(task, FILE_PP), sizeof (struct descriptor) * KERNEL_DESCRIPTORS);
 
         if (parent)
         {
@@ -248,18 +249,18 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         else
         {
 
-            struct service_descriptor *prog = kernel_getdescriptor(task, FILE_CP);
-            struct service_descriptor *root = kernel_getdescriptor(task, FILE_CR);
-            struct service_descriptor *work = kernel_getdescriptor(task, FILE_CW);
+            struct descriptor *prog = kernel_getdescriptor(task, FILE_CP);
+            struct descriptor *root = kernel_getdescriptor(task, FILE_CR);
+            struct descriptor *work = kernel_getdescriptor(task, FILE_CW);
 
-            root->protocol = service_findprotocol(6, "initrd");
-            root->id = root->protocol->root();
+            root->service = service_find(6, "initrd");
+            root->id = root->service->root();
 
             copydescriptor(work, root);
             copydescriptor(prog, root);
 
-            prog->id = prog->protocol->child(prog->id, "bin", 3);
-            prog->id = prog->protocol->child(prog->id, "init", 4);
+            prog->id = prog->service->child(prog->id, "bin", 3);
+            prog->id = prog->service->child(prog->id, "init", 4);
 
         }
 

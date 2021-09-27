@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include "cpio.h"
 
-static struct service_protocol protocol;
+static struct service service;
 static unsigned int address;
 static unsigned int limit;
 
@@ -84,7 +84,7 @@ static unsigned int child(struct cpio_header *header, unsigned int id, char *pat
 
 }
 
-static unsigned int protocol_root(void)
+static unsigned int service_root(void)
 {
 
     unsigned int current = address;
@@ -109,7 +109,7 @@ static unsigned int protocol_root(void)
 
 }
 
-static unsigned int protocol_parent(unsigned int id)
+static unsigned int service_parent(unsigned int id)
 {
 
     struct cpio_header *header = getheader(id);
@@ -118,7 +118,7 @@ static unsigned int protocol_parent(unsigned int id)
 
 }
 
-static unsigned int protocol_child(unsigned int id, char *path, unsigned int length)
+static unsigned int service_child(unsigned int id, char *path, unsigned int length)
 {
 
     struct cpio_header *header = getheader(id);
@@ -127,14 +127,14 @@ static unsigned int protocol_child(unsigned int id, char *path, unsigned int len
 
 }
 
-static unsigned int protocol_create(unsigned int id, char *name, unsigned int length)
+static unsigned int service_create(unsigned int id, char *name, unsigned int length)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_destroy(unsigned int id)
+static unsigned int service_destroy(unsigned int id)
 {
 
     return 0;
@@ -164,7 +164,7 @@ static unsigned int stepdirectory(unsigned int id, unsigned int current)
 
 }
 
-static unsigned int protocol_step(unsigned int id, unsigned int current)
+static unsigned int service_step(unsigned int id, unsigned int current)
 {
 
     struct cpio_header *header = getheader(id);
@@ -206,7 +206,7 @@ static unsigned int readdirectory(void *buffer, unsigned int count, unsigned int
 
 }
 
-static unsigned int protocol_read(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int service_read(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header *header = getheader(id);
@@ -231,7 +231,7 @@ static unsigned int protocol_read(unsigned int id, unsigned int current, void *b
 
 }
 
-static unsigned int protocol_write(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int service_write(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header *header = getheader(id);
@@ -253,14 +253,14 @@ static unsigned int protocol_write(unsigned int id, unsigned int current, void *
 
 }
 
-static unsigned int protocol_seek(unsigned int id, unsigned int offset)
+static unsigned int service_seek(unsigned int id, unsigned int offset)
 {
 
     return offset;
 
 }
 
-static unsigned int protocol_map(unsigned int id)
+static unsigned int service_map(unsigned int id)
 {
 
     struct cpio_header *header = getheader(id);
@@ -269,21 +269,21 @@ static unsigned int protocol_map(unsigned int id)
 
 }
 
-static unsigned int protocol_link(unsigned int id, unsigned int source)
+static unsigned int service_link(unsigned int id, unsigned int source)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_unlink(unsigned int id, unsigned int source)
+static unsigned int service_unlink(unsigned int id, unsigned int source)
 {
 
     return 0;
 
 }
 
-static unsigned int protocol_notify(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int service_notify(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     return 0;
@@ -296,8 +296,8 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_initprotocol(&protocol, "initrd", protocol_root, protocol_parent, protocol_child, protocol_create, protocol_destroy, protocol_step, protocol_read, protocol_write, protocol_seek, protocol_map, protocol_link, protocol_unlink, protocol_notify);
-    resource_register(&protocol.resource);
+    service_init(&service, "initrd", service_root, service_parent, service_child, service_create, service_destroy, service_step, service_read, service_write, service_seek, service_map, service_link, service_unlink, service_notify);
+    resource_register(&service.resource);
 
 }
 

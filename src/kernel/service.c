@@ -2,25 +2,18 @@
 #include "resource.h"
 #include "service.h"
 
-unsigned int service_checkdescriptor(struct service_descriptor *descriptor)
-{
-
-    return descriptor->protocol && descriptor->id;
-
-}
-
-struct service_protocol *service_findprotocol(unsigned int count, char *name)
+struct service *service_find(unsigned int count, char *name)
 {
 
     struct resource *current = 0;
 
-    while ((current = resource_foreachtype(current, RESOURCE_SERVICEPROTOCOL)))
+    while ((current = resource_foreachtype(current, RESOURCE_SERVICE)))
     {
 
-        struct service_protocol *protocol = current->data;
+        struct service *service = current->data;
 
-        if (buffer_match(protocol->name, name, count))
-            return protocol;
+        if (buffer_match(service->name, name, count))
+            return service;
 
     }
 
@@ -28,25 +21,25 @@ struct service_protocol *service_findprotocol(unsigned int count, char *name)
 
 }
 
-void service_initprotocol(struct service_protocol *protocol, char *name, unsigned int (*root)(void), unsigned int (*parent)(unsigned int id), unsigned int (*child)(unsigned int id, char *path, unsigned int length), unsigned int (*create)(unsigned int id, char *name, unsigned int length), unsigned int (*destroy)(unsigned int id), unsigned int (*step)(unsigned int id, unsigned int current), unsigned int (*read)(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset), unsigned int (*write)(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset), unsigned int (*seek)(unsigned int id, unsigned int offset), unsigned int (*map)(unsigned int id), unsigned int (*link)(unsigned int id, unsigned int source), unsigned int (*unlink)(unsigned int id, unsigned int source), unsigned int (*notify)(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data))
+void service_init(struct service *service, char *name, unsigned int (*root)(void), unsigned int (*parent)(unsigned int id), unsigned int (*child)(unsigned int id, char *path, unsigned int length), unsigned int (*create)(unsigned int id, char *name, unsigned int length), unsigned int (*destroy)(unsigned int id), unsigned int (*step)(unsigned int id, unsigned int current), unsigned int (*read)(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset), unsigned int (*write)(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset), unsigned int (*seek)(unsigned int id, unsigned int offset), unsigned int (*map)(unsigned int id), unsigned int (*link)(unsigned int id, unsigned int source), unsigned int (*unlink)(unsigned int id, unsigned int source), unsigned int (*notify)(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
-    resource_init(&protocol->resource, RESOURCE_SERVICEPROTOCOL, protocol);
+    resource_init(&service->resource, RESOURCE_SERVICE, service);
 
-    protocol->name = name;
-    protocol->root = root;
-    protocol->parent = parent;
-    protocol->child = child;
-    protocol->create = create;
-    protocol->destroy = destroy;
-    protocol->step = step;
-    protocol->read = read;
-    protocol->write = write;
-    protocol->seek = seek;
-    protocol->map = map;
-    protocol->link = link;
-    protocol->unlink = unlink;
-    protocol->notify = notify;
+    service->name = name;
+    service->root = root;
+    service->parent = parent;
+    service->child = child;
+    service->create = create;
+    service->destroy = destroy;
+    service->step = step;
+    service->read = read;
+    service->write = write;
+    service->seek = seek;
+    service->map = map;
+    service->link = link;
+    service->unlink = unlink;
+    service->notify = notify;
 
 }
 
