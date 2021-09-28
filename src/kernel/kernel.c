@@ -241,7 +241,6 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         {
 
             copydescriptor(kernel_getdescriptor(task, FILE_CP), kernel_getdescriptor(parent, FILE_CP));
-            copydescriptor(kernel_getdescriptor(task, FILE_CR), kernel_getdescriptor(parent, FILE_CR));
             copydescriptor(kernel_getdescriptor(task, FILE_CW), kernel_getdescriptor(parent, FILE_CW));
 
         }
@@ -250,14 +249,12 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         {
 
             struct descriptor *prog = kernel_getdescriptor(task, FILE_CP);
-            struct descriptor *root = kernel_getdescriptor(task, FILE_CR);
             struct descriptor *work = kernel_getdescriptor(task, FILE_CW);
 
-            root->service = service_find(6, "initrd");
-            root->id = root->service->root();
+            work->service = service_find(6, "initrd");
+            work->id = work->service->root();
 
-            copydescriptor(work, root);
-            copydescriptor(prog, root);
+            copydescriptor(prog, work);
 
             prog->id = prog->service->child(prog->id, "bin", 3);
             prog->id = prog->service->child(prog->id, "init", 4);
@@ -265,7 +262,6 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         }
 
         copydescriptor(kernel_getdescriptor(task, FILE_PP), kernel_getdescriptor(task, FILE_CP));
-        copydescriptor(kernel_getdescriptor(task, FILE_PR), kernel_getdescriptor(task, FILE_CR));
         copydescriptor(kernel_getdescriptor(task, FILE_PW), kernel_getdescriptor(task, FILE_CW));
 
         if (setupbinary(task, sp))

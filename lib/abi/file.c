@@ -12,10 +12,7 @@ unsigned int file_walk(unsigned int descriptor, unsigned int pdescriptor, char *
 unsigned int file_walk2(unsigned int descriptor, char *path)
 {
 
-    if (path[0] == '/')
-        return call_walk(descriptor, FILE_PR, path + 1, ascii_length(path + 1));
-    else
-        return call_walk(descriptor, FILE_PW, path, ascii_length(path));
+    return call_walk(descriptor, FILE_PW, path, ascii_length(path));
 
 }
 
