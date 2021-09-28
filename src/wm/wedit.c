@@ -102,7 +102,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (file_walk2(FILE_L0, mdata))
     {
 
-        file_seek(FILE_L0, 0);
+        file_reset(FILE_L0);
 
         while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
             ring_write(&input2, buffer, count);
