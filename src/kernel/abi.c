@@ -60,7 +60,7 @@ static unsigned int walk(struct task *task, void *stack)
 
         if (cl == 0)
             descriptor->id = descriptor->service->root();
-        if (cl == 2 && cp[0] == '.' && cp[1] == '.')
+        else if (cl == 2 && cp[0] == '.' && cp[1] == '.')
             descriptor->id = descriptor->service->parent(descriptor->id);
         else
             descriptor->id = descriptor->service->child(descriptor->id, cp, cl);
