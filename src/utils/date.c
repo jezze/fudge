@@ -24,7 +24,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         message_putstring(&message, ":");
         message_putvalue(&message, settings.seconds, 10, 2);
         message_putstring(&message, "\n");
-        channel_replymsg(&message);
+        channel_replymessage(&message);
 
     }
 

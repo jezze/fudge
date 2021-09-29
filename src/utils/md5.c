@@ -24,7 +24,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         message_putvalue(&message, digest[i], 16, 2);
 
     message_putstring(&message, "\n");
-    channel_replymsg(&message);
+    channel_replymessage(&message);
     channel_close();
 
 }

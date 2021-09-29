@@ -41,7 +41,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         message_init(&message, EVENT_DATA);
         message_putvalue(&message, gettimestamp(&settings), 10, 0);
         message_putstring(&message, "\n");
-        channel_replymsg(&message);
+        channel_replymessage(&message);
 
     }
 

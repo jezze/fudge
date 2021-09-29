@@ -54,7 +54,7 @@ static void resolve(char *domain)
         message_putstringz(&message, domain);
         channel_sendredirectback(id, EVENT_DATA);
         channel_sendredirectback(id, EVENT_CLOSE);
-        channel_sendbuffer(id, EVENT_OPTION, message_datasize(&message.header), message.data.buffer);
+        channel_sendmessage(id, &message);
         channel_sendstringz(id, EVENT_QUERY, "data");
 
         while ((c = channel_readsource(id, message.data.buffer, MESSAGE_SIZE)))

@@ -96,6 +96,13 @@ unsigned int channel_sendstringz(unsigned int target, unsigned int event, char *
 
 }
 
+unsigned int channel_sendmessage(unsigned int target, struct message *message)
+{
+
+    return send(target, message->header.event, message_datasize(&message->header), message->data.buffer);
+
+}
+
 unsigned int channel_sendredirectsame(unsigned int target, unsigned int event)
 {
 
@@ -138,7 +145,7 @@ unsigned int channel_replystringz(unsigned int event, char *string)
 
 }
 
-unsigned int channel_replymsg(struct message *message)
+unsigned int channel_replymessage(struct message *message)
 {
 
     return channel_reply(message->header.event, message_datasize(&message->header), message->data.buffer);

@@ -67,7 +67,7 @@ static void printmain(unsigned short type, char *name, void *rddata, void *buffe
 
     }
 
-    channel_replymsg(&message);
+    channel_replymessage(&message);
 
 }
 
@@ -129,7 +129,7 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
 
     }
 
-    channel_replymsg(&message);
+    channel_replymessage(&message);
 
 }
 

@@ -23,7 +23,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             message_putstring(&message, " ");
             message_putbuffer(&message, record.length, record.name);
             message_putstring(&message, "\n");
-            channel_replymsg(&message);
+            channel_replymessage(&message);
 
         }
 

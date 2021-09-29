@@ -15,7 +15,7 @@ static void print(unsigned int source, struct record *record)
         message_init(&message, EVENT_DATA);
         message_putbuffer(&message, record->length, record->name);
         message_putstring(&message, "\n");
-        channel_replymsg(&message);
+        channel_replymessage(&message);
 
     }
 

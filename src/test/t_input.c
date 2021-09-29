@@ -36,7 +36,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
             message_init(&reply, EVENT_DATA);
             message_putbuffer(&reply, message_datasize(&message.header), message.data.buffer);
-            channel_replymsg(&reply);
+            channel_replymessage(&reply);
 
         }
 

@@ -64,7 +64,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     message_putstring(&message, "\n");
     message_putvalue(&message, bytes, 10, 0);
     message_putstring(&message, "\n");
-    channel_replymsg(&message);
+    channel_replymessage(&message);
     channel_close();
 
 }
