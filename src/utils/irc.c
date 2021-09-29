@@ -62,7 +62,7 @@ static void resolve(char *domain)
 
             socket_bind_ipv4s(&remote, message.data.buffer);
             socket_bind_tcps(&remote, "6667", 0);
-            channel_reply(EVENT_DATA, ascii_length(message.data.buffer), message.data.buffer);
+            channel_replybuffer(EVENT_DATA, ascii_length(message.data.buffer), message.data.buffer);
 
         }
 
@@ -98,7 +98,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
     case '\n':
         ring_write(&input, &consoledata->data, 1);
-        channel_reply(EVENT_DATA, 1, &consoledata->data);
+        channel_replybuffer(EVENT_DATA, 1, &consoledata->data);
 
         count = ring_read(&input, buffer, BUFFER_SIZE);
 
@@ -109,7 +109,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
     default:
         ring_write(&input, &consoledata->data, 1);
-        channel_reply(EVENT_DATA, 1, &consoledata->data);
+        channel_replybuffer(EVENT_DATA, 1, &consoledata->data);
 
         break;
 
@@ -138,7 +138,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_send_tcp(FILE_G1, &local, &remote, &router, ascii_length(request), request);
 
         while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
-            channel_reply(EVENT_DATA, count, buffer);
+            channel_replybuffer(EVENT_DATA, count, buffer);
 
         socket_disconnect_tcp(FILE_G1, &local, &remote, &router);
         file_unlink(FILE_G1);

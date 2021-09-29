@@ -45,7 +45,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
     }
 
     if (count)
-        channel_reply(EVENT_DATA, count, &consoledata->data);
+        channel_replybuffer(EVENT_DATA, count, &consoledata->data);
 
 }
 
@@ -66,7 +66,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_listen_tcp(FILE_G1, &local, &remote, &router);
 
         while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
-            channel_reply(EVENT_DATA, count, buffer);
+            channel_replybuffer(EVENT_DATA, count, buffer);
 
         file_unlink(FILE_G1);
 

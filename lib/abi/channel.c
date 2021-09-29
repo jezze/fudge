@@ -124,7 +124,14 @@ unsigned int channel_sendredirectback(unsigned int target, unsigned int event)
 
 }
 
-unsigned int channel_reply(unsigned int event, unsigned int count, void *data)
+unsigned int channel_reply(unsigned int event)
+{
+
+    return (callbacks[event].target) ? send(callbacks[event].target, event, 0, 0) : 0;
+
+}
+
+unsigned int channel_replybuffer(unsigned int event, unsigned int count, void *data)
 {
 
     return (callbacks[event].target) ? send(callbacks[event].target, event, count, data) : 0;
@@ -148,7 +155,7 @@ unsigned int channel_replystringz(unsigned int event, char *string)
 unsigned int channel_replymessage(struct message *message)
 {
 
-    return channel_reply(message->header.event, message_datasize(&message->header), message->data.buffer);
+    return (callbacks[message->header.event].target) ? send(callbacks[message->header.event].target, message->header.event, message_datasize(&message->header), message->data.buffer) : 0;
 
 }
 
@@ -358,7 +365,7 @@ void channel_close(void)
 
     poll = 0;
 
-    channel_reply(EVENT_CLOSE, 0, 0);
+    channel_reply(EVENT_CLOSE);
 
 }
 

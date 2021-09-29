@@ -21,7 +21,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned char colormap[768];
 
             file_seekreadall(FILE_L0, colormap, 768, filesize - 768);
-            channel_reply(EVENT_DATA, 768, colormap);
+            channel_replybuffer(EVENT_DATA, 768, colormap);
 
         }
 

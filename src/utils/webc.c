@@ -85,7 +85,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_send_tcp(FILE_L0, &local, &remote, &router, count, buffer);
 
         while ((count = socket_receive_tcp(FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE)))
-            channel_reply(EVENT_DATA, count, buffer);
+            channel_replybuffer(EVENT_DATA, count, buffer);
 
         socket_disconnect_tcp(FILE_L0, &local, &remote, &router);
         file_unlink(FILE_L0);

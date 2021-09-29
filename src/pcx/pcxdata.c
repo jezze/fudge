@@ -70,7 +70,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
             offset = readline(width, offset, buffer);
 
-            channel_reply(EVENT_DATA, width, buffer);
+            channel_replybuffer(EVENT_DATA, width, buffer);
 
         }
 

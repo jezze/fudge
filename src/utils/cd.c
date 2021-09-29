@@ -5,7 +5,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (file_walk2(FILE_L0, mdata))
-        channel_reply(EVENT_PATH, msize, mdata);
+        channel_replybuffer(EVENT_PATH, msize, mdata);
 
 }
 

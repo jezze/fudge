@@ -4,7 +4,7 @@
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_reply(EVENT_DATA, msize, mdata);
+    channel_replybuffer(EVENT_DATA, msize, mdata);
 
 }
 
@@ -20,7 +20,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         file_reset(FILE_L0);
 
         while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
-            channel_reply(EVENT_DATA, count, buffer);
+            channel_replybuffer(EVENT_DATA, count, buffer);
 
     }
 

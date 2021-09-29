@@ -10,7 +10,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     file_link(FILE_G0);
 
     while ((count = channel_readdescriptor(FILE_G0, buffer, BUFFER_SIZE)))
-        channel_reply(EVENT_DATA, count, buffer);
+        channel_replybuffer(EVENT_DATA, count, buffer);
 
     file_unlink(FILE_G0);
     channel_close();
