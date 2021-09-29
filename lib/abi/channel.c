@@ -371,15 +371,6 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
 
 }
 
-void channel_close(void)
-{
-
-    poll = 0;
-
-    channel_send(EVENT_CLOSE);
-
-}
-
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
 {
 
@@ -412,20 +403,19 @@ void channel_redirect(unsigned int event, unsigned int mode, unsigned int id, un
 
 }
 
-void channel_init(void)
+void channel_open(void)
 {
-
-    unsigned int i;
 
     poll = 1;
 
-    for (i = 0; i < CHANNEL_CALLBACKS; i++)
-    {
+}
 
-        callbacks[i].target = 0;
-        callbacks[i].callback = 0;
+void channel_close(void)
+{
 
-    }
+    channel_send(EVENT_CLOSE);
+
+    poll = 0;
 
 }
 

@@ -29,7 +29,7 @@ static void onredirect(unsigned int source, void *mdata, unsigned int msize)
 void main(void)
 {
 
-    channel_init();
+    channel_open();
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_REDIRECT, onredirect);
