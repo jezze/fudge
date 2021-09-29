@@ -66,7 +66,7 @@ static void print(unsigned int source, unsigned int count, void *buffer)
         }
 
         message_putstring(&message, "|\n");
-        channel_replymessage(&message);
+        channel_sendmessage(&message);
 
         page += 16;
 

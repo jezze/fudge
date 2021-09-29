@@ -42,7 +42,7 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
 
 }
 
-static unsigned int sendredirect(unsigned int target, unsigned int event, unsigned int mode, unsigned int id)
+static unsigned int redirect(unsigned int target, unsigned int event, unsigned int mode, unsigned int id)
 {
 
     struct event_redirect redirect;
@@ -68,94 +68,94 @@ void channel_dispatch(struct message *message)
 
 }
 
-unsigned int channel_send(unsigned int target, unsigned int event)
-{
-
-    return send(target, event, 0, 0);
-
-}
-
-unsigned int channel_sendbuffer(unsigned int target, unsigned int event, unsigned int count, void *data)
-{
-
-    return send(target, event, count, data);
-
-}
-
-unsigned int channel_sendstring(unsigned int target, unsigned int event, char *string)
-{
-
-    return send(target, event, ascii_length(string), string);
-
-}
-
-unsigned int channel_sendstringz(unsigned int target, unsigned int event, char *string)
-{
-
-    return send(target, event, ascii_lengthz(string), string);
-
-}
-
-unsigned int channel_sendmessage(unsigned int target, struct message *message)
-{
-
-    return send(target, message->header.event, message_datasize(&message->header), message->data.buffer);
-
-}
-
-unsigned int channel_sendredirectsame(unsigned int target, unsigned int event)
-{
-
-    return sendredirect(target, event, EVENT_REDIRECT_TARGET, callbacks[event].target);
-
-}
-
-unsigned int channel_sendredirectto(unsigned int target, unsigned int event, unsigned int id)
-{
-
-    return sendredirect(target, event, EVENT_REDIRECT_TARGET, id);
-
-}
-
-unsigned int channel_sendredirectback(unsigned int target, unsigned int event)
-{
-
-    return sendredirect(target, event, EVENT_REDIRECT_SOURCE, 0);
-
-}
-
-unsigned int channel_reply(unsigned int event)
+unsigned int channel_send(unsigned int event)
 {
 
     return (callbacks[event].target) ? send(callbacks[event].target, event, 0, 0) : 0;
 
 }
 
-unsigned int channel_replybuffer(unsigned int event, unsigned int count, void *data)
+unsigned int channel_sendto(unsigned int target, unsigned int event)
+{
+
+    return send(target, event, 0, 0);
+
+}
+
+unsigned int channel_sendbuffer(unsigned int event, unsigned int count, void *data)
 {
 
     return (callbacks[event].target) ? send(callbacks[event].target, event, count, data) : 0;
 
 }
 
-unsigned int channel_replystring(unsigned int event, char *string)
+unsigned int channel_sendbufferto(unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    return send(target, event, count, data);
+
+}
+
+unsigned int channel_sendstring(unsigned int event, char *string)
 {
 
     return (callbacks[event].target) ? send(callbacks[event].target, event, ascii_length(string), string) : 0;
 
 }
 
-unsigned int channel_replystringz(unsigned int event, char *string)
+unsigned int channel_sendstringto(unsigned int target, unsigned int event, char *string)
+{
+
+    return send(target, event, ascii_length(string), string);
+
+}
+
+unsigned int channel_sendstringz(unsigned int event, char *string)
 {
 
     return (callbacks[event].target) ? send(callbacks[event].target, event, ascii_lengthz(string), string) : 0;
 
 }
 
-unsigned int channel_replymessage(struct message *message)
+unsigned int channel_sendstringzto(unsigned int target, unsigned int event, char *string)
+{
+
+    return send(target, event, ascii_lengthz(string), string);
+
+}
+
+unsigned int channel_sendmessage(struct message *message)
 {
 
     return (callbacks[message->header.event].target) ? send(callbacks[message->header.event].target, message->header.event, message_datasize(&message->header), message->data.buffer) : 0;
+
+}
+
+unsigned int channel_sendmessageto(unsigned int target, struct message *message)
+{
+
+    return send(target, message->header.event, message_datasize(&message->header), message->data.buffer);
+
+}
+
+unsigned int channel_redirectsame(unsigned int target, unsigned int event)
+{
+
+    return redirect(target, event, EVENT_REDIRECT_TARGET, callbacks[event].target);
+
+}
+
+unsigned int channel_redirecttarget(unsigned int target, unsigned int event, unsigned int id)
+{
+
+    return redirect(target, event, EVENT_REDIRECT_TARGET, id);
+
+}
+
+unsigned int channel_redirectback(unsigned int target, unsigned int event)
+{
+
+    return redirect(target, event, EVENT_REDIRECT_SOURCE, 0);
 
 }
 
@@ -365,7 +365,7 @@ void channel_close(void)
 
     poll = 0;
 
-    channel_reply(EVENT_CLOSE);
+    channel_send(EVENT_CLOSE);
 
 }
 

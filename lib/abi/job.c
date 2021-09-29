@@ -88,7 +88,7 @@ void activatenext(unsigned int index, struct job *jobs, unsigned int n)
         struct job *job = &jobs[index];
 
         if (job->id)
-            channel_send(job->id, EVENT_MAIN);
+            channel_sendto(job->id, EVENT_MAIN);
 
     }
 
@@ -134,13 +134,13 @@ void job_pipe(struct job *jobs, unsigned int n)
         if (job->id)
         {
 
-            channel_sendredirectback(job->id, EVENT_CLOSE);
-            channel_sendredirectback(job->id, EVENT_PATH);
+            channel_redirectback(job->id, EVENT_CLOSE);
+            channel_redirectback(job->id, EVENT_PATH);
 
             if (i < n - 1)
-                channel_sendredirectto(job->id, EVENT_DATA, jobs[i + 1].id);
+                channel_redirecttarget(job->id, EVENT_DATA, jobs[i + 1].id);
             else
-                channel_sendredirectback(job->id, EVENT_DATA);
+                channel_redirectback(job->id, EVENT_DATA);
 
         }
 
@@ -171,7 +171,7 @@ unsigned int job_run(struct job *jobs, unsigned int n)
                 message_init(&message, EVENT_OPTION);
                 message_putstringz(&message, job->options[j].key);
                 message_putstringz(&message, job->options[j].value);
-                channel_sendbuffer(job->id, EVENT_OPTION, message_datasize(&message.header), message.data.buffer);
+                channel_sendbufferto(job->id, EVENT_OPTION, message_datasize(&message.header), message.data.buffer);
 
             }
 
@@ -190,7 +190,7 @@ unsigned int job_run(struct job *jobs, unsigned int n)
             unsigned int j;
 
             for (j = 0; j < job->npaths; j++)
-                channel_sendstringz(job->id, EVENT_PATH, job->paths[j]);
+                channel_sendstringzto(job->id, EVENT_PATH, job->paths[j]);
 
         }
 
@@ -240,7 +240,7 @@ void job_send(struct job *jobs, unsigned int n, unsigned int event, unsigned int
         struct job *job = &jobs[i];
 
         if (job->id)
-            channel_sendbuffer(job->id, event, count, buffer);
+            channel_sendbufferto(job->id, event, count, buffer);
 
         break;
 

@@ -6,7 +6,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     struct message message;
 
-    channel_replystring(EVENT_DATA, "If you press f I will quit\n");
+    channel_sendstring(EVENT_DATA, "If you press f I will quit\n");
 
     while (channel_pollsourceevent(source, EVENT_CONSOLEDATA, &message))
     {
@@ -16,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (consoledata->data == 'f')
         {
 
-            channel_replystring(EVENT_DATA, "\nYou clicked f, goodbye!\n");
+            channel_sendstring(EVENT_DATA, "\nYou clicked f, goodbye!\n");
 
             break;
 
@@ -25,7 +25,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         else if (consoledata->data == '\r')
         {
 
-            channel_replystring(EVENT_DATA, "\n");
+            channel_sendstring(EVENT_DATA, "\n");
 
         }
 
@@ -36,7 +36,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
             message_init(&reply, EVENT_DATA);
             message_putbuffer(&reply, message_datasize(&message.header), message.data.buffer);
-            channel_replymessage(&reply);
+            channel_sendmessage(&reply);
 
         }
 

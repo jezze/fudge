@@ -22,11 +22,11 @@ void init(void)
     {
 
         channel_bind(EVENT_DATA, ondata);
-        channel_sendredirectback(id, EVENT_DATA);
-        channel_sendstringz(id, EVENT_PATH, "/config/base.slang");
-        channel_sendstringz(id, EVENT_PATH, "/config/arch.slang");
-        channel_sendstringz(id, EVENT_PATH, "/config/init.slang");
-        channel_send(id, EVENT_MAIN);
+        channel_redirectback(id, EVENT_DATA);
+        channel_sendstringzto(id, EVENT_PATH, "/config/base.slang");
+        channel_sendstringzto(id, EVENT_PATH, "/config/arch.slang");
+        channel_sendstringzto(id, EVENT_PATH, "/config/init.slang");
+        channel_sendto(id, EVENT_MAIN);
 
     }
 

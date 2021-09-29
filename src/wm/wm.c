@@ -150,7 +150,7 @@ static void showremotes(struct list *remotes)
 
         struct remote *remote = current->data;
 
-        channel_send(remote->source, EVENT_WMSHOW);
+        channel_sendto(remote->source, EVENT_WMSHOW);
         updateremote(remote);
 
     }
@@ -167,7 +167,7 @@ static void hideremotes(struct list *remotes)
 
         struct remote *remote = current->data;
 
-        channel_send(remote->source, EVENT_WMHIDE);
+        channel_sendto(remote->source, EVENT_WMHIDE);
         removeremote(remote);
 
     }
@@ -184,7 +184,7 @@ static void closeremotes(struct list *remotes)
 
         struct remote *remote = current->data;
 
-        channel_send(remote->source, EVENT_TERM);
+        channel_sendto(remote->source, EVENT_TERM);
 
     }
 
@@ -400,7 +400,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             wmkeypress.length = keycode->length;
             wmkeypress.keymod = keymod;
 
-            channel_sendbuffer(currentview->currentremote->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
+            channel_sendbufferto(currentview->currentremote->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
 
         }
 
@@ -453,7 +453,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             break;
 
         if ((keymod & KEYMOD_SHIFT))
-            channel_send(currentview->currentremote->source, EVENT_TERM);
+            channel_sendto(currentview->currentremote->source, EVENT_TERM);
 
         break;
 
@@ -464,7 +464,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
         id = file_spawn("/bin/wshell");
 
         if (id)
-            channel_send(id, EVENT_MAIN);
+            channel_sendto(id, EVENT_MAIN);
 
         break;
 
@@ -585,7 +585,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
             wmkeyrelease.length = keycode->length;
             wmkeyrelease.keymod = keymod;
 
-            channel_sendbuffer(currentview->currentremote->source, EVENT_WMKEYRELEASE, sizeof (struct event_wmkeyrelease), &wmkeyrelease);
+            channel_sendbufferto(currentview->currentremote->source, EVENT_WMKEYRELEASE, sizeof (struct event_wmkeyrelease), &wmkeyrelease);
 
         }
 
@@ -656,7 +656,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
         wmmousemove.relx = mousemove->relx;
         wmmousemove.rely = mousemove->rely;
 
-        channel_sendbuffer(currentview->currentremote->source, EVENT_WMMOUSEMOVE, sizeof (struct event_wmmousemove), &wmmousemove);
+        channel_sendbufferto(currentview->currentremote->source, EVENT_WMMOUSEMOVE, sizeof (struct event_wmmousemove), &wmmousemove);
 
     }
 
@@ -727,7 +727,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
         wmmousepress.button = mousepress->button;
 
-        channel_sendbuffer(currentview->currentremote->source, EVENT_WMMOUSEPRESS, sizeof (struct event_wmmousepress), &wmmousepress);
+        channel_sendbufferto(currentview->currentremote->source, EVENT_WMMOUSEPRESS, sizeof (struct event_wmmousepress), &wmmousepress);
 
     }
 
@@ -745,7 +745,7 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
 
         wmmouserelease.button = mouserelease->button;
 
-        channel_sendbuffer(currentview->currentremote->source, EVENT_WMMOUSERELEASE, sizeof (struct event_wmmouserelease), &wmmouserelease);
+        channel_sendbufferto(currentview->currentremote->source, EVENT_WMMOUSERELEASE, sizeof (struct event_wmmouserelease), &wmmouserelease);
 
     }
 
@@ -763,7 +763,7 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 
         wmmousescroll.relz = mousescroll->relz;
 
-        channel_sendbuffer(currentview->currentremote->source, EVENT_WMMOUSESCROLL, sizeof (struct event_wmmousescroll), &wmmousescroll);
+        channel_sendbufferto(currentview->currentremote->source, EVENT_WMMOUSESCROLL, sizeof (struct event_wmmousescroll), &wmmousescroll);
 
     }
 

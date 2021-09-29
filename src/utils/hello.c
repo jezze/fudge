@@ -4,7 +4,7 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_replystring(EVENT_DATA, "Hello World!\n");
+    channel_sendstring(EVENT_DATA, "Hello World!\n");
     channel_close();
 
 }

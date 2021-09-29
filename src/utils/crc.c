@@ -18,7 +18,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     message_init(&message, EVENT_DATA);
     message_putvalue(&message, crc_finalize(&sum), 10, 0);
     message_putstring(&message, "\n");
-    channel_replymessage(&message);
+    channel_sendmessage(&message);
     channel_close();
 
 }

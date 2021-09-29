@@ -9,12 +9,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (id)
     {
 
-        channel_sendredirectsame(id, EVENT_DATA);
-        channel_sendredirectback(id, EVENT_CLOSE);
-        channel_sendstringz(id, EVENT_PATH, "system:info/cores");
-        channel_sendstringz(id, EVENT_PATH, "system:info/tasks");
-        channel_sendstringz(id, EVENT_PATH, "system:info/mailboxes");
-        channel_send(id, EVENT_MAIN);
+        channel_redirectsame(id, EVENT_DATA);
+        channel_redirectback(id, EVENT_CLOSE);
+        channel_sendstringzto(id, EVENT_PATH, "system:info/cores");
+        channel_sendstringzto(id, EVENT_PATH, "system:info/tasks");
+        channel_sendstringzto(id, EVENT_PATH, "system:info/mailboxes");
+        channel_sendto(id, EVENT_MAIN);
         channel_wait(id, EVENT_CLOSE);
 
     }

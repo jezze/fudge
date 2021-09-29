@@ -150,7 +150,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
                 unsigned int count;
 
                 if ((count = sendpoll(request, source, offset + cpio_filedata(header), cpio_filesize(header))))
-                    channel_replybuffer(EVENT_DATA, count, getdata(request));
+                    channel_sendbuffer(EVENT_DATA, count, getdata(request));
 
             }
 

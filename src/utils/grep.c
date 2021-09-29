@@ -18,7 +18,7 @@ static void checkline(unsigned int source, void *buffer, unsigned int count)
         if (buffer_match((char *)buffer + i, match, matchcount))
         {
 
-            channel_replybuffer(EVENT_DATA, count, buffer);
+            channel_sendbuffer(EVENT_DATA, count, buffer);
 
             break;
 

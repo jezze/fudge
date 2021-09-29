@@ -16,7 +16,7 @@ static void print_icmp(unsigned int source, void *buffer)
     message_putstring(&message, "  Code: 0x");
     message_putvalue(&message, header->code, 16, 2);
     message_putstring(&message, "\n");
-    channel_replymessage(&message);
+    channel_sendmessage(&message);
 
 }
 
@@ -54,7 +54,7 @@ static void print_tcp(unsigned int source, void *buffer)
     message_putvalue(&message, header->window[0], 16, 2);
     message_putvalue(&message, header->window[1], 16, 2);
     message_putstring(&message, "\n");
-    channel_replymessage(&message);
+    channel_sendmessage(&message);
 
 }
 
@@ -75,7 +75,7 @@ static void print_udp(unsigned int source, void *buffer)
     message_putstring(&message, "  Length: ");
     message_putvalue(&message, net_load16(header->length), 10, 0);
     message_putstring(&message, "\n");
-    channel_replymessage(&message);
+    channel_sendmessage(&message);
 
 }
 
@@ -105,7 +105,7 @@ static void print_arp(unsigned int source, void *buffer)
     message_putvalue(&message, header->operation[0], 16, 2);
     message_putvalue(&message, header->operation[1], 16, 2);
     message_putstring(&message, "\n");
-    channel_replymessage(&message);
+    channel_sendmessage(&message);
 
 }
 
@@ -139,7 +139,7 @@ static void print_ipv4(unsigned int source, void *buffer)
     message_putstring(&message, ".");
     message_putvalue(&message, header->tip[3], 10, 0);
     message_putstring(&message, "\n");
-    channel_replymessage(&message);
+    channel_sendmessage(&message);
 
     switch (header->protocol)
     {
@@ -227,7 +227,7 @@ static void print_ipv6(unsigned int source, void *buffer)
     message_putvalue(&message, header->tip[14], 16, 2);
     message_putvalue(&message, header->tip[15], 16, 2);
     message_putstring(&message, "\n");
-    channel_replymessage(&message);
+    channel_sendmessage(&message);
 
 }
 
@@ -270,7 +270,7 @@ static void print_ethernet(unsigned int source, void *buffer)
     message_putvalue(&message, header->type[0], 16, 2);
     message_putvalue(&message, header->type[1], 16, 2);
     message_putstring(&message, "\n");
-    channel_replymessage(&message);
+    channel_sendmessage(&message);
 
     switch (net_load16(header->type))
     {

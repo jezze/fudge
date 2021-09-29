@@ -338,7 +338,7 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
             }
 
             message_putstringz(&message, "E");
-            channel_replymessage(&message);
+            channel_sendmessage(&message);
             message_init(&message, EVENT_DATA);
 
             break;

@@ -120,10 +120,10 @@ static void runcommand(unsigned int count, void *buffer)
         unsigned int tasks;
         unsigned int c;
 
-        channel_sendredirectback(id, EVENT_DATA);
-        channel_sendredirectback(id, EVENT_CLOSE);
-        channel_sendbuffer(id, EVENT_DATA, count, buffer);
-        channel_send(id, EVENT_MAIN);
+        channel_redirectback(id, EVENT_DATA);
+        channel_redirectback(id, EVENT_CLOSE);
+        channel_sendbufferto(id, EVENT_DATA, count, buffer);
+        channel_sendto(id, EVENT_MAIN);
 
         while ((c = channel_readsource(id, message.data.buffer, MESSAGE_SIZE)))
         {
@@ -194,10 +194,10 @@ static void complete(struct ring *ring)
     if (id)
     {
 
-        channel_sendredirectback(id, EVENT_DATA);
-        channel_sendredirectback(id, EVENT_CLOSE);
-        channel_sendbuffer(id, EVENT_DATA, count, buffer);
-        channel_send(id, EVENT_MAIN);
+        channel_redirectback(id, EVENT_DATA);
+        channel_redirectback(id, EVENT_CLOSE);
+        channel_sendbufferto(id, EVENT_DATA, count, buffer);
+        channel_sendto(id, EVENT_MAIN);
 
         while (channel_readsource(id, buffer, BUFFER_SIZE));
 

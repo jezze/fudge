@@ -23,7 +23,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             message_putstring(&message, "Tick: ");
             message_putvalue(&message, counter * 60, 10, 0);
             message_putstring(&message, "ms\n");
-            channel_replymessage(&message);
+            channel_sendmessage(&message);
 
             counter++;
 
