@@ -22,6 +22,17 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
     unsigned int offset = 0;
     char *buffer = data;
 
+    if (!target)
+    {
+
+        if (callbacks[event].target)
+            target = callbacks[event].target;
+
+    }
+
+    if (!target)
+        return 0;
+
     while (count > MESSAGE_SIZE)
     {
 
@@ -71,7 +82,7 @@ void channel_dispatch(struct message *message)
 unsigned int channel_send(unsigned int event)
 {
 
-    return (callbacks[event].target) ? send(callbacks[event].target, event, 0, 0) : 0;
+    return send(0, event, 0, 0);
 
 }
 
@@ -85,7 +96,7 @@ unsigned int channel_sendto(unsigned int target, unsigned int event)
 unsigned int channel_sendbuffer(unsigned int event, unsigned int count, void *data)
 {
 
-    return (callbacks[event].target) ? send(callbacks[event].target, event, count, data) : 0;
+    return send(0, event, count, data);
 
 }
 
@@ -99,7 +110,7 @@ unsigned int channel_sendbufferto(unsigned int target, unsigned int event, unsig
 unsigned int channel_sendstring(unsigned int event, char *string)
 {
 
-    return (callbacks[event].target) ? send(callbacks[event].target, event, ascii_length(string), string) : 0;
+    return send(0, event, ascii_length(string), string);
 
 }
 
@@ -113,7 +124,7 @@ unsigned int channel_sendstringto(unsigned int target, unsigned int event, char 
 unsigned int channel_sendstringz(unsigned int event, char *string)
 {
 
-    return (callbacks[event].target) ? send(callbacks[event].target, event, ascii_lengthz(string), string) : 0;
+    return send(0, event, ascii_lengthz(string), string);
 
 }
 
@@ -127,7 +138,7 @@ unsigned int channel_sendstringzto(unsigned int target, unsigned int event, char
 unsigned int channel_sendmessage(struct message *message)
 {
 
-    return (callbacks[message->header.event].target) ? send(callbacks[message->header.event].target, message->header.event, message_datasize(&message->header), message->data.buffer) : 0;
+    return send(0, message->header.event, message_datasize(&message->header), message->data.buffer);
 
 }
 
