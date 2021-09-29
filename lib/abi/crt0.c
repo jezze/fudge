@@ -29,16 +29,13 @@ static void onredirect(unsigned int source, void *mdata, unsigned int msize)
 void main(void)
 {
 
-    struct message message;
-
     channel_init();
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_REDIRECT, onredirect);
     init();
 
-    while (channel_poll(&message))
-        channel_dispatch(&message);
+    while (channel_process());
 
 }
 
