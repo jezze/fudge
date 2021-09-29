@@ -188,6 +188,8 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
     struct keymap *keymap = keymap_load(KEYMAP_US);
     struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
 
+    keymod = keymap_modkey(keypress->scancode, keymod);
+
     switch (keypress->scancode)
     {
 
@@ -221,6 +223,15 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_keyrelease *keyrelease = mdata;
+
+    keymod = keymap_modkey(keyrelease->scancode, keymod);
+
+}
+ 
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -289,6 +300,7 @@ void init(void)
     ring_init(&input, BUFFER_SIZE, inputbuffer);
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
+    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_OPTION, onoption);
