@@ -3,6 +3,7 @@
 
 static char inputbuffer[BUFFER_SIZE];
 static struct ring input;
+static unsigned int keymod = KEYMOD_NONE;
 
 static void print(void *buffer, unsigned int count)
 {
@@ -180,6 +181,46 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_keypress *keypress = mdata;
+    struct keymap *keymap = keymap_load(KEYMAP_US);
+    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
+
+    switch (keypress->scancode)
+    {
+
+    case 0x0E:
+        if (!ring_skipreverse(&input, 1))
+            break;
+
+        print("\b \b", 3);
+
+        break;
+
+    case 0x0F:
+        complete(&input);
+
+        break;
+
+    case 0x1C:
+        print(keycode->value, keycode->length);
+        ring_write(&input, keycode->value, keycode->length);
+        interpret(&input);
+
+        break;
+
+    default:
+        ring_write(&input, keycode->value, keycode->length);
+        print(keycode->value, keycode->length);
+
+        break;
+
+    }
+
+}
+
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -192,9 +233,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     printprompt();
     file_link(FILE_G0);
+    file_link(FILE_G2);
 
     while (channel_process());
 
+    file_unlink(FILE_G2);
     file_unlink(FILE_G0);
 
 }
@@ -218,6 +261,18 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    if (ascii_match(key, "keyboard"))
+    {
+
+        if (file_walk2(FILE_L0, value))
+        {
+
+            file_walk(FILE_G2, FILE_L0, "event");
+
+        }
+
+    }
+
 }
 
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
@@ -233,6 +288,7 @@ void init(void)
 
     ring_init(&input, BUFFER_SIZE, inputbuffer);
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
+    channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_OPTION, onoption);
