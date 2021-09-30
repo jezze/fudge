@@ -305,7 +305,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         file_link(FILE_L0);
 
-        while ((count = channel_readdescriptor(FILE_L0, buffer, BUFFER_SIZE)))
+        while ((count = channel_read(buffer, BUFFER_SIZE)))
             print_ethernet(source, buffer);
 
         file_unlink(FILE_L0);

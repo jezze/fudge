@@ -46,7 +46,7 @@ static void resolve(char *domain)
         channel_sendmessageto(id, &message);
         channel_sendstringzto(id, EVENT_QUERY, "data");
 
-        while ((c = channel_readsource(id, message.data.buffer, MESSAGE_SIZE)))
+        while ((c = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
             socket_bind_ipv4s(&remote, message.data.buffer);
 
     }

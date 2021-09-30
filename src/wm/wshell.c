@@ -125,7 +125,7 @@ static void runcommand(unsigned int count, void *buffer)
         channel_sendbufferto(id, EVENT_DATA, count, buffer);
         channel_sendto(id, EVENT_MAIN);
 
-        while ((c = channel_readsource(id, message.data.buffer, MESSAGE_SIZE)))
+        while ((c = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
         {
 
             unsigned int n = job_parse(jobs, 32, message.data.buffer, c);
@@ -199,7 +199,7 @@ static void complete(struct ring *ring)
         channel_sendbufferto(id, EVENT_DATA, count, buffer);
         channel_sendto(id, EVENT_MAIN);
 
-        while (channel_readsource(id, buffer, BUFFER_SIZE));
+        while (channel_readfrom(id, buffer, BUFFER_SIZE));
 
     }
 

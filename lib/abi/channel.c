@@ -53,6 +53,48 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
 
 }
 
+static unsigned int read(unsigned int source, void *buffer, unsigned int count)
+{
+
+    struct message message;
+
+    while (channel_poll(&message))
+    {
+
+        if (message.header.source == source)
+        {
+
+            switch (message.header.event)
+            {
+
+            case EVENT_CLOSE:
+                return 0;
+
+            case EVENT_DATA:
+                return buffer_write(buffer, count, message.data.buffer, message_datasize(&message.header), 0);
+
+            default:
+                channel_dispatch(&message);
+
+                break;
+
+            }
+
+        }
+
+        else
+        {
+
+            channel_dispatch(&message);
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int redirect(unsigned int target, unsigned int event, unsigned int mode, unsigned int id)
 {
 
@@ -268,87 +310,17 @@ unsigned int channel_process(void)
 
 }
 
-unsigned int channel_readsource(unsigned int source, void *buffer, unsigned int count)
+unsigned int channel_read(void *buffer, unsigned int count)
 {
 
-    struct message message;
-
-    while (channel_poll(&message))
-    {
-
-        if (message.header.source == source)
-        {
-
-            switch (message.header.event)
-            {
-
-            case EVENT_CLOSE:
-                return 0;
-
-            case EVENT_DATA:
-                return buffer_write(buffer, count, message.data.buffer, message_datasize(&message.header), 0);
-
-            default:
-                channel_dispatch(&message);
-
-                break;
-
-            }
-
-        }
-
-        else
-        {
-
-            channel_dispatch(&message);
-
-        }
-
-    }
-
-    return 0;
+    return read(0, buffer, count);
 
 }
 
-unsigned int channel_readdescriptor(unsigned int descriptor, void *buffer, unsigned int count)
+unsigned int channel_readfrom(unsigned int source, void *buffer, unsigned int count)
 {
 
-    struct message message;
-
-    while (channel_poll(&message))
-    {
-
-        if (message.header.source == 0)
-        {
-
-            switch (message.header.event)
-            {
-
-            case EVENT_CLOSE:
-                return 0;
-
-            case EVENT_DATA:
-                return buffer_write(buffer, count, message.data.buffer, message_datasize(&message.header), 0);
-
-            default:
-                channel_dispatch(&message);
-
-                break;
-
-            }
-
-        }
-
-        else
-        {
-
-            channel_dispatch(&message);
-
-        }
-
-    }
-
-    return 0;
+    return read(source, buffer, count);
 
 }
 
