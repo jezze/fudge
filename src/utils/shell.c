@@ -53,17 +53,16 @@ static void runcommand(unsigned int count, void *buffer)
         struct job jobs[32];
         unsigned int njobs = 0;
         unsigned int tasks;
-        unsigned int c;
 
         channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_CLOSE);
         channel_sendbufferto(id, EVENT_DATA, count, buffer);
         channel_sendto(id, EVENT_MAIN);
 
-        while ((c = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
+        while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
         {
 
-            unsigned int n = job_parse(jobs, 32, message.data.buffer, c);
+            unsigned int n = job_parse(jobs, 32, message.data.buffer, count);
 
             njobs = job_spawn(jobs, n);
 
