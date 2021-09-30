@@ -350,7 +350,7 @@ void channel_bind(unsigned int event, void (*callback)(unsigned int source, void
 
 }
 
-void channel_redirect(unsigned int event, unsigned int mode, unsigned int id, unsigned int source)
+void channel_route(unsigned int event, unsigned int mode, unsigned int id, unsigned int source)
 {
 
     switch (mode)

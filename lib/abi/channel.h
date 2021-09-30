@@ -23,6 +23,6 @@ unsigned int channel_read(void *buffer, unsigned int count);
 unsigned int channel_readfrom(unsigned int source, void *buffer, unsigned int count);
 unsigned int channel_wait(unsigned int source, unsigned int event);
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize));
-void channel_redirect(unsigned int event, unsigned int mode, unsigned int id, unsigned int source);
+void channel_route(unsigned int event, unsigned int mode, unsigned int id, unsigned int source);
 void channel_open(void);
 void channel_close(void);
