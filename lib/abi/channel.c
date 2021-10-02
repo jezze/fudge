@@ -224,7 +224,7 @@ unsigned int channel_process(void)
 
 }
 
-unsigned int channel_pollsource(unsigned int source, struct message *message)
+unsigned int channel_pollfrom(unsigned int source, struct message *message)
 {
 
     while (channel_pick(message))
@@ -241,7 +241,7 @@ unsigned int channel_pollsource(unsigned int source, struct message *message)
 
 }
 
-unsigned int channel_pollsourceevent(unsigned int source, unsigned int event, struct message *message)
+unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message *message)
 {
 
     while (channel_pick(message))
@@ -261,14 +261,14 @@ unsigned int channel_pollsourceevent(unsigned int source, unsigned int event, st
 unsigned int channel_pollsystem(struct message *message)
 {
 
-    return channel_pollsource(0, message);
+    return channel_pollfrom(0, message);
 
 }
 
-unsigned int channel_pollsystemevent(unsigned int event, struct message *message)
+unsigned int channel_polleventsystem(unsigned int event, struct message *message)
 {
 
-    return channel_pollsourceevent(0, event, message);
+    return channel_polleventfrom(0, event, message);
 
 }
 

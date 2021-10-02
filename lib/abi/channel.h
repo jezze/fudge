@@ -14,10 +14,10 @@ unsigned int channel_redirecttarget(unsigned int target, unsigned int event, uns
 unsigned int channel_redirectback(unsigned int target, unsigned int event);
 unsigned int channel_pick(struct message *message);
 unsigned int channel_process(void);
-unsigned int channel_pollsource(unsigned int source, struct message *message);
-unsigned int channel_pollsourceevent(unsigned int source, unsigned int event, struct message *message);
+unsigned int channel_pollfrom(unsigned int source, struct message *message);
+unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message *message);
 unsigned int channel_pollsystem(struct message *message);
-unsigned int channel_pollsystemevent(unsigned int event, struct message *message);
+unsigned int channel_polleventsystem(unsigned int event, struct message *message);
 unsigned int channel_read(void *buffer, unsigned int count);
 unsigned int channel_readfrom(unsigned int source, void *buffer, unsigned int count);
 unsigned int channel_wait(unsigned int source, unsigned int event);

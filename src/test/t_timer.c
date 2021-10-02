@@ -11,7 +11,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     file_link(FILE_G0);
 
-    while (channel_pollsystemevent(EVENT_TIMERTICK, &message))
+    while (channel_polleventsystem(EVENT_TIMERTICK, &message))
     {
 
         ticks++;
