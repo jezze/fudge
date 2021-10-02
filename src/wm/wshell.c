@@ -218,8 +218,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     printprompt();
     file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
 
-    while (channel_process());
-
 }
 
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
