@@ -61,33 +61,12 @@ static unsigned int read(unsigned int source, void *buffer, unsigned int count)
     while (channel_pick(&message))
     {
 
-        if (message.header.source == source)
-        {
-
-            switch (message.header.event)
-            {
-
-            case EVENT_CLOSE:
-                return 0;
-
-            case EVENT_DATA:
-                return buffer_write(buffer, count, message.data.buffer, message_datasize(&message.header), 0);
-
-            default:
-                channel_dispatch(&message);
-
-                break;
-
-            }
-
-        }
-
+        if (message.header.source == source && message.header.event == EVENT_CLOSE)
+            return 0;
+        else if (message.header.source == source && message.header.event == EVENT_DATA)
+            return buffer_write(buffer, count, message.data.buffer, message_datasize(&message.header), 0);
         else
-        {
-
             channel_dispatch(&message);
-
-        }
 
     }
 
