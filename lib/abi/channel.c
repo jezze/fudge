@@ -206,33 +206,17 @@ unsigned int channel_pick(struct message *message)
 
 }
 
-unsigned int channel_pollsystem(struct message *message)
+unsigned int channel_process(void)
 {
 
-    while (channel_pick(message))
+    struct message message;
+
+    if (channel_pick(&message))
     {
 
-        if (message->header.source == 0)
-            return message->header.event;
+        channel_dispatch(&message);
 
-        channel_dispatch(message);
-
-    }
-
-    return 0;
-
-}
-
-unsigned int channel_pollsystemevent(unsigned int event, struct message *message)
-{
-
-    while (channel_pick(message))
-    {
-
-        if (message->header.source == 0 && message->header.event == event)
-            return message->header.event;
-
-        channel_dispatch(message);
+        return message.header.event;
 
     }
 
@@ -274,21 +258,17 @@ unsigned int channel_pollsourceevent(unsigned int source, unsigned int event, st
 
 }
 
-unsigned int channel_process(void)
+unsigned int channel_pollsystem(struct message *message)
 {
 
-    struct message message;
+    return channel_pollsource(0, message);
 
-    if (channel_pick(&message))
-    {
+}
 
-        channel_dispatch(&message);
+unsigned int channel_pollsystemevent(unsigned int event, struct message *message)
+{
 
-        return message.header.event;
-
-    }
-
-    return 0;
+    return channel_pollsourceevent(0, event, message);
 
 }
 
