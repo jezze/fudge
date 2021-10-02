@@ -137,7 +137,7 @@ static void runcommand(unsigned int count, void *buffer)
 
         tasks = job_run(jobs, njobs);
 
-        while (tasks && channel_poll(&message))
+        while (tasks && channel_pick(&message))
         {
 
             switch (message.header.event)

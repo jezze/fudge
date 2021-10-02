@@ -58,7 +58,7 @@ static unsigned int read(unsigned int source, void *buffer, unsigned int count)
 
     struct message message;
 
-    while (channel_poll(&message))
+    while (channel_pick(&message))
     {
 
         if (message.header.source == source)
@@ -212,7 +212,7 @@ unsigned int channel_redirectback(unsigned int target, unsigned int event)
 
 }
 
-unsigned int channel_poll(struct message *message)
+unsigned int channel_pick(struct message *message)
 {
 
     while (poll)
@@ -227,10 +227,44 @@ unsigned int channel_poll(struct message *message)
 
 }
 
+unsigned int channel_pollsystem(struct message *message)
+{
+
+    while (channel_pick(message))
+    {
+
+        if (message->header.source == 0)
+            return message->header.event;
+
+        channel_dispatch(message);
+
+    }
+
+    return 0;
+
+}
+
+unsigned int channel_pollsystemevent(unsigned int event, struct message *message)
+{
+
+    while (channel_pick(message))
+    {
+
+        if (message->header.source == 0 && message->header.event == event)
+            return message->header.event;
+
+        channel_dispatch(message);
+
+    }
+
+    return 0;
+
+}
+
 unsigned int channel_pollsource(unsigned int source, struct message *message)
 {
 
-    while (channel_poll(message))
+    while (channel_pick(message))
     {
 
         if (message->header.source == source)
@@ -244,27 +278,10 @@ unsigned int channel_pollsource(unsigned int source, struct message *message)
 
 }
 
-unsigned int channel_pollevent(unsigned int event, struct message *message)
-{
-
-    while (channel_poll(message))
-    {
-
-        if (message->header.event == event)
-            return message->header.event;
-
-        channel_dispatch(message);
-
-    }
-
-    return 0;
-
-}
-
 unsigned int channel_pollsourceevent(unsigned int source, unsigned int event, struct message *message)
 {
 
-    while (channel_poll(message))
+    while (channel_pick(message))
     {
 
         if (message->header.source == source && message->header.event == event)
@@ -278,26 +295,12 @@ unsigned int channel_pollsourceevent(unsigned int source, unsigned int event, st
 
 }
 
-unsigned int channel_polldescriptor(unsigned int descriptor, struct message *message)
-{
-
-    return channel_pollsource(0, message);
-
-}
-
-unsigned int channel_polldescriptorevent(unsigned int descriptor, unsigned int event, struct message *message)
-{
-
-    return channel_pollsourceevent(0, event, message);
-
-}
-
 unsigned int channel_process(void)
 {
 
     struct message message;
 
-    if (channel_poll(&message))
+    if (channel_pick(&message))
     {
 
         channel_dispatch(&message);
@@ -329,7 +332,7 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
 
     struct message message;
 
-    while (channel_poll(&message))
+    while (channel_pick(&message))
     {
 
         if (message.header.source == source && message.header.event == event)
