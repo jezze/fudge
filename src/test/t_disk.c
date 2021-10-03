@@ -2,7 +2,8 @@
 #include <abi.h>
 
 #define BLOCKSIZE 512
-#define ERROR 0xFFFFFFFF
+#define OK 1
+#define ERROR 0
 
 struct request
 {
@@ -114,7 +115,7 @@ static unsigned int walk(unsigned int source, struct request *request, char *pat
         {
 
             if (buffer_match(path, header + 1, length))
-                return request->offset;
+                return OK;
 
         }
 
@@ -131,12 +132,15 @@ static void dowalk(unsigned int source, void *data)
 
     struct request *request = &requests[0];
     struct p9p_twalk *twalk = data;
+    unsigned int status;
 
     file_link(FILE_G1);
-    walk(source, request, (char *)(twalk + 1));
+
+    status = walk(source, request, (char *)(twalk + 1));
+
     file_unlink(FILE_G1);
 
-    if (request->offset != ERROR)
+    if (status == OK)
     {
 
         struct event_p9p reply;
@@ -155,31 +159,26 @@ static void doread(unsigned int source, void *data)
 
     file_link(FILE_G1);
 
-    if (request->offset != ERROR)
+    if (sendpoll(request, source, request->offset, sizeof (struct cpio_header) + 1024))
     {
 
-        if (sendpoll(request, source, request->offset, sizeof (struct cpio_header) + 1024))
+        struct cpio_header *header = getdata(request);
+
+        if (cpio_validate(header))
         {
 
-            struct cpio_header *header = getdata(request);
+            unsigned int count;
 
-            if (cpio_validate(header))
+            if ((count = sendpoll(request, source, request->offset + cpio_filedata(header), cpio_filesize(header))))
             {
 
-                unsigned int count;
+                char buffer[MESSAGE_SIZE];
+                struct event_p9p reply;
 
-                if ((count = sendpoll(request, source, request->offset + cpio_filedata(header), cpio_filesize(header))))
-                {
-
-                    char buffer[MESSAGE_SIZE];
-                    struct event_p9p reply;
-
-                    p9p_write1(reply.type, P9P_RREAD);
-                    buffer_copy(buffer, &reply, sizeof (struct event_p9p));
-                    buffer_copy(buffer + sizeof (struct event_p9p), getdata(request), count);
-                    channel_sendbufferto(source, EVENT_P9P, sizeof (struct event_p9p) + count, buffer);
-
-                }
+                p9p_write1(reply.type, P9P_RREAD);
+                buffer_copy(buffer, &reply, sizeof (struct event_p9p));
+                buffer_copy(buffer + sizeof (struct event_p9p), getdata(request), count);
+                channel_sendbufferto(source, EVENT_P9P, sizeof (struct event_p9p) + count, buffer);
 
             }
 
