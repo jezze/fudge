@@ -126,15 +126,38 @@ static unsigned int walk(unsigned int source, struct request *request, char *pat
 
 }
 
-static void dostuff(unsigned int source)
+unsigned int offset;
+
+static void dowalk(unsigned int source)
 {
 
     struct request *request = &requests[0];
-    unsigned int offset;
 
     file_link(FILE_G1);
 
     offset = walk(source, request, "build/data/help.txt");
+
+    file_unlink(FILE_G1);
+
+    if (offset != ERROR)
+    {
+
+        struct event_p9p reply;
+
+        reply.type = P9P_RWALK;
+
+        channel_sendbufferto(source, EVENT_P9P, sizeof (struct event_p9p), &reply);
+
+    }
+
+}
+
+static void doread(unsigned int source)
+{
+
+    struct request *request = &requests[0];
+
+    file_link(FILE_G1);
 
     if (offset != ERROR)
     {
@@ -150,7 +173,18 @@ static void dostuff(unsigned int source)
                 unsigned int count;
 
                 if ((count = sendpoll(request, source, offset + cpio_filedata(header), cpio_filesize(header))))
-                    channel_sendbuffer(EVENT_DATA, count, getdata(request));
+                {
+
+                    char buffer[MESSAGE_SIZE];
+                    struct event_p9p reply;
+
+                    reply.type = P9P_RREAD;
+
+                    buffer_copy(buffer, &reply, sizeof (struct event_p9p));
+                    buffer_copy(buffer + sizeof (struct event_p9p), getdata(request), count);
+                    channel_sendbufferto(source, EVENT_P9P, sizeof (struct event_p9p) + count, buffer);
+
+                }
 
             }
 
@@ -177,17 +211,18 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_p9p *p9p = mdata;
-    struct event_p9p reply;
 
     switch (p9p->type)
     {
 
-    case P9P_TAUTH:
-        reply.type = P9P_RAUTH;
+    case P9P_TWALK:
+        dowalk(source);
 
-        channel_sendstring(EVENT_DATA, "Auth message received!\n");
-        dostuff(source);
-        channel_sendbufferto(source, EVENT_P9P, sizeof (struct event_p9p), &reply);
+        break;
+
+
+    case P9P_TREAD:
+        doread(source);
 
         break;
 

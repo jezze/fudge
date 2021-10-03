@@ -1,14 +1,32 @@
 #include <fudge.h>
 #include <abi.h>
 
+static void p9p_walk(unsigned int descriptor, unsigned int source)
+{
+
+    struct event_p9p header;
+
+    header.type = P9P_TWALK;
+
+    file_notify(descriptor, EVENT_P9P, sizeof (struct event_p9p), &header);
+
+}
+
+static void p9p_read(unsigned int descriptor, unsigned int source)
+{
+
+    struct event_p9p header;
+
+    header.type = P9P_TREAD;
+
+    file_notify(descriptor, EVENT_P9P, sizeof (struct event_p9p), &header);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_p9p auth;
-
-    auth.type = P9P_TAUTH;
-
-    file_notify(FILE_G0, EVENT_P9P, sizeof (struct event_p9p), &auth);
+    p9p_walk(FILE_G0, source);
 
 }
 
@@ -20,8 +38,14 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
     switch (p9p->type)
     {
 
-    case P9P_RAUTH:
-        channel_sendstring(EVENT_DATA, "Auth message received!\n");
+    case P9P_RWALK:
+        p9p_read(FILE_G0, source);
+
+        break;
+
+    case P9P_RREAD:
+        channel_sendbuffer(EVENT_DATA, msize - sizeof (struct event_p9p), p9p + 1);
+        channel_close();
 
         break;
 
