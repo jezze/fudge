@@ -143,10 +143,10 @@ static void dowalk(unsigned int source, void *data)
     if (status == OK)
     {
 
-        struct event_p9p reply;
+        struct message message;
 
-        p9p_write1(reply.type, P9P_RWALK);
-        channel_sendbufferto(source, EVENT_P9P, sizeof (struct event_p9p), &reply);
+        p9p_mkrwalk(&message);
+        channel_sendmessageto(source, &message);
 
     }
 
@@ -172,13 +172,10 @@ static void doread(unsigned int source, void *data)
             if ((count = sendpoll(request, source, request->offset + cpio_filedata(header), cpio_filesize(header))))
             {
 
-                char buffer[MESSAGE_SIZE];
-                struct event_p9p reply;
+                struct message message;
 
-                p9p_write1(reply.type, P9P_RREAD);
-                buffer_copy(buffer, &reply, sizeof (struct event_p9p));
-                buffer_copy(buffer + sizeof (struct event_p9p), getdata(request), count);
-                channel_sendbufferto(source, EVENT_P9P, sizeof (struct event_p9p) + count, buffer);
+                p9p_mkrread(&message, count, getdata(request));
+                channel_sendmessageto(source, &message);
 
             }
 

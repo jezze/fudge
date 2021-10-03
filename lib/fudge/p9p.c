@@ -57,7 +57,7 @@ void p9p_write8(unsigned char p[8], unsigned int vl, unsigned int vh)
 
 }
 
-void p9p_walk(struct message *message, char *wname)
+void p9p_mktwalk(struct message *message, char *wname)
 {
 
     struct event_p9p header;
@@ -76,7 +76,23 @@ void p9p_walk(struct message *message, char *wname)
 
 }
 
-void p9p_read(struct message *message)
+void p9p_mkrwalk(struct message *message)
+{
+
+    struct event_p9p header;
+    struct p9p_rwalk body;
+
+    p9p_write4(header.size, 0);
+    p9p_write1(header.type, P9P_RWALK);
+    p9p_write2(header.tag, 0);
+    p9p_write2(body.nwqid, 0);
+    message_init(message, EVENT_P9P);
+    message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_twalk), &body);
+
+}
+
+void p9p_mktread(struct message *message)
 {
 
     struct event_p9p header;
@@ -86,6 +102,20 @@ void p9p_read(struct message *message)
     p9p_write2(header.tag, 0);
     message_init(message, EVENT_P9P);
     message_putbuffer(message, sizeof (struct event_p9p), &header);
+
+}
+
+void p9p_mkrread(struct message *message, unsigned int count, void *buffer)
+{
+
+    struct event_p9p header;
+
+    p9p_write4(header.size, 0);
+    p9p_write1(header.type, P9P_RREAD);
+    p9p_write2(header.tag, 0);
+    message_init(message, EVENT_P9P);
+    message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, count, buffer);
 
 }
 
