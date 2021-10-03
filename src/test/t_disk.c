@@ -48,7 +48,7 @@ static void request_send(struct request *request)
     message.blockrequest.count = request->blockcount;
 
     message_initheader(&message.header, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
-    file_writeall(FILE_G0, &message, message.header.length);
+    file_writeall(FILE_G1, &message, message.header.length);
 
 }
 
@@ -126,13 +126,13 @@ static unsigned int walk(unsigned int source, struct request *request, char *pat
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void dostuff(unsigned int source)
 {
 
     struct request *request = &requests[0];
     unsigned int offset;
 
-    file_link(FILE_G0);
+    file_link(FILE_G1);
 
     offset = walk(source, request, "build/data/help.txt");
 
@@ -158,18 +158,59 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    file_unlink(FILE_G1);
+
+}
+
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    file_link(FILE_G0);
+
+    while (channel_process());
+
     file_unlink(FILE_G0);
-    channel_close();
+
+}
+
+static void onp9p(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_p9p *p9p = mdata;
+    struct event_p9p reply;
+
+    switch (p9p->type)
+    {
+
+    case P9P_TAUTH:
+        reply.type = P9P_RAUTH;
+
+        channel_sendstring(EVENT_DATA, "Auth message received!\n");
+        dostuff(source);
+        channel_sendbufferto(source, EVENT_P9P, sizeof (struct event_p9p), &reply);
+
+        break;
+
+    default:
+        channel_sendstring(EVENT_DATA, "Unknown message received!\n");
+
+        break;
+
+    }
 
 }
 
 void init(void)
 {
 
-    if (!file_walk2(FILE_G0, "system:block/if:0/data"))
+    if (!file_walk2(FILE_G0, "system:service/fd0"))
+        return;
+
+    if (!file_walk2(FILE_G1, "system:block/if:0/data"))
         return;
 
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_P9P, onp9p);
 
 }
 

@@ -14,6 +14,7 @@
 #include <fudge/sha1.h>
 #include <fudge/elf.h>
 #include <fudge/cpio.h>
+#include <fudge/p9p.h>
 #include <fudge/pcf.h>
 #include <fudge/tar.h>
 #include <fudge/keymap.h>
