@@ -126,8 +126,6 @@ static unsigned int walk(unsigned int source, struct request *request, char *pat
 
 }
 
-unsigned int offset;
-
 static void dowalk(unsigned int source, void *data)
 {
 
@@ -135,12 +133,10 @@ static void dowalk(unsigned int source, void *data)
     struct p9p_twalk *twalk = data;
 
     file_link(FILE_G1);
-
-    offset = walk(source, request, (char *)(twalk + 1));
-
+    walk(source, request, (char *)(twalk + 1));
     file_unlink(FILE_G1);
 
-    if (offset != ERROR)
+    if (request->offset != ERROR)
     {
 
         struct event_p9p reply;
@@ -159,10 +155,10 @@ static void doread(unsigned int source, void *data)
 
     file_link(FILE_G1);
 
-    if (offset != ERROR)
+    if (request->offset != ERROR)
     {
 
-        if (sendpoll(request, source, offset, sizeof (struct cpio_header) + 1024))
+        if (sendpoll(request, source, request->offset, sizeof (struct cpio_header) + 1024))
         {
 
             struct cpio_header *header = getdata(request);
@@ -172,7 +168,7 @@ static void doread(unsigned int source, void *data)
 
                 unsigned int count;
 
-                if ((count = sendpoll(request, source, offset + cpio_filedata(header), cpio_filesize(header))))
+                if ((count = sendpoll(request, source, request->offset + cpio_filedata(header), cpio_filesize(header))))
                 {
 
                     char buffer[MESSAGE_SIZE];
