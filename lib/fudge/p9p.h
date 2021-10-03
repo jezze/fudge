@@ -26,3 +26,60 @@
 #define P9P_RSTAT                       125
 #define P9P_TWSTAT                      126
 #define P9P_RWSTAT                      127
+
+struct p9p_twalk
+{
+
+    unsigned char fid[4];
+    unsigned char newfid[4];
+    unsigned char nwname[2];
+
+};
+
+struct p9p_rwalk
+{
+
+    unsigned char nwqid[2];
+
+};
+
+struct p9p_tread
+{
+
+    unsigned char fid[4];
+    unsigned char offset[8];
+    unsigned char count[4];
+
+};
+
+struct p9p_rread
+{
+
+    unsigned char count[4];
+
+};
+
+struct p9p_twrite
+{
+
+    unsigned char fid[4];
+    unsigned char offset[8];
+    unsigned char count[4];
+
+};
+
+struct p9p_rwrite
+{
+
+    unsigned char count[4];
+
+};
+
+unsigned short p9p_read1(unsigned char p[1]);
+unsigned short p9p_read2(unsigned char p[2]);
+void p9p_write1(unsigned char p[1], unsigned char v);
+void p9p_write2(unsigned char p[2], unsigned short v);
+void p9p_write4(unsigned char p[4], unsigned int v);
+void p9p_write8(unsigned char p[8], unsigned int vl, unsigned int vh);
+void p9p_walk(struct message *message, char *wname);
+void p9p_read(struct message *message);

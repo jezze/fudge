@@ -15,6 +15,7 @@ unsigned int channel_redirectback(unsigned int target, unsigned int event);
 unsigned int channel_pick(struct message *message);
 unsigned int channel_process(void);
 unsigned int channel_pollfrom(unsigned int source, struct message *message);
+unsigned int channel_pollevent(unsigned int event, struct message *message);
 unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message *message);
 unsigned int channel_pollsystem(struct message *message);
 unsigned int channel_polleventsystem(unsigned int event, struct message *message);

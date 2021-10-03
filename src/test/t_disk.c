@@ -128,14 +128,15 @@ static unsigned int walk(unsigned int source, struct request *request, char *pat
 
 unsigned int offset;
 
-static void dowalk(unsigned int source)
+static void dowalk(unsigned int source, void *data)
 {
 
     struct request *request = &requests[0];
+    struct p9p_twalk *twalk = data;
 
     file_link(FILE_G1);
 
-    offset = walk(source, request, "build/data/help.txt");
+    offset = walk(source, request, (char *)(twalk + 1));
 
     file_unlink(FILE_G1);
 
@@ -144,15 +145,14 @@ static void dowalk(unsigned int source)
 
         struct event_p9p reply;
 
-        reply.type = P9P_RWALK;
-
+        p9p_write1(reply.type, P9P_RWALK);
         channel_sendbufferto(source, EVENT_P9P, sizeof (struct event_p9p), &reply);
 
     }
 
 }
 
-static void doread(unsigned int source)
+static void doread(unsigned int source, void *data)
 {
 
     struct request *request = &requests[0];
@@ -178,8 +178,7 @@ static void doread(unsigned int source)
                     char buffer[MESSAGE_SIZE];
                     struct event_p9p reply;
 
-                    reply.type = P9P_RREAD;
-
+                    p9p_write1(reply.type, P9P_RREAD);
                     buffer_copy(buffer, &reply, sizeof (struct event_p9p));
                     buffer_copy(buffer + sizeof (struct event_p9p), getdata(request), count);
                     channel_sendbufferto(source, EVENT_P9P, sizeof (struct event_p9p) + count, buffer);
@@ -212,17 +211,16 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_p9p *p9p = mdata;
 
-    switch (p9p->type)
+    switch (p9p->type[0])
     {
 
     case P9P_TWALK:
-        dowalk(source);
+        dowalk(source, p9p + 1);
 
         break;
 
-
     case P9P_TREAD:
-        doread(source);
+        doread(source, p9p + 1);
 
         break;
 

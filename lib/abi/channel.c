@@ -241,6 +241,23 @@ unsigned int channel_pollfrom(unsigned int source, struct message *message)
 
 }
 
+unsigned int channel_pollevent(unsigned int event, struct message *message)
+{
+
+    while (channel_pick(message))
+    {
+
+        if (message->header.event == event)
+            return message->header.event;
+
+        channel_dispatch(message);
+
+    }
+
+    return 0;
+
+}
+
 unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message *message)
 {
 
