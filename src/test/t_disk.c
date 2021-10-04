@@ -126,6 +126,21 @@ static unsigned int walk(unsigned int source, struct request *request, unsigned 
 
 }
 
+static void doversion(unsigned int source, void *data)
+{
+
+    struct p9p_tversion *tversion = data;
+    struct message message;
+    unsigned int msize = p9p_read4(tversion->msize);
+
+    if (msize > 1200)
+        msize = 1200;
+
+    p9p_mkrversion(&message, msize, "9P2000");
+    channel_sendmessageto(source, &message);
+
+}
+
 static void dowalk(unsigned int source, void *data)
 {
 
@@ -207,6 +222,11 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 
     switch (p9p->type[0])
     {
+
+    case P9P_TVERSION:
+        doversion(source, p9p + 1);
+
+        break;
 
     case P9P_TWALK:
         dowalk(source, p9p + 1);

@@ -64,6 +64,42 @@ void p9p_write8(unsigned char p[8], unsigned int vl, unsigned int vh)
 
 }
 
+void p9p_mktversion(struct message *message, unsigned int msize, char *version)
+{
+
+    struct event_p9p header;
+    struct p9p_tversion body;
+    unsigned short count = ascii_length(version);
+
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_tversion) + count);
+    p9p_write1(header.type, P9P_TVERSION);
+    p9p_write2(header.tag, 0);
+    p9p_write4(body.msize, msize);
+    message_init(message, EVENT_P9P);
+    message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_tversion), &body);
+    message_putbuffer(message, count, version);
+
+}
+
+void p9p_mkrversion(struct message *message, unsigned int msize, char *version)
+{
+
+    struct event_p9p header;
+    struct p9p_rversion body;
+    unsigned short count = ascii_length(version);
+
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_rversion) + count);
+    p9p_write1(header.type, P9P_RVERSION);
+    p9p_write2(header.tag, 0);
+    p9p_write4(body.msize, msize);
+    message_init(message, EVENT_P9P);
+    message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_rversion), &body);
+    message_putbuffer(message, count, version);
+
+}
+
 void p9p_mktwalk(struct message *message, unsigned int fid, unsigned int newfid, char *wname)
 {
 
