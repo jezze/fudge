@@ -1,14 +1,14 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void error(struct event_p9p *p9p, void *data)
+static void error(void *data, unsigned int count)
 {
 
     struct message message;
 
     message_init(&message, EVENT_DATA);
     message_putstring(&message, "Error occured:\n");
-    message_putbuffer(&message, p9p_read4(p9p->size) - sizeof (struct event_p9p), data);
+    message_putbuffer(&message, count, data);
     message_putstring(&message, "\n");
     channel_sendmessage(&message);
 
@@ -25,7 +25,7 @@ static unsigned int sendandpoll(struct message *request, struct message *respons
     if (p9p_read1(p9p->type) == P9P_RERROR)
     {
 
-        error(p9p, p9p + 1);
+        error(p9p + 1, p9p_read4(p9p->size) - sizeof (struct event_p9p));
 
         return 0;
 
