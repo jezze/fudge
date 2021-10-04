@@ -119,7 +119,18 @@ static unsigned int walk(unsigned int source, struct request *request, unsigned 
 
 }
 
-static void doversion(unsigned int source, void *data)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    file_link(FILE_G0);
+
+    while (channel_process());
+
+    file_unlink(FILE_G0);
+
+}
+
+static void on9pversion(unsigned int source, struct event_p9p *p9p, void *data)
 {
 
     struct p9p_tversion *tversion = data;
@@ -134,7 +145,7 @@ static void doversion(unsigned int source, void *data)
 
 }
 
-static void dowalk(unsigned int source, void *data)
+static void on9pwalk(unsigned int source, struct event_p9p *p9p, void *data)
 {
 
     struct request *request = &requests[0];
@@ -159,7 +170,7 @@ static void dowalk(unsigned int source, void *data)
 
 }
 
-static void doread(unsigned int source, void *data)
+static void on9pread(unsigned int source, struct event_p9p *p9p, void *data)
 {
 
     struct request *request = &requests[0];
@@ -197,17 +208,6 @@ static void doread(unsigned int source, void *data)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    file_link(FILE_G0);
-
-    while (channel_process());
-
-    file_unlink(FILE_G0);
-
-}
-
 static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -217,17 +217,17 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
     {
 
     case P9P_TVERSION:
-        doversion(source, p9p + 1);
+        on9pversion(source, p9p, p9p + 1);
 
         break;
 
     case P9P_TWALK:
-        dowalk(source, p9p + 1);
+        on9pwalk(source, p9p, p9p + 1);
 
         break;
 
     case P9P_TREAD:
-        doread(source, p9p + 1);
+        on9pread(source, p9p, p9p + 1);
 
         break;
 
