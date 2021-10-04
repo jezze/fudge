@@ -156,6 +156,9 @@ static void doread(unsigned int source, void *data)
 {
 
     struct request *request = &requests[0];
+    /*
+    struct p9p_tread *tread = data;
+    */
 
     file_link(FILE_G1);
 

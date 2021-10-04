@@ -92,16 +92,21 @@ void p9p_mkrwalk(struct message *message)
 
 }
 
-void p9p_mktread(struct message *message)
+void p9p_mktread(struct message *message, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count)
 {
 
     struct event_p9p header;
+    struct p9p_tread body;
 
     p9p_write4(header.size, 0);
     p9p_write1(header.type, P9P_TREAD);
     p9p_write2(header.tag, 0);
+    p9p_write4(body.fid, fid);
+    p9p_write8(body.offset, offsetl, offseth);
+    p9p_write4(body.count, count);
     message_init(message, EVENT_P9P);
     message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_tread), &body);
 
 }
 

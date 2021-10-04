@@ -83,5 +83,5 @@ void p9p_write4(unsigned char p[4], unsigned int v);
 void p9p_write8(unsigned char p[8], unsigned int vl, unsigned int vh);
 void p9p_mktwalk(struct message *message, char *wname);
 void p9p_mkrwalk(struct message *message);
-void p9p_mktread(struct message *message);
+void p9p_mktread(struct message *message, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count);
 void p9p_mkrread(struct message *message, unsigned int count, void *buffer);
