@@ -156,6 +156,24 @@ unsigned int channel_sendstringzto(unsigned int target, unsigned int event, char
 
 }
 
+unsigned int channel_sendvalue(unsigned int event, int value, unsigned int base, unsigned int padding)
+{
+
+    char num[ASCII_NUMSIZE];
+
+    return send(0, event, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num);
+
+}
+
+unsigned int channel_sendvalueto(unsigned int target, unsigned int event, int value, unsigned int base, unsigned int padding)
+{
+
+    char num[ASCII_NUMSIZE];
+
+    return send(target, event, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num);
+
+}
+
 unsigned int channel_sendmessage(struct message *message)
 {
 

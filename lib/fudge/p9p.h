@@ -75,13 +75,14 @@ struct p9p_rwrite
 
 };
 
-unsigned short p9p_read1(unsigned char p[1]);
+unsigned char p9p_read1(unsigned char p[1]);
 unsigned short p9p_read2(unsigned char p[2]);
+unsigned int p9p_read4(unsigned char p[4]);
 void p9p_write1(unsigned char p[1], unsigned char v);
 void p9p_write2(unsigned char p[2], unsigned short v);
 void p9p_write4(unsigned char p[4], unsigned int v);
 void p9p_write8(unsigned char p[8], unsigned int vl, unsigned int vh);
-void p9p_mktwalk(struct message *message, char *wname);
+void p9p_mktwalk(struct message *message, unsigned int fid, unsigned int newfid, char *wname);
 void p9p_mkrwalk(struct message *message);
 void p9p_mktread(struct message *message, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count);
 void p9p_mkrread(struct message *message, unsigned int count, void *buffer);

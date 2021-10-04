@@ -4,7 +4,7 @@
 #include "message.h"
 #include "p9p.h"
 
-unsigned short p9p_read1(unsigned char p[1])
+unsigned char p9p_read1(unsigned char p[1])
 {
 
     return (p[0] << 0);
@@ -14,7 +14,14 @@ unsigned short p9p_read1(unsigned char p[1])
 unsigned short p9p_read2(unsigned char p[2])
 {
 
-    return (p[0] << 8 | p[1] << 0);
+    return (p[1] << 8 | p[0] << 0);
+
+}
+
+unsigned int p9p_read4(unsigned char p[4])
+{
+
+    return (p[3] << 24 | p[2] << 16 | p[1] << 8 | p[0] << 0);
 
 }
 
@@ -57,7 +64,7 @@ void p9p_write8(unsigned char p[8], unsigned int vl, unsigned int vh)
 
 }
 
-void p9p_mktwalk(struct message *message, char *wname)
+void p9p_mktwalk(struct message *message, unsigned int fid, unsigned int newfid, char *wname)
 {
 
     struct event_p9p header;
@@ -66,8 +73,8 @@ void p9p_mktwalk(struct message *message, char *wname)
     p9p_write4(header.size, 0);
     p9p_write1(header.type, P9P_TWALK);
     p9p_write2(header.tag, 0);
-    p9p_write4(body.fid, 0);
-    p9p_write4(body.newfid, 0);
+    p9p_write4(body.fid, fid);
+    p9p_write4(body.newfid, newfid);
     p9p_write2(body.nwname, ascii_length(wname));
     message_init(message, EVENT_P9P);
     message_putbuffer(message, sizeof (struct event_p9p), &header);
