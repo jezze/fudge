@@ -220,7 +220,7 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_p9p *p9p = mdata;
 
-    switch (p9p->type[0])
+    switch (p9p_read1(p9p->type))
     {
 
     case P9P_TVERSION:
