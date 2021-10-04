@@ -89,10 +89,10 @@ static void *getdata(struct request *request)
 
 }
 
-static unsigned int walk(unsigned int source, struct request *request, char *path)
+static unsigned int walk(unsigned int source, struct request *request, unsigned int length, char *path)
 {
 
-    unsigned int length = ascii_lengthz(path);
+    unsigned int lengthz = length + 1;
     unsigned int offset = 0;
 
     while (sendpoll(request, source, offset, sizeof (struct cpio_header) + 1024))
@@ -111,10 +111,10 @@ static unsigned int walk(unsigned int source, struct request *request, char *pat
 
         }
 
-        if (header->namesize == length)
+        if (header->namesize == lengthz)
         {
 
-            if (buffer_match(path, header + 1, length))
+            if (buffer_match(path, header + 1, lengthz))
                 return OK;
 
         }
@@ -136,7 +136,7 @@ static void dowalk(unsigned int source, void *data)
 
     file_link(FILE_G1);
 
-    status = walk(source, request, (char *)(twalk + 1));
+    status = walk(source, request, p9p_read2(twalk->nwname), (char *)(twalk + 1));
 
     file_unlink(FILE_G1);
 
