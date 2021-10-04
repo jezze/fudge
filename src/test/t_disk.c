@@ -20,13 +20,6 @@ struct request
 
 static char blocks[BLOCKSIZE * 4];
 
-unsigned int next(struct cpio_header *header, unsigned int offset)
-{
-
-    return offset + cpio_next(header);
-
-}
-
 static void request_init(struct request *request, unsigned int source, unsigned int offset, unsigned int count)
 {
 
@@ -118,7 +111,7 @@ static unsigned int walk(unsigned int source, struct request *request, unsigned 
 
         }
 
-        offset = next(header, request->offset);
+        offset = request->offset + cpio_next(header);
 
     }
 
