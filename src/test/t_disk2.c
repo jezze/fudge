@@ -1,21 +1,55 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int version(unsigned int msize, char *name)
+static void error(struct event_p9p *p9p, void *data)
 {
 
     struct message message;
-    struct event_p9p *p9p = (struct event_p9p *)message.data.buffer;
 
-    p9p_mktversion(&message, msize, name);
-    file_notify(FILE_G0, EVENT_P9P, message_datasize(&message.header), message.data.buffer);
-    channel_pollevent(EVENT_P9P, &message);
+    message_init(&message, EVENT_DATA);
+    message_putstring(&message, "Error occured:\n");
+    message_putbuffer(&message, p9p_read4(p9p->size) - sizeof (struct event_p9p), data);
+    message_putstring(&message, "\n");
+    channel_sendmessage(&message);
+
+}
+
+static unsigned int sendandpoll(struct message *request, struct message *response)
+{
+
+    struct event_p9p *p9p = (struct event_p9p *)response->data.buffer;
+
+    file_notify(FILE_G0, EVENT_P9P, message_datasize(&request->header), request->data.buffer);
+    channel_pollevent(EVENT_P9P, response);
 
     if (p9p_read1(p9p->type) == P9P_RERROR)
+    {
+
+        error(p9p, p9p + 1);
+
         return 0;
 
-    if (p9p_read1(p9p->type) == P9P_RVERSION)
+    }
+
+    return p9p_read1(p9p->type);
+
+}
+
+static unsigned int version(unsigned int msize, char *name)
+{
+
+    struct message request;
+    struct message response;
+
+    p9p_mktversion(&request, msize, name);
+
+    switch (sendandpoll(&request, &response))
+    {
+
+    case P9P_RVERSION:
         return 1;
+
+    }
 
     return 0;
 
@@ -24,18 +58,18 @@ static unsigned int version(unsigned int msize, char *name)
 static unsigned int walk(unsigned int fid, unsigned int newfid, char *wname)
 {
 
-    struct message message;
-    struct event_p9p *p9p = (struct event_p9p *)message.data.buffer;
+    struct message request;
+    struct message response;
 
-    p9p_mktwalk(&message, fid, newfid, wname);
-    file_notify(FILE_G0, EVENT_P9P, message_datasize(&message.header), message.data.buffer);
-    channel_pollevent(EVENT_P9P, &message);
+    p9p_mktwalk(&request, fid, newfid, wname);
 
-    if (p9p_read1(p9p->type) == P9P_RERROR)
-        return 0;
+    switch (sendandpoll(&request, &response))
+    {
 
-    if (p9p_read1(p9p->type) == P9P_RWALK)
+    case P9P_RWALK:
         return 1;
+
+    }
 
     return 0;
 
@@ -44,22 +78,20 @@ static unsigned int walk(unsigned int fid, unsigned int newfid, char *wname)
 static unsigned int read(void)
 {
 
-    struct message message;
-    struct event_p9p *p9p = (struct event_p9p *)message.data.buffer;
+    struct message request;
+    struct message response;
 
-    p9p_mktread(&message, 22445566, 0, 0, 512);
-    file_notify(FILE_G0, EVENT_P9P, message_datasize(&message.header), message.data.buffer);
-    channel_pollevent(EVENT_P9P, &message);
+    p9p_mktread(&request, 22445566, 0, 0, 512);
 
-    if (p9p_read1(p9p->type) == P9P_RERROR)
-        return 0;
+    switch (sendandpoll(&request, &response))
+    {
 
-    /*
-    if (p9p_read1(p9p->type) == P9P_RREAD)
-        return 0;
-    */
+    case P9P_RREAD:
+        channel_sendbuffer(EVENT_DATA, message_datasize(&response.header) - sizeof (struct event_p9p) - sizeof (struct p9p_rread), response.data.buffer + sizeof (struct event_p9p) + sizeof (struct p9p_rread));
 
-    channel_sendbuffer(EVENT_DATA, message_datasize(&message.header) - sizeof (struct event_p9p) - sizeof (struct p9p_rread), message.data.buffer + sizeof (struct event_p9p) + sizeof (struct p9p_rread));
+        return 1;
+
+    }
 
     return 0;
 
