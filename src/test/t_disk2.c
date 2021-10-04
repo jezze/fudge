@@ -1,13 +1,13 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int version(void)
+static unsigned int version(unsigned int msize, char *name)
 {
 
     struct message message;
     struct event_p9p *p9p = (struct event_p9p *)message.data.buffer;
 
-    p9p_mktversion(&message, 1200, "9P2000");
+    p9p_mktversion(&message, msize, name);
     file_notify(FILE_G0, EVENT_P9P, message_datasize(&message.header), message.data.buffer);
     channel_pollevent(EVENT_P9P, &message);
 
@@ -21,13 +21,13 @@ static unsigned int version(void)
 
 }
 
-static unsigned int walk(void)
+static unsigned int walk(unsigned int fid, unsigned int newfid, char *wname)
 {
 
     struct message message;
     struct event_p9p *p9p = (struct event_p9p *)message.data.buffer;
 
-    p9p_mktwalk(&message, 22445566, 0, "build/data/help.txt");
+    p9p_mktwalk(&message, fid, newfid, wname);
     file_notify(FILE_G0, EVENT_P9P, message_datasize(&message.header), message.data.buffer);
     channel_pollevent(EVENT_P9P, &message);
 
@@ -68,10 +68,10 @@ static unsigned int read(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (version())
+    if (version(1200, "9P2000"))
     {
 
-        if (walk())
+        if (walk(22445566, 0, "build/data/help.txt"))
         {
 
             if (read())
