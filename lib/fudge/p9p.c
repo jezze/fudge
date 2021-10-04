@@ -69,17 +69,18 @@ void p9p_mktwalk(struct message *message, unsigned int fid, unsigned int newfid,
 
     struct event_p9p header;
     struct p9p_twalk body;
+    unsigned int count = ascii_length(wname);
 
-    p9p_write4(header.size, 0);
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_twalk) + count);
     p9p_write1(header.type, P9P_TWALK);
     p9p_write2(header.tag, 0);
     p9p_write4(body.fid, fid);
     p9p_write4(body.newfid, newfid);
-    p9p_write2(body.nwname, ascii_length(wname));
+    p9p_write2(body.nwname, count);
     message_init(message, EVENT_P9P);
     message_putbuffer(message, sizeof (struct event_p9p), &header);
     message_putbuffer(message, sizeof (struct p9p_twalk), &body);
-    message_putbuffer(message, p9p_read2(body.nwname), wname);
+    message_putbuffer(message, count, wname);
 
 }
 
@@ -89,7 +90,7 @@ void p9p_mkrwalk(struct message *message)
     struct event_p9p header;
     struct p9p_rwalk body;
 
-    p9p_write4(header.size, 0);
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_rwalk));
     p9p_write1(header.type, P9P_RWALK);
     p9p_write2(header.tag, 0);
     p9p_write2(body.nwqid, 0);
@@ -105,7 +106,7 @@ void p9p_mktread(struct message *message, unsigned int fid, unsigned int offsetl
     struct event_p9p header;
     struct p9p_tread body;
 
-    p9p_write4(header.size, 0);
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_tread));
     p9p_write1(header.type, P9P_TREAD);
     p9p_write2(header.tag, 0);
     p9p_write4(body.fid, fid);
@@ -121,12 +122,15 @@ void p9p_mkrread(struct message *message, unsigned int count, void *buffer)
 {
 
     struct event_p9p header;
+    struct p9p_rread body;
 
-    p9p_write4(header.size, 0);
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_rread) + count);
     p9p_write1(header.type, P9P_RREAD);
     p9p_write2(header.tag, 0);
+    p9p_write4(body.count, count);
     message_init(message, EVENT_P9P);
     message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_rread), &body);
     message_putbuffer(message, count, buffer);
 
 }
