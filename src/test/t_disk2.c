@@ -17,21 +17,33 @@ static void error(void *data, unsigned int count)
 static unsigned int sendandpoll(struct message *request, struct message *response)
 {
 
-    struct event_p9p *p9p = (struct event_p9p *)response->data.buffer;
+    struct event_p9p *p9prequest = (struct event_p9p *)request->data.buffer;
+    struct event_p9p *p9presponse = (struct event_p9p *)response->data.buffer;
 
     file_notify(FILE_G0, EVENT_P9P, message_datasize(&request->header), request->data.buffer);
     channel_pollevent(EVENT_P9P, response);
 
-    if (p9p_read1(p9p->type) == P9P_RERROR)
+    if (p9p_read1(p9presponse->type) == P9P_RERROR)
     {
 
-        error(p9p + 1, p9p_read4(p9p->size) - sizeof (struct event_p9p));
+        error(p9presponse + 1, p9p_read4(p9presponse->size) - sizeof (struct event_p9p));
 
         return 0;
 
     }
 
-    return p9p_read1(p9p->type);
+    if (p9p_read2(p9prequest->tag) != p9p_read2(p9presponse->tag))
+    {
+
+        char *errmsg = "Tags do not match";
+
+        error(errmsg, ascii_length(errmsg));
+
+        return 0;
+
+    }
+
+    return p9p_read1(p9presponse->type);
 
 }
 
