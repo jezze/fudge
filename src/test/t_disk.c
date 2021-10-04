@@ -92,7 +92,6 @@ static void *getdata(struct request *request)
 static unsigned int walk(unsigned int source, struct request *request, unsigned int length, char *path)
 {
 
-    unsigned int lengthz = length + 1;
     unsigned int offset = 0;
 
     while (sendpoll(request, source, offset, sizeof (struct cpio_header) + 1024))
@@ -111,10 +110,10 @@ static unsigned int walk(unsigned int source, struct request *request, unsigned 
 
         }
 
-        if (header->namesize == lengthz)
+        if (header->namesize == length + 1)
         {
 
-            if (buffer_match(path, header + 1, lengthz))
+            if (buffer_match(path, header + 1, length))
                 return OK;
 
         }
