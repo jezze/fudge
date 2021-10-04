@@ -69,7 +69,7 @@ void p9p_mktwalk(struct message *message, unsigned int fid, unsigned int newfid,
 
     struct event_p9p header;
     struct p9p_twalk body;
-    unsigned int count = ascii_length(wname);
+    unsigned short count = ascii_length(wname);
 
     p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_twalk) + count);
     p9p_write1(header.type, P9P_TWALK);
@@ -84,7 +84,7 @@ void p9p_mktwalk(struct message *message, unsigned int fid, unsigned int newfid,
 
 }
 
-void p9p_mkrwalk(struct message *message)
+void p9p_mkrwalk(struct message *message, unsigned short nwqid)
 {
 
     struct event_p9p header;
@@ -93,7 +93,7 @@ void p9p_mkrwalk(struct message *message)
     p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_rwalk));
     p9p_write1(header.type, P9P_RWALK);
     p9p_write2(header.tag, 0);
-    p9p_write2(body.nwqid, 0);
+    p9p_write2(body.nwqid, nwqid);
     message_init(message, EVENT_P9P);
     message_putbuffer(message, sizeof (struct event_p9p), &header);
     message_putbuffer(message, sizeof (struct p9p_twalk), &body);

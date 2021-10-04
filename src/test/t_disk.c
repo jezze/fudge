@@ -144,7 +144,7 @@ static void dowalk(unsigned int source, void *data)
 
         struct message message;
 
-        p9p_mkrwalk(&message);
+        p9p_mkrwalk(&message, 0);
         channel_sendmessageto(source, &message);
 
     }
