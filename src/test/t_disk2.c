@@ -53,7 +53,7 @@ static unsigned int version(unsigned int msize, char *name)
     struct message request;
     struct message response;
 
-    p9p_mktversion(&request, msize, name);
+    p9p_mktversion(&request, 41, msize, name);
 
     switch (sendandpoll(&request, &response))
     {
@@ -73,7 +73,7 @@ static unsigned int walk(unsigned int fid, unsigned int newfid, char *wname)
     struct message request;
     struct message response;
 
-    p9p_mktwalk(&request, fid, newfid, wname);
+    p9p_mktwalk(&request, 42, fid, newfid, wname);
 
     switch (sendandpoll(&request, &response))
     {
@@ -93,7 +93,7 @@ static unsigned int read(void)
     struct message request;
     struct message response;
 
-    p9p_mktread(&request, 22445566, 0, 0, 512);
+    p9p_mktread(&request, 43, 22445566, 0, 0, 512);
 
     switch (sendandpoll(&request, &response))
     {

@@ -64,7 +64,7 @@ void p9p_write8(unsigned char p[8], unsigned int vl, unsigned int vh)
 
 }
 
-void p9p_mktversion(struct message *message, unsigned int msize, char *version)
+void p9p_mktversion(struct message *message, unsigned short tag, unsigned int msize, char *version)
 {
 
     struct event_p9p header;
@@ -73,7 +73,7 @@ void p9p_mktversion(struct message *message, unsigned int msize, char *version)
 
     p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_tversion) + count);
     p9p_write1(header.type, P9P_TVERSION);
-    p9p_write2(header.tag, 0);
+    p9p_write2(header.tag, tag);
     p9p_write4(body.msize, msize);
     message_init(message, EVENT_P9P);
     message_putbuffer(message, sizeof (struct event_p9p), &header);
@@ -82,7 +82,7 @@ void p9p_mktversion(struct message *message, unsigned int msize, char *version)
 
 }
 
-void p9p_mkrversion(struct message *message, unsigned int msize, char *version)
+void p9p_mkrversion(struct message *message, unsigned short tag, unsigned int msize, char *version)
 {
 
     struct event_p9p header;
@@ -91,7 +91,7 @@ void p9p_mkrversion(struct message *message, unsigned int msize, char *version)
 
     p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_rversion) + count);
     p9p_write1(header.type, P9P_RVERSION);
-    p9p_write2(header.tag, 0);
+    p9p_write2(header.tag, tag);
     p9p_write4(body.msize, msize);
     message_init(message, EVENT_P9P);
     message_putbuffer(message, sizeof (struct event_p9p), &header);
@@ -100,7 +100,7 @@ void p9p_mkrversion(struct message *message, unsigned int msize, char *version)
 
 }
 
-void p9p_mktwalk(struct message *message, unsigned int fid, unsigned int newfid, char *wname)
+void p9p_mktwalk(struct message *message, unsigned short tag, unsigned int fid, unsigned int newfid, char *wname)
 {
 
     struct event_p9p header;
@@ -109,7 +109,7 @@ void p9p_mktwalk(struct message *message, unsigned int fid, unsigned int newfid,
 
     p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_twalk) + count);
     p9p_write1(header.type, P9P_TWALK);
-    p9p_write2(header.tag, 0);
+    p9p_write2(header.tag, tag);
     p9p_write4(body.fid, fid);
     p9p_write4(body.newfid, newfid);
     p9p_write2(body.nwname, count);
@@ -120,7 +120,7 @@ void p9p_mktwalk(struct message *message, unsigned int fid, unsigned int newfid,
 
 }
 
-void p9p_mkrwalk(struct message *message, unsigned short nwqid)
+void p9p_mkrwalk(struct message *message, unsigned short tag, unsigned short nwqid)
 {
 
     struct event_p9p header;
@@ -128,7 +128,7 @@ void p9p_mkrwalk(struct message *message, unsigned short nwqid)
 
     p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_rwalk));
     p9p_write1(header.type, P9P_RWALK);
-    p9p_write2(header.tag, 0);
+    p9p_write2(header.tag, tag);
     p9p_write2(body.nwqid, nwqid);
     message_init(message, EVENT_P9P);
     message_putbuffer(message, sizeof (struct event_p9p), &header);
@@ -136,7 +136,7 @@ void p9p_mkrwalk(struct message *message, unsigned short nwqid)
 
 }
 
-void p9p_mktread(struct message *message, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count)
+void p9p_mktread(struct message *message, unsigned short tag, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count)
 {
 
     struct event_p9p header;
@@ -144,7 +144,7 @@ void p9p_mktread(struct message *message, unsigned int fid, unsigned int offsetl
 
     p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_tread));
     p9p_write1(header.type, P9P_TREAD);
-    p9p_write2(header.tag, 0);
+    p9p_write2(header.tag, tag);
     p9p_write4(body.fid, fid);
     p9p_write8(body.offset, offsetl, offseth);
     p9p_write4(body.count, count);
@@ -154,7 +154,7 @@ void p9p_mktread(struct message *message, unsigned int fid, unsigned int offsetl
 
 }
 
-void p9p_mkrread(struct message *message, unsigned int count, void *buffer)
+void p9p_mkrread(struct message *message, unsigned short tag, unsigned int count, void *buffer)
 {
 
     struct event_p9p header;
@@ -162,7 +162,7 @@ void p9p_mkrread(struct message *message, unsigned int count, void *buffer)
 
     p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_rread) + count);
     p9p_write1(header.type, P9P_RREAD);
-    p9p_write2(header.tag, 0);
+    p9p_write2(header.tag, tag);
     p9p_write4(body.count, count);
     message_init(message, EVENT_P9P);
     message_putbuffer(message, sizeof (struct event_p9p), &header);

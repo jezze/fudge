@@ -140,7 +140,7 @@ static void on9pversion(unsigned int source, struct event_p9p *p9p, void *data)
     if (msize > 1200)
         msize = 1200;
 
-    p9p_mkrversion(&message, msize, "9P2000");
+    p9p_mkrversion(&message, p9p_read2(p9p->tag), msize, "9P2000");
     channel_sendmessageto(source, &message);
 
 }
@@ -163,7 +163,7 @@ static void on9pwalk(unsigned int source, struct event_p9p *p9p, void *data)
 
         struct message message;
 
-        p9p_mkrwalk(&message, 0);
+        p9p_mkrwalk(&message, p9p_read2(p9p->tag), 0);
         channel_sendmessageto(source, &message);
 
     }
@@ -195,7 +195,7 @@ static void on9pread(unsigned int source, struct event_p9p *p9p, void *data)
 
                 struct message message;
 
-                p9p_mkrread(&message, count, getdata(request));
+                p9p_mkrread(&message, p9p_read2(p9p->tag), count, getdata(request));
                 channel_sendmessageto(source, &message);
 
             }
