@@ -167,12 +167,12 @@ unsigned int p9p_mktattach(void *buffer, unsigned short tag, unsigned int fid, u
 
 }
 
-unsigned int p9p_mkrattach(void *buffer, unsigned short tag, char *qid[13])
+unsigned int p9p_mkrattach(void *buffer, unsigned short tag, char qid[13])
 {
 
     unsigned int n = sizeof (struct p9p_event);
 
-    n += 13 /* qid */;
+    n += p9p_writebuffer(buffer, n, 13, qid);
 
     p9p_mk(buffer, n, P9P_RATTACH, tag);
 
@@ -195,12 +195,12 @@ unsigned int p9p_mktauth(void *buffer, unsigned short tag, unsigned int afid, ch
 
 }
 
-unsigned int p9p_mkrauth(void *buffer, unsigned short tag, char *aqid[13])
+unsigned int p9p_mkrauth(void *buffer, unsigned short tag, char aqid[13])
 {
 
     unsigned int n = sizeof (struct p9p_event);
 
-    n += 13 /* aqid */;
+    n += p9p_writebuffer(buffer, n, 13, aqid);
 
     p9p_mk(buffer, n, P9P_RAUTH, tag);
 
@@ -312,7 +312,7 @@ unsigned int p9p_mkrwalk(void *buffer, unsigned short tag, unsigned short nwqid,
     n += p9p_write2(buffer, n, nwqid);
 
     for (i = 0; i < nwqid; i++)
-        n += 13; /* wqid */
+        n += p9p_writebuffer(buffer, n, 13, wqid[i]);
 
     p9p_mk(buffer, n, P9P_RWALK, tag);
 
@@ -392,12 +392,12 @@ unsigned int p9p_mktopen(void *buffer, unsigned short tag, unsigned int fid, uns
 
 }
 
-unsigned int p9p_mkropen(void *buffer, unsigned short tag, char *qid[13], unsigned int iounit)
+unsigned int p9p_mkropen(void *buffer, unsigned short tag, char qid[13], unsigned int iounit)
 {
 
     unsigned int n = sizeof (struct p9p_event);
 
-    n += 13; /* qid */
+    n += p9p_writebuffer(buffer, n, 13, qid);
     n += p9p_write4(buffer, n, iounit);
 
     p9p_mk(buffer, n, P9P_ROPEN, tag);
@@ -422,12 +422,12 @@ unsigned int p9p_mktcreate(void *buffer, unsigned short tag, unsigned int fid, c
 
 }
 
-unsigned int p9p_mkrcreate(void *buffer, unsigned short tag, char *qid[13], unsigned int iounit)
+unsigned int p9p_mkrcreate(void *buffer, unsigned short tag, char qid[13], unsigned int iounit)
 {
 
     unsigned int n = sizeof (struct p9p_event);
 
-    n += 13; /* qid */
+    n += p9p_writebuffer(buffer, n, 13, qid);
     n += p9p_write4(buffer, n, iounit);
 
     p9p_mk(buffer, n, P9P_RCREATE, tag);

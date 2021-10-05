@@ -1,5 +1,7 @@
 #include <fudge.h>
+#include <net.h>
 #include <abi.h>
+#include <socket.h>
 
 #define MAXSIZE 1200
 #define BLOCKSIZE 512
@@ -9,7 +11,6 @@
 struct request
 {
 
-    unsigned int source;
     unsigned int offset;
     unsigned int count;
     unsigned int blocksector;
@@ -19,12 +20,14 @@ struct request
 
 } requests[8];
 
+static struct socket local;
+static struct socket remote;
+static struct socket router;
 static char blocks[BLOCKSIZE * 4];
 
-static void request_init(struct request *request, unsigned int source, unsigned int offset, unsigned int count)
+static void request_init(struct request *request, unsigned int offset, unsigned int count)
 {
 
-    request->source = source;
     request->offset = offset;
     request->count = count;
     request->blocksector = offset / BLOCKSIZE;
@@ -43,7 +46,7 @@ static void request_send(struct request *request)
     message.blockrequest.count = request->blockcount;
 
     message_initheader(&message.header, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
-    file_writeall(FILE_G1, &message, message.header.length);
+    file_writeall(FILE_G5, &message, message.header.length);
 
 }
 
@@ -66,10 +69,10 @@ static unsigned int request_poll(struct request *request)
 
 }
 
-static unsigned int sendpoll(struct request *request, unsigned int source, unsigned int offset, unsigned int count)
+static unsigned int sendpoll(struct request *request, unsigned int offset, unsigned int count)
 {
 
-    request_init(request, source, offset, count);
+    request_init(request, offset, count);
     request_send(request);
 
     return request_poll(request);
@@ -83,12 +86,12 @@ static void *getdata(struct request *request)
 
 }
 
-static unsigned int walk(unsigned int source, struct request *request, unsigned int length, char *path)
+static unsigned int walk(struct request *request, unsigned int length, char *path)
 {
 
     unsigned int offset = 0;
 
-    while (sendpoll(request, source, offset, sizeof (struct cpio_header) + 1024))
+    while (sendpoll(request, offset, sizeof (struct cpio_header) + 1024))
     {
 
         struct cpio_header *header = getdata(request);
@@ -120,46 +123,80 @@ static unsigned int walk(unsigned int source, struct request *request, unsigned 
 
 }
 
-static void senderror(unsigned int source, struct p9p_event *p9p, char *error)
+static unsigned int on9perror(void *buffer, struct p9p_event *p9p, char *error)
 {
 
-    char buffer[MESSAGE_SIZE];
+    unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
 
-    channel_sendbufferto(source, EVENT_P9P, p9p_mkrerror(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), error), buffer);
+    return p9p_mkrerror(buffer, tag, error);
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static unsigned int on9pversion(void *buffer, struct p9p_event *p9p)
 {
 
-    file_link(FILE_G0);
+    unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
+    unsigned int msize = p9p_read4(p9p, P9P_OFFSET_DATA);
 
-    while (channel_process());
-
-    file_unlink(FILE_G0);
+    return p9p_mkrversion(buffer, tag, msize, "9P2000.L");
 
 }
 
-static void on9popen(unsigned int source, struct p9p_event *p9p)
+static unsigned int on9pattach(void *buffer, struct p9p_event *p9p)
 {
 
-    struct message message;
+    unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
+    char qid[13];
 
-    p9p_mkropen(&message, p9p_read2(p9p, P9P_OFFSET_TAG), 0, 0);
-    channel_sendmessageto(source, &message);
+    p9p_write1(qid, 0, 0);
+    p9p_write4(qid, 1, 0);
+    p9p_write8(qid, 5, 101010, 0);
+
+    return p9p_mkrattach(buffer, tag, qid);
 
 }
 
-static void on9pread(unsigned int source, struct p9p_event *p9p)
+static unsigned int on9pclunk(void *buffer, struct p9p_event *p9p)
 {
 
+    unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
+
+    return p9p_mkrclunk(buffer, tag);
+
+}
+
+static unsigned int on9pwalk(void *buffer, struct p9p_event *p9p)
+{
+
+    unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     struct request *request = &requests[0];
+    unsigned int status;
+
+    file_link(FILE_G5);
+
+    status = walk(request, p9p_read2(p9p, P9P_OFFSET_DATA + 10), (char *)p9p + P9P_OFFSET_DATA + 12);
+
+    file_unlink(FILE_G5);
+
+    if (status == OK)
+        return p9p_mkrwalk(buffer, tag, 0, 0);
+    else
+        return on9perror(buffer, p9p, "File not found");
+
+}
+
+static unsigned int on9pread(void *buffer, struct p9p_event *p9p)
+{
+
+    unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
+    struct request *request = &requests[0];
+    unsigned int rc = 0;
 
     channel_sendvalue(EVENT_DATA, p9p_read4(p9p, P9P_OFFSET_DATA), 10, 0);
 
-    file_link(FILE_G1);
+    file_link(FILE_G5);
 
-    if (sendpoll(request, source, request->offset, sizeof (struct cpio_header) + 1024))
+    if (sendpoll(request, request->offset, sizeof (struct cpio_header) + 1024))
     {
 
         struct cpio_header *header = getdata(request);
@@ -169,12 +206,10 @@ static void on9pread(unsigned int source, struct p9p_event *p9p)
 
             unsigned int count;
 
-            if ((count = sendpoll(request, source, request->offset + cpio_filedata(header), cpio_filesize(header))))
+            if ((count = sendpoll(request, request->offset + cpio_filedata(header), cpio_filesize(header))))
             {
 
-                char buffer[MESSAGE_SIZE];
-
-                channel_sendbufferto(source, EVENT_P9P, p9p_mkrread(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), count, getdata(request)), buffer);
+                rc = p9p_mkrread(buffer, tag, count, getdata(request));
 
             }
 
@@ -182,40 +217,47 @@ static void on9pread(unsigned int source, struct p9p_event *p9p)
 
     }
 
-    file_unlink(FILE_G1);
+    file_unlink(FILE_G5);
+
+    return rc;
 
 }
 
-static void on9pversion(unsigned int source, struct p9p_event *p9p)
+static unsigned int handle(void *reply, struct p9p_event *p9p)
 {
 
-    unsigned int msize = p9p_read4(p9p, P9P_OFFSET_DATA);
-    char buffer[MESSAGE_SIZE];
+    if (p9p_read4(p9p, P9P_OFFSET_SIZE) < P9P_OFFSET_DATA)
+        return on9perror(reply, p9p, "Error: Packet is too small\n");
 
-    if (msize > MAXSIZE)
-        msize = MAXSIZE;
+/*
+    if (p9p_read4(p9p, P9P_OFFSET_SIZE) > MAXSIZE)
+        return on9perror(reply, p9p, "Error: Packet is too big\n");
+*/
 
-    channel_sendbufferto(source, EVENT_P9P, p9p_mkrversion(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), msize, "9P2000"), buffer);
+    switch (p9p_read1(p9p, P9P_OFFSET_TYPE))
+    {
 
-}
+    case P9P_TVERSION:
+        return on9pversion(reply, p9p);
 
-static void on9pwalk(unsigned int source, struct p9p_event *p9p)
-{
+    case P9P_TATTACH:
+        return on9pattach(reply, p9p);
 
-    struct request *request = &requests[0];
-    unsigned int status;
-    char buffer[MESSAGE_SIZE];
+    case P9P_TCLUNK:
+        return on9pclunk(reply, p9p);
 
-    file_link(FILE_G1);
+    case P9P_TWALK:
+        return on9pwalk(reply, p9p);
 
-    status = walk(source, request, p9p_read2(p9p, P9P_OFFSET_DATA + 10), (char *)p9p + P9P_OFFSET_DATA + 12);
+    case P9P_TREAD:
+        return on9pread(reply, p9p);
 
-    file_unlink(FILE_G1);
+    default:
+        channel_sendstring(EVENT_DATA, "Error: Packet has unknown type\n");
 
-    if (status == OK)
-        channel_sendbufferto(source, EVENT_P9P, p9p_mkrwalk(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), 0, 0), buffer);
-    else
-        senderror(source, p9p, "File not found");
+        return on9perror(reply, p9p, "Packet has unknown type");
+
+    }
 
 }
 
@@ -223,76 +265,66 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct p9p_event *p9p = mdata;
+    char buffer[MESSAGE_SIZE];
 
-    if (p9p_read4(p9p, P9P_OFFSET_SIZE) < P9P_OFFSET_DATA)
+    channel_sendbufferto(source, EVENT_P9P, handle(buffer, p9p), buffer);
+
+}
+
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    char buffer[BUFFER_SIZE];
+    unsigned int count;
+
+    file_link(FILE_G4);
+
+    if (file_walk(FILE_L0, FILE_G0, "addr"))
+        socket_resolvelocal(FILE_L0, &local);
+
+    if (file_walk(FILE_G1, FILE_G0, "data"))
     {
 
-        channel_sendstring(EVENT_DATA, "Error: Packet is too small\n");
+        channel_sendstring(EVENT_DATA, "Listening\n");
+        file_link(FILE_G1);
+        socket_resolveremote(FILE_G1, &local, &router);
+        socket_listen_tcp(FILE_G1, &local, &remote, &router);
+        channel_sendstring(EVENT_DATA, "Established\n");
 
-        return;
+        while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
+        {
+
+            struct p9p_event *p9p = (struct p9p_event *)buffer;
+            char reply[MESSAGE_SIZE];
+
+            channel_sendstring(EVENT_DATA, "Packet received\n");
+            socket_send_tcp(FILE_G1, &local, &remote, &router, handle(reply, p9p), reply);
+
+        }
+
+        file_unlink(FILE_G1);
 
     }
 
-    if (p9p_read4(p9p, P9P_OFFSET_SIZE) > MAXSIZE)
-    {
-
-        channel_sendstring(EVENT_DATA, "Error: Packet is too big\n");
-
-        return;
-
-    }
-
-    if (p9p_read4(p9p, P9P_OFFSET_SIZE) != msize)
-    {
-
-        channel_sendstring(EVENT_DATA, "Error: Packet has incorrect size\n");
-
-        return;
-
-    }
-
-    switch (p9p_read1(p9p, P9P_OFFSET_TYPE))
-    {
-
-    case P9P_TOPEN:
-        on9popen(source, p9p);
-
-        break;
-
-    case P9P_TREAD:
-        on9pread(source, p9p);
-
-        break;
-
-    case P9P_TVERSION:
-        on9pversion(source, p9p);
-
-        break;
-
-    case P9P_TWALK:
-        on9pwalk(source, p9p);
-
-        break;
-
-    default:
-        senderror(source, p9p, "Packet has unknown type");
-        channel_sendstring(EVENT_DATA, "Error: Packet has unknown type\n");
-
-        break;
-
-    }
+    file_unlink(FILE_G4);
 
 }
 
 void init(void)
 {
 
-    if (!file_walk2(FILE_G0, "system:service/fd0"))
+    if (!file_walk2(FILE_G4, "system:service/fd0"))
         return;
 
-    if (!file_walk2(FILE_G1, "system:block/if:0/data"))
+    if (!file_walk2(FILE_G5, "system:block/if:0/data"))
         return;
 
+    file_walk2(FILE_G0, "system:ethernet/if:0");
+    socket_init(&local);
+    socket_bind_ipv4s(&local, "10.0.5.1");
+    socket_bind_tcps(&local, "564", 42);
+    socket_init(&router);
+    socket_bind_ipv4s(&router, "10.0.5.80");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_P9P, onp9p);
 
