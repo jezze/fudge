@@ -23,16 +23,16 @@ static unsigned int sendandpoll(struct message *request, struct message *respons
     file_notify(FILE_G0, EVENT_P9P, message_datasize(&request->header), request->data.buffer);
     channel_pollevent(EVENT_P9P, response);
 
-    if (p9p_read1(p9presponse, P9P_HEADER_TYPE) == P9P_RERROR)
+    if (p9p_read1(p9presponse, P9P_OFFSET_TYPE) == P9P_RERROR)
     {
 
-        error(p9presponse + 1, p9p_read4(p9presponse, 0) - sizeof (struct p9p_event));
+        error(response->data.buffer + P9P_OFFSET_DATA + 2, p9p_read2(p9presponse, P9P_OFFSET_DATA));
 
         return 0;
 
     }
 
-    if (p9p_read2(p9prequest, P9P_HEADER_TAG) != p9p_read2(p9presponse, P9P_HEADER_TAG))
+    if (p9p_read2(p9prequest, P9P_OFFSET_TAG) != p9p_read2(p9presponse, P9P_OFFSET_TAG))
     {
 
         char *errmsg = "Tags do not match";
@@ -43,7 +43,7 @@ static unsigned int sendandpoll(struct message *request, struct message *respons
 
     }
 
-    return p9p_read1(p9presponse, P9P_HEADER_TYPE);
+    return p9p_read1(p9presponse, P9P_OFFSET_TYPE);
 
 }
 
@@ -105,7 +105,7 @@ static unsigned int read(void)
     {
 
     case P9P_RREAD:
-        channel_sendbuffer(EVENT_DATA, p9p_read4(response.data.buffer, 7), response.data.buffer + sizeof (struct p9p_event) + 4);
+        channel_sendbuffer(EVENT_DATA, p9p_read4(response.data.buffer, P9P_OFFSET_DATA), response.data.buffer + P9P_OFFSET_DATA + 4);
 
         return 1;
 

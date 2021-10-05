@@ -130,22 +130,22 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void on9popen(unsigned int source, struct p9p_event *p9p, void *data)
+static void on9popen(unsigned int source, struct p9p_event *p9p)
 {
 
     struct message message;
 
-    p9p_mkropen(&message, p9p_read2(p9p, P9P_HEADER_TAG), 0, 0);
+    p9p_mkropen(&message, p9p_read2(p9p, P9P_OFFSET_TAG), 0, 0);
     channel_sendmessageto(source, &message);
 
 }
 
-static void on9pread(unsigned int source, struct p9p_event *p9p, void *data)
+static void on9pread(unsigned int source, struct p9p_event *p9p)
 {
 
     struct request *request = &requests[0];
 
-    channel_sendvalue(EVENT_DATA, p9p_read4(data, 0), 10, 0);
+    channel_sendvalue(EVENT_DATA, p9p_read4(p9p, P9P_OFFSET_DATA), 10, 0);
 
     file_link(FILE_G1);
 
@@ -164,7 +164,7 @@ static void on9pread(unsigned int source, struct p9p_event *p9p, void *data)
 
                 char buffer[MESSAGE_SIZE];
 
-                channel_sendbufferto(source, EVENT_P9P, p9p_mkrread(buffer, p9p_read2(p9p, P9P_HEADER_TAG), count, getdata(request)), buffer);
+                channel_sendbufferto(source, EVENT_P9P, p9p_mkrread(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), count, getdata(request)), buffer);
 
             }
 
@@ -176,20 +176,20 @@ static void on9pread(unsigned int source, struct p9p_event *p9p, void *data)
 
 }
 
-static void on9pversion(unsigned int source, struct p9p_event *p9p, void *data)
+static void on9pversion(unsigned int source, struct p9p_event *p9p)
 {
 
-    unsigned int msize = p9p_read4(data, 0);
+    unsigned int msize = p9p_read4(p9p, P9P_OFFSET_DATA);
     char buffer[MESSAGE_SIZE];
 
     if (msize > 1200)
         msize = 1200;
 
-    channel_sendbufferto(source, EVENT_P9P, p9p_mkrversion(buffer, p9p_read2(p9p, P9P_HEADER_TAG), msize, "9P2000"), buffer);
+    channel_sendbufferto(source, EVENT_P9P, p9p_mkrversion(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), msize, "9P2000"), buffer);
 
 }
 
-static void on9pwalk(unsigned int source, struct p9p_event *p9p, void *data)
+static void on9pwalk(unsigned int source, struct p9p_event *p9p)
 {
 
     struct request *request = &requests[0];
@@ -197,7 +197,7 @@ static void on9pwalk(unsigned int source, struct p9p_event *p9p, void *data)
 
     file_link(FILE_G1);
 
-    status = walk(source, request, p9p_read2(data, 10), (char *)data + 12);
+    status = walk(source, request, p9p_read2(p9p, P9P_OFFSET_DATA + 10), (char *)p9p + P9P_OFFSET_DATA + 12);
 
     file_unlink(FILE_G1);
 
@@ -206,7 +206,7 @@ static void on9pwalk(unsigned int source, struct p9p_event *p9p, void *data)
 
         char buffer[MESSAGE_SIZE];
 
-        channel_sendbufferto(source, EVENT_P9P, p9p_mkrwalk(buffer, p9p_read2(p9p, P9P_HEADER_TAG), 0, 0), buffer);
+        channel_sendbufferto(source, EVENT_P9P, p9p_mkrwalk(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), 0, 0), buffer);
 
     }
 
@@ -217,26 +217,26 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 
     struct p9p_event *p9p = mdata;
 
-    switch (p9p_read1(p9p, P9P_HEADER_TYPE))
+    switch (p9p_read1(p9p, P9P_OFFSET_TYPE))
     {
 
     case P9P_TOPEN:
-        on9popen(source, p9p, p9p + 1);
+        on9popen(source, p9p);
 
         break;
 
     case P9P_TREAD:
-        on9pread(source, p9p, p9p + 1);
+        on9pread(source, p9p);
 
         break;
 
     case P9P_TVERSION:
-        on9pversion(source, p9p, p9p + 1);
+        on9pversion(source, p9p);
 
         break;
 
     case P9P_TWALK:
-        on9pwalk(source, p9p, p9p + 1);
+        on9pwalk(source, p9p);
 
         break;
 
