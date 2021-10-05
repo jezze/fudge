@@ -195,6 +195,7 @@ static void on9pwalk(unsigned int source, struct p9p_event *p9p)
 
     struct request *request = &requests[0];
     unsigned int status;
+    char buffer[MESSAGE_SIZE];
 
     file_link(FILE_G1);
 
@@ -203,13 +204,9 @@ static void on9pwalk(unsigned int source, struct p9p_event *p9p)
     file_unlink(FILE_G1);
 
     if (status == OK)
-    {
-
-        char buffer[MESSAGE_SIZE];
-
         channel_sendbufferto(source, EVENT_P9P, p9p_mkrwalk(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), 0, 0), buffer);
-
-    }
+    else
+        channel_sendbufferto(source, EVENT_P9P, p9p_mkrerror(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), "File not found"), buffer);
 
 }
 
