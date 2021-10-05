@@ -17,8 +17,8 @@ static void error(void *data, unsigned int count)
 static unsigned int sendandpoll(struct message *request, struct message *response)
 {
 
-    struct event_p9p *p9prequest = (struct event_p9p *)request->data.buffer;
-    struct event_p9p *p9presponse = (struct event_p9p *)response->data.buffer;
+    struct p9p_event *p9prequest = (struct p9p_event *)request->data.buffer;
+    struct p9p_event *p9presponse = (struct p9p_event *)response->data.buffer;
 
     file_notify(FILE_G0, EVENT_P9P, message_datasize(&request->header), request->data.buffer);
     channel_pollevent(EVENT_P9P, response);
@@ -26,7 +26,7 @@ static unsigned int sendandpoll(struct message *request, struct message *respons
     if (p9p_read1(p9presponse->type) == P9P_RERROR)
     {
 
-        error(p9presponse + 1, p9p_read4(p9presponse->size) - sizeof (struct event_p9p));
+        error(p9presponse + 1, p9p_read4(p9presponse->size) - sizeof (struct p9p_event));
 
         return 0;
 
@@ -105,7 +105,7 @@ static unsigned int read(void)
     {
 
     case P9P_RREAD:
-        channel_sendbuffer(EVENT_DATA, p9p_read4(response.data.buffer + 7), response.data.buffer + sizeof (struct event_p9p) + 4);
+        channel_sendbuffer(EVENT_DATA, p9p_read4(response.data.buffer + 7), response.data.buffer + sizeof (struct p9p_event) + 4);
 
         return 1;
 

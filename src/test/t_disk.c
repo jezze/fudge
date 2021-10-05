@@ -130,7 +130,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void on9popen(unsigned int source, struct event_p9p *p9p, void *data)
+static void on9popen(unsigned int source, struct p9p_event *p9p, void *data)
 {
 
     struct message message;
@@ -140,7 +140,7 @@ static void on9popen(unsigned int source, struct event_p9p *p9p, void *data)
 
 }
 
-static void on9pread(unsigned int source, struct event_p9p *p9p, void *data)
+static void on9pread(unsigned int source, struct p9p_event *p9p, void *data)
 {
 
     struct request *request = &requests[0];
@@ -177,7 +177,7 @@ static void on9pread(unsigned int source, struct event_p9p *p9p, void *data)
 
 }
 
-static void on9pversion(unsigned int source, struct event_p9p *p9p, void *data)
+static void on9pversion(unsigned int source, struct p9p_event *p9p, void *data)
 {
 
     char *x = data;
@@ -191,7 +191,7 @@ static void on9pversion(unsigned int source, struct event_p9p *p9p, void *data)
 
 }
 
-static void on9pwalk(unsigned int source, struct event_p9p *p9p, void *data)
+static void on9pwalk(unsigned int source, struct p9p_event *p9p, void *data)
 {
 
     struct request *request = &requests[0];
@@ -218,7 +218,7 @@ static void on9pwalk(unsigned int source, struct event_p9p *p9p, void *data)
 static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_p9p *p9p = mdata;
+    struct p9p_event *p9p = mdata;
 
     switch (p9p_read1(p9p->type))
     {

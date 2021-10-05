@@ -27,6 +27,15 @@
 #define P9P_TWSTAT                      126
 #define P9P_RWSTAT                      127
 
+struct p9p_event
+{
+
+    unsigned char size[4];
+    unsigned char type[1];
+    unsigned char tag[2];
+
+};
+
 unsigned char p9p_read1(void *buffer);
 unsigned short p9p_read2(void *buffer);
 unsigned int p9p_read4(void *buffer);

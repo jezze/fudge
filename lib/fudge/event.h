@@ -165,11 +165,3 @@ struct event_wmmouserelease
 
 };
 
-struct event_p9p
-{
-
-    unsigned char size[4];
-    unsigned char type[1];
-    unsigned char tag[2];
-
-};
