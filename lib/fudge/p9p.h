@@ -30,12 +30,12 @@
 unsigned char p9p_read1(void *buffer);
 unsigned short p9p_read2(void *buffer);
 unsigned int p9p_read4(void *buffer);
-unsigned int p9p_write1(void *buffer, unsigned char v);
-unsigned int p9p_write2(void *buffer, unsigned short v);
-unsigned int p9p_write4(void *buffer, unsigned int v);
-unsigned int p9p_write8(void *buffer, unsigned int vl, unsigned int vh);
-unsigned int p9p_writebuffer(void *buffer, unsigned int count, void *v);
-unsigned int p9p_writestring(void *buffer, char *v);
+unsigned int p9p_write1(void *buffer, unsigned int o, unsigned char v);
+unsigned int p9p_write2(void *buffer, unsigned int o, unsigned short v);
+unsigned int p9p_write4(void *buffer, unsigned int o, unsigned int v);
+unsigned int p9p_write8(void *buffer, unsigned int o, unsigned int vl, unsigned int vh);
+unsigned int p9p_writebuffer(void *buffer, unsigned int o, unsigned int count, void *v);
+unsigned int p9p_writestring(void *buffer, unsigned int o, char *v);
 unsigned int p9p_mk(void *buffer, unsigned int size, unsigned char type, unsigned short tag);
 unsigned int p9p_mkrerror(void *buffer, unsigned short tag, char *ename);
 unsigned int p9p_mktattach(void *buffer, unsigned short tag, unsigned int fid, unsigned int afid, char *uname, char *aname);
