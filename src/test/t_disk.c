@@ -120,6 +120,15 @@ static unsigned int walk(unsigned int source, struct request *request, unsigned 
 
 }
 
+static void senderror(unsigned int source, struct p9p_event *p9p, char *error)
+{
+
+    char buffer[MESSAGE_SIZE];
+
+    channel_sendbufferto(source, EVENT_P9P, p9p_mkrerror(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), error), buffer);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -206,7 +215,7 @@ static void on9pwalk(unsigned int source, struct p9p_event *p9p)
     if (status == OK)
         channel_sendbufferto(source, EVENT_P9P, p9p_mkrwalk(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), 0, 0), buffer);
     else
-        channel_sendbufferto(source, EVENT_P9P, p9p_mkrerror(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), "File not found"), buffer);
+        senderror(source, p9p, "File not found");
 
 }
 
@@ -266,6 +275,7 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     default:
+        senderror(source, p9p, "Packet has unknown type");
         channel_sendstring(EVENT_DATA, "Error: Packet has unknown type\n");
 
         break;
