@@ -135,7 +135,7 @@ static void on9popen(unsigned int source, struct p9p_event *p9p, void *data)
 
     struct message message;
 
-    p9p_mkropen(&message, p9p_read2(p9p, 5), 0, 0);
+    p9p_mkropen(&message, p9p_read2(p9p, P9P_HEADER_TAG), 0, 0);
     channel_sendmessageto(source, &message);
 
 }
@@ -164,7 +164,7 @@ static void on9pread(unsigned int source, struct p9p_event *p9p, void *data)
 
                 char buffer[MESSAGE_SIZE];
 
-                channel_sendbufferto(source, EVENT_P9P, p9p_mkrread(buffer, p9p_read2(p9p, 5), count, getdata(request)), buffer);
+                channel_sendbufferto(source, EVENT_P9P, p9p_mkrread(buffer, p9p_read2(p9p, P9P_HEADER_TAG), count, getdata(request)), buffer);
 
             }
 
@@ -185,7 +185,7 @@ static void on9pversion(unsigned int source, struct p9p_event *p9p, void *data)
     if (msize > 1200)
         msize = 1200;
 
-    channel_sendbufferto(source, EVENT_P9P, p9p_mkrversion(buffer, p9p_read2(p9p, 5), msize, "9P2000"), buffer);
+    channel_sendbufferto(source, EVENT_P9P, p9p_mkrversion(buffer, p9p_read2(p9p, P9P_HEADER_TAG), msize, "9P2000"), buffer);
 
 }
 
@@ -206,7 +206,7 @@ static void on9pwalk(unsigned int source, struct p9p_event *p9p, void *data)
 
         char buffer[MESSAGE_SIZE];
 
-        channel_sendbufferto(source, EVENT_P9P, p9p_mkrwalk(buffer, p9p_read2(p9p, 5), 0, 0), buffer);
+        channel_sendbufferto(source, EVENT_P9P, p9p_mkrwalk(buffer, p9p_read2(p9p, P9P_HEADER_TAG), 0, 0), buffer);
 
     }
 
@@ -217,7 +217,7 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 
     struct p9p_event *p9p = mdata;
 
-    switch (p9p_read1(p9p, 4))
+    switch (p9p_read1(p9p, P9P_HEADER_TYPE))
     {
 
     case P9P_TOPEN:

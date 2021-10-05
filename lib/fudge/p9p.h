@@ -26,6 +26,9 @@
 #define P9P_RSTAT                       125
 #define P9P_TWSTAT                      126
 #define P9P_RWSTAT                      127
+#define P9P_HEADER_SIZE                 0
+#define P9P_HEADER_TYPE                 4
+#define P9P_HEADER_TAG                  5
 
 struct p9p_event
 {

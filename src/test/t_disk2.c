@@ -23,7 +23,7 @@ static unsigned int sendandpoll(struct message *request, struct message *respons
     file_notify(FILE_G0, EVENT_P9P, message_datasize(&request->header), request->data.buffer);
     channel_pollevent(EVENT_P9P, response);
 
-    if (p9p_read1(p9presponse, 4) == P9P_RERROR)
+    if (p9p_read1(p9presponse, P9P_HEADER_TYPE) == P9P_RERROR)
     {
 
         error(p9presponse + 1, p9p_read4(p9presponse, 0) - sizeof (struct p9p_event));
@@ -32,7 +32,7 @@ static unsigned int sendandpoll(struct message *request, struct message *respons
 
     }
 
-    if (p9p_read2(p9prequest, 5) != p9p_read2(p9presponse, 5))
+    if (p9p_read2(p9prequest, P9P_HEADER_TAG) != p9p_read2(p9presponse, P9P_HEADER_TAG))
     {
 
         char *errmsg = "Tags do not match";
@@ -43,7 +43,7 @@ static unsigned int sendandpoll(struct message *request, struct message *respons
 
     }
 
-    return p9p_read1(p9presponse, 4);
+    return p9p_read1(p9presponse, P9P_HEADER_TYPE);
 
 }
 
