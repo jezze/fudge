@@ -27,6 +27,35 @@
 #define P9P_TWSTAT                      126
 #define P9P_RWSTAT                      127
 
+struct p9p_tattach
+{
+
+    unsigned char fid[4];
+    unsigned char afid[4];
+
+};
+
+struct p9p_rattach
+{
+
+    unsigned char qid[13];
+
+};
+
+struct p9p_tauth
+{
+
+    unsigned char afid[4];
+
+};
+
+struct p9p_rauth
+{
+
+    unsigned char aqid[13];
+
+};
+
 struct p9p_tversion
 {
 
@@ -127,6 +156,10 @@ void p9p_write1(unsigned char p[1], unsigned char v);
 void p9p_write2(unsigned char p[2], unsigned short v);
 void p9p_write4(unsigned char p[4], unsigned int v);
 void p9p_write8(unsigned char p[8], unsigned int vl, unsigned int vh);
+void p9p_mktattach(struct message *message, unsigned short tag, unsigned int fid, unsigned int afid, char *uname, char *aname);
+void p9p_mkrattach(struct message *message, unsigned short tag);
+void p9p_mktauth(struct message *message, unsigned short tag, unsigned int afid, char *uname, char *aname);
+void p9p_mkrauth(struct message *message, unsigned short tag);
 void p9p_mktversion(struct message *message, unsigned short tag, unsigned int msize, char *version);
 void p9p_mkrversion(struct message *message, unsigned short tag, unsigned int msize, char *version);
 void p9p_mktwalk(struct message *message, unsigned short tag, unsigned int fid, unsigned int newfid, char *wname);

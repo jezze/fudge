@@ -64,6 +64,75 @@ void p9p_write8(unsigned char p[8], unsigned int vl, unsigned int vh)
 
 }
 
+void p9p_mktattach(struct message *message, unsigned short tag, unsigned int fid, unsigned int afid, char *uname, char *aname)
+{
+
+    struct event_p9p header;
+    struct p9p_tattach body;
+
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_tattach) + ascii_lengthz(uname) + ascii_lengthz(aname));
+    p9p_write1(header.type, P9P_TATTACH);
+    p9p_write2(header.tag, tag);
+    p9p_write4(body.fid, fid);
+    p9p_write4(body.afid, afid);
+    message_init(message, EVENT_P9P);
+    message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_tattach), &body);
+    message_putbuffer(message, ascii_lengthz(uname), uname);
+    message_putbuffer(message, ascii_lengthz(aname), aname);
+
+}
+
+void p9p_mkrattach(struct message *message, unsigned short tag)
+{
+
+    struct event_p9p header;
+    struct p9p_rattach body;
+
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_rattach));
+    p9p_write1(header.type, P9P_RATTACH);
+    p9p_write2(header.tag, tag);
+    /* What about qid here */
+    message_init(message, EVENT_P9P);
+    message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_rattach), &body);
+
+}
+
+void p9p_mktauth(struct message *message, unsigned short tag, unsigned int afid, char *uname, char *aname)
+{
+
+    struct event_p9p header;
+    struct p9p_tauth body;
+
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_tauth) + ascii_lengthz(uname) + ascii_lengthz(aname));
+    p9p_write1(header.type, P9P_TAUTH);
+    p9p_write2(header.tag, tag);
+    p9p_write4(body.afid, afid);
+    message_init(message, EVENT_P9P);
+    message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_tauth), &body);
+    message_putbuffer(message, ascii_lengthz(uname), uname);
+    message_putbuffer(message, ascii_lengthz(aname), aname);
+
+}
+
+void p9p_mkrauth(struct message *message, unsigned short tag)
+{
+
+    struct event_p9p header;
+    struct p9p_rauth body;
+
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_rauth));
+    p9p_write1(header.type, P9P_RAUTH);
+    p9p_write2(header.tag, tag);
+    /* What about qid here */
+    message_init(message, EVENT_P9P);
+    message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_rauth), &body);
+
+}
+
 void p9p_mktversion(struct message *message, unsigned short tag, unsigned int msize, char *version)
 {
 
