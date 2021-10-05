@@ -36,9 +36,9 @@ struct p9p_event
 
 };
 
-unsigned char p9p_read1(void *buffer);
-unsigned short p9p_read2(void *buffer);
-unsigned int p9p_read4(void *buffer);
+unsigned char p9p_read1(void *buffer, unsigned int o);
+unsigned short p9p_read2(void *buffer, unsigned int o);
+unsigned int p9p_read4(void *buffer, unsigned int o);
 unsigned int p9p_write1(void *buffer, unsigned int o, unsigned char v);
 unsigned int p9p_write2(void *buffer, unsigned int o, unsigned short v);
 unsigned int p9p_write4(void *buffer, unsigned int o, unsigned int v);

@@ -5,28 +5,34 @@
 #include "message.h"
 #include "p9p.h"
 
-unsigned char p9p_read1(void *buffer)
+unsigned char p9p_read1(void *buffer, unsigned int o)
 {
 
     unsigned char *p = buffer;
+
+    p += o;
 
     return (p[0] << 0);
 
 }
 
-unsigned short p9p_read2(void *buffer)
+unsigned short p9p_read2(void *buffer, unsigned int o)
 {
 
     unsigned char *p = buffer;
+
+    p += o;
 
     return (p[1] << 8 | p[0] << 0);
 
 }
 
-unsigned int p9p_read4(void *buffer)
+unsigned int p9p_read4(void *buffer, unsigned int o)
 {
 
     unsigned char *p = buffer;
+
+    p += o;
 
     return (p[3] << 24 | p[2] << 16 | p[1] << 8 | p[0] << 0);
 
