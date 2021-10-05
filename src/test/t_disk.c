@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
+#define MAXSIZE 1200
 #define BLOCKSIZE 512
 #define OK 1
 #define ERROR 0
@@ -182,8 +183,8 @@ static void on9pversion(unsigned int source, struct p9p_event *p9p)
     unsigned int msize = p9p_read4(p9p, P9P_OFFSET_DATA);
     char buffer[MESSAGE_SIZE];
 
-    if (msize > 1200)
-        msize = 1200;
+    if (msize > MAXSIZE)
+        msize = MAXSIZE;
 
     channel_sendbufferto(source, EVENT_P9P, p9p_mkrversion(buffer, p9p_read2(p9p, P9P_OFFSET_TAG), msize, "9P2000"), buffer);
 
@@ -217,6 +218,33 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 
     struct p9p_event *p9p = mdata;
 
+    if (p9p_read4(p9p, P9P_OFFSET_SIZE) < P9P_OFFSET_DATA)
+    {
+
+        channel_sendstring(EVENT_DATA, "Error: Packet is too small\n");
+
+        return;
+
+    }
+
+    if (p9p_read4(p9p, P9P_OFFSET_SIZE) > MAXSIZE)
+    {
+
+        channel_sendstring(EVENT_DATA, "Error: Packet is too big\n");
+
+        return;
+
+    }
+
+    if (p9p_read4(p9p, P9P_OFFSET_SIZE) != msize)
+    {
+
+        channel_sendstring(EVENT_DATA, "Error: Packet has incorrect size\n");
+
+        return;
+
+    }
+
     switch (p9p_read1(p9p, P9P_OFFSET_TYPE))
     {
 
@@ -241,7 +269,7 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     default:
-        channel_sendstring(EVENT_DATA, "Unknown message received!\n");
+        channel_sendstring(EVENT_DATA, "Error: Packet has unknown type\n");
 
         break;
 
