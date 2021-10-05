@@ -89,6 +89,37 @@ struct p9p_rwrite
 
 };
 
+struct p9p_topen
+{
+
+    unsigned char fid[4];
+    unsigned char mode[1];
+
+};
+
+struct p9p_ropen
+{
+
+    unsigned char qid[13];
+    unsigned char iounit[4];
+
+};
+
+struct p9p_tcreate
+{
+
+    unsigned char fid[4];
+
+};
+
+struct p9p_rcreate
+{
+
+    unsigned char qid[13];
+    unsigned char iounit[4];
+
+};
+
 unsigned char p9p_read1(unsigned char p[1]);
 unsigned short p9p_read2(unsigned char p[2]);
 unsigned int p9p_read4(unsigned char p[4]);
@@ -102,3 +133,5 @@ void p9p_mktwalk(struct message *message, unsigned short tag, unsigned int fid, 
 void p9p_mkrwalk(struct message *message, unsigned short tag, unsigned short nwqid);
 void p9p_mktread(struct message *message, unsigned short tag, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count);
 void p9p_mkrread(struct message *message, unsigned short tag, unsigned int count, void *buffer);
+void p9p_mktopen(struct message *message, unsigned short tag, unsigned int fid, unsigned char mode);
+void p9p_mkropen(struct message *message, unsigned short tag, unsigned int qid, unsigned int iounit);

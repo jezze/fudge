@@ -171,3 +171,37 @@ void p9p_mkrread(struct message *message, unsigned short tag, unsigned int count
 
 }
 
+void p9p_mktopen(struct message *message, unsigned short tag, unsigned int fid, unsigned char mode)
+{
+
+    struct event_p9p header;
+    struct p9p_topen body;
+
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_topen));
+    p9p_write1(header.type, P9P_TOPEN);
+    p9p_write2(header.tag, tag);
+    p9p_write4(body.fid, fid);
+    p9p_write1(body.mode, mode);
+    message_init(message, EVENT_P9P);
+    message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_topen), &body);
+
+}
+
+void p9p_mkropen(struct message *message, unsigned short tag, unsigned int qid, unsigned int iounit)
+{
+
+    struct event_p9p header;
+    struct p9p_ropen body;
+
+    p9p_write4(header.size, sizeof (struct event_p9p) + sizeof (struct p9p_ropen));
+    p9p_write1(header.type, P9P_ROPEN);
+    p9p_write2(header.tag, tag);
+    /* What about qid here */
+    p9p_write4(body.iounit, iounit);
+    message_init(message, EVENT_P9P);
+    message_putbuffer(message, sizeof (struct event_p9p), &header);
+    message_putbuffer(message, sizeof (struct p9p_ropen), &body);
+
+}
+

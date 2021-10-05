@@ -130,43 +130,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void on9pversion(unsigned int source, struct event_p9p *p9p, void *data)
+static void on9popen(unsigned int source, struct event_p9p *p9p, void *data)
 {
 
-    struct p9p_tversion *tversion = data;
     struct message message;
-    unsigned int msize = p9p_read4(tversion->msize);
 
-    if (msize > 1200)
-        msize = 1200;
-
-    p9p_mkrversion(&message, p9p_read2(p9p->tag), msize, "9P2000");
+    p9p_mkropen(&message, p9p_read2(p9p->tag), 0, 0);
     channel_sendmessageto(source, &message);
-
-}
-
-static void on9pwalk(unsigned int source, struct event_p9p *p9p, void *data)
-{
-
-    struct request *request = &requests[0];
-    struct p9p_twalk *twalk = data;
-    unsigned int status;
-
-    file_link(FILE_G1);
-
-    status = walk(source, request, p9p_read2(twalk->nwname), (char *)(twalk + 1));
-
-    file_unlink(FILE_G1);
-
-    if (status == OK)
-    {
-
-        struct message message;
-
-        p9p_mkrwalk(&message, p9p_read2(p9p->tag), 0);
-        channel_sendmessageto(source, &message);
-
-    }
 
 }
 
@@ -208,6 +178,46 @@ static void on9pread(unsigned int source, struct event_p9p *p9p, void *data)
 
 }
 
+static void on9pversion(unsigned int source, struct event_p9p *p9p, void *data)
+{
+
+    struct p9p_tversion *tversion = data;
+    struct message message;
+    unsigned int msize = p9p_read4(tversion->msize);
+
+    if (msize > 1200)
+        msize = 1200;
+
+    p9p_mkrversion(&message, p9p_read2(p9p->tag), msize, "9P2000");
+    channel_sendmessageto(source, &message);
+
+}
+
+static void on9pwalk(unsigned int source, struct event_p9p *p9p, void *data)
+{
+
+    struct request *request = &requests[0];
+    struct p9p_twalk *twalk = data;
+    unsigned int status;
+
+    file_link(FILE_G1);
+
+    status = walk(source, request, p9p_read2(twalk->nwname), (char *)(twalk + 1));
+
+    file_unlink(FILE_G1);
+
+    if (status == OK)
+    {
+
+        struct message message;
+
+        p9p_mkrwalk(&message, p9p_read2(p9p->tag), 0);
+        channel_sendmessageto(source, &message);
+
+    }
+
+}
+
 static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -216,6 +226,16 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
     switch (p9p_read1(p9p->type))
     {
 
+    case P9P_TOPEN:
+        on9popen(source, p9p, p9p + 1);
+
+        break;
+
+    case P9P_TREAD:
+        on9pread(source, p9p, p9p + 1);
+
+        break;
+
     case P9P_TVERSION:
         on9pversion(source, p9p, p9p + 1);
 
@@ -223,11 +243,6 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 
     case P9P_TWALK:
         on9pwalk(source, p9p, p9p + 1);
-
-        break;
-
-    case P9P_TREAD:
-        on9pread(source, p9p, p9p + 1);
 
         break;
 
