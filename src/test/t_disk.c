@@ -144,9 +144,9 @@ static void on9pread(unsigned int source, struct event_p9p *p9p, void *data)
 {
 
     struct request *request = &requests[0];
-    struct p9p_tread *tread = data;
+    char *x = data;
 
-    channel_sendvalue(EVENT_DATA, p9p_read4(tread->fid), 10, 0);
+    channel_sendvalue(EVENT_DATA, p9p_read4(x), 10, 0);
 
     file_link(FILE_G1);
 
@@ -163,10 +163,9 @@ static void on9pread(unsigned int source, struct event_p9p *p9p, void *data)
             if ((count = sendpoll(request, source, request->offset + cpio_filedata(header), cpio_filesize(header))))
             {
 
-                struct message message;
+                char buffer[MESSAGE_SIZE];
 
-                p9p_mkrread(&message, p9p_read2(p9p->tag), count, getdata(request));
-                channel_sendmessageto(source, &message);
+                channel_sendbufferto(source, EVENT_P9P, p9p_mkrread(buffer, p9p_read2(p9p->tag), count, getdata(request)), buffer);
 
             }
 
@@ -181,15 +180,14 @@ static void on9pread(unsigned int source, struct event_p9p *p9p, void *data)
 static void on9pversion(unsigned int source, struct event_p9p *p9p, void *data)
 {
 
-    struct p9p_tversion *tversion = data;
-    struct message message;
-    unsigned int msize = p9p_read4(tversion->msize);
+    char *x = data;
+    unsigned int msize = p9p_read4(x);
+    char buffer[MESSAGE_SIZE];
 
     if (msize > 1200)
         msize = 1200;
 
-    p9p_mkrversion(&message, p9p_read2(p9p->tag), msize, "9P2000");
-    channel_sendmessageto(source, &message);
+    channel_sendbufferto(source, EVENT_P9P, p9p_mkrversion(buffer, p9p_read2(p9p->tag), msize, "9P2000"), buffer);
 
 }
 
@@ -197,22 +195,21 @@ static void on9pwalk(unsigned int source, struct event_p9p *p9p, void *data)
 {
 
     struct request *request = &requests[0];
-    struct p9p_twalk *twalk = data;
+    char *x = data;
     unsigned int status;
 
     file_link(FILE_G1);
 
-    status = walk(source, request, p9p_read2(twalk->nwname), (char *)(twalk + 1));
+    status = walk(source, request, p9p_read2(x + 10), x + 12);
 
     file_unlink(FILE_G1);
 
     if (status == OK)
     {
 
-        struct message message;
+        char buffer[MESSAGE_SIZE];
 
-        p9p_mkrwalk(&message, p9p_read2(p9p->tag), 0);
-        channel_sendmessageto(source, &message);
+        channel_sendbufferto(source, EVENT_P9P, p9p_mkrwalk(buffer, p9p_read2(p9p->tag), 0, 0), buffer);
 
     }
 

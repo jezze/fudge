@@ -50,10 +50,12 @@ static unsigned int sendandpoll(struct message *request, struct message *respons
 static unsigned int version(unsigned int msize, char *name)
 {
 
+    char buffer[MESSAGE_SIZE];
     struct message request;
     struct message response;
 
-    p9p_mktversion(&request, 41, msize, name);
+    message_init(&request, EVENT_P9P);
+    message_putbuffer(&request, p9p_mktversion(buffer, 41, msize, name), buffer);
 
     switch (sendandpoll(&request, &response))
     {
@@ -70,10 +72,12 @@ static unsigned int version(unsigned int msize, char *name)
 static unsigned int walk(unsigned int fid, unsigned int newfid, char *wname)
 {
 
+    char buffer[MESSAGE_SIZE];
     struct message request;
     struct message response;
 
-    p9p_mktwalk(&request, 42, fid, newfid, wname);
+    message_init(&request, EVENT_P9P);
+    message_putbuffer(&request, p9p_mktwalk(buffer, 42, fid, newfid, 1, &wname), buffer);
 
     switch (sendandpoll(&request, &response))
     {
@@ -90,16 +94,18 @@ static unsigned int walk(unsigned int fid, unsigned int newfid, char *wname)
 static unsigned int read(void)
 {
 
+    char buffer[MESSAGE_SIZE];
     struct message request;
     struct message response;
 
-    p9p_mktread(&request, 43, 22445566, 0, 0, 512);
+    message_init(&request, EVENT_P9P);
+    message_putbuffer(&request, p9p_mktread(buffer, 43, 22445566, 0, 0, 512), buffer);
 
     switch (sendandpoll(&request, &response))
     {
 
     case P9P_RREAD:
-        channel_sendbuffer(EVENT_DATA, message_datasize(&response.header) - sizeof (struct event_p9p) - sizeof (struct p9p_rread), response.data.buffer + sizeof (struct event_p9p) + sizeof (struct p9p_rread));
+        channel_sendbuffer(EVENT_DATA, p9p_read4(response.data.buffer + 7), response.data.buffer + sizeof (struct event_p9p) + 4);
 
         return 1;
 

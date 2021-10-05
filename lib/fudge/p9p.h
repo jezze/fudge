@@ -27,144 +27,40 @@
 #define P9P_TWSTAT                      126
 #define P9P_RWSTAT                      127
 
-struct p9p_tattach
-{
-
-    unsigned char fid[4];
-    unsigned char afid[4];
-
-};
-
-struct p9p_rattach
-{
-
-    unsigned char qid[13];
-
-};
-
-struct p9p_tauth
-{
-
-    unsigned char afid[4];
-
-};
-
-struct p9p_rauth
-{
-
-    unsigned char aqid[13];
-
-};
-
-struct p9p_tversion
-{
-
-    unsigned char msize[4];
-
-};
-
-struct p9p_rversion
-{
-
-    unsigned char msize[4];
-
-};
-
-struct p9p_twalk
-{
-
-    unsigned char fid[4];
-    unsigned char newfid[4];
-    unsigned char nwname[2];
-
-};
-
-struct p9p_rwalk
-{
-
-    unsigned char nwqid[2];
-
-};
-
-struct p9p_tread
-{
-
-    unsigned char fid[4];
-    unsigned char offset[8];
-    unsigned char count[4];
-
-};
-
-struct p9p_rread
-{
-
-    unsigned char count[4];
-
-};
-
-struct p9p_twrite
-{
-
-    unsigned char fid[4];
-    unsigned char offset[8];
-    unsigned char count[4];
-
-};
-
-struct p9p_rwrite
-{
-
-    unsigned char count[4];
-
-};
-
-struct p9p_topen
-{
-
-    unsigned char fid[4];
-    unsigned char mode[1];
-
-};
-
-struct p9p_ropen
-{
-
-    unsigned char qid[13];
-    unsigned char iounit[4];
-
-};
-
-struct p9p_tcreate
-{
-
-    unsigned char fid[4];
-
-};
-
-struct p9p_rcreate
-{
-
-    unsigned char qid[13];
-    unsigned char iounit[4];
-
-};
-
-unsigned char p9p_read1(unsigned char p[1]);
-unsigned short p9p_read2(unsigned char p[2]);
-unsigned int p9p_read4(unsigned char p[4]);
-void p9p_write1(unsigned char p[1], unsigned char v);
-void p9p_write2(unsigned char p[2], unsigned short v);
-void p9p_write4(unsigned char p[4], unsigned int v);
-void p9p_write8(unsigned char p[8], unsigned int vl, unsigned int vh);
-void p9p_mktattach(struct message *message, unsigned short tag, unsigned int fid, unsigned int afid, char *uname, char *aname);
-void p9p_mkrattach(struct message *message, unsigned short tag);
-void p9p_mktauth(struct message *message, unsigned short tag, unsigned int afid, char *uname, char *aname);
-void p9p_mkrauth(struct message *message, unsigned short tag);
-void p9p_mktversion(struct message *message, unsigned short tag, unsigned int msize, char *version);
-void p9p_mkrversion(struct message *message, unsigned short tag, unsigned int msize, char *version);
-void p9p_mktwalk(struct message *message, unsigned short tag, unsigned int fid, unsigned int newfid, char *wname);
-void p9p_mkrwalk(struct message *message, unsigned short tag, unsigned short nwqid);
-void p9p_mktread(struct message *message, unsigned short tag, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count);
-void p9p_mkrread(struct message *message, unsigned short tag, unsigned int count, void *buffer);
-void p9p_mktopen(struct message *message, unsigned short tag, unsigned int fid, unsigned char mode);
-void p9p_mkropen(struct message *message, unsigned short tag, unsigned int qid, unsigned int iounit);
+unsigned char p9p_read1(void *buffer);
+unsigned short p9p_read2(void *buffer);
+unsigned int p9p_read4(void *buffer);
+unsigned int p9p_write1(void *buffer, unsigned char v);
+unsigned int p9p_write2(void *buffer, unsigned short v);
+unsigned int p9p_write4(void *buffer, unsigned int v);
+unsigned int p9p_write8(void *buffer, unsigned int vl, unsigned int vh);
+unsigned int p9p_writebuffer(void *buffer, unsigned int count, void *v);
+unsigned int p9p_writestring(void *buffer, char *v);
+unsigned int p9p_mk(void *buffer, unsigned int size, unsigned char type, unsigned short tag);
+unsigned int p9p_mkrerror(void *buffer, unsigned short tag, char *ename);
+unsigned int p9p_mktattach(void *buffer, unsigned short tag, unsigned int fid, unsigned int afid, char *uname, char *aname);
+unsigned int p9p_mkrattach(void *buffer, unsigned short tag, char *qid[13]);
+unsigned int p9p_mktauth(void *buffer, unsigned short tag, unsigned int afid, char *uname, char *aname);
+unsigned int p9p_mkrauth(void *buffer, unsigned short tag, char *aqid[13]);
+unsigned int p9p_mktclunk(void *buffer, unsigned short tag, unsigned int fid);
+unsigned int p9p_mkrclunk(void *buffer, unsigned short tag);
+unsigned int p9p_mktflush(void *buffer, unsigned short tag, unsigned short oldtag);
+unsigned int p9p_mkrflush(void *buffer, unsigned short tag);
+unsigned int p9p_mktversion(void *buffer, unsigned short tag, unsigned int msize, char *version);
+unsigned int p9p_mkrversion(void *buffer, unsigned short tag, unsigned int msize, char *version);
+unsigned int p9p_mktwalk(void *buffer, unsigned short tag, unsigned int fid, unsigned int newfid, unsigned short nwname, char **wname);
+unsigned int p9p_mkrwalk(void *buffer, unsigned short tag, unsigned short nwqid, char *wqid[13]);
+unsigned int p9p_mktread(void *buffer, unsigned short tag, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count);
+unsigned int p9p_mkrread(void *buffer, unsigned short tag, unsigned int count, void *data);
+unsigned int p9p_mktwrite(void *buffer, unsigned short tag, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count, void *data);
+unsigned int p9p_mkrwrite(void *buffer, unsigned short tag, unsigned int count);
+unsigned int p9p_mktopen(void *buffer, unsigned short tag, unsigned int fid, unsigned char mode);
+unsigned int p9p_mkropen(void *buffer, unsigned short tag, char *qid[13], unsigned int iounit);
+unsigned int p9p_mktcreate(void *buffer, unsigned short tag, unsigned int fid, char *name, unsigned int perm, unsigned char mode);
+unsigned int p9p_mkrcreate(void *buffer, unsigned short tag, char *qid[13], unsigned int iounit);
+unsigned int p9p_mktremove(void *buffer, unsigned short tag, unsigned int fid);
+unsigned int p9p_mkrremove(void *buffer, unsigned short tag);
+unsigned int p9p_mktstat(void *buffer, unsigned short tag, unsigned int fid);
+unsigned int p9p_mkrstat(void *buffer, unsigned short tag, void *stat);
+unsigned int p9p_mktwstat(void *buffer, unsigned short tag, unsigned int fid, void *stat);
+unsigned int p9p_mkrwstat(void *buffer, unsigned short tag);
