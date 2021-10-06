@@ -97,7 +97,10 @@ static void *request_getdata(struct request *request)
 static unsigned int request_walk(struct request *request, unsigned int length, char *path)
 {
 
+    unsigned int status = ERROR;
     unsigned int offset = 0;
+
+    file_link(FILE_G5);
 
     while (request_sendpoll(request, offset, sizeof (struct cpio_header) + 1024))
     {
@@ -119,7 +122,13 @@ static unsigned int request_walk(struct request *request, unsigned int length, c
         {
 
             if (buffer_match(path, header + 1, length))
-                return OK;
+            {
+
+                status = OK;
+
+                break;
+
+            }
 
         }
 
@@ -127,7 +136,9 @@ static unsigned int request_walk(struct request *request, unsigned int length, c
 
     }
 
-    return ERROR;
+    file_unlink(FILE_G5);
+
+    return status;
 
 }
 
@@ -203,23 +214,19 @@ static unsigned int protocol_attach(void *buffer, struct p9p_header *p9p)
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
-    struct request *request = request_get(fid);
-    unsigned int status;
+    struct request temp;
 
-    file_link(FILE_G5);
+    buffer_copy(&temp, request_get(fid), sizeof (struct request));
 
-    status = request_walk(request, 5, "build");
-
-    file_unlink(FILE_G5);
-
-    if (status == OK)
+    if (request_walk(&temp, 5, "build") == OK)
     {
 
         char qid[13];
 
         p9p_write1(qid, 0, 0);
         p9p_write4(qid, 1, 0);
-        p9p_write8(qid, 5, request->offset, 0);
+        p9p_write8(qid, 5, temp.offset, 0);
+        buffer_copy(request_get(fid), &temp, sizeof (struct request));
 
         return p9p_mkrattach(buffer, tag, qid);
 
@@ -245,17 +252,10 @@ static unsigned int protocol_walk(void *buffer, struct p9p_header *p9p)
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
     unsigned int newfid = p9p_read4(p9p, P9P_OFFSET_DATA);
     struct request temp;
-    unsigned int status;
 
     buffer_copy(&temp, request_get(fid), sizeof (struct request));
 
-    file_link(FILE_G5);
-
-    status = request_walk(&temp, p9p_readstringlength(p9p, P9P_OFFSET_DATA + 10), p9p_readstringdata(p9p, P9P_OFFSET_DATA + 10));
-
-    file_unlink(FILE_G5);
-
-    if (status == OK)
+    if (request_walk(&temp, p9p_readstringlength(p9p, P9P_OFFSET_DATA + 10), p9p_readstringdata(p9p, P9P_OFFSET_DATA + 10)) == OK)
     {
 
         buffer_copy(request_get(newfid), &temp, sizeof (struct request));
