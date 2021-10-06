@@ -137,29 +137,26 @@ static unsigned int read(unsigned int fid)
 
 }
 
+static void sendrequest(void)
+{
+
+    if (!version(1200, "9P2000"))
+        return;
+
+    if (!attach(1, 1))
+        return;
+
+    if (!walk(1, 1, "build/data/help.txt"))
+        return;
+
+    read(1);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (version(1200, "9P2000"))
-    {
-
-        if (attach(1, 1))
-        {
-
-            if (walk(1, 1, "build/data/help.txt"))
-            {
-
-                if (read(1))
-                {
-
-                }
-
-            }
-
-        }
-
-    }
-
+    sendrequest();
     channel_close();
 
 }
