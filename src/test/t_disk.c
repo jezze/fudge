@@ -393,9 +393,6 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count;
-
     file_link(FILE_G4);
 
     if (file_walk(FILE_L0, FILE_G0, "addr"))
@@ -404,20 +401,19 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (file_walk(FILE_G1, FILE_G0, "data"))
     {
 
-        channel_sendstring(EVENT_DATA, "Listening\n");
+        char buffer[BUFFER_SIZE];
+        unsigned int count;
+
         file_link(FILE_G1);
         socket_resolveremote(FILE_G1, &local, &router);
         socket_listen_tcp(FILE_G1, &local, &remote, &router);
-        channel_sendstring(EVENT_DATA, "Established\n");
 
         while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
         {
 
-            struct p9p_header *p9p = (struct p9p_header *)buffer;
             char reply[MESSAGE_SIZE];
 
-            channel_sendstring(EVENT_DATA, "Packet received\n");
-            socket_send_tcp(FILE_G1, &local, &remote, &router, handle(reply, p9p), reply);
+            socket_send_tcp(FILE_G1, &local, &remote, &router, handle(reply, (struct p9p_header *)buffer), reply);
 
         }
 
