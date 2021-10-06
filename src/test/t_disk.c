@@ -191,17 +191,41 @@ static unsigned int protocol_version(void *buffer, struct p9p_header *p9p)
 
 }
 
+static unsigned int protocol_auth(void *buffer, struct p9p_header *p9p)
+{
+
+    return protocol_error(buffer, p9p, "Authentication not required", -1);
+
+}
+
 static unsigned int protocol_attach(void *buffer, struct p9p_header *p9p)
 {
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
-    char qid[13];
+    unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
+    struct request *request = request_get(fid);
+    unsigned int status;
 
-    p9p_write1(qid, 0, 0);
-    p9p_write4(qid, 1, 0);
-    p9p_write8(qid, 5, 101010, 0);
+    file_link(FILE_G5);
 
-    return p9p_mkrattach(buffer, tag, qid);
+    status = request_walk(request, 5, "build");
+
+    file_unlink(FILE_G5);
+
+    if (status == OK)
+    {
+
+        char qid[13];
+
+        p9p_write1(qid, 0, 0);
+        p9p_write4(qid, 1, 0);
+        p9p_write8(qid, 5, request->offset, 0);
+
+        return p9p_mkrattach(buffer, tag, qid);
+
+    }
+
+    return protocol_error(buffer, p9p, "Could not find root directory", -1);
 
 }
 
@@ -220,21 +244,21 @@ static unsigned int protocol_walk(void *buffer, struct p9p_header *p9p)
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
     unsigned int newfid = p9p_read4(p9p, P9P_OFFSET_DATA);
-    struct request *request = request_get(fid);
-    struct request *request2 = request_get(newfid);
+    struct request temp;
     unsigned int status;
+
+    buffer_copy(&temp, request_get(fid), sizeof (struct request));
 
     file_link(FILE_G5);
 
-    status = request_walk(request, p9p_read2(p9p, P9P_OFFSET_DATA + 10), (char *)p9p + P9P_OFFSET_DATA + 12);
+    status = request_walk(&temp, p9p_readstringlength(p9p, P9P_OFFSET_DATA + 10), p9p_readstringdata(p9p, P9P_OFFSET_DATA + 10));
 
     file_unlink(FILE_G5);
 
     if (status == OK)
     {
 
-        if (fid != newfid)
-            buffer_copy(request2, request, sizeof (struct request));
+        buffer_copy(request_get(newfid), &temp, sizeof (struct request));
 
         return p9p_mkrwalk(buffer, tag, 0, 0);
 
@@ -323,6 +347,9 @@ static unsigned int handle(void *reply, struct p9p_header *p9p)
 
     case P9P_TVERSION:
         return protocol_version(reply, p9p);
+
+    case P9P_TAUTH:
+        return protocol_auth(reply, p9p);
 
     case P9P_TATTACH:
         return protocol_attach(reply, p9p);
