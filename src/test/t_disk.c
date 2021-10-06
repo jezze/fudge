@@ -142,6 +142,40 @@ static unsigned int request_walk(struct request *request, unsigned int length, c
 
 }
 
+static unsigned int request_read(struct request *request)
+{
+
+    unsigned int status = ERROR;
+
+    file_link(FILE_G5);
+
+    if (request_sendpoll(request, request->offset, sizeof (struct cpio_header) + 1024))
+    {
+
+        struct cpio_header *header = request_getdata(request);
+
+        if (cpio_validate(header))
+        {
+
+            unsigned int count;
+
+            if ((count = request_sendpoll(request, request->offset + cpio_filedata(header), cpio_filesize(header))))
+            {
+
+                status = OK;
+
+            }
+
+        }
+
+    }
+
+    file_unlink(FILE_G5);
+
+    return status;
+
+}
+
 static unsigned int protocol_error(void *buffer, struct p9p_header *p9p, char *ename, int ecode)
 {
 
@@ -274,34 +308,11 @@ static unsigned int protocol_read(void *buffer, struct p9p_header *p9p)
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
     struct request *request = request_get(fid);
-    unsigned int rc = 0;
 
-    file_link(FILE_G5);
+    if (request_read(request) == OK)
+        return p9p_mkrread(buffer, tag, request->count, request_getdata(request));
 
-    if (request_sendpoll(request, request->offset, sizeof (struct cpio_header) + 1024))
-    {
-
-        struct cpio_header *header = request_getdata(request);
-
-        if (cpio_validate(header))
-        {
-
-            unsigned int count;
-
-            if ((count = request_sendpoll(request, request->offset + cpio_filedata(header), cpio_filesize(header))))
-            {
-
-                rc = p9p_mkrread(buffer, tag, count, request_getdata(request));
-
-            }
-
-        }
-
-    }
-
-    file_unlink(FILE_G5);
-
-    return rc;
+    return protocol_error(buffer, p9p, "Read error", -1);
 
 }
 
