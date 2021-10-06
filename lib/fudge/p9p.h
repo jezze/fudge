@@ -129,4 +129,4 @@ unsigned int p9p_mkrstat(void *buffer, unsigned short tag, void *stat);
 unsigned int p9p_mktwstat(void *buffer, unsigned short tag, unsigned int fid, void *stat);
 unsigned int p9p_mkrwstat(void *buffer, unsigned short tag);
 unsigned int p9p_mktgetattr(void *buffer, unsigned short tag, unsigned int fid, char mask[8]);
-unsigned int p9p_mkrgetattr(void *buffer, unsigned short tag, char valid[8], char qid[13], unsigned int mode, unsigned int uid, unsigned int gid, char nlink[8], char rdev[8], char size[8], char blksize[8], char blocks[8]);
+unsigned int p9p_mkrgetattr(void *buffer, unsigned short tag, char valid[8], char qid[13], unsigned int mode, unsigned int uid, unsigned int gid, char nlink[8], char rdev[8], char size[8], char blksize[8], char blocks[8], char atimesec[8], char atimensec[8], char mtimesec[8], char mtimensec[8], char ctimesec[8], char ctimensec[8], char btimesec[8], char btimensec[8], char gen[8], char dataversion[8]);

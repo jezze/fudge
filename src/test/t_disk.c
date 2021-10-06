@@ -295,8 +295,20 @@ static unsigned int protocol_getattr(void *buffer, struct p9p_header *p9p)
     char size[8];
     char blksize[8];
     char blocks[8];
+    char atimesec[8];
+    char atimensec[8];
+    char mtimesec[8];
+    char mtimensec[8];
+    char ctimesec[8];
+    char ctimensec[8];
+    char btimesec[8];
+    char btimensec[8];
+    char gen[8];
+    char dataversion[8];
 
-    return p9p_mkrgetattr(buffer, tag, valid, qid, mode, uid, gid, nlink, rdev, size, blksize, blocks);
+    buffer_clear(valid, 8);
+
+    return p9p_mkrgetattr(buffer, tag, valid, qid, mode, uid, gid, nlink, rdev, size, blksize, blocks, atimesec, atimensec, mtimesec, mtimensec, ctimesec, ctimensec, btimesec, btimensec, gen, dataversion);
 
 }
 
