@@ -25,6 +25,13 @@ static struct socket remote;
 static struct socket router;
 static char blocks[BLOCKSIZE * 4];
 
+static struct request *request_get(unsigned int fid)
+{
+
+    return &requests[0];
+
+}
+
 static void request_init(struct request *request, unsigned int offset, unsigned int count)
 {
 
@@ -169,7 +176,8 @@ static unsigned int on9pwalk(void *buffer, struct p9p_event *p9p)
 {
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
-    struct request *request = &requests[0];
+    unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
+    struct request *request = request_get(fid);
     unsigned int status;
 
     file_link(FILE_G5);
@@ -189,7 +197,8 @@ static unsigned int on9pread(void *buffer, struct p9p_event *p9p)
 {
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
-    struct request *request = &requests[0];
+    unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
+    struct request *request = request_get(fid);
     unsigned int rc = 0;
 
     channel_sendvalue(EVENT_DATA, p9p_read4(p9p, P9P_OFFSET_DATA), 10, 0);
