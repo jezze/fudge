@@ -157,9 +157,7 @@ static unsigned int request_read(struct request *request)
         if (cpio_validate(header))
         {
 
-            unsigned int count;
-
-            if ((count = request_sendpoll(request, request->offset + cpio_filedata(header), cpio_filesize(header))))
+            if (request_sendpoll(request, request->offset + cpio_filedata(header), cpio_filesize(header)))
             {
 
                 status = OK;
