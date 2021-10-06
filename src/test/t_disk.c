@@ -198,7 +198,7 @@ static unsigned int protocol_version(void *buffer, struct p9p_header *p9p)
 
     }
 
-    return p9p_mkrerror(buffer, tag, "Protocol not supported");
+    return protocol_error(buffer, p9p, "Protocol not supported", -1);
 
 }
 
