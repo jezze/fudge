@@ -201,8 +201,6 @@ static unsigned int on9pread(void *buffer, struct p9p_event *p9p)
     struct request *request = request_get(fid);
     unsigned int rc = 0;
 
-    channel_sendvalue(EVENT_DATA, p9p_read4(p9p, P9P_OFFSET_DATA), 10, 0);
-
     file_link(FILE_G5);
 
     if (sendpoll(request, request->offset, sizeof (struct cpio_header) + 1024))
