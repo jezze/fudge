@@ -24,6 +24,7 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 static char blocks[BLOCKSIZE * 4];
+static unsigned int version = P9P_VERSION_UNKNOWN;
 
 static struct request *request_get(unsigned int fid)
 {
@@ -76,7 +77,7 @@ static unsigned int request_poll(struct request *request)
 
 }
 
-static unsigned int sendpoll(struct request *request, unsigned int offset, unsigned int count)
+static unsigned int request_sendpoll(struct request *request, unsigned int offset, unsigned int count)
 {
 
     request_init(request, offset, count);
@@ -86,22 +87,22 @@ static unsigned int sendpoll(struct request *request, unsigned int offset, unsig
 
 }
 
-static void *getdata(struct request *request)
+static void *request_getdata(struct request *request)
 {
 
     return ((char *)blocks + request->blockoffset);
 
 }
 
-static unsigned int walk(struct request *request, unsigned int length, char *path)
+static unsigned int request_walk(struct request *request, unsigned int length, char *path)
 {
 
     unsigned int offset = 0;
 
-    while (sendpoll(request, offset, sizeof (struct cpio_header) + 1024))
+    while (request_sendpoll(request, offset, sizeof (struct cpio_header) + 1024))
     {
 
-        struct cpio_header *header = getdata(request);
+        struct cpio_header *header = request_getdata(request);
 
         if (!cpio_validate(header))
             break;
@@ -130,26 +131,67 @@ static unsigned int walk(struct request *request, unsigned int length, char *pat
 
 }
 
-static unsigned int on9perror(void *buffer, struct p9p_event *p9p, char *error)
+static unsigned int protocol_error(void *buffer, struct p9p_header *p9p, char *ename, int ecode)
 {
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
 
-    return p9p_mkrerror(buffer, tag, error);
+    if (version == P9P_VERSION_9P2000L)
+        return p9p_mkrlerror(buffer, tag, ecode);
+
+    return p9p_mkrerror(buffer, tag, ename);
 
 }
 
-static unsigned int on9pversion(void *buffer, struct p9p_event *p9p)
+static unsigned int protocol_version(void *buffer, struct p9p_header *p9p)
 {
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int msize = p9p_read4(p9p, P9P_OFFSET_DATA);
+    unsigned int vlength = p9p_readstringlength(p9p, P9P_OFFSET_DATA + 4);
+    char *vdata = p9p_readstringdata(p9p, P9P_OFFSET_DATA + 4);
 
-    return p9p_mkrversion(buffer, tag, msize, "9P2000.L");
+    if (vlength == 6 && buffer_match(vdata, "9P2000", vlength))
+    {
+
+        version = P9P_VERSION_9P2000;
+
+        return p9p_mkrversion(buffer, tag, msize, "9P2000");
+
+    }
+
+    if (vlength == 8 && buffer_match(vdata, "9P2000.u", vlength))
+    {
+
+        version = P9P_VERSION_9P2000U;
+
+        return p9p_mkrversion(buffer, tag, msize, "9P2000.u");
+
+    }
+
+    if (vlength == 8 && buffer_match(vdata, "9P2000.L", vlength))
+    {
+
+        version = P9P_VERSION_9P2000L;
+
+        return p9p_mkrversion(buffer, tag, msize, "9P2000.L");
+
+    }
+
+    if (vlength == 8 && buffer_match(vdata, "9P2000.F", vlength))
+    {
+
+        version = P9P_VERSION_9P2000F;
+
+        return p9p_mkrversion(buffer, tag, msize, "9P2000.F");
+
+    }
+
+    return p9p_mkrerror(buffer, tag, "Protocol not supported");
 
 }
 
-static unsigned int on9pattach(void *buffer, struct p9p_event *p9p)
+static unsigned int protocol_attach(void *buffer, struct p9p_header *p9p)
 {
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
@@ -163,7 +205,7 @@ static unsigned int on9pattach(void *buffer, struct p9p_event *p9p)
 
 }
 
-static unsigned int on9pclunk(void *buffer, struct p9p_event *p9p)
+static unsigned int protocol_clunk(void *buffer, struct p9p_header *p9p)
 {
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
@@ -172,7 +214,7 @@ static unsigned int on9pclunk(void *buffer, struct p9p_event *p9p)
 
 }
 
-static unsigned int on9pwalk(void *buffer, struct p9p_event *p9p)
+static unsigned int protocol_walk(void *buffer, struct p9p_header *p9p)
 {
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
@@ -184,7 +226,7 @@ static unsigned int on9pwalk(void *buffer, struct p9p_event *p9p)
 
     file_link(FILE_G5);
 
-    status = walk(request, p9p_read2(p9p, P9P_OFFSET_DATA + 10), (char *)p9p + P9P_OFFSET_DATA + 12);
+    status = request_walk(request, p9p_read2(p9p, P9P_OFFSET_DATA + 10), (char *)p9p + P9P_OFFSET_DATA + 12);
 
     file_unlink(FILE_G5);
 
@@ -198,11 +240,11 @@ static unsigned int on9pwalk(void *buffer, struct p9p_event *p9p)
 
     }
 
-    return on9perror(buffer, p9p, "File not found");
+    return protocol_error(buffer, p9p, "File not found", -1);
 
 }
 
-static unsigned int on9pread(void *buffer, struct p9p_event *p9p)
+static unsigned int protocol_read(void *buffer, struct p9p_header *p9p)
 {
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
@@ -212,20 +254,20 @@ static unsigned int on9pread(void *buffer, struct p9p_event *p9p)
 
     file_link(FILE_G5);
 
-    if (sendpoll(request, request->offset, sizeof (struct cpio_header) + 1024))
+    if (request_sendpoll(request, request->offset, sizeof (struct cpio_header) + 1024))
     {
 
-        struct cpio_header *header = getdata(request);
+        struct cpio_header *header = request_getdata(request);
 
         if (cpio_validate(header))
         {
 
             unsigned int count;
 
-            if ((count = sendpoll(request, request->offset + cpio_filedata(header), cpio_filesize(header))))
+            if ((count = request_sendpoll(request, request->offset + cpio_filedata(header), cpio_filesize(header))))
             {
 
-                rc = p9p_mkrread(buffer, tag, count, getdata(request));
+                rc = p9p_mkrread(buffer, tag, count, request_getdata(request));
 
             }
 
@@ -239,39 +281,56 @@ static unsigned int on9pread(void *buffer, struct p9p_event *p9p)
 
 }
 
-static unsigned int handle(void *reply, struct p9p_event *p9p)
+static unsigned int protocol_getattr(void *buffer, struct p9p_header *p9p)
+{
+
+    unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
+    char valid[8];
+    char qid[13];
+    unsigned int mode = 0;
+    unsigned int uid = 0;
+    unsigned int gid = 0;
+    char nlink[8];
+    char rdev[8];
+    char size[8];
+    char blksize[8];
+    char blocks[8];
+
+    return p9p_mkrgetattr(buffer, tag, valid, qid, mode, uid, gid, nlink, rdev, size, blksize, blocks);
+
+}
+
+static unsigned int handle(void *reply, struct p9p_header *p9p)
 {
 
     if (p9p_read4(p9p, P9P_OFFSET_SIZE) < P9P_OFFSET_DATA)
-        return on9perror(reply, p9p, "Error: Packet is too small\n");
-
-/*
-    if (p9p_read4(p9p, P9P_OFFSET_SIZE) > MAXSIZE)
-        return on9perror(reply, p9p, "Error: Packet is too big\n");
-*/
+        return protocol_error(reply, p9p, "Error: Packet is too small\n", -1);
 
     switch (p9p_read1(p9p, P9P_OFFSET_TYPE))
     {
 
     case P9P_TVERSION:
-        return on9pversion(reply, p9p);
+        return protocol_version(reply, p9p);
 
     case P9P_TATTACH:
-        return on9pattach(reply, p9p);
+        return protocol_attach(reply, p9p);
 
     case P9P_TCLUNK:
-        return on9pclunk(reply, p9p);
+        return protocol_clunk(reply, p9p);
 
     case P9P_TWALK:
-        return on9pwalk(reply, p9p);
+        return protocol_walk(reply, p9p);
 
     case P9P_TREAD:
-        return on9pread(reply, p9p);
+        return protocol_read(reply, p9p);
+
+    case P9P_TGETATTR:
+        return protocol_getattr(reply, p9p);
 
     default:
         channel_sendstring(EVENT_DATA, "Error: Packet has unknown type\n");
 
-        return on9perror(reply, p9p, "Packet has unknown type");
+        return protocol_error(reply, p9p, "Packet has unknown type", -1);
 
     }
 
@@ -280,7 +339,7 @@ static unsigned int handle(void *reply, struct p9p_event *p9p)
 static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct p9p_event *p9p = mdata;
+    struct p9p_header *p9p = mdata;
     char buffer[MESSAGE_SIZE];
 
     channel_sendbufferto(source, EVENT_P9P, handle(buffer, p9p), buffer);
@@ -310,7 +369,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
         {
 
-            struct p9p_event *p9p = (struct p9p_event *)buffer;
+            struct p9p_header *p9p = (struct p9p_header *)buffer;
             char reply[MESSAGE_SIZE];
 
             channel_sendstring(EVENT_DATA, "Packet received\n");

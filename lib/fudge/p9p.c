@@ -38,6 +38,31 @@ unsigned int p9p_read4(void *buffer, unsigned int o)
 
 }
 
+unsigned short p9p_readstringlength(void *buffer, unsigned int o)
+{
+
+    return p9p_read2(buffer, o);
+
+}
+
+void *p9p_readbuffer(void *buffer, unsigned int o)
+{
+
+    char *p = buffer;
+
+    return p + o;
+
+}
+
+char *p9p_readstringdata(void *buffer, unsigned int o)
+{
+
+    char *p = buffer;
+
+    return p + o + 2;
+
+}
+
 unsigned int p9p_write1(void *buffer, unsigned int o, unsigned char v)
 {
 
@@ -138,10 +163,23 @@ unsigned int p9p_mk(void *buffer, unsigned int size, unsigned char type, unsigne
 
 }
 
+unsigned int p9p_mkrlerror(void *buffer, unsigned short tag, int ecode)
+{
+
+    unsigned int n = sizeof (struct p9p_header);
+
+    n += p9p_write4(buffer, n, ecode);
+
+    p9p_mk(buffer, n, P9P_RLERROR, tag);
+
+    return n;
+
+}
+
 unsigned int p9p_mkrerror(void *buffer, unsigned short tag, char *ename)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_writestring(buffer, n, ename);
 
@@ -154,7 +192,7 @@ unsigned int p9p_mkrerror(void *buffer, unsigned short tag, char *ename)
 unsigned int p9p_mktattach(void *buffer, unsigned short tag, unsigned int fid, unsigned int afid, char *uname, char *aname)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, fid);
     n += p9p_write4(buffer, n, afid);
@@ -167,10 +205,27 @@ unsigned int p9p_mktattach(void *buffer, unsigned short tag, unsigned int fid, u
 
 }
 
+unsigned int p9p_mktattach_u(void *buffer, unsigned short tag, unsigned int fid, unsigned int afid, char *uname, char *aname, unsigned int nuname)
+{
+
+    unsigned int n = sizeof (struct p9p_header);
+
+    n += p9p_write4(buffer, n, fid);
+    n += p9p_write4(buffer, n, afid);
+    n += p9p_writestring(buffer, n, uname);
+    n += p9p_writestring(buffer, n, aname);
+    n += p9p_write4(buffer, n, nuname);
+
+    p9p_mk(buffer, n, P9P_TATTACH, tag);
+
+    return n;
+
+}
+
 unsigned int p9p_mkrattach(void *buffer, unsigned short tag, char qid[13])
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_writebuffer(buffer, n, 13, qid);
 
@@ -183,7 +238,7 @@ unsigned int p9p_mkrattach(void *buffer, unsigned short tag, char qid[13])
 unsigned int p9p_mktauth(void *buffer, unsigned short tag, unsigned int afid, char *uname, char *aname)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, afid);
     n += p9p_writestring(buffer, n, uname);
@@ -195,10 +250,26 @@ unsigned int p9p_mktauth(void *buffer, unsigned short tag, unsigned int afid, ch
 
 }
 
+unsigned int p9p_mktauth_u(void *buffer, unsigned short tag, unsigned int afid, char *uname, char *aname, unsigned int nuname)
+{
+
+    unsigned int n = sizeof (struct p9p_header);
+
+    n += p9p_write4(buffer, n, afid);
+    n += p9p_writestring(buffer, n, uname);
+    n += p9p_writestring(buffer, n, aname);
+    n += p9p_write4(buffer, n, nuname);
+
+    p9p_mk(buffer, n, P9P_TAUTH, tag);
+
+    return n;
+
+}
+
 unsigned int p9p_mkrauth(void *buffer, unsigned short tag, char aqid[13])
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_writebuffer(buffer, n, 13, aqid);
 
@@ -211,7 +282,7 @@ unsigned int p9p_mkrauth(void *buffer, unsigned short tag, char aqid[13])
 unsigned int p9p_mktclunk(void *buffer, unsigned short tag, unsigned int fid)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, fid);
 
@@ -224,7 +295,7 @@ unsigned int p9p_mktclunk(void *buffer, unsigned short tag, unsigned int fid)
 unsigned int p9p_mkrclunk(void *buffer, unsigned short tag)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     p9p_mk(buffer, n, P9P_RCLUNK, tag);
 
@@ -235,7 +306,7 @@ unsigned int p9p_mkrclunk(void *buffer, unsigned short tag)
 unsigned int p9p_mktflush(void *buffer, unsigned short tag, unsigned short oldtag)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write2(buffer, n, oldtag);
 
@@ -248,7 +319,7 @@ unsigned int p9p_mktflush(void *buffer, unsigned short tag, unsigned short oldta
 unsigned int p9p_mkrflush(void *buffer, unsigned short tag)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     p9p_mk(buffer, n, P9P_RFLUSH, tag);
 
@@ -259,7 +330,7 @@ unsigned int p9p_mkrflush(void *buffer, unsigned short tag)
 unsigned int p9p_mktversion(void *buffer, unsigned short tag, unsigned int msize, char *version)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, msize);
     n += p9p_writestring(buffer, n, version);
@@ -273,7 +344,7 @@ unsigned int p9p_mktversion(void *buffer, unsigned short tag, unsigned int msize
 unsigned int p9p_mkrversion(void *buffer, unsigned short tag, unsigned int msize, char *version)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, msize);
     n += p9p_writestring(buffer, n, version);
@@ -287,7 +358,7 @@ unsigned int p9p_mkrversion(void *buffer, unsigned short tag, unsigned int msize
 unsigned int p9p_mktwalk(void *buffer, unsigned short tag, unsigned int fid, unsigned int newfid, unsigned short nwname, char **wname)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
     unsigned int i;
 
     n += p9p_write4(buffer, n, fid);
@@ -306,7 +377,7 @@ unsigned int p9p_mktwalk(void *buffer, unsigned short tag, unsigned int fid, uns
 unsigned int p9p_mkrwalk(void *buffer, unsigned short tag, unsigned short nwqid, char *wqid[13])
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
     unsigned int i;
 
     n += p9p_write2(buffer, n, nwqid);
@@ -323,7 +394,7 @@ unsigned int p9p_mkrwalk(void *buffer, unsigned short tag, unsigned short nwqid,
 unsigned int p9p_mktread(void *buffer, unsigned short tag, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, fid);
     n += p9p_write8(buffer, n, offsetl, offseth);
@@ -338,7 +409,7 @@ unsigned int p9p_mktread(void *buffer, unsigned short tag, unsigned int fid, uns
 unsigned int p9p_mkrread(void *buffer, unsigned short tag, unsigned int count, void *data)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, count);
     n += p9p_writebuffer(buffer, n, count, data);
@@ -352,7 +423,7 @@ unsigned int p9p_mkrread(void *buffer, unsigned short tag, unsigned int count, v
 unsigned int p9p_mktwrite(void *buffer, unsigned short tag, unsigned int fid, unsigned int offsetl, unsigned int offseth, unsigned int count, void *data)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, fid);
     n += p9p_write8(buffer, n, offsetl, offseth);
@@ -368,7 +439,7 @@ unsigned int p9p_mktwrite(void *buffer, unsigned short tag, unsigned int fid, un
 unsigned int p9p_mkrwrite(void *buffer, unsigned short tag, unsigned int count)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, count);
 
@@ -381,7 +452,7 @@ unsigned int p9p_mkrwrite(void *buffer, unsigned short tag, unsigned int count)
 unsigned int p9p_mktopen(void *buffer, unsigned short tag, unsigned int fid, unsigned char mode)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, fid);
     n += p9p_write1(buffer, n, mode);
@@ -395,7 +466,7 @@ unsigned int p9p_mktopen(void *buffer, unsigned short tag, unsigned int fid, uns
 unsigned int p9p_mkropen(void *buffer, unsigned short tag, char qid[13], unsigned int iounit)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_writebuffer(buffer, n, 13, qid);
     n += p9p_write4(buffer, n, iounit);
@@ -409,7 +480,7 @@ unsigned int p9p_mkropen(void *buffer, unsigned short tag, char qid[13], unsigne
 unsigned int p9p_mktcreate(void *buffer, unsigned short tag, unsigned int fid, char *name, unsigned int perm, unsigned char mode)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, fid);
     n += p9p_writestring(buffer, n, name);
@@ -425,7 +496,7 @@ unsigned int p9p_mktcreate(void *buffer, unsigned short tag, unsigned int fid, c
 unsigned int p9p_mkrcreate(void *buffer, unsigned short tag, char qid[13], unsigned int iounit)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_writebuffer(buffer, n, 13, qid);
     n += p9p_write4(buffer, n, iounit);
@@ -439,7 +510,7 @@ unsigned int p9p_mkrcreate(void *buffer, unsigned short tag, char qid[13], unsig
 unsigned int p9p_mktremove(void *buffer, unsigned short tag, unsigned int fid)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, fid);
 
@@ -452,7 +523,7 @@ unsigned int p9p_mktremove(void *buffer, unsigned short tag, unsigned int fid)
 unsigned int p9p_mkrremove(void *buffer, unsigned short tag)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     p9p_mk(buffer, n, P9P_RREMOVE, tag);
 
@@ -463,7 +534,7 @@ unsigned int p9p_mkrremove(void *buffer, unsigned short tag)
 unsigned int p9p_mktstat(void *buffer, unsigned short tag, unsigned int fid)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, fid);
 
@@ -476,7 +547,7 @@ unsigned int p9p_mktstat(void *buffer, unsigned short tag, unsigned int fid)
 unsigned int p9p_mkrstat(void *buffer, unsigned short tag, void *stat)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     p9p_mk(buffer, n, P9P_RSTAT, tag);
 
@@ -487,7 +558,7 @@ unsigned int p9p_mkrstat(void *buffer, unsigned short tag, void *stat)
 unsigned int p9p_mktwstat(void *buffer, unsigned short tag, unsigned int fid, void *stat)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     n += p9p_write4(buffer, n, fid);
 
@@ -500,9 +571,45 @@ unsigned int p9p_mktwstat(void *buffer, unsigned short tag, unsigned int fid, vo
 unsigned int p9p_mkrwstat(void *buffer, unsigned short tag)
 {
 
-    unsigned int n = sizeof (struct p9p_event);
+    unsigned int n = sizeof (struct p9p_header);
 
     p9p_mk(buffer, n, P9P_RWSTAT, tag);
+
+    return n;
+
+}
+
+unsigned int p9p_mktgetattr(void *buffer, unsigned short tag, unsigned int fid, char mask[8])
+{
+
+    unsigned int n = sizeof (struct p9p_header);
+
+    n += p9p_write4(buffer, n, fid);
+    n += p9p_writebuffer(buffer, n, 8, mask);
+
+    p9p_mk(buffer, n, P9P_TGETATTR, tag);
+
+    return n;
+
+}
+
+unsigned int p9p_mkrgetattr(void *buffer, unsigned short tag, char valid[8], char qid[13], unsigned int mode, unsigned int uid, unsigned int gid, char nlink[8], char rdev[8], char size[8], char blksize[8], char blocks[8])
+{
+
+    unsigned int n = sizeof (struct p9p_header);
+
+    n += p9p_writebuffer(buffer, n, 8, valid);
+    n += p9p_writebuffer(buffer, n, 13, qid);
+    n += p9p_write4(buffer, n, mode);
+    n += p9p_write4(buffer, n, uid);
+    n += p9p_write4(buffer, n, gid);
+    n += p9p_writebuffer(buffer, n, 8, nlink);
+    n += p9p_writebuffer(buffer, n, 8, rdev);
+    n += p9p_writebuffer(buffer, n, 8, size);
+    n += p9p_writebuffer(buffer, n, 8, blksize);
+    n += p9p_writebuffer(buffer, n, 8, blocks);
+
+    p9p_mk(buffer, n, P9P_RGETATTR, tag);
 
     return n;
 
