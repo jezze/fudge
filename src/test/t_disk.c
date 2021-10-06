@@ -18,7 +18,7 @@ struct request
     unsigned int blockcount;
     unsigned int blockreads;
 
-} requests[8];
+} requests[256];
 
 static struct socket local;
 static struct socket remote;
@@ -28,7 +28,7 @@ static char blocks[BLOCKSIZE * 4];
 static struct request *request_get(unsigned int fid)
 {
 
-    return &requests[0];
+    return &requests[fid];
 
 }
 
@@ -177,7 +177,9 @@ static unsigned int on9pwalk(void *buffer, struct p9p_event *p9p)
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
+    unsigned int newfid = p9p_read4(p9p, P9P_OFFSET_DATA);
     struct request *request = request_get(fid);
+    struct request *request2 = request_get(newfid);
     unsigned int status;
 
     file_link(FILE_G5);
@@ -187,9 +189,16 @@ static unsigned int on9pwalk(void *buffer, struct p9p_event *p9p)
     file_unlink(FILE_G5);
 
     if (status == OK)
+    {
+
+        if (fid != newfid)
+            buffer_copy(request2, request, sizeof (struct request));
+
         return p9p_mkrwalk(buffer, tag, 0, 0);
-    else
-        return on9perror(buffer, p9p, "File not found");
+
+    }
+
+    return on9perror(buffer, p9p, "File not found");
 
 }
 

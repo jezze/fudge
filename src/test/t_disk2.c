@@ -69,6 +69,28 @@ static unsigned int version(unsigned int msize, char *name)
 
 }
 
+static unsigned int attach(unsigned int fid, unsigned int afid)
+{
+
+    char buffer[MESSAGE_SIZE];
+    struct message request;
+    struct message response;
+
+    message_init(&request, EVENT_P9P);
+    message_putbuffer(&request, p9p_mktattach(buffer, 45, fid, afid, "nobody", "nobody"), buffer);
+
+    switch (sendandpoll(&request, &response))
+    {
+
+    case P9P_RATTACH:
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int walk(unsigned int fid, unsigned int newfid, char *wname)
 {
 
@@ -91,7 +113,7 @@ static unsigned int walk(unsigned int fid, unsigned int newfid, char *wname)
 
 }
 
-static unsigned int read(void)
+static unsigned int read(unsigned int fid)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -99,7 +121,7 @@ static unsigned int read(void)
     struct message response;
 
     message_init(&request, EVENT_P9P);
-    message_putbuffer(&request, p9p_mktread(buffer, 43, 22445566, 0, 0, 512), buffer);
+    message_putbuffer(&request, p9p_mktread(buffer, 43, fid, 0, 0, 512), buffer);
 
     switch (sendandpoll(&request, &response))
     {
@@ -121,11 +143,16 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (version(1200, "9P2000"))
     {
 
-        if (walk(22445566, 0, "build/data/help.txt"))
+        if (attach(1, 1))
         {
 
-            if (read())
+            if (walk(1, 1, "build/data/help.txt"))
             {
+
+                if (read(1))
+                {
+
+                }
 
             }
 
