@@ -8,7 +8,7 @@
 #define OK 1
 #define ERROR 0
 
-struct request
+struct state
 {
 
     unsigned int offset;
@@ -18,7 +18,7 @@ struct request
     unsigned int blockcount;
     unsigned int blockreads;
 
-} requests[256];
+} states[256];
 
 static struct socket local;
 static struct socket remote;
@@ -26,39 +26,39 @@ static struct socket router;
 static char blocks[BLOCKSIZE * 4];
 static unsigned int version = P9P_VERSION_UNKNOWN;
 
-static struct request *request_get(unsigned int fid)
+static struct state *request_get(unsigned int fid)
 {
 
-    return &requests[fid];
+    return &states[fid];
 
 }
 
-static void request_init(struct request *request, unsigned int offset, unsigned int count)
+static void request_init(struct state *state, unsigned int offset, unsigned int count)
 {
 
-    request->offset = offset;
-    request->count = count;
-    request->blocksector = offset / BLOCKSIZE;
-    request->blockoffset = offset % BLOCKSIZE;
-    request->blockcount = ((BLOCKSIZE - 1) + request->blockoffset + request->count) / BLOCKSIZE;
-    request->blockreads = 0;
+    state->offset = offset;
+    state->count = count;
+    state->blocksector = offset / BLOCKSIZE;
+    state->blockoffset = offset % BLOCKSIZE;
+    state->blockcount = ((BLOCKSIZE - 1) + state->blockoffset + state->count) / BLOCKSIZE;
+    state->blockreads = 0;
 
 }
 
-static void request_send(struct request *request)
+static void request_send(struct state *state)
 {
 
     struct {struct message_header header; struct event_blockrequest blockrequest;} message;
 
-    message.blockrequest.sector = request->blocksector;
-    message.blockrequest.count = request->blockcount;
+    message.blockrequest.sector = state->blocksector;
+    message.blockrequest.count = state->blockcount;
 
     message_initheader(&message.header, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
     file_writeall(FILE_G5, &message, message.header.length);
 
 }
 
-static unsigned int request_poll(struct request *request)
+static unsigned int request_poll(struct state *state)
 {
 
     struct message message;
@@ -66,10 +66,10 @@ static unsigned int request_poll(struct request *request)
     while (channel_polleventsystem(EVENT_DATA, &message))
     {
 
-        request->blockreads += buffer_write(blocks, BLOCKSIZE * 4, message.data.buffer, message_datasize(&message.header), request->blockreads * BLOCKSIZE) / BLOCKSIZE;
+        state->blockreads += buffer_write(blocks, BLOCKSIZE * 4, message.data.buffer, message_datasize(&message.header), state->blockreads * BLOCKSIZE) / BLOCKSIZE;
 
-        if (request->blockreads == request->blockcount)
-            return request->count;
+        if (state->blockreads == state->blockcount)
+            return state->count;
 
     }
 
@@ -77,24 +77,24 @@ static unsigned int request_poll(struct request *request)
 
 }
 
-static unsigned int request_sendpoll(struct request *request, unsigned int offset, unsigned int count)
+static unsigned int request_sendpoll(struct state *state, unsigned int offset, unsigned int count)
 {
 
-    request_init(request, offset, count);
-    request_send(request);
+    request_init(state, offset, count);
+    request_send(state);
 
-    return request_poll(request);
+    return request_poll(state);
 
 }
 
-static void *request_getdata(struct request *request)
+static void *request_getdata(struct state *state)
 {
 
-    return ((char *)blocks + request->blockoffset);
+    return ((char *)blocks + state->blockoffset);
 
 }
 
-static unsigned int request_walk(struct request *request, unsigned int length, char *path)
+static unsigned int request_walk(struct state *state, unsigned int length, char *path)
 {
 
     unsigned int status = ERROR;
@@ -102,10 +102,10 @@ static unsigned int request_walk(struct request *request, unsigned int length, c
 
     file_link(FILE_G5);
 
-    while (request_sendpoll(request, offset, sizeof (struct cpio_header) + 1024))
+    while (request_sendpoll(state, offset, sizeof (struct cpio_header) + 1024))
     {
 
-        struct cpio_header *header = request_getdata(request);
+        struct cpio_header *header = request_getdata(state);
 
         if (!cpio_validate(header))
             break;
@@ -132,7 +132,7 @@ static unsigned int request_walk(struct request *request, unsigned int length, c
 
         }
 
-        offset = request->offset + cpio_next(header);
+        offset = state->offset + cpio_next(header);
 
     }
 
@@ -142,22 +142,22 @@ static unsigned int request_walk(struct request *request, unsigned int length, c
 
 }
 
-static unsigned int request_read(struct request *request)
+static unsigned int request_read(struct state *state)
 {
 
     unsigned int status = ERROR;
 
     file_link(FILE_G5);
 
-    if (request_sendpoll(request, request->offset, sizeof (struct cpio_header) + 1024))
+    if (request_sendpoll(state, state->offset, sizeof (struct cpio_header) + 1024))
     {
 
-        struct cpio_header *header = request_getdata(request);
+        struct cpio_header *header = request_getdata(state);
 
         if (cpio_validate(header))
         {
 
-            if (request_sendpoll(request, request->offset + cpio_filedata(header), cpio_filesize(header)))
+            if (request_sendpoll(state, state->offset + cpio_filedata(header), cpio_filesize(header)))
             {
 
                 status = OK;
@@ -246,9 +246,9 @@ static unsigned int protocol_attach(void *buffer, struct p9p_header *p9p)
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
-    struct request temp;
+    struct state temp;
 
-    buffer_copy(&temp, request_get(fid), sizeof (struct request));
+    buffer_copy(&temp, request_get(fid), sizeof (struct state));
 
     if (request_walk(&temp, 5, "build") == OK)
     {
@@ -258,7 +258,7 @@ static unsigned int protocol_attach(void *buffer, struct p9p_header *p9p)
         p9p_write1(qid, 0, 0);
         p9p_write4(qid, 1, 0);
         p9p_write8(qid, 5, temp.offset, 0);
-        buffer_copy(request_get(fid), &temp, sizeof (struct request));
+        buffer_copy(request_get(fid), &temp, sizeof (struct state));
 
         return p9p_mkrattach(buffer, tag, qid);
 
@@ -283,14 +283,14 @@ static unsigned int protocol_walk(void *buffer, struct p9p_header *p9p)
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
     unsigned int newfid = p9p_read4(p9p, P9P_OFFSET_DATA + 4);
-    struct request temp;
+    struct state temp;
 
-    buffer_copy(&temp, request_get(fid), sizeof (struct request));
+    buffer_copy(&temp, request_get(fid), sizeof (struct state));
 
     if (request_walk(&temp, p9p_readstringlength(p9p, P9P_OFFSET_DATA + 10), p9p_readstringdata(p9p, P9P_OFFSET_DATA + 10)) == OK)
     {
 
-        buffer_copy(request_get(newfid), &temp, sizeof (struct request));
+        buffer_copy(request_get(newfid), &temp, sizeof (struct state));
 
         return p9p_mkrwalk(buffer, tag, 0, 0);
 
@@ -305,10 +305,10 @@ static unsigned int protocol_read(void *buffer, struct p9p_header *p9p)
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
-    struct request *request = request_get(fid);
+    struct state *state = request_get(fid);
 
-    if (request_read(request) == OK)
-        return p9p_mkrread(buffer, tag, request->count, request_getdata(request));
+    if (request_read(state) == OK)
+        return p9p_mkrread(buffer, tag, state->count, request_getdata(state));
 
     return protocol_error(buffer, p9p, "Read error", -1);
 
@@ -319,7 +319,7 @@ static unsigned int protocol_getattr(void *buffer, struct p9p_header *p9p)
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
-    struct request *request = request_get(fid);
+    struct state *state = request_get(fid);
     char valid[8];
     char qid[13];
     unsigned int mode = 0;
@@ -344,7 +344,7 @@ static unsigned int protocol_getattr(void *buffer, struct p9p_header *p9p)
     buffer_clear(valid, 8);
     p9p_write1(qid, 0, 0);
     p9p_write4(qid, 1, 0);
-    p9p_write8(qid, 5, request->offset, 0);
+    p9p_write8(qid, 5, state->offset, 0);
 
     return p9p_mkrgetattr(buffer, tag, valid, qid, mode, uid, gid, nlink, rdev, size, blksize, blocks, atimesec, atimensec, mtimesec, mtimensec, ctimesec, ctimensec, btimesec, btimensec, gen, dataversion);
 
