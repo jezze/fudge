@@ -26,7 +26,7 @@ static struct socket router;
 static char blocks[BLOCKSIZE * 4];
 static unsigned int version = P9P_VERSION_UNKNOWN;
 
-static struct state *request_get(unsigned int fid)
+static struct state *request_getstate(unsigned int fid)
 {
 
     return &states[fid];
@@ -248,7 +248,7 @@ static unsigned int protocol_attach(void *buffer, struct p9p_header *p9p)
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
     struct state temp;
 
-    buffer_copy(&temp, request_get(fid), sizeof (struct state));
+    buffer_copy(&temp, request_getstate(fid), sizeof (struct state));
 
     if (request_walk(&temp, 5, "build") == OK)
     {
@@ -258,7 +258,7 @@ static unsigned int protocol_attach(void *buffer, struct p9p_header *p9p)
         p9p_write1(qid, 0, 0);
         p9p_write4(qid, 1, 0);
         p9p_write8(qid, 5, temp.offset, 0);
-        buffer_copy(request_get(fid), &temp, sizeof (struct state));
+        buffer_copy(request_getstate(fid), &temp, sizeof (struct state));
 
         return p9p_mkrattach(buffer, tag, qid);
 
@@ -285,12 +285,12 @@ static unsigned int protocol_walk(void *buffer, struct p9p_header *p9p)
     unsigned int newfid = p9p_read4(p9p, P9P_OFFSET_DATA + 4);
     struct state temp;
 
-    buffer_copy(&temp, request_get(fid), sizeof (struct state));
+    buffer_copy(&temp, request_getstate(fid), sizeof (struct state));
 
     if (request_walk(&temp, p9p_readstringlength(p9p, P9P_OFFSET_DATA + 10), p9p_readstringdata(p9p, P9P_OFFSET_DATA + 10)) == OK)
     {
 
-        buffer_copy(request_get(newfid), &temp, sizeof (struct state));
+        buffer_copy(request_getstate(newfid), &temp, sizeof (struct state));
 
         return p9p_mkrwalk(buffer, tag, 0, 0);
 
@@ -305,7 +305,7 @@ static unsigned int protocol_read(void *buffer, struct p9p_header *p9p)
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
-    struct state *state = request_get(fid);
+    struct state *state = request_getstate(fid);
 
     if (request_read(state) == OK)
         return p9p_mkrread(buffer, tag, state->count, request_getdata(state));
@@ -319,7 +319,7 @@ static unsigned int protocol_getattr(void *buffer, struct p9p_header *p9p)
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
-    struct state *state = request_get(fid);
+    struct state *state = request_getstate(fid);
     char valid[8];
     char qid[13];
     unsigned int mode = 0;
