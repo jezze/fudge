@@ -147,10 +147,10 @@ static void sendrequest(void)
     if (!version(40, 1200, "9P2000.F"))
         return;
 
-    if (!attach(41, 1, 1))
+    if (!attach(41, 0, 0))
         return;
 
-    if (!walk(42, 1, 1, "build/data/help.txt"))
+    if (!walk(42, 0, 1, "build/data/help.txt"))
         return;
 
     read(43, 1);

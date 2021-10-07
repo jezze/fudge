@@ -282,7 +282,7 @@ static unsigned int protocol_walk(void *buffer, struct p9p_header *p9p)
 
     unsigned int tag = p9p_read4(p9p, P9P_OFFSET_TAG);
     unsigned int fid = p9p_read4(p9p, P9P_OFFSET_DATA);
-    unsigned int newfid = p9p_read4(p9p, P9P_OFFSET_DATA);
+    unsigned int newfid = p9p_read4(p9p, P9P_OFFSET_DATA + 4);
     struct request temp;
 
     buffer_copy(&temp, request_get(fid), sizeof (struct request));
