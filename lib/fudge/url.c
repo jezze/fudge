@@ -1,4 +1,4 @@
-#include "ascii.h"
+#include "cstring.h"
 #include "url.h"
 
 struct pos
@@ -69,7 +69,7 @@ unsigned int url_parse(struct url *url, void *buffer, unsigned int buffersize, c
 {
 
     const char *start = s;
-    unsigned int count = ascii_lengthz(s);
+    unsigned int count = cstring_lengthz(s);
     struct pos pos;
     unsigned int i;
 
@@ -119,7 +119,7 @@ unsigned int url_parse(struct url *url, void *buffer, unsigned int buffersize, c
                 break;
 
             default:
-                if (!ascii_isalpha(c))
+                if (!cstring_isalpha(c))
                     return 0;
 
                 break;
@@ -270,7 +270,7 @@ unsigned int url_parse(struct url *url, void *buffer, unsigned int buffersize, c
                 break;
 
             default:
-                if (!ascii_isdigit(c))
+                if (!cstring_isdigit(c))
                     return 0;
 
                 break;
@@ -368,7 +368,7 @@ unsigned int url_tostring(struct url *url, char *buffer, unsigned int buffersize
     if (url->scheme)
     {
 
-        offset += copyout(buffer, buffersize, url->scheme, ascii_length(url->scheme), offset);
+        offset += copyout(buffer, buffersize, url->scheme, cstring_length(url->scheme), offset);
         offset += copyout(buffer, buffersize, ":", 1, offset);
 
     }
@@ -381,7 +381,7 @@ unsigned int url_tostring(struct url *url, char *buffer, unsigned int buffersize
         if (url->userinfo)
         {
 
-            offset += copyout(buffer, buffersize, url->userinfo, ascii_length(url->userinfo), offset);
+            offset += copyout(buffer, buffersize, url->userinfo, cstring_length(url->userinfo), offset);
             offset += copyout(buffer, buffersize, "@", 1, offset);
 
         }
@@ -389,7 +389,7 @@ unsigned int url_tostring(struct url *url, char *buffer, unsigned int buffersize
         if (url->host)
         {
 
-            offset += copyout(buffer, buffersize, url->host, ascii_length(url->host), offset);
+            offset += copyout(buffer, buffersize, url->host, cstring_length(url->host), offset);
 
         }
 
@@ -397,7 +397,7 @@ unsigned int url_tostring(struct url *url, char *buffer, unsigned int buffersize
         {
 
             offset += copyout(buffer, buffersize, ":", 1, offset);
-            offset += copyout(buffer, buffersize, url->port, ascii_length(url->port), offset);
+            offset += copyout(buffer, buffersize, url->port, cstring_length(url->port), offset);
 
         }
 
@@ -409,7 +409,7 @@ unsigned int url_tostring(struct url *url, char *buffer, unsigned int buffersize
         if (url->authority)
             offset += copyout(buffer, buffersize, "/", 1, offset);
 
-        offset += copyout(buffer, buffersize, url->path, ascii_length(url->path), offset);
+        offset += copyout(buffer, buffersize, url->path, cstring_length(url->path), offset);
 
     }
 
@@ -417,7 +417,7 @@ unsigned int url_tostring(struct url *url, char *buffer, unsigned int buffersize
     {
 
         offset += copyout(buffer, buffersize, "?", 1, offset);
-        offset += copyout(buffer, buffersize, url->query, ascii_length(url->query), offset);
+        offset += copyout(buffer, buffersize, url->query, cstring_length(url->query), offset);
 
     }
 
@@ -425,7 +425,7 @@ unsigned int url_tostring(struct url *url, char *buffer, unsigned int buffersize
     {
 
         offset += copyout(buffer, buffersize, "#", 1, offset);
-        offset += copyout(buffer, buffersize, url->fragment, ascii_length(url->fragment), offset);
+        offset += copyout(buffer, buffersize, url->fragment, cstring_length(url->fragment), offset);
 
     }
 

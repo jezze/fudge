@@ -27,7 +27,7 @@ unsigned int dns_copyname(void *buffer, unsigned int count, char *name)
     unsigned int c = 0;
     unsigned int i;
 
-    for (i = 0; i < ascii_lengthz(name); i++)
+    for (i = 0; i < cstring_lengthz(name); i++)
     {
 
         if (name[i] == '.' || name[i] == '\0')

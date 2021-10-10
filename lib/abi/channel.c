@@ -131,46 +131,46 @@ unsigned int channel_sendbufferto(unsigned int target, unsigned int event, unsig
 unsigned int channel_sendstring(unsigned int event, char *string)
 {
 
-    return send(0, event, ascii_length(string), string);
+    return send(0, event, cstring_length(string), string);
 
 }
 
 unsigned int channel_sendstringto(unsigned int target, unsigned int event, char *string)
 {
 
-    return send(target, event, ascii_length(string), string);
+    return send(target, event, cstring_length(string), string);
 
 }
 
 unsigned int channel_sendstringz(unsigned int event, char *string)
 {
 
-    return send(0, event, ascii_lengthz(string), string);
+    return send(0, event, cstring_lengthz(string), string);
 
 }
 
 unsigned int channel_sendstringzto(unsigned int target, unsigned int event, char *string)
 {
 
-    return send(target, event, ascii_lengthz(string), string);
+    return send(target, event, cstring_lengthz(string), string);
 
 }
 
 unsigned int channel_sendvalue(unsigned int event, int value, unsigned int base, unsigned int padding)
 {
 
-    char num[ASCII_NUMSIZE];
+    char num[CSTRING_NUMSIZE];
 
-    return send(0, event, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num);
+    return send(0, event, cstring_wvalue(num, CSTRING_NUMSIZE, value, base, padding), num);
 
 }
 
 unsigned int channel_sendvalueto(unsigned int target, unsigned int event, int value, unsigned int base, unsigned int padding)
 {
 
-    char num[ASCII_NUMSIZE];
+    char num[CSTRING_NUMSIZE];
 
-    return send(target, event, ascii_wvalue(num, ASCII_NUMSIZE, value, base, padding), num);
+    return send(target, event, cstring_wvalue(num, CSTRING_NUMSIZE, value, base, padding), num);
 
 }
 

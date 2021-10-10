@@ -29,7 +29,7 @@ static void interpret(void *buffer, unsigned int count)
         char outputdata[BUFFER_SIZE];
         unsigned int offset = 0;
 
-        offset += buffer_write(outputdata, BUFFER_SIZE, text, ascii_length(text), offset);
+        offset += buffer_write(outputdata, BUFFER_SIZE, text, cstring_length(text), offset);
         offset += buffer_write(outputdata, BUFFER_SIZE, buffer, count, offset);
 
         socket_send_tcp(FILE_G1, &local, &remote, &router, offset, outputdata);
@@ -62,7 +62,7 @@ static void resolve(char *domain)
 
             socket_bind_ipv4s(&remote, message.data.buffer);
             socket_bind_tcps(&remote, "6667", 0);
-            channel_sendbuffer(EVENT_DATA, ascii_length(message.data.buffer), message.data.buffer);
+            channel_sendbuffer(EVENT_DATA, cstring_length(message.data.buffer), message.data.buffer);
 
         }
 
@@ -135,7 +135,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         file_link(FILE_G1);
         socket_resolveremote(FILE_G1, &local, &router);
         socket_connect_tcp(FILE_G1, &local, &remote, &router);
-        socket_send_tcp(FILE_G1, &local, &remote, &router, ascii_length(request), request);
+        socket_send_tcp(FILE_G1, &local, &remote, &router, cstring_length(request), request);
 
         while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
             channel_sendbuffer(EVENT_DATA, count, buffer);
@@ -153,27 +153,27 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
-    char *value = key + ascii_lengthz(key);
+    char *value = key + cstring_lengthz(key);
 
-    if (ascii_match(key, "ethernet"))
+    if (cstring_match(key, "ethernet"))
         file_walk2(FILE_G0, value);
 
-    if (ascii_match(key, "domain"))
-        ascii_copy(domain, value);
+    if (cstring_match(key, "domain"))
+        cstring_copy(domain, value);
 
-    if (ascii_match(key, "local-address"))
+    if (cstring_match(key, "local-address"))
         socket_bind_ipv4s(&local, value);
 
-    if (ascii_match(key, "local-port"))
+    if (cstring_match(key, "local-port"))
         socket_bind_tcps(&local, value, 42);
 
-    if (ascii_match(key, "remote-address") || ascii_match(key, "address"))
+    if (cstring_match(key, "remote-address") || cstring_match(key, "address"))
         socket_bind_ipv4s(&remote, value);
 
-    if (ascii_match(key, "remote-port") || ascii_match(key, "port"))
+    if (cstring_match(key, "remote-port") || cstring_match(key, "port"))
         socket_bind_tcps(&remote, value, 0);
 
-    if (ascii_match(key, "router-address"))
+    if (cstring_match(key, "router-address"))
         socket_bind_ipv4s(&router, value);
 
 }

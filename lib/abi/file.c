@@ -5,14 +5,14 @@
 unsigned int file_walk(unsigned int descriptor, unsigned int pdescriptor, char *path)
 {
 
-    return call_walk(descriptor, pdescriptor, path, ascii_length(path));
+    return call_walk(descriptor, pdescriptor, path, cstring_length(path));
 
 }
 
 unsigned int file_walk2(unsigned int descriptor, char *path)
 {
 
-    return call_walk(descriptor, FILE_PW, path, ascii_length(path));
+    return call_walk(descriptor, FILE_PW, path, cstring_length(path));
 
 }
 
@@ -26,7 +26,7 @@ unsigned int file_duplicate(unsigned int descriptor, unsigned int pdescriptor)
 unsigned int file_create(unsigned int descriptor, unsigned int pdescriptor, char *name)
 {
 
-    return call_create(descriptor, pdescriptor, name, ascii_length(name));
+    return call_create(descriptor, pdescriptor, name, cstring_length(name));
 
 }
 

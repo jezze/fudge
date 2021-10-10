@@ -1,4 +1,4 @@
-#include "ascii.h"
+#include "cstring.h"
 #include "regexp.h"
 
 #define MAX (~(unsigned int)0)
@@ -286,8 +286,8 @@ static unsigned int singletail(char *p, char *s, struct data *d, unsigned int o)
         char *q;
         unsigned int len;
 
-        len = ascii_length(p + 1);
-        lo = hi = ascii_rvalue(p + 1, len, 10);
+        len = cstring_length(p + 1);
+        lo = hi = cstring_rvalue(p + 1, len, 10);
         q = p + len;
 
         if ((p + 1) == q)
@@ -296,8 +296,8 @@ static unsigned int singletail(char *p, char *s, struct data *d, unsigned int o)
         if (*q == ',')
         {
 
-            len = ascii_length(q);
-            hi = ascii_rvalue(q + 1, len, 10);
+            len = cstring_length(q);
+            hi = cstring_rvalue(q + 1, len, 10);
             q = q + len;
 
             if (q[-1] == ',')

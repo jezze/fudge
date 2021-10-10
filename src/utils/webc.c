@@ -16,11 +16,11 @@ static unsigned int buildrequest(unsigned int count, void *buffer, struct url *k
     offset += buffer_write(buffer, count, "GET /", 5, offset);
 
     if (kurl->path)
-        offset += buffer_write(buffer, count, kurl->path, ascii_length(kurl->path), offset);
+        offset += buffer_write(buffer, count, kurl->path, cstring_length(kurl->path), offset);
 
     offset += buffer_write(buffer, count, " HTTP/1.1\r\n", 11, offset);
     offset += buffer_write(buffer, count, "Host: ", 6, offset);
-    offset += buffer_write(buffer, count, kurl->host, ascii_length(kurl->host), offset);
+    offset += buffer_write(buffer, count, kurl->host, cstring_length(kurl->host), offset);
     offset += buffer_write(buffer, count, "\r\n\r\n", 4, offset);
 
     return offset;
@@ -62,7 +62,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
 
-    if (ascii_length(url) >= 4 && buffer_match(url, "http", 4))
+    if (cstring_length(url) >= 4 && buffer_match(url, "http", 4))
         url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_SCHEME);
     else
         url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_HOST);
@@ -100,27 +100,27 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
-    char *value = key + ascii_lengthz(key);
+    char *value = key + cstring_lengthz(key);
 
-    if (ascii_match(key, "ethernet"))
+    if (cstring_match(key, "ethernet"))
         file_walk2(FILE_G0, value);
 
-    if (ascii_match(key, "url"))
-        ascii_copy(url, value);
+    if (cstring_match(key, "url"))
+        cstring_copy(url, value);
 
-    if (ascii_match(key, "local-address"))
+    if (cstring_match(key, "local-address"))
         socket_bind_ipv4s(&local, value);
 
-    if (ascii_match(key, "local-port"))
+    if (cstring_match(key, "local-port"))
         socket_bind_tcps(&local, value, 42);
 
-    if (ascii_match(key, "remote-address") || ascii_match(key, "address"))
+    if (cstring_match(key, "remote-address") || cstring_match(key, "address"))
         socket_bind_ipv4s(&remote, value);
 
-    if (ascii_match(key, "remote-port") || ascii_match(key, "port"))
+    if (cstring_match(key, "remote-port") || cstring_match(key, "port"))
         socket_bind_tcps(&remote, value, 0);
 
-    if (ascii_match(key, "router-address"))
+    if (cstring_match(key, "router-address"))
         socket_bind_ipv4s(&router, value);
 
 }

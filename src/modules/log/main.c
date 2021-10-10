@@ -38,17 +38,17 @@ static void interface_write(unsigned int level, char *string, char *file, unsign
 
     }
 
-    count += buffer_write(buffer, BUFFER_SIZE, string, ascii_length(string), count);
+    count += buffer_write(buffer, BUFFER_SIZE, string, cstring_length(string), count);
 
     if (file && line)
     {
 
-        char num[ASCII_NUMSIZE];
+        char num[CSTRING_NUMSIZE];
 
         count += buffer_write(buffer, BUFFER_SIZE, " (", 2, count);
-        count += buffer_write(buffer, BUFFER_SIZE, file, ascii_length(file), count);
+        count += buffer_write(buffer, BUFFER_SIZE, file, cstring_length(file), count);
         count += buffer_write(buffer, BUFFER_SIZE, ":", 1, count);
-        count += buffer_write(buffer, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, line, 10, 0), count);
+        count += buffer_write(buffer, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, line, 10, 0), count);
         count += buffer_write(buffer, BUFFER_SIZE, ")", 1, count);
 
     }

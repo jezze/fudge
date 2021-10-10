@@ -2,10 +2,10 @@ L:=\
     $(DIR_LIB)/fudge/fudge.a \
 
 O:=\
-    $(DIR_LIB)/fudge/ascii.o \
     $(DIR_LIB)/fudge/buffer.o \
     $(DIR_LIB)/fudge/cpio.o \
     $(DIR_LIB)/fudge/crc.o \
+    $(DIR_LIB)/fudge/cstring.o \
     $(DIR_LIB)/fudge/ctrl.o \
     $(DIR_LIB)/fudge/elf.o \
     $(DIR_LIB)/fudge/keymap.o \

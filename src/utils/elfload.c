@@ -146,7 +146,7 @@ static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionhe
         if (symbol.shindex)
             continue;
 
-        address = findmodulesymbol(ascii_length(strings + symbol.name), strings + symbol.name);
+        address = findmodulesymbol(cstring_length(strings + symbol.name), strings + symbol.name);
 
         if (address)
         {

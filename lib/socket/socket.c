@@ -10,13 +10,13 @@ static unsigned int convert(unsigned char address[IPV4_ADDRSIZE], char *buffer)
     unsigned int start = 0;
     unsigned int n = 0;
 
-    for (i = 0; i < ascii_lengthz(buffer); i++)
+    for (i = 0; i < cstring_lengthz(buffer); i++)
     {
 
         if (buffer[i] == '.' || buffer[i] == '\0')
         {
 
-            address[n] = ascii_rvalue(buffer + start, i - start, 10);
+            address[n] = cstring_rvalue(buffer + start, i - start, 10);
 
             start = i + 1;
             n++;
@@ -745,7 +745,7 @@ void socket_bind_tcps(struct socket *socket, char *port, unsigned int seq)
 
     unsigned char p[TCP_PORTSIZE];
 
-    net_save16(p, ascii_rvalue(port, ascii_length(port), 10));
+    net_save16(p, cstring_rvalue(port, cstring_length(port), 10));
     socket_bind_tcp(socket, p, seq);
  
 }
@@ -762,7 +762,7 @@ void socket_bind_udps(struct socket *socket, char *port)
 
     unsigned char p[UDP_PORTSIZE];
 
-    net_save16(p, ascii_rvalue(port, ascii_length(port), 10));
+    net_save16(p, cstring_rvalue(port, cstring_length(port), 10));
     socket_bind_udp(socket, p);
  
 }

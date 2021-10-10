@@ -41,7 +41,7 @@ static unsigned int service_child(unsigned int id, char *path, unsigned int leng
     {
 
         struct system_node *cnode = current->data;
-        unsigned int length0 = ascii_length(cnode->name);
+        unsigned int length0 = cstring_length(cnode->name);
 
         if (cnode->type == SYSTEM_NODETYPE_MULTIGROUP)
         {
@@ -55,7 +55,7 @@ static unsigned int service_child(unsigned int id, char *path, unsigned int leng
             if (!buffer_match(cnode->name, path, colon))
                 continue;
 
-            val = ascii_rvalue(path + colon + 1, length - colon - 1, 10);
+            val = cstring_rvalue(path + colon + 1, length - colon - 1, 10);
 
             if (val != cnode->index)
                 continue;
@@ -142,15 +142,15 @@ static unsigned int readgroup(struct system_node *current, void *buffer, unsigne
 
     record.id = (unsigned int)current;
     record.size = 0;
-    record.length = buffer_read(record.name, RECORD_NAMESIZE, current->name, ascii_length(current->name), 0);
+    record.length = buffer_read(record.name, RECORD_NAMESIZE, current->name, cstring_length(current->name), 0);
 
     if (current->type == SYSTEM_NODETYPE_MULTIGROUP)
     {
 
-        char num[ASCII_NUMSIZE];
+        char num[CSTRING_NUMSIZE];
 
         record.length += buffer_write(record.name, RECORD_NAMESIZE, ":", 1, record.length);
-        record.length += buffer_write(record.name, RECORD_NAMESIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, current->index, 10, 0), record.length);
+        record.length += buffer_write(record.name, RECORD_NAMESIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, current->index, 10, 0), record.length);
 
     }
 
@@ -289,7 +289,7 @@ void system_addchild(struct system_node *group, struct system_node *node)
     if (node->type == SYSTEM_NODETYPE_MULTIGROUP)
     {
 
-        unsigned int length0 = ascii_length(node->name);
+        unsigned int length0 = cstring_length(node->name);
 
         spinlock_acquire(&group->children.spinlock);
 
@@ -297,7 +297,7 @@ void system_addchild(struct system_node *group, struct system_node *node)
         {
 
             struct system_node *n = current->data;
-            unsigned int length1 = ascii_length(n->name);
+            unsigned int length1 = cstring_length(n->name);
 
             if (length0 != length1 || !buffer_match(n->name, node->name, length0))
                 continue;

@@ -35,7 +35,7 @@ static void check(unsigned int source, void *buffer, unsigned int count)
     unsigned int start = 0;
     unsigned int i;
 
-    matchcount = ascii_length(match);
+    matchcount = cstring_length(match);
 
     if (!matchcount)
         return;
@@ -67,10 +67,10 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
-    char *value = key + ascii_lengthz(key);
+    char *value = key + cstring_lengthz(key);
 
-    if (ascii_match(key, "match"))
-        ascii_copy(match, value);
+    if (cstring_match(key, "match"))
+        cstring_copy(match, value);
 
 }
 

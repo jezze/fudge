@@ -1,10 +1,10 @@
-#include "ascii.h"
+#include "cstring.h"
 #include "tar.h"
 
 unsigned int tar_readvalue(char *attribute)
 {
 
-    return ascii_rvalue(attribute, ascii_length(attribute), 8);
+    return cstring_rvalue(attribute, cstring_length(attribute), 8);
 
 }
 

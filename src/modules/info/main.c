@@ -19,10 +19,10 @@ static unsigned int cores_read(void *buffer, unsigned int count, unsigned int of
 
         struct core *core = resource->data;
         struct list_item *item;
-        char num[ASCII_NUMSIZE];
+        char num[CSTRING_NUMSIZE];
 
         c += buffer_write(data, BUFFER_SIZE, "core ", 5, c);
-        c += buffer_write(data, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, core->id, 10, 0), c);
+        c += buffer_write(data, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, core->id, 10, 0), c);
         c += buffer_write(data, BUFFER_SIZE, "\n", 1, c);
 
         spinlock_acquire(&core->tasks.spinlock);
@@ -33,7 +33,7 @@ static unsigned int cores_read(void *buffer, unsigned int count, unsigned int of
             struct task *task = item->data;
 
             c += buffer_write(data, BUFFER_SIZE, "    task ", 9, c);
-            c += buffer_write(data, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, task->id, 10, 0), c);
+            c += buffer_write(data, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, task->id, 10, 0), c);
             c += buffer_write(data, BUFFER_SIZE, "\n", 1, c);
 
         }
@@ -57,10 +57,10 @@ static unsigned int tasks_read(void *buffer, unsigned int count, unsigned int of
     {
 
         struct task *task = resource->data;
-        char num[ASCII_NUMSIZE];
+        char num[CSTRING_NUMSIZE];
 
         c += buffer_write(data, BUFFER_SIZE, "task ", 5, c);
-        c += buffer_write(data, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, task->id, 10, 0), c);
+        c += buffer_write(data, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, task->id, 10, 0), c);
         c += buffer_write(data, BUFFER_SIZE, "\n", 1, c);
 
     }
@@ -80,11 +80,11 @@ static unsigned int mailboxes_read(void *buffer, unsigned int count, unsigned in
     {
 
         struct mailbox *mailbox = resource->data;
-        char num[ASCII_NUMSIZE];
+        char num[CSTRING_NUMSIZE];
 
         c += buffer_write(data, BUFFER_SIZE, "mailbox ", 8, c);
         c += buffer_write(data, BUFFER_SIZE, "0x", 2, c);
-        c += buffer_write(data, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, (unsigned int)mailbox->ring.buffer, 16, 8), c);
+        c += buffer_write(data, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, (unsigned int)mailbox->ring.buffer, 16, 8), c);
         c += buffer_write(data, BUFFER_SIZE, "\n", 1, c);
 
     }

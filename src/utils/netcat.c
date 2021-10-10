@@ -80,18 +80,18 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
-    char *value = key + ascii_lengthz(key);
+    char *value = key + cstring_lengthz(key);
 
-    if (ascii_match(key, "ethernet"))
+    if (cstring_match(key, "ethernet"))
         file_walk2(FILE_G0, value);
 
-    if (ascii_match(key, "local-address"))
+    if (cstring_match(key, "local-address"))
         socket_bind_ipv4s(&local, value);
 
-    if (ascii_match(key, "local-port"))
+    if (cstring_match(key, "local-port"))
         socket_bind_tcps(&local, value, 42);
 
-    if (ascii_match(key, "router-address"))
+    if (cstring_match(key, "router-address"))
         socket_bind_ipv4s(&router, value);
 
 }

@@ -80,7 +80,7 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
 
     message_init(&message, EVENT_DATA);
 
-    if (ascii_match(query, "type"))
+    if (cstring_match(query, "type"))
     {
 
         message_putvalue(&message, type, 10, 0);
@@ -88,7 +88,7 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
 
     }
 
-    if (ascii_match(query, "name"))
+    if (cstring_match(query, "name"))
     {
 
         message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
@@ -96,7 +96,7 @@ static void printquery(char *query, unsigned int qsize, unsigned short type, cha
 
     }
 
-    if (ascii_match(query, "data"))
+    if (cstring_match(query, "data"))
     {
 
         switch (type)
@@ -201,27 +201,27 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
-    char *value = key + ascii_lengthz(key);
+    char *value = key + cstring_lengthz(key);
 
-    if (ascii_match(key, "ethernet"))
+    if (cstring_match(key, "ethernet"))
         file_walk2(FILE_G0, value);
 
-    if (ascii_match(key, "domain"))
-        ascii_copy(domain, value);
+    if (cstring_match(key, "domain"))
+        cstring_copy(domain, value);
 
-    if (ascii_match(key, "local-address"))
+    if (cstring_match(key, "local-address"))
         socket_bind_ipv4s(&local, value);
 
-    if (ascii_match(key, "local-port"))
+    if (cstring_match(key, "local-port"))
         socket_bind_udps(&local, value);
 
-    if (ascii_match(key, "remote-address") || ascii_match(key, "address"))
+    if (cstring_match(key, "remote-address") || cstring_match(key, "address"))
         socket_bind_ipv4s(&remote, value);
 
-    if (ascii_match(key, "remote-port") || ascii_match(key, "port"))
+    if (cstring_match(key, "remote-port") || cstring_match(key, "port"))
         socket_bind_udps(&remote, value);
 
-    if (ascii_match(key, "router-address"))
+    if (cstring_match(key, "router-address"))
         socket_bind_ipv4s(&router, value);
 
 }

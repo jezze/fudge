@@ -256,9 +256,9 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
-    char *value = key + ascii_lengthz(key);
+    char *value = key + cstring_lengthz(key);
 
-    if (ascii_match(key, "console"))
+    if (cstring_match(key, "console"))
     {
 
         if (file_walk2(FILE_L0, value))
@@ -271,7 +271,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    if (ascii_match(key, "keyboard"))
+    if (cstring_match(key, "keyboard"))
     {
 
         if (file_walk2(FILE_L0, value))

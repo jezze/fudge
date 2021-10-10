@@ -2,7 +2,7 @@
 #include <fudge/buffer.h>
 #include <fudge/spinlock.h>
 #include <fudge/list.h>
-#include <fudge/ascii.h>
+#include <fudge/cstring.h>
 #include <fudge/ctrl.h>
 #include <fudge/record.h>
 #include <fudge/regexp.h>

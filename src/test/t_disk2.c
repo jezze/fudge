@@ -33,7 +33,7 @@ static unsigned int validate(void *buffer, unsigned short tag)
 
         char *ename = "Tags do not match";
 
-        error(ename, ascii_length(ename));
+        error(ename, cstring_length(ename));
 
         return 0;
 

@@ -1,7 +1,7 @@
 #include "buffer.h"
-#include "ascii.h"
+#include "cstring.h"
 
-unsigned int ascii_length(char *in)
+unsigned int cstring_length(char *in)
 {
 
     unsigned int length = 0;
@@ -13,31 +13,31 @@ unsigned int ascii_length(char *in)
 
 }
 
-unsigned int ascii_lengthz(char *in)
+unsigned int cstring_lengthz(char *in)
 {
 
-    return ascii_length(in) + 1;
+    return cstring_length(in) + 1;
 
 }
 
-void ascii_copy(char *out, char *in)
+void cstring_copy(char *out, char *in)
 {
 
     while ((*out++ = *in++));
 
 }
 
-unsigned int ascii_match(char *in1, char *in2)
+unsigned int cstring_match(char *in1, char *in2)
 {
 
-    unsigned int n1 = ascii_lengthz(in1);
-    unsigned int n2 = ascii_lengthz(in2);
+    unsigned int n1 = cstring_lengthz(in1);
+    unsigned int n2 = cstring_lengthz(in2);
 
     return buffer_match(in1, in2, (n1 < n2) ? n1 : n2);
 
 }
 
-unsigned int ascii_isalpha(char c)
+unsigned int cstring_isalpha(char c)
 {
 
     if (c >= 'a' && c <= 'z')
@@ -50,7 +50,7 @@ unsigned int ascii_isalpha(char c)
 
 }
 
-unsigned int ascii_isdigit(char c)
+unsigned int cstring_isdigit(char c)
 {
 
     if (c >= '0' && c <= '9')
@@ -60,7 +60,7 @@ unsigned int ascii_isdigit(char c)
 
 }
 
-unsigned int ascii_toint(char c)
+unsigned int cstring_toint(char c)
 {
 
     if (c >= 'a')
@@ -76,20 +76,20 @@ unsigned int ascii_toint(char c)
 
 }
 
-unsigned int ascii_rvalue(char *in, unsigned int count, unsigned int base)
+unsigned int cstring_rvalue(char *in, unsigned int count, unsigned int base)
 {
 
     unsigned int value = 0;
     unsigned int i;
 
     for (i = 0; i < count; i++)
-        value = value * base + ascii_toint(in[i]);
+        value = value * base + cstring_toint(in[i]);
 
     return value;
 
 }
 
-unsigned int ascii_wvalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding)
+unsigned int cstring_wvalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding)
 {
 
     char *current = out;

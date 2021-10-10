@@ -711,24 +711,24 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
-    char *value = key + ascii_lengthz(key);
+    char *value = key + cstring_lengthz(key);
 
-    if (ascii_match(key, "width"))
-        optwidth = ascii_rvalue(value, ascii_length(value), 10);
+    if (cstring_match(key, "width"))
+        optwidth = cstring_rvalue(value, cstring_length(value), 10);
 
-    if (ascii_match(key, "height"))
-        optheight = ascii_rvalue(value, ascii_length(value), 10);
+    if (cstring_match(key, "height"))
+        optheight = cstring_rvalue(value, cstring_length(value), 10);
 
-    if (ascii_match(key, "bpp"))
-        optbpp = ascii_rvalue(value, ascii_length(value), 10);
+    if (cstring_match(key, "bpp"))
+        optbpp = cstring_rvalue(value, cstring_length(value), 10);
 
-    if (ascii_match(key, "keyboard"))
+    if (cstring_match(key, "keyboard"))
         file_walk2(FILE_G1, value);
 
-    if (ascii_match(key, "mouse"))
+    if (cstring_match(key, "mouse"))
         file_walk2(FILE_G2, value);
 
-    if (ascii_match(key, "video"))
+    if (cstring_match(key, "video"))
     {
 
         if (file_walk2(FILE_G3, value))

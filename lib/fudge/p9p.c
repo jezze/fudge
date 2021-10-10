@@ -1,7 +1,7 @@
 #include "event.h"
 #include "buffer.h"
 #include "file.h"
-#include "ascii.h"
+#include "cstring.h"
 #include "message.h"
 #include "p9p.h"
 
@@ -138,7 +138,7 @@ unsigned int p9p_writebuffer(void *buffer, unsigned int o, unsigned int count, v
 unsigned int p9p_writestring(void *buffer, unsigned int o, char *v)
 {
 
-    unsigned short count = ascii_length(v);
+    unsigned short count = cstring_length(v);
     unsigned char *p = buffer;
     unsigned int n = 0;
 

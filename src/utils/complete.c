@@ -25,10 +25,10 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *key = mdata;
-    char *value = key + ascii_lengthz(key);
+    char *value = key + cstring_lengthz(key);
 
-    if (ascii_match(key, "key"))
-        keylength = buffer_write(key, 1024, value, ascii_length(value), 0);
+    if (cstring_match(key, "key"))
+        keylength = buffer_write(key, 1024, value, cstring_length(value), 0);
 
 }
 

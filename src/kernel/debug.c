@@ -28,17 +28,17 @@ void debug_logs(unsigned int level, char *string)
 void debug_log8(unsigned int level, char *key, unsigned char value)
 {
 
-    char num[ASCII_NUMSIZE];
+    char num[CSTRING_NUMSIZE];
     char string[BUFFER_SIZE];
     unsigned int c = 0;
 
-    c += buffer_write(string, BUFFER_SIZE, key, ascii_length(key), c);
+    c += buffer_write(string, BUFFER_SIZE, key, cstring_length(key), c);
     c += buffer_write(string, BUFFER_SIZE, ": ", 2, c);
-    c += buffer_write(string, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, value, 2, 8), c);
+    c += buffer_write(string, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, value, 2, 8), c);
     c += buffer_write(string, BUFFER_SIZE, " ", 1, c);
-    c += buffer_write(string, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, value, 16, 2), c);
+    c += buffer_write(string, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, value, 16, 2), c);
     c += buffer_write(string, BUFFER_SIZE, " ", 1, c);
-    c += buffer_write(string, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, value, 10, 0), c);
+    c += buffer_write(string, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, value, 10, 0), c);
     c += buffer_write(string, BUFFER_SIZE, "", 1, c);
 
     debug_log(level, string, 0, 0);
@@ -48,17 +48,17 @@ void debug_log8(unsigned int level, char *key, unsigned char value)
 void debug_log16(unsigned int level, char *key, unsigned short value)
 {
 
-    char num[ASCII_NUMSIZE];
+    char num[CSTRING_NUMSIZE];
     char string[BUFFER_SIZE];
     unsigned int c = 0;
 
-    c += buffer_write(string, BUFFER_SIZE, key, ascii_length(key), c);
+    c += buffer_write(string, BUFFER_SIZE, key, cstring_length(key), c);
     c += buffer_write(string, BUFFER_SIZE, ": ", 2, c);
-    c += buffer_write(string, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, value, 2, 16), c);
+    c += buffer_write(string, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, value, 2, 16), c);
     c += buffer_write(string, BUFFER_SIZE, " ", 1, c);
-    c += buffer_write(string, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, value, 16, 4), c);
+    c += buffer_write(string, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, value, 16, 4), c);
     c += buffer_write(string, BUFFER_SIZE, " ", 1, c);
-    c += buffer_write(string, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, value, 10, 0), c);
+    c += buffer_write(string, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, value, 10, 0), c);
     c += buffer_write(string, BUFFER_SIZE, "", 1, c);
 
     debug_log(level, string, 0, 0);
@@ -68,17 +68,17 @@ void debug_log16(unsigned int level, char *key, unsigned short value)
 void debug_log32(unsigned int level, char *key, unsigned int value)
 {
 
-    char num[ASCII_NUMSIZE];
+    char num[CSTRING_NUMSIZE];
     char string[BUFFER_SIZE];
     unsigned int c = 0;
 
-    c += buffer_write(string, BUFFER_SIZE, key, ascii_length(key), c);
+    c += buffer_write(string, BUFFER_SIZE, key, cstring_length(key), c);
     c += buffer_write(string, BUFFER_SIZE, ": ", 2, c);
-    c += buffer_write(string, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, value, 2, 32), c);
+    c += buffer_write(string, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, value, 2, 32), c);
     c += buffer_write(string, BUFFER_SIZE, " ", 1, c);
-    c += buffer_write(string, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, value, 16, 8), c);
+    c += buffer_write(string, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, value, 16, 8), c);
     c += buffer_write(string, BUFFER_SIZE, " ", 1, c);
-    c += buffer_write(string, BUFFER_SIZE, num, ascii_wvalue(num, ASCII_NUMSIZE, value, 10, 0), c);
+    c += buffer_write(string, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, value, 10, 0), c);
     c += buffer_write(string, BUFFER_SIZE, "", 1, c);
 
     debug_log(level, string, 0, 0);

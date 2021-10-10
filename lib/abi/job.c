@@ -7,7 +7,7 @@
 static char *nextword(char *current)
 {
 
-    return current + ascii_lengthz(current);
+    return current + cstring_lengthz(current);
 
 }
 
