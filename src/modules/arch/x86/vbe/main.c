@@ -128,8 +128,8 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
         if (mode->framebuffer)
         {
 
-            arch_setmapvideo(4, mode->framebuffer, mode->framebuffer, 0x00400000);
-            arch_setmapvideo(5, mode->framebuffer + 0x00400000, mode->framebuffer + 0x00400000, 0x00400000);
+            arch_setmapvideo(8, mode->framebuffer, mode->framebuffer, 0x00400000);
+            arch_setmapvideo(9, mode->framebuffer + 0x00400000, mode->framebuffer + 0x00400000, 0x00400000);
 
         }
 

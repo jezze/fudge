@@ -321,7 +321,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             struct mmu_directory *kdirectory = getkerneldirectory();
             unsigned int i;
 
-            for (i = 0; i < MMU_TABLES; i++)
+            for (i = 4; i < MMU_TABLES; i++)
             {
 
                 if (kdirectory->tables[i])
