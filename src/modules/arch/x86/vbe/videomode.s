@@ -1,32 +1,31 @@
 .set VBE_MODENUM,                       0x6000
 .set VBE_STACK,                         0x7000
-.set VBE_CODE,                          0x8000
-.set VBE_GDT,                           0x9000
+.set VBE_CODE,                          0x9000
 
 .intel_syntax noprefix
 
 .global vbe_getinfo
 vbe_getinfo:
     pushad
-    mov edx, (getinfo_real - vbe_begin16)
+    mov edx, VBE_CODE + (getinfo_real - vbe_begin16)
     jmp switch_16
 
 .global vbe_getvideomode
 vbe_getvideomode:
     pushad
-    mov edx, (getvideomode_real - vbe_begin16)
+    mov edx, VBE_CODE + (getvideomode_real - vbe_begin16)
     jmp switch_16
 
 .global vbe_setvideomode
 vbe_setvideomode:
     pushad
-    mov edx, (setvideomode_real - vbe_begin16)
+    mov edx, VBE_CODE + (setvideomode_real - vbe_begin16)
     jmp switch_16
 
 .global vbe_getedid
 vbe_getedid:
     pushad
-    mov edx, (getedid_real - vbe_begin16)
+    mov edx, VBE_CODE + (getedid_real - vbe_begin16)
     jmp switch_16
 
 switch_16:
@@ -35,11 +34,10 @@ switch_16:
     mov eax, cr0
     and eax, ~0x80000000
     mov cr0, eax
-    mov eax, (VBE_GDT)
+    mov eax, VBE_CODE + (realmode_gdt - vbe_begin16)
     lgdt [eax]
     push 0x8
-    mov eax, VBE_CODE
-    add eax, (switch_real - vbe_begin16)
+    mov eax, VBE_CODE + (switch_real - vbe_begin16)
     push eax
     lret
 
@@ -55,15 +53,13 @@ switch_real:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    mov eax, (VBE_GDT + (realmode_idt - realmode_gdt))
+    mov eax, VBE_CODE + (realmode_idt - vbe_begin16)
     lidt [eax]
     mov eax, cr0
     and eax, 0x7FFFFFFE
     mov cr0, eax
     push 0x0
-    mov eax, VBE_CODE
-    add eax, edx
-    push eax
+    push edx
     lret
 
 getinfo_real:
@@ -157,18 +153,10 @@ switch_32:
     popad
     ret
 
-.global vbe_end16
-vbe_end16:
-
-.code32
-
-.global vbe_begin32
-vbe_begin32:
-
 .global realmode_gdt
 realmode_gdt:
 .word (3 * 8) - 1
-.long 0x9008
+.long (VBE_CODE + realmode_gdt - vbe_begin16 + 8)
 .word 0
 
 .long 0x0
@@ -193,6 +181,6 @@ realmode_idt:
 .word 0x3FF
 .long 0x0
 
-.global vbe_end32
-vbe_end32:
+.global vbe_end16
+vbe_end16:
 
