@@ -67,8 +67,6 @@ struct vbe_mode
 
 };
 
-extern unsigned short modenum;
-
 static struct base_driver driver;
 static struct video_interface videointerface;
 static unsigned int framebuffer;
@@ -76,6 +74,7 @@ static unsigned int framebuffer;
 static void run(unsigned int w, unsigned int h, unsigned int bpp)
 {
 
+    unsigned short *modenum = (unsigned short *)0x6000;
     struct vbe_info *info = (struct vbe_info *)0xC000;
     struct vbe_mode *mode = (struct vbe_mode *)0xD000;
     unsigned short *modes;
@@ -97,14 +96,14 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
     for (i = 0; modes[i] != 0xFFFF; i++)
     {
 
-        modenum = modes[i];
+        *modenum = modes[i];
 
         vbe_getvideomode();
 
         if (mode->width == w && mode->height == h && mode->bpp == bpp)
         {
 
-            debug_log16(DEBUG_INFO, "vbe modenum", modenum);
+            debug_log16(DEBUG_INFO, "vbe modenum", *modenum);
             debug_log16(DEBUG_INFO, "vbe width", mode->width);
             debug_log16(DEBUG_INFO, "vbe height", mode->height);
             debug_log8(DEBUG_INFO, "vbe bpp", mode->bpp);
@@ -117,11 +116,11 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 
     }
 
-    if (modenum != 0xFFFF)
+    if (*modenum != 0xFFFF)
     {
 
         /* Set mode */
-        modenum |= 0x4000;
+        *modenum |= 0x4000;
 
         vbe_setvideomode();
 

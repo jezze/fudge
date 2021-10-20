@@ -1,12 +1,9 @@
+.set VBE_MODENUM,                       0x6000
 .set VBE_STACK,                         0x7000
 .set VBE_CODE,                          0x8000
 .set VBE_GDT,                           0x9000
 
 .intel_syntax noprefix
-
-.global _modenum
-_modenum:
-.word 0
 
 .global vbe_getinfo
 vbe_getinfo:
@@ -95,7 +92,7 @@ getvideomode_real:
     mov sp, 0xA000
     mov ax, 0x4F01
     xor bx, bx
-    mov cx, _modenum
+    mov cx, [VBE_MODENUM]
     xor dx, dx
     mov di, 0xD000
     int 0x10
@@ -110,7 +107,7 @@ setvideomode_real:
     mov ss, ax
     mov sp, 0xA000
     mov ax, 0x4F02
-    mov bx, _modenum
+    mov bx, [VBE_MODENUM]
     xor cx, cx
     xor dx, dx
     xor di, di
