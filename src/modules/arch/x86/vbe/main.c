@@ -67,7 +67,6 @@ struct vbe_mode
 
 };
 
-extern void *realmode_gdt;
 extern unsigned short modenum;
 
 static struct base_driver driver;
@@ -83,8 +82,8 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
     unsigned int i;
 
     debug_logs(DEBUG_INFO, "vbe loaded");
-    buffer_copy((void *)0x9000, &realmode_gdt, 0x1000);
     buffer_copy((void *)0x8000, (void *)(unsigned int)vbe_begin16, (unsigned int)vbe_end16 - (unsigned int)vbe_begin16);
+    buffer_copy((void *)0x9000, (void *)(unsigned int)vbe_begin32, (unsigned int)vbe_end32 - (unsigned int)vbe_begin32);
 
     vbe_getedid();
     vbe_getinfo();

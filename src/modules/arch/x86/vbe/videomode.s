@@ -38,7 +38,7 @@ switch_16:
     mov eax, cr0
     and eax, ~0x80000000
     mov cr0, eax
-    mov eax, VBE_GDT
+    mov eax, (VBE_GDT)
     lgdt [eax]
     push 0x8
     mov eax, VBE_CODE
@@ -58,7 +58,7 @@ switch_real:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    mov ax, (VBE_GDT + realmode_idt - realmode_gdt)
+    mov eax, (VBE_GDT + (realmode_idt - realmode_gdt))
     lidt [eax]
     mov eax, cr0
     and eax, 0x7FFFFFFE
@@ -165,6 +165,9 @@ vbe_end16:
 
 .code32
 
+.global vbe_begin32
+vbe_begin32:
+
 .global realmode_gdt
 realmode_gdt:
 .word (3 * 8) - 1
@@ -192,4 +195,7 @@ realmode_gdt:
 realmode_idt:
 .word 0x3FF
 .long 0x0
+
+.global vbe_end32
+vbe_end32:
 
