@@ -117,27 +117,29 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 
     }
 
-    if (modenum == 0xFFFF)
-        return;
-
-    ctrl_setvideosettings(&videointerface.settings, mode->width, mode->height, mode->bpp / 8);
-
-    framebuffer = mode->framebuffer;
-
-    if (framebuffer)
+    if (modenum != 0xFFFF)
     {
 
-        arch_setmapvideo(4, framebuffer, framebuffer, 0x00400000);
-        arch_setmapvideo(5, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
+        /* Set mode */
+        modenum |= 0x4000;
+
+        vbe_setvideomode();
+
+        if (mode->framebuffer)
+        {
+
+            arch_setmapvideo(4, mode->framebuffer, mode->framebuffer, 0x00400000);
+            arch_setmapvideo(5, mode->framebuffer + 0x00400000, mode->framebuffer + 0x00400000, 0x00400000);
+
+        }
+
+        ctrl_setvideosettings(&videointerface.settings, mode->width, mode->height, mode->bpp / 8);
+        video_notifymode(&videointerface, (void *)mode->framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+
+        /* remove */
+        framebuffer = mode->framebuffer;
 
     }
-
-    /* Set mode */
-    modenum |= 0x4000;
-
-    vbe_setvideomode();
-
-    video_notifymode(&videointerface, (void *)framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
 }
 
