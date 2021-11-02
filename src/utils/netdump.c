@@ -11,10 +11,10 @@ static void print_icmp(unsigned int source, void *buffer)
     message_init(&message, EVENT_DATA);
     message_putstring(&message, "ICMP:\n");
     message_putstring(&message, "  Type: 0x");
-    message_putvalue(&message, header->type, 16, 2);
+    message_putvalue(&message, header->type[0], 16, 2);
     message_putstring(&message, "\n");
     message_putstring(&message, "  Code: 0x");
-    message_putvalue(&message, header->code, 16, 2);
+    message_putvalue(&message, header->code[0], 16, 2);
     message_putstring(&message, "\n");
     channel_sendmessage(&message);
 
@@ -96,10 +96,10 @@ static void print_arp(unsigned int source, void *buffer)
     message_putvalue(&message, header->ptype[1], 16, 2);
     message_putstring(&message, "\n");
     message_putstring(&message, "  Hardware Length: ");
-    message_putvalue(&message, header->hlength, 10, 0);
+    message_putvalue(&message, header->hlength[0], 10, 0);
     message_putstring(&message, "\n");
     message_putstring(&message, "  Protocol Length: ");
-    message_putvalue(&message, header->plength, 10, 0);
+    message_putvalue(&message, header->plength[0], 10, 0);
     message_putstring(&message, "\n");
     message_putstring(&message, "  Operation: 0x");
     message_putvalue(&message, header->operation[0], 16, 2);
@@ -119,7 +119,7 @@ static void print_ipv4(unsigned int source, void *buffer)
     message_init(&message, EVENT_DATA);
     message_putstring(&message, "IPv4:\n");
     message_putstring(&message, "  Protocol: 0x");
-    message_putvalue(&message, header->protocol, 16, 2);
+    message_putvalue(&message, header->protocol[0], 16, 2);
     message_putstring(&message, "\n");
     message_putstring(&message, "  Source Addr (IP): ");
     message_putvalue(&message, header->sip[0], 10, 0);
@@ -141,7 +141,7 @@ static void print_ipv4(unsigned int source, void *buffer)
     message_putstring(&message, "\n");
     channel_sendmessage(&message);
 
-    switch (header->protocol)
+    switch (net_load8(header->protocol))
     {
 
     case IPV4_PROTOCOL_ICMP:

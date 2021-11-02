@@ -6,8 +6,8 @@ struct arp_header
 
     unsigned char htype[2];
     unsigned char ptype[2];
-    unsigned char hlength;
-    unsigned char plength;
+    unsigned char hlength[1];
+    unsigned char plength[1];
     unsigned char operation[2];
 
 };

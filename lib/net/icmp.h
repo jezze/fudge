@@ -9,8 +9,8 @@
 struct icmp_header
 {
 
-    unsigned char type;
-    unsigned char code;
+    unsigned char type[1];
+    unsigned char code[1];
     unsigned char checksum[2];
 
 };

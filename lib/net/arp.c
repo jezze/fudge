@@ -12,7 +12,7 @@ unsigned short arp_hlen(struct arp_header *header)
 unsigned short arp_len(struct arp_header *header)
 {
 
-    return sizeof (struct arp_header) + header->hlength * 2 + header->plength * 2;
+    return sizeof (struct arp_header) + net_load8(header->hlength) * 2 + net_load8(header->plength) * 2;
 
 }
 
@@ -32,10 +32,8 @@ void arp_initheader(struct arp_header *header, unsigned short htype, unsigned ch
 
     net_save16(header->htype, htype);
     net_save16(header->ptype, ptype);
-
-    header->hlength = hlength;
-    header->plength = plength;
-
+    net_save8(header->hlength, hlength);
+    net_save8(header->plength, plength);
     net_save16(header->operation, operation);
 
 }

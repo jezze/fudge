@@ -124,16 +124,16 @@ static unsigned int respondarp(unsigned int descriptor, struct socket *local, st
     {
 
     case ARP_REQUEST:
-        if (buffer_match(pdata + header->hlength + header->plength + header->hlength, local->paddress, IPV4_ADDRSIZE))
+        if (buffer_match(pdata + net_load8(header->hlength) + net_load8(header->plength) + net_load8(header->hlength), local->paddress, IPV4_ADDRSIZE))
         {
 
             struct socket answer;
 
             socket_init(&answer);
             buffer_copy(answer.haddress, pdata, ETHERNET_ADDRSIZE);
-            buffer_copy(answer.paddress, pdata + header->hlength, IPV4_ADDRSIZE);
+            buffer_copy(answer.paddress, pdata + net_load8(header->hlength), IPV4_ADDRSIZE);
 
-            send(descriptor, data.buffer, buildarp(local, &answer, &answer, data.buffer, ARP_REPLY, local->haddress, local->paddress, pdata, pdata + header->hlength));
+            send(descriptor, data.buffer, buildarp(local, &answer, &answer, data.buffer, ARP_REPLY, local->haddress, local->paddress, pdata, pdata + net_load8(header->hlength)));
 
         }
 
@@ -157,7 +157,7 @@ static unsigned int respondicmp(unsigned int descriptor, struct socket *local, s
 
     struct message_data data;
 
-    switch (header->type)
+    switch (net_load8(header->type))
     {
 
     case ICMP_ECHOREQUEST:
@@ -407,7 +407,7 @@ unsigned int socket_handle_icmp(unsigned int descriptor, struct socket *local, s
         unsigned short ilen = ipv4_hlen(iheader);
         unsigned short itot = ipv4_len(iheader);
 
-        if (iheader->protocol == IPV4_PROTOCOL_ICMP)
+        if (net_load8(iheader->protocol) == IPV4_PROTOCOL_ICMP)
         {
 
             struct icmp_header *icmpheader = (struct icmp_header *)(data + elen + ilen);
@@ -439,7 +439,7 @@ unsigned int socket_handle_tcp(unsigned int descriptor, struct socket *local, st
         unsigned short ilen = ipv4_hlen(iheader);
         unsigned short itot = ipv4_len(iheader);
 
-        if (iheader->protocol == IPV4_PROTOCOL_TCP)
+        if (net_load8(iheader->protocol) == IPV4_PROTOCOL_TCP)
         {
 
             struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);
@@ -489,7 +489,7 @@ unsigned int socket_handle_udp(unsigned int descriptor, struct socket *local, st
         unsigned short ilen = ipv4_hlen(iheader);
         unsigned short itot = ipv4_len(iheader);
 
-        if (iheader->protocol == IPV4_PROTOCOL_UDP)
+        if (net_load8(iheader->protocol) == IPV4_PROTOCOL_UDP)
         {
 
             struct udp_header *uheader = (struct udp_header *)(data + elen + ilen);

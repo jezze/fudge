@@ -6,13 +6,13 @@
 struct ipv4_header
 {
 
-    unsigned char version;
-    unsigned char dscp;
+    unsigned char version[1];
+    unsigned char dscp[1];
     unsigned char length[2];
     unsigned char identification[2];
     unsigned char fragment[2];
-    unsigned char ttl;
-    unsigned char protocol;
+    unsigned char ttl[1];
+    unsigned char protocol[1];
     unsigned char checksum[2];
     unsigned char sip[IPV4_ADDRSIZE];
     unsigned char tip[IPV4_ADDRSIZE];

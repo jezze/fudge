@@ -1,5 +1,12 @@
 #include "net.h"
 
+unsigned char net_load8(unsigned char data[1])
+{
+
+    return data[0];
+
+}
+
 unsigned short net_load16(unsigned char data[2])
 {
 
@@ -11,6 +18,13 @@ unsigned int net_load32(unsigned char data[4])
 {
 
     return (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | (data[3] << 0);
+
+}
+
+void net_save8(unsigned char data[1], unsigned char num)
+{
+
+    data[0] = num >> 0;
 
 }
 

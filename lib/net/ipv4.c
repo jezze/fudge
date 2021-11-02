@@ -30,14 +30,14 @@ unsigned short ipv4_calculatechecksum(struct ipv4_header *header, unsigned int l
 unsigned short ipv4_hlen(struct ipv4_header *header)
 {
 
-    return (header->version & 0x0F) * 4;
+    return (net_load8(header->version) & 0x0F) * 4;
 
 }
 
 unsigned short ipv4_len(struct ipv4_header *header)
 {
 
-    return (header->length[0] << 8) | header->length[1];
+    return net_load16(header->length);
 
 }
 
@@ -57,16 +57,13 @@ void ipv4_initheader(struct ipv4_header *header, unsigned char sip[IPV4_ADDRSIZE
 
     unsigned short checksum;
 
-    header->version = 0x45;
-    header->dscp = 0;
-
+    net_save8(header->version, 0x45);
+    net_save8(header->dscp, 0);
     net_save16(header->length, count + 20);
     net_save16(header->identification, 0);
     net_save16(header->fragment, 0);
-
-    header->ttl = 64;
-    header->protocol = protocol;
-
+    net_save8(header->ttl, 64);
+    net_save8(header->protocol, protocol);
     net_save16(header->checksum, 0);
     buffer_copy(header->sip, sip, IPV4_ADDRSIZE);
     buffer_copy(header->tip, tip, IPV4_ADDRSIZE);

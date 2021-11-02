@@ -49,9 +49,8 @@ struct icmp_header *icmp_putheader(void *buffer, unsigned char type, unsigned ch
 void icmp_initheader(struct icmp_header *header, unsigned char type, unsigned char code)
 {
 
-    header->type = type;
-    header->code = code;
-
+    net_save8(header->type, type);
+    net_save8(header->code, code);
     net_save16(header->checksum, 0);
 
 }
