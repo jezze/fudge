@@ -172,10 +172,10 @@ static void print_ipv6(unsigned int source, void *buffer)
     message_init(&message, EVENT_DATA);
     message_putstring(&message, "IPv6:\n");
     message_putstring(&message, "  Next: 0x");
-    message_putvalue(&message, header->next, 16, 2);
+    message_putvalue(&message, header->next[0], 16, 2);
     message_putstring(&message, "\n");
     message_putstring(&message, "  Hop: 0x");
-    message_putvalue(&message, header->hop, 16, 2);
+    message_putvalue(&message, header->hop[0], 16, 2);
     message_putstring(&message, "\n");
     message_putstring(&message, "  Source Addr (IP): ");
     message_putvalue(&message, header->sip[0], 16, 2);
