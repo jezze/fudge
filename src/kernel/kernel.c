@@ -225,9 +225,12 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
     {
 
         struct mailbox *mailbox = &mailboxes[task->id];
+        unsigned int i;
 
         mailbox_reset(mailbox);
-        buffer_clear(kernel_getdescriptor(task, FILE_PP), sizeof (struct descriptor) * KERNEL_DESCRIPTORS);
+
+        for (i = 0; i < KERNEL_DESCRIPTORS; i++)
+            descriptor_reset(kernel_getdescriptor(task, i));
 
         if (parent)
         {
