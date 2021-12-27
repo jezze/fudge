@@ -30,11 +30,10 @@ static unsigned int walk(struct task *task, void *stack)
     if (!descriptor_check(pdescriptor))
         return 0;
 
+    descriptor_reset(descriptor);
+
     descriptor->service = pdescriptor->service;
     descriptor->id = pdescriptor->id;
-    descriptor->offset = 0;
-    descriptor->current = 0;
-    descriptor->count = 0;
 
     if (colon < args->length)
     {
@@ -89,11 +88,10 @@ static unsigned int create(struct task *task, void *stack)
     if (!args->length || !args->name)
         return 0;
 
+    descriptor_reset(descriptor);
+
     descriptor->service = pdescriptor->service;
     descriptor->id = pdescriptor->service->create(pdescriptor->id, args->name, args->length);
-    descriptor->offset = 0;
-    descriptor->current = 0;
-    descriptor->count = 0;
 
     return descriptor->id;
 

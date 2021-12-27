@@ -61,6 +61,7 @@ void core_init(struct core *core, unsigned int id, unsigned int sp)
 
     core->id = id;
     core->sp = sp;
+    core->task = 0;
 
 }
 

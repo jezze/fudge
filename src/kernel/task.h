@@ -17,11 +17,11 @@ struct task
     struct list_item item;
     struct task_thread thread;
     struct binary_node node;
+    struct spinlock spinlock;
     struct binary_format *format;
     unsigned int id;
     unsigned int state;
     unsigned int kicked;
-    struct spinlock spinlock;
 
 };
 

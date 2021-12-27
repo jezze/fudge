@@ -10,9 +10,9 @@
 #include "kernel.h"
 
 static struct task tasks[KERNEL_TASKS];
+static struct descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct link links[KERNEL_LINKS];
-static struct descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct list freelinks;
 static struct list freetasks;
 static struct list blockedtasks;
@@ -305,6 +305,15 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
         task_init(task, i);
         task_register(task);
         list_add(&freetasks, &task->item);
+
+    }
+
+    for (i = 0; i < KERNEL_DESCRIPTORS * KERNEL_TASKS; i++)
+    {
+
+        struct descriptor *descriptor = &descriptors[i];
+
+        descriptor_init(descriptor);
 
     }
 
