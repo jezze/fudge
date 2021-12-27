@@ -19,14 +19,6 @@ static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct task *task);
 
-static void copydescriptor(struct descriptor *descriptor, struct descriptor *pdescriptor)
-{
-
-    descriptor->service = pdescriptor->service;
-    descriptor->id = pdescriptor->id;
-
-}
-
 static unsigned int setupbinary(struct task *task, unsigned int sp)
 {
 
@@ -240,8 +232,8 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         if (parent)
         {
 
-            copydescriptor(kernel_getdescriptor(task, FILE_CP), kernel_getdescriptor(parent, FILE_CP));
-            copydescriptor(kernel_getdescriptor(task, FILE_CW), kernel_getdescriptor(parent, FILE_CW));
+            descriptor_copy(kernel_getdescriptor(task, FILE_CP), kernel_getdescriptor(parent, FILE_CP));
+            descriptor_copy(kernel_getdescriptor(task, FILE_CW), kernel_getdescriptor(parent, FILE_CW));
 
         }
 
@@ -254,15 +246,15 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
             work->service = service_find(6, "initrd");
             work->id = work->service->root();
 
-            copydescriptor(prog, work);
+            descriptor_copy(prog, work);
 
             prog->id = prog->service->child(prog->id, "bin", 3);
             prog->id = prog->service->child(prog->id, "init", 4);
 
         }
 
-        copydescriptor(kernel_getdescriptor(task, FILE_PP), kernel_getdescriptor(task, FILE_CP));
-        copydescriptor(kernel_getdescriptor(task, FILE_PW), kernel_getdescriptor(task, FILE_CW));
+        descriptor_copy(kernel_getdescriptor(task, FILE_PP), kernel_getdescriptor(task, FILE_CP));
+        descriptor_copy(kernel_getdescriptor(task, FILE_PW), kernel_getdescriptor(task, FILE_CW));
 
         if (setupbinary(task, sp))
         {

@@ -8,11 +8,11 @@ unsigned int descriptor_check(struct descriptor *descriptor)
 
 }
 
-void descriptor_reset(struct descriptor *descriptor)
+void descriptor_copy(struct descriptor *descriptor, struct descriptor *source)
 {
 
-    descriptor->service = 0;
-    descriptor->id = 0;
+    descriptor->service = source->service;
+    descriptor->id = source->id;
     descriptor->offset = 0;
     descriptor->current = 0;
     descriptor->count = 0;
