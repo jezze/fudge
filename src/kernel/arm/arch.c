@@ -24,7 +24,7 @@ static unsigned int spawn(struct task *task, void *stack)
 static unsigned int despawn(struct task *task, void *stack)
 {
 
-    task_setstate(task, TASK_STATE_KILLED);
+    task_signal(task, TASK_SIGNAL_KILL);
 
     return 0;
 

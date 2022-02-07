@@ -3,6 +3,37 @@
 #include "binary.h"
 #include "task.h"
 
+void task_signal(struct task *task, unsigned int signal)
+{
+
+    spinlock_acquire(&task->spinlock);
+
+    switch (signal)
+    {
+
+    case TASK_SIGNAL_KILL:
+        task->kills++;
+
+        break;
+
+    case TASK_SIGNAL_KICK:
+        if (!task->kills)
+            task->kicks++;
+
+        break;
+
+    case TASK_SIGNAL_BLOCK:
+        if (!task->kills)
+            task->blocks++;
+
+        break;
+
+    }
+
+    spinlock_release(&task->spinlock);
+
+}
+
 void task_setstate(struct task *task, unsigned int state)
 {
 
@@ -11,18 +42,24 @@ void task_setstate(struct task *task, unsigned int state)
     switch (state)
     {
 
-    case TASK_STATE_NORMAL:
-        task->state = state;
-
-        break;
-
     case TASK_STATE_KILLED:
         task->state = state;
 
         break;
 
+    case TASK_STATE_ASSIGNED:
+        task->state = state;
+
+        break;
+
     case TASK_STATE_BLOCKED:
-        if (task->state == TASK_STATE_NORMAL)
+        if (task->state == TASK_STATE_RUNNING)
+            task->state = state;
+
+        break;
+
+    case TASK_STATE_RUNNING:
+        if (task->state == TASK_STATE_ASSIGNED || task->state == TASK_STATE_BLOCKED)
             task->state = state;
 
         break;
@@ -47,11 +84,31 @@ void task_unregister(struct task *task)
 
 }
 
+void task_resetthread(struct task_thread *thread)
+{
+
+    thread->ip = 0;
+    thread->sp = 0;
+
+}
+
 void task_initthread(struct task_thread *thread)
 {
 
     thread->ip = 0;
     thread->sp = 0;
+
+}
+
+void task_reset(struct task *task)
+{
+
+    task_resetthread(&task->thread);
+
+    task->state = TASK_STATE_KILLED;
+    task->kills = 0;
+    task->kicks = 0;
+    task->blocks = 0;
 
 }
 
@@ -66,8 +123,10 @@ void task_init(struct task *task, unsigned int id)
 
     task->format = 0;
     task->id = id;
-    task->state = TASK_STATE_NORMAL;
-    task->kicked = 0;
+    task->state = TASK_STATE_KILLED;
+    task->kills = 0;
+    task->kicks = 0;
+    task->blocks = 0;
 
 }
 

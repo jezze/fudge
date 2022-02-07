@@ -14,7 +14,7 @@ static struct descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct link links[KERNEL_LINKS];
 static struct list freelinks;
-static struct list freetasks;
+static struct list killedtasks;
 static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct task *task);
@@ -89,27 +89,33 @@ void kernel_schedule(struct core *core)
     if (core->task)
     {
 
-        switch (core->task->state)
+        if (core->task->kills)
         {
 
-        case TASK_STATE_NORMAL:
-            list_add(&core->tasks, &core->task->item);
+            core->task->kills = 0;
 
-            break;
-
-        case TASK_STATE_KILLED:
-            list_add(&freetasks, &core->task->item);
-
-            break;
-
-        case TASK_STATE_BLOCKED:
-            list_add(&blockedtasks, &core->task->item);
-
-            break;
+            task_setstate(core->task, TASK_STATE_KILLED);
+            list_add(&killedtasks, &core->task->item);
 
         }
 
-        task_setstate(core->task, TASK_STATE_NORMAL);
+        else if (core->task->blocks)
+        {
+
+            core->task->blocks = 0;
+
+            task_setstate(core->task, TASK_STATE_BLOCKED);
+            list_add(&blockedtasks, &core->task->item);
+
+        }
+
+        else
+        {
+
+            task_setstate(core->task, TASK_STATE_ASSIGNED);
+            list_add(&core->tasks, &core->task->item);
+
+        }
 
         core->task = 0;
 
@@ -131,6 +137,7 @@ void kernel_schedule(struct core *core)
         {
 
             list_remove_nolock(&blockedtasks, current);
+            task_setstate(task, TASK_STATE_ASSIGNED);
             coreassign(task);
 
         }
@@ -143,6 +150,9 @@ void kernel_schedule(struct core *core)
     core_sorttasks(core);
 
     core->task = list_picktail(&core->tasks);
+
+    if (core->task)
+        task_setstate(core->task, TASK_STATE_RUNNING);
 
 }
 
@@ -158,7 +168,7 @@ void kernel_kill(unsigned int source, unsigned int target)
 
     struct task *task = &tasks[target];
 
-    task_setstate(task, TASK_STATE_KILLED);
+    task_signal(task, TASK_SIGNAL_KILL);
 
 }
 
@@ -170,7 +180,7 @@ unsigned int kernel_pick(unsigned int source, struct message_header *header, voi
     unsigned int count = mailbox_pick(mailbox, header, data);
 
     if (!count)
-        task_setstate(task, TASK_STATE_BLOCKED);
+        task_signal(task, TASK_SIGNAL_BLOCK);
 
     return count;
 
@@ -184,11 +194,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct messa
 
     header->source = source;
 
-    spinlock_acquire(&task->spinlock);
-
-    task->kicked++;
-
-    spinlock_release(&task->spinlock);
+    task_signal(task, TASK_SIGNAL_KICK);
 
     return mailbox_place(mailbox, header, data);
 
@@ -219,7 +225,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
 {
 
-    struct task *task = list_picktail(&freetasks);
+    struct task *task = list_picktail(&killedtasks);
 
     if (task)
     {
@@ -227,6 +233,7 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         struct mailbox *mailbox = &mailboxes[task->id];
         unsigned int i;
 
+        task_reset(task);
         mailbox_reset(mailbox);
 
         for (i = 0; i < KERNEL_DESCRIPTORS; i++)
@@ -262,6 +269,7 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         if (setupbinary(task, sp))
         {
 
+            task_setstate(task, TASK_STATE_ASSIGNED);
             coreassign(task);
 
             return task->id;
@@ -271,7 +279,7 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         else
         {
 
-            list_add(&freetasks, &task->item);
+            list_add(&killedtasks, &task->item);
 
             return 0;
 
@@ -289,7 +297,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     unsigned int i;
 
     list_init(&freelinks);
-    list_init(&freetasks);
+    list_init(&killedtasks);
     list_init(&blockedtasks);
 
     for (i = 1; i < KERNEL_TASKS; i++)
@@ -299,7 +307,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
         task_init(task, i);
         task_register(task);
-        list_add(&freetasks, &task->item);
+        list_add(&killedtasks, &task->item);
 
     }
 

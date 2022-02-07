@@ -1,6 +1,10 @@
-#define TASK_STATE_NORMAL               0
-#define TASK_STATE_KILLED               1
+#define TASK_STATE_KILLED               0
+#define TASK_STATE_ASSIGNED             1
 #define TASK_STATE_BLOCKED              2
+#define TASK_STATE_RUNNING              3
+#define TASK_SIGNAL_KILL                1
+#define TASK_SIGNAL_KICK                2
+#define TASK_SIGNAL_BLOCK               3
 
 struct task_thread
 {
@@ -21,12 +25,17 @@ struct task
     struct binary_format *format;
     unsigned int id;
     unsigned int state;
-    unsigned int kicked;
+    unsigned int kills;
+    unsigned int kicks;
+    unsigned int blocks;
 
 };
 
+void task_signal(struct task *task, unsigned int signal);
 void task_setstate(struct task *task, unsigned int state);
 void task_register(struct task *task);
 void task_unregister(struct task *task);
+void task_resetthread(struct task_thread *thread);
 void task_initthread(struct task_thread *thread);
+void task_reset(struct task *task);
 void task_init(struct task *task, unsigned int id);

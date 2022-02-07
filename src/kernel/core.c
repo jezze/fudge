@@ -19,12 +19,12 @@ void core_sorttasks(struct core *core)
 
         spinlock_acquire(&task->spinlock);
 
-        if (task->kicked)
+        if (task->kicks)
             list_add(&kicked, &task->item);
         else
             list_add(&normal, &task->item);
 
-        task->kicked = 0;
+        task->kicks = 0;
 
         spinlock_release(&task->spinlock);
 

@@ -50,7 +50,7 @@ static unsigned int spawn(struct task *task, void *stack)
 static unsigned int despawn(struct task *task, void *stack)
 {
 
-    task_setstate(task, TASK_STATE_KILLED);
+    task_signal(task, TASK_SIGNAL_KILL);
 
     return 0;
 
@@ -170,7 +170,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     {
 
         if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
-            task_setstate(core->task, TASK_STATE_KILLED);
+            task_signal(core->task, TASK_SIGNAL_KILL);
 
     }
 
