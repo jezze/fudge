@@ -279,6 +279,7 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         else
         {
 
+            task_transition(task, TASK_STATE_KILLED);
             list_add(&killedtasks, &task->item);
 
             return 0;
