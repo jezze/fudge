@@ -3,8 +3,8 @@
 #define TASK_STATE_BLOCKED              2
 #define TASK_STATE_RUNNING              3
 #define TASK_SIGNAL_KILL                1
-#define TASK_SIGNAL_KICK                2
-#define TASK_SIGNAL_BLOCK               3
+#define TASK_SIGNAL_BLOCK               2
+#define TASK_SIGNAL_UNBLOCK             3
 
 struct task_thread
 {
@@ -26,8 +26,8 @@ struct task
     unsigned int id;
     unsigned int state;
     unsigned int kills;
-    unsigned int kicks;
     unsigned int blocks;
+    unsigned int unblocks;
 
 };
 

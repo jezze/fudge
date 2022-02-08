@@ -194,7 +194,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct messa
 
     header->source = source;
 
-    task_signal(task, TASK_SIGNAL_KICK);
+    task_signal(task, TASK_SIGNAL_UNBLOCK);
 
     return mailbox_place(mailbox, header, data);
 
