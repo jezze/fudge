@@ -94,7 +94,7 @@ void kernel_schedule(struct core *core)
 
             core->task->kills = 0;
 
-            task_setstate(core->task, TASK_STATE_KILLED);
+            task_transition(core->task, TASK_STATE_KILLED);
             list_add(&killedtasks, &core->task->item);
 
         }
@@ -104,7 +104,7 @@ void kernel_schedule(struct core *core)
 
             core->task->blocks = 0;
 
-            task_setstate(core->task, TASK_STATE_BLOCKED);
+            task_transition(core->task, TASK_STATE_BLOCKED);
             list_add(&blockedtasks, &core->task->item);
 
         }
@@ -112,7 +112,7 @@ void kernel_schedule(struct core *core)
         else
         {
 
-            task_setstate(core->task, TASK_STATE_ASSIGNED);
+            task_transition(core->task, TASK_STATE_ASSIGNED);
             list_add(&core->tasks, &core->task->item);
 
         }
@@ -137,7 +137,7 @@ void kernel_schedule(struct core *core)
         {
 
             list_remove_nolock(&blockedtasks, current);
-            task_setstate(task, TASK_STATE_ASSIGNED);
+            task_transition(task, TASK_STATE_ASSIGNED);
             coreassign(task);
 
         }
@@ -152,7 +152,7 @@ void kernel_schedule(struct core *core)
     core->task = list_picktail(&core->tasks);
 
     if (core->task)
-        task_setstate(core->task, TASK_STATE_RUNNING);
+        task_transition(core->task, TASK_STATE_RUNNING);
 
 }
 
@@ -269,7 +269,7 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
         if (setupbinary(task, sp))
         {
 
-            task_setstate(task, TASK_STATE_ASSIGNED);
+            task_transition(task, TASK_STATE_ASSIGNED);
             coreassign(task);
 
             return task->id;

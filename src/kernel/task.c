@@ -34,7 +34,7 @@ void task_signal(struct task *task, unsigned int signal)
 
 }
 
-void task_setstate(struct task *task, unsigned int state)
+void task_transition(struct task *task, unsigned int state)
 {
 
     spinlock_acquire(&task->spinlock);
