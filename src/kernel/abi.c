@@ -233,6 +233,22 @@ static unsigned int load(struct task *task, void *stack)
 
 }
 
+static unsigned int spawn(struct task *task, void *stack)
+{
+
+    return 0;
+
+}
+
+static unsigned int despawn(struct task *task, void *stack)
+{
+
+    task_signal(task, TASK_SIGNAL_KILL);
+
+    return 0;
+
+}
+
 static unsigned int unload(struct task *task, void *stack)
 {
 
@@ -339,41 +355,48 @@ unsigned int abi_call(unsigned int index, struct task *task, void *stack)
 
 }
 
-void abi_setup(unsigned int (*spawn)(struct task *task, void *stack), unsigned int (*despawn)(struct task *task, void *stack))
+void abi_setcallback(unsigned int index, unsigned int (*callback)(struct task *task, void *stack))
 {
 
-    calls[0x00] = debug;
-    calls[0x01] = walk;
-    calls[0x02] = create;
-    calls[0x03] = destroy;
-    calls[0x04] = reset;
-    calls[0x05] = step;
-    calls[0x06] = read;
-    calls[0x07] = write;
-    calls[0x08] = seek;
-    calls[0x09] = load;
-    calls[0x0A] = unload;
-    calls[0x0B] = spawn;
-    calls[0x0C] = despawn;
-    calls[0x0D] = pick;
-    calls[0x0E] = place;
-    calls[0x0F] = link;
-    calls[0x10] = unlink;
-    calls[0x11] = notify;
-    calls[0x12] = kill;
-    calls[0x13] = debug;
-    calls[0x14] = debug;
-    calls[0x15] = debug;
-    calls[0x16] = debug;
-    calls[0x17] = debug;
-    calls[0x18] = debug;
-    calls[0x19] = debug;
-    calls[0x1A] = debug;
-    calls[0x1B] = debug;
-    calls[0x1C] = debug;
-    calls[0x1D] = debug;
-    calls[0x1E] = debug;
-    calls[0x1F] = debug;
+    calls[index] = callback;
+
+}
+
+void abi_setup(void)
+{
+
+    abi_setcallback(0x00, debug);
+    abi_setcallback(0x01, walk);
+    abi_setcallback(0x02, create);
+    abi_setcallback(0x03, destroy);
+    abi_setcallback(0x04, reset);
+    abi_setcallback(0x05, step);
+    abi_setcallback(0x06, read);
+    abi_setcallback(0x07, write);
+    abi_setcallback(0x08, seek);
+    abi_setcallback(0x09, load);
+    abi_setcallback(0x0A, unload);
+    abi_setcallback(0x0B, spawn);
+    abi_setcallback(0x0C, despawn);
+    abi_setcallback(0x0D, pick);
+    abi_setcallback(0x0E, place);
+    abi_setcallback(0x0F, link);
+    abi_setcallback(0x10, unlink);
+    abi_setcallback(0x11, notify);
+    abi_setcallback(0x12, kill);
+    abi_setcallback(0x13, debug);
+    abi_setcallback(0x14, debug);
+    abi_setcallback(0x15, debug);
+    abi_setcallback(0x16, debug);
+    abi_setcallback(0x17, debug);
+    abi_setcallback(0x18, debug);
+    abi_setcallback(0x19, debug);
+    abi_setcallback(0x1A, debug);
+    abi_setcallback(0x1B, debug);
+    abi_setcallback(0x1C, debug);
+    abi_setcallback(0x1D, debug);
+    abi_setcallback(0x1E, debug);
+    abi_setcallback(0x1F, debug);
 
 }
 

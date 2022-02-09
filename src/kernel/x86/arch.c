@@ -47,15 +47,6 @@ static unsigned int spawn(struct task *task, void *stack)
 
 }
 
-static unsigned int despawn(struct task *task, void *stack)
-{
-
-    task_signal(task, TASK_SIGNAL_KILL);
-
-    return 0;
-
-}
-
 static struct core *coreget(void)
 {
 
@@ -415,7 +406,8 @@ void arch_setup1(void)
     mmu_enable();
     kernel_setup(ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
     kernel_setcallback(coreget, coreassign);
-    abi_setup(spawn, despawn);
+    abi_setup();
+    abi_setcallback(0x0B, spawn);
 
 }
 

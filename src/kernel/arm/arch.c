@@ -12,24 +12,6 @@ extern void halt(void);
 
 static struct core core0;
 
-static unsigned int spawn(struct task *task, void *stack)
-{
-
-    unsigned int id = kernel_loadtask(task, ARCH_TASKSTACKVIRTUAL);
-
-    return id;
-
-}
-
-static unsigned int despawn(struct task *task, void *stack)
-{
-
-    task_signal(task, TASK_SIGNAL_KILL);
-
-    return 0;
-
-}
-
 static struct core *coreget(void)
 {
 
@@ -140,7 +122,7 @@ void arch_setup(void)
     core_init(&core0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
     kernel_setup(ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
     kernel_setcallback(coreget, coreassign);
-    abi_setup(spawn, despawn);
+    abi_setup();
     uart_puts("Loop forever...\n");
 
     for (;;);
