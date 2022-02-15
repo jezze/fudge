@@ -136,7 +136,7 @@ void kernel_schedule(struct core *core)
         if (ring_count(&mailbox->ring))
         {
 
-            list_remove_nolock(&blockedtasks, current);
+            list_remove_unsafe(&blockedtasks, current);
             task_transition(task, TASK_STATE_ASSIGNED);
             coreassign(task);
 

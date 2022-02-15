@@ -2,7 +2,7 @@
 #include "spinlock.h"
 #include "list.h"
 
-static void add(struct list *list, struct list_item *item)
+void list_add_unsafe(struct list *list, struct list_item *item)
 {
 
     item->prev = list->tail;
@@ -18,7 +18,16 @@ static void add(struct list *list, struct list_item *item)
 
 }
 
-static void remove(struct list *list, struct list_item *item)
+void list_add(struct list *list, struct list_item *item)
+{
+
+    spinlock_acquire(&list->spinlock);
+    list_add_unsafe(list, item);
+    spinlock_release(&list->spinlock);
+
+}
+
+void list_remove_unsafe(struct list *list, struct list_item *item)
 {
 
     if (list->head == item)
@@ -45,28 +54,12 @@ static void remove(struct list *list, struct list_item *item)
 
 }
 
-void list_add(struct list *list, struct list_item *item)
-{
-
-    spinlock_acquire(&list->spinlock);
-    add(list, item);
-    spinlock_release(&list->spinlock);
-
-}
-
 void list_remove(struct list *list, struct list_item *item)
 {
 
     spinlock_acquire(&list->spinlock);
-    remove(list, item);
+    list_remove_unsafe(list, item);
     spinlock_release(&list->spinlock);
-
-}
-
-void list_remove_nolock(struct list *list, struct list_item *item)
-{
-
-     remove(list, item);
 
 }
 
@@ -88,7 +81,7 @@ void *list_pickhead(struct list *list)
     item = list->head;
 
     if (item)
-        remove(list, item);
+        list_remove_unsafe(list, item);
 
     spinlock_release(&list->spinlock);
 
@@ -106,7 +99,7 @@ void *list_picktail(struct list *list)
     item = list->tail;
 
     if (item)
-        remove(list, item);
+        list_remove_unsafe(list, item);
 
     spinlock_release(&list->spinlock);
 

@@ -232,7 +232,7 @@ static unsigned int service_unlink(unsigned int id, unsigned int source)
         if (link->source == source)
         {
 
-            list_remove_nolock(&node->links, &link->item);
+            list_remove_unsafe(&node->links, &link->item);
             kernel_freelink(link);
 
         }
