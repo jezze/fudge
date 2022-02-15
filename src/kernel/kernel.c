@@ -222,7 +222,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 
 }
 
-unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
+struct task *kernel_loadtask(struct task *parent, unsigned int sp)
 {
 
     struct task *task = list_picktail(&killedtasks);
@@ -272,7 +272,7 @@ unsigned int kernel_loadtask(struct task *parent, unsigned int sp)
             task_transition(task, TASK_STATE_ASSIGNED);
             coreassign(task);
 
-            return task->id;
+            return task;
 
         }
 
