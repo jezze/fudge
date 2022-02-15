@@ -218,13 +218,16 @@ static unsigned int service_unlink(unsigned int id, unsigned int source)
 
     struct system_node *node = getnode(id);
     struct list_item *current;
+    struct list_item *next;
 
     spinlock_acquire(&node->links.spinlock);
 
-    for (current = node->links.head; current; current = current->next)
+    for (current = node->links.head; current; current = next)
     {
 
         struct link *link = current->data;
+
+        next = current->next;
 
         if (link->source == source)
         {
