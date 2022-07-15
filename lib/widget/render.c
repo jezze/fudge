@@ -272,37 +272,57 @@ static void paint32(void *canvas, unsigned int color, unsigned int offset, unsig
 
 }
 
-static void paintcharline(void *canvas, unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
+static unsigned int paintchar(void *canvas, char c, unsigned int x, unsigned char color, unsigned int line, unsigned int inverted)
 {
 
-    unsigned int i;
+    unsigned short index = getfontindex(c);
+    unsigned int offset = pcf_getbitmapoffset(font.data, index);
+    struct pcf_metricsdata metricsdata;
 
-    for (i = 0; i < w; i++)
+    pcf_readmetricsdata(font.data, index, &metricsdata);
+
+    if (line < metricsdata.ascent + metricsdata.descent)
     {
 
-        if (data[(i >> 3)] & (0x80 >> (i % 8)))
-            paint(canvas, color, x + i, 1);
+        unsigned char *data = font.bitmapdata + offset + line * font.bitmapalign;
+
+        if (inverted)
+        {
+
+            unsigned int i;
+
+            for (i = 0; i < metricsdata.width; i++)
+            {
+
+                if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
+                    paint(canvas, color, x + i, 1);
+
+            }
+
+        }
+
+        else
+        {
+
+            unsigned int i;
+
+            for (i = 0; i < metricsdata.width; i++)
+            {
+
+                if (data[(i >> 3)] & (0x80 >> (i % 8)))
+                    paint(canvas, color, x + i, 1);
+
+            }
+
+        }
 
     }
 
-}
-
-static void paintcharlineinverted(void *canvas, unsigned int x, unsigned int w, unsigned char color, unsigned char *data)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < w; i++)
-    {
-
-        if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
-            paint(canvas, color, x + i, 1);
-
-    }
+    return metricsdata.width;
 
 }
 
-static void painttext(void *canvas, unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int row, unsigned int cursor)
+static void painttext(void *canvas, unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int line, unsigned int cursor)
 {
 
     unsigned int i;
@@ -310,26 +330,10 @@ static void painttext(void *canvas, unsigned char *string, unsigned int length, 
     for (i = 0; i < length; i++)
     {
 
-        unsigned short index = getfontindex(string[i]);
-        unsigned int offset = pcf_getbitmapoffset(font.data, index);
-        struct pcf_metricsdata metricsdata;
+        if (x >= w)
+            break;
 
-        pcf_readmetricsdata(font.data, index, &metricsdata);
-
-        if (x + metricsdata.width > w)
-            return;
-
-        if (row < metricsdata.ascent + metricsdata.descent)
-        {
-
-            if (i == cursor)
-                paintcharlineinverted(canvas, x, metricsdata.width, color, font.bitmapdata + offset + row * font.bitmapalign);
-            else
-                paintcharline(canvas, x, metricsdata.width, color, font.bitmapdata + offset + row * font.bitmapalign);
-
-        }
-
-        x += metricsdata.width;
+        x += paintchar(canvas, string[i], x, color, line, i == cursor);
 
     }
 
