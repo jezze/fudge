@@ -433,11 +433,17 @@ static void rendertextbox(void *canvas, void *data, unsigned int line)
     unsigned int rowindex = textbox->offset + line / font.lineheight;
     unsigned int rowtotal = findrowtotal(string, textbox->length);
     unsigned int visiblerows = (textbox->size.h / font.lineheight);
-    unsigned int rowoffset = (rowtotal > visiblerows) ? rowtotal - visiblerows : 0;
+    int rowoffset = (rowtotal > visiblerows) ? rowtotal - visiblerows : 0;
 
     rowoffset += textbox->scroll;
 
-    if (rowindex < rowtotal)
+    if (rowoffset < 0)
+        rowoffset = 0;
+
+    if (rowoffset > rowtotal)
+        rowoffset = rowtotal;
+
+    if (rowindex < rowtotal - rowoffset)
     {
 
         unsigned int rowstart = findrowstart(string, textbox->length, rowindex + rowoffset);
