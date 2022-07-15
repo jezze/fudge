@@ -38,7 +38,7 @@ struct font
 static unsigned int currentw;
 static unsigned int currenth;
 static unsigned int currentbpp;
-static struct font font;
+static struct font fonts[2];
 static void (*drawables[32])(void *canvas, void *data, unsigned int line);
 static void (*getbbox[32])(struct box *bbox, void *data);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
@@ -190,18 +190,18 @@ static unsigned int findrowcount(unsigned char *string, unsigned int count, unsi
 
 }
 
-static unsigned short getfontindex(unsigned short c)
+static unsigned short getfontindex(struct font *font, unsigned short c)
 {
 
     switch (c)
     {
 
     case '\n':
-        return pcf_getindex(font.data, ' ');
+        return pcf_getindex(font->data, ' ');
 
     }
 
-    return pcf_getindex(font.data, c);
+    return pcf_getindex(font->data, c);
 
 }
 
@@ -272,19 +272,19 @@ static void paint32(void *canvas, unsigned int color, unsigned int offset, unsig
 
 }
 
-static unsigned int paintchar(void *canvas, char c, unsigned int x, unsigned char color, unsigned int line, unsigned int inverted)
+static unsigned int paintchar(void *canvas, struct font *font, char c, unsigned int x, unsigned char color, unsigned int line, unsigned int inverted)
 {
 
-    unsigned short index = getfontindex(c);
-    unsigned int offset = pcf_getbitmapoffset(font.data, index);
+    unsigned short index = getfontindex(font, c);
+    unsigned int offset = pcf_getbitmapoffset(font->data, index);
     struct pcf_metricsdata metricsdata;
 
-    pcf_readmetricsdata(font.data, index, &metricsdata);
+    pcf_readmetricsdata(font->data, index, &metricsdata);
 
     if (line < metricsdata.ascent + metricsdata.descent)
     {
 
-        unsigned char *data = font.bitmapdata + offset + line * font.bitmapalign;
+        unsigned char *data = font->bitmapdata + offset + line * font->bitmapalign;
 
         if (inverted)
         {
@@ -322,7 +322,7 @@ static unsigned int paintchar(void *canvas, char c, unsigned int x, unsigned cha
 
 }
 
-static void painttext(void *canvas, unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int line, unsigned int cursor)
+static void painttext(void *canvas, struct font *font, unsigned char *string, unsigned int length, unsigned int x, unsigned int w, unsigned char color, unsigned int line, unsigned int cursor)
 {
 
     unsigned int i;
@@ -333,7 +333,7 @@ static void painttext(void *canvas, unsigned char *string, unsigned int length, 
         if (x >= w)
             break;
 
-        x += paintchar(canvas, string[i], x, color, line, i == cursor);
+        x += paintchar(canvas, font, string[i], x, color, line, i == cursor);
 
     }
 
@@ -424,8 +424,8 @@ static void renderpanel(void *canvas, void *data, unsigned int line)
     paint(canvas, backgroundcolor, panel->size.x, panel->size.w);
     paintframe(canvas, framecolor, &panel->size, line);
 
-    if (line >= font.padding && ((line - font.padding) / font.lineheight == 0))
-        painttext(canvas, string, panel->length, panel->textbox.x, panel->textbox.x + panel->textbox.w, stringcolor, (line - font.padding) % font.lineheight, panel->length);
+    if (line >= fonts[0].padding && ((line - fonts[0].padding) / fonts[0].lineheight == 0))
+        painttext(canvas, &fonts[0], string, panel->length, panel->textbox.x, panel->textbox.x + panel->textbox.w, stringcolor, (line - fonts[0].padding) % fonts[0].lineheight, panel->length);
 
 }
 
@@ -434,7 +434,7 @@ static void rendertextbox(void *canvas, void *data, unsigned int line)
 
     struct widget_textbox *textbox = data;
     unsigned char *string = (unsigned char *)(textbox + 1);
-    unsigned int rowindex = textbox->offset + line / font.lineheight;
+    unsigned int rowindex = textbox->offset + line / fonts[0].lineheight;
     unsigned int rowtotal = findrowtotal(string, textbox->length);
     int rowoffset = textbox->scroll;
 
@@ -450,7 +450,7 @@ static void rendertextbox(void *canvas, void *data, unsigned int line)
         unsigned int rowstart = findrowstart(string, textbox->length, rowindex + rowoffset);
         unsigned int rowcount = findrowcount(string, textbox->length, rowstart);
 
-        painttext(canvas, string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % font.lineheight, textbox->cursor - rowstart);
+        painttext(canvas, &fonts[0], string + rowstart, rowcount - rowstart, textbox->size.x, textbox->size.x + textbox->size.w, textcolor[WIDGET_TEXTTYPE_NORMAL], line % fonts[0].lineheight, textbox->cursor - rowstart);
 
     }
 
@@ -840,14 +840,14 @@ void render_setdraw(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
-void render_setfont(void *data, unsigned int lineheight, unsigned int padding)
+void render_setfont(unsigned int index, void *data, unsigned int lineheight, unsigned int padding)
 {
 
-    font.data = data;
-    font.bitmapdata = pcf_getbitmapdata(font.data);
-    font.bitmapalign = pcf_getbitmapalign(font.data);
-    font.lineheight = lineheight;
-    font.padding = padding;
+    fonts[index].data = data;
+    fonts[index].bitmapdata = pcf_getbitmapdata(fonts[index].data);
+    fonts[index].bitmapalign = pcf_getbitmapalign(fonts[index].data);
+    fonts[index].lineheight = lineheight;
+    fonts[index].padding = padding;
 
 }
 

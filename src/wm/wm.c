@@ -828,7 +828,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     box_setsize(&background.size, 0, 0, videomode->w, videomode->h);
     setmouse(videomode->w / 4, videomode->h / 4, factor);
     render_setdraw(videomode->w, videomode->h, videomode->bpp);
-    render_setfont(fontdata, lineheight, padding);
+    render_setfont(0, fontdata, lineheight, padding);
 
     for (current = viewlist.head; current; current = current->next)
     {
