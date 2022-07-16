@@ -756,6 +756,10 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousescroll *mousescroll = mdata;
 
+    render_scroll(mouse.size.x, mouse.size.y, mousescroll->relz);
+    render_flush(canvasdata, 0x10000, draw);
+    render_complete();
+
     if (currentview->currentremote)
     {
 

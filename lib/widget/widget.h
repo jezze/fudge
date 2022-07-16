@@ -7,6 +7,7 @@
 #define WIDGET_DAMAGE_NONE              0
 #define WIDGET_DAMAGE_REPLACE           1
 #define WIDGET_DAMAGE_REMOVE            2
+#define WIDGET_DAMAGE_REFRESH           3
 #define WIDGET_MOUSETYPE_DEFAULT        0
 #define WIDGET_TEXTTYPE_NORMAL          0
 #define WIDGET_TEXTTYPE_HIGHLIGHT       1

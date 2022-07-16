@@ -527,16 +527,12 @@ static void getbboxwindow(struct box *bbox, void *data)
 
 }
 
-static struct widget *nextwidget(struct ring *layer, void *current)
+static struct widget *nextwidget(struct ring *layer, struct widget *current)
 {
 
-    unsigned char *position = current;
-    struct widget *widget = current;
+    current = (current) ? (struct widget *)((unsigned char *)current + current->count) : (struct widget *)layer->buffer;
 
-    current = (current) ? position + widget->count : (unsigned char *)layer->buffer;
-    position = current;
-
-    return (position < (unsigned char *)layer->buffer + layer->head) ? current : 0;
+    return ((unsigned char *)current < (unsigned char *)layer->buffer + ring_count(layer)) ? current : 0;
 
 }
 
@@ -638,6 +634,35 @@ static void renderline(void *canvas, unsigned int line)
                     drawables[current->type](canvas, current + 1, line - bbox.y);
 
             }
+
+        }
+
+    }
+
+}
+
+void render_scroll(unsigned int x, unsigned int y, int z)
+{
+
+    struct widget *current = 0;
+
+    while ((current = nextwidget(&layers[0], current)))
+    {
+
+        struct box bbox;
+
+        getbbox[current->type](&bbox, current + 1);
+
+        if (!box_isinside(&bbox, x, y))
+            continue;
+
+        if (current->type == WIDGET_TYPE_TEXTBOX)
+        {
+
+            struct widget_textbox *textbox = (struct widget_textbox *)(current + 1);
+
+            textbox->scroll += z;
+            current->damage = WIDGET_DAMAGE_REFRESH;
 
         }
 
