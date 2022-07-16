@@ -508,22 +508,22 @@ static void paintwindow(struct window *w, unsigned int y)
     if (ly == 0 || ly == w->size.h - 1)
         paintlinesegments(w->position.x, w->position.x + w->size.w, cmap, windowborder0, 1, y);
 
-    if (ly == 1 || ly == w->size.h - 2)
+    else if (ly == 1 || ly == w->size.h - 2)
         paintlinesegments(w->position.x, w->position.x + w->size.w, cmap, windowborder1, 1, y);
 
-    if (ly == 2 || ly == w->size.h - 3)
+    else if (ly == 2 || ly == w->size.h - 3)
         paintlinesegments(w->position.x, w->position.x + w->size.w, cmap, windowborder2, 3, y);
 
-    if (ly == 3 || ly == w->size.h - 4)
+    else if (ly == 3 || ly == w->size.h - 4)
         paintlinesegments(w->position.x, w->position.x + w->size.w, cmap, windowborder3, 5, y);
 
-    if (ly >= 4 && ly < 40)
+    else if (ly >= 4 && ly < 40)
         paintlinesegments(w->position.x, w->position.x + w->size.w, cmap, windowbordertitle, 5, y);
 
-    if (ly == 40)
+    else if (ly == 40)
         paintlinesegments(w->position.x, w->position.x + w->size.w, cmap, windowborderspacing, 7, y);
 
-    if (ly > 40 && ly < w->size.h - 4)
+    else if (ly > 40 && ly < w->size.h - 4)
         paintlinesegments(w->position.x, w->position.x + w->size.w, cmap, windowborderarea, 9, y);
 
 }
