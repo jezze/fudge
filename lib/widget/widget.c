@@ -5,12 +5,16 @@
 void widget_initfill(struct widget_fill *fill, unsigned int color)
 {
 
+    box_setsize(&fill->size, 0, 0, 0, 0);
+
     fill->color = color;
 
 }
 
 void widget_initmouse(struct widget_mouse *mouse, unsigned int type)
 {
+
+    box_setsize(&mouse->size, 0, 0, 0, 0);
 
     mouse->type = type;
 
@@ -19,17 +23,30 @@ void widget_initmouse(struct widget_mouse *mouse, unsigned int type)
 void widget_initpanel(struct widget_panel *panel, unsigned int active)
 {
 
+    box_setsize(&panel->size, 0, 0, 0, 0);
+    box_setsize(&panel->textbox, 0, 0, 0, 0);
+
     panel->active = active;
+    panel->length = 0;
 
 }
 
 void widget_inittextbox(struct widget_textbox *textbox)
 {
 
+    box_setsize(&textbox->size, 0, 0, 0, 0);
+
+    textbox->length = 0;
+    textbox->cursor = 0;
+    textbox->offset = 0;
+    textbox->scroll = 0;
+
 }
 
 void widget_initwindow(struct widget_window *window, unsigned int active)
 {
+
+    box_setsize(&window->size, 0, 0, 0, 0);
 
     window->active = active;
 
