@@ -15,15 +15,6 @@
 #define COLOR_TEXTLIGHT                 0x0A
 #define LAYERS                          2
 
-struct layer
-{
-
-    unsigned char *data;
-    unsigned int count;
-    unsigned int total;
-
-};
-
 struct font
 {
 
@@ -43,7 +34,7 @@ static void (*drawables[32])(void *canvas, void *data, unsigned int line);
 static void (*getbbox[32])(struct box *bbox, void *data);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
-static struct layer layers[LAYERS];
+static struct ring layers[LAYERS];
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x08, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -536,20 +527,20 @@ static void getbboxwindow(struct box *bbox, void *data)
 
 }
 
-static struct widget *nextwidget(struct layer *layer, void *current)
+static struct widget *nextwidget(struct ring *layer, void *current)
 {
 
     unsigned char *position = current;
     struct widget *widget = current;
 
-    current = (current) ? position + widget->count : layer->data;
+    current = (current) ? position + widget->count : (unsigned char *)layer->buffer;
     position = current;
 
-    return (position < layer->data + layer->count) ? current : 0;
+    return (position < (unsigned char *)layer->buffer + layer->head) ? current : 0;
 
 }
 
-static void markwidgets(struct layer *layer, unsigned int source, unsigned int id, unsigned int damage)
+static void markwidgets(struct ring *layer, unsigned int source, unsigned int id, unsigned int damage)
 {
 
     struct widget *current = 0;
@@ -564,7 +555,7 @@ static void markwidgets(struct layer *layer, unsigned int source, unsigned int i
 
 }
 
-static void markwidgetsall(struct layer *layer, unsigned int source, unsigned int damage)
+static void markwidgetsall(struct ring *layer, unsigned int source, unsigned int damage)
 {
 
     struct widget *current = 0;
@@ -579,21 +570,21 @@ static void markwidgetsall(struct layer *layer, unsigned int source, unsigned in
 
 }
 
-static void addwidget(struct layer *layer, struct widget *widget)
+static void addwidget(struct ring *layer, struct widget *widget)
 {
 
-    layer->count += buffer_write(layer->data, layer->total, widget, widget->count, layer->count);
+    layer->head += buffer_write(layer->buffer, layer->capacity, widget, widget->count, layer->head);
 
 }
 
-static void removedata(struct layer *layer, void *data, unsigned int count)
+static void removedata(struct ring *layer, void *data, unsigned int count)
 {
 
     unsigned char *position = data;
 
-    buffer_copy(position, position + count, layer->count - (position - layer->data) - count);
+    buffer_copy(position, position + count, layer->head - (position - (unsigned char *)layer->buffer) - count);
 
-    layer->count -= count;
+    layer->head -= count;
 
 }
 
@@ -705,16 +696,16 @@ void render_write(unsigned int source, void *buffer, unsigned int count)
 {
 
     struct widget *current = 0;
-    struct layer layer;
+    struct ring layer;
 
-    layer.data = buffer;
-    layer.count = count;
-    layer.total = count;
+    ring_init(&layer, count, buffer);
+
+    layer.head = count;
 
     while ((current = nextwidget(&layer, current)))
     {
 
-        struct layer *target = &layers[current->z];
+        struct ring *target = &layers[current->z];
 
         current->source = source;
 
@@ -854,8 +845,7 @@ void render_setfont(unsigned int index, void *data, unsigned int lineheight, uns
 void render_setlayer(unsigned int index, unsigned char *data, unsigned int total)
 {
 
-    layers[index].data = data;
-    layers[index].total = total;
+    ring_init(&layers[index], total, data);
 
 }
 
