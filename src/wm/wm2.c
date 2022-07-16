@@ -763,10 +763,10 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
         int w = (int)(window->size.w) + mousemove->relx;
         int h = (int)(window->size.h) + mousemove->rely;
 
-        if (mousemove->relx < 0 && w < WINDOW_MIN_HEIGHT)
+        if (w < WINDOW_MIN_HEIGHT)
             w = WINDOW_MIN_WIDTH;
 
-        if (mousemove->rely < 0 && h < WINDOW_MIN_HEIGHT)
+        if (h < WINDOW_MIN_HEIGHT)
             h = WINDOW_MIN_HEIGHT;
 
         markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
