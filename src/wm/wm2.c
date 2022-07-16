@@ -1,6 +1,12 @@
 #include <fudge.h>
 #include <abi.h>
 
+#define WINDOW_MIN_WIDTH                64
+#define WINDOW_MIN_HEIGHT               64
+#define WIDGET_TYPE_WINDOW              1
+#define DAMAGE_STATE_NONE               0
+#define DAMAGE_STATE_MADE               1
+
 struct position
 {
 
@@ -63,6 +69,16 @@ struct linesegment
 
 };
 
+struct widget
+{
+
+    unsigned int type;
+    char *id;
+    char *parent;
+    void *data;
+
+};
+
 struct window
 {
 
@@ -73,7 +89,7 @@ struct window
 
 };
 
-struct repaint
+struct damage
 {
 
     unsigned int state;
@@ -91,9 +107,10 @@ static unsigned int keymod = KEYMOD_NONE;
 static struct display display;
 static struct mouse mouse;
 static struct configuration configuration;
-static struct repaint repaint;
+static struct damage damage;
+static struct widget widgets[32];
 static struct window windows[32];
-static unsigned int nwindows;
+static unsigned int nwidgets;
 static unsigned char fontdata[0x8000];
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -322,8 +339,11 @@ static int capvalue(int x, int min, int max)
 
 }
 
-static void posset(struct position *p0, struct position *p1, unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
+static void setdamage(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
 {
+
+    struct position *p0 = &damage.position0;
+    struct position *p1 = &damage.position1;
 
     p0->x = x0;
     p0->y = y0;
@@ -332,8 +352,11 @@ static void posset(struct position *p0, struct position *p1, unsigned int x0, un
 
 }
 
-static void posshrink(struct position *p0, struct position *p1, int x0, int y0, int x1, int y1)
+static void shrinkdamage(int x0, int y0, int x1, int y1)
 {
+
+    struct position *p0 = &damage.position0;
+    struct position *p1 = &damage.position1;
 
     if (x0 < p0->x)
         p0->x = x0;
@@ -352,30 +375,40 @@ static void posshrink(struct position *p0, struct position *p1, int x0, int y0, 
 static void markforpaint(int x0, int y0, int x1, int y1)
 {
 
-    if (repaint.state)
-        posshrink(&repaint.position0, &repaint.position1, x0, y0, x1, y1);
-    else
-        posset(&repaint.position0, &repaint.position1, x0, y0, x1, y1);
+    switch (damage.state)
+    {
 
-    repaint.state = 1;
+    case DAMAGE_STATE_MADE:
+        shrinkdamage(x0, y0, x1, y1);
+
+        break;
+
+    case DAMAGE_STATE_NONE:
+        setdamage(x0, y0, x1, y1);
+
+        break;
+
+    }
+
+    damage.state = DAMAGE_STATE_MADE;
 
 }
 
-static void blit_line(unsigned int x0, unsigned int x1, unsigned int w, unsigned int color, unsigned int y)
+static void blit_line(struct display *display, unsigned int x0, unsigned int x1, unsigned int color, unsigned int y)
 {
 
-    unsigned int *buffer = display.framebuffer;
+    unsigned int *buffer = display->framebuffer;
     unsigned int x;
 
     for (x = x0; x < x1; x++)
-        buffer[y * w + x] = color;
+        buffer[y * display->size.w + x] = color;
 
 }
 
-static void blit_cmap32line(struct position *p, struct image *image, unsigned int *cmap, unsigned int tw, unsigned int y)
+static void blit_cmap32line(struct display *display, struct position *p, struct image *image, unsigned int *cmap, unsigned int y)
 {
 
-    unsigned int *buffer = display.framebuffer;
+    unsigned int *buffer = display->framebuffer;
     unsigned char *data = image->data;
     unsigned int x;
 
@@ -383,7 +416,7 @@ static void blit_cmap32line(struct position *p, struct image *image, unsigned in
     {
 
         unsigned int soffset = (y * image->size.w + x);
-        unsigned int toffset = (p->y * tw + p->x) + (y * tw + x);
+        unsigned int toffset = (p->y * display->size.w + p->x) + (y * display->size.w + x);
 
         if (data[soffset] != 0xFF)
             buffer[toffset] = cmap[data[soffset]];
@@ -427,7 +460,7 @@ static void paintlinesegment(int x0, int x1, unsigned int *cmap, struct linesegm
 
     }
 
-    blit_line(p0, p1, display.size.w, cmap[p->color], y);
+    blit_line(&display, p0, p1, cmap[p->color], y);
 
 }
 
@@ -445,9 +478,8 @@ static void paintmouse(struct mouse *m, unsigned int y)
 {
 
     unsigned int *cmap = mousecmap;
-    unsigned int ly = y - m->position.y;
 
-    blit_cmap32line(&m->position, &m->image, cmap, display.size.w, ly);
+    blit_cmap32line(&display, &m->position, &m->image, cmap, y - m->position.y);
 
 }
 
@@ -503,40 +535,68 @@ static int intersects(unsigned int y, unsigned int y0, unsigned int y1)
 
 }
 
+static void checkbackground(unsigned int y)
+{
+
+    if (intersects(y, 0, display.size.h))
+        blit_line(&display, damage.position0.x, damage.position1.x, 0xFF202020, y);
+
+}
+
+static void checkwindow(struct window *window, unsigned int y)
+{
+
+    if (intersects(y, window->position.y, window->position.y + window->size.h))
+        paintwindow(window, y);
+
+}
+
+static void checkmouse(struct mouse *mouse, unsigned int y)
+{
+
+    if (intersects(y, mouse->position.y, mouse->position.y + mouse->image.size.h))
+        paintmouse(mouse, y);
+
+}
+
 static void paint(void)
 {
 
-    if (repaint.state)
+    if (damage.state == DAMAGE_STATE_MADE)
     {
 
         unsigned int y;
 
-        for (y = repaint.position0.y; y < repaint.position1.y; y++)
+        for (y = damage.position0.y; y < damage.position1.y; y++)
         {
 
             unsigned int i;
 
-            if (intersects(y, 0, display.size.h))
-                blit_line(repaint.position0.x, repaint.position1.x, display.size.w, 0xFF202020, y);
+            checkbackground(y);
 
-            for (i = 0; i < nwindows; i++)
+            for (i = 0; i < nwidgets; i++)
             {
 
-                struct window *w = &windows[i];
+                struct widget *widget = &widgets[i];
 
-                if (intersects(y, w->position.y, w->position.y + w->size.h))
-                    paintwindow(w, y);
+                switch (widget->type)
+                {
+
+                case WIDGET_TYPE_WINDOW:
+                    checkwindow(widget->data, y);
+
+                    break;
+
+                }
 
             }
 
-            if (intersects(y, mouse.position.y, mouse.position.y + mouse.image.size.h))
-                paintmouse(&mouse, y);
-
-            paintborderrect(repaint.position0.x, repaint.position0.y, repaint.position1.x, repaint.position1.y, y);
+            checkmouse(&mouse, y);
+            paintborderrect(damage.position0.x, damage.position0.y, damage.position1.x, damage.position1.y, y);
 
         }
 
-        repaint.state = 0;
+        damage.state = DAMAGE_STATE_NONE;
 
     }
 
@@ -602,7 +662,7 @@ static struct window *getfocusedwindow(void)
 
     unsigned int i;
 
-    for (i = 0; i < nwindows; i++)
+    for (i = 0; i < nwidgets; i++)
     {
 
         struct window *w = &windows[i];
@@ -631,28 +691,57 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     if (mouse.drag)
     {
 
-        struct window *w = getfocusedwindow();
+        struct window *window = getfocusedwindow();
 
-        markforpaint(w->position.x, w->position.y, w->position.x + w->size.w, w->position.y + w->size.h);
+        markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
 
-        w->position.x += mousemove->relx;
-        w->position.y += mousemove->rely;
+        window->position.x += mousemove->relx;
+        window->position.y += mousemove->rely;
 
-        markforpaint(w->position.x, w->position.y, w->position.x + w->size.w, w->position.y + w->size.h);
+        markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
 
     }
 
     if (mouse.resize)
     {
 
-        struct window *w = getfocusedwindow();
+        struct window *window = getfocusedwindow();
 
-        markforpaint(w->position.x, w->position.y, w->position.x + w->size.w, w->position.y + w->size.h);
+        markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
 
-        w->size.w += mousemove->relx;
-        w->size.h += mousemove->rely;
+        if (mousemove->relx < 0)
+        {
 
-        markforpaint(w->position.x, w->position.y, w->position.x + w->size.w, w->position.y + w->size.h);
+            int w = (int)(window->size.w) + mousemove->relx;
+
+            window->size.w = (w > WINDOW_MIN_WIDTH) ? w : WINDOW_MIN_WIDTH;
+
+        }
+
+        else
+        {
+
+            window->size.w += mousemove->relx;
+
+        }
+
+        if (mousemove->rely < 0)
+        {
+
+            int h = (int)(window->size.h) + mousemove->rely;
+
+            window->size.h = (h > WINDOW_MIN_HEIGHT) ? h : WINDOW_MIN_HEIGHT;
+
+        }
+
+        else
+        {
+
+            window->size.h += mousemove->rely;
+
+        }
+
+        markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
 
     }
 
@@ -783,19 +872,27 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    windows[0].title = "Example1";
+    widgets[0].type = WIDGET_TYPE_WINDOW;
+    widgets[0].id = "window0";
+    widgets[0].parent = "";
+    widgets[0].data = &windows[0];
+    windows[0].title = "Window 0";
     windows[0].focus = 0;
     windows[0].size.w = 800;
     windows[0].size.h = 600;
     windows[0].position.x = 200;
     windows[0].position.y = 100;
-    windows[1].title = "Example2";
+    widgets[1].type = WIDGET_TYPE_WINDOW;
+    widgets[1].id = "window1";
+    widgets[1].parent = "";
+    widgets[1].data = &windows[1];
+    windows[1].title = "Window 1";
     windows[1].focus = 1;
     windows[1].size.w = 800;
     windows[1].size.h = 600;
     windows[1].position.x = 100;
     windows[1].position.y = 80;
-    nwindows = 2;
+    nwidgets = 2;
 
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
