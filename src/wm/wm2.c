@@ -4,8 +4,11 @@
 #define WINDOW_MIN_WIDTH                128
 #define WINDOW_MIN_HEIGHT               128
 #define WIDGET_TYPE_WINDOW              1
+#define WIDGET_TYPE_LAYOUT              2
 #define DAMAGE_STATE_NONE               0
 #define DAMAGE_STATE_MADE               1
+#define LAYOUT_TYPE_FLOAT               0
+#define LAYOUT_TYPE_VERTICAL            1
 
 struct position
 {
@@ -89,6 +92,15 @@ struct window
 
 };
 
+struct layout
+{
+
+    unsigned int type;
+    struct position position;
+    struct size size;
+
+};
+
 struct damage
 {
 
@@ -110,6 +122,7 @@ static struct configuration configuration;
 static struct damage damage;
 static struct widget widgets[32];
 static struct window windows[32];
+static struct layout layouts[32];
 static unsigned int nwidgets;
 static unsigned char fontdata[0x8000];
 static unsigned char mousedata24[] = {
@@ -694,6 +707,27 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+/*
+static struct widget *getwidgetbyid(char *id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < nwidgets; i++)
+    {
+
+        struct widget *current = &widgets[i];
+
+        if (ascii_match(current->id, id))
+            return current;
+
+    }
+
+    return 0;
+
+}
+*/
+
 static struct window *getfocusedwindow(void)
 {
 
@@ -702,10 +736,17 @@ static struct window *getfocusedwindow(void)
     for (i = 0; i < nwidgets; i++)
     {
 
-        struct window *w = &windows[i];
+        struct widget *current = &widgets[i];
 
-        if (w->focus)
-            return w;
+        if (current->type == WIDGET_TYPE_WINDOW)
+        {
+
+            struct window *window = current->data;
+
+            if (window->focus)
+                return window;
+
+        }
 
     }
 
@@ -863,9 +904,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     configuration.steplength = videomode->w / 12;
 
     loadfont(factor);
-
     setmouse(videomode->w / 4, videomode->h / 4, factor);
-
     markforpaint(0, 0, display.size.w, display.size.h);
 
 }
@@ -885,30 +924,48 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-void init(void)
+void setup(void)
 {
 
-    widgets[0].type = WIDGET_TYPE_WINDOW;
-    widgets[0].id = "window0";
-    widgets[0].parent = "";
-    widgets[0].data = &windows[0];
+    widgets[nwidgets].type = WIDGET_TYPE_LAYOUT;
+    widgets[nwidgets].id = "root";
+    widgets[nwidgets].parent = "";
+    widgets[nwidgets].data = &layouts[0];
+    layouts[0].type = LAYOUT_TYPE_FLOAT;
+    layouts[0].size.w = 0;
+    layouts[0].size.h = 0;
+    layouts[0].position.x = 0;
+    layouts[0].position.y = 0;
+    nwidgets++;
+    widgets[nwidgets].type = WIDGET_TYPE_WINDOW;
+    widgets[nwidgets].id = "window0";
+    widgets[nwidgets].parent = "root";
+    widgets[nwidgets].data = &windows[0];
     windows[0].title = "Window 0";
     windows[0].focus = 0;
     windows[0].size.w = 800;
     windows[0].size.h = 600;
     windows[0].position.x = 200;
     windows[0].position.y = 100;
-    widgets[1].type = WIDGET_TYPE_WINDOW;
-    widgets[1].id = "window1";
-    widgets[1].parent = "";
-    widgets[1].data = &windows[1];
+    nwidgets++;
+    widgets[nwidgets].type = WIDGET_TYPE_WINDOW;
+    widgets[nwidgets].id = "window1";
+    widgets[nwidgets].parent = "root";
+    widgets[nwidgets].data = &windows[1];
     windows[1].title = "Window 1";
     windows[1].focus = 1;
     windows[1].size.w = 800;
     windows[1].size.h = 600;
     windows[1].position.x = 100;
     windows[1].position.y = 80;
-    nwidgets = 2;
+    nwidgets++;
+
+}
+
+void init(void)
+{
+
+    setup();
 
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
