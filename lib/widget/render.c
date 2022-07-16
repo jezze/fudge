@@ -13,6 +13,7 @@
 #define COLOR_POINTERFRAME              0x08
 #define COLOR_TEXTNORMAL                0x09
 #define COLOR_TEXTLIGHT                 0x0A
+#define FONTS                           2
 #define LAYERS                          2
 
 struct font
@@ -29,11 +30,11 @@ struct font
 static unsigned int currentw;
 static unsigned int currenth;
 static unsigned int currentbpp;
-static struct font fonts[2];
 static void (*drawables[32])(void *canvas, void *data, unsigned int line);
 static void (*getbbox[32])(struct box *bbox, void *data);
 static void (*paint)(void *canvas, unsigned int color, unsigned int offset, unsigned int count);
 static unsigned char textcolor[2];
+static struct font fonts[FONTS];
 static struct ring layers[LAYERS];
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
