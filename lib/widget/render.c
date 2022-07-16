@@ -570,13 +570,6 @@ static void markwidgetsall(struct ring *layer, unsigned int source, unsigned int
 
 }
 
-static void addwidget(struct ring *layer, struct widget *widget)
-{
-
-    layer->head += buffer_write(layer->buffer, layer->capacity, widget, widget->count, layer->head);
-
-}
-
 static void removedata(struct ring *layer, void *data, unsigned int count)
 {
 
@@ -719,7 +712,7 @@ void render_write(unsigned int source, void *buffer, unsigned int count)
 
         case WIDGET_DAMAGE_REPLACE:
             markwidgets(target, current->source, current->id, WIDGET_DAMAGE_REMOVE);
-            addwidget(target, current);
+            ring_write(target, current, current->count);
 
             break;
 
