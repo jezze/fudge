@@ -760,40 +760,19 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     {
 
         struct window *window = getfocusedwindow();
+        int w = (int)(window->size.w) + mousemove->relx;
+        int h = (int)(window->size.h) + mousemove->rely;
+
+        if (mousemove->relx < 0 && w < WINDOW_MIN_HEIGHT)
+            w = WINDOW_MIN_WIDTH;
+
+        if (mousemove->rely < 0 && h < WINDOW_MIN_HEIGHT)
+            h = WINDOW_MIN_HEIGHT;
 
         markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
 
-        if (mousemove->relx < 0)
-        {
-
-            int w = (int)(window->size.w) + mousemove->relx;
-
-            window->size.w = (w > WINDOW_MIN_WIDTH) ? w : WINDOW_MIN_WIDTH;
-
-        }
-
-        else
-        {
-
-            window->size.w += mousemove->relx;
-
-        }
-
-        if (mousemove->rely < 0)
-        {
-
-            int h = (int)(window->size.h) + mousemove->rely;
-
-            window->size.h = (h > WINDOW_MIN_HEIGHT) ? h : WINDOW_MIN_HEIGHT;
-
-        }
-
-        else
-        {
-
-            window->size.h += mousemove->rely;
-
-        }
+        window->size.w = w;
+        window->size.h = h;
 
         markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
 
