@@ -1,8 +1,8 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define WINDOW_MIN_WIDTH                64
-#define WINDOW_MIN_HEIGHT               64
+#define WINDOW_MIN_WIDTH                128
+#define WINDOW_MIN_HEIGHT               128
 #define WIDGET_TYPE_WINDOW              1
 #define DAMAGE_STATE_NONE               0
 #define DAMAGE_STATE_MADE               1
@@ -189,15 +189,15 @@ static struct linesegment borderrect1[2] = {
 
 static unsigned int windowcmapnormal[] = {
     0xFF101010,
-    0xFFA0A0A0,
-    0xFF808080,
-    0xFF242424
+    0xFF687888,
+    0xFF485868,
+    0xFF182838
 };
 static unsigned int windowcmapfocus[] = {
     0xFF101010,
-    0xFFA8C898,
-    0xFF88A878,
-    0xFF242424
+    0xFF48C888,
+    0xFF28A868,
+    0xFF182838
 };
 
 static void setupvideo(void)
@@ -294,52 +294,32 @@ static int capvalue(int x, int min, int max)
 
 }
 
-static void setdamage(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
-{
-
-    struct position *p0 = &damage.position0;
-    struct position *p1 = &damage.position1;
-
-    p0->x = x0;
-    p0->y = y0;
-    p1->x = x1;
-    p1->y = y1;
-
-}
-
-static void shrinkdamage(int x0, int y0, int x1, int y1)
-{
-
-    struct position *p0 = &damage.position0;
-    struct position *p1 = &damage.position1;
-
-    if (x0 < p0->x)
-        p0->x = x0;
-
-    if (y0 < p0->y)
-        p0->y = y0;
-
-    if (x1 > p1->x)
-        p1->x = x1;
-
-    if (y1 > p1->y)
-        p1->y = y1;
-
-}
-
 static void markforpaint(int x0, int y0, int x1, int y1)
 {
 
     switch (damage.state)
     {
 
-    case DAMAGE_STATE_MADE:
-        shrinkdamage(x0, y0, x1, y1);
+    case DAMAGE_STATE_NONE:
+        damage.position0.x = x0;
+        damage.position0.y = y0;
+        damage.position1.x = x1;
+        damage.position1.y = y1;
 
         break;
 
-    case DAMAGE_STATE_NONE:
-        setdamage(x0, y0, x1, y1);
+    case DAMAGE_STATE_MADE:
+        if (x0 < damage.position0.x)
+            damage.position0.x = x0;
+
+        if (y0 < damage.position0.y)
+            damage.position0.y = y0;
+
+        if (x1 > damage.position1.x)
+            damage.position1.x = x1;
+
+        if (y1 > damage.position1.y)
+            damage.position1.y = y1;
 
         break;
 
@@ -354,6 +334,9 @@ static void blit_line(struct display *display, unsigned int x0, unsigned int x1,
 
     unsigned int *buffer = display->framebuffer;
     unsigned int x;
+
+    x0 = capvalue(x0, 0, display->size.w);
+    x1 = capvalue(x1, 0, display->size.w);
 
     for (x = x0; x < x1; x++)
         buffer[y * display->size.w + x] = color;
@@ -593,7 +576,7 @@ static void checkbackground(unsigned int y)
 {
 
     if (intersects(y, 0, display.size.h))
-        blit_line(&display, damage.position0.x, damage.position1.x, 0xFF202020, y);
+        blit_line(&display, damage.position0.x, damage.position1.x, 0xFF142434, y);
 
 }
 
