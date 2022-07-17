@@ -1,30 +1,9 @@
 #include <fudge.h>
 #include <abi.h>
+#include "widget.h"
 
-#define WINDOW_MIN_WIDTH                128
-#define WINDOW_MIN_HEIGHT               128
-#define WIDGET_TYPE_WINDOW              1
-#define WIDGET_TYPE_LAYOUT              2
 #define DAMAGE_STATE_NONE               0
 #define DAMAGE_STATE_MADE               1
-#define LAYOUT_TYPE_FLOAT               0
-#define LAYOUT_TYPE_VERTICAL            1
-
-struct position
-{
-
-    int x;
-    int y;
-
-};
-
-struct size
-{
-
-    unsigned int w;
-    unsigned int h;
-
-};
 
 struct image
 {
@@ -72,35 +51,6 @@ struct linesegment
 
 };
 
-struct widget
-{
-
-    unsigned int type;
-    char *id;
-    char *parent;
-    void *data;
-
-};
-
-struct window
-{
-
-    char *title;
-    unsigned int focus;
-    struct position position;
-    struct size size;
-
-};
-
-struct layout
-{
-
-    unsigned int type;
-    struct position position;
-    struct size size;
-
-};
-
 struct damage
 {
 
@@ -120,6 +70,8 @@ static struct display display;
 static struct mouse mouse;
 static struct configuration configuration;
 static struct damage damage;
+static struct list widgetlist;
+static struct list_item widgetitems[32];
 static struct widget widgets[32];
 static struct window windows[32];
 static struct layout layouts[32];
@@ -434,22 +386,6 @@ static void paintmouse(struct mouse *m, unsigned int y)
 
 }
 
-static void paintborderrect(int px0, int py0, int px1, int py1, unsigned int y)
-{
-
-#if 0
-    unsigned int *cmap = borderrectcmap;
-    unsigned int ly = y - py0;
-
-    if (ly == 0 || ly == (py1 - py0) - 1)
-        paintlinesegments(px0, px1, cmap, borderrect0, 1, y);
-
-    if (ly > 1 && ly < (py1 - py0) - 2)
-        paintlinesegments(px0, px1, cmap, borderrect1, 2, y);
-#endif
-
-}
-
 static void paintwindow(struct window *w, unsigned int y)
 {
 
@@ -642,11 +578,96 @@ static void paint(void)
             }
 
             checkmouse(&mouse, y);
-            paintborderrect(damage.position0.x, damage.position0.y, damage.position1.x, damage.position1.y, y);
 
         }
 
         damage.state = DAMAGE_STATE_NONE;
+
+    }
+
+}
+
+static struct list_item *nextitem(struct list *list, struct list_item *current)
+{
+
+    return (current) ? current->next : list->head;
+
+}
+
+struct list_item *nextchild(struct list *list, struct list_item *current, char *in)
+{
+
+    while ((current = nextitem(list, current)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (cstring_match(widget->in, in))
+            return current;
+
+    }
+
+    return 0;
+
+}
+
+static struct widget *getwidgetbyid(char *id)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = nextitem(&widgetlist, current)))
+    {
+    
+        struct widget *widget = current->data;
+
+        if (cstring_match(widget->id, id))
+            return widget;
+
+    }
+
+    return 0;
+
+}
+
+static struct window *getfocusedwindow(void)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = nextitem(&widgetlist, current)))
+    {
+ 
+        struct widget *widget = current->data;
+
+        if (widget->type == WIDGET_TYPE_WINDOW)
+        {
+
+            struct window *window = widget->data;
+
+            if (window->focus)
+                return window;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static void place(unsigned int w, unsigned int h)
+{
+
+    struct widget *widget = getwidgetbyid("root");
+
+    if (widget && widget->type == WIDGET_TYPE_LAYOUT)
+    {
+
+        struct layout *layout = widget->data;
+
+        layout->size.w = w;
+        layout->size.h = h;
 
     }
 
@@ -707,51 +728,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static struct widget *getwidgetbyid(char *id)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < nwidgets; i++)
-    {
-
-        struct widget *current = &widgets[i];
-
-        if (cstring_match(current->id, id))
-            return current;
-
-    }
-
-    return 0;
-
-}
-
-static struct window *getfocusedwindow(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < nwidgets; i++)
-    {
-
-        struct widget *current = &widgets[i];
-
-        if (current->type == WIDGET_TYPE_WINDOW)
-        {
-
-            struct window *window = current->data;
-
-            if (window->focus)
-                return window;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -769,12 +745,17 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
         struct window *window = getfocusedwindow();
 
-        markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
+        if (window)
+        {
 
-        window->position.x += mousemove->relx;
-        window->position.y += mousemove->rely;
+            markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
 
-        markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
+            window->position.x += mousemove->relx;
+            window->position.y += mousemove->rely;
+
+            markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
+
+        }
 
     }
 
@@ -782,21 +763,27 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     {
 
         struct window *window = getfocusedwindow();
-        int w = (int)(window->size.w) + mousemove->relx;
-        int h = (int)(window->size.h) + mousemove->rely;
 
-        if (w < WINDOW_MIN_HEIGHT)
-            w = WINDOW_MIN_WIDTH;
+        if (window)
+        {
 
-        if (h < WINDOW_MIN_HEIGHT)
-            h = WINDOW_MIN_HEIGHT;
+            int w = (int)(window->size.w) + mousemove->relx;
+            int h = (int)(window->size.h) + mousemove->rely;
 
-        markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
+            if (w < WINDOW_MIN_HEIGHT)
+                w = WINDOW_MIN_WIDTH;
 
-        window->size.w = w;
-        window->size.h = h;
+            if (h < WINDOW_MIN_HEIGHT)
+                h = WINDOW_MIN_HEIGHT;
 
-        markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
+            markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
+
+            window->size.w = w;
+            window->size.h = h;
+
+            markforpaint(window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
+
+        }
 
     }
 
@@ -892,7 +879,6 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_videomode *videomode = mdata;
     unsigned int factor = videomode->h / 320;
-    struct widget *widget = getwidgetbyid("root");
 
     display.framebuffer = videomode->framebuffer;
     display.size.w = videomode->w;
@@ -905,16 +891,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     loadfont(factor);
     setmouse(videomode->w / 4, videomode->h / 4, factor);
     markforpaint(0, 0, display.size.w, display.size.h);
-
-    if (widget)
-    {
-
-        struct layout *layout = widget->data;
-
-        layout->size.w = display.size.w;
-        layout->size.h = display.size.h;
-
-    }
+    place(display.size.w, display.size.h);
 
 }
 
@@ -936,38 +913,42 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 void setup(void)
 {
 
-    widgets[nwidgets].type = WIDGET_TYPE_LAYOUT;
-    widgets[nwidgets].id = "root";
-    widgets[nwidgets].parent = "";
-    widgets[nwidgets].data = &layouts[0];
-    layouts[0].type = LAYOUT_TYPE_FLOAT;
-    layouts[0].size.w = 0;
-    layouts[0].size.h = 0;
-    layouts[0].position.x = 0;
-    layouts[0].position.y = 0;
+    struct widget *widget;
+    struct list_item *widgetitem;
+
+    list_init(&widgetlist);
+
+    /* Root */
+    widget = &widgets[nwidgets];
+    widgetitem = &widgetitems[nwidgets];
     nwidgets++;
-    widgets[nwidgets].type = WIDGET_TYPE_WINDOW;
-    widgets[nwidgets].id = "window0";
-    widgets[nwidgets].parent = "root";
-    widgets[nwidgets].data = &windows[0];
-    windows[0].title = "Window 0";
-    windows[0].focus = 0;
-    windows[0].size.w = 800;
-    windows[0].size.h = 600;
-    windows[0].position.x = 200;
-    windows[0].position.y = 100;
+
+    widget_init(widget, WIDGET_TYPE_LAYOUT, "root", "", &layouts[0]);
+    layout_init(&layouts[0], LAYOUT_TYPE_FLOAT);
+    list_inititem(widgetitem, widget);
+    list_add(&widgetlist, widgetitem);
+
+    /* Window0 */
+    widget = &widgets[nwidgets];
+    widgetitem = &widgetitems[nwidgets];
     nwidgets++;
-    widgets[nwidgets].type = WIDGET_TYPE_WINDOW;
-    widgets[nwidgets].id = "window1";
-    widgets[nwidgets].parent = "root";
-    widgets[nwidgets].data = &windows[1];
-    windows[1].title = "Window 1";
+
+    widget_init(widget, WIDGET_TYPE_WINDOW, "window0", "root", &windows[0]);
+    window_init(&windows[0], "Window 0", 200, 100, 800, 600);
+    list_inititem(widgetitem, widget);
+    list_add(&widgetlist, widgetitem);
+
+    /* Window1 */
+    widget = &widgets[nwidgets];
+    widgetitem = &widgetitems[nwidgets];
+    nwidgets++;
+
+    widget_init(widget, WIDGET_TYPE_WINDOW, "window1", "root", &windows[1]);
+    window_init(&windows[1], "Window 1", 100, 80, 800, 600);
+    list_inititem(widgetitem, widget);
+    list_add(&widgetlist, widgetitem);
+
     windows[1].focus = 1;
-    windows[1].size.w = 800;
-    windows[1].size.h = 600;
-    windows[1].position.x = 100;
-    windows[1].position.y = 80;
-    nwidgets++;
 
 }
 
