@@ -707,7 +707,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-/*
 static struct widget *getwidgetbyid(char *id)
 {
 
@@ -718,7 +717,7 @@ static struct widget *getwidgetbyid(char *id)
 
         struct widget *current = &widgets[i];
 
-        if (ascii_match(current->id, id))
+        if (cstring_match(current->id, id))
             return current;
 
     }
@@ -726,7 +725,6 @@ static struct widget *getwidgetbyid(char *id)
     return 0;
 
 }
-*/
 
 static struct window *getfocusedwindow(void)
 {
@@ -894,6 +892,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_videomode *videomode = mdata;
     unsigned int factor = videomode->h / 320;
+    struct widget *widget = getwidgetbyid("root");
 
     display.framebuffer = videomode->framebuffer;
     display.size.w = videomode->w;
@@ -906,6 +905,16 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     loadfont(factor);
     setmouse(videomode->w / 4, videomode->h / 4, factor);
     markforpaint(0, 0, display.size.w, display.size.h);
+
+    if (widget)
+    {
+
+        struct layout *layout = widget->data;
+
+        layout->size.w = display.size.w;
+        layout->size.h = display.size.h;
+
+    }
 
 }
 
