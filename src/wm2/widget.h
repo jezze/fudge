@@ -40,6 +40,24 @@ struct layout
 
 };
 
+struct image
+{
+
+    struct size size;
+    void *data;
+
+};
+
+struct mouse
+{
+
+    struct position position;
+    struct image image;
+    unsigned int drag;
+    unsigned int resize;
+
+};
+
 struct window
 {
 
