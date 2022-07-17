@@ -370,3 +370,15 @@ void render_paint(struct render_display *display, struct mouse *mouse)
 
 }
 
+void render_setup(struct render_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
+{
+
+    display->framebuffer = framebuffer;
+    display->size.w = w;
+    display->size.h = h;
+    display->bpp = bpp;
+
+    render_damage(display, 0, 0, display->size.w, display->size.h);
+
+}
+

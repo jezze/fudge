@@ -459,17 +459,14 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     struct event_videomode *videomode = mdata;
     unsigned int factor = videomode->h / 320;
 
-    display.framebuffer = videomode->framebuffer;
-    display.size.w = videomode->w;
-    display.size.h = videomode->h;
-    display.bpp = videomode->bpp;
+    render_setup(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
+
     configuration.lineheight = 12 + factor * 4;
     configuration.padding = 4 + factor * 2;
     configuration.steplength = videomode->w / 12;
 
     loadfont(factor);
     setmouse(videomode->w / 4, videomode->h / 4, factor);
-    render_damage(&display, 0, 0, display.size.w, display.size.h);
     place(display.size.w, display.size.h);
 
 }
