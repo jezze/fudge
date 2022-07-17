@@ -125,154 +125,7 @@ static void paintlinesegments(struct render_display *display, int x0, int x1, un
 
 }
 
-static void paintmouse(struct render_display *display, struct mouse *m, int y)
-{
-
-    static unsigned int mousecmap[] = {
-        0xFF000000,
-        0xFFB05070,
-        0xFFF898B8
-    };
-
-    blitcmap32line(display, &m->position, m->image.data, m->image.size.w, mousecmap, y - m->position.y);
-
-}
-
-static void paintwindow(struct render_display *display, struct window *w, int y)
-{
-
-    static unsigned int windowcmapnormal[] = {
-        0xFF101010,
-        0xFF687888,
-        0xFF485868,
-        0xFF182838
-    };
-    static unsigned int windowcmapfocus[] = {
-        0xFF101010,
-        0xFF48C888,
-        0xFF28A868,
-        0xFF182838
-    };
-    static struct linesegment windowborder0[1] = {
-        {LINESEGMENT_TYPE_RELX0X1, 1, -1, WINDOW_CMAP_SHADOW}
-    };
-    static struct linesegment windowborder1[1] = {
-        {LINESEGMENT_TYPE_RELX0X1, 0, 0, WINDOW_CMAP_SHADOW}
-    };
-    static struct linesegment windowborder2[3] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 3, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -3, 0, WINDOW_CMAP_SHADOW}
-    };
-    static struct linesegment windowborder3[5] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 4, -4, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
-    };
-    static struct linesegment windowbordertitle[5] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
-    };
-    static struct linesegment windowborderspacing[7] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X0, 3, 4, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX0X1, 4, -4, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -3, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
-    };
-    static struct linesegment windowborderarea[9] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X0, 3, 4, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX0X0, 4, 5, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 5, -5, WINDOW_CMAP_AREA_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -5, -4, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -3, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
-    };
-
-    unsigned int *cmap = (w->focus) ? windowcmapfocus : windowcmapnormal;
-    int ly = y - w->position.y;
-    struct linesegment *segments;
-    unsigned int nsegments;
-
-    if (ly == 0 || ly == w->size.h - 1)
-    {
-
-        segments = windowborder0;
-        nsegments = 1;
-
-    }
-
-    else if (ly == 1 || ly == w->size.h - 2)
-    {
-
-        segments = windowborder1;
-        nsegments = 1;
-
-    }
-
-    else if (ly == 2 || ly == w->size.h - 3)
-    {
-
-        segments = windowborder2;
-        nsegments = 3;
-
-    }
-
-    else if (ly == 3 || ly == w->size.h - 4)
-    {
-
-        segments = windowborder3;
-        nsegments = 5;
-
-    }
-
-    else if (ly >= 4 && ly < 40)
-    {
-
-        segments = windowbordertitle;
-        nsegments = 5;
-
-    }
-
-    else if (ly == 40)
-    {
-
-        segments = windowborderspacing;
-        nsegments = 7;
-
-    }
-
-    else if (ly > 40 && ly < w->size.h - 4)
-    {
-
-        segments = windowborderarea;
-        nsegments = 9;
-
-    }
-
-    else
-    {
-
-        segments = 0;
-        nsegments = 0;
-
-    }
-
-    paintlinesegments(display, w->position.x, w->position.x + w->size.w, cmap, segments, nsegments, y);
-
-}
-
-static void checkbackground(struct render_display *display, int y)
+static void paintbackground(struct render_display *display, int y)
 {
 
     if (intersects(y, 0, display->size.h))
@@ -280,19 +133,160 @@ static void checkbackground(struct render_display *display, int y)
 
 }
 
-static void checkwindow(struct render_display *display, struct window *window, int y)
+static void paintwindow(struct render_display *display, struct window *window, int y)
 {
 
     if (intersects(y, window->position.y, window->position.y + window->size.h))
-        paintwindow(display, window, y);
+    {
+
+        static unsigned int windowcmapnormal[] = {
+            0xFF101010,
+            0xFF687888,
+            0xFF485868,
+            0xFF182838
+        };
+        static unsigned int windowcmapfocus[] = {
+            0xFF101010,
+            0xFF48C888,
+            0xFF28A868,
+            0xFF182838
+        };
+        static struct linesegment windowborder0[1] = {
+            {LINESEGMENT_TYPE_RELX0X1, 1, -1, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment windowborder1[1] = {
+            {LINESEGMENT_TYPE_RELX0X1, 0, 0, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment windowborder2[3] = {
+            {LINESEGMENT_TYPE_RELX0X0, 0, 3, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X1, 3, -3, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX1X1, -3, 0, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment windowborder3[5] = {
+            {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X0, 2, 2, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX0X1, 4, -4, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX1X1, -4, -2, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment windowbordertitle[5] = {
+            {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX0X1, 3, -3, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment windowborderspacing[7] = {
+            {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX0X0, 3, 4, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX0X1, 4, -4, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX1X1, -4, -3, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment windowborderarea[9] = {
+            {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX0X0, 3, 4, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX0X0, 4, 5, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X1, 5, -5, WINDOW_CMAP_AREA_NORMAL},
+            {LINESEGMENT_TYPE_RELX1X1, -5, -4, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX1X1, -4, -3, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        };
+
+        unsigned int *cmap = (window->focus) ? windowcmapfocus : windowcmapnormal;
+        int ly = y - window->position.y;
+        struct linesegment *segments;
+        unsigned int nsegments;
+
+        if (ly == 0 || ly == window->size.h - 1)
+        {
+
+            segments = windowborder0;
+            nsegments = 1;
+
+        }
+
+        else if (ly == 1 || ly == window->size.h - 2)
+        {
+
+            segments = windowborder1;
+            nsegments = 1;
+
+        }
+
+        else if (ly == 2 || ly == window->size.h - 3)
+        {
+
+            segments = windowborder2;
+            nsegments = 3;
+
+        }
+
+        else if (ly == 3 || ly == window->size.h - 4)
+        {
+
+            segments = windowborder3;
+            nsegments = 5;
+
+        }
+
+        else if (ly >= 4 && ly < 40)
+        {
+
+            segments = windowbordertitle;
+            nsegments = 5;
+
+        }
+
+        else if (ly == 40)
+        {
+
+            segments = windowborderspacing;
+            nsegments = 7;
+
+        }
+
+        else if (ly > 40 && ly < window->size.h - 4)
+        {
+
+            segments = windowborderarea;
+            nsegments = 9;
+
+        }
+
+        else
+        {
+
+            segments = 0;
+            nsegments = 0;
+
+        }
+
+        paintlinesegments(display, window->position.x, window->position.x + window->size.w, cmap, segments, nsegments, y);
+
+    }
 
 }
 
-static void checkmouse(struct render_display *display, struct mouse *mouse, int y)
+static void paintmouse(struct render_display *display, struct mouse *mouse, int y)
 {
 
     if (intersects(y, mouse->position.y, mouse->position.y + mouse->image.size.h))
-        paintmouse(display, mouse, y);
+    {
+
+        static unsigned int mousecmap[] = {
+            0xFF000000,
+            0xFFB05070,
+            0xFFF898B8
+        };
+
+        blitcmap32line(display, &mouse->position, mouse->image.data, mouse->image.size.w, mousecmap, y - mouse->position.y);
+
+    }
 
 }
 
@@ -347,7 +341,7 @@ void render_paint(struct render_display *display, struct mouse *mouse)
 
             struct list_item *current = 0;
 
-            checkbackground(display, y);
+            paintbackground(display, y);
 
             while ((current = pool_next(current)))
             {
@@ -358,7 +352,7 @@ void render_paint(struct render_display *display, struct mouse *mouse)
                 {
 
                 case WIDGET_TYPE_WINDOW:
-                    checkwindow(display, widget->data, y);
+                    paintwindow(display, widget->data, y);
 
                     break;
 
@@ -366,7 +360,7 @@ void render_paint(struct render_display *display, struct mouse *mouse)
 
             }
 
-            checkmouse(display, mouse, y);
+            paintmouse(display, mouse, y);
 
         }
 
