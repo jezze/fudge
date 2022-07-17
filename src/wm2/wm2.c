@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 #include "widget.h"
+#include "pool.h"
 
 #define DAMAGE_STATE_NONE               0
 #define DAMAGE_STATE_MADE               1
@@ -70,12 +71,6 @@ static struct display display;
 static struct mouse mouse;
 static struct configuration configuration;
 static struct damage damage;
-static struct list widgetlist;
-static struct list_item widgetitems[32];
-static struct widget widgets[32];
-static struct window windows[32];
-static struct layout layouts[32];
-static unsigned int nwidgets;
 static unsigned char fontdata[0x8000];
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -556,14 +551,14 @@ static void paint(void)
         for (y = damage.position0.y; y < damage.position1.y; y++)
         {
 
-            unsigned int i;
+            struct list_item *current = 0;
 
             checkbackground(y);
 
-            for (i = 0; i < nwidgets; i++)
+            while ((current = pool_next(current)))
             {
 
-                struct widget *widget = &widgets[i];
+                struct widget *widget = current->data;
 
                 switch (widget->type)
                 {
@@ -587,55 +582,12 @@ static void paint(void)
 
 }
 
-static struct list_item *nextitem(struct list *list, struct list_item *current)
-{
-
-    return (current) ? current->next : list->head;
-
-}
-
-struct list_item *nextchild(struct list *list, struct list_item *current, char *in)
-{
-
-    while ((current = nextitem(list, current)))
-    {
-
-        struct widget *widget = current->data;
-
-        if (cstring_match(widget->in, in))
-            return current;
-
-    }
-
-    return 0;
-
-}
-
-static struct widget *getwidgetbyid(char *id)
-{
-
-    struct list_item *current = 0;
-
-    while ((current = nextitem(&widgetlist, current)))
-    {
-    
-        struct widget *widget = current->data;
-
-        if (cstring_match(widget->id, id))
-            return widget;
-
-    }
-
-    return 0;
-
-}
-
 static struct window *getfocusedwindow(void)
 {
 
     struct list_item *current = 0;
 
-    while ((current = nextitem(&widgetlist, current)))
+    while ((current = pool_next(current)))
     {
  
         struct widget *widget = current->data;
@@ -659,7 +611,7 @@ static struct window *getfocusedwindow(void)
 static void place(unsigned int w, unsigned int h)
 {
 
-    struct widget *widget = getwidgetbyid("root");
+    struct widget *widget = pool_getwidgetbyid("root");
 
     if (widget && widget->type == WIDGET_TYPE_LAYOUT)
     {
@@ -910,52 +862,10 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-void setup(void)
-{
-
-    struct widget *widget;
-    struct list_item *widgetitem;
-
-    list_init(&widgetlist);
-
-    /* Root */
-    widget = &widgets[nwidgets];
-    widgetitem = &widgetitems[nwidgets];
-    nwidgets++;
-
-    widget_init(widget, WIDGET_TYPE_LAYOUT, "root", "", &layouts[0]);
-    layout_init(&layouts[0], LAYOUT_TYPE_FLOAT);
-    list_inititem(widgetitem, widget);
-    list_add(&widgetlist, widgetitem);
-
-    /* Window0 */
-    widget = &widgets[nwidgets];
-    widgetitem = &widgetitems[nwidgets];
-    nwidgets++;
-
-    widget_init(widget, WIDGET_TYPE_WINDOW, "window0", "root", &windows[0]);
-    window_init(&windows[0], "Window 0", 200, 100, 800, 600);
-    list_inititem(widgetitem, widget);
-    list_add(&widgetlist, widgetitem);
-
-    /* Window1 */
-    widget = &widgets[nwidgets];
-    widgetitem = &widgetitems[nwidgets];
-    nwidgets++;
-
-    widget_init(widget, WIDGET_TYPE_WINDOW, "window1", "root", &windows[1]);
-    window_init(&windows[1], "Window 1", 100, 80, 800, 600);
-    list_inititem(widgetitem, widget);
-    list_add(&widgetlist, widgetitem);
-
-    windows[1].focus = 1;
-
-}
-
 void init(void)
 {
 
-    setup();
+    pool_setup();
 
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;

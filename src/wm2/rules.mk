@@ -2,8 +2,9 @@ B:=\
     $(DIR_SRC)/wm2/wm2 \
 
 O:=\
-    $(DIR_SRC)/wm2/wm2.o \
+    $(DIR_SRC)/wm2/pool.o \
     $(DIR_SRC)/wm2/widget.o \
+    $(DIR_SRC)/wm2/wm2.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
