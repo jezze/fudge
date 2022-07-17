@@ -8,6 +8,7 @@ static struct list_item widgetitems[32];
 static struct widget widgets[32];
 static struct window windows[32];
 static struct layout layouts[32];
+static unsigned int nwidgets = 0;
 
 struct list_item *pool_next(struct list_item *current)
 {
@@ -52,46 +53,35 @@ struct widget *pool_getwidgetbyid(char *id)
 
 }
 
+static struct widget *create(unsigned int type, char *id, char *in, void *data)
+{
+
+    struct widget *widget = &widgets[nwidgets];
+    struct list_item *item = &widgetitems[nwidgets];
+
+    widget_init(widget, type, id, in, data);
+    list_inititem(item, widget);
+    list_add(&widgetlist, item);
+
+    nwidgets++;
+
+    return widget;
+
+}
+
 void pool_setup(void)
 {
 
-    struct widget *widget;
-    struct list_item *widgetitem;
-    unsigned int nwidgets = 0;
-
     list_init(&widgetlist);
-
-    /* Root */
-    widget = &widgets[nwidgets];
-    widgetitem = &widgetitems[nwidgets];
-    nwidgets++;
-
-    widget_init(widget, WIDGET_TYPE_LAYOUT, "root", "", &layouts[0]);
     layout_init(&layouts[0], LAYOUT_TYPE_FLOAT);
-    list_inititem(widgetitem, widget);
-    list_add(&widgetlist, widgetitem);
-
-    /* Window0 */
-    widget = &widgets[nwidgets];
-    widgetitem = &widgetitems[nwidgets];
-    nwidgets++;
-
-    widget_init(widget, WIDGET_TYPE_WINDOW, "window0", "root", &windows[0]);
     window_init(&windows[0], "Window 0", 200, 100, 800, 600);
-    list_inititem(widgetitem, widget);
-    list_add(&widgetlist, widgetitem);
-
-    /* Window1 */
-    widget = &widgets[nwidgets];
-    widgetitem = &widgetitems[nwidgets];
-    nwidgets++;
-
-    widget_init(widget, WIDGET_TYPE_WINDOW, "window1", "root", &windows[1]);
     window_init(&windows[1], "Window 1", 100, 80, 800, 600);
-    list_inititem(widgetitem, widget);
-    list_add(&widgetlist, widgetitem);
 
     windows[1].focus = 1;
+
+    create(WIDGET_TYPE_LAYOUT, "root", "", &layouts[0]);
+    create(WIDGET_TYPE_WINDOW, "window0", "root", &windows[0]);
+    create(WIDGET_TYPE_WINDOW, "window1", "root", &windows[1]);
 
 }
 

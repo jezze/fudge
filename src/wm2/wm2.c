@@ -608,20 +608,72 @@ static struct window *getfocusedwindow(void)
 
 }
 
+static void place_layout(struct widget *widget, struct layout *layout, int x, int y, unsigned int w, unsigned int h)
+{
+
+    layout->position.x = x;
+    layout->position.y = y;
+    layout->size.w = w;
+    layout->size.h = h;
+
+    if (layout->type == LAYOUT_TYPE_FLOAT)
+    {
+
+        struct list_item *current = 0;
+
+        while ((current = pool_nextin(current, widget->id)))
+        {
+
+        }
+
+    }
+
+}
+
+static void place_window(struct widget *widget, struct window *window, int x, int y, unsigned int w, unsigned int h)
+{
+
+    struct list_item *current = 0;
+
+    window->position.x = x;
+    window->position.y = y;
+    window->size.w = w;
+    window->size.h = h;
+
+    while ((current = pool_nextin(current, widget->id)))
+    {
+
+    }
+
+}
+
+static void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+{
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_LAYOUT:
+        place_layout(widget, widget->data, x, y, w, h);
+
+        break;
+
+    case WIDGET_TYPE_WINDOW:
+        place_window(widget, widget->data, x, y, w, h);
+
+        break;
+
+    }
+
+}
+
 static void place(unsigned int w, unsigned int h)
 {
 
     struct widget *widget = pool_getwidgetbyid("root");
 
-    if (widget && widget->type == WIDGET_TYPE_LAYOUT)
-    {
-
-        struct layout *layout = widget->data;
-
-        layout->size.w = w;
-        layout->size.h = h;
-
-    }
+    if (widget)
+        place_widget(widget, 0, 0, w, h);
 
 }
 
