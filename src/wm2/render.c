@@ -133,7 +133,7 @@ static void paintbackground(struct render_display *display, int y)
 
 }
 
-static void paintwindow(struct render_display *display, struct window *window, int y)
+static void paintwindow(struct render_display *display, struct widget_window *window, int y)
 {
 
     if (intersects(y, window->position.y, window->position.y + window->size.h))
@@ -272,21 +272,11 @@ static void paintwindow(struct render_display *display, struct window *window, i
 
 }
 
-static void paintmouse(struct render_display *display, struct mouse *mouse, int y)
+static void paintimage(struct render_display *display, struct widget_image *image, int y)
 {
 
-    if (intersects(y, mouse->position.y, mouse->position.y + mouse->image.size.h))
-    {
-
-        static unsigned int mousecmap[] = {
-            0xFF000000,
-            0xFFB05070,
-            0xFFF898B8
-        };
-
-        blitcmap32line(display, &mouse->position, mouse->image.data, mouse->image.size.w, mousecmap, y - mouse->position.y);
-
-    }
+    if (intersects(y, image->position.y, image->position.y + image->size.h))
+        blitcmap32line(display, &image->position, image->data, image->size.w, image->cmap, y - image->position.y);
 
 }
 
@@ -325,7 +315,7 @@ void render_damage(struct render_display *display, int x0, int y0, int x1, int y
 
 }
 
-void render_paint(struct render_display *display, struct mouse *mouse)
+void render_paint(struct render_display *display, struct widget_image *image)
 {
 
     if (!display->framebuffer)
@@ -360,7 +350,7 @@ void render_paint(struct render_display *display, struct mouse *mouse)
 
             }
 
-            paintmouse(display, mouse, y);
+            paintimage(display, image, y);
 
         }
 

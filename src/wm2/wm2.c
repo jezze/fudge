@@ -7,21 +7,29 @@
 struct configuration
 {
 
+    unsigned int displaywidth;
+    unsigned int displayheight;
+    unsigned int displaybpp;
     unsigned int padding;
     unsigned int lineheight;
     unsigned int steplength;
 
 };
 
-static unsigned int optwidth = 1920;
-static unsigned int optheight = 1080;
-static unsigned int optbpp = 4;
-/*
-static unsigned int keymod = KEYMOD_NONE;
-*/
+struct state
+{
+
+    struct position mouseposition;
+    unsigned int mousedrag;
+    unsigned int mouseresize;
+
+};
+
+static struct widget *rootwidget;
+static struct widget *mousewidget;
 static struct render_display display;
-static struct mouse mouse;
 static struct configuration configuration;
+static struct state state;
 static unsigned char fontdata[0x8000];
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -49,7 +57,7 @@ static unsigned char mousedata24[] = {
     0x00, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
-unsigned char mousedata16[] = {
+static unsigned char mousedata16[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x02, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -67,6 +75,11 @@ unsigned char mousedata16[] = {
     0x00, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
+static unsigned int mousecmap[] = {
+    0xFF000000,
+    0xFFB05070,
+    0xFFF898B8
+};
 
 static void setupvideo(void)
 {
@@ -74,7 +87,7 @@ static void setupvideo(void)
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
-    ctrl_setvideosettings(&settings, optwidth, optheight, optbpp);
+    ctrl_setvideosettings(&settings, configuration.displaywidth, configuration.displayheight, configuration.displaybpp);
     buffer_clear(black, 768);
 
     if (!file_walk(FILE_L0, FILE_G3, "ctrl"))
@@ -91,27 +104,40 @@ static void setupvideo(void)
 static void setmouse(unsigned int x, unsigned int y, unsigned int factor)
 {
 
-    mouse.position.x = x;
-    mouse.position.y = y;
+    state.mouseposition.x = x;
+    state.mouseposition.y = y;
 
-    switch (factor)
+    if (mousewidget)
     {
 
-    case 0:
-    case 1:
-        mouse.image.size.w = 12;
-        mouse.image.size.h = 16;
-        mouse.image.data = mousedata16;
+        struct widget_image *image = mousewidget->data;
 
-        break;
+        switch (factor)
+        {
 
-    case 2:
-    default:
-        mouse.image.size.w = 18;
-        mouse.image.size.h = 24;
-        mouse.image.data = mousedata24;
+        case 0:
+        case 1:
+            widget_initimage(image, mousedata16, mousecmap);
 
-        break;
+            image->position.x = x;
+            image->position.y = y;
+            image->size.w = 12;
+            image->size.h = 16;
+
+            break;
+
+        case 2:
+        default:
+            widget_initimage(image, mousedata24, mousecmap);
+
+            image->position.x = x;
+            image->position.y = y;
+            image->size.w = 18;
+            image->size.h = 24;
+
+            break;
+
+        }
 
     }
 
@@ -162,7 +188,7 @@ static int capvalue(int x, int min, int max)
 
 }
 
-static struct window *getfocusedwindow(void)
+static struct widget_window *getfocusedwindow(void)
 {
 
     struct list_item *current = 0;
@@ -175,7 +201,7 @@ static struct window *getfocusedwindow(void)
         if (widget->type == WIDGET_TYPE_WINDOW)
         {
 
-            struct window *window = widget->data;
+            struct widget_window *window = widget->data;
 
             if (window->focus)
                 return window;
@@ -188,7 +214,17 @@ static struct window *getfocusedwindow(void)
 
 }
 
-static void place_layout(struct widget *widget, struct layout *layout, int x, int y, unsigned int w, unsigned int h)
+static void place_image(struct widget *widget, struct widget_image *image, int x, int y, unsigned int w, unsigned int h)
+{
+
+    image->position.x = x;
+    image->position.y = y;
+    image->size.w = w;
+    image->size.h = h;
+
+}
+
+static void place_layout(struct widget *widget, struct widget_layout *layout, int x, int y, unsigned int w, unsigned int h)
 {
 
     layout->position.x = x;
@@ -196,7 +232,7 @@ static void place_layout(struct widget *widget, struct layout *layout, int x, in
     layout->size.w = w;
     layout->size.h = h;
 
-    if (layout->type == LAYOUT_TYPE_FLOAT)
+    if (layout->type != LAYOUT_TYPE_FLOAT)
     {
 
         struct list_item *current = 0;
@@ -210,7 +246,7 @@ static void place_layout(struct widget *widget, struct layout *layout, int x, in
 
 }
 
-static void place_window(struct widget *widget, struct window *window, int x, int y, unsigned int w, unsigned int h)
+static void place_window(struct widget *widget, struct widget_window *window, int x, int y, unsigned int w, unsigned int h)
 {
 
     struct list_item *current = 0;
@@ -233,6 +269,11 @@ static void place_widget(struct widget *widget, int x, int y, unsigned int w, un
     switch (widget->type)
     {
 
+    case WIDGET_TYPE_IMAGE:
+        place_image(widget, widget->data, x, y, w, h);
+
+        break;
+
     case WIDGET_TYPE_LAYOUT:
         place_layout(widget, widget->data, x, y, w, h);
 
@@ -247,47 +288,6 @@ static void place_widget(struct widget *widget, int x, int y, unsigned int w, un
 
 }
 
-static void place(unsigned int w, unsigned int h)
-{
-
-    struct widget *widget = pool_getwidgetbyid("root");
-
-    if (widget)
-        place_widget(widget, 0, 0, w, h);
-
-}
-
-static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    /*
-    struct event_keypress *keypress = mdata;
-    struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
-
-    keymod = keymap_modkey(keypress->scancode, keymod);
-
-    switch (keypress->scancode)
-    {
-
-    }
-    */
-
-}
-
-static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    /*
-    struct event_keyrelease *keyrelease = mdata;
-    struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, keyrelease->scancode, keymod);
-
-    keymod = keymap_modkey(keyrelease->scancode, keymod);
-    */
-
-}
-
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -298,7 +298,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     setupvideo();
 
     while (channel_process())
-        render_paint(&display, &mouse);
+        render_paint(&display, mousewidget->data);
 
     file_unlink(FILE_G4);
     file_unlink(FILE_G2);
@@ -312,53 +312,57 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousemove *mousemove = mdata;
 
-    render_damage(&display, mouse.position.x, mouse.position.y, mouse.position.x + mouse.image.size.w, mouse.position.y + mouse.image.size.h);
+    state.mouseposition.x = capvalue(state.mouseposition.x + mousemove->relx, 0, display.size.w);
+    state.mouseposition.y = capvalue(state.mouseposition.y + mousemove->rely, 0, display.size.h);
 
-    mouse.position.x = capvalue(mouse.position.x + mousemove->relx, 0, display.size.w);
-    mouse.position.y = capvalue(mouse.position.y + mousemove->rely, 0, display.size.h);
-
-    render_damage(&display, mouse.position.x, mouse.position.y, mouse.position.x + mouse.image.size.w, mouse.position.y + mouse.image.size.h);
-
-    if (mouse.drag)
+    if (mousewidget)
     {
 
-        struct window *window = getfocusedwindow();
+        struct widget_image *image = mousewidget->data;
 
-        if (window)
-        {
+        render_damage(&display, image->position.x, image->position.y, image->position.x + image->size.w, image->position.y + image->size.h);
 
-            render_damage(&display, window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
+        image->position.x = state.mouseposition.x;
+        image->position.y = state.mouseposition.y;
 
-            window->position.x += mousemove->relx;
-            window->position.y += mousemove->rely;
-
-            render_damage(&display, window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
-
-        }
+        render_damage(&display, image->position.x, image->position.y, image->position.x + image->size.w, image->position.y + image->size.h);
 
     }
 
-    if (mouse.resize)
+    if (state.mousedrag || state.mouseresize)
     {
 
-        struct window *window = getfocusedwindow();
+        struct widget_window *window = getfocusedwindow();
 
         if (window)
         {
 
-            int w = (int)(window->size.w) + mousemove->relx;
-            int h = (int)(window->size.h) + mousemove->rely;
-
-            if (w < WINDOW_MIN_HEIGHT)
-                w = WINDOW_MIN_WIDTH;
-
-            if (h < WINDOW_MIN_HEIGHT)
-                h = WINDOW_MIN_HEIGHT;
-
             render_damage(&display, window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
 
-            window->size.w = w;
-            window->size.h = h;
+            if (state.mousedrag)
+            {
+
+                window->position.x += mousemove->relx;
+                window->position.y += mousemove->rely;
+
+            }
+
+            if (state.mouseresize)
+            {
+
+                int w = (int)(window->size.w) + mousemove->relx;
+                int h = (int)(window->size.h) + mousemove->rely;
+
+                if (w < WINDOW_MIN_HEIGHT)
+                    w = WINDOW_MIN_WIDTH;
+
+                if (h < WINDOW_MIN_HEIGHT)
+                    h = WINDOW_MIN_HEIGHT;
+
+                window->size.w = w;
+                window->size.h = h;
+
+            }
 
             render_damage(&display, window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
 
@@ -377,12 +381,12 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
     {
 
     case 1:
-        mouse.drag = 1;
+        state.mousedrag = 1;
 
         break;
 
     case 2:
-        mouse.resize = 1;
+        state.mouseresize = 1;
 
         break;
 
@@ -399,21 +403,16 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
     {
 
     case 1:
-        mouse.drag = 0;
+        state.mousedrag = 0;
 
         break;
 
     case 2:
-        mouse.resize = 0;
+        state.mouseresize = 0;
 
         break;
 
     }
-
-}
-
-static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
-{
 
 }
 
@@ -424,13 +423,13 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *value = key + cstring_lengthz(key);
 
     if (cstring_match(key, "width"))
-        optwidth = cstring_rvalue(value, cstring_length(value), 10);
+        configuration.displaywidth = cstring_rvalue(value, cstring_length(value), 10);
 
     if (cstring_match(key, "height"))
-        optheight = cstring_rvalue(value, cstring_length(value), 10);
+        configuration.displayheight = cstring_rvalue(value, cstring_length(value), 10);
 
     if (cstring_match(key, "bpp"))
-        optbpp = cstring_rvalue(value, cstring_length(value), 10);
+        configuration.displaybpp = cstring_rvalue(value, cstring_length(value), 10);
 
     if (cstring_match(key, "keyboard"))
         file_walk2(FILE_G1, value);
@@ -467,22 +466,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     loadfont(factor);
     setmouse(videomode->w / 4, videomode->h / 4, factor);
-    place(display.size.w, display.size.h);
-
-}
-
-static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
-{
-
-}
-
-static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
-{
-
-}
-
-static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
-{
+    place_widget(rootwidget, 0, 0, display.size.w, display.size.h);
 
 }
 
@@ -491,21 +475,22 @@ void init(void)
 
     pool_setup();
 
+    rootwidget = pool_getwidgetbyid("root");
+    mousewidget = pool_getwidgetbyid("mouse");
+
+    configuration.displaywidth = 1920;
+    configuration.displayheight = 1080;
+    configuration.displaybpp = 4;
+
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
-    channel_bind(EVENT_KEYPRESS, onkeypress);
-    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEMOVE, onmousemove);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
-    channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_VIDEOMODE, onvideomode);
-    channel_bind(EVENT_WMMAP, onwmmap);
-    channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);
-    channel_bind(EVENT_WMUNMAP, onwmunmap);
 
 }
 
