@@ -74,6 +74,8 @@ static struct widget *create(unsigned int type, char *id, char *in, void *data)
 void pool_setup(void)
 {
 
+    struct widget *widget;
+
     list_init(&widgetlist);
     widget_initlayout(&layouts[0], LAYOUT_TYPE_FLOAT);
     widget_initwindow(&windows[0], "Window 0");
@@ -81,14 +83,6 @@ void pool_setup(void)
     widget_initimage(&images[0], 0, 0);
     widget_initbutton(&buttons[0], "Button0");
 
-    windows[0].position.x = 200;
-    windows[0].position.y = 100;
-    windows[0].size.w = 800;
-    windows[0].size.h = 600;
-    windows[1].position.x = 100;
-    windows[1].position.y = 80;
-    windows[1].size.w = 800;
-    windows[1].size.h = 600;
     windows[1].focus = 1;
 
     create(WIDGET_TYPE_LAYOUT, "root", "", &layouts[0]);
@@ -96,6 +90,17 @@ void pool_setup(void)
     create(WIDGET_TYPE_WINDOW, "window1", "root", &windows[1]);
     create(WIDGET_TYPE_IMAGE, "mouse", "root", &images[0]);
     create(WIDGET_TYPE_BUTTON, "button0", "window1", &buttons[0]);
+
+    widget = pool_getwidgetbyid("window0");
+    widget->position.x = 200;
+    widget->position.y = 100;
+    widget->size.w = 800;
+    widget->size.h = 600;
+    widget = pool_getwidgetbyid("window1");
+    widget->position.x = 100;
+    widget->position.y = 80;
+    widget->size.w = 800;
+    widget->size.h = 600;
 
 }
 

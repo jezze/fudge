@@ -30,14 +30,14 @@ struct widget
     char *id;
     char *in;
     void *data;
+    struct position position;
+    struct size size;
 
 };
 
 struct widget_button
 {
 
-    struct position position;
-    struct size size;
     char *label;
     unsigned int focus;
 
@@ -46,8 +46,6 @@ struct widget_button
 struct widget_image
 {
 
-    struct position position;
-    struct size size;
     void *data;
     void *cmap;
 
@@ -56,8 +54,6 @@ struct widget_image
 struct widget_layout
 {
 
-    struct position position;
-    struct size size;
     unsigned int type;
 
 };
@@ -65,8 +61,6 @@ struct widget_layout
 struct widget_window
 {
 
-    struct position position;
-    struct size size;
     char *title;
     unsigned int focus;
 

@@ -134,10 +134,10 @@ static void paintbackground(struct render_display *display, int y)
 
 }
 
-static void paintbutton(struct render_display *display, struct widget_button *button, int y)
+static void paintbutton(struct render_display *display, struct widget *widget, struct widget_button *button, int y)
 {
 
-    if (intersects(y, button->position.y, button->position.y + button->size.h))
+    if (intersects(y, widget->position.y, widget->position.y + widget->size.h))
     {
 
         static unsigned int buttoncmapnormal[] = {
@@ -199,11 +199,11 @@ static void paintbutton(struct render_display *display, struct widget_button *bu
         };
 
         unsigned int *cmap = (button->focus) ? buttoncmapfocus : buttoncmapnormal;
-        int ly = y - button->position.y;
+        int ly = y - widget->position.y;
         struct linesegment *segments;
         unsigned int nsegments;
 
-        if (ly == 0 || ly == button->size.h - 1)
+        if (ly == 0 || ly == widget->size.h - 1)
         {
 
             segments = buttonborder0;
@@ -211,7 +211,7 @@ static void paintbutton(struct render_display *display, struct widget_button *bu
 
         }
 
-        else if (ly == 1 || ly == button->size.h - 2)
+        else if (ly == 1 || ly == widget->size.h - 2)
         {
 
             segments = buttonborder1;
@@ -219,7 +219,7 @@ static void paintbutton(struct render_display *display, struct widget_button *bu
 
         }
 
-        else if (ly == 2 || ly == button->size.h - 3)
+        else if (ly == 2 || ly == widget->size.h - 3)
         {
 
             segments = buttonborder2;
@@ -227,7 +227,7 @@ static void paintbutton(struct render_display *display, struct widget_button *bu
 
         }
 
-        else if (ly == 3 || ly == button->size.h - 4)
+        else if (ly == 3 || ly == widget->size.h - 4)
         {
 
             segments = buttonborder3;
@@ -251,7 +251,7 @@ static void paintbutton(struct render_display *display, struct widget_button *bu
 
         }
 
-        else if (ly > 40 && ly < button->size.h - 4)
+        else if (ly > 40 && ly < widget->size.h - 4)
         {
 
             segments = buttonborderarea;
@@ -267,16 +267,16 @@ static void paintbutton(struct render_display *display, struct widget_button *bu
 
         }
 
-        paintlinesegments(display, button->position.x, button->position.x + button->size.w, cmap, segments, nsegments, y);
+        paintlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, y);
 
     }
 
 }
 
-static void paintwindow(struct render_display *display, struct widget_window *window, int y)
+static void paintwindow(struct render_display *display, struct widget *widget, struct widget_window *window, int y)
 {
 
-    if (intersects(y, window->position.y, window->position.y + window->size.h))
+    if (intersects(y, widget->position.y, widget->position.y + widget->size.h))
     {
 
         static unsigned int windowcmapnormal[] = {
@@ -338,11 +338,11 @@ static void paintwindow(struct render_display *display, struct widget_window *wi
         };
 
         unsigned int *cmap = (window->focus) ? windowcmapfocus : windowcmapnormal;
-        int ly = y - window->position.y;
+        int ly = y - widget->position.y;
         struct linesegment *segments;
         unsigned int nsegments;
 
-        if (ly == 0 || ly == window->size.h - 1)
+        if (ly == 0 || ly == widget->size.h - 1)
         {
 
             segments = windowborder0;
@@ -350,7 +350,7 @@ static void paintwindow(struct render_display *display, struct widget_window *wi
 
         }
 
-        else if (ly == 1 || ly == window->size.h - 2)
+        else if (ly == 1 || ly == widget->size.h - 2)
         {
 
             segments = windowborder1;
@@ -358,7 +358,7 @@ static void paintwindow(struct render_display *display, struct widget_window *wi
 
         }
 
-        else if (ly == 2 || ly == window->size.h - 3)
+        else if (ly == 2 || ly == widget->size.h - 3)
         {
 
             segments = windowborder2;
@@ -366,7 +366,7 @@ static void paintwindow(struct render_display *display, struct widget_window *wi
 
         }
 
-        else if (ly == 3 || ly == window->size.h - 4)
+        else if (ly == 3 || ly == widget->size.h - 4)
         {
 
             segments = windowborder3;
@@ -390,7 +390,7 @@ static void paintwindow(struct render_display *display, struct widget_window *wi
 
         }
 
-        else if (ly > 40 && ly < window->size.h - 4)
+        else if (ly > 40 && ly < widget->size.h - 4)
         {
 
             segments = windowborderarea;
@@ -406,17 +406,17 @@ static void paintwindow(struct render_display *display, struct widget_window *wi
 
         }
 
-        paintlinesegments(display, window->position.x, window->position.x + window->size.w, cmap, segments, nsegments, y);
+        paintlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, y);
 
     }
 
 }
 
-static void paintimage(struct render_display *display, struct widget_image *image, int y)
+static void paintimage(struct render_display *display, struct widget *widget, struct widget_image *image, int y)
 {
 
-    if (intersects(y, image->position.y, image->position.y + image->size.h))
-        blitcmap32line(display, &image->position, image->data, image->size.w, image->cmap, y - image->position.y);
+    if (intersects(y, widget->position.y, widget->position.y + widget->size.h))
+        blitcmap32line(display, &widget->position, image->data, widget->size.w, image->cmap, y - widget->position.y);
 
 }
 
@@ -427,17 +427,17 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
     {
 
     case WIDGET_TYPE_WINDOW:
-        paintwindow(display, widget->data, y);
+        paintwindow(display, widget, widget->data, y);
 
         break;
 
     case WIDGET_TYPE_BUTTON:
-        paintbutton(display, widget->data, y);
+        paintbutton(display, widget, widget->data, y);
 
         break;
 
     case WIDGET_TYPE_IMAGE:
-        paintimage(display, widget->data, y);
+        paintimage(display, widget, widget->data, y);
 
         break;
 

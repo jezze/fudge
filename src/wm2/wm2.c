@@ -147,7 +147,7 @@ static int capvalue(int x, int min, int max)
 
 }
 
-static struct widget_window *getfocusedwindow(void)
+static struct widget *getfocusedwindow(void)
 {
 
     struct list_item *current = 0;
@@ -163,7 +163,7 @@ static struct widget_window *getfocusedwindow(void)
             struct widget_window *window = widget->data;
 
             if (window->focus)
-                return window;
+                return widget;
 
         }
 
@@ -175,33 +175,35 @@ static struct widget_window *getfocusedwindow(void)
 
 static void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned int h);
 
-static void place_button(struct widget *widget, struct widget_button *button, int x, int y, unsigned int w, unsigned int h)
+static void place_button(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
-    button->position.x = x;
-    button->position.y = y;
-    button->size.w = 200;
-    button->size.h = 80;
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = 200;
+    widget->size.h = 80;
 
 }
 
-static void place_image(struct widget *widget, struct widget_image *image, int x, int y, unsigned int w, unsigned int h)
+static void place_image(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
-    image->position.x = x;
-    image->position.y = y;
-    image->size.w = w;
-    image->size.h = h;
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = w;
+    widget->size.h = h;
 
 }
 
-static void place_layout(struct widget *widget, struct widget_layout *layout, int x, int y, unsigned int w, unsigned int h)
+static void place_layout(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
-    layout->position.x = x;
-    layout->position.y = y;
-    layout->size.w = w;
-    layout->size.h = h;
+    struct widget_layout *layout = widget->data;
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = w;
+    widget->size.h = h;
 
     if (layout->type != LAYOUT_TYPE_FLOAT)
     {
@@ -213,7 +215,7 @@ static void place_layout(struct widget *widget, struct widget_layout *layout, in
 
             struct widget *child = current->data;
 
-            place_widget(child, layout->position.x, layout->position.y, layout->size.w, layout->size.h);
+            place_widget(child, widget->position.x, widget->position.y, widget->size.w, widget->size.h);
 
         }
 
@@ -221,7 +223,7 @@ static void place_layout(struct widget *widget, struct widget_layout *layout, in
 
 }
 
-static void place_window(struct widget *widget, struct widget_window *window, int x, int y, unsigned int w, unsigned int h)
+static void place_window(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
     struct list_item *current = 0;
@@ -231,7 +233,7 @@ static void place_window(struct widget *widget, struct widget_window *window, in
 
         struct widget *child = current->data;
 
-        place_widget(child, window->position.x, window->position.y, window->size.w, window->size.h);
+        place_widget(child, widget->position.x, widget->position.y, widget->size.w, widget->size.h);
 
     }
 
@@ -244,22 +246,22 @@ static void place_widget(struct widget *widget, int x, int y, unsigned int w, un
     {
 
     case WIDGET_TYPE_BUTTON:
-        place_button(widget, widget->data, x, y, w, h);
+        place_button(widget, x, y, w, h);
 
         break;
 
     case WIDGET_TYPE_IMAGE:
-        place_image(widget, widget->data, x, y, w, h);
+        place_image(widget, x, y, w, h);
 
         break;
 
     case WIDGET_TYPE_LAYOUT:
-        place_layout(widget, widget->data, x, y, w, h);
+        place_layout(widget, x, y, w, h);
 
         break;
 
     case WIDGET_TYPE_WINDOW:
-        place_window(widget, widget->data, x, y, w, h);
+        place_window(widget, x, y, w, h);
 
         break;
 
@@ -306,40 +308,38 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     if (mousewidget)
     {
 
-        struct widget_image *image = mousewidget->data;
+        render_damage(&display, mousewidget->position.x, mousewidget->position.y, mousewidget->position.x + mousewidget->size.w, mousewidget->position.y + mousewidget->size.h);
 
-        render_damage(&display, image->position.x, image->position.y, image->position.x + image->size.w, image->position.y + image->size.h);
+        mousewidget->position.x = state.mouseposition.x;
+        mousewidget->position.y = state.mouseposition.y;
 
-        image->position.x = state.mouseposition.x;
-        image->position.y = state.mouseposition.y;
-
-        render_damage(&display, image->position.x, image->position.y, image->position.x + image->size.w, image->position.y + image->size.h);
+        render_damage(&display, mousewidget->position.x, mousewidget->position.y, mousewidget->position.x + mousewidget->size.w, mousewidget->position.y + mousewidget->size.h);
 
     }
 
     if (state.mousedrag || state.mouseresize)
     {
 
-        struct widget_window *window = getfocusedwindow();
+        struct widget *widget = getfocusedwindow();
 
-        if (window)
+        if (widget)
         {
 
-            render_damage(&display, window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
+            render_damage(&display, widget->position.x, widget->position.y, widget->position.x + widget->size.w, widget->position.y + widget->size.h);
 
             if (state.mousedrag)
             {
 
-                window->position.x += state.mousemovement.x;
-                window->position.y += state.mousemovement.y;
+                widget->position.x += state.mousemovement.x;
+                widget->position.y += state.mousemovement.y;
 
             }
 
             if (state.mouseresize)
             {
 
-                int w = (int)(window->size.w) + state.mousemovement.x;
-                int h = (int)(window->size.h) + state.mousemovement.y;
+                int w = (int)(widget->size.w) + state.mousemovement.x;
+                int h = (int)(widget->size.h) + state.mousemovement.y;
 
                 if (w < WINDOW_MIN_HEIGHT)
                     w = WINDOW_MIN_WIDTH;
@@ -347,12 +347,12 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
                 if (h < WINDOW_MIN_HEIGHT)
                     h = WINDOW_MIN_HEIGHT;
 
-                window->size.w = w;
-                window->size.h = h;
+                widget->size.w = w;
+                widget->size.h = h;
 
             }
 
-            render_damage(&display, window->position.x, window->position.y, window->position.x + window->size.w, window->position.y + window->size.h);
+            render_damage(&display, widget->position.x, widget->position.y, widget->position.x + widget->size.w, widget->position.y + widget->size.h);
 
         }
 
@@ -468,10 +468,10 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
         case 1:
             widget_initimage(image, mousedata16, mousecmap);
 
-            image->position.x = state.mouseposition.x;
-            image->position.y = state.mouseposition.y;
-            image->size.w = 12;
-            image->size.h = 16;
+            mousewidget->position.x = state.mouseposition.x;
+            mousewidget->position.y = state.mouseposition.y;
+            mousewidget->size.w = 12;
+            mousewidget->size.h = 16;
 
             break;
 
@@ -479,10 +479,10 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
         default:
             widget_initimage(image, mousedata24, mousecmap);
 
-            image->position.x = state.mouseposition.x;
-            image->position.y = state.mouseposition.y;
-            image->size.w = 18;
-            image->size.h = 24;
+            mousewidget->position.x = state.mouseposition.x;
+            mousewidget->position.y = state.mouseposition.y;
+            mousewidget->size.w = 18;
+            mousewidget->size.h = 24;
 
             break;
 
