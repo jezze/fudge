@@ -134,6 +134,145 @@ static void paintbackground(struct render_display *display, int y)
 
 }
 
+static void paintbutton(struct render_display *display, struct widget_button *button, int y)
+{
+
+    if (intersects(y, button->position.y, button->position.y + button->size.h))
+    {
+
+        static unsigned int buttoncmapnormal[] = {
+            0xFF101010,
+            0xFF687888,
+            0xFF485868,
+            0xFF182838
+        };
+        static unsigned int buttoncmapfocus[] = {
+            0xFF101010,
+            0xFF48C888,
+            0xFF28A868,
+            0xFF182838
+        };
+        static struct linesegment buttonborder0[1] = {
+            {LINESEGMENT_TYPE_RELX0X1, 1, -1, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment buttonborder1[1] = {
+            {LINESEGMENT_TYPE_RELX0X1, 0, 0, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment buttonborder2[3] = {
+            {LINESEGMENT_TYPE_RELX0X0, 0, 3, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X1, 3, -3, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX1X1, -3, 0, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment buttonborder3[5] = {
+            {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X0, 2, 2, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX0X1, 4, -4, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX1X1, -4, -2, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment buttonbordertitle[5] = {
+            {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX0X1, 3, -3, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment buttonborderspacing[7] = {
+            {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX0X0, 3, 4, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX0X1, 4, -4, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX1X1, -4, -3, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        };
+        static struct linesegment buttonborderarea[9] = {
+            {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX0X0, 3, 4, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX0X0, 4, 5, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX0X1, 5, -5, WINDOW_CMAP_AREA_NORMAL},
+            {LINESEGMENT_TYPE_RELX1X1, -5, -4, WINDOW_CMAP_SHADOW},
+            {LINESEGMENT_TYPE_RELX1X1, -4, -3, WINDOW_CMAP_MAIN_NORMAL},
+            {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
+            {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        };
+
+        unsigned int *cmap = (button->focus) ? buttoncmapfocus : buttoncmapnormal;
+        int ly = y - button->position.y;
+        struct linesegment *segments;
+        unsigned int nsegments;
+
+        if (ly == 0 || ly == button->size.h - 1)
+        {
+
+            segments = buttonborder0;
+            nsegments = 1;
+
+        }
+
+        else if (ly == 1 || ly == button->size.h - 2)
+        {
+
+            segments = buttonborder1;
+            nsegments = 1;
+
+        }
+
+        else if (ly == 2 || ly == button->size.h - 3)
+        {
+
+            segments = buttonborder2;
+            nsegments = 3;
+
+        }
+
+        else if (ly == 3 || ly == button->size.h - 4)
+        {
+
+            segments = buttonborder3;
+            nsegments = 5;
+
+        }
+
+        else if (ly >= 4 && ly < 40)
+        {
+
+            segments = buttonbordertitle;
+            nsegments = 5;
+
+        }
+
+        else if (ly == 40)
+        {
+
+            segments = buttonborderspacing;
+            nsegments = 7;
+
+        }
+
+        else if (ly > 40 && ly < button->size.h - 4)
+        {
+
+            segments = buttonborderarea;
+            nsegments = 9;
+
+        }
+
+        else
+        {
+
+            segments = 0;
+            nsegments = 0;
+
+        }
+
+        paintlinesegments(display, button->position.x, button->position.x + button->size.w, cmap, segments, nsegments, y);
+
+    }
+
+}
+
 static void paintwindow(struct render_display *display, struct widget_window *window, int y)
 {
 
@@ -281,6 +420,49 @@ static void paintimage(struct render_display *display, struct widget_image *imag
 
 }
 
+static void paintwidget(struct render_display *display, struct widget *widget, int y)
+{
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_WINDOW:
+        paintwindow(display, widget->data, y);
+
+        break;
+
+    case WIDGET_TYPE_BUTTON:
+        paintbutton(display, widget->data, y);
+
+        break;
+
+    case WIDGET_TYPE_IMAGE:
+        paintimage(display, widget->data, y);
+
+        break;
+
+    }
+
+}
+
+static void paintwidgets(struct render_display *display, struct widget *widget, int y)
+{
+
+    struct list_item *current = 0;
+
+    paintwidget(display, widget, y);
+
+    while ((current = pool_nextin(current, widget->id)))
+    {
+
+        struct widget *child = current->data;
+
+        paintwidget(display, child, y);
+
+    }
+
+}
+
 void render_damage(struct render_display *display, int x0, int y0, int x1, int y1)
 {
 
@@ -316,7 +498,7 @@ void render_damage(struct render_display *display, int x0, int y0, int x1, int y
 
 }
 
-void render_paint(struct render_display *display, struct widget_image *image)
+void render_paint(struct render_display *display, struct widget *rootwidget, struct widget_image *image)
 {
 
     if (!display->framebuffer)
@@ -330,28 +512,8 @@ void render_paint(struct render_display *display, struct widget_image *image)
         for (y = display->damage.position0.y; y < display->damage.position1.y; y++)
         {
 
-            struct list_item *current = 0;
-
             paintbackground(display, y);
-
-            while ((current = pool_next(current)))
-            {
-
-                struct widget *widget = current->data;
-
-                switch (widget->type)
-                {
-
-                case WIDGET_TYPE_WINDOW:
-                    paintwindow(display, widget->data, y);
-
-                    break;
-
-                }
-
-            }
-
-            paintimage(display, image, y);
+            paintwidgets(display, rootwidget, y);
 
         }
 

@@ -173,6 +173,18 @@ static struct widget_window *getfocusedwindow(void)
 
 }
 
+static void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned int h);
+
+static void place_button(struct widget *widget, struct widget_button *button, int x, int y, unsigned int w, unsigned int h)
+{
+
+    button->position.x = x;
+    button->position.y = y;
+    button->size.w = 200;
+    button->size.h = 80;
+
+}
+
 static void place_image(struct widget *widget, struct widget_image *image, int x, int y, unsigned int w, unsigned int h)
 {
 
@@ -199,6 +211,10 @@ static void place_layout(struct widget *widget, struct widget_layout *layout, in
         while ((current = pool_nextin(current, widget->id)))
         {
 
+            struct widget *child = current->data;
+
+            place_widget(child, layout->position.x, layout->position.y, layout->size.w, layout->size.h);
+
         }
 
     }
@@ -210,13 +226,12 @@ static void place_window(struct widget *widget, struct widget_window *window, in
 
     struct list_item *current = 0;
 
-    window->position.x = x;
-    window->position.y = y;
-    window->size.w = w;
-    window->size.h = h;
-
     while ((current = pool_nextin(current, widget->id)))
     {
+
+        struct widget *child = current->data;
+
+        place_widget(child, window->position.x, window->position.y, window->size.w, window->size.h);
 
     }
 
@@ -227,6 +242,11 @@ static void place_widget(struct widget *widget, int x, int y, unsigned int w, un
 
     switch (widget->type)
     {
+
+    case WIDGET_TYPE_BUTTON:
+        place_button(widget, widget->data, x, y, w, h);
+
+        break;
 
     case WIDGET_TYPE_IMAGE:
         place_image(widget, widget->data, x, y, w, h);
@@ -257,7 +277,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     setupvideo();
 
     while (channel_process())
-        render_paint(&display, mousewidget->data);
+    {
+
+        place_widget(rootwidget, 0, 0, display.size.w, display.size.h);
+        render_paint(&display, rootwidget, mousewidget->data);
+
+    }
 
     file_unlink(FILE_G4);
     file_unlink(FILE_G2);
@@ -464,8 +489,6 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
         }
 
     }
-
-    place_widget(rootwidget, 0, 0, display.size.w, display.size.h);
 
 }
 

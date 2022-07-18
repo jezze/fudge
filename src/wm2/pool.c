@@ -6,9 +6,10 @@
 static struct list widgetlist;
 static struct list_item widgetitems[32];
 static struct widget widgets[32];
-static struct widget_window windows[32];
-static struct widget_layout layouts[32];
+static struct widget_button buttons[32];
 static struct widget_image images[32];
+static struct widget_layout layouts[32];
+static struct widget_window windows[32];
 static unsigned int nwidgets = 0;
 
 struct list_item *pool_next(struct list_item *current)
@@ -78,6 +79,7 @@ void pool_setup(void)
     widget_initwindow(&windows[0], "Window 0", 200, 100, 800, 600);
     widget_initwindow(&windows[1], "Window 1", 100, 80, 800, 600);
     widget_initimage(&images[0], 0, 0);
+    widget_initbutton(&buttons[0], "Button0");
 
     windows[1].focus = 1;
 
@@ -85,6 +87,7 @@ void pool_setup(void)
     create(WIDGET_TYPE_WINDOW, "window0", "root", &windows[0]);
     create(WIDGET_TYPE_WINDOW, "window1", "root", &windows[1]);
     create(WIDGET_TYPE_IMAGE, "mouse", "root", &images[0]);
+    create(WIDGET_TYPE_BUTTON, "button0", "window1", &buttons[0]);
 
 }
 
