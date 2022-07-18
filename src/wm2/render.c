@@ -436,14 +436,14 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
 
         }
 
-        while ((current = pool_nextin(current, widget->id)))
-        {
+    }
 
-            struct widget *child = current->data;
+    while ((current = pool_nextin(current, widget->id)))
+    {
 
-            paintwidget(display, child, y);
+        struct widget *child = current->data;
 
-        }
+        paintwidget(display, child, y);
 
     }
 

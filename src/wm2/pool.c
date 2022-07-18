@@ -101,6 +101,11 @@ void pool_setup(void)
     widget->position.y = 80;
     widget->size.w = 800;
     widget->size.h = 600;
+    widget = pool_getwidgetbyid("button0");
+    widget->position.x = 10;
+    widget->position.y = 10;
+    widget->size.w = 200;
+    widget->size.h = 80;
 
 }
 
