@@ -20,6 +20,7 @@ struct state
 {
 
     struct position mouseposition;
+    struct position mousemovement;
     unsigned int mousedrag;
     unsigned int mouseresize;
 
@@ -269,13 +270,13 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousemove *mousemove = mdata;
-    int mx = capvalue(state.mouseposition.x + mousemove->relx, 0, display.size.w);
-    int my = capvalue(state.mouseposition.y + mousemove->rely, 0, display.size.h);
-    int dx = mx - state.mouseposition.x;
-    int dy = my - state.mouseposition.y;
+    int x = capvalue(state.mouseposition.x + mousemove->relx, 0, display.size.w);
+    int y = capvalue(state.mouseposition.y + mousemove->rely, 0, display.size.h);
 
-    state.mouseposition.x = mx;
-    state.mouseposition.y = my;
+    state.mousemovement.x = x - state.mouseposition.x;
+    state.mousemovement.y = y - state.mouseposition.y;
+    state.mouseposition.x = x;
+    state.mouseposition.y = y;
 
     if (mousewidget)
     {
@@ -304,16 +305,16 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
             if (state.mousedrag)
             {
 
-                window->position.x += dx;
-                window->position.y += dy;
+                window->position.x += state.mousemovement.x;
+                window->position.y += state.mousemovement.y;
 
             }
 
             if (state.mouseresize)
             {
 
-                int w = (int)(window->size.w) + dx;
-                int h = (int)(window->size.h) + dy;
+                int w = (int)(window->size.w) + state.mousemovement.x;
+                int h = (int)(window->size.h) + state.mousemovement.y;
 
                 if (w < WINDOW_MIN_HEIGHT)
                     w = WINDOW_MIN_WIDTH;
