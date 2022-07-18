@@ -450,7 +450,7 @@ static void paintwidgets(struct render_display *display, struct widget *widget, 
 
         struct widget *child = current->data;
 
-        paintwidget(display, child, y);
+        paintwidgets(display, child, y);
 
     }
 
