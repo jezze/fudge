@@ -58,17 +58,18 @@ static void blitline(struct render_display *display, unsigned int x0, unsigned i
 
 }
 
-static void blitcmap32line(struct render_display *display, struct position *p, void *idata, unsigned int iw, unsigned int *cmap, int y)
+static void blitcmap32line(struct render_display *display, struct position *p, void *idata, unsigned int iwidth, unsigned int *cmap, int y)
 {
 
     unsigned int *buffer = display->framebuffer;
     unsigned char *data = idata;
+    unsigned int w = (p->x + iwidth >= display->size.w) ? display->size.w - p->x : iwidth;
     unsigned int x;
 
-    for (x = 0; x < iw; x++)
+    for (x = 0; x < w; x++)
     {
 
-        unsigned int soffset = (y * iw + x);
+        unsigned int soffset = (y * iwidth + x);
         unsigned int toffset = (p->y * display->size.w + p->x) + (y * display->size.w + x);
 
         if (data[soffset] != 0xFF)
