@@ -466,29 +466,34 @@ static void paintwidgets(struct render_display *display, struct widget *widget, 
 void render_damage(struct render_display *display, int x0, int y0, int x1, int y1)
 {
 
+    x0 = capvalue(x0, 0, display->size.w);
+    y0 = capvalue(y0, 0, display->size.h);
+    x1 = capvalue(x1, 0, display->size.w);
+    y1 = capvalue(y1, 0, display->size.h);
+
     switch (display->damage.state)
     {
 
     case DAMAGE_STATE_NONE:
-        display->damage.position0.x = capvalue(x0, 0, display->size.w);
-        display->damage.position0.y = capvalue(y0, 0, display->size.h);
-        display->damage.position1.x = capvalue(x1, 0, display->size.w);
-        display->damage.position1.y = capvalue(y1, 0, display->size.h);
+        display->damage.position0.x = x0;
+        display->damage.position0.y = y0;
+        display->damage.position1.x = x1;
+        display->damage.position1.y = y1;
 
         break;
 
     case DAMAGE_STATE_MADE:
         if (x0 < display->damage.position0.x)
-            display->damage.position0.x = capvalue(x0, 0, display->size.w);
+            display->damage.position0.x = x0;
 
         if (y0 < display->damage.position0.y)
-            display->damage.position0.y = capvalue(y0, 0, display->size.h);
+            display->damage.position0.y = y0;
 
         if (x1 > display->damage.position1.x)
-            display->damage.position1.x = capvalue(x1, 0, display->size.w);
+            display->damage.position1.x = x1;
 
         if (y1 > display->damage.position1.y)
-            display->damage.position1.y = capvalue(y1, 0, display->size.h);
+            display->damage.position1.y = y1;
 
         break;
 
