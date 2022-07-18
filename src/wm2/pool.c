@@ -76,11 +76,19 @@ void pool_setup(void)
 
     list_init(&widgetlist);
     widget_initlayout(&layouts[0], LAYOUT_TYPE_FLOAT);
-    widget_initwindow(&windows[0], "Window 0", 200, 100, 800, 600);
-    widget_initwindow(&windows[1], "Window 1", 100, 80, 800, 600);
+    widget_initwindow(&windows[0], "Window 0");
+    widget_initwindow(&windows[1], "Window 1");
     widget_initimage(&images[0], 0, 0);
     widget_initbutton(&buttons[0], "Button0");
 
+    windows[0].position.x = 200;
+    windows[0].position.y = 100;
+    windows[0].size.w = 800;
+    windows[0].size.h = 600;
+    windows[1].position.x = 100;
+    windows[1].position.y = 80;
+    windows[1].size.w = 800;
+    windows[1].size.h = 600;
     windows[1].focus = 1;
 
     create(WIDGET_TYPE_LAYOUT, "root", "", &layouts[0]);

@@ -45,13 +45,13 @@ void widget_initlayout(struct widget_layout *layout, unsigned int type)
 
 }
 
-void widget_initwindow(struct widget_window *window, char *title, int x, int y, unsigned int w, unsigned int h)
+void widget_initwindow(struct widget_window *window, char *title)
 {
 
-    window->position.x = x;
-    window->position.y = y;
-    window->size.w = w;
-    window->size.h = h;
+    window->position.x = 0;
+    window->position.y = 0;
+    window->size.w = 0;
+    window->size.h = 0;
     window->title = title;
     window->focus = 0;
 

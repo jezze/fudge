@@ -76,4 +76,4 @@ void widget_init(struct widget *widget, unsigned int type, char *id, char *in, v
 void widget_initbutton(struct widget_button *button, char *label);
 void widget_initimage(struct widget_image *image, void *data, void *cmap);
 void widget_initlayout(struct widget_layout *layout, unsigned int type);
-void widget_initwindow(struct widget_window *window, char *title, int x, int y, unsigned int w, unsigned int h);
+void widget_initwindow(struct widget_window *window, char *title);
