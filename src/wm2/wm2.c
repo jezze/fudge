@@ -101,48 +101,6 @@ static void setupvideo(void)
 
 }
 
-static void setmouse(unsigned int x, unsigned int y, unsigned int factor)
-{
-
-    state.mouseposition.x = x;
-    state.mouseposition.y = y;
-
-    if (mousewidget)
-    {
-
-        struct widget_image *image = mousewidget->data;
-
-        switch (factor)
-        {
-
-        case 0:
-        case 1:
-            widget_initimage(image, mousedata16, mousecmap);
-
-            image->position.x = x;
-            image->position.y = y;
-            image->size.w = 12;
-            image->size.h = 16;
-
-            break;
-
-        case 2:
-        default:
-            widget_initimage(image, mousedata24, mousecmap);
-
-            image->position.x = x;
-            image->position.y = y;
-            image->size.w = 18;
-            image->size.h = 24;
-
-            break;
-
-        }
-
-    }
-
-}
-
 static void loadfont(unsigned int factor)
 {
 
@@ -463,9 +421,45 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     configuration.lineheight = 12 + factor * 4;
     configuration.padding = 4 + factor * 2;
     configuration.steplength = videomode->w / 12;
+    state.mouseposition.x = videomode->w / 4;
+    state.mouseposition.y = videomode->h / 4;
 
     loadfont(factor);
-    setmouse(videomode->w / 4, videomode->h / 4, factor);
+
+    if (mousewidget)
+    {
+
+        struct widget_image *image = mousewidget->data;
+
+        switch (factor)
+        {
+
+        case 0:
+        case 1:
+            widget_initimage(image, mousedata16, mousecmap);
+
+            image->position.x = state.mouseposition.x;
+            image->position.y = state.mouseposition.y;
+            image->size.w = 12;
+            image->size.h = 16;
+
+            break;
+
+        case 2:
+        default:
+            widget_initimage(image, mousedata24, mousecmap);
+
+            image->position.x = state.mouseposition.x;
+            image->position.y = state.mouseposition.y;
+            image->size.w = 18;
+            image->size.h = 24;
+
+            break;
+
+        }
+
+    }
+
     place_widget(rootwidget, 0, 0, display.size.w, display.size.h);
 
 }
