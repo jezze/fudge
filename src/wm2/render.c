@@ -126,14 +126,16 @@ static void paintlinesegments(struct render_display *display, int x0, int x1, un
 
 }
 
-static void paintbackground(struct render_display *display, int y)
+static void paintfill(struct render_display *display, struct widget *widget, int y)
 {
 
-    blitline(display, display->damage.position0.x, display->damage.position1.x, 0xFF142434, y);
+    struct widget_fill *fill = widget->data;
+
+    blitline(display, widget->position.x, widget->position.x + widget->size.w, fill->color, y);
 
 }
 
-static void paintbutton(struct render_display *display, struct widget *widget, struct widget_button *button, int y)
+static void paintbutton(struct render_display *display, struct widget *widget, int y)
 {
 
     static unsigned int buttoncmapnormal[] = {
@@ -174,6 +176,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, s
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
 
+    struct widget_button *button = widget->data;
     unsigned int *cmap = (button->focus) ? buttoncmapfocus : buttoncmapnormal;
     int ly = y - widget->position.y;
     struct linesegment *segments;
@@ -231,7 +234,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, s
 
 }
 
-static void paintwindow(struct render_display *display, struct widget *widget, struct widget_window *window, int y)
+static void paintwindow(struct render_display *display, struct widget *widget, int y)
 {
 
     static unsigned int windowcmapnormal[] = {
@@ -292,6 +295,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, s
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
 
+    struct widget_window *window = widget->data;
     unsigned int *cmap = (window->focus) ? windowcmapfocus : windowcmapnormal;
     int ly = y - widget->position.y;
     struct linesegment *segments;
@@ -365,8 +369,10 @@ static void paintwindow(struct render_display *display, struct widget *widget, s
 
 }
 
-static void paintimage(struct render_display *display, struct widget *widget, struct widget_image *image, int y)
+static void paintimage(struct render_display *display, struct widget *widget, int y)
 {
+
+    struct widget_image *image = widget->data;
 
     blitcmap32line(display, &widget->position, image->data, widget->size.w, image->cmap, y - widget->position.y);
 
@@ -382,17 +388,22 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
         {
 
         case WIDGET_TYPE_BUTTON:
-            paintbutton(display, widget, widget->data, y);
+            paintbutton(display, widget, y);
+
+            break;
+
+        case WIDGET_TYPE_FILL:
+            paintfill(display, widget, y);
 
             break;
 
         case WIDGET_TYPE_IMAGE:
-            paintimage(display, widget, widget->data, y);
+            paintimage(display, widget, y);
 
             break;
 
         case WIDGET_TYPE_WINDOW:
-            paintwindow(display, widget, widget->data, y);
+            paintwindow(display, widget, y);
 
             break;
 
@@ -464,8 +475,6 @@ void render_paint(struct render_display *display, struct widget *rootwidget, str
         {
 
             struct list_item *current = 0;
-
-            paintbackground(display, y);
 
             while ((current = pool_next(current)))
             {

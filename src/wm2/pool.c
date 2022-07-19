@@ -7,6 +7,7 @@ static struct list widgetlist;
 static struct list_item widgetitems[32];
 static struct widget widgets[32];
 static struct widget_button buttons[32];
+static struct widget_fill fills[32];
 static struct widget_image images[32];
 static struct widget_layout layouts[32];
 static struct widget_window windows[32];
@@ -118,14 +119,17 @@ void pool_setup(void)
 
     list_init(&widgetlist);
     widget_initlayout(&layouts[0], LAYOUT_TYPE_FLOAT);
+    widget_initfill(&fills[0], 0xFF142434);
     widget_initwindow(&windows[0], "Window 0");
     widget_initwindow(&windows[1], "Window 1");
     widget_initimage(&images[0], 0, 0);
     widget_initbutton(&buttons[0], "Button0");
 
+    fills[0].color = 0xFF142434;
     windows[1].focus = 1;
 
     create(WIDGET_TYPE_LAYOUT, "root", "", &layouts[0]);
+    create(WIDGET_TYPE_FILL, "background", "root", &fills[0]);
     create(WIDGET_TYPE_WINDOW, "window0", "root", &windows[0]);
     create(WIDGET_TYPE_WINDOW, "window1", "root", &windows[1]);
     create(WIDGET_TYPE_IMAGE, "mouse", "root", &images[0]);

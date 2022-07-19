@@ -22,6 +22,13 @@ void widget_initbutton(struct widget_button *button, char *label)
 
 }
 
+void widget_initfill(struct widget_fill *fill, unsigned int color)
+{
+
+    fill->color = color;
+
+}
+
 void widget_initimage(struct widget_image *image, void *data, void *cmap)
 {
 
