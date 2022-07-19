@@ -83,6 +83,19 @@ static unsigned int mousecmap[] = {
     0xFFF898B8
 };
 
+static int between(int x, int min, int max)
+{
+
+    if (x < min)
+        x = min;
+
+    if (x > max)
+        x = max;
+
+    return x;
+
+}
+
 static void setupvideo(void)
 {
 
@@ -132,19 +145,6 @@ static void loadfont(unsigned int factor)
     }
 
     file_seekread(FILE_L0, fontdata, 0x8000, 0);
-
-}
-
-static int capvalue(int x, int min, int max)
-{
-
-    if (x < min)
-        x = min;
-
-    if (x > max)
-        x = max;
-
-    return x;
 
 }
 
@@ -266,8 +266,8 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousemove *mousemove = mdata;
-    int x = capvalue(state.mouseposition.x + mousemove->relx, 0, display.size.w);
-    int y = capvalue(state.mouseposition.y + mousemove->rely, 0, display.size.h);
+    int x = between(state.mouseposition.x + mousemove->relx, 0, display.size.w);
+    int y = between(state.mouseposition.y + mousemove->rely, 0, display.size.h);
 
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;

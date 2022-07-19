@@ -31,7 +31,21 @@ static int intersects(int y, int y0, int y1)
 
 }
 
-static int capvalue(int x, int min, int max)
+static int min(int a, int b)
+{
+
+    return (a < b) ? a : b;
+
+}
+
+static int max(int a, int b)
+{
+
+    return (a > b) ? a : b;
+
+}
+
+static int between(int x, int min, int max)
 {
 
     if (x < min)
@@ -50,8 +64,8 @@ static void blitline(struct render_display *display, unsigned int x0, unsigned i
     unsigned int *buffer = display->framebuffer;
     unsigned int x;
 
-    x0 = capvalue(x0, 0, display->size.w);
-    x1 = capvalue(x1, 0, display->size.w);
+    x0 = between(x0, 0, display->size.w);
+    x1 = between(x1, 0, display->size.w);
 
     for (x = x0; x < x1; x++)
         buffer[y * display->size.w + x] = color;
@@ -130,8 +144,10 @@ static void paintfill(struct render_display *display, struct widget *widget, int
 {
 
     struct widget_fill *fill = widget->data;
+    int x0 = max(widget->position.x, display->damage.position0.x);
+    int x1 = min(widget->position.x + widget->size.w, display->damage.position1.x);
 
-    blitline(display, widget->position.x, widget->position.x + widget->size.w, fill->color, y);
+    blitline(display, x0, x1, fill->color, y);
 
 }
 
@@ -416,10 +432,10 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
 void render_damage(struct render_display *display, int x0, int y0, int x1, int y1)
 {
 
-    x0 = capvalue(x0, 0, display->size.w);
-    y0 = capvalue(y0, 0, display->size.h);
-    x1 = capvalue(x1, 0, display->size.w);
-    y1 = capvalue(y1, 0, display->size.h);
+    x0 = between(x0, 0, display->size.w);
+    y0 = between(y0, 0, display->size.h);
+    x1 = between(x1, 0, display->size.w);
+    y1 = between(y1, 0, display->size.h);
 
     switch (display->damage.state)
     {
@@ -433,17 +449,10 @@ void render_damage(struct render_display *display, int x0, int y0, int x1, int y
         break;
 
     case DAMAGE_STATE_MADE:
-        if (x0 < display->damage.position0.x)
-            display->damage.position0.x = x0;
-
-        if (y0 < display->damage.position0.y)
-            display->damage.position0.y = y0;
-
-        if (x1 > display->damage.position1.x)
-            display->damage.position1.x = x1;
-
-        if (y1 > display->damage.position1.y)
-            display->damage.position1.y = y1;
+        display->damage.position0.x = min(x0, display->damage.position0.x);
+        display->damage.position0.y = min(y0, display->damage.position0.y);
+        display->damage.position1.x = max(x1, display->damage.position1.x);
+        display->damage.position1.y = max(y1, display->damage.position1.y);
 
         break;
 
