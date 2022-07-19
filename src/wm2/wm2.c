@@ -342,10 +342,13 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
             struct widget *old = getfocusedwindow();
 
+            /* This needs to damage everything inside widgetwindow as well */
             if (old)
                 render_damagebywidget(&display, old);
 
             setfocusedwindow(widgetwindow);
+
+            /* This needs to damage everything inside widgetwindow as well */
             render_damagebywidget(&display, widgetwindow);
             pool_bump(widgetwindow);
             pool_bump(mousewidget);
