@@ -22,8 +22,8 @@ struct state
 
     struct position mouseposition;
     struct position mousemovement;
-    unsigned int mousedrag;
-    unsigned int mouseresize;
+    unsigned int mousebuttonleft;
+    unsigned int mousebuttonright;
 
 };
 
@@ -226,7 +226,7 @@ static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned 
     if (last)
         return last;
 
-    if (!type || (type == parent->type))
+    if (!type || type == parent->type)
     {
 
         if (x > parent->position.x && x <= parent->position.x + parent->size.w && y > parent->position.y && y <= parent->position.y + parent->size.h)
@@ -238,7 +238,7 @@ static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned 
 
 }
 
-static void damagerecursive(struct widget *widget)
+static void damage(struct widget *widget)
 {
 
     struct list_item *current = 0;
@@ -246,7 +246,7 @@ static void damagerecursive(struct widget *widget)
     render_damagebywidget(&display, widget);
 
     while ((current = pool_nextin(current, widget->id)))
-        damagerecursive(current->data);
+        damage(current->data);
 
 }
 
@@ -286,14 +286,14 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     state.mouseposition.x = x;
     state.mouseposition.y = y;
 
-    damagerecursive(mousewidget);
+    damage(mousewidget);
 
     mousewidget->position.x = state.mouseposition.x;
     mousewidget->position.y = state.mouseposition.y;
 
-    damagerecursive(mousewidget);
+    damage(mousewidget);
 
-    if (state.mousedrag || state.mouseresize)
+    if (state.mousebuttonleft || state.mousebuttonright)
     {
 
         struct widget *widget = getfocusedwindow();
@@ -301,9 +301,9 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
         if (widget)
         {
 
-            damagerecursive(widget);
+            damage(widget);
 
-            if (state.mousedrag)
+            if (state.mousebuttonleft)
             {
 
                 widget->position.x += state.mousemovement.x;
@@ -311,7 +311,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
             }
 
-            if (state.mouseresize)
+            if (state.mousebuttonright)
             {
 
                 int w = (int)(widget->size.w) + state.mousemovement.x;
@@ -328,7 +328,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
             }
 
-            damagerecursive(widget);
+            damage(widget);
 
         }
 
@@ -340,31 +340,32 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
-    struct widget *widgetclick = getwidgetat(rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
-    struct widget *widgetwindow = getwidgetat(rootwidget, state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
+    struct widget *clickedwidget = getwidgetat(rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
+    struct widget *clickedwindow = getwidgetat(rootwidget, state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
 
     switch (mousepress->button)
     {
 
     case 1:
-        state.mousedrag = 1;
+        state.mousebuttonleft = 1;
 
-        if (widgetwindow)
+        if (clickedwindow)
         {
 
-            struct widget *old = getfocusedwindow();
+            struct widget *focusedwindow = getfocusedwindow();
 
-            if (old)
-                damagerecursive(old);
+            if (focusedwindow)
+                damage(focusedwindow);
 
-            setfocusedwindow(widgetwindow);
-            damagerecursive(widgetwindow);
-            pool_bump(widgetwindow);
+            setfocusedwindow(clickedwindow);
+            pool_bump(clickedwindow);
             pool_bump(mousewidget);
+            damage(clickedwindow);
+            damage(mousewidget);
 
         }
 
-        if (widgetclick)
+        if (clickedwidget)
         {
 
         }
@@ -372,7 +373,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     case 2:
-        state.mouseresize = 1;
+        state.mousebuttonright = 1;
 
         break;
 
@@ -389,12 +390,12 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
     {
 
     case 1:
-        state.mousedrag = 0;
+        state.mousebuttonleft = 0;
 
         break;
 
     case 2:
-        state.mouseresize = 0;
+        state.mousebuttonright = 0;
 
         break;
 
