@@ -238,6 +238,18 @@ static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned 
 
 }
 
+static void damagerecursive(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+
+    render_damagebywidget(&display, widget);
+
+    while ((current = pool_nextin(current, widget->id)))
+        damagerecursive(current->data);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -274,12 +286,12 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     state.mouseposition.x = x;
     state.mouseposition.y = y;
 
-    render_damagebywidget(&display, mousewidget);
+    damagerecursive(mousewidget);
 
     mousewidget->position.x = state.mouseposition.x;
     mousewidget->position.y = state.mouseposition.y;
 
-    render_damagebywidget(&display, mousewidget);
+    damagerecursive(mousewidget);
 
     if (state.mousedrag || state.mouseresize)
     {
@@ -289,7 +301,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
         if (widget)
         {
 
-            render_damagebywidget(&display, widget);
+            damagerecursive(widget);
 
             if (state.mousedrag)
             {
@@ -316,7 +328,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
             }
 
-            render_damagebywidget(&display, widget);
+            damagerecursive(widget);
 
         }
 
@@ -342,14 +354,11 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
             struct widget *old = getfocusedwindow();
 
-            /* This needs to damage everything inside widgetwindow as well */
             if (old)
-                render_damagebywidget(&display, old);
+                damagerecursive(old);
 
             setfocusedwindow(widgetwindow);
-
-            /* This needs to damage everything inside widgetwindow as well */
-            render_damagebywidget(&display, widgetwindow);
+            damagerecursive(widgetwindow);
             pool_bump(widgetwindow);
             pool_bump(mousewidget);
 

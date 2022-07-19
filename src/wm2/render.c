@@ -134,6 +134,9 @@ static void paintlinesegments(struct render_display *display, int x0, int x1, un
 
         }
 
+        p0 = max(p0, display->damage.position0.x);
+        p1 = min(p1, display->damage.position1.x);
+
         blitline(display, p0, p1, cmap[p->color], y);
 
     }
