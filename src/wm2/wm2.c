@@ -173,6 +173,7 @@ static struct widget *getfocusedwindow(void)
 
 }
 
+static void place_window(struct widget *widget, int x, int y, unsigned int w, unsigned int h);
 static void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned int h);
 
 static void place_button(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
@@ -188,28 +189,26 @@ static void place_button(struct widget *widget, int x, int y, unsigned int w, un
 static void place_image(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = w;
-    widget->size.h = h;
-
 }
 
 static void place_layout(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
     struct widget_layout *layout = widget->data;
+    struct list_item *current = 0;
 
     widget->position.x = x;
     widget->position.y = y;
     widget->size.w = w;
     widget->size.h = h;
 
-    if (layout->type != LAYOUT_TYPE_FLOAT)
+    switch (layout->type)
     {
 
-        struct list_item *current = 0;
+    case LAYOUT_TYPE_VERTICAL:
+        break;
 
+    case LAYOUT_TYPE_FLOAT:
         while ((current = pool_nextin(current, widget->id)))
         {
 
@@ -218,6 +217,8 @@ static void place_layout(struct widget *widget, int x, int y, unsigned int w, un
             place_widget(child, widget->position.x, widget->position.y, widget->size.w, widget->size.h);
 
         }
+
+        break;
 
     }
 
@@ -233,7 +234,7 @@ static void place_window(struct widget *widget, int x, int y, unsigned int w, un
 
         struct widget *child = current->data;
 
-        place_widget(child, widget->position.x, widget->position.y, widget->size.w, widget->size.h);
+        place_widget(child, widget->position.x + 16, widget->position.y + 16 + 38, widget->size.w - 24, widget->size.h - 24);
 
     }
 
@@ -305,17 +306,12 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     state.mouseposition.x = x;
     state.mouseposition.y = y;
 
-    if (mousewidget)
-    {
+    render_damage(&display, mousewidget->position.x, mousewidget->position.y, mousewidget->position.x + mousewidget->size.w, mousewidget->position.y + mousewidget->size.h);
 
-        render_damage(&display, mousewidget->position.x, mousewidget->position.y, mousewidget->position.x + mousewidget->size.w, mousewidget->position.y + mousewidget->size.h);
+    mousewidget->position.x = state.mouseposition.x;
+    mousewidget->position.y = state.mouseposition.y;
 
-        mousewidget->position.x = state.mouseposition.x;
-        mousewidget->position.y = state.mouseposition.y;
-
-        render_damage(&display, mousewidget->position.x, mousewidget->position.y, mousewidget->position.x + mousewidget->size.w, mousewidget->position.y + mousewidget->size.h);
-
-    }
+    render_damage(&display, mousewidget->position.x, mousewidget->position.y, mousewidget->position.x + mousewidget->size.w, mousewidget->position.y + mousewidget->size.h);
 
     if (state.mousedrag || state.mouseresize)
     {
@@ -456,37 +452,30 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     loadfont(factor);
 
-    if (mousewidget)
+    switch (factor)
     {
 
-        struct widget_image *image = mousewidget->data;
+    case 0:
+    case 1:
+        widget_initimage(mousewidget->data, mousedata16, mousecmap);
 
-        switch (factor)
-        {
+        mousewidget->position.x = state.mouseposition.x;
+        mousewidget->position.y = state.mouseposition.y;
+        mousewidget->size.w = 12;
+        mousewidget->size.h = 16;
 
-        case 0:
-        case 1:
-            widget_initimage(image, mousedata16, mousecmap);
+        break;
 
-            mousewidget->position.x = state.mouseposition.x;
-            mousewidget->position.y = state.mouseposition.y;
-            mousewidget->size.w = 12;
-            mousewidget->size.h = 16;
+    case 2:
+    default:
+        widget_initimage(mousewidget->data, mousedata24, mousecmap);
 
-            break;
+        mousewidget->position.x = state.mouseposition.x;
+        mousewidget->position.y = state.mouseposition.y;
+        mousewidget->size.w = 18;
+        mousewidget->size.h = 24;
 
-        case 2:
-        default:
-            widget_initimage(image, mousedata24, mousecmap);
-
-            mousewidget->position.x = state.mouseposition.x;
-            mousewidget->position.y = state.mouseposition.y;
-            mousewidget->size.w = 18;
-            mousewidget->size.h = 24;
-
-            break;
-
-        }
+        break;
 
     }
 
