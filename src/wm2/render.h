@@ -18,5 +18,6 @@ struct render_display
 };
 
 void render_damage(struct render_display *display, int x0, int y0, int x1, int y1);
+void render_damagebywidget(struct render_display *display, struct widget *widget);
 void render_paint(struct render_display *display, struct widget *rootwidget, struct widget_image *image);
 void render_setup(struct render_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp);

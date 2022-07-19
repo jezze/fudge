@@ -71,6 +71,27 @@ static struct widget *create(unsigned int type, char *id, char *in, void *data)
 
 }
 
+void pool_bump(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        if (current->data == widget)
+        {
+
+            list_move(&widgetlist, &widgetlist, current);
+
+            break;
+
+        }
+
+    }
+
+}
+
 void pool_setup(void)
 {
 

@@ -453,6 +453,13 @@ void render_damage(struct render_display *display, int x0, int y0, int x1, int y
 
 }
 
+void render_damagebywidget(struct render_display *display, struct widget *widget)
+{
+
+    render_damage(display, widget->position.x, widget->position.y, widget->position.x + widget->size.w, widget->position.y + widget->size.h);
+
+}
+
 void render_paint(struct render_display *display, struct widget *rootwidget, struct widget_image *image)
 {
 

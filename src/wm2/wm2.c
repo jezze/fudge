@@ -2,6 +2,7 @@
 #include <abi.h>
 #include "widget.h"
 #include "pool.h"
+#include "place.h"
 #include "render.h"
 
 struct configuration
@@ -173,100 +174,67 @@ static struct widget *getfocusedwindow(void)
 
 }
 
-static void place_window(struct widget *widget, int x, int y, unsigned int w, unsigned int h);
-static void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned int h);
-
-static void place_button(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+static void setfocusedwindow(struct widget *widget)
 {
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = 200;
-    widget->size.h = 80;
-
-}
-
-static void place_image(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
-{
-
-}
-
-static void place_layout(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
-{
-
-    struct widget_layout *layout = widget->data;
     struct list_item *current = 0;
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = w;
-    widget->size.h = h;
-
-    switch (layout->type)
+    while ((current = pool_next(current)))
     {
+ 
+        struct widget *widget = current->data;
 
-    case LAYOUT_TYPE_VERTICAL:
-        break;
-
-    case LAYOUT_TYPE_FLOAT:
-        while ((current = pool_nextin(current, widget->id)))
+        if (widget->type == WIDGET_TYPE_WINDOW)
         {
 
-            struct widget *child = current->data;
+            struct widget_window *window = widget->data;
 
-            place_widget(child, widget->position.x, widget->position.y, widget->size.w, widget->size.h);
+            window->focus = 0;
 
         }
 
-        break;
+    }
+
+    if (widget)
+    {
+
+        struct widget_window *window = widget->data;
+
+        window->focus = 1;
 
     }
 
 }
 
-static void place_window(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned int type)
 {
 
     struct list_item *current = 0;
+    struct widget *last = 0;
 
-    while ((current = pool_nextin(current, widget->id)))
+    while ((current = pool_nextin(current, parent->id)))
     {
-
+ 
         struct widget *child = current->data;
+        struct widget *match = getwidgetat(child, x, y, type);
 
-        place_widget(child, widget->position.x + 16, widget->position.y + 16 + 38, widget->size.w - 24, widget->size.h - 24);
+        if (match)
+            last = match;
 
     }
 
-}
+    if (last)
+        return last;
 
-static void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
-{
-
-    switch (widget->type)
+    if (!type || (type == parent->type))
     {
 
-    case WIDGET_TYPE_BUTTON:
-        place_button(widget, x, y, w, h);
-
-        break;
-
-    case WIDGET_TYPE_IMAGE:
-        place_image(widget, x, y, w, h);
-
-        break;
-
-    case WIDGET_TYPE_LAYOUT:
-        place_layout(widget, x, y, w, h);
-
-        break;
-
-    case WIDGET_TYPE_WINDOW:
-        place_window(widget, x, y, w, h);
-
-        break;
+        if (x > parent->position.x && x <= parent->position.x + parent->size.w && y > parent->position.y && y <= parent->position.y + parent->size.h)
+            return parent;
 
     }
+
+    return 0;
 
 }
 
@@ -306,12 +274,12 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     state.mouseposition.x = x;
     state.mouseposition.y = y;
 
-    render_damage(&display, mousewidget->position.x, mousewidget->position.y, mousewidget->position.x + mousewidget->size.w, mousewidget->position.y + mousewidget->size.h);
+    render_damagebywidget(&display, mousewidget);
 
     mousewidget->position.x = state.mouseposition.x;
     mousewidget->position.y = state.mouseposition.y;
 
-    render_damage(&display, mousewidget->position.x, mousewidget->position.y, mousewidget->position.x + mousewidget->size.w, mousewidget->position.y + mousewidget->size.h);
+    render_damagebywidget(&display, mousewidget);
 
     if (state.mousedrag || state.mouseresize)
     {
@@ -321,7 +289,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
         if (widget)
         {
 
-            render_damage(&display, widget->position.x, widget->position.y, widget->position.x + widget->size.w, widget->position.y + widget->size.h);
+            render_damagebywidget(&display, widget);
 
             if (state.mousedrag)
             {
@@ -348,7 +316,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
             }
 
-            render_damage(&display, widget->position.x, widget->position.y, widget->position.x + widget->size.w, widget->position.y + widget->size.h);
+            render_damagebywidget(&display, widget);
 
         }
 
@@ -360,12 +328,34 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
+    struct widget *widgetclick = getwidgetat(rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
+    struct widget *widgetwindow = getwidgetat(rootwidget, state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
 
     switch (mousepress->button)
     {
 
     case 1:
         state.mousedrag = 1;
+
+        if (widgetwindow)
+        {
+
+            struct widget *old = getfocusedwindow();
+
+            if (old)
+                render_damagebywidget(&display, old);
+
+            setfocusedwindow(widgetwindow);
+            render_damagebywidget(&display, widgetwindow);
+            pool_bump(widgetwindow);
+            pool_bump(mousewidget);
+
+        }
+
+        if (widgetclick)
+        {
+
+        }
 
         break;
 
