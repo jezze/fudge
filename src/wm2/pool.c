@@ -71,7 +71,7 @@ static struct widget *create(unsigned int type, char *id, char *in, void *data)
 
 }
 
-void pool_bump(struct widget *widget)
+static struct list_item *finditem(struct widget *widget)
 {
 
     struct list_item *current = 0;
@@ -80,15 +80,34 @@ void pool_bump(struct widget *widget)
     {
 
         if (current->data == widget)
-        {
-
-            list_move(&widgetlist, &widgetlist, current);
-
-            break;
-
-        }
+            return current;
 
     }
+
+    return 0;
+
+}
+
+static void bump(struct list_item *item)
+{
+
+    struct list_item *current = 0;
+    struct widget *widget = item->data;
+
+    list_move(&widgetlist, &widgetlist, item);
+
+    while ((current = pool_nextin(current, widget->id)))
+        bump(current);
+
+}
+
+void pool_bump(struct widget *widget)
+{
+
+    struct list_item *item = finditem(widget);
+
+    if (item)
+        bump(item);
 
 }
 

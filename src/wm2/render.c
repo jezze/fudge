@@ -375,8 +375,6 @@ static void paintimage(struct render_display *display, struct widget *widget, st
 static void paintwidget(struct render_display *display, struct widget *widget, int y)
 {
 
-    struct list_item *current = 0;
-
     if (intersects(y, widget->position.y, widget->position.y + widget->size.h))
     {
 
@@ -399,15 +397,6 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
             break;
 
         }
-
-    }
-
-    while ((current = pool_nextin(current, widget->id)))
-    {
-
-        struct widget *child = current->data;
-
-        paintwidget(display, child, y);
 
     }
 
@@ -474,8 +463,18 @@ void render_paint(struct render_display *display, struct widget *rootwidget, str
         for (y = display->damage.position0.y; y < display->damage.position1.y; y++)
         {
 
+            struct list_item *current = 0;
+
             paintbackground(display, y);
-            paintwidget(display, rootwidget, y);
+
+            while ((current = pool_next(current)))
+            {
+
+                struct widget *child = current->data;
+
+                paintwidget(display, child, y);
+
+            }
 
         }
 
