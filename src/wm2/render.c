@@ -6,10 +6,10 @@
 
 #define DAMAGE_STATE_NONE               0
 #define DAMAGE_STATE_MADE               1
-#define WINDOW_CMAP_SHADOW              0
-#define WINDOW_CMAP_MAIN_LIGHT          1
-#define WINDOW_CMAP_MAIN_NORMAL         2
-#define WINDOW_CMAP_AREA_NORMAL         3
+#define CMAP_INDEX_SHADOW               0
+#define CMAP_INDEX_MAIN_LIGHT           1
+#define CMAP_INDEX_MAIN_NORMAL          2
+#define CMAP_INDEX_AREA_NORMAL          3
 #define LINESEGMENT_TYPE_RELX0X0        1
 #define LINESEGMENT_TYPE_RELX0X1        2
 #define LINESEGMENT_TYPE_RELX1X1        3
@@ -149,49 +149,29 @@ static void paintbutton(struct render_display *display, struct widget *widget, s
         0xFF182838
     };
     static struct linesegment buttonborder0[1] = {
-        {LINESEGMENT_TYPE_RELX0X1, 1, -1, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X1, 1, -1, CMAP_INDEX_SHADOW}
     };
     static struct linesegment buttonborder1[1] = {
-        {LINESEGMENT_TYPE_RELX0X1, 0, 0, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X1, 0, 0, CMAP_INDEX_SHADOW}
     };
     static struct linesegment buttonborder2[3] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 3, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -3, 0, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X0, 0, 3, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -3, 0, CMAP_INDEX_SHADOW}
     };
     static struct linesegment buttonborder3[5] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 4, -4, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 2, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X1, 4, -4, CMAP_INDEX_MAIN_NORMAL},
+        {LINESEGMENT_TYPE_RELX1X1, -4, -2, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment buttonbordertitle[5] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
-    };
-    static struct linesegment buttonborderspacing[7] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X0, 3, 4, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX0X1, 4, -4, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -3, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
-    };
-    static struct linesegment buttonborderarea[9] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X0, 3, 4, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX0X0, 4, 5, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 5, -5, WINDOW_CMAP_AREA_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -5, -4, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -3, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+    static struct linesegment buttonborderlabel[5] = {
+        {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_INDEX_MAIN_NORMAL},
+        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
 
     unsigned int *cmap = (button->focus) ? buttoncmapfocus : buttoncmapnormal;
@@ -231,27 +211,11 @@ static void paintbutton(struct render_display *display, struct widget *widget, s
 
     }
 
-    else if (ly >= 4 && ly < 40)
+    else if (ly > 3 && ly < widget->size.h - 4)
     {
 
-        segments = buttonbordertitle;
+        segments = buttonborderlabel;
         nsegments = 5;
-
-    }
-
-    else if (ly == 40)
-    {
-
-        segments = buttonborderspacing;
-        nsegments = 7;
-
-    }
-
-    else if (ly > 40 && ly < widget->size.h - 4)
-    {
-
-        segments = buttonborderarea;
-        nsegments = 9;
 
     }
 
@@ -283,49 +247,49 @@ static void paintwindow(struct render_display *display, struct widget *widget, s
         0xFF182838
     };
     static struct linesegment windowborder0[1] = {
-        {LINESEGMENT_TYPE_RELX0X1, 1, -1, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X1, 1, -1, CMAP_INDEX_SHADOW}
     };
     static struct linesegment windowborder1[1] = {
-        {LINESEGMENT_TYPE_RELX0X1, 0, 0, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X1, 0, 0, CMAP_INDEX_SHADOW}
     };
     static struct linesegment windowborder2[3] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 3, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -3, 0, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X0, 0, 3, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -3, 0, CMAP_INDEX_SHADOW}
     };
     static struct linesegment windowborder3[5] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 4, -4, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 2, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X1, 4, -4, CMAP_INDEX_MAIN_NORMAL},
+        {LINESEGMENT_TYPE_RELX1X1, -4, -2, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
     static struct linesegment windowbordertitle[5] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_INDEX_MAIN_NORMAL},
+        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
     static struct linesegment windowborderspacing[7] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X0, 3, 4, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX0X1, 4, -4, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -3, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X0, 3, 4, CMAP_INDEX_MAIN_NORMAL},
+        {LINESEGMENT_TYPE_RELX0X1, 4, -4, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX1X1, -4, -3, CMAP_INDEX_MAIN_NORMAL},
+        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
     static struct linesegment windowborderarea[9] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X0, 3, 4, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX0X0, 4, 5, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 5, -5, WINDOW_CMAP_AREA_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -5, -4, WINDOW_CMAP_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -3, WINDOW_CMAP_MAIN_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, WINDOW_CMAP_MAIN_LIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, WINDOW_CMAP_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X0, 3, 4, CMAP_INDEX_MAIN_NORMAL},
+        {LINESEGMENT_TYPE_RELX0X0, 4, 5, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX0X1, 5, -5, CMAP_INDEX_AREA_NORMAL},
+        {LINESEGMENT_TYPE_RELX1X1, -5, -4, CMAP_INDEX_SHADOW},
+        {LINESEGMENT_TYPE_RELX1X1, -4, -3, CMAP_INDEX_MAIN_NORMAL},
+        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
 
     unsigned int *cmap = (window->focus) ? windowcmapfocus : windowcmapnormal;
@@ -419,11 +383,6 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
         switch (widget->type)
         {
 
-        case WIDGET_TYPE_WINDOW:
-            paintwindow(display, widget, widget->data, y);
-
-            break;
-
         case WIDGET_TYPE_BUTTON:
             paintbutton(display, widget, widget->data, y);
 
@@ -431,6 +390,11 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
 
         case WIDGET_TYPE_IMAGE:
             paintimage(display, widget, widget->data, y);
+
+            break;
+
+        case WIDGET_TYPE_WINDOW:
+            paintwindow(display, widget, widget->data, y);
 
             break;
 
