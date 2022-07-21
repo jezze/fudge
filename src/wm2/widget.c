@@ -44,11 +44,11 @@ void widget_initlayout(struct widget_layout *layout, unsigned int type)
 
 }
 
-void widget_initwindow(struct widget_window *window, char *title)
+void widget_initwindow(struct widget_window *window, char *title, unsigned int focus)
 {
 
     window->title = title;
-    window->focus = 0;
+    window->focus = focus;
 
 }
 

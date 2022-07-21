@@ -136,13 +136,10 @@ void pool_setup(void)
     list_init(&widgetlist);
     widget_initlayout(&payloads[0].layout, LAYOUT_TYPE_FLOAT);
     widget_initfill(&payloads[1].fill, 0xFF142434);
-    widget_initwindow(&payloads[2].window, "Window 0");
-    widget_initwindow(&payloads[3].window, "Window 1");
+    widget_initwindow(&payloads[2].window, "Window 0", 0);
+    widget_initwindow(&payloads[3].window, "Window 1", 1);
     widget_initimage(&payloads[4].image, 0, 0);
     widget_initbutton(&payloads[5].button, "Button0");
-
-    payloads[3].window.focus = 1;
-
     create(WIDGET_TYPE_LAYOUT, "root", "", &payloads[0]);
     create(WIDGET_TYPE_FILL, "background", "root", &payloads[1]);
     create(WIDGET_TYPE_WINDOW, "window0", "root", &payloads[2]);
