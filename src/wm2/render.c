@@ -52,6 +52,7 @@ static unsigned short getfontindex(struct font *font, unsigned short c)
 
 }
 
+/*
 static unsigned int findrowtotal(char *string, unsigned int count)
 {
 
@@ -111,6 +112,7 @@ static unsigned int findrowcount(char *string, unsigned int count, unsigned int 
     return count;
 
 }
+*/
 
 static int intersects(int y, int y0, int y1)
 {
@@ -431,6 +433,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 {
 
     struct widget_textbox *textbox = widget->data;
+    /*
     unsigned int rowindex = textbox->offset + line / fonts[0].lineheight;
     unsigned int rowtotal = findrowtotal(textbox->content, textbox->length);
     int rowoffset = textbox->scroll;
@@ -450,6 +453,9 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         painttext(display, &fonts[0], textbox->content + rowstart, rowcount - rowstart, widget->position.x, widget->position.x + widget->size.w, 0xFFFFFFFF, line % fonts[0].lineheight, textbox->cursor - rowstart);
 
     }
+    */
+
+    painttext(display, &fonts[0], textbox->content, 1, widget->position.x, widget->position.x + widget->size.w, 0xFFFFFFFF, line % fonts[0].lineheight, 2);
 
 }
 
