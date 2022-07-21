@@ -44,6 +44,17 @@ void widget_initlayout(struct widget_layout *layout, unsigned int type)
 
 }
 
+void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content)
+{
+
+    textbox->length = length;
+    textbox->cursor = 0;
+    textbox->offset = 0;
+    textbox->scroll = 0;
+    textbox->content = content;
+
+}
+
 void widget_initwindow(struct widget_window *window, char *title, unsigned int focus)
 {
 

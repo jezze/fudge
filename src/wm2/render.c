@@ -14,6 +14,17 @@
 #define LINESEGMENT_TYPE_RELX0X1        2
 #define LINESEGMENT_TYPE_RELX1X1        3
 
+struct font
+{
+
+    unsigned char *data;
+    unsigned char *bitmapdata;
+    unsigned int bitmapalign;
+    unsigned int lineheight;
+    unsigned int padding;
+
+};
+
 struct linesegment
 {
 
@@ -23,6 +34,83 @@ struct linesegment
     unsigned int color;
 
 };
+
+static struct font fonts[1];
+
+static unsigned short getfontindex(struct font *font, unsigned short c)
+{
+
+    switch (c)
+    {
+
+    case '\n':
+        return pcf_getindex(font->data, ' ');
+
+    }
+
+    return pcf_getindex(font->data, c);
+
+}
+
+static unsigned int findrowtotal(char *string, unsigned int count)
+{
+
+    unsigned int i;
+    unsigned int total = 0;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (string[i] == '\n')
+            total++;
+
+    }
+
+    return total;
+
+}
+
+static unsigned int findrowstart(char *string, unsigned int count, unsigned int row)
+{
+
+    unsigned int i;
+
+    if (!row)
+        return 0;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (string[i] == '\n')
+        {
+
+            if (!--row)
+                return i + 1;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int findrowcount(char *string, unsigned int count, unsigned int offset)
+{
+
+    unsigned int i;
+
+    for (i = offset; i < count; i++)
+    {
+
+        if (string[i] == '\n')
+            return i + 1;
+
+    }
+
+    return count;
+
+}
 
 static int intersects(int y, int y0, int y1)
 {
@@ -69,6 +157,25 @@ static void blitline(struct render_display *display, unsigned int x0, unsigned i
 
     for (x = x0; x < x1; x++)
         buffer[y * display->size.w + x] = color;
+
+}
+
+static void blitline2(struct render_display *display, unsigned int color, unsigned int offset, unsigned int count)
+{
+
+    unsigned char *buffer = display->framebuffer;
+
+    buffer += offset * 4;
+
+    while (count--)
+    {
+
+        *buffer++ = 0xFF;
+        *buffer++ = 0xFF;
+        *buffer++ = 0xFF;
+        *buffer++ = 0xFF;
+
+    }
 
 }
 
@@ -253,6 +360,99 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
 }
 
+static unsigned int paintchar(struct render_display *display, struct font *font, char c, unsigned int x, unsigned int color, unsigned int line, unsigned int inverted)
+{
+
+    unsigned short index = getfontindex(font, c);
+    unsigned int offset = pcf_getbitmapoffset(font->data, index);
+    struct pcf_metricsdata metricsdata;
+
+    pcf_readmetricsdata(font->data, index, &metricsdata);
+
+    if (line < metricsdata.ascent + metricsdata.descent)
+    {
+
+        unsigned char *data = font->bitmapdata + offset + line * font->bitmapalign;
+
+        if (inverted)
+        {
+
+            unsigned int i;
+
+            for (i = 0; i < metricsdata.width; i++)
+            {
+
+                if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
+                    blitline2(display, color, x + i, 1);
+
+            }
+
+        }
+
+        else
+        {
+
+            unsigned int i;
+
+            for (i = 0; i < metricsdata.width; i++)
+            {
+
+                if (data[(i >> 3)] & (0x80 >> (i % 8)))
+                    blitline2(display, color, x + i, 1);
+
+            }
+
+        }
+
+    }
+
+    return metricsdata.width;
+
+}
+
+static void painttext(struct render_display *display, struct font *font, char *string, unsigned int length, unsigned int x, unsigned int w, unsigned int color, unsigned int line, unsigned int cursor)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (x >= w)
+            break;
+
+        x += paintchar(display, font, string[i], x, color, line, i == cursor);
+
+    }
+
+}
+
+static void painttextbox(struct render_display *display, struct widget *widget, unsigned int line)
+{
+
+    struct widget_textbox *textbox = widget->data;
+    unsigned int rowindex = textbox->offset + line / fonts[0].lineheight;
+    unsigned int rowtotal = findrowtotal(textbox->content, textbox->length);
+    int rowoffset = textbox->scroll;
+
+    if (rowoffset < 0)
+        rowoffset = 0;
+
+    if (rowoffset > rowtotal)
+        rowoffset = rowtotal;
+
+    if (rowindex < rowtotal - rowoffset)
+    {
+
+        unsigned int rowstart = findrowstart(textbox->content, textbox->length, rowindex + rowoffset);
+        unsigned int rowcount = findrowcount(textbox->content, textbox->length, rowstart);
+
+        painttext(display, &fonts[0], textbox->content + rowstart, rowcount - rowstart, widget->position.x, widget->position.x + widget->size.w, 0xFFFFFFFF, line % fonts[0].lineheight, textbox->cursor - rowstart);
+
+    }
+
+}
+
 static void paintwindow(struct render_display *display, struct widget *widget, int y)
 {
 
@@ -421,6 +621,11 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
 
             break;
 
+        case WIDGET_TYPE_TEXTBOX:
+            painttextbox(display, widget, y);
+
+            break;
+
         case WIDGET_TYPE_WINDOW:
             paintwindow(display, widget, y);
 
@@ -502,6 +707,17 @@ void render_paint(struct render_display *display, struct widget *rootwidget, str
         display->damage.state = DAMAGE_STATE_NONE;
 
     }
+
+}
+
+void render_setfont(unsigned int index, void *data, unsigned int lineheight, unsigned int padding)
+{
+
+    fonts[index].data = data;
+    fonts[index].bitmapdata = pcf_getbitmapdata(fonts[index].data);
+    fonts[index].bitmapalign = pcf_getbitmapalign(fonts[index].data);
+    fonts[index].lineheight = lineheight;
+    fonts[index].padding = padding;
 
 }
 

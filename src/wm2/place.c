@@ -62,6 +62,16 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int w, uns
 
 }
 
+static void placetextbox(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+{
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = w;
+    widget->size.h = h;
+
+}
+
 static void placewindow(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
@@ -101,6 +111,11 @@ void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned 
 
     case WIDGET_TYPE_LAYOUT:
         placelayout(widget, x, y, w, h);
+
+        break;
+
+    case WIDGET_TYPE_TEXTBOX:
+        placetextbox(widget, x, y, w, h);
 
         break;
 
