@@ -3,15 +3,24 @@
 #include "widget.h"
 #include "pool.h"
 
+#define MAX_WIDGETS                     1024
+
+union payloads
+{
+
+    struct widget_button button;
+    struct widget_fill fill;
+    struct widget_image image;
+    struct widget_layout layout;
+    struct widget_window window;
+
+};
+
 static struct list widgetlist;
-static struct list_item widgetitems[32];
-static struct widget widgets[32];
-static struct widget_button buttons[32];
-static struct widget_fill fills[32];
-static struct widget_image images[32];
-static struct widget_layout layouts[32];
-static struct widget_window windows[32];
-static unsigned int nwidgets = 0;
+static struct list_item widgetitems[MAX_WIDGETS];
+static struct widget widgets[MAX_WIDGETS];
+static union payloads payloads[MAX_WIDGETS];
+static unsigned int nwidgets;
 
 struct list_item *pool_next(struct list_item *current)
 {
@@ -59,16 +68,23 @@ struct widget *pool_getwidgetbyid(char *id)
 static struct widget *create(unsigned int type, char *id, char *in, void *data)
 {
 
-    struct widget *widget = &widgets[nwidgets];
-    struct list_item *item = &widgetitems[nwidgets];
+    if (nwidgets < MAX_WIDGETS)
+    {
 
-    widget_init(widget, type, id, in, data);
-    list_inititem(item, widget);
-    list_add(&widgetlist, item);
+        struct widget *widget = &widgets[nwidgets];
+        struct list_item *item = &widgetitems[nwidgets];
 
-    nwidgets++;
+        widget_init(widget, type, id, in, data);
+        list_inititem(item, widget);
+        list_add(&widgetlist, item);
 
-    return widget;
+        nwidgets++;
+
+        return widget;
+
+    }
+
+    return 0;
 
 }
 
@@ -118,22 +134,21 @@ void pool_setup(void)
     struct widget *widget;
 
     list_init(&widgetlist);
-    widget_initlayout(&layouts[0], LAYOUT_TYPE_FLOAT);
-    widget_initfill(&fills[0], 0xFF142434);
-    widget_initwindow(&windows[0], "Window 0");
-    widget_initwindow(&windows[1], "Window 1");
-    widget_initimage(&images[0], 0, 0);
-    widget_initbutton(&buttons[0], "Button0");
+    widget_initlayout(&payloads[0].layout, LAYOUT_TYPE_FLOAT);
+    widget_initfill(&payloads[1].fill, 0xFF142434);
+    widget_initwindow(&payloads[2].window, "Window 0");
+    widget_initwindow(&payloads[3].window, "Window 1");
+    widget_initimage(&payloads[4].image, 0, 0);
+    widget_initbutton(&payloads[5].button, "Button0");
 
-    fills[0].color = 0xFF142434;
-    windows[1].focus = 1;
+    payloads[3].window.focus = 1;
 
-    create(WIDGET_TYPE_LAYOUT, "root", "", &layouts[0]);
-    create(WIDGET_TYPE_FILL, "background", "root", &fills[0]);
-    create(WIDGET_TYPE_WINDOW, "window0", "root", &windows[0]);
-    create(WIDGET_TYPE_WINDOW, "window1", "root", &windows[1]);
-    create(WIDGET_TYPE_IMAGE, "mouse", "root", &images[0]);
-    create(WIDGET_TYPE_BUTTON, "button0", "window1", &buttons[0]);
+    create(WIDGET_TYPE_LAYOUT, "root", "", &payloads[0]);
+    create(WIDGET_TYPE_FILL, "background", "root", &payloads[1]);
+    create(WIDGET_TYPE_WINDOW, "window0", "root", &payloads[2]);
+    create(WIDGET_TYPE_WINDOW, "window1", "root", &payloads[3]);
+    create(WIDGET_TYPE_IMAGE, "mouse", "root", &payloads[4]);
+    create(WIDGET_TYPE_BUTTON, "button0", "window1", &payloads[5]);
 
     widget = pool_getwidgetbyid("window0");
     widget->position.x = 200;
