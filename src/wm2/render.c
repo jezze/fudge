@@ -162,12 +162,12 @@ static void blitline(struct render_display *display, unsigned int x0, unsigned i
 
 }
 
-static void blitline2(struct render_display *display, unsigned int color, unsigned int offset, unsigned int count)
+static void blitline2(struct render_display *display, unsigned int color, unsigned int offset, unsigned int count, unsigned int line)
 {
 
     unsigned char *buffer = display->framebuffer;
 
-    buffer += offset * 4;
+    buffer += (display->size.w * line + offset) * 4;
 
     while (count--)
     {
@@ -385,7 +385,7 @@ static unsigned int paintchar(struct render_display *display, struct font *font,
             {
 
                 if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
-                    blitline2(display, color, x + i, 1);
+                    blitline2(display, color, x + i, 1, line);
 
             }
 
@@ -400,7 +400,7 @@ static unsigned int paintchar(struct render_display *display, struct font *font,
             {
 
                 if (data[(i >> 3)] & (0x80 >> (i % 8)))
-                    blitline2(display, color, x + i, 1);
+                    blitline2(display, color, x + i, 1, line);
 
             }
 
@@ -455,7 +455,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
     }
     */
 
-    painttext(display, &fonts[0], textbox->content, 1, widget->position.x, widget->position.x + widget->size.w, 0xFFFFFFFF, line % fonts[0].lineheight, 2);
+    painttext(display, &fonts[0], textbox->content, textbox->length, widget->position.x, widget->position.x + widget->size.w, 0xFFFFFFFF, line % fonts[0].lineheight, 2);
 
 }
 
