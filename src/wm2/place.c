@@ -35,15 +35,15 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int w, 
     struct widget_container *container = widget->data;
     struct list_item *current = 0;
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = w;
-    widget->size.h = h;
-
     switch (container->layout)
     {
 
     case CONTAINER_LAYOUT_FLOAT:
+        widget->position.x = x;
+        widget->position.y = y;
+        widget->size.w = w;
+        widget->size.h = h;
+
         while ((current = pool_nextin(current, widget->id)))
         {
 
@@ -56,9 +56,30 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int w, 
         break;
 
     case CONTAINER_LAYOUT_VERTICAL:
+        widget->position.x = x;
+        widget->position.y = y;
+        widget->size.w = w;
+        widget->size.h = 0;
+
+        while ((current = pool_nextin(current, widget->id)))
+        {
+
+            struct widget *child = current->data;
+
+            place_widget(child, widget->position.x, widget->position.y + widget->size.h, widget->size.w, widget->size.h);
+
+            /* Increate size of parent by child */
+
+        }
+
         break;
 
     case CONTAINER_LAYOUT_GRID:
+        widget->position.x = x;
+        widget->position.y = y;
+        widget->size.w = w;
+        widget->size.h = 0;
+
         break;
 
     }
