@@ -68,7 +68,8 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int w, 
 
             place_widget(child, widget->position.x, widget->position.y + widget->size.h, widget->size.w, widget->size.h);
 
-            /* Increate size of parent by child */
+            /* Replace later */
+            widget->size.h += child->size.h;
 
         }
 
@@ -92,7 +93,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int w, un
     widget->position.x = x;
     widget->position.y = y;
     widget->size.w = w;
-    widget->size.h = h;
+    widget->size.h = 32; /* dynamically change depending on text */
 
 }
 

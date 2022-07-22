@@ -502,21 +502,33 @@ void widgets_setup(void)
 
     widget_initwindow(widget->data, "Window 0", 0);
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "button0", "window0");
+    widget = pool_create(WIDGET_TYPE_CONTAINER, "base0", "window0");
+
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL);
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "button0", "base0");
 
     widget_initbutton(widget->data, "Click Me");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "button1", "base0");
+
+    widget_initbutton(widget->data, "Click Me Too");
 
     widget = pool_create(WIDGET_TYPE_WINDOW, "window1", "root");
 
     widget_initwindow(widget->data, "Window 1", 1);
 
+    widget = pool_create(WIDGET_TYPE_CONTAINER, "base1", "window1");
+
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL);
+
+    widget = pool_create(WIDGET_TYPE_TEXTBOX, "textbox0", "base1");
+
+    widget_inittextbox(widget->data, 30, "Hello World! How are we today?");
+
     widget = pool_create(WIDGET_TYPE_IMAGE, "mouse", "root");
 
     widget_initimage(widget->data, 0, 0);
-
-    widget = pool_create(WIDGET_TYPE_TEXTBOX, "textbox0", "window1");
-
-    widget_inittextbox(widget->data, 30, "Hello World! How are we today?");
 
     widget = pool_getwidgetbyid("window0");
     widget->position.x = 200;
