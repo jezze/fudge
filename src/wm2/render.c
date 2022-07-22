@@ -162,25 +162,6 @@ static void blitline(struct render_display *display, unsigned int x0, unsigned i
 
 }
 
-static void blitline2(struct render_display *display, unsigned int color, unsigned int offset, unsigned int count, unsigned int line)
-{
-
-    unsigned char *buffer = display->framebuffer;
-
-    buffer += (display->size.w * line + offset) * 4;
-
-    while (count--)
-    {
-
-        *buffer++ = 0xFF;
-        *buffer++ = 0xFF;
-        *buffer++ = 0xFF;
-        *buffer++ = 0xFF;
-
-    }
-
-}
-
 static void blitcmap32line(struct render_display *display, struct position *p, void *idata, unsigned int iwidth, unsigned int *cmap, int y)
 {
 
@@ -362,7 +343,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
 }
 
-static unsigned int paintchar(struct render_display *display, struct font *font, char c, unsigned int x, unsigned int color, unsigned int line, unsigned int inverted)
+static unsigned int paintchar(struct render_display *display, struct font *font, char c, unsigned int x, unsigned int color, int y, unsigned int inverted, unsigned int localline)
 {
 
     unsigned short index = getfontindex(font, c);
@@ -371,10 +352,10 @@ static unsigned int paintchar(struct render_display *display, struct font *font,
 
     pcf_readmetricsdata(font->data, index, &metricsdata);
 
-    if (line < metricsdata.ascent + metricsdata.descent)
+    if (localline < metricsdata.ascent + metricsdata.descent)
     {
 
-        unsigned char *data = font->bitmapdata + offset + line * font->bitmapalign;
+        unsigned char *data = font->bitmapdata + offset + localline * font->bitmapalign;
 
         if (inverted)
         {
@@ -385,7 +366,7 @@ static unsigned int paintchar(struct render_display *display, struct font *font,
             {
 
                 if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
-                    blitline2(display, color, x + i, 1, line);
+                    blitline(display, x + i, x + i + 1, color, y);
 
             }
 
@@ -400,7 +381,7 @@ static unsigned int paintchar(struct render_display *display, struct font *font,
             {
 
                 if (data[(i >> 3)] & (0x80 >> (i % 8)))
-                    blitline2(display, color, x + i, 1, line);
+                    blitline(display, x + i, x + i + 1, color, y);
 
             }
 
@@ -412,29 +393,12 @@ static unsigned int paintchar(struct render_display *display, struct font *font,
 
 }
 
-static void painttext(struct render_display *display, struct font *font, char *string, unsigned int length, unsigned int x, unsigned int w, unsigned int color, unsigned int line, unsigned int cursor)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        if (x >= w)
-            break;
-
-        x += paintchar(display, font, string[i], x, color, line, i == cursor);
-
-    }
-
-}
-
-static void painttextbox(struct render_display *display, struct widget *widget, unsigned int line)
+static void painttextbox(struct render_display *display, struct widget *widget, int y)
 {
 
     struct widget_textbox *textbox = widget->data;
     /*
-    unsigned int rowindex = textbox->offset + line / fonts[0].lineheight;
+    unsigned int rowindex = textbox->offset + y / fonts[0].lineheight;
     unsigned int rowtotal = findrowtotal(textbox->content, textbox->length);
     int rowoffset = textbox->scroll;
 
@@ -450,12 +414,29 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         unsigned int rowstart = findrowstart(textbox->content, textbox->length, rowindex + rowoffset);
         unsigned int rowcount = findrowcount(textbox->content, textbox->length, rowstart);
 
-        painttext(display, &fonts[0], textbox->content + rowstart, rowcount - rowstart, widget->position.x, widget->position.x + widget->size.w, 0xFFFFFFFF, line % fonts[0].lineheight, textbox->cursor - rowstart);
+        painttext(display, &fonts[0], textbox->content + rowstart, rowcount - rowstart, widget->position.x, widget->position.x + widget->size.w, 0xFFFFFFFF, y % fonts[0].lineheight, textbox->cursor - rowstart);
 
     }
     */
 
-    painttext(display, &fonts[0], textbox->content, textbox->length, widget->position.x, widget->position.x + widget->size.w, 0xFFFFFFFF, line % fonts[0].lineheight, 2);
+    if (y >= widget->position.y && y < widget->position.y + fonts[0].lineheight)
+    {
+
+        unsigned int x0 = widget->position.x;
+        unsigned int x1 = widget->position.x + widget->size.w;
+        unsigned int i;
+
+        for (i = 0; i < textbox->length; i++)
+        {
+
+            if (x0 >= x1)
+                break;
+
+            x0 += paintchar(display, &fonts[0], textbox->content[i], x0, 0xFFFFFFFF, y, i == 2, y % fonts[0].lineheight);
+
+        }
+
+    }
 
 }
 
