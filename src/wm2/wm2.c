@@ -485,13 +485,65 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+void widgets_setup(void)
+{
+
+    struct widget *widget;
+
+    widget = pool_create(WIDGET_TYPE_CONTAINER, "root", "");
+
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_FLOAT);
+
+    widget = pool_create(WIDGET_TYPE_FILL, "background", "root");
+
+    widget_initfill(widget->data, 0xFF142434);
+
+    widget = pool_create(WIDGET_TYPE_WINDOW, "window0", "root");
+
+    widget_initwindow(widget->data, "Window 0", 0);
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "button0", "window0");
+
+    widget_initbutton(widget->data, "Click Me");
+
+    widget = pool_create(WIDGET_TYPE_WINDOW, "window1", "root");
+
+    widget_initwindow(widget->data, "Window 1", 1);
+
+    widget = pool_create(WIDGET_TYPE_IMAGE, "mouse", "root");
+
+    widget_initimage(widget->data, 0, 0);
+
+    widget = pool_create(WIDGET_TYPE_TEXTBOX, "textbox0", "window1");
+
+    widget_inittextbox(widget->data, 30, "Hello World! How are we today?");
+
+    widget = pool_getwidgetbyid("window0");
+    widget->position.x = 200;
+    widget->position.y = 100;
+    widget->size.w = 800;
+    widget->size.h = 600;
+    widget = pool_getwidgetbyid("window1");
+    widget->position.x = 100;
+    widget->position.y = 80;
+    widget->size.w = 800;
+    widget->size.h = 600;
+    widget = pool_getwidgetbyid("button0");
+    widget->position.x = 100;
+    widget->position.y = 800;
+    widget->size.w = 240;
+    widget->size.h = 60;
+
+    rootwidget = pool_getwidgetbyid("root");
+    mousewidget = pool_getwidgetbyid("mouse");
+
+}
+
 void init(void)
 {
 
     pool_setup();
-
-    rootwidget = pool_getwidgetbyid("root");
-    mousewidget = pool_getwidgetbyid("mouse");
+    widgets_setup();
 
     configuration.displaywidth = 1920;
     configuration.displayheight = 1080;
