@@ -29,10 +29,10 @@ static void placeimage(struct widget *widget, int x, int y, unsigned int w, unsi
 
 }
 
-static void placelayout(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+static void placecontainer(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
-    struct widget_layout *layout = widget->data;
+    struct widget_container *container = widget->data;
     struct list_item *current = 0;
 
     widget->position.x = x;
@@ -40,13 +40,10 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int w, uns
     widget->size.w = w;
     widget->size.h = h;
 
-    switch (layout->type)
+    switch (container->layout)
     {
 
-    case LAYOUT_TYPE_VERTICAL:
-        break;
-
-    case LAYOUT_TYPE_FLOAT:
+    case CONTAINER_LAYOUT_FLOAT:
         while ((current = pool_nextin(current, widget->id)))
         {
 
@@ -56,6 +53,12 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int w, uns
 
         }
 
+        break;
+
+    case CONTAINER_LAYOUT_VERTICAL:
+        break;
+
+    case CONTAINER_LAYOUT_GRID:
         break;
 
     }
@@ -109,8 +112,8 @@ void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned 
 
         break;
 
-    case WIDGET_TYPE_LAYOUT:
-        placelayout(widget, x, y, w, h);
+    case WIDGET_TYPE_CONTAINER:
+        placecontainer(widget, x, y, w, h);
 
         break;
 

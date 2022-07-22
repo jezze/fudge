@@ -37,10 +37,10 @@ void widget_initimage(struct widget_image *image, void *data, void *cmap)
 
 }
 
-void widget_initlayout(struct widget_layout *layout, unsigned int type)
+void widget_initcontainer(struct widget_container *container, unsigned int layout)
 {
 
-    layout->type = type;
+    container->layout = layout;
 
 }
 

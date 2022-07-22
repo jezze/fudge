@@ -11,7 +11,7 @@ union payloads
     struct widget_button button;
     struct widget_fill fill;
     struct widget_image image;
-    struct widget_layout layout;
+    struct widget_container container;
     struct widget_textbox textbox;
     struct widget_window window;
 
@@ -135,14 +135,14 @@ void pool_setup(void)
     struct widget *widget;
 
     list_init(&widgetlist);
-    widget_initlayout(&payloads[0].layout, LAYOUT_TYPE_FLOAT);
+    widget_initcontainer(&payloads[0].container, CONTAINER_LAYOUT_FLOAT);
     widget_initfill(&payloads[1].fill, 0xFF142434);
     widget_initwindow(&payloads[2].window, "Window 0", 0);
     widget_initbutton(&payloads[3].button, "Click Me");
     widget_initwindow(&payloads[4].window, "Window 1", 1);
     widget_initimage(&payloads[5].image, 0, 0);
     widget_inittextbox(&payloads[6].textbox, 30, "Hello World! How are we today?");
-    create(WIDGET_TYPE_LAYOUT, "root", "", &payloads[0]);
+    create(WIDGET_TYPE_CONTAINER, "root", "", &payloads[0]);
     create(WIDGET_TYPE_FILL, "background", "root", &payloads[1]);
     create(WIDGET_TYPE_WINDOW, "window0", "root", &payloads[2]);
     create(WIDGET_TYPE_BUTTON, "button0", "window0", &payloads[3]);
