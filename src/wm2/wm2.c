@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include "util.h"
 #include "widget.h"
 #include "pool.h"
 #include "place.h"
@@ -82,19 +83,6 @@ static unsigned int mousecmap[] = {
     0xFFB05070,
     0xFFF898B8
 };
-
-static int between(int x, int min, int max)
-{
-
-    if (x < min)
-        x = min;
-
-    if (x > max)
-        x = max;
-
-    return x;
-
-}
 
 static void setupvideo(void)
 {
@@ -278,8 +266,8 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousemove *mousemove = mdata;
-    int x = between(state.mouseposition.x + mousemove->relx, 0, display.size.w);
-    int y = between(state.mouseposition.y + mousemove->rely, 0, display.size.h);
+    int x = util_between(state.mouseposition.x + mousemove->relx, 0, display.size.w);
+    int y = util_between(state.mouseposition.y + mousemove->rely, 0, display.size.h);
 
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;

@@ -86,8 +86,8 @@ static struct list_item *finditem(struct widget *widget)
 static void bump(struct list_item *item)
 {
 
-    struct list_item *current = 0;
     struct widget *widget = item->data;
+    struct list_item *current = 0;
 
     list_move(&widgetlist, &widgetlist, item);
 

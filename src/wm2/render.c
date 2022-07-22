@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include "util.h"
 #include "widget.h"
 #include "pool.h"
 #include "render.h"
@@ -52,110 +53,14 @@ static unsigned short getfontindex(struct font *font, unsigned short c)
 
 }
 
-/*
-static unsigned int findrowtotal(char *string, unsigned int count)
-{
-
-    unsigned int i;
-    unsigned int total = 0;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (string[i] == '\n')
-            total++;
-
-    }
-
-    return total;
-
-}
-
-static unsigned int findrowstart(char *string, unsigned int count, unsigned int row)
-{
-
-    unsigned int i;
-
-    if (!row)
-        return 0;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (string[i] == '\n')
-        {
-
-            if (!--row)
-                return i + 1;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int findrowcount(char *string, unsigned int count, unsigned int offset)
-{
-
-    unsigned int i;
-
-    for (i = offset; i < count; i++)
-    {
-
-        if (string[i] == '\n')
-            return i + 1;
-
-    }
-
-    return count;
-
-}
-*/
-
-static int intersects(int y, int y0, int y1)
-{
-
-    return y >= y0 && y < y1;
-
-}
-
-static int min(int a, int b)
-{
-
-    return (a < b) ? a : b;
-
-}
-
-static int max(int a, int b)
-{
-
-    return (a > b) ? a : b;
-
-}
-
-static int between(int x, int min, int max)
-{
-
-    if (x < min)
-        x = min;
-
-    if (x > max)
-        x = max;
-
-    return x;
-
-}
-
 static void blitline(struct render_display *display, unsigned int x0, unsigned int x1, unsigned int color, int y)
 {
 
     unsigned int *buffer = display->framebuffer;
     unsigned int x;
 
-    x0 = between(x0, 0, display->size.w);
-    x1 = between(x1, 0, display->size.w);
+    x0 = util_between(x0, 0, display->size.w);
+    x1 = util_between(x1, 0, display->size.w);
 
     for (x = x0; x < x1; x++)
         buffer[y * display->size.w + x] = color;
@@ -224,8 +129,8 @@ static void paintlinesegments(struct render_display *display, int x0, int x1, un
 
         }
 
-        p0 = max(p0, display->damage.position0.x);
-        p1 = min(p1, display->damage.position1.x);
+        p0 = util_max(p0, display->damage.position0.x);
+        p1 = util_min(p1, display->damage.position1.x);
 
         blitline(display, p0, p1, cmap[p->color], y);
 
@@ -237,8 +142,8 @@ static void paintfill(struct render_display *display, struct widget *widget, int
 {
 
     struct widget_fill *fill = widget->data;
-    int x0 = max(widget->position.x, display->damage.position0.x);
-    int x1 = min(widget->position.x + widget->size.w, display->damage.position1.x);
+    int x0 = util_max(widget->position.x, display->damage.position0.x);
+    int x1 = util_min(widget->position.x + widget->size.w, display->damage.position1.x);
 
     blitline(display, x0, x1, fill->color, y);
 
@@ -587,7 +492,7 @@ static void paintimage(struct render_display *display, struct widget *widget, in
 static void paintwidget(struct render_display *display, struct widget *widget, int y)
 {
 
-    if (intersects(y, widget->position.y, widget->position.y + widget->size.h))
+    if (util_intersects(y, widget->position.y, widget->position.y + widget->size.h))
     {
 
         switch (widget->type)
@@ -627,10 +532,10 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
 void render_damage(struct render_display *display, int x0, int y0, int x1, int y1)
 {
 
-    x0 = between(x0, 0, display->size.w);
-    y0 = between(y0, 0, display->size.h);
-    x1 = between(x1, 0, display->size.w);
-    y1 = between(y1, 0, display->size.h);
+    x0 = util_between(x0, 0, display->size.w);
+    y0 = util_between(y0, 0, display->size.h);
+    x1 = util_between(x1, 0, display->size.w);
+    y1 = util_between(y1, 0, display->size.h);
 
     switch (display->damage.state)
     {
@@ -644,10 +549,10 @@ void render_damage(struct render_display *display, int x0, int y0, int x1, int y
         break;
 
     case DAMAGE_STATE_MADE:
-        display->damage.position0.x = min(x0, display->damage.position0.x);
-        display->damage.position0.y = min(y0, display->damage.position0.y);
-        display->damage.position1.x = max(x1, display->damage.position1.x);
-        display->damage.position1.y = max(y1, display->damage.position1.y);
+        display->damage.position0.x = util_min(x0, display->damage.position0.x);
+        display->damage.position0.y = util_min(y0, display->damage.position0.y);
+        display->damage.position1.x = util_max(x1, display->damage.position1.x);
+        display->damage.position1.y = util_max(y1, display->damage.position1.y);
 
         break;
 
