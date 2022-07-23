@@ -16,16 +16,16 @@ file-centric operating systems.
 Fudge tries to keep as little state as possible inside the kernel itself to
 avoid complexity. There is for instance no out-of-the-box support for dynamic
 memory allocation. Drivers are implemented as loadable kernel modules but they
-are typically only big enough to support only the most basic of functionallity,
+are typically only big enough to support only the most basic of functionality,
 leaving the higher level logic to be done in userspace because there is no best
-solution to every use case so a user can chose to implement things differently
+solution to every use case so a user can choose to implement things differently
 if they wish.
 
 Each program has a channel which it uses to read messages from it's mailbox. For
 each type of message a program can register a callback that will be run when a
 message of a certain type appears. Messages without a registered callback will
 be dropped. By default the system has callbacks for MAIN, TERM and REDIRECT
-messages but these can be overriden. It is possible to poll messages manually
+messages but these can be overridden. It is possible to poll messages manually
 from the channel, either from a certain sender or of a certain type. Anything
 that falls outside of that will be automatically dispatched to the default
 registered callbacks. It is also possible to dispatch a message manually.
