@@ -14,21 +14,6 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int w, uns
 
 }
 
-static void placefill(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
-{
-
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = w;
-    widget->size.h = h;
-
-}
-
-static void placeimage(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
-{
-
-}
-
 static void placecontainer(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
@@ -87,6 +72,21 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int w, 
 
 }
 
+static void placefill(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+{
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = w;
+    widget->size.h = h;
+
+}
+
+static void placeimage(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+{
+
+}
+
 static void placetextbox(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
@@ -124,6 +124,11 @@ void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned 
 
         break;
 
+    case WIDGET_TYPE_CONTAINER:
+        placecontainer(widget, x, y, w, h);
+
+        break;
+
     case WIDGET_TYPE_FILL:
         placefill(widget, x, y, w, h);
 
@@ -131,11 +136,6 @@ void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned 
 
     case WIDGET_TYPE_IMAGE:
         placeimage(widget, x, y, w, h);
-
-        break;
-
-    case WIDGET_TYPE_CONTAINER:
-        placecontainer(widget, x, y, w, h);
 
         break;
 

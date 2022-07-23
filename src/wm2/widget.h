@@ -46,6 +46,13 @@ struct widget_button
 
 };
 
+struct widget_container
+{
+
+    unsigned int layout;
+
+};
+
 struct widget_fill
 {
 
@@ -58,13 +65,6 @@ struct widget_image
 
     void *data;
     void *cmap;
-
-};
-
-struct widget_container
-{
-
-    unsigned int layout;
 
 };
 
@@ -87,10 +87,10 @@ struct widget_window
 
 };
 
-void widget_init(struct widget *widget, unsigned int type, char *id, char *in, void *data);
 void widget_initbutton(struct widget_button *button, char *label);
+void widget_initcontainer(struct widget_container *container, unsigned int layout);
 void widget_initfill(struct widget_fill *fill, unsigned int color);
 void widget_initimage(struct widget_image *image, void *data, void *cmap);
-void widget_initcontainer(struct widget_container *container, unsigned int layout);
 void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content);
 void widget_initwindow(struct widget_window *window, char *title, unsigned int focus);
+void widget_init(struct widget *widget, unsigned int type, char *id, char *in, void *data);
