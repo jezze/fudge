@@ -64,7 +64,6 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
 
 }
 
-
 static void placecontainervertical(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
