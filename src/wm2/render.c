@@ -248,43 +248,32 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
 }
 
-static void paintchar(struct render_display *display, struct font *font, struct pcf_metricsdata *metricsdata, unsigned int color, int y, unsigned int inverted, unsigned int offset, unsigned int localline, int x, int x0, int x1)
+static void paintchar(struct render_display *display, unsigned char *data, unsigned int color, int y, int x, int x0, int x1)
 {
 
-    if (localline < metricsdata->ascent + metricsdata->descent)
+    unsigned int i;
+
+    for (i = x0; i < x1; i++)
     {
 
-        unsigned char *data = font->bitmapdata + offset + localline * font->bitmapalign;
+        if (data[(i >> 3)] & (0x80 >> (i % 8)))
+            blitline(display, x + i, x + i + 1, color, y);
 
-        if (inverted)
-        {
+    }
 
-            unsigned int i;
+}
 
-            for (i = x0; i < x1; i++)
-            {
 
-                if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
-                    blitline(display, x + i, x + i + 1, color, y);
+static void paintcharinverted(struct render_display *display, unsigned char *data, unsigned int color, int y, int x, int x0, int x1)
+{
 
-            }
+    unsigned int i;
 
-        }
+    for (i = x0; i < x1; i++)
+    {
 
-        else
-        {
-
-            unsigned int i;
-
-            for (i = x0; i < x1; i++)
-            {
-
-                if (data[(i >> 3)] & (0x80 >> (i % 8)))
-                    blitline(display, x + i, x + i + 1, color, y);
-
-            }
-
-        }
+        if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
+            blitline(display, x + i, x + i + 1, color, y);
 
     }
 
@@ -294,15 +283,12 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 {
 
     struct widget_textbox *textbox = widget->data;
-    int x0 = util_max(widget->position.x, display->damage.position0.x);
-    int x1 = util_min(widget->position.x + widget->size.w, display->damage.position1.x);
     struct font *font = &fonts[0];
-    unsigned int color = 0xFFFFFFFF;
 
-    if (y >= widget->position.y && y < widget->position.y + font->lineheight)
+    if (util_intersects(y, widget->position.y, widget->position.y + font->lineheight))
     {
 
-        unsigned int localline = (y - widget->position.y) % font->lineheight;
+        unsigned int line = (y - widget->position.y) % font->lineheight;
         int x = widget->position.x;
         unsigned int i;
 
@@ -315,13 +301,26 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 
             pcf_readmetricsdata(font->data, index, &metricsdata);
 
-            if (util_intersects(x, x0, x1) || util_intersects(x + metricsdata.width, x0, x1))
+            if (util_intersects(line, 0, metricsdata.ascent + metricsdata.descent))
             {
 
-                int r0 = util_max(0, x0 - x);
-                int r1 = util_min(x1 - x, metricsdata.width);
+                int x0 = util_max(widget->position.x, display->damage.position0.x);
+                int x1 = util_min(widget->position.x + widget->size.w, display->damage.position1.x);
 
-                paintchar(display, font, &metricsdata, color, y, i == 2, offset, localline, x, r0, r1);
+                if (util_intersects(x, x0, x1) || util_intersects(x + metricsdata.width, x0, x1))
+                {
+
+                    unsigned char *data = font->bitmapdata + offset + line * font->bitmapalign;
+                    unsigned int color = 0xFFFFFFFF;
+                    int r0 = util_max(0, x0 - x);
+                    int r1 = util_min(x1 - x, metricsdata.width);
+
+                    if (i == 2)
+                        paintcharinverted(display, data, color, y, x, r0, r1);
+                    else
+                        paintchar(display, data, color, y, x, r0, r1);
+
+                }
 
             }
 

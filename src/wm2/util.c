@@ -62,10 +62,10 @@ unsigned int util_findrowcount(char *string, unsigned int count, unsigned int of
 
 }
 
-int util_intersects(int y, int y0, int y1)
+int util_intersects(int v, int min, int max)
 {
 
-    return y >= y0 && y < y1;
+    return v >= min && v < max;
 
 }
 
@@ -83,16 +83,16 @@ int util_max(int a, int b)
 
 }
 
-int util_between(int x, int min, int max)
+int util_between(int v, int min, int max)
 {
 
-    if (x < min)
-        x = min;
+    if (v < min)
+        v = min;
 
-    if (x > max)
-        x = max;
+    if (v > max)
+        v = max;
 
-    return x;
+    return v;
 
 }
 
