@@ -266,8 +266,8 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousemove *mousemove = mdata;
-    int x = util_between(state.mouseposition.x + mousemove->relx, 0, display.size.w);
-    int y = util_between(state.mouseposition.y + mousemove->rely, 0, display.size.h);
+    int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.size.w);
+    int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.size.h);
 
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;

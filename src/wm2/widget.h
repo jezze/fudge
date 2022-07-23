@@ -5,8 +5,9 @@
 #define WIDGET_TYPE_TEXTBOX             5
 #define WIDGET_TYPE_WINDOW              6
 #define CONTAINER_LAYOUT_FLOAT          0
-#define CONTAINER_LAYOUT_VERTICAL       1
-#define CONTAINER_LAYOUT_GRID           2
+#define CONTAINER_LAYOUT_HORIZONTAL     1
+#define CONTAINER_LAYOUT_VERTICAL       2
+#define CONTAINER_LAYOUT_GRID           3
 #define WINDOW_MIN_WIDTH                128
 #define WINDOW_MIN_HEIGHT               128
 

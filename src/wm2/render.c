@@ -513,10 +513,10 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
 void render_damage(struct render_display *display, int x0, int y0, int x1, int y1)
 {
 
-    x0 = util_between(x0, 0, display->size.w);
-    y0 = util_between(y0, 0, display->size.h);
-    x1 = util_between(x1, 0, display->size.w);
-    y1 = util_between(y1, 0, display->size.h);
+    x0 = util_clamp(x0, 0, display->size.w);
+    y0 = util_clamp(y0, 0, display->size.h);
+    x1 = util_clamp(x1, 0, display->size.w);
+    y1 = util_clamp(y1, 0, display->size.h);
 
     switch (display->damage.state)
     {

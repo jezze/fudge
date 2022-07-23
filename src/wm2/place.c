@@ -1,8 +1,11 @@
 #include <fudge.h>
 #include <abi.h>
+#include "util.h"
 #include "widget.h"
 #include "pool.h"
 #include "place.h"
+
+#define WINDOWPADDING                   16
 
 static void placebutton(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
@@ -14,56 +17,107 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int w, uns
 
 }
 
+static void placecontainerfloat(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextin(current, widget->id)))
+    {
+
+        struct widget *child = current->data;
+
+        place_widget(child, x, y, w, h);
+
+    }
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = w;
+    widget->size.h = h;
+
+}
+
+static void placecontainerhorizontal(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+{
+
+    struct list_item *current = 0;
+    int cw = 0;
+
+    while ((current = pool_nextin(current, widget->id)))
+    {
+
+        struct widget *child = current->data;
+
+        place_widget(child, x + cw, y, 0, h);
+        child->size.h = util_clamp(child->size.h, 0, h);
+        child->size.w = util_clamp(child->size.w, 0, w - cw);
+
+        cw += child->size.w;
+
+    }
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = util_clamp(cw, 0, w);
+    widget->size.h = h;
+
+}
+
+
+static void placecontainervertical(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+{
+
+    struct list_item *current = 0;
+    int ch = 0;
+
+    while ((current = pool_nextin(current, widget->id)))
+    {
+
+        struct widget *child = current->data;
+
+        place_widget(child, x, y + ch, w, 0);
+        child->size.h = util_clamp(child->size.h, 0, h - ch);
+        child->size.w = util_clamp(child->size.w, 0, w);
+
+        ch += child->size.h;
+
+    }
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = w;
+    widget->size.h = util_clamp(ch, 0, h);
+
+}
+
 static void placecontainer(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
     struct widget_container *container = widget->data;
-    struct list_item *current = 0;
 
     switch (container->layout)
     {
 
     case CONTAINER_LAYOUT_FLOAT:
-        widget->position.x = x;
-        widget->position.y = y;
-        widget->size.w = w;
-        widget->size.h = h;
+        placecontainerfloat(widget, x, y, w, h);
+        
+        break;
 
-        while ((current = pool_nextin(current, widget->id)))
-        {
-
-            struct widget *child = current->data;
-
-            place_widget(child, widget->position.x, widget->position.y, widget->size.w, widget->size.h);
-
-        }
+    case CONTAINER_LAYOUT_HORIZONTAL:
+        placecontainerhorizontal(widget, x, y, w, h);
 
         break;
 
     case CONTAINER_LAYOUT_VERTICAL:
-        widget->position.x = x;
-        widget->position.y = y;
-        widget->size.w = w;
-        widget->size.h = 0;
-
-        while ((current = pool_nextin(current, widget->id)))
-        {
-
-            struct widget *child = current->data;
-
-            place_widget(child, widget->position.x, widget->position.y + widget->size.h, widget->size.w, widget->size.h);
-
-            /* Replace later */
-            widget->size.h += child->size.h;
-
-        }
+        placecontainervertical(widget, x, y, w, h);
 
         break;
 
     case CONTAINER_LAYOUT_GRID:
         widget->position.x = x;
         widget->position.y = y;
-        widget->size.w = w;
+        widget->size.w = 0;
         widget->size.h = 0;
 
         break;
@@ -107,7 +161,7 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int w, uns
 
         struct widget *child = current->data;
 
-        place_widget(child, widget->position.x + 16, widget->position.y + 16 + 40, widget->size.w - 32, widget->size.h - 32);
+        place_widget(child, widget->position.x + WINDOWPADDING, widget->position.y + WINDOWPADDING + 40, widget->size.w - WINDOWPADDING * 2, widget->size.h - WINDOWPADDING * 2 - 40);
 
     }
 
