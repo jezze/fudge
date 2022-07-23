@@ -53,11 +53,11 @@ static unsigned short getfontindex(struct font *font, unsigned short c)
 
 }
 
-static void blitline(struct render_display *display, unsigned int x0, unsigned int x1, unsigned int color, int y)
+static void blitline(struct render_display *display, int x0, int x1, unsigned int color, int y)
 {
 
     unsigned int *buffer = display->framebuffer;
-    unsigned int x;
+    int x;
 
     x0 = util_between(x0, 0, display->size.w);
     x1 = util_between(x1, 0, display->size.w);
@@ -73,7 +73,7 @@ static void blitcmap32line(struct render_display *display, struct position *p, v
     unsigned int *buffer = display->framebuffer;
     unsigned char *data = idata;
     unsigned int w = (p->x + iwidth >= display->size.w) ? display->size.w - p->x : iwidth;
-    unsigned int x;
+    int x;
 
     for (x = 0; x < w; x++)
     {
@@ -248,16 +248,12 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
 }
 
-static unsigned int paintchar(struct render_display *display, struct font *font, char c, unsigned int x, unsigned int color, int y, unsigned int inverted, unsigned int localline)
+static void paintchar(struct render_display *display, struct font *font, struct pcf_metricsdata *metricsdata, unsigned int color, int y, unsigned int inverted, unsigned int offset, unsigned int localline, int x, int x0, int x1)
 {
 
-    unsigned short index = getfontindex(font, c);
-    unsigned int offset = pcf_getbitmapoffset(font->data, index);
-    struct pcf_metricsdata metricsdata;
+    x1 = util_min(x1, metricsdata->width);
 
-    pcf_readmetricsdata(font->data, index, &metricsdata);
-
-    if (localline < metricsdata.ascent + metricsdata.descent)
+    if (localline < metricsdata->ascent + metricsdata->descent)
     {
 
         unsigned char *data = font->bitmapdata + offset + localline * font->bitmapalign;
@@ -267,7 +263,7 @@ static unsigned int paintchar(struct render_display *display, struct font *font,
 
             unsigned int i;
 
-            for (i = 0; i < metricsdata.width; i++)
+            for (i = x0; i < x1; i++)
             {
 
                 if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
@@ -282,7 +278,7 @@ static unsigned int paintchar(struct render_display *display, struct font *font,
 
             unsigned int i;
 
-            for (i = 0; i < metricsdata.width; i++)
+            for (i = x0; i < x1; i++)
             {
 
                 if (data[(i >> 3)] & (0x80 >> (i % 8)))
@@ -294,50 +290,38 @@ static unsigned int paintchar(struct render_display *display, struct font *font,
 
     }
 
-    return metricsdata.width;
-
 }
 
 static void painttextbox(struct render_display *display, struct widget *widget, int y)
 {
 
     struct widget_textbox *textbox = widget->data;
-    /*
-    unsigned int rowindex = textbox->offset + y / fonts[0].lineheight;
-    unsigned int rowtotal = findrowtotal(textbox->content, textbox->length);
-    int rowoffset = textbox->scroll;
+    int x0 = util_max(widget->position.x, display->damage.position0.x);
+    int x1 = util_min(widget->position.x + widget->size.w, display->damage.position1.x);
+    struct font *font = &fonts[0];
+    unsigned int color = 0xFFFFFFFF;
 
-    if (rowoffset < 0)
-        rowoffset = 0;
-
-    if (rowoffset > rowtotal)
-        rowoffset = rowtotal;
-
-    if (rowindex < rowtotal - rowoffset)
+    if (y >= widget->position.y && y < widget->position.y + font->lineheight)
     {
 
-        unsigned int rowstart = findrowstart(textbox->content, textbox->length, rowindex + rowoffset);
-        unsigned int rowcount = findrowcount(textbox->content, textbox->length, rowstart);
-
-        painttext(display, &fonts[0], textbox->content + rowstart, rowcount - rowstart, widget->position.x, widget->position.x + widget->size.w, 0xFFFFFFFF, y % fonts[0].lineheight, textbox->cursor - rowstart);
-
-    }
-    */
-
-    if (y >= widget->position.y && y < widget->position.y + fonts[0].lineheight)
-    {
-
-        unsigned int x0 = widget->position.x;
-        unsigned int x1 = widget->position.x + widget->size.w;
+        unsigned int localline = (y - widget->position.y) % font->lineheight;
+        int x = widget->position.x;
         unsigned int i;
 
         for (i = 0; i < textbox->length; i++)
         {
 
-            if (x0 >= x1)
-                break;
+            unsigned short index = getfontindex(font, textbox->content[i]);
+            unsigned int offset = pcf_getbitmapoffset(font->data, index);
+            struct pcf_metricsdata metricsdata;
 
-            x0 += paintchar(display, &fonts[0], textbox->content[i], x0, 0xFFFFFFFF, y, i == 2, y % fonts[0].lineheight);
+            pcf_readmetricsdata(font->data, index, &metricsdata);
+
+            /* Fix this. x can be less than x0 */
+            if (util_intersects(x, x0, x1))
+                paintchar(display, font, &metricsdata, color, y, i == 2, offset, localline, x, 0, x1 - x);
+
+            x += metricsdata.width;
 
         }
 
