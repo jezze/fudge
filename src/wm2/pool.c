@@ -88,7 +88,7 @@ static void bump(struct list_item *item)
 {
 
     struct widget *widget = item->data;
-    struct list_item *current = 0;
+    struct list_item *current = item->prev;
 
     list_move(&bumplist, &widgetlist, item);
 
