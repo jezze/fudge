@@ -251,8 +251,6 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 static void paintchar(struct render_display *display, struct font *font, struct pcf_metricsdata *metricsdata, unsigned int color, int y, unsigned int inverted, unsigned int offset, unsigned int localline, int x, int x0, int x1)
 {
 
-    x1 = util_min(x1, metricsdata->width);
-
     if (localline < metricsdata->ascent + metricsdata->descent)
     {
 
@@ -317,9 +315,12 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 
             pcf_readmetricsdata(font->data, index, &metricsdata);
 
-            /* Fix this. x can be less than x0 */
-            if (util_intersects(x, x0, x1))
+            if (util_intersects(x, x0, x1) && util_intersects(x + metricsdata.width, x0, x1))
+                paintchar(display, font, &metricsdata, color, y, i == 2, offset, localline, x, 0, metricsdata.width);
+            else if (util_intersects(x, x0, x1))
                 paintchar(display, font, &metricsdata, color, y, i == 2, offset, localline, x, 0, x1 - x);
+            else if (util_intersects(x + metricsdata.width, x0, x1))
+                paintchar(display, font, &metricsdata, color, y, i == 2, offset, localline, x, x0 - x, metricsdata.width);
 
             x += metricsdata.width;
 
