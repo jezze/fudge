@@ -107,7 +107,7 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int w, uns
 
         struct widget *child = current->data;
 
-        place_widget(child, widget->position.x + 16, widget->position.y + 16 + 38, widget->size.w - 24, widget->size.h - 24);
+        place_widget(child, widget->position.x + 16, widget->position.y + 16 + 38, widget->size.w - 32, widget->size.h - 24);
 
     }
 
