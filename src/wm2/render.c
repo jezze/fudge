@@ -315,12 +315,15 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 
             pcf_readmetricsdata(font->data, index, &metricsdata);
 
-            if (util_intersects(x, x0, x1) && util_intersects(x + metricsdata.width, x0, x1))
-                paintchar(display, font, &metricsdata, color, y, i == 2, offset, localline, x, 0, metricsdata.width);
-            else if (util_intersects(x, x0, x1))
-                paintchar(display, font, &metricsdata, color, y, i == 2, offset, localline, x, 0, x1 - x);
-            else if (util_intersects(x + metricsdata.width, x0, x1))
-                paintchar(display, font, &metricsdata, color, y, i == 2, offset, localline, x, x0 - x, metricsdata.width);
+            if (util_intersects(x, x0, x1) || util_intersects(x + metricsdata.width, x0, x1))
+            {
+
+                int r0 = util_max(0, x0 - x);
+                int r1 = util_min(x1 - x, metricsdata.width);
+
+                paintchar(display, font, &metricsdata, color, y, i == 2, offset, localline, x, r0, r1);
+
+            }
 
             x += metricsdata.width;
 
