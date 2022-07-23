@@ -18,6 +18,7 @@ union payloads
 };
 
 static struct list widgetlist;
+static struct list bumplist;
 static struct list_item widgetitems[MAX_WIDGETS];
 static struct widget widgets[MAX_WIDGETS];
 static union payloads payloads[MAX_WIDGETS];
@@ -89,10 +90,18 @@ static void bump(struct list_item *item)
     struct widget *widget = item->data;
     struct list_item *current = 0;
 
-    list_move(&widgetlist, &widgetlist, item);
+    list_move(&bumplist, &widgetlist, item);
 
     while ((current = pool_nextin(current, widget->id)))
+    {
+
+        struct list_item *prev = current->prev;
+
         bump(current);
+
+        current = prev;
+
+    }
 
 }
 
@@ -103,6 +112,9 @@ void pool_bump(struct widget *widget)
 
     if (item)
         bump(item);
+
+    while (bumplist.head)
+        list_move(&widgetlist, &bumplist, bumplist.head);
 
 }
 
@@ -133,6 +145,7 @@ void pool_setup(void)
 {
 
     list_init(&widgetlist);
+    list_init(&bumplist);
 
 }
 
