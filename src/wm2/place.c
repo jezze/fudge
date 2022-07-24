@@ -33,8 +33,8 @@ static void placecontainerfloat(struct widget *widget, int x, int y, unsigned in
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = w;
-    widget->size.h = h;
+    widget->size.w = 0;
+    widget->size.h = 0;
 
 }
 
@@ -42,25 +42,27 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
 {
 
     struct list_item *current = 0;
-    int cw = 0;
+    int offsetw = 0;
+    int maxh = 0;
 
     while ((current = pool_nextin(current, widget->id)))
     {
 
         struct widget *child = current->data;
 
-        place_widget(child, x + cw, y, 0, h);
-        child->size.h = util_clamp(child->size.h, 0, h);
-        child->size.w = util_clamp(child->size.w, 0, w - cw);
+        place_widget(child, x + offsetw, y, w - offsetw, h);
 
-        cw += child->size.w;
+        child->size.w = util_clamp(child->size.w, 0, w - offsetw);
+        child->size.h = util_clamp(child->size.h, 0, h);
+        offsetw += child->size.w;
+        maxh = util_max(maxh, child->size.h);
 
     }
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(cw, 0, w);
-    widget->size.h = h;
+    widget->size.w = util_clamp(offsetw, 0, w);
+    widget->size.h = maxh;
 
 }
 
@@ -68,25 +70,27 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
 {
 
     struct list_item *current = 0;
-    int ch = 0;
+    int offseth = 0;
+    int maxw = 0;
 
     while ((current = pool_nextin(current, widget->id)))
     {
 
         struct widget *child = current->data;
 
-        place_widget(child, x, y + ch, w, 0);
-        child->size.h = util_clamp(child->size.h, 0, h - ch);
-        child->size.w = util_clamp(child->size.w, 0, w);
+        place_widget(child, x, y + offseth, w, h - offseth);
 
-        ch += child->size.h;
+        child->size.w = util_clamp(child->size.w, 0, w);
+        child->size.h = util_clamp(child->size.h, 0, h - offseth);
+        offseth += child->size.h;
+        maxw = util_max(maxw, child->size.w);
 
     }
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = w;
-    widget->size.h = util_clamp(ch, 0, h);
+    widget->size.w = maxw;
+    widget->size.h = util_clamp(offseth, 0, h);
 
 }
 
