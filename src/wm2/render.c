@@ -53,18 +53,18 @@ static unsigned short getfontindex(struct font *font, unsigned short c)
 
 }
 
-static void blitline(struct render_display *display, int x0, int x1, unsigned int color, int y)
+static void blitline(struct render_display *display, unsigned int color, int line, int x0, int x1)
 {
 
     unsigned int *buffer = display->framebuffer;
     int x;
 
     for (x = x0; x < x1; x++)
-        buffer[y * display->size.w + x] = color;
+        buffer[line * display->size.w + x] = color;
 
 }
 
-static void blitcmap32line(struct render_display *display, struct position *p, void *idata, unsigned int iwidth, unsigned int *cmap, int y)
+static void blitcmap32line(struct render_display *display, struct position *p, void *idata, unsigned int iwidth, unsigned int *cmap, int line)
 {
 
     unsigned int *buffer = display->framebuffer;
@@ -75,8 +75,8 @@ static void blitcmap32line(struct render_display *display, struct position *p, v
     for (x = 0; x < w; x++)
     {
 
-        unsigned int soffset = (y * iwidth + x);
-        unsigned int toffset = (p->y * display->size.w + p->x) + (y * display->size.w + x);
+        unsigned int soffset = (line * iwidth + x);
+        unsigned int toffset = (p->y * display->size.w + p->x) + (line * display->size.w + x);
 
         if (data[soffset] != 0xFF)
             buffer[toffset] = cmap[data[soffset]];
@@ -85,7 +85,7 @@ static void blitcmap32line(struct render_display *display, struct position *p, v
 
 }
 
-static void blitchar(struct render_display *display, unsigned char *data, unsigned int color, int y, int x, int x0, int x1)
+static void blitchar(struct render_display *display, unsigned char *data, unsigned int color, int rx, int line, int x0, int x1)
 {
 
     unsigned int i;
@@ -94,14 +94,14 @@ static void blitchar(struct render_display *display, unsigned char *data, unsign
     {
 
         if (data[(i >> 3)] & (0x80 >> (i % 8)))
-            blitline(display, x + i, x + i + 1, color, y);
+            blitline(display, color, line, rx + i, rx + i + 1);
 
     }
 
 }
 
 /*
-static void blitcharcursor(struct render_display *display, unsigned char *data, unsigned int color, int y, int x, int x0, int x1)
+static void blitcharcursor(struct render_display *display, unsigned char *data, unsigned int color, int rx, int line, int x0, int x1)
 {
 
     unsigned int i;
@@ -110,20 +110,20 @@ static void blitcharcursor(struct render_display *display, unsigned char *data, 
     {
 
         if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
-            blitline(display, x + i, x + i + 1, color, y);
+            blitline(display, color, line, rx + i, rx + i + 1);
 
     }
 
 }
 */
 
-static void blittext(struct render_display *display, struct font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int x0, int x1, int y)
+static void blittext(struct render_display *display, struct font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
 {
 
-    if (util_intersects(y, ry, ry + font->lineheight))
+    if (util_intersects(line, ry, ry + font->lineheight))
     {
 
-        unsigned int line = (y - ry) % font->lineheight;
+        unsigned int lline = (line - ry) % font->lineheight;
         unsigned int i;
 
         for (i = 0; i < length; i++)
@@ -135,17 +135,17 @@ static void blittext(struct render_display *display, struct font *font, unsigned
 
             pcf_readmetricsdata(font->data, index, &metricsdata);
 
-            if (util_intersects(line, 0, metricsdata.ascent + metricsdata.descent))
+            if (util_intersects(lline, 0, metricsdata.ascent + metricsdata.descent))
             {
 
                 if (util_intersects(rx, x0, x1) || util_intersects(rx + metricsdata.width, x0, x1))
                 {
 
-                    unsigned char *data = font->bitmapdata + offset + line * font->bitmapalign;
+                    unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
                     int r0 = util_max(0, x0 - rx);
                     int r1 = util_min(x1 - rx, metricsdata.width);
 
-                    blitchar(display, data, color, y, rx, r0, r1);
+                    blitchar(display, data, color, rx, line, r0, r1);
 
                 }
 
@@ -159,7 +159,7 @@ static void blittext(struct render_display *display, struct font *font, unsigned
 
 }
 
-static void blitlinesegments(struct render_display *display, int x0, int x1, unsigned int *cmap, struct linesegment *ls, unsigned int n, int y)
+static void blitlinesegments(struct render_display *display, int x0, int x1, unsigned int *cmap, struct linesegment *ls, unsigned int n, int line)
 {
 
     unsigned int i;
@@ -203,13 +203,13 @@ static void blitlinesegments(struct render_display *display, int x0, int x1, uns
         p0 = util_max(p0, display->damage.position0.x);
         p1 = util_min(p1, display->damage.position1.x);
 
-        blitline(display, p0, p1, cmap[p->color], y);
+        blitline(display, cmap[p->color], line, p0, p1);
 
     }
 
 }
 
-static void paintbutton(struct render_display *display, struct widget *widget, int y, int x0, int x1)
+static void paintbutton(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     static unsigned int buttoncmapnormal[] = {
@@ -252,7 +252,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
     struct widget_button *button = widget->data;
     unsigned int *cmap = (button->focus) ? buttoncmapfocus : buttoncmapnormal;
-    int ly = y - widget->position.y;
+    int ly = line - widget->position.y;
     struct linesegment *segments;
     unsigned int nsegments;
     unsigned int tl = cstring_length(button->label);
@@ -306,34 +306,34 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
     }
 
-    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, y);
-    blittext(display, &fonts[0], 0xFFFFFFFF, button->label, tl, widget->position.x + (widget->size.w / 2) - (tw / 2), widget->position.y + (widget->size.h / 2) - (16 / 2), x0, x1, y);
+    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, line);
+    blittext(display, &fonts[0], 0xFFFFFFFF, button->label, tl, widget->position.x + (widget->size.w / 2) - (tw / 2), widget->position.y + (widget->size.h / 2) - (16 / 2), line, x0, x1);
 
 }
 
-static void paintfill(struct render_display *display, struct widget *widget, int y, int x0, int x1)
+static void paintfill(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     struct widget_fill *fill = widget->data;
 
-    blitline(display, x0, x1, fill->color, y);
+    blitline(display, fill->color, line, x0, x1);
 
 }
 
-static void paintimage(struct render_display *display, struct widget *widget, int y, int x0, int x1)
+static void paintimage(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     struct widget_image *image = widget->data;
 
-    blitcmap32line(display, &widget->position, image->data, widget->size.w, image->cmap, y - widget->position.y);
+    blitcmap32line(display, &widget->position, image->data, widget->size.w, image->cmap, line - widget->position.y);
 
 }
 
-static void painttextbox(struct render_display *display, struct widget *widget, int y, int x0, int x1)
+static void painttextbox(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     struct widget_textbox *textbox = widget->data;
-    unsigned int rownum = (y - widget->position.y) / fonts[0].lineheight;
+    unsigned int rownum = (line - widget->position.y) / fonts[0].lineheight;
     unsigned int rowtotal = util_findrowtotal(textbox->content, textbox->length);
 
     if (rownum < rowtotal)
@@ -342,13 +342,13 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         unsigned int s = util_findrowstart(textbox->content, textbox->length, rownum);
         unsigned int length = util_findrowcount(textbox->content, textbox->length, s);
 
-        blittext(display, &fonts[0], 0xFFFFFFFF, textbox->content + s, length, widget->position.x, widget->position.y + rownum * fonts[0].lineheight, x0, x1, y);
+        blittext(display, &fonts[0], 0xFFFFFFFF, textbox->content + s, length, widget->position.x, widget->position.y + rownum * fonts[0].lineheight, line, x0, x1);
 
     }
 
 }
 
-static void paintwindow(struct render_display *display, struct widget *widget, int y, int x0, int x1)
+static void paintwindow(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
     static unsigned int windowcmapnormal[] = {
         0xFF101010,
@@ -410,7 +410,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
 
     struct widget_window *window = widget->data;
     unsigned int *cmap = (window->focus) ? windowcmapfocus : windowcmapnormal;
-    int ly = y - widget->position.y;
+    int ly = line - widget->position.y;
     struct linesegment *segments;
     unsigned int nsegments;
     unsigned int tl = cstring_length(window->title);
@@ -480,15 +480,15 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
 
     }
 
-    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, y);
-    blittext(display, &fonts[0], 0xFFFFFFFF, window->title, tl, widget->position.x + (widget->size.w / 2) - (tw / 2), widget->position.y + 12, x0, x1, y);
+    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, line);
+    blittext(display, &fonts[0], 0xFFFFFFFF, window->title, tl, widget->position.x + (widget->size.w / 2) - (tw / 2), widget->position.y + 12, line, x0, x1);
 
 }
 
-static void paintwidget(struct render_display *display, struct widget *widget, int y)
+static void paintwidget(struct render_display *display, struct widget *widget, int line)
 {
 
-    if (util_intersects(y, widget->position.y, widget->position.y + widget->size.h))
+    if (util_intersects(line, widget->position.y, widget->position.y + widget->size.h))
     {
 
         int x0 = util_max(widget->position.x, display->damage.position0.x);
@@ -498,27 +498,27 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
         {
 
         case WIDGET_TYPE_BUTTON:
-            paintbutton(display, widget, y, x0, x1);
+            paintbutton(display, widget, line, x0, x1);
 
             break;
 
         case WIDGET_TYPE_FILL:
-            paintfill(display, widget, y, x0, x1);
+            paintfill(display, widget, line, x0, x1);
 
             break;
 
         case WIDGET_TYPE_IMAGE:
-            paintimage(display, widget, y, x0, x1);
+            paintimage(display, widget, line, x0, x1);
 
             break;
 
         case WIDGET_TYPE_TEXTBOX:
-            painttextbox(display, widget, y, x0, x1);
+            painttextbox(display, widget, line, x0, x1);
 
             break;
 
         case WIDGET_TYPE_WINDOW:
-            paintwindow(display, widget, y, x0, x1);
+            paintwindow(display, widget, line, x0, x1);
 
             break;
 
@@ -672,9 +672,9 @@ void render_paint(struct render_display *display, struct widget *rootwidget, str
     if (display->damage.state == DAMAGE_STATE_MADE)
     {
 
-        int y;
+        int line;
 
-        for (y = display->damage.position0.y; y < display->damage.position1.y; y++)
+        for (line = display->damage.position0.y; line < display->damage.position1.y; line++)
         {
 
             struct list_item *current = 0;
@@ -684,7 +684,7 @@ void render_paint(struct render_display *display, struct widget *rootwidget, str
 
                 struct widget *child = current->data;
 
-                paintwidget(display, child, y);
+                paintwidget(display, child, line);
 
             }
 
