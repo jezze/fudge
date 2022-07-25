@@ -403,6 +403,8 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     int ly = y - widget->position.y;
     struct linesegment *segments;
     unsigned int nsegments;
+    unsigned int tl = cstring_length(window->title);
+    unsigned int tw = render_getrowwidth(window->title, tl);
 
     if (ly == 0 || ly == widget->size.h - 1)
     {
@@ -469,7 +471,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     }
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, y);
-    blittext(display, &fonts[0], 0xFFFFFFFF, window->title, cstring_length(window->title), widget->position.x + 16, y, x0, x1, widget->position.y + 12);
+    blittext(display, &fonts[0], 0xFFFFFFFF, window->title, tl, widget->position.x + (widget->size.w / 2) - (tw / 2), y, x0, x1, widget->position.y + 12);
 
 }
 
