@@ -38,13 +38,6 @@ struct linesegment
 
 static struct font fonts[32];
 
-static unsigned short getfontindex(struct font *font, unsigned short c)
-{
-
-    return pcf_getindex(font->data, c);
-
-}
-
 static void blitline(struct render_display *display, unsigned int color, int line, int x0, int x1)
 {
 
@@ -118,7 +111,7 @@ static void blittext(struct render_display *display, struct font *font, unsigned
     for (i = 0; i < length; i++)
     {
 
-        unsigned short index = getfontindex(font, text[i]);
+        unsigned short index = pcf_getindex(font->data, text[i]);
         unsigned int offset = pcf_getbitmapoffset(font->data, index);
         struct pcf_metricsdata metricsdata;
 
@@ -236,6 +229,9 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
         {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
+    static unsigned int colors[1] = {
+        0xFFFFFFFF
+    };
 
     struct widget_button *button = widget->data;
     unsigned int *cmap = (button->focus) ? buttoncmapfocus : buttoncmapnormal;
@@ -299,7 +295,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, line);
 
     if (util_intersects(line, ry, ry + fonts[0].lineheight))
-        blittext(display, &fonts[0], 0xFFFFFFFF, button->label, tl, rx, ry, line, x0, x1);
+        blittext(display, &fonts[0], colors[0], button->label, tl, rx, ry, line, x0, x1);
 
 }
 
@@ -324,6 +320,10 @@ static void paintimage(struct render_display *display, struct widget *widget, in
 static void painttextbox(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
+    static unsigned int colors[1] = {
+        0xFFFFFFFF
+    };
+
     struct widget_textbox *textbox = widget->data;
     unsigned int rownum = (line - widget->position.y) / fonts[0].lineheight;
     unsigned int rowtotal = util_findrowtotal(textbox->content, textbox->length);
@@ -336,7 +336,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         unsigned int rx = widget->position.x;
         unsigned int ry = widget->position.y + rownum * fonts[0].lineheight;
 
-        blittext(display, &fonts[0], 0xFFFFFFFF, textbox->content + s, length, rx, ry, line, x0, x1);
+        blittext(display, &fonts[0], colors[0], textbox->content + s, length, rx, ry, line, x0, x1);
 
     }
 
@@ -400,6 +400,9 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
         {LINESEGMENT_TYPE_RELX1X1, -4, -3, CMAP_INDEX_MAIN_NORMAL},
         {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
+    };
+    static unsigned int colors[1] = {
+        0xFFFFFFFF
     };
 
     struct widget_window *window = widget->data;
@@ -480,7 +483,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, line);
 
     if (util_intersects(line, ry, ry + fonts[0].lineheight))
-        blittext(display, &fonts[0], 0xFFFFFFFF, window->title, tl, rx, ry, line, x0, x1);
+        blittext(display, &fonts[0], colors[0], window->title, tl, rx, ry, line, x0, x1);
 
 }
 
@@ -543,7 +546,7 @@ unsigned int render_getrowwidth(char *text, unsigned int length)
         if (text[i] == '\n')
             break;
 
-        index = getfontindex(font, text[i]);
+        index = pcf_getindex(font->data, text[i]);
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
@@ -571,7 +574,7 @@ unsigned int render_getrowheight(char *text, unsigned int length)
         if (text[i] == '\n')
             break;
 
-        index = getfontindex(font, text[i]);
+        index = pcf_getindex(font->data, text[i]);
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
