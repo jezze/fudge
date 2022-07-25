@@ -6,7 +6,7 @@ unsigned int util_findrowtotal(char *string, unsigned int count)
 {
 
     unsigned int i;
-    unsigned int total = 0;
+    unsigned int total = 1;
 
     for (i = 0; i < count; i++)
     {

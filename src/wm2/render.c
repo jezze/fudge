@@ -333,10 +333,18 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 {
 
     struct widget_textbox *textbox = widget->data;
-    char *text = textbox->content;
-    unsigned int length = util_findrowcount(text, textbox->length, text - textbox->content);
+    unsigned int rownum = (y - widget->position.y) / fonts[0].lineheight;
+    unsigned int rowtotal = util_findrowtotal(textbox->content, textbox->length);
 
-    blittext(display, &fonts[0], 0xFFFFFFFF, text, length, widget->position.x, widget->position.y, x0, x1, y);
+    if (y >= widget->position.y && rownum < rowtotal)
+    {
+
+        unsigned int s = util_findrowstart(textbox->content, textbox->length, rownum);
+        unsigned int length = util_findrowcount(textbox->content, textbox->length, s);
+
+        blittext(display, &fonts[0], 0xFFFFFFFF, textbox->content + s, length, widget->position.x, widget->position.y + rownum * fonts[0].lineheight, x0, x1, y);
+
+    }
 
 }
 
