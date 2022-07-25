@@ -54,7 +54,7 @@ unsigned int util_findrowcount(char *string, unsigned int count, unsigned int of
     {
 
         if (string[i] == '\n')
-            return i + 1;
+            return i;
 
     }
 

@@ -41,14 +41,6 @@ static struct font fonts[32];
 static unsigned short getfontindex(struct font *font, unsigned short c)
 {
 
-    switch (c)
-    {
-
-    case '\n':
-        return pcf_getindex(font->data, ' ');
-
-    }
-
     return pcf_getindex(font->data, c);
 
 }
@@ -120,40 +112,35 @@ static void blitcharcursor(struct render_display *display, unsigned char *data, 
 static void blittext(struct render_display *display, struct font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
 {
 
-    if (util_intersects(line, ry, ry + font->lineheight))
+    unsigned int lline = (line - ry) % font->lineheight;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
     {
 
-        unsigned int lline = (line - ry) % font->lineheight;
-        unsigned int i;
+        unsigned short index = getfontindex(font, text[i]);
+        unsigned int offset = pcf_getbitmapoffset(font->data, index);
+        struct pcf_metricsdata metricsdata;
 
-        for (i = 0; i < length; i++)
+        pcf_readmetricsdata(font->data, index, &metricsdata);
+
+        if (util_intersects(lline, 0, metricsdata.ascent + metricsdata.descent))
         {
 
-            unsigned short index = getfontindex(font, text[i]);
-            unsigned int offset = pcf_getbitmapoffset(font->data, index);
-            struct pcf_metricsdata metricsdata;
-
-            pcf_readmetricsdata(font->data, index, &metricsdata);
-
-            if (util_intersects(lline, 0, metricsdata.ascent + metricsdata.descent))
+            if (util_intersects(rx, x0, x1) || util_intersects(rx + metricsdata.width, x0, x1))
             {
 
-                if (util_intersects(rx, x0, x1) || util_intersects(rx + metricsdata.width, x0, x1))
-                {
+                unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
+                int r0 = util_max(0, x0 - rx);
+                int r1 = util_min(x1 - rx, metricsdata.width);
 
-                    unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
-                    int r0 = util_max(0, x0 - rx);
-                    int r1 = util_min(x1 - rx, metricsdata.width);
-
-                    blitchar(display, data, color, rx, line, r0, r1);
-
-                }
+                blitchar(display, data, color, rx, line, r0, r1);
 
             }
 
-            rx += metricsdata.width;
-
         }
+
+        rx += metricsdata.width;
 
     }
 
@@ -257,6 +244,9 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     unsigned int nsegments;
     unsigned int tl = cstring_length(button->label);
     unsigned int tw = render_getrowwidth(button->label, tl);
+    unsigned int th = render_getrowheight(button->label, tl);
+    unsigned int rx = widget->position.x + (widget->size.w / 2) - (tw / 2);
+    unsigned int ry = widget->position.y + (widget->size.h / 2) - (th / 2);
 
     if (ly == 0 || ly == widget->size.h - 1)
     {
@@ -307,7 +297,9 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     }
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, line);
-    blittext(display, &fonts[0], 0xFFFFFFFF, button->label, tl, widget->position.x + (widget->size.w / 2) - (tw / 2), widget->position.y + (widget->size.h / 2) - (16 / 2), line, x0, x1);
+
+    if (util_intersects(line, ry, ry + fonts[0].lineheight))
+        blittext(display, &fonts[0], 0xFFFFFFFF, button->label, tl, rx, ry, line, x0, x1);
 
 }
 
@@ -341,8 +333,10 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 
         unsigned int s = util_findrowstart(textbox->content, textbox->length, rownum);
         unsigned int length = util_findrowcount(textbox->content, textbox->length, s);
+        unsigned int rx = widget->position.x;
+        unsigned int ry = widget->position.y + rownum * fonts[0].lineheight;
 
-        blittext(display, &fonts[0], 0xFFFFFFFF, textbox->content + s, length, widget->position.x, widget->position.y + rownum * fonts[0].lineheight, line, x0, x1);
+        blittext(display, &fonts[0], 0xFFFFFFFF, textbox->content + s, length, rx, ry, line, x0, x1);
 
     }
 
@@ -415,6 +409,9 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     unsigned int nsegments;
     unsigned int tl = cstring_length(window->title);
     unsigned int tw = render_getrowwidth(window->title, tl);
+    unsigned int th = render_getrowheight(window->title, tl);
+    unsigned int rx = widget->position.x + (widget->size.w / 2) - (tw / 2);
+    unsigned int ry = widget->position.y + 20 - (th / 2);
 
     if (ly == 0 || ly == widget->size.h - 1)
     {
@@ -481,7 +478,9 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     }
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, line);
-    blittext(display, &fonts[0], 0xFFFFFFFF, window->title, tl, widget->position.x + (widget->size.w / 2) - (tw / 2), widget->position.y + 12, line, x0, x1);
+
+    if (util_intersects(line, ry, ry + fonts[0].lineheight))
+        blittext(display, &fonts[0], 0xFFFFFFFF, window->title, tl, rx, ry, line, x0, x1);
 
 }
 
@@ -532,7 +531,7 @@ unsigned int render_getrowwidth(char *text, unsigned int length)
 {
 
     struct font *font = &fonts[0];
-    unsigned int w = 0;
+    unsigned int cw = 0;
     unsigned int i;
 
     for (i = 0; i < length; i++)
@@ -548,18 +547,39 @@ unsigned int render_getrowwidth(char *text, unsigned int length)
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
-        w += metricsdata.width;
+        cw += metricsdata.width;
 
     }
 
-    return w;
+    return cw;
 
 }
 
 unsigned int render_getrowheight(char *text, unsigned int length)
 {
 
-    return fonts[0].lineheight;
+    struct font *font = &fonts[0];
+    unsigned int ch = 0;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        struct pcf_metricsdata metricsdata;
+        unsigned short index;
+
+        if (text[i] == '\n')
+            break;
+
+        index = getfontindex(font, text[i]);
+
+        pcf_readmetricsdata(font->data, index, &metricsdata);
+
+        ch = util_max(ch, metricsdata.ascent + metricsdata.descent);
+
+    }
+
+    return ch;
 
 }
 
@@ -593,7 +613,7 @@ unsigned int render_gettextwidth(char *text, unsigned int length)
 
 }
 
-unsigned int render_gettextheight(char *text, unsigned int length)
+unsigned int render_gettextheight(char *text, unsigned int length, unsigned int lineheight)
 {
 
     unsigned int hlast = 0;
@@ -607,7 +627,7 @@ unsigned int render_gettextheight(char *text, unsigned int length)
         if (text[i] == '\n')
         {
 
-            unsigned int h = render_getrowheight(text + s, length - s);
+            unsigned int h = (lineheight) ? fonts[0].lineheight : render_getrowheight(text + s, length - s);
 
             ch += h;
             s = i + 1;
