@@ -162,38 +162,6 @@ static struct widget *getfocusedwindow(void)
 
 }
 
-static void setfocusedwindow(struct widget *widget)
-{
-
-    struct list_item *current = 0;
-
-    while ((current = pool_next(current)))
-    {
- 
-        struct widget *widget = current->data;
-
-        if (widget->type == WIDGET_TYPE_WINDOW)
-        {
-
-            struct widget_window *window = widget->data;
-
-            window->focus = 0;
-
-        }
-
-    }
-
-    if (widget)
-    {
-
-        struct widget_window *window = widget->data;
-
-        window->focus = 1;
-
-    }
-
-}
-
 static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned int type)
 {
 
@@ -330,22 +298,33 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
     struct event_mousepress *mousepress = mdata;
     struct widget *clickedwidget = getwidgetat(rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
     struct widget *clickedwindow = getwidgetat(rootwidget, state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
+    struct widget *focusedwindow;
 
     switch (mousepress->button)
     {
 
     case 1:
         state.mousebuttonleft = 1;
+        focusedwindow = getfocusedwindow();
+
+        if (focusedwindow)
+        {
+
+            struct widget_window *window = focusedwindow->data;
+
+            window->focus = 0;
+
+            damage(focusedwindow);
+
+        }
 
         if (clickedwindow)
         {
 
-            struct widget *focusedwindow = getfocusedwindow();
+            struct widget_window *window = clickedwindow->data;
 
-            if (focusedwindow)
-                damage(focusedwindow);
+            window->focus = 1;
 
-            setfocusedwindow(clickedwindow);
             pool_bump(clickedwindow);
             pool_bump(mousewidget);
             damage(clickedwindow);
@@ -355,6 +334,8 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
         if (clickedwidget)
         {
+
+            /* Send event */
 
         }
 
