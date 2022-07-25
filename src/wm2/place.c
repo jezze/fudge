@@ -123,14 +123,6 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int w, 
 
         break;
 
-    case CONTAINER_LAYOUT_GRID:
-        widget->position.x = x;
-        widget->position.y = y;
-        widget->size.w = 0;
-        widget->size.h = 0;
-
-        break;
-
     }
 
 }
@@ -145,8 +137,48 @@ static void placefill(struct widget *widget, int x, int y, unsigned int w, unsig
 
 }
 
+static void placegrid(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+{
+
+    struct list_item *current = 0;
+    int offsetw = 0;
+    int maxh = 0;
+
+    while ((current = pool_nextin(current, widget->id)))
+    {
+
+        struct widget *child = current->data;
+
+        place_widget(child, x + offsetw, y, w - offsetw, h);
+
+        child->size.w = util_clamp(child->size.w, 0, w - offsetw);
+        child->size.h = util_clamp(child->size.h, 0, h);
+        offsetw += child->size.w + WINDOWPADDING;
+        maxh = util_max(maxh, child->size.h);
+
+    }
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = util_clamp(offsetw, 0, w);
+    widget->size.h = maxh;
+
+}
+
 static void placeimage(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
+
+}
+
+static void placetext(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+{
+
+    struct widget_text *text = widget->data;
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = render_gettextwidth(text->content, text->length);
+    widget->size.h = render_gettextheight(text->content, text->length, 1);
 
 }
 
@@ -199,8 +231,18 @@ void place_widget(struct widget *widget, int x, int y, unsigned int w, unsigned 
 
         break;
 
+    case WIDGET_TYPE_GRID:
+        placegrid(widget, x, y, w, h);
+
+        break;
+
     case WIDGET_TYPE_IMAGE:
         placeimage(widget, x, y, w, h);
+
+        break;
+
+    case WIDGET_TYPE_TEXT:
+        placetext(widget, x, y, w, h);
 
         break;
 

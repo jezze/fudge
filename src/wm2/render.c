@@ -331,6 +331,31 @@ static void paintimage(struct render_display *display, struct widget *widget, in
 
 }
 
+static void painttext(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+{
+
+    static unsigned int cmap[1] = {
+        0xFFFFFFFF
+    };
+
+    struct widget_text *text = widget->data;
+    unsigned int rownum = (line - widget->position.y) / fonts[0].lineheight;
+    unsigned int rowtotal = util_findrowtotal(text->content, text->length);
+
+    if (rownum < rowtotal)
+    {
+
+        unsigned int s = util_findrowstart(text->content, text->length, rownum);
+        unsigned int length = util_findrowcount(text->content, text->length, s);
+        unsigned int rx = widget->position.x;
+        unsigned int ry = widget->position.y + rownum * fonts[0].lineheight;
+
+        blittext(display, &fonts[0], cmap[0], text->content + s, length, rx, ry, line, x0, x1);
+
+    }
+
+}
+
 static void painttextbox(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
@@ -471,6 +496,11 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
 
         case WIDGET_TYPE_IMAGE:
             paintimage(display, widget, line, x0, x1);
+
+            break;
+
+        case WIDGET_TYPE_TEXT:
+            painttext(display, widget, line, x0, x1);
 
             break;
 

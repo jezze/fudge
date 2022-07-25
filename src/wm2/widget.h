@@ -1,13 +1,14 @@
 #define WIDGET_TYPE_BUTTON              1
 #define WIDGET_TYPE_FILL                2
-#define WIDGET_TYPE_IMAGE               3
-#define WIDGET_TYPE_CONTAINER           4
-#define WIDGET_TYPE_TEXTBOX             5
-#define WIDGET_TYPE_WINDOW              6
+#define WIDGET_TYPE_GRID                3
+#define WIDGET_TYPE_IMAGE               4
+#define WIDGET_TYPE_CONTAINER           5
+#define WIDGET_TYPE_TEXT                6
+#define WIDGET_TYPE_TEXTBOX             7
+#define WIDGET_TYPE_WINDOW              8
 #define CONTAINER_LAYOUT_FLOAT          0
 #define CONTAINER_LAYOUT_HORIZONTAL     1
 #define CONTAINER_LAYOUT_VERTICAL       2
-#define CONTAINER_LAYOUT_GRID           3
 #define WINDOW_MIN_WIDTH                128
 #define WINDOW_MIN_HEIGHT               128
 
@@ -61,6 +62,13 @@ struct widget_fill
 
 };
 
+struct widget_grid
+{
+
+    unsigned int columns;
+
+};
+
 struct widget_image
 {
 
@@ -69,14 +77,22 @@ struct widget_image
 
 };
 
-struct widget_textbox
+struct widget_text
 {
 
     unsigned int length;
-    unsigned int cursor;
-    unsigned int offset;
     int scroll;
     char *content;
+
+};
+
+struct widget_textbox
+{
+
+    char *content;
+    unsigned int length;
+    int scroll;
+    unsigned int cursor;
 
 };
 
@@ -91,7 +107,9 @@ struct widget_window
 void widget_initbutton(struct widget_button *button, char *label);
 void widget_initcontainer(struct widget_container *container, unsigned int layout);
 void widget_initfill(struct widget_fill *fill, unsigned int color);
+void widget_initgrid(struct widget_grid *grid, unsigned int columns);
 void widget_initimage(struct widget_image *image, void *data, void *cmap);
+void widget_inittext(struct widget_text *text, unsigned int length, char *content);
 void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content);
 void widget_initwindow(struct widget_window *window, char *title, unsigned int focus);
 void widget_init(struct widget *widget, unsigned int type, char *id, char *in, void *data);

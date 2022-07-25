@@ -479,9 +479,9 @@ void widgets_setup(void)
 
     widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL);
 
-    widget = pool_create(WIDGET_TYPE_TEXTBOX, "textbox0", "base1");
+    widget = pool_create(WIDGET_TYPE_TEXT, "textbox0", "base1");
 
-    widget_inittextbox(widget->data, 30, "Hello World!\nHow are we today?");
+    widget_inittext(widget->data, 30, "Hello World!\nHow are we today?");
 
     widget = pool_create(WIDGET_TYPE_TEXTBOX, "textbox1", "base1");
 
