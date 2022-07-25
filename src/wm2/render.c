@@ -192,49 +192,48 @@ static void blitlinesegments(struct render_display *display, int x0, int x1, uns
 static void paintbutton(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
-    static unsigned int buttoncmapnormal[] = {
+    static unsigned int cmapnormal[] = {
         0xFF101010,
         0xFF687888,
         0xFF485868,
-        0xFF182838
+        0xFF182838,
+        0xFFFFFFFF
     };
-    static unsigned int buttoncmapfocus[] = {
+    static unsigned int cmapfocus[] = {
         0xFF101010,
         0xFF48C888,
         0xFF28A868,
-        0xFF182838
+        0xFF182838,
+        0xFFFFFFFF
     };
-    static struct linesegment buttonborder0[1] = {
+    static struct linesegment border0[1] = {
         {LINESEGMENT_TYPE_RELX0X1, 1, -1, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment buttonborder1[1] = {
+    static struct linesegment border1[1] = {
         {LINESEGMENT_TYPE_RELX0X1, 0, 0, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment buttonborder2[3] = {
+    static struct linesegment border2[3] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 3, CMAP_INDEX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -3, 0, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment buttonborder3[5] = {
+    static struct linesegment border3[5] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 2, 2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX0X1, 4, -4, CMAP_INDEX_MAIN_NORMAL},
         {LINESEGMENT_TYPE_RELX1X1, -4, -2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment buttonborderlabel[5] = {
+    static struct linesegment borderlabel[5] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_INDEX_MAIN_NORMAL},
         {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
-    static unsigned int colors[1] = {
-        0xFFFFFFFF
-    };
 
     struct widget_button *button = widget->data;
-    unsigned int *cmap = (button->focus) ? buttoncmapfocus : buttoncmapnormal;
+    unsigned int *cmap = (button->focus) ? cmapfocus : cmapnormal;
     int ly = line - widget->position.y;
     struct linesegment *segments;
     unsigned int nsegments;
@@ -247,7 +246,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     if (ly == 0 || ly == widget->size.h - 1)
     {
 
-        segments = buttonborder0;
+        segments = border0;
         nsegments = 1;
 
     }
@@ -255,7 +254,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     else if (ly == 1 || ly == widget->size.h - 2)
     {
 
-        segments = buttonborder1;
+        segments = border1;
         nsegments = 1;
 
     }
@@ -263,7 +262,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     else if (ly == 2 || ly == widget->size.h - 3)
     {
 
-        segments = buttonborder2;
+        segments = border2;
         nsegments = 3;
 
     }
@@ -271,7 +270,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     else if (ly == 3 || ly == widget->size.h - 4)
     {
 
-        segments = buttonborder3;
+        segments = border3;
         nsegments = 5;
 
     }
@@ -279,7 +278,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     else if (ly > 3 && ly < widget->size.h - 4)
     {
 
-        segments = buttonborderlabel;
+        segments = borderlabel;
         nsegments = 5;
 
     }
@@ -295,7 +294,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, line);
 
     if (util_intersects(line, ry, ry + fonts[0].lineheight))
-        blittext(display, &fonts[0], colors[0], button->label, tl, rx, ry, line, x0, x1);
+        blittext(display, &fonts[0], cmap[4], button->label, tl, rx, ry, line, x0, x1);
 
 }
 
@@ -320,7 +319,7 @@ static void paintimage(struct render_display *display, struct widget *widget, in
 static void painttextbox(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
-    static unsigned int colors[1] = {
+    static unsigned int cmap[1] = {
         0xFFFFFFFF
     };
 
@@ -336,7 +335,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         unsigned int rx = widget->position.x;
         unsigned int ry = widget->position.y + rownum * fonts[0].lineheight;
 
-        blittext(display, &fonts[0], colors[0], textbox->content + s, length, rx, ry, line, x0, x1);
+        blittext(display, &fonts[0], cmap[0], textbox->content + s, length, rx, ry, line, x0, x1);
 
     }
 
@@ -344,44 +343,46 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 
 static void paintwindow(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
-    static unsigned int windowcmapnormal[] = {
+    static unsigned int cmapnormal[] = {
         0xFF101010,
         0xFF687888,
         0xFF485868,
-        0xFF182838
+        0xFF182838,
+        0xFFFFFFFF
     };
-    static unsigned int windowcmapfocus[] = {
+    static unsigned int cmapfocus[] = {
         0xFF101010,
         0xFF48C888,
         0xFF28A868,
-        0xFF182838
+        0xFF182838,
+        0xFFFFFFFF
     };
-    static struct linesegment windowborder0[1] = {
+    static struct linesegment border0[1] = {
         {LINESEGMENT_TYPE_RELX0X1, 1, -1, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment windowborder1[1] = {
+    static struct linesegment border1[1] = {
         {LINESEGMENT_TYPE_RELX0X1, 0, 0, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment windowborder2[3] = {
+    static struct linesegment border2[3] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 3, CMAP_INDEX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -3, 0, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment windowborder3[5] = {
+    static struct linesegment border3[5] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 2, 2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX0X1, 4, -4, CMAP_INDEX_MAIN_NORMAL},
         {LINESEGMENT_TYPE_RELX1X1, -4, -2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment windowbordertitle[5] = {
+    static struct linesegment bordertitle[5] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_INDEX_MAIN_NORMAL},
         {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment windowborderspacing[7] = {
+    static struct linesegment borderspacing[7] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX0X0, 3, 4, CMAP_INDEX_MAIN_NORMAL},
@@ -390,7 +391,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
         {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
-    static struct linesegment windowborderarea[9] = {
+    static struct linesegment borderarea[9] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_INDEX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX0X0, 3, 4, CMAP_INDEX_MAIN_NORMAL},
@@ -401,12 +402,9 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
         {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
-    static unsigned int colors[1] = {
-        0xFFFFFFFF
-    };
 
     struct widget_window *window = widget->data;
-    unsigned int *cmap = (window->focus) ? windowcmapfocus : windowcmapnormal;
+    unsigned int *cmap = (window->focus) ? cmapfocus : cmapnormal;
     int ly = line - widget->position.y;
     struct linesegment *segments;
     unsigned int nsegments;
@@ -419,7 +417,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     if (ly == 0 || ly == widget->size.h - 1)
     {
 
-        segments = windowborder0;
+        segments = border0;
         nsegments = 1;
 
     }
@@ -427,7 +425,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     else if (ly == 1 || ly == widget->size.h - 2)
     {
 
-        segments = windowborder1;
+        segments = border1;
         nsegments = 1;
 
     }
@@ -435,7 +433,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     else if (ly == 2 || ly == widget->size.h - 3)
     {
 
-        segments = windowborder2;
+        segments = border2;
         nsegments = 3;
 
     }
@@ -443,7 +441,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     else if (ly == 3 || ly == widget->size.h - 4)
     {
 
-        segments = windowborder3;
+        segments = border3;
         nsegments = 5;
 
     }
@@ -451,7 +449,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     else if (ly >= 4 && ly < 40)
     {
 
-        segments = windowbordertitle;
+        segments = bordertitle;
         nsegments = 5;
 
     }
@@ -459,7 +457,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     else if (ly == 40)
     {
 
-        segments = windowborderspacing;
+        segments = borderspacing;
         nsegments = 7;
 
     }
@@ -467,7 +465,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     else if (ly > 40 && ly < widget->size.h - 4)
     {
 
-        segments = windowborderarea;
+        segments = borderarea;
         nsegments = 9;
 
     }
@@ -483,7 +481,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, line);
 
     if (util_intersects(line, ry, ry + fonts[0].lineheight))
-        blittext(display, &fonts[0], colors[0], window->title, tl, rx, ry, line, x0, x1);
+        blittext(display, &fonts[0], cmap[4], window->title, tl, rx, ry, line, x0, x1);
 
 }
 
