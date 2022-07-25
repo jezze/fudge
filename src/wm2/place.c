@@ -4,6 +4,7 @@
 #include "widget.h"
 #include "pool.h"
 #include "place.h"
+#include "render.h"
 
 #define WINDOWPADDING                   16
 
@@ -147,10 +148,12 @@ static void placeimage(struct widget *widget, int x, int y, unsigned int w, unsi
 static void placetextbox(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
+    struct widget_textbox *textbox = widget->data;
+
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = w;
-    widget->size.h = 32; /* dynamically change depending on text */
+    widget->size.w = render_gettextwidth(textbox->content, textbox->length);
+    widget->size.h = render_gettextheight(textbox->content, textbox->length);
 
 }
 

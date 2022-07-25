@@ -117,7 +117,7 @@ static void blitcharcursor(struct render_display *display, unsigned char *data, 
 }
 */
 
-static void blittext(struct render_display *display, struct font *font, unsigned int color, char *string, unsigned int length, int x, int y, int x0, int x1, int y0)
+static void blittext(struct render_display *display, struct font *font, unsigned int color, char *text, unsigned int length, int x, int y, int x0, int x1, int y0)
 {
 
     if (util_intersects(y, y0, y0 + font->lineheight))
@@ -129,7 +129,7 @@ static void blittext(struct render_display *display, struct font *font, unsigned
         for (i = 0; i < length; i++)
         {
 
-            unsigned short index = getfontindex(font, string[i]);
+            unsigned short index = getfontindex(font, text[i]);
             unsigned int offset = pcf_getbitmapoffset(font->data, index);
             struct pcf_metricsdata metricsdata;
 
@@ -511,6 +511,101 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
         }
 
     }
+
+}
+
+unsigned int render_getrowwidth(char *text, unsigned int length)
+{
+
+    struct font *font = &fonts[0];
+    unsigned int w = 0;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        struct pcf_metricsdata metricsdata;
+        unsigned short index;
+
+        if (text[i] == '\n')
+            break;
+
+        index = getfontindex(font, text[i]);
+
+        pcf_readmetricsdata(font->data, index, &metricsdata);
+
+        w += metricsdata.width;
+
+    }
+
+    return w;
+
+}
+
+unsigned int render_getrowheight(char *text, unsigned int length)
+{
+
+    return fonts[0].lineheight;
+
+}
+
+unsigned int render_gettextwidth(char *text, unsigned int length)
+{
+
+    unsigned int wlast = 0;
+    unsigned int cw = 0;
+    unsigned int s = 0;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (text[i] == '\n')
+        {
+
+            unsigned int w = render_getrowwidth(text + s, length - s);
+
+            cw = util_max(cw, w);
+            s = i + 1;
+
+        }
+
+    }
+
+    if (length - s > 0)
+        wlast = render_getrowwidth(text + s, length - s);
+
+    return util_max(cw, wlast);
+
+}
+
+unsigned int render_gettextheight(char *text, unsigned int length)
+{
+
+    unsigned int hlast = 0;
+    unsigned int ch = 0;
+    unsigned int s = 0;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (text[i] == '\n')
+        {
+
+            unsigned int h = render_getrowheight(text + s, length - s);
+
+            ch += h;
+            s = i + 1;
+
+        }
+
+    }
+
+    if (length - s > 0)
+        hlast = render_getrowheight(text + s, length - s);
+
+    return ch + hlast;
 
 }
 
