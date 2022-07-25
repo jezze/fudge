@@ -336,7 +336,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
     unsigned int rownum = (y - widget->position.y) / fonts[0].lineheight;
     unsigned int rowtotal = util_findrowtotal(textbox->content, textbox->length);
 
-    if (y >= widget->position.y && rownum < rowtotal)
+    if (rownum < rowtotal)
     {
 
         unsigned int s = util_findrowstart(textbox->content, textbox->length, rownum);
