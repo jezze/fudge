@@ -512,7 +512,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_TEXTBOX, "textbox0", "base1");
 
-    widget_inittextbox(widget->data, 30, "Hello World! How are we today?");
+    widget_inittextbox(widget->data, 30, "Hello World!\nHow are we today?");
 
     widget = pool_create(WIDGET_TYPE_IMAGE, "mouse", "root");
 

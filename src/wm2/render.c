@@ -331,8 +331,10 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 {
 
     struct widget_textbox *textbox = widget->data;
+    char *text = textbox->content;
+    unsigned int length = util_findrowcount(text, textbox->length, text - textbox->content);
 
-    blittext(display, &fonts[0], 0xFFFFFFFF, textbox->content, textbox->length, widget->position.x, y, x0, x1, widget->position.y);
+    blittext(display, &fonts[0], 0xFFFFFFFF, text, length, widget->position.x, y, x0, x1, widget->position.y);
 
 }
 
