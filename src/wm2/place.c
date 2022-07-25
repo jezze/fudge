@@ -158,7 +158,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int w, un
     widget->position.x = x;
     widget->position.y = y;
     widget->size.w = render_gettextwidth(textbox->content, textbox->length);
-    widget->size.h = 400;
+    widget->size.h = render_gettextheight(textbox->content, textbox->length);
 
 }
 
