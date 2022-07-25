@@ -270,17 +270,8 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
             if (state.mousebuttonright)
             {
 
-                int w = (int)(widget->size.w) + state.mousemovement.x;
-                int h = (int)(widget->size.h) + state.mousemovement.y;
-
-                if (w < WINDOW_MIN_HEIGHT)
-                    w = WINDOW_MIN_WIDTH;
-
-                if (h < WINDOW_MIN_HEIGHT)
-                    h = WINDOW_MIN_HEIGHT;
-
-                widget->size.w = w;
-                widget->size.h = h;
+                widget->size.w = util_max((int)(widget->size.w) + state.mousemovement.x, WINDOW_MIN_WIDTH);
+                widget->size.h = util_max((int)(widget->size.h) + state.mousemovement.y, WINDOW_MIN_HEIGHT);
 
             }
 
