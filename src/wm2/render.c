@@ -139,7 +139,6 @@ static void blitchar(struct render_display *display, unsigned char *data, unsign
 
 }
 
-/*
 static void blitcharcursor(struct render_display *display, unsigned char *data, unsigned int color, int rx, int line, int x0, int x1)
 {
 
@@ -154,7 +153,6 @@ static void blitcharcursor(struct render_display *display, unsigned char *data, 
     }
 
 }
-*/
 
 static void blittext(struct render_display *display, struct font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
 {
@@ -182,6 +180,46 @@ static void blittext(struct render_display *display, struct font *font, unsigned
                 int r1 = util_min(x1 - rx, metricsdata.width);
 
                 blitchar(display, data, color, rx, line, r0, r1);
+
+            }
+
+        }
+
+        rx += metricsdata.width;
+
+    }
+
+}
+
+static void blittextcursor(struct render_display *display, struct font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1, int cursor)
+{
+
+    unsigned int lline = (line - ry) % font->lineheight;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        unsigned short index = pcf_getindex(font->data, text[i]);
+        unsigned int offset = pcf_getbitmapoffset(font->data, index);
+        struct pcf_metricsdata metricsdata;
+
+        pcf_readmetricsdata(font->data, index, &metricsdata);
+
+        if (util_intersects(lline, 0, metricsdata.ascent + metricsdata.descent))
+        {
+
+            if (util_intersects(rx, x0, x1) || util_intersects(rx + metricsdata.width, x0, x1))
+            {
+
+                unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
+                int r0 = util_max(0, x0 - rx);
+                int r1 = util_min(x1 - rx, metricsdata.width);
+
+                if (i == cursor)
+                    blitcharcursor(display, data, color, rx, line, r0, r1);
+                else
+                    blitchar(display, data, color, rx, line, r0, r1);
 
             }
 
@@ -375,7 +413,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         unsigned int rx = widget->position.x;
         unsigned int ry = widget->position.y + rownum * fonts[0].lineheight;
 
-        blittext(display, &fonts[0], cmap[0], textbox->content + s, length, rx, ry, line, x0, x1);
+        blittextcursor(display, &fonts[0], cmap[0], textbox->content + s, length, rx, ry, line, x0, x1, textbox->cursor);
 
     }
 
