@@ -60,7 +60,7 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
 
         child->size.w = util_clamp(child->size.w, 0, w - offsetw);
         child->size.h = util_clamp(child->size.h, 0, h);
-        offsetw += child->size.w;
+        offsetw += child->size.w + WINDOWPADDING;
         maxh = util_max(maxh, child->size.h);
 
     }
@@ -88,7 +88,7 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
 
         child->size.w = util_clamp(child->size.w, 0, w);
         child->size.h = util_clamp(child->size.h, 0, h - offseth);
-        offseth += child->size.h;
+        offseth += child->size.h + WINDOWPADDING;
         maxw = util_max(maxw, child->size.w);
 
     }

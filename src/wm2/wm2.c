@@ -483,6 +483,10 @@ void widgets_setup(void)
 
     widget_inittextbox(widget->data, 30, "Hello World!\nHow are we today?");
 
+    widget = pool_create(WIDGET_TYPE_TEXTBOX, "textbox1", "base1");
+
+    widget_inittextbox(widget->data, 25, "I am very good thank you!");
+
     widget = pool_create(WIDGET_TYPE_IMAGE, "mouse", "root");
 
     widget_initimage(widget->data, 0, 0);
