@@ -303,6 +303,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
             window->focus = 0;
 
             damage(focusedwindow);
+            damage(mousewidget);
 
         }
 
