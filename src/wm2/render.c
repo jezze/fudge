@@ -14,6 +14,9 @@
 #define LINESEGMENT_TYPE_RELX0X0        1
 #define LINESEGMENT_TYPE_RELX0X1        2
 #define LINESEGMENT_TYPE_RELX1X1        3
+#define ROWSEGMENT_TYPE_RELY0Y0         1
+#define ROWSEGMENT_TYPE_RELY0Y1         2
+#define ROWSEGMENT_TYPE_RELY1Y1         3
 
 struct font
 {
@@ -36,7 +39,58 @@ struct linesegment
 
 };
 
+struct rowsegment
+{
+
+    unsigned int type;
+    int p0;
+    int p1;
+    struct linesegment *segment;
+    unsigned int numlines;
+
+};
+
 static struct font fonts[32];
+
+static struct rowsegment *findrowsegment(struct widget *widget, struct rowsegment *rowsegments, unsigned int length, int line)
+{
+
+    int lline = line - widget->position.y;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        struct rowsegment *current = &rowsegments[i];
+
+        switch (current->type)
+        {
+
+        case ROWSEGMENT_TYPE_RELY0Y0:
+            if (util_intersects(lline, current->p0, current->p1))
+                return current;
+
+            break;
+
+        case ROWSEGMENT_TYPE_RELY0Y1:
+            if (util_intersects(lline, current->p0, widget->size.h + current->p1))
+                return current;
+
+            break;
+
+        case ROWSEGMENT_TYPE_RELY1Y1:
+            if (util_intersects(lline, widget->size.h + current->p0, widget->size.h + current->p1))
+                return current;
+
+            break;
+
+        }
+
+    }
+
+    return 0;
+
+}
 
 static void blitline(struct render_display *display, unsigned int color, int line, int x0, int x1)
 {
@@ -231,67 +285,28 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
         {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
+    static struct rowsegment rows[9] = {
+        {ROWSEGMENT_TYPE_RELY0Y0, 0, 1, border0, 1},
+        {ROWSEGMENT_TYPE_RELY0Y0, 1, 2, border1, 1},
+        {ROWSEGMENT_TYPE_RELY0Y0, 2, 3, border2, 3},
+        {ROWSEGMENT_TYPE_RELY0Y0, 3, 4, border3, 5},
+        {ROWSEGMENT_TYPE_RELY0Y1, 4, -4, borderlabel, 5},
+        {ROWSEGMENT_TYPE_RELY1Y1, -4, -3, border3, 5},
+        {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, border2, 3},
+        {ROWSEGMENT_TYPE_RELY1Y1, -2, -1, border1, 1},
+        {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, border0, 1}
+    };
 
     struct widget_button *button = widget->data;
     unsigned int *cmap = (button->focus) ? cmapfocus : cmapnormal;
-    int ly = line - widget->position.y;
-    struct linesegment *segments;
-    unsigned int nsegments;
     unsigned int tl = cstring_length(button->label);
     unsigned int tw = render_getrowwidth(button->label, tl);
     unsigned int th = render_getrowheight(button->label, tl);
     unsigned int rx = widget->position.x + (widget->size.w / 2) - (tw / 2);
     unsigned int ry = widget->position.y + (widget->size.h / 2) - (th / 2);
+    struct rowsegment *rs = findrowsegment(widget, rows, 9, line);
 
-    if (ly == 0 || ly == widget->size.h - 1)
-    {
-
-        segments = border0;
-        nsegments = 1;
-
-    }
-
-    else if (ly == 1 || ly == widget->size.h - 2)
-    {
-
-        segments = border1;
-        nsegments = 1;
-
-    }
-
-    else if (ly == 2 || ly == widget->size.h - 3)
-    {
-
-        segments = border2;
-        nsegments = 3;
-
-    }
-
-    else if (ly == 3 || ly == widget->size.h - 4)
-    {
-
-        segments = border3;
-        nsegments = 5;
-
-    }
-
-    else if (ly > 3 && ly < widget->size.h - 4)
-    {
-
-        segments = borderlabel;
-        nsegments = 5;
-
-    }
-
-    else
-    {
-
-        segments = 0;
-        nsegments = 0;
-
-    }
-
-    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, line);
+    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, rs->segment, rs->numlines, line);
 
     if (util_intersects(line, ry, ry + fonts[0].lineheight))
         blittext(display, &fonts[0], cmap[4], button->label, tl, rx, ry, line, x0, x1);
@@ -402,83 +417,30 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
         {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_INDEX_MAIN_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_INDEX_SHADOW}
     };
+    static struct rowsegment rows[11] = {
+        {ROWSEGMENT_TYPE_RELY0Y0, 0, 1, border0, 1},
+        {ROWSEGMENT_TYPE_RELY0Y0, 1, 2, border1, 1},
+        {ROWSEGMENT_TYPE_RELY0Y0, 2, 3, border2, 3},
+        {ROWSEGMENT_TYPE_RELY0Y0, 3, 4, border3, 5},
+        {ROWSEGMENT_TYPE_RELY0Y0, 4, 40, bordertitle, 5},
+        {ROWSEGMENT_TYPE_RELY0Y0, 40, 41, borderspacing, 7},
+        {ROWSEGMENT_TYPE_RELY0Y1, 41, -4, borderarea, 9},
+        {ROWSEGMENT_TYPE_RELY1Y1, -4, -3, border3, 5},
+        {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, border2, 3},
+        {ROWSEGMENT_TYPE_RELY1Y1, -2, -1, border1, 1},
+        {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, border0, 1}
+    };
 
     struct widget_window *window = widget->data;
     unsigned int *cmap = (window->focus) ? cmapfocus : cmapnormal;
-    int ly = line - widget->position.y;
-    struct linesegment *segments;
-    unsigned int nsegments;
     unsigned int tl = cstring_length(window->title);
     unsigned int tw = render_getrowwidth(window->title, tl);
     unsigned int th = render_getrowheight(window->title, tl);
     unsigned int rx = widget->position.x + (widget->size.w / 2) - (tw / 2);
     unsigned int ry = widget->position.y + 20 - (th / 2);
+    struct rowsegment *rs = findrowsegment(widget, rows, 11, line);
 
-    if (ly == 0 || ly == widget->size.h - 1)
-    {
-
-        segments = border0;
-        nsegments = 1;
-
-    }
-
-    else if (ly == 1 || ly == widget->size.h - 2)
-    {
-
-        segments = border1;
-        nsegments = 1;
-
-    }
-
-    else if (ly == 2 || ly == widget->size.h - 3)
-    {
-
-        segments = border2;
-        nsegments = 3;
-
-    }
-
-    else if (ly == 3 || ly == widget->size.h - 4)
-    {
-
-        segments = border3;
-        nsegments = 5;
-
-    }
-
-    else if (ly >= 4 && ly < 40)
-    {
-
-        segments = bordertitle;
-        nsegments = 5;
-
-    }
-
-    else if (ly == 40)
-    {
-
-        segments = borderspacing;
-        nsegments = 7;
-
-    }
-
-    else if (ly > 40 && ly < widget->size.h - 4)
-    {
-
-        segments = borderarea;
-        nsegments = 9;
-
-    }
-
-    else
-    {
-
-        segments = 0;
-        nsegments = 0;
-
-    }
-
-    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, line);
+    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, rs->segment, rs->numlines, line);
 
     if (util_intersects(line, ry, ry + fonts[0].lineheight))
         blittext(display, &fonts[0], cmap[4], window->title, tl, rx, ry, line, x0, x1);
