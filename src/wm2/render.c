@@ -255,6 +255,8 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     int ly = y - widget->position.y;
     struct linesegment *segments;
     unsigned int nsegments;
+    unsigned int tl = cstring_length(button->label);
+    unsigned int tw = render_getrowwidth(button->label, tl);
 
     if (ly == 0 || ly == widget->size.h - 1)
     {
@@ -305,7 +307,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     }
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, segments, nsegments, y);
-    blittext(display, &fonts[0], 0xFFFFFFFF, button->label, cstring_length(button->label), widget->position.x + 32, y, x0, x1, widget->position.y + (widget->size.h / 2) - (16 / 2));
+    blittext(display, &fonts[0], 0xFFFFFFFF, button->label, tl, widget->position.x + (widget->size.w / 2) - (tw / 2), y, x0, x1, widget->position.y + (widget->size.h / 2) - (16 / 2));
 
 }
 

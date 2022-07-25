@@ -6,15 +6,20 @@
 #include "place.h"
 #include "render.h"
 
-#define WINDOWPADDING                   16
+#define BUTTONPADDINGWIDTH              48
+#define BUTTONPADDINGHEIGHT             24
+#define WINDOWPADDING                   24
 
 static void placebutton(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
+    struct widget_button *button = widget->data;
+    unsigned int length = cstring_length(button->label);
+
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = 200;
-    widget->size.h = 80;
+    widget->size.w = render_getrowwidth(button->label, length) + BUTTONPADDINGWIDTH * 2;
+    widget->size.h = render_getrowheight(button->label, length) + BUTTONPADDINGHEIGHT * 2;
 
 }
 
