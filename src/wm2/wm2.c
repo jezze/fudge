@@ -12,9 +12,6 @@ struct configuration
     unsigned int displaywidth;
     unsigned int displayheight;
     unsigned int displaybpp;
-    unsigned int padding;
-    unsigned int lineheight;
-    unsigned int steplength;
 
 };
 
@@ -404,17 +401,16 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_videomode *videomode = mdata;
     unsigned int factor = videomode->h / 320;
+    unsigned int lineheight = 12 + factor * 4;
+    unsigned int padding = 4 + factor * 2;
 
     render_setup(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
 
-    configuration.lineheight = 12 + factor * 4;
-    configuration.padding = 4 + factor * 2;
-    configuration.steplength = videomode->w / 12;
     state.mouseposition.x = videomode->w / 4;
     state.mouseposition.y = videomode->h / 4;
 
     loadfont(factor);
-    render_setfont(0, fontdata, configuration.lineheight, configuration.padding);
+    render_setfont(0, fontdata, lineheight, padding);
 
     switch (factor)
     {
