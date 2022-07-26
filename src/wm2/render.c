@@ -51,6 +51,7 @@ struct rowsegment
 };
 
 static struct font fonts[32];
+static unsigned int linebuffer[3840];
 
 static struct rowsegment *findrowsegment(struct widget *widget, struct rowsegment *rowsegments, unsigned int length, int line)
 {
@@ -95,18 +96,16 @@ static struct rowsegment *findrowsegment(struct widget *widget, struct rowsegmen
 static void blitline(struct render_display *display, unsigned int color, int line, int x0, int x1)
 {
 
-    unsigned int *buffer = display->framebuffer;
     int x;
 
     for (x = x0; x < x1; x++)
-        buffer[line * display->size.w + x] = color;
+        linebuffer[x] = color;
 
 }
 
 static void blitcmap32line(struct render_display *display, struct position *p, void *idata, unsigned int iwidth, unsigned int *cmap, int line)
 {
 
-    unsigned int *buffer = display->framebuffer;
     unsigned char *data = idata;
     unsigned int w = (p->x + iwidth >= display->size.w) ? display->size.w - p->x : iwidth;
     int x;
@@ -115,10 +114,10 @@ static void blitcmap32line(struct render_display *display, struct position *p, v
     {
 
         unsigned int soffset = (line * iwidth + x);
-        unsigned int toffset = (p->y * display->size.w + p->x) + (line * display->size.w + x);
+        unsigned int toffset = p->x + x;
 
         if (data[soffset] != 0xFF)
-            buffer[toffset] = cmap[data[soffset]];
+            linebuffer[toffset] = cmap[data[soffset]];
 
     }
 
@@ -738,6 +737,8 @@ void render_paint(struct render_display *display, struct widget *rootwidget, str
                 paintwidget(display, child, line);
 
             }
+
+            buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + display->damage.position0.x, linebuffer + display->damage.position0.x, (display->damage.position1.x - display->damage.position0.x) * display->bpp);
 
         }
 
