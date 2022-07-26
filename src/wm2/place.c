@@ -8,6 +8,7 @@
 
 #define BUTTONPADDINGWIDTH              48
 #define BUTTONPADDINGHEIGHT             24
+#define TEXTBOXPADDING                  32
 #define WINDOWPADDING                   24
 
 static void placebutton(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
@@ -189,8 +190,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int w, un
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = render_gettextwidth(textbox->content, textbox->length);
-    widget->size.h = render_gettextheight(textbox->content, textbox->length, 1);
+    widget->size.w = render_gettextwidth(textbox->content, textbox->length) + TEXTBOXPADDING * 2;
+    widget->size.h = render_gettextheight(textbox->content, textbox->length, 1) + TEXTBOXPADDING * 2;
 
 }
 
