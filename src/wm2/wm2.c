@@ -449,7 +449,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "root", "");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_FLOAT, 0);
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_FLOAT, CONTAINER_PLACEMENT_NORMAL, 0);
 
     widget = pool_create(WIDGET_TYPE_FILL, "background", "root");
 
@@ -461,7 +461,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "base0", "window0");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, 16);
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_NORMAL, 16);
 
     widget = pool_create(WIDGET_TYPE_BUTTON, "button0", "base0");
 
@@ -477,7 +477,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "base1", "window1");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, 16);
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_NORMAL, 16);
 
     widget = pool_create(WIDGET_TYPE_TEXT, "text0", "base1");
 
@@ -497,11 +497,11 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "calc-base", "calc-window");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, 0);
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_NORMAL, 0);
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "calc-container", "calc-base");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, 16);
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_STRETCHED, 16);
 
     widget = pool_create(WIDGET_TYPE_TEXTBOX, "calc-display", "calc-container");
 
@@ -509,7 +509,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_GRID, "calc-grid", "calc-base");
 
-    widget_initgrid(widget->data, 4, GRID_LAYOUT_STRETCHED, 16);
+    widget_initgrid(widget->data, 4, GRID_PLACEMENT_STRETCHED, 16);
 
     widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-7", "calc-grid");
 

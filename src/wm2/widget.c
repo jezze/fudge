@@ -8,10 +8,11 @@ void widget_initbutton(struct widget_button *button, char *label)
 
 }
 
-void widget_initcontainer(struct widget_container *container, unsigned int layout, unsigned int padding)
+void widget_initcontainer(struct widget_container *container, unsigned int layout, unsigned int placement, unsigned int padding)
 {
 
     container->layout = layout;
+    container->placement = placement;
     container->padding = padding;
 
 }
@@ -23,11 +24,11 @@ void widget_initfill(struct widget_fill *fill, unsigned int color)
 
 }
 
-void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned int layout, unsigned int padding)
+void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned int placement, unsigned int padding)
 {
 
     grid->columns = columns;
-    grid->layout = layout;
+    grid->placement = placement;
     grid->padding = padding;
 
 }

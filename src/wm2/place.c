@@ -68,6 +68,9 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
         int childmaxw = wmax - container->padding * 2 - offsetw;
         int childmaxh = hmax - container->padding * 2 - offseth;
 
+        if (container->placement == CONTAINER_PLACEMENT_STRETCHED)
+            childminh = childmaxh;
+
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
 
         offsetw += child->size.w + container->padding;
@@ -103,6 +106,9 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
         int childminh = 0;
         int childmaxw = wmax - container->padding * 2 - offsetw;
         int childmaxh = hmax - container->padding * 2 - offseth;
+
+        if (container->placement == CONTAINER_PLACEMENT_STRETCHED)
+            childminw = childmaxw;
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
 
@@ -184,7 +190,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int wmin, un
         int childmaxw = wmax - grid->padding * 2 - offsetw;
         int childmaxh = hmax - grid->padding * 2 - rowh - offseth;
 
-        if (grid->layout == GRID_LAYOUT_STRETCHED)
+        if (grid->placement == GRID_PLACEMENT_STRETCHED)
         {
 
             childminw = colw;
