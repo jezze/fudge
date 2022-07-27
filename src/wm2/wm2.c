@@ -449,7 +449,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "root", "");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_FLOAT);
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_FLOAT, 0);
 
     widget = pool_create(WIDGET_TYPE_FILL, "background", "root");
 
@@ -461,7 +461,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "base0", "window0");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL);
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, 16);
 
     widget = pool_create(WIDGET_TYPE_BUTTON, "button0", "base0");
 
@@ -477,7 +477,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "base1", "window1");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL);
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, 16);
 
     widget = pool_create(WIDGET_TYPE_TEXT, "text0", "base1");
 
@@ -495,6 +495,90 @@ void widgets_setup(void)
 
     widget_initimage(widget->data, 0, 0);
 
+    widget = pool_create(WIDGET_TYPE_WINDOW, "calc-window", "root");
+
+    widget_initwindow(widget->data, "Calculator", 0);
+
+    widget = pool_create(WIDGET_TYPE_CONTAINER, "calc-base", "calc-window");
+
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, 0);
+
+    widget = pool_create(WIDGET_TYPE_CONTAINER, "calc-container", "calc-base");
+
+    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, 16);
+
+    widget = pool_create(WIDGET_TYPE_TEXTBOX, "calc-display", "calc-container");
+
+    widget_inittextbox(widget->data, 1, "0");
+
+    widget = pool_create(WIDGET_TYPE_GRID, "calc-grid", "calc-base");
+
+    widget_initgrid(widget->data, 4, 16);
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-7", "calc-grid");
+
+    widget_initbutton(widget->data, "7");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-8", "calc-grid");
+
+    widget_initbutton(widget->data, "8");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-9", "calc-grid");
+
+    widget_initbutton(widget->data, "9");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-div", "calc-grid");
+
+    widget_initbutton(widget->data, "/");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-6", "calc-grid");
+
+    widget_initbutton(widget->data, "4");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-5", "calc-grid");
+
+    widget_initbutton(widget->data, "5");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-4", "calc-grid");
+
+    widget_initbutton(widget->data, "6");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-mul", "calc-grid");
+
+    widget_initbutton(widget->data, "x");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-3", "calc-grid");
+
+    widget_initbutton(widget->data, "1");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-2", "calc-grid");
+
+    widget_initbutton(widget->data, "2");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-1", "calc-grid");
+
+    widget_initbutton(widget->data, "3");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-sub", "calc-grid");
+
+    widget_initbutton(widget->data, "-");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-0", "calc-grid");
+
+    widget_initbutton(widget->data, "0");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-dot", "calc-grid");
+
+    widget_initbutton(widget->data, ".");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-add", "calc-grid");
+
+    widget_initbutton(widget->data, "+");
+
+    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-result", "calc-grid");
+
+    widget_initbutton(widget->data, "=");
+
     widget = pool_getwidgetbyid("window0");
     widget->position.x = 200;
     widget->position.y = 100;
@@ -505,11 +589,11 @@ void widgets_setup(void)
     widget->position.y = 80;
     widget->size.w = 800;
     widget->size.h = 600;
-    widget = pool_getwidgetbyid("button0");
-    widget->position.x = 100;
-    widget->position.y = 800;
-    widget->size.w = 240;
-    widget->size.h = 60;
+    widget = pool_getwidgetbyid("calc-window");
+    widget->position.x = 80;
+    widget->position.y = 60;
+    widget->size.w = 600;
+    widget->size.h = 600;
 
     rootwidget = pool_getwidgetbyid("root");
     mousewidget = pool_getwidgetbyid("mouse");

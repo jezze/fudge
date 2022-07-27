@@ -52,6 +52,7 @@ struct widget_container
 {
 
     unsigned int layout;
+    unsigned int padding;
 
 };
 
@@ -66,6 +67,7 @@ struct widget_grid
 {
 
     unsigned int columns;
+    unsigned int padding;
 
 };
 
@@ -105,9 +107,9 @@ struct widget_window
 };
 
 void widget_initbutton(struct widget_button *button, char *label);
-void widget_initcontainer(struct widget_container *container, unsigned int layout);
+void widget_initcontainer(struct widget_container *container, unsigned int layout, unsigned int padding);
 void widget_initfill(struct widget_fill *fill, unsigned int color);
-void widget_initgrid(struct widget_grid *grid, unsigned int columns);
+void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned int padding);
 void widget_initimage(struct widget_image *image, void *data, void *cmap);
 void widget_inittext(struct widget_text *text, unsigned int length, char *content);
 void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content);
