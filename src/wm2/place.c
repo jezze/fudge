@@ -171,7 +171,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int wmin, un
     int maxw = 0;
     int maxh = 0;
     unsigned int num = 0;
-    unsigned int colw = (wmax / grid->columns) - 2 * grid->padding;
+    unsigned int colw = (wmax - grid->padding * (grid->columns + 1)) / grid->columns;
 
     while ((current = pool_nextin(current, widget->id)))
     {
