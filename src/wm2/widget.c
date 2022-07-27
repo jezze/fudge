@@ -50,11 +50,12 @@ void widget_inittext(struct widget_text *text, unsigned int length, char *conten
 
 }
 
-void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content)
+void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content, unsigned int mode)
 {
 
     textbox->content = content;
     textbox->length = length;
+    textbox->mode = mode;
     textbox->scroll = 0;
     textbox->cursor = 0;
 

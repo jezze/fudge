@@ -485,7 +485,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_TEXTBOX, "textbox0", "base1");
 
-    widget_inittextbox(widget->data, 25, "I am very good thank you!");
+    widget_inittextbox(widget->data, 25, "I am very good thank you!", TEXTBOX_MODE_NORMAL);
 
     widget = pool_create(WIDGET_TYPE_TEXT, "text1", "base1");
 
@@ -505,7 +505,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_TEXTBOX, "calc-display", "calc-container");
 
-    widget_inittextbox(widget->data, 1, "0");
+    widget_inittextbox(widget->data, 4, "1337", TEXTBOX_MODE_READONLY);
 
     widget = pool_create(WIDGET_TYPE_GRID, "calc-grid", "calc-base");
 

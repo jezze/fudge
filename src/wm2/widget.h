@@ -13,6 +13,8 @@
 #define CONTAINER_PLACEMENT_STRETCHED   1
 #define GRID_PLACEMENT_NORMAL           0
 #define GRID_PLACEMENT_STRETCHED        1
+#define TEXTBOX_MODE_NORMAL             0
+#define TEXTBOX_MODE_READONLY           1
 #define WINDOW_MIN_WIDTH                128
 #define WINDOW_MIN_HEIGHT               128
 
@@ -99,6 +101,7 @@ struct widget_textbox
 
     char *content;
     unsigned int length;
+    unsigned int mode;
     int scroll;
     unsigned int cursor;
 
@@ -118,6 +121,6 @@ void widget_initfill(struct widget_fill *fill, unsigned int color);
 void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned int placement, unsigned int padding);
 void widget_initimage(struct widget_image *image, void *data, void *cmap);
 void widget_inittext(struct widget_text *text, unsigned int length, char *content);
-void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content);
+void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content, unsigned int mode);
 void widget_initwindow(struct widget_window *window, char *title);
 void widget_init(struct widget *widget, unsigned int type, char *id, char *in, void *data);
