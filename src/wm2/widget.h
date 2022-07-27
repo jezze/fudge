@@ -113,5 +113,5 @@ void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned in
 void widget_initimage(struct widget_image *image, void *data, void *cmap);
 void widget_inittext(struct widget_text *text, unsigned int length, char *content);
 void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content);
-void widget_initwindow(struct widget_window *window, char *title, unsigned int focus);
+void widget_initwindow(struct widget_window *window, char *title);
 void widget_init(struct widget *widget, unsigned int type, char *id, char *in, void *data);

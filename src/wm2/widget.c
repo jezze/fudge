@@ -58,11 +58,11 @@ void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, cha
 
 }
 
-void widget_initwindow(struct widget_window *window, char *title, unsigned int focus)
+void widget_initwindow(struct widget_window *window, char *title)
 {
 
     window->title = title;
-    window->focus = focus;
+    window->focus = 0;
 
 }
 

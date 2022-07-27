@@ -457,7 +457,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_WINDOW, "window0", "root");
 
-    widget_initwindow(widget->data, "Window 0", 0);
+    widget_initwindow(widget->data, "Window 0");
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "base0", "window0");
 
@@ -473,7 +473,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_WINDOW, "window1", "root");
 
-    widget_initwindow(widget->data, "Window 1", 1);
+    widget_initwindow(widget->data, "Window 1");
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "base1", "window1");
 
@@ -493,7 +493,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_WINDOW, "calc-window", "root");
 
-    widget_initwindow(widget->data, "Calculator", 0);
+    widget_initwindow(widget->data, "Calculator");
 
     widget = pool_create(WIDGET_TYPE_CONTAINER, "calc-base", "calc-window");
 
