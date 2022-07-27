@@ -491,10 +491,6 @@ void widgets_setup(void)
 
     widget_inittext(widget->data, 12, "Hello again!");
 
-    widget = pool_create(WIDGET_TYPE_IMAGE, "mouse", "root");
-
-    widget_initimage(widget->data, 0, 0);
-
     widget = pool_create(WIDGET_TYPE_WINDOW, "calc-window", "root");
 
     widget_initwindow(widget->data, "Calculator", 0);
@@ -578,6 +574,10 @@ void widgets_setup(void)
     widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-result", "calc-grid");
 
     widget_initbutton(widget->data, "=");
+
+    widget = pool_create(WIDGET_TYPE_IMAGE, "mouse", "root");
+
+    widget_initimage(widget->data, 0, 0);
 
     widget = pool_getwidgetbyid("window0");
     widget->position.x = 200;
