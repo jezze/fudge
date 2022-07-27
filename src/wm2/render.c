@@ -390,6 +390,35 @@ static void paintfill(struct render_display *display, struct widget *widget, int
 
 }
 
+/*
+static void paintgradient(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+{
+
+    struct widget_gradient *gradient = widget->data;
+    unsigned int color0 = fill->color0;
+    unsigned int color1 = fill->color1;
+    unsigned int color;
+
+    char a0 = color0 >> 24;
+    char r0 = color0 >> 16;
+    char g0 = color0 >> 8;
+    char b0 = color0 >> 0;
+    char a1 = color1 >> 24;
+    char r1 = color1 >> 16;
+    char g1 = color1 >> 8;
+    char b1 = color1 >> 0;
+
+    r0 = util_max(0, r0 - line / 64);
+    g0 = util_max(0, g0 - line / 64);
+    b0 = util_max(0, b0 - line / 64);
+
+    color = (a0 << 24) | (r0 << 16) | (g0 << 8) | (b0 << 0);
+
+    blitline(display, color, line, x0, x1);
+
+}
+*/
+
 static void paintimage(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
