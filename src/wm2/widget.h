@@ -9,6 +9,8 @@
 #define CONTAINER_LAYOUT_FLOAT          0
 #define CONTAINER_LAYOUT_HORIZONTAL     1
 #define CONTAINER_LAYOUT_VERTICAL       2
+#define GRID_LAYOUT_NORMAL              0
+#define GRID_LAYOUT_STRETCHED           1
 #define WINDOW_MIN_WIDTH                128
 #define WINDOW_MIN_HEIGHT               128
 
@@ -67,6 +69,7 @@ struct widget_grid
 {
 
     unsigned int columns;
+    unsigned int layout;
     unsigned int padding;
 
 };
@@ -109,7 +112,7 @@ struct widget_window
 void widget_initbutton(struct widget_button *button, char *label);
 void widget_initcontainer(struct widget_container *container, unsigned int layout, unsigned int padding);
 void widget_initfill(struct widget_fill *fill, unsigned int color);
-void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned int padding);
+void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned int layout, unsigned int padding);
 void widget_initimage(struct widget_image *image, void *data, void *cmap);
 void widget_inittext(struct widget_text *text, unsigned int length, char *content);
 void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content);

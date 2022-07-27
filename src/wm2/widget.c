@@ -23,10 +23,11 @@ void widget_initfill(struct widget_fill *fill, unsigned int color)
 
 }
 
-void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned int padding)
+void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned int layout, unsigned int padding)
 {
 
     grid->columns = columns;
+    grid->layout = layout;
     grid->padding = padding;
 
 }

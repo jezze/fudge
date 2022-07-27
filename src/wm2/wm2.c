@@ -509,7 +509,7 @@ void widgets_setup(void)
 
     widget = pool_create(WIDGET_TYPE_GRID, "calc-grid", "calc-base");
 
-    widget_initgrid(widget->data, 4, 16);
+    widget_initgrid(widget->data, 4, GRID_LAYOUT_STRETCHED, 16);
 
     widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-7", "calc-grid");
 
