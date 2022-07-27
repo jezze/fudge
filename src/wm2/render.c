@@ -376,8 +376,8 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, rs->segment, rs->numlines, line);
 
-    if (util_intersects(line, ry, ry + fonts[0].lineheight))
-        blittext(display, &fonts[0], cmap[CMAP_BUTTON_TEXT], button->label, tl, rx, ry, line, x0, x1);
+    if (util_intersects(line, ry, ry + fonts[1].lineheight))
+        blittext(display, &fonts[1], cmap[CMAP_BUTTON_TEXT], button->label, tl, rx, ry, line, x0, x1);
 
 }
 
@@ -581,8 +581,8 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, rs->segment, rs->numlines, line);
 
-    if (util_intersects(line, ry, ry + fonts[0].lineheight))
-        blittext(display, &fonts[0], cmap[CMAP_WINDOW_TEXT], window->title, tl, rx, ry, line, x0, x1);
+    if (util_intersects(line, ry, ry + fonts[1].lineheight))
+        blittext(display, &fonts[1], cmap[CMAP_WINDOW_TEXT], window->title, tl, rx, ry, line, x0, x1);
 
 }
 

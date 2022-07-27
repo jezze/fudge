@@ -30,7 +30,8 @@ static struct widget *mousewidget;
 static struct render_display display;
 static struct configuration configuration;
 static struct state state;
-static unsigned char fontdata[0x8000];
+static unsigned char fontnormal[0x8000];
+static unsigned char fontbold[0x8000];
 static unsigned char mousedata24[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -109,27 +110,32 @@ static void loadfont(unsigned int factor)
 
     case 0:
         file_walk2(FILE_L0, "/data/ter-112n.pcf");
+        file_walk2(FILE_L1, "/data/ter-112b.pcf");
 
         break;
 
     case 1:
         file_walk2(FILE_L0, "/data/ter-114n.pcf");
+        file_walk2(FILE_L1, "/data/ter-114b.pcf");
 
         break;
 
     case 2:
         file_walk2(FILE_L0, "/data/ter-116n.pcf");
+        file_walk2(FILE_L1, "/data/ter-116b.pcf");
 
         break;
 
     default:
         file_walk2(FILE_L0, "/data/ter-118n.pcf");
+        file_walk2(FILE_L1, "/data/ter-118b.pcf");
 
         break;
 
     }
 
-    file_seekread(FILE_L0, fontdata, 0x8000, 0);
+    file_seekread(FILE_L0, fontnormal, 0x8000, 0);
+    file_seekread(FILE_L1, fontbold, 0x8000, 0);
 
 }
 
@@ -411,7 +417,8 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     state.mouseposition.y = videomode->h / 4;
 
     loadfont(factor);
-    render_setfont(0, fontdata, lineheight, padding);
+    render_setfont(0, fontnormal, lineheight, padding);
+    render_setfont(1, fontbold, lineheight, padding);
 
     switch (factor)
     {
