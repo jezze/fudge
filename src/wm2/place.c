@@ -18,8 +18,8 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int wmin, 
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = render_getrowwidth(button->label, length) + BUTTONPADDINGWIDTH * 2;
-    widget->size.h = render_getrowheight(button->label, length) + BUTTONPADDINGHEIGHT * 2;
+    widget->size.w = render_getrowwidth(RENDER_FONTBOLD, button->label, length) + BUTTONPADDINGWIDTH * 2;
+    widget->size.h = render_getrowheight(RENDER_FONTBOLD, button->label, length) + BUTTONPADDINGHEIGHT * 2;
     widget->size.w = util_clamp(widget->size.w, wmin, wmax);
     widget->size.h = util_clamp(widget->size.h, hmin, hmax);
 
@@ -240,8 +240,8 @@ static void placetext(struct widget *widget, int x, int y, unsigned int wmin, un
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = render_gettextwidth(text->content, text->length);
-    widget->size.h = render_gettextheight(text->content, text->length, 1);
+    widget->size.w = render_gettextwidth(RENDER_FONTNORMAL, text->content, text->length);
+    widget->size.h = render_gettextheight(RENDER_FONTNORMAL, text->content, text->length, 1);
     widget->size.w = util_clamp(widget->size.w, wmin, wmax);
     widget->size.h = util_clamp(widget->size.h, hmin, hmax);
 
@@ -254,8 +254,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int wmin,
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = render_gettextwidth(textbox->content, textbox->length) + TEXTBOXPADDING * 2;
-    widget->size.h = render_gettextheight(textbox->content, textbox->length, 1) + TEXTBOXPADDING * 2;
+    widget->size.w = render_gettextwidth(RENDER_FONTNORMAL, textbox->content, textbox->length) + TEXTBOXPADDING * 2;
+    widget->size.h = render_gettextheight(RENDER_FONTNORMAL, textbox->content, textbox->length, 1) + TEXTBOXPADDING * 2;
     widget->size.w = util_clamp(widget->size.w, wmin, wmax);
     widget->size.h = util_clamp(widget->size.h, hmin, hmax);
 

@@ -366,18 +366,19 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     };
 
     struct widget_button *button = widget->data;
+    struct font *font = &fonts[RENDER_FONTBOLD];
     unsigned int *cmap = (button->focus) ? cmapfocus : cmapnormal;
     unsigned int tl = cstring_length(button->label);
-    unsigned int tw = render_getrowwidth(button->label, tl);
-    unsigned int th = render_getrowheight(button->label, tl);
+    unsigned int tw = render_getrowwidth(RENDER_FONTBOLD, button->label, tl);
+    unsigned int th = render_getrowheight(RENDER_FONTBOLD, button->label, tl);
     unsigned int rx = widget->position.x + (widget->size.w / 2) - (tw / 2);
     unsigned int ry = widget->position.y + (widget->size.h / 2) - (th / 2);
     struct rowsegment *rs = findrowsegment(widget, rows, 9, line);
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, rs->segment, rs->numlines, line);
 
-    if (util_intersects(line, ry, ry + fonts[1].lineheight))
-        blittext(display, &fonts[1], cmap[CMAP_BUTTON_TEXT], button->label, tl, rx, ry, line, x0, x1);
+    if (util_intersects(line, ry, ry + font->lineheight))
+        blittext(display, font, cmap[CMAP_BUTTON_TEXT], button->label, tl, rx, ry, line, x0, x1);
 
 }
 
@@ -432,7 +433,8 @@ static void painttext(struct render_display *display, struct widget *widget, int
 {
 
     struct widget_text *text = widget->data;
-    unsigned int rownum = (line - widget->position.y) / fonts[0].lineheight;
+    struct font *font = &fonts[RENDER_FONTNORMAL];
+    unsigned int rownum = (line - widget->position.y) / font->lineheight;
     unsigned int rowtotal = util_findrowtotal(text->content, text->length);
 
     if (rownum < rowtotal)
@@ -441,9 +443,9 @@ static void painttext(struct render_display *display, struct widget *widget, int
         unsigned int s = util_findrowstart(text->content, text->length, rownum);
         unsigned int length = util_findrowcount(text->content, text->length, s);
         unsigned int rx = widget->position.x;
-        unsigned int ry = widget->position.y + rownum * fonts[0].lineheight;
+        unsigned int ry = widget->position.y + rownum * font->lineheight;
 
-        blittext(display, &fonts[0], cmapnormal[CMAP_TEXT_TEXT], text->content + s, length, rx, ry, line, x0, x1);
+        blittext(display, font, cmapnormal[CMAP_TEXT_TEXT], text->content + s, length, rx, ry, line, x0, x1);
 
     }
 
@@ -515,7 +517,8 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
     {
 
         struct widget_textbox *textbox = widget->data;
-        unsigned int rownum = (line - widget->position.y - 32) / fonts[0].lineheight;
+        struct font *font = &fonts[RENDER_FONTNORMAL];
+        unsigned int rownum = (line - widget->position.y - 32) / font->lineheight;
         unsigned int rowtotal = util_findrowtotal(textbox->content, textbox->length);
 
         if (rownum < rowtotal)
@@ -524,12 +527,12 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
             unsigned int s = util_findrowstart(textbox->content, textbox->length, rownum);
             unsigned int length = util_findrowcount(textbox->content, textbox->length, s);
             unsigned int rx = widget->position.x + 32;
-            unsigned int ry = widget->position.y + rownum * fonts[0].lineheight + 32;
+            unsigned int ry = widget->position.y + rownum * font->lineheight + 32;
 
             if (textbox->mode == TEXTBOX_MODE_READONLY)
-                blittext(display, &fonts[0], cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1);
+                blittext(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1);
             else
-                blittextcursor(display, &fonts[0], cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1, textbox->cursor);
+                blittextcursor(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1, textbox->cursor);
 
         }
 
@@ -600,18 +603,19 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     };
 
     struct widget_window *window = widget->data;
+    struct font *font = &fonts[RENDER_FONTBOLD];
     unsigned int *cmap = (window->focus) ? cmapfocus : cmapnormal;
     unsigned int tl = cstring_length(window->title);
-    unsigned int tw = render_getrowwidth(window->title, tl);
-    unsigned int th = render_getrowheight(window->title, tl);
+    unsigned int tw = render_getrowwidth(RENDER_FONTBOLD, window->title, tl);
+    unsigned int th = render_getrowheight(RENDER_FONTBOLD, window->title, tl);
     unsigned int rx = widget->position.x + (widget->size.w / 2) - (tw / 2);
     unsigned int ry = widget->position.y + 20 - (th / 2);
     struct rowsegment *rs = findrowsegment(widget, rows, 11, line);
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, rs->segment, rs->numlines, line);
 
-    if (util_intersects(line, ry, ry + fonts[1].lineheight))
-        blittext(display, &fonts[1], cmap[CMAP_WINDOW_TEXT], window->title, tl, rx, ry, line, x0, x1);
+    if (util_intersects(line, ry, ry + font->lineheight))
+        blittext(display, font, cmap[CMAP_WINDOW_TEXT], window->title, tl, rx, ry, line, x0, x1);
 
 }
 
@@ -663,10 +667,10 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
 
 }
 
-unsigned int render_getrowwidth(char *text, unsigned int length)
+unsigned int render_getrowwidth(unsigned int index, char *text, unsigned int length)
 {
 
-    struct font *font = &fonts[0];
+    struct font *font = &fonts[index];
     unsigned int cw = 0;
     unsigned int i;
 
@@ -691,10 +695,10 @@ unsigned int render_getrowwidth(char *text, unsigned int length)
 
 }
 
-unsigned int render_getrowheight(char *text, unsigned int length)
+unsigned int render_getrowheight(unsigned int index, char *text, unsigned int length)
 {
 
-    struct font *font = &fonts[0];
+    struct font *font = &fonts[index];
     unsigned int ch = 0;
     unsigned int i;
 
@@ -719,7 +723,7 @@ unsigned int render_getrowheight(char *text, unsigned int length)
 
 }
 
-unsigned int render_gettextwidth(char *text, unsigned int length)
+unsigned int render_gettextwidth(unsigned int index, char *text, unsigned int length)
 {
 
     unsigned int wlast = 0;
@@ -733,7 +737,7 @@ unsigned int render_gettextwidth(char *text, unsigned int length)
         if (text[i] == '\n')
         {
 
-            unsigned int w = render_getrowwidth(text + s, length - s);
+            unsigned int w = render_getrowwidth(index, text + s, length - s);
 
             cw = util_max(cw, w);
             s = i + 1;
@@ -743,15 +747,16 @@ unsigned int render_gettextwidth(char *text, unsigned int length)
     }
 
     if (length - s > 0)
-        wlast = render_getrowwidth(text + s, length - s);
+        wlast = render_getrowwidth(index, text + s, length - s);
 
     return util_max(cw, wlast);
 
 }
 
-unsigned int render_gettextheight(char *text, unsigned int length, unsigned int lineheight)
+unsigned int render_gettextheight(unsigned int index, char *text, unsigned int length, unsigned int lineheight)
 {
 
+    struct font *font = &fonts[index];
     unsigned int hlast = 0;
     unsigned int ch = 0;
     unsigned int s = 0;
@@ -763,7 +768,7 @@ unsigned int render_gettextheight(char *text, unsigned int length, unsigned int 
         if (text[i] == '\n')
         {
 
-            unsigned int h = (lineheight) ? fonts[0].lineheight : render_getrowheight(text + s, length - s);
+            unsigned int h = (lineheight) ? font->lineheight : render_getrowheight(index, text + s, length - s);
 
             ch += h;
             s = i + 1;
@@ -773,7 +778,7 @@ unsigned int render_gettextheight(char *text, unsigned int length, unsigned int 
     }
 
     if (length - s > 0)
-        hlast = render_getrowheight(text + s, length - s);
+        hlast = render_getrowheight(index, text + s, length - s);
 
     return ch + hlast;
 
@@ -857,11 +862,13 @@ void render_paint(struct render_display *display, struct widget *rootwidget, str
 void render_setfont(unsigned int index, void *data, unsigned int lineheight, unsigned int padding)
 {
 
-    fonts[index].data = data;
-    fonts[index].bitmapdata = pcf_getbitmapdata(fonts[index].data);
-    fonts[index].bitmapalign = pcf_getbitmapalign(fonts[index].data);
-    fonts[index].lineheight = lineheight;
-    fonts[index].padding = padding;
+    struct font *font = &fonts[index];
+
+    font->data = data;
+    font->bitmapdata = pcf_getbitmapdata(fonts[index].data);
+    font->bitmapalign = pcf_getbitmapalign(fonts[index].data);
+    font->lineheight = lineheight;
+    font->padding = padding;
 
 }
 

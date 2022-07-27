@@ -417,8 +417,8 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     state.mouseposition.y = videomode->h / 4;
 
     loadfont(factor);
-    render_setfont(0, fontnormal, lineheight, padding);
-    render_setfont(1, fontbold, lineheight, padding);
+    render_setfont(RENDER_FONTNORMAL, fontnormal, lineheight, padding);
+    render_setfont(RENDER_FONTBOLD, fontbold, lineheight, padding);
 
     switch (factor)
     {
