@@ -10,7 +10,7 @@
 #define BUTTONPADDINGHEIGHT             24
 #define TEXTBOXPADDING                  32
 
-static void placebutton(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placebutton(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     struct widget_button *button = widget->data;
@@ -23,7 +23,7 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int wmax, 
 
 }
 
-static void placecontainerfloat(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placecontainerfloat(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     struct list_item *current = 0;
@@ -33,7 +33,7 @@ static void placecontainerfloat(struct widget *widget, int x, int y, unsigned in
 
         struct widget *child = current->data;
 
-        place_widget(child, x, y, wmax, hmax);
+        place_widget(child, x, y, 0, 0, wmax, hmax);
 
     }
 
@@ -44,7 +44,7 @@ static void placecontainerfloat(struct widget *widget, int x, int y, unsigned in
 
 }
 
-static void placecontainerhorizontal(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placecontainerhorizontal(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     struct widget_container *container = widget->data;
@@ -57,7 +57,7 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
 
         struct widget *child = current->data;
 
-        place_widget(child, x + container->padding + offsetw, y + container->padding, wmax - offsetw, hmax);
+        place_widget(child, x + container->padding + offsetw, y + container->padding, 0, 0, wmax - offsetw, hmax);
 
         child->size.w = util_clamp(child->size.w, 0, wmax - offsetw);
         child->size.h = util_clamp(child->size.h, 0, hmax);
@@ -73,7 +73,7 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
 
 }
 
-static void placecontainervertical(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placecontainervertical(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     struct widget_container *container = widget->data;
@@ -86,7 +86,7 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
 
         struct widget *child = current->data;
 
-        place_widget(child, x + container->padding, y + container->padding + offseth, wmax, hmax - offseth);
+        place_widget(child, x + container->padding, y + container->padding + offseth, 0, 0, wmax, hmax - offseth);
 
         child->size.w = util_clamp(child->size.w, 0, wmax);
         child->size.h = util_clamp(child->size.h, 0, hmax - offseth);
@@ -102,7 +102,7 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
 
 }
 
-static void placecontainer(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placecontainer(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     struct widget_container *container = widget->data;
@@ -111,17 +111,17 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int wma
     {
 
     case CONTAINER_LAYOUT_FLOAT:
-        placecontainerfloat(widget, x, y, wmax, hmax);
+        placecontainerfloat(widget, x, y, wmin, hmin, wmax, hmax);
         
         break;
 
     case CONTAINER_LAYOUT_HORIZONTAL:
-        placecontainerhorizontal(widget, x, y, wmax, hmax);
+        placecontainerhorizontal(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 
     case CONTAINER_LAYOUT_VERTICAL:
-        placecontainervertical(widget, x, y, wmax, hmax);
+        placecontainervertical(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 
@@ -129,7 +129,7 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int wma
 
 }
 
-static void placefill(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placefill(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     widget->position.x = x;
@@ -139,7 +139,7 @@ static void placefill(struct widget *widget, int x, int y, unsigned int wmax, un
 
 }
 
-static void placegrid(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placegrid(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     struct widget_grid *grid = widget->data;
@@ -157,7 +157,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int wmax, un
 
         struct widget *child = current->data;
 
-        place_widget(child, x + grid->padding + offsetw, y + grid->padding + offseth, wmax - offsetw, hmax - rowh - offseth);
+        place_widget(child, x + grid->padding + offsetw, y + grid->padding + offseth, 0, 0, wmax - offsetw, hmax - rowh - offseth);
 
         child->size.w = util_clamp(child->size.w, 0, wmax - offsetw);
         child->size.h = util_clamp(child->size.h, 0, hmax - offseth);
@@ -187,12 +187,12 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int wmax, un
 
 }
 
-static void placeimage(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placeimage(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
 }
 
-static void placetext(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placetext(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     struct widget_text *text = widget->data;
@@ -204,7 +204,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int wmax, un
 
 }
 
-static void placetextbox(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placetextbox(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     struct widget_textbox *textbox = widget->data;
@@ -216,7 +216,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int wmax,
 
 }
 
-static void placewindow(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+static void placewindow(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     struct list_item *current = 0;
@@ -226,55 +226,55 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int wmax, 
 
         struct widget *child = current->data;
 
-        place_widget(child, widget->position.x + 5, widget->position.y + 41, widget->size.w - 10, widget->size.h - (41 + 5));
+        place_widget(child, widget->position.x + 5, widget->position.y + 41, 0, 0, widget->size.w - 10, widget->size.h - (41 + 5));
 
     }
 
 }
 
-void place_widget(struct widget *widget, int x, int y, unsigned int wmax, unsigned int hmax)
+void place_widget(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
     switch (widget->type)
     {
 
     case WIDGET_TYPE_BUTTON:
-        placebutton(widget, x, y, wmax, hmax);
+        placebutton(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 
     case WIDGET_TYPE_CONTAINER:
-        placecontainer(widget, x, y, wmax, hmax);
+        placecontainer(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 
     case WIDGET_TYPE_FILL:
-        placefill(widget, x, y, wmax, hmax);
+        placefill(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 
     case WIDGET_TYPE_GRID:
-        placegrid(widget, x, y, wmax, hmax);
+        placegrid(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 
     case WIDGET_TYPE_IMAGE:
-        placeimage(widget, x, y, wmax, hmax);
+        placeimage(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 
     case WIDGET_TYPE_TEXT:
-        placetext(widget, x, y, wmax, hmax);
+        placetext(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 
     case WIDGET_TYPE_TEXTBOX:
-        placetextbox(widget, x, y, wmax, hmax);
+        placetextbox(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 
     case WIDGET_TYPE_WINDOW:
-        placewindow(widget, x, y, wmax, hmax);
+        placewindow(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 

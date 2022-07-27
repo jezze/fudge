@@ -215,7 +215,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     while (channel_process())
     {
 
-        place_widget(rootwidget, 0, 0, display.size.w, display.size.h);
+        place_widget(rootwidget, 0, 0, 0, 0, display.size.w, display.size.h);
         render_paint(&display, rootwidget, mousewidget->data);
 
     }
