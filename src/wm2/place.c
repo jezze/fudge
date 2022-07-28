@@ -18,10 +18,8 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int wmin, 
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = render_getrowwidth(RENDER_FONTBOLD, button->label, length) + BUTTONPADDINGWIDTH * 2;
-    widget->size.h = render_getrowheight(RENDER_FONTBOLD, button->label, length) + BUTTONPADDINGHEIGHT * 2;
-    widget->size.w = util_clamp(widget->size.w, wmin, wmax);
-    widget->size.h = util_clamp(widget->size.h, hmin, hmax);
+    widget->size.w = util_clamp(render_getrowwidth(RENDER_FONTBOLD, button->label, length) + BUTTONPADDINGWIDTH * 2, wmin, wmax);
+    widget->size.h = util_clamp(render_getrowheight(RENDER_FONTBOLD, button->label, length) + BUTTONPADDINGHEIGHT * 2, hmin, hmax);
 
 }
 
@@ -41,10 +39,8 @@ static void placecontainerfloat(struct widget *widget, int x, int y, unsigned in
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = 0;
-    widget->size.h = 0;
-    widget->size.w = util_clamp(widget->size.w, wmin, wmax);
-    widget->size.h = util_clamp(widget->size.h, hmin, hmax);
+    widget->size.w = util_clamp(0, wmin, wmax);
+    widget->size.h = util_clamp(0, hmin, hmax);
 
 }
 
@@ -80,10 +76,8 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = offsetw;
-    widget->size.h = maxh;
-    widget->size.w = util_clamp(widget->size.w, wmin, wmax);
-    widget->size.h = util_clamp(widget->size.h, hmin, hmax);
+    widget->size.w = util_clamp(offsetw, wmin, wmax);
+    widget->size.h = util_clamp(maxh, hmin, hmax);
 
 }
 
@@ -108,10 +102,8 @@ static void placecontainermaximize(struct widget *widget, int x, int y, unsigned
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = wmax;
-    widget->size.h = hmax;
-    widget->size.w = util_clamp(widget->size.w, wmin, wmax);
-    widget->size.h = util_clamp(widget->size.h, hmin, hmax);
+    widget->size.w = util_clamp(wmax, wmin, wmax);
+    widget->size.h = util_clamp(hmax, hmin, hmax);
 
 }
 
@@ -147,10 +139,8 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = maxw;
-    widget->size.h = offseth;
-    widget->size.w = util_clamp(widget->size.w, wmin, wmax);
-    widget->size.h = util_clamp(widget->size.h, hmin, hmax);
+    widget->size.w = util_clamp(maxw, wmin, wmax);
+    widget->size.h = util_clamp(offseth, hmin, hmax);
 
 }
 
@@ -191,10 +181,8 @@ static void placefill(struct widget *widget, int x, int y, unsigned int wmin, un
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = wmax;
-    widget->size.h = hmax;
-    widget->size.w = util_clamp(widget->size.w, wmin, wmax);
-    widget->size.h = util_clamp(widget->size.h, hmin, hmax);
+    widget->size.w = util_clamp(wmax, wmin, wmax);
+    widget->size.h = util_clamp(hmax, hmin, hmax);
 
 }
 
@@ -254,10 +242,8 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int wmin, un
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(widget->size.w, maxw, wmax);
-    widget->size.h = util_clamp(widget->size.h, maxh, hmax);
-    widget->size.w = util_clamp(widget->size.w, wmin, wmax);
-    widget->size.h = util_clamp(widget->size.h, hmin, hmax);
+    widget->size.w = util_clamp(maxw, wmin, wmax);
+    widget->size.h = util_clamp(maxh, hmin, hmax);
 
 }
 
@@ -273,10 +259,8 @@ static void placetext(struct widget *widget, int x, int y, unsigned int wmin, un
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = render_gettextwidth(RENDER_FONTNORMAL, text->content, text->length);
-    widget->size.h = render_gettextheight(RENDER_FONTNORMAL, text->content, text->length, 1);
-    widget->size.w = util_clamp(widget->size.w, wmin, wmax);
-    widget->size.h = util_clamp(widget->size.h, hmin, hmax);
+    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, text->content, text->length), wmin, wmax);
+    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, text->content, text->length, 1), hmin, hmax);
 
 }
 
@@ -287,10 +271,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int wmin,
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = render_gettextwidth(RENDER_FONTNORMAL, textbox->content, textbox->length) + TEXTBOXPADDING * 2;
-    widget->size.h = render_gettextheight(RENDER_FONTNORMAL, textbox->content, textbox->length, 1) + TEXTBOXPADDING * 2;
-    widget->size.w = util_clamp(widget->size.w, wmin, wmax);
-    widget->size.h = util_clamp(widget->size.h, hmin, hmax);
+    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, textbox->content, textbox->length) + TEXTBOXPADDING * 2, wmin, wmax);
+    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, textbox->content, textbox->length, 1) + TEXTBOXPADDING * 2, hmin, hmax);
 
 }
 
