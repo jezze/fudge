@@ -462,11 +462,11 @@ void widgets_setup(void)
 
     widget_initfill(widget->data, 0xFF142434);
 
-    widget = pool_create(0, WIDGET_TYPE_WINDOW, "window0", "root");
+    widget = pool_create(1, WIDGET_TYPE_WINDOW, "window", "root");
 
     widget_initwindow(widget->data, "Window 0");
 
-    widget = pool_create(1, WIDGET_TYPE_CONTAINER, "base", "window0");
+    widget = pool_create(1, WIDGET_TYPE_CONTAINER, "base", "window");
 
     widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_NORMAL, 16);
 
@@ -486,11 +486,11 @@ void widgets_setup(void)
 
     widget_initbutton(widget->data, "Click Me Too");
 
-    widget = pool_create(0, WIDGET_TYPE_WINDOW, "window1", "root");
+    widget = pool_create(2, WIDGET_TYPE_WINDOW, "window", "root");
 
     widget_initwindow(widget->data, "Shell");
 
-    widget = pool_create(2, WIDGET_TYPE_CONTAINER, "base", "window1");
+    widget = pool_create(2, WIDGET_TYPE_CONTAINER, "base", "window");
 
     widget_initcontainer(widget->data, CONTAINER_LAYOUT_MAXIMIZE, CONTAINER_PLACEMENT_STRETCHED, 16);
 
@@ -498,11 +498,11 @@ void widgets_setup(void)
 
     widget_inittextbox(widget->data, 3, "$  ", TEXTBOX_MODE_NORMAL);
 
-    widget = pool_create(0, WIDGET_TYPE_WINDOW, "window2", "root");
+    widget = pool_create(3, WIDGET_TYPE_WINDOW, "window", "root");
 
     widget_initwindow(widget->data, "Calculator");
 
-    widget = pool_create(3, WIDGET_TYPE_CONTAINER, "base", "window2");
+    widget = pool_create(3, WIDGET_TYPE_CONTAINER, "base", "window");
 
     widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_NORMAL, 0);
 
@@ -586,17 +586,17 @@ void widgets_setup(void)
 
     widget_initimage(widget->data, 0, 0);
 
-    widget = pool_getwidgetbyid(0, "window0");
+    widget = pool_getwidgetbyid(1, "window");
     widget->position.x = 200;
     widget->position.y = 100;
     widget->size.w = 800;
     widget->size.h = 600;
-    widget = pool_getwidgetbyid(0, "window1");
+    widget = pool_getwidgetbyid(2, "window");
     widget->position.x = 100;
     widget->position.y = 80;
     widget->size.w = 800;
     widget->size.h = 600;
-    widget = pool_getwidgetbyid(0, "window2");
+    widget = pool_getwidgetbyid(3, "window");
     widget->position.x = 80;
     widget->position.y = 60;
     widget->size.w = 600;
