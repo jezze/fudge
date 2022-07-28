@@ -200,7 +200,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int wmin, un
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
 
-        offsetw += child->size.w + grid->padding;
+        offsetw += colw + grid->padding;
         rowh = util_max(rowh, child->size.h);
         maxh = util_max(maxh, rowh);
 
