@@ -188,7 +188,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int wmin, un
         int childminw = 0;
         int childminh = 0;
         int childmaxw = wmax - grid->padding * 2 - offsetw;
-        int childmaxh = hmax - grid->padding * 2 - rowh - offseth;
+        int childmaxh = hmax - grid->padding * 2 - offseth;
 
         if (grid->placement == GRID_PLACEMENT_STRETCHED)
         {
