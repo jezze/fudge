@@ -121,7 +121,7 @@ void pool_bump(struct widget *widget)
 
 }
 
-struct widget *pool_create(unsigned int type, char *id, char *in)
+struct widget *pool_create(unsigned int source, unsigned int type, char *id, char *in)
 {
 
     if (nwidgets < MAX_WIDGETS)
@@ -130,7 +130,7 @@ struct widget *pool_create(unsigned int type, char *id, char *in)
         struct widget *widget = &widgets[nwidgets];
         struct list_item *item = &widgetitems[nwidgets];
 
-        widget_init(widget, type, id, in, &payloads[nwidgets]);
+        widget_init(widget, source, type, id, in, &payloads[nwidgets]);
         list_inititem(item, widget);
         list_add(&widgetlist, item);
 

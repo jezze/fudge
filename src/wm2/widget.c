@@ -69,9 +69,10 @@ void widget_initwindow(struct widget_window *window, char *title)
 
 }
 
-void widget_init(struct widget *widget, unsigned int type, char *id, char *in, void *data)
+void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data)
 {
 
+    widget->source = source;
     widget->type = type;
     widget->id = id;
     widget->in = in;

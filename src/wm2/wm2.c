@@ -454,135 +454,135 @@ void widgets_setup(void)
 
     struct widget *widget;
 
-    widget = pool_create(WIDGET_TYPE_CONTAINER, "root", "");
+    widget = pool_create(0, WIDGET_TYPE_CONTAINER, "root", "");
 
     widget_initcontainer(widget->data, CONTAINER_LAYOUT_FLOAT, CONTAINER_PLACEMENT_NORMAL, 0);
 
-    widget = pool_create(WIDGET_TYPE_FILL, "background", "root");
+    widget = pool_create(0, WIDGET_TYPE_FILL, "background", "root");
 
     widget_initfill(widget->data, 0xFF142434);
 
-    widget = pool_create(WIDGET_TYPE_WINDOW, "window0", "root");
+    widget = pool_create(0, WIDGET_TYPE_WINDOW, "window0", "root");
 
     widget_initwindow(widget->data, "Window 0");
 
-    widget = pool_create(WIDGET_TYPE_CONTAINER, "base0", "window0");
+    widget = pool_create(1, WIDGET_TYPE_CONTAINER, "base0", "window0");
 
     widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_NORMAL, 16);
 
-    widget = pool_create(WIDGET_TYPE_TEXT, "", "base0");
+    widget = pool_create(1, WIDGET_TYPE_TEXT, "", "base0");
 
     widget_inittext(widget->data, 30, "Hello World!\nHow are we today?");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "", "base0");
+    widget = pool_create(1, WIDGET_TYPE_BUTTON, "", "base0");
 
     widget_initbutton(widget->data, "Click Me");
 
-    widget = pool_create(WIDGET_TYPE_TEXT, "", "base0");
+    widget = pool_create(1, WIDGET_TYPE_TEXT, "", "base0");
 
     widget_inittext(widget->data, 12, "Hello again!");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "", "base0");
+    widget = pool_create(1, WIDGET_TYPE_BUTTON, "", "base0");
 
     widget_initbutton(widget->data, "Click Me Too");
 
-    widget = pool_create(WIDGET_TYPE_WINDOW, "shell-window", "root");
+    widget = pool_create(0, WIDGET_TYPE_WINDOW, "shell-window", "root");
 
     widget_initwindow(widget->data, "Shell");
 
-    widget = pool_create(WIDGET_TYPE_CONTAINER, "shell-base", "shell-window");
+    widget = pool_create(2, WIDGET_TYPE_CONTAINER, "shell-base", "shell-window");
 
     widget_initcontainer(widget->data, CONTAINER_LAYOUT_MAXIMIZE, CONTAINER_PLACEMENT_STRETCHED, 16);
 
-    widget = pool_create(WIDGET_TYPE_TEXTBOX, "shell-prompt", "shell-base");
+    widget = pool_create(2, WIDGET_TYPE_TEXTBOX, "shell-prompt", "shell-base");
 
     widget_inittextbox(widget->data, 3, "$  ", TEXTBOX_MODE_NORMAL);
 
-    widget = pool_create(WIDGET_TYPE_WINDOW, "calc-window", "root");
+    widget = pool_create(0, WIDGET_TYPE_WINDOW, "calc-window", "root");
 
     widget_initwindow(widget->data, "Calculator");
 
-    widget = pool_create(WIDGET_TYPE_CONTAINER, "calc-base", "calc-window");
+    widget = pool_create(3, WIDGET_TYPE_CONTAINER, "calc-base", "calc-window");
 
     widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_NORMAL, 0);
 
-    widget = pool_create(WIDGET_TYPE_CONTAINER, "calc-container", "calc-base");
+    widget = pool_create(3, WIDGET_TYPE_CONTAINER, "calc-container", "calc-base");
 
     widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_STRETCHED, 16);
 
-    widget = pool_create(WIDGET_TYPE_TEXTBOX, "calc-display", "calc-container");
+    widget = pool_create(3, WIDGET_TYPE_TEXTBOX, "calc-display", "calc-container");
 
     widget_inittextbox(widget->data, 4, "1337", TEXTBOX_MODE_READONLY);
 
-    widget = pool_create(WIDGET_TYPE_GRID, "calc-buttons", "calc-base");
+    widget = pool_create(3, WIDGET_TYPE_GRID, "calc-buttons", "calc-base");
 
     widget_initgrid(widget->data, 4, GRID_PLACEMENT_STRETCHED, 16);
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-7", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-7", "calc-buttons");
 
     widget_initbutton(widget->data, "7");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-8", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-8", "calc-buttons");
 
     widget_initbutton(widget->data, "8");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-9", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-9", "calc-buttons");
 
     widget_initbutton(widget->data, "9");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-div", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-div", "calc-buttons");
 
     widget_initbutton(widget->data, "/");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-6", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-6", "calc-buttons");
 
     widget_initbutton(widget->data, "4");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-5", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-5", "calc-buttons");
 
     widget_initbutton(widget->data, "5");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-4", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-4", "calc-buttons");
 
     widget_initbutton(widget->data, "6");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-mul", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-mul", "calc-buttons");
 
     widget_initbutton(widget->data, "x");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-3", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-3", "calc-buttons");
 
     widget_initbutton(widget->data, "1");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-2", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-2", "calc-buttons");
 
     widget_initbutton(widget->data, "2");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-1", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-1", "calc-buttons");
 
     widget_initbutton(widget->data, "3");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-sub", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-sub", "calc-buttons");
 
     widget_initbutton(widget->data, "-");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-0", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-0", "calc-buttons");
 
     widget_initbutton(widget->data, "0");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-dot", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-dot", "calc-buttons");
 
     widget_initbutton(widget->data, ".");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-add", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-add", "calc-buttons");
 
     widget_initbutton(widget->data, "+");
 
-    widget = pool_create(WIDGET_TYPE_BUTTON, "calc-button-result", "calc-buttons");
+    widget = pool_create(3, WIDGET_TYPE_BUTTON, "calc-button-result", "calc-buttons");
 
     widget_initbutton(widget->data, "=");
 
-    widget = pool_create(WIDGET_TYPE_IMAGE, "mouse", "root");
+    widget = pool_create(0, WIDGET_TYPE_IMAGE, "mouse", "root");
 
     widget_initimage(widget->data, 0, 0);
 
