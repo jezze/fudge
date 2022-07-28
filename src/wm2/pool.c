@@ -42,8 +42,13 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 
         struct widget *widget = current->data;
 
-        if (cstring_match(widget->in, parent->id))
-            return current;
+        if (!parent->source || widget->source == parent->source)
+        {
+
+            if (cstring_match(widget->in, parent->id))
+                return current;
+
+        }
 
     }
 
@@ -51,7 +56,7 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 
 }
 
-struct widget *pool_getwidgetbyid(char *id)
+struct widget *pool_getwidgetbyid(unsigned int source, char *id)
 {
 
     struct list_item *current = 0;
@@ -60,6 +65,9 @@ struct widget *pool_getwidgetbyid(char *id)
     {
 
         struct widget *widget = current->data;
+
+        if (widget->source != source)
+            continue;
 
         if (cstring_match(widget->id, id))
             return widget;
