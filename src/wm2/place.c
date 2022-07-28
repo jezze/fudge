@@ -87,6 +87,34 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
 
 }
 
+static void placecontainermaximize(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
+{
+
+    struct widget_container *container = widget->data;
+    struct list_item *current = 0;
+
+    while ((current = pool_nextin(current, widget->id)))
+    {
+
+        struct widget *child = current->data;
+        int childx = x + container->padding; 
+        int childy = y + container->padding; 
+        int childmaxw = wmax - container->padding * 2;
+        int childmaxh = hmax - container->padding * 2;
+
+        place_widget(child, childx, childy, childmaxw, childmaxh, childmaxw, childmaxh);
+
+    }
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = wmax;
+    widget->size.h = hmax;
+    widget->size.w = util_clamp(widget->size.w, wmin, wmax);
+    widget->size.h = util_clamp(widget->size.h, hmin, hmax);
+
+}
+
 static void placecontainervertical(struct widget *widget, int x, int y, unsigned int wmin, unsigned int hmin, unsigned int wmax, unsigned int hmax)
 {
 
@@ -141,6 +169,11 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int wmi
 
     case CONTAINER_LAYOUT_HORIZONTAL:
         placecontainerhorizontal(widget, x, y, wmin, hmin, wmax, hmax);
+
+        break;
+
+    case CONTAINER_LAYOUT_MAXIMIZE:
+        placecontainermaximize(widget, x, y, wmin, hmin, wmax, hmax);
 
         break;
 

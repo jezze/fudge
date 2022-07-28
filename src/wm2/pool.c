@@ -34,6 +34,9 @@ struct list_item *pool_next(struct list_item *current)
 struct list_item *pool_nextin(struct list_item *current, char *in)
 {
 
+    if (cstring_length(in) == 0)
+        return 0;
+
     while ((current = pool_next(current)))
     {
 
