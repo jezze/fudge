@@ -171,7 +171,7 @@ static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned 
     struct list_item *current = 0;
     struct widget *last = 0;
 
-    while ((current = pool_nextin(current, parent->id)))
+    while ((current = pool_nextin(current, parent)))
     {
  
         struct widget *child = current->data;
@@ -204,7 +204,7 @@ static void damage(struct widget *widget)
 
     render_damagebywidget(&display, widget);
 
-    while ((current = pool_nextin(current, widget->id)))
+    while ((current = pool_nextin(current, widget)))
         damage(current->data);
 
 }

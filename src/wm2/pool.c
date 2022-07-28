@@ -31,10 +31,10 @@ struct list_item *pool_next(struct list_item *current)
 
 }
 
-struct list_item *pool_nextin(struct list_item *current, char *in)
+struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 {
 
-    if (cstring_length(in) == 0)
+    if (cstring_length(parent->id) == 0)
         return 0;
 
     while ((current = pool_next(current)))
@@ -42,7 +42,7 @@ struct list_item *pool_nextin(struct list_item *current, char *in)
 
         struct widget *widget = current->data;
 
-        if (cstring_match(widget->in, in))
+        if (cstring_match(widget->in, parent->id))
             return current;
 
     }
@@ -95,7 +95,7 @@ static void bump(struct list_item *item)
 
     list_move(&bumplist, &widgetlist, item);
 
-    while ((current = pool_nextin(current, widget->id)))
+    while ((current = pool_nextin(current, widget)))
     {
 
         struct list_item *prev = current->prev;

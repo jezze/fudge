@@ -28,7 +28,7 @@ static void placecontainerfloat(struct widget *widget, int x, int y, unsigned in
 
     struct list_item *current = 0;
 
-    while ((current = pool_nextin(current, widget->id)))
+    while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
@@ -53,7 +53,7 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
     int offh = 0;
     int toth = 0;
 
-    while ((current = pool_nextin(current, widget->id)))
+    while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
@@ -87,7 +87,7 @@ static void placecontainermaximize(struct widget *widget, int x, int y, unsigned
     struct widget_container *container = widget->data;
     struct list_item *current = 0;
 
-    while ((current = pool_nextin(current, widget->id)))
+    while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
@@ -116,7 +116,7 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
     int offh = 0;
     int totw = 0;
 
-    while ((current = pool_nextin(current, widget->id)))
+    while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
@@ -200,7 +200,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
     unsigned int num = 0;
     unsigned int colw = (maxw - grid->padding * (grid->columns + 1)) / grid->columns;
 
-    while ((current = pool_nextin(current, widget->id)))
+    while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
@@ -281,7 +281,7 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
 
     struct list_item *current = 0;
 
-    while ((current = pool_nextin(current, widget->id)))
+    while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
