@@ -157,6 +157,35 @@ static unsigned int readword(struct parser *parser, char *result, unsigned int c
 
 }
 
+static char *readunsafeword(struct parser *parser)
+{
+
+    char *word = strdata + strdataoffset;
+    unsigned int count = readword(parser, word, 0x4000 - strdataoffset);
+
+    return (count) ? word : 0;
+
+}
+
+static char *readsafeword(struct parser *parser)
+{
+
+    char *word = strdata + strdataoffset;
+    unsigned int count = readword(parser, word, 0x4000 - strdataoffset);
+
+    if (count)
+    {
+
+        strdataoffset += count + 1;
+
+        return word;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int getkey(struct token *tokens, unsigned int n, char *value)
 {
 
@@ -177,32 +206,18 @@ static unsigned int getkey(struct token *tokens, unsigned int n, char *value)
 static unsigned int getcommand(struct parser *parser)
 {
 
-    char word[32];
-    unsigned int count = readword(parser, word, 32);
+    char *word = readunsafeword(parser);
 
-    return (count) ? getkey(commands, 5, word) : 0;
-
-}
-
-static void parseskip(struct parser *parser)
-{
-
-    char word[4096];
-
-    readword(parser, word, 4096);
+    return (word) ? getkey(commands, 5, word) : 0;
 
 }
 
-static unsigned int parse_type(struct parser *parser)
+static unsigned int gettype(struct parser *parser)
 {
 
-    char word[32];
-    unsigned int count = readword(parser, word, 32);
+    char *word = readunsafeword(parser);
 
-    if (!count)
-        fail(parser);
-
-    return widget_gettype(word);
+    return (word) ? widget_gettype(word) : 0;
 
 }
 
@@ -212,27 +227,19 @@ static void parse_attributes(struct parser *parser, struct widget *widget)
     while (!parser->errors && !parser->expr.linebreak)
     {
 
-        char word[32];
-        unsigned int count;
+        char *word = readunsafeword(parser);
         unsigned int attribute;
-        char *value = strdata + strdataoffset;
 
-        count = readword(parser, word, 32);
-
-        if (!count)
+        if (!word)
             fail(parser);
 
         attribute = widget_getattribute(word);
-        count = readword(parser, value, 512);
+        word = readsafeword(parser);
 
-        if (!count)
+        if (!word)
             fail(parser);
 
-        strdataoffset += count;
-        strdata[strdataoffset] = '\0';
-        strdataoffset++;
-
-        widget_setattribute(widget, attribute, value);
+        widget_setattribute(widget, attribute, word);
 
     }
 
@@ -242,7 +249,7 @@ static void parse_command_comment(struct parser *parser)
 {
 
     while (!parser->errors && !parser->expr.linebreak)
-        parseskip(parser);
+        readunsafeword(parser);
 
 }
 
@@ -256,7 +263,7 @@ static void parse_command_delete(struct parser *parser)
 static void parse_command_insert(struct parser *parser, unsigned int source, char *in)
 {
 
-    unsigned int type = parse_type(parser);
+    unsigned int type = gettype(parser);
     struct widget *widget;
 
     if (!type)
