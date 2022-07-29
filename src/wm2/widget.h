@@ -27,8 +27,6 @@
 #define GRID_PLACEMENT_STRETCHED        1
 #define TEXTBOX_MODE_NORMAL             0
 #define TEXTBOX_MODE_READONLY           1
-#define WINDOW_MIN_WIDTH                128
-#define WINDOW_MIN_HEIGHT               128
 
 struct position
 {

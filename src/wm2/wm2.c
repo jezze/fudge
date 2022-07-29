@@ -6,6 +6,9 @@
 #include "place.h"
 #include "render.h"
 
+#define WINDOW_MIN_WIDTH                128
+#define WINDOW_MIN_HEIGHT               128
+
 struct configuration
 {
 
