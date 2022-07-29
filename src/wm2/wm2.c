@@ -458,148 +458,51 @@ void widgets_setup(void)
 
     struct widget *widget;
     struct parser parser;
-
-    widget = pool_create(0, WIDGET_TYPE_CONTAINER, "root", "");
-
-    widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "float");
-    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "normal");
-
-    widget = pool_create(0, WIDGET_TYPE_FILL, "background", "root");
-
-    widget_setattribute(widget, WIDGET_ATTR_COLOR, "FF142434");
-
-    widget = pool_create(1, WIDGET_TYPE_WINDOW, "window", "root");
-
-    widget_setattribute(widget, WIDGET_ATTR_TITLE, "Window 0");
-
-    widget = pool_create(1, WIDGET_TYPE_CONTAINER, "base", "window");
-
-    widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "vertical");
-    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "normal");
-    widget_setattribute(widget, WIDGET_ATTR_PADDING, "16");
-
-    widget = pool_create(1, WIDGET_TYPE_TEXT, "", "base");
-
-    widget_setattribute(widget, WIDGET_ATTR_CONTENT, "Hello World!\nHow are we today?");
-
-    widget = pool_create(1, WIDGET_TYPE_BUTTON, "", "base");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "Click Me");
-
-    widget = pool_create(1, WIDGET_TYPE_TEXT, "", "base");
-
-    widget_setattribute(widget, WIDGET_ATTR_CONTENT, "Hello again!");
-
-    widget = pool_create(1, WIDGET_TYPE_BUTTON, "", "base");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "Click Me Too");
-
-    /* Here we go */
-    parser_parse(&parser, 1, "base", 23, "+ fill color \"FF102030\"");
-
-    widget = pool_create(2, WIDGET_TYPE_WINDOW, "window", "root");
-
-    widget_setattribute(widget, WIDGET_ATTR_TITLE, "Shell");
-
-    widget = pool_create(2, WIDGET_TYPE_CONTAINER, "base", "window");
-
-    widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "maximize");
-    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "stretched");
-    widget_setattribute(widget, WIDGET_ATTR_PADDING, "16");
-
-    widget = pool_create(2, WIDGET_TYPE_TEXTBOX, "prompt", "base");
-
-    widget_setattribute(widget, WIDGET_ATTR_CONTENT, "$  ");
-
-    widget = pool_create(3, WIDGET_TYPE_WINDOW, "window", "root");
-
-    widget_setattribute(widget, WIDGET_ATTR_TITLE, "Calculator");
-
-    widget = pool_create(3, WIDGET_TYPE_CONTAINER, "base", "window");
-
-    widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "vertical");
-    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "normal");
-
-    widget = pool_create(3, WIDGET_TYPE_CONTAINER, "container", "base");
-
-    widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "vertical");
-    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "stretched");
-    widget_setattribute(widget, WIDGET_ATTR_PADDING, "16");
-
-    widget = pool_create(3, WIDGET_TYPE_TEXTBOX, "display", "container");
-
-    widget_setattribute(widget, WIDGET_ATTR_CONTENT, "1337");
-    widget_setattribute(widget, WIDGET_ATTR_MODE, "readonly");
-
-    widget = pool_create(3, WIDGET_TYPE_GRID, "buttons", "base");
-
-    widget_setattribute(widget, WIDGET_ATTR_COLUMNS, "4");
-    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "stretched");
-    widget_setattribute(widget, WIDGET_ATTR_PADDING, "16");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-7", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "7");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-8", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "8");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-9", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "9");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-div", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "/");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-6", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "4");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-5", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "5");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-4", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "6");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-mul", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "x");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-3", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "1");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-2", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "2");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-1", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "3");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-sub", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "-");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-0", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "0");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-dot", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, ".");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-add", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "+");
-
-    widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-result", "buttons");
-
-    widget_setattribute(widget, WIDGET_ATTR_LABEL, "=");
+    char *source0 =
+        "+ container id \"root\" layout \"float\"\n"
+        "+ fill in \"root\" color \"FF142434\"\n";
+    char *source1 =
+        "+ window id \"window\" title \"Window 0\"\n"
+        "+ container in \"window\" id \"base\" layout \"vertical\" padding \"16\"\n"
+        "+ text in \"base\" content \"Hello World! How are we today?\"\n"
+        "+ button in \"base\" label \"Click Me\"\n"
+        "+ text in \"base\" content \"Hello again!\"\n"
+        "+ button in \"base\" label \"Click Me Too\"\n";
+    char *source2 =
+        "+ window id \"window\" title \"Shell\"\n"
+        "+ container in \"window\" id \"base\" layout \"maximize\" padding \"16\"\n"
+        "+ textbox in \"base\" content \"$   \"\n";
+    char *source3a =
+        "+ window id \"window\" title \"Calculator\"\n"
+        "+ container in \"window\" id \"base\" layout \"vertical\"\n"
+        "+ container in \"base\" id \"container\" layout \"vertical\" placement \"stretched\" padding \"16\"\n"
+        "+ textbox in \"container\" content \"1337\" mode \"readonly\"\n"
+        "+ grid in \"base\" id \"buttons\" columns \"4\" placement \"stretched\" padding \"16\"\n";
+    char *source3b =
+        "+ button in \"buttons\" label \"7\"\n"
+        "+ button in \"buttons\" label \"8\"\n"
+        "+ button in \"buttons\" label \"9\"\n"
+        "+ button in \"buttons\" label \"/\"\n"
+        "+ button in \"buttons\" label \"4\"\n"
+        "+ button in \"buttons\" label \"5\"\n"
+        "+ button in \"buttons\" label \"6\"\n"
+        "+ button in \"buttons\" label \"x\"\n";
+    char *source3c =
+        "+ button in \"buttons\" label \"3\"\n"
+        "+ button in \"buttons\" label \"2\"\n"
+        "+ button in \"buttons\" label \"1\"\n"
+        "+ button in \"buttons\" label \"-\"\n"
+        "+ button in \"buttons\" label \"0\"\n"
+        "+ button in \"buttons\" label \".\"\n"
+        "+ button in \"buttons\" label \"+\"\n"
+        "+ button in \"buttons\" label \"=\"\n";
+
+    parser_parse(&parser, 0, "", cstring_length(source0), source0);
+    parser_parse(&parser, 1, "root", cstring_length(source1), source1);
+    parser_parse(&parser, 2, "root", cstring_length(source2), source2);
+    parser_parse(&parser, 3, "root", cstring_length(source3a), source3a);
+    parser_parse(&parser, 3, "root", cstring_length(source3b), source3b);
+    parser_parse(&parser, 3, "root", cstring_length(source3c), source3c);
 
     widget = pool_create(0, WIDGET_TYPE_IMAGE, "mouse", "root");
 

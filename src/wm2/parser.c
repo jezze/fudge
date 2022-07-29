@@ -26,6 +26,9 @@ static struct token commands[] = {
     {COMMAND_UPDATE, "="}
 };
 
+char strdata[0x4000];
+unsigned int strdataoffset;
+
 static void fail(struct parser *parser)
 {
 
@@ -212,6 +215,7 @@ static void parse_attributes(struct parser *parser, struct widget *widget)
         char word[32];
         unsigned int count;
         unsigned int attribute;
+        char *value = strdata + strdataoffset;
 
         count = readword(parser, word, 32);
 
@@ -219,13 +223,16 @@ static void parse_attributes(struct parser *parser, struct widget *widget)
             fail(parser);
 
         attribute = widget_getattribute(word);
-
-        count = readword(parser, word, 32);
+        count = readword(parser, value, 512);
 
         if (!count)
             fail(parser);
 
-        widget_setattribute(widget, attribute, word);
+        strdataoffset += count;
+        strdata[strdataoffset] = '\0';
+        strdataoffset++;
+
+        widget_setattribute(widget, attribute, value);
 
     }
 
