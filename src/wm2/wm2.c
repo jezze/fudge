@@ -463,21 +463,21 @@ void widgets_setup(void)
         "+ fill in \"root\" color \"FF142434\"\n";
     char *source1 =
         "+ window id \"window\" title \"Window 0\"\n"
-        "+ container in \"window\" id \"base\" layout \"vertical\" padding \"16\"\n"
+        "+ container id \"base\" in \"window\" layout \"vertical\" padding \"16\"\n"
         "+ text in \"base\" content \"Hello World! How are we today?\"\n"
         "+ button in \"base\" label \"Click Me\"\n"
         "+ text in \"base\" content \"Hello again!\"\n"
         "+ button in \"base\" label \"Click Me Too\"\n";
     char *source2 =
         "+ window id \"window\" title \"Shell\"\n"
-        "+ container in \"window\" id \"base\" layout \"maximize\" padding \"16\"\n"
+        "+ container id \"base\" in \"window\" layout \"maximize\" padding \"16\"\n"
         "+ textbox in \"base\" content \"$   \"\n";
     char *source3a =
         "+ window id \"window\" title \"Calculator\"\n"
-        "+ container in \"window\" id \"base\" layout \"vertical\"\n"
-        "+ container in \"base\" id \"container\" layout \"vertical\" placement \"stretched\" padding \"16\"\n"
+        "+ container id \"base\" in \"window\" layout \"vertical\"\n"
+        "+ container id \"container\" in \"base\" layout \"vertical\" placement \"stretched\" padding \"16\"\n"
         "+ textbox in \"container\" content \"1337\" mode \"readonly\"\n"
-        "+ grid in \"base\" id \"buttons\" columns \"4\" placement \"stretched\" padding \"16\"\n";
+        "+ grid id \"buttons\" in \"base\" columns \"4\" placement \"stretched\" padding \"16\"\n";
     char *source3b =
         "+ button in \"buttons\" label \"7\"\n"
         "+ button in \"buttons\" label \"8\"\n"
