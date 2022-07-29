@@ -5,6 +5,7 @@
 #include "pool.h"
 #include "place.h"
 #include "render.h"
+#include "parser.h"
 
 #define WINDOW_MIN_WIDTH                128
 #define WINDOW_MIN_HEIGHT               128
@@ -456,6 +457,7 @@ void widgets_setup(void)
 {
 
     struct widget *widget;
+    struct parser parser;
 
     widget = pool_create(0, WIDGET_TYPE_CONTAINER, "root", "");
 
@@ -491,6 +493,9 @@ void widgets_setup(void)
     widget = pool_create(1, WIDGET_TYPE_BUTTON, "", "base");
 
     widget_setattribute(widget, WIDGET_ATTR_LABEL, "Click Me Too");
+
+    /* Here we go */
+    parser_parse(&parser, 1, "base", 23, "+ fill color \"FF102030\"");
 
     widget = pool_create(2, WIDGET_TYPE_WINDOW, "window", "root");
 
