@@ -87,7 +87,7 @@ void widget_setimage(struct widget_image *image, void *data, void *cmap)
 
 }
 
-static void widget_setattributebutton(struct widget *widget, unsigned int attribute, char *value)
+static void setattributebutton(struct widget *widget, unsigned int attribute, char *value)
 {
 
     struct widget_button *button = widget->data;
@@ -104,7 +104,7 @@ static void widget_setattributebutton(struct widget *widget, unsigned int attrib
 
 }
 
-static void widget_setattributecontainer(struct widget *widget, unsigned int attribute, char *value)
+static void setattributecontainer(struct widget *widget, unsigned int attribute, char *value)
 {
 
     struct widget_container *container = widget->data;
@@ -131,7 +131,7 @@ static void widget_setattributecontainer(struct widget *widget, unsigned int att
 
 }
 
-static void widget_setattributegrid(struct widget *widget, unsigned int attribute, char *value)
+static void setattributegrid(struct widget *widget, unsigned int attribute, char *value)
 {
 
     struct widget_grid *grid = widget->data;
@@ -158,7 +158,7 @@ static void widget_setattributegrid(struct widget *widget, unsigned int attribut
 
 }
 
-static void widget_setattributefill(struct widget *widget, unsigned int attribute, char *value)
+static void setattributefill(struct widget *widget, unsigned int attribute, char *value)
 {
 
     struct widget_fill *fill = widget->data;
@@ -175,7 +175,7 @@ static void widget_setattributefill(struct widget *widget, unsigned int attribut
 
 }
 
-static void widget_setattributetext(struct widget *widget, unsigned int attribute, char *value)
+static void setattributetext(struct widget *widget, unsigned int attribute, char *value)
 {
 
     struct widget_text *text = widget->data;
@@ -193,7 +193,7 @@ static void widget_setattributetext(struct widget *widget, unsigned int attribut
 
 }
 
-static void widget_setattributetextbox(struct widget *widget, unsigned int attribute, char *value)
+static void setattributetextbox(struct widget *widget, unsigned int attribute, char *value)
 {
 
     struct widget_textbox *textbox = widget->data;
@@ -216,7 +216,7 @@ static void widget_setattributetextbox(struct widget *widget, unsigned int attri
 
 }
 
-static void widget_setattributewindow(struct widget *widget, unsigned int attribute, char *value)
+static void setattributewindow(struct widget *widget, unsigned int attribute, char *value)
 {
 
     struct widget_window *window = widget->data;
@@ -255,37 +255,37 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
     {
 
     case WIDGET_TYPE_BUTTON:
-        widget_setattributebutton(widget, attribute, value);
+        setattributebutton(widget, attribute, value);
 
         break;
 
     case WIDGET_TYPE_CONTAINER:
-        widget_setattributecontainer(widget, attribute, value);
+        setattributecontainer(widget, attribute, value);
 
         break;
 
     case WIDGET_TYPE_GRID:
-        widget_setattributegrid(widget, attribute, value);
+        setattributegrid(widget, attribute, value);
 
         break;
 
     case WIDGET_TYPE_FILL:
-        widget_setattributefill(widget, attribute, value);
+        setattributefill(widget, attribute, value);
 
         break;
 
     case WIDGET_TYPE_TEXT:
-        widget_setattributetext(widget, attribute, value);
+        setattributetext(widget, attribute, value);
 
         break;
 
     case WIDGET_TYPE_TEXTBOX:
-        widget_setattributetextbox(widget, attribute, value);
+        setattributetextbox(widget, attribute, value);
 
         break;
 
     case WIDGET_TYPE_WINDOW:
-        widget_setattributewindow(widget, attribute, value);
+        setattributewindow(widget, attribute, value);
 
         break;
 
