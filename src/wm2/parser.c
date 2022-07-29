@@ -192,6 +192,16 @@ static void parseskip(struct parser *parser)
 
 }
 
+static void parse_attributes(struct parser *parser, struct widget *widget)
+{
+
+    while (!parser->errors && !parser->expr.linebreak)
+    {
+
+    }
+
+}
+
 static void parse_command_comment(struct parser *parser)
 {
 
@@ -210,13 +220,12 @@ static void parse_command_delete(struct parser *parser)
 static void parse_command_insert(struct parser *parser, char *in)
 {
 
-    /*
     struct widget *widget = pool_create(0, 0, "", in);
 
     if (widget)
+        parse_attributes(parser, widget);
     else
         fail(parser);
-    */
 
 }
 
