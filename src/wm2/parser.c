@@ -198,6 +198,24 @@ static void parse_attributes(struct parser *parser, struct widget *widget)
     while (!parser->errors && !parser->expr.linebreak)
     {
 
+        char word[32];
+        unsigned int count;
+        unsigned int attribute;
+
+        count = readword(parser, word, 32);
+
+        if (!count)
+            fail(parser);
+
+        attribute = widget_getattribute(word);
+
+        count = readword(parser, word, 32);
+
+        if (!count)
+            fail(parser);
+
+        widget_setattribute(widget, attribute, word);
+
     }
 
 }
