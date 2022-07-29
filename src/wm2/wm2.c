@@ -460,11 +460,11 @@ void widgets_setup(void)
 
     widget = pool_create(0, WIDGET_TYPE_FILL, "background", "root");
 
-    widget_initfill(widget->data, 0xFF142434);
+    widget_setattribute(widget, WIDGET_ATTR_COLOR, "FF142434");
 
     widget = pool_create(1, WIDGET_TYPE_WINDOW, "window", "root");
 
-    widget_initwindow(widget->data, "Window 0");
+    widget_setattribute(widget, WIDGET_ATTR_TITLE, "Window 0");
 
     widget = pool_create(1, WIDGET_TYPE_CONTAINER, "base", "window");
 
@@ -472,23 +472,23 @@ void widgets_setup(void)
 
     widget = pool_create(1, WIDGET_TYPE_TEXT, "", "base");
 
-    widget_inittext(widget->data, 30, "Hello World!\nHow are we today?");
+    widget_setattribute(widget, WIDGET_ATTR_CONTENT, "Hello World!\nHow are we today?");
 
     widget = pool_create(1, WIDGET_TYPE_BUTTON, "", "base");
 
-    widget_initbutton(widget->data, "Click Me");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "Click Me");
 
     widget = pool_create(1, WIDGET_TYPE_TEXT, "", "base");
 
-    widget_inittext(widget->data, 12, "Hello again!");
+    widget_setattribute(widget, WIDGET_ATTR_CONTENT, "Hello again!");
 
     widget = pool_create(1, WIDGET_TYPE_BUTTON, "", "base");
 
-    widget_initbutton(widget->data, "Click Me Too");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "Click Me Too");
 
     widget = pool_create(2, WIDGET_TYPE_WINDOW, "window", "root");
 
-    widget_initwindow(widget->data, "Shell");
+    widget_setattribute(widget, WIDGET_ATTR_TITLE, "Shell");
 
     widget = pool_create(2, WIDGET_TYPE_CONTAINER, "base", "window");
 
@@ -500,7 +500,7 @@ void widgets_setup(void)
 
     widget = pool_create(3, WIDGET_TYPE_WINDOW, "window", "root");
 
-    widget_initwindow(widget->data, "Calculator");
+    widget_setattribute(widget, WIDGET_ATTR_TITLE, "Calculator");
 
     widget = pool_create(3, WIDGET_TYPE_CONTAINER, "base", "window");
 
@@ -520,67 +520,67 @@ void widgets_setup(void)
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-7", "buttons");
 
-    widget_initbutton(widget->data, "7");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "7");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-8", "buttons");
 
-    widget_initbutton(widget->data, "8");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "8");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-9", "buttons");
 
-    widget_initbutton(widget->data, "9");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "9");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-div", "buttons");
 
-    widget_initbutton(widget->data, "/");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "/");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-6", "buttons");
 
-    widget_initbutton(widget->data, "4");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "4");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-5", "buttons");
 
-    widget_initbutton(widget->data, "5");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "5");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-4", "buttons");
 
-    widget_initbutton(widget->data, "6");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "6");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-mul", "buttons");
 
-    widget_initbutton(widget->data, "x");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "x");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-3", "buttons");
 
-    widget_initbutton(widget->data, "1");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "1");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-2", "buttons");
 
-    widget_initbutton(widget->data, "2");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "2");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-1", "buttons");
 
-    widget_initbutton(widget->data, "3");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "3");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-sub", "buttons");
 
-    widget_initbutton(widget->data, "-");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "-");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-0", "buttons");
 
-    widget_initbutton(widget->data, "0");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "0");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-dot", "buttons");
 
-    widget_initbutton(widget->data, ".");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, ".");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-add", "buttons");
 
-    widget_initbutton(widget->data, "+");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "+");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-result", "buttons");
 
-    widget_initbutton(widget->data, "=");
+    widget_setattribute(widget, WIDGET_ATTR_LABEL, "=");
 
     widget = pool_create(0, WIDGET_TYPE_IMAGE, "mouse", "root");
 
