@@ -1,40 +1,89 @@
 #include <fudge.h>
 #include "widget.h"
 
-void widget_initcontainer(struct widget_container *container, unsigned int layout, unsigned int placement, unsigned int padding)
+struct token
 {
 
-    container->layout = layout;
-    container->placement = placement;
-    container->padding = padding;
+    unsigned int key;
+    char *value;
+
+};
+
+static struct token types[] =
+{
+    {WIDGET_TYPE_BUTTON, "button"},
+    {WIDGET_TYPE_FILL, "fill"},
+    {WIDGET_TYPE_GRID, "grid"},
+    {WIDGET_TYPE_IMAGE, "image"},
+    {WIDGET_TYPE_CONTAINER, "container"},
+    {WIDGET_TYPE_TEXT, "text"},
+    {WIDGET_TYPE_TEXTBOX, "textbox"},
+    {WIDGET_TYPE_WINDOW, "window"}
+};
+
+static struct token attributes[] =
+{
+    {WIDGET_ATTR_COLOR, "color"},
+    {WIDGET_ATTR_COLUMNS, "columns"},
+    {WIDGET_ATTR_CONTENT, "content"},
+    {WIDGET_ATTR_ID, "id"},
+    {WIDGET_ATTR_IN, "in"},
+    {WIDGET_ATTR_LABEL, "label"},
+    {WIDGET_ATTR_LAYOUT, "layout"},
+    {WIDGET_ATTR_MODE, "mode"},
+    {WIDGET_ATTR_PADDING, "padding"},
+    {WIDGET_ATTR_PLACEMENT, "placement"},
+    {WIDGET_ATTR_TITLE, "title"}
+};
+
+static struct token containerlayouts[] =
+{
+    {CONTAINER_LAYOUT_FLOAT, "float"},
+    {CONTAINER_LAYOUT_MAXIMIZE, "maximize"},
+    {CONTAINER_LAYOUT_HORIZONTAL, "horizontal"},
+    {CONTAINER_LAYOUT_VERTICAL, "vertical"}
+};
+
+static struct token containerplacements[] =
+{
+    {CONTAINER_PLACEMENT_NORMAL, "normal"},
+    {CONTAINER_PLACEMENT_STRETCHED, "stretched"}
+};
+
+static struct token gridplacements[] =
+{
+    {GRID_PLACEMENT_NORMAL, "normal"},
+    {GRID_PLACEMENT_STRETCHED, "stretched"}
+};
+
+static struct token textboxmodes[] =
+{
+    {TEXTBOX_MODE_NORMAL, "normal"},
+    {TEXTBOX_MODE_READONLY, "readonly"}
+};
+
+static unsigned int getkey(struct token *tokens, unsigned int n, char *value)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < n; i++)
+    {
+
+        if (cstring_match(tokens[i].value, value))
+            return tokens[i].key;
+
+    }
+
+    return 0;
 
 }
 
-void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned int placement, unsigned int padding)
-{
-
-    grid->columns = columns;
-    grid->placement = placement;
-    grid->padding = padding;
-
-}
-
-void widget_initimage(struct widget_image *image, void *data, void *cmap)
+void widget_setimage(struct widget_image *image, void *data, void *cmap)
 {
 
     image->data = data;
     image->cmap = cmap;
-
-}
-
-void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content, unsigned int mode)
-{
-
-    textbox->content = content;
-    textbox->length = length;
-    textbox->mode = mode;
-    textbox->scroll = 0;
-    textbox->cursor = 0;
 
 }
 
@@ -48,6 +97,60 @@ static void widget_setattributebutton(struct widget *widget, unsigned int attrib
 
     case WIDGET_ATTR_LABEL:
         button->label = value;
+
+        break;
+
+    }
+
+}
+
+static void widget_setattributecontainer(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    struct widget_container *container = widget->data;
+
+    switch (attribute)
+    {
+
+    case WIDGET_ATTR_LAYOUT:
+        container->layout = getkey(containerlayouts, 4, value);
+
+        break;
+
+    case WIDGET_ATTR_PADDING:
+        container->padding = cstring_rvalue(value, cstring_length(value), 10);
+
+        break;
+
+    case WIDGET_ATTR_PLACEMENT:
+        container->placement = getkey(containerplacements, 2, value);
+
+        break;
+
+    }
+
+}
+
+static void widget_setattributegrid(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    struct widget_grid *grid = widget->data;
+
+    switch (attribute)
+    {
+
+    case WIDGET_ATTR_COLUMNS:
+        grid->columns = cstring_rvalue(value, cstring_length(value), 10);
+
+        break;
+
+    case WIDGET_ATTR_PADDING:
+        grid->padding = cstring_rvalue(value, cstring_length(value), 10);
+
+        break;
+
+    case WIDGET_ATTR_PLACEMENT:
+        grid->placement = getkey(gridplacements, 2, value);
 
         break;
 
@@ -104,6 +207,11 @@ static void widget_setattributetextbox(struct widget *widget, unsigned int attri
 
         break;
 
+    case WIDGET_ATTR_MODE:
+        textbox->mode = getkey(textboxmodes, 2, value);
+
+        break;
+
     }
 
 }
@@ -151,6 +259,16 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case WIDGET_TYPE_CONTAINER:
+        widget_setattributecontainer(widget, attribute, value);
+
+        break;
+
+    case WIDGET_TYPE_GRID:
+        widget_setattributegrid(widget, attribute, value);
+
+        break;
+
     case WIDGET_TYPE_FILL:
         widget_setattributefill(widget, attribute, value);
 
@@ -172,6 +290,20 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
         break;
 
     }
+
+}
+
+unsigned int widget_gettype(char *value)
+{
+
+    return getkey(types, 8, value);
+
+}
+
+unsigned int widget_getattribute(char *value)
+{
+
+    return getkey(attributes, 11, value);
 
 }
 

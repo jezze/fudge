@@ -425,7 +425,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     case 0:
     case 1:
-        widget_initimage(mousewidget->data, mousedata16, mousecmap);
+        widget_setimage(mousewidget->data, mousedata16, mousecmap);
 
         mousewidget->position.x = state.mouseposition.x;
         mousewidget->position.y = state.mouseposition.y;
@@ -436,7 +436,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     case 2:
     default:
-        widget_initimage(mousewidget->data, mousedata24, mousecmap);
+        widget_setimage(mousewidget->data, mousedata24, mousecmap);
 
         mousewidget->position.x = state.mouseposition.x;
         mousewidget->position.y = state.mouseposition.y;
@@ -456,7 +456,9 @@ void widgets_setup(void)
 
     widget = pool_create(0, WIDGET_TYPE_CONTAINER, "root", "");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_FLOAT, CONTAINER_PLACEMENT_NORMAL, 0);
+    widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "float");
+    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "normal");
+    widget_setattribute(widget, WIDGET_ATTR_PADDING, "0");
 
     widget = pool_create(0, WIDGET_TYPE_FILL, "background", "root");
 
@@ -468,7 +470,9 @@ void widgets_setup(void)
 
     widget = pool_create(1, WIDGET_TYPE_CONTAINER, "base", "window");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_NORMAL, 16);
+    widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "vertical");
+    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "normal");
+    widget_setattribute(widget, WIDGET_ATTR_PADDING, "16");
 
     widget = pool_create(1, WIDGET_TYPE_TEXT, "", "base");
 
@@ -492,11 +496,13 @@ void widgets_setup(void)
 
     widget = pool_create(2, WIDGET_TYPE_CONTAINER, "base", "window");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_MAXIMIZE, CONTAINER_PLACEMENT_STRETCHED, 16);
+    widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "maximize");
+    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "stretched");
+    widget_setattribute(widget, WIDGET_ATTR_PADDING, "16");
 
     widget = pool_create(2, WIDGET_TYPE_TEXTBOX, "prompt", "base");
 
-    widget_inittextbox(widget->data, 3, "$  ", TEXTBOX_MODE_NORMAL);
+    widget_setattribute(widget, WIDGET_ATTR_CONTENT, "$  ");
 
     widget = pool_create(3, WIDGET_TYPE_WINDOW, "window", "root");
 
@@ -504,19 +510,26 @@ void widgets_setup(void)
 
     widget = pool_create(3, WIDGET_TYPE_CONTAINER, "base", "window");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_NORMAL, 0);
+    widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "vertical");
+    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "normal");
+    widget_setattribute(widget, WIDGET_ATTR_PADDING, "0");
 
     widget = pool_create(3, WIDGET_TYPE_CONTAINER, "container", "base");
 
-    widget_initcontainer(widget->data, CONTAINER_LAYOUT_VERTICAL, CONTAINER_PLACEMENT_STRETCHED, 16);
+    widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "vertical");
+    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "stretched");
+    widget_setattribute(widget, WIDGET_ATTR_PADDING, "16");
 
     widget = pool_create(3, WIDGET_TYPE_TEXTBOX, "display", "container");
 
-    widget_inittextbox(widget->data, 4, "1337", TEXTBOX_MODE_READONLY);
+    widget_setattribute(widget, WIDGET_ATTR_CONTENT, "1337");
+    widget_setattribute(widget, WIDGET_ATTR_MODE, "readonly");
 
     widget = pool_create(3, WIDGET_TYPE_GRID, "buttons", "base");
 
-    widget_initgrid(widget->data, 4, GRID_PLACEMENT_STRETCHED, 16);
+    widget_setattribute(widget, WIDGET_ATTR_COLUMNS, "4");
+    widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "stretched");
+    widget_setattribute(widget, WIDGET_ATTR_PADDING, "16");
 
     widget = pool_create(3, WIDGET_TYPE_BUTTON, "button-7", "buttons");
 
@@ -583,8 +596,6 @@ void widgets_setup(void)
     widget_setattribute(widget, WIDGET_ATTR_LABEL, "=");
 
     widget = pool_create(0, WIDGET_TYPE_IMAGE, "mouse", "root");
-
-    widget_initimage(widget->data, 0, 0);
 
     widget = pool_getwidgetbyid(1, "window");
     widget->position.x = 200;

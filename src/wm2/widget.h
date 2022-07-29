@@ -7,11 +7,16 @@
 #define WIDGET_TYPE_TEXTBOX             7
 #define WIDGET_TYPE_WINDOW              8
 #define WIDGET_ATTR_COLOR               1
-#define WIDGET_ATTR_CONTENT             2
-#define WIDGET_ATTR_ID                  3
-#define WIDGET_ATTR_IN                  4
-#define WIDGET_ATTR_LABEL               5
-#define WIDGET_ATTR_TITLE               6
+#define WIDGET_ATTR_COLUMNS             2
+#define WIDGET_ATTR_CONTENT             3
+#define WIDGET_ATTR_ID                  4
+#define WIDGET_ATTR_IN                  5
+#define WIDGET_ATTR_LABEL               6
+#define WIDGET_ATTR_LAYOUT              7
+#define WIDGET_ATTR_MODE                8
+#define WIDGET_ATTR_PADDING             9
+#define WIDGET_ATTR_PLACEMENT           10
+#define WIDGET_ATTR_TITLE               11
 #define CONTAINER_LAYOUT_FLOAT          0
 #define CONTAINER_LAYOUT_HORIZONTAL     1
 #define CONTAINER_LAYOUT_MAXIMIZE       2
@@ -123,9 +128,8 @@ struct widget_window
 
 };
 
-void widget_initcontainer(struct widget_container *container, unsigned int layout, unsigned int placement, unsigned int padding);
-void widget_initgrid(struct widget_grid *grid, unsigned int columns, unsigned int placement, unsigned int padding);
-void widget_initimage(struct widget_image *image, void *data, void *cmap);
-void widget_inittextbox(struct widget_textbox *textbox, unsigned int length, char *content, unsigned int mode);
+void widget_setimage(struct widget_image *image, void *data, void *cmap);
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value);
+unsigned int widget_gettype(char *value);
+unsigned int widget_getattribute(char *value);
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data);
