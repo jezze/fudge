@@ -458,7 +458,6 @@ void widgets_setup(void)
 
     widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "float");
     widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "normal");
-    widget_setattribute(widget, WIDGET_ATTR_PADDING, "0");
 
     widget = pool_create(0, WIDGET_TYPE_FILL, "background", "root");
 
@@ -512,7 +511,6 @@ void widgets_setup(void)
 
     widget_setattribute(widget, WIDGET_ATTR_LAYOUT, "vertical");
     widget_setattribute(widget, WIDGET_ATTR_PLACEMENT, "normal");
-    widget_setattribute(widget, WIDGET_ATTR_PADDING, "0");
 
     widget = pool_create(3, WIDGET_TYPE_CONTAINER, "container", "base");
 
