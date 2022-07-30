@@ -139,6 +139,23 @@ static void setattributecontainer(struct widget *widget, unsigned int attribute,
 
 }
 
+static void setattributefill(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    struct widget_fill *fill = widget->data;
+
+    switch (attribute)
+    {
+
+    case WIDGET_ATTR_COLOR:
+        fill->color = cstring_rvalue(value, cstring_length(value), 16);
+
+        break;
+
+    }
+
+}
+
 static void setattributegrid(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -166,20 +183,8 @@ static void setattributegrid(struct widget *widget, unsigned int attribute, char
 
 }
 
-static void setattributefill(struct widget *widget, unsigned int attribute, char *value)
+static void setattributeimage(struct widget *widget, unsigned int attribute, char *value)
 {
-
-    struct widget_fill *fill = widget->data;
-
-    switch (attribute)
-    {
-
-    case WIDGET_ATTR_COLOR:
-        fill->color = cstring_rvalue(value, cstring_length(value), 16);
-
-        break;
-
-    }
 
 }
 
@@ -272,13 +277,18 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case WIDGET_TYPE_FILL:
+        setattributefill(widget, attribute, value);
+
+        break;
+
     case WIDGET_TYPE_GRID:
         setattributegrid(widget, attribute, value);
 
         break;
 
-    case WIDGET_TYPE_FILL:
-        setattributefill(widget, attribute, value);
+    case WIDGET_TYPE_IMAGE:
+        setattributeimage(widget, attribute, value);
 
         break;
 

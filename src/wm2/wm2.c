@@ -531,10 +531,10 @@ void widgets_setup(void)
 
     char *data =
         "+ container id \"root\" layout \"float\"\n"
-        "+ fill in \"root\" color \"FF142434\"\n";
+        "+ fill in \"root\" color \"FF142434\"\n"
+        "+ image id \"mouse\" in \"root\"\n";
 
     parser_parse(0, "", cstring_length(data), data);
-    pool_create(0, WIDGET_TYPE_IMAGE, "mouse", "root");
 
     rootwidget = pool_getwidgetbyid(0, "root");
     mousewidget = pool_getwidgetbyid(0, "mouse");
