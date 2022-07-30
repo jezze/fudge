@@ -243,6 +243,14 @@ static void damage(struct widget *widget)
 
 }
 
+static void bump(struct widget *widget)
+{
+
+    pool_bump(widget);
+    damage(widget);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -354,10 +362,8 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
             window->focus = 1;
 
-            pool_bump(clickedwindow);
-            damage(clickedwindow);
-            pool_bump(state.mousewidget);
-            damage(state.mousewidget);
+            bump(clickedwindow);
+            bump(state.mousewidget);
 
         }
 
@@ -510,10 +516,8 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
         widget->size.w = 640;
         widget->size.h = 640;
 
-        pool_bump(widget);
-        damage(widget);
-        pool_bump(state.mousewidget);
-        damage(state.mousewidget);
+        bump(widget);
+        bump(state.mousewidget);
 
         numwindows++;
 
