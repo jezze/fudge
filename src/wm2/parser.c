@@ -221,7 +221,7 @@ static unsigned int gettype(struct parser *parser)
 
 }
 
-static void parse_attributes(struct parser *parser, struct widget *widget)
+static void parseattributes(struct parser *parser, struct widget *widget)
 {
 
     while (!parser->errors && !parser->expr.linebreak)
@@ -245,7 +245,7 @@ static void parse_attributes(struct parser *parser, struct widget *widget)
 
 }
 
-static void parse_command_comment(struct parser *parser)
+static void parsecomment(struct parser *parser)
 {
 
     while (!parser->errors && !parser->expr.linebreak)
@@ -253,32 +253,38 @@ static void parse_command_comment(struct parser *parser)
 
 }
 
-static void parse_command_delete(struct parser *parser)
+static void parsedelete(struct parser *parser)
 {
 
     fail(parser);
 
 }
 
-static void parse_command_insert(struct parser *parser, unsigned int source, char *in)
+static void parseinsert(struct parser *parser, unsigned int source, char *in)
 {
 
     unsigned int type = gettype(parser);
-    struct widget *widget;
 
-    if (!type)
-        fail(parser);
+    if (type)
+    {
 
-    widget = pool_create(source, type, "", in);
+        struct widget *widget = pool_create(source, type, "", in);
 
-    if (widget)
-        parse_attributes(parser, widget);
+        if (widget)
+            parseattributes(parser, widget);
+
+    }
+
     else
+    {
+
         fail(parser);
+        
+    }
 
 }
 
-static void parse_command_update(struct parser *parser)
+static void parseupdate(struct parser *parser, unsigned int source)
 {
 
     fail(parser);
@@ -300,22 +306,22 @@ static void parse(struct parser *parser, unsigned int source, char *in)
             break;
 
         case COMMAND_COMMENT:
-            parse_command_comment(parser);
+            parsecomment(parser);
 
             break;
 
         case COMMAND_DELETE:
-            parse_command_delete(parser);
+            parsedelete(parser);
 
             break;
 
         case COMMAND_INSERT:
-            parse_command_insert(parser, source, in);
+            parseinsert(parser, source, in);
 
             break;
 
         case COMMAND_UPDATE:
-            parse_command_update(parser);
+            parseupdate(parser, source);
 
             break;
 
