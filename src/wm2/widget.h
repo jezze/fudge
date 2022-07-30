@@ -1,3 +1,8 @@
+#define COMMAND_NONE                    1
+#define COMMAND_COMMENT                 2
+#define COMMAND_DELETE                  3
+#define COMMAND_INSERT                  4
+#define COMMAND_UPDATE                  5
 #define WIDGET_TYPE_BUTTON              1
 #define WIDGET_TYPE_FILL                2
 #define WIDGET_TYPE_GRID                3
@@ -128,6 +133,7 @@ struct widget_window
 
 void widget_setimage(struct widget_image *image, void *data, void *cmap);
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value);
+unsigned int widget_getcommand(char *value);
 unsigned int widget_gettype(char *value);
 unsigned int widget_getattribute(char *value);
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data);

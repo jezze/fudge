@@ -4,12 +4,6 @@
 #include "pool.h"
 #include "parser.h"
 
-#define COMMAND_NONE                    1
-#define COMMAND_COMMENT                 2
-#define COMMAND_DELETE                  3
-#define COMMAND_INSERT                  4
-#define COMMAND_UPDATE                  5
-
 struct state
 {
 
@@ -22,22 +16,6 @@ struct state
     unsigned int escaped;
     unsigned int errors;
 
-};
-
-struct token
-{
-
-    unsigned int key;
-    char *value;
-
-};
-
-static struct token commands[] = {
-    {COMMAND_NONE, ""},
-    {COMMAND_COMMENT, "#"},
-    {COMMAND_DELETE, "-"},
-    {COMMAND_INSERT, "+"},
-    {COMMAND_UPDATE, "="}
 };
 
 char strdata[0x4000];
@@ -200,29 +178,12 @@ static char *readsafeword(struct state *state)
 
 }
 
-static unsigned int getkey(struct token *tokens, unsigned int n, char *value)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < n; i++)
-    {
-
-        if (cstring_match(tokens[i].value, value))
-            return tokens[i].key;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int getcommand(struct state *state)
 {
 
     char *word = readunsafeword(state);
 
-    return (word) ? getkey(commands, 5, word) : 0;
+    return (word) ? widget_getcommand(word) : 0;
 
 }
 

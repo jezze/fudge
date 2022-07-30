@@ -9,6 +9,14 @@ struct token
 
 };
 
+static struct token commands[] = {
+    {COMMAND_NONE, ""},
+    {COMMAND_COMMENT, "#"},
+    {COMMAND_DELETE, "-"},
+    {COMMAND_INSERT, "+"},
+    {COMMAND_UPDATE, "="}
+};
+
 static struct token types[] =
 {
     {WIDGET_TYPE_BUTTON, "button"},
@@ -290,6 +298,13 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
         break;
 
     }
+
+}
+
+unsigned int widget_getcommand(char *value)
+{
+
+    return getkey(commands, 5, value);
 
 }
 
