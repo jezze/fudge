@@ -101,6 +101,8 @@ static void setupremotes(void)
 
     unsigned int i;
 
+    list_init(&remotelist);
+
     for (i = 0; i < REMOTES; i++)
     {
 
@@ -580,8 +582,6 @@ void init(void)
 
     pool_setup();
     widgets_setup();
-
-    list_init(&remotelist);
     setupremotes();
 
     configuration.displaywidth = 1920;
