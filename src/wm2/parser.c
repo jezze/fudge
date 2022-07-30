@@ -10,7 +10,7 @@
 #define COMMAND_INSERT                  4
 #define COMMAND_UPDATE                  5
 
-struct parser
+struct state
 {
 
     char *data;
@@ -43,66 +43,66 @@ static struct token commands[] = {
 char strdata[0x4000];
 unsigned int strdataoffset;
 
-static void fail(struct parser *parser)
+static void fail(struct state *state)
 {
 
-    parser->errors++;
+    state->errors++;
 
 }
 
-static void addchar(struct parser *parser, char *result, unsigned int count, unsigned int i, char c)
+static void addchar(struct state *state, char *result, unsigned int count, unsigned int i, char c)
 {
 
     if (i < count)
         result[i] = c;
     else
-        fail(parser);
+        fail(state);
 
 }
 
-static unsigned int readword(struct parser *parser, char *result, unsigned int count)
+static unsigned int readword(struct state *state, char *result, unsigned int count)
 {
 
     unsigned int i = 0;
 
-    for (; parser->offset < parser->count; parser->offset++)
+    for (; state->offset < state->count; state->offset++)
     {
 
-        char c = parser->data[parser->offset];
+        char c = state->data[state->offset];
 
         switch (c)
         {
 
         case '\0':
         case '\n':
-            parser->escaped = 0;
-            parser->line++;
-            parser->linebreak = 1;
-            parser->offset++;
+            state->escaped = 0;
+            state->line++;
+            state->linebreak = 1;
+            state->offset++;
 
-            addchar(parser, result, count, i, '\0');
+            addchar(state, result, count, i, '\0');
 
             return i;
 
         }
 
-        if (parser->escaped)
+        if (state->escaped)
         {
 
-            parser->escaped = 0;
+            state->escaped = 0;
 
             switch (c)
             {
 
             case 'n':
-                addchar(parser, result, count, i, '\n');
+                addchar(state, result, count, i, '\n');
 
                 i++;
 
                 break;
 
             default:
-                addchar(parser, result, count, i, c);
+                addchar(state, result, count, i, c);
 
                 i++;
 
@@ -119,15 +119,15 @@ static unsigned int readword(struct parser *parser, char *result, unsigned int c
             {
 
             case '\\':
-                parser->escaped = 1;
+                state->escaped = 1;
 
                 break;
 
             case ' ':
-                if (parser->quoted)
+                if (state->quoted)
                 {
 
-                    addchar(parser, result, count, i, c);
+                    addchar(state, result, count, i, c);
 
                     i++;
 
@@ -136,12 +136,12 @@ static unsigned int readword(struct parser *parser, char *result, unsigned int c
                 else
                 {
 
-                    addchar(parser, result, count, i, '\0');
+                    addchar(state, result, count, i, '\0');
 
                     if (i == 0)
                         continue;
 
-                    parser->offset++;
+                    state->offset++;
 
                     return i;
 
@@ -150,12 +150,12 @@ static unsigned int readword(struct parser *parser, char *result, unsigned int c
                 break;
 
             case '"':
-                parser->quoted = !parser->quoted;
+                state->quoted = !state->quoted;
 
                 break;
 
             default:
-                addchar(parser, result, count, i, c);
+                addchar(state, result, count, i, c);
 
                 i++;
 
@@ -171,21 +171,21 @@ static unsigned int readword(struct parser *parser, char *result, unsigned int c
 
 }
 
-static char *readunsafeword(struct parser *parser)
+static char *readunsafeword(struct state *state)
 {
 
     char *word = strdata + strdataoffset;
-    unsigned int count = readword(parser, word, 0x4000 - strdataoffset);
+    unsigned int count = readword(state, word, 0x4000 - strdataoffset);
 
     return (count) ? word : 0;
 
 }
 
-static char *readsafeword(struct parser *parser)
+static char *readsafeword(struct state *state)
 {
 
     char *word = strdata + strdataoffset;
-    unsigned int count = readword(parser, word, 0x4000 - strdataoffset);
+    unsigned int count = readword(state, word, 0x4000 - strdataoffset);
 
     if (count)
     {
@@ -217,41 +217,41 @@ static unsigned int getkey(struct token *tokens, unsigned int n, char *value)
 
 }
 
-static unsigned int getcommand(struct parser *parser)
+static unsigned int getcommand(struct state *state)
 {
 
-    char *word = readunsafeword(parser);
+    char *word = readunsafeword(state);
 
     return (word) ? getkey(commands, 5, word) : 0;
 
 }
 
-static unsigned int gettype(struct parser *parser)
+static unsigned int gettype(struct state *state)
 {
 
-    char *word = readunsafeword(parser);
+    char *word = readunsafeword(state);
 
     return (word) ? widget_gettype(word) : 0;
 
 }
 
-static void parseattributes(struct parser *parser, struct widget *widget)
+static void parseattributes(struct state *state, struct widget *widget)
 {
 
-    while (!parser->errors && !parser->linebreak)
+    while (!state->errors && !state->linebreak)
     {
 
-        char *word = readunsafeword(parser);
+        char *word = readunsafeword(state);
         unsigned int attribute;
 
         if (!word)
-            fail(parser);
+            fail(state);
 
         attribute = widget_getattribute(word);
-        word = readsafeword(parser);
+        word = readsafeword(state);
 
         if (!word)
-            fail(parser);
+            fail(state);
 
         widget_setattribute(widget, attribute, word);
 
@@ -259,25 +259,25 @@ static void parseattributes(struct parser *parser, struct widget *widget)
 
 }
 
-static void parsecomment(struct parser *parser)
+static void parsecomment(struct state *state)
 {
 
-    while (!parser->errors && !parser->linebreak)
-        readunsafeword(parser);
+    while (!state->errors && !state->linebreak)
+        readunsafeword(state);
 
 }
 
-static void parsedelete(struct parser *parser)
+static void parsedelete(struct state *state)
 {
 
-    fail(parser);
+    fail(state);
 
 }
 
-static void parseinsert(struct parser *parser, unsigned int source, char *in)
+static void parseinsert(struct state *state, unsigned int source, char *in)
 {
 
-    unsigned int type = gettype(parser);
+    unsigned int type = gettype(state);
 
     if (type)
     {
@@ -285,62 +285,62 @@ static void parseinsert(struct parser *parser, unsigned int source, char *in)
         struct widget *widget = pool_create(source, type, "", in);
 
         if (widget)
-            parseattributes(parser, widget);
+            parseattributes(state, widget);
 
     }
 
     else
     {
 
-        fail(parser);
+        fail(state);
         
     }
 
 }
 
-static void parseupdate(struct parser *parser, unsigned int source)
+static void parseupdate(struct state *state, unsigned int source)
 {
 
-    fail(parser);
+    fail(state);
 
 }
 
-static void parse(struct parser *parser, unsigned int source, char *in)
+static void parse(struct state *state, unsigned int source, char *in)
 {
 
-    while (!parser->errors && parser->offset < parser->count)
+    while (!state->errors && state->offset < state->count)
     {
 
-        parser->linebreak = 0;
+        state->linebreak = 0;
 
-        switch (getcommand(parser))
+        switch (getcommand(state))
         {
 
         case COMMAND_NONE:
             break;
 
         case COMMAND_COMMENT:
-            parsecomment(parser);
+            parsecomment(state);
 
             break;
 
         case COMMAND_DELETE:
-            parsedelete(parser);
+            parsedelete(state);
 
             break;
 
         case COMMAND_INSERT:
-            parseinsert(parser, source, in);
+            parseinsert(state, source, in);
 
             break;
 
         case COMMAND_UPDATE:
-            parseupdate(parser, source);
+            parseupdate(state, source);
 
             break;
 
         default:
-            fail(parser);
+            fail(state);
 
             break;
 
@@ -353,18 +353,18 @@ static void parse(struct parser *parser, unsigned int source, char *in)
 void parser_parse(unsigned int source, char *in, unsigned int count, void *data)
 {
 
-    struct parser parser;
+    struct state state;
 
-    parser.errors = 0;
-    parser.data = data;
-    parser.count = count;
-    parser.offset = 0;
-    parser.line = 0;
-    parser.linebreak = 0;
-    parser.quoted = 0;
-    parser.escaped = 0;
+    state.errors = 0;
+    state.data = data;
+    state.count = count;
+    state.offset = 0;
+    state.line = 0;
+    state.linebreak = 0;
+    state.quoted = 0;
+    state.escaped = 0;
 
-    parse(&parser, source, in);
+    parse(&state, source, in);
 
 }
 
