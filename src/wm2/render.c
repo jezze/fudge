@@ -814,7 +814,7 @@ void render_damagebywidget(struct render_display *display, struct widget *widget
 
 }
 
-void render_paint(struct render_display *display, struct widget *rootwidget, struct widget_image *image)
+void render_paint(struct render_display *display, struct widget *rootwidget)
 {
 
     if (!display->framebuffer)
