@@ -503,6 +503,8 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
+        damage(widget);
+
     }
 
 }
