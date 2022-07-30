@@ -43,26 +43,13 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
 
     unsigned int i = 0;
 
+    state->linebreak = 0;
+    state->escaped = 0;
+
     for (; state->offset < state->count; state->offset++)
     {
 
         char c = state->data[state->offset];
-
-        switch (c)
-        {
-
-        case '\0':
-        case '\n':
-            state->escaped = 0;
-            state->line++;
-            state->linebreak = 1;
-            state->offset++;
-
-            addchar(state, result, count, i, '\0');
-
-            return i;
-
-        }
 
         if (state->escaped)
         {
@@ -79,10 +66,15 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
 
                 break;
 
-            default:
-                addchar(state, result, count, i, c);
+            case '"':
+                addchar(state, result, count, i, '"');
 
                 i++;
+
+                break;
+
+            default:
+                fail(state);
 
                 break;
 
@@ -93,27 +85,60 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
         else
         {
 
-            switch (c)
+            if (state->quoted)
             {
 
-            case '\\':
-                state->escaped = 1;
-
-                break;
-
-            case ' ':
-                if (state->quoted)
+                switch (c)
                 {
 
+                case '\\':
+                    state->escaped = 1;
+
+                    break;
+
+                case '"':
+                    state->quoted = 0;
+
+                    break;
+
+                default:
                     addchar(state, result, count, i, c);
 
                     i++;
 
+                    break;
+
                 }
 
-                else
+            }
+
+            else
+            {
+
+                switch (c)
                 {
 
+                case '\\':
+                    state->escaped = 1;
+
+                    break;
+
+                case '"':
+                    state->quoted = 1;
+
+                    break;
+
+                case '\0':
+                case '\n':
+                    state->line++;
+                    state->linebreak = 1;
+                    state->offset++;
+
+                    addchar(state, result, count, i, '\0');
+
+                    return i;
+
+                case ' ':
                     addchar(state, result, count, i, '\0');
 
                     if (i == 0)
@@ -123,21 +148,14 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
 
                     return i;
 
+                default:
+                    addchar(state, result, count, i, c);
+
+                    i++;
+
+                    break;
+
                 }
-
-                break;
-
-            case '"':
-                state->quoted = !state->quoted;
-
-                break;
-
-            default:
-                addchar(state, result, count, i, c);
-
-                i++;
-
-                break;
 
             }
 
@@ -263,6 +281,8 @@ static void parseinsert(struct state *state, unsigned int source, char *in)
 
         if (widget)
             parseattributes(state, widget);
+        else
+            fail(state);
 
     }
 
@@ -287,8 +307,6 @@ static void parse(struct state *state, unsigned int source, char *in)
 
     while (!state->errors && state->offset < state->count)
     {
-
-        state->linebreak = 0;
 
         switch (getcommand(state))
         {
