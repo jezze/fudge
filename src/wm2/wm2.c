@@ -493,8 +493,6 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
     struct widget *widget;
     struct parser parser;
 
-    source = 42;
-
     parser_parse(&parser, source, "root", msize, mdata);
 
     widget = pool_getwidgetbyid(source, "window");
@@ -544,11 +542,11 @@ void widgets_setup(void)
         "+ textbox in \"base\" content \"$   \"\n";
 
     parser_parse(&parser, 0, "", cstring_length(source0), source0);
-    parser_parse(&parser, 1, "root", cstring_length(source1), source1);
-    parser_parse(&parser, 2, "root", cstring_length(source2), source2);
+    parser_parse(&parser, 1001, "root", cstring_length(source1), source1);
+    parser_parse(&parser, 1002, "root", cstring_length(source2), source2);
     pool_create(0, WIDGET_TYPE_IMAGE, "mouse", "root");
 
-    widget = pool_getwidgetbyid(1, "window");
+    widget = pool_getwidgetbyid(1001, "window");
 
     if (widget)
     {
@@ -560,7 +558,7 @@ void widgets_setup(void)
 
     }
 
-    widget = pool_getwidgetbyid(2, "window");
+    widget = pool_getwidgetbyid(1002, "window");
 
     if (widget)
     {
