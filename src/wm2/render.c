@@ -519,7 +519,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
             unsigned int rx = widget->position.x + 32;
             unsigned int ry = widget->position.y + rownum * font->lineheight + 32;
 
-            if (textbox->mode == TEXTBOX_MODE_READONLY)
+            if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
                 blittext(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1);
             else
                 blittextcursor(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1, textbox->cursor);

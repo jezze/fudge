@@ -10,11 +10,11 @@ struct token
 };
 
 static struct token commands[] = {
-    {COMMAND_NONE, ""},
-    {COMMAND_COMMENT, "#"},
-    {COMMAND_DELETE, "-"},
-    {COMMAND_INSERT, "+"},
-    {COMMAND_UPDATE, "="}
+    {WIDGET_COMMAND_NONE, ""},
+    {WIDGET_COMMAND_COMMENT, "#"},
+    {WIDGET_COMMAND_DELETE, "-"},
+    {WIDGET_COMMAND_INSERT, "+"},
+    {WIDGET_COMMAND_UPDATE, "="}
 };
 
 static struct token types[] =
@@ -46,28 +46,28 @@ static struct token attributes[] =
 
 static struct token containerlayouts[] =
 {
-    {CONTAINER_LAYOUT_FLOAT, "float"},
-    {CONTAINER_LAYOUT_MAXIMIZE, "maximize"},
-    {CONTAINER_LAYOUT_HORIZONTAL, "horizontal"},
-    {CONTAINER_LAYOUT_VERTICAL, "vertical"}
+    {WIDGET_CONTAINER_LAYOUT_FLOAT, "float"},
+    {WIDGET_CONTAINER_LAYOUT_MAXIMIZE, "maximize"},
+    {WIDGET_CONTAINER_LAYOUT_HORIZONTAL, "horizontal"},
+    {WIDGET_CONTAINER_LAYOUT_VERTICAL, "vertical"}
 };
 
 static struct token containerplacements[] =
 {
-    {CONTAINER_PLACEMENT_NORMAL, "normal"},
-    {CONTAINER_PLACEMENT_STRETCHED, "stretched"}
+    {WIDGET_CONTAINER_PLACEMENT_NORMAL, "normal"},
+    {WIDGET_CONTAINER_PLACEMENT_STRETCHED, "stretched"}
 };
 
 static struct token gridplacements[] =
 {
-    {GRID_PLACEMENT_NORMAL, "normal"},
-    {GRID_PLACEMENT_STRETCHED, "stretched"}
+    {WIDGET_GRID_PLACEMENT_NORMAL, "normal"},
+    {WIDGET_GRID_PLACEMENT_STRETCHED, "stretched"}
 };
 
 static struct token textboxmodes[] =
 {
-    {TEXTBOX_MODE_NORMAL, "normal"},
-    {TEXTBOX_MODE_READONLY, "readonly"}
+    {WIDGET_TEXTBOX_MODE_NORMAL, "normal"},
+    {WIDGET_TEXTBOX_MODE_READONLY, "readonly"}
 };
 
 static unsigned int getkey(struct token *tokens, unsigned int n, char *value)

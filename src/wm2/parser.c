@@ -277,25 +277,25 @@ static void parse(struct state *state, unsigned int source, char *in)
         switch (getcommand(state))
         {
 
-        case COMMAND_NONE:
+        case WIDGET_COMMAND_NONE:
             break;
 
-        case COMMAND_COMMENT:
+        case WIDGET_COMMAND_COMMENT:
             parsecomment(state);
 
             break;
 
-        case COMMAND_DELETE:
+        case WIDGET_COMMAND_DELETE:
             parsedelete(state);
 
             break;
 
-        case COMMAND_INSERT:
+        case WIDGET_COMMAND_INSERT:
             parseinsert(state, source, in);
 
             break;
 
-        case COMMAND_UPDATE:
+        case WIDGET_COMMAND_UPDATE:
             parseupdate(state, source);
 
             break;

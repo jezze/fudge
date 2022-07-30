@@ -64,7 +64,7 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
         int childmaxw = maxw - container->padding * 2 - offw;
         int childmaxh = maxh - container->padding * 2 - offh;
 
-        if (container->placement == CONTAINER_PLACEMENT_STRETCHED)
+        if (container->placement == WIDGET_CONTAINER_PLACEMENT_STRETCHED)
             childminh = childmaxh;
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
@@ -127,7 +127,7 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
         int childmaxw = maxw - container->padding * 2 - offw;
         int childmaxh = maxh - container->padding * 2 - offh;
 
-        if (container->placement == CONTAINER_PLACEMENT_STRETCHED)
+        if (container->placement == WIDGET_CONTAINER_PLACEMENT_STRETCHED)
             childminw = childmaxw;
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
@@ -152,22 +152,22 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int min
     switch (container->layout)
     {
 
-    case CONTAINER_LAYOUT_FLOAT:
+    case WIDGET_CONTAINER_LAYOUT_FLOAT:
         placecontainerfloat(widget, x, y, minw, minh, maxw, maxh);
         
         break;
 
-    case CONTAINER_LAYOUT_HORIZONTAL:
+    case WIDGET_CONTAINER_LAYOUT_HORIZONTAL:
         placecontainerhorizontal(widget, x, y, minw, minh, maxw, maxh);
 
         break;
 
-    case CONTAINER_LAYOUT_MAXIMIZE:
+    case WIDGET_CONTAINER_LAYOUT_MAXIMIZE:
         placecontainermaximize(widget, x, y, minw, minh, maxw, maxh);
 
         break;
 
-    case CONTAINER_LAYOUT_VERTICAL:
+    case WIDGET_CONTAINER_LAYOUT_VERTICAL:
         placecontainervertical(widget, x, y, minw, minh, maxw, maxh);
 
         break;
@@ -211,7 +211,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
         int childmaxw = maxw - grid->padding * 2 - offw;
         int childmaxh = maxh - grid->padding * 2 - offh;
 
-        if (grid->placement == GRID_PLACEMENT_STRETCHED)
+        if (grid->placement == WIDGET_GRID_PLACEMENT_STRETCHED)
         {
 
             childminw = colw;
