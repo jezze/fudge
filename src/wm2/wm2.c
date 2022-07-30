@@ -542,51 +542,35 @@ void widgets_setup(void)
         "+ window id \"window\" title \"Shell\"\n"
         "+ container id \"base\" in \"window\" layout \"maximize\" padding \"16\"\n"
         "+ textbox in \"base\" content \"$   \"\n";
-    char *source3 =
-        "+ window id \"window\" title \"Calculator\"\n"
-        "+ container id \"base\" in \"window\" layout \"vertical\"\n"
-        "+ container id \"container\" in \"base\" layout \"vertical\" placement \"stretched\" padding \"16\"\n"
-        "+ textbox in \"container\" content \"1337\" mode \"readonly\"\n"
-        "+ grid id \"buttons\" in \"base\" columns \"4\" placement \"stretched\" padding \"16\"\n"
-        "+ button in \"buttons\" label \"7\"\n"
-        "+ button in \"buttons\" label \"8\"\n"
-        "+ button in \"buttons\" label \"9\"\n"
-        "+ button in \"buttons\" label \"/\"\n"
-        "+ button in \"buttons\" label \"4\"\n"
-        "+ button in \"buttons\" label \"5\"\n"
-        "+ button in \"buttons\" label \"6\"\n"
-        "+ button in \"buttons\" label \"x\"\n"
-        "+ button in \"buttons\" label \"3\"\n"
-        "+ button in \"buttons\" label \"2\"\n"
-        "+ button in \"buttons\" label \"1\"\n"
-        "+ button in \"buttons\" label \"-\"\n"
-        "+ button in \"buttons\" label \"0\"\n"
-        "+ button in \"buttons\" label \".\"\n"
-        "+ button in \"buttons\" label \"+\"\n"
-        "+ button in \"buttons\" label \"=\"\n";
 
     parser_parse(&parser, 0, "", cstring_length(source0), source0);
     parser_parse(&parser, 1, "root", cstring_length(source1), source1);
     parser_parse(&parser, 2, "root", cstring_length(source2), source2);
-    parser_parse(&parser, 3, "root", cstring_length(source3), source3);
-
-    widget = pool_create(0, WIDGET_TYPE_IMAGE, "mouse", "root");
+    pool_create(0, WIDGET_TYPE_IMAGE, "mouse", "root");
 
     widget = pool_getwidgetbyid(1, "window");
-    widget->position.x = 200;
-    widget->position.y = 100;
-    widget->size.w = 800;
-    widget->size.h = 600;
+
+    if (widget)
+    {
+
+        widget->position.x = 200;
+        widget->position.y = 100;
+        widget->size.w = 800;
+        widget->size.h = 600;
+
+    }
+
     widget = pool_getwidgetbyid(2, "window");
-    widget->position.x = 100;
-    widget->position.y = 80;
-    widget->size.w = 800;
-    widget->size.h = 600;
-    widget = pool_getwidgetbyid(3, "window");
-    widget->position.x = 80;
-    widget->position.y = 60;
-    widget->size.w = 600;
-    widget->size.h = 600;
+
+    if (widget)
+    {
+
+        widget->position.x = 100;
+        widget->position.y = 80;
+        widget->size.w = 800;
+        widget->size.h = 600;
+
+    }
 
     rootwidget = pool_getwidgetbyid(0, "root");
     mousewidget = pool_getwidgetbyid(0, "mouse");
