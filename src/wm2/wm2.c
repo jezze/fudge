@@ -489,6 +489,8 @@ static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static unsigned int numwindows;
+
 static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -501,15 +503,17 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
     if (widget)
     {
 
-        widget->position.x = 20;
-        widget->position.y = 20;
-        widget->size.w = 600;
-        widget->size.h = 600;
+        widget->position.x = 64 + 128 * numwindows;
+        widget->position.y = 64 + 64 * numwindows;
+        widget->size.w = 640;
+        widget->size.h = 640;
 
         pool_bump(widget);
         pool_bump(mousewidget);
         damage(widget);
         damage(mousewidget);
+
+        numwindows++;
 
     }
 
@@ -525,50 +529,12 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 void widgets_setup(void)
 {
 
-    struct widget *widget;
-    char *source0 =
+    char *data =
         "+ container id \"root\" layout \"float\"\n"
         "+ fill in \"root\" color \"FF142434\"\n";
-    char *source1 =
-        "+ window id \"window\" title \"Window 0\"\n"
-        "+ container id \"base\" in \"window\" layout \"vertical\" padding \"16\"\n"
-        "+ text in \"base\" content \"Hello World! How are we today?\"\n"
-        "+ button in \"base\" label \"Click Me\"\n"
-        "+ text in \"base\" content \"Hello again!\"\n"
-        "+ button in \"base\" label \"Click Me Too\"\n";
-    char *source2 =
-        "+ window id \"window\" title \"Shell\"\n"
-        "+ container id \"base\" in \"window\" layout \"maximize\" padding \"16\"\n"
-        "+ textbox in \"base\" content \"$   \"\n";
 
-    parser_parse(0, "", cstring_length(source0), source0);
-    parser_parse(1001, "root", cstring_length(source1), source1);
-    parser_parse(1002, "root", cstring_length(source2), source2);
+    parser_parse(0, "", cstring_length(data), data);
     pool_create(0, WIDGET_TYPE_IMAGE, "mouse", "root");
-
-    widget = pool_getwidgetbyid(1001, "window");
-
-    if (widget)
-    {
-
-        widget->position.x = 200;
-        widget->position.y = 100;
-        widget->size.w = 800;
-        widget->size.h = 600;
-
-    }
-
-    widget = pool_getwidgetbyid(1002, "window");
-
-    if (widget)
-    {
-
-        widget->position.x = 100;
-        widget->position.y = 80;
-        widget->size.w = 800;
-        widget->size.h = 600;
-
-    }
 
     rootwidget = pool_getwidgetbyid(0, "root");
     mousewidget = pool_getwidgetbyid(0, "mouse");
