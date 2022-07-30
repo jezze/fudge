@@ -1,12 +1,11 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define STATE_NONE                      0
+#define STATE_SUM                       0
 #define STATE_ADD                       1
 #define STATE_SUB                       2
 #define STATE_MUL                       3
 #define STATE_DIV                       4
-#define STATE_SUM                       5
 
 static unsigned int prevstate;
 static int number;
@@ -33,7 +32,7 @@ static void updatestate(int state)
     switch (prevstate)
     {
 
-    case STATE_NONE:
+    case STATE_SUM:
         accumulator = number;
         number = 0;
 
@@ -70,14 +69,12 @@ static void updatestate(int state)
     switch (state)
     {
 
-        case STATE_SUM:
-            refresh(accumulator);
+    case STATE_SUM:
+        refresh(accumulator);
 
-            accumulator = 0;
-            number = 0;
-            prevstate = STATE_NONE;
+        number = 0;
 
-            break;
+        break;
 
     }
 
@@ -117,7 +114,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
     {
 
         if (cstring_match(wmevent->clicked, "button="))
-            updatevalue(STATE_SUM);
+            updatestate(STATE_SUM);
         else if (cstring_match(wmevent->clicked, "button0"))
             updatevalue(0);
         else if (cstring_match(wmevent->clicked, "button1"))
