@@ -355,7 +355,6 @@ void parser_parse(unsigned int source, char *in, unsigned int count, void *data)
 
     struct state state;
 
-    state.errors = 0;
     state.data = data;
     state.count = count;
     state.offset = 0;
@@ -363,6 +362,7 @@ void parser_parse(unsigned int source, char *in, unsigned int count, void *data)
     state.linebreak = 0;
     state.quoted = 0;
     state.escaped = 0;
+    state.errors = 0;
 
     parse(&state, source, in);
 
