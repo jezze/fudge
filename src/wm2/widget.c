@@ -217,6 +217,7 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
     case WIDGET_ATTR_CONTENT:
         textbox->length = cstring_length(value);
         textbox->content = value;
+        textbox->cursor = textbox->length - 1;
 
         break;
 
