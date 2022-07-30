@@ -7,17 +7,8 @@
 #include "render.h"
 #include "parser.h"
 
-#define REMOTES                         64
 #define WINDOW_MIN_WIDTH                128
 #define WINDOW_MIN_HEIGHT               128
-
-static struct remote
-{
-
-    struct list_item item;
-    unsigned int source;
-
-} remotes[REMOTES];
 
 struct configuration
 {
@@ -41,7 +32,6 @@ struct state
 
 };
 
-static struct list remotelist;
 static struct render_display display;
 static struct configuration configuration;
 static struct state state;
@@ -96,25 +86,6 @@ static unsigned int mousecmap[] = {
     0xFFB05070,
     0xFFF898B8
 };
-
-static void setupremotes(void)
-{
-
-    unsigned int i;
-
-    list_init(&remotelist);
-
-    for (i = 0; i < REMOTES; i++)
-    {
-
-        struct remote *remote = &remotes[i];
-
-        list_inititem(&remote->item, remote);
-        list_add(&remotelist, &remote->item);
-
-    }
-
-}
 
 static void setupvideo(void)
 {
@@ -247,7 +218,9 @@ static void bump(struct widget *widget)
 {
 
     pool_bump(widget);
+    pool_bump(state.mousewidget);
     damage(widget);
+    damage(state.mousewidget);
 
 }
 
@@ -363,7 +336,6 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
             window->focus = 1;
 
             bump(clickedwindow);
-            bump(state.mousewidget);
 
         }
 
@@ -517,7 +489,6 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
         widget->size.h = 640;
 
         bump(widget);
-        bump(state.mousewidget);
 
         numwindows++;
 
@@ -552,7 +523,6 @@ void init(void)
 
     pool_setup();
     widgets_setup();
-    setupremotes();
 
     configuration.displaywidth = 1920;
     configuration.displayheight = 1080;
