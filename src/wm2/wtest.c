@@ -20,7 +20,7 @@ static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
-        "+ window id \"window\" title \"Window 0\"\n"
+        "+ window id \"window\" title \"Test\"\n"
         "+ container id \"base\" in \"window\" layout \"vertical\" padding \"16\"\n"
         "+ text in \"base\" content \"Hello World! How are we today?\"\n"
         "+ button in \"base\" label \"Click Me\"\n"
