@@ -311,6 +311,13 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
 }
 
+unsigned int widget_getattribute(char *value)
+{
+
+    return getkey(attributes, 11, value);
+
+}
+
 unsigned int widget_getcommand(char *value)
 {
 
@@ -322,13 +329,6 @@ unsigned int widget_gettype(char *value)
 {
 
     return getkey(types, 8, value);
-
-}
-
-unsigned int widget_getattribute(char *value)
-{
-
-    return getkey(attributes, 11, value);
 
 }
 

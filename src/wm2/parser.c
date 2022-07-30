@@ -18,8 +18,8 @@ struct state
 
 };
 
-char strdata[0x4000];
-unsigned int strdataoffset;
+static char strdata[0x4000];
+static unsigned int strdataoffset;
 
 static void fail(struct state *state)
 {
@@ -178,6 +178,15 @@ static char *readsafeword(struct state *state)
 
 }
 
+static unsigned int getattribute(struct state *state)
+{
+
+    char *word = readunsafeword(state);
+
+    return (word) ? widget_getattribute(word) : 0;
+
+}
+
 static unsigned int getcommand(struct state *state)
 {
 
@@ -202,19 +211,26 @@ static void parseattributes(struct state *state, struct widget *widget)
     while (!state->errors && !state->linebreak)
     {
 
-        char *word = readunsafeword(state);
-        unsigned int attribute;
+        unsigned int attribute = getattribute(state);
 
-        if (!word)
+        if (attribute)
+        {
+
+            char *word = readsafeword(state);
+
+            if (word)
+                widget_setattribute(widget, attribute, word);
+            else
+                fail(state);
+
+        }
+
+        else
+        {
+
             fail(state);
 
-        attribute = widget_getattribute(word);
-        word = readsafeword(state);
-
-        if (!word)
-            fail(state);
-
-        widget_setattribute(widget, attribute, word);
+        }
 
     }
 
