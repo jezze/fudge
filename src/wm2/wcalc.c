@@ -1,7 +1,18 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void updatevalue(int value)
+#define STATE_NONE                      0
+#define STATE_ADD                       1
+#define STATE_SUB                       2
+#define STATE_MUL                       3
+#define STATE_DIV                       4
+#define STATE_SUM                       5
+
+static unsigned int prevstate;
+static int number;
+static int accumulator;
+
+static void refresh(int value)
 {
 
     char num[CSTRING_NUMSIZE];
@@ -13,6 +24,72 @@ static void updatevalue(int value)
     count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
+
+}
+
+static void updatestate(int state)
+{
+
+    switch (prevstate)
+    {
+
+    case STATE_NONE:
+        accumulator = number;
+        number = 0;
+
+        break;
+
+    case STATE_ADD:
+        accumulator += number;
+        number = 0;
+
+        break;
+
+    case STATE_SUB:
+        accumulator -= number;
+        number = 0;
+
+        break;
+
+    case STATE_MUL:
+        accumulator *= number;
+        number = 0;
+
+        break;
+
+    case STATE_DIV:
+        accumulator /= number;
+        number = 0;
+
+        break;
+
+    }
+
+    prevstate = state;
+
+    switch (state)
+    {
+
+        case STATE_SUM:
+            refresh(accumulator);
+
+            accumulator = 0;
+            number = 0;
+            prevstate = STATE_NONE;
+
+            break;
+
+    }
+
+}
+
+static void updatevalue(int value)
+{
+
+    number *= 10;
+    number += value;
+
+    refresh(number);
 
 }
 
@@ -40,7 +117,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
     {
 
         if (cstring_match(wmevent->clicked, "button="))
-            updatevalue(42);
+            updatevalue(STATE_SUM);
         else if (cstring_match(wmevent->clicked, "button0"))
             updatevalue(0);
         else if (cstring_match(wmevent->clicked, "button1"))
@@ -61,6 +138,14 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
             updatevalue(8);
         else if (cstring_match(wmevent->clicked, "button9"))
             updatevalue(9);
+        else if (cstring_match(wmevent->clicked, "button+"))
+            updatestate(STATE_ADD);
+        else if (cstring_match(wmevent->clicked, "button-"))
+            updatestate(STATE_SUB);
+        else if (cstring_match(wmevent->clicked, "buttonx"))
+            updatestate(STATE_MUL);
+        else if (cstring_match(wmevent->clicked, "button/"))
+            updatestate(STATE_DIV);
 
     }
 
