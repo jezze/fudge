@@ -7,8 +7,17 @@
 #include "render.h"
 #include "parser.h"
 
+#define REMOTES                         64
 #define WINDOW_MIN_WIDTH                128
 #define WINDOW_MIN_HEIGHT               128
+
+static struct remote
+{
+
+    struct list_item item;
+    unsigned int source;
+
+} remotes[REMOTES];
 
 struct configuration
 {
@@ -31,6 +40,7 @@ struct state
 
 static struct widget *rootwidget;
 static struct widget *mousewidget;
+static struct list remotelist;
 static struct render_display display;
 static struct configuration configuration;
 static struct state state;
@@ -85,6 +95,23 @@ static unsigned int mousecmap[] = {
     0xFFB05070,
     0xFFF898B8
 };
+
+static void setupremotes(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < REMOTES; i++)
+    {
+
+        struct remote *remote = &remotes[i];
+
+        list_inititem(&remote->item, remote);
+        list_add(&remotelist, &remote->item);
+
+    }
+
+}
 
 static void setupvideo(void)
 {
@@ -453,6 +480,49 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_sendto(source, EVENT_WMSHOW);
+
+}
+
+static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct widget *widget;
+    struct parser parser;
+
+    source = 42;
+
+    parser_parse(&parser, source, "root", msize, mdata);
+
+    widget = pool_getwidgetbyid(source, "window");
+
+    if (widget)
+    {
+
+        widget->position.x = 20;
+        widget->position.y = 20;
+        widget->size.w = 600;
+        widget->size.h = 600;
+
+        pool_bump(widget);
+        pool_bump(mousewidget);
+        damage(widget);
+        damage(mousewidget);
+
+    }
+
+}
+
+static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_sendto(source, EVENT_WMHIDE);
+
+}
+
 void widgets_setup(void)
 {
 
@@ -529,6 +599,9 @@ void init(void)
     pool_setup();
     widgets_setup();
 
+    list_init(&remotelist);
+    setupremotes();
+
     configuration.displaywidth = 1920;
     configuration.displayheight = 1080;
     configuration.displaybpp = 4;
@@ -542,6 +615,9 @@ void init(void)
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_VIDEOMODE, onvideomode);
+    channel_bind(EVENT_WMMAP, onwmmap);
+    channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);
+    channel_bind(EVENT_WMUNMAP, onwmunmap);
 
 }
 
