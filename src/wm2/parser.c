@@ -10,6 +10,20 @@
 #define COMMAND_INSERT                  4
 #define COMMAND_UPDATE                  5
 
+struct parser
+{
+
+    char *data;
+    unsigned int count;
+    unsigned int offset;
+    unsigned int line;
+    unsigned int linebreak;
+    unsigned int quoted;
+    unsigned int escaped;
+    unsigned int errors;
+
+};
+
 struct token
 {
 
@@ -51,20 +65,20 @@ static unsigned int readword(struct parser *parser, char *result, unsigned int c
 
     unsigned int i = 0;
 
-    for (; parser->expr.offset < parser->expr.count; parser->expr.offset++)
+    for (; parser->offset < parser->count; parser->offset++)
     {
 
-        char c = parser->expr.data[parser->expr.offset];
+        char c = parser->data[parser->offset];
 
         switch (c)
         {
 
         case '\0':
         case '\n':
-            parser->expr.escaped = 0;
-            parser->expr.line++;
-            parser->expr.linebreak = 1;
-            parser->expr.offset++;
+            parser->escaped = 0;
+            parser->line++;
+            parser->linebreak = 1;
+            parser->offset++;
 
             addchar(parser, result, count, i, '\0');
 
@@ -72,10 +86,10 @@ static unsigned int readword(struct parser *parser, char *result, unsigned int c
 
         }
 
-        if (parser->expr.escaped)
+        if (parser->escaped)
         {
 
-            parser->expr.escaped = 0;
+            parser->escaped = 0;
 
             switch (c)
             {
@@ -105,12 +119,12 @@ static unsigned int readword(struct parser *parser, char *result, unsigned int c
             {
 
             case '\\':
-                parser->expr.escaped = 1;
+                parser->escaped = 1;
 
                 break;
 
             case ' ':
-                if (parser->expr.inside)
+                if (parser->quoted)
                 {
 
                     addchar(parser, result, count, i, c);
@@ -127,7 +141,7 @@ static unsigned int readword(struct parser *parser, char *result, unsigned int c
                     if (i == 0)
                         continue;
 
-                    parser->expr.offset++;
+                    parser->offset++;
 
                     return i;
 
@@ -136,7 +150,7 @@ static unsigned int readword(struct parser *parser, char *result, unsigned int c
                 break;
 
             case '"':
-                parser->expr.inside = !parser->expr.inside;
+                parser->quoted = !parser->quoted;
 
                 break;
 
@@ -224,7 +238,7 @@ static unsigned int gettype(struct parser *parser)
 static void parseattributes(struct parser *parser, struct widget *widget)
 {
 
-    while (!parser->errors && !parser->expr.linebreak)
+    while (!parser->errors && !parser->linebreak)
     {
 
         char *word = readunsafeword(parser);
@@ -248,7 +262,7 @@ static void parseattributes(struct parser *parser, struct widget *widget)
 static void parsecomment(struct parser *parser)
 {
 
-    while (!parser->errors && !parser->expr.linebreak)
+    while (!parser->errors && !parser->linebreak)
         readunsafeword(parser);
 
 }
@@ -294,10 +308,10 @@ static void parseupdate(struct parser *parser, unsigned int source)
 static void parse(struct parser *parser, unsigned int source, char *in)
 {
 
-    while (!parser->errors && parser->expr.offset < parser->expr.count)
+    while (!parser->errors && parser->offset < parser->count)
     {
 
-        parser->expr.linebreak = 0;
+        parser->linebreak = 0;
 
         switch (getcommand(parser))
         {
@@ -336,19 +350,21 @@ static void parse(struct parser *parser, unsigned int source, char *in)
 
 }
 
-void parser_parse(struct parser *parser, unsigned int source, char *in, unsigned int count, void *data)
+void parser_parse(unsigned int source, char *in, unsigned int count, void *data)
 {
 
-    parser->errors = 0;
-    parser->expr.data = data;
-    parser->expr.count = count;
-    parser->expr.offset = 0;
-    parser->expr.line = 0;
-    parser->expr.linebreak = 0;
-    parser->expr.inside = 0;
-    parser->expr.escaped = 0;
+    struct parser parser;
 
-    parse(parser, source, in);
+    parser.errors = 0;
+    parser.data = data;
+    parser.count = count;
+    parser.offset = 0;
+    parser.line = 0;
+    parser.linebreak = 0;
+    parser.quoted = 0;
+    parser.escaped = 0;
+
+    parse(&parser, source, in);
 
 }
 
