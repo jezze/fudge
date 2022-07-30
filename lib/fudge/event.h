@@ -28,6 +28,8 @@
 #define EVENT_WMMOUSEPRESS              0x28
 #define EVENT_WMMOUSERELEASE            0x29
 #define EVENT_WMRENDERDATA              0x2A
+#define EVENT_WMEVENT                   0x2B
+#define EVENT_WMEVENTCLICK              0x2C
 #define EVENT_P9P                       0x30
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
@@ -162,6 +164,14 @@ struct event_wmmouserelease
 {
 
     unsigned int button;
+
+};
+
+struct event_wmevent
+{
+
+    unsigned int type;
+    char clicked[16];
 
 };
 

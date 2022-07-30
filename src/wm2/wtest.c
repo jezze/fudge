@@ -16,6 +16,29 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_wmevent *wmevent = mdata;
+
+    if (wmevent->type == EVENT_WMEVENTCLICK)
+    {
+
+        char *data0 = "= text1 content \"Button 0 clicked\"\n";
+        char *data1 = "= text1 content \"Button 1 clicked\"\n";
+        char *data2 = "= text1 content \"No button clicked\"\n";
+
+        if (cstring_match(wmevent->clicked, "button0"))
+            file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data0), data0);
+        else if (cstring_match(wmevent->clicked, "button1"))
+            file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data1), data1);
+        else
+            file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data2), data2);
+
+    }
+
+}
+
 static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -23,9 +46,9 @@ static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
         "+ window id \"window\" title \"Test\"\n"
         "+ container id \"base\" in \"window\" layout \"vertical\" padding \"16\"\n"
         "+ text in \"base\" content \"Hello World!\nHow are we today?\"\n"
-        "+ button in \"base\" label \"Click Me\"\n"
-        "+ text in \"base\" content \"Hello again!\"\n"
-        "+ button in \"base\" label \"Click \\\"Me\\\" Too\"\n";
+        "+ button id \"button0\" in \"base\" label \"Click Me\"\n"
+        "+ text id \"text1\" in \"base\" content \"<awaiting event>\"\n"
+        "+ button id \"button1\" in \"base\" label \"Click \\\"Me\\\" Too\"\n";
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
 
@@ -39,6 +62,7 @@ void init(void)
 
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
+    channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMSHOW, onwmshow);
 
 }

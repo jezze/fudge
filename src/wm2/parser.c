@@ -298,7 +298,26 @@ static void parseinsert(struct state *state, unsigned int source, char *in)
 static void parseupdate(struct state *state, unsigned int source)
 {
 
-    fail(state);
+    char *id = readunsafeword(state);
+
+    if (id)
+    {
+
+        struct widget *widget = pool_getwidgetbyid(source, id);
+
+        if (widget)
+            parseattributes(state, widget);
+        else
+            fail(state);
+
+    }
+
+    else
+    {
+
+        fail(state);
+
+    }
 
 }
 

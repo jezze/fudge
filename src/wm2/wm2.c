@@ -342,7 +342,13 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         if (state.clickedwidget)
         {
 
-            /* Send event */
+            struct event_wmevent wmevent;
+
+            wmevent.type = EVENT_WMEVENTCLICK;
+
+            cstring_copy(wmevent.clicked, state.clickedwidget->id);
+
+            channel_sendbufferto(state.clickedwidget->source, EVENT_WMEVENT, sizeof (struct event_wmevent), &wmevent);
 
         }
 
@@ -483,14 +489,19 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
     if (widget)
     {
 
-        widget->position.x = 64 + 128 * numwindows;
-        widget->position.y = 64 + 64 * numwindows;
-        widget->size.w = 640;
-        widget->size.h = 640;
+        if (widget->size.w == 0 && widget->size.h == 0)
+        {
 
-        bump(widget);
+            widget->position.x = 64 + 128 * numwindows;
+            widget->position.y = 64 + 64 * numwindows;
+            widget->size.w = 640;
+            widget->size.h = 640;
 
-        numwindows++;
+            bump(widget);
+
+            numwindows++;
+
+        }
 
     }
 
