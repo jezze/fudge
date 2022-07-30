@@ -1,6 +1,6 @@
 AR=$(TARGET)-ar rcs
 AS=$(TARGET)-as -c -o
-CC=$(TARGET)-gcc -Wall -Werror -ffreestanding -fno-asynchronous-unwind-tables -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -std=c89 -pedantic -O2 -S -o
+CC=$(TARGET)-gcc -Wall -Werror -Wno-overlength-strings -ffreestanding -fno-asynchronous-unwind-tables -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -std=c89 -pedantic -O2 -S -o
 NM=$(TARGET)-nm -gp
 PP=$(TARGET)-gcc -Wall -Werror -nostdinc -std=c89 -pedantic -E -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) -o
 DP=$(TARGET)-gcc -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) -MM -MT
