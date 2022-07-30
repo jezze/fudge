@@ -35,11 +35,12 @@ struct state
     struct position mousemovement;
     unsigned int mousebuttonleft;
     unsigned int mousebuttonright;
+    struct widget *rootwidget;
+    struct widget *mousewidget;
+    struct widget *clickedwidget;
 
 };
 
-static struct widget *rootwidget;
-static struct widget *mousewidget;
 static struct list remotelist;
 static struct render_display display;
 static struct configuration configuration;
@@ -254,8 +255,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     while (channel_process())
     {
 
-        place_widget(rootwidget, 0, 0, 0, 0, display.size.w, display.size.h);
-        render_paint(&display, rootwidget, mousewidget->data);
+        place_widget(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h);
+        render_paint(&display, state.rootwidget, state.mousewidget->data);
 
     }
 
@@ -278,12 +279,12 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     state.mouseposition.x = x;
     state.mouseposition.y = y;
 
-    damage(mousewidget);
+    damage(state.mousewidget);
 
-    mousewidget->position.x = state.mouseposition.x;
-    mousewidget->position.y = state.mouseposition.y;
+    state.mousewidget->position.x = state.mouseposition.x;
+    state.mousewidget->position.y = state.mouseposition.y;
 
-    damage(mousewidget);
+    damage(state.mousewidget);
 
     if (state.mousebuttonleft || state.mousebuttonright)
     {
@@ -323,8 +324,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
-    struct widget *clickedwidget = getwidgetat(rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
-    struct widget *clickedwindow = getwidgetat(rootwidget, state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
+    struct widget *clickedwindow = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
     struct widget *focusedwindow;
 
     switch (mousepress->button)
@@ -332,6 +332,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
     case 1:
         state.mousebuttonleft = 1;
+        state.clickedwidget = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
         focusedwindow = getfocusedwindow();
 
         if (focusedwindow)
@@ -342,7 +343,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
             window->focus = 0;
 
             damage(focusedwindow);
-            damage(mousewidget);
+            damage(state.mousewidget);
 
         }
 
@@ -354,13 +355,13 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
             window->focus = 1;
 
             pool_bump(clickedwindow);
-            pool_bump(mousewidget);
             damage(clickedwindow);
-            damage(mousewidget);
+            pool_bump(state.mousewidget);
+            damage(state.mousewidget);
 
         }
 
-        if (clickedwidget)
+        if (state.clickedwidget)
         {
 
             /* Send event */
@@ -388,6 +389,7 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
 
     case 1:
         state.mousebuttonleft = 0;
+        state.clickedwidget = 0;
 
         break;
 
@@ -458,23 +460,23 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     case 0:
     case 1:
-        widget_setimage(mousewidget->data, mousedata16, mousecmap);
+        widget_setimage(state.mousewidget->data, mousedata16, mousecmap);
 
-        mousewidget->position.x = state.mouseposition.x;
-        mousewidget->position.y = state.mouseposition.y;
-        mousewidget->size.w = 12;
-        mousewidget->size.h = 16;
+        state.mousewidget->position.x = state.mouseposition.x;
+        state.mousewidget->position.y = state.mouseposition.y;
+        state.mousewidget->size.w = 12;
+        state.mousewidget->size.h = 16;
 
         break;
 
     case 2:
     default:
-        widget_setimage(mousewidget->data, mousedata24, mousecmap);
+        widget_setimage(state.mousewidget->data, mousedata24, mousecmap);
 
-        mousewidget->position.x = state.mouseposition.x;
-        mousewidget->position.y = state.mouseposition.y;
-        mousewidget->size.w = 18;
-        mousewidget->size.h = 24;
+        state.mousewidget->position.x = state.mouseposition.x;
+        state.mousewidget->position.y = state.mouseposition.y;
+        state.mousewidget->size.w = 18;
+        state.mousewidget->size.h = 24;
 
         break;
 
@@ -509,9 +511,9 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
         widget->size.h = 640;
 
         pool_bump(widget);
-        pool_bump(mousewidget);
         damage(widget);
-        damage(mousewidget);
+        pool_bump(state.mousewidget);
+        damage(state.mousewidget);
 
         numwindows++;
 
@@ -536,8 +538,8 @@ void widgets_setup(void)
 
     parser_parse(0, "", cstring_length(data), data);
 
-    rootwidget = pool_getwidgetbyid(0, "root");
-    mousewidget = pool_getwidgetbyid(0, "mouse");
+    state.rootwidget = pool_getwidgetbyid(0, "root");
+    state.mousewidget = pool_getwidgetbyid(0, "mouse");
 
 }
 
