@@ -174,3 +174,14 @@ struct event_wmclick
 
 };
 
+struct event_wmkeypress2
+{
+
+    unsigned char scancode;
+    unsigned int keymod;
+    unsigned int unicode;
+    unsigned int length;
+    char pressed[16];
+
+};
+

@@ -194,6 +194,13 @@ unsigned int pool_getcstringlength(unsigned int index)
 
 }
 
+unsigned int pool_getcstringlengthz(unsigned int index)
+{
+
+    return (strindex[index].length) ? strindex[index].length : 0;
+
+}
+
 unsigned int pool_savedata(unsigned int count, void *data)
 {
 

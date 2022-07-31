@@ -30,9 +30,11 @@ struct state
     struct widget *mousewidget;
     struct widget *clickedwidget;
     struct widget *hoverwidget;
+    struct widget *focusedwidget;
 
 };
 
+static unsigned int keymod = KEYMOD_NONE;
 static struct render_display display;
 static struct configuration configuration;
 static struct state state;
@@ -252,6 +254,63 @@ static void onhover(struct widget *widget)
 
 }
 
+static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_keypress *keypress = mdata;
+    struct keymap *keymap = keymap_load(KEYMAP_US);
+    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
+
+    keymod = keymap_modkey(keypress->scancode, keymod);
+
+    if (!(keymod & KEYMOD_ALT))
+    {
+
+        if (state.focusedwidget)
+        {
+
+            struct event_wmkeypress2 wmkeypress;
+
+            wmkeypress.scancode = keypress->scancode;
+            wmkeypress.unicode = keycode->value[0];
+            wmkeypress.length = keycode->length;
+            wmkeypress.keymod = keymod;
+
+            buffer_write(wmkeypress.pressed, 16, pool_getstring(state.focusedwidget->id), pool_getcstringlengthz(state.focusedwidget->id), 0);
+
+            wmkeypress.pressed[15] = '\0';
+
+            channel_sendbufferto(state.focusedwidget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
+
+        }
+
+    }
+
+}
+
+static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
+{
+
+/*
+    struct event_keyrelease *keyrelease = mdata;
+    struct keymap *keymap = keymap_load(KEYMAP_US);
+    struct keycode *keycode = keymap_getkeycode(keymap, keyrelease->scancode, keymod);
+
+    keymod = keymap_modkey(keyrelease->scancode, keymod);
+
+    if (!(keymod & KEYMOD_ALT))
+    {
+
+        if (state.focusedwidget)
+        {
+
+        }
+
+    }
+*/
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -372,7 +431,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
             struct event_wmclick wmclick;
 
-            buffer_write(wmclick.clicked, 16, pool_getstring(state.clickedwidget->id), pool_getcstringlength(state.clickedwidget->id) + 1, 0);
+            buffer_write(wmclick.clicked, 16, pool_getstring(state.clickedwidget->id), pool_getcstringlengthz(state.clickedwidget->id), 0);
 
             wmclick.clicked[15] = '\0';
 
@@ -572,6 +631,8 @@ void init(void)
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
+    channel_bind(EVENT_KEYPRESS, onkeypress);
+    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEMOVE, onmousemove);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
