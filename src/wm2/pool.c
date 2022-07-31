@@ -202,32 +202,26 @@ unsigned int pool_savecstring(char *cstring)
 unsigned int pool_freedata(unsigned int index)
 {
 
-    if (index)
+    struct strindex *s = &strindex[index];
+    unsigned int offset = s->offset;
+    unsigned int length = s->length;
+    unsigned int next = s->offset + s->length;
+    unsigned int count = strdataoffset - next;
+    unsigned int i;
+
+    buffer_write(strdata, 0x4000, strdata + next, count, offset);
+    strdataoffset -= length;
+
+    s->offset = 0;
+    s->length = 0;
+
+    for (i = 0; i < 256; i++)
     {
 
-        struct strindex *s = &strindex[index];
-        unsigned int length = s->length;
-        unsigned int offset = s->offset;
-        unsigned int next = offset + length;
-        unsigned int count = strdataoffset - next;
-        unsigned int i;
+        struct strindex *current = &strindex[i];
 
-        buffer_write(strdata, 0x4000, strdata + next, count, offset);
-
-        s->offset = 0;
-        s->length = 0;
-
-        for (i = 0; i < 256; i++)
-        {
-
-            struct strindex *current = &strindex[i];
-
-            if (current->offset > offset)
-                current->offset -= length;
-
-        }
-
-        strdataoffset -= length;
+        if (current->offset > offset)
+            current->offset -= length;
 
     }
 
