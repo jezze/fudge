@@ -142,7 +142,6 @@ struct widget_window
 
 };
 
-void widget_setimage(struct widget_image *image, void *data, void *cmap);
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value);
 unsigned int widget_getattribute(char *value);
 unsigned int widget_getcommand(char *value);

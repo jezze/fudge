@@ -460,6 +460,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     unsigned int factor = videomode->h / 320;
     unsigned int lineheight = 12 + factor * 4;
     unsigned int padding = 4 + factor * 2;
+    struct widget_image *mouseimage = state.mousewidget->data;
 
     render_setup(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
 
@@ -475,23 +476,23 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     case 0:
     case 1:
-        widget_setimage(state.mousewidget->data, mousedata16, mousecmap);
-
         state.mousewidget->position.x = state.mouseposition.x;
         state.mousewidget->position.y = state.mouseposition.y;
         state.mousewidget->size.w = 12;
         state.mousewidget->size.h = 16;
+        mouseimage->data = mousedata16;
+        mouseimage->cmap = mousecmap;
 
         break;
 
     case 2:
     default:
-        widget_setimage(state.mousewidget->data, mousedata24, mousecmap);
-
         state.mousewidget->position.x = state.mouseposition.x;
         state.mousewidget->position.y = state.mouseposition.y;
         state.mousewidget->size.w = 18;
         state.mousewidget->size.h = 24;
+        mouseimage->data = mousedata24;
+        mouseimage->cmap = mousecmap;
 
         break;
 

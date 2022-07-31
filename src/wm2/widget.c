@@ -104,14 +104,6 @@ static unsigned int getkey(struct token *tokens, unsigned int n, char *value)
 
 }
 
-void widget_setimage(struct widget_image *image, void *data, void *cmap)
-{
-
-    image->data = data;
-    image->cmap = cmap;
-
-}
-
 static void setattributebutton(struct widget *widget, unsigned int attribute, char *value)
 {
 
