@@ -11,17 +11,18 @@
 #define WIDGET_TYPE_TEXT                        6
 #define WIDGET_TYPE_TEXTBOX                     7
 #define WIDGET_TYPE_WINDOW                      8
-#define WIDGET_ATTR_COLOR                       1
-#define WIDGET_ATTR_COLUMNS                     2
-#define WIDGET_ATTR_CONTENT                     3
-#define WIDGET_ATTR_ID                          4
-#define WIDGET_ATTR_IN                          5
-#define WIDGET_ATTR_LABEL                       6
-#define WIDGET_ATTR_LAYOUT                      7
-#define WIDGET_ATTR_MODE                        8
-#define WIDGET_ATTR_PADDING                     9
-#define WIDGET_ATTR_PLACEMENT                   10
-#define WIDGET_ATTR_TITLE                       11
+#define WIDGET_ATTR_ALIGN                       1
+#define WIDGET_ATTR_COLOR                       2
+#define WIDGET_ATTR_COLUMNS                     3
+#define WIDGET_ATTR_CONTENT                     4
+#define WIDGET_ATTR_ID                          5
+#define WIDGET_ATTR_IN                          6
+#define WIDGET_ATTR_LABEL                       7
+#define WIDGET_ATTR_LAYOUT                      8
+#define WIDGET_ATTR_MODE                        9
+#define WIDGET_ATTR_PADDING                     10
+#define WIDGET_ATTR_PLACEMENT                   11
+#define WIDGET_ATTR_TITLE                       12
 #define WIDGET_CONTAINER_LAYOUT_FLOAT           0
 #define WIDGET_CONTAINER_LAYOUT_HORIZONTAL      1
 #define WIDGET_CONTAINER_LAYOUT_MAXIMIZE        2
@@ -30,8 +31,14 @@
 #define WIDGET_CONTAINER_PLACEMENT_STRETCHED    1
 #define WIDGET_GRID_PLACEMENT_NORMAL            0
 #define WIDGET_GRID_PLACEMENT_STRETCHED         1
+#define WIDGET_TEXT_ALIGN_LEFT                  0
+#define WIDGET_TEXT_ALIGN_CENTER                1
+#define WIDGET_TEXT_ALIGN_RIGHT                 2
 #define WIDGET_TEXTBOX_MODE_NORMAL              0
 #define WIDGET_TEXTBOX_MODE_READONLY            1
+#define WIDGET_TEXTBOX_ALIGN_LEFT               0
+#define WIDGET_TEXTBOX_ALIGN_CENTER             1
+#define WIDGET_TEXTBOX_ALIGN_RIGHT              2
 
 struct position
 {
@@ -106,9 +113,10 @@ struct widget_image
 struct widget_text
 {
 
-    unsigned int length;
-    int scroll;
     char *content;
+    unsigned int length;
+    unsigned int align;
+    int scroll;
 
 };
 
@@ -117,8 +125,9 @@ struct widget_textbox
 
     char *content;
     unsigned int length;
-    unsigned int mode;
+    unsigned int align;
     int scroll;
+    unsigned int mode;
     unsigned int cursor;
 
 };

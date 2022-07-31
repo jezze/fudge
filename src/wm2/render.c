@@ -447,6 +447,24 @@ static void painttext(struct render_display *display, struct widget *widget, int
         unsigned int rx = widget->position.x;
         unsigned int ry = widget->position.y + rownum * font->lineheight;
 
+        switch (text->align)
+        {
+
+        case WIDGET_TEXT_ALIGN_LEFT:
+            break;
+
+        case WIDGET_TEXT_ALIGN_CENTER:
+            rx += widget->size.w / 2 - render_getrowwidth(RENDER_FONTNORMAL, text->content + s, length) / 2;
+
+            break;
+
+        case WIDGET_TEXT_ALIGN_RIGHT:
+            rx += widget->size.w - render_getrowwidth(RENDER_FONTNORMAL, text->content + s, length);
+
+            break;
+
+        }
+
         blittext(display, font, cmapnormal[CMAP_TEXT_TEXT], text->content + s, length, rx, ry, line, x0, x1);
 
     }
@@ -519,8 +537,27 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 
         unsigned int s = util_findrowstart(textbox->content, textbox->length, rownum);
         unsigned int length = util_findrowcount(textbox->content, textbox->length, s);
-        unsigned int rx = widget->position.x + RENDER_TEXTBOX_PADDING_WIDTH;
+        unsigned int rx = widget->position.x;
         unsigned int ry = widget->position.y + rownum * font->lineheight + RENDER_TEXTBOX_PADDING_HEIGHT;
+
+        switch (textbox->align)
+        {
+
+        case WIDGET_TEXTBOX_ALIGN_LEFT:
+            rx += RENDER_TEXTBOX_PADDING_WIDTH;
+            break;
+
+        case WIDGET_TEXTBOX_ALIGN_CENTER:
+            rx += widget->size.w / 2 - render_getrowwidth(RENDER_FONTNORMAL, textbox->content + s, length) / 2;
+
+            break;
+
+        case WIDGET_TEXTBOX_ALIGN_RIGHT:
+            rx += widget->size.w - render_getrowwidth(RENDER_FONTNORMAL, textbox->content + s, length) - RENDER_TEXTBOX_PADDING_WIDTH;
+
+            break;
+
+        }
 
         if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
             blittext(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1);

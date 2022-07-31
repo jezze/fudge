@@ -153,7 +153,7 @@ static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
         "+ window id \"window\" title \"Calculator\"\n"
         "+ container id \"base\" in \"window\" layout \"vertical\"\n"
         "+ container id \"container\" in \"base\" layout \"vertical\" placement \"stretched\" padding \"16\"\n"
-        "+ textbox id \"result\" in \"container\" content \"0\" mode \"readonly\"\n"
+        "+ textbox id \"result\" in \"container\" content \"0\" align \"right\" mode \"readonly\"\n"
         "+ grid id \"buttons\" in \"base\" columns \"4\" placement \"stretched\" padding \"16\"\n"
         "+ button id \"button7\" in \"buttons\" label \"7\"\n"
         "+ button id \"button8\" in \"buttons\" label \"8\"\n"

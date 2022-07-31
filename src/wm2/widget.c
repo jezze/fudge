@@ -9,7 +9,8 @@ struct token
 
 };
 
-static struct token commands[] = {
+static struct token commands[] =
+{
     {WIDGET_COMMAND_NONE, ""},
     {WIDGET_COMMAND_COMMENT, "#"},
     {WIDGET_COMMAND_DELETE, "-"},
@@ -31,6 +32,7 @@ static struct token types[] =
 
 static struct token attributes[] =
 {
+    {WIDGET_ATTR_ALIGN, "align"},
     {WIDGET_ATTR_COLOR, "color"},
     {WIDGET_ATTR_COLUMNS, "columns"},
     {WIDGET_ATTR_CONTENT, "content"},
@@ -62,6 +64,20 @@ static struct token gridplacements[] =
 {
     {WIDGET_GRID_PLACEMENT_NORMAL, "normal"},
     {WIDGET_GRID_PLACEMENT_STRETCHED, "stretched"}
+};
+
+static struct token textaligns[] =
+{
+    {WIDGET_TEXT_ALIGN_LEFT, "left"},
+    {WIDGET_TEXT_ALIGN_CENTER, "center"},
+    {WIDGET_TEXT_ALIGN_RIGHT, "right"}
+};
+
+static struct token textboxaligns[] =
+{
+    {WIDGET_TEXTBOX_ALIGN_LEFT, "left"},
+    {WIDGET_TEXTBOX_ALIGN_CENTER, "center"},
+    {WIDGET_TEXTBOX_ALIGN_RIGHT, "right"}
 };
 
 static struct token textboxmodes[] =
@@ -196,6 +212,11 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
     switch (attribute)
     {
 
+    case WIDGET_ATTR_ALIGN:
+        text->align = getkey(textaligns, 3, value);
+
+        break;
+
     case WIDGET_ATTR_CONTENT:
         text->length = cstring_length(value);
         text->content = value;
@@ -213,6 +234,11 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
 
     switch (attribute)
     {
+
+    case WIDGET_ATTR_ALIGN:
+        textbox->align = getkey(textboxaligns, 3, value);
+
+        break;
 
     case WIDGET_ATTR_CONTENT:
         textbox->length = cstring_length(value);
@@ -315,7 +341,7 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 unsigned int widget_getattribute(char *value)
 {
 
-    return getkey(attributes, 11, value);
+    return getkey(attributes, 12, value);
 
 }
 
