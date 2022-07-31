@@ -202,11 +202,10 @@ unsigned int pool_savecstring(char *cstring)
 unsigned int pool_freedata(unsigned int index)
 {
 
-    struct strindex *s = &strindex[index];
-
-    if (s->offset)
+    if (index)
     {
 
+        struct strindex *s = &strindex[index];
         unsigned int length = s->length;
         unsigned int offset = s->offset;
         unsigned int next = offset + length;
