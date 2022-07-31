@@ -370,16 +370,14 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         if (state.clickedwidget)
         {
 
-            struct event_wmevent wmevent;
+            struct event_wmclick wmclick;
             unsigned int length = cstring_length(pool_getstring(state.clickedwidget->id));
 
-            wmevent.type = EVENT_WMEVENTCLICK;
+            cstring_copy(wmclick.clicked, pool_getstring(state.clickedwidget->id));
 
-            cstring_copy(wmevent.clicked, pool_getstring(state.clickedwidget->id));
+            wmclick.clicked[length] = '\0';
 
-            wmevent.clicked[length] = '\0';
-
-            channel_sendbufferto(state.clickedwidget->source, EVENT_WMEVENT, sizeof (struct event_wmevent), &wmevent);
+            channel_sendbufferto(state.clickedwidget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
 
         }
 
@@ -503,7 +501,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_sendto(source, EVENT_WMSHOW);
+    channel_sendto(source, EVENT_WMINIT);
 
 }
 
@@ -543,8 +541,6 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 
 static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 {
-
-    channel_sendto(source, EVENT_WMHIDE);
 
 }
 

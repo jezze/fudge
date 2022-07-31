@@ -16,30 +16,24 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
+static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_wmevent *wmevent = mdata;
+    struct event_wmclick *wmclick = mdata;
+    char *data0 = "= text1 content \"Button 0 clicked\"\n";
+    char *data1 = "= text1 content \"Button 1 clicked\"\n";
+    char *data2 = "= text1 content \"No button clicked\"\n";
 
-    if (wmevent->type == EVENT_WMEVENTCLICK)
-    {
-
-        char *data0 = "= text1 content \"Button 0 clicked\"\n";
-        char *data1 = "= text1 content \"Button 1 clicked\"\n";
-        char *data2 = "= text1 content \"No button clicked\"\n";
-
-        if (cstring_match(wmevent->clicked, "button0"))
-            file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data0), data0);
-        else if (cstring_match(wmevent->clicked, "button1"))
-            file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data1), data1);
-        else
-            file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data2), data2);
-
-    }
+    if (cstring_match(wmclick->clicked, "button0"))
+        file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data0), data0);
+    else if (cstring_match(wmclick->clicked, "button1"))
+        file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data1), data1);
+    else
+        file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data2), data2);
 
 }
 
-static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
+static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
@@ -62,8 +56,8 @@ void init(void)
 
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
-    channel_bind(EVENT_WMEVENT, onwmevent);
-    channel_bind(EVENT_WMSHOW, onwmshow);
+    channel_bind(EVENT_WMCLICK, onwmclick);
+    channel_bind(EVENT_WMINIT, onwminit);
 
 }
 

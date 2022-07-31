@@ -103,50 +103,45 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
+static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_wmevent *wmevent = mdata;
+    struct event_wmclick *wmclick = mdata;
 
-    if (wmevent->type == EVENT_WMEVENTCLICK)
-    {
-
-        if (cstring_match(wmevent->clicked, "button="))
-            updatestate(STATE_SUM);
-        else if (cstring_match(wmevent->clicked, "button0"))
-            updatevalue(0);
-        else if (cstring_match(wmevent->clicked, "button1"))
-            updatevalue(1);
-        else if (cstring_match(wmevent->clicked, "button2"))
-            updatevalue(2);
-        else if (cstring_match(wmevent->clicked, "button3"))
-            updatevalue(3);
-        else if (cstring_match(wmevent->clicked, "button4"))
-            updatevalue(4);
-        else if (cstring_match(wmevent->clicked, "button5"))
-            updatevalue(5);
-        else if (cstring_match(wmevent->clicked, "button6"))
-            updatevalue(6);
-        else if (cstring_match(wmevent->clicked, "button7"))
-            updatevalue(7);
-        else if (cstring_match(wmevent->clicked, "button8"))
-            updatevalue(8);
-        else if (cstring_match(wmevent->clicked, "button9"))
-            updatevalue(9);
-        else if (cstring_match(wmevent->clicked, "button+"))
-            updatestate(STATE_ADD);
-        else if (cstring_match(wmevent->clicked, "button-"))
-            updatestate(STATE_SUB);
-        else if (cstring_match(wmevent->clicked, "buttonx"))
-            updatestate(STATE_MUL);
-        else if (cstring_match(wmevent->clicked, "button/"))
-            updatestate(STATE_DIV);
-
-    }
+    if (cstring_match(wmclick->clicked, "button="))
+        updatestate(STATE_SUM);
+    else if (cstring_match(wmclick->clicked, "button0"))
+        updatevalue(0);
+    else if (cstring_match(wmclick->clicked, "button1"))
+        updatevalue(1);
+    else if (cstring_match(wmclick->clicked, "button2"))
+        updatevalue(2);
+    else if (cstring_match(wmclick->clicked, "button3"))
+        updatevalue(3);
+    else if (cstring_match(wmclick->clicked, "button4"))
+        updatevalue(4);
+    else if (cstring_match(wmclick->clicked, "button5"))
+        updatevalue(5);
+    else if (cstring_match(wmclick->clicked, "button6"))
+        updatevalue(6);
+    else if (cstring_match(wmclick->clicked, "button7"))
+        updatevalue(7);
+    else if (cstring_match(wmclick->clicked, "button8"))
+        updatevalue(8);
+    else if (cstring_match(wmclick->clicked, "button9"))
+        updatevalue(9);
+    else if (cstring_match(wmclick->clicked, "button+"))
+        updatestate(STATE_ADD);
+    else if (cstring_match(wmclick->clicked, "button-"))
+        updatestate(STATE_SUB);
+    else if (cstring_match(wmclick->clicked, "buttonx"))
+        updatestate(STATE_MUL);
+    else if (cstring_match(wmclick->clicked, "button/"))
+        updatestate(STATE_DIV);
 
 }
 
-static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
+static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
@@ -184,8 +179,8 @@ void init(void)
 
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
-    channel_bind(EVENT_WMEVENT, onwmevent);
-    channel_bind(EVENT_WMSHOW, onwmshow);
+    channel_bind(EVENT_WMCLICK, onwmclick);
+    channel_bind(EVENT_WMINIT, onwminit);
 
 }
 

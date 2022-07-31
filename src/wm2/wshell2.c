@@ -16,7 +16,7 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
+static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
@@ -36,7 +36,7 @@ void init(void)
 
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
-    channel_bind(EVENT_WMSHOW, onwmshow);
+    channel_bind(EVENT_WMINIT, onwminit);
 
 }
 
