@@ -33,8 +33,7 @@ static union payloads payloads[MAX_WIDGETS];
 static unsigned int nwidgets;
 static char strdata[0x4000];
 static unsigned int strdataoffset;
-static struct strindex strindex[256];
-static unsigned int nstrindex;
+static struct strindex strindex[512];
 
 struct list_item *pool_next(struct list_item *current)
 {
@@ -164,6 +163,23 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 
 }
 
+static unsigned int findslot(void)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < 512; i++)
+    {
+
+        if (strindex[i].offset == 0 && strindex[i].length == 0)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
 char *pool_getstring(unsigned int index)
 {
 
@@ -181,14 +197,20 @@ unsigned int pool_getcstringlength(unsigned int index)
 unsigned int pool_savedata(unsigned int count, void *data)
 {
 
-    struct strindex *index = &strindex[nstrindex];
+    unsigned int slot = findslot();
 
-    index->offset = strdataoffset;
-    index->length = count;
-    strdataoffset += buffer_write(strdata, 0x4000, data, index->length, index->offset);
-    nstrindex++;
+    if (slot)
+    {
 
-    return nstrindex - 1;
+        struct strindex *index = &strindex[slot];
+
+        index->offset = strdataoffset;
+        index->length = count;
+        strdataoffset += buffer_write(strdata, 0x4000, data, index->length, index->offset);
+
+    }
+
+    return slot;
 
 }
 
@@ -215,7 +237,7 @@ unsigned int pool_freedata(unsigned int index)
     s->offset = 0;
     s->length = 0;
 
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < 512; i++)
     {
 
         struct strindex *current = &strindex[i];
