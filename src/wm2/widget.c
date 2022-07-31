@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include "widget.h"
+#include "pool.h"
 
 struct token
 {
@@ -120,7 +121,7 @@ static void setattributebutton(struct widget *widget, unsigned int attribute, ch
     {
 
     case WIDGET_ATTR_LABEL:
-        button->label = value;
+        button->label = pool_replacestring(button->label, value);
 
         break;
 
@@ -219,7 +220,7 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
 
     case WIDGET_ATTR_CONTENT:
         text->length = cstring_length(value);
-        text->content = value;
+        text->content = pool_replacestring(text->content, value);
 
         break;
 
@@ -242,7 +243,7 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
 
     case WIDGET_ATTR_CONTENT:
         textbox->length = cstring_length(value);
-        textbox->content = value;
+        textbox->content = pool_replacestring(textbox->content, value);
         textbox->cursor = textbox->length - 1;
 
         break;
@@ -265,7 +266,7 @@ static void setattributewindow(struct widget *widget, unsigned int attribute, ch
     {
 
     case WIDGET_ATTR_TITLE:
-        window->title = value;
+        window->title = pool_replacestring(window->title, value);
 
         break;
 
@@ -280,12 +281,12 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
     {
 
     case WIDGET_ATTR_ID:
-        widget->id = value;
+        widget->id = pool_replacestring(widget->id, value);
 
         break;
 
     case WIDGET_ATTR_IN:
-        widget->in = value;
+        widget->in = pool_replacestring(widget->in, value);
 
         break;
 

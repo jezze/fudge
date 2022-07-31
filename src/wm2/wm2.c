@@ -547,7 +547,7 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-void widgets_setup(void)
+static void setupwidgets(void)
 {
 
     char *data =
@@ -567,7 +567,7 @@ void init(void)
 {
 
     pool_setup();
-    widgets_setup();
+    setupwidgets();
 
     configuration.displaywidth = 1920;
     configuration.displayheight = 1080;

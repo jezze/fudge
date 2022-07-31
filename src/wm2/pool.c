@@ -23,6 +23,8 @@ static struct list_item widgetitems[MAX_WIDGETS];
 static struct widget widgets[MAX_WIDGETS];
 static union payloads payloads[MAX_WIDGETS];
 static unsigned int nwidgets;
+static char strdata[0x4000];
+static unsigned int strdataoffset;
 
 struct list_item *pool_next(struct list_item *current)
 {
@@ -149,6 +151,40 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
     }
 
     return 0;
+
+}
+
+char *pool_savestring(char *string)
+{
+
+    unsigned int offset = strdataoffset;
+    unsigned int length = cstring_length(string);
+
+    cstring_copy(strdata + strdataoffset, string);
+
+    strdataoffset += length + 1;
+
+    return strdata + offset;
+
+}
+
+char *pool_freestring(char *string)
+{
+
+    return 0;
+
+}
+
+char *pool_replacestring(char *current, char *string)
+{
+
+    if (current)
+        current = pool_freestring(current);
+
+    if (string)
+        current = pool_savestring(string);
+
+    return current;
 
 }
 

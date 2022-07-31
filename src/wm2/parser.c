@@ -18,8 +18,7 @@ struct state
 
 };
 
-static char strdata[0x4000];
-static unsigned int strdataoffset;
+static char strbuffer[BUFFER_SIZE];
 
 static void fail(struct state *state)
 {
@@ -167,59 +166,30 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
 
 }
 
-static char *readunsafeword(struct state *state)
-{
-
-    char *word = strdata + strdataoffset;
-    unsigned int count = readword(state, word, 0x4000 - strdataoffset);
-
-    return (count) ? word : 0;
-
-}
-
-static char *readsafeword(struct state *state)
-{
-
-    char *word = strdata + strdataoffset;
-    unsigned int count = readword(state, word, 0x4000 - strdataoffset);
-
-    if (count)
-    {
-
-        strdataoffset += count + 1;
-
-        return word;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int getattribute(struct state *state)
 {
 
-    char *word = readunsafeword(state);
+    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
 
-    return (word) ? widget_getattribute(word) : 0;
+    return (count) ? widget_getattribute(strbuffer) : 0;
 
 }
 
 static unsigned int getcommand(struct state *state)
 {
 
-    char *word = readunsafeword(state);
+    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
 
-    return (word) ? widget_getcommand(word) : 0;
+    return (count) ? widget_getcommand(strbuffer) : 0;
 
 }
 
 static unsigned int gettype(struct state *state)
 {
 
-    char *word = readunsafeword(state);
+    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
 
-    return (word) ? widget_gettype(word) : 0;
+    return (count) ? widget_gettype(strbuffer) : 0;
 
 }
 
@@ -234,10 +204,10 @@ static void parseattributes(struct state *state, struct widget *widget)
         if (attribute)
         {
 
-            char *word = readsafeword(state);
+            unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
 
-            if (word)
-                widget_setattribute(widget, attribute, word);
+            if (count)
+                widget_setattribute(widget, attribute, strbuffer);
             else
                 fail(state);
 
@@ -258,7 +228,7 @@ static void parsecomment(struct state *state)
 {
 
     while (!state->errors && !state->linebreak)
-        readunsafeword(state);
+        readword(state, strbuffer, BUFFER_SIZE);
 
 }
 
@@ -298,12 +268,12 @@ static void parseinsert(struct state *state, unsigned int source, char *in)
 static void parseupdate(struct state *state, unsigned int source)
 {
 
-    char *id = readunsafeword(state);
+    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
 
-    if (id)
+    if (count)
     {
 
-        struct widget *widget = pool_getwidgetbyid(source, id);
+        struct widget *widget = pool_getwidgetbyid(source, strbuffer);
 
         if (widget)
             parseattributes(state, widget);
