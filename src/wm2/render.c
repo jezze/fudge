@@ -60,42 +60,64 @@ struct rowsegment
 
 };
 
-static unsigned int cmapnormal[] = {
-    0xFF081828,
-    0xFF485868,
-    0xFF687888,
-    0xFFFFFFFF,
-    0xFFA8B8C8,
-    0xFF081828,
-    0xFF485868,
-    0xFF081828,
-    0xFFFFFFFF,
-    0xFF101010,
-    0xFF687888,
-    0xFF485868,
-    0xFF182838,
-    0xFFA8B8C8
+struct cmap
+{
+
+    unsigned int normal;
+    unsigned int focus;
+    unsigned int hover;
+
 };
 
-static unsigned int cmapfocus[] = {
-    0xFF081828,
-    0xFF48C888,
-    0xFF28A868,
-    0xFFFFFFFF,
-    0xFFA8B8C8,
-    0xFF081828,
-    0xFF485868,
-    0xFF081828,
-    0xFFFFFFFF,
-    0xFF101010,
-    0xFF48C888,
-    0xFF28A868,
-    0xFF182838,
-    0xFFFFFFFF
+static struct cmap cmap[] =
+{
+    {0xFF081828, 0xFF081828, 0xFF081828},
+    {0xFF485868, 0xFF48C888, 0xFF485868},
+    {0xFF687888, 0xFF28A868, 0xFFA8B8C8},
+    {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
+    {0xFFA8B8C8, 0xFFA8B8C8, 0xFFA8B8C8},
+    {0xFF081828, 0xFF081828, 0xFF081828},
+    {0xFF485868, 0xFF485868, 0xFF687888},
+    {0xFF081828, 0xFF081828, 0xFF081828},
+    {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
+    {0xFF101010, 0xFF101010, 0xFF101010},
+    {0xFF687888, 0xFF48C888, 0xFF687888},
+    {0xFF485868, 0xFF28A868, 0xFF485868},
+    {0xFF182838, 0xFF182838, 0xFF182838},
+    {0xFFA8B8C8, 0xFFFFFFFF, 0xFFA8B8C8}
 };
 
 static struct font fonts[32];
 static unsigned int linebuffer[3840];
+
+static unsigned int getcolor(unsigned int index, unsigned int state)
+{
+
+    struct cmap *c = &cmap[index];
+
+    switch (state)
+    {
+
+    case WIDGET_STATE_NORMAL:
+        return c->normal;
+
+        break;
+
+    case WIDGET_STATE_FOCUS:
+        return c->focus;
+
+        break;
+
+    case WIDGET_STATE_HOVER:
+        return c->hover;
+
+        break;
+
+    }
+
+    return 0;
+
+}
 
 static unsigned int getrownum(int line, int y, unsigned int padding, unsigned int lineheight)
 {
@@ -279,7 +301,7 @@ static void blittextcursor(struct render_display *display, struct font *font, un
 
 }
 
-static void blitlinesegments(struct render_display *display, int x0, int x1, unsigned int *cmap, struct linesegment *ls, unsigned int n, int line)
+static void blitlinesegments(struct render_display *display, int x0, int x1, unsigned int state, struct linesegment *ls, unsigned int n, int line)
 {
 
     unsigned int i;
@@ -323,7 +345,7 @@ static void blitlinesegments(struct render_display *display, int x0, int x1, uns
         p0 = util_max(p0, display->damage.position0.x);
         p1 = util_min(p1, display->damage.position1.x);
 
-        blitline(display, cmap[p->color], line, p0, p1);
+        blitline(display, getcolor(p->color, state), line, p0, p1);
 
     }
 
@@ -366,7 +388,6 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
     struct widget_button *button = widget->data;
     struct font *font = &fonts[RENDER_FONTBOLD];
-    unsigned int *cmap = (button->focus) ? cmapfocus : cmapnormal;
     unsigned int tl = cstring_length(button->label);
     unsigned int tw = render_getrowwidth(RENDER_FONTBOLD, button->label, tl);
     unsigned int th = render_getrowheight(RENDER_FONTBOLD, button->label, tl);
@@ -374,10 +395,10 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     unsigned int ry = widget->position.y + (widget->size.h / 2) - (th / 2);
     struct rowsegment *rs = findrowsegment(widget, rows, 9, line);
 
-    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, rs->segment, rs->numlines, line);
+    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
 
     if (util_intersects(line, ry, ry + font->lineheight))
-        blittext(display, font, cmap[CMAP_BUTTON_TEXT], button->label, tl, rx, ry, line, x0, x1);
+        blittext(display, font, getcolor(CMAP_BUTTON_TEXT, widget->state), button->label, tl, rx, ry, line, x0, x1);
 
 }
 
@@ -462,7 +483,7 @@ static void painttext(struct render_display *display, struct widget *widget, int
 
         }
 
-        blittext(display, font, cmapnormal[CMAP_TEXT_TEXT], text->content + s, length, rx, ry, line, x0, x1);
+        blittext(display, font, getcolor(CMAP_TEXT_TEXT, widget->state), text->content + s, length, rx, ry, line, x0, x1);
 
     }
 
@@ -524,7 +545,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
     unsigned int rowtotal = util_findrowtotal(textbox->content, textbox->length);
     struct rowsegment *rs = findrowsegment(widget, rows, 13, line);
 
-    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmapnormal, rs->segment, rs->numlines, line);
+    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
 
     if (rownum < rowtotal)
     {
@@ -555,9 +576,9 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         }
 
         if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
-            blittext(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1);
+            blittext(display, font, getcolor(CMAP_TEXTBOX_TEXT, widget->state), textbox->content + s, length, rx, ry, line, x0, x1);
         else
-            blittextcursor(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1, textbox->cursor);
+            blittextcursor(display, font, getcolor(CMAP_TEXTBOX_TEXT, widget->state), textbox->content + s, length, rx, ry, line, x0, x1, textbox->cursor);
 
     }
 
@@ -627,7 +648,6 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
 
     struct widget_window *window = widget->data;
     struct font *font = &fonts[RENDER_FONTBOLD];
-    unsigned int *cmap = (window->focus) ? cmapfocus : cmapnormal;
     unsigned int tl = cstring_length(window->title);
     unsigned int tw = render_getrowwidth(RENDER_FONTBOLD, window->title, tl);
     unsigned int th = render_getrowheight(RENDER_FONTBOLD, window->title, tl);
@@ -635,10 +655,10 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     unsigned int ry = widget->position.y + RENDER_WINDOW_BORDER_HEIGHT + (RENDER_WINDOW_TITLE_HEIGHT / 2) - (th / 2);
     struct rowsegment *rs = findrowsegment(widget, rows, 11, line);
 
-    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, rs->segment, rs->numlines, line);
+    blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
 
     if (util_intersects(line, ry, ry + font->lineheight))
-        blittext(display, font, cmap[CMAP_WINDOW_TEXT], window->title, tl, rx, ry, line, x0, x1);
+        blittext(display, font, getcolor(CMAP_WINDOW_TEXT, widget->state), window->title, tl, rx, ry, line, x0, x1);
 
 }
 

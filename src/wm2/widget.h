@@ -11,6 +11,9 @@
 #define WIDGET_TYPE_TEXT                        6
 #define WIDGET_TYPE_TEXTBOX                     7
 #define WIDGET_TYPE_WINDOW                      8
+#define WIDGET_STATE_NORMAL                     0
+#define WIDGET_STATE_HOVER                      1
+#define WIDGET_STATE_FOCUS                      2
 #define WIDGET_ATTR_ALIGN                       1
 #define WIDGET_ATTR_COLOR                       2
 #define WIDGET_ATTR_COLUMNS                     3
@@ -61,6 +64,7 @@ struct widget
 
     unsigned int source;
     unsigned int type;
+    unsigned int state;
     char *id;
     char *in;
     void *data;
@@ -73,7 +77,6 @@ struct widget_button
 {
 
     char *label;
-    unsigned int focus;
 
 };
 
@@ -136,7 +139,6 @@ struct widget_window
 {
 
     char *title;
-    unsigned int focus;
 
 };
 

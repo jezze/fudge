@@ -29,6 +29,7 @@ struct state
     struct widget *rootwidget;
     struct widget *mousewidget;
     struct widget *clickedwidget;
+    struct widget *hoverwidget;
 
 };
 
@@ -154,15 +155,8 @@ static struct widget *getfocusedwindow(void)
  
         struct widget *widget = current->data;
 
-        if (widget->type == WIDGET_TYPE_WINDOW)
-        {
-
-            struct widget_window *window = widget->data;
-
-            if (window->focus)
-                return widget;
-
-        }
+        if (widget->type == WIDGET_TYPE_WINDOW && widget->state == WIDGET_STATE_FOCUS)
+            return widget;
 
     }
 
@@ -224,6 +218,40 @@ static void bump(struct widget *widget)
 
 }
 
+static void onhover(struct widget *widget)
+{
+
+    if (widget != state.hoverwidget)
+    {
+
+        if (state.hoverwidget->state == WIDGET_STATE_HOVER)
+        {
+
+            state.hoverwidget->state = WIDGET_STATE_NORMAL;
+
+            damage(state.hoverwidget);
+
+        }
+
+        state.hoverwidget = widget;
+
+        switch (widget->type)
+        {
+
+        case WIDGET_TYPE_BUTTON:
+        case WIDGET_TYPE_TEXTBOX:
+            state.hoverwidget->state = WIDGET_STATE_HOVER;
+
+            damage(state.hoverwidget);
+
+            break;
+
+        }
+
+    }
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -254,6 +282,10 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     struct event_mousemove *mousemove = mdata;
     int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.size.w);
     int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.size.h);
+    struct widget *hoverwidget = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
+
+    if (hoverwidget)
+        onhover(hoverwidget);
 
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;
@@ -319,9 +351,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         if (focusedwindow)
         {
 
-            struct widget_window *window = focusedwindow->data;
-
-            window->focus = 0;
+            focusedwindow->state = WIDGET_STATE_NORMAL;
 
             damage(focusedwindow);
             damage(state.mousewidget);
@@ -331,9 +361,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         if (clickedwindow)
         {
 
-            struct widget_window *window = clickedwindow->data;
-
-            window->focus = 1;
+            clickedwindow->state = WIDGET_STATE_FOCUS;
 
             bump(clickedwindow);
 
@@ -530,6 +558,7 @@ void widgets_setup(void)
     parser_parse(0, "", cstring_length(data), data);
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
+    state.hoverwidget = pool_getwidgetbyid(0, "root");
     state.mousewidget = pool_getwidgetbyid(0, "mouse");
 
 }
