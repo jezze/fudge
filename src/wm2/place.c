@@ -14,8 +14,8 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(render_getrowwidth(RENDER_FONTBOLD, button->label, length) + RENDER_PADDING_BUTTON_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(render_getrowheight(RENDER_FONTBOLD, button->label, length) + RENDER_PADDING_BUTTON_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(render_getrowwidth(RENDER_FONTBOLD, button->label, length) + RENDER_BUTTON_PADDING_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(render_getrowheight(RENDER_FONTBOLD, button->label, length) + RENDER_BUTTON_PADDING_HEIGHT * 2, minh, maxh);
 
 }
 
@@ -267,8 +267,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, textbox->content, textbox->length) + RENDER_PADDING_TEXTBOX_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, textbox->content, textbox->length, 1) + RENDER_PADDING_TEXTBOX_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, textbox->content, textbox->length) + RENDER_TEXTBOX_PADDING_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, textbox->content, textbox->length, 1) + RENDER_TEXTBOX_PADDING_HEIGHT * 2, minh, maxh);
 
 }
 
@@ -281,12 +281,12 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
     {
 
         struct widget *child = current->data;
-        int childx = widget->position.x + 5;
-        int childy = widget->position.y + 41;
+        int childx = widget->position.x + RENDER_WINDOW_BORDER_WIDTH;
+        int childy = widget->position.y + RENDER_WINDOW_BORDER_HEIGHT + RENDER_WINDOW_TITLE_HEIGHT;
         int childminw = 0;
         int childminh = 0;
-        int childmaxw = widget->size.w - 10;
-        int childmaxh = widget->size.h - 46;
+        int childmaxw = widget->size.w - RENDER_WINDOW_BORDER_WIDTH * 2;
+        int childmaxh = widget->size.h - RENDER_WINDOW_BORDER_HEIGHT * 2 - RENDER_WINDOW_TITLE_HEIGHT;
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
 

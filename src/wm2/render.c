@@ -508,7 +508,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 
     struct widget_textbox *textbox = widget->data;
     struct font *font = &fonts[RENDER_FONTNORMAL];
-    unsigned int rownum = getrownum(line, widget->position.y, RENDER_PADDING_TEXTBOX_HEIGHT, font->lineheight);
+    unsigned int rownum = getrownum(line, widget->position.y, RENDER_TEXTBOX_PADDING_HEIGHT, font->lineheight);
     unsigned int rowtotal = util_findrowtotal(textbox->content, textbox->length);
     struct rowsegment *rs = findrowsegment(widget, rows, 13, line);
 
@@ -519,8 +519,8 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 
         unsigned int s = util_findrowstart(textbox->content, textbox->length, rownum);
         unsigned int length = util_findrowcount(textbox->content, textbox->length, s);
-        unsigned int rx = widget->position.x + RENDER_PADDING_TEXTBOX_WIDTH;
-        unsigned int ry = widget->position.y + rownum * font->lineheight + RENDER_PADDING_TEXTBOX_HEIGHT;
+        unsigned int rx = widget->position.x + RENDER_TEXTBOX_PADDING_WIDTH;
+        unsigned int ry = widget->position.y + rownum * font->lineheight + RENDER_TEXTBOX_PADDING_HEIGHT;
 
         if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
             blittext(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1);
@@ -600,7 +600,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     unsigned int tw = render_getrowwidth(RENDER_FONTBOLD, window->title, tl);
     unsigned int th = render_getrowheight(RENDER_FONTBOLD, window->title, tl);
     unsigned int rx = widget->position.x + (widget->size.w / 2) - (tw / 2);
-    unsigned int ry = widget->position.y + 20 - (th / 2);
+    unsigned int ry = widget->position.y + RENDER_WINDOW_BORDER_HEIGHT + (RENDER_WINDOW_TITLE_HEIGHT / 2) - (th / 2);
     struct rowsegment *rs = findrowsegment(widget, rows, 11, line);
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmap, rs->segment, rs->numlines, line);
