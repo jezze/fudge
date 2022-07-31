@@ -160,9 +160,7 @@ char *pool_savestring(char *string)
     unsigned int offset = strdataoffset;
     unsigned int length = cstring_length(string);
 
-    cstring_copy(strdata + strdataoffset, string);
-
-    strdataoffset += length + 1;
+    strdataoffset += buffer_write(strdata, 0x4000, string, length + 1, strdataoffset);
 
     return strdata + offset;
 
