@@ -72,8 +72,6 @@ static void updatestate(int state)
     case STATE_SUM:
         refresh(accumulator);
 
-        number = 0;
-
         break;
 
     }
