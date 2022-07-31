@@ -217,7 +217,7 @@ unsigned int pool_savedata(unsigned int count, void *data)
 unsigned int pool_savecstring(char *cstring)
 {
 
-    return pool_savedata(cstring_length(cstring) + 1, cstring);
+    return pool_savedata(cstring_lengthz(cstring), cstring);
 
 }
 
