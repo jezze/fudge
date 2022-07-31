@@ -6,7 +6,7 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 char *pool_getstring(unsigned int index);
 unsigned int pool_getcstringlength(unsigned int index);
 unsigned int pool_savedata(unsigned int count, void *data);
-unsigned int pool_savestring(char *string);
-unsigned int pool_freestring(unsigned int index);
-unsigned int pool_replacestring(unsigned int index, char *string);
+unsigned int pool_savecstring(char *cstring);
+unsigned int pool_freedata(unsigned int index);
+unsigned int pool_replacecstring(unsigned int index, char *cstring);
 void pool_setup(void);

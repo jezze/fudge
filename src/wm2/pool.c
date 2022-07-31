@@ -192,28 +192,28 @@ unsigned int pool_savedata(unsigned int count, void *data)
 
 }
 
-unsigned int pool_savestring(char *string)
+unsigned int pool_savecstring(char *cstring)
 {
 
-    return pool_savedata(cstring_length(string) + 1, string);
+    return pool_savedata(cstring_length(cstring) + 1, cstring);
 
 }
 
-unsigned int pool_freestring(unsigned int index)
+unsigned int pool_freedata(unsigned int index)
 {
 
     return 0;
 
 }
 
-unsigned int pool_replacestring(unsigned int index, char *string)
+unsigned int pool_replacecstring(unsigned int index, char *cstring)
 {
 
     if (index)
-        index = pool_freestring(index);
+        index = pool_freedata(index);
 
-    if (string)
-        index = pool_savestring(string);
+    if (cstring)
+        index = pool_savecstring(cstring);
 
     return index;
 

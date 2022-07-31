@@ -113,7 +113,7 @@ static void setattributebutton(struct widget *widget, unsigned int attribute, ch
     {
 
     case WIDGET_ATTR_LABEL:
-        button->label = pool_replacestring(button->label, value);
+        button->label = pool_replacecstring(button->label, value);
 
         break;
 
@@ -211,7 +211,7 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
         break;
 
     case WIDGET_ATTR_CONTENT:
-        text->content = pool_replacestring(text->content, value);
+        text->content = pool_replacecstring(text->content, value);
 
         break;
 
@@ -233,7 +233,7 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
         break;
 
     case WIDGET_ATTR_CONTENT:
-        textbox->content = pool_replacestring(textbox->content, value);
+        textbox->content = pool_replacecstring(textbox->content, value);
         textbox->cursor = pool_getcstringlength(textbox->content) - 1;
 
         break;
@@ -256,7 +256,7 @@ static void setattributewindow(struct widget *widget, unsigned int attribute, ch
     {
 
     case WIDGET_ATTR_TITLE:
-        window->title = pool_replacestring(window->title, value);
+        window->title = pool_replacecstring(window->title, value);
 
         break;
 
@@ -271,12 +271,12 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
     {
 
     case WIDGET_ATTR_ID:
-        widget->id = pool_replacestring(widget->id, value);
+        widget->id = pool_replacecstring(widget->id, value);
 
         break;
 
     case WIDGET_ATTR_IN:
-        widget->in = pool_replacestring(widget->in, value);
+        widget->in = pool_replacecstring(widget->in, value);
 
         break;
 
@@ -355,8 +355,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
 
     widget->source = source;
     widget->type = type;
-    widget->id = pool_replacestring(widget->id, id);
-    widget->in = pool_replacestring(widget->in, in);
+    widget->id = pool_replacecstring(widget->id, id);
+    widget->in = pool_replacecstring(widget->in, in);
     widget->data = data;
     widget->position.x = 0;
     widget->position.y = 0;
