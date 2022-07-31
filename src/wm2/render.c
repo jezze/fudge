@@ -19,15 +19,14 @@
 #define CMAP_BUTTON_TEXT                3
 #define CMAP_TEXT_TEXT                  4
 #define CMAP_TEXTBOX_SHADOW             5
-#define CMAP_TEXTBOX_MAIN               6
-#define CMAP_TEXTBOX_LIGHT              7
-#define CMAP_TEXTBOX_DARK               8
-#define CMAP_TEXTBOX_TEXT               9
-#define CMAP_WINDOW_SHADOW              10
-#define CMAP_WINDOW_LIGHT               11
-#define CMAP_WINDOW_FRAME               12
-#define CMAP_WINDOW_MAIN                13
-#define CMAP_WINDOW_TEXT                14
+#define CMAP_TEXTBOX_LIGHT              6
+#define CMAP_TEXTBOX_DARK               7
+#define CMAP_TEXTBOX_TEXT               8
+#define CMAP_WINDOW_SHADOW              9
+#define CMAP_WINDOW_LIGHT               10
+#define CMAP_WINDOW_FRAME               11
+#define CMAP_WINDOW_MAIN                12
+#define CMAP_WINDOW_TEXT                13
 
 struct font
 {
@@ -68,7 +67,6 @@ static unsigned int cmapnormal[] = {
     0xFFFFFFFF,
     0xFFA8B8C8,
     0xFF081828,
-    0xFF203040,
     0xFF485868,
     0xFF081828,
     0xFFFFFFFF,
@@ -86,7 +84,6 @@ static unsigned int cmapfocus[] = {
     0xFFFFFFFF,
     0xFFA8B8C8,
     0xFF081828,
-    0xFF203040,
     0xFF485868,
     0xFF081828,
     0xFFFFFFFF,
@@ -487,25 +484,22 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         {LINESEGMENT_TYPE_RELX0X1, 1, -1, CMAP_TEXTBOX_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -1, 0, CMAP_TEXTBOX_SHADOW}
     };
-    static struct linesegment border4[5] = {
+    static struct linesegment border4[4] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 1, CMAP_TEXTBOX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 1, 3, CMAP_TEXTBOX_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_TEXTBOX_DARK},
         {LINESEGMENT_TYPE_RELX1X1, -3, -1, CMAP_TEXTBOX_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -1, 0, CMAP_TEXTBOX_SHADOW}
     };
-    static struct linesegment border5[5] = {
+    static struct linesegment border5[4] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 1, CMAP_TEXTBOX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 1, 3, CMAP_TEXTBOX_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_TEXTBOX_MAIN},
         {LINESEGMENT_TYPE_RELX1X1, -3, -1, CMAP_TEXTBOX_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -1, 0, CMAP_TEXTBOX_SHADOW}
     };
-    static struct linesegment borderlabel[7] = {
+    static struct linesegment borderlabel[6] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 1, CMAP_TEXTBOX_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 1, 3, CMAP_TEXTBOX_LIGHT},
         {LINESEGMENT_TYPE_RELX0X0, 3, 4, CMAP_TEXTBOX_DARK},
-        {LINESEGMENT_TYPE_RELX0X1, 4, -4, CMAP_TEXTBOX_MAIN},
         {LINESEGMENT_TYPE_RELX1X1, -4, -3, CMAP_TEXTBOX_DARK},
         {LINESEGMENT_TYPE_RELX1X1, -3, -1, CMAP_TEXTBOX_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -1, 0, CMAP_TEXTBOX_SHADOW}
@@ -514,11 +508,11 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         {ROWSEGMENT_TYPE_RELY0Y0, 0, 1, border0, 1},
         {ROWSEGMENT_TYPE_RELY0Y0, 1, 2, border2, 3},
         {ROWSEGMENT_TYPE_RELY0Y0, 2, 3, border3, 3},
-        {ROWSEGMENT_TYPE_RELY0Y0, 3, 4, border4, 5},
-        {ROWSEGMENT_TYPE_RELY0Y0, 4, 5, border5, 5},
-        {ROWSEGMENT_TYPE_RELY0Y1, 5, -5, borderlabel, 7},
-        {ROWSEGMENT_TYPE_RELY1Y1, -5, -4, border5, 5},
-        {ROWSEGMENT_TYPE_RELY1Y1, -4, -3, border4, 5},
+        {ROWSEGMENT_TYPE_RELY0Y0, 3, 4, border4, 4},
+        {ROWSEGMENT_TYPE_RELY0Y0, 4, 5, border5, 4},
+        {ROWSEGMENT_TYPE_RELY0Y1, 5, -5, borderlabel, 6},
+        {ROWSEGMENT_TYPE_RELY1Y1, -5, -4, border5, 4},
+        {ROWSEGMENT_TYPE_RELY1Y1, -4, -3, border4, 4},
         {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, border3, 3},
         {ROWSEGMENT_TYPE_RELY1Y1, -2, -1, border2, 3},
         {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, border0, 1}
