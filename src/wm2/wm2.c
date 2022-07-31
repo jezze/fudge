@@ -371,11 +371,10 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         {
 
             struct event_wmclick wmclick;
-            unsigned int length = cstring_length(pool_getstring(state.clickedwidget->id));
 
-            cstring_copy(wmclick.clicked, pool_getstring(state.clickedwidget->id));
+            buffer_write(wmclick.clicked, 16, pool_getstring(state.clickedwidget->id), pool_getcstringlength(state.clickedwidget->id) + 1, 0);
 
-            wmclick.clicked[length] = '\0';
+            wmclick.clicked[15] = '\0';
 
             channel_sendbufferto(state.clickedwidget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
 
