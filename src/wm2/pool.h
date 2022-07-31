@@ -5,6 +5,7 @@ void pool_bump(struct widget *widget);
 struct widget *pool_create(unsigned int source, unsigned int type, char *id, char *in);
 char *pool_getstring(unsigned int index);
 unsigned int pool_getcstringlength(unsigned int index);
+unsigned int pool_savedata(unsigned int count, void *data);
 unsigned int pool_savestring(char *string);
 unsigned int pool_freestring(unsigned int index);
 unsigned int pool_replacestring(unsigned int index, char *string);

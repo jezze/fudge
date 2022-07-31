@@ -46,7 +46,7 @@ struct list_item *pool_next(struct list_item *current)
 struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 {
 
-    if (cstring_length(pool_getstring(parent->id)) == 0)
+    if (!pool_getcstringlength(parent->id))
         return 0;
 
     while ((current = pool_next(current)))
@@ -174,25 +174,28 @@ char *pool_getstring(unsigned int index)
 unsigned int pool_getcstringlength(unsigned int index)
 {
 
-    if (strindex[index].length)
-        return strindex[index].length - 1;
-    else
-        return 0;
+    return (strindex[index].length) ? strindex[index].length - 1 : 0;
+
+}
+
+unsigned int pool_savedata(unsigned int count, void *data)
+{
+
+    struct strindex *index = &strindex[nstrindex];
+
+    index->offset = strdataoffset;
+    index->length = count;
+    strdataoffset += buffer_write(strdata, 0x4000, data, index->length, index->offset);
+    nstrindex++;
+
+    return nstrindex - 1;
 
 }
 
 unsigned int pool_savestring(char *string)
 {
 
-    struct strindex *index = &strindex[nstrindex];
-
-    index->offset = strdataoffset;
-    index->length = cstring_length(string) + 1;
-    strdataoffset += buffer_write(strdata, 0x4000, string, index->length, index->offset);
-
-    nstrindex++;
-
-    return nstrindex - 1;
+    return pool_savedata(cstring_length(string) + 1, string);
 
 }
 
