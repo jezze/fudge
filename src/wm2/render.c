@@ -455,13 +455,13 @@ static void painttext(struct render_display *display, struct widget *widget, int
     struct widget_text *text = widget->data;
     struct font *font = &fonts[RENDER_FONTNORMAL];
     unsigned int rownum = getrownum(line, widget->position.y, 0, font->lineheight);
-    unsigned int rowtotal = util_findrowtotal(pool_getstring(text->content), text->length);
+    unsigned int rowtotal = util_findrowtotal(pool_getstring(text->content), pool_getcstringlength(text->content));
 
     if (rownum < rowtotal)
     {
 
-        unsigned int s = util_findrowstart(pool_getstring(text->content), text->length, rownum);
-        unsigned int length = util_findrowcount(pool_getstring(text->content), text->length, s);
+        unsigned int s = util_findrowstart(pool_getstring(text->content), pool_getcstringlength(text->content), rownum);
+        unsigned int length = util_findrowcount(pool_getstring(text->content), pool_getcstringlength(text->content), s);
         unsigned int rx = widget->position.x;
         unsigned int ry = widget->position.y + rownum * font->lineheight;
 
@@ -542,7 +542,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
     struct widget_textbox *textbox = widget->data;
     struct font *font = &fonts[RENDER_FONTNORMAL];
     unsigned int rownum = getrownum(line, widget->position.y, RENDER_TEXTBOX_PADDING_HEIGHT, font->lineheight);
-    unsigned int rowtotal = util_findrowtotal(pool_getstring(textbox->content), textbox->length);
+    unsigned int rowtotal = util_findrowtotal(pool_getstring(textbox->content), pool_getcstringlength(textbox->content));
     struct rowsegment *rs = findrowsegment(widget, rows, 13, line);
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
@@ -550,8 +550,8 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
     if (rownum < rowtotal)
     {
 
-        unsigned int s = util_findrowstart(pool_getstring(textbox->content), textbox->length, rownum);
-        unsigned int length = util_findrowcount(pool_getstring(textbox->content), textbox->length, s);
+        unsigned int s = util_findrowstart(pool_getstring(textbox->content), pool_getcstringlength(textbox->content), rownum);
+        unsigned int length = util_findrowcount(pool_getstring(textbox->content), pool_getcstringlength(textbox->content), s);
         unsigned int rx = widget->position.x;
         unsigned int ry = widget->position.y + rownum * font->lineheight + RENDER_TEXTBOX_PADDING_HEIGHT;
 

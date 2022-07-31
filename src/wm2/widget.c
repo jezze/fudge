@@ -211,7 +211,6 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
         break;
 
     case WIDGET_ATTR_CONTENT:
-        text->length = cstring_length(value);
         text->content = pool_replacestring(text->content, value);
 
         break;
@@ -234,9 +233,8 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
         break;
 
     case WIDGET_ATTR_CONTENT:
-        textbox->length = cstring_length(value);
         textbox->content = pool_replacestring(textbox->content, value);
-        textbox->cursor = textbox->length - 1;
+        textbox->cursor = pool_getcstringlength(textbox->content) - 1;
 
         break;
 

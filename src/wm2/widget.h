@@ -117,7 +117,6 @@ struct widget_text
 {
 
     unsigned int content;
-    unsigned int length;
     unsigned int align;
     int scroll;
 
@@ -127,7 +126,6 @@ struct widget_textbox
 {
 
     unsigned int content;
-    unsigned int length;
     unsigned int align;
     int scroll;
     unsigned int mode;

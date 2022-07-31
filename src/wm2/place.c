@@ -255,8 +255,8 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, pool_getstring(text->content), text->length), minw, maxw);
-    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, pool_getstring(text->content), text->length, 1), minh, maxh);
+    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, pool_getstring(text->content), pool_getcstringlength(text->content)), minw, maxw);
+    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, pool_getstring(text->content), pool_getcstringlength(text->content), 1), minh, maxh);
 
 }
 
@@ -267,8 +267,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, pool_getstring(textbox->content), textbox->length) + RENDER_TEXTBOX_PADDING_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, pool_getstring(textbox->content), textbox->length, 1) + RENDER_TEXTBOX_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, pool_getstring(textbox->content), pool_getcstringlength(textbox->content)) + RENDER_TEXTBOX_PADDING_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, pool_getstring(textbox->content), pool_getcstringlength(textbox->content), 1) + RENDER_TEXTBOX_PADDING_HEIGHT * 2, minh, maxh);
 
 }
 
