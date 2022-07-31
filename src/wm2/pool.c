@@ -17,6 +17,14 @@ union payloads
 
 };
 
+struct strindex
+{
+
+    unsigned int offset;
+    unsigned int length;
+
+};
+
 static struct list widgetlist;
 static struct list bumplist;
 static struct list_item widgetitems[MAX_WIDGETS];
@@ -25,6 +33,8 @@ static union payloads payloads[MAX_WIDGETS];
 static unsigned int nwidgets;
 static char strdata[0x4000];
 static unsigned int strdataoffset;
+static struct strindex strindex[256];
+static unsigned int nstrindex;
 
 struct list_item *pool_next(struct list_item *current)
 {
@@ -36,7 +46,7 @@ struct list_item *pool_next(struct list_item *current)
 struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 {
 
-    if (cstring_length(parent->id) == 0)
+    if (cstring_length(pool_getstring(parent->id)) == 0)
         return 0;
 
     while ((current = pool_next(current)))
@@ -47,7 +57,7 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
         if (!parent->source || widget->source == parent->source)
         {
 
-            if (cstring_match(widget->in, parent->id))
+            if (cstring_match(pool_getstring(widget->in), pool_getstring(parent->id)))
                 return current;
 
         }
@@ -71,7 +81,7 @@ struct widget *pool_getwidgetbyid(unsigned int source, char *id)
         if (widget->source != source)
             continue;
 
-        if (cstring_match(widget->id, id))
+        if (cstring_match(pool_getstring(widget->id), id))
             return widget;
 
     }
@@ -154,35 +164,55 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 
 }
 
-char *pool_savestring(char *string)
+char *pool_getstring(unsigned int index)
 {
 
-    unsigned int offset = strdataoffset;
-    unsigned int length = cstring_length(string);
-
-    strdataoffset += buffer_write(strdata, 0x4000, string, length + 1, strdataoffset);
-
-    return strdata + offset;
+    return strdata + strindex[index].offset;
 
 }
 
-char *pool_freestring(char *string)
+unsigned int pool_getcstringlength(unsigned int index)
+{
+
+    if (strindex[index].length)
+        return strindex[index].length - 1;
+    else
+        return 0;
+
+}
+
+unsigned int pool_savestring(char *string)
+{
+
+    struct strindex *index = &strindex[nstrindex];
+
+    index->offset = strdataoffset;
+    index->length = cstring_length(string) + 1;
+    strdataoffset += buffer_write(strdata, 0x4000, string, index->length, index->offset);
+
+    nstrindex++;
+
+    return nstrindex - 1;
+
+}
+
+unsigned int pool_freestring(unsigned int index)
 {
 
     return 0;
 
 }
 
-char *pool_replacestring(char *current, char *string)
+unsigned int pool_replacestring(unsigned int index, char *string)
 {
 
-    if (current)
-        current = pool_freestring(current);
+    if (index)
+        index = pool_freestring(index);
 
     if (string)
-        current = pool_savestring(string);
+        index = pool_savestring(string);
 
-    return current;
+    return index;
 
 }
 

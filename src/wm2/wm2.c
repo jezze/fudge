@@ -371,11 +371,11 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         {
 
             struct event_wmevent wmevent;
-            unsigned int length = cstring_length(state.clickedwidget->id);
+            unsigned int length = cstring_length(pool_getstring(state.clickedwidget->id));
 
             wmevent.type = EVENT_WMEVENTCLICK;
 
-            cstring_copy(wmevent.clicked, state.clickedwidget->id);
+            cstring_copy(wmevent.clicked, pool_getstring(state.clickedwidget->id));
 
             wmevent.clicked[length] = '\0';
 

@@ -357,8 +357,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
 
     widget->source = source;
     widget->type = type;
-    widget->id = id;
-    widget->in = in;
+    widget->id = pool_replacestring(widget->id, id);
+    widget->in = pool_replacestring(widget->in, in);
     widget->data = data;
     widget->position.x = 0;
     widget->position.y = 0;

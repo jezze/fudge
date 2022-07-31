@@ -388,9 +388,9 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
     struct widget_button *button = widget->data;
     struct font *font = &fonts[RENDER_FONTBOLD];
-    unsigned int tl = cstring_length(button->label);
-    unsigned int tw = render_getrowwidth(RENDER_FONTBOLD, button->label, tl);
-    unsigned int th = render_getrowheight(RENDER_FONTBOLD, button->label, tl);
+    unsigned int tl = pool_getcstringlength(button->label);
+    unsigned int tw = render_getrowwidth(RENDER_FONTBOLD, pool_getstring(button->label), tl);
+    unsigned int th = render_getrowheight(RENDER_FONTBOLD, pool_getstring(button->label), tl);
     unsigned int rx = widget->position.x + (widget->size.w / 2) - (tw / 2);
     unsigned int ry = widget->position.y + (widget->size.h / 2) - (th / 2);
     struct rowsegment *rs = findrowsegment(widget, rows, 9, line);
@@ -398,7 +398,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
 
     if (util_intersects(line, ry, ry + font->lineheight))
-        blittext(display, font, getcolor(CMAP_BUTTON_TEXT, widget->state), button->label, tl, rx, ry, line, x0, x1);
+        blittext(display, font, getcolor(CMAP_BUTTON_TEXT, widget->state), pool_getstring(button->label), tl, rx, ry, line, x0, x1);
 
 }
 
@@ -455,13 +455,13 @@ static void painttext(struct render_display *display, struct widget *widget, int
     struct widget_text *text = widget->data;
     struct font *font = &fonts[RENDER_FONTNORMAL];
     unsigned int rownum = getrownum(line, widget->position.y, 0, font->lineheight);
-    unsigned int rowtotal = util_findrowtotal(text->content, text->length);
+    unsigned int rowtotal = util_findrowtotal(pool_getstring(text->content), text->length);
 
     if (rownum < rowtotal)
     {
 
-        unsigned int s = util_findrowstart(text->content, text->length, rownum);
-        unsigned int length = util_findrowcount(text->content, text->length, s);
+        unsigned int s = util_findrowstart(pool_getstring(text->content), text->length, rownum);
+        unsigned int length = util_findrowcount(pool_getstring(text->content), text->length, s);
         unsigned int rx = widget->position.x;
         unsigned int ry = widget->position.y + rownum * font->lineheight;
 
@@ -472,18 +472,18 @@ static void painttext(struct render_display *display, struct widget *widget, int
             break;
 
         case WIDGET_TEXT_ALIGN_CENTER:
-            rx += widget->size.w / 2 - render_getrowwidth(RENDER_FONTNORMAL, text->content + s, length) / 2;
+            rx += widget->size.w / 2 - render_getrowwidth(RENDER_FONTNORMAL, pool_getstring(text->content) + s, length) / 2;
 
             break;
 
         case WIDGET_TEXT_ALIGN_RIGHT:
-            rx += widget->size.w - render_getrowwidth(RENDER_FONTNORMAL, text->content + s, length);
+            rx += widget->size.w - render_getrowwidth(RENDER_FONTNORMAL, pool_getstring(text->content) + s, length);
 
             break;
 
         }
 
-        blittext(display, font, getcolor(CMAP_TEXT_TEXT, widget->state), text->content + s, length, rx, ry, line, x0, x1);
+        blittext(display, font, getcolor(CMAP_TEXT_TEXT, widget->state), pool_getstring(text->content) + s, length, rx, ry, line, x0, x1);
 
     }
 
@@ -542,7 +542,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
     struct widget_textbox *textbox = widget->data;
     struct font *font = &fonts[RENDER_FONTNORMAL];
     unsigned int rownum = getrownum(line, widget->position.y, RENDER_TEXTBOX_PADDING_HEIGHT, font->lineheight);
-    unsigned int rowtotal = util_findrowtotal(textbox->content, textbox->length);
+    unsigned int rowtotal = util_findrowtotal(pool_getstring(textbox->content), textbox->length);
     struct rowsegment *rs = findrowsegment(widget, rows, 13, line);
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
@@ -550,8 +550,8 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
     if (rownum < rowtotal)
     {
 
-        unsigned int s = util_findrowstart(textbox->content, textbox->length, rownum);
-        unsigned int length = util_findrowcount(textbox->content, textbox->length, s);
+        unsigned int s = util_findrowstart(pool_getstring(textbox->content), textbox->length, rownum);
+        unsigned int length = util_findrowcount(pool_getstring(textbox->content), textbox->length, s);
         unsigned int rx = widget->position.x;
         unsigned int ry = widget->position.y + rownum * font->lineheight + RENDER_TEXTBOX_PADDING_HEIGHT;
 
@@ -564,21 +564,21 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
             break;
 
         case WIDGET_TEXTBOX_ALIGN_CENTER:
-            rx += widget->size.w / 2 - render_getrowwidth(RENDER_FONTNORMAL, textbox->content + s, length) / 2;
+            rx += widget->size.w / 2 - render_getrowwidth(RENDER_FONTNORMAL, pool_getstring(textbox->content) + s, length) / 2;
 
             break;
 
         case WIDGET_TEXTBOX_ALIGN_RIGHT:
-            rx += widget->size.w - render_getrowwidth(RENDER_FONTNORMAL, textbox->content + s, length) - RENDER_TEXTBOX_PADDING_WIDTH;
+            rx += widget->size.w - render_getrowwidth(RENDER_FONTNORMAL, pool_getstring(textbox->content) + s, length) - RENDER_TEXTBOX_PADDING_WIDTH;
 
             break;
 
         }
 
         if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
-            blittext(display, font, getcolor(CMAP_TEXTBOX_TEXT, widget->state), textbox->content + s, length, rx, ry, line, x0, x1);
+            blittext(display, font, getcolor(CMAP_TEXTBOX_TEXT, widget->state), pool_getstring(textbox->content) + s, length, rx, ry, line, x0, x1);
         else
-            blittextcursor(display, font, getcolor(CMAP_TEXTBOX_TEXT, widget->state), textbox->content + s, length, rx, ry, line, x0, x1, textbox->cursor);
+            blittextcursor(display, font, getcolor(CMAP_TEXTBOX_TEXT, widget->state), pool_getstring(textbox->content) + s, length, rx, ry, line, x0, x1, textbox->cursor);
 
     }
 
@@ -648,9 +648,9 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
 
     struct widget_window *window = widget->data;
     struct font *font = &fonts[RENDER_FONTBOLD];
-    unsigned int tl = cstring_length(window->title);
-    unsigned int tw = render_getrowwidth(RENDER_FONTBOLD, window->title, tl);
-    unsigned int th = render_getrowheight(RENDER_FONTBOLD, window->title, tl);
+    unsigned int tl = pool_getcstringlength(window->title);
+    unsigned int tw = render_getrowwidth(RENDER_FONTBOLD, pool_getstring(window->title), tl);
+    unsigned int th = render_getrowheight(RENDER_FONTBOLD, pool_getstring(window->title), tl);
     unsigned int rx = widget->position.x + (widget->size.w / 2) - (tw / 2);
     unsigned int ry = widget->position.y + RENDER_WINDOW_BORDER_HEIGHT + (RENDER_WINDOW_TITLE_HEIGHT / 2) - (th / 2);
     struct rowsegment *rs = findrowsegment(widget, rows, 11, line);
@@ -658,7 +658,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
 
     if (util_intersects(line, ry, ry + font->lineheight))
-        blittext(display, font, getcolor(CMAP_WINDOW_TEXT, widget->state), window->title, tl, rx, ry, line, x0, x1);
+        blittext(display, font, getcolor(CMAP_WINDOW_TEXT, widget->state), pool_getstring(window->title), tl, rx, ry, line, x0, x1);
 
 }
 

@@ -10,12 +10,12 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_button *button = widget->data;
-    unsigned int length = cstring_length(button->label);
+    unsigned int length = pool_getcstringlength(button->label);
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(render_getrowwidth(RENDER_FONTBOLD, button->label, length) + RENDER_BUTTON_PADDING_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(render_getrowheight(RENDER_FONTBOLD, button->label, length) + RENDER_BUTTON_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(render_getrowwidth(RENDER_FONTBOLD, pool_getstring(button->label), length) + RENDER_BUTTON_PADDING_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(render_getrowheight(RENDER_FONTBOLD, pool_getstring(button->label), length) + RENDER_BUTTON_PADDING_HEIGHT * 2, minh, maxh);
 
 }
 
@@ -255,8 +255,8 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, text->content, text->length), minw, maxw);
-    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, text->content, text->length, 1), minh, maxh);
+    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, pool_getstring(text->content), text->length), minw, maxw);
+    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, pool_getstring(text->content), text->length, 1), minh, maxh);
 
 }
 
@@ -267,8 +267,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, textbox->content, textbox->length) + RENDER_TEXTBOX_PADDING_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, textbox->content, textbox->length, 1) + RENDER_TEXTBOX_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, pool_getstring(textbox->content), textbox->length) + RENDER_TEXTBOX_PADDING_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, pool_getstring(textbox->content), textbox->length, 1) + RENDER_TEXTBOX_PADDING_HEIGHT * 2, minh, maxh);
 
 }
 

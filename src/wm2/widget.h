@@ -65,8 +65,8 @@ struct widget
     unsigned int source;
     unsigned int type;
     unsigned int state;
-    char *id;
-    char *in;
+    unsigned int id;
+    unsigned int in;
     void *data;
     struct position position;
     struct size size;
@@ -76,7 +76,7 @@ struct widget
 struct widget_button
 {
 
-    char *label;
+    unsigned int label;
 
 };
 
@@ -116,7 +116,7 @@ struct widget_image
 struct widget_text
 {
 
-    char *content;
+    unsigned int content;
     unsigned int length;
     unsigned int align;
     int scroll;
@@ -126,7 +126,7 @@ struct widget_text
 struct widget_textbox
 {
 
-    char *content;
+    unsigned int content;
     unsigned int length;
     unsigned int align;
     int scroll;
@@ -138,7 +138,7 @@ struct widget_textbox
 struct widget_window
 {
 
-    char *title;
+    unsigned int title;
 
 };
 
