@@ -100,6 +100,13 @@ static unsigned int cmapfocus[] = {
 static struct font fonts[32];
 static unsigned int linebuffer[3840];
 
+static unsigned int getrownum(int line, int y, unsigned int padding, unsigned int lineheight)
+{
+
+    return (line - y - padding) / lineheight;
+
+}
+
 static struct rowsegment *findrowsegment(struct widget *widget, struct rowsegment *rowsegments, unsigned int length, int line)
 {
 
@@ -429,7 +436,7 @@ static void painttext(struct render_display *display, struct widget *widget, int
 
     struct widget_text *text = widget->data;
     struct font *font = &fonts[RENDER_FONTNORMAL];
-    unsigned int rownum = (line - widget->position.y) / font->lineheight;
+    unsigned int rownum = getrownum(line, widget->position.y, 0, font->lineheight);
     unsigned int rowtotal = util_findrowtotal(text->content, text->length);
 
     if (rownum < rowtotal)
@@ -499,32 +506,26 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, border0, 1}
     };
 
+    struct widget_textbox *textbox = widget->data;
+    struct font *font = &fonts[RENDER_FONTNORMAL];
+    unsigned int rownum = getrownum(line, widget->position.y, RENDER_PADDING_TEXTBOX_HEIGHT, font->lineheight);
+    unsigned int rowtotal = util_findrowtotal(textbox->content, textbox->length);
     struct rowsegment *rs = findrowsegment(widget, rows, 13, line);
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, cmapnormal, rs->segment, rs->numlines, line);
 
-    if (line >= 16)
+    if (rownum < rowtotal)
     {
 
-        struct widget_textbox *textbox = widget->data;
-        struct font *font = &fonts[RENDER_FONTNORMAL];
-        unsigned int rownum = (line - widget->position.y - 32) / font->lineheight;
-        unsigned int rowtotal = util_findrowtotal(textbox->content, textbox->length);
+        unsigned int s = util_findrowstart(textbox->content, textbox->length, rownum);
+        unsigned int length = util_findrowcount(textbox->content, textbox->length, s);
+        unsigned int rx = widget->position.x + RENDER_PADDING_TEXTBOX_WIDTH;
+        unsigned int ry = widget->position.y + rownum * font->lineheight + RENDER_PADDING_TEXTBOX_HEIGHT;
 
-        if (rownum < rowtotal)
-        {
-
-            unsigned int s = util_findrowstart(textbox->content, textbox->length, rownum);
-            unsigned int length = util_findrowcount(textbox->content, textbox->length, s);
-            unsigned int rx = widget->position.x + 32;
-            unsigned int ry = widget->position.y + rownum * font->lineheight + 32;
-
-            if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
-                blittext(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1);
-            else
-                blittextcursor(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1, textbox->cursor);
-
-        }
+        if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
+            blittext(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1);
+        else
+            blittextcursor(display, font, cmapnormal[CMAP_TEXTBOX_TEXT], textbox->content + s, length, rx, ry, line, x0, x1, textbox->cursor);
 
     }
 

@@ -1,5 +1,9 @@
 #define RENDER_FONTNORMAL               0
 #define RENDER_FONTBOLD                 1
+#define RENDER_PADDING_BUTTON_WIDTH     40
+#define RENDER_PADDING_BUTTON_HEIGHT    24
+#define RENDER_PADDING_TEXTBOX_WIDTH    24
+#define RENDER_PADDING_TEXTBOX_HEIGHT   24
 
 struct render_damage
 {

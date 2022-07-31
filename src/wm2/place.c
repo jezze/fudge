@@ -6,10 +6,6 @@
 #include "place.h"
 #include "render.h"
 
-#define BUTTONPADDINGWIDTH              48
-#define BUTTONPADDINGHEIGHT             24
-#define TEXTBOXPADDING                  32
-
 static void placebutton(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
@@ -18,8 +14,8 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(render_getrowwidth(RENDER_FONTBOLD, button->label, length) + BUTTONPADDINGWIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(render_getrowheight(RENDER_FONTBOLD, button->label, length) + BUTTONPADDINGHEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(render_getrowwidth(RENDER_FONTBOLD, button->label, length) + RENDER_PADDING_BUTTON_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(render_getrowheight(RENDER_FONTBOLD, button->label, length) + RENDER_PADDING_BUTTON_HEIGHT * 2, minh, maxh);
 
 }
 
@@ -271,8 +267,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, textbox->content, textbox->length) + TEXTBOXPADDING * 2, minw, maxw);
-    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, textbox->content, textbox->length, 1) + TEXTBOXPADDING * 2, minh, maxh);
+    widget->size.w = util_clamp(render_gettextwidth(RENDER_FONTNORMAL, textbox->content, textbox->length) + RENDER_PADDING_TEXTBOX_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(render_gettextheight(RENDER_FONTNORMAL, textbox->content, textbox->length, 1) + RENDER_PADDING_TEXTBOX_HEIGHT * 2, minh, maxh);
 
 }
 
