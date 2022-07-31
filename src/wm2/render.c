@@ -545,6 +545,7 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
 
         case WIDGET_TEXTBOX_ALIGN_LEFT:
             rx += RENDER_TEXTBOX_PADDING_WIDTH;
+
             break;
 
         case WIDGET_TEXTBOX_ALIGN_CENTER:
