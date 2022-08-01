@@ -472,11 +472,13 @@ static void painttext(struct render_display *display, struct widget *widget, int
     unsigned int rownum = getrownum(index, line, widget->position.y);
     unsigned int rowstart = getrowstart(index, tt, tl, rownum, text->wrap, widget->size.w);
     struct render_rowinfo rowinfo;
+    unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
+    unsigned int rw = widget->size.w - roff;
 
-    if (render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, widget->size.w, rowstart))
+    if (render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, rw, rowstart))
     {
 
-        unsigned int rx = widget->position.x;
+        unsigned int rx = widget->position.x + roff;
         unsigned int ry = widget->position.y + rownum * rowinfo.lineheight;
 
         switch (text->align)
@@ -486,12 +488,12 @@ static void painttext(struct render_display *display, struct widget *widget, int
             break;
 
         case WIDGET_TEXT_ALIGN_CENTER:
-            rx += widget->size.w / 2 - rowinfo.width / 2;
+            rx += rw / 2 - rowinfo.width / 2;
 
             break;
 
         case WIDGET_TEXT_ALIGN_RIGHT:
-            rx += widget->size.w - rowinfo.width;
+            rx += rw - rowinfo.width;
 
             break;
 
@@ -773,16 +775,26 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
 
 }
 
-unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int length, struct render_textinfo *textinfo, unsigned int wrap, unsigned int maxw)
+unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int length, struct render_textinfo *textinfo, unsigned int wrap, unsigned int offw, unsigned int maxw)
 {
 
     unsigned int offset = 0;
     struct render_rowinfo rowinfo;
 
+    rowinfo.width = 0;
+    rowinfo.height = 0;
     textinfo->width = 0;
     textinfo->height = 0;
     textinfo->rows = 0;
     textinfo->lineheight = fonts[index].lineheight;
+    textinfo->lastrowwidth = 0;
+
+    offset = render_getrowinfo(index, text, length, &rowinfo, wrap, maxw - offw, offset);
+
+    textinfo->width = rowinfo.width + offw;
+    textinfo->height = rowinfo.height;
+    textinfo->rows++;
+    textinfo->lastrowwidth = rowinfo.width + offw;
 
     while ((offset = render_getrowinfo(index, text, length, &rowinfo, wrap, maxw, offset)))
     {
@@ -790,6 +802,7 @@ unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int len
         textinfo->width = util_max(textinfo->width, rowinfo.width);
         textinfo->height += rowinfo.height;
         textinfo->rows++;
+        textinfo->lastrowwidth = rowinfo.width;
 
     }
 

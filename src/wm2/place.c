@@ -273,11 +273,11 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     struct render_textinfo textinfo;
     unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
 
-    render_gettextinfo(index, pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, maxw);
+    render_gettextinfo(index, pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, maxw);
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(textinfo.width, minw, maxw);
+    widget->size.w = util_clamp(textinfo.width + 1, minw, maxw); /* Need +1 for some reason */
     widget->size.h = util_clamp(textinfo.rows * textinfo.lineheight, minh, maxh);
 
 }
@@ -290,6 +290,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     int offy = RENDER_TEXTBOX_PADDING_HEIGHT;
     int offw = RENDER_TEXTBOX_PADDING_WIDTH * 2;
     int offh = RENDER_TEXTBOX_PADDING_HEIGHT * 2;
+    unsigned int soffw = 0;
     int totw = 0;
 
     while ((current = pool_nextin(current, widget)))
@@ -303,11 +304,35 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
         int childmaxw = maxw - offw;
         int childmaxh = maxh - offh;
 
-        place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
 
-        offy += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
-        offh += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
-        totw = util_max(totw, child->size.w);
+            struct widget_text *text = child->data;
+            struct render_textinfo textinfo;
+            unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
+
+            text->firstrowoffset = soffw;
+
+            place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+            render_gettextinfo(index, pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, childmaxw);
+
+            soffw = textinfo.lastrowwidth;
+            offy += child->size.h - textinfo.lineheight;
+            offh += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
+            totw = util_max(totw, child->size.w);
+
+        }
+
+        else
+        {
+
+            place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+
+            offy += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
+            offh += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
+            totw = util_max(totw, child->size.w);
+
+        }
 
     }
 
