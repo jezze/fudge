@@ -342,9 +342,6 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
 
     }
 
-    widget->size.w = util_max(widget->size.w, minw);
-    widget->size.h = util_max(widget->size.h, minh);
-
 }
 
 void place_widget(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
