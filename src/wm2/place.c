@@ -322,24 +322,28 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct list_item *current = 0;
+    int offx = RENDER_WINDOW_BORDER_WIDTH;
+    int offy = RENDER_WINDOW_BORDER_HEIGHT + RENDER_WINDOW_TITLE_HEIGHT;
+    int offw = RENDER_WINDOW_BORDER_WIDTH * 2;
+    int offh = RENDER_WINDOW_BORDER_HEIGHT * 2 + RENDER_WINDOW_TITLE_HEIGHT;
 
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
-        int childx = widget->position.x + RENDER_WINDOW_BORDER_WIDTH;
-        int childy = widget->position.y + RENDER_WINDOW_BORDER_HEIGHT + RENDER_WINDOW_TITLE_HEIGHT;
+        int childx = widget->position.x + offx;
+        int childy = widget->position.y + offy;
         int childminw = 0;
         int childminh = 0;
-        int childmaxw = widget->size.w - RENDER_WINDOW_BORDER_WIDTH * 2;
-        int childmaxh = widget->size.h - RENDER_WINDOW_BORDER_HEIGHT * 2 - RENDER_WINDOW_TITLE_HEIGHT;
+        int childmaxw = widget->size.w - offw;
+        int childmaxh = widget->size.h - offh;
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
 
     }
 
-    widget->size.w = util_clamp(widget->size.w, minw, maxw);
-    widget->size.h = util_clamp(widget->size.h, minh, maxh);
+    widget->size.w = util_max(widget->size.w, minw);
+    widget->size.h = util_max(widget->size.h, minh);
 
 }
 
