@@ -218,36 +218,6 @@ static void blitcmap32line(struct render_display *display, struct widget_positio
 
 }
 
-static void blitcharnormal(struct render_display *display, unsigned char *data, unsigned int color, int rx, int line, int x0, int x1)
-{
-
-    unsigned int i;
-
-    for (i = x0; i < x1; i++)
-    {
-
-        if (data[(i >> 3)] & (0x80 >> (i % 8)))
-            blitline(display, color, line, rx + i, rx + i + 1);
-
-    }
-
-}
-
-static void blitcharinverted(struct render_display *display, unsigned char *data, unsigned int color, int rx, int line, int x0, int x1)
-{
-
-    unsigned int i;
-
-    for (i = x0; i < x1; i++)
-    {
-
-        if (!(data[(i >> 3)] & (0x80 >> (i % 8))))
-            blitline(display, color, line, rx + i, rx + i + 1);
-
-    }
-
-}
-
 static void blittextnormal(struct render_display *display, unsigned int index, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
 {
 
@@ -273,8 +243,15 @@ static void blittextnormal(struct render_display *display, unsigned int index, u
                 unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
                 int r0 = util_max(0, x0 - rx);
                 int r1 = util_min(x1 - rx, metricsdata.width);
+                unsigned int r;
 
-                blitcharnormal(display, data, color, rx, line, r0, r1);
+                for (r = r0; r < r1; r++)
+                {
+
+                    if (data[(r >> 3)] & (0x80 >> (r % 8)))
+                        blitline(display, color, line, rx + r, rx + r + 1);
+
+                }
 
             }
 
@@ -311,8 +288,15 @@ static void blittextinverted(struct render_display *display, unsigned int index,
                 unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
                 int r0 = util_max(0, x0 - rx);
                 int r1 = util_min(x1 - rx, metricsdata.width);
+                unsigned int r;
 
-                blitcharinverted(display, data, color, rx, line, r0, r1);
+                for (r = r0; r < r1; r++)
+                {
+
+                    if (!(data[(r >> 3)] & (0x80 >> (r % 8))))
+                        blitline(display, color, line, rx + r, rx + r + 1);
+
+                }
 
             }
 
