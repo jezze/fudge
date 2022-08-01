@@ -568,30 +568,35 @@ static unsigned int numwindows;
 static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct widget *widget;
+    struct list_item *current = 0;
 
     parser_parse(source, "root", msize, mdata);
 
-    widget = pool_getwidgetbyid(source, "window");
-
-    if (widget)
+    while ((current = pool_nextsource(current, source)))
     {
 
-        if (widget->size.w == 0 && widget->size.h == 0)
+        struct widget *widget = current->data;
+
+        if (widget->type == WIDGET_TYPE_WINDOW)
         {
 
-            widget->position.x = 64 + 128 * numwindows;
-            widget->position.y = 64 + 64 * numwindows;
-            widget->size.w = 640;
-            widget->size.h = 640;
+            if (widget->size.w == 0 && widget->size.h == 0)
+            {
 
-            bump(widget);
+                widget->position.x = 64 + 128 * numwindows;
+                widget->position.y = 64 + 64 * numwindows;
+                widget->size.w = 640;
+                widget->size.h = 640;
 
-            numwindows++;
+                bump(widget);
+
+                numwindows++;
+
+            }
+
+            damage(widget);
 
         }
-
-        damage(widget);
 
     }
 
