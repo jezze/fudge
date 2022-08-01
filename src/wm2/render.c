@@ -198,7 +198,7 @@ static void blitline(struct render_display *display, unsigned int color, int lin
 
 }
 
-static void blitcmap32line(struct render_display *display, struct position *p, void *idata, unsigned int iwidth, unsigned int *cmap, int line)
+static void blitcmap32line(struct render_display *display, struct widget_position *p, void *idata, unsigned int iwidth, unsigned int *cmap, int line)
 {
 
     unsigned char *data = idata;

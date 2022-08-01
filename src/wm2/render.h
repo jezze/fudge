@@ -12,8 +12,8 @@ struct render_damage
 {
 
     unsigned int state;
-    struct position position0;
-    struct position position1;
+    struct widget_position position0;
+    struct widget_position position1;
 
 };
 
@@ -21,7 +21,7 @@ struct render_display
 {
 
     void *framebuffer;
-    struct size size;
+    struct widget_size size;
     unsigned int bpp;
     struct render_damage damage;
 

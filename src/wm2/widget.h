@@ -47,7 +47,7 @@
 #define WIDGET_TEXTBOX_MODE_NORMAL              0
 #define WIDGET_TEXTBOX_MODE_READONLY            1
 
-struct position
+struct widget_position
 {
 
     int x;
@@ -55,7 +55,7 @@ struct position
 
 };
 
-struct size
+struct widget_size
 {
 
     unsigned int w;
@@ -72,8 +72,8 @@ struct widget
     unsigned int id;
     unsigned int in;
     void *data;
-    struct position position;
-    struct size size;
+    struct widget_position position;
+    struct widget_size size;
 
 };
 
