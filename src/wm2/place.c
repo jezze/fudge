@@ -10,12 +10,14 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_button *button = widget->data;
-    unsigned int length = pool_getcstringlength(button->label);
+    struct render_rowinfo rowinfo;
+
+    render_getrowinfo(RENDER_FONTBOLD, pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, 0);
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(render_getrowwidth(RENDER_FONTBOLD, pool_getstring(button->label), length) + RENDER_BUTTON_PADDING_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(render_getrowheight(RENDER_FONTBOLD, pool_getstring(button->label), length) + RENDER_BUTTON_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(rowinfo.width + RENDER_BUTTON_PADDING_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(rowinfo.height + RENDER_BUTTON_PADDING_HEIGHT * 2, minh, maxh);
 
 }
 

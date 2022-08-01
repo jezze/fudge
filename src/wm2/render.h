@@ -36,7 +36,7 @@ struct render_rowinfo
 
 };
 
-unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int length, struct render_rowinfo *rowinfo);
+unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int offset);
 unsigned int render_getrowwidth(unsigned int index, char *text, unsigned int length);
 unsigned int render_getrowheight(unsigned int index, char *text, unsigned int length);
 unsigned int render_gettextwidth(unsigned int index, char *text, unsigned int length);
