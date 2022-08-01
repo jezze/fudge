@@ -752,10 +752,16 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
 
     struct font *font = &fonts[index];
     unsigned int i;
+    unsigned int saveactive;
+    struct render_rowinfo save;
 
     if (offset >= length)
         return 0;
 
+    save.chars = 0;
+    save.width = 0;
+    save.height = 0;
+    save.lineheight = fonts[index].lineheight;
     rowinfo->chars = 0;
     rowinfo->width = 0;
     rowinfo->height = 0;
@@ -767,6 +773,16 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
         struct pcf_metricsdata metricsdata;
         unsigned short index;
 
+        if (text[i] == ' ')
+        {
+
+            saveactive = 1;
+            save.width = rowinfo->width;
+            save.height = rowinfo->height;
+            save.chars = i;
+
+        }
+
         if (text[i] == '\n')
             break;
 
@@ -775,7 +791,21 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
         if (rowinfo->width + metricsdata.width > maxw)
+        {
+
+            if (saveactive)
+            {
+
+                rowinfo->width = save.width;
+                rowinfo->height = save.height;
+
+                i = save.chars;
+
+            }
+
             break;
+
+        }
 
         rowinfo->width += metricsdata.width;
         rowinfo->height = util_max(rowinfo->height, metricsdata.ascent + metricsdata.descent);
