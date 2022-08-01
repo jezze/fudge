@@ -575,8 +575,8 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
     char *tt = pool_getstring(textbox->content);
     unsigned int tl = pool_getcstringlength(textbox->content);
     unsigned int rownum = getrownum(RENDER_FONTNORMAL, line, widget->position.y, RENDER_TEXTBOX_PADDING_HEIGHT);
-    struct rowsegment *rs = findrowsegment(widget, rows, 13, line);
     unsigned int rowstart = getrowstart(RENDER_FONTNORMAL, tt, tl, rownum);
+    struct rowsegment *rs = findrowsegment(widget, rows, 13, line);
     struct render_rowinfo rowinfo;
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
