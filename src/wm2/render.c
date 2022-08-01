@@ -779,12 +779,15 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
 {
 
     struct font *font = &fonts[index];
-    unsigned int cw = 0;
-    unsigned int ch = 0;
     unsigned int i;
 
     if (offset >= length)
         return 0;
+
+    rowinfo->chars = 0;
+    rowinfo->width = 0;
+    rowinfo->height = 0;
+    rowinfo->lineheight = fonts[index].lineheight;
 
     for (i = offset; i < length; i++)
     {
@@ -799,133 +802,38 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
-        cw += metricsdata.width;
-        ch = util_max(ch, metricsdata.ascent + metricsdata.descent);
+        rowinfo->width += metricsdata.width;
+        rowinfo->height = util_max(rowinfo->height, metricsdata.ascent + metricsdata.descent);
 
     }
 
     rowinfo->chars = i;
-    rowinfo->width = cw;
-    rowinfo->height = ch;
 
     return rowinfo->chars + 1;
 
 }
 
-unsigned int render_getrowwidth(unsigned int index, char *text, unsigned int length)
+unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int length, struct render_textinfo *textinfo)
 {
 
-    struct font *font = &fonts[index];
-    unsigned int cw = 0;
-    unsigned int i;
+    unsigned int offset = 0;
+    struct render_rowinfo rowinfo;
 
-    for (i = 0; i < length; i++)
+    textinfo->width = 0;
+    textinfo->height = 0;
+    textinfo->rows = 0;
+    textinfo->lineheight = fonts[index].lineheight;
+
+    while ((offset = render_getrowinfo(index, text, length, &rowinfo, offset)))
     {
 
-        struct pcf_metricsdata metricsdata;
-        unsigned short index;
-
-        if (text[i] == '\n')
-            break;
-
-        index = pcf_getindex(font->data, text[i]);
-
-        pcf_readmetricsdata(font->data, index, &metricsdata);
-
-        cw += metricsdata.width;
+        textinfo->width = util_max(textinfo->width, rowinfo.width);
+        textinfo->height += rowinfo.height;
+        textinfo->rows++;
 
     }
 
-    return cw;
-
-}
-
-unsigned int render_getrowheight(unsigned int index, char *text, unsigned int length)
-{
-
-    struct font *font = &fonts[index];
-    unsigned int ch = 0;
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        struct pcf_metricsdata metricsdata;
-        unsigned short index;
-
-        if (text[i] == '\n')
-            break;
-
-        index = pcf_getindex(font->data, text[i]);
-
-        pcf_readmetricsdata(font->data, index, &metricsdata);
-
-        ch = util_max(ch, metricsdata.ascent + metricsdata.descent);
-
-    }
-
-    return ch;
-
-}
-
-unsigned int render_gettextwidth(unsigned int index, char *text, unsigned int length)
-{
-
-    unsigned int wlast = 0;
-    unsigned int cw = 0;
-    unsigned int s = 0;
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        if (text[i] == '\n')
-        {
-
-            unsigned int w = render_getrowwidth(index, text + s, length - s);
-
-            cw = util_max(cw, w);
-            s = i + 1;
-
-        }
-
-    }
-
-    if (length - s > 0)
-        wlast = render_getrowwidth(index, text + s, length - s);
-
-    return util_max(cw, wlast);
-
-}
-
-unsigned int render_gettextheight(unsigned int index, char *text, unsigned int length, unsigned int lineheight)
-{
-
-    struct font *font = &fonts[index];
-    unsigned int hlast = 0;
-    unsigned int ch = 0;
-    unsigned int s = 0;
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        if (text[i] == '\n')
-        {
-
-            unsigned int h = (lineheight) ? font->lineheight : render_getrowheight(index, text + s, length - s);
-
-            ch += h;
-            s = i + 1;
-
-        }
-
-    }
-
-    if (length - s > 0)
-        hlast = render_getrowheight(index, text + s, length - s);
-
-    return ch + hlast;
+    return length;
 
 }
 

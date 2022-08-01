@@ -33,14 +33,22 @@ struct render_rowinfo
     unsigned int chars;
     unsigned int width;
     unsigned int height;
+    unsigned int lineheight;
+
+};
+
+struct render_textinfo
+{
+
+    unsigned int rows;
+    unsigned int width;
+    unsigned int height;
+    unsigned int lineheight;
 
 };
 
 unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int offset);
-unsigned int render_getrowwidth(unsigned int index, char *text, unsigned int length);
-unsigned int render_getrowheight(unsigned int index, char *text, unsigned int length);
-unsigned int render_gettextwidth(unsigned int index, char *text, unsigned int length);
-unsigned int render_gettextheight(unsigned int index, char *text, unsigned int length, unsigned int lineheight);
+unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int length, struct render_textinfo *textinfo);
 void render_damage(struct render_display *display, int x0, int y0, int x1, int y1);
 void render_damagebywidget(struct render_display *display, struct widget *widget);
 void render_paint(struct render_display *display, struct widget *rootwidget);
