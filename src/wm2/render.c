@@ -489,13 +489,14 @@ static void painttext(struct render_display *display, struct widget *widget, int
 {
 
     struct widget_text *text = widget->data;
+    unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
     char *tt = pool_getstring(text->content);
     unsigned int tl = pool_getcstringlength(text->content);
-    unsigned int rownum = getrownum(RENDER_FONTNORMAL, line, widget->position.y);
-    unsigned int rowstart = getrowstart(RENDER_FONTNORMAL, tt, tl, rownum, text->wrap, widget->size.w);
+    unsigned int rownum = getrownum(index, line, widget->position.y);
+    unsigned int rowstart = getrowstart(index, tt, tl, rownum, text->wrap, widget->size.w);
     struct render_rowinfo rowinfo;
 
-    if (render_getrowinfo(RENDER_FONTNORMAL, tt, tl, &rowinfo, text->wrap, widget->size.w, rowstart))
+    if (render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, widget->size.w, rowstart))
     {
 
         unsigned int rx = widget->position.x;
@@ -519,7 +520,7 @@ static void painttext(struct render_display *display, struct widget *widget, int
 
         }
 
-        blittext(display, RENDER_FONTNORMAL, getcolor(CMAP_TEXT_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+        blittext(display, index, getcolor(CMAP_TEXT_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 

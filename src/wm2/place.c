@@ -255,8 +255,9 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 
     struct widget_text *text = widget->data;
     struct render_textinfo textinfo;
+    unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
 
-    render_gettextinfo(RENDER_FONTNORMAL, pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, maxw);
+    render_gettextinfo(index, pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, maxw);
 
     widget->position.x = x;
     widget->position.y = y;

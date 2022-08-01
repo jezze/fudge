@@ -45,6 +45,7 @@ static struct token attributes[] =
     {WIDGET_ATTR_PADDING, "padding"},
     {WIDGET_ATTR_PLACEMENT, "placement"},
     {WIDGET_ATTR_TITLE, "title"},
+    {WIDGET_ATTR_WEIGHT, "weight"},
     {WIDGET_ATTR_WRAP, "wrap"}
 };
 
@@ -73,6 +74,12 @@ static struct token textaligns[] =
     {WIDGET_TEXT_ALIGN_LEFT, "left"},
     {WIDGET_TEXT_ALIGN_CENTER, "center"},
     {WIDGET_TEXT_ALIGN_RIGHT, "right"}
+};
+
+static struct token textweights[] =
+{
+    {WIDGET_TEXT_WEIGHT_NORMAL, "normal"},
+    {WIDGET_TEXT_WEIGHT_BOLD, "bold"}
 };
 
 static struct token textwraps[] =
@@ -216,6 +223,11 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
 
         break;
 
+    case WIDGET_ATTR_WEIGHT:
+        text->weight = getkey(textweights, 2, value);
+
+        break;
+
     case WIDGET_ATTR_WRAP:
         text->wrap = getkey(textwraps, 3, value);
 
@@ -327,7 +339,7 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 unsigned int widget_getattribute(char *value)
 {
 
-    return getkey(attributes, 13, value);
+    return getkey(attributes, 14, value);
 
 }
 

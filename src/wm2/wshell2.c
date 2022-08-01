@@ -24,7 +24,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ container id \"base\" in \"window\" layout \"maximize\" padding \"16\"\n"
         "+ textbox id \"output\" in \"base\"\n"
         "+ text id \"result\" in \"output\" wrap \"char\"\n"
-        "+ text id \"prompt\" in \"output\" wrap \"char\" content \"$ \"\n"
+        "+ text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
         "+ text id \"input0\" in \"output\" wrap \"char\"\n"
         "+ text id \"cursor\" in \"output\" wrap \"char\" content \" \"\n"
         "+ text id \"input1\" in \"output\" wrap \"char\"\n";

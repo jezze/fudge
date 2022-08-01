@@ -26,7 +26,8 @@
 #define WIDGET_ATTR_PADDING                     10
 #define WIDGET_ATTR_PLACEMENT                   11
 #define WIDGET_ATTR_TITLE                       12
-#define WIDGET_ATTR_WRAP                        13
+#define WIDGET_ATTR_WEIGHT                      13
+#define WIDGET_ATTR_WRAP                        14
 #define WIDGET_CONTAINER_LAYOUT_FLOAT           0
 #define WIDGET_CONTAINER_LAYOUT_HORIZONTAL      1
 #define WIDGET_CONTAINER_LAYOUT_MAXIMIZE        2
@@ -38,6 +39,8 @@
 #define WIDGET_TEXT_ALIGN_LEFT                  0
 #define WIDGET_TEXT_ALIGN_CENTER                1
 #define WIDGET_TEXT_ALIGN_RIGHT                 2
+#define WIDGET_TEXT_WEIGHT_NORMAL               0
+#define WIDGET_TEXT_WEIGHT_BOLD                 1
 #define WIDGET_TEXT_WRAP_NONE                   0
 #define WIDGET_TEXT_WRAP_CHAR                   1
 #define WIDGET_TEXT_WRAP_WORD                   2
@@ -119,6 +122,7 @@ struct widget_text
 
     unsigned int content;
     unsigned int align;
+    unsigned int weight;
     unsigned int wrap;
 
 };
