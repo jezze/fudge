@@ -146,11 +146,11 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"Calculator\"\n"
-        "+ container id \"base\" in \"window\" layout \"vertical\"\n"
-        "+ container id \"container\" in \"base\" layout \"vertical\" placement \"stretched\" padding \"16\"\n"
+        "+ container id \"base\" in \"window\" layout \"vertical\" padding \"8\"\n"
+        "+ container id \"container\" in \"base\" layout \"vertical\" placement \"stretched\" padding \"8\"\n"
         "+ textbox id \"output\" in \"container\" mode \"readonly\"\n"
         "+ text id \"result\" in \"output\" content \"0\" align \"right\"\n"
-        "+ grid id \"buttons\" in \"base\" columns \"4\" placement \"stretched\" padding \"16\"\n"
+        "+ grid id \"buttons\" in \"base\" columns \"4\" placement \"stretched\" padding \"8\"\n"
         "+ button id \"button7\" in \"buttons\" label \"7\"\n"
         "+ button id \"button8\" in \"buttons\" label \"8\"\n"
         "+ button id \"button9\" in \"buttons\" label \"9\"\n"
