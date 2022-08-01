@@ -12,7 +12,7 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
     struct widget_button *button = widget->data;
     struct render_rowinfo rowinfo;
 
-    render_getrowinfo(RENDER_FONTBOLD, pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, 0, 0, 0, 0);
+    render_getrowinfo(RENDER_FONTBOLD, pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, 0, 0, 0);
 
     widget->position.x = x;
     widget->position.y = y;
@@ -273,7 +273,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     struct render_textinfo textinfo;
     unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
 
-    render_gettextinfo(index, pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, 0, maxw);
+    render_gettextinfo(index, pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, maxw);
 
     widget->position.x = x;
     widget->position.y = y;

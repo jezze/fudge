@@ -128,7 +128,7 @@ static unsigned int getrownum(unsigned int index, int line, int y)
 
 }
 
-static unsigned int getrowstart(unsigned int index, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int offw, unsigned int maxw)
+static unsigned int getrowstart(unsigned int index, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw)
 {
 
     unsigned int offset = 0;
@@ -138,7 +138,7 @@ static unsigned int getrowstart(unsigned int index, char *text, unsigned int len
     if (!rownum)
         return 0;
 
-    for (rows = 1; (offset = render_getrowinfo(index, text, length, &rowinfo, wrap, (offset) ? 0 : offw, maxw, offset)); rows++)
+    for (rows = 1; (offset = render_getrowinfo(index, text, length, &rowinfo, wrap, maxw, offset)); rows++)
     {
 
         if (rows == rownum)
@@ -401,7 +401,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
 
-    if (render_getrowinfo(RENDER_FONTBOLD, tt, tl, &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0, 0))
+    if (render_getrowinfo(RENDER_FONTBOLD, tt, tl, &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
         unsigned int rx = widget->position.x + (widget->size.w / 2) - (rowinfo.width / 2);
@@ -470,10 +470,10 @@ static void painttext(struct render_display *display, struct widget *widget, int
     char *tt = pool_getstring(text->content);
     unsigned int tl = pool_getcstringlength(text->content);
     unsigned int rownum = getrownum(index, line, widget->position.y);
-    unsigned int rowstart = getrowstart(index, tt, tl, rownum, text->wrap, 0, widget->size.w);
+    unsigned int rowstart = getrowstart(index, tt, tl, rownum, text->wrap, widget->size.w);
     struct render_rowinfo rowinfo;
 
-    if (render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, 0, widget->size.w, rowstart))
+    if (render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, widget->size.w, rowstart))
     {
 
         unsigned int rx = widget->position.x;
@@ -642,7 +642,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
 
-    if (render_getrowinfo(RENDER_FONTBOLD, tt, tl, &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0, 0))
+    if (render_getrowinfo(RENDER_FONTBOLD, tt, tl, &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
         unsigned int rx = widget->position.x + (widget->size.w / 2) - (rowinfo.width / 2);
@@ -703,12 +703,12 @@ static void paintwidget(struct render_display *display, struct widget *widget, i
 
 }
 
-unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int wrap, unsigned int offw, unsigned int maxw, unsigned int offset)
+unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int wrap, unsigned int maxw, unsigned int offset)
 {
 
     struct font *font = &fonts[index];
     unsigned int si = 0;
-    unsigned int w = offw;
+    unsigned int w = 0;
     unsigned int sw = 0;
     unsigned int h = 0;
     unsigned int sh = 0;
@@ -773,7 +773,7 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
 
 }
 
-unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int length, struct render_textinfo *textinfo, unsigned int wrap, unsigned int offw, unsigned int maxw)
+unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int length, struct render_textinfo *textinfo, unsigned int wrap, unsigned int maxw)
 {
 
     unsigned int offset = 0;
@@ -784,7 +784,7 @@ unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int len
     textinfo->rows = 0;
     textinfo->lineheight = fonts[index].lineheight;
 
-    while ((offset = render_getrowinfo(index, text, length, &rowinfo, wrap, (offset) ? 0 : offw, maxw, offset)))
+    while ((offset = render_getrowinfo(index, text, length, &rowinfo, wrap, maxw, offset)))
     {
 
         textinfo->width = util_max(textinfo->width, rowinfo.width);
