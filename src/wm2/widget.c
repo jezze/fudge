@@ -89,6 +89,12 @@ static struct token textwraps[] =
     {WIDGET_TEXT_WRAP_WORD, "word"}
 };
 
+static struct token textmodes[] =
+{
+    {WIDGET_TEXT_MODE_NORMAL, "normal"},
+    {WIDGET_TEXT_MODE_INVERTED, "inverted"}
+};
+
 static struct token textboxmodes[] =
 {
     {WIDGET_TEXTBOX_MODE_NORMAL, "normal"},
@@ -220,6 +226,11 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
 
     case WIDGET_ATTR_CONTENT:
         text->content = pool_replacecstring(text->content, value);
+
+        break;
+
+    case WIDGET_ATTR_MODE:
+        text->mode = getkey(textmodes, 2, value);
 
         break;
 

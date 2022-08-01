@@ -218,7 +218,7 @@ static void blitcmap32line(struct render_display *display, struct widget_positio
 
 }
 
-static void blitchar(struct render_display *display, unsigned char *data, unsigned int color, int rx, int line, int x0, int x1)
+static void blitcharnormal(struct render_display *display, unsigned char *data, unsigned int color, int rx, int line, int x0, int x1)
 {
 
     unsigned int i;
@@ -233,8 +233,7 @@ static void blitchar(struct render_display *display, unsigned char *data, unsign
 
 }
 
-/*
-static void blitcharcursor(struct render_display *display, unsigned char *data, unsigned int color, int rx, int line, int x0, int x1)
+static void blitcharinverted(struct render_display *display, unsigned char *data, unsigned int color, int rx, int line, int x0, int x1)
 {
 
     unsigned int i;
@@ -248,9 +247,8 @@ static void blitcharcursor(struct render_display *display, unsigned char *data, 
     }
 
 }
-*/
 
-static void blittext(struct render_display *display, unsigned int index, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
+static void blittextnormal(struct render_display *display, unsigned int index, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
 {
 
     struct font *font = &fonts[index];
@@ -276,7 +274,7 @@ static void blittext(struct render_display *display, unsigned int index, unsigne
                 int r0 = util_max(0, x0 - rx);
                 int r1 = util_min(x1 - rx, metricsdata.width);
 
-                blitchar(display, data, color, rx, line, r0, r1);
+                blitcharnormal(display, data, color, rx, line, r0, r1);
 
             }
 
@@ -288,8 +286,7 @@ static void blittext(struct render_display *display, unsigned int index, unsigne
 
 }
 
-/*
-static void blittextcursor(struct render_display *display, unsigned int index, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1, int cursor)
+static void blittextinverted(struct render_display *display, unsigned int index, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
 {
 
     struct font *font = &fonts[index];
@@ -315,10 +312,7 @@ static void blittextcursor(struct render_display *display, unsigned int index, u
                 int r0 = util_max(0, x0 - rx);
                 int r1 = util_min(x1 - rx, metricsdata.width);
 
-                if (i == cursor)
-                    blitcharcursor(display, data, color, rx, line, r0, r1);
-                else
-                    blitchar(display, data, color, rx, line, r0, r1);
+                blitcharinverted(display, data, color, rx, line, r0, r1);
 
             }
 
@@ -329,7 +323,6 @@ static void blittextcursor(struct render_display *display, unsigned int index, u
     }
 
 }
-*/
 
 static void blitlinesegments(struct render_display *display, int x0, int x1, unsigned int state, struct linesegment *ls, unsigned int n, int line)
 {
@@ -432,7 +425,7 @@ static void paintbutton(struct render_display *display, struct widget *widget, i
 
 
         if (util_intersects(line, ry, ry + rowinfo.lineheight))
-            blittext(display, RENDER_FONTBOLD, getcolor(CMAP_BUTTON_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_BUTTON_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 
@@ -520,7 +513,20 @@ static void painttext(struct render_display *display, struct widget *widget, int
 
         }
 
-        blittext(display, index, getcolor(CMAP_TEXT_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+        switch (text->mode)
+        {
+
+        case WIDGET_TEXT_MODE_NORMAL:
+            blittextnormal(display, index, getcolor(CMAP_TEXT_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+
+            break;
+
+        case WIDGET_TEXT_MODE_INVERTED:
+            blittextinverted(display, index, getcolor(CMAP_TEXT_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+
+            break;
+
+        }
 
     }
 
@@ -659,7 +665,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
         unsigned int ry = widget->position.y + RENDER_WINDOW_BORDER_HEIGHT + (RENDER_WINDOW_TITLE_HEIGHT / 2) - (rowinfo.height / 2);
 
         if (util_intersects(line, ry, ry + rowinfo.lineheight))
-            blittext(display, RENDER_FONTBOLD, getcolor(CMAP_WINDOW_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_WINDOW_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 

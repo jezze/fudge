@@ -39,6 +39,8 @@
 #define WIDGET_TEXT_ALIGN_LEFT                  0
 #define WIDGET_TEXT_ALIGN_CENTER                1
 #define WIDGET_TEXT_ALIGN_RIGHT                 2
+#define WIDGET_TEXT_MODE_NORMAL                 0
+#define WIDGET_TEXT_MODE_INVERTED               1
 #define WIDGET_TEXT_WEIGHT_NORMAL               0
 #define WIDGET_TEXT_WEIGHT_BOLD                 1
 #define WIDGET_TEXT_WRAP_NONE                   0
@@ -122,6 +124,7 @@ struct widget_text
 
     unsigned int content;
     unsigned int align;
+    unsigned int mode;
     unsigned int weight;
     unsigned int wrap;
 
