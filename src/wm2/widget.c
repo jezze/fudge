@@ -44,7 +44,8 @@ static struct token attributes[] =
     {WIDGET_ATTR_MODE, "mode"},
     {WIDGET_ATTR_PADDING, "padding"},
     {WIDGET_ATTR_PLACEMENT, "placement"},
-    {WIDGET_ATTR_TITLE, "title"}
+    {WIDGET_ATTR_TITLE, "title"},
+    {WIDGET_ATTR_WRAP, "wrap"}
 };
 
 static struct token containerlayouts[] =
@@ -74,11 +75,11 @@ static struct token textaligns[] =
     {WIDGET_TEXT_ALIGN_RIGHT, "right"}
 };
 
-static struct token textboxaligns[] =
+static struct token textwraps[] =
 {
-    {WIDGET_TEXTBOX_ALIGN_LEFT, "left"},
-    {WIDGET_TEXTBOX_ALIGN_CENTER, "center"},
-    {WIDGET_TEXTBOX_ALIGN_RIGHT, "right"}
+    {WIDGET_TEXT_WRAP_NONE, "none"},
+    {WIDGET_TEXT_WRAP_CHAR, "char"},
+    {WIDGET_TEXT_WRAP_WORD, "word"}
 };
 
 static struct token textboxmodes[] =
@@ -215,6 +216,11 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
 
         break;
 
+    case WIDGET_ATTR_WRAP:
+        text->wrap = getkey(textwraps, 3, value);
+
+        break;
+
     }
 
 }
@@ -228,7 +234,7 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
     {
 
     case WIDGET_ATTR_ALIGN:
-        textbox->align = getkey(textboxaligns, 3, value);
+        textbox->align = getkey(textaligns, 3, value);
 
         break;
 
@@ -240,6 +246,11 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
 
     case WIDGET_ATTR_MODE:
         textbox->mode = getkey(textboxmodes, 2, value);
+
+        break;
+
+    case WIDGET_ATTR_WRAP:
+        textbox->wrap = getkey(textwraps, 3, value);
 
         break;
 
@@ -332,7 +343,7 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 unsigned int widget_getattribute(char *value)
 {
 
-    return getkey(attributes, 12, value);
+    return getkey(attributes, 13, value);
 
 }
 
