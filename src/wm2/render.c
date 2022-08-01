@@ -779,9 +779,9 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
 
     }
 
-    rowinfo->chars = i;
+    rowinfo->chars = i - offset;
 
-    return rowinfo->chars + 1;
+    return i + 1;
 
 }
 
