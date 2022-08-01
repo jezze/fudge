@@ -233,6 +233,7 @@ static void blitchar(struct render_display *display, unsigned char *data, unsign
 
 }
 
+/*
 static void blitcharcursor(struct render_display *display, unsigned char *data, unsigned int color, int rx, int line, int x0, int x1)
 {
 
@@ -247,6 +248,7 @@ static void blitcharcursor(struct render_display *display, unsigned char *data, 
     }
 
 }
+*/
 
 static void blittext(struct render_display *display, unsigned int index, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
 {
@@ -286,6 +288,7 @@ static void blittext(struct render_display *display, unsigned int index, unsigne
 
 }
 
+/*
 static void blittextcursor(struct render_display *display, unsigned int index, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1, int cursor)
 {
 
@@ -326,6 +329,7 @@ static void blittextcursor(struct render_display *display, unsigned int index, u
     }
 
 }
+*/
 
 static void blitlinesegments(struct render_display *display, int x0, int x1, unsigned int state, struct linesegment *ls, unsigned int n, int line)
 {
@@ -571,48 +575,9 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
         {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, border0, 1}
     };
 
-    struct widget_textbox *textbox = widget->data;
-    char *tt = pool_getstring(textbox->content);
-    unsigned int tl = pool_getcstringlength(textbox->content);
-    unsigned int rownum = getrownum(RENDER_FONTNORMAL, line - RENDER_TEXTBOX_PADDING_HEIGHT, widget->position.y);
-    unsigned int rowstart = getrowstart(RENDER_FONTNORMAL, tt, tl, rownum, textbox->wrap, widget->size.w);
     struct rowsegment *rs = findrowsegment(widget, rows, 13, line);
-    struct render_rowinfo rowinfo;
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
-
-    if (render_getrowinfo(RENDER_FONTNORMAL, tt, tl, &rowinfo, textbox->wrap, widget->size.w, rowstart))
-    {
-
-        unsigned int rx = widget->position.x;
-        unsigned int ry = widget->position.y + rownum * rowinfo.lineheight + RENDER_TEXTBOX_PADDING_HEIGHT;
-
-        switch (textbox->align)
-        {
-
-        case WIDGET_TEXT_ALIGN_LEFT:
-            rx += RENDER_TEXTBOX_PADDING_WIDTH;
-
-            break;
-
-        case WIDGET_TEXT_ALIGN_CENTER:
-            rx += widget->size.w / 2 - rowinfo.width / 2;
-
-            break;
-
-        case WIDGET_TEXT_ALIGN_RIGHT:
-            rx += widget->size.w - rowinfo.width - RENDER_TEXTBOX_PADDING_WIDTH;
-
-            break;
-
-        }
-
-        if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
-            blittext(display, RENDER_FONTNORMAL, getcolor(CMAP_TEXTBOX_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1);
-        else
-            blittextcursor(display, RENDER_FONTNORMAL, getcolor(CMAP_TEXTBOX_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1, textbox->cursor);
-
-    }
 
 }
 

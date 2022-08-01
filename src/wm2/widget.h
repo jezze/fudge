@@ -120,17 +120,12 @@ struct widget_text
     unsigned int content;
     unsigned int align;
     unsigned int wrap;
-    int scroll;
 
 };
 
 struct widget_textbox
 {
 
-    unsigned int content;
-    unsigned int align;
-    unsigned int wrap;
-    int scroll;
     unsigned int mode;
     unsigned int cursor;
 

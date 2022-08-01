@@ -233,24 +233,8 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
     switch (attribute)
     {
 
-    case WIDGET_ATTR_ALIGN:
-        textbox->align = getkey(textaligns, 3, value);
-
-        break;
-
-    case WIDGET_ATTR_CONTENT:
-        textbox->content = pool_replacecstring(textbox->content, value);
-        textbox->cursor = pool_getcstringlength(textbox->content) - 1;
-
-        break;
-
     case WIDGET_ATTR_MODE:
         textbox->mode = getkey(textboxmodes, 2, value);
-
-        break;
-
-    case WIDGET_ATTR_WRAP:
-        textbox->wrap = getkey(textwraps, 3, value);
 
         break;
 

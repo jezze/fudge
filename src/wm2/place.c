@@ -268,15 +268,33 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 static void placetextbox(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
-    struct widget_textbox *textbox = widget->data;
-    struct render_textinfo textinfo;
+    struct list_item *current = 0;
+    int offw = 0;
+    int offh = 0;
+    int totw = 0;
 
-    render_gettextinfo(RENDER_FONTNORMAL, pool_getstring(textbox->content), pool_getcstringlength(textbox->content), &textinfo, textbox->wrap, maxw);
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+        int childx = x + RENDER_TEXTBOX_PADDING_WIDTH + offw; 
+        int childy = y + RENDER_TEXTBOX_PADDING_HEIGHT + offh; 
+        int childminw = 0;
+        int childminh = 0;
+        int childmaxw = maxw - RENDER_TEXTBOX_PADDING_WIDTH * 2 - offw;
+        int childmaxh = maxh - RENDER_TEXTBOX_PADDING_HEIGHT * 2 - offh;
+
+        place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+
+        offh += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
+        totw = util_max(totw, child->size.w);
+
+    }
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(textinfo.width + RENDER_TEXTBOX_PADDING_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(textinfo.rows * textinfo.lineheight + RENDER_TEXTBOX_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(totw, minw, maxw);
+    widget->size.h = util_clamp(offh, minh, maxh);
 
 }
 
