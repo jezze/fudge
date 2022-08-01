@@ -318,7 +318,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
             soffw = textinfo.lastrowwidth;
             offy += child->size.h - textinfo.lineheight;
-            offh += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
+            offh += child->size.h - textinfo.lineheight;
             totw = util_max(totw, child->size.w);
 
         }
