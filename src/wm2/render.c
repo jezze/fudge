@@ -128,20 +128,6 @@ static unsigned int getrownum(unsigned int index, int line, int y, unsigned int 
 
 }
 
-static unsigned int getrowtotal(unsigned int index, char *text, unsigned int length)
-{
-
-    unsigned int offset = 0;
-    unsigned int rows = 0;
-    struct render_rowinfo rowinfo;
-
-    while ((offset = render_getrowinfo(index, text, length, &rowinfo, offset)))
-        rows++;
-
-    return rows;
-
-}
-
 static unsigned int getrowstart(unsigned int index, char *text, unsigned int length, unsigned int rownum)
 {
 
@@ -160,7 +146,7 @@ static unsigned int getrowstart(unsigned int index, char *text, unsigned int len
 
     }
 
-    return offset;
+    return length;
 
 }
 
@@ -502,41 +488,34 @@ static void painttext(struct render_display *display, struct widget *widget, int
     char *tt = pool_getstring(text->content);
     unsigned int tl = pool_getcstringlength(text->content);
     unsigned int rownum = getrownum(RENDER_FONTNORMAL, line, widget->position.y, 0);
-    unsigned int rowtotal = getrowtotal(RENDER_FONTNORMAL, tt, tl);
+    unsigned int rowstart = getrowstart(RENDER_FONTNORMAL, tt, tl, rownum);
+    struct render_rowinfo rowinfo;
 
-    if (rownum < rowtotal)
+    if (render_getrowinfo(RENDER_FONTNORMAL, tt, tl, &rowinfo, rowstart))
     {
 
-        unsigned int s = getrowstart(RENDER_FONTNORMAL, tt, tl, rownum);
-        struct render_rowinfo rowinfo;
+        unsigned int rx = widget->position.x;
+        unsigned int ry = widget->position.y + rownum * rowinfo.lineheight;
 
-        if (render_getrowinfo(RENDER_FONTNORMAL, tt, tl, &rowinfo, s))
+        switch (text->align)
         {
 
-            unsigned int rx = widget->position.x;
-            unsigned int ry = widget->position.y + rownum * rowinfo.lineheight;
+        case WIDGET_TEXT_ALIGN_LEFT:
+            break;
 
-            switch (text->align)
-            {
+        case WIDGET_TEXT_ALIGN_CENTER:
+            rx += widget->size.w / 2 - rowinfo.width / 2;
 
-            case WIDGET_TEXT_ALIGN_LEFT:
-                break;
+            break;
 
-            case WIDGET_TEXT_ALIGN_CENTER:
-                rx += widget->size.w / 2 - rowinfo.width / 2;
+        case WIDGET_TEXT_ALIGN_RIGHT:
+            rx += widget->size.w - rowinfo.width;
 
-                break;
-
-            case WIDGET_TEXT_ALIGN_RIGHT:
-                rx += widget->size.w - rowinfo.width;
-
-                break;
-
-            }
-
-            blittext(display, RENDER_FONTNORMAL, getcolor(CMAP_TEXT_TEXT, widget->state), tt + s, rowinfo.chars, rx, ry, line, x0, x1);
+            break;
 
         }
+
+        blittext(display, RENDER_FONTNORMAL, getcolor(CMAP_TEXT_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 
@@ -596,49 +575,42 @@ static void painttextbox(struct render_display *display, struct widget *widget, 
     char *tt = pool_getstring(textbox->content);
     unsigned int tl = pool_getcstringlength(textbox->content);
     unsigned int rownum = getrownum(RENDER_FONTNORMAL, line, widget->position.y, RENDER_TEXTBOX_PADDING_HEIGHT);
-    unsigned int rowtotal = getrowtotal(RENDER_FONTNORMAL, tt, tl);
     struct rowsegment *rs = findrowsegment(widget, rows, 13, line);
+    unsigned int rowstart = getrowstart(RENDER_FONTNORMAL, tt, tl, rownum);
+    struct render_rowinfo rowinfo;
 
     blitlinesegments(display, widget->position.x, widget->position.x + widget->size.w, widget->state, rs->segment, rs->numlines, line);
 
-    if (rownum < rowtotal)
+    if (render_getrowinfo(RENDER_FONTNORMAL, tt, tl, &rowinfo, rowstart))
     {
 
-        unsigned int s = getrowstart(RENDER_FONTNORMAL, tt, tl, rownum);
-        struct render_rowinfo rowinfo;
+        unsigned int rx = widget->position.x;
+        unsigned int ry = widget->position.y + rownum * rowinfo.lineheight + RENDER_TEXTBOX_PADDING_HEIGHT;
 
-        if (render_getrowinfo(RENDER_FONTNORMAL, tt, tl, &rowinfo, s))
+        switch (textbox->align)
         {
 
-            unsigned int rx = widget->position.x;
-            unsigned int ry = widget->position.y + rownum * rowinfo.lineheight + RENDER_TEXTBOX_PADDING_HEIGHT;
+        case WIDGET_TEXTBOX_ALIGN_LEFT:
+            rx += RENDER_TEXTBOX_PADDING_WIDTH;
 
-            switch (textbox->align)
-            {
+            break;
 
-            case WIDGET_TEXTBOX_ALIGN_LEFT:
-                rx += RENDER_TEXTBOX_PADDING_WIDTH;
+        case WIDGET_TEXTBOX_ALIGN_CENTER:
+            rx += widget->size.w / 2 - rowinfo.width / 2;
 
-                break;
+            break;
 
-            case WIDGET_TEXTBOX_ALIGN_CENTER:
-                rx += widget->size.w / 2 - rowinfo.width / 2;
+        case WIDGET_TEXTBOX_ALIGN_RIGHT:
+            rx += widget->size.w - rowinfo.width - RENDER_TEXTBOX_PADDING_WIDTH;
 
-                break;
-
-            case WIDGET_TEXTBOX_ALIGN_RIGHT:
-                rx += widget->size.w - rowinfo.width - RENDER_TEXTBOX_PADDING_WIDTH;
-
-                break;
-
-            }
-
-            if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
-                blittext(display, RENDER_FONTNORMAL, getcolor(CMAP_TEXTBOX_TEXT, widget->state), tt + s, rowinfo.chars, rx, ry, line, x0, x1);
-            else
-                blittextcursor(display, RENDER_FONTNORMAL, getcolor(CMAP_TEXTBOX_TEXT, widget->state), tt + s, rowinfo.chars, rx, ry, line, x0, x1, textbox->cursor);
+            break;
 
         }
+
+        if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
+            blittext(display, RENDER_FONTNORMAL, getcolor(CMAP_TEXTBOX_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+        else
+            blittextcursor(display, RENDER_FONTNORMAL, getcolor(CMAP_TEXTBOX_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1, textbox->cursor);
 
     }
 
