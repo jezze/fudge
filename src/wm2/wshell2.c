@@ -34,15 +34,32 @@ static void update(void)
     char buffer[BUFFER_SIZE];
     unsigned int count = 0;
 
-    count += buffer_write(buffer, BUFFER_SIZE, "= input1 content \"", 18, count);
-    count += copyringtobuffer(&input1, buffer, BUFFER_SIZE, count);
-    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
-    count += buffer_write(buffer, BUFFER_SIZE, "= input2 content \"", 18, count);
-    count += copyringtobuffer(&input2, buffer, BUFFER_SIZE, count);
-    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
-    count += buffer_write(buffer, BUFFER_SIZE, "= result content \"", 18, count);
-    count += copyringtobuffer(&result, buffer, BUFFER_SIZE, count);
-    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+    if (ring_count(&input1))
+    {
+
+        count += buffer_write(buffer, BUFFER_SIZE, "= input1 content \"", 18, count);
+        count += copyringtobuffer(&input1, buffer, BUFFER_SIZE, count);
+        count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+
+    }
+
+    if (ring_count(&input2))
+    {
+
+        count += buffer_write(buffer, BUFFER_SIZE, "= input2 content \"", 18, count);
+        count += copyringtobuffer(&input2, buffer, BUFFER_SIZE, count);
+        count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+
+    }
+
+    if (ring_count(&result))
+    {
+
+        count += buffer_write(buffer, BUFFER_SIZE, "= result content \"", 18, count);
+        count += copyringtobuffer(&result, buffer, BUFFER_SIZE, count);
+        count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+
+    }
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
 
@@ -99,6 +116,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void interpret(void)
+{
+
+    ring_reset(&input1);
+    ring_reset(&input2);
+
+}
+
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -149,7 +174,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
     case 0x1C:
         ring_move(&input1, &input2);
         ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
-        /* interpret(&input1); */
+        interpret();
 
         break;
 
