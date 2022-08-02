@@ -34,6 +34,7 @@ struct render_rowinfo
     unsigned int width;
     unsigned int height;
     unsigned int lineheight;
+    unsigned int newline;
 
 };
 
@@ -44,8 +45,7 @@ struct render_textinfo
     unsigned int width;
     unsigned int height;
     unsigned int lineheight;
-    unsigned int lastrowwidth;
-    unsigned int lastrowheight;
+    struct render_rowinfo last;
 
 };
 

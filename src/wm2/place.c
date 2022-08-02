@@ -324,9 +324,24 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
             render_gettextinfo(index, pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, childmaxw);
 
-            soffw = textinfo.lastrowwidth;
-            soffy = offy + (textinfo.rows - 1) * textinfo.lineheight;
-            soffh = offh + (textinfo.rows - 1) * textinfo.lineheight;
+            if (textinfo.last.newline)
+            {
+
+                soffw = 0;
+                soffy = offy + textinfo.rows * textinfo.lineheight;
+                soffh = offh + textinfo.rows * textinfo.lineheight;
+
+            }
+
+            else
+            {
+
+                soffw = textinfo.last.width;
+                soffy = offy + (textinfo.rows - 1) * textinfo.lineheight;
+                soffh = offh + (textinfo.rows - 1) * textinfo.lineheight;
+
+            }
+
             offy += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
             offh += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
             totw = util_max(totw, child->size.w);

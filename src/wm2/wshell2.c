@@ -99,8 +99,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void interpret(void)
 {
 
+/*
     ring_reset(&input1);
     ring_reset(&input2);
+*/
 
 }
 

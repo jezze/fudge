@@ -731,6 +731,7 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
     rowinfo->chars = 0;
     rowinfo->width = 0;
     rowinfo->height = 0;
+    rowinfo->newline = 0;
     rowinfo->lineheight = fonts[index].lineheight;
 
     for (i = offset; i < length; i++)
@@ -749,7 +750,13 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
         }
 
         if (text[i] == '\n')
+        {
+
+            rowinfo->newline = 1;
+
             break;
+
+        }
 
         index = pcf_getindex(font->data, text[i]);
 
@@ -788,33 +795,29 @@ unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int len
 {
 
     unsigned int offset = 0;
-    struct render_rowinfo rowinfo;
 
-    rowinfo.width = 0;
-    rowinfo.height = 0;
     textinfo->width = 0;
     textinfo->height = 0;
     textinfo->rows = 0;
     textinfo->lineheight = fonts[index].lineheight;
-    textinfo->lastrowwidth = 0;
-    textinfo->lastrowheight = 0;
+    textinfo->last.width = 0;
+    textinfo->last.height = 0;
+    textinfo->last.newline = 0;
+    textinfo->last.lineheight = fonts[index].lineheight;
 
-    offset = render_getrowinfo(index, text, length, &rowinfo, wrap, maxw - offw, offset);
+    offset = render_getrowinfo(index, text, length, &textinfo->last, wrap, maxw - offw, offset);
 
-    textinfo->width = util_max(textinfo->width, rowinfo.width + offw);
-    textinfo->height = rowinfo.height;
+    textinfo->last.width += offw;
+    textinfo->width = util_max(textinfo->width, textinfo->last.width);
+    textinfo->height += textinfo->last.height;
     textinfo->rows++;
-    textinfo->lastrowwidth = rowinfo.width + offw;
-    textinfo->lastrowheight = rowinfo.height;
 
-    while ((offset = render_getrowinfo(index, text, length, &rowinfo, wrap, maxw, offset)))
+    while ((offset = render_getrowinfo(index, text, length, &textinfo->last, wrap, maxw, offset)))
     {
 
-        textinfo->width = util_max(textinfo->width, rowinfo.width);
-        textinfo->height += rowinfo.height;
+        textinfo->width = util_max(textinfo->width, textinfo->last.width);
+        textinfo->height += textinfo->last.height;
         textinfo->rows++;
-        textinfo->lastrowwidth = rowinfo.width;
-        textinfo->lastrowheight = rowinfo.height;
 
     }
 
