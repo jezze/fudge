@@ -28,7 +28,6 @@ struct state
     unsigned int mousebuttonright;
     struct widget *rootwidget;
     struct widget *mousewidget;
-    struct widget *clickedwidget;
     struct widget *hoverwidget;
     struct widget *focusedwindow;
     struct widget *focusedwidget;
@@ -435,13 +434,13 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousepress *mousepress = mdata;
     struct widget *clickedwindow = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
+    struct widget *clickedwidget = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
 
     switch (mousepress->button)
     {
 
     case 1:
         state.mousebuttonleft = 1;
-        state.clickedwidget = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
 
         if (clickedwindow)
         {
@@ -451,16 +450,16 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        if (state.clickedwidget)
+        if (clickedwidget)
         {
 
             struct event_wmclick wmclick;
 
-            buffer_write(wmclick.clicked, 16, pool_getstring(state.clickedwidget->id), pool_getcstringlengthz(state.clickedwidget->id), 0);
+            buffer_write(wmclick.clicked, 16, pool_getstring(clickedwidget->id), pool_getcstringlengthz(clickedwidget->id), 0);
 
             wmclick.clicked[15] = '\0';
 
-            channel_sendbufferto(state.clickedwidget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
+            channel_sendbufferto(clickedwidget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
 
         }
 
@@ -485,7 +484,6 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
 
     case 1:
         state.mousebuttonleft = 0;
-        state.clickedwidget = 0;
 
         break;
 
