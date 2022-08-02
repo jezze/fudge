@@ -18,6 +18,7 @@ unsigned int ring_read(struct ring *ring, void *buffer, unsigned int count);
 unsigned int ring_readall(struct ring *ring, void *buffer, unsigned int count);
 unsigned int ring_readreverse(struct ring *ring, void *buffer, unsigned int count);
 unsigned int ring_readallreverse(struct ring *ring, void *buffer, unsigned int count);
+unsigned int ring_readcopy(struct ring *ring, void *buffer, unsigned int count);
 unsigned int ring_write(struct ring *ring, void *buffer, unsigned int count);
 unsigned int ring_writeall(struct ring *ring, void *buffer, unsigned int count);
 unsigned int ring_writereverse(struct ring *ring, void *buffer, unsigned int count);

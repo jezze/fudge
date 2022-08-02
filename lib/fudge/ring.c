@@ -146,6 +146,20 @@ unsigned int ring_readallreverse(struct ring *ring, void *buffer, unsigned int c
 
 }
 
+unsigned int ring_readcopy(struct ring *ring, void *buffer, unsigned int count)
+{
+
+    unsigned int head = ring->head;
+    unsigned int tail = ring->tail;
+    unsigned int total = ring_read(ring, buffer, count);
+
+    ring->head = head;
+    ring->tail = tail;
+
+    return total;
+
+}
+
 unsigned int ring_write(struct ring *ring, void *buffer, unsigned int count)
 {
 

@@ -8,26 +8,6 @@ static struct ring input2;
 static char resultdata[1024];
 static struct ring result;
 
-static unsigned int copyringtobuffer(struct ring *ring, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    unsigned char *b = buffer;
-    unsigned int head;
-    unsigned int tail;
-    unsigned int c;
-
-    head = ring->head;
-    tail = ring->tail;
-
-    c = ring_read(ring, b + offset, count - offset);
-
-    ring->head = head;
-    ring->tail = tail;
-
-    return c;
-
-}
-
 static void update(void)
 {
 
@@ -38,7 +18,7 @@ static void update(void)
     {
 
         count += buffer_write(buffer, BUFFER_SIZE, "= input1 content \"", 18, count);
-        count += copyringtobuffer(&input1, buffer, BUFFER_SIZE, count);
+        count += ring_readcopy(&input1, buffer + count, BUFFER_SIZE - count);
         count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
 
     }
@@ -47,7 +27,7 @@ static void update(void)
     {
 
         count += buffer_write(buffer, BUFFER_SIZE, "= input2 content \"", 18, count);
-        count += copyringtobuffer(&input2, buffer, BUFFER_SIZE, count);
+        count += ring_readcopy(&input2, buffer + count, BUFFER_SIZE - count);
         count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
 
     }
@@ -56,7 +36,7 @@ static void update(void)
     {
 
         count += buffer_write(buffer, BUFFER_SIZE, "= result content \"", 18, count);
-        count += copyringtobuffer(&result, buffer, BUFFER_SIZE, count);
+        count += ring_readcopy(&result, buffer + count, BUFFER_SIZE - count);
         count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
 
     }
