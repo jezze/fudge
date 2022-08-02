@@ -223,7 +223,7 @@ static void bump(struct widget *widget)
 static void onfocus(struct widget *widget)
 {
 
-    if (widget->type == WIDGET_TYPE_WINDOW || widget_setstate(widget, WIDGET_STATE_FOCUS))
+    if (widget_setstate(widget, WIDGET_STATE_FOCUS))
     {
 
         if (state.focusedwidget)
