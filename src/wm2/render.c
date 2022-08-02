@@ -98,11 +98,6 @@ static unsigned int getcolor(unsigned int index, unsigned int state)
     switch (state)
     {
 
-    case WIDGET_STATE_NORMAL:
-        return c->normal;
-
-        break;
-
     case WIDGET_STATE_FOCUS:
         return c->focus;
 
@@ -110,6 +105,12 @@ static unsigned int getcolor(unsigned int index, unsigned int state)
 
     case WIDGET_STATE_HOVER:
         return c->hover;
+
+        break;
+
+    case WIDGET_STATE_NORMAL:
+    default:
+        return c->normal;
 
         break;
 
