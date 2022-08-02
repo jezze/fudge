@@ -147,25 +147,6 @@ static void loadfont(unsigned int factor)
 
 }
 
-static struct widget *getfocusedwindow(void)
-{
-
-    struct list_item *current = 0;
-
-    while ((current = pool_next(current)))
-    {
- 
-        struct widget *widget = current->data;
-
-        if (widget->type == WIDGET_TYPE_WINDOW && widget->state == WIDGET_STATE_FOCUS)
-            return widget;
-
-    }
-
-    return 0;
-
-}
-
 static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned int type)
 {
 
@@ -402,30 +383,28 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     if (state.mousebuttonleft || state.mousebuttonright)
     {
 
-        struct widget *widget = getfocusedwindow();
-
-        if (widget)
+        if (state.focusedwindow)
         {
 
-            damage(widget);
+            damage(state.focusedwindow);
 
             if (state.mousebuttonleft)
             {
 
-                widget->position.x += state.mousemovement.x;
-                widget->position.y += state.mousemovement.y;
+                state.focusedwindow->position.x += state.mousemovement.x;
+                state.focusedwindow->position.y += state.mousemovement.y;
 
             }
 
             if (state.mousebuttonright)
             {
 
-                widget->size.w = util_max((int)(widget->size.w) + state.mousemovement.x, WINDOW_MIN_WIDTH);
-                widget->size.h = util_max((int)(widget->size.h) + state.mousemovement.y, WINDOW_MIN_HEIGHT);
+                state.focusedwindow->size.w = util_max((int)(state.focusedwindow->size.w) + state.mousemovement.x, WINDOW_MIN_WIDTH);
+                state.focusedwindow->size.h = util_max((int)(state.focusedwindow->size.h) + state.mousemovement.y, WINDOW_MIN_HEIGHT);
 
             }
 
-            damage(widget);
+            damage(state.focusedwindow);
 
         }
 
