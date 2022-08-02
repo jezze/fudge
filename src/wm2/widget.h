@@ -13,7 +13,9 @@
 #define WIDGET_TYPE_WINDOW                      8
 #define WIDGET_STATE_NORMAL                     0
 #define WIDGET_STATE_HOVER                      1
-#define WIDGET_STATE_FOCUS                      2
+#define WIDGET_STATE_HOVEROFF                   2
+#define WIDGET_STATE_FOCUS                      3
+#define WIDGET_STATE_FOCUSOFF                   4
 #define WIDGET_ATTR_ALIGN                       1
 #define WIDGET_ATTR_COLOR                       2
 #define WIDGET_ATTR_COLUMNS                     3
@@ -150,4 +152,5 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 unsigned int widget_getattribute(char *value);
 unsigned int widget_getcommand(char *value);
 unsigned int widget_gettype(char *value);
+unsigned int widget_setstate(struct widget *widget, unsigned int state);
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data);

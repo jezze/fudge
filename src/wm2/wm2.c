@@ -30,6 +30,7 @@ struct state
     struct widget *mousewidget;
     struct widget *clickedwidget;
     struct widget *hoverwidget;
+    struct widget *focusedwindow;
     struct widget *focusedwidget;
 
 };
@@ -220,35 +221,72 @@ static void bump(struct widget *widget)
 
 }
 
+/*
+static void onfocus(struct widget *widget)
+{
+
+    if (widget_setstate(widget, WIDGET_STATE_FOCUS))
+    {
+
+        if (state.focusedwidget)
+        {
+
+            widget_setstate(state.focusedwidget, WIDGET_STATE_FOCUSOFF);
+            widget_setstate(state.focusedwidget, WIDGET_STATE_NORMAL);
+            damage(state.focusedwidget);
+
+        }
+
+        state.focusedwidget = widget;
+
+        damage(state.focusedwidget);
+
+    }
+
+}
+*/
+
+static void onfocuswindow(struct widget *widget)
+{
+
+    if (widget_setstate(widget, WIDGET_STATE_FOCUS))
+    {
+
+        if (state.focusedwindow)
+        {
+
+            widget_setstate(state.focusedwindow, WIDGET_STATE_FOCUSOFF);
+            widget_setstate(state.focusedwindow, WIDGET_STATE_NORMAL);
+            damage(state.focusedwindow);
+
+        }
+
+        state.focusedwindow = widget;
+
+        bump(state.focusedwindow);
+
+    }
+
+}
+
 static void onhover(struct widget *widget)
 {
 
-    if (widget != state.hoverwidget)
+    if (widget_setstate(widget, WIDGET_STATE_HOVER))
     {
 
-        if (state.hoverwidget->state == WIDGET_STATE_HOVER)
+        if (state.hoverwidget)
         {
 
-            state.hoverwidget->state = WIDGET_STATE_NORMAL;
-
+            widget_setstate(state.hoverwidget, WIDGET_STATE_HOVEROFF);
+            widget_setstate(state.hoverwidget, WIDGET_STATE_NORMAL);
             damage(state.hoverwidget);
 
         }
 
         state.hoverwidget = widget;
 
-        switch (widget->type)
-        {
-
-        case WIDGET_TYPE_BUTTON:
-        case WIDGET_TYPE_TEXTBOX:
-            state.hoverwidget->state = WIDGET_STATE_HOVER;
-
-            damage(state.hoverwidget);
-
-            break;
-
-        }
+        damage(state.hoverwidget);
 
     }
 
@@ -397,7 +435,6 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousepress *mousepress = mdata;
     struct widget *clickedwindow = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
-    struct widget *focusedwindow;
 
     switch (mousepress->button)
     {
@@ -405,24 +442,12 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
     case 1:
         state.mousebuttonleft = 1;
         state.clickedwidget = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
-        focusedwindow = getfocusedwindow();
-
-        if (focusedwindow)
-        {
-
-            focusedwindow->state = WIDGET_STATE_NORMAL;
-
-            damage(focusedwindow);
-            damage(state.mousewidget);
-
-        }
 
         if (clickedwindow)
         {
 
-            clickedwindow->state = WIDGET_STATE_FOCUS;
-
-            bump(clickedwindow);
+            onfocuswindow(clickedwindow);
+            damage(state.mousewidget);
 
         }
 

@@ -368,6 +368,54 @@ unsigned int widget_gettype(char *value)
 
 }
 
+unsigned int widget_setstate(struct widget *widget, unsigned int state)
+{
+
+    unsigned int oldstate = widget->state;
+
+    switch (state)
+    {
+
+    case WIDGET_STATE_FOCUS:
+        widget->state = state;
+
+        break;
+
+    case WIDGET_STATE_FOCUSOFF:
+        if (widget->state == WIDGET_STATE_FOCUS)
+            widget->state = state;
+
+        break;
+
+    case WIDGET_STATE_HOVER:
+        if (widget->state == WIDGET_STATE_NORMAL)
+            widget->state = state;
+
+        break;
+
+    case WIDGET_STATE_HOVEROFF:
+        if (widget->state == WIDGET_STATE_HOVER)
+            widget->state = state;
+
+        break;
+
+    case WIDGET_STATE_NORMAL:
+        if (widget->state == WIDGET_STATE_FOCUSOFF || widget->state == WIDGET_STATE_HOVEROFF)
+            widget->state = state;
+
+        break;
+
+    default:
+        widget->state = state;
+
+        break;
+
+    }
+
+    return oldstate != state;
+
+}
+
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data)
 {
 
