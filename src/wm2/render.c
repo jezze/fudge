@@ -222,7 +222,6 @@ static void blittextnormal(struct render_display *display, unsigned int index, u
 {
 
     struct font *font = &fonts[index];
-    unsigned int lline = (line - ry) % font->lineheight;
     unsigned int i;
 
     for (i = 0; i < length; i++)
@@ -231,10 +230,15 @@ static void blittextnormal(struct render_display *display, unsigned int index, u
         unsigned short index = pcf_getindex(font->data, text[i]);
         unsigned int offset = pcf_getbitmapoffset(font->data, index);
         struct pcf_metricsdata metricsdata;
+        unsigned int lline;
+        unsigned int height;
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
-        if (util_intersects(lline, 0, metricsdata.ascent + metricsdata.descent))
+        height = metricsdata.ascent + metricsdata.descent;
+        lline = (line - ry) % font->lineheight - (font->lineheight - height) / 2;
+
+        if (util_intersects(lline, 0, height))
         {
 
             if (util_intersects(rx, x0, x1) || util_intersects(rx + metricsdata.width, x0, x1))
@@ -267,7 +271,6 @@ static void blittextinverted(struct render_display *display, unsigned int index,
 {
 
     struct font *font = &fonts[index];
-    unsigned int lline = (line - ry) % font->lineheight;
     unsigned int i;
 
     for (i = 0; i < length; i++)
@@ -276,10 +279,15 @@ static void blittextinverted(struct render_display *display, unsigned int index,
         unsigned short index = pcf_getindex(font->data, text[i]);
         unsigned int offset = pcf_getbitmapoffset(font->data, index);
         struct pcf_metricsdata metricsdata;
+        unsigned int lline;
+        unsigned int height;
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
-        if (util_intersects(lline, 0, metricsdata.ascent + metricsdata.descent))
+        height = metricsdata.ascent + metricsdata.descent;
+        lline = (line - ry) % font->lineheight - (font->lineheight - height) / 2;
+
+        if (util_intersects(lline, 0, height))
         {
 
             if (util_intersects(rx, x0, x1) || util_intersects(rx + metricsdata.width, x0, x1))
@@ -788,13 +796,15 @@ unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int len
     textinfo->rows = 0;
     textinfo->lineheight = fonts[index].lineheight;
     textinfo->lastrowwidth = 0;
+    textinfo->lastrowheight = 0;
 
     offset = render_getrowinfo(index, text, length, &rowinfo, wrap, maxw - offw, offset);
 
-    textinfo->width = rowinfo.width + offw;
+    textinfo->width = util_max(textinfo->width, rowinfo.width + offw);
     textinfo->height = rowinfo.height;
     textinfo->rows++;
     textinfo->lastrowwidth = rowinfo.width + offw;
+    textinfo->lastrowheight = rowinfo.height;
 
     while ((offset = render_getrowinfo(index, text, length, &rowinfo, wrap, maxw, offset)))
     {
@@ -803,6 +813,7 @@ unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int len
         textinfo->height += rowinfo.height;
         textinfo->rows++;
         textinfo->lastrowwidth = rowinfo.width;
+        textinfo->lastrowheight = rowinfo.height;
 
     }
 

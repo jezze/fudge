@@ -23,11 +23,11 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ window id \"window\" title \"Shell\"\n"
         "+ container id \"base\" in \"window\" layout \"maximize\" padding \"16\"\n"
         "+ textbox id \"output\" in \"base\"\n"
-        "+ text id \"result\" in \"output\" wrap \"none\" content \"AAA\nXXX\"\n"
-        "+ text id \"prompt\" in \"output\" wrap \"none\" weight \"bold\" content \"$ \"\n"
-        "+ text id \"input0\" in \"output\" wrap \"none\" content \"BBB\nYYY\"\n"
-        "+ text id \"cursor\" in \"output\" wrap \"none\" mode \"inverted\" content \" \"\n"
-        "+ text id \"input1\" in \"output\" wrap \"none\" content \"CCC\nZZZ\"\n";
+        "+ text id \"result\" in \"output\" wrap \"word\" content \"hello world\nhow are you\"\n"
+        "+ text id \"prompt\" in \"output\" wrap \"word\" weight \"bold\" content \"$ \"\n"
+        "+ text id \"input0\" in \"output\" wrap \"word\" content \"doing good thanks\nawesome to hear\"\n"
+        "+ text id \"cursor\" in \"output\" wrap \"word\" mode \"inverted\" content \" \"\n"
+        "+ text id \"input1\" in \"output\" wrap \"word\" content \"nice\njacket\"\n";
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
 

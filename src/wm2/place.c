@@ -290,7 +290,9 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     int offy = RENDER_TEXTBOX_PADDING_HEIGHT;
     int offw = RENDER_TEXTBOX_PADDING_WIDTH * 2;
     int offh = RENDER_TEXTBOX_PADDING_HEIGHT * 2;
-    unsigned int soffw = 0;
+    int soffw = 0;
+    int soffy = offy;
+    int soffh = offh;
     int totw = 0;
 
     while ((current = pool_nextin(current, widget)))
@@ -312,13 +314,21 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
 
             text->firstrowoffset = soffw;
+            offy = soffy;
+            offh = soffh;
+            childx = x + offx; 
+            childy = y + offy; 
+            childmaxw = maxw - offw;
+            childmaxh = maxh - offh;
 
             place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
             render_gettextinfo(index, pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, childmaxw);
 
             soffw = textinfo.lastrowwidth;
-            offy += child->size.h - textinfo.lineheight;
-            offh += child->size.h - textinfo.lineheight;
+            soffy = offy + (textinfo.rows - 1) * textinfo.lineheight;
+            soffh = offh + (textinfo.rows - 1) * textinfo.lineheight;
+            offy += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
+            offh += child->size.h + RENDER_TEXTBOX_PADDING_HEIGHT;
             totw = util_max(totw, child->size.w);
 
         }

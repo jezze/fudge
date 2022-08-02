@@ -45,6 +45,7 @@ struct render_textinfo
     unsigned int height;
     unsigned int lineheight;
     unsigned int lastrowwidth;
+    unsigned int lastrowheight;
 
 };
 
