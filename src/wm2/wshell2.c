@@ -1,14 +1,32 @@
 #include <fudge.h>
 #include <abi.h>
 
-static char outputdata[BUFFER_SIZE];
-static struct ring output;
 static char inputdata1[128];
 static struct ring input1;
 static char inputdata2[128];
 static struct ring input2;
-static char textdata[1024];
-static struct ring text;
+static char resultdata[1024];
+static struct ring result;
+
+static unsigned int copyringtobuffer(struct ring *ring, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    unsigned char *b = buffer;
+    unsigned int head;
+    unsigned int tail;
+    unsigned int c;
+
+    head = ring->head;
+    tail = ring->tail;
+
+    c = ring_read(ring, b + offset, count - offset);
+
+    ring->head = head;
+    ring->tail = tail;
+
+    return c;
+
+}
 
 static void update(void)
 {
@@ -17,7 +35,13 @@ static void update(void)
     unsigned int count = 0;
 
     count += buffer_write(buffer, BUFFER_SIZE, "= input1 content \"", 18, count);
-    count += buffer_write(buffer, BUFFER_SIZE, "hej", 3, count);
+    count += copyringtobuffer(&input1, buffer, BUFFER_SIZE, count);
+    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+    count += buffer_write(buffer, BUFFER_SIZE, "= input2 content \"", 18, count);
+    count += copyringtobuffer(&input2, buffer, BUFFER_SIZE, count);
+    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+    count += buffer_write(buffer, BUFFER_SIZE, "= result content \"", 18, count);
+    count += copyringtobuffer(&result, buffer, BUFFER_SIZE, count);
     count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
@@ -33,11 +57,11 @@ static void print(void *buffer, unsigned int count)
     for (i = 0; i < count; i++)
     {
 
-        if (!ring_avail(&text))
-            ring_skip(&text, ring_find(&text, '\n') + 1);
+        if (!ring_avail(&result))
+            ring_skip(&result, ring_find(&result, '\n') + 1);
 
         if (b[i] != '\r')
-            ring_write(&text, &b[i], 1);
+            ring_write(&result, &b[i], 1);
 
     }
 
@@ -149,7 +173,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
         if (wmkeypress->keymod & KEYMOD_CTRL)
         {
 
-            ring_reset(&text);
+            ring_reset(&result);
             printprompt();
 
         }
@@ -213,10 +237,9 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    ring_init(&output, BUFFER_SIZE, outputdata);
     ring_init(&input1, 128, inputdata1);
     ring_init(&input2, 128, inputdata2);
-    ring_init(&text, 1024, textdata);
+    ring_init(&result, 1024, resultdata);
 
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
