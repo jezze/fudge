@@ -220,7 +220,6 @@ static void bump(struct widget *widget)
 
 }
 
-/*
 static void onfocus(struct widget *widget)
 {
 
@@ -243,7 +242,6 @@ static void onfocus(struct widget *widget)
     }
 
 }
-*/
 
 static void onfocuswindow(struct widget *widget)
 {
@@ -455,6 +453,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
             struct event_wmclick wmclick;
 
+            onfocus(clickedwidget);
             buffer_write(wmclick.clicked, 16, pool_getstring(clickedwidget->id), pool_getcstringlengthz(clickedwidget->id), 0);
 
             wmclick.clicked[15] = '\0';
