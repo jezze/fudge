@@ -640,7 +640,6 @@ static void setupwidgets(void)
     parser_parse(0, "", cstring_length(data), data);
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
-    state.hoverwidget = pool_getwidgetbyid(0, "root");
     state.mousewidget = pool_getwidgetbyid(0, "mouse");
 
 }
