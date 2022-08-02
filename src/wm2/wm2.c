@@ -220,20 +220,22 @@ static void bump(struct widget *widget)
 
 }
 
-static void onfocus(struct widget *widget)
+static void setfocus(struct widget *widget)
 {
+
+    if (state.focusedwidget)
+    {
+
+        widget_setstate(state.focusedwidget, WIDGET_STATE_FOCUSOFF);
+        widget_setstate(state.focusedwidget, WIDGET_STATE_NORMAL);
+        damage(state.focusedwidget);
+
+        state.focusedwidget = 0;
+
+    }
 
     if (widget_setstate(widget, WIDGET_STATE_FOCUS))
     {
-
-        if (state.focusedwidget)
-        {
-
-            widget_setstate(state.focusedwidget, WIDGET_STATE_FOCUSOFF);
-            widget_setstate(state.focusedwidget, WIDGET_STATE_NORMAL);
-            damage(state.focusedwidget);
-
-        }
 
         state.focusedwidget = widget;
 
@@ -243,20 +245,22 @@ static void onfocus(struct widget *widget)
 
 }
 
-static void onfocuswindow(struct widget *widget)
+static void setfocuswindow(struct widget *widget)
 {
+
+    if (state.focusedwindow)
+    {
+
+        widget_setstate(state.focusedwindow, WIDGET_STATE_FOCUSOFF);
+        widget_setstate(state.focusedwindow, WIDGET_STATE_NORMAL);
+        damage(state.focusedwindow);
+
+        state.focusedwindow = 0;
+
+    }
 
     if (widget_setstate(widget, WIDGET_STATE_FOCUS))
     {
-
-        if (state.focusedwindow)
-        {
-
-            widget_setstate(state.focusedwindow, WIDGET_STATE_FOCUSOFF);
-            widget_setstate(state.focusedwindow, WIDGET_STATE_NORMAL);
-            damage(state.focusedwindow);
-
-        }
 
         state.focusedwindow = widget;
 
@@ -266,20 +270,22 @@ static void onfocuswindow(struct widget *widget)
 
 }
 
-static void onhover(struct widget *widget)
+static void sethover(struct widget *widget)
 {
+
+    if (state.hoverwidget)
+    {
+
+        widget_setstate(state.hoverwidget, WIDGET_STATE_HOVEROFF);
+        widget_setstate(state.hoverwidget, WIDGET_STATE_NORMAL);
+        damage(state.hoverwidget);
+
+        state.hoverwidget = 0;
+
+    }
 
     if (widget_setstate(widget, WIDGET_STATE_HOVER))
     {
-
-        if (state.hoverwidget)
-        {
-
-            widget_setstate(state.hoverwidget, WIDGET_STATE_HOVEROFF);
-            widget_setstate(state.hoverwidget, WIDGET_STATE_NORMAL);
-            damage(state.hoverwidget);
-
-        }
 
         state.hoverwidget = widget;
 
@@ -379,7 +385,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     struct widget *hoverwidget = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
 
     if (hoverwidget)
-        onhover(hoverwidget);
+        sethover(hoverwidget);
 
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;
@@ -443,7 +449,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         if (clickedwindow)
         {
 
-            onfocuswindow(clickedwindow);
+            setfocuswindow(clickedwindow);
             damage(state.mousewidget);
 
         }
@@ -453,7 +459,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
             struct event_wmclick wmclick;
 
-            onfocus(clickedwidget);
+            setfocus(clickedwidget);
             buffer_write(wmclick.clicked, 16, pool_getstring(clickedwidget->id), pool_getcstringlengthz(clickedwidget->id), 0);
 
             wmclick.clicked[15] = '\0';
