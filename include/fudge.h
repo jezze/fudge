@@ -1,4 +1,5 @@
 #include <fudge/file.h>
+#include <fudge/base64.h>
 #include <fudge/buffer.h>
 #include <fudge/spinlock.h>
 #include <fudge/list.h>
