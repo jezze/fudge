@@ -5,21 +5,26 @@ static char inputdata1[128];
 static struct ring input1;
 static char inputdata2[128];
 static struct ring input2;
-static char resultdata[1024];
+static char resultdata[2048];
 static struct ring result;
 
 static void update(void)
 {
 
     char buffer[BUFFER_SIZE];
-    unsigned int count = 0;
+    unsigned int count;
 
+    count = 0;
     count += buffer_write(buffer, BUFFER_SIZE, "= input1 content \"", 18, count);
     count += ring_readcopy(&input1, buffer + count, BUFFER_SIZE - count);
     count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
     count += buffer_write(buffer, BUFFER_SIZE, "= input2 content \"", 18, count);
     count += ring_readcopy(&input2, buffer + count, BUFFER_SIZE - count);
     count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+
+    file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
+
+    count = 0;
     count += buffer_write(buffer, BUFFER_SIZE, "= result content \"", 18, count);
     count += ring_readcopy(&result, buffer + count, BUFFER_SIZE - count);
     count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
@@ -333,7 +338,7 @@ void init(void)
 
     ring_init(&input1, 128, inputdata1);
     ring_init(&input2, 128, inputdata2);
-    ring_init(&result, 1024, resultdata);
+    ring_init(&result, 2048, resultdata);
 
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
