@@ -73,7 +73,9 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
                 break;
 
             default:
-                fail(state);
+                addchar(state, result, count, i, c);
+
+                i++;
 
                 break;
 
@@ -89,11 +91,6 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
 
                 switch (c)
                 {
-
-                case '\\':
-                    state->escaped = 1;
-
-                    break;
 
                 case '"':
                     state->quoted = 0;
