@@ -479,10 +479,19 @@ static void painttext(struct render_display *display, struct widget *widget, int
     char *tt = pool_getstring(text->content);
     unsigned int tl = pool_getcstringlength(text->content);
     unsigned int rownum = getrownum(index, line, widget->position.y);
-    unsigned int rowstart = getrowstart(index, tt, tl, rownum, text->wrap, widget->size.w);
+    unsigned int rowstart;
     struct render_rowinfo rowinfo;
     unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
     unsigned int rw = widget->size.w - roff;
+
+    /* Needs more optimizations */
+    if (rownum == text->prevrownum)
+        rowstart = text->prevrowstart;
+    else
+        rowstart = getrowstart(index, tt, tl, rownum, text->wrap, widget->size.w);
+
+    text->prevrownum = rownum;
+    text->prevrowstart = rowstart;
 
     if (render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, rw, rowstart))
     {

@@ -316,6 +316,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
 
             text->firstrowoffset = 0;
+            text->prevrownum = 0x00FFFFFF;
 
             if (lasttype == WIDGET_TYPE_TEXT)
             {
