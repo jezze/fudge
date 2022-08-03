@@ -15,18 +15,18 @@ static void update(void)
     unsigned int count;
 
     count = 0;
-    count += buffer_write(buffer, BUFFER_SIZE, "= input1 content \"", 18, count);
-    count += ring_readcopy(&input1, buffer + count, BUFFER_SIZE - count);
-    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
-    count += buffer_write(buffer, BUFFER_SIZE, "= input2 content \"", 18, count);
-    count += ring_readcopy(&input2, buffer + count, BUFFER_SIZE - count);
+    count += buffer_write(buffer, BUFFER_SIZE, "= result content \"", 18, count);
+    count += ring_readcopy(&result, buffer + count, BUFFER_SIZE - count);
     count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
 
     count = 0;
-    count += buffer_write(buffer, BUFFER_SIZE, "= result content \"", 18, count);
-    count += ring_readcopy(&result, buffer + count, BUFFER_SIZE - count);
+    count += buffer_write(buffer, BUFFER_SIZE, "= input1 content \"", 18, count);
+    count += ring_readcopy(&input1, buffer + count, BUFFER_SIZE - count);
+    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+    count += buffer_write(buffer, BUFFER_SIZE, "= input2 content \"", 18, count);
+    count += ring_readcopy(&input2, buffer + count, BUFFER_SIZE - count);
     count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
