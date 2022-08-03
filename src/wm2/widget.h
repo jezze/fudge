@@ -129,10 +129,9 @@ struct widget_text
     unsigned int mode;
     unsigned int weight;
     unsigned int wrap;
-
     unsigned int firstrowoffset;
-    unsigned int prevrownum;
-    unsigned int prevrowstart;
+    unsigned int rownum;
+    unsigned int rowstart;
 
 };
 

@@ -479,21 +479,24 @@ static void painttext(struct render_display *display, struct widget *widget, int
     char *tt = pool_getstring(text->content);
     unsigned int tl = pool_getcstringlength(text->content);
     unsigned int rownum = getrownum(index, line, widget->position.y);
-    unsigned int rowstart;
     struct render_rowinfo rowinfo;
     unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
     unsigned int rw = widget->size.w - roff;
 
-    /* Needs more optimizations */
-    if (rownum == text->prevrownum)
-        rowstart = text->prevrowstart;
-    else
-        rowstart = getrowstart(index, tt, tl, rownum, text->wrap, widget->size.w);
+    /* Rudimentary caching */
+    if (text->rownum == 0x00FFFFFF || text->rownum != rownum)
+    {
 
-    text->prevrownum = rownum;
-    text->prevrowstart = rowstart;
+        if (rownum > text->rownum)
+            text->rowstart = render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, rw, text->rowstart);
+        else
+            text->rowstart = getrowstart(index, tt, tl, rownum, text->wrap, widget->size.w);
 
-    if (render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, rw, rowstart))
+        text->rownum = rownum;
+
+    }
+
+    if (render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, rw, text->rowstart))
     {
 
         unsigned int rx = widget->position.x + roff;
@@ -521,12 +524,12 @@ static void painttext(struct render_display *display, struct widget *widget, int
         {
 
         case WIDGET_TEXT_MODE_NORMAL:
-            blittextnormal(display, index, getcolor(CMAP_TEXT_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextnormal(display, index, getcolor(CMAP_TEXT_TEXT, widget->state), tt + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
         case WIDGET_TEXT_MODE_INVERTED:
-            blittextinverted(display, index, getcolor(CMAP_TEXT_TEXT, widget->state), tt + rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextinverted(display, index, getcolor(CMAP_TEXT_TEXT, widget->state), tt + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
