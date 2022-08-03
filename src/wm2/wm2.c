@@ -31,10 +31,10 @@ struct state
     struct widget *hoverwidget;
     struct widget *focusedwindow;
     struct widget *focusedwidget;
+    unsigned int keymod;
 
 };
 
-static unsigned int keymod = KEYMOD_NONE;
 static struct render_display display;
 static struct configuration configuration;
 static struct state state;
@@ -281,11 +281,11 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_keypress *keypress = mdata;
     struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
+    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, state.keymod);
 
-    keymod = keymap_modkey(keypress->scancode, keymod);
+    state.keymod = keymap_modkey(keypress->scancode, state.keymod);
 
-    if (!(keymod & KEYMOD_ALT))
+    if (!(state.keymod & KEYMOD_ALT))
     {
 
         if (state.focusedwidget)
@@ -296,7 +296,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             wmkeypress.scancode = keypress->scancode;
             wmkeypress.unicode = keycode->value[0];
             wmkeypress.length = keycode->length;
-            wmkeypress.keymod = keymod;
+            wmkeypress.keymod = state.keymod;
 
             buffer_write(wmkeypress.pressed, 16, pool_getstring(state.focusedwidget->id), pool_getcstringlengthz(state.focusedwidget->id), 0);
 
@@ -313,23 +313,9 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 {
 
-/*
     struct event_keyrelease *keyrelease = mdata;
-    struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, keyrelease->scancode, keymod);
 
-    keymod = keymap_modkey(keyrelease->scancode, keymod);
-
-    if (!(keymod & KEYMOD_ALT))
-    {
-
-        if (state.focusedwidget)
-        {
-
-        }
-
-    }
-*/
+    state.keymod = keymap_modkey(keyrelease->scancode, state.keymod);
 
 }
 
