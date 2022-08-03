@@ -657,7 +657,7 @@ static void paintwindow(struct render_display *display, struct widget *widget, i
     {
 
         unsigned int rx = widget->position.x + (widget->size.w / 2) - (rowinfo.width / 2);
-        unsigned int ry = widget->position.y + RENDER_WINDOW_BORDER_HEIGHT + (RENDER_WINDOW_TITLE_HEIGHT / 2) - (rowinfo.height / 2);
+        unsigned int ry = widget->position.y + RENDER_WINDOW_BORDER_HEIGHT + (RENDER_WINDOW_TITLE_HEIGHT / 2) - (rowinfo.lineheight / 2);
 
         if (util_intersects(line, ry, ry + rowinfo.lineheight))
             blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_WINDOW_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
