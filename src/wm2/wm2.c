@@ -478,6 +478,23 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_mousescroll *mousescroll = mdata;
+
+    if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX)
+    {
+
+        struct widget_textbox *textbox = state.focusedwidget->data;
+
+        textbox->scroll += mousescroll->relz;
+        damage(state.focusedwidget);
+
+    }
+
+}
+
 static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -686,6 +703,7 @@ void init(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEMOVE, onmousemove);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
+    channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_VIDEOMODE, onvideomode);

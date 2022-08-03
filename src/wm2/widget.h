@@ -137,7 +137,7 @@ struct widget_textbox
 {
 
     unsigned int mode;
-    unsigned int cursor;
+    int scroll;
 
 };
 
