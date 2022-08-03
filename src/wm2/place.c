@@ -323,12 +323,17 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
                 if (textinfo.last.newline)
                 {
 
+                    soffy += textinfo.rows * textinfo.lineheight;
+                    soffh += textinfo.rows * textinfo.lineheight;
+
                 }
 
                 else
                 {
 
                     text->firstrowoffset = textinfo.last.width;
+                    soffy += (textinfo.rows - 1) * textinfo.lineheight;
+                    soffh += (textinfo.rows - 1) * textinfo.lineheight;
 
                 }
 
@@ -338,27 +343,6 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             childmaxh = maxh - soffh;
 
             render_gettextinfo(index, pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, childmaxw);
-
-            if (lasttype == WIDGET_TYPE_TEXT)
-            {
-
-                if (textinfo.last.newline)
-                {
-
-                    soffy += textinfo.rows * textinfo.lineheight;
-                    soffh += textinfo.rows * textinfo.lineheight;
-
-                }
-
-                else
-                {
-
-                    soffy += (textinfo.rows - 1) * textinfo.lineheight;
-                    soffh += (textinfo.rows - 1) * textinfo.lineheight;
-
-                }
-
-            }
 
         }
 
