@@ -182,6 +182,15 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 
 }
 
+void pool_destroy(struct widget *widget)
+{
+
+    struct list_item *item = finditem(widget);
+
+    list_remove(&widgetlist, item);
+
+}
+
 static unsigned int findslot(void)
 {
 

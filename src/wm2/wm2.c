@@ -285,7 +285,41 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
     state.keymod = keymap_modkey(keypress->scancode, state.keymod);
 
-    if (!(state.keymod & KEYMOD_ALT))
+    if ((state.keymod & KEYMOD_ALT))
+    {
+
+        switch (keypress->scancode)
+        {
+
+        case 0x10:
+            if ((state.keymod & KEYMOD_SHIFT))
+            {
+
+                if (state.focusedwindow)
+                    channel_sendto(state.focusedwindow->source, EVENT_TERM);
+
+            }
+
+            break;
+
+        case 0x19:
+            if ((state.keymod & KEYMOD_SHIFT))
+            {
+
+                unsigned int id = file_spawn("/bin/wshell2");
+
+                if (id)
+                    channel_sendto(id, EVENT_MAIN);
+
+            }
+
+            break;
+
+        }
+
+    }
+
+    else
     {
 
         if (state.focusedwidget)
@@ -597,6 +631,25 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 
 static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 {
+
+    struct list_item *current = 0;
+
+    while ((current = pool_next(current)))
+    {
+ 
+        struct widget *child = current->data;
+
+        if (child->source == source)
+        {
+
+            current = current->prev;
+
+            damage(child);
+            pool_destroy(child);
+
+        }
+
+    }
 
 }
 

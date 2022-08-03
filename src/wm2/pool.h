@@ -4,6 +4,7 @@ struct list_item *pool_nextsource(struct list_item *current, unsigned int source
 struct widget *pool_getwidgetbyid(unsigned int source, char *id);
 void pool_bump(struct widget *widget);
 struct widget *pool_create(unsigned int source, unsigned int type, char *id, char *in);
+void pool_destroy(struct widget *widget);
 char *pool_getstring(unsigned int index);
 unsigned int pool_getcstringlength(unsigned int index);
 unsigned int pool_getcstringlengthz(unsigned int index);
