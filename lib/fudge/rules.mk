@@ -2,6 +2,7 @@ L:=\
     $(DIR_LIB)/fudge/fudge.a \
 
 O:=\
+    $(DIR_LIB)/fudge/base64.o \
     $(DIR_LIB)/fudge/buffer.o \
     $(DIR_LIB)/fudge/cpio.o \
     $(DIR_LIB)/fudge/crc.o \

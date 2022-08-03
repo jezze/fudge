@@ -762,7 +762,7 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
-        if (wrap != WIDGET_TEXT_WRAP_NONE && w + metricsdata.width > maxw)
+        if (wrap != WIDGET_TEXT_WRAP_NONE && w + metricsdata.width >= maxw)
         {
 
             if (wrap == WIDGET_TEXT_WRAP_WORD && si)
@@ -771,6 +771,13 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
                 i = si;
                 w = sw;
                 h = sh;
+
+            }
+
+            else
+            {
+
+                i--;
 
             }
 

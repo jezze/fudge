@@ -14,32 +14,15 @@ static void update(void)
     char buffer[BUFFER_SIZE];
     unsigned int count = 0;
 
-    if (ring_count(&input1))
-    {
-
-        count += buffer_write(buffer, BUFFER_SIZE, "= input1 content \"", 18, count);
-        count += ring_readcopy(&input1, buffer + count, BUFFER_SIZE - count);
-        count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
-
-    }
-
-    if (ring_count(&input2))
-    {
-
-        count += buffer_write(buffer, BUFFER_SIZE, "= input2 content \"", 18, count);
-        count += ring_readcopy(&input2, buffer + count, BUFFER_SIZE - count);
-        count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
-
-    }
-
-    if (ring_count(&result))
-    {
-
-        count += buffer_write(buffer, BUFFER_SIZE, "= result content \"", 18, count);
-        count += ring_readcopy(&result, buffer + count, BUFFER_SIZE - count);
-        count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
-
-    }
+    count += buffer_write(buffer, BUFFER_SIZE, "= input1 content \"", 18, count);
+    count += ring_readcopy(&input1, buffer + count, BUFFER_SIZE - count);
+    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+    count += buffer_write(buffer, BUFFER_SIZE, "= input2 content \"", 18, count);
+    count += ring_readcopy(&input2, buffer + count, BUFFER_SIZE - count);
+    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+    count += buffer_write(buffer, BUFFER_SIZE, "= result content \"", 18, count);
+    count += ring_readcopy(&result, buffer + count, BUFFER_SIZE - count);
+    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
 
@@ -89,6 +72,113 @@ static void moveright(unsigned int steps)
 
 }
 
+static void check(void *mdata, struct job *jobs, unsigned int njobs)
+{
+
+    struct event_wmkeypress2 *wmkeypress = mdata;
+
+    switch (wmkeypress->scancode)
+    {
+
+    case 0x2E:
+        if (wmkeypress->keymod & KEYMOD_CTRL)
+            job_send(jobs, njobs, EVENT_TERM, 0, 0);
+        else
+            job_send(jobs, njobs, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+
+        break;
+
+    default:
+        job_send(jobs, njobs, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+
+        break;
+
+    }
+
+}
+
+static void runcommand(unsigned int count, void *buffer)
+{
+
+    unsigned int id = file_spawn("/bin/slang");
+
+    if (id)
+    {
+
+        struct message message;
+        struct job jobs[32];
+        unsigned int njobs = 0;
+        unsigned int tasks;
+
+        channel_redirectback(id, EVENT_DATA);
+        channel_redirectback(id, EVENT_CLOSE);
+        channel_sendbufferto(id, EVENT_DATA, count, buffer);
+        channel_sendto(id, EVENT_MAIN);
+
+        while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
+        {
+
+            unsigned int n = job_parse(jobs, 32, message.data.buffer, count);
+
+            njobs = job_spawn(jobs, n);
+
+        }
+
+        job_pipe(jobs, njobs);
+
+        tasks = job_run(jobs, njobs);
+
+        while (tasks && channel_pick(&message))
+        {
+
+            switch (message.header.event)
+            {
+
+            case EVENT_CLOSE:
+                tasks = job_close(message.header.source, jobs, njobs);
+
+                break;
+
+            case EVENT_WMKEYPRESS:
+                check(message.data.buffer, jobs, njobs);
+
+                break;
+
+            default:
+                channel_dispatch(&message);
+
+                break;
+
+            }
+
+        }
+
+    }
+
+}
+
+static void interpret(void)
+{
+
+    char buffer[128];
+    unsigned int count = ring_read(&input1, buffer, 128);
+
+    printprompt();
+    print(buffer, count);
+
+    if (count >= 2)
+        runcommand(count, buffer);
+
+}
+
+static void ondata(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    print(mdata, msize);
+    update();
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -96,13 +186,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void interpret(void)
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-/*
-    ring_reset(&input1);
-    ring_reset(&input2);
-*/
+    if (file_walk(FILE_L0, FILE_CW, mdata))
+        file_duplicate(FILE_CW, FILE_L0);
 
 }
 
@@ -121,11 +209,11 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ window id \"window\" title \"Shell\"\n"
         "+ container id \"base\" in \"window\" layout \"maximize\" padding \"16\"\n"
         "+ textbox id \"output\" in \"base\"\n"
-        "+ text id \"result\" in \"output\" wrap \"none\"\n"
-        "+ text id \"prompt\" in \"output\" wrap \"none\" weight \"bold\" content \"$ \"\n"
-        "+ text id \"input1\" in \"output\" wrap \"none\"\n"
-        "+ text id \"cursor\" in \"output\" wrap \"none\" mode \"inverted\" content \" \"\n"
-        "+ text id \"input2\" in \"output\" wrap \"none\"\n";
+        "+ text id \"result\" in \"output\" wrap \"char\"\n"
+        "+ text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
+        "+ text id \"input1\" in \"output\" wrap \"char\"\n"
+        "+ text id \"cursor\" in \"output\" wrap \"char\" mode \"inverted\" content \" \"\n"
+        "+ text id \"input2\" in \"output\" wrap \"char\"\n";
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
 
@@ -181,7 +269,6 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
         {
 
             ring_reset(&result);
-            printprompt();
 
         }
 
@@ -251,7 +338,9 @@ void init(void)
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
+    channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_WMINIT, onwminit);
     channel_bind(EVENT_WMKEYPRESS, onwmkeypress);

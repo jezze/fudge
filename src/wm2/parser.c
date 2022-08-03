@@ -209,7 +209,7 @@ static void parseattributes(struct state *state, struct widget *widget)
             if (count)
                 widget_setattribute(widget, attribute, strbuffer);
             else
-                fail(state);
+                widget_setattribute(widget, attribute, 0);
 
         }
 
