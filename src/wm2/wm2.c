@@ -675,7 +675,7 @@ static void setupwidgets(void)
 
     char *data =
         "+ container id \"root\" layout \"float\"\n"
-        "+ fill in \"root\" color \"FF142434\"\n"
+        "+ fill in \"root\" color \"FF202020\"\n"
         "+ image id \"mouse\" in \"root\" type \"internal\"\n";
 
     parser_parse(0, "", cstring_length(data), data);
