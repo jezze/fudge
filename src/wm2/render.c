@@ -72,20 +72,20 @@ struct cmap
 
 static struct cmap cmap[] =
 {
-    {0xFF181818, 0xFF181818, 0xFF181818}, /* CMAP_BUTTON_SHADOW */
-    {0xFF484848, 0xFF686868, 0xFF585858}, /* CMAP_BUTTON_MAIN */
-    {0xFF707070, 0xFF909090, 0xFF808080}, /* CMAP_BUTTON_LIGHT */
+    {0xE0181818, 0xE0181818, 0xE0181818}, /* CMAP_BUTTON_SHADOW */
+    {0xE0484848, 0xE0686868, 0xE0585858}, /* CMAP_BUTTON_MAIN */
+    {0xE0707070, 0xE0909090, 0xE0808080}, /* CMAP_BUTTON_LIGHT */
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* CMAP_BUTTON_TEXT */
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* CMAP_TEXT_TEXT */
-    {0xFF181818, 0xFF181818, 0xFF181818}, /* CMAP_FRAME_SHADOW */
-    {0xFF505050, 0xFF707070, 0xFF606060}, /* CMAP_FRAME_LIGHT */
-    {0xFF282828, 0xFF282828, 0xFF282828}, /* CMAP_FRAME_MAIN */
+    {0xE0181818, 0xE0181818, 0xE0181818}, /* CMAP_FRAME_SHADOW */
+    {0xE0505050, 0xE0707070, 0xE0606060}, /* CMAP_FRAME_LIGHT */
+    {0xE0282828, 0xE0282828, 0xE0282828}, /* CMAP_FRAME_MAIN */
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* CMAP_FRAME_TEXT */
-    {0xFF181818, 0xFF181818, 0xFF181818}, /* CMAP_WINDOW_SHADOW */
-    {0xFF484848, 0xFF484848, 0xFF484848}, /* CMAP_WINDOW_LIGHT */
-    {0xFF686868, 0xFF28A868, 0xFF686868}, /* CMAP_WINDOW_FRAME */
-    {0xFF303030, 0xFF303030, 0xFF303030}, /* CMAP_WINDOW_MAIN */
-    {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* CMAP_WINDOW_TEXT */
+    {0xE0181818, 0xE0181818, 0xE0181818}, /* CMAP_WINDOW_SHADOW */
+    {0xE0484848, 0xE0484848, 0xE0484848}, /* CMAP_WINDOW_LIGHT */
+    {0xE0686868, 0xE028A868, 0xE0686868}, /* CMAP_WINDOW_FRAME */
+    {0xE0303030, 0xE0303030, 0xE0303030}, /* CMAP_WINDOW_MAIN */
+    {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFF}, /* CMAP_WINDOW_TEXT */
     {0x00000000, 0x00000000, 0x00000000}
 };
 
@@ -197,6 +197,30 @@ static void blitline(struct render_display *display, unsigned int color, int lin
 
     while (x0 < x1)
         linebuffer[x0++] = color;
+
+}
+
+static void blitline2(struct render_display *display, unsigned int color, int line, int x0, int x1)
+{
+
+    unsigned char *fg = (unsigned char *)&color;
+
+    while (x0 < x1)
+    {
+
+        unsigned char *bg = (unsigned char *)&linebuffer[x0];
+        unsigned char *result = bg;
+        unsigned int alpha = fg[3] + 1;
+        unsigned int inv_alpha = 256 - fg[3];
+
+        result[0] = ((alpha * fg[0] + inv_alpha * bg[0]) >> 8);
+        result[1] = ((alpha * fg[1] + inv_alpha * bg[1]) >> 8);
+        result[2] = ((alpha * fg[2] + inv_alpha * bg[2]) >> 8);
+        result[3] = 0xFF;
+
+        x0++;
+
+    }
 
 }
 
@@ -363,7 +387,7 @@ static void blitsegments(struct render_display *display, int x0, int x1, int y, 
         p0 = util_max(p0, display->damage.position0.x);
         p1 = util_min(p1, display->damage.position1.x);
 
-        blitline(display, getcolor(p->color, state), line, p0, p1);
+        blitline2(display, getcolor(p->color, state), line, p0, p1);
 
     }
 
@@ -808,7 +832,7 @@ static void rendertext(struct render_display *display, struct widget *widget, in
 static void rendertextbox(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
-    blitline(display, getcolor(CMAP_FRAME_MAIN, widget->state), line, x0, x1);
+    blitline2(display, getcolor(CMAP_FRAME_MAIN, widget->state), line, x0, x1);
     blitframe(display, widget->state, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line);
 
 }
