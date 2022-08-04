@@ -22,6 +22,21 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 
 }
 
+static void placechoice(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+{
+
+    struct widget_choice *choice = widget->data;
+    struct render_rowinfo rowinfo;
+
+    render_getrowinfo(RENDER_FONTNORMAL, pool_getstring(choice->label), pool_getcstringlength(choice->label), &rowinfo, 0, 0, 0);
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = util_clamp(rowinfo.width + RENDER_CHOICE_PADDING_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(rowinfo.height + RENDER_CHOICE_PADDING_HEIGHT * 2, minh, maxh);
+
+}
+
 static void placecontainerfloat(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
@@ -308,6 +323,21 @@ static void placeimage(struct widget *widget, int x, int y, unsigned int minw, u
 
 }
 
+static void placeselect(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+{
+
+    struct widget_select *select = widget->data;
+    struct render_rowinfo rowinfo;
+
+    render_getrowinfo(RENDER_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, 0, 0, 0);
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = util_clamp(rowinfo.width + RENDER_CHOICE_PADDING_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(rowinfo.height + RENDER_CHOICE_PADDING_HEIGHT * 2, minh, maxh);
+
+}
+
 static void placetext(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
@@ -443,6 +473,11 @@ void place_widget(struct widget *widget, int x, int y, unsigned int minw, unsign
 
         break;
 
+    case WIDGET_TYPE_CHOICE:
+        placechoice(widget, x, y, minw, minh, maxw, maxh);
+
+        break;
+
     case WIDGET_TYPE_CONTAINER:
         placecontainer(widget, x, y, minw, minh, maxw, maxh);
 
@@ -460,6 +495,11 @@ void place_widget(struct widget *widget, int x, int y, unsigned int minw, unsign
 
     case WIDGET_TYPE_IMAGE:
         placeimage(widget, x, y, minw, minh, maxw, maxh);
+
+        break;
+
+    case WIDGET_TYPE_SELECT:
+        placeselect(widget, x, y, minw, minh, maxw, maxh);
 
         break;
 

@@ -7,10 +7,12 @@
 #define WIDGET_TYPE_FILL                        2
 #define WIDGET_TYPE_GRID                        3
 #define WIDGET_TYPE_IMAGE                       4
-#define WIDGET_TYPE_CONTAINER                   5
-#define WIDGET_TYPE_TEXT                        6
-#define WIDGET_TYPE_TEXTBOX                     7
-#define WIDGET_TYPE_WINDOW                      8
+#define WIDGET_TYPE_CHOICE                      5
+#define WIDGET_TYPE_CONTAINER                   6
+#define WIDGET_TYPE_SELECT                      7
+#define WIDGET_TYPE_TEXT                        8
+#define WIDGET_TYPE_TEXTBOX                     9
+#define WIDGET_TYPE_WINDOW                      10
 #define WIDGET_STATE_NORMAL                     0
 #define WIDGET_STATE_HOVER                      1
 #define WIDGET_STATE_HOVEROFF                   2
@@ -92,6 +94,13 @@ struct widget_button
 
 };
 
+struct widget_choice
+{
+
+    unsigned int label;
+
+};
+
 struct widget_container
 {
 
@@ -124,6 +133,13 @@ struct widget_image
     unsigned int source;
     void *data;
     void *cmap;
+
+};
+
+struct widget_select
+{
+
+    unsigned int label;
 
 };
 

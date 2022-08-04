@@ -25,7 +25,9 @@ static struct token types[] =
     {WIDGET_TYPE_FILL, "fill"},
     {WIDGET_TYPE_GRID, "grid"},
     {WIDGET_TYPE_IMAGE, "image"},
+    {WIDGET_TYPE_CHOICE, "choice"},
     {WIDGET_TYPE_CONTAINER, "container"},
+    {WIDGET_TYPE_SELECT, "select"},
     {WIDGET_TYPE_TEXT, "text"},
     {WIDGET_TYPE_TEXTBOX, "textbox"},
     {WIDGET_TYPE_WINDOW, "window"}
@@ -143,6 +145,23 @@ static void setattributebutton(struct widget *widget, unsigned int attribute, ch
 
 }
 
+static void setattributechoice(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    struct widget_choice *choice = widget->data;
+
+    switch (attribute)
+    {
+
+    case WIDGET_ATTR_LABEL:
+        choice->label = pool_replacecstring(choice->label, value);
+
+        break;
+
+    }
+
+}
+
 static void setattributecontainer(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -229,6 +248,23 @@ static void setattributeimage(struct widget *widget, unsigned int attribute, cha
 
     case WIDGET_ATTR_TYPE:
         image->type = getkey(imagetypes, 2, value);
+
+        break;
+
+    }
+
+}
+
+static void setattributeselect(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    struct widget_select *select = widget->data;
+
+    switch (attribute)
+    {
+
+    case WIDGET_ATTR_LABEL:
+        select->label = pool_replacecstring(select->label, value);
 
         break;
 
@@ -333,6 +369,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case WIDGET_TYPE_CHOICE:
+        setattributechoice(widget, attribute, value);
+
+        break;
+
     case WIDGET_TYPE_CONTAINER:
         setattributecontainer(widget, attribute, value);
 
@@ -350,6 +391,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case WIDGET_TYPE_IMAGE:
         setattributeimage(widget, attribute, value);
+
+        break;
+
+    case WIDGET_TYPE_SELECT:
+        setattributeselect(widget, attribute, value);
 
         break;
 
@@ -389,7 +435,7 @@ unsigned int widget_getcommand(char *value)
 unsigned int widget_gettype(char *value)
 {
 
-    return getkey(types, 8, value);
+    return getkey(types, 10, value);
 
 }
 
