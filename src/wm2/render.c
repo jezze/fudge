@@ -73,12 +73,12 @@ struct cmap
 static struct cmap cmap[] =
 {
     {0xFF181818, 0xFF181818, 0xFF181818}, /* CMAP_BUTTON_SHADOW */
-    {0xFF484848, 0xFF484848, 0xFF484848}, /* CMAP_BUTTON_MAIN */
-    {0xFF707070, 0xFF707070, 0xFF707070}, /* CMAP_BUTTON_LIGHT */
+    {0xFF484848, 0xFF686868, 0xFF585858}, /* CMAP_BUTTON_MAIN */
+    {0xFF707070, 0xFF909090, 0xFF808080}, /* CMAP_BUTTON_LIGHT */
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* CMAP_BUTTON_TEXT */
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* CMAP_TEXT_TEXT */
     {0xFF181818, 0xFF181818, 0xFF181818}, /* CMAP_FRAME_SHADOW */
-    {0xFF505050, 0xFF505050, 0xFF505050}, /* CMAP_FRAME_LIGHT */
+    {0xFF505050, 0xFF707070, 0xFF606060}, /* CMAP_FRAME_LIGHT */
     {0xFF282828, 0xFF282828, 0xFF282828}, /* CMAP_FRAME_MAIN */
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* CMAP_FRAME_TEXT */
     {0xFF181818, 0xFF181818, 0xFF181818}, /* CMAP_WINDOW_SHADOW */
@@ -942,28 +942,23 @@ unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int len
 
     unsigned int offset = 0;
 
-    textinfo->width = 0;
-    textinfo->height = 0;
-    textinfo->rows = 0;
-    textinfo->lineheight = fonts[index].lineheight;
-    textinfo->last.width = 0;
-    textinfo->last.height = 0;
-    textinfo->last.newline = 0;
-    textinfo->last.lineheight = fonts[index].lineheight;
-
-    offset = render_getrowinfo(index, text, length, &textinfo->last, wrap, maxw - offw, offset);
-
-    textinfo->last.width += offw;
-    textinfo->width = util_max(textinfo->width, textinfo->last.width);
-    textinfo->height += textinfo->last.height;
-    textinfo->rows++;
-
-    while ((offset = render_getrowinfo(index, text, length, &textinfo->last, wrap, maxw, offset)))
+    if ((offset = render_getrowinfo(index, text, length, &textinfo->last, wrap, maxw - offw, offset)))
     {
 
-        textinfo->width = util_max(textinfo->width, textinfo->last.width);
-        textinfo->height += textinfo->last.height;
-        textinfo->rows++;
+        textinfo->last.width += offw;
+        textinfo->lineheight = fonts[index].lineheight;
+        textinfo->width = textinfo->last.width;
+        textinfo->height = textinfo->last.height;
+        textinfo->rows = 1;
+
+        while ((offset = render_getrowinfo(index, text, length, &textinfo->last, wrap, maxw, offset)))
+        {
+
+            textinfo->width = util_max(textinfo->width, textinfo->last.width);
+            textinfo->height += textinfo->last.height;
+            textinfo->rows++;
+
+        }
 
     }
 
