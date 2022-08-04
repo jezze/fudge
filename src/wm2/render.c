@@ -623,7 +623,6 @@ static void renderbutton(struct render_display *display, struct widget *widget, 
         unsigned int rx = widget->position.x + (widget->size.w / 2) - (rowinfo.width / 2);
         unsigned int ry = widget->position.y + (widget->size.h / 2) - (rowinfo.height / 2);
 
-
         if (util_intersects(line, ry, ry + rowinfo.lineheight))
             blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_BUTTON_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
 
