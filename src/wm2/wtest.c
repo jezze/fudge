@@ -42,7 +42,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ text in \"base\" wrap \"word\" content \"Hello World! How are we today?\nI am very good thank you for asking!\nThat is very good.\"\n"
         "+ button id \"button0\" in \"base\" label \"Click Me\"\n"
         "+ text id \"text1\" wrap \"word\" in \"base\" content \"<awaiting event>\"\n"
-        "+ button id \"button1\" in \"base\" label \"Click \\\"Me\\\" Too\"\n";
+        "+ button id \"button1\" in \"base\" label \"Click Me Too\"\n"
+        "+ image in \"base\" type \"image/pcx\"\n";
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
 
