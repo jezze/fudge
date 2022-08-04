@@ -1,6 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
-#include "pcx.h"
+#include <image.h>
 
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {

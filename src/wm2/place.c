@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <image.h>
 #include "util.h"
 #include "widget.h"
 #include "pool.h"
@@ -264,9 +265,21 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
 static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
-    /* Get this using pcx library */
-    unsigned int w = 320;
-    unsigned int h = 240;
+    struct widget_image *image = widget->data;
+    unsigned int w = 0;
+    unsigned int h = 0;
+
+    if (file_walk2(FILE_L0, pool_getstring(image->source)))
+    {
+
+        struct pcx_header header;
+
+        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
+
+        w = header.xend - header.xstart + 1;
+        h = header.yend - header.ystart + 1;
+
+    }
 
     widget->position.x = x;
     widget->position.y = y;

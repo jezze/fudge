@@ -28,3 +28,4 @@ struct pcx_header
 
 };
 
+unsigned int pcx_readline(unsigned char *raw, unsigned int width, unsigned char *buffer);

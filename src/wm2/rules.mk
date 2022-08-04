@@ -13,6 +13,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/image/image.a \
 
 include $(DIR_MK)/bin.mk
 

@@ -27,10 +27,11 @@
 #define WIDGET_ATTR_MODE                        9
 #define WIDGET_ATTR_PADDING                     10
 #define WIDGET_ATTR_PLACEMENT                   11
-#define WIDGET_ATTR_TITLE                       12
-#define WIDGET_ATTR_TYPE                        13
-#define WIDGET_ATTR_WEIGHT                      14
-#define WIDGET_ATTR_WRAP                        15
+#define WIDGET_ATTR_SOURCE                      12
+#define WIDGET_ATTR_TITLE                       13
+#define WIDGET_ATTR_TYPE                        14
+#define WIDGET_ATTR_WEIGHT                      15
+#define WIDGET_ATTR_WRAP                        16
 #define WIDGET_CONTAINER_LAYOUT_FLOAT           0
 #define WIDGET_CONTAINER_LAYOUT_HORIZONTAL      1
 #define WIDGET_CONTAINER_LAYOUT_MAXIMIZE        2
@@ -120,6 +121,7 @@ struct widget_image
 {
 
     unsigned int type;
+    unsigned int source;
     void *data;
     void *cmap;
 

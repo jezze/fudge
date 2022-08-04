@@ -44,6 +44,7 @@ static struct token attributes[] =
     {WIDGET_ATTR_MODE, "mode"},
     {WIDGET_ATTR_PADDING, "padding"},
     {WIDGET_ATTR_PLACEMENT, "placement"},
+    {WIDGET_ATTR_SOURCE, "source"},
     {WIDGET_ATTR_TITLE, "title"},
     {WIDGET_ATTR_TYPE, "type"},
     {WIDGET_ATTR_WEIGHT, "weight"},
@@ -221,6 +222,11 @@ static void setattributeimage(struct widget *widget, unsigned int attribute, cha
     switch (attribute)
     {
 
+    case WIDGET_ATTR_SOURCE:
+        image->source = pool_replacecstring(image->source, value);
+
+        break;
+
     case WIDGET_ATTR_TYPE:
         image->type = getkey(imagetypes, 2, value);
 
@@ -369,7 +375,7 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 unsigned int widget_getattribute(char *value)
 {
 
-    return getkey(attributes, 15, value);
+    return getkey(attributes, 16, value);
 
 }
 

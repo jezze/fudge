@@ -43,7 +43,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ button id \"button0\" in \"base\" label \"Click Me\"\n"
         "+ text id \"text1\" wrap \"word\" in \"base\" content \"<awaiting event>\"\n"
         "+ button id \"button1\" in \"base\" label \"Click Me Too\"\n"
-        "+ image in \"base\" type \"image/pcx\"\n";
+        "+ image in \"base\" type \"image/pcx\" source \"initrd:data/mi.pcx\"\n";
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
 

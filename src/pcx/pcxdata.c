@@ -1,46 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
-#include "pcx.h"
-
-static unsigned int readline(unsigned int width, unsigned int offset, unsigned char *buffer)
-{
-
-    unsigned char raw[BUFFER_SIZE];
-    unsigned int rindex = 0;
-    unsigned int oindex = 0;
-
-    file_seekread(FILE_L0, raw, BUFFER_SIZE, 128 + offset);
-
-    do
-    {
-
-        unsigned int repeat = 1;
-        unsigned char current = raw[rindex];
-
-        rindex++;
-
-        if ((current & 0xC0) == 0xC0)
-        {
-
-            repeat = current & 0x3F;
-            current = raw[rindex];
-            rindex++;
-
-        }
-
-        while (repeat--)
-        {
-
-            buffer[oindex] = current;
-            oindex++;
-
-        }
-
-    } while (oindex < width);
-
-    return rindex;
-
-}
+#include <image.h>
 
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
@@ -67,8 +27,11 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         {
 
             unsigned char buffer[BUFFER_SIZE];
+            unsigned char raw[BUFFER_SIZE];
 
-            offset = readline(width, offset, buffer);
+            file_seekread(FILE_L0, raw, BUFFER_SIZE, 128 + offset);
+
+            offset = pcx_readline(raw, width, buffer);
 
             channel_sendbuffer(EVENT_DATA, width, buffer);
 

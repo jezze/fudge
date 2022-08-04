@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <image.h>
 #include "util.h"
 #include "widget.h"
 #include "pool.h"
@@ -462,6 +463,85 @@ static void paintgradient(struct render_display *display, struct widget *widget,
 }
 */
 
+static unsigned int cachedimage = 0;
+static unsigned char data[0x8000];
+static unsigned char colormap[768];
+struct pcx_header header;
+static unsigned int width;
+static unsigned int height;
+static unsigned int filesize = 31467;
+static unsigned int lastoffset;
+static unsigned int lastline;
+
+static void blitpcx(struct render_display *display, int line, char *source, int y, int x0, int x1)
+{
+
+    unsigned char buffer[BUFFER_SIZE];
+    unsigned int i;
+    int h;
+
+    if (!cachedimage)
+    {
+
+        if (file_walk2(FILE_L0, source))
+        {
+
+            unsigned char magic;
+
+            file_readall(FILE_L0, &header, sizeof (struct pcx_header));
+            file_seekread(FILE_L0, data, 0x8000, 128);
+
+            width = header.xend - header.xstart + 1;
+            height = header.yend - header.ystart + 1;
+
+            file_seekreadall(FILE_L0, &magic, 1, filesize - 768 - 1);
+
+            if (magic == PCX_COLORMAP_MAGIC)
+                file_readall(FILE_L0, colormap, 768);
+
+            lastoffset = pcx_readline(data, width, buffer);
+            lastline = 0;
+            cachedimage = 1;
+
+        }
+
+    }
+
+    if (lastline == line - 1)
+    {
+
+        lastoffset += pcx_readline(data + lastoffset, width, buffer);
+        lastline = line;
+
+    }
+
+    else
+    {
+
+        lastoffset = 0;
+
+        for (h = 0; h < line - y; h++)
+            lastoffset += pcx_readline(data + lastoffset, width, buffer);
+
+        lastline = line;
+
+    }
+
+    for (i = 0; i < width; i++)
+    {
+
+        unsigned int off = buffer[i];
+        unsigned char a = 0xFF;
+        unsigned char r = colormap[off * 3 + 0];
+        unsigned char g = colormap[off * 3 + 1];
+        unsigned char b = colormap[off * 3 + 2];
+
+        linebuffer[x0 + i] = (unsigned int)(a << 24 | r << 16 | g << 8 | b);
+
+    }
+
+}
+
 static void paintimage(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
@@ -476,7 +556,7 @@ static void paintimage(struct render_display *display, struct widget *widget, in
         break;
 
     case WIDGET_IMAGE_TYPE_PCX:
-        blitline(display, 0xFFFF0000, line, x0, x1);
+        blitpcx(display, line, pool_getstring(image->source), widget->position.y, x0, x1);
 
         break;
 
