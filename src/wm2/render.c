@@ -153,10 +153,9 @@ static unsigned int getrowstart(unsigned int index, char *text, unsigned int len
 
 }
 
-static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int length, int line, int y, int h)
+static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int length, int lline, int h)
 {
 
-    int lline = line - y;
     unsigned int i;
 
     for (i = 0; i < length; i++)
@@ -201,18 +200,18 @@ static void blitline(struct render_display *display, unsigned int color, int lin
 
 }
 
-static void blitcmap32line(struct render_display *display, struct widget_position *p, void *idata, unsigned int iwidth, unsigned int *cmap, int line)
+static void blitcmap32line(struct render_display *display, int x, void *idata, unsigned int iwidth, unsigned int *cmap, int lline)
 {
 
     unsigned char *data = idata;
-    unsigned int w = (p->x + iwidth >= display->size.w) ? display->size.w - p->x : iwidth;
-    int x;
+    unsigned int w = (x + iwidth >= display->size.w) ? display->size.w - x : iwidth;
+    int i;
 
-    for (x = 0; x < w; x++)
+    for (i = 0; i < w; i++)
     {
 
-        unsigned int soffset = (line * iwidth + x);
-        unsigned int toffset = p->x + x;
+        unsigned int soffset = (lline * iwidth + i);
+        unsigned int toffset = x + i;
 
         if (data[soffset] != 0xFF)
             linebuffer[toffset] = cmap[data[soffset]];
@@ -322,7 +321,7 @@ static void blittextinverted(struct render_display *display, unsigned int index,
 static void blitsegments(struct render_display *display, int x0, int x1, int y, int h, unsigned int state, struct rowsegment *rows, unsigned int nrows, int line)
 {
 
-    struct rowsegment *rs = findrowsegment(rows, nrows, line, y, h);
+    struct rowsegment *rs = findrowsegment(rows, nrows, line - y, h);
     unsigned int i;
 
     for (i = 0; i < rs->numlines; i++)
@@ -550,43 +549,46 @@ static unsigned char colormap[768];
 struct pcx_header header;
 static unsigned int width;
 static unsigned int height;
-static unsigned int filesize = 31467;
 static unsigned int lastoffset;
 static unsigned int lastline;
+static unsigned char buffer[BUFFER_SIZE];
+
+static void cachepcx(char *source)
+{
+
+    if (cachedimage)
+        return;
+
+    if (file_walk2(FILE_L0, source))
+    {
+
+        unsigned char magic;
+        unsigned int filesize = 31467;
+
+        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
+        file_seekread(FILE_L0, data, 0x8000, 128);
+
+        width = header.xend - header.xstart + 1;
+        height = header.yend - header.ystart + 1;
+
+        file_seekreadall(FILE_L0, &magic, 1, filesize - 768 - 1);
+
+        if (magic == PCX_COLORMAP_MAGIC)
+            file_readall(FILE_L0, colormap, 768);
+
+        cachedimage = 1;
+
+    }
+
+}
 
 static void blitpcx(struct render_display *display, int line, char *source, int x, int y, int x0, int x1)
 {
 
-    unsigned char buffer[BUFFER_SIZE];
     int i;
     int h;
 
-    if (!cachedimage)
-    {
-
-        if (file_walk2(FILE_L0, source))
-        {
-
-            unsigned char magic;
-
-            file_readall(FILE_L0, &header, sizeof (struct pcx_header));
-            file_seekread(FILE_L0, data, 0x8000, 128);
-
-            width = header.xend - header.xstart + 1;
-            height = header.yend - header.ystart + 1;
-
-            file_seekreadall(FILE_L0, &magic, 1, filesize - 768 - 1);
-
-            if (magic == PCX_COLORMAP_MAGIC)
-                file_readall(FILE_L0, colormap, 768);
-
-            lastoffset = pcx_readline(data, width, buffer);
-            lastline = 0;
-            cachedimage = 1;
-
-        }
-
-    }
+    cachepcx(source);
 
     if (lastline == line - 1)
     {
@@ -601,7 +603,7 @@ static void blitpcx(struct render_display *display, int line, char *source, int 
 
         lastoffset = 0;
 
-        for (h = 0; h < line - y; h++)
+        for (h = 0; h < line - y + 1; h++)
             lastoffset += pcx_readline(data + lastoffset, width, buffer);
 
         lastline = line;
@@ -693,7 +695,7 @@ static void renderimage(struct render_display *display, struct widget *widget, i
     {
 
     case WIDGET_IMAGE_TYPE_INTERNAL:
-        blitcmap32line(display, &widget->position, image->data, widget->size.w, image->cmap, line - widget->position.y);
+        blitcmap32line(display, widget->position.x, image->data, widget->size.w, image->cmap, line - widget->position.y);
 
         break;
 
