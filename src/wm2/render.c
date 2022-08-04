@@ -467,7 +467,20 @@ static void paintimage(struct render_display *display, struct widget *widget, in
 
     struct widget_image *image = widget->data;
 
-    blitcmap32line(display, &widget->position, image->data, widget->size.w, image->cmap, line - widget->position.y);
+    switch (image->type)
+    {
+
+    case WIDGET_IMAGE_TYPE_INTERNAL:
+        blitcmap32line(display, &widget->position, image->data, widget->size.w, image->cmap, line - widget->position.y);
+
+        break;
+
+    case WIDGET_IMAGE_TYPE_PCX:
+        blitline(display, 0xFFFF0000, line, x0, x1);
+
+        break;
+
+    }
 
 }
 

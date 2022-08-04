@@ -261,8 +261,37 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
 
 }
 
+static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+{
+
+    /* Get this using pcx library */
+    unsigned int w = 320;
+    unsigned int h = 240;
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = util_clamp(w, minw, maxw);
+    widget->size.h = util_clamp(h, minh, maxh);
+
+}
+
 static void placeimage(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
+
+    struct widget_image *image = widget->data;
+
+    switch (image->type)
+    {
+
+    case WIDGET_IMAGE_TYPE_INTERNAL:
+        break;
+
+    case WIDGET_IMAGE_TYPE_PCX:
+        placeimagepcx(widget, x, y, minw, minh, maxw, maxh);
+
+        break;
+
+    }
 
 }
 
