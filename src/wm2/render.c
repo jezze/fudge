@@ -708,6 +708,35 @@ static void renderimage(struct render_display *display, struct widget *widget, i
 
 }
 
+static void renderselect(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+{
+
+    struct widget_select *select = widget->data;
+    char *tt = pool_getstring(select->label);
+    unsigned int tl = pool_getcstringlength(select->label);
+    struct render_rowinfo rowinfo;
+    unsigned int extra;
+
+    render_getrowinfo(RENDER_FONTNORMAL, "X", 1, &rowinfo, 0, 0, 0);
+
+    extra = rowinfo.width + RENDER_SELECT_PADDING_WIDTH * 2;
+
+    blitbutton(display, widget->state, widget->position.x, widget->position.y, extra, widget->size.h, line);
+    blitbutton(display, widget->state, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line);
+
+    if (render_getrowinfo(RENDER_FONTNORMAL, tt, tl, &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
+    {
+
+        unsigned int rx = (widget->position.x + extra) + ((widget->size.w - extra) / 2) - (rowinfo.width / 2);
+        unsigned int ry = widget->position.y + (widget->size.h / 2) - (rowinfo.height / 2);
+
+        if (util_intersects(line, ry, ry + rowinfo.lineheight))
+            blittextnormal(display, RENDER_FONTNORMAL, getcolor(CMAP_BUTTON_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
+
+    }
+
+}
+
 static void rendertext(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
@@ -831,6 +860,11 @@ static void renderwidget(struct render_display *display, struct widget *widget, 
 
         case WIDGET_TYPE_IMAGE:
             renderimage(display, widget, line, x0, x1);
+
+            break;
+
+        case WIDGET_TYPE_SELECT:
+            renderselect(display, widget, line, x0, x1);
 
             break;
 

@@ -40,6 +40,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ window id \"window\" title \"Test\"\n"
         "+ container id \"base\" in \"window\" layout \"vertical\" padding \"16\"\n"
         "+ text in \"base\" wrap \"word\" content \"Hello World! How are we today?\nI am very good thank you for asking!\nThat is very good.\"\n"
+        "+ select id \"myselect\" in \"base\" label \"Select country\"\n"
         "+ button id \"button0\" in \"base\" label \"Click Me\"\n"
         "+ text id \"text1\" wrap \"word\" in \"base\" content \"<awaiting event>\"\n"
         "+ button id \"button1\" in \"base\" label \"Click Me Too\"\n"

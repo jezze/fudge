@@ -328,13 +328,18 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
     struct widget_select *select = widget->data;
     struct render_rowinfo rowinfo;
+    unsigned int extra;
+
+    render_getrowinfo(RENDER_FONTNORMAL, "X", 1, &rowinfo, 0, 0, 0);
+
+    extra = rowinfo.width + RENDER_SELECT_PADDING_WIDTH * 2;
 
     render_getrowinfo(RENDER_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, 0, 0, 0);
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(rowinfo.width + RENDER_CHOICE_PADDING_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(rowinfo.height + RENDER_CHOICE_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(rowinfo.width + RENDER_SELECT_PADDING_WIDTH * 2 + extra, minw, maxw);
+    widget->size.h = util_clamp(rowinfo.height + RENDER_SELECT_PADDING_HEIGHT * 2, minh, maxh);
 
 }
 
