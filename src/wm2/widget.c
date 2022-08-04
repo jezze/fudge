@@ -45,6 +45,7 @@ static struct token attributes[] =
     {WIDGET_ATTR_PADDING, "padding"},
     {WIDGET_ATTR_PLACEMENT, "placement"},
     {WIDGET_ATTR_TITLE, "title"},
+    {WIDGET_ATTR_TYPE, "type"},
     {WIDGET_ATTR_WEIGHT, "weight"},
     {WIDGET_ATTR_WRAP, "wrap"}
 };
@@ -67,6 +68,12 @@ static struct token gridplacements[] =
 {
     {WIDGET_GRID_PLACEMENT_NORMAL, "normal"},
     {WIDGET_GRID_PLACEMENT_STRETCHED, "stretched"}
+};
+
+static struct token imagetypes[] =
+{
+    {WIDGET_IMAGE_TYPE_INTERNAL, "internal"},
+    {WIDGET_IMAGE_TYPE_PCX, "image/pcx"}
 };
 
 static struct token textaligns[] =
@@ -209,6 +216,18 @@ static void setattributegrid(struct widget *widget, unsigned int attribute, char
 static void setattributeimage(struct widget *widget, unsigned int attribute, char *value)
 {
 
+    struct widget_image *image = widget->data;
+
+    switch (attribute)
+    {
+
+    case WIDGET_ATTR_TYPE:
+        image->type = getkey(imagetypes, 2, value);
+
+        break;
+
+    }
+
 }
 
 static void setattributetext(struct widget *widget, unsigned int attribute, char *value)
@@ -350,7 +369,7 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 unsigned int widget_getattribute(char *value)
 {
 
-    return getkey(attributes, 14, value);
+    return getkey(attributes, 15, value);
 
 }
 

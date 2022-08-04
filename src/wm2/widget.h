@@ -28,8 +28,9 @@
 #define WIDGET_ATTR_PADDING                     10
 #define WIDGET_ATTR_PLACEMENT                   11
 #define WIDGET_ATTR_TITLE                       12
-#define WIDGET_ATTR_WEIGHT                      13
-#define WIDGET_ATTR_WRAP                        14
+#define WIDGET_ATTR_TYPE                        13
+#define WIDGET_ATTR_WEIGHT                      14
+#define WIDGET_ATTR_WRAP                        15
 #define WIDGET_CONTAINER_LAYOUT_FLOAT           0
 #define WIDGET_CONTAINER_LAYOUT_HORIZONTAL      1
 #define WIDGET_CONTAINER_LAYOUT_MAXIMIZE        2
@@ -38,6 +39,8 @@
 #define WIDGET_CONTAINER_PLACEMENT_STRETCHED    1
 #define WIDGET_GRID_PLACEMENT_NORMAL            0
 #define WIDGET_GRID_PLACEMENT_STRETCHED         1
+#define WIDGET_IMAGE_TYPE_INTERNAL              1
+#define WIDGET_IMAGE_TYPE_PCX                   2
 #define WIDGET_TEXT_ALIGN_LEFT                  0
 #define WIDGET_TEXT_ALIGN_CENTER                1
 #define WIDGET_TEXT_ALIGN_RIGHT                 2
@@ -116,6 +119,7 @@ struct widget_grid
 struct widget_image
 {
 
+    unsigned int type;
     void *data;
     void *cmap;
 
