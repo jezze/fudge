@@ -554,11 +554,11 @@ static unsigned int filesize = 31467;
 static unsigned int lastoffset;
 static unsigned int lastline;
 
-static void blitpcx(struct render_display *display, int line, char *source, int y, int x0, int x1)
+static void blitpcx(struct render_display *display, int line, char *source, int x, int y, int x0, int x1)
 {
 
     unsigned char buffer[BUFFER_SIZE];
-    unsigned int i;
+    int i;
     int h;
 
     if (!cachedimage)
@@ -608,16 +608,16 @@ static void blitpcx(struct render_display *display, int line, char *source, int 
 
     }
 
-    for (i = 0; i < width; i++)
+    for (i = x0; i < x1; i++)
     {
 
-        unsigned int off = buffer[i];
+        unsigned int off = buffer[i - x];
         unsigned char a = 0xFF;
         unsigned char r = colormap[off * 3 + 0];
         unsigned char g = colormap[off * 3 + 1];
         unsigned char b = colormap[off * 3 + 2];
 
-        linebuffer[x0 + i] = (unsigned int)(a << 24 | r << 16 | g << 8 | b);
+        linebuffer[i] = (unsigned int)(a << 24 | r << 16 | g << 8 | b);
 
     }
 
@@ -698,7 +698,7 @@ static void renderimage(struct render_display *display, struct widget *widget, i
         break;
 
     case WIDGET_IMAGE_TYPE_PCX:
-        blitpcx(display, line, pool_getstring(image->source), widget->position.y, x0, x1);
+        blitpcx(display, line, pool_getstring(image->source), widget->position.x, widget->position.y, x0, x1);
 
         break;
 
