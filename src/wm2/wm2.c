@@ -366,7 +366,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         place_widget(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h);
-        render_paint(&display, state.rootwidget);
+        render_render(&display, state.rootwidget);
 
     }
 
