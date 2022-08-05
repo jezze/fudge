@@ -92,7 +92,8 @@ unsigned short pic_getisr(void)
 unsigned short pic_interrupt(struct cpu_general general, unsigned int index, unsigned int slave, struct cpu_interrupt interrupt)
 {
 
-    routines[index](index);
+    if (routines[index])
+        routines[index](index);
 
     if (slave)
         io_outb(REG_COMMAND1, REG_COMMAND_EOI);
