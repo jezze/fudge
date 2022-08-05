@@ -91,27 +91,32 @@ void kernel_freelink(struct link *link)
 void kernel_schedule(struct core *core)
 {
 
+    struct list normal;
+    struct list unblocked;
     struct list_item *current;
     struct list_item *next;
     struct list_item *taskitem;
 
+    list_init(&normal);
+    list_init(&unblocked);
+
     if (core->task)
     {
 
-        if (core->task->kills)
+        if (core->task->sigkills)
         {
 
-            core->task->kills = 0;
+            core->task->sigkills = 0;
 
             task_transition(core->task, TASK_STATE_KILLED);
             list_add(&killedtasks, &core->task->item);
 
         }
 
-        else if (core->task->blocks)
+        else if (core->task->sigblocks)
         {
 
-            core->task->blocks = 0;
+            core->task->sigblocks = 0;
 
             task_transition(core->task, TASK_STATE_BLOCKED);
             list_add(&blockedtasks, &core->task->item);
@@ -156,7 +161,31 @@ void kernel_schedule(struct core *core)
     }
 
     spinlock_release(&blockedtasks.spinlock);
-    core_sorttasks(core);
+
+    while ((taskitem = list_pickhead(&core->tasks)))
+    {
+
+        struct task *task = taskitem->data;
+
+        spinlock_acquire(&task->spinlock);
+
+        if (task->sigunblocks)
+            list_add(&unblocked, taskitem);
+        else
+            list_add(&normal, taskitem);
+
+        task->sigunblocks = 0;
+
+        spinlock_release(&task->spinlock);
+
+    }
+
+    while ((taskitem = list_pickhead(&normal)))
+        list_add(&core->tasks, taskitem);
+
+    while ((taskitem = list_pickhead(&unblocked)))
+        list_add(&core->tasks, taskitem);
+
 
     taskitem = list_picktail(&core->tasks);
 

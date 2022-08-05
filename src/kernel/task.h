@@ -25,9 +25,9 @@ struct task
     struct binary_format *format;
     unsigned int id;
     unsigned int state;
-    unsigned int kills;
-    unsigned int blocks;
-    unsigned int unblocks;
+    unsigned int sigkills;
+    unsigned int sigblocks;
+    unsigned int sigunblocks;
 
 };
 

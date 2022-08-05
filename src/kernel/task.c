@@ -12,19 +12,17 @@ void task_signal(struct task *task, unsigned int signal)
     {
 
     case TASK_SIGNAL_KILL:
-        task->kills++;
+        task->sigkills++;
 
         break;
 
     case TASK_SIGNAL_BLOCK:
-        if (!task->kills)
-            task->blocks++;
+        task->sigblocks++;
 
         break;
 
     case TASK_SIGNAL_UNBLOCK:
-        if (!task->kills)
-            task->unblocks++;
+        task->sigunblocks++;
 
         break;
 
@@ -106,9 +104,9 @@ void task_reset(struct task *task)
     task_resetthread(&task->thread);
 
     task->state = TASK_STATE_KILLED;
-    task->kills = 0;
-    task->blocks = 0;
-    task->unblocks = 0;
+    task->sigkills = 0;
+    task->sigblocks = 0;
+    task->sigunblocks = 0;
 
 }
 
@@ -124,9 +122,9 @@ void task_init(struct task *task, unsigned int id)
     task->format = 0;
     task->id = id;
     task->state = TASK_STATE_KILLED;
-    task->kills = 0;
-    task->blocks = 0;
-    task->unblocks = 0;
+    task->sigkills = 0;
+    task->sigblocks = 0;
+    task->sigunblocks = 0;
 
 }
 
