@@ -9,20 +9,22 @@ void core_sorttasks(struct core *core)
 
     struct list normal;
     struct list unblocked;
-    struct task *task;
+    struct list_item *taskitem;
 
     list_init(&normal);
     list_init(&unblocked);
 
-    while ((task = list_pickhead(&core->tasks)))
+    while ((taskitem = list_pickhead(&core->tasks)))
     {
+
+        struct task *task = taskitem->data;
 
         spinlock_acquire(&task->spinlock);
 
         if (task->unblocks)
-            list_add(&unblocked, &task->item);
+            list_add(&unblocked, taskitem);
         else
-            list_add(&normal, &task->item);
+            list_add(&normal, taskitem);
 
         task->unblocks = 0;
 
@@ -30,11 +32,11 @@ void core_sorttasks(struct core *core)
 
     }
 
-    while ((task = list_pickhead(&normal)))
-        list_add(&core->tasks, &task->item);
+    while ((taskitem = list_pickhead(&normal)))
+        list_add(&core->tasks, taskitem);
 
-    while ((task = list_pickhead(&unblocked)))
-        list_add(&core->tasks, &task->item);
+    while ((taskitem = list_pickhead(&unblocked)))
+        list_add(&core->tasks, taskitem);
 
 }
 

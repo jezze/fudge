@@ -71,7 +71,7 @@ void list_move(struct list *to, struct list *from, struct list_item *item)
 
 }
 
-void *list_pickhead(struct list *list)
+struct list_item *list_pickhead(struct list *list)
 {
 
     struct list_item *item;
@@ -85,11 +85,11 @@ void *list_pickhead(struct list *list)
 
     spinlock_release(&list->spinlock);
 
-    return (item) ? item->data : 0;
+    return item;
 
 }
 
-void *list_picktail(struct list *list)
+struct list_item *list_picktail(struct list *list)
 {
 
     struct list_item *item;
@@ -103,7 +103,7 @@ void *list_picktail(struct list *list)
 
     spinlock_release(&list->spinlock);
 
-    return (item) ? item->data : 0;
+    return item;
 
 }
 

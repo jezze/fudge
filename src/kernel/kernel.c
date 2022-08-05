@@ -62,12 +62,20 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *t
 struct link *kernel_picklink(unsigned int source)
 {
 
-    struct link *link = list_picktail(&freelinks);
+    struct list_item *linkitem = list_picktail(&freelinks);
 
-    if (link)
+    if (linkitem)
+    {
+
+        struct link *link = linkitem->data;
+
         link->source = source;
 
-    return link;
+        return link;
+
+    }
+
+    return 0;
 
 }
 
@@ -85,6 +93,7 @@ void kernel_schedule(struct core *core)
 
     struct list_item *current;
     struct list_item *next;
+    struct list_item *taskitem;
 
     if (core->task)
     {
@@ -149,10 +158,23 @@ void kernel_schedule(struct core *core)
     spinlock_release(&blockedtasks.spinlock);
     core_sorttasks(core);
 
-    core->task = list_picktail(&core->tasks);
+    taskitem = list_picktail(&core->tasks);
 
-    if (core->task)
+    if (taskitem)
+    {
+
+        core->task = taskitem->data;
+
         task_transition(core->task, TASK_STATE_RUNNING);
+
+    }
+
+    else
+    {
+
+        core->task = 0;
+
+    }
 
 }
 
@@ -225,11 +247,12 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 struct task *kernel_loadtask(struct task *parent, unsigned int sp)
 {
 
-    struct task *task = list_picktail(&killedtasks);
+    struct list_item *taskitem = list_picktail(&killedtasks);
 
-    if (task)
+    if (taskitem)
     {
 
+        struct task *task = taskitem->data;
         struct mailbox *mailbox = &mailboxes[task->id];
         unsigned int i;
 
