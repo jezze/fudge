@@ -7,7 +7,7 @@ struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *task));
 struct link *kernel_picklink(unsigned int source);
 void kernel_freelink(struct link *link);
-void kernel_schedule(struct core *core);
+struct task *kernel_schedule(struct core *core, struct task *coretask);
 struct descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor);
 void kernel_kill(unsigned int source, unsigned int target);
 unsigned int kernel_pick(unsigned int source, struct message_header *header, void *data);

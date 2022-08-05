@@ -88,70 +88,61 @@ void kernel_freelink(struct link *link)
 
 }
 
-void kernel_schedule(struct core *core)
+struct task *kernel_schedule(struct core *core, struct task *coretask)
 {
 
-    struct list_item *current;
-    struct list_item *next;
     struct list_item *taskitem;
+    struct list_item *next;
 
-    if (core->task)
+    if (coretask)
     {
 
-        if (core->task->sigkills)
+        if (coretask->sigkills)
         {
 
-            core->task->sigkills = 0;
-
-            task_transition(core->task, TASK_STATE_KILLED);
-            list_add(&killedtasks, &core->task->item);
+            task_unsignal(coretask, TASK_SIGNAL_KILL);
+            task_transition(coretask, TASK_STATE_KILLED);
+            list_add(&killedtasks, &coretask->item);
 
         }
 
-        else if (core->task->sigblocks)
+        else if (coretask->sigblocks)
         {
 
-            core->task->sigblocks = 0;
-
-            task_transition(core->task, TASK_STATE_BLOCKED);
-            list_add(&blockedtasks, &core->task->item);
+            task_unsignal(coretask, TASK_SIGNAL_BLOCK);
+            task_transition(coretask, TASK_STATE_BLOCKED);
+            list_add(&blockedtasks, &coretask->item);
 
         }
 
         else
         {
 
-            task_transition(core->task, TASK_STATE_ASSIGNED);
-            list_add(&core->tasks, &core->task->item);
+            task_transition(coretask, TASK_STATE_ASSIGNED);
+            coreassign(coretask);
 
         }
-
-        core->task = 0;
 
     }
 
     spinlock_acquire(&blockedtasks.spinlock);
 
-    for (current = blockedtasks.head; current; current = next)
+    for (taskitem = blockedtasks.head; taskitem; taskitem = next)
     {
 
-        struct task *task = current->data;
+        struct task *task = taskitem->data;
         struct mailbox *mailbox = &mailboxes[task->id];
 
-        next = current->next;
+        next = taskitem->next;
 
         spinlock_acquire(&mailbox->spinlock);
 
         if (ring_count(&mailbox->ring))
         {
 
-            list_remove_unsafe(&blockedtasks, current);
+            list_remove_unsafe(&blockedtasks, taskitem);
+            task_unsignal(task, TASK_SIGNAL_UNBLOCK);
             task_transition(task, TASK_STATE_ASSIGNED);
-            spinlock_acquire(&task->spinlock);
-
-            task->sigunblocks = 0;
-
-            spinlock_release(&task->spinlock);
             coreassign(task);
 
         }
@@ -167,18 +158,15 @@ void kernel_schedule(struct core *core)
     if (taskitem)
     {
 
-        core->task = taskitem->data;
+        struct task *task = taskitem->data;
 
-        task_transition(core->task, TASK_STATE_RUNNING);
+        task_transition(task, TASK_STATE_RUNNING);
 
-    }
-
-    else
-    {
-
-        core->task = 0;
+        return task;
 
     }
+
+    return 0;
 
 }
 

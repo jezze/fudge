@@ -32,6 +32,35 @@ void task_signal(struct task *task, unsigned int signal)
 
 }
 
+void task_unsignal(struct task *task, unsigned int signal)
+{
+
+    spinlock_acquire(&task->spinlock);
+
+    switch (signal)
+    {
+
+    case TASK_SIGNAL_KILL:
+        task->sigkills = 0;
+
+        break;
+
+    case TASK_SIGNAL_BLOCK:
+        task->sigblocks = 0;
+
+        break;
+
+    case TASK_SIGNAL_UNBLOCK:
+        task->sigunblocks = 0;
+
+        break;
+
+    }
+
+    spinlock_release(&task->spinlock);
+
+}
+
 void task_transition(struct task *task, unsigned int state)
 {
 

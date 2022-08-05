@@ -32,6 +32,7 @@ struct task
 };
 
 void task_signal(struct task *task, unsigned int signal);
+void task_unsignal(struct task *task, unsigned int signal);
 void task_transition(struct task *task, unsigned int state);
 void task_register(struct task *task);
 void task_unregister(struct task *task);

@@ -21,7 +21,7 @@ void syse_resume(struct cpu_general *general)
 
     }
 
-    kernel_schedule(core);
+    core->task = kernel_schedule(core, core->task);
 
     if (core->task)
     {
