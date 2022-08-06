@@ -184,7 +184,7 @@ static void damage(struct widget *widget)
 
     struct list_item *current = 0;
 
-    render_damagebywidget(&display, widget);
+    render_damage(&display, widget->position.x, widget->position.y, widget->position.x + widget->size.w, widget->position.y + widget->size.h);
 
     while ((current = pool_nextin(current, widget)))
         damage(current->data);

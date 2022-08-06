@@ -56,7 +56,6 @@ struct render_textinfo
 unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int wrap, unsigned int maxw, unsigned int offset);
 unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int length, struct render_textinfo *textinfo, unsigned int wrap, unsigned int offw, unsigned int maxw);
 void render_damage(struct render_display *display, int x0, int y0, int x1, int y1);
-void render_damagebywidget(struct render_display *display, struct widget *widget);
 void render_render(struct render_display *display);
 void render_setfont(unsigned int index, void *data, unsigned int lineheight, unsigned int padding);
 void render_setup(struct render_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp);
