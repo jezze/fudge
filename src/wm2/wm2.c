@@ -147,6 +147,44 @@ static void loadfont(unsigned int factor)
 
 }
 
+static struct widget *gethoverwidgetat(struct widget *parent, int x, int y)
+{
+
+    struct list_item *current = 0;
+    struct widget *last = 0;
+
+    while ((current = pool_nextin(current, parent)))
+    {
+ 
+        struct widget *child = current->data;
+        struct widget *match = gethoverwidgetat(child, x, y);
+
+        if (match)
+            last = match;
+
+    }
+
+    if (last)
+        return last;
+
+    switch (parent->type)
+    {
+
+    case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_SELECT:
+    case WIDGET_TYPE_TEXTBOX:
+    case WIDGET_TYPE_WINDOW:
+        if (x > parent->position.x && x <= parent->position.x + parent->size.w && y > parent->position.y && y <= parent->position.y + parent->size.h)
+            return parent;
+
+        break;
+
+    }
+
+    return 0;
+
+}
+
 static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned int type)
 {
 
@@ -383,7 +421,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     struct event_mousemove *mousemove = mdata;
     int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.size.w);
     int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.size.h);
-    struct widget *hoverwidget = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
+    struct widget *hoverwidget = gethoverwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y);
 
     if (hoverwidget)
         sethover(hoverwidget);
@@ -437,7 +475,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousepress *mousepress = mdata;
     struct widget *clickedwindow = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
-    struct widget *clickedwidget = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, 0);
+    struct widget *clickedwidget = gethoverwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y);
 
     switch (mousepress->button)
     {
