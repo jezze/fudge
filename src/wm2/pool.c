@@ -9,10 +9,12 @@ union payloads
 {
 
     struct widget_button button;
+    struct widget_choice choice;
     struct widget_container container;
     struct widget_fill fill;
     struct widget_grid grid;
     struct widget_image image;
+    struct widget_select select;
     struct widget_text text;
     struct widget_textbox textbox;
     struct widget_window window;
