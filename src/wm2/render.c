@@ -1058,7 +1058,7 @@ void render_damagebywidget(struct render_display *display, struct widget *widget
 
 }
 
-void render_render(struct render_display *display, struct widget *rootwidget)
+void render_render(struct render_display *display)
 {
 
     if (!display->framebuffer)
