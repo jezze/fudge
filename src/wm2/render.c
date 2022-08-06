@@ -860,54 +860,46 @@ static void renderwindow(struct render_display *display, struct widget *widget, 
 
 }
 
-static void renderwidget(struct render_display *display, struct widget *widget, int line)
+static void renderwidget(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
-    if (util_intersects(line, widget->position.y, widget->position.y + widget->size.h))
+    switch (widget->type)
     {
 
-        int x0 = util_max(widget->position.x, display->damage.position0.x);
-        int x1 = util_min(widget->position.x + widget->size.w, display->damage.position1.x);
+    case WIDGET_TYPE_BUTTON:
+        renderbutton(display, widget, line, x0, x1);
 
-        switch (widget->type)
-        {
+        break;
 
-        case WIDGET_TYPE_BUTTON:
-            renderbutton(display, widget, line, x0, x1);
+    case WIDGET_TYPE_FILL:
+        renderfill(display, widget, line, x0, x1);
 
-            break;
+        break;
 
-        case WIDGET_TYPE_FILL:
-            renderfill(display, widget, line, x0, x1);
+    case WIDGET_TYPE_IMAGE:
+        renderimage(display, widget, line, x0, x1);
 
-            break;
+        break;
 
-        case WIDGET_TYPE_IMAGE:
-            renderimage(display, widget, line, x0, x1);
+    case WIDGET_TYPE_SELECT:
+        renderselect(display, widget, line, x0, x1);
 
-            break;
+        break;
 
-        case WIDGET_TYPE_SELECT:
-            renderselect(display, widget, line, x0, x1);
+    case WIDGET_TYPE_TEXT:
+        rendertext(display, widget, line, x0, x1);
 
-            break;
+        break;
 
-        case WIDGET_TYPE_TEXT:
-            rendertext(display, widget, line, x0, x1);
+    case WIDGET_TYPE_TEXTBOX:
+        rendertextbox(display, widget, line, x0, x1);
 
-            break;
+        break;
 
-        case WIDGET_TYPE_TEXTBOX:
-            rendertextbox(display, widget, line, x0, x1);
+    case WIDGET_TYPE_WINDOW:
+        renderwindow(display, widget, line, x0, x1);
 
-            break;
-
-        case WIDGET_TYPE_WINDOW:
-            renderwindow(display, widget, line, x0, x1);
-
-            break;
-
-        }
+        break;
 
     }
 
@@ -1085,9 +1077,17 @@ void render_render(struct render_display *display, struct widget *rootwidget)
             while ((current = pool_next(current)))
             {
 
-                struct widget *child = current->data;
+                struct widget *widget = current->data;
 
-                renderwidget(display, child, line);
+                if (util_intersects(line, widget->position.y, widget->position.y + widget->size.h))
+                {
+
+                    int x0 = util_max(widget->position.x, display->damage.position0.x);
+                    int x1 = util_min(widget->position.x + widget->size.w, display->damage.position1.x);
+
+                    renderwidget(display, widget, line, x0, x1);
+
+                }
 
             }
 
