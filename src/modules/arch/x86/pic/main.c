@@ -92,13 +92,56 @@ unsigned short pic_getisr(void)
 unsigned short pic_interrupt(struct cpu_general general, unsigned int index, unsigned int slave, struct cpu_interrupt interrupt)
 {
 
-    if (routines[index])
-        routines[index](index);
+    if (index == 15)
+    {
 
-    if (slave)
-        io_outb(REG_COMMAND1, REG_COMMAND_EOI);
+        if (getstatus(REG_COMMAND1, REG_COMMAND_ISR))
+        {
 
-    io_outb(REG_COMMAND0, REG_COMMAND_EOI);
+            if (routines[index])
+                routines[index](index);
+
+            io_outb(REG_COMMAND1, REG_COMMAND_EOI);
+            io_outb(REG_COMMAND0, REG_COMMAND_EOI);
+
+        }
+
+        else
+        {
+
+            io_outb(REG_COMMAND0, REG_COMMAND_EOI);
+
+        }
+
+    }
+
+    else if (index == 7)
+    {
+
+        if (getstatus(REG_COMMAND0, REG_COMMAND_ISR))
+        {
+
+            if (routines[index])
+                routines[index](index);
+
+            io_outb(REG_COMMAND0, REG_COMMAND_EOI);
+
+        }
+
+    }
+
+    else
+    {
+
+        if (routines[index])
+            routines[index](index);
+
+        if (slave)
+            io_outb(REG_COMMAND1, REG_COMMAND_EOI);
+
+        io_outb(REG_COMMAND0, REG_COMMAND_EOI);
+
+    }
 
     return arch_resume(&general, &interrupt);
 
