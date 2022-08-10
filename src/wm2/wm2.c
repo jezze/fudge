@@ -38,6 +38,7 @@ struct state
 static struct render_display display;
 static struct configuration configuration;
 static struct state state;
+static unsigned int numwindows;
 static unsigned char fontnormal[0x8000];
 static unsigned char fontbold[0x8000];
 static unsigned char mousedata24[] = {
@@ -644,8 +645,6 @@ static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
     channel_sendto(source, EVENT_WMINIT);
 
 }
-
-static unsigned int numwindows;
 
 static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 {

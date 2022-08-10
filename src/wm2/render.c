@@ -91,6 +91,7 @@ static struct cmap cmap[] =
 
 static struct font fonts[32];
 static unsigned int linebuffer[3840];
+static struct pool_pcxresource pcxresource;
 
 static unsigned int getcolor(unsigned int index, unsigned int state)
 {
@@ -566,8 +567,6 @@ static void blitwindow(struct render_display *display, unsigned int state, int x
     blitsegments(display, x, x + w, y, h, state, rows, 11, line);
 
 }
-
-static struct pool_pcxresource pcxresource;
 
 static void blitpcx(struct render_display *display, int line, char *source, int x, int y, int x0, int x1)
 {
