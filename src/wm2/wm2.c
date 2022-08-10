@@ -528,6 +528,7 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
         struct widget_textbox *textbox = state.focusedwidget->data;
 
         textbox->scroll += mousescroll->relz;
+
         damage(state.focusedwidget);
 
     }
