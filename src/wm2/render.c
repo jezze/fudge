@@ -567,83 +567,26 @@ static void blitwindow(struct render_display *display, unsigned int state, int x
 
 }
 
-static unsigned int cachedimage = 0;
-static unsigned char data[0x8000];
-static unsigned char colormap[768];
-struct pcx_header header;
-static unsigned int width;
-static unsigned int height;
-static unsigned int lastoffset;
-static unsigned int lastline;
-static unsigned char buffer[BUFFER_SIZE];
-
-static void cachepcx(char *source)
-{
-
-    if (cachedimage)
-        return;
-
-    if (file_walk2(FILE_L0, source))
-    {
-
-        unsigned char magic;
-        unsigned int filesize = 31467;
-
-        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
-        file_seekread(FILE_L0, data, 0x8000, 128);
-
-        width = header.xend - header.xstart + 1;
-        height = header.yend - header.ystart + 1;
-
-        file_seekreadall(FILE_L0, &magic, 1, filesize - 768 - 1);
-
-        if (magic == PCX_COLORMAP_MAGIC)
-            file_readall(FILE_L0, colormap, 768);
-
-        cachedimage = 1;
-
-    }
-
-}
+static struct pool_pcxresource pcxresource;
 
 static void blitpcx(struct render_display *display, int line, char *source, int x, int y, int x0, int x1)
 {
 
+    unsigned char buffer[BUFFER_SIZE];
     int i;
-    int h;
 
-    cachepcx(source);
-
-    if (lastline == line - 1)
-    {
-
-        lastoffset += pcx_readline(data + lastoffset, width, buffer);
-        lastline = line;
-
-    }
-
-    else
-    {
-
-        lastoffset = 0;
-
-        for (h = 0; h < line - y + 1; h++)
-            lastoffset += pcx_readline(data + lastoffset, width, buffer);
-
-        lastline = line;
-
-    }
+    pool_pcxload(&pcxresource, source);
+    pool_pcxreadline(&pcxresource, line, y, buffer);
 
     for (i = x0; i < x1; i++)
     {
 
         unsigned int off = buffer[i - x];
-        unsigned char a = 0xFF;
-        unsigned char r = colormap[off * 3 + 0];
-        unsigned char g = colormap[off * 3 + 1];
-        unsigned char b = colormap[off * 3 + 2];
+        unsigned char r = pcxresource.colormap[off * 3 + 0];
+        unsigned char g = pcxresource.colormap[off * 3 + 1];
+        unsigned char b = pcxresource.colormap[off * 3 + 2];
 
-        linebuffer[i] = (unsigned int)(a << 24 | r << 16 | g << 8 | b);
+        linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
 
     }
 

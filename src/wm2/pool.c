@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <image.h>
 #include "widget.h"
 #include "pool.h"
 
@@ -298,6 +299,63 @@ unsigned int pool_replacecstring(unsigned int index, char *cstring)
         index = pool_savecstring(cstring);
 
     return index;
+
+}
+
+void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
+{
+
+    if (pcxresource->cached)
+        return;
+
+    if (file_walk2(FILE_L0, source))
+    {
+
+        struct pcx_header header;
+        unsigned char magic;
+        unsigned int filesize = 31467;
+
+        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
+        file_seekread(FILE_L0, pcxresource->data, 0x8000, 128);
+
+        pcxresource->width = header.xend - header.xstart + 1;
+        pcxresource->height = header.yend - header.ystart + 1;
+
+        file_seekreadall(FILE_L0, &magic, 1, filesize - 768 - 1);
+
+        if (magic == PCX_COLORMAP_MAGIC)
+            file_readall(FILE_L0, pcxresource->colormap, 768);
+
+        pcxresource->cached = 1;
+
+    }
+
+}
+
+void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, unsigned char *buffer)
+{
+
+    int h;
+
+    if (pcxresource->lastline == line - 1)
+    {
+
+        pcxresource->lastoffset += pcx_readline(pcxresource->data + pcxresource->lastoffset, pcxresource->width, buffer);
+        pcxresource->lastline = line;
+
+    }
+
+    else
+    {
+
+        pcxresource->lastoffset = 0;
+
+        for (h = 0; h < line - y + 1; h++)
+            pcxresource->lastoffset += pcx_readline(pcxresource->data + pcxresource->lastoffset, pcxresource->width, buffer);
+
+        pcxresource->lastline = line;
+
+    }
 
 }
 
