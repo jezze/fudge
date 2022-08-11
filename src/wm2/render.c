@@ -72,16 +72,16 @@ struct cmap
 
 static struct cmap cmap[] =
 {
-    {0xE0181818, 0xE0181818, 0xE0181818}, /* CMAP_BUTTON_SHADOW */
+    {0x40181818, 0x40181818, 0x40181818}, /* CMAP_BUTTON_SHADOW */
     {0xE0484848, 0xE0686868, 0xE0585858}, /* CMAP_BUTTON_MAIN */
     {0xE0707070, 0xE0909090, 0xE0808080}, /* CMAP_BUTTON_LIGHT */
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* CMAP_BUTTON_TEXT */
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* CMAP_TEXT_TEXT */
-    {0xE0181818, 0xE0181818, 0xE0181818}, /* CMAP_FRAME_SHADOW */
+    {0x40181818, 0x40181818, 0x40181818}, /* CMAP_FRAME_SHADOW */
     {0xE0505050, 0xE0707070, 0xE0606060}, /* CMAP_FRAME_LIGHT */
     {0xE0282828, 0xE0282828, 0xE0282828}, /* CMAP_FRAME_MAIN */
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, /* CMAP_FRAME_TEXT */
-    {0xE0181818, 0xE0181818, 0xE0181818}, /* CMAP_WINDOW_SHADOW */
+    {0x40181818, 0x40181818, 0x40181818}, /* CMAP_WINDOW_SHADOW */
     {0xE0484848, 0xE0484848, 0xE0484848}, /* CMAP_WINDOW_LIGHT */
     {0xE0686868, 0xE028A868, 0xE0686868}, /* CMAP_WINDOW_FRAME */
     {0xE0303030, 0xE0303030, 0xE0303030}, /* CMAP_WINDOW_MAIN */
@@ -410,7 +410,7 @@ static void blitbutton(struct render_display *display, unsigned int state, int x
     };
     static struct linesegment line3[5] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_BUTTON_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 4, 4, CMAP_BUTTON_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 4, CMAP_BUTTON_LIGHT},
         {LINESEGMENT_TYPE_RELX0X1, 4, -4, CMAP_BUTTON_MAIN},
         {LINESEGMENT_TYPE_RELX1X1, -4, -2, CMAP_BUTTON_LIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_BUTTON_SHADOW}
@@ -430,7 +430,7 @@ static void blitbutton(struct render_display *display, unsigned int state, int x
         {ROWSEGMENT_TYPE_RELY0Y1, 4, -4, line4, 5},
         {ROWSEGMENT_TYPE_RELY1Y1, -4, -3, line3, 5},
         {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, line2, 3},
-        {ROWSEGMENT_TYPE_RELY1Y1, -2, 1, line1, 1},
+        {ROWSEGMENT_TYPE_RELY1Y1, -2, -1, line1, 1},
         {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, line0, 1}
     };
 
@@ -488,9 +488,9 @@ static void blitframe(struct render_display *display, unsigned int state, int x,
         {ROWSEGMENT_TYPE_RELY0Y0, 2, 3, line2, 3},
         {ROWSEGMENT_TYPE_RELY0Y0, 3, 4, line3, 5},
         {ROWSEGMENT_TYPE_RELY0Y0, 4, 5, line4, 5},
-        {ROWSEGMENT_TYPE_RELY0Y0, 4, 5, line5, 6},
-        {ROWSEGMENT_TYPE_RELY0Y1, 5, -5, line6, 6},
-        {ROWSEGMENT_TYPE_RELY1Y1, -5, -4, line5, 6},
+        {ROWSEGMENT_TYPE_RELY0Y0, 5, 6, line5, 6},
+        {ROWSEGMENT_TYPE_RELY0Y1, 6, -6, line6, 6},
+        {ROWSEGMENT_TYPE_RELY1Y1, -6, -5, line5, 6},
         {ROWSEGMENT_TYPE_RELY1Y1, -5, -4, line4, 5},
         {ROWSEGMENT_TYPE_RELY1Y1, -4, -3, line3, 5},
         {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, line2, 3},
