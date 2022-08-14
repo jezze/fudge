@@ -21,10 +21,10 @@ static struct mmu_directory *getkerneldirectory(void)
 
 }
 
-static struct mmu_directory *gettaskdirectory(struct task *task)
+static struct mmu_directory *gettaskdirectory(unsigned int index)
 {
 
-    return (struct mmu_directory *)(ARCH_TASKMMUPHYSICAL + task->id * ARCH_TASKMMUSIZE);
+    return (struct mmu_directory *)(ARCH_TASKMMUPHYSICAL + index * ARCH_TASKMMUSIZE);
 
 }
 
@@ -43,7 +43,7 @@ static unsigned int spawn(struct task *task, void *stack)
     if (ntask)
     {
 
-        buffer_copy(gettaskdirectory(ntask), getkerneldirectory(), sizeof (struct mmu_directory));
+        buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
 
         return ntask->id;
 
@@ -92,7 +92,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = core->task->thread.ip;
         interrupt->esp.value = core->task->thread.sp;
 
-        mmu_setdirectory(gettaskdirectory(core->task));
+        mmu_setdirectory(gettaskdirectory(core->task->id));
 
     }
 
@@ -295,7 +295,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     {
 
         unsigned int code = core->task->format->findbase(&core->task->node, address);
-        struct mmu_directory *directory = gettaskdirectory(core->task);
+        struct mmu_directory *directory = gettaskdirectory(core->task->id);
 
         if (code)
         {
@@ -423,7 +423,7 @@ void arch_setup2(void)
     struct task *ntask = kernel_loadtask(0, ARCH_TASKSTACKVIRTUAL);
 
     if (ntask)
-        buffer_copy(gettaskdirectory(ntask), getkerneldirectory(), sizeof (struct mmu_directory));
+        buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
 
     arch_leave(&core0);
 
