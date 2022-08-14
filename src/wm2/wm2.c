@@ -439,7 +439,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
     damage(state.mousewidget);
 
-    if (state.mousebuttonleft || state.mousebuttonright)
+    if (state.mousebuttonleft && (state.keymod & KEYMOD_ALT))
     {
 
         if (state.focusedwindow)
@@ -447,21 +447,25 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
             damage(state.focusedwindow);
 
-            if (state.mousebuttonleft)
-            {
+            state.focusedwindow->position.x += state.mousemovement.x;
+            state.focusedwindow->position.y += state.mousemovement.y;
 
-                state.focusedwindow->position.x += state.mousemovement.x;
-                state.focusedwindow->position.y += state.mousemovement.y;
+            damage(state.focusedwindow);
 
-            }
+        }
 
-            if (state.mousebuttonright)
-            {
+    }
 
-                state.focusedwindow->size.w = util_max((int)(state.focusedwindow->size.w) + state.mousemovement.x, WINDOW_MIN_WIDTH);
-                state.focusedwindow->size.h = util_max((int)(state.focusedwindow->size.h) + state.mousemovement.y, WINDOW_MIN_HEIGHT);
+    if (state.mousebuttonright && (state.keymod & KEYMOD_ALT))
+    {
 
-            }
+        if (state.focusedwindow)
+        {
+
+            damage(state.focusedwindow);
+
+            state.focusedwindow->size.w = util_max((int)(state.focusedwindow->size.w) + state.mousemovement.x, WINDOW_MIN_WIDTH);
+            state.focusedwindow->size.h = util_max((int)(state.focusedwindow->size.h) + state.mousemovement.y, WINDOW_MIN_HEIGHT);
 
             damage(state.focusedwindow);
 
