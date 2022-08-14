@@ -170,6 +170,7 @@ static void interpret(void)
 
     printprompt();
     print(buffer, count);
+    update();
 
     if (count >= 2)
         runcommand(count, buffer);

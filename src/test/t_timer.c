@@ -1,8 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int ticks;
-static unsigned int counter;
+static unsigned int counter = 1;
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
@@ -14,20 +13,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     while (channel_polleventsystem(EVENT_TIMERTICK, &message))
     {
 
-        ticks++;
+        message_init(&message, EVENT_DATA);
+        message_putstring(&message, "Tick: ");
+        message_putvalue(&message, counter, 10, 0);
+        message_putstring(&message, " second\n");
+        channel_sendmessage(&message);
 
-        if (ticks % 6)
-        {
-
-            message_init(&message, EVENT_DATA);
-            message_putstring(&message, "Tick: ");
-            message_putvalue(&message, counter * 60, 10, 0);
-            message_putstring(&message, "ms\n");
-            channel_sendmessage(&message);
-
-            counter++;
-
-        }
+        counter++;
 
     }
 
@@ -39,7 +31,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    if (!file_walk2(FILE_G0, "system:timer/if:0/event10"))
+    if (!file_walk2(FILE_G0, "system:timer/if:0/event100"))
         return;
 
     channel_bind(EVENT_MAIN, onmain);
