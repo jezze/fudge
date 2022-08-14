@@ -17,9 +17,16 @@
 #define INIT16PHYSICAL                  0x00008000
 #define INIT32PHYSICAL                  0x00008200
 
-static struct arch_tss tss[256];
-static struct core cores[256];
-static struct list_item coreitems[256];
+struct coredata
+{
+
+    struct arch_tss tss;
+    struct core core;
+    struct list_item item;
+
+};
+
+static struct coredata coredata[256];
 static struct list corelist;
 
 static void detect(struct acpi_madt *madt)
@@ -58,7 +65,7 @@ static void detect(struct acpi_madt *madt)
 static struct core *coreget(void)
 {
 
-    return &cores[apic_getid()];
+    return &coredata[apic_getid()].core;
 
 }
 
@@ -86,15 +93,15 @@ void smp_setupbp(unsigned int stack, struct list *tasks)
     unsigned int id = apic_getid();
     struct list_item *taskitem;
 
-    core_init(&cores[id], id, stack);
-    core_register(&cores[id]);
-    arch_configuretss(&tss[id], cores[id].id, cores[id].sp);
+    core_init(&coredata[id].core, id, stack);
+    core_register(&coredata[id].core);
+    arch_configuretss(&coredata[id].tss, coredata[id].core.id, coredata[id].core.sp);
     apic_setup_bp();
-    list_inititem(&coreitems[id], &cores[id]);
-    list_add(&corelist, &coreitems[id]);
+    list_inititem(&coredata[id].item, &coredata[id].core);
+    list_add(&corelist, &coredata[id].item);
 
     while ((taskitem = list_pickhead(tasks)))
-        list_add(&cores[id].tasks, taskitem);
+        list_add(&coredata[id].core.tasks, taskitem);
 
 }
 
@@ -103,16 +110,16 @@ void smp_setupap(unsigned int stack)
 
     unsigned int id = apic_getid();
 
-    core_init(&cores[id], id, stack);
-    core_register(&cores[id]);
-    arch_configuretss(&tss[id], cores[id].id, cores[id].sp);
+    core_init(&coredata[id].core, id, stack);
+    core_register(&coredata[id].core);
+    arch_configuretss(&coredata[id].tss, coredata[id].core.id, coredata[id].core.sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_KERNELMMUPHYSICAL);
     mmu_enable();
     apic_setup_ap();
     pat_setup();
-    list_inititem(&coreitems[id], &cores[id]);
-    list_add(&corelist, &coreitems[id]);
-    arch_leave(&cores[id]);
+    list_inititem(&coredata[id].item, &coredata[id].core);
+    list_add(&corelist, &coredata[id].item);
+    arch_leave(&coredata[id].core);
 
 }
 

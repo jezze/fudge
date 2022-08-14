@@ -9,15 +9,29 @@
 #include "descriptor.h"
 #include "kernel.h"
 
-static struct task tasks[KERNEL_TASKS];
+struct taskdata
+{
+
+    struct task task;
+    struct list_item item;
+
+};
+
+struct linkdata
+{
+
+    struct link link;
+    struct list_item item;
+
+};
+
+static struct taskdata taskdata[KERNEL_TASKS];
+static struct linkdata linkdata[KERNEL_LINKS];
 static struct descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
-static struct link links[KERNEL_LINKS];
 static struct list freelinks;
 static struct list killedtasks;
 static struct list blockedtasks;
-static struct list_item taskitems[KERNEL_TASKS];
-static struct list_item linkitems[KERNEL_LINKS];
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct list_item *item);
 
@@ -122,7 +136,7 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
 
             task_unsignal(coretask, TASK_SIGNAL_KILL);
             task_transition(coretask, TASK_STATE_KILLED);
-            list_add(&killedtasks, &taskitems[coretask->id]);
+            list_add(&killedtasks, &taskdata[coretask->id].item);
 
         }
 
@@ -131,7 +145,7 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
 
             task_unsignal(coretask, TASK_SIGNAL_BLOCK);
             task_transition(coretask, TASK_STATE_BLOCKED);
-            list_add(&blockedtasks, &taskitems[coretask->id]);
+            list_add(&blockedtasks, &taskdata[coretask->id].item);
 
         }
 
@@ -139,7 +153,7 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
         {
 
             task_transition(coretask, TASK_STATE_ASSIGNED);
-            coreassign(&taskitems[coretask->id]);
+            coreassign(&taskdata[coretask->id].item);
 
         }
 
@@ -163,7 +177,7 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
             list_remove_unsafe(&blockedtasks, taskitem);
             task_unsignal(task, TASK_SIGNAL_UNBLOCK);
             task_transition(task, TASK_STATE_ASSIGNED);
-            coreassign(&taskitems[task->id]);
+            coreassign(&taskdata[task->id].item);
 
         }
 
@@ -200,7 +214,7 @@ struct descriptor *kernel_getdescriptor(struct task *task, unsigned int descript
 void kernel_kill(unsigned int source, unsigned int target)
 {
 
-    struct task *task = &tasks[target];
+    struct task *task = &taskdata[target].task;
 
     task_signal(task, TASK_SIGNAL_KILL);
 
@@ -209,7 +223,7 @@ void kernel_kill(unsigned int source, unsigned int target)
 unsigned int kernel_pick(unsigned int source, struct message_header *header, void *data)
 {
 
-    struct task *task = &tasks[source];
+    struct task *task = &taskdata[source].task;
     struct mailbox *mailbox = &mailboxes[source];
     unsigned int count = mailbox_pick(mailbox, header, data);
 
@@ -223,7 +237,7 @@ unsigned int kernel_pick(unsigned int source, struct message_header *header, voi
 unsigned int kernel_place(unsigned int source, unsigned int target, struct message_header *header, void *data)
 {
 
-    struct task *task = &tasks[target];
+    struct task *task = &taskdata[target].task;
     struct mailbox *mailbox = &mailboxes[target];
 
     header->source = source;
@@ -305,7 +319,7 @@ struct task *kernel_loadtask(struct task *parent, unsigned int sp)
         {
 
             task_transition(task, TASK_STATE_ASSIGNED);
-            coreassign(&taskitems[task->id]);
+            coreassign(&taskdata[task->id].item);
 
             return task;
 
@@ -315,7 +329,7 @@ struct task *kernel_loadtask(struct task *parent, unsigned int sp)
         {
 
             task_transition(task, TASK_STATE_KILLED);
-            list_add(&killedtasks, &taskitems[task->id]);
+            list_add(&killedtasks, &taskdata[task->id].item);
 
             return 0;
 
@@ -339,8 +353,8 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     for (i = 1; i < KERNEL_TASKS; i++)
     {
 
-        struct task *task = &tasks[i];
-        struct list_item *item = &taskitems[i];
+        struct task *task = &taskdata[i].task;
+        struct list_item *item = &taskdata[i].item;
 
         task_init(task, i);
         task_register(task);
@@ -371,8 +385,8 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     for (i = 0; i < KERNEL_LINKS; i++)
     {
 
-        struct link *link = &links[i];
-        struct list_item *item = &linkitems[i];
+        struct link *link = &linkdata[i].link;
+        struct list_item *item = &linkdata[i].item;
 
         link_init(link);
         list_inititem(item, link);
