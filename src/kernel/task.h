@@ -18,7 +18,6 @@ struct task
 {
 
     struct resource resource;
-    struct list_item item;
     struct task_thread thread;
     struct binary_node node;
     struct spinlock spinlock;

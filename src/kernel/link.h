@@ -1,7 +1,6 @@
 struct link
 {
 
-    struct list_item item;
     unsigned int source;
 
 };

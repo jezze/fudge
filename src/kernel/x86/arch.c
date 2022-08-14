@@ -60,10 +60,10 @@ static struct core *coreget(void)
 
 }
 
-static void coreassign(struct task *task)
+static void coreassign(struct list_item *item)
 {
 
-    list_add(&core0.tasks, &task->item);
+    list_add(&core0.tasks, item);
 
 }
 

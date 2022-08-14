@@ -19,6 +19,7 @@
 
 static struct arch_tss tss[256];
 static struct core cores[256];
+static struct list_item coreitems[256];
 static struct list corelist;
 
 static void detect(struct acpi_madt *madt)
@@ -61,7 +62,7 @@ static struct core *coreget(void)
 
 }
 
-static void coreassign(struct task *task)
+static void coreassign(struct list_item *item)
 {
 
     struct list_item *coreitem = list_pickhead(&corelist);
@@ -71,7 +72,7 @@ static void coreassign(struct task *task)
 
         struct core *core = coreitem->data;
 
-        list_add(&core->tasks, &task->item);
+        list_add(&core->tasks, item);
         list_add(&corelist, coreitem);
         apic_sendint(core->id, APIC_REG_ICR_TYPE_NORMAL | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0xFE);
 
@@ -89,7 +90,8 @@ void smp_setupbp(unsigned int stack, struct list *tasks)
     core_register(&cores[id]);
     arch_configuretss(&tss[id], cores[id].id, cores[id].sp);
     apic_setup_bp();
-    list_add(&corelist, &cores[id].item);
+    list_inititem(&coreitems[id], &cores[id]);
+    list_add(&corelist, &coreitems[id]);
 
     while ((taskitem = list_pickhead(tasks)))
         list_add(&cores[id].tasks, taskitem);
@@ -108,7 +110,8 @@ void smp_setupap(unsigned int stack)
     mmu_enable();
     apic_setup_ap();
     pat_setup();
-    list_add(&corelist, &cores[id].item);
+    list_inititem(&coreitems[id], &cores[id]);
+    list_add(&corelist, &coreitems[id]);
     arch_leave(&cores[id]);
 
 }

@@ -204,10 +204,8 @@ static unsigned int service_link(unsigned int id, unsigned int source)
 {
 
     struct system_node *node = getnode(id);
-    struct link *link = kernel_picklink(source);
 
-    if (link)
-        list_add(&node->links, &link->item);
+    kernel_addlink(source, &node->links);
 
     return id;
 
@@ -217,29 +215,8 @@ static unsigned int service_unlink(unsigned int id, unsigned int source)
 {
 
     struct system_node *node = getnode(id);
-    struct list_item *current;
-    struct list_item *next;
 
-    spinlock_acquire(&node->links.spinlock);
-
-    for (current = node->links.head; current; current = next)
-    {
-
-        struct link *link = current->data;
-
-        next = current->next;
-
-        if (link->source == source)
-        {
-
-            list_remove_unsafe(&node->links, &link->item);
-            kernel_freelink(link);
-
-        }
-
-    }
-
-    spinlock_release(&node->links.spinlock);
+    kernel_removelink(source, &node->links);
 
     return id;
 

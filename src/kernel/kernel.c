@@ -16,8 +16,10 @@ static struct link links[KERNEL_LINKS];
 static struct list freelinks;
 static struct list killedtasks;
 static struct list blockedtasks;
+static struct list_item taskitems[KERNEL_TASKS];
+static struct list_item linkitems[KERNEL_LINKS];
 static struct core *(*coreget)(void);
-static void (*coreassign)(struct task *task);
+static void (*coreassign)(struct list_item *item);
 
 static unsigned int setupbinary(struct task *task, unsigned int sp)
 {
@@ -51,7 +53,7 @@ struct core *kernel_getcore(void)
 
 }
 
-void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *task))
+void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item))
 {
 
     coreget = get;
@@ -59,7 +61,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct task *t
 
 }
 
-struct link *kernel_picklink(unsigned int source)
+void kernel_addlink(unsigned int source, struct list *list)
 {
 
     struct list_item *linkitem = list_picktail(&freelinks);
@@ -71,20 +73,38 @@ struct link *kernel_picklink(unsigned int source)
 
         link->source = source;
 
-        return link;
+        list_add(list, linkitem);
 
     }
 
-    return 0;
-
 }
 
-void kernel_freelink(struct link *link)
+void kernel_removelink(unsigned int source, struct list *list)
 {
 
-    link->source = 0;
+    struct list_item *current;
+    struct list_item *next;
 
-    list_add(&freelinks, &link->item);
+    spinlock_acquire(&list->spinlock);
+
+    for (current = list->head; current; current = next)
+    {
+
+        struct link *link = current->data;
+
+        next = current->next;
+
+        if (link->source == source)
+        {
+
+            list_remove_unsafe(list, current);
+            list_add_unsafe(&freelinks, current);
+
+        }
+
+    }
+
+    spinlock_release(&list->spinlock);
 
 }
 
@@ -102,7 +122,7 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
 
             task_unsignal(coretask, TASK_SIGNAL_KILL);
             task_transition(coretask, TASK_STATE_KILLED);
-            list_add(&killedtasks, &coretask->item);
+            list_add(&killedtasks, &taskitems[coretask->id]);
 
         }
 
@@ -111,7 +131,7 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
 
             task_unsignal(coretask, TASK_SIGNAL_BLOCK);
             task_transition(coretask, TASK_STATE_BLOCKED);
-            list_add(&blockedtasks, &coretask->item);
+            list_add(&blockedtasks, &taskitems[coretask->id]);
 
         }
 
@@ -119,7 +139,7 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
         {
 
             task_transition(coretask, TASK_STATE_ASSIGNED);
-            coreassign(coretask);
+            coreassign(&taskitems[coretask->id]);
 
         }
 
@@ -143,7 +163,7 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
             list_remove_unsafe(&blockedtasks, taskitem);
             task_unsignal(task, TASK_SIGNAL_UNBLOCK);
             task_transition(task, TASK_STATE_ASSIGNED);
-            coreassign(task);
+            coreassign(&taskitems[task->id]);
 
         }
 
@@ -285,7 +305,7 @@ struct task *kernel_loadtask(struct task *parent, unsigned int sp)
         {
 
             task_transition(task, TASK_STATE_ASSIGNED);
-            coreassign(task);
+            coreassign(&taskitems[task->id]);
 
             return task;
 
@@ -295,7 +315,7 @@ struct task *kernel_loadtask(struct task *parent, unsigned int sp)
         {
 
             task_transition(task, TASK_STATE_KILLED);
-            list_add(&killedtasks, &task->item);
+            list_add(&killedtasks, &taskitems[task->id]);
 
             return 0;
 
@@ -320,10 +340,12 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     {
 
         struct task *task = &tasks[i];
+        struct list_item *item = &taskitems[i];
 
         task_init(task, i);
         task_register(task);
-        list_add(&killedtasks, &task->item);
+        list_inititem(item, task);
+        list_add(&killedtasks, item);
 
     }
 
@@ -350,9 +372,11 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     {
 
         struct link *link = &links[i];
+        struct list_item *item = &linkitems[i];
 
         link_init(link);
-        list_add(&freelinks, &link->item);
+        list_inititem(item, link);
+        list_add(&freelinks, item);
 
     }
 
