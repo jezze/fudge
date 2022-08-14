@@ -335,8 +335,6 @@ void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
 void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, unsigned char *buffer)
 {
 
-    int h;
-
     if (pcxresource->lastline == line - 1)
     {
 
@@ -347,6 +345,8 @@ void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, uns
 
     else
     {
+
+        int h;
 
         pcxresource->lastoffset = 0;
 

@@ -20,16 +20,32 @@ static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmclick *wmclick = mdata;
-    char *data0 = "= text1 content \"Button 0 clicked\"\n";
-    char *data1 = "= text1 content \"Button 1 clicked\"\n";
-    char *data2 = "= text1 content \"No button clicked\"\n";
 
     if (cstring_match(wmclick->clicked, "button0"))
+    {
+
+        char *data0 = "= text1 content \"Button 0 clicked\"\n";
+
         file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data0), data0);
+
+    }
+
     else if (cstring_match(wmclick->clicked, "button1"))
+    {
+
+        char *data1 = "= text1 content \"Button 1 clicked\"\n";
+
         file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data1), data1);
+    }
+
     else
+    {
+
+        char *data2 = "= text1 content \"No button clicked\"\n";
+
         file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data2), data2);
+
+    }
 
 }
 
