@@ -3,7 +3,7 @@
 
 static struct list resources;
 
-static struct resource *resource_next(struct resource *resource)
+static struct resource *nextresource(struct resource *resource)
 {
 
     struct list_item *current = (resource) ? resource->item.next : resources.head;
@@ -17,7 +17,7 @@ struct resource *resource_foreach(struct resource *resource)
 
     spinlock_acquire(&resources.spinlock);
 
-    resource = resource_next(resource);
+    resource = nextresource(resource);
 
     spinlock_release(&resources.spinlock);
 
@@ -30,7 +30,7 @@ struct resource *resource_foreachtype(struct resource *resource, unsigned int ty
 
     spinlock_acquire(&resources.spinlock);
 
-    while ((resource = resource_next(resource)))
+    while ((resource = nextresource(resource)))
     {
 
         if (resource->type == type)
