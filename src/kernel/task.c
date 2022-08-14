@@ -61,7 +61,7 @@ void task_unsignal(struct task *task, unsigned int signal)
 
 }
 
-void task_transition(struct task *task, unsigned int state)
+unsigned int task_transition(struct task *task, unsigned int state)
 {
 
     spinlock_acquire(&task->spinlock);
@@ -94,6 +94,8 @@ void task_transition(struct task *task, unsigned int state)
     }
 
     spinlock_release(&task->spinlock);
+
+    return task->state == state;
 
 }
 

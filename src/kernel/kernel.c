@@ -135,8 +135,9 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
         {
 
             task_unsignal(coretask, TASK_SIGNAL_KILL);
-            task_transition(coretask, TASK_STATE_KILLED);
-            list_add(&killedtasks, &taskdata[coretask->id].item);
+
+            if (task_transition(coretask, TASK_STATE_KILLED))
+                list_add(&killedtasks, &taskdata[coretask->id].item);
 
         }
 
@@ -144,16 +145,17 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
         {
 
             task_unsignal(coretask, TASK_SIGNAL_BLOCK);
-            task_transition(coretask, TASK_STATE_BLOCKED);
-            list_add(&blockedtasks, &taskdata[coretask->id].item);
+
+            if (task_transition(coretask, TASK_STATE_BLOCKED))
+                list_add(&blockedtasks, &taskdata[coretask->id].item);
 
         }
 
         else
         {
 
-            task_transition(coretask, TASK_STATE_ASSIGNED);
-            coreassign(&taskdata[coretask->id].item);
+            if (task_transition(coretask, TASK_STATE_ASSIGNED))
+                coreassign(&taskdata[coretask->id].item);
 
         }
 
@@ -176,8 +178,9 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
 
             list_remove_unsafe(&blockedtasks, taskitem);
             task_unsignal(task, TASK_SIGNAL_UNBLOCK);
-            task_transition(task, TASK_STATE_ASSIGNED);
-            coreassign(&taskdata[task->id].item);
+
+            if (task_transition(task, TASK_STATE_ASSIGNED))
+                coreassign(taskitem);
 
         }
 
@@ -194,9 +197,8 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
 
         struct task *task = taskitem->data;
 
-        task_transition(task, TASK_STATE_RUNNING);
-
-        return task;
+        if (task_transition(task, TASK_STATE_RUNNING))
+            return task;
 
     }
 
@@ -318,8 +320,8 @@ struct task *kernel_loadtask(struct task *parent, unsigned int sp)
         if (setupbinary(task, sp))
         {
 
-            task_transition(task, TASK_STATE_ASSIGNED);
-            coreassign(&taskdata[task->id].item);
+            if (task_transition(task, TASK_STATE_ASSIGNED))
+                coreassign(taskitem);
 
             return task;
 
@@ -328,8 +330,8 @@ struct task *kernel_loadtask(struct task *parent, unsigned int sp)
         else
         {
 
-            task_transition(task, TASK_STATE_KILLED);
-            list_add(&killedtasks, &taskdata[task->id].item);
+            if (task_transition(task, TASK_STATE_KILLED))
+                list_add(&killedtasks, taskitem);
 
             return 0;
 
