@@ -110,7 +110,7 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
     char module[32];
 
     offset += buffer_write(module, 32, symbolname, buffer_findbyte(symbolname, count, '_'), offset);
-    offset += buffer_write(module, 32, ".ko", 4, offset);
+    offset += cstring_writez(module, 32, ".ko", offset);
 
     if (file_walk(FILE_L0, FILE_G0, module))
         address = findsymbol(FILE_L0, count, symbolname);

@@ -147,10 +147,8 @@ static unsigned int readgroup(struct system_node *current, void *buffer, unsigne
     if (current->type == SYSTEM_NODETYPE_MULTIGROUP)
     {
 
-        char num[CSTRING_NUMSIZE];
-
-        record.length += buffer_write(record.name, RECORD_NAMESIZE, ":", 1, record.length);
-        record.length += buffer_write(record.name, RECORD_NAMESIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, current->index, 10, 0), record.length);
+        record.length += cstring_write(record.name, RECORD_NAMESIZE, ":", record.length);
+        record.length += cstring_writevalue(record.name, RECORD_NAMESIZE, current->index, 10, 0, record.length);
 
     }
 

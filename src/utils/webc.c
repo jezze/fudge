@@ -13,15 +13,15 @@ static unsigned int buildrequest(unsigned int count, void *buffer, struct url *k
 
     unsigned int offset = 0;
 
-    offset += buffer_write(buffer, count, "GET /", 5, offset);
+    offset += cstring_write(buffer, count, "GET /", offset);
 
     if (kurl->path)
-        offset += buffer_write(buffer, count, kurl->path, cstring_length(kurl->path), offset);
+        offset += cstring_write(buffer, count, kurl->path, offset);
 
-    offset += buffer_write(buffer, count, " HTTP/1.1\r\n", 11, offset);
-    offset += buffer_write(buffer, count, "Host: ", 6, offset);
-    offset += buffer_write(buffer, count, kurl->host, cstring_length(kurl->host), offset);
-    offset += buffer_write(buffer, count, "\r\n\r\n", 4, offset);
+    offset += cstring_write(buffer, count, " HTTP/1.1\r\n", offset);
+    offset += cstring_write(buffer, count, "Host: ", offset);
+    offset += cstring_write(buffer, count, kurl->host, offset);
+    offset += cstring_write(buffer, count, "\r\n\r\n", offset);
 
     return offset;
 

@@ -17,43 +17,41 @@ static void interface_write(unsigned int level, char *string, char *file, unsign
     {
 
     case DEBUG_CRITICAL:
-        count += buffer_write(buffer, BUFFER_SIZE, "[CRIT] ", 7, count);
+        count += cstring_write(buffer, BUFFER_SIZE, "[CRIT] ", count);
 
         break;
 
     case DEBUG_ERROR:
-        count += buffer_write(buffer, BUFFER_SIZE, "[ERRO] ", 7, count);
+        count += cstring_write(buffer, BUFFER_SIZE, "[ERRO] ", count);
 
         break;
 
     case DEBUG_WARNING:
-        count += buffer_write(buffer, BUFFER_SIZE, "[WARN] ", 7, count);
+        count += cstring_write(buffer, BUFFER_SIZE, "[WARN] ", count);
 
         break;
 
     case DEBUG_INFO:
-        count += buffer_write(buffer, BUFFER_SIZE, "[INFO] ", 7, count);
+        count += cstring_write(buffer, BUFFER_SIZE, "[INFO] ", count);
 
         break;
 
     }
 
-    count += buffer_write(buffer, BUFFER_SIZE, string, cstring_length(string), count);
+    count += cstring_write(buffer, BUFFER_SIZE, string, count);
 
     if (file && line)
     {
 
-        char num[CSTRING_NUMSIZE];
-
-        count += buffer_write(buffer, BUFFER_SIZE, " (", 2, count);
-        count += buffer_write(buffer, BUFFER_SIZE, file, cstring_length(file), count);
-        count += buffer_write(buffer, BUFFER_SIZE, ":", 1, count);
-        count += buffer_write(buffer, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, line, 10, 0), count);
-        count += buffer_write(buffer, BUFFER_SIZE, ")", 1, count);
+        count += cstring_write(buffer, BUFFER_SIZE, " (", count);
+        count += cstring_write(buffer, BUFFER_SIZE, file, count);
+        count += cstring_write(buffer, BUFFER_SIZE, ":", count);
+        count += cstring_writevalue(buffer, BUFFER_SIZE, line, 10, 0, count);
+        count += cstring_write(buffer, BUFFER_SIZE, ")", count);
 
     }
 
-    count += buffer_write(buffer, BUFFER_SIZE, "\n", 1, count);
+    count += cstring_write(buffer, BUFFER_SIZE, "\n", count);
 
     kernel_notify(&messages.links, EVENT_DATA, buffer, count);
 

@@ -29,7 +29,7 @@ static void interpret(void *buffer, unsigned int count)
         char outputdata[BUFFER_SIZE];
         unsigned int offset = 0;
 
-        offset += buffer_write(outputdata, BUFFER_SIZE, text, cstring_length(text), offset);
+        offset += cstring_write(outputdata, BUFFER_SIZE, text, offset);
         offset += buffer_write(outputdata, BUFFER_SIZE, buffer, count, offset);
 
         socket_send_tcp(FILE_G1, &local, &remote, &router, offset, outputdata);

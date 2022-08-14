@@ -26,23 +26,21 @@ unsigned int message_putbuffer(struct message *message, unsigned int count, void
 unsigned int message_putstring(struct message *message, char *string)
 {
 
-    return message_putbuffer(message, cstring_length(string), string);
+    return message->header.length += cstring_write(message->data.buffer, MESSAGE_SIZE, string, message_datasize(&message->header));
 
 }
 
 unsigned int message_putstringz(struct message *message, char *string)
 {
 
-    return message_putbuffer(message, cstring_lengthz(string), string);
+    return message->header.length += cstring_writez(message->data.buffer, MESSAGE_SIZE, string, message_datasize(&message->header));
 
 }
 
 unsigned int message_putvalue(struct message *message, int value, unsigned int base, unsigned int padding)
 {
 
-    char num[CSTRING_NUMSIZE];
-
-    return message_putbuffer(message, cstring_wvalue(num, CSTRING_NUMSIZE, value, base, padding), num);
+    return message->header.length += cstring_writevalue(message->data.buffer, MESSAGE_SIZE, value, base, padding, message_datasize(&message->header));
 
 }
 

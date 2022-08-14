@@ -50,7 +50,7 @@ unsigned int dns_copyname(void *buffer, unsigned int count, char *name)
 
     }
 
-    c += buffer_write(buffer, count, "\0", 1, c);
+    c += cstring_writez(buffer, count, "", c);
 
     return c;
 
@@ -82,7 +82,7 @@ unsigned int dns_writename(void *buffer, unsigned int count, char *name, void *s
             index += name[index] + 1;
 
             if (name[index])
-                offset += buffer_write(buffer, count, ".", 1, offset);
+                offset += cstring_write(buffer, count, ".", offset);
 
         }
 

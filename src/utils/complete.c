@@ -28,7 +28,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *value = key + cstring_lengthz(key);
 
     if (cstring_match(key, "key"))
-        keylength = buffer_write(key, 1024, value, cstring_length(value), 0);
+        keylength = cstring_write(key, 1024, value, 0);
 
 }
 

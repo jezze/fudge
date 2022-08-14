@@ -14,13 +14,12 @@ static int accumulator;
 static void refresh(int value)
 {
 
-    char num[CSTRING_NUMSIZE];
     char buffer[BUFFER_SIZE];
     unsigned int count = 0;
 
-    count += buffer_write(buffer, BUFFER_SIZE, "= result content \"", 18, count);
-    count += buffer_write(buffer, BUFFER_SIZE, num, cstring_wvalue(num, CSTRING_NUMSIZE, value, 10, 0), count);
-    count += buffer_write(buffer, BUFFER_SIZE, "\"\n", 2, count);
+    count += cstring_write(buffer, BUFFER_SIZE, "= result content \"", count);
+    count += cstring_writevalue(buffer, BUFFER_SIZE, value, 10, 0, count);
+    count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
 

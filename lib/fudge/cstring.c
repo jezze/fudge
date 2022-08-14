@@ -76,6 +76,29 @@ unsigned int cstring_toint(char c)
 
 }
 
+unsigned int cstring_write(char *out, unsigned int count, char *in, unsigned int offset)
+{
+
+    return buffer_write(out, count, in, cstring_length(in), offset);
+
+}
+
+unsigned int cstring_writez(char *out, unsigned int count, char *in, unsigned int offset)
+{
+
+    return buffer_write(out, count, in, cstring_lengthz(in), offset);
+
+}
+
+unsigned int cstring_writevalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding, unsigned int offset)
+{
+
+    char num[1024];
+
+    return buffer_write(out, count, num, cstring_wvalue(num, 1024, value, base, padding), offset);
+
+}
+
 unsigned int cstring_rvalue(char *in, unsigned int count, unsigned int base)
 {
 

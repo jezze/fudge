@@ -18,7 +18,7 @@ static unsigned int service_create(void *name, unsigned int length)
     system_initnode(node, SYSTEM_NODETYPE_NORMAL, namebuffer + nameoffset);
 
     nameoffset += buffer_write(namebuffer, 1024, name, length, nameoffset);
-    nameoffset += buffer_write(namebuffer, 1024, "", 1, nameoffset);
+    nameoffset += cstring_writez(namebuffer, 1024, "", nameoffset);
 
     system_addchild(&service, node);
 
