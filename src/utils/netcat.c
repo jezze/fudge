@@ -52,14 +52,14 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count;
-
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
 
     if (file_walk(FILE_G1, FILE_G0, "data"))
     {
+
+        char buffer[BUFFER_SIZE];
+        unsigned int count;
 
         file_link(FILE_G1);
         socket_resolveremote(FILE_G1, &local, &router);

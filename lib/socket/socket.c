@@ -118,8 +118,6 @@ static unsigned int buildudp(struct socket *local, struct socket *remote, struct
 static unsigned int respondarp(unsigned int descriptor, struct socket *local, struct socket *remote, struct arp_header *header, unsigned char *pdata, unsigned int psize)
 {
 
-    struct message_data data;
-
     switch (net_load16(header->operation))
     {
 
@@ -127,6 +125,7 @@ static unsigned int respondarp(unsigned int descriptor, struct socket *local, st
         if (buffer_match(pdata + net_load8(header->hlength) + net_load8(header->plength) + net_load8(header->hlength), local->paddress, IPV4_ADDRSIZE))
         {
 
+            struct message_data data;
             struct socket answer;
 
             socket_init(&answer);

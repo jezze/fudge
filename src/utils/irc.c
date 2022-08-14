@@ -120,10 +120,6 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *request = "NICK jfu_fudge\nUSER jfu_fudge 0 * :Jens Fudge\nJOIN #fudge\n";
-    char buffer[BUFFER_SIZE];
-    unsigned int count;
-
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
 
@@ -131,6 +127,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     if (file_walk(FILE_G1, FILE_G0, "data"))
     {
+
+        char *request = "NICK jfu_fudge\nUSER jfu_fudge 0 * :Jens Fudge\nJOIN #fudge\n";
+        char buffer[BUFFER_SIZE];
+        unsigned int count;
 
         file_link(FILE_G1);
         socket_resolveremote(FILE_G1, &local, &router);

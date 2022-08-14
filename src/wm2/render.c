@@ -123,16 +123,16 @@ static unsigned int getcolor(unsigned int index, unsigned int state)
 
 }
 
-static unsigned int getrownum(unsigned int index, int line, int y)
+static unsigned int getrownum(unsigned int fontindex, int line, int y)
 {
 
-    struct font *font = &fonts[index];
+    struct font *font = &fonts[fontindex];
 
     return (line - y) / font->lineheight;
 
 }
 
-static unsigned int getrowstart(unsigned int index, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw)
+static unsigned int getrowstart(unsigned int fontindex, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw)
 {
 
     unsigned int offset = 0;
@@ -142,7 +142,7 @@ static unsigned int getrowstart(unsigned int index, char *text, unsigned int len
     if (!rownum)
         return 0;
 
-    for (rows = 1; (offset = render_getrowinfo(index, text, length, &rowinfo, wrap, maxw, offset)); rows++)
+    for (rows = 1; (offset = render_getrowinfo(fontindex, text, length, &rowinfo, wrap, maxw, offset)); rows++)
     {
 
         if (rows == rownum)
@@ -245,10 +245,10 @@ static void blitcmap32line(struct render_display *display, int x, void *idata, u
 
 }
 
-static void blittextnormal(struct render_display *display, unsigned int index, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
+static void blittextnormal(struct render_display *display, unsigned int fontindex, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
 {
 
-    struct font *font = &fonts[index];
+    struct font *font = &fonts[fontindex];
     unsigned int i;
 
     for (i = 0; i < length; i++)
@@ -294,10 +294,10 @@ static void blittextnormal(struct render_display *display, unsigned int index, u
 
 }
 
-static void blittextinverted(struct render_display *display, unsigned int index, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
+static void blittextinverted(struct render_display *display, unsigned int fontindex, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
 {
 
-    struct font *font = &fonts[index];
+    struct font *font = &fonts[fontindex];
     unsigned int i;
 
     for (i = 0; i < length; i++)
@@ -707,10 +707,10 @@ static void rendertext(struct render_display *display, struct widget *widget, in
 {
 
     struct widget_text *text = widget->data;
-    unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
+    unsigned int fontindex = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
     char *tt = pool_getstring(text->content);
     unsigned int tl = pool_getcstringlength(text->content);
-    unsigned int rownum = getrownum(index, line, widget->position.y);
+    unsigned int rownum = getrownum(fontindex, line, widget->position.y);
     struct render_rowinfo rowinfo;
     unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
     unsigned int rw = widget->size.w - roff;
@@ -720,15 +720,15 @@ static void rendertext(struct render_display *display, struct widget *widget, in
     {
 
         if (rownum > text->rownum)
-            text->rowstart = render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, rw, text->rowstart);
+            text->rowstart = render_getrowinfo(fontindex, tt, tl, &rowinfo, text->wrap, rw, text->rowstart);
         else
-            text->rowstart = getrowstart(index, tt, tl, rownum, text->wrap, widget->size.w);
+            text->rowstart = getrowstart(fontindex, tt, tl, rownum, text->wrap, widget->size.w);
 
         text->rownum = rownum;
 
     }
 
-    if (render_getrowinfo(index, tt, tl, &rowinfo, text->wrap, rw, text->rowstart))
+    if (render_getrowinfo(fontindex, tt, tl, &rowinfo, text->wrap, rw, text->rowstart))
     {
 
         unsigned int rx = widget->position.x + roff;
@@ -756,12 +756,12 @@ static void rendertext(struct render_display *display, struct widget *widget, in
         {
 
         case WIDGET_TEXT_MODE_NORMAL:
-            blittextnormal(display, index, getcolor(CMAP_TEXT_TEXT, widget->state), tt + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextnormal(display, fontindex, getcolor(CMAP_TEXT_TEXT, widget->state), tt + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
         case WIDGET_TEXT_MODE_INVERTED:
-            blittextinverted(display, index, getcolor(CMAP_TEXT_TEXT, widget->state), tt + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextinverted(display, fontindex, getcolor(CMAP_TEXT_TEXT, widget->state), tt + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
@@ -847,10 +847,10 @@ static void renderwidget(struct render_display *display, struct widget *widget, 
 
 }
 
-unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int wrap, unsigned int maxw, unsigned int offset)
+unsigned int render_getrowinfo(unsigned int fontindex, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int wrap, unsigned int maxw, unsigned int offset)
 {
 
-    struct font *font = &fonts[index];
+    struct font *font = &fonts[fontindex];
     unsigned int si = 0;
     unsigned int w = 0;
     unsigned int sw = 0;
@@ -865,7 +865,7 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
     rowinfo->width = 0;
     rowinfo->height = 0;
     rowinfo->newline = 0;
-    rowinfo->lineheight = fonts[index].lineheight;
+    rowinfo->lineheight = fonts[fontindex].lineheight;
 
     for (i = offset; i < length; i++)
     {
@@ -931,21 +931,21 @@ unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int leng
 
 }
 
-unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int length, struct render_textinfo *textinfo, unsigned int wrap, unsigned int offw, unsigned int maxw)
+unsigned int render_gettextinfo(unsigned int fontindex, char *text, unsigned int length, struct render_textinfo *textinfo, unsigned int wrap, unsigned int offw, unsigned int maxw)
 {
 
     unsigned int offset = 0;
 
-    if ((offset = render_getrowinfo(index, text, length, &textinfo->last, wrap, maxw - offw, offset)))
+    if ((offset = render_getrowinfo(fontindex, text, length, &textinfo->last, wrap, maxw - offw, offset)))
     {
 
         textinfo->last.width += offw;
-        textinfo->lineheight = fonts[index].lineheight;
+        textinfo->lineheight = fonts[fontindex].lineheight;
         textinfo->width = textinfo->last.width;
         textinfo->height = textinfo->last.height;
         textinfo->rows = 1;
 
-        while ((offset = render_getrowinfo(index, text, length, &textinfo->last, wrap, maxw, offset)))
+        while ((offset = render_getrowinfo(fontindex, text, length, &textinfo->last, wrap, maxw, offset)))
         {
 
             textinfo->width = util_max(textinfo->width, textinfo->last.width);
@@ -1036,14 +1036,14 @@ void render_render(struct render_display *display)
 
 }
 
-void render_setfont(unsigned int index, void *data, unsigned int lineheight, unsigned int padding)
+void render_setfont(unsigned int fontindex, void *data, unsigned int lineheight, unsigned int padding)
 {
 
-    struct font *font = &fonts[index];
+    struct font *font = &fonts[fontindex];
 
     font->data = data;
-    font->bitmapdata = pcf_getbitmapdata(fonts[index].data);
-    font->bitmapalign = pcf_getbitmapalign(fonts[index].data);
+    font->bitmapdata = pcf_getbitmapdata(font->data);
+    font->bitmapalign = pcf_getbitmapalign(font->data);
     font->lineheight = lineheight;
     font->padding = padding;
 

@@ -23,7 +23,7 @@ struct state
 static struct socket local;
 static struct socket remote;
 static struct socket router;
-static char blocks[BLOCKSIZE * 4];
+static char blockdata[BLOCKSIZE * 4];
 static unsigned int version = P9P_VERSION_UNKNOWN;
 
 static struct state *request_getstate(unsigned int fid)
@@ -66,7 +66,7 @@ static unsigned int request_poll(struct state *state)
     while (channel_polleventsystem(EVENT_DATA, &message))
     {
 
-        state->blockreads += buffer_write(blocks, BLOCKSIZE * 4, message.data.buffer, message_datasize(&message.header), state->blockreads * BLOCKSIZE) / BLOCKSIZE;
+        state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, message.data.buffer, message_datasize(&message.header), state->blockreads * BLOCKSIZE) / BLOCKSIZE;
 
         if (state->blockreads == state->blockcount)
             return state->count;
@@ -90,7 +90,7 @@ static unsigned int request_sendpoll(struct state *state, unsigned int offset, u
 static void *request_getdata(struct state *state)
 {
 
-    return ((char *)blocks + state->blockoffset);
+    return ((char *)blockdata + state->blockoffset);
 
 }
 

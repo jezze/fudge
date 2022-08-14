@@ -70,9 +70,8 @@ unsigned int base64_decode(unsigned char *src, unsigned int len, unsigned char *
 {
 
     unsigned char dtable[256];
-    unsigned char *pos;
+    unsigned char *pos = 0;
     unsigned char block[4];
-    unsigned char tmp;
     unsigned int count;
     unsigned int i;
     int pad = 0;
@@ -102,7 +101,7 @@ unsigned int base64_decode(unsigned char *src, unsigned int len, unsigned char *
     for (i = 0; i < len; i++)
     {
 
-        tmp = dtable[src[i]];
+        unsigned char tmp = dtable[src[i]];
 
         if (tmp == 0x80)
             continue;

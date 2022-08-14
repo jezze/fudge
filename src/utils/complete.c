@@ -1,13 +1,13 @@
 #include <fudge.h>
 #include <abi.h>
 
-static char key[1024];
+static char keyname[1024];
 static unsigned int keylength;
 
 static void print(unsigned int source, struct record *record)
 {
 
-    if (buffer_match(record->name, key, keylength))
+    if (buffer_match(record->name, keyname, keylength))
     {
 
         struct message message;
@@ -28,7 +28,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *value = key + cstring_lengthz(key);
 
     if (cstring_match(key, "key"))
-        keylength = cstring_write(key, 1024, value, 0);
+        keylength = cstring_write(keyname, 1024, value, 0);
 
 }
 

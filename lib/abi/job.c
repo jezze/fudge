@@ -52,8 +52,6 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
             break;
 
         case 'E':
-            start = nextword(start);
-
             return njobs;
 
         }
