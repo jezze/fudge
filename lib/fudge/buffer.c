@@ -1,5 +1,7 @@
 #include "buffer.h"
 
+extern void buffer_x86_copy(void *out, void *in, unsigned int count);
+
 void buffer_clear(void *out, unsigned int count)
 {
 
@@ -7,17 +9,6 @@ void buffer_clear(void *out, unsigned int count)
 
     while (count--)
         *op++ = 0;
-
-}
-
-void buffer_copy(void *out, void *in, unsigned int count)
-{
-
-    unsigned char *op = out;
-    unsigned char *ip = in;
-
-    while (count--)
-        *op++ = *ip++;
 
 }
 

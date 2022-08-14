@@ -1,6 +1,7 @@
 O:=\
     $(O) \
     $(DIR_LIB)/fudge/arm/atomic.o \
+    $(DIR_LIB)/fudge/arm/buffer.o \
     $(DIR_LIB)/fudge/arm/__aeabi_idiv.o \
     $(DIR_LIB)/fudge/arm/__aeabi_idivmod.o \
     $(DIR_LIB)/fudge/arm/__aeabi_uidiv.o \
