@@ -1,6 +1,51 @@
 #include "buffer.h"
 #include "cstring.h"
 
+static unsigned int writevalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding)
+{
+
+    char *current = out;
+    int b = base;
+    int num = value;
+    unsigned int i;
+
+    for (i = 1; i < count; i++)
+    {
+
+        *current++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + num % b];
+
+        num /= b;
+
+        if (!num && i >= padding)
+            break;
+
+    }
+
+    if (value < 0)
+    {
+
+        *current++ = '-';
+
+        i++;
+
+    }
+
+    current--;
+
+    while (out < current)
+    {
+
+        char c = *current;
+
+        *current-- = *out;
+        *out++ = c;
+
+    }
+
+    return i;
+
+}
+
 unsigned int cstring_length(char *in)
 {
 
@@ -99,11 +144,11 @@ unsigned int cstring_writevalue(char *out, unsigned int count, int value, unsign
 
     char num[1024];
 
-    return buffer_write(out, count, num, cstring_wvalue(num, 1024, value, base, padding), offset);
+    return buffer_write(out, count, num, writevalue(num, 1024, value, base, padding), offset);
 
 }
 
-unsigned int cstring_rvalue(char *in, unsigned int count, unsigned int base)
+unsigned int cstring_readvalue(char *in, unsigned int count, unsigned int base)
 {
 
     unsigned int value = 0;
@@ -113,51 +158,6 @@ unsigned int cstring_rvalue(char *in, unsigned int count, unsigned int base)
         value = value * base + cstring_toint(in[i]);
 
     return value;
-
-}
-
-unsigned int cstring_wvalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding)
-{
-
-    char *current = out;
-    int b = base;
-    int num = value;
-    unsigned int i;
-
-    for (i = 1; i < count; i++)
-    {
-
-        *current++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + num % b];
-
-        num /= b;
-
-        if (!num && i >= padding)
-            break;
-
-    }
-
-    if (value < 0)
-    {
-
-        *current++ = '-';
-
-        i++;
-
-    }
-
-    current--;
-
-    while (out < current)
-    {
-
-        char c = *current;
-
-        *current-- = *out;
-        *out++ = c;
-
-    }
-
-    return i;
 
 }
 

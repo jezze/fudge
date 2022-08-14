@@ -780,13 +780,13 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *value = key + cstring_lengthz(key);
 
     if (cstring_match(key, "width"))
-        optwidth = cstring_rvalue(value, cstring_length(value), 10);
+        optwidth = cstring_readvalue(value, cstring_length(value), 10);
 
     if (cstring_match(key, "height"))
-        optheight = cstring_rvalue(value, cstring_length(value), 10);
+        optheight = cstring_readvalue(value, cstring_length(value), 10);
 
     if (cstring_match(key, "bpp"))
-        optbpp = cstring_rvalue(value, cstring_length(value), 10);
+        optbpp = cstring_readvalue(value, cstring_length(value), 10);
 
     if (cstring_match(key, "keyboard"))
         file_walk2(FILE_G1, value);

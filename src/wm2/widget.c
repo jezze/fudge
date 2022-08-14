@@ -176,7 +176,7 @@ static void setattributecontainer(struct widget *widget, unsigned int attribute,
         break;
 
     case WIDGET_ATTR_PADDING:
-        container->padding = cstring_rvalue(value, cstring_length(value), 10);
+        container->padding = cstring_readvalue(value, cstring_length(value), 10);
 
         break;
 
@@ -198,7 +198,7 @@ static void setattributefill(struct widget *widget, unsigned int attribute, char
     {
 
     case WIDGET_ATTR_COLOR:
-        fill->color = cstring_rvalue(value, cstring_length(value), 16);
+        fill->color = cstring_readvalue(value, cstring_length(value), 16);
 
         break;
 
@@ -215,12 +215,12 @@ static void setattributegrid(struct widget *widget, unsigned int attribute, char
     {
 
     case WIDGET_ATTR_COLUMNS:
-        grid->columns = cstring_rvalue(value, cstring_length(value), 10);
+        grid->columns = cstring_readvalue(value, cstring_length(value), 10);
 
         break;
 
     case WIDGET_ATTR_PADDING:
-        grid->padding = cstring_rvalue(value, cstring_length(value), 10);
+        grid->padding = cstring_readvalue(value, cstring_length(value), 10);
 
         break;
 

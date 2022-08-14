@@ -55,7 +55,7 @@ static unsigned int service_child(unsigned int id, char *path, unsigned int leng
             if (!buffer_match(cnode->name, path, colon))
                 continue;
 
-            val = cstring_rvalue(path + colon + 1, length - colon - 1, 10);
+            val = cstring_readvalue(path + colon + 1, length - colon - 1, 10);
 
             if (val != cnode->index)
                 continue;

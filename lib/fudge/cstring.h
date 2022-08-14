@@ -8,5 +8,4 @@ unsigned int cstring_toint(char c);
 unsigned int cstring_write(char *out, unsigned int count, char *in, unsigned int offset);
 unsigned int cstring_writez(char *out, unsigned int count, char *in, unsigned int offset);
 unsigned int cstring_writevalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding, unsigned int offset);
-unsigned int cstring_rvalue(char *in, unsigned int count, unsigned int base);
-unsigned int cstring_wvalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding);
+unsigned int cstring_readvalue(char *in, unsigned int count, unsigned int base);
