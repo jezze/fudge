@@ -1,4 +1,4 @@
-#include "buffer.h"
+#include <fudge.h>
 #include "sha1.h"
 
 #define F0(b, c, d)                     (d ^ (b & (c ^ d)))

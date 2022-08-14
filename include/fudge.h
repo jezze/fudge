@@ -10,9 +10,6 @@
 #include <fudge/ring.h>
 #include <fudge/message.h>
 #include <fudge/event.h>
-#include <fudge/crc.h>
-#include <fudge/md5.h>
-#include <fudge/sha1.h>
 #include <fudge/elf.h>
 #include <fudge/cpio.h>
 #include <fudge/p9p.h>

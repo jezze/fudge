@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <hash.h>
 
 static struct crc sum;
 
