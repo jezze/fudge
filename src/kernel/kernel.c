@@ -131,7 +131,7 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
     if (coretask)
     {
 
-        if (coretask->sigkills)
+        if (coretask->signals.kills)
         {
 
             task_unsignal(coretask, TASK_SIGNAL_KILL);
@@ -140,7 +140,7 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
 
         }
 
-        else if (coretask->sigblocks)
+        else if (coretask->signals.blocks)
         {
 
             task_unsignal(coretask, TASK_SIGNAL_BLOCK);

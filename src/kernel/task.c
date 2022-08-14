@@ -12,17 +12,17 @@ void task_signal(struct task *task, unsigned int signal)
     {
 
     case TASK_SIGNAL_KILL:
-        task->sigkills++;
+        task->signals.kills++;
 
         break;
 
     case TASK_SIGNAL_BLOCK:
-        task->sigblocks++;
+        task->signals.blocks++;
 
         break;
 
     case TASK_SIGNAL_UNBLOCK:
-        task->sigunblocks++;
+        task->signals.unblocks++;
 
         break;
 
@@ -41,17 +41,17 @@ void task_unsignal(struct task *task, unsigned int signal)
     {
 
     case TASK_SIGNAL_KILL:
-        task->sigkills = 0;
+        task->signals.kills = 0;
 
         break;
 
     case TASK_SIGNAL_BLOCK:
-        task->sigblocks = 0;
+        task->signals.blocks = 0;
 
         break;
 
     case TASK_SIGNAL_UNBLOCK:
-        task->sigunblocks = 0;
+        task->signals.unblocks = 0;
 
         break;
 
@@ -111,11 +111,29 @@ void task_unregister(struct task *task)
 
 }
 
+void task_resetsignals(struct task_signals *signals)
+{
+
+    signals->kills = 0;
+    signals->blocks = 0;
+    signals->unblocks = 0;
+
+}
+
 void task_resetthread(struct task_thread *thread)
 {
 
     thread->ip = 0;
     thread->sp = 0;
+
+}
+
+void task_initsignals(struct task_signals *signals)
+{
+
+    signals->kills = 0;
+    signals->blocks = 0;
+    signals->unblocks = 0;
 
 }
 
@@ -130,12 +148,10 @@ void task_initthread(struct task_thread *thread)
 void task_reset(struct task *task)
 {
 
+    task_resetsignals(&task->signals);
     task_resetthread(&task->thread);
 
     task->state = TASK_STATE_KILLED;
-    task->sigkills = 0;
-    task->sigblocks = 0;
-    task->sigunblocks = 0;
 
 }
 
@@ -143,6 +159,7 @@ void task_init(struct task *task, unsigned int id)
 {
 
     resource_init(&task->resource, RESOURCE_TASK, task);
+    task_initsignals(&task->signals);
     task_initthread(&task->thread);
     binary_initnode(&task->node);
     spinlock_init(&task->spinlock);
@@ -150,9 +167,6 @@ void task_init(struct task *task, unsigned int id)
     task->format = 0;
     task->id = id;
     task->state = TASK_STATE_KILLED;
-    task->sigkills = 0;
-    task->sigblocks = 0;
-    task->sigunblocks = 0;
 
 }
 
