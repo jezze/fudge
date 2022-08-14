@@ -362,12 +362,13 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 static void placetextbox(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
+    struct widget_textbox *textbox = widget->data;
     struct list_item *current = 0;
     int offx = RENDER_TEXTBOX_PADDING_WIDTH;
     int offy = RENDER_TEXTBOX_PADDING_HEIGHT;
     int offw = RENDER_TEXTBOX_PADDING_WIDTH * 2;
     int offh = RENDER_TEXTBOX_PADDING_HEIGHT * 2;
-    int soffy = offy;
+    int soffy = offy - textbox->scroll;
     int soffh = offh;
     int totw = 0;
     unsigned int lasttype = 0;
