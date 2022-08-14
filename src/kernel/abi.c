@@ -233,22 +233,6 @@ static unsigned int load(struct task *task, void *stack)
 
 }
 
-static unsigned int spawn(struct task *task, void *stack)
-{
-
-    return 0;
-
-}
-
-static unsigned int despawn(struct task *task, void *stack)
-{
-
-    task_signal(task, TASK_SIGNAL_KILL);
-
-    return 0;
-
-}
-
 static unsigned int unload(struct task *task, void *stack)
 {
 
@@ -277,6 +261,22 @@ static unsigned int unload(struct task *task, void *stack)
         module_unregister();
 
     return 1;
+
+}
+
+static unsigned int spawn(struct task *task, void *stack)
+{
+
+    return 0;
+
+}
+
+static unsigned int despawn(struct task *task, void *stack)
+{
+
+    task_signal(task, TASK_SIGNAL_KILL);
+
+    return 0;
 
 }
 
