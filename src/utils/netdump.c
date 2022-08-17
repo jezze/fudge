@@ -312,6 +312,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    else
+    {
+
+        channel_error("Could not find data");
+
+    }
+
     channel_close();
 
 }

@@ -370,3 +370,19 @@ void channel_close(void)
 
 }
 
+void channel_error(char *description)
+{
+
+    channel_sendstring(EVENT_ERROR, description);
+    channel_close();
+    call_despawn();
+
+}
+
+void channel_warning(char *description)
+{
+
+    channel_sendstring(EVENT_ERROR, description);
+
+}
+

@@ -145,13 +145,13 @@ static void sendrequest(void)
 {
 
     if (!version(40, 1200, "9P2000.F"))
-        return;
+        channel_error("Incorrect version");
 
     if (!attach(41, 0, 0))
-        return;
+        channel_error("Could not attach");
 
     if (!walk(42, 0, 1, "build/data/help.txt"))
-        return;
+        channel_error("Could not walk");
 
     read(43, 1);
 
@@ -169,7 +169,7 @@ void init(void)
 {
 
     if (!file_walk2(FILE_G0, "system:service/fd0"))
-        return;
+        channel_error("Service node not found");
 
     channel_bind(EVENT_MAIN, onmain);
 

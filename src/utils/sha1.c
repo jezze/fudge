@@ -46,6 +46,13 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    else
+    {
+
+        channel_error("File not found");
+
+    }
+
 }
 
 void init(void)

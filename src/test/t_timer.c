@@ -32,7 +32,13 @@ void init(void)
 {
 
     if (!file_walk2(FILE_G0, "system:timer/if:0/event100"))
+    {
+
+        channel_error("Timer not found");
+
         return;
+
+    }
 
     channel_bind(EVENT_MAIN, onmain);
 

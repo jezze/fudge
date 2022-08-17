@@ -68,6 +68,13 @@ static void resolve(char *domain)
 
     }
 
+    else
+    {
+
+        channel_error("Could not spawn process");
+
+    }
+
 }
 
 static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
@@ -122,6 +129,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
+    else
+        channel_error("Could not find address");
 
     resolve(domain);
 
@@ -142,6 +151,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         socket_disconnect_tcp(FILE_G1, &local, &remote, &router);
         file_unlink(FILE_G1);
+
+    }
+
+    else
+    {
+
+        channel_error("Could not find data");
 
     }
 

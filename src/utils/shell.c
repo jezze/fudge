@@ -55,6 +55,7 @@ static void runcommand(unsigned int count, void *buffer)
         unsigned int tasks;
 
         channel_redirectback(id, EVENT_DATA);
+        channel_redirectback(id, EVENT_ERROR);
         channel_redirectback(id, EVENT_CLOSE);
         channel_sendbufferto(id, EVENT_DATA, count, buffer);
         channel_sendto(id, EVENT_MAIN);
@@ -125,6 +126,7 @@ static void complete(struct ring *ring)
     {
 
         channel_redirectback(id, EVENT_DATA);
+        channel_redirectback(id, EVENT_ERROR);
         channel_redirectback(id, EVENT_CLOSE);
         channel_sendbufferto(id, EVENT_DATA, count, buffer);
         channel_sendto(id, EVENT_MAIN);
@@ -238,6 +240,15 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onerror(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    print("Error: ", 7);
+    print(mdata, msize);
+    print("\n", 1);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -301,6 +312,7 @@ void init(void)
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_DATA, ondata);
+    channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_PATH, onpath);

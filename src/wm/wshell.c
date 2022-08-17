@@ -121,6 +121,7 @@ static void runcommand(unsigned int count, void *buffer)
 
         channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_CLOSE);
+        channel_redirectback(id, EVENT_ERROR);
         channel_sendbufferto(id, EVENT_DATA, count, buffer);
         channel_sendto(id, EVENT_MAIN);
 
@@ -195,6 +196,7 @@ static void complete(struct ring *ring)
 
         channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_CLOSE);
+        channel_redirectback(id, EVENT_ERROR);
         channel_sendbufferto(id, EVENT_DATA, count, buffer);
         channel_sendto(id, EVENT_MAIN);
 
@@ -208,6 +210,16 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     print(mdata, msize);
+    updatecontent();
+
+}
+
+static void onerror(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    print("Error: ", 7);
+    print(mdata, msize);
+    print("\n", 1);
     updatecontent();
 
 }
@@ -359,6 +371,7 @@ void init(void)
         return;
 
     channel_bind(EVENT_DATA, ondata);
+    channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_TERM, onterm);

@@ -54,6 +54,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
+    else
+        channel_error("Could not find address");
 
     if (file_walk(FILE_G1, FILE_G0, "data"))
     {
@@ -69,6 +71,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             channel_sendbuffer(EVENT_DATA, count, buffer);
 
         file_unlink(FILE_G1);
+
+    }
+
+    else
+    {
+
+        channel_error("Could not find data");
 
     }
 

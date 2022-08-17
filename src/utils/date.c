@@ -28,6 +28,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    else
+    {
+
+        channel_error("Ctrl file not found");
+
+    }
+
     channel_close();
 
 }

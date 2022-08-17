@@ -21,7 +21,7 @@ void init(void)
 {
 
     if (!file_walk2(FILE_G0, "system:log/messages"))
-        return;
+        channel_error("Could not find system log");
 
     channel_bind(EVENT_MAIN, onmain);
 
