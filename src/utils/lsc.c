@@ -4,8 +4,6 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_reset(FILE_G0);
-
     do
     {
 

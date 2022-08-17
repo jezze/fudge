@@ -380,7 +380,6 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         tokenlist_reset(&infix);
         tokenlist_reset(&postfix);
         tokenlist_reset(&stack);
-        file_reset(FILE_L0);
 
         while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
             tokenizebuffer(&infix, &stringtable, count, buffer);

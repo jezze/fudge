@@ -38,8 +38,6 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (file_walk2(FILE_L0, mdata))
     {
 
-        file_reset(FILE_L0);
-
         do
         {
 

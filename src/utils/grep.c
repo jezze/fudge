@@ -83,8 +83,6 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         char buffer[BUFFER_SIZE];
         unsigned int count;
 
-        file_reset(FILE_L0);
-
         while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
             check(source, buffer, count);
 

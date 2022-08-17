@@ -18,55 +18,79 @@ static unsigned int debug(struct task *task, void *stack)
 
 }
 
+static struct service *findservice(char *path, unsigned int length)
+{
+
+    unsigned int colon = buffer_findbyte(path, length, ':');
+
+    if (colon < length)
+    {
+
+        struct service *service = service_find(colon, path);
+
+        if (service)
+            return service;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int findpath(struct service *service, unsigned int id, char *path, unsigned int length)
+{
+
+    unsigned int colon = buffer_findbyte(path, length, ':');
+    unsigned int offset = (colon < length) ? colon + 1 : 0;
+
+    while (offset < length)
+    {
+
+        char *cp = path + offset;
+        unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+
+        if (cl == 0)
+            id = service->root();
+        else if (cl == 2 && cp[0] == '.' && cp[1] == '.')
+            id = service->parent(id);
+        else
+            id = service->child(id, cp, cl);
+
+        if (!id)
+            return 0;
+
+        offset += cl + 1;
+
+    }
+
+    return id;
+
+}
+
 static unsigned int walk(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *path; unsigned int length;} *args = stack;
     struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     struct descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
-    unsigned int colon = buffer_findbyte(args->path, args->length, ':');
-    unsigned int offset = 0;
+    struct service *service = findservice(args->path, args->length);
 
     if (!descriptor_check(pdescriptor))
         return 0;
 
     descriptor_copy(descriptor, pdescriptor);
 
-    if (colon < args->length)
+    if (service)
     {
 
-        struct service *service = service_find(colon, args->path);
-
-        if (service)
-        {
-
-            descriptor->service = service;
-            descriptor->id = service->root();
-            offset += colon + 1;
-
-        }
+        descriptor->service = service;
+        descriptor->id = service->root();
 
     }
 
-    while (offset < args->length)
-    {
-
-        char *cp = args->path + offset;
-        unsigned int cl = buffer_findbyte(cp, args->length - offset, '/');
-
-        if (cl == 0)
-            descriptor->id = descriptor->service->root();
-        else if (cl == 2 && cp[0] == '.' && cp[1] == '.')
-            descriptor->id = descriptor->service->parent(descriptor->id);
-        else
-            descriptor->id = descriptor->service->child(descriptor->id, cp, cl);
-
-        if (!descriptor->id)
-            return 0;
-
-        offset += cl + 1;
-
-    }
+    descriptor->id = findpath(descriptor->service, descriptor->id, args->path, args->length);
+    descriptor->current = descriptor->service->step(descriptor->id, 0);
+    descriptor->offset = descriptor->service->seek(descriptor->id, 0);
 
     return descriptor->id;
 
