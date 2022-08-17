@@ -60,8 +60,6 @@ static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char
     struct elf_header header;
     unsigned int i;
 
-    file_reset(descriptor);
-
     if (!readheader(descriptor, &header))
         return 0;
 
@@ -116,7 +114,13 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
         address = findsymbol(FILE_L0, count, symbolname);
 
     if (!address)
+    {
+
+        file_reset(FILE_G1);
+
         address = findsymbol(FILE_G1, count, symbolname);
+
+    }
 
     return address;
 
