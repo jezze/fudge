@@ -50,7 +50,10 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 
     struct ctrl_videosettings *settings = buffer;
 
-    ctrl_setvideosettings(&videointerface.settings, settings->w, settings->h, settings->bpp);
+    videointerface.settings.w = settings->w;
+    videointerface.settings.h = settings->h;
+    videointerface.settings.bpp = settings->bpp;
+
     setreg(REG_COMMAND_ENABLE, 0x00);
     setreg(REG_COMMAND_XRES, videointerface.settings.w);
     setreg(REG_COMMAND_YRES, videointerface.settings.h);

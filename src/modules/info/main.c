@@ -11,37 +11,28 @@ static unsigned int cores_read(void *buffer, unsigned int count, unsigned int of
 {
 
     struct resource *resource = 0;
-    char data[BUFFER_SIZE];
-    unsigned int c = 0;
+    unsigned int n = offset / sizeof (struct ctrl_core);
+    unsigned int o = offset % sizeof (struct ctrl_core);
+    unsigned int i;
 
-    while ((resource = resource_foreachtype(resource, RESOURCE_CORE)))
+    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); i++)
     {
 
-        struct core *core = resource->data;
-        struct list_item *item;
-
-        c += cstring_write(data, BUFFER_SIZE, "core ", c);
-        c += cstring_writevalue(data, BUFFER_SIZE, core->id, 10, 0, c);
-        c += cstring_write(data, BUFFER_SIZE, "\n", c);
-
-        spinlock_acquire(&core->tasks.spinlock);
-
-        for (item = core->tasks.head; item; item = item->next)
+        if (i == n)
         {
 
-            struct task *task = item->data;
+            struct core *core = resource->data;
+            struct ctrl_core ctrl;
 
-            c += cstring_write(data, BUFFER_SIZE, "    task ", c);
-            c += cstring_writevalue(data, BUFFER_SIZE, task->id, 10, 0, c);
-            c += cstring_write(data, BUFFER_SIZE, "\n", c);
+            ctrl.id = core->id;
+
+            return buffer_read(buffer, count, &ctrl, sizeof (struct core), o);
 
         }
 
-        spinlock_release(&core->tasks.spinlock);
-
     }
 
-    return buffer_read(buffer, count, data, c, offset);
+    return 0;
 
 }
 
@@ -49,21 +40,34 @@ static unsigned int tasks_read(void *buffer, unsigned int count, unsigned int of
 {
 
     struct resource *resource = 0;
-    char data[BUFFER_SIZE];
-    unsigned int c = 0;
+    unsigned int n = offset / sizeof (struct ctrl_task);
+    unsigned int o = offset % sizeof (struct ctrl_task);
+    unsigned int i;
 
-    while ((resource = resource_foreachtype(resource, RESOURCE_TASK)))
+    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_TASK)); i++)
     {
 
-        struct task *task = resource->data;
+        if (i == n)
+        {
 
-        c += cstring_write(data, BUFFER_SIZE, "task ", c);
-        c += cstring_writevalue(data, BUFFER_SIZE, task->id, 10, 0, c);
-        c += cstring_write(data, BUFFER_SIZE, "\n", c);
+            struct task *task = resource->data;
+            struct ctrl_task ctrl;
+
+            ctrl.id = task->id;
+            ctrl.state = task->state;
+            ctrl.thread_ip = task->thread.ip;
+            ctrl.thread_sp = task->thread.sp;
+            ctrl.signals_kills = task->signals.kills;
+            ctrl.signals_blocks = task->signals.blocks;
+            ctrl.signals_unblocks = task->signals.unblocks;
+
+            return buffer_read(buffer, count, &ctrl, sizeof (struct task), o);
+
+        }
 
     }
 
-    return buffer_read(buffer, count, data, c, offset);
+    return 0;
 
 }
 
@@ -71,22 +75,28 @@ static unsigned int mailboxes_read(void *buffer, unsigned int count, unsigned in
 {
 
     struct resource *resource = 0;
-    char data[BUFFER_SIZE];
-    unsigned int c = 0;
+    unsigned int n = offset / sizeof (struct ctrl_mailbox);
+    unsigned int o = offset % sizeof (struct ctrl_mailbox);
+    unsigned int i;
 
-    while ((resource = resource_foreachtype(resource, RESOURCE_MAILBOX)))
+    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_MAILBOX)); i++)
     {
 
-        struct mailbox *mailbox = resource->data;
+        if (i == n)
+        {
 
-        c += cstring_write(data, BUFFER_SIZE, "mailbox ", c);
-        c += cstring_write(data, BUFFER_SIZE, "0x", c);
-        c += cstring_writevalue(data, BUFFER_SIZE, (unsigned int)mailbox->ring.buffer, 16, 8, c);
-        c += cstring_write(data, BUFFER_SIZE, "\n", c);
+            struct mailbox *mailbox = resource->data;
+            struct ctrl_mailbox ctrl;
+
+            ctrl.address = (unsigned int)mailbox->ring.buffer;
+
+            return buffer_read(buffer, count, &ctrl, sizeof (struct mailbox), o);
+
+        }
 
     }
 
-    return buffer_read(buffer, count, data, c, offset);
+    return 0;
 
 }
 

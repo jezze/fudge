@@ -44,5 +44,29 @@ struct ctrl_timertick
 
 };
 
-void ctrl_setpartsettings(struct ctrl_partsettings *settings, unsigned int interface, unsigned int start, unsigned int end);
-void ctrl_setvideosettings(struct ctrl_videosettings *settings, unsigned int w, unsigned int h, unsigned int bpp);
+struct ctrl_core
+{
+
+    unsigned int id;
+
+};
+
+struct ctrl_task
+{
+
+    unsigned int id;
+    unsigned int state;
+    unsigned int signals_kills;
+    unsigned int signals_blocks;
+    unsigned int signals_unblocks;
+    unsigned int thread_ip;
+    unsigned int thread_sp;
+
+};
+
+struct ctrl_mailbox
+{
+
+    unsigned int address;
+
+};

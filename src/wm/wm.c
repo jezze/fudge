@@ -306,7 +306,10 @@ static void setupvideo(void)
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
-    ctrl_setvideosettings(&settings, optwidth, optheight, optbpp);
+    settings.w = optwidth;
+    settings.h = optheight;
+    settings.bpp = optbpp;
+
     buffer_clear(black, 768);
 
     if (!file_walk(FILE_L0, FILE_G3, "ctrl"))

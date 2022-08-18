@@ -97,7 +97,10 @@ static void setupvideo(void)
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
-    ctrl_setvideosettings(&settings, configuration.displaywidth, configuration.displayheight, configuration.displaybpp);
+    settings.w = configuration.displaywidth;
+    settings.h = configuration.displayheight;
+    settings.bpp = configuration.displaybpp;
+
     buffer_clear(black, 768);
 
     if (!file_walk(FILE_L0, FILE_G3, "ctrl"))

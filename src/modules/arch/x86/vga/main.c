@@ -124,7 +124,10 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
         if (videointerface.settings.w == 320)
             vga_restore();
 
-        ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
+        videointerface.settings.w = 80;
+        videointerface.settings.h = 25;
+        videointerface.settings.bpp = 2;
+
         vga_settext();
 
     }
@@ -135,7 +138,10 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
         if (videointerface.settings.w == 80)
             vga_save();
 
-        ctrl_setvideosettings(&videointerface.settings, 320, 200, 1);
+        videointerface.settings.w = 320;
+        videointerface.settings.h = 200;
+        videointerface.settings.bpp = 1;
+
         vga_setgraphic();
 
     }
@@ -217,7 +223,11 @@ static void driver_init(unsigned int id)
 
     console_initinterface(&consoleinterface, id);
     video_initinterface(&videointerface, id);
-    ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
+
+    videointerface.settings.w = 80;
+    videointerface.settings.h = 25;
+    videointerface.settings.bpp = 2;
+
     clear(0);
 
     consoleinterface.ctrl.operations.read = consoleinterface_readctrl;

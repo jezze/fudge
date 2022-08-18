@@ -131,7 +131,10 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 
         }
 
-        ctrl_setvideosettings(&videointerface.settings, mode->width, mode->height, mode->bpp / 8);
+        videointerface.settings.w = mode->width;
+        videointerface.settings.h = mode->height;
+        videointerface.settings.bpp = mode->bpp / 8;
+
         video_notifymode(&videointerface, (void *)mode->framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
 
         /* remove */
@@ -191,8 +194,10 @@ static void driver_init(unsigned int id)
 {
 
     video_initinterface(&videointerface, id);
-    ctrl_setvideosettings(&videointerface.settings, 80, 25, 2);
 
+    videointerface.settings.w = 80;
+    videointerface.settings.h = 25;
+    videointerface.settings.bpp = 2;
     videointerface.ctrl.operations.read = videointerface_readctrl;
     videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;
