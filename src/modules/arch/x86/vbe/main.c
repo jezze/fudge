@@ -131,11 +131,11 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 
         }
 
-        videointerface.settings.w = mode->width;
-        videointerface.settings.h = mode->height;
-        videointerface.settings.bpp = mode->bpp / 8;
+        videointerface.width = mode->width;
+        videointerface.height = mode->height;
+        videointerface.bpp = mode->bpp / 8;
 
-        video_notifymode(&videointerface, (void *)mode->framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+        video_notifymode(&videointerface, (void *)mode->framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
 
         /* remove */
         framebuffer = mode->framebuffer;
@@ -147,7 +147,13 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
+    struct ctrl_videosettings settings;
+
+    settings.width = videointerface.width;
+    settings.height = videointerface.height;
+    settings.bpp = videointerface.bpp;
+
+    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
@@ -156,7 +162,7 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 
     struct ctrl_videosettings *settings = buffer;
 
-    run(settings->w, settings->h, settings->bpp * 8);
+    run(settings->width, settings->height, settings->bpp * 8);
 
     return count;
 
@@ -165,14 +171,14 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
+    return buffer_read(buffer, count, (void *)framebuffer, videointerface.width * videointerface.height * videointerface.bpp, offset);
 
 }
 
 static unsigned int videointerface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+    return buffer_write((void *)framebuffer, videointerface.width * videointerface.height * videointerface.bpp, buffer, count, offset);
 
 }
 
@@ -195,9 +201,9 @@ static void driver_init(unsigned int id)
 
     video_initinterface(&videointerface, id);
 
-    videointerface.settings.w = 80;
-    videointerface.settings.h = 25;
-    videointerface.settings.bpp = 2;
+    videointerface.width = 80;
+    videointerface.height = 25;
+    videointerface.bpp = 2;
     videointerface.ctrl.operations.read = videointerface_readctrl;
     videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;

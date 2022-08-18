@@ -28,7 +28,7 @@ static unsigned int framebuffer = 0x000A0000;
 static void clear(unsigned int offset)
 {
 
-    unsigned int total = videointerface.settings.w * videointerface.settings.h;
+    unsigned int total = videointerface.width * videointerface.height;
     unsigned int i;
 
     for (i = offset; i < total; i++)
@@ -55,10 +55,10 @@ static unsigned int consoleinterface_readctrl(void *buffer, unsigned int count, 
 static unsigned int consoleinterface_writetransmit(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int total = videointerface.settings.w * videointerface.settings.h;
+    unsigned int total = videointerface.width * videointerface.height;
     unsigned int i;
 
-    if (videointerface.settings.w != 80)
+    if (videointerface.width != 80)
         return count;
 
     for (i = 0; i < count; i++)
@@ -73,10 +73,10 @@ static unsigned int consoleinterface_writetransmit(void *buffer, unsigned int co
             cursor.offset = (cursor.offset + 8) & ~(8 - 1);
 
         if (c == '\r')
-            cursor.offset -= (cursor.offset % videointerface.settings.w);
+            cursor.offset -= (cursor.offset % videointerface.width);
 
         if (c == '\n')
-            cursor.offset += videointerface.settings.w - (cursor.offset % videointerface.settings.w);
+            cursor.offset += videointerface.width - (cursor.offset % videointerface.width);
 
         if (c >= ' ')
         {
@@ -90,10 +90,10 @@ static unsigned int consoleinterface_writetransmit(void *buffer, unsigned int co
         if (cursor.offset >= total)
         {
 
-            buffer_copy(taddress, taddress + videointerface.settings.w, videointerface.settings.w * (videointerface.settings.h - 1) * sizeof (struct vga_character));
-            clear(videointerface.settings.w * (videointerface.settings.h - 1));
+            buffer_copy(taddress, taddress + videointerface.width, videointerface.width * (videointerface.height - 1) * sizeof (struct vga_character));
+            clear(videointerface.width * (videointerface.height - 1));
 
-            cursor.offset -= videointerface.settings.w;
+            cursor.offset -= videointerface.width;
 
         }
 
@@ -109,7 +109,13 @@ static unsigned int consoleinterface_writetransmit(void *buffer, unsigned int co
 static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
+    struct ctrl_videosettings settings;
+
+    settings.width = videointerface.width;
+    settings.height = videointerface.height;
+    settings.bpp = videointerface.bpp;
+
+    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
@@ -118,15 +124,15 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 
     struct ctrl_videosettings *settings = buffer;
 
-    if (settings->w == 80)
+    if (settings->width == 80)
     {
 
-        if (videointerface.settings.w == 320)
+        if (videointerface.width == 320)
             vga_restore();
 
-        videointerface.settings.w = 80;
-        videointerface.settings.h = 25;
-        videointerface.settings.bpp = 2;
+        videointerface.width = 80;
+        videointerface.height = 25;
+        videointerface.bpp = 2;
 
         vga_settext();
 
@@ -135,18 +141,18 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
     else
     {
 
-        if (videointerface.settings.w == 80)
+        if (videointerface.width == 80)
             vga_save();
 
-        videointerface.settings.w = 320;
-        videointerface.settings.h = 200;
-        videointerface.settings.bpp = 1;
+        videointerface.width = 320;
+        videointerface.height = 200;
+        videointerface.bpp = 1;
 
         vga_setgraphic();
 
     }
 
-    video_notifymode(&videointerface, 0, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, 0, videointerface.width, videointerface.height, videointerface.bpp);
 
     return count;
 
@@ -155,14 +161,14 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
+    return buffer_read(buffer, count, (void *)framebuffer, videointerface.width * videointerface.height * videointerface.bpp, offset);
 
 }
 
 static unsigned int videointerface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+    return buffer_write((void *)framebuffer, videointerface.width * videointerface.height * videointerface.bpp, buffer, count, offset);
 
 }
 
@@ -224,9 +230,9 @@ static void driver_init(unsigned int id)
     console_initinterface(&consoleinterface, id);
     video_initinterface(&videointerface, id);
 
-    videointerface.settings.w = 80;
-    videointerface.settings.h = 25;
-    videointerface.settings.bpp = 2;
+    videointerface.width = 80;
+    videointerface.height = 25;
+    videointerface.bpp = 2;
 
     clear(0);
 

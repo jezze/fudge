@@ -41,7 +41,13 @@ static void setreg(unsigned short index, unsigned short data)
 static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_read(buffer, count, &videointerface.settings, sizeof (struct ctrl_videosettings), offset);
+    struct ctrl_videosettings settings;
+
+    settings.width = videointerface.width;
+    settings.height = videointerface.height;
+    settings.bpp = videointerface.bpp;
+
+    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_videosettings), offset);
 
 }
 
@@ -50,16 +56,16 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 
     struct ctrl_videosettings *settings = buffer;
 
-    videointerface.settings.w = settings->w;
-    videointerface.settings.h = settings->h;
-    videointerface.settings.bpp = settings->bpp;
+    videointerface.width = settings->width;
+    videointerface.height = settings->height;
+    videointerface.bpp = settings->bpp;
 
     setreg(REG_COMMAND_ENABLE, 0x00);
-    setreg(REG_COMMAND_XRES, videointerface.settings.w);
-    setreg(REG_COMMAND_YRES, videointerface.settings.h);
-    setreg(REG_COMMAND_BPP, videointerface.settings.bpp * 8);
+    setreg(REG_COMMAND_XRES, videointerface.width);
+    setreg(REG_COMMAND_YRES, videointerface.height);
+    setreg(REG_COMMAND_BPP, videointerface.bpp * 8);
     setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
-    video_notifymode(&videointerface, (void *)framebuffer, videointerface.settings.w, videointerface.settings.h, videointerface.settings.bpp);
+    video_notifymode(&videointerface, (void *)framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
 
     return count;
 
@@ -68,14 +74,14 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_read(buffer, count, (void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, offset);
+    return buffer_read(buffer, count, (void *)framebuffer, videointerface.width * videointerface.height * videointerface.bpp, offset);
 
 }
 
 static unsigned int videointerface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_write((void *)framebuffer, videointerface.settings.w * videointerface.settings.h * videointerface.settings.bpp, buffer, count, offset);
+    return buffer_write((void *)framebuffer, videointerface.width * videointerface.height * videointerface.bpp, buffer, count, offset);
 
 }
 

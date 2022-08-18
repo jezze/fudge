@@ -30,19 +30,19 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 {
 
     char buffer[4096];
-    int xs = (x2 - x1) / settings->w;
-    int ys = (y2 - y1) / settings->h;
+    int xs = (x2 - x1) / settings->width;
+    int ys = (y2 - y1) / settings->height;
     unsigned int x;
     unsigned int y;
 
     file_walk(FILE_L1, FILE_L0, "data");
 
-    for (y = 0; y < settings->h; y++)
+    for (y = 0; y < settings->height; y++)
     {
 
         int yy = y1 + y * ys;
 
-        for (x = 0; x < settings->w; x++)
+        for (x = 0; x < settings->width; x++)
         {
 
             int xx = x1 + x * xs;
@@ -64,7 +64,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
         }
 
-        file_seekwriteall(FILE_L1, buffer, settings->w, settings->w * y);
+        file_seekwriteall(FILE_L1, buffer, settings->width, settings->width * y);
 
     }
 
@@ -75,8 +75,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     struct ctrl_videosettings settings;
 
-    settings.w = 320;
-    settings.h = 200;
+    settings.width = 320;
+    settings.height = 200;
     settings.bpp = 1;
 
     file_walk2(FILE_L0, "system:video/if:0");

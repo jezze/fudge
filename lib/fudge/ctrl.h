@@ -18,29 +18,12 @@ struct ctrl_consolesettings
 
 };
 
-struct ctrl_partsettings
-{
-
-    unsigned int interface;
-    unsigned int start;
-    unsigned int end;
-
-};
-
 struct ctrl_videosettings
 {
 
-    unsigned int w;
-    unsigned int h;
+    unsigned int width;
+    unsigned int height;
     unsigned int bpp;
-
-};
-
-struct ctrl_timertick
-{
-
-    unsigned int jiffies;
-    unsigned int repeat;
 
 };
 

@@ -8,7 +8,9 @@ struct video_interface
     struct system_node colormap;
     struct system_node event;
     unsigned int id;
-    struct ctrl_videosettings settings;
+    unsigned int width;
+    unsigned int height;
+    unsigned int bpp;
 
 };
 

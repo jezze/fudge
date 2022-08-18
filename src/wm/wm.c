@@ -306,8 +306,8 @@ static void setupvideo(void)
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
-    settings.w = optwidth;
-    settings.h = optheight;
+    settings.width = optwidth;
+    settings.height = optheight;
     settings.bpp = optbpp;
 
     buffer_clear(black, 768);

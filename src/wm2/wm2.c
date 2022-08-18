@@ -97,8 +97,8 @@ static void setupvideo(void)
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
-    settings.w = configuration.displaywidth;
-    settings.h = configuration.displayheight;
+    settings.width = configuration.displaywidth;
+    settings.height = configuration.displayheight;
     settings.bpp = configuration.displaybpp;
 
     buffer_clear(black, 768);
