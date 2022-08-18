@@ -17,14 +17,14 @@ static unsigned int isleapyear(unsigned int year)
 
 }
 
-static unsigned int gettimestamp(struct ctrl_clocksettings *settings)
+static unsigned int gettimestamp(unsigned int year, unsigned int month, unsigned int day, unsigned int hours, unsigned int minutes, unsigned int seconds)
 {
 
-    unsigned int year = settings->year - 1970;
-    unsigned int dyear = ((((365 * year) + (year / 4)) - (year / 100)) + (year / 400));
-    unsigned int dmonth = isleapyear(year) ? dotm366[settings->month - 1] : dotm365[settings->month - 1];
+    unsigned int syear = year - 1970;
+    unsigned int dyear = ((((365 * syear) + (syear / 4)) - (syear / 100)) + (syear / 400));
+    unsigned int dmonth = isleapyear(syear) ? dotm366[month - 1] : dotm365[month - 1];
 
-    return ((dyear + dmonth + settings->day) * 86400) + ((settings->hours * 3600) + (settings->minutes * 60) + settings->seconds);
+    return ((dyear + dmonth + day) * 86400) + ((hours * 3600) + (minutes * 60) + seconds);
 
 }
 
@@ -39,7 +39,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         file_seekreadall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings), 0);
         message_init(&message, EVENT_DATA);
-        message_putvalue(&message, gettimestamp(&settings), 10, 0);
+        message_putvalue(&message, gettimestamp(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds), 10, 0);
         message_putstring(&message, "\n");
         channel_sendmessage(&message);
 
