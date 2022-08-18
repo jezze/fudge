@@ -16,7 +16,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         unsigned int offset = 0;
         unsigned int h;
 
-        file_seekreadall(FILE_L0, &header, sizeof (struct pcx_header), 0);
+        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
 
         width = header.xend - header.xstart + 1;
         height = header.yend - header.ystart + 1;

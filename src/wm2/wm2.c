@@ -143,8 +143,8 @@ static void loadfont(unsigned int factor)
 
     }
 
-    file_seekread(FILE_L0, fontnormal, 0x8000, 0);
-    file_seekread(FILE_L1, fontbold, 0x8000, 0);
+    file_read(FILE_L0, fontnormal, 0x8000);
+    file_read(FILE_L1, fontbold, 0x8000);
 
 }
 

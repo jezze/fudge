@@ -37,7 +37,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         struct ctrl_clocksettings settings;
         struct message message;
 
-        file_seekreadall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings), 0);
+        file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
         message_init(&message, EVENT_DATA);
         message_putvalue(&message, gettimestamp(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds), 10, 0);
         message_putstring(&message, "\n");

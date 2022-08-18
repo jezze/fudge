@@ -12,7 +12,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         unsigned char magic;
         unsigned int filesize = 31467;
 
-        file_seekreadall(FILE_L0, &header, sizeof (struct pcx_header), 0);
+        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
         file_seekreadall(FILE_L0, &magic, 1, filesize - 768 - 1);
 
         if (magic == PCX_COLORMAP_MAGIC)
