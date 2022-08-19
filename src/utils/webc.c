@@ -36,18 +36,33 @@ static void resolve(char *domain)
     {
 
         struct message message;
-        unsigned int c;
 
         message_init(&message, EVENT_OPTION);
         message_putstringz(&message, "domain");
         message_putstringz(&message, domain);
-        channel_redirectback(id, EVENT_DATA);
+        channel_redirectback(id, EVENT_QUERY);
         channel_redirectback(id, EVENT_CLOSE);
         channel_sendmessageto(id, &message);
-        channel_sendstringzto(id, EVENT_QUERY, "data");
+        channel_sendto(id, EVENT_MAIN);
 
-        while ((c = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
-            socket_bind_ipv4s(&remote, message.data.buffer);
+        while (channel_pollfrom(id, &message))
+        {
+
+            if (message.header.event == EVENT_QUERY)
+            {
+
+                char *key = message.data.buffer;
+                char *value = key + cstring_lengthz(key);
+
+                if (cstring_match(key, "data"))
+                    socket_bind_ipv4s(&remote, value);
+
+            }
+
+            if (message.header.event == EVENT_CLOSE)
+                break;
+
+        }
 
     }
 

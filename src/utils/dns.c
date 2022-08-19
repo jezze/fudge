@@ -31,14 +31,14 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
 
 }
 
-static void printmain(unsigned short type, char *name, void *rddata, void *buffer)
+static void reply(unsigned short type, char *name, void *rddata, void *buffer)
 {
 
     unsigned char *addr = rddata;
     struct message message;
     char fullname[256];
 
-    message_init(&message, EVENT_DATA);
+    message_init(&message, EVENT_MAIN);
 
     switch (type)
     {
@@ -69,63 +69,46 @@ static void printmain(unsigned short type, char *name, void *rddata, void *buffe
 
     channel_sendmessage(&message);
 
-}
+    message_init(&message, EVENT_QUERY);
+    message_putstringz(&message, "type");
+    message_putvalue(&message, type, 10, 0);
+    message_putstringz(&message, "");
+    channel_sendmessage(&message);
 
-static void printquery(char *query, unsigned int qsize, unsigned short type, char *name, void *rddata, void *buffer)
-{
+    message_init(&message, EVENT_QUERY);
+    message_putstringz(&message, "name");
+    message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
+    message_putstringz(&message, "");
+    channel_sendmessage(&message);
 
-    unsigned char *addr = rddata;
-    struct message message;
-    char fullname[256];
+    message_init(&message, EVENT_QUERY);
+    message_putstringz(&message, "data");
 
-    message_init(&message, EVENT_DATA);
-
-    if (cstring_match(query, "type"))
+    switch (type)
     {
 
-        message_putvalue(&message, type, 10, 0);
+    case 1:
+        message_putvalue(&message, addr[0], 10, 0);
+        message_putstring(&message, ".");
+        message_putvalue(&message, addr[1], 10, 0);
+        message_putstring(&message, ".");
+        message_putvalue(&message, addr[2], 10, 0);
+        message_putstring(&message, ".");
+        message_putvalue(&message, addr[3], 10, 0);
         message_putstringz(&message, "");
 
-    }
+        break;
 
-    if (cstring_match(query, "name"))
-    {
-
-        message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
+    case 5:
+        message_putbuffer(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
         message_putstringz(&message, "");
 
-    }
+        break;
 
-    if (cstring_match(query, "data"))
-    {
+    default:
+        message_putstringz(&message, "<null>");
 
-        switch (type)
-        {
-
-        case 1:
-            message_putvalue(&message, addr[0], 10, 0);
-            message_putstring(&message, ".");
-            message_putvalue(&message, addr[1], 10, 0);
-            message_putstring(&message, ".");
-            message_putvalue(&message, addr[2], 10, 0);
-            message_putstring(&message, ".");
-            message_putvalue(&message, addr[3], 10, 0);
-            message_putstringz(&message, "");
-
-            break;
-
-        case 5:
-            message_putbuffer(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
-            message_putstringz(&message, "");
-
-            break;
-
-        default:
-            message_putstringz(&message, "<null>");
-
-            break;
-
-        }
+        break;
 
     }
 
@@ -183,7 +166,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
                 rddata = (buffer + responselength);
                 responselength += net_load16(answer->rdlength);
 
-                printmain(net_load16(answer->type), name, rddata, buffer);
+                reply(net_load16(answer->type), name, rddata, buffer);
 
             }
 
@@ -226,78 +209,6 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onquery(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    if (file_walk(FILE_L0, FILE_G0, "addr"))
-        socket_resolvelocal(FILE_L0, &local);
-
-    if (file_walk(FILE_L0, FILE_G0, "data"))
-    {
-
-        unsigned char buffer[BUFFER_SIZE];
-        unsigned int count = buildrequest(BUFFER_SIZE, buffer);
-
-        file_link(FILE_L0);
-        socket_resolveremote(FILE_L0, &local, &router);
-        socket_send_udp(FILE_L0, &local, &remote, &router, count, buffer);
-
-        count = socket_receive_udp(FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE);
-
-        if (count)
-        {
-
-            struct dns_header *header = (struct dns_header *)buffer;
-            unsigned int responselength = sizeof (struct dns_header);
-            unsigned int i;
-
-            for (i = 0; i < net_load16(header->questions); i++)
-            {
-
-                char *name;
-
-                name = (char *)(buffer + responselength);
-                responselength += dns_namesize(name);
-                responselength += sizeof (struct dns_question);
-
-            }
-
-            for (i = 0; i < net_load16(header->answers); i++)
-            {
-
-                struct dns_answer *answer;
-                char *name;
-                void *rddata;
-
-                name = (char *)(buffer + responselength);
-                responselength += dns_namesize(name);
-                answer = (struct dns_answer *)(buffer + responselength);
-                responselength += sizeof (struct dns_answer);
-                rddata = (buffer + responselength);
-                responselength += net_load16(answer->rdlength);
-
-                /* just print one query for now and only if type is 1 */
-                if (net_load16(answer->type) == 1)
-                {
-
-                    printquery(mdata, msize, net_load16(answer->type), name, rddata, buffer);
-
-                    break;
-
-                }
-
-            }
-
-        }
-
-        file_unlink(FILE_L0);
-
-    }
-
-    channel_close();
-
-}
-
 void init(void)
 {
 
@@ -312,7 +223,6 @@ void init(void)
     socket_bind_ipv4s(&router, "10.0.5.80");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_OPTION, onoption);
-    channel_bind(EVENT_QUERY, onquery);
 
 }
 
