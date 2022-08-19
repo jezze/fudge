@@ -38,7 +38,7 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
     struct message message;
     char fullname[256];
 
-    message_init(&message, EVENT_MAIN);
+    message_init(&message, EVENT_DATA);
 
     switch (type)
     {
