@@ -58,12 +58,10 @@ static unsigned int read(unsigned int source, void *buffer, unsigned int count)
 
     struct message message;
 
-    while (channel_pick(&message))
+    while (channel_pollfrom(source, &message) != EVENT_CLOSE)
     {
 
-        if (message.header.source == source && message.header.event == EVENT_CLOSE)
-            return 0;
-        else if (message.header.source == source && message.header.event == EVENT_DATA)
+        if (message.header.event == EVENT_DATA)
             return buffer_write(buffer, count, message.data.buffer, message_datasize(&message.header), 0);
         else
             channel_dispatch(&message);
