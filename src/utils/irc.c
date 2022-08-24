@@ -56,7 +56,7 @@ static void resolve(char *domain)
         channel_sendmessageto(id, &message);
         channel_sendto(id, EVENT_MAIN);
 
-        while (channel_pollfrom(id, &message))
+        while (channel_pollfrom(id, &message) != EVENT_CLOSE)
         {
 
             if (message.header.event == EVENT_QUERY)
@@ -69,9 +69,6 @@ static void resolve(char *domain)
                     socket_bind_ipv4s(&remote, value);
 
             }
-
-            if (message.header.event == EVENT_CLOSE)
-                break;
 
         }
 
