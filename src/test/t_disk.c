@@ -63,7 +63,7 @@ static unsigned int request_poll(struct state *state)
 
     struct message message;
 
-    while (channel_polleventsystem(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &message))
     {
 
         state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, message.data.buffer, message_datasize(&message.header), state->blockreads * BLOCKSIZE) / BLOCKSIZE;

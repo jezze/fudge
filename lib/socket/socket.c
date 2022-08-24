@@ -562,7 +562,7 @@ unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, s
     if (local->info.tcp.state != TCP_STATE_ESTABLISHED)
         return 0;
 
-    while (channel_polleventsystem(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &message))
     {
 
         unsigned int payploadcount;
@@ -588,7 +588,7 @@ unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, s
 
     struct message message;
 
-    while (channel_polleventsystem(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &message))
     {
 
         unsigned int payploadcount;
@@ -613,7 +613,7 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
 
     local->info.tcp.state = TCP_STATE_LISTEN;
 
-    while (channel_polleventsystem(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &message))
     {
 
         char buffer[BUFFER_SIZE];
@@ -637,7 +637,7 @@ void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct so
 
     send(descriptor, message.data.buffer, buildtcp(local, remote, router, message.data.buffer, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, BUFFER_SIZE, 0, 0));
 
-    while (channel_polleventsystem(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &message))
     {
 
         char buffer[BUFFER_SIZE];
@@ -657,7 +657,7 @@ void socket_disconnect_tcp(unsigned int descriptor, struct socket *local, struct
 
     struct message message;
 
-    while (channel_polleventsystem(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &message))
     {
 
         char buffer[BUFFER_SIZE];
@@ -691,7 +691,7 @@ void socket_resolveremote(unsigned int descriptor, struct socket *local, struct 
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE); 
     send(descriptor, message.data.buffer, buildarp(local, remote, &multicast, message.data.buffer, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
-    while (channel_polleventsystem(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &message))
     {
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);

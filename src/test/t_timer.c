@@ -10,7 +10,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     file_link(FILE_G0);
 
-    while (channel_polleventsystem(EVENT_TIMERTICK, &message))
+    while (channel_kpollevent(EVENT_TIMERTICK, &message))
     {
 
         message_init(&message, EVENT_DATA);

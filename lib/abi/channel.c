@@ -275,14 +275,14 @@ unsigned int channel_polleventfrom(unsigned int source, unsigned int event, stru
 
 }
 
-unsigned int channel_pollsystem(struct message *message)
+unsigned int channel_kpoll(struct message *message)
 {
 
     return channel_pollfrom(0, message);
 
 }
 
-unsigned int channel_polleventsystem(unsigned int event, struct message *message)
+unsigned int channel_kpollevent(unsigned int event, struct message *message)
 {
 
     return channel_polleventfrom(0, event, message);
@@ -308,17 +308,7 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
 
     struct message message;
 
-    while (channel_pick(&message))
-    {
-
-        if (message.header.source == source && message.header.event == event)
-            return message.header.event;
-
-        channel_dispatch(&message);
-
-    }
-
-    return 0;
+    return channel_polleventfrom(source, event, &message);
 
 }
 
