@@ -37,6 +37,18 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/test/t_loop \
+
+O:=\
+    $(DIR_SRC)/test/t_loop.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/test/t_timer \
 
 O:=\
