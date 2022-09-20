@@ -1,4 +1,16 @@
 B:=\
+    $(DIR_SRC)/wm2/wcalc \
+
+O:=\
+    $(DIR_SRC)/wm2/wcalc.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/wm2/wm2 \
 
 O:=\
@@ -18,14 +30,16 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/wm2/wcalc \
+    $(DIR_SRC)/wm2/wrun \
 
 O:=\
-    $(DIR_SRC)/wm2/wcalc.o \
+    $(DIR_SRC)/wm2/wrun.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/socket/socket.a \
+    $(DIR_LIB)/net/net.a \
 
 include $(DIR_MK)/bin.mk
 
