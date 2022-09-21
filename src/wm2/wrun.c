@@ -7,6 +7,39 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 static char url[512];
+static char inputdata[BUFFER_SIZE];
+static struct ring input;
+static unsigned int isbody;
+
+static void handlehttppacket(void)
+{
+
+    unsigned int newline;
+
+    while ((newline = ring_each(&input, '\n')))
+    {
+
+        char buffer[BUFFER_SIZE];
+        unsigned int count = ring_read(&input, buffer, newline);
+
+        if (isbody)
+        {
+
+            channel_sendbuffer(EVENT_DATA, count, buffer);
+
+        }
+
+        else
+        {
+
+            if (count == 1 && buffer[0] == '\n')
+                isbody = 1;
+
+        }
+
+    }
+
+}
 
 static unsigned int buildrequest(unsigned int count, void *buffer, struct url *kurl)
 {
@@ -152,9 +185,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         while ((count = socket_receive_tcp(FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE)))
         {
 
-            /* Todo: Strip away headers by reading line by line */
-
-            file_notify(FILE_G1, EVENT_WMRENDERDATA, count, buffer);
+            if (ring_write(&input, buffer, count))
+                handlehttppacket();
 
         }
 
@@ -179,6 +211,7 @@ void init(void)
         return;
 
     file_walk2(FILE_G0, "system:ethernet/if:0");
+    ring_init(&input, BUFFER_SIZE, inputdata);
     socket_init(&local);
     socket_bind_ipv4s(&local, "10.0.5.1");
     socket_bind_tcps(&local, "50001", 42);

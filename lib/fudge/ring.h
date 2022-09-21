@@ -28,6 +28,7 @@ unsigned int ring_move(struct ring *to, struct ring *from);
 unsigned int ring_overmove(struct ring *to, struct ring *from);
 unsigned int ring_copy(struct ring *to, struct ring *from);
 unsigned int ring_overcopy(struct ring *to, struct ring *from);
+unsigned int ring_each(struct ring *ring, char value);
 unsigned int ring_find(struct ring *ring, char value);
 unsigned int ring_findreverse(struct ring *ring, char value);
 void ring_reset(struct ring *ring);
