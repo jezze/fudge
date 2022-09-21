@@ -25,6 +25,7 @@ static void handlehttppacket(void)
         if (isbody)
         {
 
+            channel_sendbuffer(EVENT_DATA, count, buffer);
             file_notify(FILE_G1, EVENT_WMRENDERDATA, count, buffer);
 
         }
@@ -32,7 +33,7 @@ static void handlehttppacket(void)
         else
         {
 
-            if (count == 1 && buffer[0] == '\n')
+            if (count == 2 && buffer[0] == '\r' && buffer[1] == '\n')
                 isbody = 1;
 
         }
