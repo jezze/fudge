@@ -25,7 +25,7 @@ static void handlehttppacket(void)
         if (isbody)
         {
 
-            channel_sendbuffer(EVENT_DATA, count, buffer);
+            file_notify(FILE_G1, EVENT_WMRENDERDATA, count, buffer);
 
         }
 
