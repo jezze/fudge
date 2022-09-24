@@ -21,7 +21,7 @@ static void printprompt(void)
 
 }
 
-static void check(void *mdata, struct job *jobs, unsigned int njobs)
+static void handleinput(void *mdata, struct job *jobs, unsigned int njobs)
 {
 
     struct event_consoledata *consoledata = mdata;
@@ -80,7 +80,7 @@ static void runcommand(unsigned int count, void *buffer)
                 break;
 
             case EVENT_CONSOLEDATA:
-                check(message.data.buffer, jobs, njobs);
+                handleinput(message.data.buffer, jobs, njobs);
 
                 break;
 

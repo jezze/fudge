@@ -85,7 +85,7 @@ static void moveright(unsigned int steps)
 
 }
 
-static void check(void *mdata, struct job *jobs, unsigned int njobs)
+static void handleinput(void *mdata, struct job *jobs, unsigned int njobs)
 {
 
     struct event_wmkeypress *wmkeypress = mdata;
@@ -147,7 +147,7 @@ static void runcommand(unsigned int count, void *buffer)
                 break;
 
             case EVENT_WMKEYPRESS:
-                check(message.data.buffer, jobs, njobs);
+                handleinput(message.data.buffer, jobs, njobs);
 
                 break;
 
