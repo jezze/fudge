@@ -106,7 +106,7 @@ static void handleinput(struct job *job, void *mdata)
 
 }
 
-static void runcommand(unsigned int count, void *buffer)
+static void createjob(struct job *job, unsigned int count, void *buffer)
 {
 
     unsigned int id = file_spawn("/bin/slang");
@@ -115,45 +115,53 @@ static void runcommand(unsigned int count, void *buffer)
     {
 
         struct message message;
-        struct job_worker workers[JOBSIZE];
-        struct job job;
 
-        job_init(&job, workers, JOBSIZE);
         channel_redirectback(id, EVENT_DATA);
-        channel_redirectback(id, EVENT_CLOSE);
         channel_redirectback(id, EVENT_ERROR);
+        channel_redirectback(id, EVENT_CLOSE);
         channel_sendbufferto(id, EVENT_DATA, count, buffer);
         channel_sendto(id, EVENT_MAIN);
 
         while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
-            job_parse(&job, message.data.buffer, count);
+            job_parse(job, message.data.buffer, count);
 
-        job_spawn(&job);
-        job_pipe(&job);
-        job_run(&job);
+    }
 
-        while (job_count(&job) && channel_pick(&message))
+}
+
+static void runcommand(unsigned int count, void *buffer)
+{
+
+    struct message message;
+    struct job_worker workers[JOBSIZE];
+    struct job job;
+
+    job_init(&job, workers, JOBSIZE);
+    createjob(&job, count, buffer);
+    job_spawn(&job);
+    job_pipe(&job);
+    job_run(&job);
+
+    while (job_count(&job) && channel_pick(&message))
+    {
+
+        switch (message.header.event)
         {
 
-            switch (message.header.event)
-            {
+        case EVENT_CLOSE:
+            job_close(&job, message.header.source);
 
-            case EVENT_CLOSE:
-                job_close(&job, message.header.source);
+            break;
 
-                break;
+        case EVENT_WMKEYPRESS:
+            handleinput(&job, message.data.buffer);
 
-            case EVENT_WMKEYPRESS:
-                handleinput(&job, message.data.buffer);
+            break;
 
-                break;
+        default:
+            channel_dispatch(&message);
 
-            default:
-                channel_dispatch(&message);
-
-                break;
-
-            }
+            break;
 
         }
 
