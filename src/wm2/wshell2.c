@@ -2,12 +2,14 @@
 #include <abi.h>
 
 #define JOBSIZE                         32
+#define INPUTSIZE                       128
+#define TEXTSIZE                        2048
 
-static char inputdata1[128];
+static char inputdata1[INPUTSIZE];
 static struct ring input1;
-static char inputdata2[128];
+static char inputdata2[INPUTSIZE];
 static struct ring input2;
-static char resultdata[2048];
+static char resultdata[TEXTSIZE];
 static struct ring result;
 
 static void update(void)
@@ -64,7 +66,7 @@ static void printprompt(void)
 static void moveleft(unsigned int steps)
 {
 
-    char buffer[128];
+    char buffer[INPUTSIZE];
 
     ring_writereverse(&input2, buffer, ring_readreverse(&input1, buffer, steps));
 
@@ -73,7 +75,7 @@ static void moveleft(unsigned int steps)
 static void moveright(unsigned int steps)
 {
 
-    char buffer[128];
+    char buffer[INPUTSIZE];
 
     ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
 
@@ -161,8 +163,8 @@ static void runcommand(unsigned int count, void *buffer)
 static void interpret(void)
 {
 
-    char buffer[128];
-    unsigned int count = ring_read(&input1, buffer, 128);
+    char buffer[INPUTSIZE];
+    unsigned int count = ring_read(&input1, buffer, INPUTSIZE);
 
     printprompt();
     print(buffer, count);
@@ -343,9 +345,9 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    ring_init(&input1, 128, inputdata1);
-    ring_init(&input2, 128, inputdata2);
-    ring_init(&result, 2048, resultdata);
+    ring_init(&input1, INPUTSIZE, inputdata1);
+    ring_init(&input2, INPUTSIZE, inputdata2);
+    ring_init(&result, TEXTSIZE, resultdata);
 
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
