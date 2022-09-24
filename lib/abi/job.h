@@ -19,7 +19,7 @@ struct job
 };
 
 unsigned int job_parse(struct job *jobs, unsigned int c, unsigned int n, void *buffer, unsigned int count);
-unsigned int job_spawn(struct job *jobs, unsigned int n);
+void job_spawn(struct job *jobs, unsigned int n);
 void job_pipe(struct job *jobs, unsigned int n);
 unsigned int job_run(struct job *jobs, unsigned int n);
 unsigned int job_close(unsigned int id, struct job *jobs, unsigned int n);

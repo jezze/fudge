@@ -101,7 +101,7 @@ unsigned int activatenext(unsigned int startindex, struct job *jobs, unsigned in
 
 }
 
-unsigned int job_spawn(struct job *jobs, unsigned int n)
+void job_spawn(struct job *jobs, unsigned int n)
 {
 
     unsigned int i;
@@ -118,13 +118,11 @@ unsigned int job_spawn(struct job *jobs, unsigned int n)
 
             job_send(jobs, i, EVENT_TERM, 0, 0);
 
-            return 0;
+            return;
 
         }
 
     }
-
-    return n;
 
 }
 
@@ -249,8 +247,6 @@ void job_send(struct job *jobs, unsigned int n, unsigned int event, unsigned int
 
         if (job->id)
             channel_sendbufferto(job->id, event, count, buffer);
-
-        break;
 
     }
 
