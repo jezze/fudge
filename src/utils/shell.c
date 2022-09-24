@@ -61,14 +61,9 @@ static void runcommand(unsigned int count, void *buffer)
         channel_sendto(id, EVENT_MAIN);
 
         while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
-        {
+            njobs = job_parse(jobs, njobs, 32, message.data.buffer, count);
 
-            unsigned int n = job_parse(jobs, 32, message.data.buffer, count);
-
-            njobs = job_spawn(jobs, n);
-
-        }
-
+        job_spawn(jobs, njobs);
         job_pipe(jobs, njobs);
 
         tasks = job_run(jobs, njobs);

@@ -5,9 +5,9 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct job jobs[32];
-    unsigned int n = job_parse(jobs, 32, mdata, msize);
-    unsigned int njobs = job_spawn(jobs, n);
+    unsigned int njobs = job_parse(jobs, 0, 32, mdata, msize);
 
+    job_spawn(jobs, njobs);
     job_pipe(jobs, njobs);
     job_run(jobs, njobs);
 

@@ -11,19 +11,18 @@ static char *nextword(char *current)
 
 }
 
-unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned int count)
+unsigned int job_parse(struct job *jobs, unsigned int c, unsigned int n, void *buffer, unsigned int count)
 {
 
     char *start = buffer;
     char *end = start + count;
-    unsigned int njobs = 0;
 
     buffer_clear(jobs, sizeof (struct job) * n);
 
     while (start < end)
     {
 
-        struct job *p = &jobs[njobs];
+        struct job *p = &jobs[c];
 
         switch (start[0])
         {
@@ -31,7 +30,7 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
         case 'P':
             start = nextword(start);
             p->program = start;
-            njobs++;
+            c++;
 
             break;
 
@@ -52,7 +51,7 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
             break;
 
         case 'E':
-            return njobs;
+            return c;
 
         }
 
@@ -60,7 +59,7 @@ unsigned int job_parse(struct job *jobs, unsigned int n, void *buffer, unsigned 
 
     }
 
-    return njobs;
+    return c;
 
 }
 
