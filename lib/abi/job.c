@@ -154,7 +154,7 @@ void job_pipe(struct job *jobs, unsigned int n)
 
 }
 
-unsigned int job_run(struct job *jobs, unsigned int n)
+void job_run(struct job *jobs, unsigned int n)
 {
 
     unsigned int i;
@@ -204,11 +204,9 @@ unsigned int job_run(struct job *jobs, unsigned int n)
 
     activatenext(0, jobs, n);
 
-    return job_count(jobs, n);
-
 }
 
-unsigned int job_close(unsigned int id, struct job *jobs, unsigned int n)
+void job_close(unsigned int id, struct job *jobs, unsigned int n)
 {
 
     unsigned int i;
@@ -230,8 +228,6 @@ unsigned int job_close(unsigned int id, struct job *jobs, unsigned int n)
         }
 
     }
-
-    return job_count(jobs, n);
 
 }
 

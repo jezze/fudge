@@ -21,8 +21,8 @@ struct job
 unsigned int job_parse(struct job *jobs, unsigned int c, unsigned int n, void *buffer, unsigned int count);
 void job_spawn(struct job *jobs, unsigned int n);
 void job_pipe(struct job *jobs, unsigned int n);
-unsigned int job_run(struct job *jobs, unsigned int n);
-unsigned int job_close(unsigned int id, struct job *jobs, unsigned int n);
+void job_run(struct job *jobs, unsigned int n);
+void job_close(unsigned int id, struct job *jobs, unsigned int n);
 void job_send(struct job *jobs, unsigned int n, unsigned int event, unsigned int count, void *buffer);
 void job_sendall(struct job *jobs, unsigned int n, unsigned int event, unsigned int count, void *buffer);
 void job_killall(struct job *jobs, unsigned int n);

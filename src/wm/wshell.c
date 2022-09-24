@@ -117,7 +117,6 @@ static void runcommand(unsigned int count, void *buffer)
         struct message message;
         struct job jobs[32];
         unsigned int njobs = 0;
-        unsigned int tasks;
 
         channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_CLOSE);
@@ -130,17 +129,16 @@ static void runcommand(unsigned int count, void *buffer)
 
         job_spawn(jobs, njobs);
         job_pipe(jobs, njobs);
+        job_run(jobs, njobs);
 
-        tasks = job_run(jobs, njobs);
-
-        while (tasks && channel_pick(&message))
+        while (job_count(jobs, njobs) && channel_pick(&message))
         {
 
             switch (message.header.event)
             {
 
             case EVENT_CLOSE:
-                tasks = job_close(message.header.source, jobs, njobs);
+                job_close(message.header.source, jobs, njobs);
 
                 break;
 
