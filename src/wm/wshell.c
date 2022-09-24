@@ -2,6 +2,8 @@
 #include <abi.h>
 #include <widget.h>
 
+#define JOBSIZE                         32
+
 static struct widget_textbox content;
 static char outputdata[BUFFER_SIZE];
 static struct ring output;
@@ -115,7 +117,7 @@ static void runcommand(unsigned int count, void *buffer)
     {
 
         struct message message;
-        struct job jobs[32];
+        struct job jobs[JOBSIZE];
         unsigned int njobs = 0;
 
         channel_redirectback(id, EVENT_DATA);
@@ -125,7 +127,7 @@ static void runcommand(unsigned int count, void *buffer)
         channel_sendto(id, EVENT_MAIN);
 
         while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
-            njobs = job_parse(jobs, njobs, 32, message.data.buffer, count);
+            njobs = job_parse(jobs, njobs, JOBSIZE, message.data.buffer, count);
 
         job_spawn(jobs, njobs);
         job_pipe(jobs, njobs);
