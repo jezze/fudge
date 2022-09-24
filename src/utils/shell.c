@@ -2,8 +2,9 @@
 #include <abi.h>
 
 #define JOBSIZE                         32
+#define INPUTSIZE                       128
 
-static char inputbuffer[BUFFER_SIZE];
+static char inputbuffer[INPUTSIZE];
 static struct ring input;
 static unsigned int keymod = KEYMOD_NONE;
 
@@ -109,11 +110,15 @@ static void runcommand(unsigned int count, void *buffer)
 static void interpret(struct ring *ring)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
+    if (ring_count(ring) >= 2)
+    {
 
-    if (count >= 2)
+        char buffer[INPUTSIZE];
+        unsigned int count = ring_read(ring, buffer, INPUTSIZE);
+
         runcommand(count, buffer);
+
+    }
 
     printprompt();
 
@@ -122,20 +127,76 @@ static void interpret(struct ring *ring)
 static void complete(struct ring *ring)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
-    unsigned int id = file_spawn("/bin/complete");
-
-    if (id)
+    if (ring_count(ring))
     {
 
-        channel_redirectback(id, EVENT_DATA);
-        channel_redirectback(id, EVENT_ERROR);
-        channel_redirectback(id, EVENT_CLOSE);
-        channel_sendbufferto(id, EVENT_DATA, count, buffer);
-        channel_sendto(id, EVENT_MAIN);
+        char path[INPUTSIZE];
+        unsigned int lastspace;
+        unsigned int pathcount;
+        char match[INPUTSIZE];
+        unsigned int matchcount = 0;
+        unsigned int id1 = file_spawn("/bin/ls");
+        unsigned int id2 = file_spawn("/bin/grep");
 
-        while (channel_readfrom(id, buffer, BUFFER_SIZE));
+        lastspace = ring_findreverse(ring, ' ');
+
+        ring_skip(ring, ring_count(ring) - lastspace);
+
+        pathcount = ring_read(ring, path, INPUTSIZE);
+        matchcount += cstring_writez(match, INPUTSIZE, "match", matchcount);
+        matchcount += buffer_write(match, INPUTSIZE, path, pathcount, matchcount);
+        matchcount += cstring_writez(match, INPUTSIZE, "", matchcount);
+
+        if (id1 && id2)
+        {
+
+            struct message message;
+            unsigned int count;
+
+            channel_redirecttarget(id1, EVENT_DATA, id2);
+            channel_redirectback(id1, EVENT_CLOSE);
+            channel_redirectback(id2, EVENT_DATA);
+            channel_redirectback(id2, EVENT_CLOSE);
+            channel_sendbufferto(id2, EVENT_OPTION, matchcount, match);
+            channel_sendto(id1, EVENT_MAIN);
+            channel_wait(id1, EVENT_CLOSE);
+            channel_sendto(id2, EVENT_MAIN);
+
+            while ((count = channel_readfrom(id2, message.data.buffer, MESSAGE_SIZE)))
+            {
+
+                print("\n", 1);
+                print(message.data.buffer, count);
+
+            }
+
+        }
+
+    }
+
+    else
+    {
+
+        unsigned int id = file_spawn("/bin/ls");
+
+        if (id)
+        {
+
+            struct message message;
+            unsigned int count;
+
+            channel_redirectback(id, EVENT_CLOSE);
+            channel_redirectback(id, EVENT_DATA);
+            channel_sendto(id, EVENT_MAIN);
+
+            print("\n", 1);
+
+            while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
+                print(message.data.buffer, count);
+
+            printprompt();
+
+        }
 
     }
 
@@ -311,7 +372,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    ring_init(&input, BUFFER_SIZE, inputbuffer);
+    ring_init(&input, INPUTSIZE, inputbuffer);
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
