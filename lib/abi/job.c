@@ -77,18 +77,28 @@ static unsigned int spawn(struct job *job)
 
 }
 
-void activatenext(unsigned int index, struct job *jobs, unsigned int n)
+unsigned int activatenext(unsigned int startindex, struct job *jobs, unsigned int n)
 {
 
-    if (index < n)
+    unsigned int i;
+
+    for (i = startindex; i < n; i++)
     {
 
-        struct job *job = &jobs[index];
+        struct job *job = &jobs[i];
 
         if (job->id)
+        {
+
             channel_sendto(job->id, EVENT_MAIN);
 
+            return i;
+
+        }
+
     }
+
+    return n;
 
 }
 
