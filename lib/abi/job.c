@@ -11,18 +11,16 @@ static char *nextword(char *current)
 
 }
 
-unsigned int job_parse(struct job *jobs, unsigned int c, unsigned int n, void *buffer, unsigned int count)
+void job_parse(struct job *job, void *buffer, unsigned int count)
 {
 
     char *start = buffer;
     char *end = start + count;
 
-    buffer_clear(jobs, sizeof (struct job) * n);
-
     while (start < end)
     {
 
-        struct job *p = &jobs[c];
+        struct job_worker *p = &job->workers[job->count];
 
         switch (start[0])
         {
@@ -30,7 +28,7 @@ unsigned int job_parse(struct job *jobs, unsigned int c, unsigned int n, void *b
         case 'P':
             start = nextword(start);
             p->program = start;
-            c++;
+            job->count++;
 
             break;
 
@@ -51,7 +49,7 @@ unsigned int job_parse(struct job *jobs, unsigned int c, unsigned int n, void *b
             break;
 
         case 'E':
-            return c;
+            return;
 
         }
 
@@ -59,64 +57,35 @@ unsigned int job_parse(struct job *jobs, unsigned int c, unsigned int n, void *b
 
     }
 
-    return c;
-
 }
 
-static unsigned int spawn(struct job *job)
+static unsigned int spawn(struct job_worker *worker)
 {
 
     if (!file_walk2(FILE_L0, "/bin"))
         return 0;
 
-    if (!(file_walk(FILE_CP, FILE_L0, job->program) || file_walk2(FILE_CP, job->program)))
+    if (!(file_walk(FILE_CP, FILE_L0, worker->program) || file_walk2(FILE_CP, worker->program)))
         return 0;
 
     return call_spawn();
 
 }
 
-unsigned int activatenext(unsigned int startindex, struct job *jobs, unsigned int n)
+void activatenext(unsigned int startindex, struct job *job)
 {
 
     unsigned int i;
 
-    for (i = startindex; i < n; i++)
+    for (i = startindex; i < job->count; i++)
     {
 
-        struct job *job = &jobs[i];
+        struct job_worker *worker = &job->workers[i];
 
-        if (job->id)
+        if (worker->id)
         {
 
-            channel_sendto(job->id, EVENT_MAIN);
-
-            return i;
-
-        }
-
-    }
-
-    return n;
-
-}
-
-void job_spawn(struct job *jobs, unsigned int n)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < n; i++)
-    {
-
-        struct job *job = &jobs[i];
-
-        job->id = spawn(job);
-
-        if (!job->id)
-        {
-
-            job_sendall(jobs, n, EVENT_TERM, 0, 0);
+            channel_sendto(worker->id, EVENT_MAIN);
 
             return;
 
@@ -126,27 +95,24 @@ void job_spawn(struct job *jobs, unsigned int n)
 
 }
 
-void job_pipe(struct job *jobs, unsigned int n)
+void job_spawn(struct job *job)
 {
 
     unsigned int i;
 
-    for (i = 0; i < n; i++)
+    for (i = 0; i < job->count; i++)
     {
 
-        struct job *job = &jobs[i];
+        struct job_worker *worker = &job->workers[i];
 
-        if (job->id)
+        worker->id = spawn(worker);
+
+        if (!worker->id)
         {
 
-            channel_redirectback(job->id, EVENT_CLOSE);
-            channel_redirectback(job->id, EVENT_PATH);
-            channel_redirectback(job->id, EVENT_ERROR);
+            job_sendall(job, EVENT_TERM, 0, 0);
 
-            if (i < n - 1)
-                channel_redirecttarget(job->id, EVENT_DATA, jobs[i + 1].id);
-            else
-                channel_redirectback(job->id, EVENT_DATA);
+            return;
 
         }
 
@@ -154,30 +120,58 @@ void job_pipe(struct job *jobs, unsigned int n)
 
 }
 
-void job_run(struct job *jobs, unsigned int n)
+void job_pipe(struct job *job)
 {
 
     unsigned int i;
 
-    for (i = 0; i < n; i++)
+    for (i = 0; i < job->count; i++)
     {
 
-        struct job *job = &jobs[i];
+        struct job_worker *worker = &job->workers[i];
 
-        if (job->id)
+        if (worker->id)
+        {
+
+            channel_redirectback(worker->id, EVENT_CLOSE);
+            channel_redirectback(worker->id, EVENT_PATH);
+            channel_redirectback(worker->id, EVENT_ERROR);
+
+            if (i < job->count - 1)
+                channel_redirecttarget(worker->id, EVENT_DATA, job->workers[i + 1].id);
+            else
+                channel_redirectback(worker->id, EVENT_DATA);
+
+        }
+
+    }
+
+}
+
+void job_run(struct job *job)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < job->count; i++)
+    {
+
+        struct job_worker *worker = &job->workers[i];
+
+        if (worker->id)
         {
 
             unsigned int j;
 
-            for (j = 0; j < job->noptions; j++)
+            for (j = 0; j < worker->noptions; j++)
             {
 
                 struct message message;
 
                 message_init(&message, EVENT_OPTION);
-                message_putstringz(&message, job->options[j].key);
-                message_putstringz(&message, job->options[j].value);
-                channel_sendbufferto(job->id, EVENT_OPTION, message_datasize(&message.header), message.data.buffer);
+                message_putstringz(&message, worker->options[j].key);
+                message_putstringz(&message, worker->options[j].value);
+                channel_sendbufferto(worker->id, EVENT_OPTION, message_datasize(&message.header), message.data.buffer);
 
             }
 
@@ -185,43 +179,43 @@ void job_run(struct job *jobs, unsigned int n)
 
     }
 
-    for (i = 0; i < n; i++)
+    for (i = 0; i < job->count; i++)
     {
 
-        struct job *job = &jobs[i];
+        struct job_worker *worker = &job->workers[i];
 
-        if (job->id)
+        if (worker->id)
         {
 
             unsigned int j;
 
-            for (j = 0; j < job->npaths; j++)
-                channel_sendstringzto(job->id, EVENT_PATH, job->paths[j]);
+            for (j = 0; j < worker->npaths; j++)
+                channel_sendstringzto(worker->id, EVENT_PATH, worker->paths[j]);
 
         }
 
     }
 
-    activatenext(0, jobs, n);
+    activatenext(0, job);
 
 }
 
-void job_close(unsigned int id, struct job *jobs, unsigned int n)
+void job_close(unsigned int id, struct job *job)
 {
 
     unsigned int i;
 
-    for (i = 0; i < n; i++)
+    for (i = 0; i < job->count; i++)
     {
 
-        struct job *job = &jobs[i];
+        struct job_worker *worker = &job->workers[i];
 
-        if (job->id == id)
+        if (worker->id == id)
         {
 
-            job->id = 0;
+            worker->id = 0;
 
-            activatenext(i + 1, jobs, n);
+            activatenext(i + 1, job);
 
             break;
 
@@ -231,20 +225,20 @@ void job_close(unsigned int id, struct job *jobs, unsigned int n)
 
 }
 
-void job_send(struct job *jobs, unsigned int n, unsigned int event, unsigned int count, void *buffer)
+void job_send(struct job *job, unsigned int event, unsigned int count, void *buffer)
 {
 
     unsigned int i;
 
-    for (i = 0; i < n; i++)
+    for (i = 0; i < job->count; i++)
     {
 
-        struct job *job = &jobs[i];
+        struct job_worker *worker = &job->workers[i];
 
-        if (job->id)
+        if (worker->id)
         {
 
-            channel_sendbufferto(job->id, event, count, buffer);
+            channel_sendbufferto(worker->id, event, count, buffer);
 
             break;
 
@@ -254,39 +248,39 @@ void job_send(struct job *jobs, unsigned int n, unsigned int event, unsigned int
 
 }
 
-void job_sendall(struct job *jobs, unsigned int n, unsigned int event, unsigned int count, void *buffer)
+void job_sendall(struct job *job, unsigned int event, unsigned int count, void *buffer)
 {
 
     unsigned int i;
 
-    for (i = 0; i < n; i++)
+    for (i = 0; i < job->count; i++)
     {
 
-        struct job *job = &jobs[i];
+        struct job_worker *worker = &job->workers[i];
 
-        if (job->id)
-            channel_sendbufferto(job->id, event, count, buffer);
+        if (worker->id)
+            channel_sendbufferto(worker->id, event, count, buffer);
 
     }
 
 }
 
-void job_killall(struct job *jobs, unsigned int n)
+void job_killall(struct job *job)
 {
 
     unsigned int i;
 
-    for (i = 0; i < n; i++)
+    for (i = 0; i < job->count; i++)
     {
 
-        struct job *job = &jobs[i];
+        struct job_worker *worker = &job->workers[i];
 
-        if (job->id)
+        if (worker->id)
         {
 
-            call_kill(job->id);
+            call_kill(worker->id);
 
-            job->id = 0;
+            worker->id = 0;
 
         }
 
@@ -294,23 +288,34 @@ void job_killall(struct job *jobs, unsigned int n)
 
 }
 
-unsigned int job_count(struct job *jobs, unsigned int n)
+unsigned int job_count(struct job *job)
 {
 
     unsigned int count = 0;
     unsigned int i;
 
-    for (i = 0; i < n; i++)
+    for (i = 0; i < job->count; i++)
     {
 
-        struct job *job = &jobs[i];
+        struct job_worker *worker = &job->workers[i];
 
-        if (job->id)
+        if (worker->id)
             count++;
 
     }
 
     return count;
+
+}
+
+void job_init(struct job *job, struct job_worker *workers, unsigned int capacity)
+{
+
+    job->workers = workers;
+    job->capacity = capacity;
+    job->count = 0;
+
+    buffer_clear(job->workers, sizeof (struct job_worker) * capacity);
 
 }
 

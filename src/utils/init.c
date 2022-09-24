@@ -1,15 +1,19 @@
 #include <fudge.h>
 #include <abi.h>
 
+#define JOBSIZE                         32
+
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct job jobs[32];
-    unsigned int njobs = job_parse(jobs, 0, 32, mdata, msize);
+    struct job_worker workers[JOBSIZE];
+    struct job job;
 
-    job_spawn(jobs, njobs);
-    job_pipe(jobs, njobs);
-    job_run(jobs, njobs);
+    job_init(&job, workers, JOBSIZE);
+    job_parse(&job, mdata, msize);
+    job_spawn(&job);
+    job_pipe(&job);
+    job_run(&job);
 
 }
 

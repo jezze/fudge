@@ -21,7 +21,7 @@ static void printprompt(void)
 
 }
 
-static void handleinput(void *mdata, struct job *jobs, unsigned int njobs)
+static void handleinput(void *mdata, struct job *controller)
 {
 
     struct event_consoledata *consoledata = mdata;
@@ -30,12 +30,12 @@ static void handleinput(void *mdata, struct job *jobs, unsigned int njobs)
     {
 
     case 0x03:
-        job_send(jobs, njobs, EVENT_TERM, 0, 0);
+        job_send(controller, EVENT_TERM, 0, 0);
 
         break;
 
     default:
-        job_send(jobs, njobs, EVENT_CONSOLEDATA, 1, &consoledata->data);
+        job_send(controller, EVENT_CONSOLEDATA, 1, &consoledata->data);
 
         break;
 
@@ -52,9 +52,10 @@ static void runcommand(unsigned int count, void *buffer)
     {
 
         struct message message;
-        struct job jobs[JOBSIZE];
-        unsigned int njobs = 0;
+        struct job_worker workers[JOBSIZE];
+        struct job job;
 
+        job_init(&job, workers, JOBSIZE);
         channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_ERROR);
         channel_redirectback(id, EVENT_CLOSE);
@@ -62,25 +63,25 @@ static void runcommand(unsigned int count, void *buffer)
         channel_sendto(id, EVENT_MAIN);
 
         while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
-            njobs = job_parse(jobs, njobs, JOBSIZE, message.data.buffer, count);
+            job_parse(&job, message.data.buffer, count);
 
-        job_spawn(jobs, njobs);
-        job_pipe(jobs, njobs);
-        job_run(jobs, njobs);
+        job_spawn(&job);
+        job_pipe(&job);
+        job_run(&job);
 
-        while (job_count(jobs, njobs) && channel_pick(&message))
+        while (job_count(&job) && channel_pick(&message))
         {
 
             switch (message.header.event)
             {
 
             case EVENT_CLOSE:
-                job_close(message.header.source, jobs, njobs);
+                job_close(message.header.source, &job);
 
                 break;
 
             case EVENT_CONSOLEDATA:
-                handleinput(message.data.buffer, jobs, njobs);
+                handleinput(message.data.buffer, &job);
 
                 break;
 
