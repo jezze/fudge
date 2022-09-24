@@ -72,7 +72,7 @@ static unsigned int spawn(struct job_worker *worker)
 
 }
 
-void activatenext(unsigned int startindex, struct job *job)
+static void activatenext(struct job *job, unsigned int startindex)
 {
 
     unsigned int i;
@@ -196,7 +196,7 @@ void job_run(struct job *job)
 
     }
 
-    activatenext(0, job);
+    activatenext(job, 0);
 
 }
 
@@ -215,7 +215,7 @@ void job_close(struct job *job, unsigned int id)
 
             worker->id = 0;
 
-            activatenext(i + 1, job);
+            activatenext(job, i + 1);
 
             break;
 
