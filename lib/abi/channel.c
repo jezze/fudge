@@ -23,12 +23,7 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
     char *buffer = data;
 
     if (!target)
-    {
-
-        if (callbacks[event].target)
-            target = callbacks[event].target;
-
-    }
+        target = callbacks[event].target;
 
     if (!target)
         return 0;
