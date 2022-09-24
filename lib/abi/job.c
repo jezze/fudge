@@ -116,7 +116,7 @@ void job_spawn(struct job *jobs, unsigned int n)
         if (!job->id)
         {
 
-            job_send(jobs, i, EVENT_TERM, 0, 0);
+            job_sendall(jobs, n, EVENT_TERM, 0, 0);
 
             return;
 
@@ -246,13 +246,36 @@ void job_send(struct job *jobs, unsigned int n, unsigned int event, unsigned int
         struct job *job = &jobs[i];
 
         if (job->id)
+        {
+
+            channel_sendbufferto(job->id, event, count, buffer);
+
+            break;
+
+        }
+
+    }
+
+}
+
+void job_sendall(struct job *jobs, unsigned int n, unsigned int event, unsigned int count, void *buffer)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < n; i++)
+    {
+
+        struct job *job = &jobs[i];
+
+        if (job->id)
             channel_sendbufferto(job->id, event, count, buffer);
 
     }
 
 }
 
-void job_kill(struct job *jobs, unsigned int n)
+void job_killall(struct job *jobs, unsigned int n)
 {
 
     unsigned int i;
