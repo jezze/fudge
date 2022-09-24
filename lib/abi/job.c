@@ -200,7 +200,7 @@ void job_run(struct job *job)
 
 }
 
-void job_close(unsigned int id, struct job *job)
+void job_close(struct job *job, unsigned int id)
 {
 
     unsigned int i;

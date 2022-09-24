@@ -85,7 +85,7 @@ static void moveright(unsigned int steps)
 
 }
 
-static void handleinput(void *mdata, struct job *job)
+static void handleinput(struct job *job, void *mdata)
 {
 
     struct event_wmkeypress *wmkeypress = mdata;
@@ -143,12 +143,12 @@ static void runcommand(unsigned int count, void *buffer)
             {
 
             case EVENT_CLOSE:
-                job_close(message.header.source, &job);
+                job_close(&job, message.header.source);
 
                 break;
 
             case EVENT_WMKEYPRESS:
-                handleinput(message.data.buffer, &job);
+                handleinput(&job, message.data.buffer);
 
                 break;
 

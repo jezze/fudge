@@ -21,7 +21,7 @@ static void printprompt(void)
 
 }
 
-static void handleinput(void *mdata, struct job *controller)
+static void handleinput(struct job *job, void *mdata)
 {
 
     struct event_consoledata *consoledata = mdata;
@@ -30,12 +30,12 @@ static void handleinput(void *mdata, struct job *controller)
     {
 
     case 0x03:
-        job_send(controller, EVENT_TERM, 0, 0);
+        job_send(job, EVENT_TERM, 0, 0);
 
         break;
 
     default:
-        job_send(controller, EVENT_CONSOLEDATA, 1, &consoledata->data);
+        job_send(job, EVENT_CONSOLEDATA, 1, &consoledata->data);
 
         break;
 
@@ -76,12 +76,12 @@ static void runcommand(unsigned int count, void *buffer)
             {
 
             case EVENT_CLOSE:
-                job_close(message.header.source, &job);
+                job_close(&job, message.header.source);
 
                 break;
 
             case EVENT_CONSOLEDATA:
-                handleinput(message.data.buffer, &job);
+                handleinput(&job, message.data.buffer);
 
                 break;
 
