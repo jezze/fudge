@@ -282,7 +282,13 @@ void job_killall(struct job *jobs, unsigned int n)
         struct job *job = &jobs[i];
 
         if (job->id)
+        {
+
             call_kill(job->id);
+
+            job->id = 0;
+
+        }
 
     }
 
