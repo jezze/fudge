@@ -133,32 +133,24 @@ static void createjob(struct job *job, unsigned int count, void *buffer)
 
 }
 
-static void runcommand(unsigned int count, void *buffer)
+static void listenjob(struct job *job)
 {
 
     struct message message;
-    struct job_worker workers[JOBSIZE];
-    struct job job;
 
-    job_init(&job, workers, JOBSIZE);
-    createjob(&job, count, buffer);
-    job_spawn(&job);
-    job_pipe(&job);
-    job_run(&job);
-
-    while (job_count(&job) && channel_pick(&message))
+    while (job_count(job) && channel_pick(&message))
     {
 
         switch (message.header.event)
         {
 
         case EVENT_CLOSE:
-            job_close(&job, message.header.source);
+            job_close(job, message.header.source);
 
             break;
 
         case EVENT_WMKEYPRESS:
-            handleinput(&job, message.data.buffer);
+            handleinput(job, message.data.buffer);
 
             break;
 
@@ -170,6 +162,21 @@ static void runcommand(unsigned int count, void *buffer)
         }
 
     }
+
+}
+
+static void runcommand(unsigned int count, void *buffer)
+{
+
+    struct job_worker workers[JOBSIZE];
+    struct job job;
+
+    job_init(&job, workers, JOBSIZE);
+    createjob(&job, count, buffer);
+    job_spawn(&job);
+    job_pipe(&job);
+    job_run(&job);
+    listenjob(&job);
 
 }
 
