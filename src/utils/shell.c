@@ -127,31 +127,41 @@ static void interpret(struct ring *ring)
 static void complete(struct ring *ring)
 {
 
-    if (ring_count(ring))
+    char buffer[INPUTSIZE];
+    unsigned int count = ring_read(ring, buffer, INPUTSIZE);
+
+    if (count)
     {
 
-        char path[INPUTSIZE];
         unsigned int lastspace;
-        unsigned int pathcount;
+        unsigned int lastslash;
+        unsigned int lastwordoffset;
+        unsigned int lastwordcount;
+        unsigned int searchoffset;
+        unsigned int searchcount;
+        char search[INPUTSIZE];
         char prefix[INPUTSIZE];
         unsigned int prefixcount = 0;
         unsigned int id1 = file_spawn("/bin/ls");
         unsigned int id2 = file_spawn("/bin/grep");
 
-        lastspace = ring_findreverse(ring, ' ');
+        lastspace = buffer_findlastbyte(buffer, count, ' ');
+        lastwordoffset = (lastspace) ? lastspace + 1 : 0;
+        lastwordcount = count - lastwordoffset;
+        lastslash = buffer_findlastbyte(buffer + lastwordoffset, lastwordcount, '/');
+        searchoffset = (lastslash) ? lastslash + 1 : 0;
+        searchcount = lastwordcount - searchoffset;
 
-        ring_skip(ring, ring_count(ring) - lastspace);
+        buffer_copy(search, buffer + lastwordoffset + searchoffset, searchcount);
 
-        pathcount = ring_read(ring, path, INPUTSIZE);
         prefixcount += cstring_writez(prefix, INPUTSIZE, "prefix", prefixcount);
-        prefixcount += buffer_write(prefix, INPUTSIZE, path, pathcount, prefixcount);
+        prefixcount += buffer_write(prefix, INPUTSIZE, search, searchcount, prefixcount);
         prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
 
         if (id1 && id2)
         {
 
             struct message message;
-            unsigned int count;
 
             channel_redirecttarget(id1, EVENT_DATA, id2);
             channel_redirectback(id1, EVENT_CLOSE);
