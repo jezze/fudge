@@ -105,7 +105,7 @@ static void interpret(struct ring *ring)
     char buffer[INPUTSIZE];
     unsigned int count = ring_read(ring, buffer, INPUTSIZE);
 
-    if (count >= 2)
+    if (count)
     {
 
         struct job_worker workers[JOBSIZE];

@@ -171,7 +171,7 @@ static void interpret(void)
     print(buffer, count);
     update();
 
-    if (count >= 2)
+    if (count)
     {
 
         struct job_worker workers[JOBSIZE];

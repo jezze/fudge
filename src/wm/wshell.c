@@ -174,7 +174,7 @@ static void interpret(struct ring *ring)
     print(buffer, count);
     updatecontent();
 
-    if (count >= 2)
+    if (count)
     {
 
         struct job_worker workers[JOBSIZE];
