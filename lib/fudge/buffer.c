@@ -21,6 +21,38 @@ void buffer_copy(void *out, void *in, unsigned int count)
 
 }
 
+unsigned int buffer_eachbyte(void *in, unsigned int count, unsigned char value, unsigned int offset)
+{
+
+    unsigned char *ip = in;
+
+    while (offset < count)
+    {
+
+        if (ip[offset] == value)
+            return offset + 1;
+
+        offset++;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int buffer_lastbyte(void *in, unsigned int count, unsigned char value)
+{
+
+    unsigned int offset = 0;
+    unsigned int last = 0;
+
+    while ((offset = buffer_eachbyte(in, count, value, offset)))
+        last = offset;
+
+    return last;
+
+}
+
 unsigned int buffer_findbyte(void *in, unsigned int count, unsigned char value)
 {
 
@@ -36,25 +68,6 @@ unsigned int buffer_findbyte(void *in, unsigned int count, unsigned char value)
     }
 
     return offset;
-
-}
-
-unsigned int buffer_findlastbyte(void *in, unsigned int count, unsigned char value)
-{
-
-    unsigned char *ip = in;
-    unsigned int offset;
-    unsigned int position = 0;
-
-    for (offset = 0; offset < count; offset++)
-    {
-
-        if (ip[offset] == value)
-            position = offset;
-
-    }
-
-    return position;
 
 }
 

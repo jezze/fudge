@@ -36,7 +36,7 @@ static char *getname(unsigned int id)
 static unsigned int parent(struct cpio_header *header, unsigned int id)
 {
 
-    unsigned int length = buffer_findlastbyte(getname(id), header->namesize - 1, '/');
+    unsigned int length = buffer_lastbyte(getname(id), header->namesize - 1, '/');
     unsigned int current = id;
 
     do
@@ -50,7 +50,7 @@ static unsigned int parent(struct cpio_header *header, unsigned int id)
         if ((cheader->mode & 0xF000) != 0x4000)
             continue;
 
-        if (cheader->namesize == length + 1)
+        if (cheader->namesize == length)
             return current;
 
     } while ((current = getnext(current)));

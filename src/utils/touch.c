@@ -4,17 +4,17 @@
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int lb = buffer_findlastbyte(mdata, msize, '/');
+    unsigned int offset = buffer_lastbyte(mdata, msize, '/');
 
-    if (lb)
+    if (offset)
     {
 
         char *buffer = mdata;
 
-        buffer[lb] = '\0';
+        buffer[offset - 1] = '\0';
 
         if (file_walk2(FILE_L0, buffer))
-            file_create(FILE_L1, FILE_L0, buffer + lb + 1);
+            file_create(FILE_L1, FILE_L0, buffer + offset);
         else
             channel_error("Parent directory not found");
 

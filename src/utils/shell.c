@@ -133,8 +133,6 @@ static void complete(struct ring *ring)
     if (count)
     {
 
-        unsigned int lastspace;
-        unsigned int lastslash;
         unsigned int lastwordoffset;
         unsigned int lastwordcount;
         unsigned int searchoffset;
@@ -145,14 +143,12 @@ static void complete(struct ring *ring)
         unsigned int id1 = file_spawn("/bin/ls");
         unsigned int id2 = file_spawn("/bin/grep");
 
-        lastspace = buffer_findlastbyte(buffer, count, ' ');
-        lastwordoffset = (lastspace) ? lastspace + 1 : 0;
+        lastwordoffset = buffer_lastbyte(buffer, count, ' ');
         lastwordcount = count - lastwordoffset;
-        lastslash = buffer_findlastbyte(buffer + lastwordoffset, lastwordcount, '/');
-        searchoffset = (lastslash) ? lastslash + 1 : 0;
-        searchcount = lastwordcount - searchoffset;
+        searchoffset = lastwordoffset + buffer_lastbyte(buffer + lastwordoffset, lastwordcount, '/');
+        searchcount = count - searchoffset;
 
-        buffer_copy(search, buffer + lastwordoffset + searchoffset, searchcount);
+        buffer_copy(search, buffer + searchoffset, searchcount);
 
         prefixcount += cstring_writez(prefix, INPUTSIZE, "prefix", prefixcount);
         prefixcount += buffer_write(prefix, INPUTSIZE, search, searchcount, prefixcount);
