@@ -27,7 +27,13 @@ unsigned int buffer_findbyte(void *in, unsigned int count, unsigned char value)
     unsigned char *ip = in;
     unsigned int offset;
 
-    for (offset = 0; offset < count && ip[offset] != value; offset++);
+    for (offset = 0; offset < count; offset++)
+    {
+
+        if (ip[offset] == value)
+            return offset;
+
+    }
 
     return offset;
 
