@@ -190,28 +190,6 @@ static void interpret(struct ring *ring)
 
 }
 
-static void complete(struct ring *ring)
-{
-
-    char buffer[BUFFER_SIZE];
-    unsigned int count = ring_read(ring, buffer, BUFFER_SIZE);
-    unsigned int id = file_spawn("/bin/complete");
-
-    if (id)
-    {
-
-        channel_redirectback(id, EVENT_DATA);
-        channel_redirectback(id, EVENT_CLOSE);
-        channel_redirectback(id, EVENT_ERROR);
-        channel_sendbufferto(id, EVENT_DATA, count, buffer);
-        channel_sendto(id, EVENT_MAIN);
-
-        while (channel_readfrom(id, buffer, BUFFER_SIZE));
-
-    }
-
-}
-
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -269,7 +247,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
     case 0x0F:
         ring_move(&input1, &input2);
-        complete(&input1);
+        /* complete(&input1); */
 
         break;
 

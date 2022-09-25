@@ -1,26 +1,47 @@
 #include <fudge.h>
 #include <abi.h>
 
-static char match[1024];
-static unsigned int matchcount;
+#define STRINGSIZE                      64
 
-static void checkline(unsigned int source, void *buffer, unsigned int count)
+static char prefix[STRINGSIZE];
+static char substr[STRINGSIZE];
+
+static void checkprefix(unsigned int source, void *buffer, unsigned int count)
 {
 
-    unsigned int i;
+    unsigned int prefixcount = cstring_length(prefix);
 
-    if (matchcount > count)
-        return;
-
-    for (i = 0; i < count - matchcount; i++)
+    if (prefixcount && prefixcount <= count)
     {
 
-        if (buffer_match((char *)buffer + i, match, matchcount))
-        {
-
+        if (buffer_match(buffer, prefix, prefixcount))
             channel_sendbuffer(EVENT_DATA, count, buffer);
 
-            break;
+    }
+
+}
+
+static void checksubstr(unsigned int source, void *buffer, unsigned int count)
+{
+
+    unsigned int substrcount = cstring_length(substr);
+
+    if (substrcount && substrcount <= count)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < count - substrcount; i++)
+        {
+
+            if (buffer_match((char *)buffer + i, substr, substrcount))
+            {
+
+                channel_sendbuffer(EVENT_DATA, count, buffer);
+
+                break;
+
+            }
 
         }
 
@@ -35,18 +56,14 @@ static void check(unsigned int source, void *buffer, unsigned int count)
     unsigned int start = 0;
     unsigned int i;
 
-    matchcount = cstring_length(match);
-
-    if (!matchcount)
-        return;
-
     for (i = 0; i < count; i++)
     {
 
         if (b[i] == '\n' || b[i] == '\0')
         {
 
-            checkline(source, b + start, i - start + 1);
+            checkprefix(source, b + start, i - start + 1);
+            checksubstr(source, b + start, i - start + 1);
 
             start = i + 1;
 
@@ -69,8 +86,11 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *key = mdata;
     char *value = key + cstring_lengthz(key);
 
-    if (cstring_match(key, "match"))
-        cstring_copy(match, value);
+    if (cstring_match(key, "prefix"))
+        cstring_copy(prefix, value);
+
+    if (cstring_match(key, "substr"))
+        cstring_copy(substr, value);
 
 }
 

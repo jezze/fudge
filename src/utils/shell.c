@@ -133,8 +133,8 @@ static void complete(struct ring *ring)
         char path[INPUTSIZE];
         unsigned int lastspace;
         unsigned int pathcount;
-        char match[INPUTSIZE];
-        unsigned int matchcount = 0;
+        char prefix[INPUTSIZE];
+        unsigned int prefixcount = 0;
         unsigned int id1 = file_spawn("/bin/ls");
         unsigned int id2 = file_spawn("/bin/grep");
 
@@ -143,9 +143,9 @@ static void complete(struct ring *ring)
         ring_skip(ring, ring_count(ring) - lastspace);
 
         pathcount = ring_read(ring, path, INPUTSIZE);
-        matchcount += cstring_writez(match, INPUTSIZE, "match", matchcount);
-        matchcount += buffer_write(match, INPUTSIZE, path, pathcount, matchcount);
-        matchcount += cstring_writez(match, INPUTSIZE, "", matchcount);
+        prefixcount += cstring_writez(prefix, INPUTSIZE, "prefix", prefixcount);
+        prefixcount += buffer_write(prefix, INPUTSIZE, path, pathcount, prefixcount);
+        prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
 
         if (id1 && id2)
         {
@@ -157,7 +157,7 @@ static void complete(struct ring *ring)
             channel_redirectback(id1, EVENT_CLOSE);
             channel_redirectback(id2, EVENT_DATA);
             channel_redirectback(id2, EVENT_CLOSE);
-            channel_sendbufferto(id2, EVENT_OPTION, matchcount, match);
+            channel_sendbufferto(id2, EVENT_OPTION, prefixcount, prefix);
             channel_sendto(id1, EVENT_MAIN);
             channel_wait(id1, EVENT_CLOSE);
             channel_sendto(id2, EVENT_MAIN);
