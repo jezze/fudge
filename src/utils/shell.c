@@ -102,11 +102,12 @@ static void listenjob(struct job *job)
 static void interpret(struct ring *ring)
 {
 
-    if (ring_count(ring) >= 2)
+    char buffer[INPUTSIZE];
+    unsigned int count = ring_read(ring, buffer, INPUTSIZE);
+
+    if (count >= 2)
     {
 
-        char buffer[INPUTSIZE];
-        unsigned int count = ring_read(ring, buffer, INPUTSIZE);
         struct job_worker workers[JOBSIZE];
         struct job job;
 
