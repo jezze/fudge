@@ -21,27 +21,16 @@ static unsigned int debug(struct task *task, void *stack)
 static struct service *findservice(char *path, unsigned int length)
 {
 
-    unsigned int colon = buffer_findbyte(path, length, ':');
+    unsigned int offset = buffer_firstbyte(path, length, ':');
 
-    if (colon < length)
-    {
-
-        struct service *service = service_find(colon, path);
-
-        if (service)
-            return service;
-
-    }
-
-    return 0;
+    return (offset) ? service_find(offset - 1, path) : 0;
 
 }
 
 static unsigned int findpath(struct service *service, unsigned int id, char *path, unsigned int length)
 {
 
-    unsigned int colon = buffer_findbyte(path, length, ':');
-    unsigned int offset = (colon < length) ? colon + 1 : 0;
+    unsigned int offset = buffer_firstbyte(path, length, ':');
 
     while (offset < length)
     {

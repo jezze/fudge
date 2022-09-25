@@ -40,6 +40,13 @@ unsigned int buffer_eachbyte(void *in, unsigned int count, unsigned char value, 
 
 }
 
+unsigned int buffer_firstbyte(void *in, unsigned int count, unsigned char value)
+{
+
+    return buffer_eachbyte(in, count, value, 0);
+
+}
+
 unsigned int buffer_lastbyte(void *in, unsigned int count, unsigned char value)
 {
 
