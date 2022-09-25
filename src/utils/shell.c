@@ -99,21 +99,6 @@ static void listenjob(struct job *job)
 
 }
 
-static void runcommand(unsigned int count, void *buffer)
-{
-
-    struct job_worker workers[JOBSIZE];
-    struct job job;
-
-    job_init(&job, workers, JOBSIZE);
-    createjob(&job, count, buffer);
-    job_spawn(&job);
-    job_pipe(&job);
-    job_run(&job);
-    listenjob(&job);
-
-}
-
 static void interpret(struct ring *ring)
 {
 
@@ -122,8 +107,15 @@ static void interpret(struct ring *ring)
 
         char buffer[INPUTSIZE];
         unsigned int count = ring_read(ring, buffer, INPUTSIZE);
+        struct job_worker workers[JOBSIZE];
+        struct job job;
 
-        runcommand(count, buffer);
+        job_init(&job, workers, JOBSIZE);
+        createjob(&job, count, buffer);
+        job_spawn(&job);
+        job_pipe(&job);
+        job_run(&job);
+        listenjob(&job);
 
     }
 

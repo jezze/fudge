@@ -161,21 +161,6 @@ static void listenjob(struct job *job)
 
 }
 
-static void runcommand(unsigned int count, void *buffer)
-{
-
-    struct job_worker workers[JOBSIZE];
-    struct job job;
-
-    job_init(&job, workers, JOBSIZE);
-    createjob(&job, count, buffer);
-    job_spawn(&job);
-    job_pipe(&job);
-    job_run(&job);
-    listenjob(&job);
-
-}
-
 static void interpret(void)
 {
 
@@ -187,7 +172,19 @@ static void interpret(void)
     update();
 
     if (count >= 2)
-        runcommand(count, buffer);
+    {
+
+        struct job_worker workers[JOBSIZE];
+        struct job job;
+
+        job_init(&job, workers, JOBSIZE);
+        createjob(&job, count, buffer);
+        job_spawn(&job);
+        job_pipe(&job);
+        job_run(&job);
+        listenjob(&job);
+
+    }
 
 }
 
