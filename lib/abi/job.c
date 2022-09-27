@@ -261,7 +261,7 @@ unsigned int job_pick(struct job *job, struct message *message)
 
 }
 
-void job_send(struct job *job, unsigned int event, unsigned int count, void *buffer)
+void job_sendfirst(struct job *job, unsigned int event, unsigned int count, void *buffer)
 {
 
     unsigned int i;

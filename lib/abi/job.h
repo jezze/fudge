@@ -34,7 +34,7 @@ void job_run(struct job *job);
 void job_close(struct job *job, unsigned int id);
 unsigned int job_exist(struct job *job, unsigned int id);
 unsigned int job_pick(struct job *job, struct message *message);
-void job_send(struct job *job, unsigned int event, unsigned int count, void *buffer);
+void job_sendfirst(struct job *job, unsigned int event, unsigned int count, void *buffer);
 void job_sendall(struct job *job, unsigned int event, unsigned int count, void *buffer);
 void job_killall(struct job *job);
 unsigned int job_count(struct job *job);

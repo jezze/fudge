@@ -31,12 +31,12 @@ static void handleinput(struct job *job, void *mdata)
     {
 
     case 0x03:
-        job_send(job, EVENT_TERM, 0, 0);
+        job_sendfirst(job, EVENT_TERM, 0, 0);
 
         break;
 
     default:
-        job_send(job, EVENT_CONSOLEDATA, 1, &consoledata->data);
+        job_sendfirst(job, EVENT_CONSOLEDATA, 1, &consoledata->data);
 
         break;
 

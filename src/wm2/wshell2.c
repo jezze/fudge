@@ -91,14 +91,14 @@ static void handleinput(struct job *job, void *mdata)
 
     case 0x2E:
         if (wmkeypress->keymod & KEYMOD_CTRL)
-            job_send(job, EVENT_TERM, 0, 0);
+            job_sendfirst(job, EVENT_TERM, 0, 0);
         else
-            job_send(job, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+            job_sendfirst(job, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
 
         break;
 
     default:
-        job_send(job, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+        job_sendfirst(job, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
 
         break;
 
