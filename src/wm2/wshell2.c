@@ -134,7 +134,7 @@ static void listenjob(struct job *job)
 
     struct message message;
 
-    while (job_count(job) && channel_pick(&message))
+    while (job_pick(job, &message))
     {
 
         switch (message.header.event)

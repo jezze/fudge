@@ -225,6 +225,42 @@ void job_close(struct job *job, unsigned int id)
 
 }
 
+unsigned int job_exist(struct job *job, unsigned int id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < job->count; i++)
+    {
+
+        struct job_worker *worker = &job->workers[i];
+
+        if (worker->id == id)
+            return id;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int job_pick(struct job *job, struct message *message)
+{
+
+    while (job_count(job) && channel_pick(message))
+    {
+
+        if (job_exist(job, message->header.source))
+            return message->header.source;
+        else
+            channel_dispatch(message);
+
+    }
+
+    return 0;
+
+}
+
 void job_send(struct job *job, unsigned int event, unsigned int count, void *buffer)
 {
 
