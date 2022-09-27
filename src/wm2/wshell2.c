@@ -162,11 +162,6 @@ static void listenjob(struct job *job)
 
             break;
 
-        default:
-            channel_dispatch(&message);
-
-            break;
-
         }
 
     }

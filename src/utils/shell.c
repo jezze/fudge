@@ -99,11 +99,6 @@ static void interpretprocess(struct job *job)
 
             break;
 
-        default:
-            channel_dispatch(&message);
-
-            break;
-
         }
 
     }
@@ -226,11 +221,6 @@ static void completeprocess(struct job *job)
                 print(message.data.buffer, message_datasize(&message.header));
 
             }
-
-            break;
-
-        default:
-            channel_dispatch(&message);
 
             break;
 
