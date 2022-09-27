@@ -142,14 +142,13 @@ static void completespawn(struct job *job, unsigned int count, void *buffer)
 
     buffer_copy(search, (char *)buffer + searchoffset, searchcount);
 
-    prefixcount += cstring_writez(prefix, INPUTSIZE, "prefix", prefixcount);
     prefixcount += buffer_write(prefix, INPUTSIZE, search, searchcount, prefixcount);
     prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
 
     job->workers[0].program = "/bin/ls";
     job->workers[1].program = "/bin/grep";
     job->workers[1].options[0].key = "prefix";
-    job->workers[1].options[0].value = "l";
+    job->workers[1].options[0].value = prefix;
     job->workers[1].noptions = 1;
     job->count = 2;
 
