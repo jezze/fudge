@@ -124,6 +124,9 @@ static void interpret(struct ring *ring)
 
 }
 
+static char prefix[INPUTSIZE];
+static unsigned int prefixcount;
+
 static void completespawn(struct job *job, unsigned int count, void *buffer)
 {
 
@@ -132,8 +135,6 @@ static void completespawn(struct job *job, unsigned int count, void *buffer)
     unsigned int searchoffset;
     unsigned int searchcount;
     char search[INPUTSIZE];
-    char prefix[INPUTSIZE];
-    unsigned int prefixcount = 0;
 
     lastwordoffset = buffer_lastbyte(buffer, count, ' ');
     lastwordcount = count - lastwordoffset;
@@ -142,6 +143,7 @@ static void completespawn(struct job *job, unsigned int count, void *buffer)
 
     buffer_copy(search, (char *)buffer + searchoffset, searchcount);
 
+    prefixcount = 0;
     prefixcount += buffer_write(prefix, INPUTSIZE, search, searchcount, prefixcount);
     prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
 
@@ -171,7 +173,21 @@ static void completeprocess(struct job *job)
             break;
 
         case EVENT_DATA:
-            print(message.data.buffer, message_datasize(&message.header));
+            if (buffer_firstbyte(message.data.buffer, message_datasize(&message.header), '\n') == message_datasize(&message.header))
+            {
+
+                ring_write(&input, message.data.buffer + prefixcount - 1, message_datasize(&message.header) - prefixcount);
+                print(message.data.buffer + prefixcount - 1, message_datasize(&message.header) - prefixcount);
+
+            }
+
+            else
+            {
+
+                print("\n", 1);
+                print(message.data.buffer, message_datasize(&message.header));
+
+            }
 
             break;
 
@@ -190,7 +206,7 @@ static void complete(struct ring *ring)
 {
 
     char buffer[INPUTSIZE];
-    unsigned int count = ring_read(ring, buffer, INPUTSIZE);
+    unsigned int count = ring_readcopy(ring, buffer, INPUTSIZE);
 
     if (count)
     {
