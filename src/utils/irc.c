@@ -99,6 +99,9 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
     case '\0':
         break;
 
+    case '\f':
+        break;
+
     case '\t':
         break;
 
