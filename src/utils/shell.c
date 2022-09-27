@@ -130,46 +130,52 @@ static unsigned int prefixcount;
 static void completespawn(struct job *job, unsigned int count, void *buffer)
 {
 
-    unsigned int lastwordoffset;
-    unsigned int lastwordcount;
-    unsigned int searchoffset;
-    unsigned int searchcount;
-    char search[INPUTSIZE];
+    job->workers[0].program = "/bin/ls";
+    job->count = 1;
 
-    lastwordoffset = buffer_lastbyte(buffer, count, ' ');
-    lastwordcount = count - lastwordoffset;
-    searchoffset = lastwordoffset + buffer_lastbyte((char *)buffer + lastwordoffset, lastwordcount, '/');
-    searchcount = count - searchoffset;
-
-    buffer_copy(search, (char *)buffer + searchoffset, searchcount);
-
-    prefixcount = 0;
-    prefixcount += buffer_write(prefix, INPUTSIZE, search, searchcount, prefixcount);
-    prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
-
-    if (lastwordoffset > 0)
+    if (count)
     {
 
-        job->workers[0].program = "/bin/ls";
-        job->workers[1].program = "/bin/grep";
-        job->workers[1].options[0].key = "prefix";
-        job->workers[1].options[0].value = prefix;
-        job->workers[1].noptions = 1;
-        job->count = 2;
+        unsigned int lastwordoffset;
+        unsigned int lastwordcount;
+        unsigned int searchoffset;
+        unsigned int searchcount;
+        char search[INPUTSIZE];
 
-    }
+        lastwordoffset = buffer_lastbyte(buffer, count, ' ');
+        lastwordcount = count - lastwordoffset;
+        searchoffset = lastwordoffset + buffer_lastbyte((char *)buffer + lastwordoffset, lastwordcount, '/');
+        searchcount = count - searchoffset;
 
-    else
-    {
+        buffer_copy(search, (char *)buffer + searchoffset, searchcount);
 
-        job->workers[0].program = "/bin/ls";
-        job->workers[0].paths[0] = "/bin";
-        job->workers[0].npaths = 1;
-        job->workers[1].program = "/bin/grep";
-        job->workers[1].options[0].key = "prefix";
-        job->workers[1].options[0].value = prefix;
-        job->workers[1].noptions = 1;
-        job->count = 2;
+        prefixcount = 0;
+        prefixcount += buffer_write(prefix, INPUTSIZE, search, searchcount, prefixcount);
+        prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
+
+        if (lastwordoffset > 0)
+        {
+
+            job->workers[1].program = "/bin/grep";
+            job->workers[1].options[0].key = "prefix";
+            job->workers[1].options[0].value = prefix;
+            job->workers[1].noptions = 1;
+            job->count = 2;
+
+        }
+
+        else
+        {
+
+            job->workers[0].paths[0] = "/bin";
+            job->workers[0].npaths = 1;
+            job->workers[1].program = "/bin/grep";
+            job->workers[1].options[0].key = "prefix";
+            job->workers[1].options[0].value = prefix;
+            job->workers[1].noptions = 1;
+            job->count = 2;
+
+        }
 
     }
 
@@ -203,6 +209,8 @@ static void completeprocess(struct job *job)
             else
             {
 
+                /* this does not happen right now */
+
                 print("\n", 1);
                 print(message.data.buffer, message_datasize(&message.header));
 
@@ -226,47 +234,15 @@ static void complete(struct ring *ring)
 
     char buffer[INPUTSIZE];
     unsigned int count = ring_readcopy(ring, buffer, INPUTSIZE);
+    struct job_worker workers[JOBSIZE];
+    struct job job;
 
-    if (count)
-    {
-
-        struct job_worker workers[JOBSIZE];
-        struct job job;
-
-        job_init(&job, workers, JOBSIZE);
-        completespawn(&job, count, buffer);
-        job_spawn(&job);
-        job_pipe(&job);
-        job_run(&job);
-        completeprocess(&job);
-
-    }
-
-    else
-    {
-
-        unsigned int id = file_spawn("/bin/ls");
-
-        if (id)
-        {
-
-            struct message message;
-            unsigned int count;
-
-            channel_redirectback(id, EVENT_CLOSE);
-            channel_redirectback(id, EVENT_DATA);
-            channel_sendto(id, EVENT_MAIN);
-
-            print("\n", 1);
-
-            while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
-                print(message.data.buffer, count);
-
-            printprompt();
-
-        }
-
-    }
+    job_init(&job, workers, JOBSIZE);
+    completespawn(&job, count, buffer);
+    job_spawn(&job);
+    job_pipe(&job);
+    job_run(&job);
+    completeprocess(&job);
 
 }
 
