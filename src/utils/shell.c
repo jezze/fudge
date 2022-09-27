@@ -133,6 +133,8 @@ static void complete(struct ring *ring)
     if (count)
     {
 
+        struct job_worker workers[JOBSIZE];
+        struct job job;
         unsigned int lastwordoffset;
         unsigned int lastwordcount;
         unsigned int searchoffset;
@@ -140,8 +142,7 @@ static void complete(struct ring *ring)
         char search[INPUTSIZE];
         char prefix[INPUTSIZE];
         unsigned int prefixcount = 0;
-        unsigned int id1 = file_spawn("/bin/ls");
-        unsigned int id2 = file_spawn("/bin/grep");
+        struct message message;
 
         lastwordoffset = buffer_lastbyte(buffer, count, ' ');
         lastwordcount = count - lastwordoffset;
@@ -154,25 +155,39 @@ static void complete(struct ring *ring)
         prefixcount += buffer_write(prefix, INPUTSIZE, search, searchcount, prefixcount);
         prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
 
-        if (id1 && id2)
+        job_init(&job, workers, JOBSIZE);
+
+        job.workers[0].program = "/bin/ls";
+        job.workers[1].program = "/bin/grep";
+        job.workers[1].options[0].key = "prefix";
+        job.workers[1].options[0].value = "l";
+        job.workers[1].noptions = 1;
+        job.count = 2;
+
+        job_spawn(&job);
+        job_pipe(&job);
+        job_run(&job);
+
+        while (job_count(&job) && channel_pick(&message))
         {
 
-            struct message message;
-
-            channel_redirecttarget(id1, EVENT_DATA, id2);
-            channel_redirectback(id1, EVENT_CLOSE);
-            channel_redirectback(id2, EVENT_DATA);
-            channel_redirectback(id2, EVENT_CLOSE);
-            channel_sendbufferto(id2, EVENT_OPTION, prefixcount, prefix);
-            channel_sendto(id1, EVENT_MAIN);
-            channel_wait(id1, EVENT_CLOSE);
-            channel_sendto(id2, EVENT_MAIN);
-
-            while ((count = channel_readfrom(id2, message.data.buffer, MESSAGE_SIZE)))
+            switch (message.header.event)
             {
 
-                print("\n", 1);
-                print(message.data.buffer, count);
+            case EVENT_CLOSE:
+                job_close(&job, message.header.source);
+
+                break;
+
+            case EVENT_DATA:
+                print(message.data.buffer, message_datasize(&message.header));
+
+                break;
+
+            default:
+                channel_dispatch(&message);
+
+                break;
 
             }
 
