@@ -44,7 +44,7 @@ static void handleinput(struct job *job, void *mdata)
 
 }
 
-static void createjob(struct job *job, unsigned int count, void *buffer)
+static void interpretspawn(struct job *job, unsigned int count, void *buffer)
 {
 
     unsigned int id = file_spawn("/bin/slang");
@@ -67,7 +67,7 @@ static void createjob(struct job *job, unsigned int count, void *buffer)
 
 }
 
-static void listenjob(struct job *job)
+static void interpretprocess(struct job *job)
 {
 
     struct message message;
@@ -112,15 +112,78 @@ static void interpret(struct ring *ring)
         struct job job;
 
         job_init(&job, workers, JOBSIZE);
-        createjob(&job, count, buffer);
+        interpretspawn(&job, count, buffer);
         job_spawn(&job);
         job_pipe(&job);
         job_run(&job);
-        listenjob(&job);
+        interpretprocess(&job);
 
     }
 
     printprompt();
+
+}
+
+static void completespawn(struct job *job, unsigned int count, void *buffer)
+{
+
+    unsigned int lastwordoffset;
+    unsigned int lastwordcount;
+    unsigned int searchoffset;
+    unsigned int searchcount;
+    char search[INPUTSIZE];
+    char prefix[INPUTSIZE];
+    unsigned int prefixcount = 0;
+
+    lastwordoffset = buffer_lastbyte(buffer, count, ' ');
+    lastwordcount = count - lastwordoffset;
+    searchoffset = lastwordoffset + buffer_lastbyte((char *)buffer + lastwordoffset, lastwordcount, '/');
+    searchcount = count - searchoffset;
+
+    buffer_copy(search, (char *)buffer + searchoffset, searchcount);
+
+    prefixcount += cstring_writez(prefix, INPUTSIZE, "prefix", prefixcount);
+    prefixcount += buffer_write(prefix, INPUTSIZE, search, searchcount, prefixcount);
+    prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
+
+    job->workers[0].program = "/bin/ls";
+    job->workers[1].program = "/bin/grep";
+    job->workers[1].options[0].key = "prefix";
+    job->workers[1].options[0].value = "l";
+    job->workers[1].noptions = 1;
+    job->count = 2;
+
+}
+
+static void completeprocess(struct job *job)
+{
+
+    struct message message;
+
+    while (job_count(job) && channel_pick(&message))
+    {
+
+        switch (message.header.event)
+        {
+
+        case EVENT_CLOSE:
+            job_close(job, message.header.source);
+
+            break;
+
+        case EVENT_DATA:
+            print(message.data.buffer, message_datasize(&message.header));
+
+            break;
+
+        default:
+            channel_dispatch(&message);
+
+            break;
+
+        }
+
+    }
 
 }
 
@@ -135,63 +198,13 @@ static void complete(struct ring *ring)
 
         struct job_worker workers[JOBSIZE];
         struct job job;
-        unsigned int lastwordoffset;
-        unsigned int lastwordcount;
-        unsigned int searchoffset;
-        unsigned int searchcount;
-        char search[INPUTSIZE];
-        char prefix[INPUTSIZE];
-        unsigned int prefixcount = 0;
-        struct message message;
-
-        lastwordoffset = buffer_lastbyte(buffer, count, ' ');
-        lastwordcount = count - lastwordoffset;
-        searchoffset = lastwordoffset + buffer_lastbyte(buffer + lastwordoffset, lastwordcount, '/');
-        searchcount = count - searchoffset;
-
-        buffer_copy(search, buffer + searchoffset, searchcount);
-
-        prefixcount += cstring_writez(prefix, INPUTSIZE, "prefix", prefixcount);
-        prefixcount += buffer_write(prefix, INPUTSIZE, search, searchcount, prefixcount);
-        prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
 
         job_init(&job, workers, JOBSIZE);
-
-        job.workers[0].program = "/bin/ls";
-        job.workers[1].program = "/bin/grep";
-        job.workers[1].options[0].key = "prefix";
-        job.workers[1].options[0].value = "l";
-        job.workers[1].noptions = 1;
-        job.count = 2;
-
+        completespawn(&job, count, buffer);
         job_spawn(&job);
         job_pipe(&job);
         job_run(&job);
-
-        while (job_count(&job) && channel_pick(&message))
-        {
-
-            switch (message.header.event)
-            {
-
-            case EVENT_CLOSE:
-                job_close(&job, message.header.source);
-
-                break;
-
-            case EVENT_DATA:
-                print(message.data.buffer, message_datasize(&message.header));
-
-                break;
-
-            default:
-                channel_dispatch(&message);
-
-                break;
-
-            }
-
-        }
+        completeprocess(&job);
 
     }
 
