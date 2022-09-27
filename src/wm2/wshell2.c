@@ -145,6 +145,18 @@ static void listenjob(struct job *job)
 
             break;
 
+        case EVENT_DATA:
+            print(message.data.buffer, message_datasize(&message.header));
+            update();
+
+            break;
+
+        case EVENT_PATH:
+            if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
+                file_duplicate(FILE_CW, FILE_L0);
+
+            break;
+
         case EVENT_WMKEYPRESS:
             handleinput(job, message.data.buffer);
 
@@ -188,14 +200,6 @@ static void interpret(void)
 
 }
 
-static void ondata(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    print(mdata, msize);
-    update();
-
-}
-
 static void onerror(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -210,14 +214,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
-
-}
-
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    if (file_walk(FILE_L0, FILE_CW, mdata))
-        file_duplicate(FILE_CW, FILE_L0);
 
 }
 
@@ -365,10 +361,8 @@ void init(void)
     if (!file_walk2(FILE_G0, "system:service/wm"))
         return;
 
-    channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_WMINIT, onwminit);
     channel_bind(EVENT_WMKEYPRESS, onwmkeypress);

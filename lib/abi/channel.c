@@ -165,13 +165,6 @@ unsigned int channel_sendmessageto(unsigned int target, struct message *message)
 
 }
 
-unsigned int channel_redirectsame(unsigned int target, unsigned int event)
-{
-
-    return redirect(target, event, EVENT_REDIRECT_TARGET, callbacks[event].target);
-
-}
-
 unsigned int channel_redirecttarget(unsigned int target, unsigned int event, unsigned int id)
 {
 

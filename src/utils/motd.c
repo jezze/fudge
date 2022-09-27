@@ -1,6 +1,13 @@
 #include <fudge.h>
 #include <abi.h>
 
+static void ondata(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_sendbuffer(EVENT_DATA, msize, mdata);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -9,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (id)
     {
 
-        channel_redirectsame(id, EVENT_DATA);
+        channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_CLOSE);
         channel_sendstringzto(id, EVENT_PATH, "/data/motd.txt");
         channel_sendto(id, EVENT_MAIN);
@@ -31,6 +38,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
 
 }

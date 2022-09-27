@@ -9,7 +9,6 @@ unsigned int channel_sendstringz(unsigned int event, char *string);
 unsigned int channel_sendstringzto(unsigned int target, unsigned int event, char *string);
 unsigned int channel_sendmessage(struct message *message);
 unsigned int channel_sendmessageto(unsigned int target, struct message *message);
-unsigned int channel_redirectsame(unsigned int target, unsigned int event);
 unsigned int channel_redirecttarget(unsigned int target, unsigned int event, unsigned int id);
 unsigned int channel_redirectback(unsigned int target, unsigned int event);
 unsigned int channel_pick(struct message *message);
