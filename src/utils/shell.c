@@ -201,8 +201,8 @@ static void completeprocess(void)
     if (ring_each(&result, '\n') == ring_count(&result))
     {
 
-        ring_write(&input, buffer + prefixcount - 1, ring_count(&result) - prefixcount);
-        print(buffer + prefixcount - 1, ring_count(&result) - prefixcount);
+        ring_write(&input, buffer + cstring_length(prefix), ring_count(&result) - prefixcount);
+        print(buffer + cstring_length(prefix), ring_count(&result) - prefixcount);
 
 
     }
