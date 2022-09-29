@@ -172,7 +172,11 @@ static void completespawn(unsigned int count, void *buffer)
 static void completeprocess(void)
 {
 
+    char buffer[BUFFER_SIZE];
+    struct ring result;
     struct message message;
+
+    ring_init(&result, BUFFER_SIZE, buffer);
 
     while (job_pick(&job, &message))
     {
@@ -186,27 +190,30 @@ static void completeprocess(void)
             break;
 
         case EVENT_DATA:
-            if (buffer_firstbyte(message.data.buffer, message_datasize(&message.header), '\n') == message_datasize(&message.header))
-            {
-
-                ring_write(&input, message.data.buffer + prefixcount - 1, message_datasize(&message.header) - prefixcount);
-                print(message.data.buffer + prefixcount - 1, message_datasize(&message.header) - prefixcount);
-
-            }
-
-            else
-            {
-
-                /* this does not happen right now */
-
-                print("\n", 1);
-                print(message.data.buffer, message_datasize(&message.header));
-
-            }
+            ring_write(&result, message.data.buffer, message_datasize(&message.header));
 
             break;
 
         }
+
+    }
+
+    if (ring_each(&result, '\n') == ring_count(&result))
+    {
+
+        ring_write(&input, buffer + prefixcount - 1, ring_count(&result) - prefixcount);
+        print(buffer + prefixcount - 1, ring_count(&result) - prefixcount);
+
+
+    }
+
+    else
+    {
+
+        print("\n", 1);
+        print(buffer, ring_count(&result));
+        printprompt();
+        print(buffer, ring_readcopy(&input, buffer, INPUTSIZE));
 
     }
 
