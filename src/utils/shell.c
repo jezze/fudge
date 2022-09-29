@@ -305,7 +305,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
         switch (keypress->scancode)
         {
 
-        case 'c':
+        case 0x2E:
             if ((keymod & KEYMOD_CTRL))
                 job_sendfirst(&job, EVENT_TERM, 0, 0);
             else
