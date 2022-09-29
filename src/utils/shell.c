@@ -6,6 +6,8 @@
 
 static char inputbuffer[INPUTSIZE];
 static struct ring input;
+static struct job_worker workers[JOBSIZE];
+static struct job job;
 static unsigned int keymod = KEYMOD_NONE;
 
 static void print(void *buffer, unsigned int count)
@@ -22,29 +24,7 @@ static void printprompt(void)
 
 }
 
-static void handleinput(struct job *job, void *mdata)
-{
-
-    struct event_consoledata *consoledata = mdata;
-
-    switch (consoledata->data)
-    {
-
-    case 0x03:
-        job_sendfirst(job, EVENT_TERM, 0, 0);
-
-        break;
-
-    default:
-        job_sendfirst(job, EVENT_CONSOLEDATA, 1, &consoledata->data);
-
-        break;
-
-    }
-
-}
-
-static void interpretspawn(struct job *job, unsigned int count, void *buffer)
+static void interpretspawn(unsigned int count, void *buffer)
 {
 
     unsigned int id = file_spawn("/bin/slang");
@@ -61,30 +41,25 @@ static void interpretspawn(struct job *job, unsigned int count, void *buffer)
         channel_sendto(id, EVENT_MAIN);
 
         while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
-            job_parse(job, message.data.buffer, count);
+            job_parse(&job, message.data.buffer, count);
 
     }
 
 }
 
-static void interpretprocess(struct job *job)
+static void interpretprocess(void)
 {
 
     struct message message;
 
-    while (job_pick(job, &message))
+    while (job_pick(&job, &message))
     {
 
         switch (message.header.event)
         {
 
         case EVENT_CLOSE:
-            job_close(job, message.header.source);
-
-            break;
-
-        case EVENT_CONSOLEDATA:
-            handleinput(job, message.data.buffer);
+            job_close(&job, message.header.source);
 
             break;
 
@@ -105,24 +80,21 @@ static void interpretprocess(struct job *job)
 
 }
 
-static void interpret(struct ring *ring)
+static void interpret(void)
 {
 
     char buffer[INPUTSIZE];
-    unsigned int count = ring_read(ring, buffer, INPUTSIZE);
+    unsigned int count = ring_read(&input, buffer, INPUTSIZE);
 
     if (count)
     {
 
-        struct job_worker workers[JOBSIZE];
-        struct job job;
-
         job_init(&job, workers, JOBSIZE);
-        interpretspawn(&job, count, buffer);
+        interpretspawn(count, buffer);
         job_spawn(&job);
         job_pipe(&job);
         job_run(&job);
-        interpretprocess(&job);
+        interpretprocess();
 
     }
 
@@ -133,11 +105,11 @@ static void interpret(struct ring *ring)
 static char prefix[INPUTSIZE];
 static unsigned int prefixcount;
 
-static void completespawn(struct job *job, unsigned int count, void *buffer)
+static void completespawn(unsigned int count, void *buffer)
 {
 
-    job->workers[0].program = "/bin/ls";
-    job->count = 1;
+    job.workers[0].program = "/bin/ls";
+    job.count = 1;
 
     if (count)
     {
@@ -162,24 +134,24 @@ static void completespawn(struct job *job, unsigned int count, void *buffer)
         if (lastwordoffset > 0)
         {
 
-            job->workers[1].program = "/bin/grep";
-            job->workers[1].options[0].key = "prefix";
-            job->workers[1].options[0].value = prefix;
-            job->workers[1].noptions = 1;
-            job->count = 2;
+            job.workers[1].program = "/bin/grep";
+            job.workers[1].options[0].key = "prefix";
+            job.workers[1].options[0].value = prefix;
+            job.workers[1].noptions = 1;
+            job.count = 2;
 
         }
 
         else
         {
 
-            job->workers[0].paths[0] = "/bin";
-            job->workers[0].npaths = 1;
-            job->workers[1].program = "/bin/grep";
-            job->workers[1].options[0].key = "prefix";
-            job->workers[1].options[0].value = prefix;
-            job->workers[1].noptions = 1;
-            job->count = 2;
+            job.workers[0].paths[0] = "/bin";
+            job.workers[0].npaths = 1;
+            job.workers[1].program = "/bin/grep";
+            job.workers[1].options[0].key = "prefix";
+            job.workers[1].options[0].value = prefix;
+            job.workers[1].noptions = 1;
+            job.count = 2;
 
         }
 
@@ -187,19 +159,19 @@ static void completespawn(struct job *job, unsigned int count, void *buffer)
 
 }
 
-static void completeprocess(struct job *job)
+static void completeprocess(void)
 {
 
     struct message message;
 
-    while (job_pick(job, &message))
+    while (job_pick(&job, &message))
     {
 
         switch (message.header.event)
         {
 
         case EVENT_CLOSE:
-            job_close(job, message.header.source);
+            job_close(&job, message.header.source);
 
             break;
 
@@ -230,20 +202,18 @@ static void completeprocess(struct job *job)
 
 }
 
-static void complete(struct ring *ring)
+static void complete(void)
 {
 
     char buffer[INPUTSIZE];
-    unsigned int count = ring_readcopy(ring, buffer, INPUTSIZE);
-    struct job_worker workers[JOBSIZE];
-    struct job job;
+    unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
 
     job_init(&job, workers, JOBSIZE);
-    completespawn(&job, count, buffer);
+    completespawn(count, buffer);
     job_spawn(&job);
     job_pipe(&job);
     job_run(&job);
-    completeprocess(&job);
+    completeprocess();
 
 }
 
@@ -252,44 +222,69 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_consoledata *consoledata = mdata;
 
-    switch (consoledata->data)
+    if (job_count(&job))
     {
 
-    case '\0':
-        break;
+        switch (consoledata->data)
+        {
 
-    case '\f':
-        break;
+        case 0x03:
+            job_sendfirst(&job, EVENT_TERM, 0, 0);
 
-    case '\t':
-        complete(&input);
-
-        break;
-
-    case '\b':
-    case 0x7F:
-        if (!ring_skipreverse(&input, 1))
             break;
 
-        print("\b \b", 3);
+        default:
+            job_sendfirst(&job, EVENT_CONSOLEDATA, msize, mdata);
 
-        break;
+            break;
 
-    case '\r':
-        consoledata->data = '\n';
+        }
 
-    case '\n':
-        print(&consoledata->data, 1);
-        ring_write(&input, &consoledata->data, 1);
-        interpret(&input);
+    }
 
-        break;
+    else
+    {
 
-    default:
-        ring_write(&input, &consoledata->data, 1);
-        print(&consoledata->data, 1);
+        switch (consoledata->data)
+        {
 
-        break;
+        case '\0':
+            break;
+
+        case '\f':
+            break;
+
+        case '\t':
+            complete();
+
+            break;
+
+        case '\b':
+        case 0x7F:
+            if (!ring_skipreverse(&input, 1))
+                break;
+
+            print("\b \b", 3);
+
+            break;
+
+        case '\r':
+            consoledata->data = '\n';
+
+        case '\n':
+            print(&consoledata->data, 1);
+            ring_write(&input, &consoledata->data, 1);
+            interpret();
+
+            break;
+
+        default:
+            ring_write(&input, &consoledata->data, 1);
+            print(&consoledata->data, 1);
+
+            break;
+
+        }
 
     }
 
@@ -316,14 +311,14 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     case 0x0F:
-        complete(&input);
+        complete();
 
         break;
 
     case 0x1C:
         print(keycode->value, keycode->length);
         ring_write(&input, keycode->value, keycode->length);
-        interpret(&input);
+        interpret();
 
         break;
 
