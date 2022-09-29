@@ -114,21 +114,26 @@ static void completespawn(unsigned int count, void *buffer)
     if (count)
     {
 
-        unsigned int lastwordoffset;
-        unsigned int lastwordcount;
-        unsigned int searchoffset;
-        unsigned int searchcount;
-        char search[INPUTSIZE];
+        unsigned int lastwordoffset = buffer_lastbyte(buffer, count, ' ');
+        unsigned int lastwordcount = count - lastwordoffset;
+        unsigned int searchoffset = lastwordoffset + buffer_lastbyte((char *)buffer + lastwordoffset, lastwordcount, '/');
+        unsigned int searchcount = count - searchoffset;
 
-        lastwordoffset = buffer_lastbyte(buffer, count, ' ');
-        lastwordcount = count - lastwordoffset;
-        searchoffset = lastwordoffset + buffer_lastbyte((char *)buffer + lastwordoffset, lastwordcount, '/');
-        searchcount = count - searchoffset;
+        if (searchoffset > lastwordoffset)
+        {
 
-        buffer_copy(search, (char *)buffer + searchoffset, searchcount);
+            char path[INPUTSIZE];
+            unsigned int pathcount;
 
-        prefixcount = 0;
-        prefixcount += buffer_write(prefix, INPUTSIZE, search, searchcount, prefixcount);
+            pathcount = buffer_write(path, INPUTSIZE, (char *)buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0);
+            pathcount += cstring_writez(path, INPUTSIZE, "", pathcount);
+
+            job.workers[0].paths[0] = path;
+            job.workers[0].npaths = 1;
+
+        }
+
+        prefixcount = buffer_write(prefix, INPUTSIZE, (char *)buffer + searchoffset, searchcount, 0);
         prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
 
         if (lastwordoffset > 0)
