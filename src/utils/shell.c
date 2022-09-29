@@ -119,31 +119,22 @@ static void completespawn(unsigned int count, void *buffer)
         unsigned int searchoffset = lastwordoffset + buffer_lastbyte((char *)buffer + lastwordoffset, lastwordcount, '/');
         unsigned int searchcount = count - searchoffset;
 
-        if (searchoffset > lastwordoffset)
+        if (lastwordoffset)
         {
 
-            char path[INPUTSIZE];
-            unsigned int pathcount;
+            if (searchoffset > lastwordoffset)
+            {
 
-            pathcount = buffer_write(path, INPUTSIZE, (char *)buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0);
-            pathcount += cstring_writez(path, INPUTSIZE, "", pathcount);
+                char path[INPUTSIZE];
+                unsigned int pathcount;
 
-            job.workers[0].paths[0] = path;
-            job.workers[0].npaths = 1;
+                pathcount = buffer_write(path, INPUTSIZE, (char *)buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0);
+                pathcount += cstring_writez(path, INPUTSIZE, "", pathcount);
 
-        }
+                job.workers[0].paths[0] = path;
+                job.workers[0].npaths = 1;
 
-        prefixcount = buffer_write(prefix, INPUTSIZE, (char *)buffer + searchoffset, searchcount, 0);
-        prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
-
-        if (lastwordoffset > 0)
-        {
-
-            job.workers[1].program = "/bin/grep";
-            job.workers[1].options[0].key = "prefix";
-            job.workers[1].options[0].value = prefix;
-            job.workers[1].noptions = 1;
-            job.count = 2;
+            }
 
         }
 
@@ -152,11 +143,25 @@ static void completespawn(unsigned int count, void *buffer)
 
             job.workers[0].paths[0] = "/bin";
             job.workers[0].npaths = 1;
-            job.workers[1].program = "/bin/grep";
-            job.workers[1].options[0].key = "prefix";
-            job.workers[1].options[0].value = prefix;
-            job.workers[1].noptions = 1;
-            job.count = 2;
+
+        }
+
+        if (searchcount)
+        {
+
+            prefixcount = buffer_write(prefix, INPUTSIZE, (char *)buffer + searchoffset, searchcount, 0);
+            prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
+
+            if (prefixcount)
+            {
+
+                job.workers[1].program = "/bin/grep";
+                job.workers[1].options[0].key = "prefix";
+                job.workers[1].options[0].value = prefix;
+                job.workers[1].noptions = 1;
+                job.count = 2;
+
+            }
 
         }
 
