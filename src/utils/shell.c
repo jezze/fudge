@@ -299,34 +299,62 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
     keymod = keymap_modkey(keypress->scancode, keymod);
 
-    switch (keypress->scancode)
+    if (job_count(&job))
     {
 
-    case 0x0E:
-        if (!ring_skipreverse(&input, 1))
+        switch (keypress->scancode)
+        {
+
+        case 'c':
+            if ((keymod & KEYMOD_CTRL))
+                job_sendfirst(&job, EVENT_TERM, 0, 0);
+            else
+                job_sendfirst(&job, EVENT_CONSOLEDATA, keycode->length, keycode->value);
+
             break;
 
-        print("\b \b", 3);
+        default:
+            job_sendfirst(&job, EVENT_CONSOLEDATA, keycode->length, keycode->value);
 
-        break;
+            break;
 
-    case 0x0F:
-        complete();
+        }
 
-        break;
+    }
 
-    case 0x1C:
-        print(keycode->value, keycode->length);
-        ring_write(&input, keycode->value, keycode->length);
-        interpret();
+    else
+    {
 
-        break;
+        switch (keypress->scancode)
+        {
 
-    default:
-        ring_write(&input, keycode->value, keycode->length);
-        print(keycode->value, keycode->length);
+        case 0x0E:
+            if (!ring_skipreverse(&input, 1))
+                break;
 
-        break;
+            print("\b \b", 3);
+
+            break;
+
+        case 0x0F:
+            complete();
+
+            break;
+
+        case 0x1C:
+            print(keycode->value, keycode->length);
+            ring_write(&input, keycode->value, keycode->length);
+            interpret();
+
+            break;
+
+        default:
+            ring_write(&input, keycode->value, keycode->length);
+            print(keycode->value, keycode->length);
+
+            break;
+
+        }
 
     }
 
