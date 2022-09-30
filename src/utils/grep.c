@@ -1,14 +1,12 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define STRINGSIZE                      64
-
-static char prefix[STRINGSIZE];
-static char substr[STRINGSIZE];
+static struct option options[32];
 
 static void checkprefix(unsigned int source, void *buffer, unsigned int count)
 {
 
+    char *prefix = option_getstring(options, "prefix");
     unsigned int prefixcount = cstring_length(prefix);
 
     if (prefixcount && prefixcount <= count)
@@ -24,6 +22,7 @@ static void checkprefix(unsigned int source, void *buffer, unsigned int count)
 static void checksubstr(unsigned int source, void *buffer, unsigned int count)
 {
 
+    char *substr = option_getstring(options, "substr");
     unsigned int substrcount = cstring_length(substr);
 
     if (substrcount && substrcount <= count)
@@ -86,11 +85,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *key = mdata;
     char *value = key + cstring_lengthz(key);
 
-    if (cstring_match(key, "prefix"))
-        cstring_copy(prefix, value);
-
-    if (cstring_match(key, "substr"))
-        cstring_copy(substr, value);
+    option_set(options, key, value);
 
 }
 
@@ -120,6 +115,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    option_add(options, "prefix", "");
+    option_add(options, "substr", "");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_PATH, onpath);
