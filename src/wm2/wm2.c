@@ -10,15 +10,6 @@
 #define WINDOW_MIN_WIDTH                128
 #define WINDOW_MIN_HEIGHT               128
 
-struct configuration
-{
-
-    unsigned int displaywidth;
-    unsigned int displayheight;
-    unsigned int displaybpp;
-
-};
-
 struct state
 {
 
@@ -35,8 +26,8 @@ struct state
 
 };
 
+static struct option options[32];
 static struct render_display display;
-static struct configuration configuration;
 static struct state state;
 static unsigned int numwindows;
 static unsigned char fontnormal[0x8000];
@@ -97,9 +88,9 @@ static void setupvideo(void)
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
-    settings.width = configuration.displaywidth;
-    settings.height = configuration.displayheight;
-    settings.bpp = configuration.displaybpp;
+    settings.width = option_getdecimal(options, "width");
+    settings.height = option_getdecimal(options, "height");
+    settings.bpp = option_getdecimal(options, "bpp");
 
     buffer_clear(black, 768);
 
@@ -395,6 +386,21 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    if (!file_walk2(FILE_G0, option_getstring(options, "wm")))
+        channel_warning("Could not open window manager service");
+
+    if (!file_walk2(FILE_G1, option_getstring(options, "keyboard")))
+        channel_warning("Could not open keyboard");
+
+    if (!file_walk2(FILE_G2, option_getstring(options, "mouse")))
+        channel_warning("Could not open mouse");
+
+    if (!file_walk2(FILE_G3, option_getstring(options, "video")))
+        channel_warning("Could not open video");
+
+    if (!file_walk(FILE_G4, FILE_G3, "event"))
+        channel_warning("Could not open video event");
+
     file_link(FILE_G0);
     file_link(FILE_G1);
     file_link(FILE_G2);
@@ -564,33 +570,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *key = mdata;
     char *value = key + cstring_lengthz(key);
 
-    if (cstring_match(key, "width"))
-        configuration.displaywidth = cstring_readvalue(value, cstring_length(value), 10);
-
-    if (cstring_match(key, "height"))
-        configuration.displayheight = cstring_readvalue(value, cstring_length(value), 10);
-
-    if (cstring_match(key, "bpp"))
-        configuration.displaybpp = cstring_readvalue(value, cstring_length(value), 10);
-
-    if (cstring_match(key, "keyboard"))
-        file_walk2(FILE_G1, value);
-
-    if (cstring_match(key, "mouse"))
-        file_walk2(FILE_G2, value);
-
-    if (cstring_match(key, "video"))
-    {
-
-        if (file_walk2(FILE_G3, value))
-        {
-
-            file_walk(FILE_G4, FILE_G3, "event");
-            file_walk(FILE_G5, FILE_G3, "data");
-
-        }
-
-    }
+    option_set(options, key, value);
 
 }
 
@@ -727,14 +707,15 @@ static void setupwidgets(void)
 void init(void)
 {
 
-    file_walk2(FILE_G0, "system:service/wm");
     pool_setup();
     setupwidgets();
-
-    configuration.displaywidth = 1920;
-    configuration.displayheight = 1080;
-    configuration.displaybpp = 4;
-
+    option_add(options, "width", "1920");
+    option_add(options, "height", "1080");
+    option_add(options, "bpp", "4");
+    option_add(options, "wm", "system:service/wm");
+    option_add(options, "keyboard", "system:keyboard/event");
+    option_add(options, "mouse", "system:mouse/event");
+    option_add(options, "video", "system:video/if:0");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);
