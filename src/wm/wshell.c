@@ -337,15 +337,12 @@ static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    file_walk2(FILE_G0, "system:service/wm");
+    widget_inittextbox(&content);
     ring_init(&output, BUFFER_SIZE, outputdata);
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&text, TEXTSIZE, textdata);
-    widget_inittextbox(&content);
-
-    if (!file_walk2(FILE_G0, "system:service/wm"))
-        return;
-
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);

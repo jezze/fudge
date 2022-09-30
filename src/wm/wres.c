@@ -51,9 +51,7 @@ static void onwmmousepress(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    if (!file_walk2(FILE_G0, "system:service/wm"))
-        return;
-
+    file_walk2(FILE_G0, "system:service/wm");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_WMMOUSEPRESS, onwmmousepress);

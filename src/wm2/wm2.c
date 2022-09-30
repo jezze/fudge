@@ -727,15 +727,13 @@ static void setupwidgets(void)
 void init(void)
 {
 
+    file_walk2(FILE_G0, "system:service/wm");
     pool_setup();
     setupwidgets();
 
     configuration.displaywidth = 1920;
     configuration.displayheight = 1080;
     configuration.displaybpp = 4;
-
-    if (!file_walk2(FILE_G0, "system:service/wm"))
-        return;
 
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

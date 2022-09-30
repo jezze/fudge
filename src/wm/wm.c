@@ -942,6 +942,7 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    file_walk2(FILE_G0, "system:service/wm");
     list_init(&viewlist);
     list_init(&remotelist);
     ring_init(&output, BUFFER_SIZE, outputdata);
@@ -950,10 +951,6 @@ void init(void)
     render_init();
     render_setlayer(0, layerdata0, 0x10000);
     render_setlayer(1, layerdata1, 0x200);
-
-    if (!file_walk2(FILE_G0, "system:service/wm"))
-        return;
-
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);

@@ -208,9 +208,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    if (!file_walk2(FILE_G1, "system:service/wm"))
-        return;
-
+    file_walk2(FILE_G1, "system:service/wm");
     file_walk2(FILE_G0, "system:ethernet/if:0");
     ring_init(&input, BUFFER_SIZE, inputdata);
     socket_init(&local);

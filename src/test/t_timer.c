@@ -31,15 +31,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    if (!file_walk2(FILE_G0, "system:timer/if:0/event100"))
-    {
-
-        channel_error("Timer not found");
-
-        return;
-
-    }
-
+    file_walk2(FILE_G0, "system:timer/if:0/event100");
     channel_bind(EVENT_MAIN, onmain);
 
 }

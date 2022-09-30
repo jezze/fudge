@@ -247,12 +247,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    if (!file_walk2(FILE_G0, "/kernel"))
-        channel_error("Kernel directory not found");
-
-    if (!file_walk(FILE_G1, FILE_G0, "fudge"))
-        channel_error("Fudge binary not found");
-
+    file_walk2(FILE_G0, "/kernel");
+    file_walk(FILE_G1, FILE_G0, "fudge");
     channel_bind(EVENT_PATH, onpath);
 
 }
