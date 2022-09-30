@@ -437,12 +437,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    if (file_walk2(FILE_G4, "system:service/fd0"))
-        channel_error("Service node not found");
-
-    if (!file_walk2(FILE_G5, "system:block/if:0/data"))
-        channel_error("Data node not found");
-
+    file_walk2(FILE_G4, "system:service/fd0");
+    file_walk2(FILE_G5, "system:block/if:0/data");
     file_walk2(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
     socket_bind_ipv4s(&local, "10.0.5.1");

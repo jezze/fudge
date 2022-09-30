@@ -168,9 +168,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    if (!file_walk2(FILE_G0, "system:service/fd0"))
-        channel_error("Service node not found");
-
+    file_walk2(FILE_G0, "system:service/fd0");
     channel_bind(EVENT_MAIN, onmain);
 
 }
