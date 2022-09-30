@@ -90,6 +90,9 @@ static void updatevalue(int value)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    if (!file_walk2(FILE_G0, "system:service/wm"))
+        channel_warning("Could not open window manager service");
+
     file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
 
 }
@@ -174,7 +177,6 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    file_walk2(FILE_G0, "system:service/wm");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_WMCLICK, onwmclick);

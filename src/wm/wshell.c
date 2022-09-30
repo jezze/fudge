@@ -183,6 +183,9 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    if (!file_walk2(FILE_G0, "system:service/wm"))
+        channel_warning("Could not open window manager service");
+
     printprompt();
     file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
 
@@ -337,7 +340,6 @@ static void onwmshow(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    file_walk2(FILE_G0, "system:service/wm");
     widget_inittextbox(&content);
     ring_init(&output, BUFFER_SIZE, outputdata);
     ring_init(&input1, INPUTSIZE, inputdata1);

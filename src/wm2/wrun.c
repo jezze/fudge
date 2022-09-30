@@ -109,6 +109,9 @@ static void resolve(char *domain)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    if (!file_walk2(FILE_G1, "system:service/wm"))
+        channel_warning("Could not open window manager service");
+
     file_notify(FILE_G1, EVENT_WMMAP, 0, 0);
 
 }
@@ -208,7 +211,6 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    file_walk2(FILE_G1, "system:service/wm");
     file_walk2(FILE_G0, "system:ethernet/if:0");
     ring_init(&input, BUFFER_SIZE, inputdata);
     socket_init(&local);
