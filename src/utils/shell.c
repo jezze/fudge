@@ -428,8 +428,8 @@ void init(void)
 {
 
     ring_init(&input, INPUTSIZE, inputbuffer);
-    option_add(options, "input", "");
-    option_add(options, "output", "");
+    option_add(options, "input", "system:console/if:0/event");
+    option_add(options, "output", "system:console/if:0/transmit");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
