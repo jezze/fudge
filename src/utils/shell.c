@@ -186,24 +186,29 @@ static void complete(void)
 
     }
 
-    if (ring_each(&result, '\n') == ring_count(&result))
+    if (ring_count(&result))
     {
 
-        char *resultbuffer = resultdata + cstring_length(prefix);
-        unsigned int resultcount = ring_count(&result) - cstring_lengthz(prefix);
+        if (ring_each(&result, '\n') == ring_count(&result))
+        {
 
-        ring_write(&input, resultbuffer, resultcount);
-        print(resultbuffer, resultcount);
+            char *resultbuffer = resultdata + cstring_length(prefix);
+            unsigned int resultcount = ring_count(&result) - cstring_lengthz(prefix);
 
-    }
+            ring_write(&input, resultbuffer, resultcount);
+            print(resultbuffer, resultcount);
 
-    else
-    {
+        }
 
-        print("\n", 1);
-        print(resultdata, ring_count(&result));
-        printprompt();
-        print(resultdata, ring_readcopy(&input, resultdata, BUFFER_SIZE));
+        else
+        {
+
+            print("\n", 1);
+            print(resultdata, ring_count(&result));
+            printprompt();
+            print(resultdata, ring_readcopy(&input, resultdata, BUFFER_SIZE));
+
+        }
 
     }
 
