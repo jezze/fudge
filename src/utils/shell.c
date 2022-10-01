@@ -108,8 +108,7 @@ static void complete(void)
     {
 
         unsigned int lastwordoffset = buffer_lastbyte(buffer, count, ' ');
-        unsigned int lastwordcount = count - lastwordoffset;
-        unsigned int searchoffset = lastwordoffset + buffer_lastbyte((char *)buffer + lastwordoffset, lastwordcount, '/');
+        unsigned int searchoffset = lastwordoffset + buffer_lastbyte(buffer + lastwordoffset, count - lastwordoffset, '/');
         unsigned int searchcount = count - searchoffset;
 
         if (lastwordoffset)
@@ -121,7 +120,7 @@ static void complete(void)
                 char path[INPUTSIZE];
                 unsigned int pathcount;
 
-                pathcount = buffer_write(path, INPUTSIZE, (char *)buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0);
+                pathcount = buffer_write(path, INPUTSIZE, buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0);
                 pathcount += cstring_writez(path, INPUTSIZE, "", pathcount);
 
                 job.workers[0].paths[0] = path;
