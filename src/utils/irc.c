@@ -3,12 +3,12 @@
 #include <abi.h>
 #include <socket.h>
 
+static struct option options[32];
 static struct socket local;
 static struct socket remote;
 static struct socket router;
 static char inputbuffer[BUFFER_SIZE];
 static struct ring input;
-static char domain[512];
 
 static void interpret(void *buffer, unsigned int count)
 {
@@ -38,7 +38,7 @@ static void interpret(void *buffer, unsigned int count)
 
 }
 
-static void resolve(char *domain)
+static void resolve(void)
 {
 
     unsigned int id = file_spawn("/bin/dns");
@@ -50,7 +50,7 @@ static void resolve(char *domain)
 
         message_init(&message, EVENT_OPTION);
         message_putstringz(&message, "domain");
-        message_putstringz(&message, domain);
+        message_putstringz(&message, option_getstring(options, "domain"));
         channel_redirectback(id, EVENT_QUERY);
         channel_redirectback(id, EVENT_CLOSE);
         channel_sendmessageto(id, &message);
@@ -136,14 +136,21 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk(FILE_L0, FILE_G0, "addr"))
-        socket_resolvelocal(FILE_L0, &local);
+    socket_bind_ipv4s(&local, option_getstring(options, "local-address"));
+    socket_bind_tcps(&local, option_getstring(options, "local-port"), 42);
+    socket_bind_ipv4s(&router, option_getstring(options, "router-address"));
+
+    if (!file_walk2(FILE_L0, option_getstring(options, "ethernet")))
+        channel_warning("Could not open ethernet");
+
+    if (file_walk(FILE_L1, FILE_L0, "addr"))
+        socket_resolvelocal(FILE_L1, &local);
     else
         channel_error("Could not find address");
 
-    resolve(domain);
+    resolve();
 
-    if (file_walk(FILE_G1, FILE_G0, "data"))
+    if (file_walk(FILE_G1, FILE_L0, "data"))
     {
 
         char *request = "NICK jfu_fudge\nUSER jfu_fudge 0 * :Jens Fudge\nJOIN #fudge\n";
@@ -180,26 +187,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *key = mdata;
     char *value = key + cstring_lengthz(key);
 
-    if (cstring_match(key, "ethernet"))
-        file_walk2(FILE_G0, value);
-
-    if (cstring_match(key, "domain"))
-        cstring_copy(domain, value);
-
-    if (cstring_match(key, "local-address"))
-        socket_bind_ipv4s(&local, value);
-
-    if (cstring_match(key, "local-port"))
-        socket_bind_tcps(&local, value, 42);
-
-    if (cstring_match(key, "remote-address") || cstring_match(key, "address"))
-        socket_bind_ipv4s(&remote, value);
-
-    if (cstring_match(key, "remote-port") || cstring_match(key, "port"))
-        socket_bind_tcps(&remote, value, 0);
-
-    if (cstring_match(key, "router-address"))
-        socket_bind_ipv4s(&router, value);
+    option_set(options, key, value);
 
 }
 
@@ -207,13 +195,14 @@ void init(void)
 {
 
     ring_init(&input, BUFFER_SIZE, inputbuffer);
-    file_walk2(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
-    socket_bind_ipv4s(&local, "10.0.5.1");
-    socket_bind_tcps(&local, "50003", 42);
     socket_init(&remote);
     socket_init(&router);
-    socket_bind_ipv4s(&router, "10.0.5.80");
+    option_add(options, "ethernet", "system:ethernet/if:0");
+    option_add(options, "local-address", "10.0.5.1");
+    option_add(options, "local-port", "50003");
+    option_add(options, "router-address", "10.0.5.80");
+    option_add(options, "domain", "");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_OPTION, onoption);

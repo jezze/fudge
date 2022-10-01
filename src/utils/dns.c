@@ -206,12 +206,12 @@ void init(void)
     socket_init(&remote);
     socket_init(&router);
     option_add(options, "ethernet", "system:ethernet/if:0");
-    option_add(options, "domain", "");
     option_add(options, "local-address", "10.0.5.1");
     option_add(options, "local-port", "50000");
     option_add(options, "remote-address", "8.8.8.8");
     option_add(options, "remote-port", "53");
     option_add(options, "router-address", "10.0.5.80");
+    option_add(options, "domain", "");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_OPTION, onoption);
 
