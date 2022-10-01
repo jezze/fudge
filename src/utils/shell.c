@@ -88,11 +88,18 @@ static void interpret(void)
 
 }
 
-static char prefix[INPUTSIZE];
-static unsigned int prefixcount;
-
-static void completespawn(unsigned int count, void *buffer)
+static void complete(void)
 {
+
+    char buffer[INPUTSIZE];
+    char prefix[INPUTSIZE];
+    char resultdata[BUFFER_SIZE];
+    struct ring result;
+    struct message message;
+    unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
+
+    ring_init(&result, BUFFER_SIZE, resultdata);
+    job_init(&job, workers, JOBSIZE);
 
     job.workers[0].program = "/bin/ls";
     job.count = 1;
@@ -135,6 +142,8 @@ static void completespawn(unsigned int count, void *buffer)
         if (searchcount)
         {
 
+            unsigned int prefixcount;
+
             prefixcount = buffer_write(prefix, INPUTSIZE, (char *)buffer + searchoffset, searchcount, 0);
             prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
 
@@ -153,16 +162,9 @@ static void completespawn(unsigned int count, void *buffer)
 
     }
 
-}
-
-static void completeprocess(void)
-{
-
-    char buffer[BUFFER_SIZE];
-    struct ring result;
-    struct message message;
-
-    ring_init(&result, BUFFER_SIZE, buffer);
+    job_spawn(&job);
+    job_pipe(&job);
+    job_run(&job);
 
     while (job_pick(&job, &message))
     {
@@ -187,9 +189,11 @@ static void completeprocess(void)
     if (ring_each(&result, '\n') == ring_count(&result))
     {
 
-        ring_write(&input, buffer + cstring_length(prefix), ring_count(&result) - prefixcount);
-        print(buffer + cstring_length(prefix), ring_count(&result) - prefixcount);
+        char *resultbuffer = resultdata + cstring_length(prefix);
+        unsigned int resultcount = ring_count(&result) - cstring_lengthz(prefix);
 
+        ring_write(&input, resultbuffer, resultcount);
+        print(resultbuffer, resultcount);
 
     }
 
@@ -197,26 +201,11 @@ static void completeprocess(void)
     {
 
         print("\n", 1);
-        print(buffer, ring_count(&result));
+        print(resultdata, ring_count(&result));
         printprompt();
-        print(buffer, ring_readcopy(&input, buffer, INPUTSIZE));
+        print(resultdata, ring_readcopy(&input, resultdata, BUFFER_SIZE));
 
     }
-
-}
-
-static void complete(void)
-{
-
-    char buffer[INPUTSIZE];
-    unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
-
-    job_init(&job, workers, JOBSIZE);
-    completespawn(count, buffer);
-    job_spawn(&job);
-    job_pipe(&job);
-    job_run(&job);
-    completeprocess();
 
 }
 
