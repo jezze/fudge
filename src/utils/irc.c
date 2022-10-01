@@ -41,42 +41,32 @@ static void resolve(void)
 {
 
     unsigned int id = file_spawn("/bin/dns");
+    struct message message;
 
-    if (id)
+    if (!id)
+        channel_error("Could not spawn process");
+
+    message_init(&message, EVENT_OPTION);
+    message_putstringz(&message, "domain");
+    message_putstringz(&message, option_getstring("domain"));
+    channel_redirectback(id, EVENT_QUERY);
+    channel_redirectback(id, EVENT_CLOSE);
+    channel_sendmessageto(id, &message);
+    channel_sendto(id, EVENT_MAIN);
+
+    while (channel_pollfrom(id, &message) != EVENT_CLOSE)
     {
 
-        struct message message;
-
-        message_init(&message, EVENT_OPTION);
-        message_putstringz(&message, "domain");
-        message_putstringz(&message, option_getstring("domain"));
-        channel_redirectback(id, EVENT_QUERY);
-        channel_redirectback(id, EVENT_CLOSE);
-        channel_sendmessageto(id, &message);
-        channel_sendto(id, EVENT_MAIN);
-
-        while (channel_pollfrom(id, &message) != EVENT_CLOSE)
+        if (message.header.event == EVENT_QUERY)
         {
 
-            if (message.header.event == EVENT_QUERY)
-            {
+            char *key = message.data.buffer;
+            char *value = key + cstring_lengthz(key);
 
-                char *key = message.data.buffer;
-                char *value = key + cstring_lengthz(key);
-
-                if (cstring_match(key, "data"))
-                    socket_bind_ipv4s(&remote, value);
-
-            }
+            if (cstring_match(key, "data"))
+                socket_bind_ipv4s(&remote, value);
 
         }
-
-    }
-
-    else
-    {
-
-        channel_error("Could not spawn process");
 
     }
 

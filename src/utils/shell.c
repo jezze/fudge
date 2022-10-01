@@ -34,49 +34,46 @@ static void interpret(void)
     {
 
         unsigned int id = file_spawn("/bin/slang");
+        struct message message;
 
-        if (id)
+        if (!id)
+            channel_error("Could not spawn process");
+
+        job_init(&job, workers, JOBSIZE);
+        channel_redirectback(id, EVENT_DATA);
+        channel_redirectback(id, EVENT_ERROR);
+        channel_redirectback(id, EVENT_CLOSE);
+        channel_sendbufferto(id, EVENT_DATA, count, buffer);
+        channel_sendto(id, EVENT_MAIN);
+
+        while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
+            job_parse(&job, message.data.buffer, count);
+
+        job_spawn(&job);
+        job_pipe(&job);
+        job_run(&job);
+
+        while (job_pick(&job, &message))
         {
 
-            struct message message;
-
-            job_init(&job, workers, JOBSIZE);
-            channel_redirectback(id, EVENT_DATA);
-            channel_redirectback(id, EVENT_ERROR);
-            channel_redirectback(id, EVENT_CLOSE);
-            channel_sendbufferto(id, EVENT_DATA, count, buffer);
-            channel_sendto(id, EVENT_MAIN);
-
-            while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
-                job_parse(&job, message.data.buffer, count);
-
-            job_spawn(&job);
-            job_pipe(&job);
-            job_run(&job);
-
-            while (job_pick(&job, &message))
+            switch (message.header.event)
             {
 
-                switch (message.header.event)
-                {
+            case EVENT_CLOSE:
+                job_close(&job, message.header.source);
 
-                case EVENT_CLOSE:
-                    job_close(&job, message.header.source);
+                break;
 
-                    break;
+            case EVENT_DATA:
+                print(message.data.buffer, message_datasize(&message.header));
 
-                case EVENT_DATA:
-                    print(message.data.buffer, message_datasize(&message.header));
+                break;
 
-                    break;
+            case EVENT_PATH:
+                if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
+                    file_duplicate(FILE_CW, FILE_L0);
 
-                case EVENT_PATH:
-                    if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
-                        file_duplicate(FILE_CW, FILE_L0);
-
-                    break;
-
-                }
+                break;
 
             }
 
