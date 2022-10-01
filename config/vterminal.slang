@@ -1,1 +1,1 @@
-shell ?keyboard system:keyboard/if:0 ?console system:console/if:1
+shell ?input system:keyboard/if:0/event ?output system:console/if:1/transmit
