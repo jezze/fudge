@@ -84,18 +84,16 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    char buffer[BUFFER_SIZE];
+    unsigned int count;
+
     page = 0;
 
-    if (file_walk2(FILE_L0, mdata))
-    {
+    if (!file_walk2(FILE_L0, mdata))
+        channel_error("File not found");
 
-        char buffer[BUFFER_SIZE];
-        unsigned int count;
-
-        while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
-            print(source, count, buffer);
-
-    }
+    while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
+        print(source, count, buffer);
 
 }
 

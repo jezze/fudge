@@ -97,16 +97,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, mdata))
-    {
+    char buffer[BUFFER_SIZE];
+    unsigned int count;
 
-        char buffer[BUFFER_SIZE];
-        unsigned int count;
+    if (!file_walk2(FILE_L0, mdata))
+        channel_error("File not found");
 
-        while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
-            ring_write(&input2, buffer, count);
-
-    }
+    while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
+        ring_write(&input2, buffer, count);
 
 }
 

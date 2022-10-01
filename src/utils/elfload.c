@@ -227,28 +227,23 @@ static unsigned int resolve(unsigned int descriptor)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_G2, mdata))
-    {
+    if (!file_walk2(FILE_G0, "/kernel"))
+        channel_error("Could not find kernel directory");
 
-        if (resolve(FILE_G2))
-            call_load(FILE_G2);
+    if (!file_walk(FILE_G1, FILE_G0, "fudge"))
+        channel_error("Could not find fudge binary");
 
-    }
+    if (!file_walk2(FILE_G2, mdata))
+        channel_error("Could not find path");
 
-    else
-    {
-
-        channel_error("File not found");
-
-    }
+    if (resolve(FILE_G2))
+        call_load(FILE_G2);
 
 }
 
 void init(void)
 {
 
-    file_walk2(FILE_G0, "/kernel");
-    file_walk(FILE_G1, FILE_G0, "fudge");
     channel_bind(EVENT_PATH, onpath);
 
 }

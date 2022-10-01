@@ -31,27 +31,17 @@ static unsigned int gettimestamp(unsigned int year, unsigned int month, unsigned
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, option_getstring("clock")))
-    {
+    struct ctrl_clocksettings settings;
+    struct message message;
 
-        struct ctrl_clocksettings settings;
-        struct message message;
+    if (!file_walk2(FILE_L0, option_getstring("clock")))
+        channel_error("Could not find clock device ctrl");
 
-        file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
-        message_init(&message, EVENT_DATA);
-        message_putvalue(&message, gettimestamp(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds), 10, 0);
-        message_putstring(&message, "\n");
-        channel_sendmessage(&message);
-
-    }
-
-    else
-    {
-
-        channel_error("Clock ctrl file not found");
-
-    }
-
+    file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
+    message_init(&message, EVENT_DATA);
+    message_putvalue(&message, gettimestamp(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds), 10, 0);
+    message_putstring(&message, "\n");
+    channel_sendmessage(&message);
     channel_close();
 
 }

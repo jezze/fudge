@@ -13,10 +13,10 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
         buffer[offset - 1] = '\0';
 
-        if (file_walk2(FILE_L0, buffer))
-            file_create(FILE_L1, FILE_L0, buffer + offset);
-        else
+        if (!file_walk2(FILE_L0, buffer))
             channel_error("Parent directory not found");
+
+        file_create(FILE_L1, FILE_L0, buffer + offset);
 
     }
 
