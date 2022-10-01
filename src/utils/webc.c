@@ -95,19 +95,23 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     char *url = option_getstring("url");
     char urldata[BUFFER_SIZE];
     struct url kurl;
+    unsigned char buffer[BUFFER_SIZE];
+    unsigned int count;
+
+    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
+        channel_error("Could not find ethernet device");
+
+    if (!file_walk(FILE_L1, FILE_L0, "data"))
+        channel_error("Could not find ethernet device data");
+
+    if (!file_walk(FILE_L2, FILE_L0, "addr"))
+        channel_error("Could not find ethernet device addr");
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcps(&local, option_getstring("local-port"), 42);
     socket_bind_tcps(&remote, option_getstring("remote-port"), 0);
     socket_bind_ipv4s(&router, option_getstring("router-address"));
-
-    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_warning("Could not open ethernet");
-
-    if (file_walk(FILE_L1, FILE_L0, "addr"))
-        socket_resolvelocal(FILE_L1, &local);
-    else
-        channel_error("Could not find address");
+    socket_resolvelocal(FILE_L2, &local);
 
     if (cstring_length(url) >= 4 && buffer_match(url, "http", 4))
         url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_SCHEME);
@@ -120,37 +124,23 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (kurl.port)
         socket_bind_tcps(&remote, kurl.port, 0);
 
-    if (file_walk(FILE_L1, FILE_L0, "data"))
+    count = buildrequest(BUFFER_SIZE, buffer, &kurl);
+
+    file_link(FILE_L1);
+    socket_resolveremote(FILE_L1, &local, &router);
+    socket_connect_tcp(FILE_L1, &local, &remote, &router);
+    socket_send_tcp(FILE_L1, &local, &remote, &router, count, buffer);
+
+    while ((count = socket_receive_tcp(FILE_L1, &local, &remote, &router, buffer, BUFFER_SIZE)))
     {
 
-        unsigned char buffer[BUFFER_SIZE];
-        unsigned int count = buildrequest(BUFFER_SIZE, buffer, &kurl);
-
-        file_link(FILE_L1);
-        socket_resolveremote(FILE_L1, &local, &router);
-        socket_connect_tcp(FILE_L1, &local, &remote, &router);
-        socket_send_tcp(FILE_L1, &local, &remote, &router, count, buffer);
-
-        while ((count = socket_receive_tcp(FILE_L1, &local, &remote, &router, buffer, BUFFER_SIZE)))
-        {
-
-            if (ring_write(&input, buffer, count))
-                handlehttppacket();
-
-        }
-
-        socket_disconnect_tcp(FILE_L1, &local, &remote, &router);
-        file_unlink(FILE_L1);
+        if (ring_write(&input, buffer, count))
+            handlehttppacket();
 
     }
 
-    else
-    {
-
-        channel_error("Could not find data");
-
-    }
-
+    socket_disconnect_tcp(FILE_L1, &local, &remote, &router);
+    file_unlink(FILE_L1);
     channel_close();
 
 }

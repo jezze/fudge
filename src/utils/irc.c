@@ -135,47 +135,34 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    char *request = "NICK jfu_fudge\nUSER jfu_fudge 0 * :Jens Fudge\nJOIN #fudge\n";
+    char buffer[BUFFER_SIZE];
+    unsigned int count;
+
+    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
+        channel_error("Could not find ethernet device");
+
+    if (!file_walk(FILE_L1, FILE_L0, "data"))
+        channel_error("Could not find ethernet device data");
+
+    if (!file_walk(FILE_L2, FILE_L0, "addr"))
+        channel_error("Could not find ethernet device addr");
+
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcps(&local, option_getstring("local-port"), 42);
     socket_bind_ipv4s(&router, option_getstring("router-address"));
-
-    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_warning("Could not open ethernet");
-
-    if (file_walk(FILE_L1, FILE_L0, "addr"))
-        socket_resolvelocal(FILE_L1, &local);
-    else
-        channel_error("Could not find address");
-
+    socket_resolvelocal(FILE_L2, &local);
     resolve();
+    file_link(FILE_G1);
+    socket_resolveremote(FILE_G1, &local, &router);
+    socket_connect_tcp(FILE_G1, &local, &remote, &router);
+    socket_send_tcp(FILE_G1, &local, &remote, &router, cstring_length(request), request);
 
-    if (file_walk(FILE_G1, FILE_L0, "data"))
-    {
+    while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
+        channel_sendbuffer(EVENT_DATA, count, buffer);
 
-        char *request = "NICK jfu_fudge\nUSER jfu_fudge 0 * :Jens Fudge\nJOIN #fudge\n";
-        char buffer[BUFFER_SIZE];
-        unsigned int count;
-
-        file_link(FILE_G1);
-        socket_resolveremote(FILE_G1, &local, &router);
-        socket_connect_tcp(FILE_G1, &local, &remote, &router);
-        socket_send_tcp(FILE_G1, &local, &remote, &router, cstring_length(request), request);
-
-        while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
-            channel_sendbuffer(EVENT_DATA, count, buffer);
-
-        socket_disconnect_tcp(FILE_G1, &local, &remote, &router);
-        file_unlink(FILE_G1);
-
-    }
-
-    else
-    {
-
-        channel_error("Could not find data");
-
-    }
-
+    socket_disconnect_tcp(FILE_G1, &local, &remote, &router);
+    file_unlink(FILE_G1);
     channel_close();
 
 }

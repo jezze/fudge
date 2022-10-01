@@ -118,72 +118,72 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned char buffer[BUFFER_SIZE];
+    unsigned int count;
+
+    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
+        channel_error("Could not find ethernet device");
+
+    if (!file_walk(FILE_L1, FILE_L0, "data"))
+        channel_error("Could not find ethernet device data");
+
+    if (!file_walk(FILE_L2, FILE_L0, "addr"))
+        channel_error("Could not find ethernet device addr");
+
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_udps(&local, option_getstring("local-port"));
     socket_bind_ipv4s(&remote, option_getstring("remote-address"));
     socket_bind_udps(&remote, option_getstring("remote-port"));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
+    socket_resolvelocal(FILE_L2, &local);
 
-    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_warning("Could not open ethernet");
+    count = buildrequest(BUFFER_SIZE, buffer);
 
-    if (file_walk(FILE_L1, FILE_L0, "addr"))
-        socket_resolvelocal(FILE_L1, &local);
+    file_link(FILE_L1);
+    socket_resolveremote(FILE_L1, &local, &router);
+    socket_send_udp(FILE_L1, &local, &remote, &router, count, buffer);
 
-    if (file_walk(FILE_L1, FILE_L0, "data"))
+    count = socket_receive_udp(FILE_L1, &local, &remote, &router, buffer, BUFFER_SIZE);
+
+    if (count)
     {
 
-        unsigned char buffer[BUFFER_SIZE];
-        unsigned int count = buildrequest(BUFFER_SIZE, buffer);
+        struct dns_header *header = (struct dns_header *)buffer;
+        unsigned int responselength = sizeof (struct dns_header);
+        unsigned int i;
 
-        file_link(FILE_L1);
-        socket_resolveremote(FILE_L1, &local, &router);
-        socket_send_udp(FILE_L1, &local, &remote, &router, count, buffer);
-
-        count = socket_receive_udp(FILE_L1, &local, &remote, &router, buffer, BUFFER_SIZE);
-
-        if (count)
+        for (i = 0; i < net_load16(header->questions); i++)
         {
 
-            struct dns_header *header = (struct dns_header *)buffer;
-            unsigned int responselength = sizeof (struct dns_header);
-            unsigned int i;
+            char *name;
 
-            for (i = 0; i < net_load16(header->questions); i++)
-            {
-
-                char *name;
-
-                name = (char *)(buffer + responselength);
-                responselength += dns_namesize(name);
-                responselength += sizeof (struct dns_question);
-
-            }
-
-            for (i = 0; i < net_load16(header->answers); i++)
-            {
-
-                struct dns_answer *answer;
-                char *name;
-                void *rddata;
-
-                name = (char *)(buffer + responselength);
-                responselength += dns_namesize(name);
-                answer = (struct dns_answer *)(buffer + responselength);
-                responselength += sizeof (struct dns_answer);
-                rddata = (buffer + responselength);
-                responselength += net_load16(answer->rdlength);
-
-                reply(net_load16(answer->type), name, rddata, buffer);
-
-            }
+            name = (char *)(buffer + responselength);
+            responselength += dns_namesize(name);
+            responselength += sizeof (struct dns_question);
 
         }
 
-        file_unlink(FILE_L1);
+        for (i = 0; i < net_load16(header->answers); i++)
+        {
+
+            struct dns_answer *answer;
+            char *name;
+            void *rddata;
+
+            name = (char *)(buffer + responselength);
+            responselength += dns_namesize(name);
+            answer = (struct dns_answer *)(buffer + responselength);
+            responselength += sizeof (struct dns_answer);
+            rddata = (buffer + responselength);
+            responselength += net_load16(answer->rdlength);
+
+            reply(net_load16(answer->type), name, rddata, buffer);
+
+        }
 
     }
 
+    file_unlink(FILE_L1);
     channel_close();
 
 }

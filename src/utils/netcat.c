@@ -55,42 +55,30 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    char buffer[BUFFER_SIZE];
+    unsigned int count;
+
+    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
+        channel_error("Could not find ethernet device");
+
+    if (!file_walk(FILE_L1, FILE_L0, "data"))
+        channel_error("Could not find ethernet device data");
+
+    if (!file_walk(FILE_L2, FILE_L0, "addr"))
+        channel_error("Could not find ethernet device addr");
+
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcps(&local, option_getstring("local-port"), 42);
     socket_bind_ipv4s(&router, option_getstring("router-address"));
+    socket_resolvelocal(FILE_L2, &local);
+    file_link(FILE_G1);
+    socket_resolveremote(FILE_G1, &local, &router);
+    socket_listen_tcp(FILE_G1, &local, &remote, &router);
 
-    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_warning("Could not open ethernet");
+    while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
+        channel_sendbuffer(EVENT_DATA, count, buffer);
 
-    if (file_walk(FILE_L1, FILE_L0, "addr"))
-        socket_resolvelocal(FILE_L1, &local);
-    else
-        channel_error("Could not find address");
-
-    if (file_walk(FILE_G1, FILE_L0, "data"))
-    {
-
-        char buffer[BUFFER_SIZE];
-        unsigned int count;
-
-        file_link(FILE_G1);
-        socket_resolveremote(FILE_G1, &local, &router);
-        socket_listen_tcp(FILE_G1, &local, &remote, &router);
-
-        while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
-            channel_sendbuffer(EVENT_DATA, count, buffer);
-
-        file_unlink(FILE_G1);
-
-    }
-
-    else
-    {
-
-        channel_error("Could not find data");
-
-    }
-
+    file_unlink(FILE_G1);
     channel_close();
 
 }

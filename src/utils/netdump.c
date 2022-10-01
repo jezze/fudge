@@ -297,31 +297,21 @@ static void print_ethernet(unsigned int source, void *buffer)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    char buffer[BUFFER_SIZE];
+    unsigned int count;
+
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_warning("Could not open ethernet");
+        channel_error("Could not find ethernet device");
 
-    if (file_walk(FILE_L1, FILE_L0, "data"))
-    {
+    if (!file_walk(FILE_L1, FILE_L0, "data"))
+        channel_error("Could not find ethernet device data");
 
-        char buffer[BUFFER_SIZE];
-        unsigned int count;
+    file_link(FILE_L1);
 
-        file_link(FILE_L1);
+    while ((count = channel_read(buffer, BUFFER_SIZE)))
+        print_ethernet(source, buffer);
 
-        while ((count = channel_read(buffer, BUFFER_SIZE)))
-            print_ethernet(source, buffer);
-
-        file_unlink(FILE_L1);
-
-    }
-
-    else
-    {
-
-        channel_error("Could not find data");
-
-    }
-
+    file_unlink(FILE_L1);
     channel_close();
 
 }
