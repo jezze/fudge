@@ -2,6 +2,8 @@
 #include <net.h>
 #include <abi.h>
 
+static struct option options[32];
+
 static void print_icmp(unsigned int source, void *buffer)
 {
 
@@ -297,18 +299,21 @@ static void print_ethernet(unsigned int source, void *buffer)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk(FILE_L0, FILE_G0, "data"))
+    if (!file_walk2(FILE_L0, option_getstring(options, "ethernet")))
+        channel_warning("Could not open ethernet");
+
+    if (file_walk(FILE_L1, FILE_L0, "data"))
     {
 
         char buffer[BUFFER_SIZE];
         unsigned int count;
 
-        file_link(FILE_L0);
+        file_link(FILE_L1);
 
         while ((count = channel_read(buffer, BUFFER_SIZE)))
             print_ethernet(source, buffer);
 
-        file_unlink(FILE_L0);
+        file_unlink(FILE_L1);
 
     }
 
@@ -329,15 +334,14 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *key = mdata;
     char *value = key + cstring_lengthz(key);
 
-    if (cstring_match(key, "ethernet"))
-        file_walk2(FILE_G0, value);
+    option_set(options, key, value);
 
 }
 
 void init(void)
 {
 
-    file_walk2(FILE_G0, "system:ethernet/if:0");
+    option_add(options, "ethernet", "system:ethernet/if:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_OPTION, onoption);
 
