@@ -3,10 +3,10 @@
 #include <abi.h>
 #include <socket.h>
 
+static struct option options[32];
 static struct socket local;
 static struct socket remote;
 static struct socket router;
-static char domain[512];
 
 static unsigned int buildrequest(unsigned int count, void *buffer)
 {
@@ -24,7 +24,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
     net_save16(question.class, 0x0001);
 
     offset += buffer_write(buffer, count, &header, sizeof (struct dns_header), offset);
-    offset += dns_copyname((char *)buffer + offset, count - offset, domain);
+    offset += dns_copyname((char *)buffer + offset, count - offset, option_getstring(options, "domain"));
     offset += buffer_write(buffer, count, &question, sizeof (struct dns_question), offset);
 
     return offset;
@@ -119,20 +119,29 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk(FILE_L0, FILE_G0, "addr"))
-        socket_resolvelocal(FILE_L0, &local);
+    socket_bind_ipv4s(&local, option_getstring(options, "local-address"));
+    socket_bind_udps(&local, option_getstring(options, "local-port"));
+    socket_bind_ipv4s(&remote, option_getstring(options, "remote-address"));
+    socket_bind_udps(&remote, option_getstring(options, "remote-port"));
+    socket_bind_ipv4s(&router, option_getstring(options, "router-address"));
 
-    if (file_walk(FILE_L0, FILE_G0, "data"))
+    if (!file_walk2(FILE_L0, option_getstring(options, "ethernet")))
+        channel_warning("Could not open ethernet");
+
+    if (file_walk(FILE_L1, FILE_L0, "addr"))
+        socket_resolvelocal(FILE_L1, &local);
+
+    if (file_walk(FILE_L1, FILE_L0, "data"))
     {
 
         unsigned char buffer[BUFFER_SIZE];
         unsigned int count = buildrequest(BUFFER_SIZE, buffer);
 
-        file_link(FILE_L0);
-        socket_resolveremote(FILE_L0, &local, &router);
-        socket_send_udp(FILE_L0, &local, &remote, &router, count, buffer);
+        file_link(FILE_L1);
+        socket_resolveremote(FILE_L1, &local, &router);
+        socket_send_udp(FILE_L1, &local, &remote, &router, count, buffer);
 
-        count = socket_receive_udp(FILE_L0, &local, &remote, &router, buffer, BUFFER_SIZE);
+        count = socket_receive_udp(FILE_L1, &local, &remote, &router, buffer, BUFFER_SIZE);
 
         if (count)
         {
@@ -172,7 +181,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        file_unlink(FILE_L0);
+        file_unlink(FILE_L1);
 
     }
 
@@ -186,41 +195,23 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *key = mdata;
     char *value = key + cstring_lengthz(key);
 
-    if (cstring_match(key, "ethernet"))
-        file_walk2(FILE_G0, value);
-
-    if (cstring_match(key, "domain"))
-        cstring_copy(domain, value);
-
-    if (cstring_match(key, "local-address"))
-        socket_bind_ipv4s(&local, value);
-
-    if (cstring_match(key, "local-port"))
-        socket_bind_udps(&local, value);
-
-    if (cstring_match(key, "remote-address") || cstring_match(key, "address"))
-        socket_bind_ipv4s(&remote, value);
-
-    if (cstring_match(key, "remote-port") || cstring_match(key, "port"))
-        socket_bind_udps(&remote, value);
-
-    if (cstring_match(key, "router-address"))
-        socket_bind_ipv4s(&router, value);
+    option_set(options, key, value);
 
 }
 
 void init(void)
 {
 
-    file_walk2(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
-    socket_bind_ipv4s(&local, "10.0.5.1");
-    socket_bind_udps(&local, "50000");
     socket_init(&remote);
-    socket_bind_ipv4s(&remote, "8.8.8.8");
-    socket_bind_udps(&remote, "53");
     socket_init(&router);
-    socket_bind_ipv4s(&router, "10.0.5.80");
+    option_add(options, "ethernet", "system:ethernet/if:0");
+    option_add(options, "domain", "");
+    option_add(options, "local-address", "10.0.5.1");
+    option_add(options, "local-port", "50000");
+    option_add(options, "remote-address", "8.8.8.8");
+    option_add(options, "remote-port", "53");
+    option_add(options, "router-address", "10.0.5.80");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_OPTION, onoption);
 
