@@ -87,63 +87,6 @@ static void moveright(unsigned int steps)
 
 }
 
-static void interpretspawn(unsigned int count, void *buffer)
-{
-
-    unsigned int id = file_spawn("/bin/slang");
-
-    if (id)
-    {
-
-        struct message message;
-
-        channel_redirectback(id, EVENT_DATA);
-        channel_redirectback(id, EVENT_ERROR);
-        channel_redirectback(id, EVENT_CLOSE);
-        channel_sendbufferto(id, EVENT_DATA, count, buffer);
-        channel_sendto(id, EVENT_MAIN);
-
-        while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
-            job_parse(&job, message.data.buffer, count);
-
-    }
-
-}
-
-static void interpretprocess(void)
-{
-
-    struct message message;
-
-    while (job_pick(&job, &message))
-    {
-
-        switch (message.header.event)
-        {
-
-        case EVENT_CLOSE:
-            job_close(&job, message.header.source);
-
-            break;
-
-        case EVENT_DATA:
-            print(message.data.buffer, message_datasize(&message.header));
-            updatecontent();
-
-            break;
-
-        case EVENT_PATH:
-            if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
-                file_duplicate(FILE_CW, FILE_L0);
-
-            break;
-
-        }
-
-    }
-
-}
-
 static void interpret(void)
 {
 
@@ -156,12 +99,55 @@ static void interpret(void)
     if (count)
     {
 
-        job_init(&job, workers, JOBSIZE);
-        interpretspawn(count, buffer);
-        job_spawn(&job);
-        job_pipe(&job);
-        job_run(&job);
-        interpretprocess();
+        unsigned int id = file_spawn("/bin/slang");
+
+        if (id)
+        {
+
+            struct message message;
+
+            job_init(&job, workers, JOBSIZE);
+            channel_redirectback(id, EVENT_DATA);
+            channel_redirectback(id, EVENT_ERROR);
+            channel_redirectback(id, EVENT_CLOSE);
+            channel_sendbufferto(id, EVENT_DATA, count, buffer);
+            channel_sendto(id, EVENT_MAIN);
+
+            while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
+                job_parse(&job, message.data.buffer, count);
+
+            job_spawn(&job);
+            job_pipe(&job);
+            job_run(&job);
+
+            while (job_pick(&job, &message))
+            {
+
+                switch (message.header.event)
+                {
+
+                case EVENT_CLOSE:
+                    job_close(&job, message.header.source);
+
+                    break;
+
+                case EVENT_DATA:
+                    print(message.data.buffer, message_datasize(&message.header));
+                    updatecontent();
+
+                    break;
+
+                case EVENT_PATH:
+                    if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
+                        file_duplicate(FILE_CW, FILE_L0);
+
+                    break;
+
+                }
+
+            }
+
+        }
 
     }
 
