@@ -4,15 +4,28 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count;
+    if (file_walk2(FILE_L0, option_getstring("log")))
+    {
 
-    file_link(FILE_G0);
+        char buffer[BUFFER_SIZE];
+        unsigned int count;
 
-    while ((count = channel_read(buffer, BUFFER_SIZE)))
-        channel_sendbuffer(EVENT_DATA, count, buffer);
+        file_link(FILE_L0);
 
-    file_unlink(FILE_G0);
+        while ((count = channel_read(buffer, BUFFER_SIZE)))
+            channel_sendbuffer(EVENT_DATA, count, buffer);
+
+        file_unlink(FILE_L0);
+
+    }
+
+    else
+    {
+
+        channel_error("Log not found");
+
+    }
+
     channel_close();
 
 }
@@ -20,7 +33,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    file_walk2(FILE_G0, "system:log/messages");
+    option_add("log", "system:log/messages");
     channel_bind(EVENT_MAIN, onmain);
 
 }
