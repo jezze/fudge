@@ -4,16 +4,13 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, option_getstring("clock")))
-        channel_error("Could not open clock");
-
-    if (file_walk(FILE_L1, FILE_L0, "ctrl"))
+    if (file_walk2(FILE_L0, option_getstring("clock")))
     {
 
         struct ctrl_clocksettings settings;
         struct message message;
 
-        file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
+        file_readall(FILE_L0, &settings, sizeof (struct ctrl_clocksettings));
         message_init(&message, EVENT_DATA);
         message_putvalue(&message, settings.year, 10, 4);
         message_putstring(&message, "-");
@@ -45,7 +42,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("clock", "system:clock/if:0");
+    option_add("clock", "system:clock/if:0/ctrl");
     channel_bind(EVENT_MAIN, onmain);
 
 }
