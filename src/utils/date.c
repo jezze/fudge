@@ -1,12 +1,10 @@
 #include <fudge.h>
 #include <abi.h>
 
-static struct option options[32];
-
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, option_getstring(options, "clock")))
+    if (!file_walk2(FILE_L0, option_getstring("clock")))
         channel_error("Could not open clock");
 
     if (file_walk(FILE_L1, FILE_L0, "ctrl"))
@@ -44,22 +42,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onoption(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    char *key = mdata;
-    char *value = key + cstring_lengthz(key);
-
-    option_set(options, key, value);
-
-}
-
 void init(void)
 {
 
-    option_add(options, "clock", "system:clock/if:0");
+    option_add("clock", "system:clock/if:0");
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_OPTION, onoption);
 
 }
 

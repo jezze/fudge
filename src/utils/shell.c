@@ -4,7 +4,6 @@
 #define JOBSIZE                         32
 #define INPUTSIZE                       128
 
-static struct option options[32];
 static char inputbuffer[INPUTSIZE];
 static struct ring input;
 static struct job_worker workers[JOBSIZE];
@@ -399,10 +398,10 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G0, option_getstring(options, "input")))
+    if (!file_walk2(FILE_G0, option_getstring("input")))
         channel_warning("Could not get input device");
 
-    if (!file_walk2(FILE_G1, option_getstring(options, "output")))
+    if (!file_walk2(FILE_G1, option_getstring("output")))
         channel_warning("Could not get output device");
 
     printprompt();
@@ -414,28 +413,17 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onoption(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    char *key = mdata;
-    char *value = key + cstring_lengthz(key);
-
-    option_set(options, key, value);
-
-}
-
 void init(void)
 {
 
     ring_init(&input, INPUTSIZE, inputbuffer);
-    option_add(options, "input", "system:console/if:0/event");
-    option_add(options, "output", "system:console/if:0/transmit");
+    option_add("input", "system:console/if:0/event");
+    option_add("output", "system:console/if:0/transmit");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_OPTION, onoption);
 
 }
 

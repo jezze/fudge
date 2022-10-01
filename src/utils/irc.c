@@ -3,7 +3,6 @@
 #include <abi.h>
 #include <socket.h>
 
-static struct option options[32];
 static struct socket local;
 static struct socket remote;
 static struct socket router;
@@ -50,7 +49,7 @@ static void resolve(void)
 
         message_init(&message, EVENT_OPTION);
         message_putstringz(&message, "domain");
-        message_putstringz(&message, option_getstring(options, "domain"));
+        message_putstringz(&message, option_getstring("domain"));
         channel_redirectback(id, EVENT_QUERY);
         channel_redirectback(id, EVENT_CLOSE);
         channel_sendmessageto(id, &message);
@@ -136,11 +135,11 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    socket_bind_ipv4s(&local, option_getstring(options, "local-address"));
-    socket_bind_tcps(&local, option_getstring(options, "local-port"), 42);
-    socket_bind_ipv4s(&router, option_getstring(options, "router-address"));
+    socket_bind_ipv4s(&local, option_getstring("local-address"));
+    socket_bind_tcps(&local, option_getstring("local-port"), 42);
+    socket_bind_ipv4s(&router, option_getstring("router-address"));
 
-    if (!file_walk2(FILE_L0, option_getstring(options, "ethernet")))
+    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
         channel_warning("Could not open ethernet");
 
     if (file_walk(FILE_L1, FILE_L0, "addr"))
@@ -181,16 +180,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onoption(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    char *key = mdata;
-    char *value = key + cstring_lengthz(key);
-
-    option_set(options, key, value);
-
-}
-
 void init(void)
 {
 
@@ -198,14 +187,13 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
-    option_add(options, "ethernet", "system:ethernet/if:0");
-    option_add(options, "local-address", "10.0.5.1");
-    option_add(options, "local-port", "50003");
-    option_add(options, "router-address", "10.0.5.80");
-    option_add(options, "domain", "");
+    option_add("ethernet", "system:ethernet/if:0");
+    option_add("local-address", "10.0.5.1");
+    option_add("local-port", "50003");
+    option_add("router-address", "10.0.5.80");
+    option_add("domain", "");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_OPTION, onoption);
 
 }
 

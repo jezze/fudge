@@ -26,7 +26,6 @@ struct state
 
 };
 
-static struct option options[32];
 static struct render_display display;
 static struct state state;
 static unsigned int numwindows;
@@ -88,9 +87,9 @@ static void setupvideo(void)
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
-    settings.width = option_getdecimal(options, "width");
-    settings.height = option_getdecimal(options, "height");
-    settings.bpp = option_getdecimal(options, "bpp");
+    settings.width = option_getdecimal("width");
+    settings.height = option_getdecimal("height");
+    settings.bpp = option_getdecimal("bpp");
 
     buffer_clear(black, 768);
 
@@ -386,16 +385,16 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G0, option_getstring(options, "wm")))
+    if (!file_walk2(FILE_G0, option_getstring("wm")))
         channel_warning("Could not open window manager service");
 
-    if (!file_walk2(FILE_G1, option_getstring(options, "keyboard")))
+    if (!file_walk2(FILE_G1, option_getstring("keyboard")))
         channel_warning("Could not open keyboard");
 
-    if (!file_walk2(FILE_G2, option_getstring(options, "mouse")))
+    if (!file_walk2(FILE_G2, option_getstring("mouse")))
         channel_warning("Could not open mouse");
 
-    if (!file_walk2(FILE_G3, option_getstring(options, "video")))
+    if (!file_walk2(FILE_G3, option_getstring("video")))
         channel_warning("Could not open video");
 
     if (!file_walk(FILE_G4, FILE_G3, "event"))
@@ -564,16 +563,6 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onoption(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    char *key = mdata;
-    char *value = key + cstring_lengthz(key);
-
-    option_set(options, key, value);
-
-}
-
 static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -709,13 +698,13 @@ void init(void)
 
     pool_setup();
     setupwidgets();
-    option_add(options, "width", "1920");
-    option_add(options, "height", "1080");
-    option_add(options, "bpp", "4");
-    option_add(options, "wm", "system:service/wm");
-    option_add(options, "keyboard", "system:keyboard/event");
-    option_add(options, "mouse", "system:mouse/event");
-    option_add(options, "video", "system:video/if:0");
+    option_add("width", "1920");
+    option_add("height", "1080");
+    option_add("bpp", "4");
+    option_add("wm", "system:service/wm");
+    option_add("keyboard", "system:keyboard/event");
+    option_add("mouse", "system:mouse/event");
+    option_add("video", "system:video/if:0");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);
@@ -723,7 +712,6 @@ void init(void)
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
-    channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_VIDEOMODE, onvideomode);
     channel_bind(EVENT_WMMAP, onwmmap);
     channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);

@@ -1,7 +1,9 @@
 #include <fudge.h>
 #include "option.h"
 
-static struct option *find(struct option *options, char *key)
+static struct option options[32];
+
+static struct option *find(char *key)
 {
 
     unsigned int i;
@@ -20,7 +22,7 @@ static struct option *find(struct option *options, char *key)
 
 }
 
-static struct option *findfree(struct option *options, char *key)
+static struct option *findfree(char *key)
 {
 
     unsigned int i;
@@ -31,38 +33,38 @@ static struct option *findfree(struct option *options, char *key)
 
 }
 
-int option_getdecimal(struct option *options, char *key)
+int option_getdecimal(char *key)
 {
 
-    struct option *option = find(options, key);
+    struct option *option = find(key);
 
     return (option) ? cstring_readvalue(option->value, cstring_length(option->value), 10) : 0;
 
 }
 
-char *option_getstring(struct option *options, char *key)
+char *option_getstring(char *key)
 {
 
-    struct option *option = find(options, key);
+    struct option *option = find(key);
 
     return (option) ? option->value : 0;
 
 }
 
-void option_set(struct option *options, char *key, char *value)
+void option_set(char *key, char *value)
 {
 
-    struct option *option = find(options, key);
+    struct option *option = find(key);
 
     if (option)
         cstring_copy(option->value, value);
 
 }
 
-void option_add(struct option *options, char *key, char *value)
+void option_add(char *key, char *value)
 {
 
-    struct option *option = findfree(options, key);
+    struct option *option = findfree(key);
 
     if (option)
         option_init(option, key, value);

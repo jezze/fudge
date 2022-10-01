@@ -6,8 +6,8 @@ struct option
 
 };
 
-int option_getdecimal(struct option *options, char *key);
-char *option_getstring(struct option *options, char *key);
-void option_set(struct option *options, char *key, char *value);
-void option_add(struct option *options, char *key, char *value);
+int option_getdecimal(char *key);
+char *option_getstring(char *key);
+void option_set(char *key, char *value);
+void option_add(char *key, char *value);
 void option_init(struct option *option, char *key, char *value);

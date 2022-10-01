@@ -1,12 +1,10 @@
 #include <fudge.h>
 #include <abi.h>
 
-static struct option options[32];
-
 static void checkprefix(unsigned int source, void *buffer, unsigned int count)
 {
 
-    char *prefix = option_getstring(options, "prefix");
+    char *prefix = option_getstring("prefix");
     unsigned int prefixcount = cstring_length(prefix);
 
     if (prefixcount && prefixcount <= count)
@@ -22,7 +20,7 @@ static void checkprefix(unsigned int source, void *buffer, unsigned int count)
 static void checksubstr(unsigned int source, void *buffer, unsigned int count)
 {
 
-    char *substr = option_getstring(options, "substr");
+    char *substr = option_getstring("substr");
     unsigned int substrcount = cstring_length(substr);
 
     if (substrcount && substrcount <= count)
@@ -79,16 +77,6 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onoption(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    char *key = mdata;
-    char *value = key + cstring_lengthz(key);
-
-    option_set(options, key, value);
-
-}
-
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -115,10 +103,9 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add(options, "prefix", "");
-    option_add(options, "substr", "");
+    option_add("prefix", "");
+    option_add("substr", "");
     channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_PATH, onpath);
 
 }
