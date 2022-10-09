@@ -95,6 +95,22 @@ static void resolve(char *domain)
 
 }
 
+static void seed(struct mtwist_state *state)
+{
+
+    struct ctrl_clocksettings settings;
+
+    if (!file_walk2(FILE_L0, option_getstring("clock")))
+        channel_error("Could not find clock device");
+
+    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
+        channel_error("Could not find clock device ctrl");
+
+    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
+    mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
+
+}
+
 static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 {
 
@@ -132,22 +148,6 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 
     file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
     channel_close();
-
-}
-
-static void seed(struct mtwist_state *state)
-{
-
-    struct ctrl_clocksettings settings;
-
-    if (!file_walk2(FILE_L0, option_getstring("clock")))
-        channel_error("Could not find clock device");
-
-    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
-        channel_error("Could not find clock device ctrl");
-
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
-    mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
 }
 
