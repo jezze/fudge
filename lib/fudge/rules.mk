@@ -17,6 +17,7 @@ O:=\
     $(DIR_LIB)/fudge/ring.o \
     $(DIR_LIB)/fudge/spinlock.o \
     $(DIR_LIB)/fudge/tar.o \
+    $(DIR_LIB)/fudge/time.o \
     $(DIR_LIB)/fudge/url.o \
     $(DIR_LIB)/fudge/utf8.o \
 

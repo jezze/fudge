@@ -272,6 +272,18 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/utils/random \
+
+O:=\
+    $(DIR_SRC)/utils/random.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/reboot \
 
 O:=\

@@ -15,6 +15,7 @@
 #include <fudge/p9p.h>
 #include <fudge/pcf.h>
 #include <fudge/tar.h>
+#include <fudge/time.h>
 #include <fudge/keymap.h>
 #include <fudge/mtwist.h>
 #include <fudge/url.h>
