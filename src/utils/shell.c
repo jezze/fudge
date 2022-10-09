@@ -64,6 +64,11 @@ static void interpret(void)
 
                 break;
 
+            case EVENT_ERROR:
+                channel_dispatch(&message);
+
+                break;
+
             case EVENT_DATA:
                 print(message.data.buffer, message_datasize(&message.header));
 
@@ -170,6 +175,11 @@ static void complete(void)
 
         case EVENT_CLOSE:
             job_close(&job, message.header.source);
+
+            break;
+
+        case EVENT_ERROR:
+            channel_dispatch(&message);
 
             break;
 

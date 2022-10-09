@@ -127,6 +127,11 @@ static void interpret(void)
 
                 break;
 
+            case EVENT_ERROR:
+                channel_dispatch(&message);
+
+                break;
+
             case EVENT_DATA:
                 print(message.data.buffer, message_datasize(&message.header));
                 update();
