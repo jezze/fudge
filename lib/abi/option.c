@@ -61,13 +61,12 @@ char *option_getstring(char *key)
 
 }
 
-void option_set(char *key, char *value)
+unsigned int option_set(char *key, char *value)
 {
 
     struct option *option = find(key);
 
-    if (option)
-        cstring_copy(option->value, value);
+    return (option) ? cstring_write(option->value, 64, value, 0) : 0;
 
 }
 
@@ -86,7 +85,7 @@ void option_init(struct option *option, char *key, char *value)
 
     option->key = key;
 
-    cstring_copy(option->value, value);
+    cstring_write(option->value, 64, value, 0);
 
 }
 

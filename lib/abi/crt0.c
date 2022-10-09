@@ -16,7 +16,8 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *key = mdata;
     char *value = key + cstring_lengthz(key);
 
-    option_set(key, value);
+    if (!option_set(key, value))
+        channel_warning("Unrecognized option");
 
 }
 
