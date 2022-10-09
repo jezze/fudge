@@ -111,26 +111,26 @@ static void loadfont(unsigned int factor)
     {
 
     case 0:
-        file_walk2(FILE_L0, "/data/ter-112n.pcf");
-        file_walk2(FILE_L1, "/data/ter-112b.pcf");
+        file_walk2(FILE_L0, "/data/font/ter-112n.pcf");
+        file_walk2(FILE_L1, "/data/font/ter-112b.pcf");
 
         break;
 
     case 1:
-        file_walk2(FILE_L0, "/data/ter-114n.pcf");
-        file_walk2(FILE_L1, "/data/ter-114b.pcf");
+        file_walk2(FILE_L0, "/data/font/ter-114n.pcf");
+        file_walk2(FILE_L1, "/data/font/ter-114b.pcf");
 
         break;
 
     case 2:
-        file_walk2(FILE_L0, "/data/ter-116n.pcf");
-        file_walk2(FILE_L1, "/data/ter-116b.pcf");
+        file_walk2(FILE_L0, "/data/font/ter-116n.pcf");
+        file_walk2(FILE_L1, "/data/font/ter-116b.pcf");
 
         break;
 
     default:
-        file_walk2(FILE_L0, "/data/ter-118n.pcf");
-        file_walk2(FILE_L1, "/data/ter-118b.pcf");
+        file_walk2(FILE_L0, "/data/font/ter-118n.pcf");
+        file_walk2(FILE_L1, "/data/font/ter-118b.pcf");
 
         break;
 
