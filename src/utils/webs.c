@@ -8,11 +8,7 @@ static struct socket remote;
 static struct socket router;
 static char inputdata[BUFFER_SIZE];
 static struct ring input;
-static char *response =
-    "<html>\n"
-    "  <h1>Hello world!</h1>\n"
-    "  <p>This server is running on Fudge</p>\n"
-    "</html>\n";
+static char request[128];
 
 static void sendresponse(void)
 {
@@ -20,14 +16,39 @@ static void sendresponse(void)
     char buffer[BUFFER_SIZE];
     unsigned int count = 0;
 
-    count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 200 OK\r\n", count);
-    count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
-    count += cstring_write(buffer, BUFFER_SIZE, "Content-Type: text/html\r\n", count);
-    count += cstring_write(buffer, BUFFER_SIZE, "Content-Length: ", count);
-    count += cstring_writevalue(buffer, BUFFER_SIZE, cstring_length(response), 10, 0, count);
-    count += cstring_write(buffer, BUFFER_SIZE, "\r\n", count);
-    count += cstring_write(buffer, BUFFER_SIZE, "\r\n", count);
-    count += cstring_write(buffer, BUFFER_SIZE, response, count);
+    if (!file_walk2(FILE_L0, "/data/html"))
+        channel_error("Could not find html root directory");
+
+    if (cstring_length(request) == 0)
+        channel_error("Incorrect request");
+
+    if (cstring_length(request) == 1 && request[0] == '/')
+        cstring_writez(request, 128, "/index.html", 0);
+
+    if (file_walk(FILE_L1, FILE_L0, request + 1))
+    {
+
+        char file[BUFFER_SIZE];
+        unsigned int filesize = file_read(FILE_L1, file, BUFFER_SIZE);
+
+        count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 200 OK\r\n", count);
+        count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
+        count += cstring_write(buffer, BUFFER_SIZE, "Content-Type: text/html\r\n", count);
+        count += cstring_write(buffer, BUFFER_SIZE, "Content-Length: ", count);
+        count += cstring_writevalue(buffer, BUFFER_SIZE, filesize, 10, 0, count);
+        count += cstring_write(buffer, BUFFER_SIZE, "\r\n", count);
+        count += cstring_write(buffer, BUFFER_SIZE, "\r\n", count);
+        count += buffer_write(buffer, BUFFER_SIZE, file, filesize, count);
+
+    }
+
+    else
+    {
+
+        count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 404 Not Found\r\n", count);
+        count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
+
+    }
 
     socket_send_tcp(FILE_G0, &local, &remote, &router, count, buffer);
 
@@ -45,6 +66,16 @@ static void handlehttppacket(void)
         unsigned int count = ring_read(&input, buffer, newline);
 
         channel_sendbuffer(EVENT_DATA, count, buffer);
+
+        if (count > 4 && buffer_match(buffer, "GET ", 4))
+        {
+
+            unsigned int end = buffer_lastbyte(buffer, BUFFER_SIZE, ' ');
+            unsigned int length = buffer_write(request, 128, buffer + 4, end - 4 - 1, 0);
+
+            buffer_write(request, 128, "", 1, length);
+
+        }
 
         if (count == 2 && buffer[0] == '\r' && buffer[1] == '\n')
             sendresponse();
