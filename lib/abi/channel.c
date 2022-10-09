@@ -33,8 +33,7 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
 
         message_initheader(&header, event, MESSAGE_SIZE);
 
-        while (!call_place(target, &header, buffer + offset))
-            channel_process();
+        while (!call_place(target, &header, buffer + offset));
 
         count -= MESSAGE_SIZE;
         offset += MESSAGE_SIZE;
@@ -43,8 +42,7 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
 
     message_initheader(&header, event, count);
 
-    while (!call_place(target, &header, buffer + offset))
-        channel_process();
+    while (!call_place(target, &header, buffer + offset));
 
     return count + offset;
 

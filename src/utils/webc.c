@@ -12,16 +12,11 @@ static struct ring input;
 static void handlehttppacket(void)
 {
 
-    unsigned int newline;
+    char buffer[MESSAGE_SIZE];
+    unsigned int count;
 
-    while ((newline = ring_each(&input, '\n')))
-    {
-
-        char buffer[BUFFER_SIZE];
-
-        channel_sendbuffer(EVENT_DATA, ring_read(&input, buffer, newline), buffer);
-
-    }
+    while ((count = ring_read(&input, buffer, MESSAGE_SIZE)))
+        channel_sendbuffer(EVENT_DATA, count, buffer);
 
 }
 
