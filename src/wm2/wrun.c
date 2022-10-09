@@ -60,7 +60,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer, struct url *u
 
 }
 
-static void resolve(char *domain)
+static void dnsresolve(struct socket *socket, char *domain)
 {
 
     unsigned int id = file_spawn("/bin/dns");
@@ -87,7 +87,7 @@ static void resolve(char *domain)
             char *value = key + cstring_lengthz(key);
 
             if (cstring_match(key, "data"))
-                socket_bind_ipv4s(&remote, value);
+                socket_bind_ipv4s(socket, value);
 
         }
 
@@ -174,7 +174,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     socket_resolvelocal(FILE_L2, &local);
 
     if (url.host)
-        resolve(url.host);
+        dnsresolve(&remote, url.host);
     else
         socket_bind_ipv4s(&remote, option_getstring("remote-address"));
 
