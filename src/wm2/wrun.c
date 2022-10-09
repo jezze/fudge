@@ -41,19 +41,19 @@ static void handlehttppacket(void)
 
 }
 
-static unsigned int buildrequest(unsigned int count, void *buffer, struct url *kurl)
+static unsigned int buildrequest(unsigned int count, void *buffer, struct url *url)
 {
 
     unsigned int offset = 0;
 
     offset += cstring_write(buffer, count, "GET /", offset);
 
-    if (kurl->path)
-        offset += cstring_write(buffer, count, kurl->path, offset);
+    if (url->path)
+        offset += cstring_write(buffer, count, url->path, offset);
 
     offset += cstring_write(buffer, count, " HTTP/1.1\r\n", offset);
     offset += cstring_write(buffer, count, "Host: ", offset);
-    offset += cstring_write(buffer, count, kurl->host, offset);
+    offset += cstring_write(buffer, count, url->host, offset);
     offset += cstring_write(buffer, count, "\r\n\r\n", offset);
 
     return offset;
@@ -95,6 +95,28 @@ static void resolve(char *domain)
 
 }
 
+static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
+{
+
+    char *opturl = option_getstring("url");
+    unsigned int count = cstring_length(opturl);
+
+    if (!count)
+        channel_error("No URL was provided");
+
+    if (cstring_length(opturl) >= 4 && buffer_match(opturl, "http", 4))
+        url_parse(url, urldata, urlsize, opturl, URL_SCHEME);
+    else
+        url_parse(url, urldata, urlsize, opturl, URL_HOST);
+
+    if (url->host)
+        resolve(url->host);
+
+    if (url->port)
+        socket_bind_tcps(&remote, url->port, 0);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -132,9 +154,8 @@ static void seed(struct mtwist_state *state)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *url = option_getstring("url");
     char urldata[BUFFER_SIZE];
-    struct url kurl;
+    struct url url;
     unsigned char buffer[BUFFER_SIZE];
     unsigned int count;
     struct mtwist_state state;
@@ -155,19 +176,9 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     socket_bind_tcpv(&remote, option_getdecimal("remote-port"), 0);
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(FILE_L2, &local);
+    parseurl(&url, urldata, BUFFER_SIZE);
 
-    if (cstring_length(url) >= 4 && buffer_match(url, "http", 4))
-        url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_SCHEME);
-    else
-        url_parse(&kurl, urldata, BUFFER_SIZE, url, URL_HOST);
-
-    if (kurl.host)
-        resolve(kurl.host);
-
-    if (kurl.port)
-        socket_bind_tcps(&remote, kurl.port, 0);
-
-    count = buildrequest(BUFFER_SIZE, buffer, &kurl);
+    count = buildrequest(BUFFER_SIZE, buffer, &url);
 
     file_link(FILE_L1);
     socket_resolveremote(FILE_L1, &local, &router);
