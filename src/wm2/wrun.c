@@ -144,7 +144,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state));
-    socket_bind_tcps(&remote, option_getstring("remote-port"), 0);
+    socket_bind_tcpv(&remote, option_getdecimal("remote-port"), 0);
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(FILE_L2, &local);
 

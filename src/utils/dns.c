@@ -144,7 +144,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_udpv(&local, mtwist_rand(&state));
     socket_bind_ipv4s(&remote, option_getstring("remote-address"));
-    socket_bind_udps(&remote, option_getstring("remote-port"));
+    socket_bind_udpv(&remote, option_getdecimal("remote-port"));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(FILE_L2, &local);
 
