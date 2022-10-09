@@ -117,19 +117,15 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
     char *opturl = option_getstring("url");
     unsigned int count = cstring_length(opturl);
 
-    if (!count)
-        channel_error("No URL was provided");
+    if (count)
+    {
 
-    if (cstring_length(opturl) >= 4 && buffer_match(opturl, "http", 4))
-        url_parse(url, urldata, urlsize, opturl, URL_SCHEME);
-    else
-        url_parse(url, urldata, urlsize, opturl, URL_HOST);
+        if (cstring_length(opturl) >= 4 && buffer_match(opturl, "http", 4))
+            url_parse(url, urldata, urlsize, opturl, URL_SCHEME);
+        else
+            url_parse(url, urldata, urlsize, opturl, URL_HOST);
 
-    if (url->host)
-        resolve(url->host);
-
-    if (url->port)
-        socket_bind_tcps(&remote, url->port, 0);
+    }
 
 }
 
@@ -161,6 +157,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     struct mtwist_state state;
 
     seed(&state);
+    parseurl(&url, urldata, BUFFER_SIZE);
 
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
         channel_error("Could not find ethernet device");
@@ -173,10 +170,18 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state));
-    socket_bind_tcpv(&remote, option_getdecimal("remote-port"), 0);
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(FILE_L2, &local);
-    parseurl(&url, urldata, BUFFER_SIZE);
+
+    if (url.host)
+        resolve(url.host);
+    else
+        socket_bind_ipv4s(&remote, option_getstring("remote-address"));
+
+    if (url.port)
+        socket_bind_tcps(&remote, url.port, 0);
+    else
+        socket_bind_tcpv(&remote, option_getdecimal("remote-port"), 0);
 
     count = buildrequest(BUFFER_SIZE, buffer, &url);
 
@@ -208,6 +213,7 @@ void init(void)
     option_add("clock", "system:clock/if:0");
     option_add("ethernet", "system:ethernet/if:0");
     option_add("local-address", "10.0.5.1");
+    option_add("remote-address", "");
     option_add("remote-port", "80");
     option_add("router-address", "10.0.5.80");
     option_add("url", "");
