@@ -41,6 +41,8 @@ void socket_bind_ipv4(struct socket *socket, unsigned char address[IPV4_ADDRSIZE
 void socket_bind_ipv4s(struct socket *socket, char *address);
 void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], unsigned int seq);
 void socket_bind_tcps(struct socket *socket, char *port, unsigned int seq);
+void socket_bind_tcpv(struct socket *socket, unsigned short port, unsigned int seq);
 void socket_bind_udp(struct socket *socket, unsigned char port[UDP_PORTSIZE]);
 void socket_bind_udps(struct socket *socket, char *port);
+void socket_bind_udpv(struct socket *socket, unsigned short port);
 void socket_init(struct socket *socket);

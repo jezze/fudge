@@ -87,6 +87,17 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct url kurl;
     unsigned char buffer[BUFFER_SIZE];
     unsigned int count;
+    struct ctrl_clocksettings settings;
+    struct mtwist_state state;
+
+    if (!file_walk2(FILE_L0, option_getstring("clock")))
+        channel_error("Could not find clock device");
+
+    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
+        channel_error("Could not find clock device ctrl");
+
+    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
+    mtwist_seed1(&state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
         channel_error("Could not find ethernet device");
@@ -98,7 +109,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_error("Could not find ethernet device addr");
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_tcps(&local, option_getstring("local-port"), 42);
+    socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state));
     socket_bind_tcps(&remote, option_getstring("remote-port"), 0);
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(FILE_L2, &local);
@@ -142,9 +153,9 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
+    option_add("clock", "system:clock/if:0");
     option_add("ethernet", "system:ethernet/if:0");
     option_add("local-address", "10.0.5.1");
-    option_add("local-port", "50001");
     option_add("remote-port", "80");
     option_add("router-address", "10.0.5.80");
     option_add("url", "");

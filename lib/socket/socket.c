@@ -749,6 +749,16 @@ void socket_bind_tcps(struct socket *socket, char *port, unsigned int seq)
  
 }
 
+void socket_bind_tcpv(struct socket *socket, unsigned short port, unsigned int seq)
+{
+
+    unsigned char p[TCP_PORTSIZE];
+
+    net_save16(p, port);
+    socket_bind_tcp(socket, p, seq);
+ 
+}
+
 void socket_bind_udp(struct socket *socket, unsigned char port[UDP_PORTSIZE])
 {
 
@@ -762,6 +772,16 @@ void socket_bind_udps(struct socket *socket, char *port)
     unsigned char p[UDP_PORTSIZE];
 
     net_save16(p, cstring_readvalue(port, cstring_length(port), 10));
+    socket_bind_udp(socket, p);
+ 
+}
+
+void socket_bind_udpv(struct socket *socket, unsigned short port)
+{
+
+    unsigned char p[UDP_PORTSIZE];
+
+    net_save16(p, port);
     socket_bind_udp(socket, p);
  
 }
