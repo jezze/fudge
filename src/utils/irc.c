@@ -17,7 +17,7 @@ static void interpret(void *buffer, unsigned int count)
     if (data[0] == '/')
     {
 
-        socket_send_tcp(FILE_G1, &local, &remote, &router, count - 1, data + 1);
+        socket_send_tcp(FILE_G0, &local, &remote, &router, count - 1, data + 1);
 
     }
 
@@ -31,7 +31,7 @@ static void interpret(void *buffer, unsigned int count)
         offset += cstring_write(outputdata, BUFFER_SIZE, text, offset);
         offset += buffer_write(outputdata, BUFFER_SIZE, buffer, count, offset);
 
-        socket_send_tcp(FILE_G1, &local, &remote, &router, offset, outputdata);
+        socket_send_tcp(FILE_G0, &local, &remote, &router, offset, outputdata);
 
     }
 
@@ -143,7 +143,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
         channel_error("Could not find ethernet device");
 
-    if (!file_walk(FILE_L1, FILE_L0, "data"))
+    if (!file_walk(FILE_G0, FILE_L0, "data"))
         channel_error("Could not find ethernet device data");
 
     if (!file_walk(FILE_L2, FILE_L0, "addr"))
@@ -154,16 +154,16 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(FILE_L2, &local);
     resolve();
-    file_link(FILE_G1);
-    socket_resolveremote(FILE_G1, &local, &router);
-    socket_connect_tcp(FILE_G1, &local, &remote, &router);
-    socket_send_tcp(FILE_G1, &local, &remote, &router, cstring_length(request), request);
+    file_link(FILE_G0);
+    socket_resolveremote(FILE_G0, &local, &router);
+    socket_connect_tcp(FILE_G0, &local, &remote, &router);
+    socket_send_tcp(FILE_G0, &local, &remote, &router, cstring_length(request), request);
 
-    while ((count = socket_receive_tcp(FILE_G1, &local, &remote, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive_tcp(FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
         channel_sendbuffer(EVENT_DATA, count, buffer);
 
-    socket_disconnect_tcp(FILE_G1, &local, &remote, &router);
-    file_unlink(FILE_G1);
+    socket_disconnect_tcp(FILE_G0, &local, &remote, &router);
+    file_unlink(FILE_G0);
     channel_close();
 
 }
