@@ -393,3 +393,17 @@ L:=\
     $(DIR_LIB)/net/net.a \
 
 include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/webs \
+
+O:=\
+    $(DIR_SRC)/utils/webs.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/socket/socket.a \
+    $(DIR_LIB)/net/net.a \
+
+include $(DIR_MK)/bin.mk
