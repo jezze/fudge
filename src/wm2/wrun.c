@@ -113,16 +113,10 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwminit(unsigned int source, void *mdata, unsigned int msize)
+static void seed(struct mtwist_state *state)
 {
 
-    char *url = option_getstring("url");
-    char urldata[BUFFER_SIZE];
-    struct url kurl;
-    unsigned char buffer[BUFFER_SIZE];
-    unsigned int count;
     struct ctrl_clocksettings settings;
-    struct mtwist_state state;
 
     if (!file_walk2(FILE_L0, option_getstring("clock")))
         channel_error("Could not find clock device");
@@ -131,7 +125,21 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         channel_error("Could not find clock device ctrl");
 
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
-    mtwist_seed1(&state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
+    mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
+
+}
+
+static void onwminit(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    char *url = option_getstring("url");
+    char urldata[BUFFER_SIZE];
+    struct url kurl;
+    unsigned char buffer[BUFFER_SIZE];
+    unsigned int count;
+    struct mtwist_state state;
+
+    seed(&state);
 
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
         channel_error("Could not find ethernet device");
