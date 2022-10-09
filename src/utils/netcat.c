@@ -87,7 +87,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_error("Could not find ethernet device addr");
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state));
+    socket_bind_tcps(&local, option_getstring("local-port"), mtwist_rand(&state));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(FILE_L2, &local);
     file_link(FILE_G0);
@@ -109,8 +109,8 @@ void init(void)
     socket_init(&router);
     option_add("clock", "system:clock/if:0");
     option_add("ethernet", "system:ethernet/if:0");
-    option_add("domain", "");
     option_add("local-address", "10.0.5.1");
+    option_add("local-port", "");
     option_add("router-address", "10.0.5.80");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);
