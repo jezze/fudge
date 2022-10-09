@@ -45,7 +45,7 @@ $(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@mkdir -p $@/config
 	@cp config/* $@/config
 	@mkdir -p $@/data
-	@cp data/* $@/data
+	@cp -r data/* $@/data
 	@mkdir -p $@/kernel
 	@cp $(KBIN) $@/kernel
 	@cp $(KMAP) $@/kernel
