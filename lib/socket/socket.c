@@ -175,14 +175,14 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
 
     struct message_data data;
 
-    switch (local->info.tcp.state)
+    switch (remote->info.tcp.state)
     {
 
     case TCP_STATE_LISTEN:
         if (header->flags[1] == TCP_FLAGS1_SYN)
         {
 
-            local->info.tcp.state = TCP_STATE_SYNRECEIVED;
+            remote->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
             send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
@@ -195,7 +195,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         if (header->flags[1] == (TCP_FLAGS1_SYN | TCP_FLAGS1_ACK))
         {
 
-            local->info.tcp.state = TCP_STATE_ESTABLISHED;
+            remote->info.tcp.state = TCP_STATE_ESTABLISHED;
             local->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
@@ -206,7 +206,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         else if (header->flags[1] == TCP_FLAGS1_SYN)
         {
 
-            local->info.tcp.state = TCP_STATE_SYNRECEIVED;
+            remote->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
             send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
@@ -219,7 +219,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         if (header->flags[1] == TCP_FLAGS1_ACK)
         {
 
-            local->info.tcp.state = TCP_STATE_ESTABLISHED;
+            remote->info.tcp.state = TCP_STATE_ESTABLISHED;
             local->info.tcp.seq = net_load32(header->ack);
 
         }
@@ -242,7 +242,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
         {
 
-            local->info.tcp.state = TCP_STATE_CLOSEWAIT;
+            remote->info.tcp.state = TCP_STATE_CLOSEWAIT;
             local->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.seq = net_load32(header->seq) + psize + 1;
 
@@ -250,7 +250,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
 
             /* Wait for application to close down */
 
-            local->info.tcp.state = TCP_STATE_LASTACK;
+            remote->info.tcp.state = TCP_STATE_LASTACK;
 
             send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
@@ -261,7 +261,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_ACK))
         {
 
-            local->info.tcp.state = TCP_STATE_CLOSEWAIT;
+            remote->info.tcp.state = TCP_STATE_CLOSEWAIT;
             local->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
@@ -269,7 +269,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
 
             /* Wait for application to close down */
 
-            local->info.tcp.state = TCP_STATE_LASTACK;
+            remote->info.tcp.state = TCP_STATE_LASTACK;
 
             send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_FIN, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
 
@@ -290,7 +290,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         if (header->flags[1] == TCP_FLAGS1_ACK)
         {
 
-            local->info.tcp.state = TCP_STATE_FINWAIT2;
+            remote->info.tcp.state = TCP_STATE_FINWAIT2;
             local->info.tcp.seq = net_load32(header->ack);
 
         }
@@ -298,7 +298,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         else if (header->flags[1] == TCP_FLAGS1_FIN)
         {
 
-            local->info.tcp.state = TCP_STATE_CLOSING;
+            remote->info.tcp.state = TCP_STATE_CLOSING;
             remote->info.tcp.seq = net_load32(header->seq) + 1;
 
             send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK, local->info.tcp.seq, remote->info.tcp.seq, BUFFER_SIZE, 0, 0));
@@ -311,11 +311,11 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         if (header->flags[1] == TCP_FLAGS1_FIN)
         {
 
-            local->info.tcp.state = TCP_STATE_TIMEWAIT;
+            remote->info.tcp.state = TCP_STATE_TIMEWAIT;
 
             /* Sleep some time */
 
-            local->info.tcp.state = TCP_STATE_CLOSED;
+            remote->info.tcp.state = TCP_STATE_CLOSED;
 
         }
 
@@ -328,12 +328,12 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         if (header->flags[1] == TCP_FLAGS1_ACK)
         {
 
-            local->info.tcp.state = TCP_STATE_TIMEWAIT;
+            remote->info.tcp.state = TCP_STATE_TIMEWAIT;
             local->info.tcp.seq = net_load32(header->ack);
 
             /* Sleep some time */
 
-            local->info.tcp.state = TCP_STATE_CLOSED;
+            remote->info.tcp.state = TCP_STATE_CLOSED;
 
         }
 
@@ -343,7 +343,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         if (header->flags[1] == TCP_FLAGS1_ACK)
         {
 
-            local->info.tcp.state = TCP_STATE_CLOSED;
+            remote->info.tcp.state = TCP_STATE_CLOSED;
             local->info.tcp.seq = net_load32(header->ack);
 
         }
@@ -454,9 +454,10 @@ unsigned int socket_handle_tcp(unsigned int descriptor, struct socket *local, st
                 {
 
                     buffer_copy(remote->haddress, eheader->sha, ETHERNET_ADDRSIZE);
-                    socket_bind_ipv4(remote, iheader->sip);
-                    socket_bind_tcp(remote, theader->sp, net_load32(theader->seq));
+                    buffer_copy(remote->paddress, iheader->sip, IPV4_ADDRSIZE);
+                    buffer_copy(remote->info.tcp.port, theader->sp, TCP_PORTSIZE);
 
+                    remote->info.tcp.seq = net_load32(theader->seq);
                     remote->resolved = 1;
 
                 }
@@ -504,8 +505,8 @@ unsigned int socket_handle_udp(unsigned int descriptor, struct socket *local, st
                 {
 
                     buffer_copy(remote->haddress, eheader->sha, ETHERNET_ADDRSIZE);
-                    socket_bind_ipv4(remote, iheader->sip);
-                    socket_bind_udp(remote, uheader->sp);
+                    buffer_copy(remote->paddress, iheader->sip, IPV4_ADDRSIZE);
+                    buffer_copy(remote->info.udp.port, uheader->sp, UDP_PORTSIZE);
 
                     remote->resolved = 1;
 
@@ -529,7 +530,7 @@ unsigned int socket_send_tcp(unsigned int descriptor, struct socket *local, stru
 
     struct message_data data;
 
-    switch (local->info.tcp.state)
+    switch (remote->info.tcp.state)
     {
 
     case TCP_STATE_ESTABLISHED:
@@ -559,7 +560,7 @@ unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, s
 
     struct message message;
 
-    if (local->info.tcp.state != TCP_STATE_ESTABLISHED)
+    if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
         return 0;
 
     while (channel_kpollevent(EVENT_DATA, &message))
@@ -574,7 +575,7 @@ unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, s
         if (payploadcount)
             return payploadcount;
 
-        if (local->info.tcp.state != TCP_STATE_ESTABLISHED)
+        if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
             return 0;
 
     }
@@ -611,7 +612,7 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
 
     struct message message;
 
-    local->info.tcp.state = TCP_STATE_LISTEN;
+    remote->info.tcp.state = TCP_STATE_LISTEN;
 
     while (channel_kpollevent(EVENT_DATA, &message))
     {
@@ -621,7 +622,7 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
         socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
         socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
 
-        if (local->info.tcp.state == TCP_STATE_ESTABLISHED)
+        if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
             return;
 
     }
@@ -633,7 +634,7 @@ void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct so
 
     struct message message;
 
-    local->info.tcp.state = TCP_STATE_SYNSENT;
+    remote->info.tcp.state = TCP_STATE_SYNSENT;
 
     send(descriptor, message.data.buffer, buildtcp(local, remote, router, message.data.buffer, TCP_FLAGS1_SYN, local->info.tcp.seq, 0, BUFFER_SIZE, 0, 0));
 
@@ -645,7 +646,7 @@ void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct so
         socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
         socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
 
-        if (local->info.tcp.state == TCP_STATE_ESTABLISHED)
+        if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
             break;
 
     }
@@ -666,14 +667,14 @@ void socket_disconnect_tcp(unsigned int descriptor, struct socket *local, struct
         socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
 
         /* No timeout implemented */
-        if (local->info.tcp.state == TCP_STATE_TIMEWAIT)
+        if (remote->info.tcp.state == TCP_STATE_TIMEWAIT)
             break;
 
         /* Sometimes no last ack is sent back */
-        if (local->info.tcp.state == TCP_STATE_LASTACK)
+        if (remote->info.tcp.state == TCP_STATE_LASTACK)
             break;
 
-        if (local->info.tcp.state == TCP_STATE_CLOSED)
+        if (remote->info.tcp.state == TCP_STATE_CLOSED)
             break;
 
     }
