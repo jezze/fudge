@@ -162,7 +162,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_resolveremote(FILE_L1, &local, &router);
     socket_send_udp(FILE_L1, &local, &remote, &router, count, buffer);
 
-    count = socket_receive_udp(FILE_L1, &local, &remote, &router, buffer, BUFFER_SIZE);
+    count = socket_receive_udp(FILE_L1, &local, &remote, 1, &router, buffer, BUFFER_SIZE);
 
     if (count)
     {

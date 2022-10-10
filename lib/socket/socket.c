@@ -555,18 +555,26 @@ unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, stru
 
 }
 
-unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count)
+static struct socket *getremote(struct socket *remotes, unsigned int nremotes)
+{
+
+    return &remotes[0];
+
+}
+
+unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count)
 {
 
     struct message message;
-
-    if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
-        return 0;
 
     while (channel_kpollevent(EVENT_DATA, &message))
     {
 
         unsigned int payploadcount;
+        struct socket *remote = getremote(remotes, nremotes);
+
+        if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
+            return 0;
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
 
@@ -584,7 +592,7 @@ unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, s
 
 }
 
-unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count)
+unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count)
 {
 
     struct message message;
@@ -593,6 +601,7 @@ unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, s
     {
 
         unsigned int payploadcount;
+        struct socket *remote = getremote(remotes, nremotes);
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
 
@@ -607,17 +616,19 @@ unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, s
 
 }
 
-void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
+void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router)
 {
 
     struct message message;
-
-    remote->info.tcp.state = TCP_STATE_LISTEN;
 
     while (channel_kpollevent(EVENT_DATA, &message))
     {
 
         char buffer[BUFFER_SIZE];
+        struct socket *remote = getremote(remotes, nremotes);
+
+        if (remote->info.tcp.state == 0)
+            remote->info.tcp.state = TCP_STATE_LISTEN;
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
         socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);

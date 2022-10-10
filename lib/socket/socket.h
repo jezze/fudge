@@ -31,9 +31,9 @@ unsigned int socket_handle_tcp(unsigned int descriptor, struct socket *local, st
 unsigned int socket_handle_udp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);
 unsigned int socket_send_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
 unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
-unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count);
-unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router, void *buffer, unsigned int count);
-void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);
+unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count);
+unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count);
+void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router);
 void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);
 void socket_disconnect_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);
 void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote);

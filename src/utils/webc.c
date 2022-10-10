@@ -151,7 +151,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_connect_tcp(FILE_L1, &local, &remote, &router);
     socket_send_tcp(FILE_L1, &local, &remote, &router, count, buffer);
 
-    while ((count = socket_receive_tcp(FILE_L1, &local, &remote, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive_tcp(FILE_L1, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
     {
 
         if (ring_write(&input, buffer, count))
