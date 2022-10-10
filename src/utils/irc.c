@@ -167,7 +167,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
     socket_send_tcp(FILE_G0, &local, &remote, &router, cstring_length(request), request);
 
-    while ((count = socket_receive_tcp(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
         channel_sendbuffer(EVENT_DATA, count, buffer);
 
     socket_disconnect_tcp(FILE_G0, &local, &remote, &router);

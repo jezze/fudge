@@ -94,7 +94,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_resolveremote(FILE_G0, &local, &router);
     socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
 
-    while ((count = socket_receive_tcp(FILE_G0, &local, remotes, 64, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive(FILE_G0, &local, remotes, 64, &router, buffer, BUFFER_SIZE)))
         channel_sendbuffer(EVENT_DATA, count, buffer);
 
     file_unlink(FILE_G0);

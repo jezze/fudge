@@ -417,7 +417,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_resolveremote(FILE_G1, &local, &router);
         socket_listen_tcp(FILE_G1, &local, &remote, 1, &router);
 
-        while ((count = socket_receive_tcp(FILE_G1, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
+        while ((count = socket_receive(FILE_G1, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
         {
 
             char reply[MESSAGE_SIZE];

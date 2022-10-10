@@ -688,7 +688,7 @@ static struct socket *acceptudp(struct socket *local, struct socket *remotes, un
 
 }
 
-unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count)
+unsigned int socket_receive(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count)
 {
 
     struct message message;
@@ -724,31 +724,6 @@ unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, s
 
             if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
                 return 0;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count)
-{
-
-    struct message message;
-
-    while (channel_kpollevent(EVENT_DATA, &message))
-    {
-
-        struct socket *remote;
-
-        remote = acceptarp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
-
-        if (remote)
-        {
-
-            socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
 
         }
 

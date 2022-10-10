@@ -126,7 +126,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_resolveremote(FILE_G0, &local, &router);
     socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
 
-    while ((count = socket_receive_tcp(FILE_G0, &local, remotes, 64, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive(FILE_G0, &local, remotes, 64, &router, buffer, BUFFER_SIZE)))
     {
 
         if (ring_write(&input, buffer, count))
