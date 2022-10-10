@@ -777,34 +777,6 @@ void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct so
 
 }
 
-void socket_disconnect_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
-{
-
-    struct message message;
-
-    while (channel_kpollevent(EVENT_DATA, &message))
-    {
-
-        char buffer[BUFFER_SIZE];
-
-        socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
-        socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
-
-        /* No timeout implemented */
-        if (remote->info.tcp.state == TCP_STATE_TIMEWAIT)
-            break;
-
-        /* Sometimes no last ack is sent back */
-        if (remote->info.tcp.state == TCP_STATE_LASTACK)
-            break;
-
-        if (remote->info.tcp.state == TCP_STATE_CLOSED)
-            break;
-
-    }
-
-}
-
 void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote)
 {
 

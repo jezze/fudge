@@ -159,7 +159,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    socket_disconnect_tcp(FILE_L1, &local, &remote, &router);
     file_unlink(FILE_L1);
     channel_close();
 

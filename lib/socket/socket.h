@@ -34,7 +34,6 @@ unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, stru
 unsigned int socket_receive(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count);
 void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router);
 void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);
-void socket_disconnect_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router);
 void socket_resolveremote(unsigned int descriptor, struct socket *local, struct socket *remote);
 void socket_resolvelocal(unsigned int descriptor, struct socket *socket);
 void socket_bind_ipv4(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]);
