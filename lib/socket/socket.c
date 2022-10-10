@@ -555,7 +555,14 @@ unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, stru
 
 }
 
-static struct socket *getremote(struct socket *remotes, unsigned int nremotes)
+static struct socket *getremotetcp(struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
+{
+
+    return &remotes[0];
+
+}
+
+static struct socket *getremoteudp(struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
 {
 
     return &remotes[0];
@@ -571,7 +578,10 @@ unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, s
     {
 
         unsigned int payploadcount;
-        struct socket *remote = getremote(remotes, nremotes);
+        struct socket *remote = getremotetcp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+
+        if (!remote)
+            return 0;
 
         if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
             return 0;
@@ -601,7 +611,10 @@ unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, s
     {
 
         unsigned int payploadcount;
-        struct socket *remote = getremote(remotes, nremotes);
+        struct socket *remote = getremoteudp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+
+        if (!remote)
+            return 0;
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
 
@@ -629,7 +642,10 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
     {
 
         char buffer[BUFFER_SIZE];
-        struct socket *remote = getremote(remotes, nremotes);
+        struct socket *remote = getremotetcp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+
+        if (!remote)
+            return;
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
         socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
