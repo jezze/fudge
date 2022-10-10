@@ -59,7 +59,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
 
 }
 
-static void resolve(void)
+static void dnsresolve(void)
 {
 
     unsigned int id = file_spawn("/bin/dns");
@@ -86,7 +86,7 @@ static void resolve(void)
             char *value = key + cstring_lengthz(key);
 
             if (cstring_match(key, "data"))
-                socket_bind_ipv4s(&remote, value);
+                option_set("remote-address", value);
 
         }
 
@@ -182,7 +182,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(FILE_L1, &local);
-    resolve();
+
+    if (cstring_length(option_getstring("domain")))
+        dnsresolve();
+
+    socket_bind_tcps(&local, option_getstring("remote-address"), mtwist_rand(&state), mtwist_rand(&state));
+    socket_bind_tcps(&remote, option_getstring("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
 
     count = buildrequest(BUFFER_SIZE, buffer);
 
@@ -209,10 +214,12 @@ void init(void)
     option_add("clock", "system:clock/if:0");
     option_add("ethernet", "system:ethernet/if:0");
     option_add("local-address", "10.0.5.1");
+    option_add("remote-address", "");
+    option_add("remote-port", "6667");
     option_add("router-address", "10.0.5.80");
-    option_add("domain", "");
+    option_add("domain", "irc.libera.chat");
     option_add("channel", "#fudge");
-    option_add("nick", "user123");
+    option_add("nick", "");
     option_add("realname", "Anonymous User");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);

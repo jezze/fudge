@@ -87,7 +87,7 @@ static void dnsresolve(struct socket *socket, char *domain)
             char *value = key + cstring_lengthz(key);
 
             if (cstring_match(key, "data"))
-                socket_bind_ipv4s(socket, value);
+                socket_bind_ipv4s(&remote, value);
 
         }
 
@@ -175,8 +175,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     if (url.host)
         dnsresolve(&remote, url.host);
-    else
-        socket_bind_ipv4s(&remote, option_getstring("remote-address"));
+
+    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
 
     if (url.port)
         socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
