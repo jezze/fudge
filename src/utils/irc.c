@@ -24,16 +24,38 @@ static void interpret(void *buffer, unsigned int count)
     else
     {
 
-        char *text = "PRIVMSG #fudge :";
         char outputdata[BUFFER_SIZE];
         unsigned int offset = 0;
 
-        offset += cstring_write(outputdata, BUFFER_SIZE, text, offset);
+        offset += cstring_write(outputdata, BUFFER_SIZE, "PRIVMSG ", offset);
+        offset += cstring_write(outputdata, BUFFER_SIZE, option_getstring("channel"), offset);
+        offset += cstring_write(outputdata, BUFFER_SIZE, " :", offset);
         offset += buffer_write(outputdata, BUFFER_SIZE, buffer, count, offset);
 
         socket_send_tcp(FILE_G0, &local, &remote, &router, offset, outputdata);
 
     }
+
+}
+
+static unsigned int buildrequest(unsigned int count, void *buffer)
+{
+
+    unsigned int offset = 0;
+
+    offset += cstring_write(buffer, count, "NICK ", offset);
+    offset += cstring_write(buffer, count, option_getstring("nick"), offset);
+    offset += cstring_write(buffer, count, "\n", offset);
+    offset += cstring_write(buffer, count, "USER ", offset);
+    offset += cstring_write(buffer, count, option_getstring("nick"), offset);
+    offset += cstring_write(buffer, count, " 0 * :", offset);
+    offset += cstring_write(buffer, count, option_getstring("realname"), offset);
+    offset += cstring_write(buffer, count, "\n", offset);
+    offset += cstring_write(buffer, count, "JOIN ", offset);
+    offset += cstring_write(buffer, count, option_getstring("channel"), offset);
+    offset += cstring_write(buffer, count, "\n", offset);
+
+    return offset;
 
 }
 
@@ -69,6 +91,22 @@ static void resolve(void)
         }
 
     }
+
+}
+
+static void seed(struct mtwist_state *state)
+{
+
+    struct ctrl_clocksettings settings;
+
+    if (!file_walk2(FILE_L0, option_getstring("clock")))
+        channel_error("Could not find clock device");
+
+    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
+        channel_error("Could not find clock device ctrl");
+
+    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
+    mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
 }
 
@@ -122,26 +160,9 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void seed(struct mtwist_state *state)
-{
-
-    struct ctrl_clocksettings settings;
-
-    if (!file_walk2(FILE_L0, option_getstring("clock")))
-        channel_error("Could not find clock device");
-
-    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
-        channel_error("Could not find clock device ctrl");
-
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
-    mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
-
-}
-
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *request = "NICK jfu_fudge\nUSER jfu_fudge 0 * :Jens Fudge\nJOIN #fudge\n";
     char buffer[BUFFER_SIZE];
     unsigned int count;
     struct mtwist_state state;
@@ -162,10 +183,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(FILE_L1, &local);
     resolve();
+
+    count = buildrequest(BUFFER_SIZE, buffer);
+
     file_link(FILE_G0);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
-    socket_send_tcp(FILE_G0, &local, &remote, &router, cstring_length(request), request);
+    socket_send_tcp(FILE_G0, &local, &remote, &router, count, buffer);
 
     while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
         channel_sendbuffer(EVENT_DATA, count, buffer);
@@ -187,6 +211,9 @@ void init(void)
     option_add("local-address", "10.0.5.1");
     option_add("router-address", "10.0.5.80");
     option_add("domain", "");
+    option_add("channel", "#fudge");
+    option_add("nick", "user123");
+    option_add("realname", "Anonymous User");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);
 
