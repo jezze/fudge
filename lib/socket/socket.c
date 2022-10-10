@@ -714,16 +714,8 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 
             unsigned int payploadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
 
-            if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
-            {
-
-                if (payploadcount)
-                    return payploadcount;
-
-                if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
-                    return 0;
-
-            }
+            if (payploadcount)
+                return payploadcount;
 
         }
 
