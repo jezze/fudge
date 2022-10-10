@@ -712,18 +712,25 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
         if (remote)
         {
 
-            unsigned int payploadcount;
+            if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
+            {
 
-            if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
-                return 0;
+                unsigned int payploadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
 
-            payploadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+                if (payploadcount)
+                    return payploadcount;
 
-            if (payploadcount)
-                return payploadcount;
+                if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
+                    return 0;
 
-            if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
-                return 0;
+            }
+
+            else
+            {
+
+                socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+
+            }
 
         }
 
@@ -748,39 +755,14 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router)
 {
 
-    struct message message;
     unsigned int i;
 
     for (i = 0; i < nremotes; i++)
-        remotes[i].info.tcp.state = TCP_STATE_LISTEN;
-
-    while (channel_kpollevent(EVENT_DATA, &message))
     {
 
-        struct socket *remote;
+        struct socket *remote = &remotes[i];
 
-        remote = acceptarp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
-
-        if (remote)
-        {
-
-            socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
-
-        }
-
-        remote = accepttcp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
-
-        if (remote)
-        {
-
-            char buffer[BUFFER_SIZE];
-
-            socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
-
-            if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
-                return;
-
-        }
+        remote->info.tcp.state = TCP_STATE_LISTEN;
 
     }
 
