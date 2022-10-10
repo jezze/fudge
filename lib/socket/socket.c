@@ -555,6 +555,13 @@ unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, stru
 
 }
 
+static struct socket *getremotearp(struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
+{
+
+    return &remotes[0];
+
+}
+
 static struct socket *getremotetcp(struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
 {
 
@@ -578,23 +585,34 @@ unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, s
     {
 
         unsigned int payploadcount;
-        struct socket *remote = getremotetcp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        struct socket *remote;
 
-        if (!remote)
-            return 0;
+        remote = getremotearp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
 
-        if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
-            return 0;
+        if (remote)
+        {
 
-        socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
+            socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
 
-        payploadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+        }
 
-        if (payploadcount)
-            return payploadcount;
+        remote = getremotetcp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
 
-        if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
-            return 0;
+        if (remote)
+        {
+
+            if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
+                return 0;
+
+            payploadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+
+            if (payploadcount)
+                return payploadcount;
+
+            if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
+                return 0;
+
+        }
 
     }
 
@@ -611,17 +629,28 @@ unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, s
     {
 
         unsigned int payploadcount;
-        struct socket *remote = getremoteudp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        struct socket *remote;
 
-        if (!remote)
-            return 0;
+        remote = getremotearp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
 
-        socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
+        if (remote)
+        {
 
-        payploadcount = socket_handle_udp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+            socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
 
-        if (payploadcount)
-            return payploadcount;
+        }
+
+        remote = getremoteudp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+
+        if (remote)
+        {
+
+            payploadcount = socket_handle_udp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+
+            if (payploadcount)
+                return payploadcount;
+
+        }
 
     }
 
@@ -642,16 +671,28 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
     {
 
         char buffer[BUFFER_SIZE];
-        struct socket *remote = getremotetcp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        struct socket *remote;
 
-        if (!remote)
-            return;
+        remote = getremotearp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
 
-        socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
-        socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+        if (remote)
+        {
 
-        if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
-            return;
+            socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
+
+        }
+
+        remote = getremotetcp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+
+        if (remote)
+        {
+
+            socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+
+            if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
+                return;
+
+        }
 
     }
 
