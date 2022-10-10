@@ -450,18 +450,6 @@ unsigned int socket_handle_tcp(unsigned int descriptor, struct socket *local, st
                 void *pdata = data + elen + ilen + tlen;
                 unsigned int psize = itot - (ilen + tlen);
 
-                if (!remote->resolved)
-                {
-
-                    buffer_copy(remote->haddress, eheader->sha, ETHERNET_ADDRSIZE);
-                    buffer_copy(remote->paddress, iheader->sip, IPV4_ADDRSIZE);
-                    buffer_copy(remote->info.tcp.port, theader->sp, TCP_PORTSIZE);
-
-                    remote->info.tcp.remoteseq = net_load32(theader->seq);
-                    remote->resolved = 1;
-
-                }
-
                 if (respondtcp(descriptor, local, remote, router, theader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
 
@@ -500,17 +488,6 @@ unsigned int socket_handle_udp(unsigned int descriptor, struct socket *local, st
 
                 void *pdata = data + elen + ilen + ulen;
                 unsigned int psize = itot - (ilen + ulen);
-
-                if (!remote->resolved)
-                {
-
-                    buffer_copy(remote->haddress, eheader->sha, ETHERNET_ADDRSIZE);
-                    buffer_copy(remote->paddress, iheader->sip, IPV4_ADDRSIZE);
-                    buffer_copy(remote->info.udp.port, uheader->sp, UDP_PORTSIZE);
-
-                    remote->resolved = 1;
-
-                }
 
                 if (respondudp(descriptor, local, remote, router, uheader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
@@ -558,7 +535,17 @@ unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, stru
 static struct socket *acceptarp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
 {
 
-    return &remotes[0];
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_ARP)
+    {
+
+        return &remotes[0];
+
+    }
+
+    return 0;
 
 }
 
