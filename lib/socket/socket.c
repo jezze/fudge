@@ -620,15 +620,16 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
 {
 
     struct message message;
+    unsigned int i;
+
+    for (i = 0; i < nremotes; i++)
+        remotes[i].info.tcp.state = TCP_STATE_LISTEN;
 
     while (channel_kpollevent(EVENT_DATA, &message))
     {
 
         char buffer[BUFFER_SIZE];
         struct socket *remote = getremote(remotes, nremotes);
-
-        if (remote->info.tcp.state == 0)
-            remote->info.tcp.state = TCP_STATE_LISTEN;
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
         socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
