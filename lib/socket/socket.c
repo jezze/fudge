@@ -555,24 +555,103 @@ unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, stru
 
 }
 
-static struct socket *getremotearp(struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
+static struct socket *acceptarp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
 {
 
     return &remotes[0];
 
 }
 
-static struct socket *getremotetcp(struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
+static struct socket *accepttcp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
 {
 
-    return &remotes[0];
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+        unsigned short ilen = ipv4_hlen(iheader);
+
+        if (net_load8(iheader->protocol) == IPV4_PROTOCOL_TCP)
+        {
+
+            struct tcp_header *theader = (struct tcp_header *)(data + elen + ilen);
+
+            if (net_load16(theader->tp) == net_load16(local->info.tcp.port))
+            {
+
+                struct socket *remote = &remotes[0];
+
+                if (!remote->resolved)
+                {
+
+                    buffer_copy(remote->haddress, eheader->sha, ETHERNET_ADDRSIZE);
+                    buffer_copy(remote->paddress, iheader->sip, IPV4_ADDRSIZE);
+                    buffer_copy(remote->info.tcp.port, theader->sp, TCP_PORTSIZE);
+
+                    remote->info.tcp.remoteseq = net_load32(theader->seq);
+                    remote->resolved = 1;
+
+                }
+
+                return &remotes[0];
+
+            }
+
+        }
+
+    }
+
+    return 0;
 
 }
 
-static struct socket *getremoteudp(struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
+static struct socket *acceptudp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
 {
 
-    return &remotes[0];
+    unsigned char *data = buffer;
+    struct ethernet_header *eheader = (struct ethernet_header *)(data);
+    unsigned short elen = ethernet_hlen(eheader);
+
+    if (net_load16(eheader->type) == ETHERNET_TYPE_IPV4)
+    {
+
+        struct ipv4_header *iheader = (struct ipv4_header *)(data + elen);
+        unsigned short ilen = ipv4_hlen(iheader);
+
+        if (net_load8(iheader->protocol) == IPV4_PROTOCOL_UDP)
+        {
+
+            struct udp_header *uheader = (struct udp_header *)(data + elen + ilen);
+
+            if (net_load16(uheader->tp) == net_load16(local->info.udp.port))
+            {
+
+                struct socket *remote = &remotes[0];
+
+                if (!remote->resolved)
+                {
+
+                    buffer_copy(remote->haddress, eheader->sha, ETHERNET_ADDRSIZE);
+                    buffer_copy(remote->paddress, iheader->sip, IPV4_ADDRSIZE);
+                    buffer_copy(remote->info.udp.port, uheader->sp, UDP_PORTSIZE);
+
+                    remote->resolved = 1;
+
+                }
+
+                return &remotes[0];
+
+            }
+
+        }
+
+    }
+
+    return 0;
 
 }
 
@@ -587,7 +666,7 @@ unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, s
         unsigned int payploadcount;
         struct socket *remote;
 
-        remote = getremotearp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        remote = acceptarp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
 
         if (remote)
         {
@@ -596,7 +675,7 @@ unsigned int socket_receive_tcp(unsigned int descriptor, struct socket *local, s
 
         }
 
-        remote = getremotetcp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        remote = accepttcp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
 
         if (remote)
         {
@@ -631,7 +710,7 @@ unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, s
         unsigned int payploadcount;
         struct socket *remote;
 
-        remote = getremotearp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        remote = acceptarp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
 
         if (remote)
         {
@@ -640,7 +719,7 @@ unsigned int socket_receive_udp(unsigned int descriptor, struct socket *local, s
 
         }
 
-        remote = getremoteudp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        remote = acceptudp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
 
         if (remote)
         {
@@ -673,7 +752,7 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
         char buffer[BUFFER_SIZE];
         struct socket *remote;
 
-        remote = getremotearp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        remote = acceptarp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
 
         if (remote)
         {
@@ -682,7 +761,7 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
 
         }
 
-        remote = getremotetcp(remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        remote = accepttcp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
 
         if (remote)
         {
