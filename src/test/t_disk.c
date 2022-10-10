@@ -442,7 +442,7 @@ void init(void)
     file_walk2(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
     socket_bind_ipv4s(&local, "10.0.5.1");
-    socket_bind_tcps(&local, "564", 42);
+    socket_bind_tcps(&local, "564", 42, 42);
     socket_init(&router);
     socket_bind_ipv4s(&router, "10.0.5.80");
     channel_bind(EVENT_MAIN, onmain);

@@ -130,7 +130,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_error("Could not find ethernet device addr");
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state));
+    socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(FILE_L2, &local);
 
@@ -140,9 +140,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_bind_ipv4s(&remote, option_getstring("remote-address"));
 
     if (url.port)
-        socket_bind_tcps(&remote, url.port, 0);
+        socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
     else
-        socket_bind_tcpv(&remote, option_getdecimal("remote-port"), 0);
+        socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
 
     count = buildrequest(BUFFER_SIZE, buffer, &url);
 

@@ -3,14 +3,14 @@
 #include <abi.h>
 #include <socket.h>
 
-static struct socket local;
-static struct socket remote;
 static struct socket router;
+static struct socket local;
+static struct socket remotes[64];
 static char inputdata[BUFFER_SIZE];
 static struct ring input;
 static char request[128];
 
-static void sendresponse(void)
+static void sendresponse(struct socket *remote)
 {
 
     char buffer[BUFFER_SIZE];
@@ -50,11 +50,11 @@ static void sendresponse(void)
 
     }
 
-    socket_send_tcp(FILE_G0, &local, &remote, &router, count, buffer);
+    socket_send_tcp(FILE_G0, &local, remote, &router, count, buffer);
 
 }
 
-static void handlehttppacket(void)
+static void handlehttppacket(struct socket *remote)
 {
 
     unsigned int newline;
@@ -78,7 +78,7 @@ static void handlehttppacket(void)
         }
 
         if (count == 2 && buffer[0] == '\r' && buffer[1] == '\n')
-            sendresponse();
+            sendresponse(remote);
 
     }
 
@@ -118,19 +118,19 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk(FILE_L2, FILE_L0, "addr"))
         channel_error("Could not find ethernet device addr");
 
-    socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_tcpv(&local, option_getdecimal("local-port"), mtwist_rand(&state));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
+    socket_bind_ipv4s(&local, option_getstring("local-address"));
+    socket_bind_tcpv(&local, option_getdecimal("local-port"), mtwist_rand(&state), mtwist_rand(&state));
     socket_resolvelocal(FILE_L2, &local);
     file_link(FILE_G0);
     socket_resolveremote(FILE_G0, &local, &router);
-    socket_listen_tcp(FILE_G0, &local, &remote, &router);
+    socket_listen_tcp(FILE_G0, &local, &remotes[0], &router);
 
-    while ((count = socket_receive_tcp(FILE_G0, &local, &remote, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive_tcp(FILE_G0, &local, &remotes[0], &router, buffer, BUFFER_SIZE)))
     {
 
         if (ring_write(&input, buffer, count))
-            handlehttppacket();
+            handlehttppacket(&remotes[0]);
 
     }
 
@@ -142,10 +142,15 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    unsigned int i;
+
     ring_init(&input, BUFFER_SIZE, inputdata);
-    socket_init(&local);
-    socket_init(&remote);
     socket_init(&router);
+    socket_init(&local);
+
+    for (i = 0; i < 64; i++)
+        socket_init(&remotes[i]);
+
     option_add("clock", "system:clock/if:0");
     option_add("ethernet", "system:ethernet/if:0");
     option_add("local-address", "10.0.5.1");
