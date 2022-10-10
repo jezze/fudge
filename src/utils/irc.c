@@ -151,16 +151,16 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
         channel_error("Could not find ethernet device");
 
+    if (!file_walk(FILE_L1, FILE_L0, "addr"))
+        channel_error("Could not find ethernet device addr");
+
     if (!file_walk(FILE_G0, FILE_L0, "data"))
         channel_error("Could not find ethernet device data");
-
-    if (!file_walk(FILE_L2, FILE_L0, "addr"))
-        channel_error("Could not find ethernet device addr");
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(FILE_L2, &local);
+    socket_resolvelocal(FILE_L1, &local);
     resolve();
     file_link(FILE_G0);
     socket_resolveremote(FILE_G0, &local, &router);

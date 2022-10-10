@@ -162,16 +162,16 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
         channel_error("Could not find ethernet device");
 
-    if (!file_walk(FILE_L1, FILE_L0, "data"))
-        channel_error("Could not find ethernet device data");
-
-    if (!file_walk(FILE_L2, FILE_L0, "addr"))
+    if (!file_walk(FILE_L1, FILE_L0, "addr"))
         channel_error("Could not find ethernet device addr");
+
+    if (!file_walk(FILE_G1, FILE_L0, "data"))
+        channel_error("Could not find ethernet device data");
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(FILE_L2, &local);
+    socket_resolvelocal(FILE_L1, &local);
 
     if (url.host)
         dnsresolve(&remote, url.host);
@@ -185,12 +185,12 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     count = buildrequest(BUFFER_SIZE, buffer, &url);
 
-    file_link(FILE_L1);
-    socket_resolveremote(FILE_L1, &local, &router);
-    socket_connect_tcp(FILE_L1, &local, &remote, &router);
-    socket_send_tcp(FILE_L1, &local, &remote, &router, count, buffer);
+    file_link(FILE_G1);
+    socket_resolveremote(FILE_G1, &local, &router);
+    socket_connect_tcp(FILE_G1, &local, &remote, &router);
+    socket_send_tcp(FILE_G1, &local, &remote, &router, count, buffer);
 
-    while ((count = socket_receive(FILE_L1, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive(FILE_G1, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
     {
 
         if (ring_write(&input, buffer, count))
@@ -198,7 +198,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    file_unlink(FILE_L1);
+    file_unlink(FILE_G1);
 
 }
 

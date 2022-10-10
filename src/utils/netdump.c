@@ -303,15 +303,15 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
         channel_error("Could not find ethernet device");
 
-    if (!file_walk(FILE_L1, FILE_L0, "data"))
+    if (!file_walk(FILE_G0, FILE_L0, "data"))
         channel_error("Could not find ethernet device data");
 
-    file_link(FILE_L1);
+    file_link(FILE_G0);
 
     while ((count = channel_read(buffer, BUFFER_SIZE)))
         print_ethernet(source, buffer);
 
-    file_unlink(FILE_L1);
+    file_unlink(FILE_G0);
     channel_close();
 
 }
