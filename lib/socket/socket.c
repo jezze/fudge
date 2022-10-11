@@ -717,6 +717,9 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
             if (payploadcount)
                 return payploadcount;
 
+            if (remote->info.tcp.state == TCP_STATE_CLOSED)
+                remote->info.tcp.state = local->info.tcp.state;
+
         }
 
         remote = acceptudp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
@@ -742,12 +745,14 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
 
     unsigned int i;
 
+    local->info.tcp.state = TCP_STATE_LISTEN;
+
     for (i = 0; i < nremotes; i++)
     {
 
         struct socket *remote = &remotes[i];
 
-        remote->info.tcp.state = TCP_STATE_LISTEN;
+        remote->info.tcp.state = local->info.tcp.state;
 
     }
 
