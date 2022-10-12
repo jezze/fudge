@@ -69,19 +69,22 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
     channel_sendmessage(&message);
 
     message_init(&message, EVENT_QUERY);
-    message_putstringz(&message, "type");
+    message_putstring(&message, "type");
+    message_putzero(&message);
     message_putvalue(&message, type, 10, 0);
-    message_putstringz(&message, "");
+    message_putzero(&message);
     channel_sendmessage(&message);
 
     message_init(&message, EVENT_QUERY);
-    message_putstringz(&message, "name");
+    message_putstring(&message, "name");
+    message_putzero(&message);
     message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
-    message_putstringz(&message, "");
+    message_putzero(&message);
     channel_sendmessage(&message);
 
     message_init(&message, EVENT_QUERY);
-    message_putstringz(&message, "data");
+    message_putstring(&message, "data");
+    message_putzero(&message);
 
     switch (type)
     {
@@ -94,18 +97,19 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
         message_putvalue(&message, addr[2], 10, 0);
         message_putstring(&message, ".");
         message_putvalue(&message, addr[3], 10, 0);
-        message_putstringz(&message, "");
+        message_putzero(&message);
 
         break;
 
     case 5:
         message_putbuffer(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
-        message_putstringz(&message, "");
+        message_putzero(&message);
 
         break;
 
     default:
-        message_putstringz(&message, "<null>");
+        message_putstring(&message, "<null>");
+        message_putzero(&message);
 
         break;
 

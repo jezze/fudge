@@ -281,9 +281,12 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
             if (!u)
                 return;
 
-            message_putstringz(&message, "O");
-            message_putstringz(&message, t->str);
-            message_putstringz(&message, u->str);
+            message_putstring(&message, "O");
+            message_putzero(&message);
+            message_putstring(&message, t->str);
+            message_putzero(&message);
+            message_putstring(&message, u->str);
+            message_putzero(&message);
 
             break;
 
@@ -296,16 +299,20 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
                 if (tokenlist_check(stack) == TOKEN_IDENT)
                 {
 
-                    message_putstringz(&message, "D");
-                    message_putstringz(&message, t->str);
+                    message_putstring(&message, "D");
+                    message_putzero(&message);
+                    message_putstring(&message, t->str);
+                    message_putzero(&message);
 
                 }
 
                 else
                 {
 
-                    message_putstringz(&message, "P");
-                    message_putstringz(&message, t->str);
+                    message_putstring(&message, "P");
+                    message_putzero(&message);
+                    message_putstring(&message, t->str);
+                    message_putzero(&message);
 
                 }
 
@@ -322,22 +329,27 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
                 if (tokenlist_check(stack) == TOKEN_IDENT)
                 {
 
-                    message_putstringz(&message, "D");
-                    message_putstringz(&message, t->str);
+                    message_putstring(&message, "D");
+                    message_putzero(&message);
+                    message_putstring(&message, t->str);
+                    message_putzero(&message);
 
                 }
 
                 else
                 {
 
-                    message_putstringz(&message, "P");
-                    message_putstringz(&message, t->str);
+                    message_putstring(&message, "P");
+                    message_putzero(&message);
+                    message_putstring(&message, t->str);
+                    message_putzero(&message);
 
                 }
 
             }
 
-            message_putstringz(&message, "E");
+            message_putstring(&message, "E");
+            message_putzero(&message);
             channel_sendmessage(&message);
             message_init(&message, EVENT_DATA);
 

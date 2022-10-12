@@ -30,13 +30,10 @@ unsigned int message_putstring(struct message *message, char *string)
 
 }
 
-unsigned int message_putstringz(struct message *message, char *string)
+unsigned int message_putzero(struct message *message)
 {
 
-    message->header.length += cstring_write(message->data.buffer, MESSAGE_SIZE, string, message_datasize(&message->header));
-    message->header.length += cstring_writez(message->data.buffer, MESSAGE_SIZE, message_datasize(&message->header));
-
-    return message->header.length;
+    return message->header.length += cstring_writezero(message->data.buffer, MESSAGE_SIZE, message_datasize(&message->header));
 
 }
 

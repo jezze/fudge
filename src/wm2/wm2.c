@@ -364,7 +364,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             wmkeypress.length = keycode->length;
             wmkeypress.keymod = state.keymod;
 
-            cstring_writez(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, pool_getstring(state.focusedwidget->id), 0));
+            cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, pool_getstring(state.focusedwidget->id), 0));
             channel_sendbufferto(state.focusedwidget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
 
         }
@@ -507,7 +507,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
             struct event_wmclick wmclick;
 
             setfocus(clickedwidget);
-            cstring_writez(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(clickedwidget->id), 0));
+            cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(clickedwidget->id), 0));
             channel_sendbufferto(clickedwidget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
 
         }

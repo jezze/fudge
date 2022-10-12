@@ -39,7 +39,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer, struct url *u
 
 }
 
-static void dnsresolve(struct socket *socket, char *domain)
+static void dnsresolve(char *domain)
 {
 
     unsigned int id = file_spawn("/bin/dns");
@@ -49,8 +49,10 @@ static void dnsresolve(struct socket *socket, char *domain)
         channel_error("Could not spawn process");
 
     message_init(&message, EVENT_OPTION);
-    message_putstringz(&message, "domain");
-    message_putstringz(&message, domain);
+    message_putstring(&message, "domain");
+    message_putzero(&message);
+    message_putstring(&message, domain);
+    message_putzero(&message);
     channel_redirectback(id, EVENT_QUERY);
     channel_redirectback(id, EVENT_CLOSE);
     channel_sendmessageto(id, &message);
@@ -135,7 +137,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_resolvelocal(FILE_L1, &local);
 
     if (url.host)
-        dnsresolve(&remote, url.host);
+        dnsresolve(url.host);
 
     socket_bind_ipv4s(&remote, option_getstring("remote-address"));
 

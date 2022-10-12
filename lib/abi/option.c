@@ -66,7 +66,7 @@ unsigned int option_set(char *key, char *value)
 
     struct option *option = find(key);
 
-    return (option) ? cstring_writez(option->value, 64, cstring_write(option->value, 64, value, 0)) : 0;
+    return (option) ? cstring_writezero(option->value, 64, cstring_write(option->value, 64, value, 0)) : 0;
 
 }
 
@@ -85,7 +85,7 @@ void option_init(struct option *option, char *key, char *value)
 
     option->key = key;
 
-    cstring_writez(option->value, 64, cstring_write(option->value, 64, value, 0));
+    cstring_writezero(option->value, 64, cstring_write(option->value, 64, value, 0));
 
 }
 

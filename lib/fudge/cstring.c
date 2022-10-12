@@ -128,7 +128,7 @@ unsigned int cstring_write(char *out, unsigned int count, char *in, unsigned int
 
 }
 
-unsigned int cstring_writez(char *out, unsigned int count, unsigned int offset)
+unsigned int cstring_writezero(char *out, unsigned int count, unsigned int offset)
 {
 
     if (offset < count)
