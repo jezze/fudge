@@ -120,7 +120,7 @@ void job_spawn(struct job *job)
 
 }
 
-void job_pipe(struct job *job)
+void job_pipe(struct job *job, unsigned int event)
 {
 
     unsigned int i;
@@ -138,9 +138,9 @@ void job_pipe(struct job *job)
             channel_redirectback(worker->id, EVENT_ERROR);
 
             if (i < job->count - 1)
-                channel_redirecttarget(worker->id, EVENT_DATA, job->workers[i + 1].id);
+                channel_redirecttarget(worker->id, event, job->workers[i + 1].id);
             else
-                channel_redirectback(worker->id, EVENT_DATA);
+                channel_redirectback(worker->id, event);
 
         }
 

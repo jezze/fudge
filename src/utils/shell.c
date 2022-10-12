@@ -50,7 +50,7 @@ static void interpret(void)
             job_parse(&job, message.data.buffer, count);
 
         job_spawn(&job);
-        job_pipe(&job);
+        job_pipe(&job, EVENT_DATA);
         job_run(&job);
 
         while (job_pick(&job, &message))
@@ -159,7 +159,7 @@ static void complete(void)
     }
 
     job_spawn(&job);
-    job_pipe(&job);
+    job_pipe(&job, EVENT_DATA);
     job_run(&job);
 
     while (job_pick(&job, &message))
