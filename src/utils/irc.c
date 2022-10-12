@@ -186,7 +186,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (cstring_length(option_getstring("domain")))
         dnsresolve();
 
-    socket_bind_tcps(&local, option_getstring("remote-address"), mtwist_rand(&state), mtwist_rand(&state));
+    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
     socket_bind_tcps(&remote, option_getstring("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
 
     count = buildrequest(BUFFER_SIZE, buffer);
