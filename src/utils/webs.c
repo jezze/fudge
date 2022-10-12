@@ -75,7 +75,7 @@ static void handlehttppacket(struct socket *remote)
             unsigned int end = buffer_lastbyte(buffer, BUFFER_SIZE, ' ');
             unsigned int length = buffer_write(request, 128, buffer + 4, end - 4 - 1, 0);
 
-            buffer_write(request, 128, "", 1, length);
+            cstring_writez(request, 128, "", length);
 
         }
 
