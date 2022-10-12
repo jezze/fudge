@@ -242,17 +242,11 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
         {
 
-            remote->info.tcp.state = TCP_STATE_CLOSEWAIT;
+            remote->info.tcp.state = TCP_STATE_CLOSED;
             remote->info.tcp.localseq = net_load32(header->ack);
             remote->info.tcp.remoteseq = net_load32(header->seq) + psize + 1;
 
             send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
-
-            /* Wait for application to close down */
-
-            remote->info.tcp.state = TCP_STATE_LASTACK;
-
-            send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_FIN, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
             return psize;
 
@@ -261,17 +255,11 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
         else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_ACK))
         {
 
-            remote->info.tcp.state = TCP_STATE_CLOSEWAIT;
+            remote->info.tcp.state = TCP_STATE_CLOSED;
             remote->info.tcp.localseq = net_load32(header->ack);
             remote->info.tcp.remoteseq = net_load32(header->seq) + 1;
 
             send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
-
-            /* Wait for application to close down */
-
-            remote->info.tcp.state = TCP_STATE_LASTACK;
-
-            send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_FIN, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -717,8 +705,13 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
             if (payploadcount)
                 return payploadcount;
 
+/*
             if (remote->info.tcp.state == TCP_STATE_CLOSED)
                 remote->info.tcp.state = local->info.tcp.state;
+*/
+
+            if (remote->info.tcp.state == TCP_STATE_CLOSED)
+                return 0;
 
         }
 

@@ -47,6 +47,8 @@ static void sendresponse(struct socket *remote)
 
         count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 404 Not Found\r\n", count);
         count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
+        count += cstring_write(buffer, BUFFER_SIZE, "Content-Length: 0\r\n", count);
+        count += cstring_write(buffer, BUFFER_SIZE, "\r\n", count);
 
     }
 
