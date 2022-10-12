@@ -60,6 +60,19 @@ unsigned int buffer_lastbyte(void *in, unsigned int count, unsigned char value)
 
 }
 
+unsigned int buffer_countbyte(char *in, unsigned int count, unsigned char value)
+{
+
+    unsigned int offset = 0;
+    unsigned int total = 0;
+
+    while ((offset = buffer_eachbyte(in, count, value, offset)))
+        total++;
+
+    return total;
+
+}
+
 unsigned int buffer_findbyte(void *in, unsigned int count, unsigned char value)
 {
 
