@@ -38,7 +38,7 @@ void debug_log8(unsigned int level, char *key, unsigned char value)
     c += cstring_writevalue(string, BUFFER_SIZE, value, 16, 2, c);
     c += cstring_write(string, BUFFER_SIZE, " ", c);
     c += cstring_writevalue(string, BUFFER_SIZE, value, 10, 0, c);
-    c += cstring_writez(string, BUFFER_SIZE, "", c);
+    c += cstring_writez(string, BUFFER_SIZE, c);
 
     debug_log(level, string, 0, 0);
 
@@ -57,7 +57,7 @@ void debug_log16(unsigned int level, char *key, unsigned short value)
     c += cstring_writevalue(string, BUFFER_SIZE, value, 16, 4, c);
     c += cstring_write(string, BUFFER_SIZE, " ", c);
     c += cstring_writevalue(string, BUFFER_SIZE, value, 10, 0, c);
-    c += cstring_writez(string, BUFFER_SIZE, "", c);
+    c += cstring_writez(string, BUFFER_SIZE, c);
 
     debug_log(level, string, 0, 0);
 
@@ -76,7 +76,7 @@ void debug_log32(unsigned int level, char *key, unsigned int value)
     c += cstring_writevalue(string, BUFFER_SIZE, value, 16, 8, c);
     c += cstring_write(string, BUFFER_SIZE, " ", c);
     c += cstring_writevalue(string, BUFFER_SIZE, value, 10, 0, c);
-    c += cstring_writez(string, BUFFER_SIZE, "", c);
+    c += cstring_writez(string, BUFFER_SIZE, c);
 
     debug_log(level, string, 0, 0);
 

@@ -120,10 +120,8 @@ static void complete(void)
             {
 
                 char path[INPUTSIZE];
-                unsigned int pathcount;
 
-                pathcount = buffer_write(path, INPUTSIZE, buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0);
-                pathcount += cstring_writez(path, INPUTSIZE, "", pathcount);
+                cstring_writez(path, INPUTSIZE, buffer_write(path, INPUTSIZE, buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0));
 
                 job.workers[0].paths[0] = path;
                 job.workers[0].npaths = 1;
@@ -143,10 +141,7 @@ static void complete(void)
         if (searchcount)
         {
 
-            unsigned int prefixcount;
-
-            prefixcount = buffer_write(prefix, INPUTSIZE, (char *)buffer + searchoffset, searchcount, 0);
-            prefixcount += cstring_writez(prefix, INPUTSIZE, "", prefixcount);
+            unsigned int prefixcount = cstring_writez(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, (char *)buffer + searchoffset, searchcount, 0));
 
             if (prefixcount)
             {

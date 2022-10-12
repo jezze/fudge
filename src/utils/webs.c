@@ -23,7 +23,7 @@ static void sendresponse(struct socket *remote)
         channel_error("Incorrect request");
 
     if (cstring_length(request) == 1 && request[0] == '/')
-        cstring_writez(request, 128, "/index.html", 0);
+        cstring_writez(request, 128, cstring_write(request, 128, "/index.html", 0));
 
     if (file_walk(FILE_L1, FILE_L0, request + 1))
     {
@@ -73,9 +73,8 @@ static void handlehttppacket(struct socket *remote)
         {
 
             unsigned int end = buffer_lastbyte(buffer, BUFFER_SIZE, ' ');
-            unsigned int length = buffer_write(request, 128, buffer + 4, end - 4 - 1, 0);
 
-            cstring_writez(request, 128, "", length);
+            cstring_writez(request, 128, buffer_write(request, 128, buffer + 4, end - 4 - 1, 0));
 
         }
 

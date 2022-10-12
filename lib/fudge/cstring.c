@@ -128,14 +128,26 @@ unsigned int cstring_write(char *out, unsigned int count, char *in, unsigned int
 
 }
 
-unsigned int cstring_writez(char *out, unsigned int count, char *in, unsigned int offset)
+unsigned int cstring_writez(char *out, unsigned int count, unsigned int offset)
 {
 
-    unsigned int total = buffer_write(out, count, in, cstring_lengthz(in), offset);
+    if (offset < count)
+    {
 
-    out[count - 1] = '\0';
+        out[offset] = '\0';
 
-    return total;
+        return 1;
+
+    }
+
+    else
+    {
+
+        out[count - 1] = '\0';
+
+        return 0;
+
+    }
 
 }
 
