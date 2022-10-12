@@ -67,21 +67,18 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
     }
 
     channel_sendmessage(&message);
-
     message_init(&message, EVENT_QUERY);
     message_putstring(&message, "type");
     message_putzero(&message);
     message_putvalue(&message, type, 10, 0);
     message_putzero(&message);
     channel_sendmessage(&message);
-
     message_init(&message, EVENT_QUERY);
     message_putstring(&message, "name");
     message_putzero(&message);
     message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
     message_putzero(&message);
     channel_sendmessage(&message);
-
     message_init(&message, EVENT_QUERY);
     message_putstring(&message, "data");
     message_putzero(&message);
