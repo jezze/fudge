@@ -6,7 +6,6 @@ O:=\
     $(DIR_LIB)/abi/crt0.o \
     $(DIR_LIB)/abi/file.o \
     $(DIR_LIB)/abi/job.o \
-    $(DIR_LIB)/abi/log.o \
     $(DIR_LIB)/abi/option.o \
 
 include $(DIR_LIB)/abi/$(ARCH)/rules.mk
@@ -20,7 +19,6 @@ O:=\
     $(DIR_LIB)/abi/crt0.o \
     $(DIR_LIB)/abi/file.o \
     $(DIR_LIB)/abi/job.o \
-    $(DIR_LIB)/abi/log.o \
     $(DIR_LIB)/abi/option.o \
 
 include $(DIR_LIB)/abi/$(ARCH)/qrules.mk
