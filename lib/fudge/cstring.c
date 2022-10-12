@@ -58,7 +58,7 @@ unsigned int cstring_length(char *in)
 
 }
 
-unsigned int cstring_lengthz(char *in)
+unsigned int cstring_lengthzero(char *in)
 {
 
     return cstring_length(in) + 1;
@@ -75,8 +75,8 @@ void cstring_copy(char *out, char *in)
 unsigned int cstring_match(char *in1, char *in2)
 {
 
-    unsigned int n1 = cstring_lengthz(in1);
-    unsigned int n2 = cstring_lengthz(in2);
+    unsigned int n1 = cstring_lengthzero(in1);
+    unsigned int n2 = cstring_lengthzero(in2);
 
     return buffer_match(in1, in2, (n1 < n2) ? n1 : n2);
 

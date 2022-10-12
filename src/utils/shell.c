@@ -194,7 +194,7 @@ static void complete(void)
         {
 
             char *resultbuffer = resultdata + cstring_length(prefix);
-            unsigned int resultcount = ring_count(&result) - cstring_lengthz(prefix);
+            unsigned int resultcount = ring_count(&result) - cstring_lengthzero(prefix);
 
             ring_write(&input, resultbuffer, resultcount);
             print(resultbuffer, resultcount);

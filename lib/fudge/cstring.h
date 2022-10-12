@@ -1,5 +1,5 @@
 unsigned int cstring_length(char *in);
-unsigned int cstring_lengthz(char *in);
+unsigned int cstring_lengthzero(char *in);
 void cstring_copy(char *out, char *in);
 unsigned int cstring_match(char *in1, char *in2);
 unsigned int cstring_isalpha(char c);

@@ -10,7 +10,7 @@ static unsigned int convert(unsigned char address[IPV4_ADDRSIZE], char *buffer)
     unsigned int start = 0;
     unsigned int n = 0;
 
-    for (i = 0; i < cstring_lengthz(buffer); i++)
+    for (i = 0; i < cstring_lengthzero(buffer); i++)
     {
 
         if (buffer[i] == '.' || buffer[i] == '\0')

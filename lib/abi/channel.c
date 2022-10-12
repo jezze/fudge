@@ -138,14 +138,14 @@ unsigned int channel_sendstringto(unsigned int target, unsigned int event, char 
 unsigned int channel_sendstringz(unsigned int event, char *string)
 {
 
-    return send(0, event, cstring_lengthz(string), string);
+    return send(0, event, cstring_lengthzero(string), string);
 
 }
 
 unsigned int channel_sendstringzto(unsigned int target, unsigned int event, char *string)
 {
 
-    return send(target, event, cstring_lengthz(string), string);
+    return send(target, event, cstring_lengthzero(string), string);
 
 }
 

@@ -85,7 +85,7 @@ static void dnsresolve(char *domain)
         {
 
             char *key = message.data.buffer;
-            char *value = key + cstring_lengthz(key);
+            char *value = key + cstring_lengthzero(key);
 
             if (cstring_match(key, "data"))
                 option_set("remote-address", value);
