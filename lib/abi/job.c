@@ -59,19 +59,6 @@ void job_parse(struct job *job, void *buffer, unsigned int count)
 
 }
 
-static unsigned int spawn(struct job_worker *worker)
-{
-
-    if (!file_walk2(FILE_L0, "/bin"))
-        return 0;
-
-    if (!(file_walk(FILE_CP, FILE_L0, worker->program) || file_walk2(FILE_CP, worker->program)))
-        return 0;
-
-    return call_spawn();
-
-}
-
 static void activatenext(struct job *job, unsigned int startindex)
 {
 
@@ -95,28 +82,30 @@ static void activatenext(struct job *job, unsigned int startindex)
 
 }
 
-void job_spawn(struct job *job)
+unsigned int job_spawn(struct job *job)
 {
 
     unsigned int i;
+
+    if (!file_walk2(FILE_L0, "/bin"))
+        return 0;
 
     for (i = 0; i < job->count; i++)
     {
 
         struct job_worker *worker = &job->workers[i];
 
-        worker->id = spawn(worker);
+        if (!(file_walk(FILE_CP, FILE_L0, worker->program) || file_walk2(FILE_CP, worker->program)))
+            return 0;
+
+        worker->id = call_spawn();
 
         if (!worker->id)
-        {
-
-            job_sendall(job, EVENT_TERM, 0, 0);
-
-            return;
-
-        }
+            return 0;
 
     }
+
+    return job->count;
 
 }
 

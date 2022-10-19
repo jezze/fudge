@@ -112,42 +112,53 @@ static void interpret(void)
         while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
             job_parse(&job, message.data.buffer, count);
 
-        job_spawn(&job);
-        job_listen(&job, EVENT_CLOSE);
-        job_listen(&job, EVENT_ERROR);
-        job_listen(&job, EVENT_PATH);
-        job_pipe(&job, EVENT_DATA);
-        job_run(&job);
-
-        while (job_pick(&job, &message))
+        if (job_spawn(&job))
         {
 
-            switch (message.header.event)
+            job_listen(&job, EVENT_CLOSE);
+            job_listen(&job, EVENT_ERROR);
+            job_listen(&job, EVENT_PATH);
+            job_pipe(&job, EVENT_DATA);
+            job_run(&job);
+
+            while (job_pick(&job, &message))
             {
 
-            case EVENT_CLOSE:
-                job_close(&job, message.header.source);
+                switch (message.header.event)
+                {
 
-                break;
+                case EVENT_CLOSE:
+                    job_close(&job, message.header.source);
 
-            case EVENT_ERROR:
-                channel_dispatch(&message);
+                    break;
 
-                break;
+                case EVENT_ERROR:
+                    channel_dispatch(&message);
 
-            case EVENT_DATA:
-                print(message.data.buffer, message_datasize(&message.header));
-                update();
+                    break;
 
-                break;
+                case EVENT_DATA:
+                    print(message.data.buffer, message_datasize(&message.header));
+                    update();
 
-            case EVENT_PATH:
-                if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
-                    file_duplicate(FILE_CW, FILE_L0);
+                    break;
 
-                break;
+                case EVENT_PATH:
+                    if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
+                        file_duplicate(FILE_CW, FILE_L0);
+
+                    break;
+
+                }
 
             }
+
+        }
+
+        else
+        {
+
+            job_killall(&job);
 
         }
 

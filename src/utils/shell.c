@@ -49,41 +49,52 @@ static void interpret(void)
         while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
             job_parse(&job, message.data.buffer, count);
 
-        job_spawn(&job);
-        job_listen(&job, EVENT_CLOSE);
-        job_listen(&job, EVENT_ERROR);
-        job_listen(&job, EVENT_PATH);
-        job_pipe(&job, EVENT_DATA);
-        job_run(&job);
-
-        while (job_pick(&job, &message))
+        if (job_spawn(&job))
         {
 
-            switch (message.header.event)
+            job_listen(&job, EVENT_CLOSE);
+            job_listen(&job, EVENT_ERROR);
+            job_listen(&job, EVENT_PATH);
+            job_pipe(&job, EVENT_DATA);
+            job_run(&job);
+
+            while (job_pick(&job, &message))
             {
 
-            case EVENT_CLOSE:
-                job_close(&job, message.header.source);
+                switch (message.header.event)
+                {
 
-                break;
+                case EVENT_CLOSE:
+                    job_close(&job, message.header.source);
 
-            case EVENT_ERROR:
-                channel_dispatch(&message);
+                    break;
 
-                break;
+                case EVENT_ERROR:
+                    channel_dispatch(&message);
 
-            case EVENT_DATA:
-                print(message.data.buffer, message_datasize(&message.header));
+                    break;
 
-                break;
+                case EVENT_DATA:
+                    print(message.data.buffer, message_datasize(&message.header));
 
-            case EVENT_PATH:
-                if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
-                    file_duplicate(FILE_CW, FILE_L0);
+                    break;
 
-                break;
+                case EVENT_PATH:
+                    if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
+                        file_duplicate(FILE_CW, FILE_L0);
+
+                    break;
+
+                }
 
             }
+
+        }
+
+        else
+        {
+
+            job_killall(&job);
 
         }
 
@@ -161,60 +172,71 @@ static void complete(void)
 
     }
 
-    job_spawn(&job);
-    job_listen(&job, EVENT_CLOSE);
-    job_listen(&job, EVENT_ERROR);
-    job_pipe(&job, EVENT_DATA);
-    job_run(&job);
-
-    while (job_pick(&job, &message))
+    if (job_spawn(&job))
     {
 
-        switch (message.header.event)
+        job_listen(&job, EVENT_CLOSE);
+        job_listen(&job, EVENT_ERROR);
+        job_pipe(&job, EVENT_DATA);
+        job_run(&job);
+
+        while (job_pick(&job, &message))
         {
 
-        case EVENT_CLOSE:
-            job_close(&job, message.header.source);
+            switch (message.header.event)
+            {
 
-            break;
+            case EVENT_CLOSE:
+                job_close(&job, message.header.source);
 
-        case EVENT_ERROR:
-            channel_dispatch(&message);
+                break;
 
-            break;
+            case EVENT_ERROR:
+                channel_dispatch(&message);
 
-        case EVENT_DATA:
-            ring_write(&result, message.data.buffer, message_datasize(&message.header));
+                break;
 
-            break;
+            case EVENT_DATA:
+                ring_write(&result, message.data.buffer, message_datasize(&message.header));
+
+                break;
+
+            }
+
+        }
+
+        if (ring_count(&result))
+        {
+
+            if (ring_each(&result, '\n') == ring_count(&result))
+            {
+
+                char *resultbuffer = resultdata + cstring_length(prefix);
+                unsigned int resultcount = ring_count(&result) - cstring_lengthzero(prefix);
+
+                ring_write(&input, resultbuffer, resultcount);
+                print(resultbuffer, resultcount);
+
+            }
+
+            else
+            {
+
+                print("\n", 1);
+                print(resultdata, ring_count(&result));
+                printprompt();
+                print(resultdata, ring_readcopy(&input, resultdata, BUFFER_SIZE));
+
+            }
 
         }
 
     }
 
-    if (ring_count(&result))
+    else
     {
 
-        if (ring_each(&result, '\n') == ring_count(&result))
-        {
-
-            char *resultbuffer = resultdata + cstring_length(prefix);
-            unsigned int resultcount = ring_count(&result) - cstring_lengthzero(prefix);
-
-            ring_write(&input, resultbuffer, resultcount);
-            print(resultbuffer, resultcount);
-
-        }
-
-        else
-        {
-
-            print("\n", 1);
-            print(resultdata, ring_count(&result));
-            printprompt();
-            print(resultdata, ring_readcopy(&input, resultdata, BUFFER_SIZE));
-
-        }
+        job_killall(&job);
 
     }
 
