@@ -12,6 +12,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, mdata, msize);
     job_spawn(&job);
+    job_listen(&job, EVENT_DATA);
     job_pipe(&job, EVENT_DATA);
     job_run(&job);
 

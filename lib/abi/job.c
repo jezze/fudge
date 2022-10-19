@@ -131,20 +131,13 @@ void job_pipe(struct job *job, unsigned int event)
 
     unsigned int i;
 
-    for (i = 0; i < job->count; i++)
+    for (i = 0; i < job->count - 1; i++)
     {
 
         struct job_worker *worker = &job->workers[i];
 
         if (worker->id)
-        {
-
-            if (i < job->count - 1)
-                channel_redirecttarget(worker->id, event, job->workers[i + 1].id);
-            else
-                channel_redirectback(worker->id, event);
-
-        }
+            channel_redirecttarget(worker->id, event, job->workers[i + 1].id);
 
     }
 

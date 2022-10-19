@@ -119,6 +119,7 @@ static void interpret(void)
         {
 
             job_listen(&job, EVENT_CLOSE);
+            job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
             job_listen(&job, EVENT_PATH);
             job_pipe(&job, EVENT_DATA);
