@@ -307,7 +307,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     file_link(FILE_G0);
 
-    while (channel_readmessage(&message))
+    while (channel_readmessage(EVENT_DATA, &message))
         print_ethernet(source, message.data.buffer);
 
     file_unlink(FILE_G0);

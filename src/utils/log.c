@@ -11,7 +11,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     file_link(FILE_L0);
 
-    while (channel_readmessage(&message))
+    while (channel_readmessage(EVENT_DATA, &message))
         channel_sendmessage(&message);
 
     file_unlink(FILE_L0);
