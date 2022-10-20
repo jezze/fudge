@@ -39,7 +39,6 @@ static void interpret(void)
         if (!id)
             channel_error("Could not spawn process");
 
-        job_init(&job, workers, JOBSIZE);
         channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_ERROR);
         channel_redirectback(id, EVENT_CLOSE);
@@ -47,55 +46,61 @@ static void interpret(void)
         channel_sendto(id, EVENT_MAIN);
 
         while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
-            job_parse(&job, message.data.buffer, count);
-
-        if (job_spawn(&job))
         {
 
-            job_listen(&job, EVENT_CLOSE);
-            job_listen(&job, EVENT_DATA);
-            job_listen(&job, EVENT_ERROR);
-            job_listen(&job, EVENT_PATH);
-            job_pipe(&job, EVENT_DATA);
-            job_run(&job);
+            job_init(&job, workers, JOBSIZE);
+            job_parse(&job, message.data.buffer, count);
 
-            while (job_pick(&job, &message))
+            if (job_spawn(&job))
             {
 
-                switch (message.header.event)
+                job_listen(&job, EVENT_CLOSE);
+                job_listen(&job, EVENT_DATA);
+                job_listen(&job, EVENT_ERROR);
+                job_listen(&job, EVENT_PATH);
+                job_pipe(&job, EVENT_DATA);
+                job_run(&job);
+
+                while (job_pick(&job, &message))
                 {
 
-                case EVENT_CLOSE:
-                    job_close(&job, message.header.source);
+                    switch (message.header.event)
+                    {
 
-                    break;
+                    case EVENT_CLOSE:
+                        job_close(&job, message.header.source);
 
-                case EVENT_ERROR:
-                    channel_dispatch(&message);
+                        break;
 
-                    break;
+                    case EVENT_ERROR:
+                        channel_dispatch(&message);
 
-                case EVENT_DATA:
-                    print(message.data.buffer, message_datasize(&message.header));
+                        break;
 
-                    break;
+                    case EVENT_DATA:
+                        print(message.data.buffer, message_datasize(&message.header));
 
-                case EVENT_PATH:
-                    if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
-                        file_duplicate(FILE_CW, FILE_L0);
+                        break;
 
-                    break;
+                    case EVENT_PATH:
+                        if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
+                            file_duplicate(FILE_CW, FILE_L0);
+
+                        break;
+
+                    }
 
                 }
 
+
             }
 
-        }
+            else
+            {
 
-        else
-        {
+                job_killall(&job);
 
-            job_killall(&job);
+            }
 
         }
 
