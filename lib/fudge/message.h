@@ -24,7 +24,6 @@ struct message
 
 };
 
-unsigned int message_headersize(struct message_header *header);
 unsigned int message_datasize(struct message_header *header);
 unsigned int message_putbuffer(struct message *message, unsigned int count, void *buffer);
 unsigned int message_putstring(struct message *message, char *string);
