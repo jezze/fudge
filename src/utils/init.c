@@ -11,10 +11,24 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, mdata, msize);
-    job_spawn(&job);
-    job_listen(&job, EVENT_DATA);
-    job_pipe(&job, EVENT_DATA);
-    job_run(&job);
+
+    if (job_spawn(&job))
+    {
+
+        job_listen(&job, EVENT_CLOSE);
+        job_listen(&job, EVENT_ERROR);
+        job_listen(&job, EVENT_DATA);
+        job_pipe(&job, EVENT_DATA);
+        job_run(&job);
+
+    }
+
+    else
+    {
+
+        job_killall(&job);
+
+    }
 
 }
 
@@ -27,7 +41,9 @@ void init(void)
     {
 
         channel_bind(EVENT_DATA, ondata);
+        channel_redirectback(id, EVENT_CLOSE);
         channel_redirectback(id, EVENT_DATA);
+        channel_redirectback(id, EVENT_ERROR);
         channel_sendstringzto(id, EVENT_PATH, "/config/base.slang");
         channel_sendstringzto(id, EVENT_PATH, "/config/arch.slang");
         channel_sendstringzto(id, EVENT_PATH, "/config/init.slang");
