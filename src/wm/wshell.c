@@ -111,11 +111,11 @@ static void interpret(void)
         channel_sendbufferto(id, EVENT_DATA, count, buffer);
         channel_sendto(id, EVENT_MAIN);
 
-        while ((count = channel_readfrom(id, message.data.buffer, MESSAGE_SIZE)))
+        while (channel_readmessagefrom(id, &message))
         {
 
             job_init(&job, workers, JOBSIZE);
-            job_parse(&job, message.data.buffer, count);
+            job_parse(&job, message.data.buffer, message_datasize(&message.header));
 
             if (job_spawn(&job))
             {

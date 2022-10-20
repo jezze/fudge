@@ -297,8 +297,7 @@ static void print_ethernet(unsigned int source, void *buffer)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count;
+    struct message message;
 
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
         channel_error("Could not find ethernet device");
@@ -308,8 +307,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     file_link(FILE_G0);
 
-    while ((count = channel_read(buffer, BUFFER_SIZE)))
-        print_ethernet(source, buffer);
+    while (channel_readmessage(&message))
+        print_ethernet(source, message.data.buffer);
 
     file_unlink(FILE_G0);
     channel_close();
