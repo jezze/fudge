@@ -658,7 +658,7 @@ static void renderbutton(struct render_display *display, struct widget *widget, 
         unsigned int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
         unsigned int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h, 0);
 
-        if (util_intersects(line, ry, ry + rowinfo.lineheight))
+        if (util_intersects(line, ry, ry + rowinfo.height))
             blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_BUTTON_TEXT, widget->state), pool_getstring(button->label), rowinfo.chars, rx, ry, line, x0, x1);
 
     }
@@ -745,7 +745,7 @@ static void renderselect(struct render_display *display, struct widget *widget, 
         unsigned int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
         unsigned int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h, 0);
 
-        if (util_intersects(line, ry, ry + rowinfo.lineheight))
+        if (util_intersects(line, ry, ry + rowinfo.height))
             blittextnormal(display, RENDER_FONTNORMAL, getcolor(CMAP_BUTTON_TEXT, widget->state), pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x1);
 
     }
@@ -822,7 +822,7 @@ static void renderwindow(struct render_display *display, struct widget *widget, 
         unsigned int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
         unsigned int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, RENDER_WINDOW_TITLE_HEIGHT + RENDER_WINDOW_BORDER_HEIGHT, 0);
 
-        if (util_intersects(line, ry, ry + rowinfo.lineheight))
+        if (util_intersects(line, ry, ry + rowinfo.height))
             blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_WINDOW_TEXT, widget->state), pool_getstring(window->title), rowinfo.chars, rx, ry, line, x0, x1);
 
     }
