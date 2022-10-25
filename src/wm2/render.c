@@ -150,6 +150,8 @@ static int getrowx(struct render_rowinfo *rowinfo, unsigned int halign, int x, i
 static int getrowy(struct render_rowinfo *rowinfo, unsigned int valign, int y, int h, unsigned int rownum)
 {
 
+    int ydiff = rowinfo->lineheight - rowinfo->height;
+
     y += rownum * rowinfo->lineheight;
 
     switch (valign)
@@ -159,7 +161,7 @@ static int getrowy(struct render_rowinfo *rowinfo, unsigned int valign, int y, i
         return y;
 
     case WIDGET_TEXT_VALIGN_MIDDLE:
-        return y + h / 2 - rowinfo->height / 2;
+        return y + h / 2 - rowinfo->height / 2 - ydiff / 2;
 
     case WIDGET_TEXT_VALIGN_BOTTOM:
         return y + h - rowinfo->height;
@@ -826,7 +828,7 @@ static void renderwindow(struct render_display *display, struct widget *widget, 
     {
 
         unsigned int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
-        unsigned int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, RENDER_WINDOW_TITLE_HEIGHT, 0);
+        unsigned int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, RENDER_WINDOW_TITLE_HEIGHT + RENDER_WINDOW_BORDER_HEIGHT, 0);
 
         if (util_intersects(line, ry, ry + rowinfo.lineheight))
             blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_WINDOW_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
