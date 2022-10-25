@@ -411,33 +411,33 @@ static void blitsegments(struct render_display *display, int x, int y, int w, in
             {
 
             case LINESEGMENT_TYPE_RELX0X0:
-                p0 = x0 + p->p0;
-                p1 = x0 + p->p1;
+                p0 = x + p->p0;
+                p1 = x + p->p1;
 
                 break;
 
             case LINESEGMENT_TYPE_RELX0X1:
-                p0 = x0 + p->p0;
-                p1 = x1 + p->p1;
+                p0 = x + p->p0;
+                p1 = x + w + p->p1;
 
                 break;
 
             case LINESEGMENT_TYPE_RELX1X1:
-                p0 = x1 + p->p0;
-                p1 = x1 + p->p1;
+                p0 = x + w + p->p0;
+                p1 = x + w + p->p1;
 
                 break;
 
             default:
-                p0 = x0;
-                p1 = x1;
+                p0 = x;
+                p1 = x + w;
 
                 break;
 
             }
 
-            p0 = util_max(p0, display->damage.position0.x);
-            p1 = util_min(p1, display->damage.position1.x);
+            p0 = util_max(p0, x0);
+            p1 = util_min(p1, x1);
 
             blitline2(display, getcolor(p->color, state), line, p0, p1);
 
@@ -447,7 +447,7 @@ static void blitsegments(struct render_display *display, int x, int y, int w, in
 
 }
 
-static void blitbutton(struct render_display *display, unsigned int state, int x, int y, int w, int h, int line)
+static void blitbutton(struct render_display *display, unsigned int state, int x, int y, int w, int h, int line, int x0, int x1)
 {
 
     static struct linesegment line0[1] = {
@@ -487,11 +487,11 @@ static void blitbutton(struct render_display *display, unsigned int state, int x
         {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, line0, 1}
     };
 
-    blitsegments(display, x, y, w, h, state, rows, 9, line, x, x + w);
+    blitsegments(display, x, y, w, h, state, rows, 9, line, x0, x1);
 
 }
 
-static void blitframe(struct render_display *display, unsigned int state, int x, int y, int w, int h, int line)
+static void blitframe(struct render_display *display, unsigned int state, int x, int y, int w, int h, int line, int x0, int x1)
 {
 
     static struct linesegment line0[1] = {
@@ -551,11 +551,11 @@ static void blitframe(struct render_display *display, unsigned int state, int x,
         {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, line0, 1}
     };
 
-    blitsegments(display, x, y, w, h, state, rows, 13, line, x, x + w);
+    blitsegments(display, x, y, w, h, state, rows, 13, line, x0, x1);
 
 }
 
-static void blitwindow(struct render_display *display, unsigned int state, int x, int y, int w, int h, int line)
+static void blitwindow(struct render_display *display, unsigned int state, int x, int y, int w, int h, int line, int x0, int x1)
 {
 
     static struct linesegment line0[1] = {
@@ -617,7 +617,7 @@ static void blitwindow(struct render_display *display, unsigned int state, int x
         {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, line0, 1}
     };
 
-    blitsegments(display, x, y, w, h, state, rows, 11, line, x, x + w);
+    blitsegments(display, x, y, w, h, state, rows, 11, line, x0, x1);
 
 }
 
@@ -650,7 +650,7 @@ static void renderbutton(struct render_display *display, struct widget *widget, 
     struct widget_button *button = widget->data;
     struct render_rowinfo rowinfo;
 
-    blitbutton(display, widget->state, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line);
+    blitbutton(display, widget->state, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1);
 
     if (render_getrowinfo(RENDER_FONTBOLD, pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
@@ -736,8 +736,8 @@ static void renderselect(struct render_display *display, struct widget *widget, 
 
     extra = rowinfo.width + RENDER_SELECT_PADDING_WIDTH * 2;
 
-    blitbutton(display, widget->state, widget->position.x, widget->position.y, extra, widget->size.h, line);
-    blitbutton(display, widget->state, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line);
+    blitbutton(display, widget->state, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x1);
+    blitbutton(display, widget->state, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x1);
 
     if (render_getrowinfo(RENDER_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
@@ -804,7 +804,7 @@ static void rendertextbox(struct render_display *display, struct widget *widget,
 {
 
     blitline2(display, getcolor(CMAP_FRAME_MAIN, widget->state), line, x0, x1);
-    blitframe(display, widget->state, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line);
+    blitframe(display, widget->state, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1);
 
 }
 
@@ -814,7 +814,7 @@ static void renderwindow(struct render_display *display, struct widget *widget, 
     struct widget_window *window = widget->data;
     struct render_rowinfo rowinfo;
 
-    blitwindow(display, widget->state, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line);
+    blitwindow(display, widget->state, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1);
 
     if (render_getrowinfo(RENDER_FONTBOLD, pool_getstring(window->title), pool_getcstringlength(window->title), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
