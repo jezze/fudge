@@ -710,6 +710,34 @@ static void renderselect(struct render_display *display, struct widget *widget, 
 
 }
 
+static int getrowx(struct render_rowinfo *rowinfo, unsigned int align, int x, int w)
+{
+
+    switch (align)
+    {
+
+    case WIDGET_TEXT_ALIGN_LEFT:
+        return x;
+
+    case WIDGET_TEXT_ALIGN_CENTER:
+        return x + w / 2 - rowinfo->width / 2;
+
+    case WIDGET_TEXT_ALIGN_RIGHT:
+        return x + w - rowinfo->width;
+
+    }
+
+    return 0;
+
+}
+
+static int getrowy(struct render_rowinfo *rowinfo, int y, unsigned int rownum)
+{
+
+    return y + rownum * rowinfo->lineheight;
+
+}
+
 static void rendertext(struct render_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
@@ -738,26 +766,8 @@ static void rendertext(struct render_display *display, struct widget *widget, in
     if (render_getrowinfo(fontindex, tt, tl, &rowinfo, text->wrap, rw, text->rowstart))
     {
 
-        unsigned int rx = widget->position.x + roff;
-        unsigned int ry = widget->position.y + rownum * rowinfo.lineheight;
-
-        switch (text->align)
-        {
-
-        case WIDGET_TEXT_ALIGN_LEFT:
-            break;
-
-        case WIDGET_TEXT_ALIGN_CENTER:
-            rx += rw / 2 - rowinfo.width / 2;
-
-            break;
-
-        case WIDGET_TEXT_ALIGN_RIGHT:
-            rx += rw - rowinfo.width;
-
-            break;
-
-        }
+        unsigned int rx = getrowx(&rowinfo, text->align, widget->position.x + roff, rw);
+        unsigned int ry = getrowy(&rowinfo, widget->position.y, rownum);
 
         switch (text->mode)
         {
