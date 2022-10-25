@@ -148,36 +148,43 @@ static unsigned int getrowstart(unsigned int fontindex, char *text, unsigned int
 
 }
 
-static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int length, int lline, int h)
+static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int length, int line, int y, int h)
 {
 
-    unsigned int i;
+    int lline = line - y;
 
-    for (i = 0; i < length; i++)
+    if (lline >= 0 && lline < h)
     {
 
-        struct rowsegment *current = &rows[i];
+        unsigned int i;
 
-        switch (current->type)
+        for (i = 0; i < length; i++)
         {
 
-        case ROWSEGMENT_TYPE_RELY0Y0:
-            if (util_intersects(lline, current->p0, current->p1))
-                return current;
+            struct rowsegment *current = &rows[i];
 
-            break;
+            switch (current->type)
+            {
 
-        case ROWSEGMENT_TYPE_RELY0Y1:
-            if (util_intersects(lline, current->p0, h + current->p1))
-                return current;
+            case ROWSEGMENT_TYPE_RELY0Y0:
+                if (util_intersects(lline, current->p0, current->p1))
+                    return current;
 
-            break;
+                break;
 
-        case ROWSEGMENT_TYPE_RELY1Y1:
-            if (util_intersects(lline, h + current->p0, h + current->p1))
-                return current;
+            case ROWSEGMENT_TYPE_RELY0Y1:
+                if (util_intersects(lline, current->p0, h + current->p1))
+                    return current;
 
-            break;
+                break;
+
+            case ROWSEGMENT_TYPE_RELY1Y1:
+                if (util_intersects(lline, h + current->p0, h + current->p1))
+                    return current;
+
+                break;
+
+            }
 
         }
 
@@ -340,7 +347,7 @@ static void blittextinverted(struct render_display *display, unsigned int fontin
 static void blitsegments(struct render_display *display, int x0, int x1, int y, int h, unsigned int state, struct rowsegment *rows, unsigned int nrows, int line)
 {
 
-    struct rowsegment *rs = findrowsegment(rows, nrows, line - y, h);
+    struct rowsegment *rs = findrowsegment(rows, nrows, line, y, h);
 
     if (rs)
     {
