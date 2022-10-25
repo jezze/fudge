@@ -35,10 +35,10 @@ static struct token types[] =
 
 static struct token attributes[] =
 {
-    {WIDGET_ATTR_ALIGN, "align"},
     {WIDGET_ATTR_COLOR, "color"},
     {WIDGET_ATTR_COLUMNS, "columns"},
     {WIDGET_ATTR_CONTENT, "content"},
+    {WIDGET_ATTR_HALIGN, "halign"},
     {WIDGET_ATTR_ID, "id"},
     {WIDGET_ATTR_IN, "in"},
     {WIDGET_ATTR_LABEL, "label"},
@@ -50,6 +50,7 @@ static struct token attributes[] =
     {WIDGET_ATTR_TITLE, "title"},
     {WIDGET_ATTR_TYPE, "type"},
     {WIDGET_ATTR_WEIGHT, "weight"},
+    {WIDGET_ATTR_VALIGN, "valign"},
     {WIDGET_ATTR_WRAP, "wrap"}
 };
 
@@ -79,17 +80,24 @@ static struct token imagetypes[] =
     {WIDGET_IMAGE_TYPE_PCX, "image/pcx"}
 };
 
-static struct token textaligns[] =
+static struct token texthaligns[] =
 {
-    {WIDGET_TEXT_ALIGN_LEFT, "left"},
-    {WIDGET_TEXT_ALIGN_CENTER, "center"},
-    {WIDGET_TEXT_ALIGN_RIGHT, "right"}
+    {WIDGET_TEXT_HALIGN_LEFT, "left"},
+    {WIDGET_TEXT_HALIGN_CENTER, "center"},
+    {WIDGET_TEXT_HALIGN_RIGHT, "right"}
 };
 
 static struct token textweights[] =
 {
     {WIDGET_TEXT_WEIGHT_NORMAL, "normal"},
     {WIDGET_TEXT_WEIGHT_BOLD, "bold"}
+};
+
+static struct token textvaligns[] =
+{
+    {WIDGET_TEXT_VALIGN_TOP, "top"},
+    {WIDGET_TEXT_VALIGN_MIDDLE, "middle"},
+    {WIDGET_TEXT_VALIGN_BOTTOM, "bottom"}
 };
 
 static struct token textwraps[] =
@@ -280,8 +288,8 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
     switch (attribute)
     {
 
-    case WIDGET_ATTR_ALIGN:
-        text->align = getkey(textaligns, 3, value);
+    case WIDGET_ATTR_HALIGN:
+        text->halign = getkey(texthaligns, 3, value);
 
         break;
 
@@ -297,6 +305,11 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
 
     case WIDGET_ATTR_WEIGHT:
         text->weight = getkey(textweights, 2, value);
+
+        break;
+
+    case WIDGET_ATTR_VALIGN:
+        text->valign = getkey(textvaligns, 3, value);
 
         break;
 
@@ -421,7 +434,7 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 unsigned int widget_getattribute(char *value)
 {
 
-    return getkey(attributes, 16, value);
+    return getkey(attributes, 17, value);
 
 }
 
