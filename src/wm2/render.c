@@ -104,18 +104,12 @@ static unsigned int getcolor(unsigned int index, unsigned int state)
     case WIDGET_STATE_FOCUS:
         return c->focus;
 
-        break;
-
     case WIDGET_STATE_HOVER:
         return c->hover;
-
-        break;
 
     case WIDGET_STATE_NORMAL:
     default:
         return c->normal;
-
-        break;
 
     }
 
@@ -347,48 +341,54 @@ static void blitsegments(struct render_display *display, int x0, int x1, int y, 
 {
 
     struct rowsegment *rs = findrowsegment(rows, nrows, line - y, h);
-    unsigned int i;
 
-    for (i = 0; i < rs->numlines; i++)
+    if (rs)
     {
 
-        struct linesegment *p = &rs->lines[i];
-        int p0;
-        int p1;
+        unsigned int i;
 
-        switch (p->type)
+        for (i = 0; i < rs->numlines; i++)
         {
 
-        case LINESEGMENT_TYPE_RELX0X0:
-            p0 = x0 + p->p0;
-            p1 = x0 + p->p1;
+            struct linesegment *p = &rs->lines[i];
+            int p0;
+            int p1;
 
-            break;
+            switch (p->type)
+            {
 
-        case LINESEGMENT_TYPE_RELX0X1:
-            p0 = x0 + p->p0;
-            p1 = x1 + p->p1;
+            case LINESEGMENT_TYPE_RELX0X0:
+                p0 = x0 + p->p0;
+                p1 = x0 + p->p1;
 
-            break;
+                break;
 
-        case LINESEGMENT_TYPE_RELX1X1:
-            p0 = x1 + p->p0;
-            p1 = x1 + p->p1;
+            case LINESEGMENT_TYPE_RELX0X1:
+                p0 = x0 + p->p0;
+                p1 = x1 + p->p1;
 
-            break;
+                break;
 
-        default:
-            p0 = x0;
-            p1 = x1;
+            case LINESEGMENT_TYPE_RELX1X1:
+                p0 = x1 + p->p0;
+                p1 = x1 + p->p1;
 
-            break;
+                break;
+
+            default:
+                p0 = x0;
+                p1 = x1;
+
+                break;
+
+            }
+
+            p0 = util_max(p0, display->damage.position0.x);
+            p1 = util_min(p1, display->damage.position1.x);
+
+            blitline2(display, getcolor(p->color, state), line, p0, p1);
 
         }
-
-        p0 = util_max(p0, display->damage.position0.x);
-        p1 = util_min(p1, display->damage.position1.x);
-
-        blitline2(display, getcolor(p->color, state), line, p0, p1);
 
     }
 
