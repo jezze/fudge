@@ -390,7 +390,7 @@ static void blittextinverted(struct render_display *display, unsigned int fontin
 
 }
 
-static void blitsegments(struct render_display *display, int x0, int x1, int y, int h, unsigned int state, struct rowsegment *rows, unsigned int nrows, int line)
+static void blitsegments(struct render_display *display, int x, int y, int w, int h, unsigned int state, struct rowsegment *rows, unsigned int nrows, int line, int x0, int x1)
 {
 
     struct rowsegment *rs = findrowsegment(rows, nrows, line, y, h);
@@ -487,7 +487,7 @@ static void blitbutton(struct render_display *display, unsigned int state, int x
         {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, line0, 1}
     };
 
-    blitsegments(display, x, x + w, y, h, state, rows, 9, line);
+    blitsegments(display, x, y, w, h, state, rows, 9, line, x, x + w);
 
 }
 
@@ -551,7 +551,7 @@ static void blitframe(struct render_display *display, unsigned int state, int x,
         {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, line0, 1}
     };
 
-    blitsegments(display, x, x + w, y, h, state, rows, 13, line);
+    blitsegments(display, x, y, w, h, state, rows, 13, line, x, x + w);
 
 }
 
@@ -617,7 +617,7 @@ static void blitwindow(struct render_display *display, unsigned int state, int x
         {ROWSEGMENT_TYPE_RELY1Y1, -1, 0, line0, 1}
     };
 
-    blitsegments(display, x, x + w, y, h, state, rows, 11, line);
+    blitsegments(display, x, y, w, h, state, rows, 11, line, x, x + w);
 
 }
 
