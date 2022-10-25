@@ -669,7 +669,7 @@ static void renderselect(struct render_display *display, struct widget *widget, 
 
     extra = rowinfo.width + RENDER_SELECT_PADDING_WIDTH * 2;
 
-    blitpanel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+    blitpanel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
     blitpanel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (render_getrowinfo(RENDER_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
