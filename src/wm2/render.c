@@ -648,20 +648,18 @@ static void renderbutton(struct render_display *display, struct widget *widget, 
 {
 
     struct widget_button *button = widget->data;
-    char *tt = pool_getstring(button->label);
-    unsigned int tl = pool_getcstringlength(button->label);
     struct render_rowinfo rowinfo;
 
     blitbutton(display, widget->state, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line);
 
-    if (render_getrowinfo(RENDER_FONTBOLD, tt, tl, &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
+    if (render_getrowinfo(RENDER_FONTBOLD, pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
         unsigned int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
         unsigned int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h, 0);
 
         if (util_intersects(line, ry, ry + rowinfo.lineheight))
-            blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_BUTTON_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_BUTTON_TEXT, widget->state), pool_getstring(button->label), rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 
@@ -731,8 +729,6 @@ static void renderselect(struct render_display *display, struct widget *widget, 
 {
 
     struct widget_select *select = widget->data;
-    char *tt = pool_getstring(select->label);
-    unsigned int tl = pool_getcstringlength(select->label);
     struct render_rowinfo rowinfo;
     unsigned int extra;
 
@@ -743,14 +739,14 @@ static void renderselect(struct render_display *display, struct widget *widget, 
     blitbutton(display, widget->state, widget->position.x, widget->position.y, extra, widget->size.h, line);
     blitbutton(display, widget->state, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line);
 
-    if (render_getrowinfo(RENDER_FONTNORMAL, tt, tl, &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
+    if (render_getrowinfo(RENDER_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
         unsigned int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
         unsigned int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h, 0);
 
         if (util_intersects(line, ry, ry + rowinfo.lineheight))
-            blittextnormal(display, RENDER_FONTNORMAL, getcolor(CMAP_BUTTON_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextnormal(display, RENDER_FONTNORMAL, getcolor(CMAP_BUTTON_TEXT, widget->state), pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 
@@ -761,8 +757,6 @@ static void rendertext(struct render_display *display, struct widget *widget, in
 
     struct widget_text *text = widget->data;
     unsigned int fontindex = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
-    char *tt = pool_getstring(text->content);
-    unsigned int tl = pool_getcstringlength(text->content);
     unsigned int rownum = getrownum(fontindex, line, widget->position.y);
     struct render_rowinfo rowinfo;
     unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
@@ -773,15 +767,15 @@ static void rendertext(struct render_display *display, struct widget *widget, in
     {
 
         if (rownum > text->rownum)
-            text->rowstart = render_getrowinfo(fontindex, tt, tl, &rowinfo, text->wrap, rw, text->rowstart);
+            text->rowstart = render_getrowinfo(fontindex, pool_getstring(text->content), pool_getcstringlength(text->content), &rowinfo, text->wrap, rw, text->rowstart);
         else
-            text->rowstart = getrowstart(fontindex, tt, tl, rownum, text->wrap, widget->size.w);
+            text->rowstart = getrowstart(fontindex, pool_getstring(text->content), pool_getcstringlength(text->content), rownum, text->wrap, widget->size.w);
 
         text->rownum = rownum;
 
     }
 
-    if (render_getrowinfo(fontindex, tt, tl, &rowinfo, text->wrap, rw, text->rowstart))
+    if (render_getrowinfo(fontindex, pool_getstring(text->content), pool_getcstringlength(text->content), &rowinfo, text->wrap, rw, text->rowstart))
     {
 
         unsigned int rx = getrowx(&rowinfo, text->halign, widget->position.x + roff, rw);
@@ -791,12 +785,12 @@ static void rendertext(struct render_display *display, struct widget *widget, in
         {
 
         case WIDGET_TEXT_MODE_NORMAL:
-            blittextnormal(display, fontindex, getcolor(CMAP_TEXT_TEXT, widget->state), tt + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextnormal(display, fontindex, getcolor(CMAP_TEXT_TEXT, widget->state), pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
         case WIDGET_TEXT_MODE_INVERTED:
-            blittextinverted(display, fontindex, getcolor(CMAP_TEXT_TEXT, widget->state), tt + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextinverted(display, fontindex, getcolor(CMAP_TEXT_TEXT, widget->state), pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
@@ -818,20 +812,18 @@ static void renderwindow(struct render_display *display, struct widget *widget, 
 {
 
     struct widget_window *window = widget->data;
-    char *tt = pool_getstring(window->title);
-    unsigned int tl = pool_getcstringlength(window->title);
     struct render_rowinfo rowinfo;
 
     blitwindow(display, widget->state, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line);
 
-    if (render_getrowinfo(RENDER_FONTBOLD, tt, tl, &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
+    if (render_getrowinfo(RENDER_FONTBOLD, pool_getstring(window->title), pool_getcstringlength(window->title), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
         unsigned int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
         unsigned int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, RENDER_WINDOW_TITLE_HEIGHT + RENDER_WINDOW_BORDER_HEIGHT, 0);
 
         if (util_intersects(line, ry, ry + rowinfo.lineheight))
-            blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_WINDOW_TEXT, widget->state), tt, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextnormal(display, RENDER_FONTBOLD, getcolor(CMAP_WINDOW_TEXT, widget->state), pool_getstring(window->title), rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 
