@@ -15,11 +15,11 @@
 #define ROWSEGMENT_TYPE_RELY0Y1         2
 #define ROWSEGMENT_TYPE_RELY1Y1         3
 #define CMAP_PANEL_SHADOW               0
-#define CMAP_PANEL_MAIN                 1
-#define CMAP_PANEL_LIGHT                2
+#define CMAP_PANEL_NORMAL               1
+#define CMAP_PANEL_HIGHLIGHT            2
 #define CMAP_FRAME_SHADOW               0
-#define CMAP_FRAME_MAIN                 1
-#define CMAP_FRAME_LIGHT                2
+#define CMAP_FRAME_NORMAL               1
+#define CMAP_FRAME_HIGHLIGHT            2
 #define CMAP_TEXT_COLOR                 0
 
 struct font
@@ -51,15 +51,6 @@ struct rowsegment
     int p1;
     struct linesegment *lines;
     unsigned int numlines;
-
-};
-
-struct cmap
-{
-
-    unsigned int normal;
-    unsigned int focus;
-    unsigned int hover;
 
 };
 
@@ -428,21 +419,21 @@ static void blitpanel(struct render_display *display, int x, int y, int w, int h
     };
     static struct linesegment line2[3] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_PANEL_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 2, -2, CMAP_PANEL_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X1, 2, -2, CMAP_PANEL_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_PANEL_SHADOW}
     };
     static struct linesegment line3[5] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_PANEL_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 4, CMAP_PANEL_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 4, -4, CMAP_PANEL_MAIN},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -2, CMAP_PANEL_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 4, CMAP_PANEL_HIGHLIGHT},
+        {LINESEGMENT_TYPE_RELX0X1, 4, -4, CMAP_PANEL_NORMAL},
+        {LINESEGMENT_TYPE_RELX1X1, -4, -2, CMAP_PANEL_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_PANEL_SHADOW}
     };
     static struct linesegment line4[5] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_PANEL_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_PANEL_LIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_PANEL_MAIN},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_PANEL_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_PANEL_HIGHLIGHT},
+        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_PANEL_NORMAL},
+        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_PANEL_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_PANEL_SHADOW}
     };
     static struct rowsegment rows[9] = {
@@ -472,39 +463,39 @@ static void blitframe(struct render_display *display, int x, int y, int w, int h
     };
     static struct linesegment line2[3] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 3, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_FRAME_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_FRAME_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -3, 0, CMAP_FRAME_SHADOW}
     };
     static struct linesegment line3[5] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 4, CMAP_FRAME_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 4, CMAP_FRAME_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX0X1, 4, -4, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -4, -2, CMAP_FRAME_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -4, -2, CMAP_FRAME_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_FRAME_SHADOW}
     };
     static struct linesegment line4[5] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_FRAME_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_FRAME_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_FRAME_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_FRAME_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_FRAME_SHADOW}
     };
     static struct linesegment line5[7] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_FRAME_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_FRAME_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX0X0, 3, 6, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 6, -6, CMAP_FRAME_MAIN},
+        {LINESEGMENT_TYPE_RELX0X1, 6, -6, CMAP_FRAME_NORMAL},
         {LINESEGMENT_TYPE_RELX1X1, -6, -3, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_FRAME_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_FRAME_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_FRAME_SHADOW}
     };
     static struct linesegment line6[7] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_FRAME_LIGHT},
+        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_FRAME_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX0X0, 3, 5, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 5, -5, CMAP_FRAME_MAIN},
+        {LINESEGMENT_TYPE_RELX0X1, 5, -5, CMAP_FRAME_NORMAL},
         {LINESEGMENT_TYPE_RELX1X1, -5, -3, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_FRAME_LIGHT},
+        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_FRAME_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_FRAME_SHADOW}
     };
     static struct rowsegment rows[13] = {
@@ -567,8 +558,8 @@ static void renderbutton(struct render_display *display, struct widget *widget, 
     };
     static unsigned int cmapfocus[3] = {
         0xE0181818,
-        0xE0505050,
-        0xE0808080,
+        0xE0585858,
+        0xE0888888,
     };
     static unsigned int cmaptext[1] = {
         0xE0FFFFFF,
@@ -667,8 +658,8 @@ static void renderselect(struct render_display *display, struct widget *widget, 
     };
     static unsigned int cmapfocus[3] = {
         0xE0181818,
-        0xE0505050,
-        0xE0808080,
+        0xE0585858,
+        0xE0888888,
     };
     static unsigned int cmaptext[1] = {
         0xE0FFFFFF,
@@ -703,8 +694,14 @@ static void rendertext(struct render_display *display, struct widget *widget, in
     struct render_rowinfo rowinfo;
     unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
     unsigned int rw = widget->size.w - roff;
-    static unsigned int cmaptext[1] = {
-        0xE0FFFFFF,
+    static unsigned int cmapnormal[1] = {
+        0xE0E0E0E0,
+    };
+    static unsigned int cmaphover[1] = {
+        0xE0E0E0E0,
+    };
+    static unsigned int cmapfocus[1] = {
+        0xE0F0F0F0,
     };
 
     /* Rudimentary caching */
@@ -730,12 +727,12 @@ static void rendertext(struct render_display *display, struct widget *widget, in
         {
 
         case WIDGET_TEXT_MODE_NORMAL:
-            blittextnormal(display, fontindex, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextnormal(display, fontindex, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
         case WIDGET_TEXT_MODE_INVERTED:
-            blittextinverted(display, fontindex, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blittextinverted(display, fontindex, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
@@ -761,7 +758,7 @@ static void rendertextbox(struct render_display *display, struct widget *widget,
     static unsigned int cmapfocus[3] = {
         0xE0181818,
         0xE0282828,
-        0xE0606060,
+        0xE0686868,
     };
 
     blitframe(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
