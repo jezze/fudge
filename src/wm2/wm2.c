@@ -170,7 +170,7 @@ static struct widget *gethoverwidgetat(struct widget *parent, int x, int y)
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_TEXTBOX:
     case WIDGET_TYPE_WINDOW:
-        if (x > parent->position.x && x <= parent->position.x + parent->size.w && y > parent->position.y && y <= parent->position.y + parent->size.h)
+        if (util_intersects(x, parent->position.x, parent->position.x + parent->size.w) && util_intersects(y, parent->position.y, parent->position.y + parent->size.h))
             return parent;
 
         break;
@@ -204,7 +204,7 @@ static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned 
     if (!type || type == parent->type)
     {
 
-        if (x > parent->position.x && x <= parent->position.x + parent->size.w && y > parent->position.y && y <= parent->position.y + parent->size.h)
+        if (util_intersects(x, parent->position.x, parent->position.x + parent->size.w) && util_intersects(y, parent->position.y, parent->position.y + parent->size.h))
             return parent;
 
     }
@@ -443,17 +443,22 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     state.mouseposition.x = x;
     state.mouseposition.y = y;
 
-    damage(state.mousewidget);
-
-    state.mousewidget->position.x = state.mouseposition.x;
-    state.mousewidget->position.y = state.mouseposition.y;
-
-    damage(state.mousewidget);
-
-    if (state.mousebuttonleft && (state.keymod & KEYMOD_ALT))
+    if (state.mousewidget)
     {
 
-        if (state.focusedwindow)
+        damage(state.mousewidget);
+
+        state.mousewidget->position.x = state.mouseposition.x;
+        state.mousewidget->position.y = state.mouseposition.y;
+
+        damage(state.mousewidget);
+
+    }
+
+    if (state.focusedwindow)
+    {
+
+        if (state.mousebuttonleft && (state.keymod & KEYMOD_ALT))
         {
 
             damage(state.focusedwindow);
@@ -465,12 +470,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-    }
-
-    if (state.mousebuttonright && (state.keymod & KEYMOD_ALT))
-    {
-
-        if (state.focusedwindow)
+        if (state.mousebuttonright && (state.keymod & KEYMOD_ALT))
         {
 
             damage(state.focusedwindow);
