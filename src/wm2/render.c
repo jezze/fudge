@@ -232,7 +232,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
     render_getrowinfo(RENDER_FONTNORMAL, "X", 1, &rowinfo, 0, 0, 0);
 
-    extra = rowinfo.width + RENDER_SELECT_PADDING_WIDTH * 2;
+    extra = rowinfo.width + 36 * 2;
 
     blit_panel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
     blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));

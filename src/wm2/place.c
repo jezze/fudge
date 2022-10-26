@@ -8,6 +8,18 @@
 #include "place.h"
 #include "render.h"
 
+#define RENDER_BUTTON_PADDING_WIDTH     36
+#define RENDER_BUTTON_PADDING_HEIGHT    20
+#define RENDER_CHOICE_PADDING_WIDTH     36
+#define RENDER_CHOICE_PADDING_HEIGHT    20
+#define RENDER_SELECT_PADDING_WIDTH     36
+#define RENDER_SELECT_PADDING_HEIGHT    20
+#define RENDER_TEXTBOX_PADDING_WIDTH    20
+#define RENDER_TEXTBOX_PADDING_HEIGHT   20
+#define RENDER_WINDOW_BORDER_WIDTH      8
+#define RENDER_WINDOW_BORDER_HEIGHT     8
+#define RENDER_WINDOW_TITLE_HEIGHT      36
+
 static void placebutton(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
