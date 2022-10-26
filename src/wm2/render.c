@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 #include <image.h>
+#include "config.h"
 #include "util.h"
 #include "widget.h"
 #include "pool.h"
@@ -232,7 +233,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
     render_getrowinfo(RENDER_FONTNORMAL, "X", 1, &rowinfo, 0, 0, 0);
 
-    extra = rowinfo.width + 36 * 2;
+    extra = rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2;
 
     blit_panel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
     blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
@@ -344,11 +345,11 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
         0xE0585858,
     };
 
-    blit_panel(display, widget->position.x, widget->position.y, 36, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_panel(display, widget->position.x + 36, widget->position.y, 36, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_panel(display, widget->position.x + 72, widget->position.y, widget->size.w - 108, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_panel(display, widget->position.x + widget->size.w - 36, widget->position.y, 36, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_panel(display, widget->position.x, widget->position.y + 36, widget->size.w, widget->size.h - 36, line, x0, x1, getcmap(widget->state, cmapmain, cmapmain, cmapmain));
+    blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 0, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 2, widget->position.y, widget->size.w - CONFIG_WINDOW_ICON_WIDTH * 3, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x + widget->size.w - CONFIG_WINDOW_ICON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x, widget->position.y + CONFIG_WINDOW_ICON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_ICON_HEIGHT, line, x0, x1, getcmap(widget->state, cmapmain, cmapmain, cmapmain));
 
 }
 

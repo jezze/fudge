@@ -1,24 +1,13 @@
 #include <fudge.h>
 #include <abi.h>
 #include <image.h>
+#include "config.h"
 #include "util.h"
 #include "widget.h"
 #include "pool.h"
 #include "blit.h"
 #include "place.h"
 #include "render.h"
-
-#define BUTTON_PADDING_WIDTH            36
-#define BUTTON_PADDING_HEIGHT           20
-#define CHOICE_PADDING_WIDTH            36
-#define CHOICE_PADDING_HEIGHT           20
-#define SELECT_PADDING_WIDTH            36
-#define SELECT_PADDING_HEIGHT           20
-#define TEXTBOX_PADDING_WIDTH           20
-#define TEXTBOX_PADDING_HEIGHT          20
-#define WINDOW_BORDER_WIDTH             8
-#define WINDOW_BORDER_HEIGHT            8
-#define WINDOW_TITLE_HEIGHT             36
 
 static void placebutton(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
@@ -30,8 +19,8 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(rowinfo.width + BUTTON_PADDING_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(rowinfo.height + BUTTON_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(rowinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(rowinfo.height + CONFIG_BUTTON_PADDING_HEIGHT * 2, minh, maxh);
 
 }
 
@@ -45,8 +34,8 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(rowinfo.width + CHOICE_PADDING_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(rowinfo.height + CHOICE_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(rowinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, minw, maxw);
+    widget->size.h = util_clamp(rowinfo.height + CONFIG_CHOICE_PADDING_HEIGHT * 2, minh, maxh);
 
 }
 
@@ -345,14 +334,14 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
     render_getrowinfo(RENDER_FONTNORMAL, "X", 1, &rowinfo, 0, 0, 0);
 
-    extra = rowinfo.width + SELECT_PADDING_WIDTH * 2;
+    extra = rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2;
 
     render_getrowinfo(RENDER_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, 0, 0, 0);
 
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(rowinfo.width + SELECT_PADDING_WIDTH * 2 + extra, minw, maxw);
-    widget->size.h = util_clamp(rowinfo.height + SELECT_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, minw, maxw);
+    widget->size.h = util_clamp(rowinfo.height + CONFIG_SELECT_PADDING_HEIGHT * 2, minh, maxh);
 
 }
 
@@ -377,10 +366,10 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
     struct widget_textbox *textbox = widget->data;
     struct list_item *current = 0;
-    int offx = TEXTBOX_PADDING_WIDTH;
-    int offy = TEXTBOX_PADDING_HEIGHT;
-    int offw = TEXTBOX_PADDING_WIDTH * 2;
-    int offh = TEXTBOX_PADDING_HEIGHT * 2;
+    int offx = CONFIG_TEXTBOX_PADDING_WIDTH;
+    int offy = CONFIG_TEXTBOX_PADDING_HEIGHT;
+    int offw = CONFIG_TEXTBOX_PADDING_WIDTH * 2;
+    int offh = CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
     int soffy = offy - textbox->scroll;
     int soffh = offh;
     int totw = 0;
@@ -442,8 +431,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
 
         lasttype = child->type;
-        offy += child->size.h + TEXTBOX_PADDING_HEIGHT;
-        offh += child->size.h + TEXTBOX_PADDING_HEIGHT;
+        offy += child->size.h + CONFIG_TEXTBOX_PADDING_HEIGHT;
+        offh += child->size.h + CONFIG_TEXTBOX_PADDING_HEIGHT;
         totw = util_max(totw, child->size.w);
 
     }
@@ -459,10 +448,10 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct list_item *current = 0;
-    int offx = WINDOW_BORDER_WIDTH;
-    int offy = WINDOW_BORDER_HEIGHT + WINDOW_TITLE_HEIGHT;
-    int offw = WINDOW_BORDER_WIDTH * 2;
-    int offh = WINDOW_BORDER_HEIGHT * 2 + WINDOW_TITLE_HEIGHT;
+    int offx = CONFIG_WINDOW_BORDER_WIDTH;
+    int offy = CONFIG_WINDOW_BORDER_HEIGHT + CONFIG_WINDOW_ICON_HEIGHT;
+    int offw = CONFIG_WINDOW_BORDER_WIDTH * 2;
+    int offh = CONFIG_WINDOW_BORDER_HEIGHT * 2 + CONFIG_WINDOW_ICON_HEIGHT;
 
     while ((current = pool_nextin(current, widget)))
     {
