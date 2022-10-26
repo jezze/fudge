@@ -89,6 +89,56 @@ static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int l
 
 }
 
+static void blitrowsegment(struct blit_display *display, int x, int w, struct rowsegment *rs, int line, int x0, int x1, unsigned int *cmap)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < rs->numlines; i++)
+    {
+
+        struct linesegment *p = &rs->lines[i];
+        int p0;
+        int p1;
+
+        switch (p->type)
+        {
+
+        case LINESEGMENT_TYPE_RELX0X0:
+            p0 = x + p->p0;
+            p1 = x + p->p1;
+
+            break;
+
+        case LINESEGMENT_TYPE_RELX0X1:
+            p0 = x + p->p0;
+            p1 = x + w + p->p1;
+
+            break;
+
+        case LINESEGMENT_TYPE_RELX1X1:
+            p0 = x + w + p->p0;
+            p1 = x + w + p->p1;
+
+            break;
+
+        default:
+            p0 = x;
+            p1 = x + w;
+
+            break;
+
+        }
+
+        p0 = util_max(p0, x0);
+        p1 = util_min(p1, x1);
+
+        blit_alphaline(display, cmap[p->color], line, p0, p1);
+
+    }
+
+}
+
 void blit_line(struct blit_display *display, unsigned int color, int line, int x0, int x1)
 {
 
@@ -232,56 +282,6 @@ void blit_textinverted(struct blit_display *display, struct blit_font *font, uns
         }
 
         rx += metricsdata.width;
-
-    }
-
-}
-
-static void blitrowsegment(struct blit_display *display, int x, int w, struct rowsegment *rs, int line, int x0, int x1, unsigned int *cmap)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < rs->numlines; i++)
-    {
-
-        struct linesegment *p = &rs->lines[i];
-        int p0;
-        int p1;
-
-        switch (p->type)
-        {
-
-        case LINESEGMENT_TYPE_RELX0X0:
-            p0 = x + p->p0;
-            p1 = x + p->p1;
-
-            break;
-
-        case LINESEGMENT_TYPE_RELX0X1:
-            p0 = x + p->p0;
-            p1 = x + w + p->p1;
-
-            break;
-
-        case LINESEGMENT_TYPE_RELX1X1:
-            p0 = x + w + p->p0;
-            p1 = x + w + p->p1;
-
-            break;
-
-        default:
-            p0 = x;
-            p1 = x + w;
-
-            break;
-
-        }
-
-        p0 = util_max(p0, x0);
-        p1 = util_min(p1, x1);
-
-        blit_alphaline(display, cmap[p->color], line, p0, p1);
 
     }
 

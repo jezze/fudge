@@ -217,8 +217,12 @@ static void damage(struct widget *widget)
 {
 
     struct list_item *current = 0;
+    int x0 = util_clamp(widget->position.x, 0, display.size.w);
+    int y0 = util_clamp(widget->position.y, 0, display.size.h);
+    int x1 = util_clamp(widget->position.x + widget->size.w, 0, display.size.w);
+    int y1 = util_clamp(widget->position.y + widget->size.h, 0, display.size.h);
 
-    render_damage(&display, &displaydamage, widget->position.x, widget->position.y, widget->position.x + widget->size.w, widget->position.y + widget->size.h);
+    render_damage(&displaydamage, x0, y0, x1, y1);
 
     while ((current = pool_nextin(current, widget)))
         damage(current->data);
@@ -574,7 +578,8 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     unsigned int padding = 4 + factor * 2;
     struct widget_image *mouseimage = state.mousewidget->data;
 
-    render_setup(&display, &displaydamage, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
+    render_setup(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
+    render_damage(&displaydamage, 0, 0, videomode->w, videomode->h);
 
     state.mouseposition.x = videomode->w / 4;
     state.mouseposition.y = videomode->h / 4;

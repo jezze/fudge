@@ -510,13 +510,8 @@ unsigned int render_gettextinfo(unsigned int fontindex, char *text, unsigned int
 
 }
 
-void render_damage(struct blit_display *display, struct blit_damage *damage, int x0, int y0, int x1, int y1)
+void render_damage(struct blit_damage *damage, int x0, int y0, int x1, int y1)
 {
-
-    x0 = util_clamp(x0, 0, display->size.w);
-    y0 = util_clamp(y0, 0, display->size.h);
-    x1 = util_clamp(x1, 0, display->size.w);
-    y1 = util_clamp(y1, 0, display->size.h);
 
     switch (damage->state)
     {
@@ -599,15 +594,13 @@ void render_setfont(unsigned int fontindex, void *data, unsigned int lineheight,
 
 }
 
-void render_setup(struct blit_display *display, struct blit_damage *damage, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
+void render_setup(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
     display->framebuffer = framebuffer;
     display->size.w = w;
     display->size.h = h;
     display->bpp = bpp;
-
-    render_damage(display, damage, 0, 0, display->size.w, display->size.h);
 
 }
 
