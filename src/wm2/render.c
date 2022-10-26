@@ -73,7 +73,7 @@ static int getrowy(struct render_rowinfo *rowinfo, unsigned int valign, int y, i
 
 }
 
-static unsigned int getrowstart(unsigned int fontindex, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw)
+static unsigned int getrowstart(struct blit_font *font, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw)
 {
 
     unsigned int offset = 0;
@@ -83,7 +83,7 @@ static unsigned int getrowstart(unsigned int fontindex, char *text, unsigned int
     if (!rownum)
         return 0;
 
-    for (rows = 1; (offset = render_getrowinfo(fontindex, text, length, &rowinfo, wrap, maxw, offset)); rows++)
+    for (rows = 1; (offset = render_getrowinfo(font, text, length, &rowinfo, wrap, maxw, offset)); rows++)
     {
 
         if (rows == rownum)
@@ -121,7 +121,7 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 
     blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
-    if (render_getrowinfo(POOL_FONTBOLD, pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
+    if (render_getrowinfo(pool_getfont(POOL_FONTBOLD), pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
         int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
@@ -219,14 +219,14 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
         0xE0FFFFFF,
     };
 
-    render_getrowinfo(POOL_FONTNORMAL, "X", 1, &rowinfo, 0, 0, 0);
+    render_getrowinfo(pool_getfont(POOL_FONTNORMAL), "X", 1, &rowinfo, 0, 0, 0);
 
     extra = rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2;
 
     blit_panel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
     blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
-    if (render_getrowinfo(POOL_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
+    if (render_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
         int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
@@ -264,15 +264,15 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     {
 
         if (rownum > text->rownum)
-            text->rowstart = render_getrowinfo(fontindex, pool_getstring(text->content), pool_getcstringlength(text->content), &rowinfo, text->wrap, rw, text->rowstart);
+            text->rowstart = render_getrowinfo(font, pool_getstring(text->content), pool_getcstringlength(text->content), &rowinfo, text->wrap, rw, text->rowstart);
         else
-            text->rowstart = getrowstart(fontindex, pool_getstring(text->content), pool_getcstringlength(text->content), rownum, text->wrap, widget->size.w);
+            text->rowstart = getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), rownum, text->wrap, widget->size.w);
 
         text->rownum = rownum;
 
     }
 
-    if (render_getrowinfo(fontindex, pool_getstring(text->content), pool_getcstringlength(text->content), &rowinfo, text->wrap, rw, text->rowstart))
+    if (render_getrowinfo(font, pool_getstring(text->content), pool_getcstringlength(text->content), &rowinfo, text->wrap, rw, text->rowstart))
     {
 
         int rx = getrowx(&rowinfo, text->halign, widget->position.x + roff, rw);
@@ -387,10 +387,9 @@ static void renderwidget(struct blit_display *display, struct widget *widget, in
 
 }
 
-unsigned int render_getrowinfo(unsigned int fontindex, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int wrap, unsigned int maxw, unsigned int offset)
+unsigned int render_getrowinfo(struct blit_font *font, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int wrap, unsigned int maxw, unsigned int offset)
 {
 
-    struct blit_font *font = pool_getfont(fontindex);
     unsigned int si = 0;
     unsigned int w = 0;
     unsigned int sw = 0;
@@ -471,12 +470,12 @@ unsigned int render_getrowinfo(unsigned int fontindex, char *text, unsigned int 
 
 }
 
-unsigned int render_gettextinfo(unsigned int fontindex, char *text, unsigned int length, struct render_textinfo *textinfo, unsigned int wrap, unsigned int offw, unsigned int maxw)
+unsigned int render_gettextinfo(struct blit_font *font, char *text, unsigned int length, struct render_textinfo *textinfo, unsigned int wrap, unsigned int offw, unsigned int maxw)
 {
 
     unsigned int offset = 0;
 
-    if ((offset = render_getrowinfo(fontindex, text, length, &textinfo->last, wrap, maxw - offw, offset)))
+    if ((offset = render_getrowinfo(font, text, length, &textinfo->last, wrap, maxw - offw, offset)))
     {
 
         textinfo->last.width += offw;
@@ -485,7 +484,7 @@ unsigned int render_gettextinfo(unsigned int fontindex, char *text, unsigned int
         textinfo->height = textinfo->last.height;
         textinfo->rows = 1;
 
-        while ((offset = render_getrowinfo(fontindex, text, length, &textinfo->last, wrap, maxw, offset)))
+        while ((offset = render_getrowinfo(font, text, length, &textinfo->last, wrap, maxw, offset)))
         {
 
             textinfo->width = util_max(textinfo->width, textinfo->last.width);
