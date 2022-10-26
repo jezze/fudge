@@ -12,25 +12,6 @@
 #define RENDER_WINDOW_BORDER_HEIGHT     5
 #define RENDER_WINDOW_TITLE_HEIGHT      36
 
-struct render_damage
-{
-
-    unsigned int state;
-    struct widget_position position0;
-    struct widget_position position1;
-
-};
-
-struct render_display
-{
-
-    void *framebuffer;
-    struct widget_size size;
-    unsigned int bpp;
-    struct render_damage damage;
-
-};
-
 struct render_rowinfo
 {
 
@@ -55,7 +36,7 @@ struct render_textinfo
 
 unsigned int render_getrowinfo(unsigned int index, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int wrap, unsigned int maxw, unsigned int offset);
 unsigned int render_gettextinfo(unsigned int index, char *text, unsigned int length, struct render_textinfo *textinfo, unsigned int wrap, unsigned int offw, unsigned int maxw);
-void render_damage(struct render_display *display, int x0, int y0, int x1, int y1);
-void render_render(struct render_display *display);
+void render_damage(struct blit_display *display, int x0, int y0, int x1, int y1);
+void render_render(struct blit_display *display);
 void render_setfont(unsigned int index, void *data, unsigned int lineheight, unsigned int padding);
-void render_setup(struct render_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp);
+void render_setup(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp);

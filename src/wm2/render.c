@@ -4,59 +4,14 @@
 #include "util.h"
 #include "widget.h"
 #include "pool.h"
+#include "blit.h"
 #include "render.h"
 
 #define DAMAGE_STATE_NONE               0
 #define DAMAGE_STATE_MADE               1
-#define LINESEGMENT_TYPE_RELX0X0        1
-#define LINESEGMENT_TYPE_RELX0X1        2
-#define LINESEGMENT_TYPE_RELX1X1        3
-#define ROWSEGMENT_TYPE_RELY0Y0         1
-#define ROWSEGMENT_TYPE_RELY0Y1         2
-#define ROWSEGMENT_TYPE_RELY1Y1         3
-#define CMAP_PANEL_SHADOW               0
-#define CMAP_PANEL_NORMAL               1
-#define CMAP_PANEL_HIGHLIGHT            2
-#define CMAP_FRAME_SHADOW               0
-#define CMAP_FRAME_NORMAL               1
-#define CMAP_FRAME_HIGHLIGHT            2
 #define CMAP_TEXT_COLOR                 0
 
-struct font
-{
-
-    unsigned char *data;
-    unsigned char *bitmapdata;
-    unsigned int bitmapalign;
-    unsigned int lineheight;
-    unsigned int padding;
-
-};
-
-struct linesegment
-{
-
-    unsigned int type;
-    int p0;
-    int p1;
-    unsigned int color;
-
-};
-
-struct rowsegment
-{
-
-    unsigned int type;
-    int p0;
-    int p1;
-    struct linesegment *lines;
-    unsigned int numlines;
-
-};
-
-static struct font fonts[32];
-static unsigned int linebuffer[3840];
-static struct pool_pcxresource pcxresource;
+static struct blit_font fonts[32];
 
 static unsigned int *getcmap(unsigned int state, unsigned int *normal, unsigned int *hover, unsigned int *focus)
 {
@@ -81,7 +36,7 @@ static unsigned int *getcmap(unsigned int state, unsigned int *normal, unsigned 
 static unsigned int getrownum(unsigned int fontindex, int line, int y)
 {
 
-    struct font *font = &fonts[fontindex];
+    struct blit_font *font = &fonts[fontindex];
 
     return (line - y) / font->lineheight;
 
@@ -151,342 +106,7 @@ static unsigned int getrowstart(unsigned int fontindex, char *text, unsigned int
 
 }
 
-static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int length, int line, int y, int h)
-{
-
-    int lline = line - y;
-
-    if (lline >= 0 && lline < h)
-    {
-
-        unsigned int i;
-
-        for (i = 0; i < length; i++)
-        {
-
-            struct rowsegment *current = &rows[i];
-
-            switch (current->type)
-            {
-
-            case ROWSEGMENT_TYPE_RELY0Y0:
-                if (util_intersects(lline, current->p0, current->p1))
-                    return current;
-
-                break;
-
-            case ROWSEGMENT_TYPE_RELY0Y1:
-                if (util_intersects(lline, current->p0, h + current->p1))
-                    return current;
-
-                break;
-
-            case ROWSEGMENT_TYPE_RELY1Y1:
-                if (util_intersects(lline, h + current->p0, h + current->p1))
-                    return current;
-
-                break;
-
-            }
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-static void blitline(struct render_display *display, unsigned int color, int line, int x0, int x1)
-{
-
-    while (x0 < x1)
-        linebuffer[x0++] = color;
-
-}
-
-static void blitline2(struct render_display *display, unsigned int color, int line, int x0, int x1)
-{
-
-    unsigned char *fg = (unsigned char *)&color;
-
-    while (x0 < x1)
-    {
-
-        unsigned char *bg = (unsigned char *)&linebuffer[x0];
-        unsigned char *result = bg;
-        unsigned int alpha = fg[3] + 1;
-        unsigned int inv_alpha = 256 - fg[3];
-
-        result[0] = ((alpha * fg[0] + inv_alpha * bg[0]) >> 8);
-        result[1] = ((alpha * fg[1] + inv_alpha * bg[1]) >> 8);
-        result[2] = ((alpha * fg[2] + inv_alpha * bg[2]) >> 8);
-        result[3] = 0xFF;
-
-        x0++;
-
-    }
-
-}
-
-static void blitcmap32line(struct render_display *display, int x, void *idata, unsigned int iwidth, unsigned int *cmap, int lline)
-{
-
-    unsigned char *data = idata;
-    unsigned int w = (x + iwidth >= display->size.w) ? display->size.w - x : iwidth;
-    int i;
-
-    for (i = 0; i < w; i++)
-    {
-
-        unsigned int soffset = (lline * iwidth + i);
-        unsigned int toffset = x + i;
-
-        if (data[soffset] != 0xFF)
-            linebuffer[toffset] = cmap[data[soffset]];
-
-    }
-
-}
-
-static void blittextnormal(struct render_display *display, unsigned int fontindex, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
-{
-
-    struct font *font = &fonts[fontindex];
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        unsigned short index = pcf_getindex(font->data, text[i]);
-        unsigned int offset = pcf_getbitmapoffset(font->data, index);
-        struct pcf_metricsdata metricsdata;
-        unsigned int lline;
-        unsigned int height;
-
-        pcf_readmetricsdata(font->data, index, &metricsdata);
-
-        height = metricsdata.ascent + metricsdata.descent;
-        lline = (line - ry) % font->lineheight - (font->lineheight - height) / 2;
-
-        if (util_intersects(lline, 0, height))
-        {
-
-            if (util_intersects(rx, x0, x1) || util_intersects(rx + metricsdata.width, x0, x1))
-            {
-
-                unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
-                int r0 = util_max(0, x0 - rx);
-                int r1 = util_min(x1 - rx, metricsdata.width);
-                unsigned int r;
-
-                for (r = r0; r < r1; r++)
-                {
-
-                    if (data[(r >> 3)] & (0x80 >> (r % 8)))
-                        blitline(display, color, line, rx + r, rx + r + 1);
-
-                }
-
-            }
-
-        }
-
-        rx += metricsdata.width;
-
-    }
-
-}
-
-static void blittextinverted(struct render_display *display, unsigned int fontindex, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
-{
-
-    struct font *font = &fonts[fontindex];
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        unsigned short index = pcf_getindex(font->data, text[i]);
-        unsigned int offset = pcf_getbitmapoffset(font->data, index);
-        struct pcf_metricsdata metricsdata;
-        unsigned int lline;
-        unsigned int height;
-
-        pcf_readmetricsdata(font->data, index, &metricsdata);
-
-        height = metricsdata.ascent + metricsdata.descent;
-        lline = (line - ry) % font->lineheight - (font->lineheight - height) / 2;
-
-        if (util_intersects(lline, 0, height))
-        {
-
-            if (util_intersects(rx, x0, x1) || util_intersects(rx + metricsdata.width, x0, x1))
-            {
-
-                unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
-                int r0 = util_max(0, x0 - rx);
-                int r1 = util_min(x1 - rx, metricsdata.width);
-                unsigned int r;
-
-                for (r = r0; r < r1; r++)
-                {
-
-                    if (!(data[(r >> 3)] & (0x80 >> (r % 8))))
-                        blitline(display, color, line, rx + r, rx + r + 1);
-
-                }
-
-            }
-
-        }
-
-        rx += metricsdata.width;
-
-    }
-
-}
-
-static void blitrowsegment(struct render_display *display, int x, int w, struct rowsegment *rs, int line, int x0, int x1, unsigned int *cmap)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < rs->numlines; i++)
-    {
-
-        struct linesegment *p = &rs->lines[i];
-        int p0;
-        int p1;
-
-        switch (p->type)
-        {
-
-        case LINESEGMENT_TYPE_RELX0X0:
-            p0 = x + p->p0;
-            p1 = x + p->p1;
-
-            break;
-
-        case LINESEGMENT_TYPE_RELX0X1:
-            p0 = x + p->p0;
-            p1 = x + w + p->p1;
-
-            break;
-
-        case LINESEGMENT_TYPE_RELX1X1:
-            p0 = x + w + p->p0;
-            p1 = x + w + p->p1;
-
-            break;
-
-        default:
-            p0 = x;
-            p1 = x + w;
-
-            break;
-
-        }
-
-        p0 = util_max(p0, x0);
-        p1 = util_min(p1, x1);
-
-        blitline2(display, cmap[p->color], line, p0, p1);
-
-    }
-
-}
-
-static void blitpanel(struct render_display *display, int x, int y, int w, int h, int line, int x0, int x1, unsigned int *cmap)
-{
-
-    static struct linesegment line0[1] = {
-        {LINESEGMENT_TYPE_RELX0X1, 0, 0, CMAP_PANEL_SHADOW}
-    };
-    static struct linesegment line1[3] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_PANEL_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 2, -2, CMAP_PANEL_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_PANEL_SHADOW}
-    };
-    static struct linesegment line2[5] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_PANEL_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_PANEL_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_PANEL_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_PANEL_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_PANEL_SHADOW}
-    };
-    static struct rowsegment rows[5] = {
-        {ROWSEGMENT_TYPE_RELY0Y0, 0, 2, line0, 1},
-        {ROWSEGMENT_TYPE_RELY0Y0, 2, 3, line1, 3},
-        {ROWSEGMENT_TYPE_RELY0Y1, 3, -3, line2, 5},
-        {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, line1, 3},
-        {ROWSEGMENT_TYPE_RELY1Y1, -2, 0, line0, 1}
-    };
-    struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
-
-    if (rs)
-        blitrowsegment(display, x, w, rs, line, x0, x1, cmap);
-
-}
-
-static void blitframe(struct render_display *display, int x, int y, int w, int h, int line, int x0, int x1, unsigned int *cmap)
-{
-
-    static struct linesegment line0[1] = {
-        {LINESEGMENT_TYPE_RELX0X1, 0, 0, CMAP_FRAME_SHADOW}
-    };
-    static struct linesegment line1[3] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 2, -2, CMAP_FRAME_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_FRAME_SHADOW}
-    };
-    static struct linesegment line2[7] = {
-        {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_FRAME_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX0X0, 3, 5, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 5, -5, CMAP_FRAME_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -5, -3, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_FRAME_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_FRAME_SHADOW}
-    };
-    static struct rowsegment rows[5] = {
-        {ROWSEGMENT_TYPE_RELY0Y0, 0, 2, line0, 1},
-        {ROWSEGMENT_TYPE_RELY0Y0, 2, 3, line1, 3},
-        {ROWSEGMENT_TYPE_RELY0Y1, 3, -3, line2, 7},
-        {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, line1, 3},
-        {ROWSEGMENT_TYPE_RELY1Y1, -2, 0, line0, 1}
-    };
-    struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
-
-    if (rs)
-        blitrowsegment(display, x, w, rs, line, x0, x1, cmap);
-
-}
-
-static void blitpcx(struct render_display *display, int line, char *source, int x, int y, int x0, int x1)
-{
-
-    unsigned char buffer[BUFFER_SIZE];
-    int i;
-
-    pool_pcxload(&pcxresource, source);
-    pool_pcxreadline(&pcxresource, line, y, buffer);
-
-    for (i = x0; i < x1; i++)
-    {
-
-        unsigned int off = buffer[i - x];
-        unsigned char r = pcxresource.colormap[off * 3 + 0];
-        unsigned char g = pcxresource.colormap[off * 3 + 1];
-        unsigned char b = pcxresource.colormap[off * 3 + 2];
-
-        linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
-
-    }
-
-}
-
-static void renderbutton(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+static void renderbutton(struct blit_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     struct widget_button *button = widget->data;
@@ -510,7 +130,7 @@ static void renderbutton(struct render_display *display, struct widget *widget, 
         0xE0FFFFFF,
     };
 
-    blitpanel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+    blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (render_getrowinfo(RENDER_FONTBOLD, pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
@@ -519,23 +139,23 @@ static void renderbutton(struct render_display *display, struct widget *widget, 
         int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
         if (util_intersects(line, ry, ry + rowinfo.height))
-            blittextnormal(display, RENDER_FONTBOLD, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label), rowinfo.chars, rx, ry, line, x0, x1);
+            blit_textnormal(display, &fonts[RENDER_FONTBOLD], getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label), rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 
 }
 
-static void renderfill(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+static void renderfill(struct blit_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     struct widget_fill *fill = widget->data;
 
-    blitline(display, fill->color, line, x0, x1);
+    blit_line(display, fill->color, line, x0, x1);
 
 }
 
 /*
-static void rendergradient(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+static void rendergradient(struct blit_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     struct widget_gradient *gradient = widget->data;
@@ -558,12 +178,12 @@ static void rendergradient(struct render_display *display, struct widget *widget
 
     color = (a0 << 24) | (r0 << 16) | (g0 << 8) | (b0 << 0);
 
-    blitline(display, color, line, x0, x1);
+    blit_line(display, color, line, x0, x1);
 
 }
 */
 
-static void renderimage(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+static void renderimage(struct blit_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     struct widget_image *image = widget->data;
@@ -572,12 +192,12 @@ static void renderimage(struct render_display *display, struct widget *widget, i
     {
 
     case WIDGET_IMAGE_TYPE_INTERNAL:
-        blitcmap32line(display, widget->position.x, image->data, widget->size.w, image->cmap, line - widget->position.y);
+        blit_cmap32line(display, widget->position.x, image->data, widget->size.w, image->cmap, line - widget->position.y);
 
         break;
 
     case WIDGET_IMAGE_TYPE_PCX:
-        blitpcx(display, line, pool_getstring(image->source), widget->position.x, widget->position.y, x0, x1);
+        blit_pcx(display, line, pool_getstring(image->source), widget->position.x, widget->position.y, x0, x1);
 
         break;
 
@@ -585,7 +205,7 @@ static void renderimage(struct render_display *display, struct widget *widget, i
 
 }
 
-static void renderselect(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+static void renderselect(struct blit_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     struct widget_select *select = widget->data;
@@ -614,8 +234,8 @@ static void renderselect(struct render_display *display, struct widget *widget, 
 
     extra = rowinfo.width + RENDER_SELECT_PADDING_WIDTH * 2;
 
-    blitpanel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
-    blitpanel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+    blit_panel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+    blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (render_getrowinfo(RENDER_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
@@ -624,13 +244,13 @@ static void renderselect(struct render_display *display, struct widget *widget, 
         int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
         if (util_intersects(line, ry, ry + rowinfo.height))
-            blittextnormal(display, RENDER_FONTNORMAL, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x1);
+            blit_textnormal(display, &fonts[RENDER_FONTNORMAL], getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 
 }
 
-static void rendertext(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+static void rendertext(struct blit_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     struct widget_text *text = widget->data;
@@ -672,12 +292,12 @@ static void rendertext(struct render_display *display, struct widget *widget, in
         {
 
         case WIDGET_TEXT_MODE_NORMAL:
-            blittextnormal(display, fontindex, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blit_textnormal(display, &fonts[fontindex], getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
         case WIDGET_TEXT_MODE_INVERTED:
-            blittextinverted(display, fontindex, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blit_textinverted(display, &fonts[fontindex], getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
@@ -687,7 +307,7 @@ static void rendertext(struct render_display *display, struct widget *widget, in
 
 }
 
-static void rendertextbox(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+static void rendertextbox(struct blit_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     static unsigned int cmapnormal[3] = {
@@ -706,11 +326,11 @@ static void rendertextbox(struct render_display *display, struct widget *widget,
         0xE0686868,
     };
 
-    blitframe(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+    blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
 }
 
-static void renderwindow(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+static void renderwindow(struct blit_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     static unsigned int cmaptop[3] = {
@@ -724,15 +344,15 @@ static void renderwindow(struct render_display *display, struct widget *widget, 
         0xE0585858,
     };
 
-    blitpanel(display, widget->position.x, widget->position.y, 36, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blitpanel(display, widget->position.x + 36, widget->position.y, 36, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blitpanel(display, widget->position.x + 72, widget->position.y, widget->size.w - 108, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blitpanel(display, widget->position.x + widget->size.w - 36, widget->position.y, 36, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blitpanel(display, widget->position.x, widget->position.y + 36, widget->size.w, widget->size.h - 36, line, x0, x1, getcmap(widget->state, cmapmain, cmapmain, cmapmain));
+    blit_panel(display, widget->position.x, widget->position.y, 36, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x + 36, widget->position.y, 36, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x + 72, widget->position.y, widget->size.w - 108, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x + widget->size.w - 36, widget->position.y, 36, 36, line, x0, x1, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x, widget->position.y + 36, widget->size.w, widget->size.h - 36, line, x0, x1, getcmap(widget->state, cmapmain, cmapmain, cmapmain));
 
 }
 
-static void renderwidget(struct render_display *display, struct widget *widget, int line, int x0, int x1)
+static void renderwidget(struct blit_display *display, struct widget *widget, int line, int x0, int x1)
 {
 
     switch (widget->type)
@@ -780,7 +400,7 @@ static void renderwidget(struct render_display *display, struct widget *widget, 
 unsigned int render_getrowinfo(unsigned int fontindex, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int wrap, unsigned int maxw, unsigned int offset)
 {
 
-    struct font *font = &fonts[fontindex];
+    struct blit_font *font = &fonts[fontindex];
     unsigned int si = 0;
     unsigned int w = 0;
     unsigned int sw = 0;
@@ -890,7 +510,7 @@ unsigned int render_gettextinfo(unsigned int fontindex, char *text, unsigned int
 
 }
 
-void render_damage(struct render_display *display, int x0, int y0, int x1, int y1)
+void render_damage(struct blit_display *display, int x0, int y0, int x1, int y1)
 {
 
     x0 = util_clamp(x0, 0, display->size.w);
@@ -923,7 +543,7 @@ void render_damage(struct render_display *display, int x0, int y0, int x1, int y
 
 }
 
-void render_render(struct render_display *display)
+void render_render(struct blit_display *display)
 {
 
     if (!display->framebuffer)
@@ -956,7 +576,7 @@ void render_render(struct render_display *display)
 
             }
 
-            buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + display->damage.position0.x, linebuffer + display->damage.position0.x, (display->damage.position1.x - display->damage.position0.x) * display->bpp);
+            blit(display, line);
 
         }
 
@@ -969,7 +589,7 @@ void render_render(struct render_display *display)
 void render_setfont(unsigned int fontindex, void *data, unsigned int lineheight, unsigned int padding)
 {
 
-    struct font *font = &fonts[fontindex];
+    struct blit_font *font = &fonts[fontindex];
 
     font->data = data;
     font->bitmapdata = pcf_getbitmapdata(font->data);
@@ -979,7 +599,7 @@ void render_setfont(unsigned int fontindex, void *data, unsigned int lineheight,
 
 }
 
-void render_setup(struct render_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
+void render_setup(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
     display->framebuffer = framebuffer;

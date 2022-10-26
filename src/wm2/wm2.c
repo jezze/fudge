@@ -3,6 +3,7 @@
 #include "util.h"
 #include "widget.h"
 #include "pool.h"
+#include "blit.h"
 #include "place.h"
 #include "render.h"
 #include "parser.h"
@@ -26,7 +27,7 @@ struct state
 
 };
 
-static struct render_display display;
+static struct blit_display display;
 static struct state state;
 static unsigned int numwindows;
 static unsigned char fontnormal[0x8000];

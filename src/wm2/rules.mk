@@ -14,6 +14,7 @@ B:=\
     $(DIR_SRC)/wm2/wm2 \
 
 O:=\
+    $(DIR_SRC)/wm2/blit.o \
     $(DIR_SRC)/wm2/parser.o \
     $(DIR_SRC)/wm2/place.o \
     $(DIR_SRC)/wm2/pool.o \

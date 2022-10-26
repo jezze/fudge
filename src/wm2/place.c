@@ -4,6 +4,7 @@
 #include "util.h"
 #include "widget.h"
 #include "pool.h"
+#include "blit.h"
 #include "place.h"
 #include "render.h"
 
