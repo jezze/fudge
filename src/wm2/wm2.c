@@ -416,7 +416,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         place_widget(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h);
-        render_render(&display, &displaydamage);
+        render(&display, &displaydamage);
 
     }
 
@@ -578,7 +578,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     unsigned int padding = 4 + factor * 2;
     struct widget_image *mouseimage = state.mousewidget->data;
 
-    render_setup(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
+    blit_initdisplay(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
     render_damage(&displaydamage, 0, 0, videomode->w, videomode->h);
 
     state.mouseposition.x = videomode->w / 4;

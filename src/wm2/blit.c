@@ -376,6 +376,16 @@ void blit_pcx(struct blit_display *display, int line, char *source, int x, int y
 
 }
 
+void blit_initdisplay(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
+{
+
+    display->framebuffer = framebuffer;
+    display->size.w = w;
+    display->size.h = h;
+    display->bpp = bpp;
+
+}
+
 void blit(struct blit_display *display, struct blit_damage *damage, int line)
 {
 

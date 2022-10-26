@@ -6,6 +6,7 @@
 #include "widget.h"
 #include "pool.h"
 #include "blit.h"
+#include "text.h"
 #include "place.h"
 #include "render.h"
 
@@ -15,7 +16,7 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
     struct widget_button *button = widget->data;
     struct render_rowinfo rowinfo;
 
-    render_getrowinfo(pool_getfont(POOL_FONTBOLD), pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, 0, 0, 0);
+    text_getrowinfo(pool_getfont(POOL_FONTBOLD), pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, 0, 0, 0);
 
     widget->position.x = x;
     widget->position.y = y;
@@ -30,7 +31,7 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
     struct widget_choice *choice = widget->data;
     struct render_rowinfo rowinfo;
 
-    render_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(choice->label), pool_getcstringlength(choice->label), &rowinfo, 0, 0, 0);
+    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(choice->label), pool_getcstringlength(choice->label), &rowinfo, 0, 0, 0);
 
     widget->position.x = x;
     widget->position.y = y;
@@ -332,11 +333,11 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
     struct render_rowinfo rowinfo;
     unsigned int extra;
 
-    render_getrowinfo(pool_getfont(POOL_FONTNORMAL), "X", 1, &rowinfo, 0, 0, 0);
+    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), "X", 1, &rowinfo, 0, 0, 0);
 
     extra = rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2;
 
-    render_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, 0, 0, 0);
+    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, 0, 0, 0);
 
     widget->position.x = x;
     widget->position.y = y;
@@ -352,7 +353,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     struct render_textinfo textinfo;
     unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
 
-    render_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, maxw);
+    text_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, maxw);
 
     widget->position.x = x;
     widget->position.y = y;
@@ -424,7 +425,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             childy = y + soffy; 
             childmaxh = maxh - soffh;
 
-            render_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, childmaxw);
+            text_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, childmaxw);
 
         }
 
