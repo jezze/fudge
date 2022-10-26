@@ -31,15 +31,6 @@ static unsigned int *getcmap(unsigned int state, unsigned int *normal, unsigned 
 
 }
 
-static unsigned int getrownum(unsigned int fontindex, int line, int y)
-{
-
-    struct blit_font *font = pool_getfont(fontindex);
-
-    return (line - y) / font->lineheight;
-
-}
-
 static int getrowx(struct render_rowinfo *rowinfo, unsigned int halign, int x, int w)
 {
 
@@ -253,7 +244,8 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
     struct widget_text *text = widget->data;
     unsigned int fontindex = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
-    unsigned int rownum = getrownum(fontindex, line, widget->position.y);
+    struct blit_font *font = pool_getfont(fontindex);
+    unsigned int rownum = (line - widget->position.y) / font->lineheight;
     struct render_rowinfo rowinfo;
     unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
     unsigned int rw = widget->size.w - roff;
@@ -290,12 +282,12 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
         {
 
         case WIDGET_TEXT_MODE_NORMAL:
-            blit_textnormal(display, pool_getfont(fontindex), getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blit_textnormal(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
         case WIDGET_TEXT_MODE_INVERTED:
-            blit_textinverted(display, pool_getfont(fontindex), getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blit_textinverted(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
@@ -488,7 +480,7 @@ unsigned int render_gettextinfo(unsigned int fontindex, char *text, unsigned int
     {
 
         textinfo->last.width += offw;
-        textinfo->lineheight = pool_getfont(fontindex)->lineheight;
+        textinfo->lineheight = textinfo->last.lineheight;
         textinfo->width = textinfo->last.width;
         textinfo->height = textinfo->last.height;
         textinfo->rows = 1;
