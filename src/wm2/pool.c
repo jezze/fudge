@@ -2,6 +2,7 @@
 #include <abi.h>
 #include <image.h>
 #include "widget.h"
+#include "blit.h"
 #include "pool.h"
 
 #define MAX_WIDGETS                     1024
@@ -39,6 +40,7 @@ static unsigned int nwidgets;
 static char strdata[0x4000];
 static unsigned int strdataoffset;
 static struct strindex strindex[512];
+static struct blit_font fonts[32];
 
 struct list_item *pool_next(struct list_item *current)
 {
@@ -356,6 +358,26 @@ void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, uns
         pcxresource->lastline = line;
 
     }
+
+}
+
+struct blit_font *pool_getfont(unsigned int index)
+{
+
+    return &fonts[index];
+
+}
+
+void pool_setfont(unsigned int index, void *data, unsigned int lineheight, unsigned int padding)
+{
+
+    struct blit_font *font = pool_getfont(index);
+
+    font->data = data;
+    font->bitmapdata = pcf_getbitmapdata(font->data);
+    font->bitmapalign = pcf_getbitmapalign(font->data);
+    font->lineheight = lineheight;
+    font->padding = padding;
 
 }
 

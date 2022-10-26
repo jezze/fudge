@@ -1,3 +1,6 @@
+#define POOL_FONTNORMAL                 0
+#define POOL_FONTBOLD                   1
+
 struct pool_pcxresource
 {
 
@@ -27,4 +30,6 @@ unsigned int pool_freedata(unsigned int index);
 unsigned int pool_replacecstring(unsigned int index, char *cstring);
 void pool_pcxload(struct pool_pcxresource *pcxresource, char *source);
 void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, unsigned char *buffer);
+struct blit_font *pool_getfont(unsigned int index);
+void pool_setfont(unsigned int index, void *data, unsigned int lineheight, unsigned int padding);
 void pool_setup(void);

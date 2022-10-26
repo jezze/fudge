@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <abi.h>
-#include <image.h>
 #include "config.h"
 #include "util.h"
 #include "widget.h"
@@ -11,8 +10,6 @@
 #define DAMAGE_STATE_NONE               0
 #define DAMAGE_STATE_MADE               1
 #define CMAP_TEXT_COLOR                 0
-
-static struct blit_font fonts[32];
 
 static unsigned int *getcmap(unsigned int state, unsigned int *normal, unsigned int *hover, unsigned int *focus)
 {
@@ -37,7 +34,7 @@ static unsigned int *getcmap(unsigned int state, unsigned int *normal, unsigned 
 static unsigned int getrownum(unsigned int fontindex, int line, int y)
 {
 
-    struct blit_font *font = &fonts[fontindex];
+    struct blit_font *font = pool_getfont(fontindex);
 
     return (line - y) / font->lineheight;
 
@@ -133,14 +130,14 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 
     blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
-    if (render_getrowinfo(RENDER_FONTBOLD, pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
+    if (render_getrowinfo(POOL_FONTBOLD, pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
         int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
         int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
         if (util_intersects(line, ry, ry + rowinfo.height))
-            blit_textnormal(display, &fonts[RENDER_FONTBOLD], getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label), rowinfo.chars, rx, ry, line, x0, x1);
+            blit_textnormal(display, pool_getfont(POOL_FONTBOLD), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label), rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 
@@ -231,21 +228,21 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
         0xE0FFFFFF,
     };
 
-    render_getrowinfo(RENDER_FONTNORMAL, "X", 1, &rowinfo, 0, 0, 0);
+    render_getrowinfo(POOL_FONTNORMAL, "X", 1, &rowinfo, 0, 0, 0);
 
     extra = rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2;
 
     blit_panel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
     blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x1, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
-    if (render_getrowinfo(RENDER_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
+    if (render_getrowinfo(POOL_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
         int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
         int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
         if (util_intersects(line, ry, ry + rowinfo.height))
-            blit_textnormal(display, &fonts[RENDER_FONTNORMAL], getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x1);
+            blit_textnormal(display, pool_getfont(POOL_FONTNORMAL), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x1);
 
     }
 
@@ -255,7 +252,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 {
 
     struct widget_text *text = widget->data;
-    unsigned int fontindex = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? RENDER_FONTBOLD : RENDER_FONTNORMAL;
+    unsigned int fontindex = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
     unsigned int rownum = getrownum(fontindex, line, widget->position.y);
     struct render_rowinfo rowinfo;
     unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
@@ -293,12 +290,12 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
         {
 
         case WIDGET_TEXT_MODE_NORMAL:
-            blit_textnormal(display, &fonts[fontindex], getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blit_textnormal(display, pool_getfont(fontindex), getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
         case WIDGET_TEXT_MODE_INVERTED:
-            blit_textinverted(display, &fonts[fontindex], getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
+            blit_textinverted(display, pool_getfont(fontindex), getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, rowinfo.chars, rx, ry, line, x0, x1);
 
             break;
 
@@ -401,7 +398,7 @@ static void renderwidget(struct blit_display *display, struct widget *widget, in
 unsigned int render_getrowinfo(unsigned int fontindex, char *text, unsigned int length, struct render_rowinfo *rowinfo, unsigned int wrap, unsigned int maxw, unsigned int offset)
 {
 
-    struct blit_font *font = &fonts[fontindex];
+    struct blit_font *font = pool_getfont(fontindex);
     unsigned int si = 0;
     unsigned int w = 0;
     unsigned int sw = 0;
@@ -416,7 +413,7 @@ unsigned int render_getrowinfo(unsigned int fontindex, char *text, unsigned int 
     rowinfo->width = 0;
     rowinfo->height = 0;
     rowinfo->newline = 0;
-    rowinfo->lineheight = fonts[fontindex].lineheight;
+    rowinfo->lineheight = font->lineheight;
 
     for (i = offset; i < length; i++)
     {
@@ -491,7 +488,7 @@ unsigned int render_gettextinfo(unsigned int fontindex, char *text, unsigned int
     {
 
         textinfo->last.width += offw;
-        textinfo->lineheight = fonts[fontindex].lineheight;
+        textinfo->lineheight = pool_getfont(fontindex)->lineheight;
         textinfo->width = textinfo->last.width;
         textinfo->height = textinfo->last.height;
         textinfo->rows = 1;
@@ -579,19 +576,6 @@ void render_render(struct blit_display *display, struct blit_damage *damage)
         damage->state = DAMAGE_STATE_NONE;
 
     }
-
-}
-
-void render_setfont(unsigned int fontindex, void *data, unsigned int lineheight, unsigned int padding)
-{
-
-    struct blit_font *font = &fonts[fontindex];
-
-    font->data = data;
-    font->bitmapdata = pcf_getbitmapdata(font->data);
-    font->bitmapalign = pcf_getbitmapalign(font->data);
-    font->lineheight = lineheight;
-    font->padding = padding;
 
 }
 
