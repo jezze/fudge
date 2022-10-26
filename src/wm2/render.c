@@ -347,58 +347,51 @@ static void blittextinverted(struct render_display *display, unsigned int fontin
 
 }
 
-static void blitsegments2(struct render_display *display, int x, int y, int w, int h, struct rowsegment *rows, unsigned int nrows, int line, int x0, int x1, unsigned int *cmap)
+static void blitrowsegment(struct render_display *display, int x, int w, struct rowsegment *rs, int line, int x0, int x1, unsigned int *cmap)
 {
 
-    struct rowsegment *rs = findrowsegment(rows, nrows, line, y, h);
+    unsigned int i;
 
-    if (rs)
+    for (i = 0; i < rs->numlines; i++)
     {
 
-        unsigned int i;
+        struct linesegment *p = &rs->lines[i];
+        int p0;
+        int p1;
 
-        for (i = 0; i < rs->numlines; i++)
+        switch (p->type)
         {
 
-            struct linesegment *p = &rs->lines[i];
-            int p0;
-            int p1;
+        case LINESEGMENT_TYPE_RELX0X0:
+            p0 = x + p->p0;
+            p1 = x + p->p1;
 
-            switch (p->type)
-            {
+            break;
 
-            case LINESEGMENT_TYPE_RELX0X0:
-                p0 = x + p->p0;
-                p1 = x + p->p1;
+        case LINESEGMENT_TYPE_RELX0X1:
+            p0 = x + p->p0;
+            p1 = x + w + p->p1;
 
-                break;
+            break;
 
-            case LINESEGMENT_TYPE_RELX0X1:
-                p0 = x + p->p0;
-                p1 = x + w + p->p1;
+        case LINESEGMENT_TYPE_RELX1X1:
+            p0 = x + w + p->p0;
+            p1 = x + w + p->p1;
 
-                break;
+            break;
 
-            case LINESEGMENT_TYPE_RELX1X1:
-                p0 = x + w + p->p0;
-                p1 = x + w + p->p1;
+        default:
+            p0 = x;
+            p1 = x + w;
 
-                break;
-
-            default:
-                p0 = x;
-                p1 = x + w;
-
-                break;
-
-            }
-
-            p0 = util_max(p0, x0);
-            p1 = util_min(p1, x1);
-
-            blitline2(display, cmap[p->color], line, p0, p1);
+            break;
 
         }
+
+        p0 = util_max(p0, x0);
+        p1 = util_min(p1, x1);
+
+        blitline2(display, cmap[p->color], line, p0, p1);
 
     }
 
@@ -429,8 +422,10 @@ static void blitpanel(struct render_display *display, int x, int y, int w, int h
         {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, line1, 3},
         {ROWSEGMENT_TYPE_RELY1Y1, -2, 0, line0, 1}
     };
+    struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
 
-    blitsegments2(display, x, y, w, h, rows, 5, line, x0, x1, cmap);
+    if (rs)
+        blitrowsegment(display, x, w, rs, line, x0, x1, cmap);
 
 }
 
@@ -461,8 +456,10 @@ static void blitframe(struct render_display *display, int x, int y, int w, int h
         {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, line1, 3},
         {ROWSEGMENT_TYPE_RELY1Y1, -2, 0, line0, 1}
     };
+    struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
 
-    blitsegments2(display, x, y, w, h, rows, 5, line, x0, x1, cmap);
+    if (rs)
+        blitrowsegment(display, x, w, rs, line, x0, x1, cmap);
 
 }
 
