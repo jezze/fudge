@@ -108,12 +108,8 @@ static int getrowx(struct render_rowinfo *rowinfo, unsigned int halign, int x, i
 
 }
 
-static int getrowy(struct render_rowinfo *rowinfo, unsigned int valign, int y, int h, unsigned int rownum)
+static int getrowy(struct render_rowinfo *rowinfo, unsigned int valign, int y, int h)
 {
-
-    int ydiff = rowinfo->lineheight - rowinfo->height;
-
-    y += rownum * rowinfo->lineheight;
 
     switch (valign)
     {
@@ -122,7 +118,7 @@ static int getrowy(struct render_rowinfo *rowinfo, unsigned int valign, int y, i
         return y;
 
     case WIDGET_TEXT_VALIGN_MIDDLE:
-        return y + h / 2 - rowinfo->height / 2 - ydiff / 2;
+        return y + h / 2 - rowinfo->height / 2 - (rowinfo->lineheight - rowinfo->height) / 2;
 
     case WIDGET_TEXT_VALIGN_BOTTOM:
         return y + h - rowinfo->height;
@@ -570,8 +566,8 @@ static void renderbutton(struct render_display *display, struct widget *widget, 
     if (render_getrowinfo(RENDER_FONTBOLD, pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
-        unsigned int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
-        unsigned int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h, 0);
+        int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
+        int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
         if (util_intersects(line, ry, ry + rowinfo.height))
             blittextnormal(display, RENDER_FONTBOLD, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label), rowinfo.chars, rx, ry, line, x0, x1);
@@ -675,8 +671,8 @@ static void renderselect(struct render_display *display, struct widget *widget, 
     if (render_getrowinfo(RENDER_FONTNORMAL, pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
-        unsigned int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
-        unsigned int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h, 0);
+        int rx = getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
+        int ry = getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
         if (util_intersects(line, ry, ry + rowinfo.height))
             blittextnormal(display, RENDER_FONTNORMAL, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x1);
@@ -720,8 +716,8 @@ static void rendertext(struct render_display *display, struct widget *widget, in
     if (render_getrowinfo(fontindex, pool_getstring(text->content), pool_getcstringlength(text->content), &rowinfo, text->wrap, rw, text->rowstart))
     {
 
-        unsigned int rx = getrowx(&rowinfo, text->halign, widget->position.x + roff, rw);
-        unsigned int ry = getrowy(&rowinfo, text->valign, widget->position.y, widget->size.h, rownum);
+        int rx = getrowx(&rowinfo, text->halign, widget->position.x + roff, rw);
+        int ry = getrowy(&rowinfo, text->valign, widget->position.y + rownum * rowinfo.lineheight, widget->size.h);
 
         switch (text->mode)
         {
