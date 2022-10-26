@@ -510,7 +510,7 @@ unsigned int render_gettextinfo(unsigned int fontindex, char *text, unsigned int
 
 }
 
-void render_damage(struct blit_display *display, int x0, int y0, int x1, int y1)
+void render_damage(struct blit_display *display, struct blit_damage *damage, int x0, int y0, int x1, int y1)
 {
 
     x0 = util_clamp(x0, 0, display->size.w);
@@ -518,43 +518,43 @@ void render_damage(struct blit_display *display, int x0, int y0, int x1, int y1)
     x1 = util_clamp(x1, 0, display->size.w);
     y1 = util_clamp(y1, 0, display->size.h);
 
-    switch (display->damage.state)
+    switch (damage->state)
     {
 
     case DAMAGE_STATE_NONE:
-        display->damage.position0.x = x0;
-        display->damage.position0.y = y0;
-        display->damage.position1.x = x1;
-        display->damage.position1.y = y1;
+        damage->position0.x = x0;
+        damage->position0.y = y0;
+        damage->position1.x = x1;
+        damage->position1.y = y1;
 
         break;
 
     case DAMAGE_STATE_MADE:
-        display->damage.position0.x = util_min(x0, display->damage.position0.x);
-        display->damage.position0.y = util_min(y0, display->damage.position0.y);
-        display->damage.position1.x = util_max(x1, display->damage.position1.x);
-        display->damage.position1.y = util_max(y1, display->damage.position1.y);
+        damage->position0.x = util_min(x0, damage->position0.x);
+        damage->position0.y = util_min(y0, damage->position0.y);
+        damage->position1.x = util_max(x1, damage->position1.x);
+        damage->position1.y = util_max(y1, damage->position1.y);
 
         break;
 
     }
 
-    display->damage.state = DAMAGE_STATE_MADE;
+    damage->state = DAMAGE_STATE_MADE;
 
 }
 
-void render_render(struct blit_display *display)
+void render_render(struct blit_display *display, struct blit_damage *damage)
 {
 
     if (!display->framebuffer)
         return;
 
-    if (display->damage.state == DAMAGE_STATE_MADE)
+    if (damage->state == DAMAGE_STATE_MADE)
     {
 
         int line;
 
-        for (line = display->damage.position0.y; line < display->damage.position1.y; line++)
+        for (line = damage->position0.y; line < damage->position1.y; line++)
         {
 
             struct list_item *current = 0;
@@ -567,8 +567,8 @@ void render_render(struct blit_display *display)
                 if (util_intersects(line, widget->position.y, widget->position.y + widget->size.h))
                 {
 
-                    int x0 = util_max(widget->position.x, display->damage.position0.x);
-                    int x1 = util_min(widget->position.x + widget->size.w, display->damage.position1.x);
+                    int x0 = util_max(widget->position.x, damage->position0.x);
+                    int x1 = util_min(widget->position.x + widget->size.w, damage->position1.x);
 
                     renderwidget(display, widget, line, x0, x1);
 
@@ -576,11 +576,11 @@ void render_render(struct blit_display *display)
 
             }
 
-            blit(display, line);
+            blit(display, damage, line);
 
         }
 
-        display->damage.state = DAMAGE_STATE_NONE;
+        damage->state = DAMAGE_STATE_NONE;
 
     }
 
@@ -599,7 +599,7 @@ void render_setfont(unsigned int fontindex, void *data, unsigned int lineheight,
 
 }
 
-void render_setup(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
+void render_setup(struct blit_display *display, struct blit_damage *damage, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
     display->framebuffer = framebuffer;
@@ -607,7 +607,7 @@ void render_setup(struct blit_display *display, void *framebuffer, unsigned int 
     display->size.h = h;
     display->bpp = bpp;
 
-    render_damage(display, 0, 0, display->size.w, display->size.h);
+    render_damage(display, damage, 0, 0, display->size.w, display->size.h);
 
 }
 

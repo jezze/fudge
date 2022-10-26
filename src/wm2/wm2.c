@@ -28,6 +28,7 @@ struct state
 };
 
 static struct blit_display display;
+static struct blit_damage displaydamage;
 static struct state state;
 static unsigned int numwindows;
 static unsigned char fontnormal[0x8000];
@@ -217,7 +218,7 @@ static void damage(struct widget *widget)
 
     struct list_item *current = 0;
 
-    render_damage(&display, widget->position.x, widget->position.y, widget->position.x + widget->size.w, widget->position.y + widget->size.h);
+    render_damage(&display, &displaydamage, widget->position.x, widget->position.y, widget->position.x + widget->size.w, widget->position.y + widget->size.h);
 
     while ((current = pool_nextin(current, widget)))
         damage(current->data);
@@ -411,7 +412,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         place_widget(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h);
-        render_render(&display);
+        render_render(&display, &displaydamage);
 
     }
 
@@ -573,7 +574,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     unsigned int padding = 4 + factor * 2;
     struct widget_image *mouseimage = state.mousewidget->data;
 
-    render_setup(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
+    render_setup(&display, &displaydamage, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
 
     state.mouseposition.x = videomode->w / 4;
     state.mouseposition.y = videomode->h / 4;

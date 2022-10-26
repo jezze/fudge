@@ -376,10 +376,10 @@ void blit_pcx(struct blit_display *display, int line, char *source, int x, int y
 
 }
 
-void blit(struct blit_display *display, int line)
+void blit(struct blit_display *display, struct blit_damage *damage, int line)
 {
 
-    buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + display->damage.position0.x, linebuffer + display->damage.position0.x, (display->damage.position1.x - display->damage.position0.x) * display->bpp);
+    buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + damage->position0.x, linebuffer + damage->position0.x, (damage->position1.x - damage->position0.x) * display->bpp);
 
 }
 
