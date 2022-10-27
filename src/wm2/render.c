@@ -272,8 +272,8 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 
     static unsigned int cmaptop[3] = {
         0xE0181818,
-        0xE05818B8,
-        0xE09858F8,
+        0xE0484868,
+        0xE08888A8,
     };
     static unsigned int cmapmain[3] = {
         0xE0181818,
@@ -281,7 +281,7 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
         0xE0585858,
     };
     static unsigned int cmapicon[1] = {
-        0xC0FFFFFF,
+        0x80FFFFFF,
     };
 
     blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 0, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
