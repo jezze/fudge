@@ -93,9 +93,9 @@ static void blitrowsegment(struct blit_display *display, struct rowsegment *rs, 
     for (i = 0; i < rs->numlines; i++)
     {
 
-        struct linesegment *p = &rs->lines[i];
+        struct linesegment *current = &rs->lines[i];
 
-        blit_alphaline(display, cmap[p->color], util_max(getpoint(p->t0, p->p0, x, w), x0), util_min(getpoint(p->t1, p->p1, x, w), x2));
+        blit_alphaline(display, cmap[current->color], util_max(getpoint(current->t0, current->p0, x, w), x0), util_min(getpoint(current->t1, current->p1, x, w), x2));
 
     }
 
