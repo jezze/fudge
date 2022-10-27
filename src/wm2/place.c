@@ -450,9 +450,9 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
 
     struct list_item *current = 0;
     int offx = CONFIG_WINDOW_BORDER_WIDTH;
-    int offy = CONFIG_WINDOW_BORDER_HEIGHT + CONFIG_WINDOW_ICON_HEIGHT;
+    int offy = CONFIG_WINDOW_BORDER_HEIGHT + CONFIG_ICON_HEIGHT;
     int offw = CONFIG_WINDOW_BORDER_WIDTH * 2;
-    int offh = CONFIG_WINDOW_BORDER_HEIGHT * 2 + CONFIG_WINDOW_ICON_HEIGHT;
+    int offh = CONFIG_WINDOW_BORDER_HEIGHT * 2 + CONFIG_ICON_HEIGHT;
 
     while ((current = pool_nextin(current, widget)))
     {

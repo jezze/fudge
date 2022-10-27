@@ -165,12 +165,16 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     static unsigned int cmaptext[1] = {
         0xE8FFFFFF,
     };
+    static unsigned int cmapicon[1] = {
+        0xE8FFFFFF,
+    };
 
     text_getrowinfo(pool_getfont(POOL_FONTNORMAL), "X", 1, &rowinfo, 0, 0, 0);
 
-    extra = rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2;
+    extra = rowinfo.width + CONFIG_ICON_WIDTH;
 
     blit_panel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+    blit_iconhamburger(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x2, cmapicon);
     blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
@@ -284,13 +288,13 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
         0xE8FFFFFF,
     };
 
-    blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 0, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_iconhamburger(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 0, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, cmapicon);
-    blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 2, widget->position.y, widget->size.w - CONFIG_WINDOW_ICON_WIDTH * 3, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_panel(display, widget->position.x + widget->size.w - CONFIG_WINDOW_ICON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_iconx(display, widget->position.x + widget->size.w - CONFIG_WINDOW_ICON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, cmapicon);
-    blit_panel(display, widget->position.x, widget->position.y + CONFIG_WINDOW_ICON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmapmain, cmapmain, cmapmain));
+    blit_panel(display, widget->position.x + CONFIG_ICON_WIDTH * 0, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_iconhamburger(display, widget->position.x + CONFIG_ICON_WIDTH * 0, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, cmapicon);
+    blit_panel(display, widget->position.x + CONFIG_ICON_WIDTH * 1, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x + CONFIG_ICON_WIDTH * 2, widget->position.y, widget->size.w - CONFIG_ICON_WIDTH * 3, CONFIG_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x + widget->size.w - CONFIG_ICON_WIDTH * 1, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_iconx(display, widget->position.x + widget->size.w - CONFIG_ICON_WIDTH * 1, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, cmapicon);
+    blit_panel(display, widget->position.x, widget->position.y + CONFIG_ICON_HEIGHT, widget->size.w, widget->size.h - CONFIG_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmapmain, cmapmain, cmapmain));
 
 }
 
