@@ -118,7 +118,17 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
     {
 
     case WIDGET_IMAGE_TYPE_INTERNAL:
-        blit_cmap32line(display, widget->position.x, image->data, widget->size.w, image->cmap, line - widget->position.y);
+        {
+
+        static unsigned int cmap[3] = {
+            0xE0000000,
+            0xE0B05070,
+            0xE0F898B8
+        };
+
+        blit_mouse(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x1, getcmap(widget->state, cmap, cmap, cmap));
+
+        }
 
         break;
 
