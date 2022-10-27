@@ -38,22 +38,22 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
     struct widget_button *button = widget->data;
     struct render_rowinfo rowinfo;
     static unsigned int cmapnormal[3] = {
-        0xE0181818,
-        0xE0484848,
-        0xE0787878,
+        0xE8101010,
+        0xE8484848,
+        0xE8888888,
     };
     static unsigned int cmaphover[3] = {
-        0xE0181818,
-        0xE0505050,
-        0xE0808080,
+        0xE8101010,
+        0xE8505050,
+        0xE8888888,
     };
     static unsigned int cmapfocus[3] = {
-        0xE0181818,
-        0xE0585858,
-        0xE0888888,
+        0xE8101010,
+        0xE8585858,
+        0xE8888888,
     };
     static unsigned int cmaptext[1] = {
-        0xE0FFFFFF,
+        0xE8FFFFFF,
     };
 
     blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
@@ -121,9 +121,9 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
         {
 
         static unsigned int cmap[3] = {
-            0xE0000000,
-            0xE0B05070,
-            0xE0F898B8
+            0xE8101010,
+            0xE8202020,
+            0xE8F0F0F0,
         };
 
         blit_mouse(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmap, cmap, cmap));
@@ -148,22 +148,22 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     struct render_rowinfo rowinfo;
     unsigned int extra;
     static unsigned int cmapnormal[3] = {
-        0xE0181818,
-        0xE0484848,
-        0xE0787878,
+        0xE8101010,
+        0xE8484848,
+        0xE8888888,
     };
     static unsigned int cmaphover[3] = {
-        0xE0181818,
-        0xE0505050,
-        0xE0808080,
+        0xE8101010,
+        0xE8505050,
+        0xE8888888,
     };
     static unsigned int cmapfocus[3] = {
-        0xE0181818,
-        0xE0585858,
-        0xE0888888,
+        0xE8101010,
+        0xE8585858,
+        0xE8888888,
     };
     static unsigned int cmaptext[1] = {
-        0xE0FFFFFF,
+        0xE8FFFFFF,
     };
 
     text_getrowinfo(pool_getfont(POOL_FONTNORMAL), "X", 1, &rowinfo, 0, 0, 0);
@@ -197,13 +197,13 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
     unsigned int rw = widget->size.w - roff;
     static unsigned int cmapnormal[1] = {
-        0xE0E0E0E0,
+        0xE8E0E0E0,
     };
     static unsigned int cmaphover[1] = {
-        0xE0E0E0E0,
+        0xE8E0E0E0,
     };
     static unsigned int cmapfocus[1] = {
-        0xE0F0F0F0,
+        0xE8F0F0F0,
     };
 
     /* Rudimentary caching */
@@ -248,19 +248,19 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 {
 
     static unsigned int cmapnormal[3] = {
-        0xE0181818,
-        0xE0282828,
-        0xE0585858,
+        0xE8101010,
+        0xE8282828,
+        0xE8686868,
     };
     static unsigned int cmaphover[3] = {
-        0xE0181818,
-        0xE0282828,
-        0xE0606060,
+        0xE8101010,
+        0xE8282828,
+        0xE8787878,
     };
     static unsigned int cmapfocus[3] = {
-        0xE0181818,
-        0xE0282828,
-        0xE0686868,
+        0xE8101010,
+        0xE8282828,
+        0xE8888888,
     };
 
     blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
@@ -271,17 +271,17 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 {
 
     static unsigned int cmaptop[3] = {
-        0xE0181818,
-        0xE0484868,
-        0xE08888A8,
+        0xE8101010,
+        0xE8805050,
+        0xE8E0B0B0,
     };
     static unsigned int cmapmain[3] = {
-        0xE0181818,
-        0xE0303030,
-        0xE0585858,
+        0xE8101010,
+        0xE8303030,
+        0xE8585858,
     };
     static unsigned int cmapicon[1] = {
-        0x80FFFFFF,
+        0xE8FFFFFF,
     };
 
     blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 0, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
