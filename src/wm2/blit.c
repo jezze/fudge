@@ -18,6 +18,7 @@
 #define CMAP_MOUSE_SHADOW               0
 #define CMAP_MOUSE_NORMAL               1
 #define CMAP_MOUSE_HIGHLIGHT            2
+#define CMAP_ICON_NORMAL                0
 
 struct linesegment
 {
@@ -226,6 +227,57 @@ void blit_textinverted(struct blit_display *display, struct blit_font *font, uns
         rx += metricsdata.width;
 
     }
+
+}
+
+void blit_iconx(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    static struct linesegment line0[1] = {
+        {REL1, REL1, -3, 2, CMAP_ICON_NORMAL}
+    };
+    static struct linesegment line1[1] = {
+        {REL1, REL1, -4, 3, CMAP_ICON_NORMAL}
+    };
+    static struct linesegment line2[1] = {
+        {REL1, REL1, -5, 4, CMAP_ICON_NORMAL}
+    };
+    static struct linesegment line3[2] = {
+        {REL1, REL1, -6, -2, CMAP_ICON_NORMAL},
+        {REL1, REL1, 1, 5, CMAP_ICON_NORMAL}
+    };
+    static struct linesegment line4[2] = {
+        {REL1, REL1, -7, -3, CMAP_ICON_NORMAL},
+        {REL1, REL1, 2, 6, CMAP_ICON_NORMAL}
+    };
+    static struct linesegment line5[2] = {
+        {REL1, REL1, -6, -4, CMAP_ICON_NORMAL},
+        {REL1, REL1, 3, 5, CMAP_ICON_NORMAL}
+    };
+    static struct linesegment line6[2] = {
+        {REL1, REL1, -5, -5, CMAP_ICON_NORMAL},
+        {REL1, REL1, 4, 4, CMAP_ICON_NORMAL}
+    };
+    static struct rowsegment rows[14] = {
+        {REL1, REL1, -6, -5, line6, 2},
+        {REL1, REL1, -5, -4, line5, 2},
+        {REL1, REL1, -4, -3, line4, 2},
+        {REL1, REL1, -3, -2, line3, 2},
+        {REL1, REL1, -2, -1, line2, 1},
+        {REL1, REL1, -1, 0, line1, 1},
+        {REL1, REL1, 0, 1, line0, 1},
+        {REL1, REL1, 1, 2, line0, 1},
+        {REL1, REL1, 2, 3, line1, 1},
+        {REL1, REL1, 3, 4, line2, 1},
+        {REL1, REL1, 4, 5, line3, 2},
+        {REL1, REL1, 5, 6, line4, 2},
+        {REL1, REL1, 6, 7, line5, 2},
+        {REL1, REL1, 7, 8, line6, 2}
+    };
+    struct rowsegment *rs = findrowsegment(rows, 14, line, y, h);
+
+    if (rs)
+        blitrowsegment(display, rs, x, w, x0, x2, cmap);
 
 }
 
