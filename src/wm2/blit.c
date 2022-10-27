@@ -259,20 +259,20 @@ void blit_iconx(struct blit_display *display, int x, int y, int w, int h, int li
         {REL1, REL1, 4, 5, CMAP_ICON_NORMAL}
     };
     static struct rowsegment rows[14] = {
-        {REL1, REL1, -6, -5, line6, 2},
-        {REL1, REL1, -5, -4, line5, 2},
-        {REL1, REL1, -4, -3, line4, 2},
-        {REL1, REL1, -3, -2, line3, 2},
-        {REL1, REL1, -2, -1, line2, 1},
-        {REL1, REL1, -1, 0, line1, 1},
+        {REL1, REL1, -7, -6, line6, 2},
+        {REL1, REL1, -6, -5, line5, 2},
+        {REL1, REL1, -5, -4, line4, 2},
+        {REL1, REL1, -4, -3, line3, 2},
+        {REL1, REL1, -3, -2, line2, 1},
+        {REL1, REL1, -2, -1, line1, 1},
+        {REL1, REL1, -1, 0, line0, 1},
         {REL1, REL1, 0, 1, line0, 1},
-        {REL1, REL1, 1, 2, line0, 1},
-        {REL1, REL1, 2, 3, line1, 1},
-        {REL1, REL1, 3, 4, line2, 1},
-        {REL1, REL1, 4, 5, line3, 2},
-        {REL1, REL1, 5, 6, line4, 2},
-        {REL1, REL1, 6, 7, line5, 2},
-        {REL1, REL1, 7, 8, line6, 2}
+        {REL1, REL1, 1, 2, line1, 1},
+        {REL1, REL1, 2, 3, line2, 1},
+        {REL1, REL1, 3, 4, line3, 2},
+        {REL1, REL1, 4, 5, line4, 2},
+        {REL1, REL1, 5, 6, line5, 2},
+        {REL1, REL1, 6, 7, line6, 2}
     };
     struct rowsegment *rs = findrowsegment(rows, 14, line, y, h);
 
@@ -512,7 +512,14 @@ void blit_frame(struct blit_display *display, int x, int y, int w, int h, int li
         {REL0, REL2, 2, -2, CMAP_FRAME_HIGHLIGHT},
         {REL2, REL2, -2, 0, CMAP_FRAME_SHADOW}
     };
-    static struct linesegment line2[7] = {
+    static struct linesegment line2[5] = {
+        {REL0, REL0, 0, 2, CMAP_FRAME_SHADOW},
+        {REL0, REL0, 2, 3, CMAP_FRAME_HIGHLIGHT},
+        {REL0, REL2, 3, -3, CMAP_FRAME_SHADOW},
+        {REL2, REL2, -3, -2, CMAP_FRAME_HIGHLIGHT},
+        {REL2, REL2, -2, 0, CMAP_FRAME_SHADOW}
+    };
+    static struct linesegment line3[7] = {
         {REL0, REL0, 0, 2, CMAP_FRAME_SHADOW},
         {REL0, REL0, 2, 3, CMAP_FRAME_HIGHLIGHT},
         {REL0, REL0, 3, 5, CMAP_FRAME_SHADOW},
@@ -521,14 +528,16 @@ void blit_frame(struct blit_display *display, int x, int y, int w, int h, int li
         {REL2, REL2, -3, -2, CMAP_FRAME_HIGHLIGHT},
         {REL2, REL2, -2, 0, CMAP_FRAME_SHADOW}
     };
-    static struct rowsegment rows[5] = {
+    static struct rowsegment rows[7] = {
         {REL0, REL0, 0, 2, line0, 1},
         {REL0, REL0, 2, 3, line1, 3},
-        {REL0, REL2, 3, -3, line2, 7},
+        {REL0, REL0, 3, 5, line2, 5},
+        {REL0, REL2, 5, -5, line3, 7},
+        {REL2, REL2, -5, -3, line2, 5},
         {REL2, REL2, -3, -2, line1, 3},
         {REL2, REL2, -2, 0, line0, 1}
     };
-    struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
+    struct rowsegment *rs = findrowsegment(rows, 7, line, y, h);
 
     if (rs)
         blitrowsegment(display, rs, x, w, x0, x2, cmap);
