@@ -281,10 +281,11 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
         0xE0585858,
     };
     static unsigned int cmapicon[1] = {
-        0xE0FFFFFF,
+        0xC0FFFFFF,
     };
 
     blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 0, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_iconhamburger(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 0, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, cmapicon);
     blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
     blit_panel(display, widget->position.x + CONFIG_WINDOW_ICON_WIDTH * 2, widget->position.y, widget->size.w - CONFIG_WINDOW_ICON_WIDTH * 3, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
     blit_panel(display, widget->position.x + widget->size.w - CONFIG_WINDOW_ICON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_ICON_WIDTH, CONFIG_WINDOW_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));

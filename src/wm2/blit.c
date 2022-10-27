@@ -230,6 +230,24 @@ void blit_textinverted(struct blit_display *display, struct blit_font *font, uns
 
 }
 
+void blit_iconhamburger(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    static struct linesegment line0[1] = {
+        {REL1, REL1, -8, 8, CMAP_ICON_NORMAL}
+    };
+    static struct rowsegment rows[3] = {
+        {REL1, REL1, -8, -4, line0, 1},
+        {REL1, REL1, -2, 2, line0, 1},
+        {REL1, REL1, 4, 8, line0, 1}
+    };
+    struct rowsegment *rs = findrowsegment(rows, 3, line, y, h);
+
+    if (rs)
+        blitrowsegment(display, rs, x, w, x0, x2, cmap);
+
+}
+
 void blit_iconx(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
 {
 
