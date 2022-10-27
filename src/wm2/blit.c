@@ -234,29 +234,29 @@ void blit_iconx(struct blit_display *display, int x, int y, int w, int h, int li
 {
 
     static struct linesegment line0[1] = {
-        {REL1, REL1, -3, 2, CMAP_ICON_NORMAL}
+        {REL1, REL1, -3, 3, CMAP_ICON_NORMAL}
     };
     static struct linesegment line1[1] = {
-        {REL1, REL1, -4, 3, CMAP_ICON_NORMAL}
+        {REL1, REL1, -4, 4, CMAP_ICON_NORMAL}
     };
     static struct linesegment line2[1] = {
-        {REL1, REL1, -5, 4, CMAP_ICON_NORMAL}
+        {REL1, REL1, -5, 5, CMAP_ICON_NORMAL}
     };
     static struct linesegment line3[2] = {
-        {REL1, REL1, -6, -2, CMAP_ICON_NORMAL},
-        {REL1, REL1, 1, 5, CMAP_ICON_NORMAL}
+        {REL1, REL1, -6, -1, CMAP_ICON_NORMAL},
+        {REL1, REL1, 1, 6, CMAP_ICON_NORMAL}
     };
     static struct linesegment line4[2] = {
-        {REL1, REL1, -7, -3, CMAP_ICON_NORMAL},
-        {REL1, REL1, 2, 6, CMAP_ICON_NORMAL}
+        {REL1, REL1, -7, -2, CMAP_ICON_NORMAL},
+        {REL1, REL1, 2, 7, CMAP_ICON_NORMAL}
     };
     static struct linesegment line5[2] = {
-        {REL1, REL1, -6, -4, CMAP_ICON_NORMAL},
-        {REL1, REL1, 3, 5, CMAP_ICON_NORMAL}
+        {REL1, REL1, -6, -3, CMAP_ICON_NORMAL},
+        {REL1, REL1, 3, 6, CMAP_ICON_NORMAL}
     };
     static struct linesegment line6[2] = {
-        {REL1, REL1, -5, -5, CMAP_ICON_NORMAL},
-        {REL1, REL1, 4, 4, CMAP_ICON_NORMAL}
+        {REL1, REL1, -5, -4, CMAP_ICON_NORMAL},
+        {REL1, REL1, 4, 5, CMAP_ICON_NORMAL}
     };
     static struct rowsegment rows[14] = {
         {REL1, REL1, -6, -5, line6, 2},
