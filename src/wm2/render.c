@@ -76,7 +76,7 @@ static void renderfill(struct blit_display *display, struct widget *widget, int 
 
     struct widget_fill *fill = widget->data;
 
-    blit_line(display, fill->color, line, x0, x2);
+    blit_line(display, fill->color, x0, x2);
 
 }
 
@@ -104,7 +104,7 @@ static void rendergradient(struct blit_display *display, struct widget *widget, 
 
     color = (a0 << 24) | (r0 << 16) | (g0 << 8) | (b0 << 0);
 
-    blit_line(display, color, line, x0, x2);
+    blit_line(display, color, x0, x2);
 
 }
 */

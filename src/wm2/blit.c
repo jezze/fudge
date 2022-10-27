@@ -85,7 +85,7 @@ static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int l
 
 }
 
-static void blitrowsegment(struct blit_display *display, int x, int w, struct rowsegment *rs, int line, int x0, int x2, unsigned int *cmap)
+static void blitrowsegment(struct blit_display *display, struct rowsegment *rs, int x, int w, int x0, int x2, unsigned int *cmap)
 {
 
     unsigned int i;
@@ -95,13 +95,13 @@ static void blitrowsegment(struct blit_display *display, int x, int w, struct ro
 
         struct linesegment *p = &rs->lines[i];
 
-        blit_alphaline(display, cmap[p->color], line, util_max(getpoint(p->t0, p->p0, x, w), x0), util_min(getpoint(p->t1, p->p1, x, w), x2));
+        blit_alphaline(display, cmap[p->color], util_max(getpoint(p->t0, p->p0, x, w), x0), util_min(getpoint(p->t1, p->p1, x, w), x2));
 
     }
 
 }
 
-void blit_line(struct blit_display *display, unsigned int color, int line, int x0, int x2)
+void blit_line(struct blit_display *display, unsigned int color, int x0, int x2)
 {
 
     while (x0 < x2)
@@ -109,7 +109,7 @@ void blit_line(struct blit_display *display, unsigned int color, int line, int x
 
 }
 
-void blit_alphaline(struct blit_display *display, unsigned int color, int line, int x0, int x2)
+void blit_alphaline(struct blit_display *display, unsigned int color, int x0, int x2)
 {
 
     unsigned char *fg = (unsigned char *)&color;
@@ -167,7 +167,7 @@ void blit_textnormal(struct blit_display *display, struct blit_font *font, unsig
                 {
 
                     if (data[(r >> 3)] & (0x80 >> (r % 8)))
-                        blit_line(display, color, line, rx + r, rx + r + 1);
+                        blit_line(display, color, rx + r, rx + r + 1);
 
                 }
 
@@ -215,7 +215,7 @@ void blit_textinverted(struct blit_display *display, struct blit_font *font, uns
                 {
 
                     if (!(data[(r >> 3)] & (0x80 >> (r % 8))))
-                        blit_line(display, color, line, rx + r, rx + r + 1);
+                        blit_line(display, color, rx + r, rx + r + 1);
 
                 }
 
@@ -413,7 +413,7 @@ void blit_mouse(struct blit_display *display, int x, int y, int w, int h, int li
     struct rowsegment *rs = findrowsegment(rows, 24, line, y, h);
 
     if (rs)
-        blitrowsegment(display, x, w, rs, line, x0, x2, cmap);
+        blitrowsegment(display, rs, x, w, x0, x2, cmap);
 
 }
 
@@ -445,7 +445,7 @@ void blit_panel(struct blit_display *display, int x, int y, int w, int h, int li
     struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
 
     if (rs)
-        blitrowsegment(display, x, w, rs, line, x0, x2, cmap);
+        blitrowsegment(display, rs, x, w, x0, x2, cmap);
 
 }
 
@@ -479,7 +479,7 @@ void blit_frame(struct blit_display *display, int x, int y, int w, int h, int li
     struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
 
     if (rs)
-        blitrowsegment(display, x, w, rs, line, x0, x2, cmap);
+        blitrowsegment(display, rs, x, w, x0, x2, cmap);
 
 }
 
