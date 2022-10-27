@@ -170,10 +170,10 @@ static void damage(struct widget *widget)
     struct list_item *current = 0;
     int x0 = util_clamp(widget->position.x, 0, display.size.w);
     int y0 = util_clamp(widget->position.y, 0, display.size.h);
-    int x1 = util_clamp(widget->position.x + widget->size.w, 0, display.size.w);
-    int y1 = util_clamp(widget->position.y + widget->size.h, 0, display.size.h);
+    int x2 = util_clamp(widget->position.x + widget->size.w, 0, display.size.w);
+    int y2 = util_clamp(widget->position.y + widget->size.h, 0, display.size.h);
 
-    render_damage(&displaydamage, x0, y0, x1, y1);
+    render_damage(&displaydamage, x0, y0, x2, y2);
 
     while ((current = pool_nextin(current, widget)))
         damage(current->data);

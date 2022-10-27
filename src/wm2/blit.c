@@ -7,11 +7,11 @@
 #include "blit.h"
 
 #define LINESEGMENT_TYPE_RELX0X0        1
-#define LINESEGMENT_TYPE_RELX0X1        2
-#define LINESEGMENT_TYPE_RELX1X1        3
+#define LINESEGMENT_TYPE_RELX0X2        2
+#define LINESEGMENT_TYPE_RELX2X2        3
 #define ROWSEGMENT_TYPE_RELY0Y0         1
-#define ROWSEGMENT_TYPE_RELY0Y1         2
-#define ROWSEGMENT_TYPE_RELY1Y1         3
+#define ROWSEGMENT_TYPE_RELY0Y2         2
+#define ROWSEGMENT_TYPE_RELY2Y2         3
 #define CMAP_PANEL_SHADOW               0
 #define CMAP_PANEL_NORMAL               1
 #define CMAP_PANEL_HIGHLIGHT            2
@@ -70,13 +70,13 @@ static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int l
 
                 break;
 
-            case ROWSEGMENT_TYPE_RELY0Y1:
+            case ROWSEGMENT_TYPE_RELY0Y2:
                 if (util_intersects(lline, current->p0, h + current->p1))
                     return current;
 
                 break;
 
-            case ROWSEGMENT_TYPE_RELY1Y1:
+            case ROWSEGMENT_TYPE_RELY2Y2:
                 if (util_intersects(lline, h + current->p0, h + current->p1))
                     return current;
 
@@ -92,7 +92,7 @@ static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int l
 
 }
 
-static void blitrowsegment(struct blit_display *display, int x, int w, struct rowsegment *rs, int line, int x0, int x1, unsigned int *cmap)
+static void blitrowsegment(struct blit_display *display, int x, int w, struct rowsegment *rs, int line, int x0, int x2, unsigned int *cmap)
 {
 
     unsigned int i;
@@ -113,13 +113,13 @@ static void blitrowsegment(struct blit_display *display, int x, int w, struct ro
 
             break;
 
-        case LINESEGMENT_TYPE_RELX0X1:
+        case LINESEGMENT_TYPE_RELX0X2:
             p0 = x + p->p0;
             p1 = x + w + p->p1;
 
             break;
 
-        case LINESEGMENT_TYPE_RELX1X1:
+        case LINESEGMENT_TYPE_RELX2X2:
             p0 = x + w + p->p0;
             p1 = x + w + p->p1;
 
@@ -134,7 +134,7 @@ static void blitrowsegment(struct blit_display *display, int x, int w, struct ro
         }
 
         p0 = util_max(p0, x0);
-        p1 = util_min(p1, x1);
+        p1 = util_min(p1, x2);
 
         blit_alphaline(display, cmap[p->color], line, p0, p1);
 
@@ -142,20 +142,20 @@ static void blitrowsegment(struct blit_display *display, int x, int w, struct ro
 
 }
 
-void blit_line(struct blit_display *display, unsigned int color, int line, int x0, int x1)
+void blit_line(struct blit_display *display, unsigned int color, int line, int x0, int x2)
 {
 
-    while (x0 < x1)
+    while (x0 < x2)
         linebuffer[x0++] = color;
 
 }
 
-void blit_alphaline(struct blit_display *display, unsigned int color, int line, int x0, int x1)
+void blit_alphaline(struct blit_display *display, unsigned int color, int line, int x0, int x2)
 {
 
     unsigned char *fg = (unsigned char *)&color;
 
-    while (x0 < x1)
+    while (x0 < x2)
     {
 
         unsigned char *bg = (unsigned char *)&linebuffer[x0];
@@ -174,7 +174,7 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int line, 
 
 }
 
-void blit_textnormal(struct blit_display *display, struct blit_font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
+void blit_textnormal(struct blit_display *display, struct blit_font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2)
 {
 
     unsigned int i;
@@ -196,12 +196,12 @@ void blit_textnormal(struct blit_display *display, struct blit_font *font, unsig
         if (util_intersects(lline, 0, height))
         {
 
-            if (util_intersects(rx, x0, x1) || util_intersects(rx + metricsdata.width, x0, x1))
+            if (util_intersects(rx, x0, x2) || util_intersects(rx + metricsdata.width, x0, x2))
             {
 
                 unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
                 int r0 = util_max(0, x0 - rx);
-                int r1 = util_min(x1 - rx, metricsdata.width);
+                int r1 = util_min(x2 - rx, metricsdata.width);
                 unsigned int r;
 
                 for (r = r0; r < r1; r++)
@@ -222,7 +222,7 @@ void blit_textnormal(struct blit_display *display, struct blit_font *font, unsig
 
 }
 
-void blit_textinverted(struct blit_display *display, struct blit_font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x1)
+void blit_textinverted(struct blit_display *display, struct blit_font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2)
 {
 
     unsigned int i;
@@ -244,12 +244,12 @@ void blit_textinverted(struct blit_display *display, struct blit_font *font, uns
         if (util_intersects(lline, 0, height))
         {
 
-            if (util_intersects(rx, x0, x1) || util_intersects(rx + metricsdata.width, x0, x1))
+            if (util_intersects(rx, x0, x2) || util_intersects(rx + metricsdata.width, x0, x2))
             {
 
                 unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
                 int r0 = util_max(0, x0 - rx);
-                int r1 = util_min(x1 - rx, metricsdata.width);
+                int r1 = util_min(x2 - rx, metricsdata.width);
                 unsigned int r;
 
                 for (r = r0; r < r1; r++)
@@ -270,7 +270,7 @@ void blit_textinverted(struct blit_display *display, struct blit_font *font, uns
 
 }
 
-void blit_mouse(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x1, unsigned int *cmap)
+void blit_mouse(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
@@ -454,77 +454,77 @@ void blit_mouse(struct blit_display *display, int x, int y, int w, int h, int li
     struct rowsegment *rs = findrowsegment(rows, 24, line, y, h);
 
     if (rs)
-        blitrowsegment(display, x, w, rs, line, x0, x1, cmap);
+        blitrowsegment(display, x, w, rs, line, x0, x2, cmap);
 
 }
 
-void blit_panel(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x1, unsigned int *cmap)
+void blit_panel(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
-        {LINESEGMENT_TYPE_RELX0X1, 0, 0, CMAP_PANEL_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X2, 0, 0, CMAP_PANEL_SHADOW}
     };
     static struct linesegment line1[3] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_PANEL_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 2, -2, CMAP_PANEL_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_PANEL_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X2, 2, -2, CMAP_PANEL_HIGHLIGHT},
+        {LINESEGMENT_TYPE_RELX2X2, -2, 0, CMAP_PANEL_SHADOW}
     };
     static struct linesegment line2[5] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_PANEL_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_PANEL_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX0X1, 3, -3, CMAP_PANEL_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_PANEL_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_PANEL_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X2, 3, -3, CMAP_PANEL_NORMAL},
+        {LINESEGMENT_TYPE_RELX2X2, -3, -2, CMAP_PANEL_HIGHLIGHT},
+        {LINESEGMENT_TYPE_RELX2X2, -2, 0, CMAP_PANEL_SHADOW}
     };
     static struct rowsegment rows[5] = {
         {ROWSEGMENT_TYPE_RELY0Y0, 0, 2, line0, 1},
         {ROWSEGMENT_TYPE_RELY0Y0, 2, 3, line1, 3},
-        {ROWSEGMENT_TYPE_RELY0Y1, 3, -3, line2, 5},
-        {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, line1, 3},
-        {ROWSEGMENT_TYPE_RELY1Y1, -2, 0, line0, 1}
+        {ROWSEGMENT_TYPE_RELY0Y2, 3, -3, line2, 5},
+        {ROWSEGMENT_TYPE_RELY2Y2, -3, -2, line1, 3},
+        {ROWSEGMENT_TYPE_RELY2Y2, -2, 0, line0, 1}
     };
     struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
 
     if (rs)
-        blitrowsegment(display, x, w, rs, line, x0, x1, cmap);
+        blitrowsegment(display, x, w, rs, line, x0, x2, cmap);
 
 }
 
-void blit_frame(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x1, unsigned int *cmap)
+void blit_frame(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
-        {LINESEGMENT_TYPE_RELX0X1, 0, 0, CMAP_FRAME_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X2, 0, 0, CMAP_FRAME_SHADOW}
     };
     static struct linesegment line1[3] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 2, -2, CMAP_FRAME_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_FRAME_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X2, 2, -2, CMAP_FRAME_HIGHLIGHT},
+        {LINESEGMENT_TYPE_RELX2X2, -2, 0, CMAP_FRAME_SHADOW}
     };
     static struct linesegment line2[7] = {
         {LINESEGMENT_TYPE_RELX0X0, 0, 2, CMAP_FRAME_SHADOW},
         {LINESEGMENT_TYPE_RELX0X0, 2, 3, CMAP_FRAME_HIGHLIGHT},
         {LINESEGMENT_TYPE_RELX0X0, 3, 5, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX0X1, 5, -5, CMAP_FRAME_NORMAL},
-        {LINESEGMENT_TYPE_RELX1X1, -5, -3, CMAP_FRAME_SHADOW},
-        {LINESEGMENT_TYPE_RELX1X1, -3, -2, CMAP_FRAME_HIGHLIGHT},
-        {LINESEGMENT_TYPE_RELX1X1, -2, 0, CMAP_FRAME_SHADOW}
+        {LINESEGMENT_TYPE_RELX0X2, 5, -5, CMAP_FRAME_NORMAL},
+        {LINESEGMENT_TYPE_RELX2X2, -5, -3, CMAP_FRAME_SHADOW},
+        {LINESEGMENT_TYPE_RELX2X2, -3, -2, CMAP_FRAME_HIGHLIGHT},
+        {LINESEGMENT_TYPE_RELX2X2, -2, 0, CMAP_FRAME_SHADOW}
     };
     static struct rowsegment rows[5] = {
         {ROWSEGMENT_TYPE_RELY0Y0, 0, 2, line0, 1},
         {ROWSEGMENT_TYPE_RELY0Y0, 2, 3, line1, 3},
-        {ROWSEGMENT_TYPE_RELY0Y1, 3, -3, line2, 7},
-        {ROWSEGMENT_TYPE_RELY1Y1, -3, -2, line1, 3},
-        {ROWSEGMENT_TYPE_RELY1Y1, -2, 0, line0, 1}
+        {ROWSEGMENT_TYPE_RELY0Y2, 3, -3, line2, 7},
+        {ROWSEGMENT_TYPE_RELY2Y2, -3, -2, line1, 3},
+        {ROWSEGMENT_TYPE_RELY2Y2, -2, 0, line0, 1}
     };
     struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
 
     if (rs)
-        blitrowsegment(display, x, w, rs, line, x0, x1, cmap);
+        blitrowsegment(display, x, w, rs, line, x0, x2, cmap);
 
 }
 
-void blit_pcx(struct blit_display *display, int line, char *source, int x, int y, int x0, int x1)
+void blit_pcx(struct blit_display *display, int line, char *source, int x, int y, int x0, int x2)
 {
 
     unsigned char buffer[BUFFER_SIZE];
@@ -533,7 +533,7 @@ void blit_pcx(struct blit_display *display, int line, char *source, int x, int y
     pool_pcxload(&pcxresource, source);
     pool_pcxreadline(&pcxresource, line, y, buffer);
 
-    for (i = x0; i < x1; i++)
+    for (i = x0; i < x2; i++)
     {
 
         unsigned int off = buffer[i - x];
@@ -560,7 +560,7 @@ void blit_initdisplay(struct blit_display *display, void *framebuffer, unsigned 
 void blit(struct blit_display *display, struct blit_damage *damage, int line)
 {
 
-    buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + damage->position0.x, linebuffer + damage->position0.x, (damage->position1.x - damage->position0.x) * display->bpp);
+    buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + damage->position0.x, linebuffer + damage->position0.x, (damage->position2.x - damage->position0.x) * display->bpp);
 
 }
 
