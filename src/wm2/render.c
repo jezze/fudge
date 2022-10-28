@@ -146,7 +146,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
     struct widget_select *select = widget->data;
     struct render_rowinfo rowinfo;
-    unsigned int extra;
+    unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
     static unsigned int cmapnormal[3] = {
         0xE8101010,
         0xE8484848,
@@ -169,10 +169,6 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
         0xE8FFFFFF,
     };
 
-    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), "X", 1, &rowinfo, 0, 0, 0);
-
-    extra = rowinfo.width + CONFIG_ICON_WIDTH;
-
     blit_panel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
     blit_iconhamburger(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x2, cmapicon);
     blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
@@ -184,7 +180,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
         int ry = text_getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
         if (util_intersects(line, ry, ry + rowinfo.height))
-            blit_textnormal(display, pool_getfont(POOL_FONTNORMAL), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x2);
+            blit_textnormal(display, pool_getfont(POOL_FONTBOLD), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x2);
 
     }
 

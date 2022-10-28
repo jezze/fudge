@@ -331,11 +331,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
     struct widget_select *select = widget->data;
     struct render_rowinfo rowinfo;
-    unsigned int extra;
-
-    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), "X", 1, &rowinfo, 0, 0, 0);
-
-    extra = rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2;
+    unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
 
     text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, 0, 0, 0);
 
