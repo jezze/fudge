@@ -15,13 +15,23 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 
     struct widget_button *button = widget->data;
     struct render_rowinfo rowinfo;
+    int mw;
+    int mh;
 
     text_getrowinfo(pool_getfont(POOL_FONTBOLD), pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, 0, 0, 0);
 
+    mw = rowinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2;
+    mh = rowinfo.height + CONFIG_BUTTON_PADDING_HEIGHT * 2;
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(rowinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(rowinfo.height + CONFIG_BUTTON_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(mw, minw, maxw);
+    widget->size.h = util_clamp(mh, minh, maxh);
+
+    if (maxw < mw)
+        widget->size.w = 0;
+
+    if (maxh < mh)
+        widget->size.h = 0;
 
 }
 
@@ -332,13 +342,23 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
     struct widget_select *select = widget->data;
     struct render_rowinfo rowinfo;
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
+    int mw;
+    int mh;
 
     text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, 0, 0, 0);
 
+    mw = rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra;
+    mh = rowinfo.height + CONFIG_SELECT_PADDING_HEIGHT * 2;
     widget->position.x = x;
     widget->position.y = y;
-    widget->size.w = util_clamp(rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, minw, maxw);
-    widget->size.h = util_clamp(rowinfo.height + CONFIG_SELECT_PADDING_HEIGHT * 2, minh, maxh);
+    widget->size.w = util_clamp(mw, minw, maxw);
+    widget->size.h = util_clamp(mh, minh, maxh);
+
+    if (maxw < mw)
+        widget->size.w = 0;
+
+    if (maxh < mh)
+        widget->size.h = 0;
 
 }
 
